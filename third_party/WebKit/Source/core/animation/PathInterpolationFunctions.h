@@ -15,6 +15,8 @@ class StylePath;
 
 class PathInterpolationFunctions {
  public:
+  enum CoordinateConversion { PreserveCoordinates, ForceAbsolute };
+
   static std::unique_ptr<SVGPathByteStream> AppliedValue(
       const InterpolableValue&,
       const NonInterpolableValue*);
@@ -24,9 +26,11 @@ class PathInterpolationFunctions {
                         const InterpolationType&,
                         const InterpolationValue&);
 
-  static InterpolationValue ConvertValue(const SVGPathByteStream&);
+  static InterpolationValue ConvertValue(const SVGPathByteStream&,
+                                         CoordinateConversion);
 
-  static InterpolationValue ConvertValue(const StylePath*);
+  static InterpolationValue ConvertValue(const StylePath*,
+                                         CoordinateConversion);
 
   static InterpolationValue MaybeConvertNeutral(
       const InterpolationValue& underlying,

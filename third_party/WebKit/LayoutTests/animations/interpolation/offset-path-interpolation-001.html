@@ -8,8 +8,8 @@
 // Distinct number of path segments
 assertNoInterpolation({
   property: 'offset-path',
-  from: "path('m 0 0 h 1 h 2')",
-  to: "path('m 0 0 h 3')"
+  from: "path('M 0 0 H 1 H 2')",
+  to: "path('M 0 0 H 3')"
 });
 
 assertNoInterpolation({
@@ -21,28 +21,28 @@ assertNoInterpolation({
 // Distinct segment types
 assertNoInterpolation({
   property: 'offset-path',
-  from: "path('m 10 0 h 1')",
-  to: "path('m 20 0 v 2')"
+  from: "path('M 10 0 H 11')",
+  to: "path('M 20 0 V 2')"
 });
 
 assertNoInterpolation({
   property: 'offset-path',
-  from: "path('m 1 2 l 3 4 Z')",
-  to: "path('m 1 2 l 3 4')"
+  from: "path('M 1 2 L 4 6 Z')",
+  to: "path('M 1 2 L 4 6')"
 });
 
 // Exercise each segment type
 assertInterpolation({
   property: 'offset-path',
-  from: "path('m 0 0 Z')",
-  to: "path('m 0 0 Z')"
+  from: "path('M 0 0 Z')",
+  to: "path('M 0 0 Z')"
 }, [
-  {at: -0.4, is: "path('m 0 0 Z')"},
-  {at: 0, is: "path('m 0 0 Z')"},
-  {at: 0.2, is: "path('m 0 0 Z')"},
-  {at: 0.6, is: "path('m 0 0 Z')"},
-  {at: 1, is: "path('m 0 0 Z')"},
-  {at: 1.4, is: "path('m 0 0 Z')"}
+  {at: -0.4, is: "path('M 0 0 Z')"},
+  {at: 0, is: "path('M 0 0 Z')"},
+  {at: 0.2, is: "path('M 0 0 Z')"},
+  {at: 0.6, is: "path('M 0 0 Z')"},
+  {at: 1, is: "path('M 0 0 Z')"},
+  {at: 1.4, is: "path('M 0 0 Z')"}
 ]);
 
 assertInterpolation({
@@ -63,12 +63,12 @@ assertInterpolation({
   from: "path('m 20 50')",
   to: "path('m 30 70')"
 }, [
-  {at: -0.4, is: "path('m 16 42')"},
-  {at: 0, is: "path('m 20 50')"},
-  {at: 0.2, is: "path('m 22 54')"},
-  {at: 0.6, is: "path('m 26 62')"},
-  {at: 1, is: "path('m 30 70')"},
-  {at: 1.4, is: "path('m 34 78')"}
+  {at: -0.4, is: "path('M 16 42')"},
+  {at: 0, is: "path('M 20 50')"},
+  {at: 0.2, is: "path('M 22 54')"},
+  {at: 0.6, is: "path('M 26 62')"},
+  {at: 1, is: "path('M 30 70')"},
+  {at: 1.4, is: "path('M 34 78')"}
 ]);
 
 assertInterpolation({
@@ -76,12 +76,12 @@ assertInterpolation({
   from: "path('m 0 0 L 20 50')",
   to: "path('m 0 0 L 30 70')"
 }, [
-  {at: -0.4, is: "path('m 0 0 L 16 42')"},
-  {at: 0, is: "path('m 0 0 L 20 50')"},
-  {at: 0.2, is: "path('m 0 0 L 22 54')"},
-  {at: 0.6, is: "path('m 0 0 L 26 62')"},
-  {at: 1, is: "path('m 0 0 L 30 70')"},
-  {at: 1.4, is: "path('m 0 0 L 34 78')"}
+  {at: -0.4, is: "path('M 0 0 L 16 42')"},
+  {at: 0, is: "path('M 0 0 L 20 50')"},
+  {at: 0.2, is: "path('M 0 0 L 22 54')"},
+  {at: 0.6, is: "path('M 0 0 L 26 62')"},
+  {at: 1, is: "path('M 0 0 L 30 70')"},
+  {at: 1.4, is: "path('M 0 0 L 34 78')"}
 ]);
 
 assertInterpolation({
@@ -89,12 +89,12 @@ assertInterpolation({
   from: "path('m 0 0 l 20 50')",
   to: "path('m 0 0 l 30 70')"
 }, [
-  {at: -0.4, is: "path('m 0 0 l 16 42')"},
-  {at: 0, is: "path('m 0 0 l 20 50')"},
-  {at: 0.2, is: "path('m 0 0 l 22 54')"},
-  {at: 0.6, is: "path('m 0 0 l 26 62')"},
-  {at: 1, is: "path('m 0 0 l 30 70')"},
-  {at: 1.4, is: "path('m 0 0 l 34 78')"}
+  {at: -0.4, is: "path('M 0 0 L 16 42')"},
+  {at: 0, is: "path('M 0 0 L 20 50')"},
+  {at: 0.2, is: "path('M 0 0 L 22 54')"},
+  {at: 0.6, is: "path('M 0 0 L 26 62')"},
+  {at: 1, is: "path('M 0 0 L 30 70')"},
+  {at: 1.4, is: "path('M 0 0 L 34 78')"}
 ]);
 </script>
 </body>
