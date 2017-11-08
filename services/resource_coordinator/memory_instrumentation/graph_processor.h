@@ -48,6 +48,15 @@ class GraphProcessor {
   static void AssignTracingOverhead(base::StringPiece allocator,
                                     GlobalDumpGraph* global_graph,
                                     GlobalDumpGraph::Process* process);
+
+  static GlobalDumpGraph::Node::Entry AggregateNumericWithNameForNode(
+      GlobalDumpGraph::Node* node,
+      base::StringPiece name);
+
+  static void AggregateNumericsRecursively(GlobalDumpGraph::Node* node);
+
+  static void PropagateNumericsAndDiagnosticsRecursively(
+      GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation

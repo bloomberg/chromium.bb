@@ -117,7 +117,7 @@ class GlobalDumpGraph {
     }
     const Node* parent() const { return parent_; }
     const GlobalDumpGraph::Process* dump_graph() const { return dump_graph_; }
-    const std::map<std::string, Entry>& entries() const { return entries_; }
+    std::map<std::string, Entry>* entries() { return &entries_; }
 
    private:
     GlobalDumpGraph::Process* const dump_graph_;
