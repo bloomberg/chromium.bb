@@ -1,6 +1,5 @@
 Tests how utilities functions highlight text and then revert/re-apply highlighting changes.
 
-Bug 70244
 --------- Running test: ----------
 After highlight: [function]
 After revert: function

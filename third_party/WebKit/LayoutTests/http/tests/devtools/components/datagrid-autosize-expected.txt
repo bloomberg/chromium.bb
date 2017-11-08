@@ -1,6 +1,5 @@
 Tests DataGrid column auto size calculation.
 
-Bug 101363
 Auto sizing [198,2,400], minPercent=90, maxPercent=undefined
     [33,33,34]
 Auto sizing [1000], minPercent=5, maxPercent=undefined

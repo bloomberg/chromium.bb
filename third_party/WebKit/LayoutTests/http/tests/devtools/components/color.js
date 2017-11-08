@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var test = function() {
+(async function() {
+  TestRunner.addResult(`Tests Common.Color\n`);
+
+
   function dumpColor(colorText) {
     var color = Common.Color.parse(colorText);
     TestRunner.addResult('Dumping \'' + colorText + '\' in different formats:');
@@ -53,11 +55,4 @@ var test = function() {
   dumpColor('#1234');
   dumpColor('#0FF');
   TestRunner.completeTest();
-};
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests Common.Color</p>
-</body>
-</html>
+})();

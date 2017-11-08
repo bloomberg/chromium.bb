@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script type="text/javascript">
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var test = function() {
+(async function() {
+  TestRunner.addResult(`Tests inspector cookies table\n`);
+
+
   function dumpCookies(cookies) {
     TestRunner.addResult(cookies.map(x => x.name()).join(','));
   }
@@ -153,11 +155,4 @@ var test = function() {
   }
 
   self.runtime.loadModulePromise('cookie_table').then(run);
-};
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests inspector cookies table</p>
-</body>
-</html>
+})();

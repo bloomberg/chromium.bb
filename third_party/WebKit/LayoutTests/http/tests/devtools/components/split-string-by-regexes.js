@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests TextUtils.TextUtils.splitStringByRegexes.\n`);
+
+
   TestRunner.runTestSuite([
     function testSimple(next) {
       var regexes = [/hello/g, /[0-9]+/g];
@@ -62,13 +64,4 @@ function test() {
       TestRunner.addResult('"' + result.value + '", ' + result.position + ', ' + result.regexIndex);
     }
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests TextUtils.TextUtils.splitStringByRegexes.
-</p>
-</body>
-</html>
+})();

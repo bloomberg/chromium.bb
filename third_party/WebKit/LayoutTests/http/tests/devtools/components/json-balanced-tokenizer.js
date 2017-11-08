@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function test() {
+(async function() {
+  TestRunner.addResult(`Test TextUtils.TextUtils.BalancedJSONTokenizer.\n`);
+
+
   TestRunner.runTestSuite([
     function testMatchQuotes(next) {
       var testStrings = [
@@ -16,7 +18,7 @@ function test() {
       for (var i = 0; i < testStrings.length; ++i) {
         var string = JSON.stringify(testStrings[i]);
         TestRunner.addResult('\nParsing ' + string);
-        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest));
+        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner));
         var result = tokenizer.write(string);
         if (!result)
           TestRunner.addResult(`tokenizer.write() returned ${result}, true expected`);
@@ -34,7 +36,7 @@ function test() {
       for (var i = 0; i < testData.length; ++i) {
         var string = JSON.stringify(testData[i]);
         TestRunner.addResult('\nParsing ' + string);
-        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest));
+        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner));
         var result = tokenizer.write(string);
         if (!result)
           TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
@@ -52,7 +54,7 @@ function test() {
       for (var i = 0; i < testData.length; ++i) {
         var string = JSON.stringify(testData[i]);
         TestRunner.addResult('\nParsing ' + string);
-        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+        var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner), true);
         var result = tokenizer.write(string);
         var expectedResult = !(testData[i] instanceof Array);
         if (result != expectedResult)
@@ -69,14 +71,14 @@ function test() {
         {'etc': {'\\\\"': '\\\\"'}}
       ];
       var string = JSON.stringify(testStrings);
-      var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+      var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner), true);
       TestRunner.addResult('\nRunning at once:');
       var result = tokenizer.write(string);
       if (result)
         TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
 
       for (var sample of [3, 15, 50]) {
-        tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+        tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner), true);
         TestRunner.addResult('\nRunning by ' + sample + ':');
         for (var i = 0; i < string.length; i += sample) {
           var result = tokenizer.write(string.substring(i, i + sample));
@@ -91,17 +93,10 @@ function test() {
     function testGarbageAfterObject(next) {
       var testString = '[{a: \'b\'}], {\'x\': {a: \'b\'}}';
       TestRunner.addResult('\nParsing ' + testString);
-      var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(InspectorTest), true);
+      var tokenizer = new TextUtils.TextUtils.BalancedJSONTokenizer(TestRunner.addResult.bind(TestRunner), true);
       var result = tokenizer.write(testString);
       TestRunner.addResult(`tokenizer.write() returned ${result}, false expected`);
       next();
     }
   ]);
-}
-</script>
-
-<body onload="runTest()">
-Test TextUtils.TextUtils.BalancedJSONTokenizer.
-</p>
-</body>
-</html>
+})();

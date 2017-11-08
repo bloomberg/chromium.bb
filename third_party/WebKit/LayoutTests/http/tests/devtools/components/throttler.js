@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`This test verifies throttler behavior.\n`);
+  TestRunner.printDevToolsConsole();
+
   class TimeoutMock {
     constructor() {
       this._timeoutId = 0;
@@ -45,7 +47,7 @@ function test() {
       this._timeoutIdToProcess = {};
       this._timeoutIdToMillis = {};
     }
-  };
+  }
 
   var ProcessMock = function(name, runnable) {
     this._runnable = runnable;
@@ -276,12 +278,4 @@ function test() {
   function logSchedule(operation, asSoonAsPossible) {
     TestRunner.addResult('SCHEDULED: \'' + operation.processName + '\' asSoonAsPossible: ' + asSoonAsPossible);
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>This test verifies throttler behavior.</p>
-</body>
-</html>
+})();

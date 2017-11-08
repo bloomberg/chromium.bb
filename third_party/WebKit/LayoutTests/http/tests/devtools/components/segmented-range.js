@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/datagrid-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests SegmentedRange\n`);
+  await TestRunner.loadModule('data_grid_test_runner');
+
   function testCase(testName, data, merge, expectSameBackwards) {
     TestRunner.addResult('Test case: ' + testName);
     TestRunner.addResult('Input Segments: ' + JSON.stringify(data));
@@ -59,10 +61,4 @@ function test() {
   testCase('one consuming many:', [[0, 1, 'a'], [2, 3, 'a'], [4, 5, 'a'], [6, 7, 'a'], [2, 6, 'a']], merge, true);
   testCase('one consuming many, no merge:', [[0, 1, 'a'], [2, 3, 'a'], [4, 5, 'a'], [6, 7, 'a'], [2, 6, 'a']]);
   TestRunner.completeTest();
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests SegmentedRange</p>
-</body>
-</html>
+})();
