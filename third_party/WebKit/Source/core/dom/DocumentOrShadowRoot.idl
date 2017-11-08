@@ -13,9 +13,8 @@
     Selection? getSelection();
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extensions-to-the-document-interface
-    // TODO(foolip): The x and y arguments should be of type double.
-    Element? elementFromPoint(long x, long y);
-    sequence<Element> elementsFromPoint(long x, long y);
+    Element? elementFromPoint(double x, double y);
+    sequence<Element> elementsFromPoint(double x, double y);
     readonly attribute Element? activeElement;
     [SameObject] readonly attribute StyleSheetList styleSheets;
     // PointerLock API

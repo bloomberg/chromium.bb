@@ -34,13 +34,13 @@ class DocumentOrShadowRoot {
     return tree_scope.GetSelection();
   }
 
-  static Element* elementFromPoint(TreeScope& tree_scope, int x, int y) {
+  static Element* elementFromPoint(TreeScope& tree_scope, double x, double y) {
     return tree_scope.ElementFromPoint(x, y);
   }
 
   static HeapVector<Member<Element>> elementsFromPoint(TreeScope& tree_scope,
-                                                       int x,
-                                                       int y) {
+                                                       double x,
+                                                       double y) {
     return tree_scope.ElementsFromPoint(x, y);
   }
 

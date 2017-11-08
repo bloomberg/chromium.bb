@@ -1532,14 +1532,15 @@ AtomicString Document::contentType() const {
   return AtomicString("application/xml");
 }
 
-Element* Document::ElementFromPoint(int x, int y) const {
+Element* Document::ElementFromPoint(double x, double y) const {
   if (GetLayoutViewItem().IsNull())
     return nullptr;
 
   return TreeScope::ElementFromPoint(x, y);
 }
 
-HeapVector<Member<Element>> Document::ElementsFromPoint(int x, int y) const {
+HeapVector<Member<Element>> Document::ElementsFromPoint(double x,
+                                                        double y) const {
   if (GetLayoutViewItem().IsNull())
     return HeapVector<Member<Element>>();
   return TreeScope::ElementsFromPoint(x, y);
