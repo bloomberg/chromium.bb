@@ -15,7 +15,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"
 #include "ui/events/ozone/evdev/keyboard_util_evdev.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 namespace ui {
 
@@ -31,7 +30,7 @@ const int kSwitchStylusInserted = 15;
 }  // namespace
 
 EventConverterEvdevImpl::EventConverterEvdevImpl(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     int id,
     const EventDeviceInfo& devinfo,

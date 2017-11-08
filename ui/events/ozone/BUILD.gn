@@ -99,8 +99,6 @@ if (use_ozone) {
       "evdev/keyboard_util_evdev.h",
       "evdev/mouse_button_map_evdev.cc",
       "evdev/mouse_button_map_evdev.h",
-      "evdev/scoped_input_device.cc",
-      "evdev/scoped_input_device.h",
       "evdev/tablet_event_converter_evdev.cc",
       "evdev/tablet_event_converter_evdev.h",
       "evdev/touch_evdev_debug_buffer.cc",

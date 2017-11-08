@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/files/scoped_file.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -83,7 +84,7 @@ void SetGestureBoolProperty(GesturePropertyProvider* provider,
 
 std::unique_ptr<EventConverterEvdev> CreateConverter(
     const OpenInputDeviceParams& params,
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     const EventDeviceInfo& devinfo) {
 #if defined(USE_EVDEV_GESTURES)
   // Touchpad or mouse: use gestures library.
@@ -132,7 +133,7 @@ std::unique_ptr<EventConverterEvdev> OpenInputDevice(
   const base::FilePath& path = params.path;
   TRACE_EVENT1("evdev", "OpenInputDevice", "path", path.value());
 
-  ScopedInputDevice fd(open(path.value().c_str(), O_RDWR | O_NONBLOCK));
+  base::ScopedFD fd(open(path.value().c_str(), O_RDWR | O_NONBLOCK));
   if (fd.get() < 0) {
     PLOG(ERROR) << "Cannot open " << path.value();
     return nullptr;

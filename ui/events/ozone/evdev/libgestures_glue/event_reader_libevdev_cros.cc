@@ -28,7 +28,7 @@ std::string FormatLog(const char* fmt, va_list args) {
 }  // namespace
 
 EventReaderLibevdevCros::EventReaderLibevdevCros(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     const base::FilePath& path,
     int id,
     const EventDeviceInfo& devinfo,

@@ -31,7 +31,7 @@ EventPointerType GetToolType(int button_tool) {
 }  // namespace
 
 TabletEventConverterEvdev::TabletEventConverterEvdev(
-    ScopedInputDevice fd,
+    base::ScopedFD fd,
     base::FilePath path,
     int id,
     CursorDelegateEvdev* cursor,

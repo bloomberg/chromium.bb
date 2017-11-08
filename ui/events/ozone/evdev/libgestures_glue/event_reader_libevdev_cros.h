@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 namespace ui {
 
@@ -43,7 +43,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
     virtual void OnLibEvdevCrosStopped(Evdev* evdev, EventStateRec* state) = 0;
   };
 
-  EventReaderLibevdevCros(ScopedInputDevice fd,
+  EventReaderLibevdevCros(base::ScopedFD fd,
                           const base::FilePath& path,
                           int id,
                           const EventDeviceInfo& devinfo,

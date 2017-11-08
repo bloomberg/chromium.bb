@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 #include "ui/events/ozone/gamepad/gamepad_mapping.h"
 #include "ui/events/ozone/gamepad/webgamepad_constants.h"
 
@@ -27,7 +27,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  GamepadEventConverterEvdev(ScopedInputDevice fd,
+  GamepadEventConverterEvdev(base::ScopedFD fd,
                              base::FilePath path,
                              int id,
                              const EventDeviceInfo& info,
@@ -110,7 +110,7 @@ class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
   std::unique_ptr<GamepadMapper> mapper_;
 
   // Input device file descriptor.
-  ScopedInputDevice input_device_fd_;
+  base::ScopedFD input_device_fd_;
 
   // Callbacks for dispatching events.
   DeviceEventDispatcherEvdev* dispatcher_;

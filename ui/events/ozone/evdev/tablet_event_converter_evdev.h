@@ -6,6 +6,7 @@
 #define UI_EVENTS_OZONE_TABLET_EVENT_CONVERTER_EVDEV_H_
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event.h"
@@ -14,7 +15,6 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
-#include "ui/events/ozone/evdev/scoped_input_device.h"
 
 struct input_event;
 
@@ -25,7 +25,7 @@ class DeviceEventDispatcherEvdev;
 class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
     : public EventConverterEvdev {
  public:
-  TabletEventConverterEvdev(ScopedInputDevice fd,
+  TabletEventConverterEvdev(base::ScopedFD fd,
                             base::FilePath path,
                             int id,
                             CursorDelegateEvdev* cursor,
@@ -50,7 +50,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   void FlushEvents(const input_event& input);
 
   // Input device file descriptor.
-  ScopedInputDevice input_device_fd_;
+  base::ScopedFD input_device_fd_;
 
   // Controller for watching the input fd.
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
