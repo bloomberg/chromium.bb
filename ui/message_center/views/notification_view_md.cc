@@ -343,7 +343,7 @@ views::View* NotificationViewMD::TargetForRect(views::View* root,
                                                const gfx::Rect& rect) {
   CHECK_EQ(root, this);
 
-  // TODO(tdanderson): Modify this function to support rect-based event
+  // TODO(tetsui): Modify this function to support rect-based event
   // targeting. Using the center point of |rect| preserves this function's
   // expected behavior for the time being.
   gfx::Point point = rect.CenterPoint();
@@ -485,6 +485,22 @@ void NotificationViewMD::OnMouseEntered(const ui::MouseEvent& event) {
 void NotificationViewMD::OnMouseExited(const ui::MouseEvent& event) {
   MessageView::OnMouseExited(event);
   UpdateControlButtonsVisibility();
+}
+
+bool NotificationViewMD::OnMousePressed(const ui::MouseEvent& event) {
+  if (!event.IsOnlyLeftMouseButton())
+    return false;
+
+  // Ignore click of actions row outside action buttons.
+  if (expanded_) {
+    DCHECK(actions_row_);
+    gfx::Point point_in_child = event.location();
+    ConvertPointToTarget(this, actions_row_, &point_in_child);
+    if (actions_row_->HitTestPoint(point_in_child))
+      return true;
+  }
+
+  return MessageView::OnMousePressed(event);
 }
 
 void NotificationViewMD::UpdateWithNotification(

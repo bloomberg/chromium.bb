@@ -141,6 +141,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
