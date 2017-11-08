@@ -346,7 +346,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         List<Surface> surfaceList = new ArrayList<Surface>(3);
         // Make sure both ImageReader's Surfaces are registered with the session.
-        // TODO(mcasas): release these Surfaces when not needed, https://crbug.com/643884.
         surfaceList.add(mPreviewReader.getSurface());
         surfaceList.add(mPhotoReader.getSurface());
         surfaceList.add(mPrecaptureSurface);
@@ -1171,5 +1170,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
     @Override
     public void deallocate() {
         Log.d(TAG, "deallocate");
+        if (mPrecaptureSurface != null) mPrecaptureSurface.release();
+        if (mPhotoReader != null) mPhotoReader.close();
+        if (mPreviewReader != null) mPreviewReader.close();
     }
 }
