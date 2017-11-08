@@ -95,6 +95,14 @@ AutofillType AutofillField::Type() const {
   // autofill predicts a credit card type.
   if (html_type_ != HTML_TYPE_UNSPECIFIED &&
       !(html_type_ == HTML_TYPE_UNRECOGNIZED && IsCreditCardPrediction())) {
+    // If autocomplete=tel and server says it's a phone field without country
+    // code, we override html prediction(autocomplete=tel leads to whole number
+    // prediction).
+    if (html_type_ == HTML_TYPE_TEL &&
+        overall_server_type_ == PHONE_HOME_CITY_AND_NUMBER) {
+      return AutofillType(PHONE_HOME_CITY_AND_NUMBER);
+    }
+
     return AutofillType(html_type_, html_mode_);
   }
 
