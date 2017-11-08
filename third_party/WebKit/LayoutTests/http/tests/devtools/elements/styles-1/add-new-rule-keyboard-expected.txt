@@ -1,0 +1,16 @@
+Tests that adding a new rule works properly with user input.
+
+Text
+Is editing? true
+[expanded] 
+element.style { ()
+
+[expanded] 
+div#inspected { (inspector-stylesheet:1 -> inspector-stylesheet:1:16)
+    : ;
+
+[expanded] 
+div { (user agent stylesheet)
+    display: block;
+
+
