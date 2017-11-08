@@ -335,7 +335,8 @@ typedef struct SPEED_FEATURES {
   BLOCK_SIZE always_this_block_size;
 
   // Drop less likely picked reference frames in the RD search
-  // Has two levels for now: 1 and 2, where 2 is more aggressive than 1.
+  // Has three levels for now: 1, 2 and 3, where higher levels are more
+  // aggressive than lower ones.
   int selective_ref_frame;
 
 #if CONFIG_EXT_PARTITION_TYPES

@@ -203,6 +203,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
 
   if (speed >= 3) {
+    sf->selective_ref_frame = 3;
+
     sf->tx_size_search_method =
         frame_is_boosted(cpi) ? USE_FULL_RD : USE_LARGESTALL;
     sf->mode_search_skip_flags =
