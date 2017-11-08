@@ -14,8 +14,6 @@
 namespace blink {
 class WebAudioDevice;
 class WebFrameClient;
-class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebRTCPeerConnectionHandler;
@@ -62,8 +60,6 @@ class TEST_RUNNER_EXPORT WebTestInterfaces {
   WebTestRunner* TestRunner();
   blink::WebThemeEngine* ThemeEngine();
 
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
-      blink::WebMediaStreamCenterClient* client);
   std::unique_ptr<blink::WebRTCPeerConnectionHandler>
   CreateWebRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);

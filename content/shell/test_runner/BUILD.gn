@@ -46,8 +46,6 @@ component("test_runner") {
     "mock_web_audio_device.h",
     "mock_web_document_subresource_filter.cc",
     "mock_web_document_subresource_filter.h",
-    "mock_web_media_stream_center.cc",
-    "mock_web_media_stream_center.h",
     "mock_web_midi_accessor.cc",
     "mock_web_midi_accessor.h",
     "mock_web_speech_recognizer.cc",
