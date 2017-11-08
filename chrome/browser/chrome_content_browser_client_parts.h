@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace base {
@@ -16,6 +17,7 @@ class FilePath;
 }
 
 namespace content {
+class AssociatedInterfaceRegistry;
 class BrowserContext;
 class BrowserURLHandler;
 class RenderProcessHost;
@@ -62,6 +64,15 @@ class ChromeContentBrowserClientParts {
 
   // Called when the ResourceDispatcherHost is created.
   virtual void ResourceDispatcherHostCreated() {}
+
+  // Allows to register browser interfaces exposed through the
+  // RenderProcessHost. Note that interface factory callbacks added to
+  // |registry| will by default be run immediately on the IO thread, unless a
+  // task runner is provided.
+  virtual void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      content::AssociatedInterfaceRegistry* associated_registry,
+      content::RenderProcessHost* render_process_host) {}
 };
 
 #endif  // CHROME_BROWSER_CHROME_CONTENT_BROWSER_CLIENT_PARTS_H_

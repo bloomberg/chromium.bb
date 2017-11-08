@@ -35,49 +35,16 @@
 #ifndef INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
 #define INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
 
-// These are only used internally, so the order does not matter.
-enum class ChromeViewHostMsg_GetPluginInfo_Status {
-  kAllowed,
-  // Plugin is blocked, but still can be manually loaded via context menu.
-  kBlocked,
-  // Plugin is blocked by policy, so it cannot be manually loaded.
-  kBlockedByPolicy,
-  // Plugin is blocked, and cannot be manually loaded via context menu.
-  kBlockedNoLoading,
-  kComponentUpdateRequired,
-  kDisabled,
-  // Flash is blocked, but user can click on the placeholder to trigger the
-  // Flash permission prompt.
-  kFlashHiddenPreferHtml,
-  kNotFound,
-  kOutdatedBlocked,
-  kOutdatedDisallowed,
-  kPlayImportantContent,
-#if defined(OS_LINUX)
-  kRestartRequired,
-#endif
-  kUnauthorized,
-};
 
 #endif  // INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(ChromeViewHostMsg_GetPluginInfo_Status,
-                          ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
                           blink::WebConsoleMessage::kLevelLast)
 IPC_ENUM_TRAITS_MAX_VALUE(content::BrowserControlsState,
                           content::BROWSER_CONTROLS_STATE_LAST)
 
-// Output parameters for ChromeViewHostMsg_GetPluginInfo message.
-IPC_STRUCT_BEGIN(ChromeViewHostMsg_GetPluginInfo_Output)
-  IPC_STRUCT_MEMBER(ChromeViewHostMsg_GetPluginInfo_Status, status)
-  IPC_STRUCT_MEMBER(content::WebPluginInfo, plugin)
-  IPC_STRUCT_MEMBER(std::string, actual_mime_type)
-  IPC_STRUCT_MEMBER(std::string, group_identifier)
-  IPC_STRUCT_MEMBER(base::string16, group_name)
-IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(WebApplicationInfo::MobileCapable,
                           WebApplicationInfo::MOBILE_CAPABLE_APPLE)
@@ -197,16 +164,6 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
                             base::string16 /* database name */,
                             bool /* allowed */)
 
-// Return information about a plugin for the given URL and MIME type.
-// In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows
-// about specific reasons why a plugin can't be used, for example because it's
-// disabled.
-IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
-                            int /* render_frame_id */,
-                            GURL /* url */,
-                            url::Origin /* main_frame_origin */,
-                            std::string /* mime_type */,
-                            ChromeViewHostMsg_GetPluginInfo_Output /* output */)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 // Returns whether any internal plugin supporting |mime_type| is registered and

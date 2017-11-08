@@ -18,8 +18,6 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-enum class ChromeViewHostMsg_GetPluginInfo_Status;
-
 class ChromePluginPlaceholder final
     : public plugins::LoadablePluginPlaceholder,
       public content::RenderThreadObserver,
@@ -44,7 +42,7 @@ class ChromePluginPlaceholder final
       content::RenderFrame* render_frame,
       const blink::WebPluginParams& params);
 
-  void SetStatus(ChromeViewHostMsg_GetPluginInfo_Status status);
+  void SetStatus(chrome::mojom::PluginStatus status);
 
   chrome::mojom::PluginRendererPtr BindPluginRenderer();
 
@@ -90,7 +88,7 @@ class ChromePluginPlaceholder final
   // IPC message handlers:
   void OnSetPrerenderMode(prerender::PrerenderMode mode);
 
-  ChromeViewHostMsg_GetPluginInfo_Status status_;
+  chrome::mojom::PluginStatus status_;
 
   base::string16 title_;
 

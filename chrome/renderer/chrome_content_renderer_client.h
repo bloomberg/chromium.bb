@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
+#include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/features.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
@@ -48,8 +49,6 @@ class PrescientNetworkingDispatcher;
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 #endif
-
-struct ChromeViewHostMsg_GetPluginInfo_Output;
 
 namespace content {
 class BrowserPluginDelegate;
@@ -229,10 +228,12 @@ class ChromeContentRendererClient
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+  static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();
+
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,
       const blink::WebPluginParams& params,
-      const ChromeViewHostMsg_GetPluginInfo_Output& output);
+      const chrome::mojom::PluginInfo& plugin_info);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)

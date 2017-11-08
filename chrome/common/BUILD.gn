@@ -689,13 +689,18 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
+    "//content/public/common:interfaces",
     "//mojo/common:common_custom_types",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
+    "//url/mojo:url_mojom_origin",
   ]
 
-  overridden_deps = [ "//third_party/WebKit/public:mojo_bindings" ]
+  overridden_deps = [
+    "//third_party/WebKit/public:mojo_bindings",
+    "//content/public/common:interfaces",
+  ]
   component_deps = [ "//content/public/common" ]
 
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.

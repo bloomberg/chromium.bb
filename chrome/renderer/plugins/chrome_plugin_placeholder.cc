@@ -32,6 +32,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
+#include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -64,7 +65,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     const std::string& html_data,
     const base::string16& title)
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data),
-      status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
+      status_(chrome::mojom::PluginStatus::kAllowed),
       title_(title),
       context_menu_request_id_(0),
       plugin_renderer_binding_(this) {
@@ -163,8 +164,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   return blocked_plugin;
 }
 
-void ChromePluginPlaceholder::SetStatus(
-    ChromeViewHostMsg_GetPluginInfo_Status status) {
+void ChromePluginPlaceholder::SetStatus(chrome::mojom::PluginStatus status) {
   status_ = status;
 }
 
@@ -211,16 +211,17 @@ void ChromePluginPlaceholder::PluginListChanged() {
   if (!render_frame() || !plugin())
     return;
 
-  ChromeViewHostMsg_GetPluginInfo_Output output;
+  chrome::mojom::PluginInfoPtr plugin_info;
   std::string mime_type(GetPluginParams().mime_type.Utf8());
-  render_frame()->Send(new ChromeViewHostMsg_GetPluginInfo(
+
+  ChromeContentRendererClient::GetPluginInfoHost()->GetPluginInfo(
       routing_id(), GURL(GetPluginParams().url),
       render_frame()->GetWebFrame()->Top()->GetSecurityOrigin(), mime_type,
-      &output));
-  if (output.status == status_)
+      &plugin_info);
+  if (plugin_info->status == status_)
     return;
   blink::WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
-      render_frame(), GetPluginParams(), output);
+      render_frame(), GetPluginParams(), *plugin_info);
   ReplacePlugin(new_plugin);
   if (!new_plugin) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(
@@ -284,7 +285,7 @@ void ChromePluginPlaceholder::ShowContextMenu(
   }
 
   bool flash_hidden =
-      status_ == ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
+      status_ == chrome::mojom::PluginStatus::kFlashHiddenPreferHtml;
   if (!GetPluginInfo().path.value().empty() && !flash_hidden) {
     content::MenuItem run_item;
     run_item.action = chrome::MENU_COMMAND_PLUGIN_RUN;

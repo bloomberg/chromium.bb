@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/features.h"
+#include "chrome/common/plugin.mojom.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/component_updater/component_updater_service.h"
@@ -192,7 +193,8 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {
+      ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
+      binding_(this) {
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
           base::Bind(&PluginInfoMessageFilter::ShutdownOnUIThread,
@@ -206,20 +208,28 @@ void PluginInfoMessageFilter::ShutdownOnUIThread() {
 }
 
 bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(PluginInfoMessageFilter, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetPluginInfo,
-                                    OnGetPluginInfo)
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  IPC_BEGIN_MESSAGE_MAP(PluginInfoMessageFilter, message)
     IPC_MESSAGE_HANDLER(
         ChromeViewHostMsg_IsInternalPluginAvailableForMimeType,
         OnIsInternalPluginAvailableForMimeType)
-#endif
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
+#else
+  return false;
+#endif
 }
 
 void PluginInfoMessageFilter::OnDestruct() const {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PluginInfoMessageFilter::DestructOnBrowserThread,
+                     base::Unretained(this)));
+}
+
+void PluginInfoMessageFilter::DestructOnBrowserThread() const {
+  binding_.Close();
   // Destroy on the UI thread because we contain a |PrefMember|.
   content::BrowserThread::DeleteOnUIThread::Destruct(this);
 }
@@ -241,24 +251,28 @@ struct PluginInfoMessageFilter::GetPluginInfo_Params {
   std::string mime_type;
 };
 
-void PluginInfoMessageFilter::OnGetPluginInfo(
-    int render_frame_id,
+void PluginInfoMessageFilter::OnPluginInfoHostRequest(
+    chrome::mojom::PluginInfoHostAssociatedRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void PluginInfoMessageFilter::GetPluginInfo(
+    int32_t render_frame_id,
     const GURL& url,
-    const url::Origin& main_frame_origin,
+    const url::Origin& origin,
     const std::string& mime_type,
-    IPC::Message* reply_msg) {
-  GetPluginInfo_Params params = {render_frame_id, url, main_frame_origin,
-                                 mime_type};
-  PluginService::GetInstance()->GetPlugins(base::BindOnce(
-      &PluginInfoMessageFilter::PluginsLoaded, this, params, reply_msg));
+    const GetPluginInfoCallback& callback) {
+  GetPluginInfo_Params params = {render_frame_id, url, origin, mime_type};
+  PluginService::GetInstance()->GetPlugins(
+      base::BindOnce(&PluginInfoMessageFilter::PluginsLoaded, this, params,
+                     std::move(callback)));
 }
 
 void PluginInfoMessageFilter::PluginsLoaded(
     const GetPluginInfo_Params& params,
-    IPC::Message* reply_msg,
+    GetPluginInfoCallback callback,
     const std::vector<WebPluginInfo>& plugins) {
-  std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output(
-      new ChromeViewHostMsg_GetPluginInfo_Output());
+  chrome::mojom::PluginInfoPtr output = chrome::mojom::PluginInfo::New();
   // This also fills in |actual_mime_type|.
   std::unique_ptr<PluginMetadata> plugin_metadata;
   if (context_.FindEnabledPlugin(params.render_frame_id, params.url,
@@ -271,20 +285,20 @@ void PluginInfoMessageFilter::PluginsLoaded(
         plugin_metadata->identifier(), &output->status);
   }
 
-  if (output->status == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
+  if (output->status == chrome::mojom::PluginStatus::kNotFound) {
     // Check to see if the component updater can fetch an implementation.
     base::PostTaskAndReplyWithResult(
         main_thread_task_runner_.get(), FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &component_updater::ComponentUpdateService::GetComponentForMimeType,
             base::Unretained(g_browser_process->component_updater()),
             params.mime_type),
-        base::Bind(&PluginInfoMessageFilter::ComponentPluginLookupDone, this,
-                   params, base::Passed(&output),
-                   base::Passed(&plugin_metadata), reply_msg));
+        base::BindOnce(&PluginInfoMessageFilter::ComponentPluginLookupDone,
+                       this, params, std::move(output), std::move(callback),
+                       std::move(plugin_metadata)));
   } else {
-    GetPluginInfoReply(params, std::move(output), std::move(plugin_metadata),
-                       reply_msg);
+    GetPluginInfoFinish(params, std::move(output), std::move(callback),
+                        std::move(plugin_metadata));
   }
 }
 
@@ -332,9 +346,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const WebPluginInfo& plugin,
     PluginMetadata::SecurityStatus security_status,
     const std::string& plugin_identifier,
-    ChromeViewHostMsg_GetPluginInfo_Status* status) const {
+    chrome::mojom::PluginStatus* status) const {
   if (security_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+    *status = chrome::mojom::PluginStatus::kAllowed;
     return;
   }
 
@@ -357,12 +371,11 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   DCHECK(plugin_setting != CONTENT_SETTING_ASK);
 
-  if (*status ==
-      ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml) {
+  if (*status == chrome::mojom::PluginStatus::kFlashHiddenPreferHtml) {
     if (plugin_setting == CONTENT_SETTING_BLOCK) {
       *status = is_managed && !legacy_ask_user
-                    ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
-                    : ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading;
+                    ? chrome::mojom::PluginStatus::kBlockedByPolicy
+                    : chrome::mojom::PluginStatus::kBlockedNoLoading;
     }
     return;
   }
@@ -372,9 +385,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   if (security_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
     if (allow_outdated_plugins_.IsManaged()) {
-      *status = ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed;
+      *status = chrome::mojom::PluginStatus::kOutdatedDisallowed;
     } else {
-      *status = ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked;
+      *status = chrome::mojom::PluginStatus::kOutdatedBlocked;
     }
     return;
   }
@@ -385,7 +398,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
       !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
       uses_default_content_setting) {
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+    *status = chrome::mojom::PluginStatus::kUnauthorized;
     return;
   }
 
@@ -405,13 +418,13 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
       (plugin_setting == CONTENT_SETTING_ALLOW &&
        PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
        !run_all_flash_in_allow_mode_.GetValue())) {
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
+    *status = chrome::mojom::PluginStatus::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
     // For managed users with the ASK policy, we allow manually running plugins
     // via context menu. This is the closest to admin intent.
     *status = is_managed && !legacy_ask_user
-                  ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
-                  : ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
+                  ? chrome::mojom::PluginStatus::kBlockedByPolicy
+                  : chrome::mojom::PluginStatus::kBlocked;
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -419,13 +432,12 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // the guest. In order to do this, set the status to 'Unauthorized' here,
   // and update the status as appropriate depending on the response from the
   // embedder.
-  if (*status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      *status == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked ||
-      *status ==
-          ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) {
+  if (*status == chrome::mojom::PluginStatus::kAllowed ||
+      *status == chrome::mojom::PluginStatus::kBlocked ||
+      *status == chrome::mojom::PluginStatus::kPlayImportantContent) {
     if (extensions::WebViewRendererState::GetInstance()->IsGuest(
             render_process_id_))
-      *status = ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized;
+      *status = chrome::mojom::PluginStatus::kUnauthorized;
   }
 #endif
 }
@@ -435,11 +447,11 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     const GURL& url,
     const url::Origin& main_frame_origin,
     const std::string& mime_type,
-    ChromeViewHostMsg_GetPluginInfo_Status* status,
+    chrome::mojom::PluginStatus* status,
     WebPluginInfo* plugin,
     std::string* actual_mime_type,
     std::unique_ptr<PluginMetadata>* plugin_metadata) const {
-  *status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+  *status = chrome::mojom::PluginStatus::kAllowed;
 
   bool allow_wildcard = true;
   std::vector<WebPluginInfo> matching_plugins;
@@ -458,7 +470,7 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       matching_plugins.end());
 #endif  // defined(GOOGLE_CHROME_BUILD)
   if (matching_plugins.empty()) {
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
+    *status = chrome::mojom::PluginStatus::kNotFound;
     return false;
   }
 
@@ -479,12 +491,12 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
   if (!enabled) {
     // Otherwise, we only found disabled plugins, so we take the first one.
     i = 0;
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
+    *status = chrome::mojom::PluginStatus::kDisabled;
 
     if (PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map_) &&
         matching_plugins[0].name ==
             base::ASCIIToUTF16(content::kFlashPluginName)) {
-      *status = ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
+      *status = chrome::mojom::PluginStatus::kFlashHiddenPreferHtml;
 
       // In the Prefer HTML case, the plugin is actually enabled, but hidden.
       // It will still be blocked in the body of DecidePluginStatus.
@@ -502,32 +514,30 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
 
 void PluginInfoMessageFilter::ComponentPluginLookupDone(
     const GetPluginInfo_Params& params,
-    std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
+    chrome::mojom::PluginInfoPtr output,
+    GetPluginInfoCallback callback,
     std::unique_ptr<PluginMetadata> plugin_metadata,
-    IPC::Message* reply_msg,
     std::unique_ptr<component_updater::ComponentInfo> cus_plugin_info) {
   if (cus_plugin_info) {
-    output->status =
-        ChromeViewHostMsg_GetPluginInfo_Status::kComponentUpdateRequired;
+    output->status = chrome::mojom::PluginStatus::kComponentUpdateRequired;
 #if defined(OS_LINUX)
     if (cus_plugin_info->version != base::Version("0")) {
-      output->status =
-          ChromeViewHostMsg_GetPluginInfo_Status::kRestartRequired;
+      output->status = chrome::mojom::PluginStatus::kRestartRequired;
     }
 #endif
     plugin_metadata = base::MakeUnique<PluginMetadata>(
         cus_plugin_info->id, cus_plugin_info->name, false, GURL(), GURL(),
         base::ASCIIToUTF16(cus_plugin_info->id), std::string());
   }
-  GetPluginInfoReply(params, std::move(output), std::move(plugin_metadata),
-                     reply_msg);
+  GetPluginInfoFinish(params, std::move(output), std::move(callback),
+                      std::move(plugin_metadata));
 }
 
-void PluginInfoMessageFilter::GetPluginInfoReply(
+void PluginInfoMessageFilter::GetPluginInfoFinish(
     const GetPluginInfo_Params& params,
-    std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
-    std::unique_ptr<PluginMetadata> plugin_metadata,
-    IPC::Message* reply_msg) {
+    chrome::mojom::PluginInfoPtr output,
+    GetPluginInfoCallback callback,
+    std::unique_ptr<PluginMetadata> plugin_metadata) {
   if (plugin_metadata) {
     output->group_identifier = plugin_metadata->identifier();
     output->group_name = plugin_metadata->name();
@@ -535,15 +545,14 @@ void PluginInfoMessageFilter::GetPluginInfoReply(
 
   context_.MaybeGrantAccess(output->status, output->plugin.path);
 
-  ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, *output);
-  Send(reply_msg);
-  if (output->status != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
+  if (output->status != chrome::mojom::PluginStatus::kNotFound) {
     main_thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&PluginInfoMessageFilter::ReportMetrics, this,
                        params.render_frame_id, output->actual_mime_type,
                        params.url, params.main_frame_origin, ukm_source_id_));
   }
+  std::move(callback).Run(std::move(output));
 }
 
 void PluginInfoMessageFilter::ReportMetrics(
@@ -598,10 +607,10 @@ void PluginInfoMessageFilter::ReportMetrics(
 }
 
 void PluginInfoMessageFilter::Context::MaybeGrantAccess(
-    ChromeViewHostMsg_GetPluginInfo_Status status,
+    chrome::mojom::PluginStatus status,
     const base::FilePath& path) const {
-  if (status == ChromeViewHostMsg_GetPluginInfo_Status::kAllowed ||
-      status == ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent) {
+  if (status == chrome::mojom::PluginStatus::kAllowed ||
+      status == chrome::mojom::PluginStatus::kPlayImportantContent) {
     ChromePluginServiceFilter::GetInstance()->AuthorizePlugin(
         render_process_id_, path);
   }

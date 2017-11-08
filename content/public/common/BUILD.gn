@@ -253,6 +253,7 @@ source_set("common_sources") {
     "web_preferences.h",
     "webplugininfo.cc",
     "webplugininfo.h",
+    "webplugininfo_param_traits.h",
     "zygote_fork_delegate_linux.h",
     "zygote_handle.h",
   ]
@@ -354,6 +355,8 @@ mojom("interfaces") {
   visibility = [
     ":common_sources",
     "//content/common/*",
+    "//chrome/common:mojo_bindings",
+    "//chrome/common:mojo_bindings_blink",
   ]
 
   sources = [
@@ -365,6 +368,7 @@ mojom("interfaces") {
     "push_messaging_status.mojom",
     "url_loader.mojom",
     "url_loader_factory.mojom",
+    "webplugininfo.mojom",
     "window_container_type.mojom",
   ]
 
