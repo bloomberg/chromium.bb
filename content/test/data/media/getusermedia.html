@@ -156,21 +156,6 @@
         failedCallback);
   }
 
-  // Creates a MediaStream and renders it locally. When the video is detected to
-  // be rolling we report success. The acquired stream is stored in window
-  // under the name |streamName|.
-  function getUserMediaAndGetStreamUp(constraints, streamName) {
-    console.log('Calling getUserMediaAndGetStreamUp.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
-          window[streamName] = stream;
-          detectVideoInLocalView1(stream)
-              .then(reportTestSuccess);
-        },
-        failedCallback);
-  }
-
   function getUserMediaAndRenderInSeveralVideoTags() {
     navigator.webkitGetUserMedia(
         {video: true},
