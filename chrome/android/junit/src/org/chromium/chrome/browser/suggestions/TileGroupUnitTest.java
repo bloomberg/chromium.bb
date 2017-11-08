@@ -33,6 +33,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -49,6 +50,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.TileView.Style;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -61,16 +63,15 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features({@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME),
-        @Features.Register(ChromeFeatureList.CHROME_HOME),
-        @Features.Register(ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS)})
+@EnableFeatures({ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME, ChromeFeatureList.CHROME_HOME,
+        ChromeFeatureList.NTP_TILES_LOWER_RESOLUTION_FAVICONS})
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;
     private static final String[] URLS = {"https://www.google.com", "https://tellmedadjokes.com"};
 
     @Rule
-    public Features.Processor mFeaturesProcessor = new Features.Processor();
+    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock
     private TileGroup.Observer mTileGroupObserver;

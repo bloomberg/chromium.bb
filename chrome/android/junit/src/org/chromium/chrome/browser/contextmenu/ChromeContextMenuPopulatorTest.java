@@ -13,6 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.Contex
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.MenuSourceType;
 
@@ -38,7 +40,7 @@ import java.util.List;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features(@Features.Register(value = ChromeFeatureList.CUSTOM_CONTEXT_MENU, enabled = false))
+@DisableFeatures(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
 public class ChromeContextMenuPopulatorTest {
     private static final String PAGE_URL = "http://www.blah.com";
     private static final String LINK_URL = "http://www.blah.com/other_blah";
@@ -47,7 +49,7 @@ public class ChromeContextMenuPopulatorTest {
     private static final String IMAGE_TITLE_TEXT = "IMAGE!";
 
     @Rule
-    public Features.Processor mFeaturesProcessor = new Features.Processor();
+    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock
     private ContextMenuItemDelegate mItemDelegate;

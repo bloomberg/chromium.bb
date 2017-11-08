@@ -18,6 +18,7 @@ import android.content.Context;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
@@ -39,17 +41,14 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features({
-        @Features.Register(ChromeFeatureList.CHROME_HOME),
-        @Features.Register(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL),
-        @Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME)
-})
+@EnableFeatures({ChromeFeatureList.CHROME_HOME, ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_CAROUSEL,
+        ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME})
 public class SuggestionsCarouselTest {
     private static final String URL_STRING = "http://www.test.com";
     private static final String INVALID_URL = "file://URL";
 
     @Rule
-    public Features.Processor processor = new Features.Processor();
+    public TestRule processor = new Features.JUnitProcessor();
 
     @Mock
     private SuggestionsSource mSuggestionsSource;

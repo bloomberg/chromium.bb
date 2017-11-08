@@ -16,6 +16,7 @@ import android.os.SystemClock;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -93,7 +94,7 @@ public class GeolocationHeaderUnitTest {
     private static int sRefreshLastKnownLocation = 0;
 
     @Rule
-    public Features.Processor mFeatureProcessor = new Features.Processor();
+    public TestRule mFeatureProcessor = new Features.JUnitProcessor();
 
     @Mock
     private Tab mTab;

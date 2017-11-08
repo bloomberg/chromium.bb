@@ -12,6 +12,8 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasDat
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
+import static org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+
 import android.accounts.Account;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -58,7 +60,6 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
@@ -271,7 +272,7 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @Features(@Features.Register(ChromeFeatureList.TABS_IN_CBD))
+    @EnableFeatures(ChromeFeatureList.TABS_IN_CBD)
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");

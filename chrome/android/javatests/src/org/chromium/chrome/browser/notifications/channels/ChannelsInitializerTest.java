@@ -23,9 +23,9 @@ import android.support.test.filters.SmallTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 import java.util.ArrayList;
@@ -56,8 +57,7 @@ public class ChannelsInitializerTest {
     public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     @Rule
-    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
-    public Features.Processor processor = new Features.Processor();
+    public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     @Before
     @TargetApi(Build.VERSION_CODES.O)
@@ -91,7 +91,7 @@ public class ChannelsInitializerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     @TargetApi(Build.VERSION_CODES.O)
     @Feature({"Browser", "Notifications"})
-    @Features(@Features.Register(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS))
+    @EnableFeatures(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
     public void testDeleteLegacyChannels_noopOnCurrentDefinitions() throws Exception {
         assertThat(getChannelsIgnoringDefault(), is(empty()));
 
