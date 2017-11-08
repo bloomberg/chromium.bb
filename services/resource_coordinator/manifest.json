@@ -12,7 +12,7 @@
           "resource_coordinator::mojom::CoordinationUnitIntrospector"
         ],
         "coordination_unit": [ "resource_coordinator::mojom::CoordinationUnitProvider" ],
-        "tab_signal": [ "resource_coordinator::mojom::TabSignalGenerator" ],
+        "page_signal": [ "resource_coordinator::mojom::PageSignalGenerator" ],
         "tracing": [ "tracing::mojom::Coordinator" ],
         "tests": [ "*" ]
       },
