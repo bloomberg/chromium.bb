@@ -19,9 +19,11 @@
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/mime_util.h"
+#include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
@@ -63,25 +65,51 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
     case VideoTrackRecorder::CodecId::LAST:
       return media::kUnknownVideoCodec;
   }
-  NOTREACHED() << "Unsupported codec";
+  NOTREACHED() << "Unsupported video codec";
   return media::kUnknownVideoCodec;
+}
+
+media::AudioCodec CodecIdToMediaAudioCodec(AudioTrackRecorder::CodecId id) {
+  switch (id) {
+    case AudioTrackRecorder::CodecId::PCM:
+      return media::kCodecPCM;
+    case AudioTrackRecorder::CodecId::OPUS:
+      return media::kCodecOpus;
+    case AudioTrackRecorder::CodecId::LAST:
+      return media::kUnknownAudioCodec;
+  }
+  NOTREACHED() << "Unsupported audio codec";
+  return media::kUnknownAudioCodec;
 }
 
 // Extracts the first recognised CodecId of |codecs| or CodecId::LAST if none
 // of them is known.
-VideoTrackRecorder::CodecId StringToCodecId(const blink::WebString& codecs) {
+VideoTrackRecorder::CodecId VideoStringToCodecId(
+    const blink::WebString& codecs) {
   const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
 
   if (codecs_str.find("vp8") != std::string::npos)
     return VideoTrackRecorder::CodecId::VP8;
-  else if (codecs_str.find("vp9") != std::string::npos)
+  if (codecs_str.find("vp9") != std::string::npos)
     return VideoTrackRecorder::CodecId::VP9;
 #if BUILDFLAG(RTC_USE_H264)
-  else if (codecs_str.find("h264") != std::string::npos ||
-           codecs_str.find("avc1") != std::string::npos)
+  if (codecs_str.find("h264") != std::string::npos ||
+      codecs_str.find("avc1") != std::string::npos)
     return VideoTrackRecorder::CodecId::H264;
 #endif
   return VideoTrackRecorder::CodecId::LAST;
+}
+
+AudioTrackRecorder::CodecId AudioStringToCodecId(
+    const blink::WebString& codecs) {
+  const std::string& codecs_str = ToLowerASCII(codecs.Utf8());
+
+  if (codecs_str.find("opus") != std::string::npos)
+    return AudioTrackRecorder::CodecId::OPUS;
+  if (codecs_str.find("pcm") != std::string::npos)
+    return AudioTrackRecorder::CodecId::PCM;
+
+  return AudioTrackRecorder::CodecId::LAST;
 }
 
 void OnEncodingInfoError(
@@ -94,7 +122,8 @@ void OnEncodingInfoError(
 MediaRecorderHandler::MediaRecorderHandler()
     : video_bits_per_second_(0),
       audio_bits_per_second_(0),
-      codec_id_(VideoTrackRecorder::CodecId::VP8),
+      video_codec_id_(VideoTrackRecorder::CodecId::VP8),
+      audio_codec_id_(AudioTrackRecorder::CodecId::OPUS),
       recording_(false),
       client_(nullptr),
       weak_factory_(this) {}
@@ -121,16 +150,17 @@ bool MediaRecorderHandler::CanSupportMimeType(
   const bool video = base::EqualsCaseInsensitiveASCII(type, "video/webm") ||
                      base::EqualsCaseInsensitiveASCII(type, "video/x-matroska");
   const bool audio =
-      video ? false : base::EqualsCaseInsensitiveASCII(type, "audio/webm");
+      video ? false : (base::EqualsCaseInsensitiveASCII(type, "audio/webm"));
   if (!video && !audio)
     return false;
 
   // Both |video| and |audio| support empty |codecs|; |type| == "video" supports
-  // vp8, vp9, h264 and avc1 or opus; |type| = "audio", supports only opus.
+  // vp8, vp9, h264 and avc1 or opus; |type| = "audio", supports opus or pcm
+  // (little-endian 32-bit float).
   // http://www.webmproject.org/docs/container Sec:"HTML5 Video Type Parameters"
-  static const char* const kVideoCodecs[] = {"vp8", "vp9", "h264", "avc1",
-                                             "opus"};
-  static const char* const kAudioCodecs[] = { "opus" };
+  static const char* const kVideoCodecs[] = {"vp8",  "vp9",  "h264",
+                                             "avc1", "opus", "pcm"};
+  static const char* const kAudioCodecs[] = {"opus", "pcm"};
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =
       video ? arraysize(kVideoCodecs) : arraysize(kAudioCodecs);
@@ -166,13 +196,24 @@ bool MediaRecorderHandler::Initialize(
   }
 
   // Once established that we support the codec(s), hunt then individually.
-  const VideoTrackRecorder::CodecId codec_id = StringToCodecId(codecs);
-  codec_id_ = (codec_id != VideoTrackRecorder::CodecId::LAST)
-                  ? codec_id
-                  : VideoTrackRecorder::GetPreferredCodecId();
+  const VideoTrackRecorder::CodecId video_codec_id =
+      VideoStringToCodecId(codecs);
+  video_codec_id_ = (video_codec_id != VideoTrackRecorder::CodecId::LAST)
+                        ? video_codec_id
+                        : VideoTrackRecorder::GetPreferredCodecId();
+  DVLOG_IF(1, video_codec_id == VideoTrackRecorder::CodecId::LAST)
+      << "Falling back to preferred video codec id "
+      << static_cast<int>(video_codec_id_);
 
-  DVLOG_IF(1, codec_id == VideoTrackRecorder::CodecId::LAST)
-      << "Falling back to preferred codec id " << static_cast<int>(codec_id_);
+  // Do the same for the audio codec(s).
+  const AudioTrackRecorder::CodecId audio_codec_id =
+      AudioStringToCodecId(codecs);
+  audio_codec_id_ = (audio_codec_id != AudioTrackRecorder::CodecId::LAST)
+                        ? audio_codec_id
+                        : AudioTrackRecorder::GetPreferredCodecId();
+  DVLOG_IF(1, audio_codec_id == AudioTrackRecorder::CodecId::LAST)
+      << "Falling back to preferred audio codec id "
+      << static_cast<int>(audio_codec_id_);
 
   media_stream_ = media_stream;
   DCHECK(client);
@@ -217,11 +258,12 @@ bool MediaRecorderHandler::Start(int timeslice) {
     return false;
   }
 
-  webm_muxer_.reset(new media::WebmMuxer(
-      CodecIdToMediaVideoCodec(codec_id_), media::kCodecOpus, use_video_tracks,
-      use_audio_tracks,
-      base::Bind(&MediaRecorderHandler::WriteData,
-                 weak_factory_.GetWeakPtr())));
+  webm_muxer_.reset(
+      new media::WebmMuxer(CodecIdToMediaVideoCodec(video_codec_id_),
+                           CodecIdToMediaAudioCodec(audio_codec_id_),
+                           use_video_tracks, use_audio_tracks,
+                           base::Bind(&MediaRecorderHandler::WriteData,
+                                      weak_factory_.GetWeakPtr())));
 
   if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
@@ -237,8 +279,9 @@ bool MediaRecorderHandler::Start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.emplace_back(new VideoTrackRecorder(
-        codec_id_, video_track, on_encoded_video_cb, video_bits_per_second_));
+    video_recorders_.emplace_back(
+        new VideoTrackRecorder(video_codec_id_, video_track,
+                               on_encoded_video_cb, video_bits_per_second_));
   }
 
   if (use_audio_tracks) {
@@ -256,8 +299,8 @@ bool MediaRecorderHandler::Start(int timeslice) {
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
     audio_recorders_.emplace_back(new AudioTrackRecorder(
-        AudioTrackRecorder::CodecId::OPUS, audio_track,
-        std::move(on_encoded_audio_cb), audio_bits_per_second_));
+        audio_codec_id_, audio_track, std::move(on_encoded_audio_cb),
+        audio_bits_per_second_));
   }
 
   recording_ = true;
@@ -329,7 +372,8 @@ void MediaRecorderHandler::EncodingInfo(
   if (configuration.video_configuration && info->supported) {
     const bool is_likely_accelerated =
         VideoTrackRecorder::CanUseAcceleratedEncoder(
-            StringToCodecId(codec), configuration.video_configuration->width,
+            VideoStringToCodecId(codec),
+            configuration.video_configuration->width,
             configuration.video_configuration->height);
 
     const float pixels_per_second =
