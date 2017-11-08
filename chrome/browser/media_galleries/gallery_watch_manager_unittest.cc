@@ -58,11 +58,15 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
  public:
   GalleryWatchManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+#if defined(OS_CHROMEOS)
+        test_user_manager_(std::make_unique<chromeos::ScopedTestUserManager>()),
+#endif
         profile_(new TestingProfile()),
         gallery_prefs_(NULL),
         expect_gallery_changed_(false),
         expect_gallery_watch_dropped_(false),
-        pending_loop_(NULL) {}
+        pending_loop_(NULL) {
+  }
 
   ~GalleryWatchManagerTest() override {}
 
@@ -98,8 +102,14 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
     manager_.reset();
 
     // The TestingProfile must be destroyed before the TestingBrowserProcess
-    // because it uses it in its destructor.
+    // because TestingProfile uses TestingBrowserProcess in its destructor.
     ShutdownProfile();
+
+#if defined(OS_CHROMEOS)
+    // The TestUserManager must be destroyed before the TestingBrowserProcess
+    // because TestUserManager uses TestingBrowserProcess in its destructor.
+    test_user_manager_.reset();
+#endif
 
     // The MediaFileSystemRegistry owned by the TestingBrowserProcess must be
     // destroyed before the StorageMonitor because it calls
@@ -194,7 +204,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 
   storage_monitor::TestStorageMonitor* monitor_;

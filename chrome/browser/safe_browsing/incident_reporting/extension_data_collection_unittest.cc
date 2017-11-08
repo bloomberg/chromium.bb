@@ -135,9 +135,17 @@ class ExtensionDataCollectionTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+#if defined OS_CHROMEOS
+    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#endif
   }
 
   void TearDown() override {
+#if defined OS_CHROMEOS
+    // UserManager should be destroyed before TestingBrowserProcess as it
+    // uses it in destructor.
+    test_user_manager_.reset();
+#endif
     profile_manager_.reset();
     TestingBrowserProcess::DeleteInstance();
     testing::Test::TearDown();
@@ -179,7 +187,7 @@ class ExtensionDataCollectionTest : public testing::Test {
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 
