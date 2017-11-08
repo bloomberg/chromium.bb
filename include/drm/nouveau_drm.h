@@ -27,6 +27,12 @@
 
 #define NOUVEAU_DRM_HEADER_PATCHLEVEL 16
 
+#include "drm.h"
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct drm_nouveau_channel_alloc {
 	uint32_t     fb_ctxdma_handle;
 	uint32_t     tt_ctxdma_handle;
@@ -206,5 +212,9 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_GEM_CPU_PREP       0x42
 #define DRM_NOUVEAU_GEM_CPU_FINI       0x43
 #define DRM_NOUVEAU_GEM_INFO           0x44
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* __NOUVEAU_DRM_H__ */
