@@ -31,7 +31,7 @@ const int kLayerMargin = 8;
 }  // namespace
 
 AccessibilityCursorRingLayer::AccessibilityCursorRingLayer(
-    FocusRingLayerDelegate* delegate,
+    AccessibilityLayerDelegate* delegate,
     int red,
     int green,
     int blue)
