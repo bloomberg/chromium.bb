@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <X11/Xlib.h>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
@@ -267,9 +266,7 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
                          &SelectionRequestor::AbortStaleRequests);
     }
 
-    base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-        base::MessageLoopForUI::current());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     request->quit_closure = run_loop.QuitClosure();
     run_loop.Run();
 
