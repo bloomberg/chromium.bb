@@ -5,13 +5,11 @@
 #include "components/policy/core/common/policy_loader_win.h"
 
 #include <lm.h>       // For NetGetJoinInformation
-#include <rpc.h>      // For struct GUID
 // <security.h> needs this.
 #define SECURITY_WIN32 1
 #include <security.h>  // For GetUserNameEx()
 #include <shlwapi.h>   // For PathIsUNC()
 #include <stddef.h>
-#include <userenv.h>  // For GPO functions
 
 #include <memory>
 #include <string>
@@ -46,7 +44,6 @@
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/policy/core/common/preg_parser.h"
 #include "components/policy/core/common/registry_dict.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
@@ -75,14 +72,6 @@ const char* kInsecurePolicies[] = {
     key::kNewTabPageLocation,      key::kRestoreOnStartup,
     key::kRestoreOnStartupURLs,    key::kSafeBrowsingForTrustedSourcesEnabled,
     key::kCloudPolicyOverridesMachinePolicy};
-
-#pragma warning(push)
-#pragma warning(disable : 4068)  // unknown pragmas
-// TODO(dcheng): Remove pragma once http://llvm.org/PR24007 is fixed.
-#pragma clang diagnostic ignored "-Wmissing-braces"
-// The GUID of the registry settings group policy extension.
-GUID kRegistrySettingsCSEGUID = REGISTRY_EXTENSION_GUID;
-#pragma warning(pop)
 
 // The list of possible errors that can occur while collecting information about
 // the current enterprise environment.
@@ -161,117 +150,6 @@ void FilterUntrustedPolicy(PolicyMap* policy) {
   UMA_HISTOGRAM_COUNTS("EnterpriseCheck.InvalidPoliciesDetected",
                        invalid_policies);
 }
-
-// A helper class encapsulating run-time-linked function calls to Wow64 APIs.
-class Wow64Functions {
- public:
-  Wow64Functions()
-      : kernel32_lib_(base::FilePath(FILE_PATH_LITERAL("kernel32"))),
-        is_wow_64_process_(nullptr),
-        wow_64_disable_wow_64_fs_redirection_(nullptr),
-        wow_64_revert_wow_64_fs_redirection_(nullptr) {
-    if (kernel32_lib_.is_valid()) {
-      is_wow_64_process_ = reinterpret_cast<IsWow64Process>(
-          kernel32_lib_.GetFunctionPointer("IsWow64Process"));
-      wow_64_disable_wow_64_fs_redirection_ =
-          reinterpret_cast<Wow64DisableWow64FSRedirection>(
-              kernel32_lib_.GetFunctionPointer(
-                  "Wow64DisableWow64FsRedirection"));
-      wow_64_revert_wow_64_fs_redirection_ =
-          reinterpret_cast<Wow64RevertWow64FSRedirection>(
-              kernel32_lib_.GetFunctionPointer(
-                  "Wow64RevertWow64FsRedirection"));
-    }
-  }
-
-  bool is_valid() {
-    return is_wow_64_process_ && wow_64_disable_wow_64_fs_redirection_ &&
-           wow_64_revert_wow_64_fs_redirection_;
-  }
-
-  bool IsWow64() {
-    BOOL result = 0;
-    if (!is_wow_64_process_(GetCurrentProcess(), &result))
-      PLOG(WARNING) << "IsWow64ProcFailed";
-    return !!result;
-  }
-
-  bool DisableFsRedirection(PVOID* previous_state) {
-    return !!wow_64_disable_wow_64_fs_redirection_(previous_state);
-  }
-
-  bool RevertFsRedirection(PVOID previous_state) {
-    return !!wow_64_revert_wow_64_fs_redirection_(previous_state);
-  }
-
- private:
-  typedef BOOL(WINAPI* IsWow64Process)(HANDLE, PBOOL);
-  typedef BOOL(WINAPI* Wow64DisableWow64FSRedirection)(PVOID*);
-  typedef BOOL(WINAPI* Wow64RevertWow64FSRedirection)(PVOID);
-
-  base::ScopedNativeLibrary kernel32_lib_;
-
-  IsWow64Process is_wow_64_process_;
-  Wow64DisableWow64FSRedirection wow_64_disable_wow_64_fs_redirection_;
-  Wow64RevertWow64FSRedirection wow_64_revert_wow_64_fs_redirection_;
-
-  DISALLOW_COPY_AND_ASSIGN(Wow64Functions);
-};
-
-// Global Wow64Function instance used by ScopedDisableWow64Redirection below.
-static base::LazyInstance<Wow64Functions>::DestructorAtExit g_wow_64_functions =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Scoper that switches off Wow64 File System Redirection during its lifetime.
-class ScopedDisableWow64Redirection {
- public:
-  ScopedDisableWow64Redirection() : active_(false), previous_state_(nullptr) {
-    Wow64Functions* wow64 = g_wow_64_functions.Pointer();
-    if (wow64->is_valid() && wow64->IsWow64()) {
-      if (wow64->DisableFsRedirection(&previous_state_))
-        active_ = true;
-      else
-        PLOG(WARNING) << "Wow64DisableWow64FSRedirection";
-    }
-  }
-
-  ~ScopedDisableWow64Redirection() {
-    if (active_)
-      CHECK(g_wow_64_functions.Get().RevertFsRedirection(previous_state_));
-  }
-
-  bool is_active() { return active_; }
-
- private:
-  bool active_;
-  PVOID previous_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDisableWow64Redirection);
-};
-
-// AppliedGPOListProvider implementation that calls actual Windows APIs.
-class WinGPOListProvider : public AppliedGPOListProvider {
- public:
-  ~WinGPOListProvider() override {}
-
-  // AppliedGPOListProvider:
-  DWORD GetAppliedGPOList(DWORD flags,
-                          LPCTSTR machine_name,
-                          PSID sid_user,
-                          GUID* extension_guid,
-                          PGROUP_POLICY_OBJECT* gpo_list) override {
-    return ::GetAppliedGPOList(flags, machine_name, sid_user, extension_guid,
-                               gpo_list);
-  }
-
-  BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override {
-    return ::FreeGPOList(gpo_list);
-  }
-};
-
-// The default windows GPO list provider used for PolicyLoaderWin.
-static base::LazyInstance<WinGPOListProvider>::DestructorAtExit
-    g_win_gpo_list_provider = LAZY_INSTANCE_INITIALIZER;
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
 // settings to |policy| for the given |scope| and |level|.
@@ -412,17 +290,12 @@ void CollectEnterpriseUMAs() {
 
 }  // namespace
 
-const base::FilePath::CharType PolicyLoaderWin::kPRegFileName[] =
-    FILE_PATH_LITERAL("Registry.pol");
-
 PolicyLoaderWin::PolicyLoaderWin(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const base::string16& chrome_policy_key,
-    AppliedGPOListProvider* gpo_provider)
+    const base::string16& chrome_policy_key)
     : AsyncPolicyLoader(task_runner),
       is_initialized_(false),
       chrome_policy_key_(chrome_policy_key),
-      gpo_provider_(gpo_provider),
       user_policy_changed_event_(
           base::WaitableEvent::ResetPolicy::AUTOMATIC,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -456,8 +329,7 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 std::unique_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const base::string16& chrome_policy_key) {
-  return base::WrapUnique(new PolicyLoaderWin(
-      task_runner, chrome_policy_key, g_win_gpo_list_provider.Pointer()));
+  return base::WrapUnique(new PolicyLoaderWin(task_runner, chrome_policy_key));
 }
 
 void PolicyLoaderWin::InitOnBackgroundThread() {
@@ -481,10 +353,6 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
       {POLICY_SCOPE_USER, HKEY_CURRENT_USER},
   };
 
-  bool honor_policies = ShouldHonorPolicies();
-  VLOG(1) << "Reading policy from the registry is "
-          << (honor_policies ? "enabled." : "disabled.");
-
   // Load policy data for the different scopes/levels and merge them.
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap* chrome_policy =
@@ -494,29 +362,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
     PolicyLoadStatusUmaReporter status;
     RegistryDict gpo_dict;
 
-    // Note: GPO rules mandate a call to EnterCriticalPolicySection() here, and
-    // a matching LeaveCriticalPolicySection() call below after the
-    // ReadPolicyFromGPO() block. Unfortunately, the policy mutex may be
-    // unavailable for extended periods of time, and there are reports of this
-    // happening in the wild: http://crbug.com/265862.
-    //
-    // Blocking for minutes is neither acceptable for Chrome startup, nor on
-    // the FILE thread on which this code runs in steady state. Given that
-    // there have never been any reports of issues due to partially-applied /
-    // corrupt group policy, this code intentionally omits the
-    // EnterCriticalPolicySection() call.
-    //
-    // If there's ever reason to revisit this decision, one option could be to
-    // make the EnterCriticalPolicySection() call on a dedicated thread and
-    // timeout on it more aggressively. For now, there's no justification for
-    // the additional effort this would introduce.
-
-    bool is_registry_forced = honor_policies || gpo_provider_ == nullptr;
-    if (is_registry_forced || !ReadPolicyFromGPO(scope, &gpo_dict, &status)) {
-      VLOG_IF(1, !is_registry_forced) << "Failed to read GPO files for "
-                                      << scope << " falling back to registry.";
-      gpo_dict.ReadRegistry(kScopes[i].hive, chrome_policy_key_);
-    }
+    gpo_dict.ReadRegistry(kScopes[i].hive, chrome_policy_key_);
 
     // Remove special-cased entries from the GPO dictionary.
     std::unique_ptr<RegistryDict> recommended_dict(
@@ -535,107 +381,6 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   }
 
   return bundle;
-}
-
-bool PolicyLoaderWin::ReadPRegFile(const base::FilePath& preg_file,
-                                   RegistryDict* policy,
-                                   PolicyLoadStatusSampler* status) {
-  // The following deals with the minor annoyance that Wow64 FS redirection
-  // might need to be turned off: This is the case if running as a 32-bit
-  // process on a 64-bit system, in which case Wow64 FS redirection redirects
-  // access to the %WINDIR%/System32/GroupPolicy directory to
-  // %WINDIR%/SysWOW64/GroupPolicy, but the file is actually in the
-  // system-native directory.
-  if (base::PathExists(preg_file)) {
-    return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy, status);
-  } else {
-    // Try with redirection switched off.
-    ScopedDisableWow64Redirection redirection_disable;
-    if (redirection_disable.is_active() && base::PathExists(preg_file)) {
-      status->Add(POLICY_LOAD_STATUS_WOW64_REDIRECTION_DISABLED);
-      return preg_parser::ReadFile(preg_file, chrome_policy_key_, policy,
-                                   status);
-    }
-  }
-
-  // Report the error.
-  LOG(ERROR) << "PReg file doesn't exist: " << preg_file.value();
-  status->Add(POLICY_LOAD_STATUS_MISSING);
-  return false;
-}
-
-bool PolicyLoaderWin::LoadGPOPolicy(PolicyScope scope,
-                                    PGROUP_POLICY_OBJECT policy_object_list,
-                                    RegistryDict* policy,
-                                    PolicyLoadStatusSampler* status) {
-  RegistryDict parsed_policy;
-  RegistryDict forced_policy;
-  for (GROUP_POLICY_OBJECT* policy_object = policy_object_list; policy_object;
-       policy_object = policy_object->pNext) {
-    if (policy_object->dwOptions & GPO_FLAG_DISABLE)
-      continue;
-
-    if (PathIsUNC(policy_object->lpFileSysPath)) {
-      // UNC path: Assume this is an AD-managed machine, which updates the
-      // registry via GPO's standard registry CSE periodically. Fall back to
-      // reading from the registry in this case.
-      status->Add(POLICY_LOAD_STATUS_INACCCESSIBLE);
-      return false;
-    }
-
-    base::FilePath preg_file_path(
-        base::FilePath(policy_object->lpFileSysPath).Append(kPRegFileName));
-    if (policy_object->dwOptions & GPO_FLAG_FORCE) {
-      RegistryDict new_forced_policy;
-      if (!ReadPRegFile(preg_file_path, &new_forced_policy, status))
-        return false;
-
-      // Merge with existing forced policy, giving precedence to the existing
-      // forced policy.
-      // TODO(ljusten): Same problem as below.
-      new_forced_policy.Merge(forced_policy);
-      forced_policy.Swap(&new_forced_policy);
-    } else {
-      if (!ReadPRegFile(preg_file_path, &parsed_policy, status))
-        return false;
-    }
-  }
-
-  // Merge, give precedence to forced policy.
-  // TODO(ljusten): This doesn't work properly if policies are explicitly
-  // disabled or string list policies have less entries in the forced_policy.
-  // The merged dictionary still has excessive policies and strings. To fix
-  // this, use only one dict and call ReadPRegFile in the proper order (forced
-  // last). See crbug.com/659979.
-  parsed_policy.Merge(forced_policy);
-  policy->Swap(&parsed_policy);
-
-  return true;
-}
-
-bool PolicyLoaderWin::ReadPolicyFromGPO(PolicyScope scope,
-                                        RegistryDict* policy,
-                                        PolicyLoadStatusSampler* status) {
-  PGROUP_POLICY_OBJECT policy_object_list = nullptr;
-  DWORD flags = scope == POLICY_SCOPE_MACHINE ? GPO_LIST_FLAG_MACHINE : 0;
-  if (gpo_provider_->GetAppliedGPOList(flags, nullptr, nullptr,
-                                       &kRegistrySettingsCSEGUID,
-                                       &policy_object_list) != ERROR_SUCCESS) {
-    PLOG(ERROR) << "GetAppliedGPOList scope " << scope;
-    status->Add(POLICY_LOAD_STATUS_QUERY_FAILED);
-    return false;
-  }
-
-  bool result = true;
-  if (policy_object_list) {
-    result = LoadGPOPolicy(scope, policy_object_list, policy, status);
-    if (!gpo_provider_->FreeGPOList(policy_object_list))
-      LOG(WARNING) << "FreeGPOList";
-  } else {
-    status->Add(POLICY_LOAD_STATUS_NO_POLICY);
-  }
-
-  return result;
 }
 
 void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,

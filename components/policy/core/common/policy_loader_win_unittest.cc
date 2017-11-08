@@ -16,11 +16,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_paths.h"
 #include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -42,7 +38,6 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "components/policy/core/common/preg_parser.h"
 #include "components/policy/core/common/schema_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -177,8 +172,7 @@ class ScopedGroupPolicyRegistrySandbox {
 };
 
 // A test harness that feeds policy via the Chrome GPO registry subtree.
-class RegistryTestHarness : public PolicyProviderTestHarness,
-                            public AppliedGPOListProvider {
+class RegistryTestHarness : public PolicyProviderTestHarness {
  public:
   RegistryTestHarness(HKEY hive, PolicyScope scope);
   ~RegistryTestHarness() override;
@@ -204,14 +198,6 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
       const base::DictionaryValue* policy_value) override;
   void Install3rdPartyPolicy(const base::DictionaryValue* policies) override;
 
-  // AppliedGPOListProvider:
-  DWORD GetAppliedGPOList(DWORD flags,
-                          LPCTSTR machine_name,
-                          PSID sid_user,
-                          GUID* extension_guid,
-                          PGROUP_POLICY_OBJECT* gpo_list) override;
-  BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override;
-
   // Creates a harness instance that will install policy in HKCU or HKLM,
   // respectively.
   static PolicyProviderTestHarness* CreateHKCU();
@@ -223,80 +209,6 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryTestHarness);
-};
-
-// A test harness that generates PReg files for the provider to read.
-class PRegTestHarness : public PolicyProviderTestHarness,
-                        public AppliedGPOListProvider {
- public:
-  PRegTestHarness();
-  ~PRegTestHarness() override;
-
-  // PolicyProviderTestHarness:
-  void SetUp() override;
-
-  ConfigurationPolicyProvider* CreateProvider(
-      SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
-
-  void InstallEmptyPolicy() override;
-  void InstallStringPolicy(const std::string& policy_name,
-                           const std::string& policy_value) override;
-  void InstallIntegerPolicy(const std::string& policy_name,
-                            int policy_value) override;
-  void InstallBooleanPolicy(const std::string& policy_name,
-                            bool policy_value) override;
-  void InstallStringListPolicy(const std::string& policy_name,
-                               const base::ListValue* policy_value) override;
-  void InstallDictionaryPolicy(
-      const std::string& policy_name,
-      const base::DictionaryValue* policy_value) override;
-  void Install3rdPartyPolicy(const base::DictionaryValue* policies) override;
-
-  // AppliedGPOListProvider:
-  DWORD GetAppliedGPOList(DWORD flags,
-                          LPCTSTR machine_name,
-                          PSID sid_user,
-                          GUID* extension_guid,
-                          PGROUP_POLICY_OBJECT* gpo_list) override;
-  BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override;
-
-  // Creates a harness instance.
-  static PolicyProviderTestHarness* Create();
-
- private:
-  // Helper to append a base::string16 to an uint8_t buffer.
-  static void AppendChars(std::vector<uint8_t>* buffer,
-                          const base::string16& chars);
-
-  // Appends a record with the given fields to the PReg file.
-  void AppendRecordToPRegFile(const base::string16& path,
-                              const std::string& key,
-                              DWORD type,
-                              DWORD size,
-                              uint8_t* data);
-
-  // Appends the given DWORD |value| for |path| + |key| to the PReg file.
-  void AppendDWORDToPRegFile(const base::string16& path,
-                             const std::string& key,
-                             DWORD value);
-
-  // Appends the given string |value| for |path| + |key| to the PReg file.
-  void AppendStringToPRegFile(const base::string16& path,
-                              const std::string& key,
-                              const std::string& value);
-
-  // Appends the given policy |value| for |path| + |key| to the PReg file,
-  // converting and recursing as necessary.
-  void AppendPolicyToPRegFile(const base::string16& path,
-                              const std::string& key,
-                              const base::Value* value);
-
-  base::ScopedTempDir temp_dir_;
-  base::FilePath preg_file_path_;
-  GROUP_POLICY_OBJECT gpo_;
-
-  DISALLOW_COPY_AND_ASSIGN(PRegTestHarness);
 };
 
 ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {}
@@ -378,7 +290,7 @@ ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   base::win::SetDomainStateForTesting(true);
   std::unique_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
+      new PolicyLoaderWin(task_runner, kTestPolicyKey));
   return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
@@ -465,19 +377,6 @@ void RegistryTestHarness::Install3rdPartyPolicy(
   }
 }
 
-DWORD RegistryTestHarness::GetAppliedGPOList(DWORD flags,
-                                             LPCTSTR machine_name,
-                                             PSID sid_user,
-                                             GUID* extension_guid,
-                                             PGROUP_POLICY_OBJECT* gpo_list) {
-  *gpo_list = NULL;
-  return ERROR_ACCESS_DENIED;
-}
-
-BOOL RegistryTestHarness::FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) {
-  return TRUE;
-}
-
 // static
 PolicyProviderTestHarness* RegistryTestHarness::CreateHKCU() {
   return new RegistryTestHarness(HKEY_CURRENT_USER, POLICY_SCOPE_USER);
@@ -488,250 +387,28 @@ PolicyProviderTestHarness* RegistryTestHarness::CreateHKLM() {
   return new RegistryTestHarness(HKEY_LOCAL_MACHINE, POLICY_SCOPE_MACHINE);
 }
 
-PRegTestHarness::PRegTestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                                POLICY_SOURCE_PLATFORM) {
-}
-
-PRegTestHarness::~PRegTestHarness() {}
-
-void PRegTestHarness::SetUp() {
-  base::win::SetDomainStateForTesting(false);
-  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  preg_file_path_ = temp_dir_.GetPath().Append(PolicyLoaderWin::kPRegFileName);
-  ASSERT_TRUE(base::WriteFile(preg_file_path_,
-                                   preg_parser::kPRegFileHeader,
-                                   arraysize(preg_parser::kPRegFileHeader)));
-
-  memset(&gpo_, 0, sizeof(GROUP_POLICY_OBJECT));
-  gpo_.lpFileSysPath =
-      const_cast<wchar_t*>(temp_dir_.GetPath().value().c_str());
-}
-
-ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
-    SchemaRegistry* registry,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  std::unique_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(task_runner, kTestPolicyKey, this));
-  return new AsyncPolicyProvider(registry, std::move(loader));
-}
-
-void PRegTestHarness::InstallEmptyPolicy() {}
-
-void PRegTestHarness::InstallStringPolicy(const std::string& policy_name,
-                                          const std::string& policy_value) {
-  AppendStringToPRegFile(kTestPolicyKey, policy_name, policy_value);
-}
-
-void PRegTestHarness::InstallIntegerPolicy(const std::string& policy_name,
-                                           int policy_value) {
-  AppendDWORDToPRegFile(kTestPolicyKey, policy_name, policy_value);
-}
-
-void PRegTestHarness::InstallBooleanPolicy(const std::string& policy_name,
-                                           bool policy_value) {
-  AppendDWORDToPRegFile(kTestPolicyKey, policy_name, policy_value);
-}
-
-void PRegTestHarness::InstallStringListPolicy(
-    const std::string& policy_name,
-    const base::ListValue* policy_value) {
-  AppendPolicyToPRegFile(kTestPolicyKey, policy_name, policy_value);
-}
-
-void PRegTestHarness::InstallDictionaryPolicy(
-    const std::string& policy_name,
-    const base::DictionaryValue* policy_value) {
-  std::string json;
-  base::JSONWriter::Write(*policy_value, &json);
-  AppendStringToPRegFile(kTestPolicyKey, policy_name, json);
-}
-
-void PRegTestHarness::Install3rdPartyPolicy(
-    const base::DictionaryValue* policies) {
-  // The first level entries are domains, and the second level entries map
-  // components to their policy.
-  const base::string16 kPathPrefix =
-      base::string16(kTestPolicyKey) + kPathSep + kThirdParty + kPathSep;
-  for (base::DictionaryValue::Iterator domain(*policies);
-       !domain.IsAtEnd(); domain.Advance()) {
-    const base::DictionaryValue* components = NULL;
-    if (!domain.value().GetAsDictionary(&components)) {
-      ADD_FAILURE();
-      continue;
-    }
-    const base::string16 domain_path = kPathPrefix + UTF8ToUTF16(domain.key());
-    for (base::DictionaryValue::Iterator component(*components);
-         !component.IsAtEnd(); component.Advance()) {
-      const base::string16 component_path =
-          domain_path + kPathSep + UTF8ToUTF16(component.key());
-      AppendPolicyToPRegFile(component_path, UTF16ToUTF8(kMandatory),
-                             &component.value());
-    }
-  }
-}
-
-DWORD PRegTestHarness::GetAppliedGPOList(DWORD flags,
-                                         LPCTSTR machine_name,
-                                         PSID sid_user,
-                                         GUID* extension_guid,
-                                         PGROUP_POLICY_OBJECT* gpo_list) {
-  *gpo_list = flags & GPO_LIST_FLAG_MACHINE ? &gpo_ : NULL;
-  return ERROR_SUCCESS;
-}
-
-BOOL PRegTestHarness::FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) {
-  return TRUE;
-}
-
-// static
-PolicyProviderTestHarness* PRegTestHarness::Create() {
-  return new PRegTestHarness();
-}
-
-// static
-void PRegTestHarness::AppendChars(std::vector<uint8_t>* buffer,
-                                  const base::string16& chars) {
-  for (base::string16::const_iterator c(chars.begin()); c != chars.end(); ++c) {
-    buffer->push_back(*c & 0xff);
-    buffer->push_back((*c >> 8) & 0xff);
-  }
-}
-
-void PRegTestHarness::AppendRecordToPRegFile(const base::string16& path,
-                                             const std::string& key,
-                                             DWORD type,
-                                             DWORD size,
-                                             uint8_t* data) {
-  std::vector<uint8_t> buffer;
-  AppendChars(&buffer, L"[");
-  AppendChars(&buffer, path);
-  AppendChars(&buffer, base::string16(L"\0;", 2));
-  AppendChars(&buffer, UTF8ToUTF16(key));
-  AppendChars(&buffer, base::string16(L"\0;", 2));
-  type = base::ByteSwapToLE32(type);
-  uint8_t* type_data = reinterpret_cast<uint8_t*>(&type);
-  buffer.insert(buffer.end(), type_data, type_data + sizeof(DWORD));
-  AppendChars(&buffer, L";");
-  size = base::ByteSwapToLE32(size);
-  uint8_t* size_data = reinterpret_cast<uint8_t*>(&size);
-  buffer.insert(buffer.end(), size_data, size_data + sizeof(DWORD));
-  AppendChars(&buffer, L";");
-  buffer.insert(buffer.end(), data, data + size);
-  AppendChars(&buffer, L"]");
-
-  ASSERT_TRUE(base::AppendToFile(preg_file_path_,
-                                 reinterpret_cast<const char*>(buffer.data()),
-                                 buffer.size()));
-}
-
-void PRegTestHarness::AppendDWORDToPRegFile(const base::string16& path,
-                                            const std::string& key,
-                                            DWORD value) {
-  value = base::ByteSwapToLE32(value);
-  AppendRecordToPRegFile(path, key, REG_DWORD, sizeof(DWORD),
-                         reinterpret_cast<uint8_t*>(&value));
-}
-
-void PRegTestHarness::AppendStringToPRegFile(const base::string16& path,
-                                             const std::string& key,
-                                             const std::string& value) {
-  base::string16 string16_value(UTF8ToUTF16(value));
-  std::vector<base::char16> data;
-  std::transform(string16_value.begin(), string16_value.end(),
-                 std::back_inserter(data), std::ptr_fun(base::ByteSwapToLE16));
-  data.push_back(base::ByteSwapToLE16(L'\0'));
-
-  AppendRecordToPRegFile(path, key, REG_SZ, data.size() * sizeof(base::char16),
-                         reinterpret_cast<uint8_t*>(data.data()));
-}
-
-void PRegTestHarness::AppendPolicyToPRegFile(const base::string16& path,
-                                             const std::string& key,
-                                             const base::Value* value) {
-  switch (value->GetType()) {
-    case base::Value::Type::BOOLEAN: {
-      bool boolean_value = false;
-      ASSERT_TRUE(value->GetAsBoolean(&boolean_value));
-      AppendDWORDToPRegFile(path, key, boolean_value);
-      break;
-    }
-    case base::Value::Type::INTEGER: {
-      int int_value = 0;
-      ASSERT_TRUE(value->GetAsInteger(&int_value));
-      AppendDWORDToPRegFile(path, key, int_value);
-      break;
-    }
-    case base::Value::Type::DOUBLE: {
-      double double_value = 0;
-      ASSERT_TRUE(value->GetAsDouble(&double_value));
-      AppendStringToPRegFile(path, key, base::DoubleToString(double_value));
-      break;
-    }
-    case base::Value::Type::STRING: {
-      std::string string_value;
-      ASSERT_TRUE(value->GetAsString(&string_value));
-      AppendStringToPRegFile(path, key, string_value);
-      break;
-    }
-    case base::Value::Type::DICTIONARY: {
-      base::string16 subpath = path + kPathSep + UTF8ToUTF16(key);
-      const base::DictionaryValue* dict = NULL;
-      ASSERT_TRUE(value->GetAsDictionary(&dict));
-      for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
-           entry.Advance()) {
-        AppendPolicyToPRegFile(subpath, entry.key(), &entry.value());
-      }
-      break;
-    }
-    case base::Value::Type::LIST: {
-      base::string16 subpath = path + kPathSep + UTF8ToUTF16(key);
-      const base::ListValue* list = NULL;
-      ASSERT_TRUE(value->GetAsList(&list));
-      for (size_t i = 0; i < list->GetSize(); ++i) {
-        const base::Value* entry = NULL;
-        ASSERT_TRUE(list->Get(i, &entry));
-        AppendPolicyToPRegFile(subpath, base::IntToString(i + 1), entry);
-      }
-      break;
-    }
-    case base::Value::Type::BINARY:
-    case base::Value::Type::NONE: {
-      ADD_FAILURE();
-      break;
-    }
-  }
-}
-
 }  // namespace
 
 // Instantiate abstract test case for basic policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    PolicyProviderWinTest,
-    ConfigurationPolicyProviderTest,
-    testing::Values(RegistryTestHarness::CreateHKCU,
-                    RegistryTestHarness::CreateHKLM,
-                    PRegTestHarness::Create));
+INSTANTIATE_TEST_CASE_P(PolicyProviderWinTest,
+                        ConfigurationPolicyProviderTest,
+                        testing::Values(RegistryTestHarness::CreateHKCU,
+                                        RegistryTestHarness::CreateHKLM));
 
 // Instantiate abstract test case for 3rd party policy reading tests.
-INSTANTIATE_TEST_CASE_P(
-    ThirdPartyPolicyProviderWinTest,
-    Configuration3rdPartyPolicyProviderTest,
-    testing::Values(RegistryTestHarness::CreateHKCU,
-                    RegistryTestHarness::CreateHKLM,
-                    PRegTestHarness::Create));
+INSTANTIATE_TEST_CASE_P(ThirdPartyPolicyProviderWinTest,
+                        Configuration3rdPartyPolicyProviderTest,
+                        testing::Values(RegistryTestHarness::CreateHKCU,
+                                        RegistryTestHarness::CreateHKLM));
 
 // Test cases for windows policy provider specific functionality.
-class PolicyLoaderWinTest : public PolicyTestBase,
-                            public AppliedGPOListProvider {
+class PolicyLoaderWinTest : public PolicyTestBase {
  protected:
   // The policy key this tests places data under. This must match the data
   // files in chrome/test/data/policy/gpo.
   static const base::char16 kTestPolicyKey[];
 
-  PolicyLoaderWinTest()
-      : gpo_list_(NULL),
-        gpo_list_status_(ERROR_ACCESS_DENIED) {}
+  PolicyLoaderWinTest() {}
   ~PolicyLoaderWinTest() override {}
 
   void SetUp() override {
@@ -742,89 +419,17 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     // that the test will not be executed if SetUp has a fatal failure. This is
     // important, see crbug.com/721691.
     ASSERT_NO_FATAL_FAILURE(registry_sandbox_.ActivateOverrides());
-
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
-    test_data_dir_ = test_data_dir_.AppendASCII("chrome")
-                                   .AppendASCII("test")
-                                   .AppendASCII("data")
-                                   .AppendASCII("policy")
-                                   .AppendASCII("gpo");
-
-    gpo_list_provider_ = this;
-  }
-
-  // AppliedGPOListProvider:
-  DWORD GetAppliedGPOList(DWORD flags,
-                          LPCTSTR machine_name,
-                          PSID sid_user,
-                          GUID* extension_guid,
-                          PGROUP_POLICY_OBJECT* gpo_list) override {
-    *gpo_list = gpo_list_;
-    return gpo_list_status_;
-  }
-  BOOL FreeGPOList(PGROUP_POLICY_OBJECT gpo_list) override {
-    return TRUE;
-  }
-
-  void InitGPO(GROUP_POLICY_OBJECT* gpo,
-               DWORD options,
-               const base::FilePath& path,
-               GROUP_POLICY_OBJECT* next,
-               GROUP_POLICY_OBJECT* prev) {
-    memset(gpo, 0, sizeof(GROUP_POLICY_OBJECT));
-    gpo->dwOptions = options;
-    gpo->lpFileSysPath = const_cast<wchar_t*>(path.value().c_str());
-    gpo->pNext = next;
-    gpo->pPrev = prev;
   }
 
   bool Matches(const PolicyBundle& expected) {
     PolicyLoaderWin loader(scoped_task_environment_.GetMainThreadTaskRunner(),
-                           kTestPolicyKey, gpo_list_provider_);
+                           kTestPolicyKey);
     std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
   }
 
-  void InstallRegistrySentinel() {
-    RegKey hklm_key(HKEY_CURRENT_USER, kTestPolicyKey, KEY_ALL_ACCESS);
-    ASSERT_TRUE(hklm_key.Valid());
-    hklm_key.WriteValue(
-        UTF8ToUTF16(test_keys::kKeyString).c_str(),
-        UTF8ToUTF16("registry").c_str());
-  }
-
-  bool MatchesRegistrySentinel() {
-    base::DictionaryValue expected_policy;
-    expected_policy.SetString(test_keys::kKeyString, "registry");
-    PolicyBundle expected;
-    expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_PLATFORM);
-    return Matches(expected);
-  }
-
-  bool MatchesTestBundle() {
-    base::DictionaryValue expected_policy;
-    expected_policy.SetBoolean(test_keys::kKeyBoolean, true);
-    expected_policy.SetString(test_keys::kKeyString, "GPO");
-    expected_policy.SetInteger(test_keys::kKeyInteger, 42);
-    auto list = base::MakeUnique<base::ListValue>();
-    list->AppendString("GPO 1");
-    list->AppendString("GPO 2");
-    expected_policy.Set(test_keys::kKeyStringList, std::move(list));
-    PolicyBundle expected;
-    expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-        .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
-    return Matches(expected);
-  }
-
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
-  PGROUP_POLICY_OBJECT gpo_list_;
-  DWORD gpo_list_status_;
-  base::FilePath test_data_dir_;
-  AppliedGPOListProvider* gpo_list_provider_;
 };
 
 const base::char16 PolicyLoaderWinTest::kTestPolicyKey[] =
@@ -1052,148 +657,7 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   EXPECT_TRUE(Matches(expected));
 }
 
-TEST_F(PolicyLoaderWinTest, AppliedPolicyNotPresent) {
-  InstallRegistrySentinel();
-  gpo_list_ = NULL;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  PolicyBundle empty;
-  EXPECT_TRUE(Matches(empty));
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyEmpty) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  PolicyBundle empty;
-  EXPECT_TRUE(Matches(empty));
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyInDomain) {
-  base::win::SetDomainStateForTesting(true);
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, GpoProviderNotSpecified) {
-  base::win::SetDomainStateForTesting(false);
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("empty"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-  gpo_list_provider_ = nullptr;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyNonExistingFile) {
-  InstallRegistrySentinel();
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, test_data_dir_, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyBadPath) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("bad"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyPresent) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("test1"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyMerged) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test2"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test1"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyDisabled) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test2"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, GPO_FLAG_DISABLE, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyForcedPolicy) {
-  InstallRegistrySentinel();
-  base::FilePath gpo1_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath gpo2_dir(test_data_dir_.AppendASCII("test2"));
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, GPO_FLAG_FORCE, gpo1_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, gpo2_dir, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesTestBundle());
-}
-
-TEST_F(PolicyLoaderWinTest, AppliedPolicyUNCPath) {
-  InstallRegistrySentinel();
-  base::FilePath gpo_dir(test_data_dir_.AppendASCII("test1"));
-  base::FilePath unc_path(L"\\\\some_share\\GPO");
-  GROUP_POLICY_OBJECT gpo1;
-  GROUP_POLICY_OBJECT gpo2;
-  InitGPO(&gpo1, 0, gpo_dir, &gpo2, NULL);
-  InitGPO(&gpo2, 0, unc_path, NULL, &gpo1);
-  gpo_list_ = &gpo1;
-  gpo_list_status_ = ERROR_SUCCESS;
-
-  EXPECT_TRUE(MatchesRegistrySentinel());
-}
-
-TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
-  base::FilePath gpo_dir(
-      test_data_dir_.AppendASCII("extension_alternative_spelling"));
-  GROUP_POLICY_OBJECT gpo;
-  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
-  gpo_list_ = &gpo;
-  gpo_list_status_ = ERROR_SUCCESS;
-
+TEST_F(PolicyLoaderWinTest, AlternativePropertySchemaType) {
   const char kTestSchema[] =
       "{"
       "  \"type\": \"object\","
@@ -1202,6 +666,8 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
       "    \"policy 2\": { \"type\": \"integer\" }"
       "  }"
       "}";
+  // Register two namespaces. One will be completely populated with all defined
+  // properties and the second will be only partially populated.
   const PolicyNamespace ns_a(
       POLICY_DOMAIN_EXTENSIONS, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   const PolicyNamespace ns_b(
@@ -1219,6 +685,20 @@ TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
   expected_b.SetInteger("policy 1", 2);
   expected.Get(ns_b).LoadFrom(&expected_b, POLICY_LEVEL_MANDATORY,
                               POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM);
+
+  const base::string16 kPathSuffix =
+      kTestPolicyKey +
+      base::ASCIIToUTF16(
+          "\\3rdparty\\extensions\\aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  EXPECT_TRUE(
+      InstallValue(expected_a, HKEY_LOCAL_MACHINE, kPathSuffix, kMandatory));
+  const base::string16 kPathSuffix2 =
+      kTestPolicyKey +
+      base::ASCIIToUTF16(
+          "\\3rdparty\\extensions\\bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  EXPECT_TRUE(
+      InstallValue(expected_b, HKEY_LOCAL_MACHINE, kPathSuffix2, kMandatory));
+
   EXPECT_TRUE(Matches(expected));
 }
 
