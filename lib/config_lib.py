@@ -464,6 +464,10 @@ class TastVMTestConfig(object):
 
   def __init__(self, suite_name, test_exprs, timeout=DEFAULT_TEST_TIMEOUT):
     """Constructor -- see members above."""
+    # This is an easy mistake to make and results in confusing errors later when
+    # a list of one-character strings gets passed to the tast command.
+    if not isinstance(test_exprs, list):
+      raise TypeError('test_exprs must be list of strings')
     self.suite_name = suite_name
     self.test_exprs = test_exprs
     self.timeout = timeout

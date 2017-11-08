@@ -1687,8 +1687,7 @@ def GeneralTemplates(site_config, ge_build_config):
   site_config.AddTemplate(
       'tast_vm_canary_tests',
       tast_vm_tests=[
-          config_lib.TastVMTestConfig('tast_vm_canary',
-                                      ['((bvt || canary) && !arc)'])],
+          config_lib.TastVMTestConfig('tast_vm_canary', ['(bvt || canary)'])],
   )
 
 

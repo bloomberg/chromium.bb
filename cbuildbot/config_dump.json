@@ -6744,7 +6744,7 @@
         "buildslave_type": "baremetal",
         "important": true,
         "tast_vm_tests": [
-            "{\n    \"suite_name\": \"tast_vm_canary\",\n    \"test_exprs\": [\n        \"((bvt || canary) && !arc)\"\n    ],\n    \"timeout\": 600\n}"
+            "{\n    \"suite_name\": \"tast_vm_canary\",\n    \"test_exprs\": [\n        \"(bvt || canary)\"\n    ],\n    \"timeout\": 600\n}"
         ]
     },
     "betty-release-afdo": {
@@ -6867,7 +6867,7 @@
         "paygen": false,
         "push_image": false,
         "tast_vm_tests": [
-            "{\n    \"suite_name\": \"tast_vm_canary\",\n    \"test_exprs\": [\n        \"((bvt || canary) && !arc)\"\n    ],\n    \"timeout\": 600\n}"
+            "{\n    \"suite_name\": \"tast_vm_canary\",\n    \"test_exprs\": [\n        \"(bvt || canary)\"\n    ],\n    \"timeout\": 600\n}"
         ]
     },
     "betty-telemetry": {
