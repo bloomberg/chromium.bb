@@ -302,9 +302,6 @@ extern const char kEnableOutOfProcessHeapProfilingName[];
 extern const char kEnableOutOfProcessHeapProfilingDescription[];
 extern const char kEnableOutOfProcessHeapProfilingModeMinimal[];
 extern const char kEnableOutOfProcessHeapProfilingModeAll[];
-extern const char kEnableOutOfProcessHeapProfilingModeBrowser[];
-extern const char kEnableOutOfProcessHeapProfilingModeGpu[];
-extern const char kEnableOutOfProcessHeapProfilingModeRendererSampling[];
 
 extern const char kEnablePictureInPictureName[];
 extern const char kEnablePictureInPictureDescription[];
