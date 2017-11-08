@@ -1505,6 +1505,17 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
+  // Some calling code invokes |dismissViewControllerAnimated:completion:|
+  // multiple times.  When the BVC is displayed using VC containment, multiple
+  // calls are effectively idempotent because only the first call has any effect
+  // and subsequent calls do nothing.  However, when the BVC is presented,
+  // subsequent calls end up dismissing the BVC itself.  This is never what we
+  // want, so check for this case and return early.
+  // TODO(crbug.com/782338): Fix callers and remove this early return.
+  if (TabSwitcherPresentsBVCEnabled() && self.dismissingModal) {
+    return;
+  }
+
   self.dismissingModal = YES;
   __weak BrowserViewController* weakSelf = self;
   [super dismissViewControllerAnimated:flag
