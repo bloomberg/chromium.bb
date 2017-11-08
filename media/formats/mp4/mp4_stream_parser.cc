@@ -402,6 +402,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       audio_config.Initialize(codec, sample_format, channel_layout,
                               sample_per_second, extra_data, scheme,
                               base::TimeDelta(), 0);
+      if (codec == kCodecAAC)
+        audio_config.disable_discard_decoder_delay();
+
       DVLOG(1) << "audio_track_id=" << audio_track_id
                << " config=" << audio_config.AsHumanReadableString();
       if (!audio_config.IsValidConfig()) {

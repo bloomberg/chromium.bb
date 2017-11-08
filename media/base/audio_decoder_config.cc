@@ -17,7 +17,8 @@ AudioDecoderConfig::AudioDecoderConfig()
       channel_layout_(CHANNEL_LAYOUT_UNSUPPORTED),
       samples_per_second_(0),
       bytes_per_frame_(0),
-      codec_delay_(0) {}
+      codec_delay_(0),
+      should_discard_decoder_delay_(true) {}
 
 AudioDecoderConfig::AudioDecoderConfig(
     AudioCodec codec,
@@ -55,6 +56,8 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
   // |bytes_per_frame_| will be overwritten in SetChannelsForDiscrete()
   channels_ = ChannelLayoutToChannelCount(channel_layout_);
   bytes_per_frame_ = channels_ * bytes_per_channel_;
+
+  should_discard_decoder_delay_ = true;
 }
 
 AudioDecoderConfig::~AudioDecoderConfig() {}
@@ -67,8 +70,7 @@ bool AudioDecoderConfig::IsValidConfig() const {
          samples_per_second_ > 0 &&
          samples_per_second_ <= limits::kMaxSampleRate &&
          sample_format_ != kUnknownSampleFormat &&
-         seek_preroll_ >= base::TimeDelta() &&
-         codec_delay_ >= 0;
+         seek_preroll_ >= base::TimeDelta() && codec_delay_ >= 0;
 }
 
 bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
@@ -80,7 +82,9 @@ bool AudioDecoderConfig::Matches(const AudioDecoderConfig& config) const {
           (encryption_scheme().Matches(config.encryption_scheme())) &&
           (sample_format() == config.sample_format()) &&
           (seek_preroll() == config.seek_preroll()) &&
-          (codec_delay() == config.codec_delay()));
+          (codec_delay() == config.codec_delay()) &&
+          (should_discard_decoder_delay() ==
+           config.should_discard_decoder_delay()));
 }
 
 std::string AudioDecoderConfig::AsHumanReadableString() const {
@@ -94,7 +98,8 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
     << " seek_preroll: " << seek_preroll().InMilliseconds() << "ms"
     << " codec_delay: " << codec_delay() << " has extra data? "
     << (extra_data().empty() ? "false" : "true") << " encrypted? "
-    << (is_encrypted() ? "true" : "false");
+    << (is_encrypted() ? "true" : "false") << " discard decoder delay? "
+    << (should_discard_decoder_delay() ? "true" : "false");
   return s.str();
 }
 

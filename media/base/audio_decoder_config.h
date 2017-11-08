@@ -94,6 +94,14 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // useful for decryptors that decrypts an encrypted stream to a clear stream.
   void SetIsEncrypted(bool is_encrypted);
 
+  bool should_discard_decoder_delay() const {
+    return should_discard_decoder_delay_;
+  }
+
+  void disable_discard_decoder_delay() {
+    should_discard_decoder_delay_ = false;
+  }
+
  private:
   AudioCodec codec_;
   SampleFormat sample_format_;
@@ -113,6 +121,10 @@ class MEDIA_EXPORT AudioDecoderConfig {
   // returning decoded data.  This value can include both decoder delay as well
   // as padding added during encoding.
   int codec_delay_;
+
+  // Indicates if a decoder should implicitly discard decoder delay without it
+  // being explicitly marked in discard padding.
+  bool should_discard_decoder_delay_;
 
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
   // generated copy constructor and assignment operator. Since the extra data is
