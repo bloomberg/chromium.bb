@@ -42,8 +42,9 @@ void ChromeOmniboxEditController::OnInputInProgress(bool in_progress) {
 bool ChromeOmniboxEditController::SwitchToTabWithURL(const std::string& url,
                                                      bool close_this) {
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
+  content::WebContents* old_web_contents = GetWebContents();
   Profile* profile =
-      Profile::FromBrowserContext(GetWebContents()->GetBrowserContext());
+      Profile::FromBrowserContext(old_web_contents->GetBrowserContext());
   if (!profile)
     return false;
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -52,8 +53,13 @@ bool ChromeOmniboxEditController::SwitchToTabWithURL(const std::string& url,
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
         content::WebContents* new_web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);
+        // If the tab in question is the currently active tab, skip over it,
+        // under the assumption that the user had in mind another tab with
+        // this URL.  If none is found, we'll return false and simply
+        // navigate again.
+        if (new_web_contents == old_web_contents)
+          continue;
         if (new_web_contents->GetLastCommittedURL() == url) {
-          content::WebContents* old_web_contents = GetWebContents();
           if (close_this) {
             old_web_contents->Close();
           } else {
@@ -64,8 +70,7 @@ bool ChromeOmniboxEditController::SwitchToTabWithURL(const std::string& url,
             // to BrowserCommandController::ExecuteCommandWithDisposition().
             old_web_contents->Focus();
           }
-          if (new_web_contents != old_web_contents)
-            new_web_contents->GetDelegate()->ActivateContents(new_web_contents);
+          new_web_contents->GetDelegate()->ActivateContents(new_web_contents);
           return true;
         }
       }

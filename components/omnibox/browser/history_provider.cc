@@ -13,6 +13,8 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/in_memory_url_index_types.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/url_util.h"
 
 using bookmarks::BookmarkModel;
@@ -101,4 +103,29 @@ ACMatchClassifications HistoryProvider::SpansFromTermMatch(
   }
 
   return spans;
+}
+
+void HistoryProvider::ConvertOpenTabMatches() {
+  for (auto& match : matches_) {
+    // If url is in a tab, change type, update classification.
+    if (client()->IsTabOpenWithURL(match.destination_url)) {
+      match.type = AutocompleteMatchType::TAB_SEARCH;
+      const base::string16 switch_tab_message =
+          l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT) +
+          base::UTF8ToUTF16(" - ");
+      match.description = switch_tab_message + match.description;
+      // Add classfication for the prefix.
+      if (match.description_class[0].style != ACMatchClassification::NONE) {
+        match.description_class.insert(
+            match.description_class.begin(),
+            ACMatchClassification(0, ACMatchClassification::NONE));
+      }
+      // Shift the rest.
+      for (auto& classification : match.description_class) {
+        if (classification.offset != 0 ||
+            classification.style != ACMatchClassification::NONE)
+          classification.offset += switch_tab_message.size();
+      }
+    }
+  }
 }
