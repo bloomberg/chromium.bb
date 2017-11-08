@@ -71,6 +71,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search_provider_logos/features.h"
+#include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -1091,44 +1092,24 @@ const FeatureEntry::Choice kAsyncImageDecodingChoices[] = {
      cc::switches::kDisableCheckerImaging, ""},
 };
 
+const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kUseDdljsonApiTest0[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android0.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android1.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest2[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android2.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest3[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android3.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest4[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android4.json"}};
+    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android0.json"},
+    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android1.json"},
+    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android2.json"},
+    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android3.json"},
+    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_android4.json"},
 #else
-const FeatureEntry::FeatureParam kUseDdljsonApiTest0[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop0.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop1.json"}};
-#endif  // defined(OS_ANDROID)
-
-const FeatureEntry::FeatureVariation kUseDdljsonApiVariations[] = {
-    {"(force test doodle 0)", kUseDdljsonApiTest0,
-     arraysize(kUseDdljsonApiTest0), nullptr},
-    {"(force test doodle 1)", kUseDdljsonApiTest1,
-     arraysize(kUseDdljsonApiTest1), nullptr},
-#if defined(OS_ANDROID)
-    // Interactive doodles: Android-only for now.
-    {"(force test doodle 2)", kUseDdljsonApiTest2,
-     arraysize(kUseDdljsonApiTest2), nullptr},
-    {"(force test doodle 3)", kUseDdljsonApiTest3,
-     arraysize(kUseDdljsonApiTest3), nullptr},
-    {"(force test doodle 4)", kUseDdljsonApiTest4,
-     arraysize(kUseDdljsonApiTest4), nullptr},
+    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop0.json"},
+    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop1.json"},
 #endif  // defined(OS_ANDROID)
 };
 
@@ -3288,10 +3269,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         search_provider_logos::features::kUseDdljsonApi,
-         kUseDdljsonApiVariations,
-         "NTPUseDdljsonApi")},
+     MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
 
 #if defined(OS_ANDROID)
     {"spannable-inline-autocomplete",

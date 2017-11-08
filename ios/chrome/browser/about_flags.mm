@@ -30,7 +30,7 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/payments/core/features.h"
-#include "components/search_provider_logos/features.h"
+#include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -68,33 +68,19 @@ const FeatureEntry::Choice kMarkHttpAsChoices[] = {
      security_state::switches::kMarkHttpAs,
      security_state::switches::kMarkHttpAsDangerous}};
 
-const FeatureEntry::FeatureParam kUseDdljsonApiTest0[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios0.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest1[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios1.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest2[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios2.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest3[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios3.json"}};
-const FeatureEntry::FeatureParam kUseDdljsonApiTest4[] = {
-    {search_provider_logos::features::kDdljsonOverrideUrlParam,
-     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios4.json"}};
-
-const FeatureEntry::FeatureVariation kUseDdljsonApiVariations[] = {
-    {"(force test doodle 0)", kUseDdljsonApiTest0,
-     arraysize(kUseDdljsonApiTest0), nullptr},
-    {"(force test doodle 1)", kUseDdljsonApiTest1,
-     arraysize(kUseDdljsonApiTest1), nullptr},
-    {"(force test doodle 2)", kUseDdljsonApiTest2,
-     arraysize(kUseDdljsonApiTest2), nullptr},
-    {"(force test doodle 3)", kUseDdljsonApiTest3,
-     arraysize(kUseDdljsonApiTest3), nullptr},
-    {"(force test doodle 4)", kUseDdljsonApiTest4,
-     arraysize(kUseDdljsonApiTest4), nullptr}};
+const FeatureEntry::Choice kUseDdljsonApiChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {"(force test doodle 0)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios0.json"},
+    {"(force test doodle 1)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios1.json"},
+    {"(force test doodle 2)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios2.json"},
+    {"(force test doodle 3)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios3.json"},
+    {"(force test doodle 4)", search_provider_logos::switches::kGoogleDoodleUrl,
+     "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_ios4.json"},
+};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -149,10 +135,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          "IPH_DemoMode")},
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         search_provider_logos::features::kUseDdljsonApi,
-         kUseDdljsonApiVariations,
-         "NTPUseDdljsonApi")},
+     MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
     {"omnibox-ui-elide-suggestion-url-after-host",
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
      flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,

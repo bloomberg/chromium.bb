@@ -198,8 +198,7 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
   const bool is_google = template_url->url_ref().HasGoogleBaseURLs(
       template_url_service_->search_terms_data());
   if (is_google) {
-    // TODO(treib): After features::kUseDdljsonApi has launched, put the Google
-    // doodle URL into prepopulated_engines.json.
+    // TODO(treib): Put the Google doodle URL into prepopulated_engines.json.
     base_url =
         GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
     doodle_url = search_provider_logos::GetGoogleDoodleURL(base_url);
@@ -250,20 +249,11 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
     logo_tracker_->SetServerAPI(
         logo_url, base::Bind(&search_provider_logos::ParseFixedLogoResponse),
         base::Bind(&search_provider_logos::UseFixedLogoUrl));
-  } else if (is_google) {
-    // TODO(treib): Get rid of this Google special case after
-    // features::kUseDdljsonApi has launched.
-    logo_tracker_->SetServerAPI(
-        doodle_url,
-        search_provider_logos::GetGoogleParseLogoResponseCallback(base_url),
-        search_provider_logos::GetGoogleAppendQueryparamsCallback(
-            use_gray_background_));
   } else {
     logo_tracker_->SetServerAPI(
         doodle_url,
-        base::Bind(&search_provider_logos::GoogleNewParseLogoResponse,
-                   base_url),
-        base::Bind(&search_provider_logos::GoogleNewAppendQueryparamsToLogoURL,
+        base::Bind(&search_provider_logos::ParseDoodleLogoResponse, base_url),
+        base::Bind(&search_provider_logos::AppendQueryparamsToDoodleLogoURL,
                    use_gray_background_));
   }
 

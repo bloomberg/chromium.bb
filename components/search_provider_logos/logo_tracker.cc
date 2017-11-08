@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
@@ -16,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/search_provider_logos/switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -239,13 +237,7 @@ void LogoTracker::FetchLogo() {
       cached_logo_->metadata.expiration_time >= clock_->Now()) {
     fingerprint = cached_logo_->metadata.fingerprint;
   }
-  GURL url;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kGoogleDoodleUrl)) {
-    url = GURL(command_line->GetSwitchValueASCII(switches::kGoogleDoodleUrl));
-  } else {
-    url = append_queryparams_func_.Run(logo_url_, fingerprint);
-  }
+  GURL url = append_queryparams_func_.Run(logo_url_, fingerprint);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("logo_tracker", R"(
