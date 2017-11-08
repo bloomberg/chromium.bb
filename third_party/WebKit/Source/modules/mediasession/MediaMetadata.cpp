@@ -8,11 +8,11 @@
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/mediasession/MediaImage.h"
 #include "modules/mediasession/MediaMetadataInit.h"
 #include "modules/mediasession/MediaSession.h"
 #include "platform/bindings/ScriptState.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

@@ -5,7 +5,6 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Deprecation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/WorkerFetchContext.h"
@@ -17,6 +16,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Functional.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -105,7 +105,7 @@ void WorkerOrWorkletGlobalScope::Dispose() {
 scoped_refptr<WebTaskRunner> WorkerOrWorkletGlobalScope::GetTaskRunner(
     TaskType type) {
   DCHECK(IsContextThread());
-  return TaskRunnerHelper::Get(type, GetThread());
+  return GetThread()->GetTaskRunner(type);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {

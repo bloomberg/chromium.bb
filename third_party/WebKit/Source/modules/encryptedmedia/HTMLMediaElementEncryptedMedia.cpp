@@ -10,7 +10,6 @@
 #include "bindings/core/v8/V8ThrowDOMException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/typed_arrays/DOMTypedArray.h"
@@ -22,6 +21,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/StringBuilder.h"
+#include "public/platform/TaskType.h"
 
 #define EME_LOG_LEVEL 3
 

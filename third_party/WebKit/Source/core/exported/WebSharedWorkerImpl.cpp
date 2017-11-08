@@ -34,7 +34,6 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreInitializer.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -63,6 +62,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebContentSettingsClient.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -200,7 +200,8 @@ void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/multipage/workers.html#shared-workers-and-the-sharedworker-interface
-  TaskRunnerHelper::Get(TaskType::kDOMManipulation, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kDOMManipulation)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&WebSharedWorkerImpl::ConnectTaskOnWorkerThread,

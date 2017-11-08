@@ -4,7 +4,6 @@
 
 #include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/testing/DummyPageHolder.h"
@@ -19,6 +18,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/platform/TaskType.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -224,7 +224,8 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
   // on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature1));
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
@@ -234,7 +235,8 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
 
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountFeature.
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountFeature,
@@ -247,7 +249,8 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
   // Deprecated API use on the DedicatedWorkerGlobalScope should be recorded in
   // UseCounter on the Document.
   EXPECT_FALSE(UseCounter::IsCounted(GetDocument(), kFeature2));
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
@@ -257,7 +260,8 @@ TEST_F(DedicatedWorkerTest, UseCounter) {
 
   // API use should be reported to the Document only one time. See comments in
   // DedicatedWorkerObjectProxyForTest::CountDeprecation.
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(&DedicatedWorkerThreadForTest::CountDeprecation,
@@ -269,7 +273,8 @@ TEST_F(DedicatedWorkerTest, TaskRunner) {
   const String source_code = "// Do nothing";
   WorkerMessagingProxy()->StartWithSourceCode(source_code);
 
-  TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GetWorkerThread())
+  GetWorkerThread()
+      ->GetTaskRunner(TaskType::kUnspecedTimer)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(&DedicatedWorkerThreadForTest::TestTaskRunner,
                                  CrossThreadUnretained(GetWorkerThread())));

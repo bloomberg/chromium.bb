@@ -9,11 +9,11 @@
 #include "core/dom/ModuleMap.h"
 #include "core/dom/ModuleScript.h"
 #include "core/dom/ScriptModuleResolverImpl.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
 #include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
 #include "platform/WebTaskRunner.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

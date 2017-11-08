@@ -27,7 +27,6 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/CoreExport.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/loader/resource/ImageResourceObserver.h"
@@ -35,6 +34,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/WeakPtr.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

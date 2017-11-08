@@ -273,8 +273,6 @@ blink_core_sources("dom") {
     "SynchronousMutationObserver.h",
     "TagCollection.cpp",
     "TagCollection.h",
-    "TaskRunnerHelper.cpp",
-    "TaskRunnerHelper.h",
     "TaskTypeTraits.h",
     "TemplateContentDocumentFragment.h",
     "Text.cpp",

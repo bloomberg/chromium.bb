@@ -4,7 +4,6 @@
 
 #include "modules/webaudio/AudioWorkletNode.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -17,6 +16,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/heap/Persistent.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

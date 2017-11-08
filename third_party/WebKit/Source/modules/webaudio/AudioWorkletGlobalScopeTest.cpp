@@ -15,7 +15,6 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/GlobalScopeCreationParams.h"
@@ -34,6 +33,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/text/TextPosition.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,7 +79,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 
   void RunBasicTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+    thread->GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(
             BLINK_FROM_HERE,
             CrossThreadBind(
@@ -91,7 +91,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 
   void RunSimpleProcessTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+    thread->GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(BLINK_FROM_HERE,
                    CrossThreadBind(&AudioWorkletGlobalScopeTest::
                                        RunSimpleProcessTestOnWorkletThread,
@@ -103,7 +103,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 
   void RunParsingTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+    thread->GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(
             BLINK_FROM_HERE,
             CrossThreadBind(
@@ -115,7 +115,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
 
   void RunParsingParameterDescriptorTest(WorkerThread* thread) {
     WaitableEvent waitable_event;
-    TaskRunnerHelper::Get(TaskType::kUnthrottled, thread)
+    thread->GetTaskRunner(TaskType::kUnthrottled)
         ->PostTask(
             BLINK_FROM_HERE,
             CrossThreadBind(

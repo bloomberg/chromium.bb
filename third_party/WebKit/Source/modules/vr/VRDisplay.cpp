@@ -8,7 +8,6 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/ScriptedAnimationController.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
@@ -36,6 +35,7 @@
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Time.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 #include <array>
 #include "core/dom/ExecutionContext.h"

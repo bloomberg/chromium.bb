@@ -30,7 +30,6 @@
 #include <memory>
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -59,6 +58,7 @@
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 
@@ -224,7 +224,7 @@ void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
     if (GetIsolate() && thread_state_ != ThreadState::kReadyToShutdown)
       inspector_task_runner_->InterruptAndRunAllTasksDontWait(GetIsolate());
   }
-  TaskRunnerHelper::Get(TaskType::kUnthrottled, this)
+  GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(
                      &WorkerThread::PerformDebuggerTaskDontWaitOnWorkerThread,

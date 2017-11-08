@@ -5,7 +5,6 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include <memory>
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -30,6 +29,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
+#include "public/platform/TaskType.h"
 #include "public/platform/WebURLLoadTiming.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLRequest.h"
@@ -243,7 +243,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
                                         parent_frame_task_runners_.Get());
     worker_thread_->WaitForInit();
     worker_loading_task_runner_ =
-        TaskRunnerHelper::Get(TaskType::kUnspecedLoading, worker_thread_.get());
+        worker_thread_->GetTaskRunner(TaskType::kUnspecedLoading);
   }
 
   void OnServeRequests() override { testing::RunPendingTasks(); }

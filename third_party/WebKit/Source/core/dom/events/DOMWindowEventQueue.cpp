@@ -26,11 +26,11 @@
 
 #include "core/dom/events/DOMWindowEventQueue.h"
 
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/SuspendableTimer.h"
 #include "core/probe/CoreProbes.h"
+#include "public/platform/TaskType.h"
 
 namespace blink {
 

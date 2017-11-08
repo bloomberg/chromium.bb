@@ -11,11 +11,11 @@
 #include "bindings/core/v8/V8PersistentValueVector.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
-#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
+#include "public/platform/TaskType.h"
 #include "public/web/WebScriptExecutionCallback.h"
 
 namespace blink {
