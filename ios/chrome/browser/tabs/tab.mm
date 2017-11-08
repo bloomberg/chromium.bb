@@ -474,8 +474,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // The check for overscrollActionsControllerDelegate is necessary to avoid
   // recreating a OverscrollActionsController during teardown.
   if (!_overscrollActionsController) {
-    _overscrollActionsController = [[OverscrollActionsController alloc] init];
-    [self.webController addObserver:_overscrollActionsController];
+    _overscrollActionsController = [[OverscrollActionsController alloc]
+        initWithWebViewProxy:self.webState->GetWebViewProxy()];
   }
   OverscrollStyle style = OverscrollStyle::REGULAR_PAGE_NON_INCOGNITO;
   if (_browserState->IsOffTheRecord())
@@ -529,8 +529,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   [_openInController detachFromWebController];
   _openInController = nil;
-  if (_overscrollActionsController)
-    [self.webController removeObserver:_overscrollActionsController];
   [_overscrollActionsController invalidate];
   _overscrollActionsController = nil;
 
