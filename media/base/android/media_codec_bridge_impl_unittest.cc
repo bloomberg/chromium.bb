@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/base/android/media_codec_bridge_impl.h"
@@ -15,7 +16,10 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
+#include "media/base/video_frame.h"
+#include "media/video/h264_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/libyuv/include/libyuv/convert_from.h"
 
 using testing::IsNull;
 using testing::NotNull;
@@ -109,6 +113,20 @@ namespace media {
     }                                                             \
   } while (0)
 
+#define SKIP_TEST_IF_HW_H264_IS_NOT_AVAILABLE()                        \
+  do {                                                                 \
+    if (!MediaCodecUtil::IsH264EncoderAvailable()) {                   \
+      VLOG(0) << "Could not run test - h264 not supported on device."; \
+      return;                                                          \
+    }                                                                  \
+  } while (0)
+
+enum PixelFormat {
+  // Subset of MediaCodecInfo.CodecCapabilities.
+  COLOR_FORMAT_YUV420_PLANAR = 19,
+  COLOR_FORMAT_YUV420_SEMIPLANAR = 21,
+};
+
 static const int kPresentationTimeBase = 100;
 static const int kMaxInputPts = kPresentationTimeBase + 2;
 
@@ -149,6 +167,114 @@ void DecodeMediaFrame(MediaCodecBridge* media_codec,
     input_pts += base::TimeDelta::FromMicroseconds(33000);
     timestamp = new_timestamp;
   }
+}
+
+// Performs basic, codec-specific sanity checks on the encoded H264 frame:
+// whether we've seen keyframes before non-keyframes, correct sequences of H.264
+// NALUs (SPS before PPS and before slices), etc.
+void H264Validate(const uint8_t* frame, size_t size) {
+  H264Parser h264_parser;
+  h264_parser.SetStream(frame, static_cast<off_t>(size));
+  bool seen_sps;
+  bool seen_pps;
+  bool seen_idr;
+
+  while (1) {
+    H264NALU nalu;
+    H264Parser::Result result;
+
+    result = h264_parser.AdvanceToNextNALU(&nalu);
+    if (result == H264Parser::kEOStream)
+      break;
+
+    ASSERT_THAT(result, H264Parser::kOk);
+
+    bool keyframe = false;
+
+    switch (nalu.nal_unit_type) {
+      case H264NALU::kIDRSlice:
+        ASSERT_TRUE(seen_sps);
+        ASSERT_TRUE(seen_pps);
+        seen_idr = true;
+        keyframe = true;
+      // fallthrough
+      case H264NALU::kNonIDRSlice: {
+        ASSERT_TRUE(seen_idr);
+        seen_sps = seen_pps = false;
+        break;
+      }
+
+      case H264NALU::kSPS: {
+        int sps_id;
+        ASSERT_EQ(H264Parser::kOk, h264_parser.ParseSPS(&sps_id));
+        seen_sps = true;
+        break;
+      }
+
+      case H264NALU::kPPS: {
+        ASSERT_TRUE(seen_sps);
+        int pps_id;
+        ASSERT_EQ(H264Parser::kOk, h264_parser.ParsePPS(&pps_id));
+        seen_pps = true;
+        break;
+      }
+
+      default:
+        break;
+    }
+  }
+}
+
+void EncodeMediaFrame(MediaCodecBridge* media_codec,
+                      const uint8_t* src_data,
+                      const size_t src_size,
+                      const int width,
+                      const int height,
+                      const base::TimeDelta input_timestamp) {
+  int input_buf_index = -1;
+  MediaCodecStatus status =
+      media_codec->DequeueInputBuffer(InfiniteTimeOut(), &input_buf_index);
+  ASSERT_EQ(MEDIA_CODEC_OK, status);
+
+  uint8_t* buffer = nullptr;
+  size_t capacity = 0;
+  status = media_codec->GetInputBuffer(input_buf_index, &buffer, &capacity);
+  ASSERT_EQ(MEDIA_CODEC_OK, status);
+
+  // Convert to NV12 because H264 encoder is created with color format
+  // COLOR_FormatYUV420SemiPlanar, both in main code path and unittest here.
+  bool converted =
+      !libyuv::I420ToNV12(src_data, width, src_data + width * height, width / 2,
+                          src_data + width * height * 5 / 4, width / 2, buffer,
+                          width, buffer + width * height, width, width, height);
+  ASSERT_TRUE(converted == true);
+
+  status = media_codec->QueueInputBuffer(input_buf_index, nullptr, src_size,
+                                         input_timestamp);
+  ASSERT_EQ(MEDIA_CODEC_OK, status);
+
+  int32_t buf_index = -1;
+  size_t offset = 0;
+  size_t output_size;
+  bool key_frame = false;
+
+  do {
+    status = media_codec->DequeueOutputBuffer(InfiniteTimeOut(), &buf_index,
+                                              &offset, &output_size, nullptr,
+                                              nullptr, &key_frame);
+    EXPECT_NE(status, MEDIA_CODEC_ERROR);
+  } while (buf_index < 0);
+  ASSERT_TRUE(status == MEDIA_CODEC_OK && buf_index >= 0);
+
+  std::unique_ptr<uint8_t[]> output_data =
+      std::make_unique<uint8_t[]>(output_size);
+  status = media_codec->CopyFromOutputBuffer(buf_index, offset,
+                                             output_data.get(), output_size);
+  ASSERT_EQ(MEDIA_CODEC_OK, status);
+
+  H264Validate(output_data.get(), output_size);
+
+  media_codec->ReleaseOutputBuffer(buf_index, false);
 }
 
 AudioDecoderConfig NewAudioConfig(
@@ -308,6 +434,54 @@ TEST(MediaCodecBridgeTest, CreateUnsupportedCodec) {
           kUnknownVideoCodec, CodecType::kAny, gfx::Size(320, 240), nullptr,
           nullptr, std::vector<uint8_t>(), std::vector<uint8_t>()),
       IsNull());
+}
+
+// Test MediaCodec HW H264 encoding and validate the format of encoded frames.
+TEST(MediaCodecBridgeTest, H264VideoEncodeAndValidate) {
+  SKIP_TEST_IF_HW_H264_IS_NOT_AVAILABLE();
+
+  const int width = 320;
+  const int height = 192;
+  const int bit_rate = 300000;
+  const int frame_rate = 30;
+  const int i_frame_interval = 20;
+  const int color_format = COLOR_FORMAT_YUV420_SEMIPLANAR;
+
+  std::unique_ptr<MediaCodecBridge> media_codec(
+      MediaCodecBridgeImpl::CreateVideoEncoder(
+          kCodecH264, gfx::Size(width, height), bit_rate, frame_rate,
+          i_frame_interval, color_format));
+  ASSERT_THAT(media_codec, NotNull());
+
+  const char* src_filename = "bear_320x192_40frames.yuv";
+  base::FilePath src_file = GetTestDataFilePath(src_filename);
+  int64_t src_file_size = 0;
+  ASSERT_TRUE(base::GetFileSize(src_file, &src_file_size));
+
+  const VideoPixelFormat kInputFormat = PIXEL_FORMAT_I420;
+  const int frame_size = static_cast<int>(
+      VideoFrame::AllocationSize(kInputFormat, gfx::Size(width, height)));
+  ASSERT_TRUE(frame_size > 0);
+  ASSERT_TRUE(src_file_size % frame_size == 0U);
+
+  const int num_frames = src_file_size / frame_size;
+  base::File src(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  std::unique_ptr<uint8_t[]> frame_data =
+      std::make_unique<uint8_t[]>(frame_size);
+  off_t src_offset = 0;
+  // A monotonically-growing value.
+  base::TimeDelta input_timestamp;
+  // Src_file should contain 40 frames. Here we only encode 3 of them.
+  for (int frame = 0; frame < num_frames && frame < 3; frame++) {
+    ASSERT_THAT(src.Read(src_offset, (char*)frame_data.get(), frame_size),
+                frame_size);
+    src_offset += static_cast<off_t>(frame_size);
+
+    input_timestamp += base::TimeDelta::FromMicroseconds(
+        base::Time::kMicrosecondsPerSecond / frame_rate);
+    EncodeMediaFrame(media_codec.get(), frame_data.get(), frame_size, width,
+                     height, input_timestamp);
+  }
 }
 
 }  // namespace media
