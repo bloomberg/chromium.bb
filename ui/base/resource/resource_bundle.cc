@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -424,6 +425,14 @@ base::string16 ResourceBundle::MaybeMangleLocalizedString(
     const base::string16& str) {
   if (!mangle_localized_strings_)
     return str;
+
+  // IDS_DEFAULT_FONT_SIZE and friends are localization "strings" that are
+  // actually integral constants. These should not be mangled or they become
+  // impossible to parse.
+  int ignored;
+  if (base::StringToInt(str, &ignored))
+    return str;
+
   // For a string S, produce [[ --- S --- ]], where the number of dashes is 1/4
   // of the number of characters in S. This makes S something around 50-75%
   // longer, except for extremely short strings, which get > 100% longer.
