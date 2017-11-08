@@ -896,6 +896,25 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
   CreateURLLoaderThrottles(const base::Callback<WebContents*()>& wc_getter);
 
+  // Allows the embedder to register per-scheme URLLoaderFactory implementations
+  // to handle navigation URL requests for schemes not handled by the Network
+  // Service. Only called when the Network Service is enabled.
+  using NonNetworkURLLoaderFactoryMap =
+      std::map<std::string, std::unique_ptr<mojom::URLLoaderFactory>>;
+  virtual void RegisterNonNetworkNavigationURLLoaderFactories(
+      RenderFrameHost* frame_host,
+      NonNetworkURLLoaderFactoryMap* factories);
+
+  // Allows the embedder to register per-scheme URLLoaderFactory implementations
+  // to handle subresource URL requests for schemes not handled by the Network
+  // Service. The factories added to this map will only be used to service
+  // subresource requests from |frame_host| as long as it's navigated to
+  // |frame_url|. Only called when the Network Service is enabled.
+  virtual void RegisterNonNetworkSubresourceURLLoaderFactories(
+      RenderFrameHost* frame_host,
+      const GURL& frame_url,
+      NonNetworkURLLoaderFactoryMap* factories);
+
   // Creates a NetworkContext for a BrowserContext's StoragePartition. If the
   // network service is enabled, it must return a NetworkContext using the
   // network service. If the network service is disabled, the embedder may

@@ -357,7 +357,6 @@ source_set("browser_sources") {
     "//components/web_modal",
     "//components/zoom",
     "//content/public/browser",
-    "//content/public/common",
     "//crypto:platform",
     "//crypto:platform",
     "//extensions:extensions_browser_resources",
@@ -375,6 +374,7 @@ source_set("browser_sources") {
   ]
 
   public_deps = [
+    "//content/public/common",
     "//extensions/browser/install",
     "//extensions/browser/kiosk",
     "//extensions/browser/updater",

@@ -121,6 +121,7 @@ source_set("browser_sources") {
     "download_url_parameters.h",
     "favicon_status.cc",
     "favicon_status.h",
+    "file_url_loader.h",
     "focused_node_details.h",
     "font_list_async.h",
     "frame_service_base.h",

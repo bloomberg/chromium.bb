@@ -582,13 +582,13 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   int frame_tree_node_id = request_info->frame_tree_node_id;
 
   // Check if a web UI scheme wants to handle this request.
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   mojom::URLLoaderFactoryPtrInfo factory_for_webui;
   mojom::URLLoaderFactoryPtrInfo subresource_factory_for_webui;
   const auto& schemes = URLDataManagerBackend::GetWebUISchemes();
   if (std::find(schemes.begin(), schemes.end(), new_request->url.scheme()) !=
       schemes.end()) {
-    FrameTreeNode* frame_tree_node =
-        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     factory_for_webui = CreateWebUIURLLoader(frame_tree_node).PassInterface();
     subresource_factory_for_webui =
         CreateWebUIURLLoader(frame_tree_node).PassInterface();
@@ -623,6 +623,15 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+
+  if (frame_tree_node) {
+    // |frame_tree_node| may be null in some unit test environments.
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkNavigationURLLoaderFactories(
+            frame_tree_node->current_frame_host(),
+            &non_network_url_loader_factories_);
+  }
 }
 
 NavigationURLLoaderNetworkService::~NavigationURLLoaderNetworkService() {

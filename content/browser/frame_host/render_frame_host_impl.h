@@ -43,6 +43,7 @@
 #include "content/common/image_downloader/image_downloader.mojom.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/navigation_params.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
@@ -1285,7 +1286,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A collection of non-network URLLoaderFactory implementations which are used
   // to service any supported non-network subresource requests for the currently
   // committed navigation.
-  std::vector<std::unique_ptr<mojom::URLLoaderFactory>>
+  ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
 
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.

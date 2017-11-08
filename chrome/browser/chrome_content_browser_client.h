@@ -363,6 +363,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::vector<std::unique_ptr<content::URLLoaderThrottle>>
   CreateURLLoaderThrottles(
       const base::Callback<content::WebContents*()>& wc_getter) override;
+  void RegisterNonNetworkNavigationURLLoaderFactories(
+      content::RenderFrameHost* frame_host,
+      NonNetworkURLLoaderFactoryMap* factories) override;
+  void RegisterNonNetworkSubresourceURLLoaderFactories(
+      content::RenderFrameHost* frame_host,
+      const GURL& frame_url,
+      NonNetworkURLLoaderFactoryMap* factories) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

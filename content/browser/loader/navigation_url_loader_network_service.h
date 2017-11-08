@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/loader/navigation_url_loader.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
@@ -75,7 +76,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   bool allow_download_;
 
   // Factories to handle navigation requests for non-network resources.
-  std::map<std::string, std::unique_ptr<mojom::URLLoaderFactory>>
+  ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
 
   base::WeakPtrFactory<NavigationURLLoaderNetworkService> weak_factory_;
