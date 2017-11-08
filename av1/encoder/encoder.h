@@ -470,6 +470,7 @@ typedef struct AV1_COMP {
   int mbgraph_n_frames;  // number of frames filled in the above
   int static_mb_pct;     // % forced skip mbs by segmentation
   int ref_frame_flags;
+  int ext_ref_frame_flags;
 #if CONFIG_FRAME_MARKER
   RATE_FACTOR_LEVEL frame_rf_level[FRAME_BUFFERS];
 #endif  // CONFIG_FRAME_MARKER

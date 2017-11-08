@@ -3346,7 +3346,7 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
 int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags) {
   if (ref_frame_flags > ((1 << INTER_REFS_PER_FRAME) - 1)) return -1;
 
-  cpi->ref_frame_flags = ref_frame_flags;
+  cpi->ext_ref_frame_flags = ref_frame_flags;
   return 0;
 }
 
@@ -5092,7 +5092,7 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
 
   // After av1_apply_encoding_flags() is called, cpi->ref_frame_flags might be
   // adjusted according to external encoder flags.
-  int flags = cpi->ref_frame_flags;
+  int flags = cpi->ext_ref_frame_flags;
 
   if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~AOM_GOLD_FLAG;
 
@@ -6722,13 +6722,13 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   // priority rank for 7 reference frames are: LAST, ALTREF, LAST2, LAST3,
   // GOLDEN, BWDREF, ALTREF2. If only one reference frame is used, it must be
   // LAST.
-  cpi->ref_frame_flags = AOM_REFFRAME_ALL;
+  cpi->ext_ref_frame_flags = AOM_REFFRAME_ALL;
   if (flags &
       (AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
        AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_BWD |
        AOM_EFLAG_NO_REF_ARF2)) {
     if (flags & AOM_EFLAG_NO_REF_LAST) {
-      cpi->ref_frame_flags = 0;
+      cpi->ext_ref_frame_flags = 0;
     } else {
       int ref = AOM_REFFRAME_ALL;
 
