@@ -71,6 +71,9 @@ class LocationBarDecoration {
   // the result of |GetTooltip()| as a fallback.
   virtual NSString* GetAccessibilityLabel();
 
+  // Returns a NSRect derived from |frame| to set up the tracking area.
+  virtual NSRect GetTrackingFrame(NSRect frame);
+
   // Methods to set up and remove the tracking area from the |control_view|.
   CrTrackingArea* SetupTrackingArea(NSRect frame, NSView* control_view);
   void RemoveTrackingArea();

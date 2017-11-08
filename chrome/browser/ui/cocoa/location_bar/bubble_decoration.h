@@ -33,6 +33,7 @@ class BubbleDecoration : public LocationBarDecoration {
   CGFloat GetWidthForSpace(CGFloat width) override;
   NSRect GetBackgroundFrame(NSRect frame) override;
   void DrawInFrame(NSRect frame, NSView* control_view) override;
+  NSRect GetTrackingFrame(NSRect frame) override;
   NSFont* GetFont() const override;
 
  protected:
