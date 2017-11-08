@@ -23,9 +23,6 @@ class LayoutTestContentRendererClient : public ShellContentRendererClient {
   void RenderThreadStarted() override;
   void RenderFrameCreated(RenderFrame* render_frame) override;
   void RenderViewCreated(RenderView* render_view) override;
-  std::unique_ptr<blink::WebMediaStreamCenter>
-  OverrideCreateWebMediaStreamCenter(
-      blink::WebMediaStreamCenterClient* client) override;
   std::unique_ptr<blink::WebMIDIAccessor> OverrideCreateMIDIAccessor(
       blink::WebMIDIAccessorClient* client) override;
   std::unique_ptr<blink::WebAudioDevice> OverrideCreateAudioDevice(

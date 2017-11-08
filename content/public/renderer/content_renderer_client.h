@@ -41,8 +41,6 @@ class WebFrame;
 class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
-class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebSocketHandshakeThrottle;
@@ -148,11 +146,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void DeferMediaLoad(RenderFrame* render_frame,
                               bool has_played_media_before,
                               const base::Closure& closure);
-
-  // Allows the embedder to override creating a WebMediaStreamCenter. If it
-  // returns NULL the content layer will create the stream center.
-  virtual std::unique_ptr<blink::WebMediaStreamCenter>
-  OverrideCreateWebMediaStreamCenter(blink::WebMediaStreamCenterClient* client);
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.

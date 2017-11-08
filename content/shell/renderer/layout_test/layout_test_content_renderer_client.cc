@@ -165,18 +165,6 @@ void LayoutTestContentRendererClient::RenderViewCreated(
       ->InitializeWebViewWithMocks(render_view->GetWebView());
 }
 
-std::unique_ptr<WebMediaStreamCenter>
-LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
-    WebMediaStreamCenterClient* client) {
-#if BUILDFLAG(ENABLE_WEBRTC)
-  test_runner::WebTestInterfaces* interfaces =
-      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
-  return interfaces->CreateMediaStreamCenter(client);
-#else
-  return nullptr;
-#endif
-}
-
 std::unique_ptr<WebMIDIAccessor>
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {

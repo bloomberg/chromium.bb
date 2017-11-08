@@ -54,12 +54,6 @@ void ContentRendererClient::DeferMediaLoad(
   closure.Run();
 }
 
-std::unique_ptr<blink::WebMediaStreamCenter>
-ContentRendererClient::OverrideCreateWebMediaStreamCenter(
-    blink::WebMediaStreamCenterClient* client) {
-  return nullptr;
-}
-
 std::unique_ptr<blink::WebMIDIAccessor>
 ContentRendererClient::OverrideCreateMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {

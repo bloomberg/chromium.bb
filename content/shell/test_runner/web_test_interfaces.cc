@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/shell/test_runner/mock_web_audio_device.h"
-#include "content/shell/test_runner/mock_web_media_stream_center.h"
 #include "content/shell/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -64,11 +63,6 @@ WebThemeEngine* WebTestInterfaces::ThemeEngine() {
 
 TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
   return interfaces_.get();
-}
-
-std::unique_ptr<WebMediaStreamCenter>
-WebTestInterfaces::CreateMediaStreamCenter(WebMediaStreamCenterClient* client) {
-  return std::make_unique<MockWebMediaStreamCenter>();
 }
 
 std::unique_ptr<WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
