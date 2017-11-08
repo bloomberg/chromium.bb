@@ -1365,7 +1365,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const WebURL& url,
 
 void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
-                                         WebURLError& error,
+                                         base::Optional<WebURLError>& error,
                                          WebData& data,
                                          int64_t& encoded_data_length,
                                          int64_t& encoded_body_length) {

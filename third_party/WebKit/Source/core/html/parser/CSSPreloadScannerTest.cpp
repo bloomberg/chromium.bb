@@ -143,7 +143,7 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
 
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->AppendData(data, strlen(data));
-  ResourceError error(ResourceError::Domain::kTest, 0, url);
+  ResourceError error = ResourceError::Failure(url);
   resource->FinishAsError(error, dummy_page_holder->GetDocument()
                                      .GetTaskRunner(TaskType::kUnspecedLoading)
                                      .get());

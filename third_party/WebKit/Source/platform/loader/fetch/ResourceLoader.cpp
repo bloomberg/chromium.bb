@@ -687,7 +687,7 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
 
   WrappedResourceRequest request_in(request);
   WebURLResponse response_out;
-  WebURLError error_out;
+  WTF::Optional<WebURLError> error_out;
   WebData data_out;
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;
@@ -699,8 +699,8 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   if (!loader_)
     return;
   int64_t decoded_body_length = data_out.size();
-  if (error_out.reason()) {
-    DidFail(error_out, encoded_data_length, encoded_body_length,
+  if (error_out) {
+    DidFail(*error_out, encoded_data_length, encoded_body_length,
             decoded_body_length);
     return;
   }

@@ -419,7 +419,6 @@ void Resource::SetDataBufferingPolicy(
 
 void Resource::FinishAsError(const ResourceError& error,
                              WebTaskRunner* task_runner) {
-  DCHECK(!error.IsNull());
   error_ = error;
   is_revalidating_ = false;
 

@@ -11730,8 +11730,9 @@ TEST_P(ParameterizedWebFrameTest, FallbackForNonexistentProvisionalNavigation) {
   // content shouldn't crash. It should return NoLoadInProgress. This is so the
   // caller won't attempt to replace the correctly empty frame with an error
   // page.
-  EXPECT_EQ(WebLocalFrame::NoLoadInProgress,
-            child->MaybeRenderFallbackContent(WebURLError()));
+  EXPECT_EQ(
+      WebLocalFrame::NoLoadInProgress,
+      child->MaybeRenderFallbackContent(ResourceError::Failure(request.Url())));
 }
 
 TEST_P(ParameterizedWebFrameTest, AltTextOnAboutBlankPage) {

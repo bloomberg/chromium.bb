@@ -17,7 +17,6 @@ std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
             << ", errorCode = " << error.ErrorCode()
             << ", failingURL = " << error.FailingURL()
             << ", localizedDescription = " << error.LocalizedDescription()
-            << ", isNull = " << error.IsNull()
             << ", isCancellation = " << error.IsCancellation()
             << ", isAccessCheck = " << error.IsAccessCheck()
             << ", isTimeout = " << error.IsTimeout()

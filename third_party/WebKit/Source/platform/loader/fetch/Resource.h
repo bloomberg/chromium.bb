@@ -46,6 +46,7 @@
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
@@ -114,7 +115,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     preload_discovery_time_ = preload_discovery_time;
   }
 
-  const ResourceError& GetResourceError() const { return error_; }
+  const ResourceError& GetResourceError() const {
+    DCHECK(error_);
+    return *error_;
+  }
 
   void SetIdentifier(unsigned long identifier) { identifier_ = identifier; }
   unsigned long Identifier() const { return identifier_; }
@@ -226,12 +230,12 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   AtomicString HttpContentType() const;
 
-  bool WasCanceled() const { return error_.IsCancellation(); }
+  bool WasCanceled() const { return error_ && error_->IsCancellation(); }
   bool ErrorOccurred() const {
     return status_ == ResourceStatus::kLoadError ||
            status_ == ResourceStatus::kDecodeError;
   }
-  bool LoadFailedOrCanceled() const { return !error_.IsNull(); }
+  bool LoadFailedOrCanceled() const { return !!error_; }
 
   DataBufferingPolicy GetDataBufferingPolicy() const {
     return options_.data_buffering_policy;
@@ -437,7 +441,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   Member<CachedMetadataHandlerImpl> cache_handler_;
   scoped_refptr<SecurityOrigin> fetcher_security_origin_;
 
-  ResourceError error_;
+  Optional<ResourceError> error_;
 
   double load_finish_time_;
 

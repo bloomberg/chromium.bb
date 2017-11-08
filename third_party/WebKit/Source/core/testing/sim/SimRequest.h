@@ -5,6 +5,7 @@
 #ifndef SimRequest_h
 #define SimRequest_h
 
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLError.h"
@@ -40,7 +41,6 @@ class SimRequest final {
   void Complete(const Vector<char>& data);
 
   const String& Url() const { return url_; }
-  const WebURLError& GetError() const { return error_; }
   const WebURLResponse& GetResponse() const { return response_; }
 
  private:
@@ -54,7 +54,7 @@ class SimRequest final {
 
   String url_;
   WebURLResponse response_;
-  WebURLError error_;
+  Optional<WebURLError> error_;
   WebURLLoaderClient* client_;
   unsigned total_encoded_data_length_;
   bool is_ready_;
