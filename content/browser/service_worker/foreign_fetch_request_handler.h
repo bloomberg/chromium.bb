@@ -148,6 +148,8 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
 
   base::WeakPtrFactory<ForeignFetchRequestHandler> weak_factory_;
 
+  static int user_data_key_;  // Only address is used.
+
   DISALLOW_COPY_AND_ASSIGN(ForeignFetchRequestHandler);
 };
 
