@@ -322,18 +322,22 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   (void)cm;
   if (block_signals_txsize(bsize)) {
     const TX_SIZE tx_size = mbmi->tx_size;
-    const int is_inter = is_inter_block(mbmi);
     const int tx_size_ctx = get_tx_size_context(xd);
-    const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                         : intra_tx_size_cat_lookup[bsize];
+    const int32_t tx_size_cat = intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
-    const int depth = tx_size_to_depth(coded_tx_size);
+    const int depth = tx_size_to_depth(coded_tx_size, tx_size_cat);
+    const int max_depths = tx_size_cat_to_max_depth(tx_size_cat);
+
+    assert(coded_tx_size <= tx_size_cat + 1);
+    assert(depth >= 0 && depth <= max_depths);
+
+    assert(!is_inter_block(mbmi));
     assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
 
     aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
-                     tx_size_cat + 2);
+                     max_depths + 1);
 #if CONFIG_RECT_TX_EXT
-    if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
+    if (is_quarter_tx_allowed(xd, mbmi, 0) && tx_size != coded_tx_size)
 #if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, tx_size == quarter_txsize_lookup[bsize],
                        cm->fc->quarter_tx_size_cdf, 2);

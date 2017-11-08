@@ -246,7 +246,9 @@ typedef enum ATTRIBUTE_PACKED {
    one more than the minimum. */
 #define TX_SIZE_CTX_MIN (TX_SIZE_LUMA_MIN + 1)
 
-#define MAX_TX_DEPTH (TX_SIZES - TX_SIZE_CTX_MIN)
+// Maximum tx_size categories
+#define MAX_TX_CATS (TX_SIZES - TX_SIZE_CTX_MIN)
+#define MAX_TX_DEPTH 2
 
 #define MAX_TX_SIZE_LOG2 (5 + CONFIG_TX64X64)
 #define MAX_TX_SIZE (1 << MAX_TX_SIZE_LOG2)

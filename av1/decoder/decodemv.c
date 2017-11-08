@@ -510,13 +510,15 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int32_t tx_size_cat, aom_reader *r) {
+  const int max_depths = tx_size_cat_to_max_depth(tx_size_cat);
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
 
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
-                                    tx_size_cat + 2, ACCT_STR);
-  const TX_SIZE tx_size = depth_to_tx_size(depth);
+                                    max_depths + 1, ACCT_STR);
+  assert(depth >= 0 && depth <= max_depths);
+  const TX_SIZE tx_size = depth_to_tx_size(depth, tx_size_cat);
   assert(!is_rect_tx(tx_size));
   return tx_size;
 }

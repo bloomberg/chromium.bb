@@ -2357,7 +2357,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
                                          : intra_tx_size_cat_lookup[bsize];
     const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
-    const int depth = tx_size_to_depth(coded_tx_size);
+    const int depth = tx_size_to_depth(coded_tx_size, tx_size_cat);
     const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 #if CONFIG_RECT_TX_EXT
@@ -2739,7 +2739,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 
   if (tx_select) {
     start_tx = max_tx_size;
-    end_tx = (max_tx_size >= TX_32X32) ? TX_8X8 : TX_4X4;
+    end_tx = AOMMAX((int)TX_4X4, start_tx - MAX_TX_DEPTH + evaluate_rect_tx);
   } else {
     const TX_SIZE chosen_tx_size =
         tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);

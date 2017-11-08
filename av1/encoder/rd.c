@@ -219,7 +219,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
   }
 #endif  // CONFIG_CFL
 
-  for (i = 0; i < MAX_TX_DEPTH; ++i)
+  for (i = 0; i < MAX_TX_CATS; ++i)
     for (j = 0; j < TX_SIZE_CONTEXTS; ++j)
       av1_cost_tokens_from_cdf(x->tx_size_cost[i][j], fc->tx_size_cdf[i][j],
                                NULL);
