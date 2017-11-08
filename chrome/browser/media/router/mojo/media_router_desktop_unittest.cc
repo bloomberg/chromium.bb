@@ -62,32 +62,32 @@ class MediaRouterDesktopTest : public MediaRouterMojoTest {
  private:
   static std::unique_ptr<KeyedService> CreateMediaRouter(
       content::BrowserContext* context) {
-    return std::unique_ptr<KeyedService>(new MediaRouterDesktop(context));
+    return std::unique_ptr<KeyedService>(new MediaRouterDesktop(
+        context, MediaRouterDesktop::FirewallCheck::SKIP_FOR_TESTING));
   }
 };
 
 #if defined(OS_WIN)
-// TODO: reenable, flaky on windows.https://crbug.com/781412
-TEST_F(MediaRouterDesktopTest, DISABLED_EnableMdnsAfterEachRegister) {
+TEST_F(MediaRouterDesktopTest, EnableMdnsAfterEachRegister) {
+  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery()).Times(0);
+  RegisterExtensionProvider();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_CALL(mock_extension_provider_,
               UpdateMediaSinks(MediaSourceForDesktop().id()));
-  // EnableMdnsDiscovery() is never called except on Windows.
+  EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
+  router()->OnUserGesture();
+  base::RunLoop().RunUntilIdle();
+
+  // EnableMdnsDiscovery() is called on this RegisterExtensionProvider() because
+  // we've already seen an mdns-enabling event.
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
   RegisterExtensionProvider();
-  // Should not call EnableMdnsDiscovery(), but will call UpdateMediaSinks.
-  router()->OnUserGesture();
   base::RunLoop().RunUntilIdle();
 }
 #endif
 
-// Flaky on Win.  http://crbug.com/752513
-#if defined(OS_WIN)
-#define MAYBE_UpdateMediaSinksOnUserGesture \
-  DISABLED_UpdateMediaSinksOnUserGesture
-#else
-#define MAYBE_UpdateMediaSinksOnUserGesture UpdateMediaSinksOnUserGesture
-#endif
-TEST_F(MediaRouterDesktopTest, MAYBE_UpdateMediaSinksOnUserGesture) {
+TEST_F(MediaRouterDesktopTest, UpdateMediaSinksOnUserGesture) {
 #if defined(OS_WIN)
   EXPECT_CALL(mock_extension_provider_, EnableMdnsDiscovery());
 #endif
