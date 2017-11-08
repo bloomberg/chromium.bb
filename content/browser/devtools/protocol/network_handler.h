@@ -30,6 +30,7 @@ struct CommonNavigationParams;
 struct GlobalRequestID;
 class NavigationHandle;
 class NavigationThrottle;
+struct InterceptedRequestInfo;
 struct ResourceRequest;
 struct ResourceRequestCompletionStatus;
 struct ResourceResponseHead;
@@ -131,6 +132,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
   void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
   bool ShouldBypassServiceWorker() const;
+
+  void RequestIntercepted(std::unique_ptr<InterceptedRequestInfo> request_info);
 
  private:
   void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
