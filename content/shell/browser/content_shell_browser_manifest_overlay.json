@@ -13,7 +13,7 @@
         "echo": [
           "echo"
         ],
-        "ui": [ "window_tree_host_factory" ]
+        "ui": [ "test", "window_tree_host_factory" ]
       }
     },
     "navigation:frame": {
