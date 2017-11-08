@@ -6,6 +6,7 @@ import py_utils
 
 from telemetry.page import page
 from telemetry.page import cache_temperature as cache_temperature_module
+from telemetry.page import traffic_setting as traffic_setting_module
 from telemetry.page import shared_page_state
 
 
@@ -15,13 +16,18 @@ _WEB_CONTENTS_TIMEOUT = 180
 class PageCyclerStory(page.Page):
 
   def __init__(self, url, page_set,
-      shared_page_state_class=shared_page_state.SharedDesktopPageState,
-      cache_temperature=cache_temperature_module.ANY, name='', **kwargs):
+               shared_page_state_class=shared_page_state.SharedDesktopPageState,
+               cache_temperature=cache_temperature_module.ANY, name='',
+               traffic_setting=traffic_setting_module.NONE, **kwargs):
     super(PageCyclerStory, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
         cache_temperature=cache_temperature, name=name,
         **kwargs)
+    if cache_temperature != cache_temperature_module.ANY:
+      self.grouping_keys['cache_temperature'] = cache_temperature
+    if traffic_setting != traffic_setting_module.NONE:
+      self.grouping_keys['traffic_setting'] = traffic_setting
 
   def RunNavigateSteps(self, action_runner):
     url = self.file_path_url_with_scheme if self.is_file else self.url

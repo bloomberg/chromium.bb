@@ -17,6 +17,8 @@ class Typical25Page(page_module.Page):
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
         cache_temperature=cache_temperature, name=url)
+    if cache_temperature != cache_temperature_module.ANY:
+      self.grouping_keys['cache_temperature'] = cache_temperature
     self._run_no_page_interactions = run_no_page_interactions
 
   def RunPageInteractions(self, action_runner):
