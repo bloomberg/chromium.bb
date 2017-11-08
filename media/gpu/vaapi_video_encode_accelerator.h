@@ -261,10 +261,11 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // to the encoder thread is safe, because |this| always outlives the encoder
   // thread (it's a member of this class).
   base::WeakPtr<VaapiVideoEncodeAccelerator> weak_this_;
-  base::WeakPtrFactory<VaapiVideoEncodeAccelerator> weak_this_ptr_factory_;
 
   // The completion callback of the Flush() function.
   FlushCallback flush_callback_;
+
+  base::WeakPtrFactory<VaapiVideoEncodeAccelerator> weak_this_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoEncodeAccelerator);
 };
