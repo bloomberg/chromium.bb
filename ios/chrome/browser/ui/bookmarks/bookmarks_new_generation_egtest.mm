@@ -734,14 +734,13 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_CONTENT_CONTEXT_COPY)]
       performAction:grey_tap()];
 
-  // Wait so that the string is copied to clipboard.
-  // TODO(crbug.com/780064): poll for pasteboard change instead.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
-
   // Verify general pasteboard has the URL copied.
-  NSString* copiedString = [UIPasteboard generalPasteboard].string;
-  GREYAssert([copiedString containsString:@"www.a.fr"],
-             @"The URL is not copied");
+  ConditionBlock condition = ^{
+    return !![[UIPasteboard generalPasteboard].string
+        containsString:@"www.a.fr"];
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+             @"Waiting for URL to be copied to pasteboard.");
 
   // Verify edit mode is closed (context bar back to default state).
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
