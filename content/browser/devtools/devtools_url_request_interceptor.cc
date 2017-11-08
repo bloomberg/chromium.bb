@@ -16,6 +16,9 @@
 
 namespace content {
 
+InterceptedRequestInfo::InterceptedRequestInfo() = default;
+InterceptedRequestInfo::~InterceptedRequestInfo() = default;
+
 // static
 bool DevToolsURLRequestInterceptor::IsNavigationRequest(
     ResourceType resource_type) {

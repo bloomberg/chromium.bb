@@ -281,100 +281,6 @@ int DevToolsURLInterceptorRequestJob::MockResponseDetails::ReadRawData(
 }
 
 namespace {
-const char* ResourceTypeToString(ResourceType resource_type) {
-  switch (resource_type) {
-    case RESOURCE_TYPE_MAIN_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_SUB_FRAME:
-      return protocol::Page::ResourceTypeEnum::Document;
-    case RESOURCE_TYPE_STYLESHEET:
-      return protocol::Page::ResourceTypeEnum::Stylesheet;
-    case RESOURCE_TYPE_SCRIPT:
-      return protocol::Page::ResourceTypeEnum::Script;
-    case RESOURCE_TYPE_IMAGE:
-      return protocol::Page::ResourceTypeEnum::Image;
-    case RESOURCE_TYPE_FONT_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Font;
-    case RESOURCE_TYPE_SUB_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_OBJECT:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_MEDIA:
-      return protocol::Page::ResourceTypeEnum::Media;
-    case RESOURCE_TYPE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_SHARED_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_PREFETCH:
-      return protocol::Page::ResourceTypeEnum::Fetch;
-    case RESOURCE_TYPE_FAVICON:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_XHR:
-      return protocol::Page::ResourceTypeEnum::XHR;
-    case RESOURCE_TYPE_PING:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_SERVICE_WORKER:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_CSP_REPORT:
-      return protocol::Page::ResourceTypeEnum::Other;
-    case RESOURCE_TYPE_PLUGIN_RESOURCE:
-      return protocol::Page::ResourceTypeEnum::Other;
-    default:
-      return protocol::Page::ResourceTypeEnum::Other;
-  }
-}
-
-void SendRequestInterceptedEventOnUiThread(
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::string interception_id,
-    std::unique_ptr<protocol::Network::Request> network_request,
-    const base::UnguessableToken& frame_id,
-    ResourceType resource_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!network_handler)
-    return;
-  network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type),
-      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type));
-}
-
-void SendRedirectInterceptedEventOnUiThread(
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::string interception_id,
-    std::unique_ptr<protocol::Network::Request> network_request,
-    const base::UnguessableToken& frame_id,
-    ResourceType resource_type,
-    std::unique_ptr<protocol::Object> headers_object,
-    int http_status_code,
-    std::string redirect_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!network_handler)
-    return;
-  network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type),
-      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type),
-      std::move(headers_object), http_status_code, redirect_url);
-}
-
-void SendAuthRequiredEventOnUiThread(
-    base::WeakPtr<protocol::NetworkHandler> network_handler,
-    std::string interception_id,
-    std::unique_ptr<protocol::Network::Request> network_request,
-    const base::UnguessableToken& frame_id,
-    ResourceType resource_type,
-    std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!network_handler)
-    return;
-  network_handler->frontend()->RequestIntercepted(
-      interception_id, std::move(network_request), frame_id.ToString(),
-      ResourceTypeToString(resource_type),
-      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type),
-      protocol::Maybe<protocol::Network::Headers>(), protocol::Maybe<int>(),
-      protocol::Maybe<protocol::String>(), std::move(auth_challenge));
-}
 
 class ProxyUploadElementReader : public net::UploadElementReader {
  public:
@@ -480,17 +386,14 @@ void DevToolsURLInterceptorRequestJob::Start() {
     // there's no need to send another. We can just start the SubRequest.
     // If we're not intercepting results we can also just start the SubRequest.
     sub_request_.reset(new SubRequest(request_details_, this, interceptor_));
-  } else {
-    waiting_for_user_response_ =
-        WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
-    std::unique_ptr<protocol::Network::Request> network_request =
-        protocol::NetworkHandler::CreateRequestFromURLRequest(request());
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(SendRequestInterceptedEventOnUiThread, network_handler_,
-                       interception_id_, base::Passed(&network_request),
-                       devtools_token_, resource_type_));
+    return;
   }
+  waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&protocol::NetworkHandler::RequestIntercepted,
+                     network_handler_, BuildRequestInfo()));
 }
 
 void DevToolsURLInterceptorRequestJob::Kill() {
@@ -606,9 +509,8 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
 
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_AUTH_ACK;
 
-  std::unique_ptr<protocol::Network::Request> network_request =
-      protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
-  std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge =
+  std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
+  request_info->auth_challenge =
       protocol::Network::AuthChallenge::Create()
           .SetSource(auth_info->is_proxy
                          ? protocol::Network::AuthChallenge::SourceEnum::Proxy
@@ -617,13 +519,10 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestAuthRequired(
           .SetScheme(auth_info->scheme)
           .SetRealm(auth_info->realm)
           .Build();
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(SendAuthRequiredEventOnUiThread, network_handler_,
-                     interception_id_, base::Passed(&network_request),
-                     devtools_token_, resource_type_,
-                     base::Passed(&auth_challenge)));
+      base::BindOnce(&protocol::NetworkHandler::RequestIntercepted,
+                     network_handler_, std::move(request_info)));
 }
 
 void DevToolsURLInterceptorRequestJob::OnSubRequestResponseStarted(
@@ -670,17 +569,15 @@ void DevToolsURLInterceptorRequestJob::OnSubRequestRedirectReceived(
 
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_REQUEST_ACK;
 
-  std::unique_ptr<protocol::Network::Request> network_request =
-      protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
-  std::unique_ptr<protocol::Object> headers_object =
+  std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
+  request_info->headers_object =
       protocol::Object::fromValue(headers_dict.get(), nullptr);
+  request_info->http_status_code = redirectinfo.status_code;
+  request_info->redirect_url = redirectinfo.new_url.spec();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(SendRedirectInterceptedEventOnUiThread, network_handler_,
-                     interception_id_, base::Passed(&network_request),
-                     devtools_token_, resource_type_,
-                     base::Passed(&headers_object), redirectinfo.status_code,
-                     redirectinfo.new_url.spec()));
+      base::BindOnce(&protocol::NetworkHandler::RequestIntercepted,
+                     network_handler_, std::move(request_info)));
 }
 
 void DevToolsURLInterceptorRequestJob::StopIntercepting() {
@@ -783,6 +680,19 @@ void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
       NOTREACHED();
       break;
   }
+}
+
+std::unique_ptr<InterceptedRequestInfo>
+DevToolsURLInterceptorRequestJob::BuildRequestInfo() {
+  auto result = std::make_unique<InterceptedRequestInfo>();
+  result->interception_id = interception_id_;
+  result->network_request =
+      protocol::NetworkHandler::CreateRequestFromURLRequest(request());
+  result->frame_id = devtools_token_;
+  result->resource_type = resource_type_;
+  result->is_navigation =
+      DevToolsURLRequestInterceptor::IsNavigationRequest(resource_type_);
+  return result;
 }
 
 void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(

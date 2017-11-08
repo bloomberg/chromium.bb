@@ -28,6 +28,21 @@ class DevToolsTargetRegistry;
 class DevToolsURLInterceptorRequestJob;
 class ResourceRequestInfo;
 
+struct InterceptedRequestInfo {
+  InterceptedRequestInfo();
+  ~InterceptedRequestInfo();
+
+  std::string interception_id;
+  std::unique_ptr<protocol::Network::Request> network_request;
+  base::UnguessableToken frame_id;
+  ResourceType resource_type;
+  bool is_navigation;
+  protocol::Maybe<protocol::Object> headers_object;
+  protocol::Maybe<int> http_status_code;
+  protocol::Maybe<protocol::String> redirect_url;
+  protocol::Maybe<protocol::Network::AuthChallenge> auth_challenge;
+};
+
 // An interceptor that creates DevToolsURLInterceptorRequestJobs for requests
 // from pages where interception has been enabled via
 // Network.setRequestInterceptionEnabled.

@@ -71,6 +71,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   const base::UnguessableToken& target_id() const { return target_id_; }
 
  private:
+  std::unique_ptr<InterceptedRequestInfo> BuildRequestInfo();
+
   class SubRequest;
   class MockResponseDetails;
 
