@@ -354,20 +354,13 @@ bool ChromePasswordProtectionService::IsIncognito() {
 }
 
 bool ChromePasswordProtectionService::IsPingingEnabled(
-    const base::Feature& feature,
+    LoginReputationClientRequest::TriggerType trigger_type,
     RequestOutcome* reason) {
   if (!IsSafeBrowsingEnabled())
     return false;
 
-  DCHECK(feature.name == kProtectedPasswordEntryPinging.name ||
-         feature.name == kPasswordFieldOnFocusPinging.name);
-  if (!base::FeatureList::IsEnabled(feature)) {
-    *reason = DISABLED_DUE_TO_FEATURE_DISABLED;
-    return false;
-  }
-
   // Protected password entry pinging is enabled for all users.
-  if (feature.name == kProtectedPasswordEntryPinging.name)
+  if (trigger_type == LoginReputationClientRequest::PASSWORD_REUSE_EVENT)
     return true;
 
   // Password field on focus pinging is enabled for !incognito &&
@@ -453,7 +446,7 @@ void ChromePasswordProtectionService::LogPasswordReuseDialogInteraction(
   user_event_service->RecordUserEvent(std::move(specifics));
 }
 
-PasswordProtectionService::SyncAccountType
+LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
 ChromePasswordProtectionService::GetSyncAccountType() {
   const AccountInfo account_info = GetAccountInfo();
   if (account_info.account_id.empty() || account_info.hosted_domain.empty()) {
