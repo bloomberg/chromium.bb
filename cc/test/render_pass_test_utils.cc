@@ -133,32 +133,32 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
   viz::ResourceId resource1 = resource_provider->CreateResource(
-      gfx::Size(45, 5), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource1);
   viz::ResourceId resource2 = resource_provider->CreateResource(
-      gfx::Size(346, 61), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource2);
   viz::ResourceId resource3 = resource_provider->CreateResource(
-      gfx::Size(12, 134), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource3);
   viz::ResourceId resource4 = resource_provider->CreateResource(
-      gfx::Size(56, 12), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = resource_provider->CreateResource(
-      resource5_size, ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource5_size, viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource5);
   viz::ResourceId resource6 = resource_provider->CreateResource(
-      gfx::Size(64, 92), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource6);
   viz::ResourceId resource7 = resource_provider->CreateResource(
-      gfx::Size(9, 14), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(9, 14), viz::ResourceTextureHint::kDefault,
       resource_provider->best_texture_format(), gfx::ColorSpace::CreateSRGB());
   resource_provider->AllocateForTesting(resource7);
 
@@ -247,7 +247,7 @@ void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = resource_provider->CreateResource(
-        gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_DEFAULT,
+        gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
         resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
     resource_provider->AllocateForTesting(plane_resources[i]);
@@ -284,38 +284,38 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   *sync_token_for_mailbox_tebxture = kSyncTokenForMailboxTextureQuad;
 
   viz::ResourceId resource1 = child_resource_provider->CreateResource(
-      gfx::Size(45, 5), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(45, 5), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource1);
   viz::ResourceId resource2 = child_resource_provider->CreateResource(
-      gfx::Size(346, 61), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(346, 61), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource2);
   viz::ResourceId resource3 = child_resource_provider->CreateResource(
-      gfx::Size(12, 134), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(12, 134), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource3);
   viz::ResourceId resource4 = child_resource_provider->CreateResource(
-      gfx::Size(56, 12), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(56, 12), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource4);
   gfx::Size resource5_size(73, 26);
   viz::ResourceId resource5 = child_resource_provider->CreateResource(
-      resource5_size, ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource5_size, viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource5);
   viz::ResourceId resource6 = child_resource_provider->CreateResource(
-      gfx::Size(64, 92), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(64, 92), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource6);
   viz::ResourceId resource7 = child_resource_provider->CreateResource(
-      gfx::Size(9, 14), ResourceProvider::TEXTURE_HINT_DEFAULT,
+      gfx::Size(9, 14), viz::ResourceTextureHint::kDefault,
       child_resource_provider->best_texture_format(),
       gfx::ColorSpace::CreateSRGB());
   child_resource_provider->AllocateForTesting(resource7);
@@ -346,7 +346,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
     plane_resources[i] = child_resource_provider->CreateResource(
-        gfx::Size(20, 12), ResourceProvider::TEXTURE_HINT_DEFAULT,
+        gfx::Size(20, 12), viz::ResourceTextureHint::kDefault,
         child_resource_provider->best_texture_format(),
         gfx::ColorSpace::CreateREC601());
     child_resource_provider->AllocateForTesting(plane_resources[i]);

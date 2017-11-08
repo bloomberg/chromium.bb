@@ -111,7 +111,7 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider,
 
 ResourcePool::ResourcePool(ResourceProvider* resource_provider,
                            base::SingleThreadTaskRunner* task_runner,
-                           ResourceProvider::TextureHint hint,
+                           viz::ResourceTextureHint hint,
                            const base::TimeDelta& expiration_delay,
                            bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),

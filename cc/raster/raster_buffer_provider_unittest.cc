@@ -243,7 +243,7 @@ class RasterBufferProviderTest
           size, viz::RGBA_8888, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
           gfx::ColorSpace());
     } else {
-      resource->Allocate(size, ResourceProvider::TEXTURE_HINT_DEFAULT,
+      resource->Allocate(size, viz::ResourceTextureHint::kDefault,
                          viz::RGBA_8888, gfx::ColorSpace());
     }
     return resource;
