@@ -1,4 +1,20 @@
 This is a testharness.js-based test.
-FAIL CSS Flexbox: Resolving relative height content within a flex container against flexed size Uncaught ReferenceError: checkLayout is not defined
+FAIL .flexbox 1 assert_equals: 
+<div class="flexbox column-wrap">
+       <div>
+            <span data-expected-height="50"></span>
+        </div>
+        <div>
+            <span data-expected-height="50"></span>
+        </div>
+    </div>
+height expected 50 but got 0
+FAIL .flexbox 2 assert_equals: 
+<div class="flexbox column">
+        <div>
+            <span data-expected-height="100"></span>
+        </div>
+    </div>
+height expected 100 but got 0
 Harness: the test ran to completion.
 
