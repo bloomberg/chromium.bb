@@ -37,7 +37,7 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
      */
     @CalledByNative
     public static boolean clearDataAndSetEnabled(boolean enable) {
-        synchronized (InstanceID.class) {
+        synchronized (sSubtypeInstancesLock) {
             sSubtypeInstances.clear();
             boolean wasEnabled = sFakeFactoryForTesting != null;
             if (enable) {
@@ -62,20 +62,20 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
      * token). If a test fails with too many InstanceIDs/tokens, the test subscribed too many times.
      */
     public static Pair<String, String> getSubtypeAndAuthorizedEntityOfOnlyToken() {
-        if (InstanceIDWithSubtype.sSubtypeInstances.size() != 1) {
-            throw new IllegalStateException("Expected exactly one InstanceID, but there are "
-                    + InstanceIDWithSubtype.sSubtypeInstances.size());
+        synchronized (sSubtypeInstancesLock) {
+            if (sSubtypeInstances.size() != 1) {
+                throw new IllegalStateException("Expected exactly one InstanceID, but there are "
+                        + sSubtypeInstances.size());
+            }
+            FakeInstanceIDWithSubtype iid =
+                    (FakeInstanceIDWithSubtype) sSubtypeInstances.values().iterator().next();
+            if (iid.mTokens.size() != 1) {
+                throw new IllegalStateException(
+                        "Expected exactly one token, but there are " + iid.mTokens.size());
+            }
+            String authorizedEntity = iid.mTokens.keySet().iterator().next().split(",", 3)[1];
+            return Pair.create(iid.getSubtype(), authorizedEntity);
         }
-        FakeInstanceIDWithSubtype iid =
-                (FakeInstanceIDWithSubtype) InstanceIDWithSubtype.sSubtypeInstances.values()
-                        .iterator()
-                        .next();
-        if (iid.mTokens.size() != 1) {
-            throw new IllegalStateException(
-                    "Expected exactly one token, but there are " + iid.mTokens.size());
-        }
-        String authorizedEntity = iid.mTokens.keySet().iterator().next().split(",", 3)[1];
-        return Pair.create(iid.getSubtype(), authorizedEntity);
     }
 
     private FakeInstanceIDWithSubtype(String subtype) {
@@ -157,7 +157,7 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
 
     @Override
     public void deleteInstanceID() throws IOException {
-        synchronized (InstanceID.class) {
+        synchronized (sSubtypeInstancesLock) {
             sSubtypeInstances.remove(getSubtype());
 
             // InstanceID.deleteInstanceID calls InstanceID.deleteToken which enforces this.
