@@ -60,7 +60,4 @@ void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
   }
 }
 
-void SuggestionsSearchProvider::Stop() {
-}
-
 }  // namespace app_list

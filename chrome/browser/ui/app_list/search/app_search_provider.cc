@@ -327,9 +327,6 @@ void AppSearchProvider::Start(bool /*is_voice_query*/,
   UpdateResults();
 }
 
-void AppSearchProvider::Stop() {
-}
-
 void AppSearchProvider::RefreshApps() {
   apps_.clear();
   apps_.reserve(kMinimumReservedAppsContainerCapacity);

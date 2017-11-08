@@ -25,7 +25,6 @@ class ArcPlayStoreSearchProvider : public SearchProvider {
 
   // SearchProvider:
   void Start(bool is_voice_query, const base::string16& query) override;
-  void Stop() override;
 
  private:
   void OnResults(base::TimeTicks query_start_time,

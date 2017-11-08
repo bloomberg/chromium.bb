@@ -37,7 +37,6 @@ class AnswerCardSearchProvider : public SearchProvider,
 
   // SearchProvider overrides:
   void Start(bool is_voice_query, const base::string16& query) override;
-  void Stop() override {}
 
   // AnswerCardContents::Delegate overrides:
   void UpdatePreferredSize(const AnswerCardContents* source) override;

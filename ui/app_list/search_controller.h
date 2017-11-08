@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/mixer.h"
@@ -34,7 +33,6 @@ class APP_LIST_EXPORT SearchController {
   virtual ~SearchController();
 
   void Start();
-  void Stop();
 
   void OpenResult(SearchResult* result, int event_flags);
   void InvokeResultAction(SearchResult* result,
@@ -64,8 +62,6 @@ class APP_LIST_EXPORT SearchController {
   History* history_;  // KeyedService, not owned.
 
   bool is_voice_query_ = false;
-
-  base::OneShotTimer stop_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);
 };

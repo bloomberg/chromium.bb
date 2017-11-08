@@ -31,7 +31,6 @@ class SuggestionsSearchProvider : public SearchProvider {
 
   // SearchProvider overrides:
   void Start(bool is_voice_query, const base::string16& query) override;
-  void Stop() override;
 
  private:
   // Called when suggestions are available from the SuggestionsService.

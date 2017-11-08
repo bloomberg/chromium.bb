@@ -94,7 +94,6 @@ class TestSearchProvider : public SearchProvider {
       Add(std::unique_ptr<SearchResult>(result));
     }
   }
-  void Stop() override {}
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
   void set_display_type(SearchResult::DisplayType display_type) {
@@ -147,10 +146,8 @@ class MixerTest : public testing::Test {
   void RunQuery() {
     const base::string16 query;
 
-    for (size_t i = 0; i < providers_.size(); ++i) {
+    for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(is_voice_query_, query);
-      providers_[i]->Stop();
-    }
 
     mixer_->MixAndPublish(is_voice_query_, known_results_, kMaxSearchResults);
   }

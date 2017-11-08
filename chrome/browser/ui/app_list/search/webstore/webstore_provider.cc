@@ -67,6 +67,9 @@ WebstoreProvider::~WebstoreProvider() {}
 
 void WebstoreProvider::Start(bool /*is_voice_query*/,
                              const base::string16& query) {
+  if (webstore_search_)
+    webstore_search_->Stop();
+
   ClearResults();
   if (!IsValidQuery(query)) {
     query_.clear();
@@ -97,11 +100,6 @@ void WebstoreProvider::Start(bool /*is_voice_query*/,
   // Add a placeholder result which when clicked will run the user's query in a
   // browser. This placeholder is removed when the search results arrive.
   Add(base::MakeUnique<SearchWebstoreResult>(profile_, controller_, query_));
-}
-
-void WebstoreProvider::Stop() {
-  if (webstore_search_)
-    webstore_search_->Stop();
 }
 
 void WebstoreProvider::StartQuery() {

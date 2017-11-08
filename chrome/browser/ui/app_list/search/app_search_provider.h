@@ -38,7 +38,6 @@ class AppSearchProvider : public SearchProvider {
 
   // SearchProvider overrides:
   void Start(bool is_voice_query, const base::string16& query) override;
-  void Stop() override;
 
   // Refresh indexed app data and update search results. When |force_inline| is
   // set to true, search results is updated before returning from the function.

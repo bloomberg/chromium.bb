@@ -34,16 +34,12 @@ OmniboxProvider::OmniboxProvider(Profile* profile,
 OmniboxProvider::~OmniboxProvider() {}
 
 void OmniboxProvider::Start(bool is_voice_query, const base::string16& query) {
+  controller_->Stop(false);
   is_voice_query_ = is_voice_query;
   AutocompleteInput input =
       AutocompleteInput(query, metrics::OmniboxEventProto::INVALID_SPEC,
                         ChromeAutocompleteSchemeClassifier(profile_));
   controller_->Start(input);
-}
-
-void OmniboxProvider::Stop() {
-  controller_->Stop(false);
-  is_voice_query_ = false;
 }
 
 void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {

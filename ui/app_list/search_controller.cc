@@ -20,14 +20,6 @@
 #include "ui/app_list/search_provider.h"
 #include "ui/app_list/search_result.h"
 
-namespace {
-
-// Maximum time (in milliseconds) to wait to the search providers to finish.
-// The value is increased from 1500 ms. See crbug.com/765339.
-constexpr int kStopTimeMS = 60000;
-
-}
-
 namespace app_list {
 
 SearchController::SearchController(SearchBoxModel* search_box,
@@ -39,8 +31,6 @@ SearchController::~SearchController() {
 }
 
 void SearchController::Start() {
-  Stop();
-
   base::string16 query;
   base::TrimWhitespace(search_box_->text(), base::TRIM_ALL, &query);
 
@@ -51,21 +41,9 @@ void SearchController::Start() {
     provider->Start(is_voice_query_, query);
 
   dispatching_query_ = false;
-  query_for_recommendation_ = query.empty() ? true : false;
+  query_for_recommendation_ = query.empty();
 
   OnResultsChanged();
-
-  stop_timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(kStopTimeMS),
-                    base::Bind(&SearchController::Stop,
-                               base::Unretained(this)));
-}
-
-void SearchController::Stop() {
-  stop_timer_.Stop();
-
-  for (const auto& provider : providers_)
-    provider->Stop();
 }
 
 void SearchController::OpenResult(SearchResult* result, int event_flags) {
