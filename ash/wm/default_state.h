@@ -5,6 +5,7 @@
 #ifndef ASH_WM_DEFAULT_STATE_H_
 #define ASH_WM_DEFAULT_STATE_H_
 
+#include "ash/wm/base_state.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "ui/display/display.h"
@@ -19,28 +20,27 @@ namespace wm {
 class SetBoundsEvent;
 
 // DefaultState implements Ash behavior without state machine.
-class DefaultState : public WindowState::State {
+class DefaultState : public BaseState {
  public:
   explicit DefaultState(mojom::WindowStateType initial_state_type);
   ~DefaultState() override;
 
   // WindowState::State overrides:
-  void OnWMEvent(WindowState* window_state, const WMEvent* event) override;
-  mojom::WindowStateType GetType() const override;
   void AttachState(WindowState* window_state,
                    WindowState::State* previous_state) override;
   void DetachState(WindowState* window_state) override;
 
+  // BaseState:
+  void HandleWorkspaceEvents(WindowState* window_state,
+                             const WMEvent* event) override;
+  void HandleCompoundEvents(WindowState* window_state,
+                            const WMEvent* event) override;
+  void HandleBoundsEvents(WindowState* window_state,
+                          const WMEvent* event) override;
+  void HandleTransitionEvents(WindowState* window_state,
+                              const WMEvent* event) override;
+
  private:
-  // Process state dependent events, such as TOGGLE_MAXIMIZED,
-  // TOGGLE_FULLSCREEN.
-  static bool ProcessCompoundEvents(WindowState* window_state,
-                                    const WMEvent* event);
-
-  // Process workspace related events, such as DISPLAY_BOUNDS_CHANGED.
-  static bool ProcessWorkspaceEvents(WindowState* window_state,
-                                     const WMEvent* event);
-
   // Set the fullscreen/maximized bounds without animation.
   static bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
 
@@ -63,9 +63,6 @@ class DefaultState : public WindowState::State {
   // Animates to new window bounds based on the current and previous state type.
   void UpdateBoundsFromState(wm::WindowState* window_state,
                              mojom::WindowStateType old_state_type);
-
-  // The current type of the window.
-  mojom::WindowStateType state_type_;
 
   // The saved window state for the case that the state gets de-/activated.
   gfx::Rect stored_bounds_;

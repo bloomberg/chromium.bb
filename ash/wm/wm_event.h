@@ -20,7 +20,7 @@ enum WMEventType {
   // state and the request may not be fullfilled.
 
   // NORMAL is used as a restore operation with a few exceptions.
-  WM_EVENT_NORMAL,
+  WM_EVENT_NORMAL = 0,
   WM_EVENT_MAXIMIZE,
   WM_EVENT_MINIMIZE,
   WM_EVENT_FULLSCREEN,
@@ -100,6 +100,28 @@ class ASH_EXPORT WMEvent {
   virtual ~WMEvent();
 
   WMEventType type() const { return type_; }
+
+  // Predicates to test the type of event.
+
+  // Event that notifies that workspace has changed. (its size, being
+  // added/moved to another workspace,
+  // e.g. WM_EVENT_ADDED_TO_WORKSPACE).
+  bool IsWorkspaceEvent() const;
+
+  // True if the event will result in another event. For example
+  // TOGGLE_FULLSCREEN sends WM_EVENT_FULLSCREEN or WM_EVENT_NORMAL
+  // depending on the current state.
+  bool IsCompoundEvent() const;
+
+  // WM_EVENT_PIN or WM_EVENT_TRUSTD_PIN.
+  bool IsPinEvent() const;
+
+  // True If the event requurests bounds change, e.g. SET_BOUNDS
+  bool IsBoundsEvent() const;
+
+  // True if the event requests the window state transition,
+  // e.g. WM_EVENT_MAXIMIZED.
+  bool IsTransitionEvent() const;
 
  private:
   WMEventType type_;
