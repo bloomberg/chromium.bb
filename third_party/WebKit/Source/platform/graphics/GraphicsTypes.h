@@ -130,12 +130,6 @@ enum DisableDeferralReason {
   kDisableDeferralReasonCount,
 };
 
-enum FlushReason {
-  kFlushReasonUnknown,
-  kFlushReasonInitialClear,
-  kFlushReasonDrawImageOfWebGL,
-};
-
 enum MailboxSyncMode {
   kVerifiedSyncToken,
   kUnverifiedSyncToken,

@@ -30,7 +30,7 @@
       // prep for clearRect test
       canvas = document.getElementById('canvas2');
       var ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#888888'; 
+      ctx.fillStyle = '#888888';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
@@ -40,9 +40,9 @@
       var ctx = canvas.getContext('2d');
 
       // Test with default CTM
-      ctx.fillStyle = 'black'; 
-      ctx.strokeStyle = 'green'; 
-      ctx.lineWidth = 12; 
+      ctx.fillStyle = 'black';
+      ctx.strokeStyle = 'green';
+      ctx.lineWidth = 12;
 
       ctx.save();
       ctx.scale(1.5, 0.8);
@@ -71,7 +71,7 @@
       ctx.bezierCurveTo(50, 120, 50, 20, 100, 20);
       ctx.closePath();
       ctx.lineWidth = 20;
-      ctx.strokeStyle = 'black'; 
+      ctx.strokeStyle = 'black';
       ctx.stroke();
 
       // Test with thick stroke and transform, and shadow
@@ -94,7 +94,7 @@
       ctx.lineTo(15, 80);
 
       ctx.lineWidth = 20;
-      ctx.strokeStyle = '#222222'; 
+      ctx.strokeStyle = '#222222';
       ctx.stroke();
 
       // Text test
@@ -105,7 +105,7 @@
       ctx.scale(1, 0.9);
       ctx.strokeStyle = 'black';
       ctx.strokeText("WebKit", 20, 100);
-      ctx.fillStyle = 'green'; 
+      ctx.fillStyle = 'green';
       ctx.fillText("WebKit", 20, 100);
 
       // drawImage test

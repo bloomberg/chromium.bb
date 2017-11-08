@@ -47,20 +47,13 @@
 
 #include <memory>
 
-class SkImage;
 struct SkImageInfo;
-
-namespace gpu {
-namespace gles2 {
-class GLES2Interface;
-}
-}
 
 namespace blink {
 
 class Canvas2DLayerBridgeTest;
+class CanvasResourceProvider;
 class ImageBuffer;
-class WebGraphicsContext3DProviderWrapper;
 class SharedContextRateLimiter;
 
 #if defined(OS_MACOSX)
@@ -106,7 +99,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   void DisableDeferral(DisableDeferralReason) override;
   bool IsValid() const override;
   bool Restore() override;
-  WebLayer* Layer() const override;
+  WebLayer* Layer() override;
   bool IsAccelerated() const override;
   void SetFilterQuality(SkFilterQuality) override;
   void SetIsHidden(bool) override;
@@ -117,15 +110,13 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
                    size_t row_bytes,
                    int x,
                    int y) override;
-  void Flush(FlushReason) override;
-  void FlushGpu(FlushReason) override;
   void DontUseIdleSchedulingForTesting() {
     dont_use_idle_scheduling_for_testing_ = true;
   }
 
   void BeginDestruction();
   void Hibernate();
-  bool IsHibernating() const { return hibernation_image_.get(); }
+  bool IsHibernating() const { return hibernation_image_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
@@ -162,83 +153,23 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   void SetLoggerForTesting(std::unique_ptr<Logger>);
 
  private:
-  void ResetSurface();
+  void ResetResourceProvider();
   bool IsHidden() { return is_hidden_; }
-  bool CheckSurfaceValid();
-  void Init();
-  void FlushInternal();
-  void FlushGpuInternal();
+  bool CheckResourceProviderValid();
 
-  // All information associated with a CHROMIUM image.
-  struct ImageInfo;
-
-  struct MailboxInfo {
-    scoped_refptr<StaticBitmapImage> image_;
-
-    // If this mailbox wraps an GpuMemoryBuffer-backed texture, the ids of the
-    // CHROMIUM image and the texture.
-    scoped_refptr<ImageInfo> image_info_;
-
-    MailboxInfo(const MailboxInfo&);
-    MailboxInfo();
-  };
-
-  // Callback for mailboxes given to the compositor from PrepareTextureMailbox.
-  static void ReleaseFrameResources(
-      WeakPtr<Canvas2DLayerBridge>,
-      WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      std::unique_ptr<MailboxInfo>,
-      const gpu::Mailbox&,
-      const gpu::SyncToken&,
-      bool lost_resource);
-
-  gpu::gles2::GLES2Interface* ContextGL();
   void StartRecording();
   void SkipQueuedDrawCommands();
-  void FlushRecordingOnly();
-  void ReportSurfaceCreationFailure();
+  void FlushRecording();
+  void ReportResourceProviderCreationFailure();
 
-  SkSurface* GetOrCreateSurface(AccelerationHint = kPreferAcceleration);
+  CanvasResourceProvider* GetOrCreateResourceProvider(
+      AccelerationHint = kPreferAcceleration);
   bool ShouldAccelerate(AccelerationHint) const;
 
-  // Returns the GL filter associated with |m_filterQuality|.
-  GLenum GetGLFilter();
-
-  // Creates an GpuMemoryBuffer-backed texture. Copies |image| into the texture.
-  // Prepares a mailbox from the texture. The caller must have created a new
-  // MailboxInfo, and prepended it to |m_mailboxs|. Returns whether the
-  // mailbox was successfully prepared. |mailbox| is an out parameter only
-  // populated on success.
-  bool PrepareGpuMemoryBufferMailboxFromImage(SkImage*,
-                                              MailboxInfo*,
-                                              viz::TextureMailbox*);
-
-  // Creates an GpuMemoryBuffer-backed texture. Returns an ImageInfo, which is
-  // empty on failure. The caller takes ownership of both the texture and the
-  // image.
-  scoped_refptr<ImageInfo> CreateGpuMemoryBufferBackedTexture();
-
-  // Releases all resources in the CHROMIUM image cache.
-  void ClearCHROMIUMImageCache();
-
-  // Returns whether the mailbox was successfully prepared from the SkImage.
-  // The mailbox is an out parameter only populated on success.
-  bool PrepareMailboxFromImage(scoped_refptr<StaticBitmapImage>&&,
-                               MailboxInfo*,
-                               viz::TextureMailbox*);
-
-  // Used for cloning context_provider_wrapper_ into an rvalue
-  WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() const {
-    return context_provider_wrapper_;
-  }
-
+  std::unique_ptr<CanvasResourceProvider> resource_provider_;
   std::unique_ptr<PaintRecorder> recorder_;
-  sk_sp<SkSurface> surface_;
-  std::unique_ptr<PaintCanvas> surface_paint_canvas_;
   sk_sp<SkImage> hibernation_image_;
-  int initial_surface_save_count_;
   std::unique_ptr<WebExternalTextureLayer> layer_;
-  WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
   std::unique_ptr<Logger> logger_;
   WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_;
@@ -252,28 +183,18 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   bool is_hidden_;
   bool is_deferral_enabled_;
   bool software_rendering_while_hidden_;
-  bool surface_creation_failed_at_least_once_ = false;
+  bool resource_provider_creation_failed_at_least_once_ = false;
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
-  bool did_draw_since_last_flush_ = false;
-  bool did_draw_since_last_gpu_flush_ = false;
-  bool use_gpu_memory_buffers_ = false;
+  bool context_lost_ = false;
 
   friend class Canvas2DLayerBridgeTest;
   friend class CanvasRenderingContext2DTest;
   friend class HTMLCanvasPainterTestForSPv2;
 
-  uint32_t last_image_id_;
-  GLenum last_filter_;
   AccelerationMode acceleration_mode_;
-  const IntSize size_;
   CanvasColorParams color_params_;
   CheckedNumeric<int> recording_pixel_count_;
-
-  // Each element in this vector represents an GpuMemoryBuffer-backed texture
-  // that is ready to be reused.
-  // Elements in this vector can safely be purged in low memory conditions.
-  Vector<scoped_refptr<ImageInfo>> image_info_cache_;
 };
 
 }  // namespace blink
