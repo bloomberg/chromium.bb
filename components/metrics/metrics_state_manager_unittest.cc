@@ -14,7 +14,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/test/histogram_tester.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_switches.h"
@@ -218,6 +220,7 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->ForceClientIdCreation();
     EXPECT_EQ(kInitialClientId, state_manager->client_id());
+    EXPECT_FALSE(state_manager->metrics_ids_were_reset_);
   }
 
   // Set the reset pref to cause the IDs to be reset.
@@ -228,6 +231,8 @@ TEST_F(MetricsStateManagerTest, ResetMetricsIDs) {
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
     state_manager->ForceClientIdCreation();
     EXPECT_NE(kInitialClientId, state_manager->client_id());
+    EXPECT_TRUE(state_manager->metrics_ids_were_reset_);
+    EXPECT_EQ(kInitialClientId, state_manager->previous_client_id_);
 
     state_manager->GetLowEntropySource();
 
@@ -378,6 +383,8 @@ TEST_F(MetricsStateManagerTest, ResetBackup) {
     // A brand new client id should have been generated.
     EXPECT_NE(std::string(), state_manager->client_id());
     EXPECT_NE(client_info.client_id, state_manager->client_id());
+    EXPECT_TRUE(state_manager->metrics_ids_were_reset_);
+    EXPECT_EQ(client_info.client_id, state_manager->previous_client_id_);
     EXPECT_TRUE(stored_client_info_backup_);
 
     // The installation date should not have been affected.
@@ -410,6 +417,49 @@ TEST_F(MetricsStateManagerTest, CheckProvider) {
   provider->ProvideSystemProfileMetrics(&system_profile);
   EXPECT_EQ(system_profile.install_date(), kInstallDateExpected);
   EXPECT_EQ(system_profile.uma_enabled_date(), kEnabledDateExpected);
+
+  base::HistogramTester histogram_tester;
+  ChromeUserMetricsExtension uma_proto;
+  provider->ProvidePreviousSessionData(&uma_proto);
+  // The client_id field in the proto should not be overwritten.
+  EXPECT_FALSE(uma_proto.has_client_id());
+  // Nothing should have been emitted to the cloned install histogram.
+  histogram_tester.ExpectTotalCount("UMA.IsClonedInstall", 0);
+}
+
+TEST_F(MetricsStateManagerTest, CheckProviderResetIds) {
+  int64_t kInstallDate = 1373051956;
+  int64_t kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
+  int64_t kEnabledDate = 1373001211;
+  int64_t kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
+
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info.installation_date = kInstallDate;
+  client_info.reporting_enabled_date = kEnabledDate;
+
+  SetFakeClientInfoBackup(client_info);
+  SetClientInfoPrefs(client_info);
+
+  // Set the reset pref to cause the IDs to be reset.
+  prefs_.SetBoolean(prefs::kMetricsResetIds, true);
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+  EXPECT_NE(client_info.client_id, state_manager->client_id());
+  EXPECT_TRUE(state_manager->metrics_ids_were_reset_);
+  EXPECT_EQ(client_info.client_id, state_manager->previous_client_id_);
+
+  std::unique_ptr<MetricsProvider> provider = state_manager->GetProvider();
+  SystemProfileProto system_profile;
+  provider->ProvideSystemProfileMetrics(&system_profile);
+  EXPECT_EQ(system_profile.install_date(), kInstallDateExpected);
+  EXPECT_EQ(system_profile.uma_enabled_date(), kEnabledDateExpected);
+
+  base::HistogramTester histogram_tester;
+  ChromeUserMetricsExtension uma_proto;
+  provider->ProvidePreviousSessionData(&uma_proto);
+  EXPECT_EQ(MetricsLog::Hash(state_manager->previous_client_id_),
+            uma_proto.client_id());
+  histogram_tester.ExpectUniqueSample("UMA.IsClonedInstall", 1, 1);
 }
 
 }  // namespace metrics
