@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/autofill_credit_card_policy_handler.h"
+#include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -12,13 +12,13 @@
 #include "components/prefs/pref_value_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace policy {
+namespace autofill {
 
 // Test cases for the Autofill credit card policy setting.
 class AutofillCreditCardPolicyHandlerTest : public testing::Test {};
 
 TEST_F(AutofillCreditCardPolicyHandlerTest, Default) {
-  PolicyMap policy;
+  policy::PolicyMap policy;
   PrefValueMap prefs;
   AutofillCreditCardPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -27,10 +27,11 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Default) {
 }
 
 TEST_F(AutofillCreditCardPolicyHandlerTest, Enabled) {
-  PolicyMap policy;
-  policy.Set(key::kAutofillCreditCardEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(true), nullptr);
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kAutofillCreditCardEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(true),
+             nullptr);
   PrefValueMap prefs;
   AutofillCreditCardPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -41,15 +42,16 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Enabled) {
 }
 
 TEST_F(AutofillCreditCardPolicyHandlerTest, Disabled) {
-  PolicyMap policy;
-  policy.Set(key::kAutofillCreditCardEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(false), nullptr);
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kAutofillCreditCardEnabled,
+             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD, base::MakeUnique<base::Value>(false),
+             nullptr);
   PrefValueMap prefs;
   AutofillCreditCardPolicyHandler handler;
   handler.ApplyPolicySettings(policy, &prefs);
 
-  // Disabling Autofill should switch the prefs to managed.
+  // Disabling Autofill for credit cards should switch the prefs to managed.
   const base::Value* value = nullptr;
   EXPECT_TRUE(
       prefs.GetValue(autofill::prefs::kAutofillCreditCardEnabled, &value));
@@ -60,4 +62,4 @@ TEST_F(AutofillCreditCardPolicyHandlerTest, Disabled) {
   EXPECT_FALSE(autofill_credt_card_enabled);
 }
 
-}  // namespace policy
+}  // namespace autofill

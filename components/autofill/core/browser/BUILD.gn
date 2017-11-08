@@ -206,6 +206,15 @@ static_library("browser") {
     sources += [ "ui/save_card_bubble_controller.h" ]
   }
 
+  if (!is_ios) {
+    sources += [
+      "autofill_credit_card_policy_handler.cc",
+      "autofill_credit_card_policy_handler.h",
+      "autofill_policy_handler.cc",
+      "autofill_policy_handler.h",
+    ]
+  }
+
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
@@ -246,6 +255,13 @@ static_library("browser") {
     "//ui/gfx/range",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [
+      "//components/policy/core/browser",
+      "//components/policy/core/common",
+    ]
+  }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
@@ -361,6 +377,7 @@ source_set("unit_tests") {
     "autofill_profile_unittest.cc",
     "autofill_profile_validator_unittest.cc",
     "autofill_type_unittest.cc",
+    "autofill_wallet_data_type_controller_unittest.cc",
     "contact_info_unittest.cc",
     "country_combobox_model_unittest.cc",
     "country_names_unittest.cc",
@@ -397,6 +414,13 @@ source_set("unit_tests") {
 
   if (is_ios || is_android) {
     sources += [ "autofill_assistant_unittest.cc" ]
+  }
+
+  if (!is_ios) {
+    sources += [
+      "autofill_credit_card_policy_handler_unittest.cc",
+      "autofill_policy_handler_unittest.cc",
+    ]
   }
 
   deps = [
@@ -436,4 +460,8 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
+
+  if (!is_ios) {
+    deps += [ "//components/policy/core/common" ]
+  }
 }

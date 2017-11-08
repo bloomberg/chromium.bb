@@ -21,10 +21,6 @@ group("browser") {
 source_set("internal") {
   visibility = [ "//components/policy/*" ]
   sources = [
-    "autofill_credit_card_policy_handler.cc",
-    "autofill_credit_card_policy_handler.h",
-    "autofill_policy_handler.cc",
-    "autofill_policy_handler.h",
     "browser_policy_connector.cc",
     "browser_policy_connector.h",
     "browser_policy_connector_base.cc",
@@ -79,7 +75,6 @@ source_set("internal") {
 
   public_deps += [ "//components/policy/core/common:internal" ]
   deps += [
-    "//components/autofill/core/common",
     "//components/proxy_config",
     "//google_apis",
     "//net",
@@ -114,8 +109,6 @@ source_set("unit_tests") {
   sources = [
     "android/android_combined_policy_provider_unittest.cc",
     "android/policy_converter_unittest.cc",
-    "autofill_credit_card_policy_handler_unittest.cc",
-    "autofill_policy_handler_unittest.cc",
     "browser_policy_connector_unittest.cc",
     "configuration_policy_handler_unittest.cc",
     "configuration_policy_pref_store_unittest.cc",
@@ -126,7 +119,6 @@ source_set("unit_tests") {
   deps = [
     ":test_support",
     "//base",
-    "//components/autofill/core/common",
     "//components/policy:generated",
     "//components/prefs:test_support",
     "//components/proxy_config",

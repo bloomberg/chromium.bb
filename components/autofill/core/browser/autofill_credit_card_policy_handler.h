@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_
-#define COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_
 
 #include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/policy_export.h"
 
-namespace policy {
+namespace autofill {
 
 // ConfigurationPolicyHandler for the AutofillCreditCardEnabled policy.
-class POLICY_EXPORT AutofillCreditCardPolicyHandler
-    : public TypeCheckingPolicyHandler {
+class AutofillCreditCardPolicyHandler
+    : public policy::TypeCheckingPolicyHandler {
  public:
   AutofillCreditCardPolicyHandler();
   ~AutofillCreditCardPolicyHandler() override;
 
   // ConfigurationPolicyHandler methods:
-  void ApplyPolicySettings(const PolicyMap& policies,
+  void ApplyPolicySettings(const policy::PolicyMap& policies,
                            PrefValueMap* prefs) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardPolicyHandler);
 };
 
-}  // namespace policy
+}  // namespace autofill
 
-#endif  // COMPONENTS_POLICY_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CREDIT_CARD_POLICY_HANDLER_H_

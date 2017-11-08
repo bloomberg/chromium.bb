@@ -28,6 +28,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
+#include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
+#include "components/autofill/core/browser/autofill_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
@@ -36,8 +38,6 @@
 #include "components/network_time/network_time_pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/policy/core/browser/autofill_credit_card_policy_handler.h"
-#include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
@@ -884,8 +884,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
         kSimplePolicyMap[i].value_type));
   }
 
-  handlers->AddHandler(base::MakeUnique<AutofillCreditCardPolicyHandler>());
-  handlers->AddHandler(base::MakeUnique<AutofillPolicyHandler>());
+  handlers->AddHandler(
+      base::MakeUnique<autofill::AutofillCreditCardPolicyHandler>());
+  handlers->AddHandler(base::MakeUnique<autofill::AutofillPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<DefaultSearchPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<ForceYouTubeSafetyModePolicyHandler>());

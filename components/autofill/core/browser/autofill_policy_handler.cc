@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/autofill_policy_handler.h"
+#include "components/autofill/core/browser/autofill_policy_handler.h"
 
 #include "base/values.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -10,21 +10,21 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 
-namespace policy {
+namespace autofill {
 
 AutofillPolicyHandler::AutofillPolicyHandler()
-    : TypeCheckingPolicyHandler(key::kAutoFillEnabled,
-                                base::Value::Type::BOOLEAN) {}
+    : policy::TypeCheckingPolicyHandler(policy::key::kAutoFillEnabled,
+                                        base::Value::Type::BOOLEAN) {}
 
-AutofillPolicyHandler::~AutofillPolicyHandler() {
-}
+AutofillPolicyHandler::~AutofillPolicyHandler() {}
 
-void AutofillPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
-                                                PrefValueMap* prefs) {
+void AutofillPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& policies,
+    PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
   bool auto_fill_enabled;
   if (value && value->GetAsBoolean(&auto_fill_enabled) && !auto_fill_enabled)
     prefs->SetBoolean(autofill::prefs::kAutofillEnabled, false);
 }
 
-}  // namespace policy
+}  // namespace autofill
