@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -146,11 +145,7 @@ class NestedLoopCaptureView : public View {
     widget_->SetCapture(widget_->GetContentsView());
     EXPECT_TRUE(widget_->HasCapture());
 
-    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
-
-    base::RunLoop run_loop;
-    run_loop.Run();
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
     return true;
   }
 
