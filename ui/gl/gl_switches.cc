@@ -119,6 +119,7 @@ const char kDisableDirectCompositionLayers[] =
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
 const char* const kGLSwitchesCopiedFromGpuProcessHost[] = {
+    kDisableDirectComposition,
     kDisableGpuVsync,
     kDisableD3D11,
     kDisableES3GLContext,
