@@ -44,7 +44,7 @@ a:visited {
    * local_ntp.css. */
   height: calc(2*var(--tile-height) + var(--tile-margin));
   line-height: calc(var(--tile-height) + var(--tile-margin));
-  margin: 4px 0 calc(var(--tile-margin) / 2) 0;
+  margin: 4px 0 8px 0;
   opacity: 0;
   position: absolute;
   /* This align correctly for both LTR and RTL */
