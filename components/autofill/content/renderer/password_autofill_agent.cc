@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
+#include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -618,6 +619,11 @@ void PasswordAutofillAgent::SetAutofillAgent(AutofillAgent* autofill_agent) {
   autofill_agent_ = autofill_agent;
 }
 
+void PasswordAutofillAgent::SetPasswordGenerationAgent(
+    PasswordGenerationAgent* generation_agent) {
+  password_generation_agent_ = generation_agent;
+}
+
 PasswordAutofillAgent::PasswordValueGatekeeper::PasswordValueGatekeeper()
     : was_user_gesture_seen_(false) {
 }
@@ -724,6 +730,11 @@ bool PasswordAutofillAgent::FillSuggestion(
     password_info->password_field_suggestion_was_accepted = true;
     password_info->password_field = password_element;
   }
+
+  // Call OnFieldAutofilled before WebInputElement::SetAutofilled which may
+  // cause frame closing.
+  if (password_generation_agent_)
+    password_generation_agent_->OnFieldAutofilled(password_element);
 
   if (IsUsernameAmendable(username_element, element->IsPasswordField())) {
     username_element.SetAutofillValue(blink::WebString::FromUTF16(username));
@@ -1794,6 +1805,11 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // TODO(tkent): Check maxlength and pattern for both username and password
   // fields.
 
+  // Call OnFieldAutofilled before WebInputElement::SetAutofilled which may
+  // cause frame closing.
+  if (password_generation_agent_)
+    password_generation_agent_->OnFieldAutofilled(*password_element);
+
   // Input matches the username, fill in required values.
   if (!username_element->IsNull() &&
       IsElementAutocompletable(*username_element)) {
@@ -1821,8 +1837,8 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   ProvisionallySavePassword(password_element->Form(), *password_element,
                             RESTRICTION_NONE);
   registration_callback.Run(password_element);
-
   password_element->SetAutofilled(true);
+
   if (logger)
     logger->LogElementName(Logger::STRING_PASSWORD_FILLED, *password_element);
   return true;
