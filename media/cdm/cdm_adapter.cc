@@ -1163,6 +1163,12 @@ cdm::FileIO* CdmAdapter::CreateFileIO(cdm::FileIOClient* client) {
 }
 
 void CdmAdapter::RequestStorageId(uint32_t version) {
+  if (version >= 0x80000000) {
+    // Versions 0x80000000 and above are reserved.
+    cdm_->OnStorageId(version, nullptr, 0);
+    return;
+  }
+
   helper_->GetStorageId(version, base::Bind(&CdmAdapter::OnStorageIdObtained,
                                             weak_factory_.GetWeakPtr()));
 }
