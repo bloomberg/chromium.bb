@@ -112,6 +112,10 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
       Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
           vpn_provider_.app_id);
+    } else if (vpn_provider_.provider_type == VPNProvider::ARC_VPN) {
+      // TODO(lgcheng@) Add UMA status if needed.
+      Shell::Get()->system_tray_controller()->ShowArcVpnCreate(
+          vpn_provider_.app_id);
     } else {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);

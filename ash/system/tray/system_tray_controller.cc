@@ -124,6 +124,11 @@ void SystemTrayController::ShowThirdPartyVpnCreate(
     system_tray_client_->ShowThirdPartyVpnCreate(extension_id);
 }
 
+void SystemTrayController::ShowArcVpnCreate(const std::string& app_id) {
+  if (system_tray_client_)
+    system_tray_client_->ShowArcVpnCreate(app_id);
+}
+
 void SystemTrayController::ShowNetworkSettings(const std::string& network_id) {
   if (system_tray_client_)
     system_tray_client_->ShowNetworkSettings(network_id);
