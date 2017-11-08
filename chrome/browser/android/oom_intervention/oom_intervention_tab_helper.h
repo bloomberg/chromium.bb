@@ -54,11 +54,26 @@ class OomInterventionTabHelper
   // Called when NearOomMonitor detects near-OOM situation.
   void OnNearOomDetected();
 
+  void ResetInterventionState();
+
   bool navigation_started_ = false;
   base::Optional<base::TimeTicks> near_oom_detected_time_;
   std::unique_ptr<NearOomMonitor::Subscription> subscription_;
 
   blink::mojom::OomInterventionPtr intervention_;
+
+  enum class InterventionState {
+    // Intervention isn't triggered yet.
+    NOT_TRIGGERED,
+    // Intervention is triggered but the user doesn't respond yet.
+    UI_SHOWN,
+    // Intervention is triggered and the user declined it.
+    DECLINED,
+    // Intervention is triggered and the user accepted it.
+    ACCEPTED,
+  };
+
+  InterventionState intervention_state_ = InterventionState::NOT_TRIGGERED;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_OOM_INTERVENTION_OOM_INTERVENTION_TAB_HELPER_H_
