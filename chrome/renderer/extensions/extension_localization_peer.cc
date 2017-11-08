@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/common/resource_request_completion_status.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/message_bundle.h"
@@ -90,19 +91,14 @@ void ExtensionLocalizationPeer::OnTransferSizeUpdated(int transfer_size_diff) {
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    int error_code,
-    bool stale_copy_in_cache,
-    const base::TimeTicks& completion_time,
-    int64_t total_transfer_size,
-    int64_t encoded_body_size,
-    int64_t decoded_body_size) {
+    const content::ResourceRequestCompletionStatus& completion_status) {
   // Give sub-classes a chance at altering the data.
-  if (error_code != net::OK) {
+  if (completion_status.error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    original_peer_->OnCompletedRequest(net::ERR_ABORTED, stale_copy_in_cache,
-                                       completion_time, total_transfer_size,
-                                       encoded_body_size, decoded_body_size);
+    content::ResourceRequestCompletionStatus aborted_status(completion_status);
+    aborted_status.error_code = net::ERR_ABORTED;
+    original_peer_->OnCompletedRequest(aborted_status);
     return;
   }
 
@@ -111,9 +107,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
     original_peer_->OnReceivedData(base::MakeUnique<StringData>(data_));
-  original_peer_->OnCompletedRequest(error_code, stale_copy_in_cache,
-                                     completion_time, total_transfer_size,
-                                     encoded_body_size, decoded_body_size);
+  original_peer_->OnCompletedRequest(completion_status);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

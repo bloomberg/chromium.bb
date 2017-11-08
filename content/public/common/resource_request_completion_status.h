@@ -30,6 +30,8 @@ struct CONTENT_EXPORT ResourceRequestCompletionStatus {
 
   ~ResourceRequestCompletionStatus();
 
+  bool operator==(const ResourceRequestCompletionStatus& rhs) const;
+
   // The error code. ERR_FAILED is set for CORS errors.
   int error_code = 0;
 

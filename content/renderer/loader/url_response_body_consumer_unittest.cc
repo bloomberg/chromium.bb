@@ -64,15 +64,11 @@ class TestRequestPeer : public RequestPeer {
 
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
-  void OnCompletedRequest(int error_code,
-                          bool stale_copy_in_cache,
-                          const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size,
-                          int64_t encoded_body_size,
-                          int64_t decoded_body_size) override {
+  void OnCompletedRequest(
+      const ResourceRequestCompletionStatus& completion_status) override {
     EXPECT_FALSE(context_->complete);
     context_->complete = true;
-    context_->error_code = error_code;
+    context_->error_code = completion_status.error_code;
     context_->run_loop_quit_closure.Run();
   }
 
