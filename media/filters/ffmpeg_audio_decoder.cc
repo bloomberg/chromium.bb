@@ -307,6 +307,9 @@ bool FFmpegAudioDecoder::ConfigureDecoder(const AudioDecoderConfig& config) {
   codec_context_->get_buffer2 = GetAudioBufferImpl;
   codec_context_->refcounted_frames = 1;
 
+  if (!config.should_discard_decoder_delay())
+    codec_context_->flags2 |= AV_CODEC_FLAG2_SKIP_MANUAL;
+
   if (config.codec() == kCodecOpus)
     codec_context_->request_sample_fmt = AV_SAMPLE_FMT_FLT;
 

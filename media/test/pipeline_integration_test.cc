@@ -1544,7 +1544,8 @@ TEST_P(MSEPipelineIntegrationTest, FlacInMp4_Hashed) {
 
 TEST_P(MSEPipelineIntegrationTest, ADTS) {
   MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);
-  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+  EXPECT_EQ(PIPELINE_OK,
+            StartPipelineWithMediaSource(&source, kHashed, nullptr));
   source.EndOfStream();
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
@@ -1554,6 +1555,9 @@ TEST_P(MSEPipelineIntegrationTest, ADTS) {
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
+
+  // Verify that nothing was stripped.
+  EXPECT_HASH_EQ("0.46,1.72,4.26,4.57,3.39,1.53,", GetAudioHash());
 }
 
 TEST_P(MSEPipelineIntegrationTest, ADTS_TimestampOffset) {
@@ -1584,7 +1588,7 @@ TEST_P(MSEPipelineIntegrationTest, ADTS_TimestampOffset) {
   EXPECT_EQ(592, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   // Verify preroll is stripped.
-  EXPECT_HASH_EQ("-0.25,0.67,0.04,0.14,-0.49,-0.41,", GetAudioHash());
+  EXPECT_HASH_EQ("-1.76,-1.35,-0.72,0.70,1.24,0.52,", GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
@@ -1596,6 +1600,17 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_MP3) {
 
   // Verify codec delay and preroll are stripped.
   EXPECT_HASH_EQ("1.30,2.72,4.56,5.08,3.74,2.03,", GetAudioHash());
+}
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_ADTS) {
+  ASSERT_EQ(PIPELINE_OK, Start("sfx.adts", kHashed));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  // Verify codec delay and preroll are stripped.
+  EXPECT_HASH_EQ("1.80,1.66,2.31,3.26,4.46,3.36,", GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHashed_FlacInMp4) {
