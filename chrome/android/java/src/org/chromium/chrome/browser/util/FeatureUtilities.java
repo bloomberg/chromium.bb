@@ -212,6 +212,8 @@ public class FeatureUtilities {
      */
     public static void finalizePendingFeatures() {
         if (sChromeHomeNeedsUpdate) {
+            // Clear the Chrome Home flag so that it can be re-cached below.
+            sChromeHomeEnabled = null;
             // Re-cache the Chrome Home state.
             cacheChromeHomeEnabled();
             notifyChromeHomeStatusChanged(isChromeHomeEnabled());
@@ -271,10 +273,6 @@ public class FeatureUtilities {
     public static void cacheChromeHomeEnabled() {
         // Chrome Home doesn't work with tablets.
         if (DeviceFormFactor.isTablet()) return;
-
-        // Any time this method is called, clear the cached Chrome Home state so it can be set in
-        // isChromeHomeEnabled below.
-        sChromeHomeEnabled = null;
 
         boolean isChromeHomeEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
