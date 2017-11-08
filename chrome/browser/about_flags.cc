@@ -3240,6 +3240,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"browser-side-navigation", flag_descriptions::kBrowserSideNavigationName,
      flag_descriptions::kBrowserSideNavigationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrowserSideNavigation)},
+    {"navigation-mojo-response", flag_descriptions::kNavigationMojoResponseName,
+     flag_descriptions::kNavigationMojoResponseDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kNavigationMojoResponse)},
 
 #if defined(OS_MACOSX)
     {"mac-touchbar", flag_descriptions::kMacTouchBarName,

@@ -37,4 +37,15 @@ bool IsBrowserSideNavigationEnabled() {
   return base::FeatureList::IsEnabled(features::kBrowserSideNavigation);
 }
 
+// Browser side navigation (aka PlzNavigate) is using blob URLs to deliver
+// the body of the main resource to the renderer process. When enabled, the
+// NavigationMojoResponse feature replaces this mechanism by a Mojo DataPipe.
+// Design doc: https://goo.gl/Rrrc7n.
+bool IsNavigationMojoResponseEnabled() {
+  if (!IsBrowserSideNavigationEnabled())
+    return false;
+
+  return base::FeatureList::IsEnabled(features::kNavigationMojoResponse);
+}
+
 }  // namespace content

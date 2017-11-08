@@ -24683,6 +24683,7 @@ from previous Chrome versions.
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
   <int value="-340023285" label="WebNFC:enabled"/>
+  <int value="-338978205" label="NavigationMojoResponse:enabled"/>
   <int value="-329727402" label="disable-files-quick-view"/>
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-326083626" label="AppBanners:disabled"/>
@@ -25343,6 +25344,7 @@ from previous Chrome versions.
   <int value="1517863401" label="history-entry-requires-user-gesture"/>
   <int value="1529979182" label="EnablePasswordSelection:enabled"/>
   <int value="1533111748" label="Multidevice:enabled"/>
+  <int value="1536921097" label="NavigationMojoResponse:disabled"/>
   <int value="1538690515" label="OneGoogleBarOnLocalNtp:enabled"/>
   <int value="1541723759" label="ServiceWorkerNavigationPreload:disabled"/>
   <int value="1548776701" label="AllBookmarks:disabled"/>
