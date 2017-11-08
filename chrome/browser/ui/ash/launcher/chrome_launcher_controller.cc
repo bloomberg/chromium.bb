@@ -579,10 +579,14 @@ ash::MenuItemList ChromeLauncherController::GetAppMenuItemsForTesting(
 std::vector<content::WebContents*>
 ChromeLauncherController::GetV1ApplicationsFromAppId(
     const std::string& app_id) {
+  // Use the app's shelf item to find that app's windows.
   const ash::ShelfItem* item = GetItem(ash::ShelfID(app_id));
-  // If there is no such item pinned to the launcher, no menu gets created.
-  if (!item || item->type != ash::TYPE_PINNED_APP)
+  if (!item)
     return std::vector<content::WebContents*>();
+
+  // This should only be called for apps.
+  DCHECK(item->type == ash::TYPE_APP || item->type == ash::TYPE_PINNED_APP);
+
   ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(item->id);
   AppShortcutLauncherItemController* item_controller =
       static_cast<AppShortcutLauncherItemController*>(delegate);

@@ -53,9 +53,6 @@ AppShortcutLauncherItemController::Create(const ash::ShelfID& shelf_id) {
       new AppShortcutLauncherItemController(shelf_id));
 }
 
-// Item controller for an app shortcut. Shortcuts track app and launcher ids,
-// but do not have any associated windows (opening a shortcut will replace the
-// item with the appropriate ash::ShelfItemDelegate type).
 AppShortcutLauncherItemController::AppShortcutLauncherItemController(
     const ash::ShelfID& shelf_id)
     : ash::ShelfItemDelegate(shelf_id) {
