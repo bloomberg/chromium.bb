@@ -7,7 +7,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -51,6 +54,8 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   // Provides tests a way to simulate this render process crashing.
   void SimulateCrash();
+  void SimulateRenderProcessExit(base::TerminationStatus termination_status,
+                                 int exit_code);
 
   // RenderProcessHost implementation (public portion).
   bool Init() override;

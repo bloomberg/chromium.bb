@@ -73,6 +73,10 @@ class CrashDumpManager {
     CrashDumpStatus status = CrashDumpStatus::kNoDump;
   };
 
+  // Careful note: the CrashDumpManager observers are asynchronous, and are
+  // notified via PostTask. This could be problematic with a large number of
+  // observers. Consider using a middle-layer observer to fan out synchronously
+  // to leaf observers if you need many objects listening to these messages.
   class Observer {
    public:
     virtual void OnCrashDumpProcessed(const CrashDumpDetails& details) {}

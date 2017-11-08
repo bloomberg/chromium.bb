@@ -1,0 +1,204 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
+
+#include <memory>
+#include <utility>
+
+#include "base/at_exit.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/files/scoped_file.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
+#include "base/optional.h"
+#include "base/process/kill.h"
+#include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
+#include "build/build_config.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_renderer_host.h"
+#include "net/base/net_errors.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/common/descriptors_android.h"
+#include "components/crash/content/browser/child_process_crash_observer_android.h"
+#include "components/crash/content/browser/crash_dump_manager_android.h"
+#include "components/crash/content/browser/crash_dump_observer_android.h"
+#endif
+
+#if defined(OS_ANDROID)
+// This class listens for notifications that crash dumps have been processed.
+// Notifications will come from all crashes, even if an associated crash dump
+// was not created. On destruction, waits for a crash dump message.
+class CrashDumpWaiter : public breakpad::CrashDumpManager::Observer {
+ public:
+  CrashDumpWaiter() {
+    breakpad::CrashDumpManager::GetInstance()->AddObserver(this);
+  }
+  ~CrashDumpWaiter() {
+    base::RunLoop run_loop;
+    wait_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+    breakpad::CrashDumpManager::GetInstance()->RemoveObserver(this);
+  }
+
+ private:
+  // CrashDumpManager::Observer:
+  void OnCrashDumpProcessed(
+      const breakpad::CrashDumpManager::CrashDumpDetails& details) override {
+    if (!wait_closure_.is_null())
+      std::move(wait_closure_).Run();
+  }
+
+  base::OnceClosure wait_closure_;
+  DISALLOW_COPY_AND_ASSIGN(CrashDumpWaiter);
+};
+#endif  // defined(OS_ANDROID)
+
+class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
+                                public OutOfMemoryReporter::Observer {
+ public:
+  OutOfMemoryReporterTest() {}
+  ~OutOfMemoryReporterTest() override {}
+
+  // ChromeRenderViewHostTestHarness:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+    EXPECT_NE(content::ChildProcessHost::kInvalidUniqueID, process()->GetID());
+#if defined(OS_ANDROID)
+    ASSERT_TRUE(breakpad::CrashDumpManager::GetInstance());
+    breakpad::CrashDumpObserver::Create();
+    breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
+        std::make_unique<breakpad::ChildProcessCrashObserver>(
+            base::FilePath(), kAndroidMinidumpDescriptor));
+
+    // Simulate a call to ChildStart and create an empty crash dump.
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+        base::Bind(base::IgnoreResult(
+                       &breakpad::CrashDumpManager::CreateMinidumpFileForChild),
+                   base::Unretained(breakpad::CrashDumpManager::GetInstance()),
+                   process()->GetID()));
+#endif
+    OutOfMemoryReporter::CreateForWebContents(web_contents());
+    OutOfMemoryReporter::FromWebContents(web_contents())->AddObserver(this);
+  }
+
+  // OutOfMemoryReporter::Observer:
+  void OnForegroundOOMDetected(const GURL& url,
+                               ukm::SourceId source_id) override {
+    last_oom_url_ = url;
+    if (!oom_closure_.is_null())
+      std::move(oom_closure_).Run();
+  }
+
+  void SimulateOOM() {
+#if defined(OS_ANDROID)
+    process()->SimulateRenderProcessExit(base::TERMINATION_STATUS_OOM_PROTECTED,
+                                         0);
+#elif defined(OS_CHROMEOS)
+    process()->SimulateRenderProcessExit(
+        base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM, 0);
+#else
+    process()->SimulateRenderProcessExit(base::TERMINATION_STATUS_OOM, 0);
+#endif
+  }
+
+  void RunClosureAndWaitForNotification(base::OnceClosure closure) {
+#if defined(OS_ANDROID)
+    {
+      CrashDumpWaiter crash_waiter;
+      std::move(closure).Run();
+    }
+    // Since the observer list is not ordered, it isn't guaranteed that the
+    // OutOfMemoryReporter will be notified at this point. However, we do know
+    // the task to notify the reporter will be posted, so just pump the run loop
+    // here.
+    base::RunLoop().RunUntilIdle();
+#else
+    // No need to wait on non-android platforms. The message will be
+    // synchronous.
+    std::move(closure).Run();
+#endif
+  }
+
+  void SimulateOOMAndWait() {
+    RunClosureAndWaitForNotification(base::BindOnce(
+        &OutOfMemoryReporterTest::SimulateOOM, base::Unretained(this)));
+  }
+
+ protected:
+  base::ShadowingAtExitManager at_exit_;
+
+  base::Optional<GURL> last_oom_url_;
+  base::OnceClosure oom_closure_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporterTest);
+};
+
+TEST_F(OutOfMemoryReporterTest, SimpleOOM) {
+  const GURL url("https://example.test/");
+  NavigateAndCommit(url);
+
+  SimulateOOMAndWait();
+  EXPECT_EQ(url, last_oom_url_.value());
+}
+
+TEST_F(OutOfMemoryReporterTest, NormalCrash_NoOOM) {
+  const GURL url("https://example.test/");
+  NavigateAndCommit(url);
+  RunClosureAndWaitForNotification(
+      base::BindOnce(&content::MockRenderProcessHost::SimulateRenderProcessExit,
+                     base::Unretained(process()),
+                     base::TERMINATION_STATUS_ABNORMAL_TERMINATION, 0));
+  EXPECT_FALSE(last_oom_url_.has_value());
+}
+
+TEST_F(OutOfMemoryReporterTest, SubframeNavigation_IsNotLogged) {
+  const GURL url("https://example.test/");
+  NavigateAndCommit(url);
+
+  // Navigate a subframe, make sure it isn't the navigation that is logged.
+  const GURL subframe_url("https://subframe.test/");
+  auto* subframe =
+      content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
+  subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      subframe_url, subframe);
+  EXPECT_TRUE(subframe);
+
+  SimulateOOMAndWait();
+  EXPECT_EQ(last_oom_url_.value(), url);
+}
+
+TEST_F(OutOfMemoryReporterTest, OOMOnPreviousPage) {
+  const GURL url1("https://example.test1/");
+  const GURL url2("https://example.test2/");
+  const GURL url3("https://example.test2/");
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  // Should not commit.
+  content::NavigationSimulator::NavigateAndFailFromBrowser(web_contents(), url3,
+                                                           net::ERR_ABORTED);
+  SimulateOOMAndWait();
+  EXPECT_EQ(url2, last_oom_url_.value());
+
+  last_oom_url_.reset();
+  NavigateAndCommit(url1);
+
+  // Should navigate to an error page.
+  content::NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), url3, net::ERR_CONNECTION_RESET);
+  // Don't report OOMs on error pages.
+  SimulateOOMAndWait();
+  EXPECT_FALSE(last_oom_url_.has_value());
+}

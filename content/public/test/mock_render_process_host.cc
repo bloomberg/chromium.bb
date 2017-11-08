@@ -81,9 +81,14 @@ MockRenderProcessHost::~MockRenderProcessHost() {
 }
 
 void MockRenderProcessHost::SimulateCrash() {
+  SimulateRenderProcessExit(base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
+}
+
+void MockRenderProcessHost::SimulateRenderProcessExit(
+    base::TerminationStatus status,
+    int exit_code) {
   has_connection_ = false;
-  RenderProcessHost::RendererClosedDetails details(
-      base::TERMINATION_STATUS_PROCESS_CRASHED, 0);
+  RenderProcessHost::RendererClosedDetails details(status, exit_code);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<RenderProcessHost::RendererClosedDetails>(&details));
