@@ -61,6 +61,7 @@ source_set("coordinator") {
   ]
   deps = [
     ":activity_services",
+    ":features",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/passwords",

@@ -9,6 +9,8 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_controller.h"
+#import "ios/chrome/browser/ui/activity_services/canonical_url_feature.h"
+#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_password.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
@@ -24,6 +26,10 @@
 #endif
 
 @interface ActivityServiceLegacyCoordinator ()<ActivityServicePassword>
+
+// Shares the current page using the |canonicalURL|.
+- (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL;
+
 @end
 
 @implementation ActivityServiceLegacyCoordinator
@@ -65,8 +71,31 @@
 #pragma mark - Command handlers
 
 - (void)sharePage {
-  ShareToData* data =
-      activity_services::ShareToDataForTab([self.tabModel currentTab], GURL());
+  if (!base::FeatureList::IsEnabled(activity_services::kShareCanonicalURL)) {
+    [self sharePageWithCanonicalURL:GURL::EmptyGURL()];
+  } else {
+    __weak ActivityServiceLegacyCoordinator* weakSelf = self;
+    activity_services::RetrieveCanonicalUrl(
+        self.tabModel.currentTab.webState, ^(const GURL& url) {
+          [weakSelf sharePageWithCanonicalURL:url];
+        });
+  }
+}
+
+#pragma mark - Providers
+
+- (id<PasswordFormFiller>)currentPasswordFormFiller {
+  web::WebState* webState = self.tabModel.currentTab.webState;
+  return webState ? PasswordTabHelper::FromWebState(webState)
+                        ->GetPasswordFormFiller()
+                  : nil;
+}
+
+#pragma mark - Private Methods
+
+- (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL {
+  ShareToData* data = activity_services::ShareToDataForTab(
+      [self.tabModel currentTab], canonicalURL);
   if (!data)
     return;
 
@@ -81,15 +110,6 @@
            passwordProvider:self
            positionProvider:self.positionProvider
        presentationProvider:self.presentationProvider];
-}
-
-#pragma mark - Providers
-
-- (id<PasswordFormFiller>)currentPasswordFormFiller {
-  web::WebState* webState = self.tabModel.currentTab.webState;
-  return webState ? PasswordTabHelper::FromWebState(webState)
-                        ->GetPasswordFormFiller()
-                  : nil;
 }
 
 @end
