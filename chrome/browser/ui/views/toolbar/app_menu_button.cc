@@ -6,6 +6,7 @@
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -40,6 +41,8 @@ namespace {
 
 constexpr float kIconSize = 16;
 
+constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(1500);
+
 }  // namespace
 
 // static
@@ -47,13 +50,21 @@ bool AppMenuButton::g_open_app_immediately_for_testing = false;
 
 AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     : views::MenuButton(base::string16(), toolbar_view, false),
-      toolbar_view_(toolbar_view) {
+      toolbar_view_(toolbar_view),
+      animation_delay_timer_(FROM_HERE,
+                             kDelayTime,
+                             base::Bind(&AppMenuButton::AnimateIconIfPossible,
+                                        base::Unretained(this),
+                                        false),
+                             false) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
 
   if (base::FeatureList::IsEnabled(features::kAnimatedAppMenuIcon)) {
     toolbar_view_->browser()->tab_strip_model()->AddObserver(this);
     should_use_new_icon_ = true;
+    should_delay_animation_ = base::GetFieldTrialParamByFeatureAsBool(
+        features::kAnimatedAppMenuIcon, "HasDelay", false);
   }
 }
 
@@ -111,7 +122,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
                         base::TimeTicks::Now() - menu_open_time);
   }
 
-  AnimateIconIfPossible();
+  AnimateIconIfPossible(false);
 }
 
 void AppMenuButton::CloseMenu() {
@@ -157,7 +168,7 @@ void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
                                   content::WebContents* contents,
                                   int index,
                                   bool foreground) {
-  AnimateIconIfPossible();
+  AnimateIconIfPossible(true);
 }
 
 void AppMenuButton::UpdateIcon(bool should_animate) {
@@ -201,7 +212,7 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
                             : toolbar_icon_color);
 
     if (should_animate)
-      AnimateIconIfPossible();
+      AnimateIconIfPossible(true);
 
     return;
   }
@@ -231,13 +242,20 @@ void AppMenuButton::SetTrailingMargin(int margin) {
   InvalidateLayout();
 }
 
-void AppMenuButton::AnimateIconIfPossible() {
+void AppMenuButton::AnimateIconIfPossible(bool with_delay) {
   if (!new_icon_ || !should_use_new_icon_ ||
       severity_ == AppMenuIconController::Severity::NONE) {
     return;
   }
 
-  new_icon_->Animate(views::AnimatedIconView::END);
+  if (!should_delay_animation_ || !with_delay || new_icon_->IsAnimating()) {
+    animation_delay_timer_.Stop();
+    new_icon_->Animate(views::AnimatedIconView::END);
+    return;
+  }
+
+  if (!animation_delay_timer_.IsRunning())
+    animation_delay_timer_.Reset();
 }
 
 const char* AppMenuButton::GetClassName() const {

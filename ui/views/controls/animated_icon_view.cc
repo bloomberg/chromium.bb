@@ -40,6 +40,10 @@ void AnimatedIconView::SetState(State state) {
   UpdateStaticImage();
 }
 
+bool AnimatedIconView::IsAnimating() const {
+  return start_time_ != base::TimeTicks();
+}
+
 void AnimatedIconView::OnPaint(gfx::Canvas* canvas) {
   if (!IsAnimating()) {
     views::ImageView::OnPaint(canvas);
@@ -66,10 +70,6 @@ void AnimatedIconView::OnAnimationStep(base::TimeTicks timestamp) {
 }
 
 void AnimatedIconView::OnCompositingShuttingDown(ui::Compositor* compositor) {}
-
-bool AnimatedIconView::IsAnimating() const {
-  return start_time_ != base::TimeTicks();
-}
 
 void AnimatedIconView::UpdateStaticImage() {
   gfx::IconDescription description(

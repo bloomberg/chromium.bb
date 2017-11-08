@@ -34,6 +34,8 @@ class VIEWS_EXPORT AnimatedIconView : public views::ImageView,
   // Jumps to the end or start state.
   void SetState(State state);
 
+  bool IsAnimating() const;
+
   // views::ImageView
   void OnPaint(gfx::Canvas* canvas) override;
 
@@ -42,8 +44,6 @@ class VIEWS_EXPORT AnimatedIconView : public views::ImageView,
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
  private:
-  bool IsAnimating() const;
-
   void UpdateStaticImage();
 
   const gfx::VectorIcon& icon_;
