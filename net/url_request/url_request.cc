@@ -51,9 +51,6 @@ namespace net {
 
 namespace {
 
-// Max number of http redirects to follow.  Same number as gecko.
-const int kMaxRedirects = 20;
-
 // TODO(battre): Delete this, see http://crbug.com/89321:
 // This counter keeps track of the identifiers used for URL requests so far.
 // 0 is reserved to represent an invalid ID.
