@@ -26,9 +26,9 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/frame_policy.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
+#include "third_party/WebKit/common/frame_policy.h"
 
 namespace content {
 
@@ -180,7 +180,7 @@ bool FrameTree::AddFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     const base::UnguessableToken& devtools_frame_token,
-    const FramePolicy& frame_policy,
+    const blink::FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties) {
   CHECK_NE(new_routing_id, MSG_ROUTING_NONE);
 

@@ -4,7 +4,7 @@
 
 #include "content/common/frame_replication_state.h"
 
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 
 namespace content {

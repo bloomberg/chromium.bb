@@ -19,8 +19,8 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/frame_policy.h"
 #include "content/common/frame_replication_state.h"
+#include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -209,7 +209,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // may not yet have taken effect, since "sandbox" and "allow" attribute
   // updates in an <iframe> element take effect on next navigation. To retrieve
   // the currently active policy for this frame, use effective_frame_policy().
-  const FramePolicy& pending_frame_policy() const {
+  const blink::FramePolicy& pending_frame_policy() const {
     return pending_frame_policy_;
   }
 
@@ -222,7 +222,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // those in |frame_policy|.
   // Attempting to change the container policy on the main frame will have no
   // effect.
-  void SetPendingFramePolicy(FramePolicy frame_policy);
+  void SetPendingFramePolicy(blink::FramePolicy frame_policy);
 
   // Returns the currently active frame policy for this frame, including the
   // sandbox flags which were present at the time the document was loaded, and
@@ -233,7 +233,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // policy changes that have been made by updating the containing iframe
   // element attributes since the frame was last navigated; use
   // pending_frame_policy() for those.
-  const FramePolicy& effective_frame_policy() const {
+  const blink::FramePolicy& effective_frame_policy() const {
     return replication_state_.frame_policy;
   }
 
@@ -416,7 +416,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // 'allowpaymentrequest' or 'src' attributes, the updated policy for the frame
   // is stored here, and transferred into replication_state_.frame_policy when
   // they take effect on the next frame navigation.
-  FramePolicy pending_frame_policy_;
+  blink::FramePolicy pending_frame_policy_;
 
   // Used for devtools instrumentation and trace-ability. The token is
   // propagated to Blink's LocalFrame and both Blink and content/

@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/frame_policy.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -26,6 +25,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "third_party/WebKit/common/frame_policy.h"
 
 namespace content {
 
@@ -133,7 +133,8 @@ TEST_F(RenderProcessHostUnitTest, ReuseCommittedSite) {
       process()->GetNextRoutingID(),
       TestRenderFrameHost::CreateStubInterfaceProviderRequest(),
       blink::WebTreeScopeType::kDocument, std::string(), unique_name,
-      base::UnguessableToken::Create(), FramePolicy(), FrameOwnerProperties());
+      base::UnguessableToken::Create(), blink::FramePolicy(),
+      FrameOwnerProperties());
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   subframe = static_cast<TestRenderFrameHost*>(

@@ -24,7 +24,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "url/url_constants.h"
 
 namespace content {

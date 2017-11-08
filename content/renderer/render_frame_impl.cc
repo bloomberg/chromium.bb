@@ -50,7 +50,6 @@
 #include "content/common/edit_command.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/frame_policy.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
@@ -172,6 +171,7 @@
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/data_element.h"
+#include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -2393,7 +2393,8 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
   frame_->SetOpener(opener);
 }
 
-void RenderFrameImpl::OnDidUpdateFramePolicy(const FramePolicy& frame_policy) {
+void RenderFrameImpl::OnDidUpdateFramePolicy(
+    const blink::FramePolicy& frame_policy) {
   frame_->SetFrameOwnerPolicy(frame_policy.sandbox_flags,
                               frame_policy.container_policy);
 }

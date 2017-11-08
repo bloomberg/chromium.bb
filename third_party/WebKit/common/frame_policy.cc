@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/frame_policy.h"
+#include "third_party/WebKit/common/frame_policy.h"
 
-namespace content {
+namespace blink {
 
 FramePolicy::FramePolicy()
-    : sandbox_flags(blink::WebSandboxFlags::kNone), container_policy({}) {}
+    : sandbox_flags(WebSandboxFlags::kNone), container_policy({}) {}
 
-FramePolicy::FramePolicy(blink::WebSandboxFlags sandbox_flags,
-                         const blink::ParsedFeaturePolicy& container_policy)
+FramePolicy::FramePolicy(WebSandboxFlags sandbox_flags,
+                         const ParsedFeaturePolicy& container_policy)
     : sandbox_flags(sandbox_flags), container_policy(container_policy) {}
 
 FramePolicy::FramePolicy(const FramePolicy& lhs)
@@ -19,4 +19,4 @@ FramePolicy::FramePolicy(const FramePolicy& lhs)
 
 FramePolicy::~FramePolicy() {}
 
-}  // namespace content
+}  // namespace blink

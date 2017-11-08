@@ -8,8 +8,8 @@
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/web/WebFrame.h"
-#include "public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "v8/include/v8.h"
 
 namespace blink {

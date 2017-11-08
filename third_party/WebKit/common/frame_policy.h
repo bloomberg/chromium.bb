@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_FRAME_POLICY_H_
-#define CONTENT_COMMON_FRAME_POLICY_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_FRAME_POLICY_H_
+#define THIRD_PARTY_WEBKIT_COMMON_FRAME_POLICY_H_
 
-#include "content/common/content_export.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 
-namespace content {
+namespace blink {
 
 // This structure contains the attributes of a frame which determine what
 // features are available during the lifetime of the framed document. Currently,
@@ -23,17 +22,17 @@ namespace content {
 // structure are kept in the frame tree for each frame -- the effective policy
 // and the pending policy, which will take effect when the frame is next
 // navigated.
-struct CONTENT_EXPORT FramePolicy {
+struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy();
-  FramePolicy(blink::WebSandboxFlags sandbox_flags,
-              const blink::ParsedFeaturePolicy& container_policy);
+  FramePolicy(WebSandboxFlags sandbox_flags,
+              const ParsedFeaturePolicy& container_policy);
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
-  blink::WebSandboxFlags sandbox_flags;
-  blink::ParsedFeaturePolicy container_policy;
+  WebSandboxFlags sandbox_flags;
+  ParsedFeaturePolicy container_policy;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_FRAME_POLICY_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_FRAME_POLICY_H_

@@ -15,6 +15,7 @@ component("blink_common") {
     "//chrome/*",
     "//content/*",
     "//third_party/WebKit/*",
+    "//components/*",
     ":*",
   ]
 
@@ -28,6 +29,8 @@ component("blink_common") {
     "device_memory/approximated_device_memory.h",
     "feature_policy/feature_policy.cc",
     "feature_policy/feature_policy.h",
+    "frame_policy.cc",
+    "frame_policy.h",
     "message_port/cloneable_message.cc",
     "message_port/cloneable_message.h",
     "message_port/cloneable_message_struct_traits.cc",
@@ -46,6 +49,7 @@ component("blink_common") {
     "origin_trials/trial_token.h",
     "origin_trials/trial_token_validator.cc",
     "origin_trials/trial_token_validator.h",
+    "sandbox_flags.h",
   ]
 
   public_deps = [

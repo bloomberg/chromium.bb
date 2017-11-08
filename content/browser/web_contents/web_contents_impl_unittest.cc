@@ -57,7 +57,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebSandboxFlags.h"
+#include "third_party/WebKit/common/sandbox_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/url_constants.h"
 

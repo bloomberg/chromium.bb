@@ -10,8 +10,8 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy_header.h"
-#include "content/common/frame_policy.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
+#include "third_party/WebKit/common/frame_policy.h"
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "url/origin.h"
 
@@ -89,7 +89,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // CommitPendingFramePolicy()). The proxies need updated flags so that they
   // can be inherited properly if a proxy ever becomes a parent of a local
   // frame.
-  FramePolicy frame_policy;
+  blink::FramePolicy frame_policy;
 
   // Accumulated CSP headers - gathered from http headers, <meta> elements,
   // parent frames (in case of about:blank frames).
