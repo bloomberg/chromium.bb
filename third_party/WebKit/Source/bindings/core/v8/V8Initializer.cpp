@@ -180,6 +180,56 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
   context->DispatchErrorEvent(event, access_control_status);
 }
 
+void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
+                                           v8::Local<v8::Value> data) {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
+
+  // During the frame teardown, there may not be a valid context.
+  ScriptState* script_state = ScriptState::Current(isolate);
+  if (!script_state->ContextIsValid())
+    return;
+
+  // Exceptions that occur in error handler should be ignored since in that case
+  // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker
+  // object.
+  if (per_isolate_data->IsReportingException())
+    return;
+
+  per_isolate_data->SetReportingException(true);
+
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  std::unique_ptr<SourceLocation> location =
+      SourceLocation::FromMessage(isolate, message, context);
+
+  if (message->ErrorLevel() != v8::Isolate::kMessageError) {
+    context->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource,
+        MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
+        ToCoreStringWithNullCheck(message->Get()), std::move(location)));
+    return;
+  }
+
+  ErrorEvent* event =
+      ErrorEvent::Create(ToCoreStringWithNullCheck(message->Get()),
+                         std::move(location), &script_state->World());
+
+  AccessControlStatus cors_status = message->IsSharedCrossOrigin()
+                                        ? kSharableCrossOrigin
+                                        : kNotSharableCrossOrigin;
+
+  // If execution termination has been triggered as part of constructing
+  // the error event from the v8::Message, quietly leave.
+  if (!isolate->IsExecutionTerminating()) {
+    V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
+        script_state, event, data, script_state->GetContext()->Global());
+    ExecutionContext::From(script_state)
+        ->DispatchErrorEvent(event, cors_status);
+  }
+
+  per_isolate_data->SetReportingException(false);
+}
+
 namespace {
 
 static RejectedPromises& RejectedPromisesOnMainThread() {
@@ -605,56 +655,6 @@ static void ReportFatalErrorInWorker(const char* location,
   // FIXME: We temporarily deal with V8 internal error situations such as
   // out-of-memory by crashing the worker.
   LOG(FATAL);
-}
-
-static void MessageHandlerInWorker(v8::Local<v8::Message> message,
-                                   v8::Local<v8::Value> data) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
-
-  // During the frame teardown, there may not be a valid context.
-  ScriptState* script_state = ScriptState::Current(isolate);
-  if (!script_state->ContextIsValid())
-    return;
-
-  // Exceptions that occur in error handler should be ignored since in that case
-  // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker
-  // object.
-  if (per_isolate_data->IsReportingException())
-    return;
-
-  per_isolate_data->SetReportingException(true);
-
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::FromMessage(isolate, message, context);
-
-  if (message->ErrorLevel() != v8::Isolate::kMessageError) {
-    context->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource,
-        MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
-        ToCoreStringWithNullCheck(message->Get()), std::move(location)));
-    return;
-  }
-
-  ErrorEvent* event =
-      ErrorEvent::Create(ToCoreStringWithNullCheck(message->Get()),
-                         std::move(location), &script_state->World());
-
-  AccessControlStatus cors_status = message->IsSharedCrossOrigin()
-                                        ? kSharableCrossOrigin
-                                        : kNotSharableCrossOrigin;
-
-  // If execution termination has been triggered as part of constructing
-  // the error event from the v8::Message, quietly leave.
-  if (!isolate->IsExecutionTerminating()) {
-    V8ErrorHandler::StoreExceptionOnErrorEventWrapper(
-        script_state, event, data, script_state->GetContext()->Global());
-    ExecutionContext::From(script_state)
-        ->DispatchErrorEvent(event, cors_status);
-  }
-
-  per_isolate_data->SetReportingException(false);
 }
 
 // Stack size for workers is limited to 500KB because default stack size for
