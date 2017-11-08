@@ -1336,11 +1336,46 @@ class MetaBuildWrapper(object):
       if 'invalid_targets' in gn_outp:
         outp['invalid_targets'] = gn_outp['invalid_targets']
       if 'compile_targets' in gn_outp:
+        all_input_compile_targets = sorted(
+            set(inp['test_targets'] + inp['additional_compile_targets']))
+
+        # If we're building 'all', we can throw away the rest of the targets
+        # since they're redundant.
         if 'all' in gn_outp['compile_targets']:
           outp['compile_targets'] = ['all']
         else:
+          outp['compile_targets'] = gn_outp['compile_targets']
+
+        # crbug.com/736215: When GN returns targets back, for targets in
+        # the default toolchain, GN will have generated a phony ninja
+        # target matching the label, and so we can safely (and easily)
+        # transform any GN label into the matching ninja target. For
+        # targets in other toolchains, though, GN doesn't generate the
+        # phony targets, and we don't know how to turn the labels into
+        # compile targets. In this case, we also conservatively give up
+        # and build everything. Probably the right thing to do here is
+        # to have GN return the compile targets directly.
+        if any("(" in target for target in outp['compile_targets']):
+          self.Print('WARNING: targets with non-default toolchains were '
+                     'found, building everything instead.')
+          outp['compile_targets'] = all_input_compile_targets
+        else:
           outp['compile_targets'] = [
-              label.replace('//', '') for label in gn_outp['compile_targets']]
+              label.replace('//', '') for label in outp['compile_targets']]
+
+        # Windows has a maximum command line length of 8k; even Linux
+        # maxes out at 128k; if analyze returns a *really long* list of
+        # targets, we just give up and conservatively build everything instead.
+        # Probably the right thing here is for ninja to support response
+        # files as input on the command line
+        # (see https://github.com/ninja-build/ninja/issues/1355).
+        if len(' '.join(outp['compile_targets'])) > 7*1024:
+          self.Print('WARNING: Too many compile targets were affected.')
+          self.Print('WARNING: Building everything instead to avoid '
+                     'command-line length issues.')
+          outp['compile_targets'] = all_input_compile_targets
+
+
       if 'test_targets' in gn_outp:
         outp['test_targets'] = [
           labels_to_targets[label] for label in gn_outp['test_targets']]
