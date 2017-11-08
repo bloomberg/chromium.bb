@@ -55,6 +55,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                              uint64_t submit_time) override;
   void DidNotProduceFrame(const BeginFrameAck& begin_frame_ack) override;
 
+  CompositorFrameSinkSupport* support() const { return support_.get(); }
+
   // HitTestAggregatorDelegate:
   void OnAggregatedHitTestRegionListUpdated(
       mojo::ScopedSharedBufferHandle active_handle,
@@ -78,8 +80,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       compositor_frame_sink_binding_;
   mojo::AssociatedBinding<mojom::DisplayPrivate> display_private_binding_;
 
-  // Must be destroyed before |compositor_frame_sink_client_|.
-  std::unique_ptr<CompositorFrameSinkSupport> support_;
+  // Must be destroyed before |compositor_frame_sink_client_|. This must never
+  // change for the lifetime of RootCompositorFrameSinkImpl.
+  const std::unique_ptr<CompositorFrameSinkSupport> support_;
 
   // RootCompositorFrameSinkImpl holds a Display and its BeginFrameSource if
   // it was created with a non-null gpu::SurfaceHandle.

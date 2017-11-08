@@ -109,6 +109,7 @@ viz_component("service") {
     "frame_sinks/surface_resource_holder.cc",
     "frame_sinks/surface_resource_holder.h",
     "frame_sinks/surface_resource_holder_client.h",
+    "frame_sinks/video_capture/capturable_frame_sink.h",
     "gl/gpu_service_impl.cc",
     "gl/gpu_service_impl.h",
     "hit_test/hit_test_aggregator.cc",

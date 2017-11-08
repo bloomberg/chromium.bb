@@ -32,6 +32,9 @@ std::unique_ptr<CompositorFrameSinkSupport> CompositorFrameSinkSupport::Create(
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
+  // No video capture clients should remain at this point.
+  DCHECK(capture_clients_.empty());
+
   if (!destruction_callback_.is_null())
     std::move(destruction_callback_).Run();
 
@@ -207,7 +210,8 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       std::move(frame), frame_index,
       base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                      weak_factory_.GetWeakPtr()),
-      aggregated_damage_callback_,
+      base::BindRepeating(&CompositorFrameSinkSupport::OnAggregatedDamage,
+                          weak_factory_.GetWeakPtr()),
       frame.metadata.presentation_token
           ? base::BindOnce(
                 &CompositorFrameSinkSupport::DidPresentCompositorFrame,
@@ -332,6 +336,8 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
   last_begin_frame_args_ = args;
   if (client_)
     client_->OnBeginFrame(args);
+  for (CapturableFrameSink::Client* capture_client : capture_clients_)
+    capture_client->OnBeginFrame(args);
 }
 
 const BeginFrameArgs& CompositorFrameSinkSupport::LastUsedBeginFrameArgs()
@@ -365,6 +371,21 @@ Surface* CompositorFrameSinkSupport::CreateSurface(
       frame_sink_manager_->GetPrimaryBeginFrameSource(), needs_sync_tokens_);
 }
 
+void CompositorFrameSinkSupport::AttachCaptureClient(
+    CapturableFrameSink::Client* client) {
+  DCHECK(std::find(capture_clients_.begin(), capture_clients_.end(), client) ==
+         capture_clients_.end());
+  capture_clients_.push_back(client);
+}
+
+void CompositorFrameSinkSupport::DetachCaptureClient(
+    CapturableFrameSink::Client* client) {
+  const auto it =
+      std::find(capture_clients_.begin(), capture_clients_.end(), client);
+  if (it != capture_clients_.end())
+    capture_clients_.erase(it);
+}
+
 void CompositorFrameSinkSupport::RequestCopyOfSurface(
     std::unique_ptr<CopyOutputRequest> copy_request) {
   if (!current_surface_id_.is_valid())
@@ -380,6 +401,21 @@ void CompositorFrameSinkSupport::RequestCopyOfSurface(
 
 Surface* CompositorFrameSinkSupport::GetCurrentSurfaceForTesting() {
   return surface_manager_->GetSurfaceForId(current_surface_id_);
+}
+
+void CompositorFrameSinkSupport::OnAggregatedDamage(
+    const LocalSurfaceId& local_surface_id,
+    const gfx::Rect& damage_rect,
+    const CompositorFrame& frame) const {
+  DCHECK(!damage_rect.IsEmpty());
+
+  if (aggregated_damage_callback_)
+    aggregated_damage_callback_.Run(local_surface_id, damage_rect);
+
+  const BeginFrameAck& ack = frame.metadata.begin_frame_ack;
+  const gfx::Size& frame_size = frame.size_in_pixels();
+  for (CapturableFrameSink::Client* client : capture_clients_)
+    client->OnFrameDamaged(ack, frame_size, damage_rect);
 }
 
 }  // namespace viz
