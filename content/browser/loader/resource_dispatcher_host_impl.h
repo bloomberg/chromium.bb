@@ -724,6 +724,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // (i.e. have at least three outstanding requests).
   bool HasRequestsFromMultipleActiveTabs();
 
+  static net::NetworkTrafficAnnotationTag GetTrafficAnnotation();
+
   LoaderMap pending_loaders_;
 
   // Collection of temp files downloaded for child processes via

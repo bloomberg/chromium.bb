@@ -133,36 +133,6 @@ using SyncLoadResultCallback =
 
 // ----------------------------------------------------------------------------
 
-namespace {
-
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("resource_dispatcher_host",
-                                        R"(
-        semantics {
-          sender: "Resource Dispatcher Host"
-          description:
-            "Navigation-initiated request or renderer process initiated "
-            "request, which includes all resources for normal page loads, "
-            "chrome URLs, resources for installed extensions, as well as "
-            "downloads."
-          trigger:
-            "Navigating to a URL or downloading a file. A webpage, "
-            "ServiceWorker, chrome:// page, or extension may also initiate "
-            "requests in the background."
-          data: "Anything the initiator wants to send."
-          destination: OTHER
-        }
-        policy {
-          cookies_allowed: YES
-          cookies_store: "user or per-app cookie store"
-          setting: "These requests cannot be disabled."
-          policy_exception_justification:
-            "Not implemented. Without these requests, Chrome will be unable to "
-            "load any webpage."
-        })");
-
-}  // namespace
-
 namespace content {
 
 namespace {
@@ -873,7 +843,7 @@ void ResourceDispatcherHostImpl::OnSyncLoad(
                  base::Passed(WrapUnique(sync_result)));
   BeginRequest(requester_info, request_id, request_data,
                true /* is_sync_load */, callback, sync_result->routing_id(),
-               nullptr, nullptr, kTrafficAnnotation);
+               nullptr, nullptr, GetTrafficAnnotation());
 }
 
 bool ResourceDispatcherHostImpl::IsRequestIDInUse(
@@ -2065,7 +2035,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   std::unique_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      info.common_params.url, net::HIGHEST, nullptr, kTrafficAnnotation);
+      info.common_params.url, net::HIGHEST, nullptr, GetTrafficAnnotation());
 
   new_request->set_method(info.common_params.method);
   new_request->set_site_for_cookies(info.site_for_cookies);
@@ -2759,6 +2729,37 @@ bool ResourceDispatcherHostImpl::HasRequestsFromMultipleActiveTabs() {
     }
   }
   return false;
+}
+
+// static
+// We have this function at the bottom of this file because it confuses
+// syntax highliting.
+net::NetworkTrafficAnnotationTag
+ResourceDispatcherHostImpl::GetTrafficAnnotation() {
+  return net::DefineNetworkTrafficAnnotation("resource_dispatcher_host",
+                                             R"(
+        semantics {
+          sender: "Resource Dispatcher Host"
+          description:
+            "Navigation-initiated request or renderer process initiated "
+            "request, which includes all resources for normal page loads, "
+            "chrome URLs, resources for installed extensions, as well as "
+            "downloads."
+          trigger:
+            "Navigating to a URL or downloading a file. A webpage, "
+            "ServiceWorker, chrome:// page, or extension may also initiate "
+            "requests in the background."
+          data: "Anything the initiator wants to send."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user or per-app cookie store"
+          setting: "These requests cannot be disabled."
+          policy_exception_justification:
+            "Not implemented. Without these requests, Chrome will be unable to "
+            "load any webpage."
+        })");
 }
 
 }  // namespace content
