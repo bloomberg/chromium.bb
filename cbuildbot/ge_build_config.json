@@ -1184,7 +1184,7 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": false,
-          "board_group": "scarlet",
+          "board_group": "gru",
           "arch": "ARM_INTERNAL"
         }
       ]
