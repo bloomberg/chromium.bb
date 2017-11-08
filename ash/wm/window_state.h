@@ -33,6 +33,7 @@ class WindowState;
 class WindowStateDelegate;
 class WindowStateObserver;
 class WMEvent;
+class ClientControlledState;
 
 // Returns the WindowState for the active window, null if there is no active
 // window.
@@ -323,6 +324,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class DefaultState;
+  friend class ash::wm::ClientControlledState;
   friend class ash::LockWindowState;
   friend class ash::TabletModeWindowState;
   friend WindowState* GetWindowState(aura::Window*);
