@@ -116,7 +116,8 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       false,  // is_main_frame
       true,   // allow_download
       false,  // is_async
-      content::PREVIEWS_OFF);
+      content::PREVIEWS_OFF,
+      nullptr);  // navigation_ui_data
   EXPECT_TRUE(attribute->IsFulfilled(
       WebRequestData(url_request_ok.get(), ON_BEFORE_REQUEST)));
 
@@ -132,7 +133,8 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
       true,   // is_main_frame
       true,   // allow_download
       false,  // is_async
-      content::PREVIEWS_OFF);
+      content::PREVIEWS_OFF,
+      nullptr);  // navigation_ui_data
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(url_request_fail.get(),
                                                      ON_BEFORE_REQUEST)));
 }

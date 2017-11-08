@@ -96,7 +96,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
       true,   // is_main_frame
       true,   // allow_download
       false,  // is_async
-      content::PREVIEWS_OFF);
+      content::PREVIEWS_OFF,
+      nullptr);  // navigation_ui_data
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
@@ -115,7 +116,8 @@ TEST(WebRequestConditionTest, CreateCondition) {
       false,  // is_main_frame
       true,   // allow_download
       false,  // is_async
-      content::PREVIEWS_OFF);
+      content::PREVIEWS_OFF,
+      nullptr);  // navigation_ui_data
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -163,7 +165,8 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
       true,   // is_main_frame
       true,   // allow_download
       false,  // is_async
-      content::PREVIEWS_OFF);
+      content::PREVIEWS_OFF,
+      nullptr);  // navigation_ui_data
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 

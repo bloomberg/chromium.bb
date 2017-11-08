@@ -20,6 +20,7 @@
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -729,6 +730,17 @@ void OfflinePageRequestJob::OnOfflineFilePathAvailable(
   }
 
   ReportAccessEntryPoint(name_space, GetAccessEntryPoint());
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request());
+  ChromeNavigationUIData* navigation_data =
+      static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
+  if (navigation_data) {
+    std::unique_ptr<OfflinePageNavigationUIData> offline_page_data =
+        std::make_unique<OfflinePageNavigationUIData>(true);
+    navigation_data->SetOfflinePageNavigationUIData(
+        std::move(offline_page_data));
+  }
 
   // Sets the file path and lets URLRequestFileJob start to read from the file.
   file_path_ = offline_file_path;

@@ -230,7 +230,8 @@ class ExtensionProtocolsTest : public testing::Test {
         /*render_frame_id=*/-1,
         /*is_main_frame=*/resource_type == content::RESOURCE_TYPE_MAIN_FRAME,
         /*allow_download=*/true,
-        /*is_async=*/false, content::PREVIEWS_OFF);
+        /*is_async=*/false, content::PREVIEWS_OFF,
+        /*navigation_ui_data*/ nullptr);
     request->Start();
     base::RunLoop().Run();
   }

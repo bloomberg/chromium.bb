@@ -95,6 +95,8 @@
 
 namespace blink {
 
+// The MHTML mime type should be same as the one we check in the browser
+// process's ChromeResourceDispatcherHostDelegate.
 static bool IsArchiveMIMEType(const String& mime_type) {
   return DeprecatedEqualIgnoringCase("multipart/related", mime_type);
 }

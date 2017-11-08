@@ -213,7 +213,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/false,
       /*allow_download=*/true,
-      /*is_async=*/true, content::PREVIEWS_OFF);
+      /*is_async=*/true, content::PREVIEWS_OFF, nullptr);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());
@@ -250,7 +250,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/true,
       /*allow_download=*/true,
-      /*is_async=*/true, content::PREVIEWS_OFF);
+      /*is_async=*/true, content::PREVIEWS_OFF, nullptr);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());
@@ -285,7 +285,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
       kDefaultRouteId, MSG_ROUTING_NONE,
       /*is_main_frame=*/false,
       /*allow_download=*/true,
-      /*is_async=*/false, content::PREVIEWS_OFF);
+      /*is_async=*/false, content::PREVIEWS_OFF, nullptr);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());

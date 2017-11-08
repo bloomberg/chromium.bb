@@ -410,7 +410,8 @@ class ResourceLoaderTest : public testing::Test,
         request.get(), resource_type, &resource_context_,
         rfh->GetProcess()->GetID(), rfh->GetRenderViewHost()->GetRoutingID(),
         rfh->GetRoutingID(), belongs_to_main_frame, true /* allow_download */,
-        false /* is_async */, PREVIEWS_OFF /* previews_state */);
+        false /* is_async */, PREVIEWS_OFF /* previews_state */,
+        nullptr /* navigation_ui_data */);
     std::unique_ptr<TestResourceHandler> resource_handler(
         new TestResourceHandler(nullptr, nullptr));
     raw_ptr_resource_handler_ = resource_handler.get();

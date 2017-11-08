@@ -104,6 +104,11 @@ ResourceDispatcherHostDelegate::CreateClientCertStore(
   return std::unique_ptr<net::ClientCertStore>();
 }
 
+bool ResourceDispatcherHostDelegate::AllowRenderingMhtmlOverHttp(
+    net::URLRequest* request) const {
+  return false;
+}
+
 ResourceDispatcherHostDelegate::~ResourceDispatcherHostDelegate() {
 }
 

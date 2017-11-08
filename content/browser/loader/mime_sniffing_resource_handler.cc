@@ -524,6 +524,14 @@ bool MimeSniffingResourceHandler::MustDownload() {
              host_->delegate()->ShouldForceDownloadResource(
                  request()->url(), response_->head.mime_type)) {
     must_download_ = true;
+  } else if (request()->url().SchemeIsHTTPOrHTTPS() &&
+             // The MHTML mime type should be same as the one we check in
+             // Blink's DocumentLoader.
+             response_->head.mime_type == "multipart/related" &&
+             !host_->delegate()->AllowRenderingMhtmlOverHttp(request())) {
+    // Force to download the MHTML page from the remote server, instead of
+    // loading it.
+    must_download_ = true;
   } else {
     must_download_ = false;
   }

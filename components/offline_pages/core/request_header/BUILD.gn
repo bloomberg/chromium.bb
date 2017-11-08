@@ -10,6 +10,8 @@ static_library("request_header") {
   sources = [
     "offline_page_header.cc",
     "offline_page_header.h",
+    "offline_page_navigation_ui_data.cc",
+    "offline_page_navigation_ui_data.h",
   ]
 
   deps = [

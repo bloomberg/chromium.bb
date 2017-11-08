@@ -138,7 +138,7 @@ class LinkHeaderServiceWorkerTest : public ::testing::Test {
         -1 /* render_process_id */, -1 /* render_view_id */,
         -1 /* render_frame_id */, resource_type == RESOURCE_TYPE_MAIN_FRAME,
         true /* allow_download */, true /* is_async */,
-        PREVIEWS_OFF /* previews_state */);
+        PREVIEWS_OFF /* previews_state */, nullptr /* navigation_ui_data */);
     ResourceRequestInfoImpl::ForRequest(request.get())
         ->set_initiated_in_secure_context_for_testing(true);
 

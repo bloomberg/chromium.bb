@@ -42,16 +42,18 @@ const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
 }
 
 // static
-void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
-                                             ResourceType resource_type,
-                                             ResourceContext* context,
-                                             int render_process_id,
-                                             int render_view_id,
-                                             int render_frame_id,
-                                             bool is_main_frame,
-                                             bool allow_download,
-                                             bool is_async,
-                                             PreviewsState previews_state) {
+void ResourceRequestInfo::AllocateForTesting(
+    net::URLRequest* request,
+    ResourceType resource_type,
+    ResourceContext* context,
+    int render_process_id,
+    int render_view_id,
+    int render_frame_id,
+    bool is_main_frame,
+    bool allow_download,
+    bool is_async,
+    PreviewsState previews_state,
+    std::unique_ptr<NavigationUIData> navigation_ui_data) {
   // Make sure RESOURCE_TYPE_MAIN_FRAME is declared as being fetched as part of
   // the main frame.
   DCHECK(resource_type != RESOURCE_TYPE_MAIN_FRAME || is_main_frame);
@@ -85,6 +87,7 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
       nullptr,                                // body
       false);                                 // initiated_in_secure_context
   info->AssociateWithRequest(request);
+  info->set_navigation_ui_data(std::move(navigation_ui_data));
 }
 
 // static

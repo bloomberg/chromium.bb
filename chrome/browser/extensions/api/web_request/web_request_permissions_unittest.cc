@@ -166,7 +166,8 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
         process_id, view_id, MSG_ROUTING_NONE,
         /*is_main_frame=*/false,
         /*allow_download=*/true,
-        /*is_async=*/false, content::PREVIEWS_OFF);
+        /*is_async=*/false, content::PREVIEWS_OFF,
+        /*navigation_ui_data*/ nullptr);
     extension_info_map_->RegisterExtensionProcess(extensions::kWebStoreAppId,
                                                   process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
