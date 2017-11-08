@@ -80,9 +80,9 @@ class CxxDependencyTest(unittest.TestCase):
         'gfx::CubicBezier',
         'gfx::ICCProfile',
         'gfx::ScrollOffset',
+        'scoped_refptr<base::SingleThreadTaskRunner>',
     ]
     disallow_list = [
-        'scoped_refptr<base::SingleThreadTaskRunner>',
         'base::Callback<void()>',
         'base::OnceCallback<void()>',
         'content::RenderFrame',
@@ -101,7 +101,7 @@ class CxxDependencyTest(unittest.TestCase):
         ]
         # Access to a protected member
         # pylint: disable=W0212
-        return PRESUBMIT._CheckForForbiddenNamespace(mock_input_api, MockOutputApi())
+        return PRESUBMIT._CheckForForbiddenChromiumCode(mock_input_api, MockOutputApi())
 
     # References in comments should never be checked.
     def testCheckCommentsIgnored(self):
