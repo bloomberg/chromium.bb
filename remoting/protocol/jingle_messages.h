@@ -12,7 +12,7 @@
 #include "remoting/protocol/errors.h"
 #include "remoting/signaling/signaling_address.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
-#include "third_party/webrtc/p2p/base/candidate.h"
+#include "third_party/webrtc/api/candidate.h"
 
 namespace remoting {
 namespace protocol {
