@@ -17,7 +17,6 @@ namespace vr {
 class BrowserUiInterface;
 class ContentInputDelegate;
 class ContentInputForwarder;
-class SkiaSurfaceProvider;
 class UiBrowserInterface;
 class UiInputManager;
 class UiRenderer;
@@ -26,8 +25,12 @@ class UiSceneManager;
 class VrShellRenderer;
 struct ControllerModel;
 struct Model;
-struct OmniboxSuggestions;
 struct ReticleModel;
+}  // namespace vr
+
+namespace vr {
+
+struct OmniboxSuggestions;
 
 struct UiInitialState {
   bool in_cct = false;
@@ -74,8 +77,7 @@ class Ui : public BrowserUiInterface {
 
   bool ShouldRenderWebVr();
   void OnGlInitialized(unsigned int content_texture_id,
-                       UiElementRenderer::TextureLocation content_location,
-                       bool use_ganesh);
+                       UiElementRenderer::TextureLocation content_location);
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(
       PlatformController::SwipeDirection direction);
@@ -101,7 +103,6 @@ class Ui : public BrowserUiInterface {
   std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
   std::unique_ptr<vr::UiInputManager> input_manager_;
   std::unique_ptr<vr::UiRenderer> ui_renderer_;
-  std::unique_ptr<SkiaSurfaceProvider> provider_;
 
   base::WeakPtrFactory<Ui> weak_ptr_factory_;
 
