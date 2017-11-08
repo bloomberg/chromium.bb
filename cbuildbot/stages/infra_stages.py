@@ -121,7 +121,7 @@ def _StageChrootFilesIntoDir(target_path, paths):
     paths: An iterable of absolute paths inside the chroot
   """
   for path in paths:
-    chroot_path = path_util.FromChrootPath(os.path.join(_GO_BINDIR, path))
+    chroot_path = path_util.FromChrootPath(path)
     install_path = os.path.join(target_path, os.path.relpath(path, '/'))
     install_parent = os.path.dirname(install_path)
     osutils.SafeMakedirs(install_parent, 0o775)
