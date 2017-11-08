@@ -148,6 +148,10 @@ void AppBannerInfoBarDelegateAndroid::OnInstallFinished(
   }
 }
 
+const SkBitmap& AppBannerInfoBarDelegateAndroid::GetPrimaryIcon() const {
+  return primary_icon_;
+}
+
 bool AppBannerInfoBarDelegateAndroid::Accept() {
   has_user_interaction_ = true;
 
@@ -165,6 +169,10 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
     return AcceptWebApk(web_contents);
 
   return AcceptWebApp(web_contents);
+}
+
+base::string16 AppBannerInfoBarDelegateAndroid::GetMessageText() const {
+  return app_title_;
 }
 
 AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
@@ -276,10 +284,6 @@ AppBannerInfoBarDelegateAndroid::GetIdentifier() const {
   return APP_BANNER_INFOBAR_DELEGATE_ANDROID;
 }
 
-gfx::Image AppBannerInfoBarDelegateAndroid::GetIcon() const {
-  return gfx::Image::CreateFrom1xBitmap(primary_icon_);
-}
-
 void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
   has_user_interaction_ = true;
 
@@ -301,10 +305,6 @@ void AppBannerInfoBarDelegateAndroid::InfoBarDismissed() {
     AppBannerSettingsHelper::RecordBannerDismissEvent(
         web_contents, package_name_, AppBannerSettingsHelper::NATIVE);
   }
-}
-
-base::string16 AppBannerInfoBarDelegateAndroid::GetMessageText() const {
-  return app_title_;
 }
 
 int AppBannerInfoBarDelegateAndroid::GetButtons() const {

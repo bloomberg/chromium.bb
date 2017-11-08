@@ -35,6 +35,8 @@ class AppBannerInfoBarAndroid : public ConfirmInfoBar {
   void OnInstallStateChanged(int new_state);
 
  private:
+  banners::AppBannerInfoBarDelegateAndroid* GetDelegate();
+
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
