@@ -90,7 +90,7 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
-    service->SetFileSystemFactoryForTesting(
+    service->SetDefaultFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
     const base::File::Error result = service->MountFileSystem(

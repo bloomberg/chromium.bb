@@ -128,7 +128,7 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
         content::CreateFileSystemContextForTesting(NULL, data_dir_.GetPath());
 
     Service* service = Service::Get(profile_);  // Owned by its factory.
-    service->SetFileSystemFactoryForTesting(
+    service->SetDefaultFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
     const base::File::Error result = service->MountFileSystem(
