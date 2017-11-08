@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Ensure transactions created within Promise callbacks are not deactivated due to console activity\n`);
+  await TestRunner.loadModule('console_test_runner');
+
   testRunner.waitUntilDone();
   testRunner.showWebInspector();
 
@@ -30,11 +33,4 @@ function test() {
       });
     };
   };
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Ensure transactions created within Promise callbacks are not deactivated due to console activity</p>
-</body>
-</html>
+})();

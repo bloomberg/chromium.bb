@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that database names are correctly loaded and saved in IndexedDBModel.\n`);
+  await TestRunner.loadModule('application_test_runner');
+
   var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
   var databaseName = 'testDatabase1';
@@ -170,12 +172,7 @@ function test() {
   }
 
   function step22() {
+    ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that database names are correctly loaded and saved in IndexedDBModel.</p>
-</body>
-</html>
+})();

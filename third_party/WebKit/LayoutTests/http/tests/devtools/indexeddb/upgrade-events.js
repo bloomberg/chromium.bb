@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/indexeddb/indexeddb-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that deleted databases do not get recreated.\n`);
+  await TestRunner.loadModule('application_test_runner');
+
   var indexedDBModel = ApplicationTestRunner.createIndexedDBModel();
   var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
   var securityOrigin = 'http://127.0.0.1:8000';
@@ -120,10 +122,4 @@ function test() {
       callback();
     }
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that deleted databases do not get recreated.</p>
-</body>
-</html>
+})();

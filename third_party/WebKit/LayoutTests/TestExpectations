@@ -901,14 +901,14 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.js [ Failure Pass ]
 
-crbug.com/734744 http/tests/devtools/indexeddb/resources-panel.html [ Pass Failure Timeout ]
-crbug.com/734744 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.html [ Pass Failure Timeout ]
+crbug.com/734744 http/tests/devtools/indexeddb/resources-panel.js [ Pass Failure Timeout ]
+crbug.com/734744 virtual/mojo-loading/http/tests/devtools/indexeddb/resources-panel.js [ Pass Failure Timeout ]
 
-crbug.com/734793 http/tests/devtools/indexeddb/database-names.html [ Pass Failure Timeout ]
-crbug.com/734793 virtual/mojo-loading/http/tests/devtools/indexeddb/database-names.html [ Pass Failure Timeout ]
+crbug.com/734793 http/tests/devtools/indexeddb/database-names.js [ Pass Failure Timeout ]
+crbug.com/734793 virtual/mojo-loading/http/tests/devtools/indexeddb/database-names.js [ Pass Failure Timeout ]
 
-crbug.com/735259 http/tests/devtools/indexeddb/upgrade-events.html [ Pass Failure ]
-crbug.com/735259 virtual/mojo-loading/http/tests/devtools/indexeddb/upgrade-events.html [ Pass Failure ]
+crbug.com/735259 http/tests/devtools/indexeddb/upgrade-events.js [ Pass Failure ]
+crbug.com/735259 virtual/mojo-loading/http/tests/devtools/indexeddb/upgrade-events.js [ Pass Failure ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -1872,8 +1872,8 @@ crbug.com/763718 virtual/mojo-loading/http/tests/devtools/bindings/livelocation-
 
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
-crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
