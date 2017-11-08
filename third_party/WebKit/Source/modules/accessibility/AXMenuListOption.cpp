@@ -78,7 +78,7 @@ AXObject* AXMenuListOption::ComputeParent() const {
   HTMLSelectElement* select = ToHTMLOptionElement(node)->OwnerSelectElement();
   if (!select)
     return nullptr;
-  AXObject* select_ax_object = AxObjectCache().GetOrCreate(select);
+  AXObject* select_ax_object = AXObjectCache().GetOrCreate(select);
 
   // This happens if the <select> is not rendered. Return it and move on.
   if (!select_ax_object->IsMenuList())

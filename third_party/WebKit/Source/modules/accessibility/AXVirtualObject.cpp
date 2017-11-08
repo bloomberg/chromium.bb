@@ -30,7 +30,7 @@ void AXVirtualObject::AddChildren() {
     return;
 
   for (const auto& child : accessible_node_->GetChildren())
-    children_.push_back(AxObjectCache().GetOrCreate(child));
+    children_.push_back(AXObjectCache().GetOrCreate(child));
 }
 
 const AtomicString& AXVirtualObject::GetAOMPropertyOrARIAAttribute(

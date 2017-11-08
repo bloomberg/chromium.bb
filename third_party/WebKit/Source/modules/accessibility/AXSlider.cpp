@@ -86,7 +86,7 @@ void AXSlider::AddChildren() {
 
   have_children_ = true;
 
-  AXObjectCacheImpl& cache = AxObjectCache();
+  AXObjectCacheImpl& cache = AXObjectCache();
 
   AXSliderThumb* thumb =
       static_cast<AXSliderThumb*>(cache.GetOrCreate(kSliderThumbRole));
@@ -95,7 +95,7 @@ void AXSlider::AddChildren() {
   // Before actually adding the value indicator to the hierarchy,
   // allow the platform to make a final decision about it.
   if (thumb->AccessibilityIsIgnored())
-    cache.Remove(thumb->AxObjectID());
+    cache.Remove(thumb->AXObjectID());
   else
     children_.push_back(thumb);
 }
@@ -107,7 +107,7 @@ AXObject* AXSlider::ElementAccessibilityHitTest(const IntPoint& point) const {
       return children_[0].Get();
   }
 
-  return AxObjectCache().GetOrCreate(layout_object_);
+  return AXObjectCache().GetOrCreate(layout_object_);
 }
 
 bool AXSlider::OnNativeSetValueAction(const String& value) {

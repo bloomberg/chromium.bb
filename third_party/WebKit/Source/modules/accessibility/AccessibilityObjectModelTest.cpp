@@ -27,7 +27,8 @@ class AccessibilityObjectModelTest
  protected:
   AXObjectCacheImpl* AXObjectCache() {
     GetDocument().GetSettings()->SetAccessibilityEnabled(true);
-    return static_cast<AXObjectCacheImpl*>(GetDocument().AxObjectCache());
+    return static_cast<AXObjectCacheImpl*>(
+        GetDocument().GetOrCreateAXObjectCache());
   }
 };
 

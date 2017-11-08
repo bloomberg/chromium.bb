@@ -94,7 +94,7 @@ static void InertSubtreesChanged(Document& document) {
   // the tree. The most foolproof way is to clear the entire tree and rebuild
   // it, though a more clever way is probably possible.
   document.ClearAXObjectCache();
-  if (AXObjectCache* cache = document.AxObjectCache())
+  if (AXObjectCache* cache = document.ExistingAXObjectCache())
     cache->ChildrenChanged(&document);
 }
 

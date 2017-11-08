@@ -38,18 +38,18 @@ AXRelationCache::AXRelationCache(AXObjectCacheImpl* object_cache)
 AXRelationCache::~AXRelationCache() {}
 
 bool AXRelationCache::IsAriaOwned(const AXObject* child) const {
-  return aria_owned_child_to_owner_mapping_.Contains(child->AxObjectID());
+  return aria_owned_child_to_owner_mapping_.Contains(child->AXObjectID());
 }
 
 AXObject* AXRelationCache::GetAriaOwnedParent(const AXObject* child) const {
   return ObjectFromAXID(
-      aria_owned_child_to_owner_mapping_.at(child->AxObjectID()));
+      aria_owned_child_to_owner_mapping_.at(child->AXObjectID()));
 }
 
 // Update reverse relation map, where relation_source is related to target_ids.
 void AXRelationCache::UpdateReverseRelations(const AXObject* relation_source,
                                              const Vector<String>& target_ids) {
-  AXID relation_source_axid = relation_source->AxObjectID();
+  AXID relation_source_axid = relation_source->AXObjectID();
 
   // Add entries to reverse map.
   for (const String& target_id : target_ids) {
@@ -134,14 +134,14 @@ void AXRelationCache::MapOwnedChildren(const AXObject* owner,
     AXObject* added_child = ObjectFromAXID(added_child_id);
 
     // Add this child to the mapping from child to owner.
-    aria_owned_child_to_owner_mapping_.Set(added_child_id, owner->AxObjectID());
+    aria_owned_child_to_owner_mapping_.Set(added_child_id, owner->AXObjectID());
 
     // Add its parent object to a mapping from child to real parent. If later
     // this owner doesn't own this child anymore, we need to return it to its
     // original parent.
     AXObject* original_parent = added_child->ParentObject();
     aria_owned_child_to_real_parent_mapping_.Set(added_child_id,
-                                                 original_parent->AxObjectID());
+                                                 original_parent->AXObjectID());
 
     // Now detach the object from its original parent and call childrenChanged
     // on the original parent so that it can recompute its list of children.
@@ -170,7 +170,7 @@ void AXRelationCache::UpdateAriaOwns(
     Element* element = scope.getElementById(AtomicString(id_name));
     AXObject* child = GetOrCreate(element);
     if (IsValidOwnsRelation(const_cast<AXObject*>(owner), child)) {
-      validated_owned_child_axids.push_back(child->AxObjectID());
+      validated_owned_child_axids.push_back(child->AXObjectID());
       validated_owned_children_result.push_back(child);
     }
   }
@@ -178,7 +178,7 @@ void AXRelationCache::UpdateAriaOwns(
   // Compare this to the current list of owned children, and exit early if
   // there are no changes.
   Vector<AXID> current_child_axids =
-      aria_owner_to_children_mapping_.at(owner->AxObjectID());
+      aria_owner_to_children_mapping_.at(owner->AXObjectID());
   if (current_child_axids == validated_owned_child_axids)
     return;
 
@@ -189,7 +189,7 @@ void AXRelationCache::UpdateAriaOwns(
   MapOwnedChildren(owner, validated_owned_child_axids);
 
   // Finally, update the mapping from the owner to the list of child IDs.
-  aria_owner_to_children_mapping_.Set(owner->AxObjectID(),
+  aria_owner_to_children_mapping_.Set(owner->AXObjectID(),
                                       validated_owned_child_axids);
 }
 

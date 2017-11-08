@@ -87,7 +87,7 @@ unsigned AXARIAGrid::CalculateNumColumns() {
 }
 
 void AXARIAGrid::AddColumnChildren(unsigned num_cols) {
-  AXObjectCacheImpl& ax_cache = AxObjectCache();
+  AXObjectCacheImpl& ax_cache = AXObjectCache();
   for (unsigned i = 0; i < num_cols; ++i) {
     AXTableColumn* column = ToAXTableColumn(ax_cache.GetOrCreate(kColumnRole));
     column->SetColumnIndex((int)i);

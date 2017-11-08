@@ -312,12 +312,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // The AXObjectCacheImpl that owns this object, and its unique ID within this
   // cache.
-  AXObjectCacheImpl& AxObjectCache() const {
+  AXObjectCacheImpl& AXObjectCache() const {
     DCHECK(ax_object_cache_);
     return *ax_object_cache_;
   }
 
-  AXID AxObjectID() const { return id_; }
+  AXID AXObjectID() const { return id_; }
 
   // Wrappers that retrieve either an Accessibility Object Model property,
   // or the equivalent ARIA attribute, in that order.
@@ -670,7 +670,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Explicitly set an object's bounding rect and offset container.
   void SetElementRect(LayoutRect r, AXObject* container) {
     explicit_element_rect_ = r;
-    explicit_container_id_ = container->AxObjectID();
+    explicit_container_id_ = container->AXObjectID();
   }
 
   // Hit testing.

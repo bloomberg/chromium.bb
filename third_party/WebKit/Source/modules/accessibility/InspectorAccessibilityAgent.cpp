@@ -501,7 +501,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildObjectForIgnoredNode(
   AXObject::IgnoredReasons ignored_reasons;
   AXID ax_id = kIDForInspectedNodeWithNoAXNode;
   if (ax_object && ax_object->IsAXLayoutObject())
-    ax_id = ax_object->AxObjectID();
+    ax_id = ax_object->AXObjectID();
   std::unique_ptr<AXNode> ignored_node_object =
       AXNode::create()
           .setNodeId(String::Number(ax_id))
@@ -584,7 +584,7 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(
   AccessibilityRole role = ax_object.RoleValue();
   std::unique_ptr<AXNode> node_object =
       AXNode::create()
-          .setNodeId(String::Number(ax_object.AxObjectID()))
+          .setNodeId(String::Number(ax_object.AXObjectID()))
           .setIgnored(false)
           .build();
   node_object->setRole(CreateRoleNameValue(role));
@@ -700,14 +700,14 @@ void InspectorAccessibilityAgent::AddChildren(
     AXObjectCacheImpl& cache) const {
   if (inspected_ax_object && inspected_ax_object->AccessibilityIsIgnored() &&
       &ax_object == inspected_ax_object->ParentObjectUnignored()) {
-    child_ids->addItem(String::Number(inspected_ax_object->AxObjectID()));
+    child_ids->addItem(String::Number(inspected_ax_object->AXObjectID()));
     return;
   }
 
   const AXObject::AXObjectVector& children = ax_object.Children();
   for (unsigned i = 0; i < children.size(); i++) {
     AXObject& child_ax_object = *children[i].Get();
-    child_ids->addItem(String::Number(child_ax_object.AxObjectID()));
+    child_ids->addItem(String::Number(child_ax_object.AXObjectID()));
     if (&child_ax_object == inspected_ax_object)
       continue;
     if (&ax_object != inspected_ax_object) {

@@ -60,7 +60,7 @@ class ObjectAttributeSetter : public AXSparseAttributeSetter {
     Element* target = ToElement(node)->GetTreeScope().getElementById(value);
     if (!target)
       return;
-    AXObject* ax_target = obj.AxObjectCache().GetOrCreate(target);
+    AXObject* ax_target = obj.AXObjectCache().GetOrCreate(target);
     if (ax_target)
       attribute_map.AddObjectAttribute(attribute_, *ax_target);
   }
@@ -95,7 +95,7 @@ class ObjectVectorAttributeSetter : public AXSparseAttributeSetter {
     TreeScope& scope = node->GetTreeScope();
     for (const auto& id : ids) {
       if (Element* id_element = scope.getElementById(AtomicString(id))) {
-        AXObject* ax_id_element = obj.AxObjectCache().GetOrCreate(id_element);
+        AXObject* ax_id_element = obj.AXObjectCache().GetOrCreate(id_element);
         if (ax_id_element && !ax_id_element->AccessibilityIsIgnored())
           objects.push_back(ax_id_element);
       }

@@ -27,7 +27,8 @@ void AccessibilityTest::TearDown() {
 }
 
 AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
-  auto ax_object_cache = ToAXObjectCacheImpl(GetDocument().AxObjectCache());
+  auto ax_object_cache =
+      ToAXObjectCacheImpl(GetDocument().GetOrCreateAXObjectCache());
   DCHECK(ax_object_cache);
   return *ax_object_cache;
 }

@@ -346,7 +346,7 @@ bool AXLayoutObject::IsEditable() const {
     Document& document = GetLayoutObject()->GetDocument();
     HTMLElement* body = document.body();
     if (body && HasEditableStyle(*body)) {
-      AXObject* ax_body = AxObjectCache().GetOrCreate(body);
+      AXObject* ax_body = AXObjectCache().GetOrCreate(body);
       return ax_body && ax_body != ax_body->AriaHiddenRoot();
     }
 
@@ -366,7 +366,7 @@ bool AXLayoutObject::IsRichlyEditable() const {
     Document& document = layout_object_->GetDocument();
     HTMLElement* body = document.body();
     if (body && HasRichlyEditableStyle(*body)) {
-      AXObject* ax_body = AxObjectCache().GetOrCreate(body);
+      AXObject* ax_body = AXObjectCache().GetOrCreate(body);
       return ax_body && ax_body != ax_body->AriaHiddenRoot();
     }
 
@@ -418,7 +418,7 @@ bool AXLayoutObject::IsFocused() const {
   Element* focused_element = GetDocument()->FocusedElement();
   if (!focused_element)
     return false;
-  AXObject* focused_object = AxObjectCache().GetOrCreate(focused_element);
+  AXObject* focused_object = AXObjectCache().GetOrCreate(focused_element);
   if (!focused_object || !focused_object->IsAXLayoutObject())
     return false;
 
@@ -452,7 +452,7 @@ bool AXLayoutObject::IsSelected() const {
   if (!container || container->IsMultiSelectable())
     return false;
 
-  AXObject* focused_object = AxObjectCache().FocusedObject();
+  AXObject* focused_object = AXObjectCache().FocusedObject();
   return focused_object == this ||
          (focused_object && focused_object->ActiveDescendant() == this);
 }
@@ -552,7 +552,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     if (ignored_reasons) {
       HTMLLabelElement* label = LabelElementContainer();
       if (label && label != GetNode()) {
-        AXObject* label_ax_object = AxObjectCache().GetOrCreate(label);
+        AXObject* label_ax_object = AXObjectCache().GetOrCreate(label);
         ignored_reasons->push_back(
             IgnoredReason(kAXLabelContainer, label_ax_object));
       }
@@ -870,7 +870,7 @@ RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
   // Color::blend should be called like this: background.blend(foreground).
   for (LayoutObject* layout_object = GetLayoutObject(); layout_object;
        layout_object = layout_object->Parent()) {
-    const AXObject* ax_parent = AxObjectCache().GetOrCreate(layout_object);
+    const AXObject* ax_parent = AXObjectCache().GetOrCreate(layout_object);
     if (ax_parent && ax_parent != this) {
       Color parent_color = ax_parent->BackgroundColor();
       blended_color = parent_color.Blend(blended_color);
@@ -1164,7 +1164,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
          next = next->NextOnLine()) {
       LayoutObject* layout_object =
           LineLayoutAPIShim::LayoutObjectFrom(next->GetLineLayoutItem());
-      result = AxObjectCache().GetOrCreate(layout_object);
+      result = AXObjectCache().GetOrCreate(layout_object);
       if (result)
         break;
     }
@@ -1197,7 +1197,7 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
        prev = prev->PrevOnLine()) {
     LayoutObject* layout_object =
         LineLayoutAPIShim::LayoutObjectFrom(prev->GetLineLayoutItem());
-    result = AxObjectCache().GetOrCreate(layout_object);
+    result = AXObjectCache().GetOrCreate(layout_object);
     if (result)
       break;
   }
@@ -1449,7 +1449,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
   if (!obj)
     return nullptr;
 
-  AXObject* result = AxObjectCache().GetOrCreate(obj);
+  AXObject* result = AXObjectCache().GetOrCreate(obj);
   result->UpdateChildrenIfNecessary();
 
   // Allow the element to perform any hit-testing it might need to do to reach
@@ -1489,7 +1489,7 @@ AXObject* AXLayoutObject::ComputeParent() const {
     return nullptr;
 
   if (AriaRoleAttribute() == kMenuBarRole)
-    return AxObjectCache().GetOrCreate(layout_object_->Parent());
+    return AXObjectCache().GetOrCreate(layout_object_->Parent());
 
   // menuButton and its corresponding menu are DOM siblings, but Accessibility
   // needs them to be parent/child.
@@ -1501,12 +1501,12 @@ AXObject* AXLayoutObject::ComputeParent() const {
 
   LayoutObject* parent_obj = LayoutParentObject();
   if (parent_obj)
-    return AxObjectCache().GetOrCreate(parent_obj);
+    return AXObjectCache().GetOrCreate(parent_obj);
 
   // A WebArea's parent should be the page popup owner, if any, otherwise null.
   if (IsWebArea()) {
     LocalFrame* frame = layout_object_->GetFrame();
-    return AxObjectCache().GetOrCreate(frame->PagePopupOwner());
+    return AXObjectCache().GetOrCreate(frame->PagePopupOwner());
   }
 
   return nullptr;
@@ -1517,7 +1517,7 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
     return nullptr;
 
   if (AriaRoleAttribute() == kMenuBarRole)
-    return AxObjectCache().Get(layout_object_->Parent());
+    return AXObjectCache().Get(layout_object_->Parent());
 
   // menuButton and its corresponding menu are DOM siblings, but Accessibility
   // needs them to be parent/child.
@@ -1529,12 +1529,12 @@ AXObject* AXLayoutObject::ComputeParentIfExists() const {
 
   LayoutObject* parent_obj = LayoutParentObject();
   if (parent_obj)
-    return AxObjectCache().Get(parent_obj);
+    return AXObjectCache().Get(parent_obj);
 
   // A WebArea's parent should be the page popup owner, if any, otherwise null.
   if (IsWebArea()) {
     LocalFrame* frame = layout_object_->GetFrame();
-    return AxObjectCache().Get(frame->PagePopupOwner());
+    return AXObjectCache().Get(frame->PagePopupOwner());
   }
 
   return nullptr;
@@ -1554,7 +1554,7 @@ AXObject* AXLayoutObject::RawFirstChild() const {
   if (!first_child)
     return nullptr;
 
-  return AxObjectCache().GetOrCreate(first_child);
+  return AXObjectCache().GetOrCreate(first_child);
 }
 
 AXObject* AXLayoutObject::RawNextSibling() const {
@@ -1610,7 +1610,7 @@ AXObject* AXLayoutObject::RawNextSibling() const {
   if (!next_sibling)
     return nullptr;
 
-  return AxObjectCache().GetOrCreate(next_sibling);
+  return AXObjectCache().GetOrCreate(next_sibling);
 }
 
 void AXLayoutObject::AddChildren() {
@@ -1626,7 +1626,7 @@ void AXLayoutObject::AddChildren() {
   ComputeAriaOwnsChildren(owned_children);
 
   for (AXObject* obj = RawFirstChild(); obj; obj = obj->RawNextSibling()) {
-    if (!AxObjectCache().IsAriaOwned(obj)) {
+    if (!AXObjectCache().IsAriaOwned(obj)) {
       obj->SetParent(this);
       AddChild(obj);
     }
@@ -1711,7 +1711,7 @@ Element* AXLayoutObject::AnchorElement() const {
   if (!layout_object_)
     return nullptr;
 
-  AXObjectCacheImpl& cache = AxObjectCache();
+  AXObjectCacheImpl& cache = AXObjectCache();
   LayoutObject* curr_layout_object;
 
   // Search up the layout tree for a LayoutObject with a DOM node. Defer to an
@@ -1873,7 +1873,7 @@ AXObject::AXRange AXLayoutObject::TextControlSelection() const {
   if (!layout)
     return AXRange();
 
-  AXObject* ax_object = AxObjectCache().GetOrCreate(layout);
+  AXObject* ax_object = AXObjectCache().GetOrCreate(layout);
   if (!ax_object || !ax_object->IsAXLayoutObject())
     return AXRange();
 
@@ -1922,7 +1922,7 @@ AXLayoutObject* AXLayoutObject::GetUnignoredObjectFromNode(Node& node) const {
   if (IsDetached())
     return nullptr;
 
-  AXObject* ax_object = AxObjectCache().GetOrCreate(&node);
+  AXObject* ax_object = AXObjectCache().GetOrCreate(&node);
   if (!ax_object)
     return nullptr;
 
@@ -2078,7 +2078,7 @@ bool AXLayoutObject::IsValidSelectionBound(const AXObject* bound_object) const {
          bound_object->IsAXLayoutObject() && bound_object->GetLayoutObject() &&
          bound_object->GetLayoutObject()->GetFrame() ==
              GetLayoutObject()->GetFrame() &&
-         &bound_object->AxObjectCache() == &AxObjectCache();
+         &bound_object->AXObjectCache() == &AXObjectCache();
 }
 
 bool AXLayoutObject::OnNativeSetValueAction(const String& string) {
@@ -2111,9 +2111,9 @@ void AXLayoutObject::HandleActiveDescendantChanged() {
   if (!GetLayoutObject())
     return;
 
-  AXObject* focused_object = AxObjectCache().FocusedObject();
+  AXObject* focused_object = AXObjectCache().FocusedObject();
   if (focused_object == this && SupportsActiveDescendant()) {
-    AxObjectCache().PostNotification(
+    AXObjectCache().PostNotification(
         GetLayoutObject(), AXObjectCacheImpl::kAXActiveDescendantChanged);
   }
 }
@@ -2143,7 +2143,7 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
 
   // Post that the row count changed.
   if (container_parent)
-    AxObjectCache().PostNotification(container_parent,
+    AXObjectCache().PostNotification(container_parent,
                                      AXObjectCacheImpl::kAXRowCountChanged);
 
   // Post that the specific row either collapsed or expanded.
@@ -2157,9 +2157,9 @@ void AXLayoutObject::HandleAriaExpandedChanged() {
     if (expanded == kExpandedCollapsed)
       notification = AXObjectCacheImpl::kAXRowCollapsed;
 
-    AxObjectCache().PostNotification(this, notification);
+    AXObjectCache().PostNotification(this, notification);
   } else {
-    AxObjectCache().PostNotification(this,
+    AXObjectCache().PostNotification(this,
                                      AXObjectCacheImpl::kAXExpandedChanged);
   }
 }
@@ -2244,7 +2244,7 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
   for (scoped_refptr<AbstractInlineTextBox> box =
            layout_text->FirstAbstractInlineTextBox();
        box.get(); box = box->NextInlineTextBox()) {
-    AXObject* ax_object = AxObjectCache().GetOrCreate(box.get());
+    AXObject* ax_object = AXObjectCache().GetOrCreate(box.get());
     if (!ax_object->AccessibilityIsIgnored())
       children_.push_back(ax_object);
   }
@@ -2289,7 +2289,7 @@ bool AXLayoutObject::IsTabItemSelected() const {
   // The ARIA spec says a tab item can also be selected if it is aria-labeled by
   // a tabpanel that has keyboard focus inside of it, or if a tabpanel in its
   // aria-controls list has KB focus inside of it.
-  AXObject* focused_element = AxObjectCache().FocusedObject();
+  AXObject* focused_element = AXObjectCache().FocusedObject();
   if (!focused_element)
     return false;
 
@@ -2299,7 +2299,7 @@ bool AXLayoutObject::IsTabItemSelected() const {
     return false;
 
   for (const auto& element : elements) {
-    AXObject* tab_panel = AxObjectCache().GetOrCreate(element);
+    AXObject* tab_panel = AXObjectCache().GetOrCreate(element);
 
     // A tab item should only control tab panels.
     if (!tab_panel || tab_panel->RoleValue() != kTabPanelRole)
@@ -2324,7 +2324,7 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
   if (!area)
     return nullptr;
 
-  AXObject* parent = AxObjectCache().GetOrCreate(area->ImageElement());
+  AXObject* parent = AXObjectCache().GetOrCreate(area->ImageElement());
   if (!parent)
     return nullptr;
 
@@ -2458,7 +2458,7 @@ void AXLayoutObject::AddHiddenChildren() {
     if (child.GetLayoutObject()) {
       // Find out where the last layout sibling is located within m_children.
       if (AXObject* child_object =
-              AxObjectCache().Get(child.GetLayoutObject())) {
+              AXObjectCache().Get(child.GetLayoutObject())) {
         if (child_object->AccessibilityIsIgnored()) {
           const auto& children = child_object->Children();
           child_object = children.size() ? children.back().Get() : nullptr;
@@ -2476,7 +2476,7 @@ void AXLayoutObject::AddHiddenChildren() {
     if (insertion_index > previous_size)
       insertion_index = previous_size;
 
-    InsertChild(AxObjectCache().GetOrCreate(&child), insertion_index);
+    InsertChild(AXObjectCache().GetOrCreate(&child), insertion_index);
     insertion_index += (children_.size() - previous_size);
   }
 }
@@ -2493,7 +2493,7 @@ void AXLayoutObject::AddTextFieldChildren() {
     return;
 
   AXSpinButton* ax_spin_button =
-      ToAXSpinButton(AxObjectCache().GetOrCreate(kSpinButtonRole));
+      ToAXSpinButton(AXObjectCache().GetOrCreate(kSpinButtonRole));
   ax_spin_button->SetSpinButtonElement(
       ToSpinButtonElement(spin_button_element));
   ax_spin_button->SetParent(this);
@@ -2512,15 +2512,15 @@ void AXLayoutObject::AddImageMapChildren() {
   for (HTMLAreaElement& area :
        Traversal<HTMLAreaElement>::DescendantsOf(*map)) {
     // add an <area> element for this child if it has a link
-    AXObject* obj = AxObjectCache().GetOrCreate(&area);
+    AXObject* obj = AXObjectCache().GetOrCreate(&area);
     if (obj) {
       AXImageMapLink* area_object = ToAXImageMapLink(obj);
       area_object->SetParent(this);
-      DCHECK(area_object->AxObjectID() != 0);
+      DCHECK_NE(area_object->AXObjectID(), 0U);
       if (!area_object->AccessibilityIsIgnored())
         children_.push_back(area_object);
       else
-        AxObjectCache().Remove(area_object->AxObjectID());
+        AXObjectCache().Remove(area_object->AXObjectID());
     }
   }
 }

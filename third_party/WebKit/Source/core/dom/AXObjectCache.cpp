@@ -66,7 +66,7 @@ std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::Create(
 
 ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
     : document_(&document) {
-  if (!document_->AxObjectCache())
+  if (!document_->GetOrCreateAXObjectCache())
     cache_ = AXObjectCache::Create(*document_);
 }
 
@@ -78,7 +78,7 @@ ScopedAXObjectCache::~ScopedAXObjectCache() {
 AXObjectCache* ScopedAXObjectCache::Get() {
   if (cache_)
     return cache_.Get();
-  AXObjectCache* cache = document_->AxObjectCache();
+  AXObjectCache* cache = document_->GetOrCreateAXObjectCache();
   DCHECK(cache);
   return cache;
 }

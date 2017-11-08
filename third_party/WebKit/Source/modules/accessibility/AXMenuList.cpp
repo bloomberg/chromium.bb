@@ -76,7 +76,7 @@ void AXMenuList::AddChildren() {
   DCHECK(!IsDetached());
   have_children_ = true;
 
-  AXObjectCacheImpl& cache = AxObjectCache();
+  AXObjectCacheImpl& cache = AXObjectCache();
 
   AXObject* list = cache.GetOrCreate(kMenuListPopupRole);
   if (!list)
@@ -84,7 +84,7 @@ void AXMenuList::AddChildren() {
 
   ToAXMockObject(list)->SetParent(this);
   if (list->AccessibilityIsIgnored()) {
-    cache.Remove(list->AxObjectID());
+    cache.Remove(list->AXObjectID());
     return;
   }
 
@@ -123,7 +123,7 @@ void AXMenuList::DidUpdateActiveOption(int option_index) {
     }
   }
 
-  AxObjectCache().PostNotification(this,
+  AXObjectCache().PostNotification(this,
                                    AXObjectCacheImpl::kAXMenuListValueChanged);
 }
 
@@ -143,7 +143,7 @@ void AXMenuList::DidHidePopup() {
   popup->DidHide();
 
   if (GetNode() && GetNode()->IsFocused())
-    AxObjectCache().PostNotification(
+    AXObjectCache().PostNotification(
         this, AXObjectCacheImpl::kAXFocusedUIElementChanged);
 }
 
