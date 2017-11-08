@@ -48,7 +48,8 @@ enum PathComponentIndex : unsigned {
 };
 
 InterpolationValue PathInterpolationFunctions::ConvertValue(
-    const SVGPathByteStream& byte_stream) {
+    const SVGPathByteStream& byte_stream,
+    CoordinateConversion coordinateConversion) {
   SVGPathByteStreamSource path_source(byte_stream);
   size_t length = 0;
   PathCoordinates current_coordinates;
@@ -60,7 +61,10 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
     interpolable_path_segs.push_back(
         SVGPathSegInterpolationFunctions::ConsumePathSeg(segment,
                                                          current_coordinates));
-    path_seg_types.push_back(segment.command);
+    SVGPathSegType seg_type = segment.command;
+    if (coordinateConversion == ForceAbsolute)
+      seg_type = ToAbsolutePathSegType(seg_type);
+    path_seg_types.push_back(seg_type);
     length++;
   }
 
@@ -79,12 +83,13 @@ InterpolationValue PathInterpolationFunctions::ConvertValue(
 }
 
 InterpolationValue PathInterpolationFunctions::ConvertValue(
-    const StylePath* style_path) {
+    const StylePath* style_path,
+    CoordinateConversion coordinateConversion) {
   if (style_path)
-    return ConvertValue(style_path->ByteStream());
+    return ConvertValue(style_path->ByteStream(), coordinateConversion);
 
   std::unique_ptr<SVGPathByteStream> empty_path = SVGPathByteStream::Create();
-  return ConvertValue(*empty_path);
+  return ConvertValue(*empty_path, ForceAbsolute);
 }
 
 class UnderlyingPathSegTypesChecker

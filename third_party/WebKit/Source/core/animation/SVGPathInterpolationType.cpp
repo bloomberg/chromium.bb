@@ -16,7 +16,8 @@ InterpolationValue SVGPathInterpolationType::MaybeConvertSVGValue(
     return nullptr;
 
   return PathInterpolationFunctions::ConvertValue(
-      ToSVGPath(svg_value).ByteStream());
+      ToSVGPath(svg_value).ByteStream(),
+      PathInterpolationFunctions::PreserveCoordinates);
 }
 
 InterpolationValue SVGPathInterpolationType::MaybeConvertNeutral(
