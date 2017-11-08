@@ -46,7 +46,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
       chunks_.resize(*index + 1);
 
     TraceBufferChunk* chunk = chunks_[*index].release();
-    chunks_[*index] = NULL;  // Put NULL in the slot of a in-flight chunk.
+    chunks_[*index] = nullptr;  // Put nullptr in the slot of a in-flight chunk.
     if (chunk)
       chunk->Reset(current_chunk_seq_++);
     else
@@ -81,16 +81,16 @@ class TraceBufferRingBuffer : public TraceBuffer {
 
   TraceEvent* GetEventByHandle(TraceEventHandle handle) override {
     if (handle.chunk_index >= chunks_.size())
-      return NULL;
+      return nullptr;
     TraceBufferChunk* chunk = chunks_[handle.chunk_index].get();
     if (!chunk || chunk->seq() != handle.chunk_seq)
-      return NULL;
+      return nullptr;
     return chunk->GetEventAt(handle.event_index);
   }
 
   const TraceBufferChunk* NextChunk() override {
     if (chunks_.empty())
-      return NULL;
+      return nullptr;
 
     while (current_iteration_index_ != queue_tail_) {
       size_t chunk_index = recyclable_chunks_queue_[current_iteration_index_];
@@ -100,7 +100,7 @@ class TraceBufferRingBuffer : public TraceBuffer {
       DCHECK(chunks_[chunk_index]);
       return chunks_[chunk_index].get();
     }
-    return NULL;
+    return nullptr;
   }
 
   void EstimateTraceMemoryOverhead(
@@ -198,10 +198,10 @@ class TraceBufferVector : public TraceBuffer {
 
   TraceEvent* GetEventByHandle(TraceEventHandle handle) override {
     if (handle.chunk_index >= chunks_.size())
-      return NULL;
+      return nullptr;
     TraceBufferChunk* chunk = chunks_[handle.chunk_index].get();
     if (!chunk || chunk->seq() != handle.chunk_seq)
-      return NULL;
+      return nullptr;
     return chunk->GetEventAt(handle.event_index);
   }
 
@@ -212,7 +212,7 @@ class TraceBufferVector : public TraceBuffer {
       if (chunk)
         return chunk;
     }
-    return NULL;
+    return nullptr;
   }
 
   void EstimateTraceMemoryOverhead(

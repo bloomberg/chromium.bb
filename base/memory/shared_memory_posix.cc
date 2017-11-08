@@ -99,7 +99,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   ScopedFD readonly_fd;
 
   FilePath path;
-  if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
+  if (options.name_deprecated == nullptr || options.name_deprecated->empty()) {
     bool result =
         CreateAnonymousSharedMemory(options, &fp, &readonly_fd, &path);
     if (!result)
@@ -177,7 +177,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     }
     requested_size_ = options.size;
   }
-  if (fp == NULL) {
+  if (fp == nullptr) {
     PLOG(ERROR) << "Creating shared memory in " << path.value() << " failed";
     FilePath dir = path.DirName();
     if (access(dir.value().c_str(), W_OK | X_OK) < 0) {
@@ -275,10 +275,10 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   }
 #endif
 
-  memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
+  memory_ = mmap(nullptr, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
                  MAP_SHARED, shm_.GetHandle(), offset);
 
-  bool mmap_succeeded = memory_ != (void*)-1 && memory_ != NULL;
+  bool mmap_succeeded = memory_ != (void*)-1 && memory_ != nullptr;
   if (mmap_succeeded) {
     mapped_size_ = bytes;
     mapped_id_ = shm_.GetGUID();
@@ -287,19 +287,19 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
                   (SharedMemory::MAP_MINIMUM_ALIGNMENT - 1));
     SharedMemoryTracker::GetInstance()->IncrementMemoryUsage(*this);
   } else {
-    memory_ = NULL;
+    memory_ = nullptr;
   }
 
   return mmap_succeeded;
 }
 
 bool SharedMemory::Unmap() {
-  if (memory_ == NULL)
+  if (memory_ == nullptr)
     return false;
 
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
   munmap(memory_, mapped_size_);
-  memory_ = NULL;
+  memory_ = nullptr;
   mapped_size_ = 0;
   mapped_id_ = UnguessableToken();
   return true;

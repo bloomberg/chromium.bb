@@ -53,7 +53,7 @@ template<typename Type>
 inline const char* PickleIterator::GetReadPointerAndAdvance() {
   if (sizeof(Type) > end_index_ - read_index_) {
     read_index_ = end_index_;
-    return NULL;
+    return nullptr;
   }
   const char* current_read_ptr = payload_ + read_index_;
   Advance(sizeof(Type));
@@ -64,7 +64,7 @@ const char* PickleIterator::GetReadPointerAndAdvance(int num_bytes) {
   if (num_bytes < 0 ||
       end_index_ - read_index_ < static_cast<size_t>(num_bytes)) {
     read_index_ = end_index_;
-    return NULL;
+    return nullptr;
   }
   const char* current_read_ptr = payload_ + read_index_;
   Advance(num_bytes);
@@ -77,7 +77,7 @@ inline const char* PickleIterator::GetReadPointerAndAdvance(
   // Check for int32_t overflow.
   int num_bytes;
   if (!CheckMul(num_elements, size_element).AssignIfValid(&num_bytes))
-    return NULL;
+    return nullptr;
   return GetReadPointerAndAdvance(num_bytes);
 }
 
@@ -191,7 +191,7 @@ bool PickleIterator::ReadStringPiece16(StringPiece16* result) {
 
 bool PickleIterator::ReadData(const char** data, int* length) {
   *length = 0;
-  *data = 0;
+  *data = nullptr;
 
   if (!ReadInt(length))
     return false;
@@ -214,7 +214,7 @@ Pickle::Attachment::~Attachment() {}
 // Payload is uint32_t aligned.
 
 Pickle::Pickle()
-    : header_(NULL),
+    : header_(nullptr),
       header_size_(sizeof(Header)),
       capacity_after_header_(0),
       write_offset_(0) {
@@ -225,7 +225,7 @@ Pickle::Pickle()
 }
 
 Pickle::Pickle(int header_size)
-    : header_(NULL),
+    : header_(nullptr),
       header_size_(bits::Align(header_size, sizeof(uint32_t))),
       capacity_after_header_(0),
       write_offset_(0) {
@@ -251,11 +251,11 @@ Pickle::Pickle(const char* data, int data_len)
 
   // If there is anything wrong with the data, we're not going to use it.
   if (!header_size_)
-    header_ = NULL;
+    header_ = nullptr;
 }
 
 Pickle::Pickle(const Pickle& other)
-    : header_(NULL),
+    : header_(nullptr),
       header_size_(other.header_size_),
       capacity_after_header_(0),
       write_offset_(other.write_offset_) {
@@ -273,12 +273,12 @@ Pickle& Pickle::operator=(const Pickle& other) {
     return *this;
   }
   if (capacity_after_header_ == kCapacityReadOnly) {
-    header_ = NULL;
+    header_ = nullptr;
     capacity_after_header_ = 0;
   }
   if (header_size_ != other.header_size_) {
     free(header_);
-    header_ = NULL;
+    header_ = nullptr;
     header_size_ = other.header_size_;
   }
   Resize(other.header_->payload_size);
@@ -360,10 +360,10 @@ const char* Pickle::FindNext(size_t header_size,
                              const char* end) {
   size_t pickle_size = 0;
   if (!PeekNext(header_size, start, end, &pickle_size))
-    return NULL;
+    return nullptr;
 
   if (pickle_size > static_cast<size_t>(end - start))
-    return NULL;
+    return nullptr;
 
   return start + pickle_size;
 }

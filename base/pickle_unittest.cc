@@ -323,9 +323,9 @@ TEST(PickleTest, FindNext) {
   const char* start = reinterpret_cast<const char*>(pickle.data());
   const char* end = start + pickle.size();
 
-  EXPECT_TRUE(end == Pickle::FindNext(pickle.header_size_, start, end));
-  EXPECT_TRUE(NULL == Pickle::FindNext(pickle.header_size_, start, end - 1));
-  EXPECT_TRUE(end == Pickle::FindNext(pickle.header_size_, start, end + 1));
+  EXPECT_EQ(end, Pickle::FindNext(pickle.header_size_, start, end));
+  EXPECT_EQ(nullptr, Pickle::FindNext(pickle.header_size_, start, end - 1));
+  EXPECT_EQ(end, Pickle::FindNext(pickle.header_size_, start, end + 1));
 }
 
 TEST(PickleTest, FindNextWithIncompleteHeader) {
@@ -336,7 +336,7 @@ TEST(PickleTest, FindNextWithIncompleteHeader) {
   const char* start = buffer.get();
   const char* end = start + header_size - 1;
 
-  EXPECT_TRUE(NULL == Pickle::FindNext(header_size, start, end));
+  EXPECT_EQ(nullptr, Pickle::FindNext(header_size, start, end));
 }
 
 #if defined(COMPILER_MSVC)
@@ -357,14 +357,14 @@ TEST(PickleTest, FindNextOverflow) {
     return;
 
   header->payload_size = -(reinterpret_cast<uintptr_t>(start) + header_size2);
-  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+  EXPECT_EQ(nullptr, Pickle::FindNext(header_size2, start, end));
 
   header->payload_size = -header_size2;
-  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+  EXPECT_EQ(nullptr, Pickle::FindNext(header_size2, start, end));
 
   header->payload_size = 0;
   end = start + header_size;
-  EXPECT_TRUE(NULL == Pickle::FindNext(header_size2, start, end));
+  EXPECT_EQ(nullptr, Pickle::FindNext(header_size2, start, end));
 }
 #if defined(COMPILER_MSVC)
 #pragma warning(pop)
@@ -485,7 +485,7 @@ TEST(PickleTest, EvilLengths) {
 // Check we can write zero bytes of data and 'data' can be NULL.
 TEST(PickleTest, ZeroLength) {
   Pickle pickle;
-  pickle.WriteData(NULL, 0);
+  pickle.WriteData(nullptr, 0);
 
   PickleIterator iter(pickle);
   const char* outdata;
@@ -502,7 +502,7 @@ TEST(PickleTest, ReadBytes) {
   pickle.WriteBytes(&data, sizeof(data));
 
   PickleIterator iter(pickle);
-  const char* outdata_char = NULL;
+  const char* outdata_char = nullptr;
   EXPECT_TRUE(iter.ReadBytes(&outdata_char, sizeof(data)));
 
   int outdata;

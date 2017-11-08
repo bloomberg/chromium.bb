@@ -157,7 +157,7 @@ void SetLinuxDistro(const std::string& distro) {
 
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
                               bool* syscall_supported) {
-  if (syscall_supported != NULL)
+  if (syscall_supported != nullptr)
     *syscall_supported = false;
 
   std::vector<pid_t> tids;
@@ -171,7 +171,7 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
     int fd = open(buf, O_RDONLY);
     if (fd < 0)
       continue;
-    if (syscall_supported != NULL)
+    if (syscall_supported != nullptr)
       *syscall_supported = true;
     bool read_ret = ReadFromFD(fd, syscall_data.get(), expected_data.length());
     close(fd);

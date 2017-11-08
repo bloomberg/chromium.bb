@@ -83,8 +83,7 @@ struct TestSuiteResultsAggregator {
 
 }  // namespace
 
-TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(NULL) {
-}
+TestResultsTracker::TestResultsTracker() : iteration_(-1), out_(nullptr) {}
 
 TestResultsTracker::~TestResultsTracker() {
   DCHECK(thread_checker_.CalledOnValidThread());

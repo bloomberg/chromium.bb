@@ -20,10 +20,9 @@ FixedPatternStringSearchIgnoringCaseAndAccents(const string16& find_this)
   const string16& dummy = find_this_;
 
   UErrorCode status = U_ZERO_ERROR;
-  search_ = usearch_open(find_this_.data(), find_this_.size(),
-                         dummy.data(), dummy.size(),
-                         uloc_getDefault(),
-                         NULL,  // breakiter
+  search_ = usearch_open(find_this_.data(), find_this_.size(), dummy.data(),
+                         dummy.size(), uloc_getDefault(),
+                         nullptr,  // breakiter
                          &status);
   if (U_SUCCESS(status)) {
     UCollator* collator = usearch_getCollator(search_);

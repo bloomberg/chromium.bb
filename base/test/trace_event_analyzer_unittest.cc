@@ -746,7 +746,7 @@ TEST_F(TraceEventAnalyzerTest, RateStats) {
     event_ptrs.push_back(&events.back());
   }
 
-  ASSERT_TRUE(GetRateStats(event_ptrs, &stats, NULL));
+  ASSERT_TRUE(GetRateStats(event_ptrs, &stats, nullptr));
   EXPECT_EQ(little_delta, stats.mean_us);
   EXPECT_EQ(little_delta, stats.min_us);
   EXPECT_EQ(little_delta, stats.max_us);
@@ -761,7 +761,7 @@ TEST_F(TraceEventAnalyzerTest, RateStats) {
     event_ptrs.push_back(&events.back());
   }
 
-  ASSERT_TRUE(GetRateStats(event_ptrs, &stats, NULL));
+  ASSERT_TRUE(GetRateStats(event_ptrs, &stats, nullptr));
   EXPECT_LT(little_delta, stats.mean_us);
   EXPECT_EQ(little_delta, stats.min_us);
   EXPECT_EQ(big_delta, stats.max_us);
@@ -800,9 +800,9 @@ TEST_F(TraceEventAnalyzerTest, RateStats) {
     TraceEventVector few_event_ptrs;
     few_event_ptrs.push_back(&event);
     few_event_ptrs.push_back(&event);
-    ASSERT_FALSE(GetRateStats(few_event_ptrs, &stats, NULL));
+    ASSERT_FALSE(GetRateStats(few_event_ptrs, &stats, nullptr));
     few_event_ptrs.push_back(&event);
-    ASSERT_TRUE(GetRateStats(few_event_ptrs, &stats, NULL));
+    ASSERT_TRUE(GetRateStats(few_event_ptrs, &stats, nullptr));
 
     // Trim off more than allowed and verify failure.
     options.trim_min = 0;
@@ -883,7 +883,7 @@ TEST_F(TraceEventAnalyzerTest, FindClosest) {
   // Only one event matches query_one, so two closest can't be found.
   EXPECT_FALSE(FindClosest(event_ptrs, query_one, 0, &index_1, &index_2));
 
-  EXPECT_TRUE(FindClosest(event_ptrs, query_one, 3, &index_1, NULL));
+  EXPECT_TRUE(FindClosest(event_ptrs, query_one, 3, &index_1, nullptr));
   EXPECT_EQ(0u, index_1);
 
   EXPECT_TRUE(FindClosest(event_ptrs, query_named, 1, &index_1, &index_2));

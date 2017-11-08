@@ -92,19 +92,19 @@ bool IsBinaryInstrumented() {
 }
 
 ReturnAddressLocationResolver GetProfilerReturnAddrResolutionFunc() {
-  return NULL;
+  return nullptr;
 }
 
 DynamicFunctionEntryHook GetProfilerDynamicFunctionEntryHookFunc() {
-  return NULL;
+  return nullptr;
 }
 
 AddDynamicSymbol GetProfilerAddDynamicSymbolFunc() {
-  return NULL;
+  return nullptr;
 }
 
 MoveDynamicSymbol GetProfilerMoveDynamicSymbolFunc() {
-  return NULL;
+  return nullptr;
 }
 
 #else  // defined(OS_WIN)

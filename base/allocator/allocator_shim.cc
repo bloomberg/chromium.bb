@@ -68,7 +68,7 @@ bool CallNewHandler(size_t size) {
   {
     while (subtle::Acquire_CompareAndSwap(&g_new_handler_lock, 0, 1))
       PlatformThread::YieldCurrentThread();
-    nh = std::set_new_handler(0);
+    nh = std::set_new_handler(nullptr);
     ignore_result(std::set_new_handler(nh));
     subtle::Release_Store(&g_new_handler_lock, 0);
   }

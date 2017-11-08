@@ -35,9 +35,7 @@ void DeserializeHistogramAndAddSamples(PickleIterator* iter) {
 
 HistogramDeltaSerialization::HistogramDeltaSerialization(
     const std::string& caller_name)
-    : histogram_snapshot_manager_(this),
-      serialized_deltas_(NULL) {
-}
+    : histogram_snapshot_manager_(this), serialized_deltas_(nullptr) {}
 
 HistogramDeltaSerialization::~HistogramDeltaSerialization() {
 }
@@ -54,7 +52,7 @@ void HistogramDeltaSerialization::PrepareAndSerializeDeltas(
   StatisticsRecorder::PrepareDeltas(
       include_persistent, Histogram::kIPCSerializationSourceFlag,
       Histogram::kNoFlags, &histogram_snapshot_manager_);
-  serialized_deltas_ = NULL;
+  serialized_deltas_ = nullptr;
 }
 
 // static

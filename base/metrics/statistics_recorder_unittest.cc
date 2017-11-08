@@ -377,18 +377,18 @@ TEST_P(StatisticsRecorderTest, ToJSON) {
   std::unique_ptr<Value> root = JSONReader::Read(json);
   ASSERT_TRUE(root.get());
 
-  DictionaryValue* root_dict = NULL;
+  DictionaryValue* root_dict = nullptr;
   ASSERT_TRUE(root->GetAsDictionary(&root_dict));
 
   // No query should be set.
   ASSERT_FALSE(root_dict->HasKey("query"));
 
-  ListValue* histogram_list = NULL;
+  ListValue* histogram_list = nullptr;
   ASSERT_TRUE(root_dict->GetList("histograms", &histogram_list));
   ASSERT_EQ(2u, histogram_list->GetSize());
 
   // Examine the first histogram.
-  DictionaryValue* histogram_dict = NULL;
+  DictionaryValue* histogram_dict = nullptr;
   ASSERT_TRUE(histogram_list->GetDictionary(0, &histogram_dict));
 
   int sample_count;

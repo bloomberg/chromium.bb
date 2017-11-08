@@ -209,7 +209,7 @@ const void *const *StackTrace::Addresses(size_t* count) const {
   *count = count_;
   if (count_)
     return trace_;
-  return NULL;
+  return nullptr;
 }
 
 std::string StackTrace::ToString() const {

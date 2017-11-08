@@ -400,17 +400,17 @@ void SampleVectorIterator::Get(HistogramBase::Sample* min,
                                int64_t* max,
                                HistogramBase::Count* count) const {
   DCHECK(!Done());
-  if (min != NULL)
+  if (min != nullptr)
     *min = bucket_ranges_->range(index_);
-  if (max != NULL)
+  if (max != nullptr)
     *max = strict_cast<int64_t>(bucket_ranges_->range(index_ + 1));
-  if (count != NULL)
+  if (count != nullptr)
     *count = subtle::NoBarrier_Load(&counts_[index_]);
 }
 
 bool SampleVectorIterator::GetBucketIndex(size_t* index) const {
   DCHECK(!Done());
-  if (index != NULL)
+  if (index != nullptr)
     *index = index_;
   return true;
 }

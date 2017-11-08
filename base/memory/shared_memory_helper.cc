@@ -72,7 +72,7 @@ bool PrepareMapFile(ScopedFILE fp,
                     int* readonly_mapped_file) {
   DCHECK_EQ(-1, *mapped_file);
   DCHECK_EQ(-1, *readonly_mapped_file);
-  if (fp == NULL)
+  if (fp == nullptr)
     return false;
 
   // This function theoretically can block on the disk, but realistically

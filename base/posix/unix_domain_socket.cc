@@ -76,7 +76,7 @@ bool UnixDomainSocket::SendMsg(int fd,
   msg.msg_iov = &iov;
   msg.msg_iovlen = 1;
 
-  char* control_buffer = NULL;
+  char* control_buffer = nullptr;
   if (fds.size()) {
     const unsigned control_len = CMSG_SPACE(sizeof(int) * fds.size());
     control_buffer = new char[control_len];
@@ -119,7 +119,7 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
                                   std::vector<ScopedFD>* fds) {
-  return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, NULL);
+  return UnixDomainSocket::RecvMsgWithPid(fd, buf, length, fds, nullptr);
 }
 
 // static
@@ -161,7 +161,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   if (r == -1)
     return -1;
 
-  int* wire_fds = NULL;
+  int* wire_fds = nullptr;
   unsigned wire_fds_len = 0;
   ProcessId pid = -1;
 
@@ -261,14 +261,14 @@ ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
   const ssize_t reply_len = RecvMsgWithFlags(
-      recv_sock.get(), reply, max_reply_len, recvmsg_flags, &recv_fds, NULL);
+      recv_sock.get(), reply, max_reply_len, recvmsg_flags, &recv_fds, nullptr);
   recv_sock.reset();
   if (reply_len == -1)
     return -1;
 
   // If we received more file descriptors than caller expected, then we treat
   // that as an error.
-  if (recv_fds.size() > (result_fd != NULL ? 1 : 0)) {
+  if (recv_fds.size() > (result_fd != nullptr ? 1 : 0)) {
     NOTREACHED();
     return -1;
   }

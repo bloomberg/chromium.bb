@@ -317,7 +317,7 @@ bool FileProxy::Write(int64_t offset,
                       int bytes_to_write,
                       const WriteCallback& callback) {
   DCHECK(file_.IsValid());
-  if (bytes_to_write <= 0 || buffer == NULL)
+  if (bytes_to_write <= 0 || buffer == nullptr)
     return false;
 
   WriteHelper* helper =

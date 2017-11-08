@@ -89,11 +89,7 @@ bool WaitableEvent::IsSignaled() {
 class SyncWaiter : public WaitableEvent::Waiter {
  public:
   SyncWaiter()
-      : fired_(false),
-        signaling_event_(NULL),
-        lock_(),
-        cv_(&lock_) {
-  }
+      : fired_(false), signaling_event_(nullptr), lock_(), cv_(&lock_) {}
 
   bool Fire(WaitableEvent* signaling_event) override {
     base::AutoLock locked(lock_);

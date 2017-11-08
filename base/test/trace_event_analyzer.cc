@@ -23,8 +23,7 @@ TraceEvent::TraceEvent()
       timestamp(0),
       duration(0),
       phase(TRACE_EVENT_PHASE_BEGIN),
-      other_event(NULL) {
-}
+      other_event(nullptr) {}
 
 TraceEvent::TraceEvent(TraceEvent&& other) = default;
 
@@ -42,7 +41,7 @@ bool TraceEvent::SetFromJSON(const base::Value* event_value) {
       static_cast<const base::DictionaryValue*>(event_value);
 
   std::string phase_str;
-  const base::DictionaryValue* args = NULL;
+  const base::DictionaryValue* args = nullptr;
 
   if (!dictionary->GetString("ph", &phase_str)) {
     LOG(ERROR) << "ph is missing from TraceEvent JSON";
@@ -704,12 +703,12 @@ bool ParseEventsFromJson(const std::string& json,
                          std::vector<TraceEvent>* output) {
   std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
 
-  base::ListValue* root_list = NULL;
+  base::ListValue* root_list = nullptr;
   if (!root.get() || !root->GetAsList(&root_list))
     return false;
 
   for (size_t i = 0; i < root_list->GetSize(); ++i) {
-    base::Value* item = NULL;
+    base::Value* item = nullptr;
     if (root_list->Get(i, &item)) {
       TraceEvent event;
       if (event.SetFromJSON(item))
@@ -737,7 +736,7 @@ TraceAnalyzer* TraceAnalyzer::Create(const std::string& json_events) {
   std::unique_ptr<TraceAnalyzer> analyzer(new TraceAnalyzer());
   if (analyzer->SetEvents(json_events))
     return analyzer.release();
-  return NULL;
+  return nullptr;
 }
 
 bool TraceAnalyzer::SetEvents(const std::string& json_events) {
@@ -858,14 +857,14 @@ const TraceEvent* TraceAnalyzer::FindFirstOf(const Query& query) {
   TraceEventVector output;
   if (FindEvents(query, &output) > 0)
     return output.front();
-  return NULL;
+  return nullptr;
 }
 
 const TraceEvent* TraceAnalyzer::FindLastOf(const Query& query) {
   TraceEventVector output;
   if (FindEvents(query, &output) > 0)
     return output.back();
-  return NULL;
+  return nullptr;
 }
 
 const std::string& TraceAnalyzer::GetThreadName(

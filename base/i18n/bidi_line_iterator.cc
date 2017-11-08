@@ -64,13 +64,12 @@ UCharDirection GetURLBiDiClassCallback(const void* /*unused*/, UChar32 c) {
 
 }  // namespace
 
-BiDiLineIterator::BiDiLineIterator() : bidi_(NULL) {
-}
+BiDiLineIterator::BiDiLineIterator() : bidi_(nullptr) {}
 
 BiDiLineIterator::~BiDiLineIterator() {
   if (bidi_) {
     ubidi_close(bidi_);
-    bidi_ = NULL;
+    bidi_ = nullptr;
   }
 }
 
@@ -96,7 +95,7 @@ bool BiDiLineIterator::Open(const string16& text,
 }
 
 int BiDiLineIterator::CountRuns() const {
-  DCHECK(bidi_ != NULL);
+  DCHECK(bidi_ != nullptr);
   UErrorCode error = U_ZERO_ERROR;
   const int runs = ubidi_countRuns(bidi_, &error);
   return U_SUCCESS(error) ? runs : 0;
@@ -105,14 +104,14 @@ int BiDiLineIterator::CountRuns() const {
 UBiDiDirection BiDiLineIterator::GetVisualRun(int index,
                                               int* start,
                                               int* length) const {
-  DCHECK(bidi_ != NULL);
+  DCHECK(bidi_ != nullptr);
   return ubidi_getVisualRun(bidi_, index, start, length);
 }
 
 void BiDiLineIterator::GetLogicalRun(int start,
                                      int* end,
                                      UBiDiLevel* level) const {
-  DCHECK(bidi_ != NULL);
+  DCHECK(bidi_ != nullptr);
   ubidi_getLogicalRun(bidi_, start, end, level);
 }
 

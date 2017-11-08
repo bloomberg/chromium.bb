@@ -126,8 +126,8 @@ TEST(SharedMemoryTest, OpenClose) {
   EXPECT_NE(memory1.memory(), memory2.memory());  // Compare the pointers.
 
   // Make sure we don't segfault. (it actually happened!)
-  ASSERT_NE(memory1.memory(), static_cast<void*>(NULL));
-  ASSERT_NE(memory2.memory(), static_cast<void*>(NULL));
+  ASSERT_NE(memory1.memory(), static_cast<void*>(nullptr));
+  ASSERT_NE(memory2.memory(), static_cast<void*>(nullptr));
 
   // Write data to the first memory segment, verify contents of second.
   memset(memory1.memory(), '1', kDataSize);
@@ -223,7 +223,7 @@ TEST(SharedMemoryTest, CloseNoUnmap) {
   SharedMemory memory;
   ASSERT_TRUE(memory.CreateAndMapAnonymous(kDataSize));
   char* ptr = static_cast<char*>(memory.memory());
-  ASSERT_NE(ptr, static_cast<void*>(NULL));
+  ASSERT_NE(ptr, static_cast<void*>(nullptr));
   memset(ptr, 'G', kDataSize);
 
   memory.Close();
@@ -393,7 +393,7 @@ TEST(SharedMemoryTest, GetReadOnlyHandle) {
       << "The descriptor itself should be read-only.";
 
   errno = 0;
-  void* writable = mmap(NULL, contents.size(), PROT_READ | PROT_WRITE,
+  void* writable = mmap(nullptr, contents.size(), PROT_READ | PROT_WRITE,
                         MAP_SHARED, handle_fd, 0);
   int mmap_errno = errno;
   EXPECT_EQ(MAP_FAILED, writable)
@@ -509,7 +509,7 @@ TEST(SharedMemoryTest, MapAt) {
   SharedMemory memory;
   ASSERT_TRUE(memory.CreateAndMapAnonymous(kDataSize));
   uint32_t* ptr = static_cast<uint32_t*>(memory.memory());
-  ASSERT_NE(ptr, static_cast<void*>(NULL));
+  ASSERT_NE(ptr, static_cast<void*>(nullptr));
 
   for (size_t i = 0; i < kCount; ++i) {
     ptr[i] = i;
@@ -521,7 +521,7 @@ TEST(SharedMemoryTest, MapAt) {
   ASSERT_TRUE(memory.MapAt(offset, kDataSize - offset));
   offset /= sizeof(uint32_t);
   ptr = static_cast<uint32_t*>(memory.memory());
-  ASSERT_NE(ptr, static_cast<void*>(NULL));
+  ASSERT_NE(ptr, static_cast<void*>(nullptr));
   for (size_t i = offset; i < kCount; ++i) {
     EXPECT_EQ(ptr[i - offset], i);
   }

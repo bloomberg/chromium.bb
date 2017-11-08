@@ -73,125 +73,93 @@ static const struct {
   const wchar_t* wide;
   const wchar_t* u16_wide;
 } kConvertCodepageCases[] = {
-  // Test a case where the input cannot be decoded, using SKIP, FAIL
-  // and SUBSTITUTE error handling rules. "A7 41" is valid, but "A6" isn't.
-  {"big5",
-   "\xA7\x41\xA6",
-   OnStringConversionError::FAIL,
-   false,
-   L"",
-   NULL},
-  {"big5",
-   "\xA7\x41\xA6",
-   OnStringConversionError::SKIP,
-   true,
-   L"\x4F60",
-   NULL},
-  {"big5",
-   "\xA7\x41\xA6",
-   OnStringConversionError::SUBSTITUTE,
-   true,
-   L"\x4F60\xFFFD",
-   NULL},
-  // Arabic (ISO-8859)
-  {"iso-8859-6",
-   "\xC7\xEE\xE4\xD3\xF1\xEE\xE4\xC7\xE5\xEF" " "
-   "\xD9\xEE\xE4\xEE\xEA\xF2\xE3\xEF\xE5\xF2",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x0627\x064E\x0644\x0633\x0651\x064E\x0644\x0627\x0645\x064F" L" "
-   L"\x0639\x064E\x0644\x064E\x064A\x0652\x0643\x064F\x0645\x0652",
-   NULL},
-  // Chinese Simplified (GB2312)
-  {"gb2312",
-   "\xC4\xE3\xBA\xC3",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x4F60\x597D",
-   NULL},
-  // Chinese (GB18030) : 4 byte sequences mapped to BMP characters
-  {"gb18030",
-   "\x81\x30\x84\x36\xA1\xA7",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x00A5\x00A8",
-   NULL},
-  // Chinese (GB18030) : A 4 byte sequence mapped to plane 2 (U+20000)
-  {"gb18030",
-   "\x95\x32\x82\x36\xD2\xBB",
-   OnStringConversionError::FAIL,
-   true,
+    // Test a case where the input cannot be decoded, using SKIP, FAIL
+    // and SUBSTITUTE error handling rules. "A7 41" is valid, but "A6" isn't.
+    {"big5", "\xA7\x41\xA6", OnStringConversionError::FAIL, false, L"",
+     nullptr},
+    {"big5", "\xA7\x41\xA6", OnStringConversionError::SKIP, true, L"\x4F60",
+     nullptr},
+    {"big5", "\xA7\x41\xA6", OnStringConversionError::SUBSTITUTE, true,
+     L"\x4F60\xFFFD", nullptr},
+    // Arabic (ISO-8859)
+    {"iso-8859-6",
+     "\xC7\xEE\xE4\xD3\xF1\xEE\xE4\xC7\xE5\xEF"
+     " "
+     "\xD9\xEE\xE4\xEE\xEA\xF2\xE3\xEF\xE5\xF2",
+     OnStringConversionError::FAIL, true,
+     L"\x0627\x064E\x0644\x0633\x0651\x064E\x0644\x0627\x0645\x064F"
+     L" "
+     L"\x0639\x064E\x0644\x064E\x064A\x0652\x0643\x064F\x0645\x0652",
+     nullptr},
+    // Chinese Simplified (GB2312)
+    {"gb2312", "\xC4\xE3\xBA\xC3", OnStringConversionError::FAIL, true,
+     L"\x4F60\x597D", nullptr},
+    // Chinese (GB18030) : 4 byte sequences mapped to BMP characters
+    {"gb18030", "\x81\x30\x84\x36\xA1\xA7", OnStringConversionError::FAIL, true,
+     L"\x00A5\x00A8", nullptr},
+    // Chinese (GB18030) : A 4 byte sequence mapped to plane 2 (U+20000)
+    {"gb18030", "\x95\x32\x82\x36\xD2\xBB", OnStringConversionError::FAIL, true,
 #if defined(WCHAR_T_IS_UTF16)
-   L"\xD840\xDC00\x4E00",
+     L"\xD840\xDC00\x4E00",
 #elif defined(WCHAR_T_IS_UTF32)
-   L"\x20000\x4E00",
+     L"\x20000\x4E00",
 #endif
-   L"\xD840\xDC00\x4E00"},
-  {"big5",
-   "\xA7\x41\xA6\x6E",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x4F60\x597D",
-   NULL},
-  // Greek (ISO-8859)
-  {"iso-8859-7",
-   "\xE3\xE5\xE9\xDC" " " "\xF3\xEF\xF5",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x03B3\x03B5\x03B9\x03AC" L" " L"\x03C3\x03BF\x03C5",
-   NULL},
-  // Hebrew (Windows)
-  {"windows-1255",
-   "\xF9\xD1\xC8\xEC\xE5\xC9\xED",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x05E9\x05C1\x05B8\x05DC\x05D5\x05B9\x05DD",
-   NULL},
-  // Korean (EUC)
-  {"euc-kr",
-   "\xBE\xC8\xB3\xE7\xC7\xCF\xBC\xBC\xBF\xE4",
-   OnStringConversionError::FAIL,
-   true,
-   L"\xC548\xB155\xD558\xC138\xC694",
-   NULL},
-  // Japanese (EUC)
-  {"euc-jp",
-   "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF\xB0\xEC\x8E\xA6",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x3053\x3093\x306B\x3061\x306F\x4E00\xFF66",
-   NULL},
-  // Japanese (ISO-2022)
-  {"iso-2022-jp",
-   "\x1B$B" "\x24\x33\x24\x73\x24\x4B\x24\x41\x24\x4F\x30\x6C" "\x1B(B"
-   "ab" "\x1B(J" "\x5C\x7E#$" "\x1B(B",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x3053\x3093\x306B\x3061\x306F\x4E00" L"ab\x00A5\x203E#$",
-   NULL},
-  // Japanese (Shift-JIS)
-  {"sjis",
-   "\x82\xB1\x82\xF1\x82\xC9\x82\xBF\x82\xCD\x88\xEA\xA6",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x3053\x3093\x306B\x3061\x306F\x4E00\xFF66",
-   NULL},
-  // Russian (KOI8)
-  {"koi8-r",
-   "\xDA\xC4\xD2\xC1\xD7\xD3\xD4\xD7\xD5\xCA\xD4\xC5",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x0437\x0434\x0440\x0430\x0432\x0441\x0442\x0432"
-   L"\x0443\x0439\x0442\x0435",
-   NULL},
-  // Thai (windows-874)
-  {"windows-874",
-   "\xCA\xC7\xD1\xCA\xB4\xD5" "\xA4\xC3\xD1\xBA",
-   OnStringConversionError::FAIL,
-   true,
-   L"\x0E2A\x0E27\x0E31\x0E2A\x0E14\x0E35"
-   L"\x0E04\x0E23\x0e31\x0E1A",
-   NULL},
+     L"\xD840\xDC00\x4E00"},
+    {"big5", "\xA7\x41\xA6\x6E", OnStringConversionError::FAIL, true,
+     L"\x4F60\x597D", nullptr},
+    // Greek (ISO-8859)
+    {"iso-8859-7",
+     "\xE3\xE5\xE9\xDC"
+     " "
+     "\xF3\xEF\xF5",
+     OnStringConversionError::FAIL, true,
+     L"\x03B3\x03B5\x03B9\x03AC"
+     L" "
+     L"\x03C3\x03BF\x03C5",
+     nullptr},
+    // Hebrew (Windows)
+    {"windows-1255", "\xF9\xD1\xC8\xEC\xE5\xC9\xED",
+     OnStringConversionError::FAIL, true,
+     L"\x05E9\x05C1\x05B8\x05DC\x05D5\x05B9\x05DD", nullptr},
+    // Korean (EUC)
+    {"euc-kr", "\xBE\xC8\xB3\xE7\xC7\xCF\xBC\xBC\xBF\xE4",
+     OnStringConversionError::FAIL, true, L"\xC548\xB155\xD558\xC138\xC694",
+     nullptr},
+    // Japanese (EUC)
+    {"euc-jp", "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF\xB0\xEC\x8E\xA6",
+     OnStringConversionError::FAIL, true,
+     L"\x3053\x3093\x306B\x3061\x306F\x4E00\xFF66", nullptr},
+    // Japanese (ISO-2022)
+    {"iso-2022-jp",
+     "\x1B$B"
+     "\x24\x33\x24\x73\x24\x4B\x24\x41\x24\x4F\x30\x6C"
+     "\x1B(B"
+     "ab"
+     "\x1B(J"
+     "\x5C\x7E#$"
+     "\x1B(B",
+     OnStringConversionError::FAIL, true,
+     L"\x3053\x3093\x306B\x3061\x306F\x4E00"
+     L"ab\x00A5\x203E#$",
+     nullptr},
+    // Japanese (Shift-JIS)
+    {"sjis", "\x82\xB1\x82\xF1\x82\xC9\x82\xBF\x82\xCD\x88\xEA\xA6",
+     OnStringConversionError::FAIL, true,
+     L"\x3053\x3093\x306B\x3061\x306F\x4E00\xFF66", nullptr},
+    // Russian (KOI8)
+    {"koi8-r", "\xDA\xC4\xD2\xC1\xD7\xD3\xD4\xD7\xD5\xCA\xD4\xC5",
+     OnStringConversionError::FAIL, true,
+     L"\x0437\x0434\x0440\x0430\x0432\x0441\x0442\x0432"
+     L"\x0443\x0439\x0442\x0435",
+     nullptr},
+    // Thai (windows-874)
+    {"windows-874",
+     "\xCA\xC7\xD1\xCA\xB4\xD5"
+     "\xA4\xC3\xD1\xBA",
+     OnStringConversionError::FAIL, true,
+     L"\x0E2A\x0E27\x0E31\x0E2A\x0E14\x0E35"
+     L"\x0E04\x0E23\x0e31\x0E1A",
+     nullptr},
 };
 
 TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndUTF16) {
@@ -207,7 +175,7 @@ TEST(ICUStringConversionsTest, ConvertBetweenCodepageAndUTF16) {
                                    kConvertCodepageCases[i].on_error,
                                    &utf16);
     string16 utf16_expected;
-    if (kConvertCodepageCases[i].u16_wide == NULL)
+    if (kConvertCodepageCases[i].u16_wide == nullptr)
       utf16_expected = BuildString16(kConvertCodepageCases[i].wide);
     else
       utf16_expected = BuildString16(kConvertCodepageCases[i].u16_wide);

@@ -162,8 +162,8 @@ static void PartitionAllocBaseInit(PartitionRootBase* root) {
 static void PartitionBucketInitBase(PartitionBucket* bucket,
                                     PartitionRootBase* root) {
   bucket->active_pages_head = &g_sentinel_page;
-  bucket->empty_pages_head = 0;
-  bucket->decommitted_pages_head = 0;
+  bucket->empty_pages_head = nullptr;
+  bucket->decommitted_pages_head = nullptr;
   bucket->num_full_pages = 0;
   bucket->num_system_pages_per_slot_span =
       PartitionBucketNumSystemPages(bucket->slot_size);
@@ -241,7 +241,7 @@ void PartitionAllocGenericInit(PartitionRootGeneric* root) {
       PartitionBucketInitBase(bucket, root);
       // Disable psuedo buckets so that touching them faults.
       if (current_size % kGenericSmallestBucket)
-        bucket->active_pages_head = 0;
+        bucket->active_pages_head = nullptr;
       current_size += currentIncrement;
       ++bucket;
     }
@@ -415,7 +415,7 @@ static ALWAYS_INLINE void* PartitionAllocPartitionPages(
   char* super_page = reinterpret_cast<char*>(AllocPages(
       requestedAddress, kSuperPageSize, kSuperPageSize, PageReadWrite));
   if (UNLIKELY(!super_page))
-    return 0;
+    return nullptr;
 
   root->total_size_of_super_pages += kSuperPageSize;
   PartitionIncreaseCommittedPages(root, total_size);
@@ -457,7 +457,7 @@ static ALWAYS_INLINE void* PartitionAllocPartitionPages(
   // successful mapping, which is far from random. So we just get fresh
   // randomness for the next mapping attempt.
   if (requestedAddress && requestedAddress != super_page)
-    root->next_super_page = 0;
+    root->next_super_page = nullptr;
 
   // We allocated a new super page so update super page metadata.
   // First check if this is a new extent or not.
@@ -470,9 +470,9 @@ static ALWAYS_INLINE void* PartitionAllocPartitionPages(
   // Most new extents will be part of a larger extent, and these three fields
   // are unused, but we initialize them to 0 so that we get a clear signal
   // in case they are accidentally used.
-  latest_extent->super_page_base = 0;
-  latest_extent->super_pages_end = 0;
-  latest_extent->next = 0;
+  latest_extent->super_page_base = nullptr;
+  latest_extent->super_pages_end = nullptr;
+  latest_extent->next = nullptr;
 
   PartitionSuperPageExtentEntry* current_extent = root->current_extent;
   bool isNewExtent = (super_page != requestedAddress);
@@ -608,9 +608,9 @@ static ALWAYS_INLINE char* PartitionPageAllocAndFillFreelist(
       entry->next = PartitionFreelistMask(next_entry);
       entry = next_entry;
     }
-    entry->next = PartitionFreelistMask(0);
+    entry->next = PartitionFreelistMask(nullptr);
   } else {
-    page->freelist_head = 0;
+    page->freelist_head = nullptr;
   }
   return return_object;
 }
@@ -661,7 +661,7 @@ static bool PartitionSetNewActivePage(PartitionBucket* bucket) {
       if (UNLIKELY(!bucket->num_full_pages))
         PartitionBucketFull();
       // Not necessary but might help stop accidents.
-      page->next_page = 0;
+      page->next_page = nullptr;
     }
   }
 
@@ -706,7 +706,7 @@ static ALWAYS_INLINE PartitionPage* PartitionDirectMap(PartitionRootBase* root,
   // TODO: these pages will be zero-filled. Consider internalizing an
   // allocZeroed() API so we can avoid a memset() entirely in this case.
   char* ptr = reinterpret_cast<char*>(
-      AllocPages(0, map_size, kSuperPageSize, PageReadWrite));
+      AllocPages(nullptr, map_size, kSuperPageSize, PageReadWrite));
   if (UNLIKELY(!ptr))
     return nullptr;
 
@@ -744,7 +744,7 @@ static ALWAYS_INLINE PartitionPage* PartitionDirectMap(PartitionRootBase* root,
   page->freelist_head = reinterpret_cast<PartitionFreelistEntry*>(slot);
   PartitionFreelistEntry* next_entry =
       reinterpret_cast<PartitionFreelistEntry*>(slot);
-  next_entry->next = PartitionFreelistMask(0);
+  next_entry->next = PartitionFreelistMask(nullptr);
 
   DCHECK(!bucket->active_pages_head);
   DCHECK(!bucket->empty_pages_head);
@@ -921,7 +921,7 @@ static ALWAYS_INLINE void PartitionDecommitPage(PartitionRootBase* root,
   // Pulling this trick enables us to use a singly-linked page list for all
   // cases, which is critical in keeping the page metadata structure down to
   // 32 bytes in size.
-  page->freelist_head = 0;
+  page->freelist_head = nullptr;
   page->num_unprovisioned_slots = 0;
   DCHECK(PartitionPageStateIsDecommitted(page));
 }
@@ -945,7 +945,7 @@ static ALWAYS_INLINE void PartitionRegisterEmptyPage(PartitionPage* page) {
     DCHECK(page->empty_cache_index >= 0);
     DCHECK(static_cast<unsigned>(page->empty_cache_index) < kMaxFreeableSpans);
     DCHECK(root->global_empty_page_ring[page->empty_cache_index] == page);
-    root->global_empty_page_ring[page->empty_cache_index] = 0;
+    root->global_empty_page_ring[page->empty_cache_index] = nullptr;
   }
 
   int16_t current_index = root->global_empty_page_ring_index;
@@ -1094,7 +1094,7 @@ void* PartitionReallocGeneric(PartitionRootGeneric* root,
     return PartitionAllocGeneric(root, new_size, type_name);
   if (UNLIKELY(!new_size)) {
     PartitionFreeGeneric(root, ptr);
-    return 0;
+    return nullptr;
   }
 
   if (new_size > kGenericMaxDirectMapped)

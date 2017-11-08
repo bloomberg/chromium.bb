@@ -45,10 +45,10 @@ namespace base {
 
 MessagePumpLibevent::FileDescriptorWatcher::FileDescriptorWatcher(
     const Location& from_here)
-    : event_(NULL),
-      pump_(NULL),
-      watcher_(NULL),
-      was_destroyed_(NULL),
+    : event_(nullptr),
+      pump_(nullptr),
+      watcher_(nullptr),
+      was_destroyed_(nullptr),
       created_from_location_(from_here) {}
 
 MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {
@@ -63,14 +63,14 @@ MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {
 
 bool MessagePumpLibevent::FileDescriptorWatcher::StopWatchingFileDescriptor() {
   event* e = ReleaseEvent();
-  if (e == NULL)
+  if (e == nullptr)
     return true;
 
   // event_del() is a no-op if the event isn't active.
   int rv = event_del(e);
   delete e;
-  pump_ = NULL;
-  watcher_ = NULL;
+  pump_ = nullptr;
+  watcher_ = nullptr;
   return (rv == 0);
 }
 
@@ -83,7 +83,7 @@ void MessagePumpLibevent::FileDescriptorWatcher::Init(event* e) {
 
 event* MessagePumpLibevent::FileDescriptorWatcher::ReleaseEvent() {
   struct event* e = event_;
-  event_ = NULL;
+  event_ = nullptr;
   return e;
 }
 
@@ -184,7 +184,7 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
   }
 
   // Add this socket to the list of monitored sockets.
-  if (event_add(evt.get(), NULL)) {
+  if (event_add(evt.get(), nullptr)) {
     DPLOG(ERROR) << "event_add failed(fd=" << EVENT_FD(evt.get()) << ")";
     return false;
   }
@@ -305,7 +305,7 @@ bool MessagePumpLibevent::Init() {
             OnWakeup, this);
   event_base_set(event_base_, wakeup_event_);
 
-  if (event_add(wakeup_event_, 0))
+  if (event_add(wakeup_event_, nullptr))
     return false;
   return true;
 }

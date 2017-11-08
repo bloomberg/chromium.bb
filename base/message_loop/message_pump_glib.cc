@@ -112,12 +112,8 @@ gboolean WorkSourceDispatch(GSource* source,
 }
 
 // I wish these could be const, but g_source_new wants non-const.
-GSourceFuncs WorkSourceFuncs = {
-  WorkSourcePrepare,
-  WorkSourceCheck,
-  WorkSourceDispatch,
-  NULL
-};
+GSourceFuncs WorkSourceFuncs = {WorkSourcePrepare, WorkSourceCheck,
+                                WorkSourceDispatch, nullptr};
 
 // The following is used to make sure we only run the MessagePumpGlib on one
 // thread. X only has one message pump so we can only have one UI loop per
@@ -180,7 +176,7 @@ struct MessagePumpGlib::RunState {
 };
 
 MessagePumpGlib::MessagePumpGlib()
-    : state_(NULL),
+    : state_(nullptr),
       context_(g_main_context_default()),
       wakeup_gpollfd_(new GPollFD) {
   // Create our wakeup pipe, which is used to flag when work was scheduled.

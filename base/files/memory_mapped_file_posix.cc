@@ -22,8 +22,7 @@
 
 namespace base {
 
-MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
-}
+MemoryMappedFile::MemoryMappedFile() : data_(nullptr), length_(0) {}
 
 #if !defined(OS_NACL)
 bool MemoryMappedFile::MapFileRegionToMemory(
@@ -157,7 +156,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
       break;
   }
 
-  data_ = static_cast<uint8_t*>(mmap(NULL, map_size, flags, MAP_SHARED,
+  data_ = static_cast<uint8_t*>(mmap(nullptr, map_size, flags, MAP_SHARED,
                                      file_.GetPlatformFile(), map_start));
   if (data_ == MAP_FAILED) {
     DPLOG(ERROR) << "mmap " << file_.GetPlatformFile();
@@ -172,11 +171,11 @@ bool MemoryMappedFile::MapFileRegionToMemory(
 void MemoryMappedFile::CloseHandles() {
   AssertBlockingAllowed();
 
-  if (data_ != NULL)
+  if (data_ != nullptr)
     munmap(data_, length_);
   file_.Close();
 
-  data_ = NULL;
+  data_ = nullptr;
   length_ = 0;
 }
 

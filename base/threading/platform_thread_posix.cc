@@ -42,7 +42,7 @@ namespace {
 
 struct ThreadParams {
   ThreadParams()
-      : delegate(NULL), joinable(false), priority(ThreadPriority::NORMAL) {}
+      : delegate(nullptr), joinable(false), priority(ThreadPriority::NORMAL) {}
 
   PlatformThread::Delegate* delegate;
   bool joinable;
@@ -79,7 +79,7 @@ void* ThreadFunc(void* params) {
       PlatformThread::CurrentId());
 
   base::TerminateOnThread();
-  return NULL;
+  return nullptr;
 }
 
 bool CreateThread(size_t stack_size,
@@ -226,7 +226,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
   AssertBlockingAllowed();
-  CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), NULL));
+  CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), nullptr));
 }
 
 // static

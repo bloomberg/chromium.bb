@@ -171,7 +171,7 @@ void WaitableEventWatcher::StopWatching() {
   if (cancel_flag_->value()) {
     // In this case, the event has fired, but we haven't figured that out yet.
     // The WaitableEvent may have been deleted too.
-    cancel_flag_ = NULL;
+    cancel_flag_ = nullptr;
     return;
   }
 
@@ -185,7 +185,7 @@ void WaitableEventWatcher::StopWatching() {
     // delegate getting called. If the task has run then we have the last
     // reference to the flag and it will be deleted immedately after.
     cancel_flag_->Set();
-    cancel_flag_ = NULL;
+    cancel_flag_ = nullptr;
     return;
   }
 
@@ -211,7 +211,7 @@ void WaitableEventWatcher::StopWatching() {
     // have been enqueued with the MessageLoop because the waiter was never
     // signaled)
     delete waiter_;
-    cancel_flag_ = NULL;
+    cancel_flag_ = nullptr;
     return;
   }
 
@@ -220,7 +220,7 @@ void WaitableEventWatcher::StopWatching() {
   // task on the SequencedTaskRunner, but to delete it instead. The Waiter
   // deletes itself once run.
   cancel_flag_->Set();
-  cancel_flag_ = NULL;
+  cancel_flag_ = nullptr;
 
   // If the waiter has already run then the task has been enqueued. If the Task
   // hasn't yet run, the flag will stop the delegate from getting called. (This

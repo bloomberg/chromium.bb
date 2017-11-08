@@ -117,7 +117,7 @@ TEST_F(FileProxyTest, CreateOrOpen_Create) {
 
 TEST_F(FileProxyTest, CreateOrOpen_Open) {
   // Creates a file.
-  base::WriteFile(TestPath(), NULL, 0);
+  base::WriteFile(TestPath(), nullptr, 0);
   ASSERT_TRUE(PathExists(TestPath()));
 
   // Opens the created file.

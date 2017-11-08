@@ -176,7 +176,7 @@ TEST(CommandLineTest, EmptyString) {
   EXPECT_EQ(1U, cl_from_string.argv().size());
   EXPECT_TRUE(cl_from_string.GetArgs().empty());
 #endif
-  CommandLine cl_from_argv(0, NULL);
+  CommandLine cl_from_argv(0, nullptr);
   EXPECT_TRUE(cl_from_argv.GetCommandLineString().empty());
   EXPECT_TRUE(cl_from_argv.GetProgram().empty());
   EXPECT_EQ(1U, cl_from_argv.argv().size());
@@ -382,9 +382,9 @@ TEST(CommandLineTest, ProgramQuotes) {
 TEST(CommandLineTest, Init) {
   // Call Init without checking output once so we know it's been called
   // whether or not the test runner does so.
-  CommandLine::Init(0, NULL);
+  CommandLine::Init(0, nullptr);
   CommandLine* initial = CommandLine::ForCurrentProcess();
-  EXPECT_FALSE(CommandLine::Init(0, NULL));
+  EXPECT_FALSE(CommandLine::Init(0, nullptr));
   CommandLine* current = CommandLine::ForCurrentProcess();
   EXPECT_EQ(initial, current);
 }

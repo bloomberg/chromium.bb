@@ -250,7 +250,7 @@ Time Time::LocalMidnight() const {
 bool Time::FromStringInternal(const char* time_string,
                               bool is_local,
                               Time* parsed_time) {
-  DCHECK((time_string != NULL) && (parsed_time != NULL));
+  DCHECK((time_string != nullptr) && (parsed_time != nullptr));
 
   if (time_string[0] == '\0')
     return false;

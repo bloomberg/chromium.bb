@@ -2519,9 +2519,9 @@ TEST_F(FileUtilTest, ReadFileToString) {
   EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, &data, 6));
   EXPECT_EQ("0123", data);
 
-  EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, NULL, 6));
+  EXPECT_TRUE(ReadFileToStringWithMaxSize(file_path, nullptr, 6));
 
-  EXPECT_TRUE(ReadFileToString(file_path, NULL));
+  EXPECT_TRUE(ReadFileToString(file_path, nullptr));
 
   data = "temp";
   EXPECT_FALSE(ReadFileToString(file_path_dangerous, &data));

@@ -52,15 +52,11 @@ struct Provider {
   bool is_static;
 };
 
-Provider base_provider = {
-  PathProvider,
-  NULL,
+Provider base_provider = {PathProvider, nullptr,
 #ifndef NDEBUG
-  PATH_START,
-  PATH_END,
+                          PATH_START, PATH_END,
 #endif
-  true
-};
+                          true};
 
 #if defined(OS_WIN)
 Provider base_provider_win = {
@@ -190,7 +186,7 @@ bool PathService::Get(int key, FilePath* result) {
   if (key == DIR_CURRENT)
     return GetCurrentDirectory(result);
 
-  Provider* provider = NULL;
+  Provider* provider = nullptr;
   {
     AutoLock scoped_lock(path_data->lock);
     if (LockedGetFromCache(key, path_data, result))

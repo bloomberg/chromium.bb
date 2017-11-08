@@ -142,20 +142,20 @@ TEST(SecurityTest, MALLOC_OVERFLOW_TEST(RandomMemoryAllocations)) {
   // that it has allocated early on, before starting the sophisticated
   // allocators.
   void* default_mmap_heap_address =
-      mmap(0, kPageSize, PROT_READ|PROT_WRITE,
-           MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+      mmap(nullptr, kPageSize, PROT_READ | PROT_WRITE,
+           MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   ASSERT_NE(default_mmap_heap_address,
             static_cast<void*>(MAP_FAILED));
   ASSERT_EQ(munmap(default_mmap_heap_address, kPageSize), 0);
   void* brk_heap_address = sbrk(0);
   ASSERT_NE(brk_heap_address, reinterpret_cast<void*>(-1));
-  ASSERT_TRUE(brk_heap_address != NULL);
+  ASSERT_TRUE(brk_heap_address != nullptr);
   // 1 MB should get us past what TCMalloc pre-allocated before initializing
   // the sophisticated allocators.
   size_t kAllocSize = 1<<20;
   std::unique_ptr<char, base::FreeDeleter> ptr(
       static_cast<char*>(malloc(kAllocSize)));
-  ASSERT_TRUE(ptr != NULL);
+  ASSERT_TRUE(ptr != nullptr);
   // If two pointers are separated by less than 512MB, they are considered
   // to be in the same area.
   // Our random pointer could be anywhere within 0x3fffffffffff (46bits),

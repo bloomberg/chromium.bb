@@ -201,7 +201,7 @@ HistogramBase* SparseHistogram::DeserializeInfoImpl(PickleIterator* iter) {
   int flags;
   if (!iter->ReadString(&histogram_name) || !iter->ReadInt(&flags)) {
     DLOG(ERROR) << "Pickle error decoding Histogram: " << histogram_name;
-    return NULL;
+    return nullptr;
   }
 
   flags &= ~HistogramBase::kIPCSerializationSourceFlag;

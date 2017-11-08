@@ -20,7 +20,7 @@ const ProcessEntry* ProcessIterator::NextProcessEntry() {
   } while (result && !IncludeEntry());
   if (result)
     return &entry_;
-  return NULL;
+  return nullptr;
 }
 
 ProcessIterator::ProcessEntries ProcessIterator::Snapshot() {

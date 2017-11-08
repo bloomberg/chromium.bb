@@ -212,7 +212,7 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd) {
 
     // Wait until some inotify events are available.
     int select_result =
-      HANDLE_EINTR(select(inotify_fd + 1, &rfds, NULL, NULL, NULL));
+        HANDLE_EINTR(select(inotify_fd + 1, &rfds, nullptr, nullptr, nullptr));
     if (select_result < 0) {
       DPLOG(WARNING) << "select failed";
       return;

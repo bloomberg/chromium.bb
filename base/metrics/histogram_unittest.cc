@@ -642,10 +642,10 @@ TEST_P(HistogramTest, BadConstruction) {
   // Try to get the same histogram name with different arguments.
   HistogramBase* bad_histogram = Histogram::FactoryGet(
       "BadConstruction", 0, 100, 7, HistogramBase::kNoFlags);
-  EXPECT_EQ(NULL, bad_histogram);
+  EXPECT_EQ(nullptr, bad_histogram);
   bad_histogram = Histogram::FactoryGet(
       "BadConstruction", 0, 99, 8, HistogramBase::kNoFlags);
-  EXPECT_EQ(NULL, bad_histogram);
+  EXPECT_EQ(nullptr, bad_histogram);
 
   HistogramBase* linear_histogram = LinearHistogram::FactoryGet(
       "BadConstructionLinear", 0, 100, 8, HistogramBase::kNoFlags);
@@ -654,10 +654,10 @@ TEST_P(HistogramTest, BadConstruction) {
   // Try to get the same histogram name with different arguments.
   bad_histogram = LinearHistogram::FactoryGet(
       "BadConstructionLinear", 0, 100, 7, HistogramBase::kNoFlags);
-  EXPECT_EQ(NULL, bad_histogram);
+  EXPECT_EQ(nullptr, bad_histogram);
   bad_histogram = LinearHistogram::FactoryGet(
       "BadConstructionLinear", 10, 100, 8, HistogramBase::kNoFlags);
-  EXPECT_EQ(NULL, bad_histogram);
+  EXPECT_EQ(nullptr, bad_histogram);
 }
 
 TEST_P(HistogramTest, FactoryTime) {

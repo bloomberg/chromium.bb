@@ -38,7 +38,7 @@ bool UncheckedCalloc(size_t num_items, size_t size, void** result) {
 
   // Overflow check
   if (size && ((alloc_size / size) != num_items)) {
-    *result = NULL;
+    *result = nullptr;
     return false;
   }
 

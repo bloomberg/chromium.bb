@@ -33,7 +33,7 @@ class EventInjector {
   EventInjector() : processed_events_(0) {
     source_ = static_cast<Source*>(g_source_new(&SourceFuncs, sizeof(Source)));
     source_->injector = this;
-    g_source_attach(source_, NULL);
+    g_source_attach(source_, nullptr);
     g_source_set_can_recurse(source_, TRUE);
   }
 
@@ -135,12 +135,9 @@ class EventInjector {
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };
 
-GSourceFuncs EventInjector::SourceFuncs = {
-  EventInjector::Prepare,
-  EventInjector::Check,
-  EventInjector::Dispatch,
-  NULL
-};
+GSourceFuncs EventInjector::SourceFuncs = {EventInjector::Prepare,
+                                           EventInjector::Check,
+                                           EventInjector::Dispatch, nullptr};
 
 void IncrementInt(int *value) {
   ++*value;
@@ -159,7 +156,7 @@ void PostMessageLoopTask(const Location& from_here, OnceClosure task) {
 // Test fixture.
 class MessagePumpGLibTest : public testing::Test {
  public:
-  MessagePumpGLibTest() : loop_(NULL), injector_(NULL) { }
+  MessagePumpGLibTest() : loop_(nullptr), injector_(nullptr) {}
 
   // Overridden from testing::Test:
   void SetUp() override {
@@ -168,9 +165,9 @@ class MessagePumpGLibTest : public testing::Test {
   }
   void TearDown() override {
     delete injector_;
-    injector_ = NULL;
+    injector_ = nullptr;
     delete loop_;
-    loop_ = NULL;
+    loop_ = nullptr;
   }
 
   MessageLoop* loop() const { return loop_; }
@@ -383,8 +380,8 @@ void AddEventsAndDrainGLib(EventInjector* injector) {
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, BindOnce(&DoNothing));
 
   // Drain the events
-  while (g_main_context_pending(NULL)) {
-    g_main_context_iteration(NULL, FALSE);
+  while (g_main_context_pending(nullptr)) {
+    g_main_context_iteration(nullptr, FALSE);
   }
 }
 
@@ -408,13 +405,13 @@ class GLibLoopRunner : public RefCounted<GLibLoopRunner> {
 
   void RunGLib() {
     while (!quit_) {
-      g_main_context_iteration(NULL, TRUE);
+      g_main_context_iteration(nullptr, TRUE);
     }
   }
 
   void RunLoop() {
     while (!quit_) {
-      g_main_context_iteration(NULL, TRUE);
+      g_main_context_iteration(nullptr, TRUE);
     }
   }
 

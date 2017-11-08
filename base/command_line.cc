@@ -24,7 +24,7 @@
 
 namespace base {
 
-CommandLine* CommandLine::current_process_commandline_ = NULL;
+CommandLine* CommandLine::current_process_commandline_ = nullptr;
 
 namespace {
 
@@ -233,7 +233,7 @@ bool CommandLine::Init(int argc, const char* const* argv) {
 void CommandLine::Reset() {
   DCHECK(current_process_commandline_);
   delete current_process_commandline_;
-  current_process_commandline_ = NULL;
+  current_process_commandline_ = nullptr;
 }
 
 // static

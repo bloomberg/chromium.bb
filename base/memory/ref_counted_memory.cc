@@ -48,7 +48,7 @@ scoped_refptr<RefCountedBytes> RefCountedBytes::TakeVector(
 const unsigned char* RefCountedBytes::front() const {
   // STL will assert if we do front() on an empty vector, but calling code
   // expects a NULL.
-  return size() ? &data_.front() : NULL;
+  return size() ? &data_.front() : nullptr;
 }
 
 size_t RefCountedBytes::size() const {
@@ -70,8 +70,8 @@ scoped_refptr<RefCountedString> RefCountedString::TakeString(
 }
 
 const unsigned char* RefCountedString::front() const {
-  return data_.empty() ? NULL :
-         reinterpret_cast<const unsigned char*>(data_.data());
+  return data_.empty() ? nullptr
+                       : reinterpret_cast<const unsigned char*>(data_.data());
 }
 
 size_t RefCountedString::size() const {

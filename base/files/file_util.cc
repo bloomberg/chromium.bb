@@ -178,13 +178,13 @@ bool IsDirectoryEmpty(const FilePath& dir_path) {
 FILE* CreateAndOpenTemporaryFile(FilePath* path) {
   FilePath directory;
   if (!GetTempDir(&directory))
-    return NULL;
+    return nullptr;
 
   return CreateAndOpenTemporaryFileInDir(directory, path);
 }
 
 bool CreateDirectory(const FilePath& full_path) {
-  return CreateDirectoryAndGetError(full_path, NULL);
+  return CreateDirectoryAndGetError(full_path, nullptr);
 }
 
 bool GetFileSize(const FilePath& file_path, int64_t* file_size) {
@@ -215,14 +215,14 @@ bool TouchFile(const FilePath& path,
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool CloseFile(FILE* file) {
-  if (file == NULL)
+  if (file == nullptr)
     return true;
   return fclose(file) == 0;
 }
 
 #if !defined(OS_NACL_NONSFI)
 bool TruncateFile(FILE* file) {
-  if (file == NULL)
+  if (file == nullptr)
     return false;
   long current_offset = ftell(file);
   if (current_offset == -1)

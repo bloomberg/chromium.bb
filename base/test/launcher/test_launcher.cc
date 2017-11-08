@@ -541,9 +541,9 @@ bool TestLauncher::Run() {
   sigemptyset(&action.sa_mask);
   action.sa_handler = &ShutdownPipeSignalHandler;
 
-  CHECK_EQ(0, sigaction(SIGINT, &action, NULL));
-  CHECK_EQ(0, sigaction(SIGQUIT, &action, NULL));
-  CHECK_EQ(0, sigaction(SIGTERM, &action, NULL));
+  CHECK_EQ(0, sigaction(SIGINT, &action, nullptr));
+  CHECK_EQ(0, sigaction(SIGQUIT, &action, nullptr));
+  CHECK_EQ(0, sigaction(SIGTERM, &action, nullptr));
 
   auto controller = base::FileDescriptorWatcher::WatchReadable(
       g_shutdown_pipe[0],

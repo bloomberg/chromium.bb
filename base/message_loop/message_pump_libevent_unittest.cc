@@ -133,7 +133,7 @@ class DeleteWatcher : public BaseWatcher {
   void OnFileCanWriteWithoutBlocking(int /* fd */) override {
     DCHECK(controller_);
     delete controller_;
-    controller_ = NULL;
+    controller_ = nullptr;
   }
 };
 

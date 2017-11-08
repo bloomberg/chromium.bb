@@ -22,7 +22,7 @@ const char kTestPartLesultsLimitExceeded[] =
 }  // namespace
 
 XmlUnitTestResultPrinter::XmlUnitTestResultPrinter()
-    : output_file_(NULL), open_failed_(false) {}
+    : output_file_(nullptr), open_failed_(false) {}
 
 XmlUnitTestResultPrinter::~XmlUnitTestResultPrinter() {
   if (output_file_ && !open_failed_) {
