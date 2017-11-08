@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Cookie Store Tests (testMetaHttpEquivSetCookie) assert_equals: testDeleteCookies failures: TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function,TypeError: cookieStore.delete is not a function expected 0 but got 12
+Harness: the test ran to completion.
+
