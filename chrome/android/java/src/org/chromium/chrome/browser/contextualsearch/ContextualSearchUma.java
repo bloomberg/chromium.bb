@@ -696,6 +696,8 @@ public class ContextualSearchUma {
 
     /**
      * Logs the whether the panel was seen and the type of the trigger and if Bar nearly overlapped.
+     * If the panel was seen, logs the duration of the panel view into a BarOverlap or BarNoOverlap
+     * duration histogram.
      * @param wasPanelSeen Whether the panel was seen.
      * @param wasTap Whether the gesture was a Tap or not.
      * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
@@ -705,6 +707,19 @@ public class ContextualSearchUma {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchBarOverlapSeen",
                 getBarOverlapEnum(wasBarOverlap, wasPanelSeen, wasTap),
                 BAR_OVERLAP_RESULTS_BOUNDARY);
+    }
+
+    /**
+     * Logs the duration of the panel viewed in its Peeked state before being opened.
+     * @param wasBarOverlap Whether the trigger location overlapped the Bar area.
+     * @param panelPeekDurationMs The duration that the panel was peeking before being opened
+     *        by the user.
+     */
+    public static void logBarOverlapPeekDuration(boolean wasBarOverlap, long panelPeekDurationMs) {
+        String histogram = wasBarOverlap ? "Search.ContextualSearchBarOverlap.DurationSeen"
+                                         : "Search.ContextualSearchBarNoOverlap.DurationSeen";
+        RecordHistogram.recordMediumTimesHistogram(
+                histogram, panelPeekDurationMs, TimeUnit.MILLISECONDS);
     }
 
     /**
