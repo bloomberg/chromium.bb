@@ -143,6 +143,10 @@ if (is_android) {
     # off will enable proguard.
     is_java_debug = is_debug
 
+    # Report Java assert failure on Android. Turning it on will report Java
+    # assert failure without crash.
+    report_java_assert = false
+
     # Mark APKs as android:debuggable="true".
     debuggable_apks = !is_official_build
 
