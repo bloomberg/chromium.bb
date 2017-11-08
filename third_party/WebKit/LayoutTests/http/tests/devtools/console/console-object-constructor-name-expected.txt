@@ -1,6 +1,6 @@
 Tests that the name of the function invoked as object constructor will be displayed as its type in the front-end. Bug 50063.
 
-console-object-constructor-name.js:22 Parent {}
-console-object-constructor-name.js:23 Child {}
-console-object-constructor-name.js:24 inner {}
+console-object-constructor-name.js:22 Parent {}
+console-object-constructor-name.js:23 Child {}
+console-object-constructor-name.js:24 inner {}
 

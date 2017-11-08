@@ -342,10 +342,10 @@ console-format-startup.html:11 -Infinity
 console-format-startup.html:12 [-Infinity]
 globals[20]
 -Infinity
-console-format-startup.html:11 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format-startup.html:11 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
 console-format-startup.html:12 [Array(10)]
 globals[21]
-(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
 console-format-startup.html:11 {}
 console-format-startup.html:12 [{…}]
 globals[22]
@@ -389,18 +389,18 @@ console-format-startup.html:12 [ƒ]
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format-startup.html:11 Number {42}
+console-format-startup.html:11 Number {42}
 console-format-startup.html:12 [Number]
 globals[32]
-Number {42}
-console-format-startup.html:11 String {"abc"}
+Number {42}
+console-format-startup.html:11 String {"abc"}
 console-format-startup.html:12 [String]
 globals[33]
-String {"abc"}
-console-format-startup.html:11 Uint16Array(3) [1, 2, 3]
+String {"abc"}
+console-format-startup.html:11 Uint16Array(3) [1, 2, 3]
 console-format-startup.html:12 [Uint16Array(3)]
 globals[34]
-Uint16Array(3) [1, 2, 3]
+Uint16Array(3) [1, 2, 3]
 console-format-startup.html:11 #text
 console-format-startup.html:12 [text]
 globals[35]
@@ -409,50 +409,50 @@ console-format-startup.html:11 DOMException: Failed to execute 'removeChild' on 
 console-format-startup.html:12 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format-startup.html:11 Uint8Array [3]
+console-format-startup.html:11 Uint8Array [3]
 console-format-startup.html:12 [Uint8Array(1)]
 globals[37]
-Uint8Array [3]
-console-format-startup.html:11 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+Uint8Array [3]
+console-format-startup.html:11 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
 console-format-startup.html:12 [Uint8Array(400)]
 globals[38]
-Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format-startup.html:11 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format-startup.html:11 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
 console-format-startup.html:12 [Uint8Array(400000000)]
 globals[39]
-Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format-startup.html:11 namespace.longSubNamespace.x.className {}
+Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format-startup.html:11 namespace.longSubNamespace.x.className {}
 console-format-startup.html:12 [n…e.l…e.x.className]
 globals[40]
-namespace.longSubNamespace.x.className {}
-console-format-startup.html:11 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+namespace.longSubNamespace.x.className {}
+console-format-startup.html:11 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
 console-format-startup.html:12 [Array(200)]
 globals[41]
-(200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+(200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
 console-format-startup.html:11 ["test"]
 console-format-startup.html:12 [Array(1)]
 globals[42]
 ["test"]
-console-format-startup.html:11 Number {42, 1: "foo", a: "bar"}
+console-format-startup.html:11 Number {42, 1: "foo", a: "bar"}
 console-format-startup.html:12 [Number]
 globals[43]
-Number {42, 1: "foo", a: "bar"}
-console-format-startup.html:11 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+Number {42, 1: "foo", a: "bar"}
+console-format-startup.html:11 String {"abc", 3: "foo", 01: "foo", a: "bar"}
 console-format-startup.html:12 [String]
 globals[44]
-String {"abc", 3: "foo", 01: "foo", a: "bar"}
-console-format-startup.html:11 Promise {<rejected>: -0}
+String {"abc", 3: "foo", 01: "foo", a: "bar"}
+console-format-startup.html:11 Promise {<rejected>: -0}
 console-format-startup.html:12 [Promise]
 globals[45]
-Promise {<rejected>: -0}
-console-format-startup.html:11 Promise {<resolved>: 1}
+Promise {<rejected>: -0}
+console-format-startup.html:11 Promise {<resolved>: 1}
 console-format-startup.html:12 [Promise]
 globals[46]
-Promise {<resolved>: 1}
-console-format-startup.html:11 Promise {<pending>}
+Promise {<resolved>: 1}
+console-format-startup.html:11 Promise {<pending>}
 console-format-startup.html:12 [Promise]
 globals[47]
-Promise {<pending>}
+Promise {<pending>}
 console-format-startup.html:11 Symbol()
 console-format-startup.html:12 [Symbol()]
 globals[48]
@@ -465,46 +465,46 @@ console-format-startup.html:11 {a: Symbol(), Symbol(a): 2}
 console-format-startup.html:12 [{…}]
 globals[50]
 {a: Symbol(), Symbol(a): 2}
-console-format-startup.html:11 Map(1) {{…} => {…}}
+console-format-startup.html:11 Map(1) {{…} => {…}}
 console-format-startup.html:12 [Map(1)]
 globals[51]
-Map(1) {{…} => {…}}
-console-format-startup.html:11 WeakMap {{…} => {…}}
+Map(1) {{…} => {…}}
+console-format-startup.html:11 WeakMap {{…} => {…}}
 console-format-startup.html:12 [WeakMap]
 globals[52]
-WeakMap {{…} => {…}}
-console-format-startup.html:11 Set(1) {{…}}
+WeakMap {{…} => {…}}
+console-format-startup.html:11 Set(1) {{…}}
 console-format-startup.html:12 [Set(1)]
 globals[53]
-Set(1) {{…}}
-console-format-startup.html:11 WeakSet {{…}}
+Set(1) {{…}}
+console-format-startup.html:11 WeakSet {{…}}
 console-format-startup.html:12 [WeakSet]
 globals[54]
-WeakSet {{…}}
-console-format-startup.html:11 Map(1) {Map(0) => WeakMap}
+WeakSet {{…}}
+console-format-startup.html:11 Map(1) {Map(0) => WeakMap}
 console-format-startup.html:12 [Map(1)]
 globals[55]
-Map(1) {Map(0) => WeakMap}
-console-format-startup.html:11 Map(1) {Map(1) => WeakMap}
+Map(1) {Map(0) => WeakMap}
+console-format-startup.html:11 Map(1) {Map(1) => WeakMap}
 console-format-startup.html:12 [Map(1)]
 globals[56]
-Map(1) {Map(1) => WeakMap}
-console-format-startup.html:11 Set(1) {WeakSet}
+Map(1) {Map(1) => WeakMap}
+console-format-startup.html:11 Set(1) {WeakSet}
 console-format-startup.html:12 [Set(1)]
 globals[57]
-Set(1) {WeakSet}
-console-format-startup.html:11 Set(1) {WeakSet}
+Set(1) {WeakSet}
+console-format-startup.html:11 Set(1) {WeakSet}
 console-format-startup.html:12 [Set(1)]
 globals[58]
-Set(1) {WeakSet}
-console-format-startup.html:11 Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
+Set(1) {WeakSet}
+console-format-startup.html:11 Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
 console-format-startup.html:12 [Map(6)]
 globals[59]
-Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
-console-format-startup.html:11 genFunction {<suspended>}
+Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
+console-format-startup.html:11 genFunction {<suspended>}
 console-format-startup.html:12 [genFunction]
 globals[60]
-genFunction {<suspended>}
+genFunction {<suspended>}
 Expanded all messages
 console-format-startup.html:25 Array(10)
     0: "test"
@@ -605,7 +605,7 @@ console-format-startup.html:222 HTMLAllCollection(18)
     p: p#p
     sel: select#sel
     svg-node: svg#svg-node
-    x: NodeList(3) [div#x, input, input]
+    x: NodeList(3) [div#x, input, input]
     __proto__: HTMLAllCollection
 console-format-startup.html:226 HTMLFormControlsCollection(3)
     0: select#sel
@@ -613,7 +613,7 @@ console-format-startup.html:226 HTMLFormControlsCollection(3)
     2: input
     length: 3
     sel: select#sel
-    x: RadioNodeList(2) [input, input, value: ""]
+    x: RadioNodeList(2) [input, input, value: ""]
     __proto__: HTMLFormControlsCollection
 console-format-startup.html:230 RadioNodeList(2)
     0: input
@@ -623,7 +623,7 @@ console-format-startup.html:230 RadioNodeList(2)
     __proto__: RadioNodeList
 console-format-startup.html:236 Array(2)
     0: 1
-    1: (2) [2, Array(2)]
+    1: (2) [2, Array(2)]
     length: 2
     __proto__: Array(0)
 console-format-startup.html:239 NonArrayWithLength
@@ -833,7 +833,7 @@ console-format-startup.html:12 [-Infinity]
     __proto__: Array(0)
 globals[20]
 -Infinity
-console-format-startup.html:11 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format-startup.html:11 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -841,11 +841,11 @@ console-format-startup.html:11 (10) ["test", "test2", empty × 2, "test4", empty
     length: 10
     __proto__: Array(0)
 console-format-startup.html:12 [Array(10)]
-    0: (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+    0: (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     length: 1
     __proto__: Array(0)
 globals[21]
-(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -983,18 +983,18 @@ console-format-startup.html:12 [ƒ]
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
-console-format-startup.html:11 Number {42}
+console-format-startup.html:11 Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
 console-format-startup.html:12 [Number]
-    0: Number {42}
+    0: Number {42}
     length: 1
     __proto__: Array(0)
 globals[32]
-Number {42}
+Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format-startup.html:11 String {"abc"}
+console-format-startup.html:11 String {"abc"}
     0: "a"
     1: "b"
     2: "c"
@@ -1002,18 +1002,18 @@ console-format-startup.html:11 String {"abc"}
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format-startup.html:12 [String]
-    0: String {"abc"}
+    0: String {"abc"}
     length: 1
     __proto__: Array(0)
 globals[33]
-String {"abc"}
+String {"abc"}
     0: "a"
     1: "b"
     2: "c"
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format-startup.html:11 Uint16Array(3) [1, 2, 3]
+console-format-startup.html:11 Uint16Array(3) [1, 2, 3]
     0: 1
     1: 2
     2: 3
@@ -1024,11 +1024,11 @@ console-format-startup.html:11 Uint16Array(3) [1, 2, 3]
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:12 [Uint16Array(3)]
-    0: Uint16Array(3) [1, 2, 3]
+    0: Uint16Array(3) [1, 2, 3]
     length: 1
     __proto__: Array(0)
 globals[34]
-Uint16Array(3) [1, 2, 3]
+Uint16Array(3) [1, 2, 3]
     0: 1
     1: 2
     2: 3
@@ -1052,7 +1052,7 @@ console-format-startup.html:12 [DOMException: Failed to execute 'removeChild' on
     __proto__: Array(0)
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format-startup.html:11 Uint8Array [3]
+console-format-startup.html:11 Uint8Array [3]
     0: 3
     buffer: (...)
     byteLength: (...)
@@ -1061,11 +1061,11 @@ console-format-startup.html:11 Uint8Array [3]
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
 console-format-startup.html:12 [Uint8Array(1)]
-    0: Uint8Array [3]
+    0: Uint8Array [3]
     length: 1
     __proto__: Array(0)
 globals[37]
-Uint8Array [3]
+Uint8Array [3]
     0: 3
     buffer: (...)
     byteLength: (...)
@@ -1073,7 +1073,7 @@ Uint8Array [3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format-startup.html:11 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format-startup.html:11 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99]
     [100 … 199]
     [200 … 299]
@@ -1081,54 +1081,54 @@ console-format-startup.html:11 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     foo: "bar"
     __proto__: TypedArray
 console-format-startup.html:12 [Uint8Array(400)]
-    0: Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+    0: Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     length: 1
     __proto__: Array(0)
 globals[38]
-Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99]
     [100 … 199]
     [200 … 299]
     [300 … 399]
     foo: "bar"
     __proto__: TypedArray
-console-format-startup.html:11 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format-startup.html:11 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
     __proto__: TypedArray
 console-format-startup.html:12 [Uint8Array(400000000)]
-    0: Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+    0: Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     length: 1
     __proto__: Array(0)
 globals[39]
-Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
     __proto__: TypedArray
-console-format-startup.html:11 namespace.longSubNamespace.x.className {}
+console-format-startup.html:11 namespace.longSubNamespace.x.className {}
     __proto__: Object
 console-format-startup.html:12 [n…e.l…e.x.className]
-    0: namespace.longSubNamespace.x.className {}
+    0: namespace.longSubNamespace.x.className {}
     length: 1
     __proto__: Array(0)
 globals[40]
-namespace.longSubNamespace.x.className {}
+namespace.longSubNamespace.x.className {}
     __proto__: Object
-console-format-startup.html:11 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+console-format-startup.html:11 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
     [0 … 99]
     [100 … 199]
     length: 200
     __proto__: Array(0)
 console-format-startup.html:12 [Array(200)]
-    0: (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+    0: (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
     length: 1
     __proto__: Array(0)
 globals[41]
-(200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+(200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
     [0 … 99]
     [100 … 199]
     length: 200
@@ -1146,22 +1146,22 @@ globals[42]
     0: "test"
     length: 1
     __proto__: Array(0)
-console-format-startup.html:11 Number {42, 1: "foo", a: "bar"}
+console-format-startup.html:11 Number {42, 1: "foo", a: "bar"}
     1: "foo"
     a: "bar"
     __proto__: Number
     [[PrimitiveValue]]: 42
 console-format-startup.html:12 [Number]
-    0: Number {42, 1: "foo", a: "bar"}
+    0: Number {42, 1: "foo", a: "bar"}
     length: 1
     __proto__: Array(0)
 globals[43]
-Number {42, 1: "foo", a: "bar"}
+Number {42, 1: "foo", a: "bar"}
     1: "foo"
     a: "bar"
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format-startup.html:11 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+console-format-startup.html:11 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     0: "a"
     01: "foo"
     1: "b"
@@ -1172,11 +1172,11 @@ console-format-startup.html:11 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format-startup.html:12 [String]
-    0: String {"abc", 3: "foo", 01: "foo", a: "bar"}
+    0: String {"abc", 3: "foo", 01: "foo", a: "bar"}
     length: 1
     __proto__: Array(0)
 globals[44]
-String {"abc", 3: "foo", 01: "foo", a: "bar"}
+String {"abc", 3: "foo", 01: "foo", a: "bar"}
     0: "a"
     01: "foo"
     1: "b"
@@ -1186,42 +1186,42 @@ String {"abc", 3: "foo", 01: "foo", a: "bar"}
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format-startup.html:11 Promise {<rejected>: -0}
+console-format-startup.html:11 Promise {<rejected>: -0}
     __proto__: Promise
     [[PromiseStatus]]: "rejected"
     [[PromiseValue]]: -0
 console-format-startup.html:12 [Promise]
-    0: Promise {<rejected>: -0}
+    0: Promise {<rejected>: -0}
     length: 1
     __proto__: Array(0)
 globals[45]
-Promise {<rejected>: -0}
+Promise {<rejected>: -0}
     __proto__: Promise
     [[PromiseStatus]]: "rejected"
     [[PromiseValue]]: -0
-console-format-startup.html:11 Promise {<resolved>: 1}
+console-format-startup.html:11 Promise {<resolved>: 1}
     __proto__: Promise
     [[PromiseStatus]]: "resolved"
     [[PromiseValue]]: 1
 console-format-startup.html:12 [Promise]
-    0: Promise {<resolved>: 1}
+    0: Promise {<resolved>: 1}
     length: 1
     __proto__: Array(0)
 globals[46]
-Promise {<resolved>: 1}
+Promise {<resolved>: 1}
     __proto__: Promise
     [[PromiseStatus]]: "resolved"
     [[PromiseValue]]: 1
-console-format-startup.html:11 Promise {<pending>}
+console-format-startup.html:11 Promise {<pending>}
     __proto__: Promise
     [[PromiseStatus]]: "pending"
     [[PromiseValue]]: undefined
 console-format-startup.html:12 [Promise]
-    0: Promise {<pending>}
+    0: Promise {<pending>}
     length: 1
     __proto__: Array(0)
 globals[47]
-Promise {<pending>}
+Promise {<pending>}
     __proto__: Promise
     [[PromiseStatus]]: "pending"
     [[PromiseValue]]: undefined
@@ -1256,139 +1256,139 @@ globals[50]
     Symbol(a): 2
     get getter: ƒ getter()
     __proto__: Object
-console-format-startup.html:11 Map(1) {{…} => {…}}
+console-format-startup.html:11 Map(1) {{…} => {…}}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
 console-format-startup.html:12 [Map(1)]
-    0: Map(1) {{…} => {…}}
+    0: Map(1) {{…} => {…}}
     length: 1
     __proto__: Array(0)
 globals[51]
-Map(1) {{…} => {…}}
+Map(1) {{…} => {…}}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-format-startup.html:11 WeakMap {{…} => {…}}
+console-format-startup.html:11 WeakMap {{…} => {…}}
     __proto__: WeakMap
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
 console-format-startup.html:12 [WeakMap]
-    0: WeakMap {{…} => {…}}
+    0: WeakMap {{…} => {…}}
     length: 1
     __proto__: Array(0)
 globals[52]
-WeakMap {{…} => {…}}
+WeakMap {{…} => {…}}
     __proto__: WeakMap
     [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-format-startup.html:11 Set(1) {{…}}
+console-format-startup.html:11 Set(1) {{…}}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: Object
         length: 1
 console-format-startup.html:12 [Set(1)]
-    0: Set(1) {{…}}
+    0: Set(1) {{…}}
     length: 1
     __proto__: Array(0)
 globals[53]
-Set(1) {{…}}
+Set(1) {{…}}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-startup.html:11 WeakSet {{…}}
+console-format-startup.html:11 WeakSet {{…}}
     __proto__: WeakSet
     [[Entries]]: Array(1)
         0: Object
         length: 1
 console-format-startup.html:12 [WeakSet]
-    0: WeakSet {{…}}
+    0: WeakSet {{…}}
     length: 1
     __proto__: Array(0)
 globals[54]
-WeakSet {{…}}
+WeakSet {{…}}
     __proto__: WeakSet
     [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-startup.html:11 Map(1) {Map(0) => WeakMap}
+console-format-startup.html:11 Map(1) {Map(0) => WeakMap}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Map(0) => WeakMap}
         length: 1
 console-format-startup.html:12 [Map(1)]
-    0: Map(1) {Map(0) => WeakMap}
+    0: Map(1) {Map(0) => WeakMap}
     length: 1
     __proto__: Array(0)
 globals[55]
-Map(1) {Map(0) => WeakMap}
+Map(1) {Map(0) => WeakMap}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Map(0) => WeakMap}
         length: 1
-console-format-startup.html:11 Map(1) {Map(1) => WeakMap}
+console-format-startup.html:11 Map(1) {Map(1) => WeakMap}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Map(1) => WeakMap}
         length: 1
 console-format-startup.html:12 [Map(1)]
-    0: Map(1) {Map(1) => WeakMap}
+    0: Map(1) {Map(1) => WeakMap}
     length: 1
     __proto__: Array(0)
 globals[56]
-Map(1) {Map(1) => WeakMap}
+Map(1) {Map(1) => WeakMap}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(1)
         0: {Map(1) => WeakMap}
         length: 1
-console-format-startup.html:11 Set(1) {WeakSet}
+console-format-startup.html:11 Set(1) {WeakSet}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: WeakSet
         length: 1
 console-format-startup.html:12 [Set(1)]
-    0: Set(1) {WeakSet}
+    0: Set(1) {WeakSet}
     length: 1
     __proto__: Array(0)
 globals[57]
-Set(1) {WeakSet}
+Set(1) {WeakSet}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: WeakSet
         length: 1
-console-format-startup.html:11 Set(1) {WeakSet}
+console-format-startup.html:11 Set(1) {WeakSet}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: WeakSet
         length: 1
 console-format-startup.html:12 [Set(1)]
-    0: Set(1) {WeakSet}
+    0: Set(1) {WeakSet}
     length: 1
     __proto__: Array(0)
 globals[58]
-Set(1) {WeakSet}
+Set(1) {WeakSet}
     size: (...)
     __proto__: Set
     [[Entries]]: Array(1)
         0: WeakSet
         length: 1
-console-format-startup.html:11 Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
+console-format-startup.html:11 Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(6)
@@ -1400,11 +1400,11 @@ console-format-startup.html:11 Map(6) {" from str " => " to str ", undefined => 
         5: {Array(1) => Array(1)}
         length: 6
 console-format-startup.html:12 [Map(6)]
-    0: Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
+    0: Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
     length: 1
     __proto__: Array(0)
 globals[59]
-Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
+Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, {…} => {…}, …}
     size: (...)
     __proto__: Map
     [[Entries]]: Array(6)
@@ -1415,7 +1415,7 @@ Map(6) {" from str " => " to str ", undefined => undefined, null => null, 42 => 
         4: {Object => Object}
         5: {Array(1) => Array(1)}
         length: 6
-console-format-startup.html:11 genFunction {<suspended>}
+console-format-startup.html:11 genFunction {<suspended>}
     __proto__: Generator
     [[GeneratorStatus]]: "suspended"
     [[GeneratorFunction]]: ƒ* ()
@@ -1423,11 +1423,11 @@ console-format-startup.html:11 genFunction {<suspended>}
     [[GeneratorLocation]]: console-format-startup.html:132
     [[Scopes]]: Scopes[2]
 console-format-startup.html:12 [genFunction]
-    0: genFunction {<suspended>}
+    0: genFunction {<suspended>}
     length: 1
     __proto__: Array(0)
 globals[60]
-genFunction {<suspended>}
+genFunction {<suspended>}
     __proto__: Generator
     [[GeneratorStatus]]: "suspended"
     [[GeneratorFunction]]: ƒ* ()
