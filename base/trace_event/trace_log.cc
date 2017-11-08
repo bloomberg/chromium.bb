@@ -55,7 +55,7 @@ class DeleteTraceLogForTesting {
  public:
   static void Delete() {
     Singleton<trace_event::TraceLog,
-              LeakySingletonTraits<trace_event::TraceLog>>::OnExit(0);
+              LeakySingletonTraits<trace_event::TraceLog>>::OnExit(nullptr);
   }
 };
 
@@ -267,7 +267,7 @@ TraceLog::ThreadLocalEventBuffer::~ThreadLocalEventBuffer() {
     FlushWhileLocked();
     trace_log_->thread_message_loops_.erase(MessageLoop::current());
   }
-  trace_log_->thread_local_event_buffer_.Set(NULL);
+  trace_log_->thread_local_event_buffer_.Set(nullptr);
 }
 
 TraceEvent* TraceLog::ThreadLocalEventBuffer::AddTraceEvent(
@@ -285,7 +285,7 @@ TraceEvent* TraceLog::ThreadLocalEventBuffer::AddTraceEvent(
     trace_log_->CheckIfBufferIsFullWhileLocked();
   }
   if (!chunk_)
-    return NULL;
+    return nullptr;
 
   size_t event_index;
   TraceEvent* trace_event = chunk_->AddTraceEvent(&event_index);
@@ -384,7 +384,7 @@ void TraceLog::InitializeThreadLocalEventBufferIfSupported() {
   if (thread_local_event_buffer &&
       !CheckGeneration(thread_local_event_buffer->generation())) {
     delete thread_local_event_buffer;
-    thread_local_event_buffer = NULL;
+    thread_local_event_buffer = nullptr;
   }
   if (!thread_local_event_buffer) {
     thread_local_event_buffer = new ThreadLocalEventBuffer(this);
@@ -773,7 +773,7 @@ TraceEvent* TraceLog::AddEventToThreadSharedChunkWhileLocked(
       CheckIfBufferIsFullWhileLocked();
   }
   if (!thread_shared_chunk_)
-    return NULL;
+    return nullptr;
 
   size_t event_index;
   TraceEvent* trace_event = thread_shared_chunk_->AddTraceEvent(&event_index);
@@ -915,7 +915,7 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
     UseNextTraceBuffer();
     thread_message_loops_.clear();
 
-    flush_task_runner_ = NULL;
+    flush_task_runner_ = nullptr;
     flush_output_callback = flush_output_callback_;
     flush_output_callback_.Reset();
 
@@ -1248,7 +1248,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       !disabled_by_filters) {
     OptionalAutoLock lock(&lock_);
 
-    TraceEvent* trace_event = NULL;
+    TraceEvent* trace_event = nullptr;
     if (thread_local_event_buffer) {
       trace_event = thread_local_event_buffer->AddTraceEvent(&handle);
     } else {
@@ -1457,22 +1457,23 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   }
 
 #if !defined(OS_NACL)  // NaCl shouldn't expose the process id.
-  InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                          0, "num_cpus", "number",
-                          base::SysInfo::NumberOfProcessors());
+  InitializeMetadataEvent(
+      AddEventToThreadSharedChunkWhileLocked(nullptr, false), 0, "num_cpus",
+      "number", base::SysInfo::NumberOfProcessors());
 #endif
 
   int current_thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   if (process_sort_index_ != 0) {
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            current_thread_id, "process_sort_index",
-                            "sort_index", process_sort_index_);
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false),
+        current_thread_id, "process_sort_index", "sort_index",
+        process_sort_index_);
   }
 
   if (!process_name_.empty()) {
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            current_thread_id, "process_name", "name",
-                            process_name_);
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false),
+        current_thread_id, "process_name", "name", process_name_);
   }
 
 // See https://crbug.com/726484 for Fuchsia.
@@ -1480,9 +1481,10 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   Time process_creation_time = CurrentProcessInfo::CreationTime();
   if (!process_creation_time.is_null()) {
     TimeDelta process_uptime = Time::Now() - process_creation_time;
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            current_thread_id, "process_uptime_seconds",
-                            "uptime", process_uptime.InSeconds());
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false),
+        current_thread_id, "process_uptime_seconds", "uptime",
+        process_uptime.InSeconds());
   }
 #endif  // !defined(OS_NACL) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 
@@ -1490,18 +1492,19 @@ void TraceLog::AddMetadataEventsWhileLocked() {
     std::vector<base::StringPiece> labels;
     for (const auto& it : process_labels_)
       labels.push_back(it.second);
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            current_thread_id, "process_labels", "labels",
-                            base::JoinString(labels, ","));
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false),
+        current_thread_id, "process_labels", "labels",
+        base::JoinString(labels, ","));
   }
 
   // Thread sort indices.
   for (const auto& it : thread_sort_indices_) {
     if (it.second == 0)
       continue;
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            it.first, "thread_sort_index", "sort_index",
-                            it.second);
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false), it.first,
+        "thread_sort_index", "sort_index", it.second);
   }
 
   // Thread names.
@@ -1509,16 +1512,17 @@ void TraceLog::AddMetadataEventsWhileLocked() {
   for (const auto& it : thread_names_) {
     if (it.second.empty())
       continue;
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            it.first, "thread_name", "name", it.second);
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false), it.first,
+        "thread_name", "name", it.second);
   }
 
   // If buffer is full, add a metadata record to report this.
   if (!buffer_limit_reached_timestamp_.is_null()) {
-    InitializeMetadataEvent(AddEventToThreadSharedChunkWhileLocked(NULL, false),
-                            current_thread_id, "trace_buffer_overflowed",
-                            "overflowed_at_ts",
-                            buffer_limit_reached_timestamp_);
+    InitializeMetadataEvent(
+        AddEventToThreadSharedChunkWhileLocked(nullptr, false),
+        current_thread_id, "trace_buffer_overflowed", "overflowed_at_ts",
+        buffer_limit_reached_timestamp_);
   }
 }
 
@@ -1528,13 +1532,13 @@ void TraceLog::DeleteForTesting() {
 }
 
 TraceEvent* TraceLog::GetEventByHandle(TraceEventHandle handle) {
-  return GetEventByHandleInternal(handle, NULL);
+  return GetEventByHandleInternal(handle, nullptr);
 }
 
 TraceEvent* TraceLog::GetEventByHandleInternal(TraceEventHandle handle,
                                                OptionalAutoLock* lock) {
   if (!handle.chunk_seq)
-    return NULL;
+    return nullptr;
 
   DCHECK(handle.chunk_seq);
   DCHECK(handle.chunk_index <= TraceBufferChunk::kMaxChunkIndex);
@@ -1556,7 +1560,7 @@ TraceEvent* TraceLog::GetEventByHandleInternal(TraceEventHandle handle,
       handle.chunk_index == thread_shared_chunk_index_) {
     return handle.chunk_seq == thread_shared_chunk_->seq()
                ? thread_shared_chunk_->GetEventAt(handle.event_index)
-               : NULL;
+               : nullptr;
   }
 
   return logged_events_->GetEventByHandle(handle);

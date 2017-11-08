@@ -119,7 +119,7 @@ void DelegateSimpleThreadPool::JoinAll() {
   DCHECK(!threads_.empty()) << "JoinAll() called with no outstanding threads.";
 
   // Tell all our threads to quit their worker loop.
-  AddWork(NULL, num_threads_);
+  AddWork(nullptr, num_threads_);
 
   // Join and destroy all the worker threads.
   for (int i = 0; i < num_threads_; ++i) {
@@ -140,7 +140,7 @@ void DelegateSimpleThreadPool::AddWork(Delegate* delegate, int repeat_count) {
 }
 
 void DelegateSimpleThreadPool::Run() {
-  Delegate* work = NULL;
+  Delegate* work = nullptr;
 
   while (true) {
     dry_.Wait();

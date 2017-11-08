@@ -304,7 +304,7 @@ TEST_F(FilePathWatcherTest, DeleteDuringNotify) {
 
   // We win if we haven't crashed yet.
   // Might as well double-check it got deleted, too.
-  ASSERT_TRUE(deleter->watcher() == NULL);
+  ASSERT_TRUE(deleter->watcher() == nullptr);
 }
 
 // Verify that deleting the watcher works even if there is a pending

@@ -43,7 +43,7 @@ void* GetPermissionInfo(const FilePath& path, size_t* length) {
 
   struct stat stat_buf;
   if (stat(path.value().c_str(), &stat_buf) != 0)
-    return NULL;
+    return nullptr;
 
   *length = sizeof(mode_t);
   mode_t* mode = new mode_t;
@@ -96,9 +96,9 @@ bool MakeFileUnwritable(const FilePath& path) {
 }
 
 FilePermissionRestorer::FilePermissionRestorer(const FilePath& path)
-    : path_(path), info_(NULL), length_(0) {
+    : path_(path), info_(nullptr), length_(0) {
   info_ = GetPermissionInfo(path_, &length_);
-  DCHECK(info_ != NULL);
+  DCHECK(info_ != nullptr);
   DCHECK_NE(0u, length_);
 }
 

@@ -315,9 +315,9 @@ void CrashChildMain(int death_location) {
   struct sigaction act = {};
   act.sa_sigaction = CheckCrashTestSighandler;
   act.sa_flags = SA_SIGINFO;
-  ASSERT_EQ(0, sigaction(SIGTRAP, &act, NULL));
-  ASSERT_EQ(0, sigaction(SIGBUS, &act, NULL));
-  ASSERT_EQ(0, sigaction(SIGILL, &act, NULL));
+  ASSERT_EQ(0, sigaction(SIGTRAP, &act, nullptr));
+  ASSERT_EQ(0, sigaction(SIGBUS, &act, nullptr));
+  ASSERT_EQ(0, sigaction(SIGILL, &act, nullptr));
   DO_CHECK(death_location != 1);
   DO_CHECK(death_location != 2);
   printf("\n");
@@ -388,7 +388,7 @@ TEST_F(LoggingTest, DcheckStreamsAreLazy) {
   DCHECK(mock_log_source.Log()) << mock_log_source.Log();
   DPCHECK(mock_log_source.Log()) << mock_log_source.Log();
   DCHECK_EQ(0, 0) << mock_log_source.Log();
-  DCHECK_EQ(mock_log_source.Log(), static_cast<const char*>(NULL))
+  DCHECK_EQ(mock_log_source.Log(), static_cast<const char*>(nullptr))
       << mock_log_source.Log();
 #endif
 }

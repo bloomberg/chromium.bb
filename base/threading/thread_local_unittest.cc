@@ -30,9 +30,7 @@ class ThreadLocalTesterBase : public base::DelegateSimpleThreadPool::Delegate {
 class SetThreadLocal : public ThreadLocalTesterBase {
  public:
   SetThreadLocal(TLPType* tlp, base::WaitableEvent* done)
-      : ThreadLocalTesterBase(tlp, done),
-        val_(NULL) {
-  }
+      : ThreadLocalTesterBase(tlp, done), val_(nullptr) {}
   ~SetThreadLocal() override {}
 
   void set_value(char* val) { val_ = val; }
@@ -50,9 +48,7 @@ class SetThreadLocal : public ThreadLocalTesterBase {
 class GetThreadLocal : public ThreadLocalTesterBase {
  public:
   GetThreadLocal(TLPType* tlp, base::WaitableEvent* done)
-      : ThreadLocalTesterBase(tlp, done),
-        ptr_(NULL) {
-  }
+      : ThreadLocalTesterBase(tlp, done), ptr_(nullptr) {}
   ~GetThreadLocal() override {}
 
   void set_ptr(char** ptr) { ptr_ = ptr; }
@@ -93,14 +89,13 @@ TEST(ThreadLocalTest, Pointer) {
   done.Reset();
   tp1.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
+  EXPECT_EQ(static_cast<char*>(nullptr), tls_val);
 
   tls_val = kBogusPointer;
   done.Reset();
   tp2.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
-
+  EXPECT_EQ(static_cast<char*>(nullptr), tls_val);
 
   SetThreadLocal setter(&tlp, &done);
   setter.set_value(kBogusPointer);
@@ -110,7 +105,7 @@ TEST(ThreadLocalTest, Pointer) {
   tp1.AddWork(&setter);
   done.Wait();
 
-  tls_val = NULL;
+  tls_val = nullptr;
   done.Reset();
   tp1.AddWork(&getter);
   done.Wait();
@@ -121,7 +116,7 @@ TEST(ThreadLocalTest, Pointer) {
   done.Reset();
   tp2.AddWork(&getter);
   done.Wait();
-  EXPECT_EQ(static_cast<char*>(NULL), tls_val);
+  EXPECT_EQ(static_cast<char*>(nullptr), tls_val);
 
   // Set thread 2 to kBogusPointer + 1.
   setter.set_value(kBogusPointer + 1);
@@ -130,14 +125,14 @@ TEST(ThreadLocalTest, Pointer) {
   tp2.AddWork(&setter);
   done.Wait();
 
-  tls_val = NULL;
+  tls_val = nullptr;
   done.Reset();
   tp2.AddWork(&getter);
   done.Wait();
   EXPECT_EQ(kBogusPointer + 1, tls_val);
 
   // Make sure thread 1 is still kBogusPointer.
-  tls_val = NULL;
+  tls_val = nullptr;
   done.Reset();
   tp1.AddWork(&getter);
   done.Wait();

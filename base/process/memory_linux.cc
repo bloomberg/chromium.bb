@@ -107,7 +107,7 @@ bool UncheckedMalloc(size_t size, void** result) {
 #elif defined(USE_TCMALLOC)
   *result = tc_malloc_skip_new_handler(size);
 #endif
-  return *result != NULL;
+  return *result != nullptr;
 }
 
 }  // namespace base

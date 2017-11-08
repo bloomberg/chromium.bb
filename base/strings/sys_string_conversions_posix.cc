@@ -109,7 +109,7 @@ std::wstring SysNativeMBToWide(const StringPiece& native_mb) {
   memset(&ps, 0, sizeof(ps));
   for (size_t i = 0; i < native_mb.size(); ) {
     const char* src = native_mb.data() + i;
-    size_t res = mbrtowc(NULL, src, native_mb.size() - i, &ps);
+    size_t res = mbrtowc(nullptr, src, native_mb.size() - i, &ps);
     switch (res) {
       // Handle any errors and return an empty string.
       case static_cast<size_t>(-2):

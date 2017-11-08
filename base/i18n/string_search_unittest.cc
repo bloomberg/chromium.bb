@@ -189,14 +189,14 @@ TEST(StringSearchTest, UnicodeLocaleDependent) {
   // Composed characters
   const string16 a_with_ring = WideToUTF16(L"\u00e5");
 
-  EXPECT_TRUE(StringSearchIgnoringCaseAndAccents(
-      a_base, a_with_ring, NULL, NULL));
+  EXPECT_TRUE(StringSearchIgnoringCaseAndAccents(a_base, a_with_ring, nullptr,
+                                                 nullptr));
 
   const char* default_locale = uloc_getDefault();
   SetICUDefaultLocale("da");
 
-  EXPECT_FALSE(StringSearchIgnoringCaseAndAccents(
-      a_base, a_with_ring, NULL, NULL));
+  EXPECT_FALSE(StringSearchIgnoringCaseAndAccents(a_base, a_with_ring, nullptr,
+                                                  nullptr));
 
   SetICUDefaultLocale(default_locale);
 }

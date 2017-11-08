@@ -24,7 +24,7 @@ namespace {
 // Global map of crash key names to registration entries.
 typedef std::unordered_map<base::StringPiece, CrashKey, base::StringPieceHash>
     CrashKeyMap;
-CrashKeyMap* g_crash_keys_ = NULL;
+CrashKeyMap* g_crash_keys_ = nullptr;
 
 // The maximum length of a single chunk.
 size_t g_chunk_max_length_ = 0;
@@ -34,8 +34,8 @@ const char kChunkFormatString[] = "%s-%" PRIuS;
 
 // The functions that are called to actually set the key-value pairs in the
 // crash reportng system.
-SetCrashKeyValueFuncT g_set_key_func_ = NULL;
-ClearCrashKeyValueFuncT g_clear_key_func_ = NULL;
+SetCrashKeyValueFuncT g_set_key_func_ = nullptr;
+ClearCrashKeyValueFuncT g_clear_key_func_ = nullptr;
 
 // For a given |length|, computes the number of chunks a value of that size
 // will occupy.
@@ -147,7 +147,7 @@ size_t InitCrashKeys(const CrashKey* const keys, size_t count,
   DCHECK(!g_crash_keys_) << "Crash logging may only be initialized once";
   if (!keys) {
     delete g_crash_keys_;
-    g_crash_keys_ = NULL;
+    g_crash_keys_ = nullptr;
     return 0;
   }
 
@@ -168,10 +168,10 @@ size_t InitCrashKeys(const CrashKey* const keys, size_t count,
 
 const CrashKey* LookupCrashKey(const base::StringPiece& key) {
   if (!g_crash_keys_)
-    return NULL;
+    return nullptr;
   CrashKeyMap::const_iterator it = g_crash_keys_->find(key.as_string());
   if (it == g_crash_keys_->end())
-    return NULL;
+    return nullptr;
   return &(it->second);
 }
 
@@ -197,10 +197,10 @@ std::vector<std::string> ChunkCrashKeyValue(const CrashKey& crash_key,
 
 void ResetCrashLoggingForTesting() {
   delete g_crash_keys_;
-  g_crash_keys_ = NULL;
+  g_crash_keys_ = nullptr;
   g_chunk_max_length_ = 0;
-  g_set_key_func_ = NULL;
-  g_clear_key_func_ = NULL;
+  g_set_key_func_ = nullptr;
+  g_clear_key_func_ = nullptr;
 }
 
 }  // namespace debug

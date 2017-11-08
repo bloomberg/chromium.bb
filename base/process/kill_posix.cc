@@ -138,7 +138,7 @@ namespace {
 // Return true if the given child is dead. This will also reap the process.
 // Doesn't block.
 static bool IsChildDead(pid_t child) {
-  const pid_t result = HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
+  const pid_t result = HANDLE_EINTR(waitpid(child, nullptr, WNOHANG));
   if (result == -1) {
     DPLOG(ERROR) << "waitpid(" << child << ")";
     NOTREACHED();
@@ -168,7 +168,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
   void WaitForChildToDie() {
     // Wait forever case.
     if (timeout_ == 0) {
-      pid_t r = HANDLE_EINTR(waitpid(child_, NULL, 0));
+      pid_t r = HANDLE_EINTR(waitpid(child_, nullptr, 0));
       if (r != child_) {
         DPLOG(ERROR) << "While waiting for " << child_
                      << " to terminate, we got the following result: " << r;
@@ -189,7 +189,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
     if (kill(child_, SIGKILL) == 0) {
       // SIGKILL is uncatchable. Since the signal was delivered, we can
       // just wait for the process to die now in a blocking manner.
-      if (HANDLE_EINTR(waitpid(child_, NULL, 0)) < 0)
+      if (HANDLE_EINTR(waitpid(child_, nullptr, 0)) < 0)
         DPLOG(WARNING) << "waitpid";
     } else {
       DLOG(ERROR) << "While waiting for " << child_ << " to terminate we"

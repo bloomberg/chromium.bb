@@ -42,12 +42,12 @@ struct SimpleMessage {
   }
 
   static bool HasFieldPresent(const base::Value* value, bool* result) {
-    *result = value != NULL;
+    *result = value != nullptr;
     return true;
   }
 
   static bool GetValueString(const base::Value* value, std::string* result) {
-    const base::DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict))
       return false;
 

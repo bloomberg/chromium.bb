@@ -69,11 +69,11 @@ void ToUnicodeCallbackSubstitute(const void* context,
                                  UErrorCode * err) {
   static const UChar kReplacementChar = 0xFFFD;
   if (reason <= UCNV_IRREGULAR) {
-      if (context == NULL ||
-          (*(reinterpret_cast<const char*>(context)) == 'i' &&
-           reason == UCNV_UNASSIGNED)) {
-        *err = U_ZERO_ERROR;
-        ucnv_cbToUWriteUChars(to_args, &kReplacementChar, 1, 0, err);
+    if (context == nullptr ||
+        (*(reinterpret_cast<const char*>(context)) == 'i' &&
+         reason == UCNV_UNASSIGNED)) {
+      *err = U_ZERO_ERROR;
+      ucnv_cbToUWriteUChars(to_args, &kReplacementChar, 1, 0, err);
       }
       // else the caller must have set the error code accordingly.
   }
@@ -92,13 +92,13 @@ bool ConvertFromUTF16(UConverter* converter, const UChar* uchar_src,
   // Setup our error handler.
   switch (on_error) {
     case OnStringConversionError::FAIL:
-      ucnv_setFromUCallBack(converter, UCNV_FROM_U_CALLBACK_STOP, 0,
-                            NULL, NULL, &status);
+      ucnv_setFromUCallBack(converter, UCNV_FROM_U_CALLBACK_STOP, nullptr,
+                            nullptr, nullptr, &status);
       break;
     case OnStringConversionError::SKIP:
     case OnStringConversionError::SUBSTITUTE:
-      ucnv_setFromUCallBack(converter, UCNV_FROM_U_CALLBACK_SKIP, 0,
-                            NULL, NULL, &status);
+      ucnv_setFromUCallBack(converter, UCNV_FROM_U_CALLBACK_SKIP, nullptr,
+                            nullptr, nullptr, &status);
       break;
     default:
       NOTREACHED();
@@ -120,16 +120,16 @@ void SetUpErrorHandlerForToUChars(OnStringConversionError::Type on_error,
                                   UConverter* converter, UErrorCode* status) {
   switch (on_error) {
     case OnStringConversionError::FAIL:
-      ucnv_setToUCallBack(converter, UCNV_TO_U_CALLBACK_STOP, 0,
-                          NULL, NULL, status);
+      ucnv_setToUCallBack(converter, UCNV_TO_U_CALLBACK_STOP, nullptr, nullptr,
+                          nullptr, status);
       break;
     case OnStringConversionError::SKIP:
-      ucnv_setToUCallBack(converter, UCNV_TO_U_CALLBACK_SKIP, 0,
-                          NULL, NULL, status);
+      ucnv_setToUCallBack(converter, UCNV_TO_U_CALLBACK_SKIP, nullptr, nullptr,
+                          nullptr, status);
       break;
     case OnStringConversionError::SUBSTITUTE:
-      ucnv_setToUCallBack(converter, ToUnicodeCallbackSubstitute, 0,
-                          NULL, NULL, status);
+      ucnv_setToUCallBack(converter, ToUnicodeCallbackSubstitute, nullptr,
+                          nullptr, nullptr, status);
       break;
     default:
       NOTREACHED();

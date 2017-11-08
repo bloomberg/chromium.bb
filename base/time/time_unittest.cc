@@ -114,7 +114,7 @@ class TimeTest : public testing::Test {
 // Test conversions to/from time_t and exploding/unexploding.
 TEST_F(TimeTest, TimeT) {
   // C library time and exploded time.
-  time_t now_t_1 = time(NULL);
+  time_t now_t_1 = time(nullptr);
   struct tm tms;
 #if defined(OS_WIN)
   localtime_s(&tms, &now_t_1);

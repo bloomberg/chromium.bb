@@ -201,9 +201,9 @@ void BackInTime(Lock* lock) {
   AutoLock auto_lock(*lock);
 
   timeval tv;
-  gettimeofday(&tv, NULL);
+  gettimeofday(&tv, nullptr);
   tv.tv_sec -= kDiscontinuitySeconds;
-  settimeofday(&tv, NULL);
+  settimeofday(&tv, nullptr);
 }
 
 // Tests that TimedWait ignores changes to the system clock.
@@ -212,9 +212,9 @@ void BackInTime(Lock* lock) {
 // http://crbug.com/293736
 TEST_F(ConditionVariableTest, DISABLED_TimeoutAcrossSetTimeOfDay) {
   timeval tv;
-  gettimeofday(&tv, NULL);
+  gettimeofday(&tv, nullptr);
   tv.tv_sec += kDiscontinuitySeconds;
-  if (settimeofday(&tv, NULL) < 0) {
+  if (settimeofday(&tv, nullptr) < 0) {
     PLOG(ERROR) << "Could not set time of day. Run as root?";
     return;
   }

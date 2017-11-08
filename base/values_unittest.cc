@@ -696,11 +696,11 @@ TEST(ValuesTest, Basic) {
   ASSERT_FALSE(settings.GetString("global.homepage", &homepage));
   ASSERT_EQ(std::string("http://google.com"), homepage);
 
-  ASSERT_FALSE(settings.Get("global", NULL));
+  ASSERT_FALSE(settings.Get("global", nullptr));
   settings.SetBoolean("global", true);
-  ASSERT_TRUE(settings.Get("global", NULL));
+  ASSERT_TRUE(settings.Get("global", nullptr));
   settings.SetString("global.homepage", "http://scurvy.com");
-  ASSERT_TRUE(settings.Get("global", NULL));
+  ASSERT_TRUE(settings.Get("global", nullptr));
   homepage = "http://google.com";
   ASSERT_TRUE(settings.GetString("global.homepage", &homepage));
   ASSERT_EQ(std::string("http://scurvy.com"), homepage);
@@ -819,7 +819,7 @@ TEST(ValuesTest, StringValue) {
   // Test overloaded GetAsString.
   std::string narrow = "http://google.com";
   string16 utf16 = ASCIIToUTF16("http://google.com");
-  const Value* string_value = NULL;
+  const Value* string_value = nullptr;
   ASSERT_TRUE(narrow_value->GetAsString(&narrow));
   ASSERT_TRUE(narrow_value->GetAsString(&utf16));
   ASSERT_TRUE(narrow_value->GetAsString(&string_value));
@@ -835,9 +835,9 @@ TEST(ValuesTest, StringValue) {
   ASSERT_EQ(string_value->GetString(), narrow);
 
   // Don't choke on NULL values.
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<string16*>(NULL)));
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::string*>(NULL)));
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<const Value**>(NULL)));
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<string16*>(nullptr)));
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::string*>(nullptr)));
+  ASSERT_TRUE(narrow_value->GetAsString(static_cast<const Value**>(nullptr)));
 }
 
 TEST(ValuesTest, ListDeletion) {
@@ -867,7 +867,7 @@ TEST(ValuesTest, ListRemoval) {
   {
     ListValue list;
     list.Append(std::make_unique<Value>());
-    EXPECT_TRUE(list.Remove(0, NULL));
+    EXPECT_TRUE(list.Remove(0, nullptr));
     EXPECT_EQ(0U, list.GetSize());
   }
 
@@ -981,7 +981,7 @@ TEST(ValuesTest, DictionaryRemoval) {
     DictionaryValue dict;
     dict.Set(key, std::make_unique<Value>());
     EXPECT_TRUE(dict.HasKey(key));
-    EXPECT_TRUE(dict.Remove(key, NULL));
+    EXPECT_TRUE(dict.Remove(key, nullptr));
     EXPECT_FALSE(dict.HasKey(key));
   }
 }
@@ -1043,12 +1043,12 @@ TEST(ValuesTest, DictionaryRemovePath) {
   EXPECT_TRUE(removed_item->IsType(base::Value::Type::INTEGER));
   EXPECT_FALSE(dict.HasKey("a.long.way.down"));
   EXPECT_FALSE(dict.HasKey("a.long.way"));
-  EXPECT_TRUE(dict.Get("a.long.key.path", NULL));
+  EXPECT_TRUE(dict.Get("a.long.key.path", nullptr));
 
   removed_item.reset();
   EXPECT_FALSE(dict.RemovePath("a.long.way.down", &removed_item));
   EXPECT_FALSE(removed_item);
-  EXPECT_TRUE(dict.Get("a.long.key.path", NULL));
+  EXPECT_TRUE(dict.Get("a.long.key.path", nullptr));
 
   removed_item.reset();
   EXPECT_TRUE(dict.RemovePath("a.long.key.path", &removed_item));
@@ -1088,13 +1088,13 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_dict.get());
   ASSERT_NE(copy_dict.get(), &original_dict);
 
-  Value* copy_null = NULL;
+  Value* copy_null = nullptr;
   ASSERT_TRUE(copy_dict->Get("null", &copy_null));
   ASSERT_TRUE(copy_null);
   ASSERT_NE(copy_null, null_weak);
   ASSERT_TRUE(copy_null->IsType(Value::Type::NONE));
 
-  Value* copy_bool = NULL;
+  Value* copy_bool = nullptr;
   ASSERT_TRUE(copy_dict->Get("bool", &copy_bool));
   ASSERT_TRUE(copy_bool);
   ASSERT_NE(copy_bool, bool_weak);
@@ -1103,7 +1103,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_bool->GetAsBoolean(&copy_bool_value));
   ASSERT_TRUE(copy_bool_value);
 
-  Value* copy_int = NULL;
+  Value* copy_int = nullptr;
   ASSERT_TRUE(copy_dict->Get("int", &copy_int));
   ASSERT_TRUE(copy_int);
   ASSERT_NE(copy_int, int_weak);
@@ -1112,7 +1112,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_int->GetAsInteger(&copy_int_value));
   ASSERT_EQ(42, copy_int_value);
 
-  Value* copy_double = NULL;
+  Value* copy_double = nullptr;
   ASSERT_TRUE(copy_dict->Get("double", &copy_double));
   ASSERT_TRUE(copy_double);
   ASSERT_NE(copy_double, double_weak);
@@ -1121,7 +1121,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_double->GetAsDouble(&copy_double_value));
   ASSERT_EQ(3.14, copy_double_value);
 
-  Value* copy_string = NULL;
+  Value* copy_string = nullptr;
   ASSERT_TRUE(copy_dict->Get("string", &copy_string));
   ASSERT_TRUE(copy_string);
   ASSERT_NE(copy_string, string_weak);
@@ -1133,7 +1133,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_EQ(std::string("hello"), copy_string_value);
   ASSERT_EQ(ASCIIToUTF16("hello"), copy_string16_value);
 
-  Value* copy_string16 = NULL;
+  Value* copy_string16 = nullptr;
   ASSERT_TRUE(copy_dict->Get("string16", &copy_string16));
   ASSERT_TRUE(copy_string16);
   ASSERT_NE(copy_string16, string16_weak);
@@ -1143,7 +1143,7 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_EQ(std::string("hello16"), copy_string_value);
   ASSERT_EQ(ASCIIToUTF16("hello16"), copy_string16_value);
 
-  Value* copy_binary = NULL;
+  Value* copy_binary = nullptr;
   ASSERT_TRUE(copy_dict->Get("binary", &copy_binary));
   ASSERT_TRUE(copy_binary);
   ASSERT_NE(copy_binary, binary_weak);
@@ -1151,12 +1151,12 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_NE(binary_weak->GetBlob().data(), copy_binary->GetBlob().data());
   ASSERT_EQ(binary_weak->GetBlob(), copy_binary->GetBlob());
 
-  Value* copy_value = NULL;
+  Value* copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("list", &copy_value));
   ASSERT_TRUE(copy_value);
   ASSERT_NE(copy_value, list_weak);
   ASSERT_TRUE(copy_value->IsType(Value::Type::LIST));
-  ListValue* copy_list = NULL;
+  ListValue* copy_list = nullptr;
   ASSERT_TRUE(copy_value->GetAsList(&copy_list));
   ASSERT_TRUE(copy_list);
   ASSERT_EQ(2U, copy_list->GetSize());
@@ -1177,12 +1177,12 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_list_element_1->GetAsInteger(&copy_list_element_1_value));
   ASSERT_EQ(1, copy_list_element_1_value);
 
-  copy_value = NULL;
+  copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
   ASSERT_TRUE(copy_value);
   ASSERT_NE(copy_value, dict_weak);
   ASSERT_TRUE(copy_value->IsType(Value::Type::DICTIONARY));
-  DictionaryValue* copy_nested_dictionary = NULL;
+  DictionaryValue* copy_nested_dictionary = nullptr;
   ASSERT_TRUE(copy_value->GetAsDictionary(&copy_nested_dictionary));
   ASSERT_TRUE(copy_nested_dictionary);
   EXPECT_TRUE(copy_nested_dictionary->HasKey("key"));
@@ -1224,7 +1224,7 @@ TEST(ValuesTest, Equals) {
   // Check if Equals detects differences in only the keys.
   copy = dv.CreateDeepCopy();
   EXPECT_EQ(dv, *copy);
-  copy->Remove("a", NULL);
+  copy->Remove("a", nullptr);
   copy->SetBoolean("aa", false);
   EXPECT_NE(dv, *copy);
 }
@@ -1653,259 +1653,262 @@ TEST(ValuesTest, GetWithNullOutValue) {
   main_list.Append(std::make_unique<Value>(dict_value.Clone()));
   main_list.Append(std::make_unique<Value>(list_value.Clone()));
 
-  EXPECT_TRUE(main_dict.Get("bool", NULL));
-  EXPECT_TRUE(main_dict.Get("int", NULL));
-  EXPECT_TRUE(main_dict.Get("double", NULL));
-  EXPECT_TRUE(main_dict.Get("string", NULL));
-  EXPECT_TRUE(main_dict.Get("binary", NULL));
-  EXPECT_TRUE(main_dict.Get("dict", NULL));
-  EXPECT_TRUE(main_dict.Get("list", NULL));
-  EXPECT_FALSE(main_dict.Get("DNE", NULL));
+  EXPECT_TRUE(main_dict.Get("bool", nullptr));
+  EXPECT_TRUE(main_dict.Get("int", nullptr));
+  EXPECT_TRUE(main_dict.Get("double", nullptr));
+  EXPECT_TRUE(main_dict.Get("string", nullptr));
+  EXPECT_TRUE(main_dict.Get("binary", nullptr));
+  EXPECT_TRUE(main_dict.Get("dict", nullptr));
+  EXPECT_TRUE(main_dict.Get("list", nullptr));
+  EXPECT_FALSE(main_dict.Get("DNE", nullptr));
 
-  EXPECT_TRUE(main_dict.GetBoolean("bool", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("int", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("double", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("string", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("binary", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("dict", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("list", NULL));
-  EXPECT_FALSE(main_dict.GetBoolean("DNE", NULL));
+  EXPECT_TRUE(main_dict.GetBoolean("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("int", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("double", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("string", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("list", nullptr));
+  EXPECT_FALSE(main_dict.GetBoolean("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetInteger("bool", NULL));
-  EXPECT_TRUE(main_dict.GetInteger("int", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("double", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("string", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("binary", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("dict", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("list", NULL));
-  EXPECT_FALSE(main_dict.GetInteger("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetInteger("bool", nullptr));
+  EXPECT_TRUE(main_dict.GetInteger("int", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("double", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("string", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("list", nullptr));
+  EXPECT_FALSE(main_dict.GetInteger("DNE", nullptr));
 
   // Both int and double values can be obtained from GetDouble.
-  EXPECT_FALSE(main_dict.GetDouble("bool", NULL));
-  EXPECT_TRUE(main_dict.GetDouble("int", NULL));
-  EXPECT_TRUE(main_dict.GetDouble("double", NULL));
-  EXPECT_FALSE(main_dict.GetDouble("string", NULL));
-  EXPECT_FALSE(main_dict.GetDouble("binary", NULL));
-  EXPECT_FALSE(main_dict.GetDouble("dict", NULL));
-  EXPECT_FALSE(main_dict.GetDouble("list", NULL));
-  EXPECT_FALSE(main_dict.GetDouble("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetDouble("bool", nullptr));
+  EXPECT_TRUE(main_dict.GetDouble("int", nullptr));
+  EXPECT_TRUE(main_dict.GetDouble("double", nullptr));
+  EXPECT_FALSE(main_dict.GetDouble("string", nullptr));
+  EXPECT_FALSE(main_dict.GetDouble("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetDouble("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetDouble("list", nullptr));
+  EXPECT_FALSE(main_dict.GetDouble("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetString("bool", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("int", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("double", static_cast<std::string*>(NULL)));
-  EXPECT_TRUE(main_dict.GetString("string", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("binary", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("dict", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("list", static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("DNE", static_cast<std::string*>(NULL)));
+  EXPECT_FALSE(main_dict.GetString("bool", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("int", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("double", static_cast<std::string*>(nullptr)));
+  EXPECT_TRUE(
+      main_dict.GetString("string", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(
+      main_dict.GetString("binary", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("dict", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("list", static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("DNE", static_cast<std::string*>(nullptr)));
 
-  EXPECT_FALSE(main_dict.GetString("bool", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("int", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("double", static_cast<string16*>(NULL)));
-  EXPECT_TRUE(main_dict.GetString("string", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("binary", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("dict", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("list", static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_dict.GetString("DNE", static_cast<string16*>(NULL)));
+  EXPECT_FALSE(main_dict.GetString("bool", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("int", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("double", static_cast<string16*>(nullptr)));
+  EXPECT_TRUE(main_dict.GetString("string", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("binary", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("dict", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("list", static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_dict.GetString("DNE", static_cast<string16*>(nullptr)));
 
-  EXPECT_FALSE(main_dict.GetBinary("bool", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("int", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("double", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("string", NULL));
-  EXPECT_TRUE(main_dict.GetBinary("binary", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("dict", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("list", NULL));
-  EXPECT_FALSE(main_dict.GetBinary("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetBinary("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("int", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("double", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("string", nullptr));
+  EXPECT_TRUE(main_dict.GetBinary("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("list", nullptr));
+  EXPECT_FALSE(main_dict.GetBinary("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetDictionary("bool", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("int", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("double", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("string", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("binary", NULL));
-  EXPECT_TRUE(main_dict.GetDictionary("dict", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("list", NULL));
-  EXPECT_FALSE(main_dict.GetDictionary("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetDictionary("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("int", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("double", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("string", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("binary", nullptr));
+  EXPECT_TRUE(main_dict.GetDictionary("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("list", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionary("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetList("bool", NULL));
-  EXPECT_FALSE(main_dict.GetList("int", NULL));
-  EXPECT_FALSE(main_dict.GetList("double", NULL));
-  EXPECT_FALSE(main_dict.GetList("string", NULL));
-  EXPECT_FALSE(main_dict.GetList("binary", NULL));
-  EXPECT_FALSE(main_dict.GetList("dict", NULL));
-  EXPECT_TRUE(main_dict.GetList("list", NULL));
-  EXPECT_FALSE(main_dict.GetList("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetList("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetList("int", nullptr));
+  EXPECT_FALSE(main_dict.GetList("double", nullptr));
+  EXPECT_FALSE(main_dict.GetList("string", nullptr));
+  EXPECT_FALSE(main_dict.GetList("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetList("dict", nullptr));
+  EXPECT_TRUE(main_dict.GetList("list", nullptr));
+  EXPECT_FALSE(main_dict.GetList("DNE", nullptr));
 
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("bool", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("int", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("double", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("string", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("binary", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("dict", NULL));
-  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetWithoutPathExpansion("DNE", NULL));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("bool", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("int", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("double", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("string", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("binary", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("dict", nullptr));
+  EXPECT_TRUE(main_dict.GetWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetWithoutPathExpansion("DNE", nullptr));
 
-  EXPECT_TRUE(main_dict.GetBooleanWithoutPathExpansion("bool", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("int", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("double", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("string", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("binary", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("dict", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("DNE", NULL));
+  EXPECT_TRUE(main_dict.GetBooleanWithoutPathExpansion("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("int", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("double", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("string", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetBooleanWithoutPathExpansion("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("bool", NULL));
-  EXPECT_TRUE(main_dict.GetIntegerWithoutPathExpansion("int", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("double", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("string", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("binary", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("dict", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("bool", nullptr));
+  EXPECT_TRUE(main_dict.GetIntegerWithoutPathExpansion("int", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("double", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("string", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetIntegerWithoutPathExpansion("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("bool", NULL));
-  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("int", NULL));
-  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("double", NULL));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("string", NULL));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("binary", NULL));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("dict", NULL));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("bool", nullptr));
+  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("int", nullptr));
+  EXPECT_TRUE(main_dict.GetDoubleWithoutPathExpansion("double", nullptr));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("string", nullptr));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetDoubleWithoutPathExpansion("DNE", nullptr));
 
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "bool", static_cast<std::string*>(NULL)));
+      "bool", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "int", static_cast<std::string*>(NULL)));
+      "int", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "double", static_cast<std::string*>(NULL)));
+      "double", static_cast<std::string*>(nullptr)));
   EXPECT_TRUE(main_dict.GetStringWithoutPathExpansion(
-      "string", static_cast<std::string*>(NULL)));
+      "string", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "binary", static_cast<std::string*>(NULL)));
+      "binary", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "dict", static_cast<std::string*>(NULL)));
+      "dict", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "list", static_cast<std::string*>(NULL)));
+      "list", static_cast<std::string*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "DNE", static_cast<std::string*>(NULL)));
+      "DNE", static_cast<std::string*>(nullptr)));
 
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "bool", static_cast<string16*>(NULL)));
+      "bool", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "int", static_cast<string16*>(NULL)));
+      "int", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "double", static_cast<string16*>(NULL)));
+      "double", static_cast<string16*>(nullptr)));
   EXPECT_TRUE(main_dict.GetStringWithoutPathExpansion(
-      "string", static_cast<string16*>(NULL)));
+      "string", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "binary", static_cast<string16*>(NULL)));
+      "binary", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "dict", static_cast<string16*>(NULL)));
+      "dict", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "list", static_cast<string16*>(NULL)));
+      "list", static_cast<string16*>(nullptr)));
   EXPECT_FALSE(main_dict.GetStringWithoutPathExpansion(
-      "DNE", static_cast<string16*>(NULL)));
+      "DNE", static_cast<string16*>(nullptr)));
 
   // There is no GetBinaryWithoutPathExpansion for some reason, but if there
   // were it should be tested here...
 
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("bool", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("int", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("double", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("string", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("binary", NULL));
-  EXPECT_TRUE(main_dict.GetDictionaryWithoutPathExpansion("dict", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("int", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("double", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("string", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("binary", nullptr));
+  EXPECT_TRUE(main_dict.GetDictionaryWithoutPathExpansion("dict", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetDictionaryWithoutPathExpansion("DNE", nullptr));
 
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("bool", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("int", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("double", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("string", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("binary", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("dict", NULL));
-  EXPECT_TRUE(main_dict.GetListWithoutPathExpansion("list", NULL));
-  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("DNE", NULL));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("bool", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("int", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("double", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("string", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("binary", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("dict", nullptr));
+  EXPECT_TRUE(main_dict.GetListWithoutPathExpansion("list", nullptr));
+  EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("DNE", nullptr));
 
-  EXPECT_TRUE(main_list.Get(0, NULL));
-  EXPECT_TRUE(main_list.Get(1, NULL));
-  EXPECT_TRUE(main_list.Get(2, NULL));
-  EXPECT_TRUE(main_list.Get(3, NULL));
-  EXPECT_TRUE(main_list.Get(4, NULL));
-  EXPECT_TRUE(main_list.Get(5, NULL));
-  EXPECT_TRUE(main_list.Get(6, NULL));
-  EXPECT_FALSE(main_list.Get(7, NULL));
+  EXPECT_TRUE(main_list.Get(0, nullptr));
+  EXPECT_TRUE(main_list.Get(1, nullptr));
+  EXPECT_TRUE(main_list.Get(2, nullptr));
+  EXPECT_TRUE(main_list.Get(3, nullptr));
+  EXPECT_TRUE(main_list.Get(4, nullptr));
+  EXPECT_TRUE(main_list.Get(5, nullptr));
+  EXPECT_TRUE(main_list.Get(6, nullptr));
+  EXPECT_FALSE(main_list.Get(7, nullptr));
 
-  EXPECT_TRUE(main_list.GetBoolean(0, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(1, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(2, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(3, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(4, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(5, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(6, NULL));
-  EXPECT_FALSE(main_list.GetBoolean(7, NULL));
+  EXPECT_TRUE(main_list.GetBoolean(0, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(1, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(2, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(3, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(4, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(5, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(6, nullptr));
+  EXPECT_FALSE(main_list.GetBoolean(7, nullptr));
 
-  EXPECT_FALSE(main_list.GetInteger(0, NULL));
-  EXPECT_TRUE(main_list.GetInteger(1, NULL));
-  EXPECT_FALSE(main_list.GetInteger(2, NULL));
-  EXPECT_FALSE(main_list.GetInteger(3, NULL));
-  EXPECT_FALSE(main_list.GetInteger(4, NULL));
-  EXPECT_FALSE(main_list.GetInteger(5, NULL));
-  EXPECT_FALSE(main_list.GetInteger(6, NULL));
-  EXPECT_FALSE(main_list.GetInteger(7, NULL));
+  EXPECT_FALSE(main_list.GetInteger(0, nullptr));
+  EXPECT_TRUE(main_list.GetInteger(1, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(2, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(3, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(4, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(5, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(6, nullptr));
+  EXPECT_FALSE(main_list.GetInteger(7, nullptr));
 
-  EXPECT_FALSE(main_list.GetDouble(0, NULL));
-  EXPECT_TRUE(main_list.GetDouble(1, NULL));
-  EXPECT_TRUE(main_list.GetDouble(2, NULL));
-  EXPECT_FALSE(main_list.GetDouble(3, NULL));
-  EXPECT_FALSE(main_list.GetDouble(4, NULL));
-  EXPECT_FALSE(main_list.GetDouble(5, NULL));
-  EXPECT_FALSE(main_list.GetDouble(6, NULL));
-  EXPECT_FALSE(main_list.GetDouble(7, NULL));
+  EXPECT_FALSE(main_list.GetDouble(0, nullptr));
+  EXPECT_TRUE(main_list.GetDouble(1, nullptr));
+  EXPECT_TRUE(main_list.GetDouble(2, nullptr));
+  EXPECT_FALSE(main_list.GetDouble(3, nullptr));
+  EXPECT_FALSE(main_list.GetDouble(4, nullptr));
+  EXPECT_FALSE(main_list.GetDouble(5, nullptr));
+  EXPECT_FALSE(main_list.GetDouble(6, nullptr));
+  EXPECT_FALSE(main_list.GetDouble(7, nullptr));
 
-  EXPECT_FALSE(main_list.GetString(0, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(1, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(2, static_cast<std::string*>(NULL)));
-  EXPECT_TRUE(main_list.GetString(3, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(4, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(5, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(6, static_cast<std::string*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(7, static_cast<std::string*>(NULL)));
+  EXPECT_FALSE(main_list.GetString(0, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(1, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(2, static_cast<std::string*>(nullptr)));
+  EXPECT_TRUE(main_list.GetString(3, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(4, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(5, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(6, static_cast<std::string*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(7, static_cast<std::string*>(nullptr)));
 
-  EXPECT_FALSE(main_list.GetString(0, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(1, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(2, static_cast<string16*>(NULL)));
-  EXPECT_TRUE(main_list.GetString(3, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(4, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(5, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(6, static_cast<string16*>(NULL)));
-  EXPECT_FALSE(main_list.GetString(7, static_cast<string16*>(NULL)));
+  EXPECT_FALSE(main_list.GetString(0, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(1, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(2, static_cast<string16*>(nullptr)));
+  EXPECT_TRUE(main_list.GetString(3, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(4, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(5, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(6, static_cast<string16*>(nullptr)));
+  EXPECT_FALSE(main_list.GetString(7, static_cast<string16*>(nullptr)));
 
-  EXPECT_FALSE(main_list.GetBinary(0, NULL));
-  EXPECT_FALSE(main_list.GetBinary(1, NULL));
-  EXPECT_FALSE(main_list.GetBinary(2, NULL));
-  EXPECT_FALSE(main_list.GetBinary(3, NULL));
-  EXPECT_TRUE(main_list.GetBinary(4, NULL));
-  EXPECT_FALSE(main_list.GetBinary(5, NULL));
-  EXPECT_FALSE(main_list.GetBinary(6, NULL));
-  EXPECT_FALSE(main_list.GetBinary(7, NULL));
+  EXPECT_FALSE(main_list.GetBinary(0, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(1, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(2, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(3, nullptr));
+  EXPECT_TRUE(main_list.GetBinary(4, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(5, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(6, nullptr));
+  EXPECT_FALSE(main_list.GetBinary(7, nullptr));
 
-  EXPECT_FALSE(main_list.GetDictionary(0, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(1, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(2, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(3, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(4, NULL));
-  EXPECT_TRUE(main_list.GetDictionary(5, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(6, NULL));
-  EXPECT_FALSE(main_list.GetDictionary(7, NULL));
+  EXPECT_FALSE(main_list.GetDictionary(0, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(1, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(2, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(3, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(4, nullptr));
+  EXPECT_TRUE(main_list.GetDictionary(5, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(6, nullptr));
+  EXPECT_FALSE(main_list.GetDictionary(7, nullptr));
 
-  EXPECT_FALSE(main_list.GetList(0, NULL));
-  EXPECT_FALSE(main_list.GetList(1, NULL));
-  EXPECT_FALSE(main_list.GetList(2, NULL));
-  EXPECT_FALSE(main_list.GetList(3, NULL));
-  EXPECT_FALSE(main_list.GetList(4, NULL));
-  EXPECT_FALSE(main_list.GetList(5, NULL));
-  EXPECT_TRUE(main_list.GetList(6, NULL));
-  EXPECT_FALSE(main_list.GetList(7, NULL));
+  EXPECT_FALSE(main_list.GetList(0, nullptr));
+  EXPECT_FALSE(main_list.GetList(1, nullptr));
+  EXPECT_FALSE(main_list.GetList(2, nullptr));
+  EXPECT_FALSE(main_list.GetList(3, nullptr));
+  EXPECT_FALSE(main_list.GetList(4, nullptr));
+  EXPECT_FALSE(main_list.GetList(5, nullptr));
+  EXPECT_TRUE(main_list.GetList(6, nullptr));
+  EXPECT_FALSE(main_list.GetList(7, nullptr));
 }
 
 TEST(ValuesTest, SelfSwap) {

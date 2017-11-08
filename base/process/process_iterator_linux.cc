@@ -33,7 +33,7 @@ std::string GetProcStatsFieldAsString(
     return proc_stats[field_num];
 
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
 // Reads /proc/<pid>/cmdline and populates |proc_cmd_line_args| with the command

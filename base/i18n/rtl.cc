@@ -38,14 +38,14 @@ std::string GetLocaleString(const icu::Locale& locale) {
   const char* variant = locale.getVariant();
 
   std::string result =
-      (language != NULL && *language != '\0') ? language : "und";
+      (language != nullptr && *language != '\0') ? language : "und";
 
-  if (country != NULL && *country != '\0') {
+  if (country != nullptr && *country != '\0') {
     result += '-';
     result += country;
   }
 
-  if (variant != NULL && *variant != '\0')
+  if (variant != nullptr && *variant != '\0')
     result += '@' + base::ToLowerASCII(variant);
 
   return result;

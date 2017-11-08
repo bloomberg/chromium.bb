@@ -109,7 +109,7 @@ class CapturingDestructionObserver
   // DestructionObserver implementation:
   void WillDestroyCurrentMessageLoop() override {
     event_list_->push_back(THREAD_EVENT_MESSAGE_LOOP_DESTROYED);
-    event_list_ = NULL;
+    event_list_ = nullptr;
   }
 
  private:

@@ -328,7 +328,7 @@ bool Process::Terminate(int exit_code, bool wait) const {
     // The process may not end immediately due to pending I/O
     bool exited = false;
     while (tries-- > 0) {
-      pid_t pid = HANDLE_EINTR(waitpid(process_, NULL, WNOHANG));
+      pid_t pid = HANDLE_EINTR(waitpid(process_, nullptr, WNOHANG));
       if (pid == process_) {
         exited = true;
         break;

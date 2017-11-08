@@ -22,7 +22,7 @@ SequencedWorkerPoolOwner::SequencedWorkerPoolOwner(
 
 SequencedWorkerPoolOwner::~SequencedWorkerPoolOwner() {
   pool_->Shutdown();
-  pool_ = NULL;
+  pool_ = nullptr;
 
   // Spin the current message loop until SWP destruction verified in OnDestruct.
   exit_loop_.Run();

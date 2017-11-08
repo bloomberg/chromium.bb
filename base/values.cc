@@ -795,7 +795,7 @@ bool DictionaryValue::Get(StringPiece path,
   for (size_t delimiter_position = current_path.find('.');
        delimiter_position != std::string::npos;
        delimiter_position = current_path.find('.')) {
-    const DictionaryValue* child_dictionary = NULL;
+    const DictionaryValue* child_dictionary = nullptr;
     if (!current_dictionary->GetDictionaryWithoutPathExpansion(
             current_path.substr(0, delimiter_position), &child_dictionary)) {
       return false;
@@ -1078,13 +1078,13 @@ bool DictionaryValue::RemovePath(StringPiece path,
     return RemoveWithoutPathExpansion(path, out_value);
 
   StringPiece subdict_path = path.substr(0, delimiter_position);
-  DictionaryValue* subdict = NULL;
+  DictionaryValue* subdict = nullptr;
   if (!GetDictionary(subdict_path, &subdict))
     return false;
   result = subdict->RemovePath(path.substr(delimiter_position + 1),
                                out_value);
   if (result && subdict->empty())
-    RemoveWithoutPathExpansion(subdict_path, NULL);
+    RemoveWithoutPathExpansion(subdict_path, nullptr);
 
   return result;
 }

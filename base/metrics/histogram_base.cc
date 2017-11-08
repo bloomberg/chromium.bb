@@ -46,7 +46,7 @@ std::string HistogramTypeToString(HistogramType type) {
 HistogramBase* DeserializeHistogramInfo(PickleIterator* iter) {
   int type;
   if (!iter->ReadInt(&type))
-    return NULL;
+    return nullptr;
 
   switch (type) {
     case HISTOGRAM:
@@ -60,7 +60,7 @@ HistogramBase* DeserializeHistogramInfo(PickleIterator* iter) {
     case SPARSE_HISTOGRAM:
       return SparseHistogram::DeserializeInfoImpl(iter);
     default:
-      return NULL;
+      return nullptr;
   }
 }
 

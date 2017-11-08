@@ -109,7 +109,7 @@ std::unique_ptr<base::Value> JSONFileValueDeserializer::Deserialize(
       *error_code = error;
     if (error_str)
       *error_str = GetErrorMessageForCode(error);
-    return NULL;
+    return nullptr;
   }
 
   JSONStringValueDeserializer deserializer(json_string, options_);

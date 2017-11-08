@@ -170,7 +170,7 @@ int sys_rt_sigaction(int sig, const struct kernel_sigaction* act,
 // See crbug.com/177956.
 void ResetChildSignalHandlersToDefaults(void) {
   for (int signum = 1; ; ++signum) {
-    struct kernel_sigaction act = {0};
+    struct kernel_sigaction act = {nullptr};
     int sigaction_get_ret = sys_rt_sigaction(signum, nullptr, &act);
     if (sigaction_get_ret && errno == EINVAL) {
 #if !defined(NDEBUG)
@@ -517,7 +517,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
       // While this isn't strictly disk IO, waiting for another process to
       // finish is the sort of thing ThreadRestrictions is trying to prevent.
       base::AssertBlockingAllowed();
-      pid_t ret = HANDLE_EINTR(waitpid(pid, 0, 0));
+      pid_t ret = HANDLE_EINTR(waitpid(pid, nullptr, 0));
       DPCHECK(ret > 0);
     }
   }

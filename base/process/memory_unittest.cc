@@ -122,15 +122,14 @@ const int kExitCode = 1;
 class OutOfMemoryTest : public testing::Test {
  public:
   OutOfMemoryTest()
-    : value_(NULL),
-    // Make test size as large as possible minus a few pages so
-    // that alignment or other rounding doesn't make it wrap.
-    test_size_(std::numeric_limits<std::size_t>::max() - 12 * 1024),
-    // A test size that is > 2Gb and will cause the allocators to reject
-    // the allocation due to security restrictions. See crbug.com/169327.
-    insecure_test_size_(std::numeric_limits<int>::max()),
-    signed_test_size_(std::numeric_limits<ssize_t>::max()) {
-  }
+      : value_(nullptr),
+        // Make test size as large as possible minus a few pages so
+        // that alignment or other rounding doesn't make it wrap.
+        test_size_(std::numeric_limits<std::size_t>::max() - 12 * 1024),
+        // A test size that is > 2Gb and will cause the allocators to reject
+        // the allocation due to security restrictions. See crbug.com/169327.
+        insecure_test_size_(std::numeric_limits<int>::max()),
+        signed_test_size_(std::numeric_limits<ssize_t>::max()) {}
 
  protected:
   void* value_;
@@ -185,7 +184,7 @@ TEST_F(OutOfMemoryDeathTest, Malloc) {
 TEST_F(OutOfMemoryDeathTest, Realloc) {
   ASSERT_EXIT({
       SetUpInDeathAssert();
-      value_ = realloc(NULL, test_size_);
+      value_ = realloc(nullptr, test_size_);
     }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
@@ -263,7 +262,7 @@ TEST_F(OutOfMemoryDeathTest, SecurityMalloc) {
 TEST_F(OutOfMemoryDeathTest, SecurityRealloc) {
   ASSERT_EXIT({
       SetUpInDeathAssert();
-      value_ = realloc(NULL, insecure_test_size_);
+      value_ = realloc(nullptr, insecure_test_size_);
     }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 
@@ -504,16 +503,16 @@ TEST_F(OutOfMemoryTest, TerminateBecauseOutOfMemoryReportsAllocSize) {
 // on Windows as well.
 TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
   EXPECT_TRUE(base::UncheckedMalloc(kSafeMallocSize, &value_));
-  EXPECT_TRUE(value_ != NULL);
+  EXPECT_TRUE(value_ != nullptr);
   free(value_);
 
   EXPECT_FALSE(base::UncheckedMalloc(test_size_, &value_));
-  EXPECT_TRUE(value_ == NULL);
+  EXPECT_TRUE(value_ == nullptr);
 }
 
 TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
   EXPECT_TRUE(base::UncheckedCalloc(1, kSafeMallocSize, &value_));
-  EXPECT_TRUE(value_ != NULL);
+  EXPECT_TRUE(value_ != nullptr);
   const char* bytes = static_cast<const char*>(value_);
   for (size_t i = 0; i < kSafeMallocSize; ++i)
     EXPECT_EQ(0, bytes[i]);
@@ -521,14 +520,14 @@ TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
 
   EXPECT_TRUE(
       base::UncheckedCalloc(kSafeCallocItems, kSafeCallocSize, &value_));
-  EXPECT_TRUE(value_ != NULL);
+  EXPECT_TRUE(value_ != nullptr);
   bytes = static_cast<const char*>(value_);
   for (size_t i = 0; i < (kSafeCallocItems * kSafeCallocSize); ++i)
     EXPECT_EQ(0, bytes[i]);
   free(value_);
 
   EXPECT_FALSE(base::UncheckedCalloc(1, test_size_, &value_));
-  EXPECT_TRUE(value_ == NULL);
+  EXPECT_TRUE(value_ == nullptr);
 }
 #endif  // !defined(OS_OPENBSD) && BUILDFLAG(ENABLE_WIN_ALLOCATOR_SHIM_TESTS) &&
         // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

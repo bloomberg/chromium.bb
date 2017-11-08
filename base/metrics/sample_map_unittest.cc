@@ -88,7 +88,7 @@ TEST(SampleMapIteratorTest, IterateTest) {
   EXPECT_EQ(1, min);
   EXPECT_EQ(2, max);
   EXPECT_EQ(100, count);
-  EXPECT_FALSE(it->GetBucketIndex(NULL));
+  EXPECT_FALSE(it->GetBucketIndex(nullptr));
 
   it->Next();
   it->Get(&min, &max, &count);

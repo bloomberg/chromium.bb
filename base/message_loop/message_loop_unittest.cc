@@ -964,12 +964,12 @@ TEST_P(MessageLoopTypedTest, DISABLED_EnsureDeletion) {
     MessageLoop loop(GetParam());
     loop.task_runner()->PostTask(
         FROM_HERE, BindOnce(&RecordDeletionProbe::Run,
-                            new RecordDeletionProbe(NULL, &a_was_deleted)));
+                            new RecordDeletionProbe(nullptr, &a_was_deleted)));
     // TODO(ajwong): Do we really need 1000ms here?
     loop.task_runner()->PostDelayedTask(
         FROM_HERE,
         BindOnce(&RecordDeletionProbe::Run,
-                 new RecordDeletionProbe(NULL, &b_was_deleted)),
+                 new RecordDeletionProbe(nullptr, &b_was_deleted)),
         TimeDelta::FromMilliseconds(1000));
   }
   EXPECT_TRUE(a_was_deleted);
@@ -987,7 +987,7 @@ TEST_P(MessageLoopTypedTest, DISABLED_EnsureDeletion_Chain) {
     MessageLoop loop(GetParam());
     // The scoped_refptr for each of the below is held either by the chained
     // RecordDeletionProbe, or the bound RecordDeletionProbe::Run() callback.
-    RecordDeletionProbe* a = new RecordDeletionProbe(NULL, &a_was_deleted);
+    RecordDeletionProbe* a = new RecordDeletionProbe(nullptr, &a_was_deleted);
     RecordDeletionProbe* b = new RecordDeletionProbe(a, &b_was_deleted);
     RecordDeletionProbe* c = new RecordDeletionProbe(b, &c_was_deleted);
     loop.task_runner()->PostTask(FROM_HERE,

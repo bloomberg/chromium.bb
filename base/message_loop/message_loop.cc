@@ -45,7 +45,7 @@ base::ThreadLocalPointer<MessageLoop>* GetTLSMessageLoop() {
   static auto* lazy_tls_ptr = new base::ThreadLocalPointer<MessageLoop>();
   return lazy_tls_ptr;
 }
-MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = NULL;
+MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
 
 #if defined(OS_IOS)
 using MessagePumpForIO = MessagePumpIOSForIO;
@@ -136,9 +136,9 @@ MessageLoop::~MessageLoop() {
 
   // Tell the incoming queue that we are dying.
   incoming_task_queue_->WillDestroyCurrentMessageLoop();
-  incoming_task_queue_ = NULL;
-  unbound_task_runner_ = NULL;
-  task_runner_ = NULL;
+  incoming_task_queue_ = nullptr;
+  unbound_task_runner_ = nullptr;
+  task_runner_ = nullptr;
 
   // OK, now make it so that no one can find us.
   if (current() == this)

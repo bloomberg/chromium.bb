@@ -49,7 +49,7 @@ VlogInfo::VlogInfo(const std::string& v_switch,
                    const std::string& vmodule_switch,
                    int* min_log_level)
     : min_log_level_(min_log_level) {
-  DCHECK(min_log_level != NULL);
+  DCHECK_NE(min_log_level, nullptr);
 
   int vlog_level = 0;
   if (!v_switch.empty()) {

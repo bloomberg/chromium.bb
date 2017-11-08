@@ -273,8 +273,8 @@ class PthreadEvent {
                WaitableEvent::InitialState initial_state) {
     DCHECK_EQ(WaitableEvent::ResetPolicy::AUTOMATIC, reset_policy);
     DCHECK_EQ(WaitableEvent::InitialState::NOT_SIGNALED, initial_state);
-    pthread_mutex_init(&mutex_, 0);
-    pthread_cond_init(&cond_, 0);
+    pthread_mutex_init(&mutex_, nullptr);
+    pthread_cond_init(&cond_, nullptr);
     signaled_ = false;
   }
 

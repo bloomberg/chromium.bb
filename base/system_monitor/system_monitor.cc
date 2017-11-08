@@ -12,7 +12,7 @@
 
 namespace base {
 
-static SystemMonitor* g_system_monitor = NULL;
+static SystemMonitor* g_system_monitor = nullptr;
 
 SystemMonitor::SystemMonitor()
     :  devices_changed_observer_list_(
@@ -23,7 +23,7 @@ SystemMonitor::SystemMonitor()
 
 SystemMonitor::~SystemMonitor() {
   DCHECK_EQ(this, g_system_monitor);
-  g_system_monitor = NULL;
+  g_system_monitor = nullptr;
 }
 
 // static

@@ -21,7 +21,7 @@ struct UsesItself : public SupportsUserData::Data {
   }
 
   ~UsesItself() override {
-    EXPECT_EQ(NULL, supports_user_data_->GetUserData(key_));
+    EXPECT_EQ(nullptr, supports_user_data_->GetUserData(key_));
   }
 
   SupportsUserData* supports_user_data_;

@@ -260,7 +260,7 @@ void FilePath::GetComponents(std::vector<StringType>* components) const {
 }
 
 bool FilePath::IsParent(const FilePath& child) const {
-  return AppendRelativePath(child, NULL);
+  return AppendRelativePath(child, nullptr);
 }
 
 bool FilePath::AppendRelativePath(const FilePath& child,
@@ -299,7 +299,7 @@ bool FilePath::AppendRelativePath(const FilePath& child,
     ++child_comp;
   }
 
-  if (path != NULL) {
+  if (path != nullptr) {
     for (; child_comp != child_components.end(); ++child_comp) {
       *path = path->Append(*child_comp);
     }

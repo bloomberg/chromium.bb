@@ -168,7 +168,7 @@ class ThreadLocalObject {
 
 MULTIPROCESS_TEST_MAIN(TerminateCurrentProcessImmediatelyWithCode0) {
   base::ThreadLocalPointer<ThreadLocalObject> object;
-  base::AtExitManager::RegisterCallback(&AtExitHandler, NULL);
+  base::AtExitManager::RegisterCallback(&AtExitHandler, nullptr);
   Process::TerminateCurrentProcessImmediately(0);
   NOTREACHED();
   return 42;

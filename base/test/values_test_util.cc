@@ -25,7 +25,7 @@ void ExpectDictBooleanValue(bool expected_value,
 void ExpectDictDictionaryValue(const DictionaryValue& expected_value,
                                const DictionaryValue& value,
                                const std::string& key) {
-  const DictionaryValue* dict_value = NULL;
+  const DictionaryValue* dict_value = nullptr;
   EXPECT_TRUE(value.GetDictionary(key, &dict_value)) << key;
   EXPECT_EQ(expected_value, *dict_value) << key;
 }
@@ -41,7 +41,7 @@ void ExpectDictIntegerValue(int expected_value,
 void ExpectDictListValue(const ListValue& expected_value,
                          const DictionaryValue& value,
                          const std::string& key) {
-  const ListValue* list_value = NULL;
+  const ListValue* list_value = nullptr;
   EXPECT_TRUE(value.GetList(key, &list_value)) << key;
   EXPECT_EQ(expected_value, *list_value) << key;
 }
@@ -64,7 +64,7 @@ namespace test {
 std::unique_ptr<Value> ParseJson(base::StringPiece json) {
   std::string error_msg;
   std::unique_ptr<Value> result = base::JSONReader::ReadAndReturnError(
-      json, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error_msg);
+      json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error_msg);
   if (!result) {
     ADD_FAILURE() << "Failed to parse \"" << json << "\": " << error_msg;
     result = std::make_unique<Value>();

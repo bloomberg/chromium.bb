@@ -119,7 +119,7 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
 const char* GetDesktopEnvironmentName(DesktopEnvironment env) {
   switch (env) {
     case DESKTOP_ENVIRONMENT_OTHER:
-      return NULL;
+      return nullptr;
     case DESKTOP_ENVIRONMENT_GNOME:
       return "GNOME";
     case DESKTOP_ENVIRONMENT_KDE3:
@@ -135,7 +135,7 @@ const char* GetDesktopEnvironmentName(DesktopEnvironment env) {
     case DESKTOP_ENVIRONMENT_XFCE:
       return "XFCE";
   }
-  return NULL;
+  return nullptr;
 }
 
 const char* GetDesktopEnvironmentName(Environment* env) {

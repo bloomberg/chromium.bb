@@ -28,14 +28,14 @@ int32_t ToUpperMapper(UChar* dest, int32_t dest_capacity,
                       const UChar* src, int32_t src_length,
                       UErrorCode* error) {
   // Use default locale.
-  return u_strToUpper(dest, dest_capacity, src, src_length, NULL, error);
+  return u_strToUpper(dest, dest_capacity, src, src_length, nullptr, error);
 }
 
 int32_t ToLowerMapper(UChar* dest, int32_t dest_capacity,
                       const UChar* src, int32_t src_length,
                       UErrorCode* error) {
   // Use default locale.
-  return u_strToLower(dest, dest_capacity, src, src_length, NULL, error);
+  return u_strToLower(dest, dest_capacity, src, src_length, nullptr, error);
 }
 
 int32_t FoldCaseMapper(UChar* dest, int32_t dest_capacity,

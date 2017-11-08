@@ -6,15 +6,14 @@
 
 namespace base {
 
-ScopedNativeLibrary::ScopedNativeLibrary() : library_(NULL) {
-}
+ScopedNativeLibrary::ScopedNativeLibrary() : library_(nullptr) {}
 
 ScopedNativeLibrary::ScopedNativeLibrary(NativeLibrary library)
     : library_(library) {
 }
 
 ScopedNativeLibrary::ScopedNativeLibrary(const FilePath& library_path) {
-  library_ = base::LoadNativeLibrary(library_path, NULL);
+  library_ = base::LoadNativeLibrary(library_path, nullptr);
 }
 
 ScopedNativeLibrary::~ScopedNativeLibrary() {
@@ -25,7 +24,7 @@ ScopedNativeLibrary::~ScopedNativeLibrary() {
 void* ScopedNativeLibrary::GetFunctionPointer(
     const char* function_name) const {
   if (!library_)
-    return NULL;
+    return nullptr;
   return base::GetFunctionPointerFromNativeLibrary(library_, function_name);
 }
 
@@ -37,7 +36,7 @@ void ScopedNativeLibrary::Reset(NativeLibrary library) {
 
 NativeLibrary ScopedNativeLibrary::Release() {
   NativeLibrary result = library_;
-  library_ = NULL;
+  library_ = nullptr;
   return result;
 }
 

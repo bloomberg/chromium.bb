@@ -123,7 +123,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       if (pretty_print_)
         json_string_->push_back(' ');
 
-      const ListValue* list = NULL;
+      const ListValue* list = nullptr;
       bool first_value_has_been_output = false;
       bool result = node.GetAsList(&list);
       DCHECK(result);
@@ -154,7 +154,7 @@ bool JSONWriter::BuildJSONString(const Value& node, size_t depth) {
       if (pretty_print_)
         json_string_->append(kPrettyPrintLineEnding);
 
-      const DictionaryValue* dict = NULL;
+      const DictionaryValue* dict = nullptr;
       bool first_value_has_been_output = false;
       bool result = node.GetAsDictionary(&dict);
       DCHECK(result);
