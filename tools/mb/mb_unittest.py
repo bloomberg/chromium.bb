@@ -308,7 +308,7 @@ class UnitTest(unittest.TestCase):
                      ['/fake_src/out/Debug', '/fake_src/out/Debug'])
     self.assertEqual(mbw.files['/fake_src/out/Debug/mb_type'], 'gyp')
 
-  def test_gn_analyze(self):
+  def test_analyze(self):
     files = {'/tmp/in.json': '''{\
                "files": ["foo/foo_unittest.cc"],
                "test_targets": ["foo_unittests"],
@@ -331,6 +331,81 @@ class UnitTest(unittest.TestCase):
       'compile_targets': ['foo:foo_unittests'],
       'test_targets': ['foo_unittests']
     })
+
+  def test_analyze_optimizes_compile_for_all(self):
+    files = {'/tmp/in.json': '''{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["foo_unittests"],
+               "additional_compile_targets": ["all"]
+             }''',
+             '/tmp/out.json.gn': '''{\
+               "status": "Found dependency",
+               "compile_targets": ["//foo:foo_unittests", "all"],
+               "test_targets": ["//foo:foo_unittests"]
+             }'''}
+
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+
+    # check that 'foo_unittests' is not in the compile_targets
+    self.assertEqual(['all'], out['compile_targets'])
+
+  def test_analyze_handles_other_toolchains(self):
+    files = {'/tmp/in.json': '''{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["foo_unittests"],
+               "additional_compile_targets": ["all"]
+             }''',
+             '/tmp/out.json.gn': '''{\
+               "status": "Found dependency",
+               "compile_targets": ["//foo:foo_unittests",
+                                   "//foo:foo_unittests(bar)"],
+               "test_targets": ["//foo:foo_unittests"]
+             }'''}
+
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+
+    # crbug.com/736215: If GN returns a label containing a toolchain,
+    # MB (and Ninja) don't know how to handle it; to work around this,
+    # we give up and just build everything we were asked to build. The
+    # output compile_targets should include all of the input test_targets and
+    # additional_compile_targets.
+    self.assertEqual(['all', 'foo_unittests'], out['compile_targets'])
+
+  def test_analyze_handles_way_too_many_results(self):
+    too_many_files = ', '.join(['"//foo:foo%d"' % i for i in xrange(4 * 1024)])
+    files = {'/tmp/in.json': '''{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["foo_unittests"],
+               "additional_compile_targets": ["all"]
+             }''',
+             '/tmp/out.json.gn': '''{\
+               "status": "Found dependency",
+               "compile_targets": [''' + too_many_files + '''],
+               "test_targets": ["//foo:foo_unittests"]
+             }'''}
+
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (0, '', '')
+
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
+    out = json.loads(mbw.files['/tmp/out.json'])
+
+    # If GN returns so many compile targets that we might have command-line
+    # issues, we should give up and just build everything we were asked to
+    # build. The output compile_targets should include all of the input
+    # test_targets and additional_compile_targets.
+    self.assertEqual(['all', 'foo_unittests'], out['compile_targets'])
 
   def test_gn_gen(self):
     mbw = self.fake_mbw()
