@@ -34,7 +34,7 @@ extern "C" {
 /* Please note that modifications to all structs defined here are
  * subject to backwards-compatibility constraints.
  *
- * Do not use pointers, use uint64_t instead for 32 bit / 64 bit user/kernel
+ * Do not use pointers, use __u64 instead for 32 bit / 64 bit user/kernel
  * compatibility Keep fields aligned to their size
  */
 
