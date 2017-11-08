@@ -62,12 +62,6 @@ void TraverseCoordinatorHierarchy(BrowserCoordinator* coordinator,
 
 #pragma mark - SettingsNavigationControllerDelegate
 
-- (void)closeSettingsAndOpenNewIncognitoTab {
-  // Placeholder implementation to conform to the delegate protocol;
-  // for now this just closes the settings without opening a new tab.
-  [self closeSettings];
-}
-
 - (void)closeSettings {
   [self.callableDispatcher closeSettings];
 }

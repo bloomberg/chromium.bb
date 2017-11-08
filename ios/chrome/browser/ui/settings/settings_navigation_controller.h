@@ -30,10 +30,6 @@ class ChromeBrowserState;
 @protocol SettingsNavigationControllerDelegate<NSObject>
 
 // Informs the delegate that the settings navigation controller should be
-// closed and a new incognito window should be opened.
-- (void)closeSettingsAndOpenNewIncognitoTab;
-
-// Informs the delegate that the settings navigation controller should be
 // closed.
 - (void)closeSettings;
 

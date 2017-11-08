@@ -432,10 +432,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
                                                            completion:block];
 }
 
-- (void)closeSettingsAndOpenNewIncognitoTab {
-  NOTREACHED();
-}
-
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
   NOTREACHED();
   return nil;
