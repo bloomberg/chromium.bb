@@ -476,16 +476,16 @@ void CorePageLoadMetricsObserver::OnFirstMeaningfulPaintInMainFrameDocument(
                         timing.paint_timing->first_meaningful_paint.value() -
                             timing.parse_timing->parse_start.value());
     RecordFirstMeaningfulPaintStatus(internal::FIRST_MEANINGFUL_PAINT_RECORDED);
-
-    if (WasStartedInBackgroundOptionalEventInForeground(
-            timing.paint_timing->first_meaningful_paint, info)) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstMeaningfulPaint,
-                          timing.paint_timing->first_meaningful_paint.value() -
-                              info.first_foreground_time.value());
-    }
   } else {
     RecordFirstMeaningfulPaintStatus(
         internal::FIRST_MEANINGFUL_PAINT_BACKGROUNDED);
+  }
+
+  if (WasStartedInBackgroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstMeaningfulPaint,
+                        timing.paint_timing->first_meaningful_paint.value() -
+                            info.first_foreground_time.value());
   }
 }
 
