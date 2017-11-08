@@ -45,7 +45,7 @@ class WebLeakDetectorClient {
     unsigned number_of_live_nodes;
     unsigned number_of_live_layout_objects;
     unsigned number_of_live_resources;
-    unsigned number_of_live_suspendable_objects;
+    unsigned number_of_live_pausable_objects;
     unsigned number_of_live_script_promises;
     unsigned number_of_live_frames;
     unsigned number_of_live_v8_per_context_data;

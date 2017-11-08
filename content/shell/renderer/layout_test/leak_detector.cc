@@ -51,7 +51,7 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
   previous_result_.number_of_live_layout_objects =
       kInitialNumberOfLiveLayoutObjects;
   previous_result_.number_of_live_resources = kInitialNumberOfLiveResources;
-  previous_result_.number_of_live_suspendable_objects =
+  previous_result_.number_of_live_pausable_objects =
       kInitialNumberOfLiveSuspendableObject;
   previous_result_.number_of_live_script_promises =
       kInitialNumberOfScriptPromises;
@@ -115,12 +115,12 @@ void LeakDetector::OnLeakDetectionComplete(
     list->AppendInteger(result.number_of_live_resources);
     detail.Set("numberOfLiveResources", std::move(list));
   }
-  if (previous_result_.number_of_live_suspendable_objects <
-      result.number_of_live_suspendable_objects) {
+  if (previous_result_.number_of_live_pausable_objects <
+      result.number_of_live_pausable_objects) {
     auto list = std::make_unique<base::ListValue>();
-    list->AppendInteger(previous_result_.number_of_live_suspendable_objects);
-    list->AppendInteger(result.number_of_live_suspendable_objects);
-    detail.Set("numberOfLiveSuspendableObjects", std::move(list));
+    list->AppendInteger(previous_result_.number_of_live_pausable_objects);
+    list->AppendInteger(result.number_of_live_pausable_objects);
+    detail.Set("numberOfLivePausableObjects", std::move(list));
   }
   if (previous_result_.number_of_live_script_promises <
       result.number_of_live_script_promises) {
