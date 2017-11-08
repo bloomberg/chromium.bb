@@ -38,7 +38,7 @@ class CSSImageNonInterpolableValue : public NonInterpolableValue {
 
   static scoped_refptr<CSSImageNonInterpolableValue> Create(CSSValue* start,
                                                             CSSValue* end) {
-    return WTF::AdoptRef(new CSSImageNonInterpolableValue(start, end));
+    return base::AdoptRef(new CSSImageNonInterpolableValue(start, end));
   }
 
   bool IsSingle() const { return is_single_; }

@@ -41,7 +41,7 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
   ~AnimatableDouble() override {}
 
   static scoped_refptr<AnimatableDouble> Create(double number) {
-    return WTF::AdoptRef(new AnimatableDouble(number));
+    return base::AdoptRef(new AnimatableDouble(number));
   }
 
   double ToDouble() const { return number_; }

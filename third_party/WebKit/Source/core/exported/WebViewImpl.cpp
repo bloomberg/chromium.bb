@@ -302,7 +302,7 @@ WebView* WebView::Create(WebViewClient* client,
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
                                  WebPageVisibilityState visibility_state) {
   // Pass the WebViewImpl's self-reference to the caller.
-  auto web_view = WTF::AdoptRef(new WebViewImpl(client, visibility_state));
+  auto web_view = base::AdoptRef(new WebViewImpl(client, visibility_state));
   web_view->AddRef();
   return web_view.get();
 }

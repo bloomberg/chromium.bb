@@ -49,7 +49,7 @@ class CORE_EXPORT CSSFontFace final
 
  public:
   CSSFontFace(FontFace* font_face, Vector<UnicodeRange>& ranges)
-      : ranges_(WTF::AdoptRef(new UnicodeRangeSet(ranges))),
+      : ranges_(base::AdoptRef(new UnicodeRangeSet(ranges))),
         segmented_font_face_(nullptr),
         font_face_(font_face) {
     DCHECK(font_face_);

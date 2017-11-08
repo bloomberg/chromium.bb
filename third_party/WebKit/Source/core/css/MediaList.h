@@ -42,7 +42,7 @@ class MediaQuery;
 class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
  public:
   static scoped_refptr<MediaQuerySet> Create() {
-    return WTF::AdoptRef(new MediaQuerySet());
+    return base::AdoptRef(new MediaQuerySet());
   }
   static scoped_refptr<MediaQuerySet> Create(const String& media_string);
 
@@ -59,7 +59,7 @@ class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
   String MediaText() const;
 
   scoped_refptr<MediaQuerySet> Copy() const {
-    return WTF::AdoptRef(new MediaQuerySet(*this));
+    return base::AdoptRef(new MediaQuerySet(*this));
   }
 
  private:

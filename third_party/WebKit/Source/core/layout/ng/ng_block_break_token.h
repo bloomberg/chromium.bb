@@ -28,14 +28,14 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
       NGLayoutInputNode node,
       LayoutUnit used_block_size,
       Vector<scoped_refptr<NGBreakToken>>& child_break_tokens) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new NGBlockBreakToken(node, used_block_size, child_break_tokens));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
   static scoped_refptr<NGBlockBreakToken> Create(NGLayoutInputNode node,
                                                  LayoutUnit used_block_size) {
-    return WTF::AdoptRef(new NGBlockBreakToken(node, used_block_size));
+    return base::AdoptRef(new NGBlockBreakToken(node, used_block_size));
   }
 
   // Represents the amount of block size used in previous fragments.

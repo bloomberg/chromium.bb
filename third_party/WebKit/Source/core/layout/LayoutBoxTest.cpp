@@ -377,7 +377,7 @@ TEST_F(LayoutBoxTest, DeferredInvalidation) {
   // Inject an animated image since deferred invalidations are only done for
   // animated images.
   auto* image =
-      ImageResourceContent::CreateLoaded(WTF::AdoptRef(new AnimatedImage()));
+      ImageResourceContent::CreateLoaded(base::AdoptRef(new AnimatedImage()));
   ToLayoutImage(obj)->ImageResource()->SetImageResource(image);
   ASSERT_TRUE(ToLayoutImage(obj)->CachedImage()->GetImage()->MaybeAnimated());
 

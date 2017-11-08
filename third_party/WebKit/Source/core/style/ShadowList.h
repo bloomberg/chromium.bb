@@ -52,7 +52,7 @@ class ShadowList : public RefCounted<ShadowList> {
  public:
   // This consumes passed in vector.
   static scoped_refptr<ShadowList> Adopt(ShadowDataVector& shadows) {
-    return WTF::AdoptRef(new ShadowList(shadows));
+    return base::AdoptRef(new ShadowList(shadows));
   }
   const ShadowDataVector& Shadows() const { return shadows_; }
   bool operator==(const ShadowList& o) const { return shadows_ == o.shadows_; }

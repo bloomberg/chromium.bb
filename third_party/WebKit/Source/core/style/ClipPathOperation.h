@@ -67,7 +67,7 @@ class ReferenceClipPathOperation final : public ClipPathOperation {
   static scoped_refptr<ReferenceClipPathOperation> Create(
       const String& url,
       SVGElementProxy& element_proxy) {
-    return WTF::AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
+    return base::AdoptRef(new ReferenceClipPathOperation(url, element_proxy));
   }
 
   void AddClient(SVGResourceClient*);
@@ -98,7 +98,7 @@ class ShapeClipPathOperation final : public ClipPathOperation {
  public:
   static scoped_refptr<ShapeClipPathOperation> Create(
       scoped_refptr<BasicShape> shape) {
-    return WTF::AdoptRef(new ShapeClipPathOperation(std::move(shape)));
+    return base::AdoptRef(new ShapeClipPathOperation(std::move(shape)));
   }
 
   const BasicShape* GetBasicShape() const { return shape_.get(); }

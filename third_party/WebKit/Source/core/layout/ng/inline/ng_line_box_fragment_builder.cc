@@ -132,12 +132,12 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   }
 
   scoped_refptr<NGPhysicalLineBoxFragment> fragment =
-      WTF::AdoptRef(new NGPhysicalLineBoxFragment(
+      base::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), physical_size, children_, metrics_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
 
-  return WTF::AdoptRef(new NGLayoutResult(
+  return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats_,
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
       end_margin_strut_,

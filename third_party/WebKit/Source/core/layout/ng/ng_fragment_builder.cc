@@ -194,14 +194,14 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   }
 
   scoped_refptr<NGPhysicalBoxFragment> fragment =
-      WTF::AdoptRef(new NGPhysicalBoxFragment(
+      base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), physical_size, contents_visual_rect,
           children_, baselines_, BoxType(),
           border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;
 
-  return WTF::AdoptRef(new NGLayoutResult(
+  return base::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, positioned_floats,
       unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
       end_margin_strut_, intrinsic_block_size_, NGLayoutResult::kSuccess));
@@ -211,7 +211,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants;
   Vector<NGPositionedFloat> positioned_floats;
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new NGLayoutResult(nullptr, oof_positioned_descendants, positioned_floats,
                          unpositioned_floats_, nullptr, bfc_offset_,
                          end_margin_strut_, LayoutUnit(), status));

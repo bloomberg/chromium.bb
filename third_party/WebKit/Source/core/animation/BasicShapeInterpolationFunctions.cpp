@@ -16,11 +16,11 @@ class BasicShapeNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<NonInterpolableValue> Create(
       BasicShape::ShapeType type) {
-    return WTF::AdoptRef(new BasicShapeNonInterpolableValue(type));
+    return base::AdoptRef(new BasicShapeNonInterpolableValue(type));
   }
   static scoped_refptr<NonInterpolableValue> CreatePolygon(WindRule wind_rule,
                                                            size_t size) {
-    return WTF::AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
+    return base::AdoptRef(new BasicShapeNonInterpolableValue(wind_rule, size));
   }
 
   BasicShape::ShapeType GetShapeType() const { return type_; }

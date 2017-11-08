@@ -65,7 +65,7 @@ scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
   Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
   Vector<NGBaseline> baselines_copy(baselines_);
   scoped_refptr<NGPhysicalFragment> physical_fragment =
-      WTF::AdoptRef(new NGPhysicalBoxFragment(
+      base::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), size_, contents_visual_rect_, children_copy,
           baselines_copy, BoxType(), border_edge_, break_token_));
   return physical_fragment;

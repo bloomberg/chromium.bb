@@ -109,7 +109,7 @@ class WorkerThreadableLoader::WaitableEventWithTasks final
     : public ThreadSafeRefCounted<WaitableEventWithTasks> {
  public:
   static scoped_refptr<WaitableEventWithTasks> Create() {
-    return WTF::AdoptRef(new WaitableEventWithTasks);
+    return base::AdoptRef(new WaitableEventWithTasks);
   }
 
   void Signal() {

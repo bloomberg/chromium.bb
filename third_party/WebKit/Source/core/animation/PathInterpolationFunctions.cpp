@@ -23,7 +23,7 @@ class SVGPathNonInterpolableValue : public NonInterpolableValue {
 
   static scoped_refptr<SVGPathNonInterpolableValue> Create(
       Vector<SVGPathSegType>& path_seg_types) {
-    return WTF::AdoptRef(new SVGPathNonInterpolableValue(path_seg_types));
+    return base::AdoptRef(new SVGPathNonInterpolableValue(path_seg_types));
   }
 
   const Vector<SVGPathSegType>& PathSegTypes() const { return path_seg_types_; }

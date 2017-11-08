@@ -593,7 +593,7 @@ WebPagePopup* WebPagePopup::Create(WebWidgetClient* client) {
   //    WebPagePopupImpl to close.
   // We need them because the closing operation is asynchronous and the widget
   // can be closed while the WebViewImpl is unaware of it.
-  auto popup = WTF::AdoptRef(new WebPagePopupImpl(client));
+  auto popup = base::AdoptRef(new WebPagePopupImpl(client));
   popup->AddRef();
   return popup.get();
 }

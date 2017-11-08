@@ -28,7 +28,7 @@ class StyleSheetContents;
 class CORE_EXPORT StringKeyframe : public Keyframe {
  public:
   static scoped_refptr<StringKeyframe> Create() {
-    return WTF::AdoptRef(new StringKeyframe);
+    return base::AdoptRef(new StringKeyframe);
   }
 
   MutableStylePropertySet::SetResult SetCSSPropertyValue(
@@ -77,7 +77,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         scoped_refptr<TimingFunction> easing,
         const CSSValue* value,
         EffectModel::CompositeOperation composite) {
-      return WTF::AdoptRef(new CSSPropertySpecificKeyframe(
+      return base::AdoptRef(new CSSPropertySpecificKeyframe(
           offset, std::move(easing), value, composite));
     }
 
@@ -123,7 +123,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
         scoped_refptr<TimingFunction> easing,
         const String& value,
         EffectModel::CompositeOperation composite) {
-      return WTF::AdoptRef(new SVGPropertySpecificKeyframe(
+      return base::AdoptRef(new SVGPropertySpecificKeyframe(
           offset, std::move(easing), value, composite));
     }
 

@@ -35,7 +35,7 @@ namespace blink {
 class StyleReflection : public RefCounted<StyleReflection> {
  public:
   static scoped_refptr<StyleReflection> Create() {
-    return WTF::AdoptRef(new StyleReflection);
+    return base::AdoptRef(new StyleReflection);
   }
 
   bool operator==(const StyleReflection& o) const {

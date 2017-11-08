@@ -22,7 +22,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<CSSTransformNonInterpolableValue> Create(
       TransformOperations&& transform) {
-    return WTF::AdoptRef(new CSSTransformNonInterpolableValue(
+    return base::AdoptRef(new CSSTransformNonInterpolableValue(
         true, std::move(transform), EmptyTransformOperations(), false, false));
   }
 
@@ -31,7 +31,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
       double start_fraction,
       CSSTransformNonInterpolableValue&& end,
       double end_fraction) {
-    return WTF::AdoptRef(new CSSTransformNonInterpolableValue(
+    return base::AdoptRef(new CSSTransformNonInterpolableValue(
         false, start.GetInterpolatedTransform(start_fraction),
         end.GetInterpolatedTransform(end_fraction), start.IsAdditive(),
         end.IsAdditive()));

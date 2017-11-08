@@ -82,7 +82,7 @@ scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
     unsigned start_offset,
     unsigned end_offset) {
   scoped_refptr<NGPhysicalTextFragment> fragment =
-      WTF::AdoptRef(new NGPhysicalTextFragment(
+      base::AdoptRef(new NGPhysicalTextFragment(
           layout_object_, Style(), inline_node_.Text(), index, start_offset,
           end_offset, size_.ConvertToPhysical(WritingMode()), expansion_,
           ToLineOrientation(WritingMode()), end_effect_,

@@ -23,7 +23,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
   static scoped_refptr<TransitionKeyframe> Create(
       const PropertyHandle& property) {
     DCHECK(!property.IsSVGAttribute());
-    return WTF::AdoptRef(new TransitionKeyframe(property));
+    return base::AdoptRef(new TransitionKeyframe(property));
   }
   void SetValue(std::unique_ptr<TypedInterpolationValue> value) {
     value_ = std::move(value);
@@ -39,7 +39,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
         EffectModel::CompositeOperation composite,
         std::unique_ptr<TypedInterpolationValue> value,
         scoped_refptr<AnimatableValue> compositor_value) {
-      return WTF::AdoptRef(new PropertySpecificKeyframe(
+      return base::AdoptRef(new PropertySpecificKeyframe(
           offset, std::move(easing), composite, std::move(value),
           std::move(compositor_value)));
     }
@@ -95,7 +95,7 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
   bool IsTransitionKeyframe() const final { return true; }
 
   scoped_refptr<Keyframe> Clone() const final {
-    return WTF::AdoptRef(new TransitionKeyframe(*this));
+    return base::AdoptRef(new TransitionKeyframe(*this));
   }
 
   scoped_refptr<Keyframe::PropertySpecificKeyframe>

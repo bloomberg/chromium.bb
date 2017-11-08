@@ -96,7 +96,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   }
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
-    return WTF::AdoptRef(new NGPhysicalTextFragment(
+    return base::AdoptRef(new NGPhysicalTextFragment(
         layout_object_, Style(), text_, item_index_, start_offset_, end_offset_,
         size_, expansion_, LineOrientation(), EndEffect(), shape_result_));
   }

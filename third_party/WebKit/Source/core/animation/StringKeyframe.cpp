@@ -95,7 +95,7 @@ PropertyHandleSet StringKeyframe::Properties() const {
 }
 
 scoped_refptr<Keyframe> StringKeyframe::Clone() const {
-  return WTF::AdoptRef(new StringKeyframe(*this));
+  return base::AdoptRef(new StringKeyframe(*this));
 }
 
 scoped_refptr<Keyframe::PropertySpecificKeyframe>

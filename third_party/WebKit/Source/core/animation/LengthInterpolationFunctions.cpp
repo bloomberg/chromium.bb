@@ -20,7 +20,7 @@ class CSSLengthNonInterpolableValue : public NonInterpolableValue {
   static scoped_refptr<CSSLengthNonInterpolableValue> Create(
       bool has_percentage) {
     DEFINE_STATIC_REF(CSSLengthNonInterpolableValue, singleton,
-                      WTF::AdoptRef(new CSSLengthNonInterpolableValue()));
+                      base::AdoptRef(new CSSLengthNonInterpolableValue()));
     DCHECK(singleton);
     return has_percentage ? singleton : nullptr;
   }

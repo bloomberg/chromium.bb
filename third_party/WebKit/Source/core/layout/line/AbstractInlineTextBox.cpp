@@ -55,7 +55,7 @@ scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
 
-  scoped_refptr<AbstractInlineTextBox> obj = WTF::AdoptRef(
+  scoped_refptr<AbstractInlineTextBox> obj = base::AdoptRef(
       new AbstractInlineTextBox(line_layout_text, inline_text_box));
   g_abstract_inline_text_box_map_->Set(inline_text_box, obj);
   return obj;

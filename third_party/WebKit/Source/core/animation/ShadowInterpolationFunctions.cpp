@@ -32,7 +32,7 @@ class ShadowNonInterpolableValue : public NonInterpolableValue {
 
   static scoped_refptr<ShadowNonInterpolableValue> Create(
       ShadowStyle shadow_style) {
-    return WTF::AdoptRef(new ShadowNonInterpolableValue(shadow_style));
+    return base::AdoptRef(new ShadowNonInterpolableValue(shadow_style));
   }
 
   ShadowStyle Style() const { return style_; }

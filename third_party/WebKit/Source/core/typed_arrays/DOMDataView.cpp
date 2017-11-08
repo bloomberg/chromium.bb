@@ -21,7 +21,7 @@ class DataView final : public ArrayBufferView {
     CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
     CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLength());
-    return WTF::AdoptRef(new DataView(buffer, byte_offset, byte_length));
+    return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 
   unsigned ByteLength() const override { return byte_length_; }
