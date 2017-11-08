@@ -857,6 +857,13 @@ NSString* const kTransitionToolbarAnimationKey =
   // a modal view.
   BOOL isInitialDisplay = _initialCardSize.height == 0.0;
   if (isInitialDisplay) {
+    // Calls like -viewportSizeWasChanged should instead be called in
+    // viewDidLayoutSubviews, but since stack_view_controller is going away in
+    // the near future, it's easier to put this here instead of refactoring.
+    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+      [self.view layoutIfNeeded];
+    }
+
     [_mainCardSet setObserver:self];
     [_otrCardSet setObserver:self];
     [self setInitialCardSizing];
@@ -2009,7 +2016,8 @@ NSString* const kTransitionToolbarAnimationKey =
   [_activeCardSet.displayView
       insertSubview:self.transitionToolbarController.view
        aboveSubview:_activeCardSet.currentCard.view];
-  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar) &&
+      self.transitionToolbarController && _activeCardSet.currentCard.view) {
     [self.transitionToolbarController.view.leadingAnchor
         constraintEqualToAnchor:_activeCardSet.displayView.leadingAnchor]
         .active = YES;

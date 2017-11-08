@@ -2452,6 +2452,14 @@ using ios::material::TimingFunction;
   _snapshot = UIGraphicsGetImageFromCurrentImageContext();
   UIGraphicsEndImageContext();
 
+  // If self.view is offscreen during render, UIKit sets views' origin to 0,0.
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar) &&
+      frame.origin.y != 0) {
+    CGRect fixFrame = [self view].frame;
+    fixFrame.origin.y = frame.origin.y;
+    [self view].frame = fixFrame;
+  }
+
   // In the past, when the current tab was prerendered, taking a snapshot
   // sometimes lead to layout of its UIWebView. As this may be the fist time
   // the UIWebViews was laid out, its scroll view was scrolled. This lead
