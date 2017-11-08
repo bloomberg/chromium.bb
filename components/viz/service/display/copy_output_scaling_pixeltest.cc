@@ -17,11 +17,13 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace viz {
 namespace {
@@ -29,10 +31,18 @@ namespace {
 template <typename RendererType>
 class CopyOutputScalingPixelTest
     : public cc::RendererPixelTest<RendererType>,
-      public testing::WithParamInterface<std::tuple<int, int, int, int>> {
+      public testing::WithParamInterface<
+          std::tuple<gfx::Vector2d, gfx::Vector2d, CopyOutputResult::Format>> {
  public:
   // Include the public accessor method from the parent class.
   using cc::RendererPixelTest<RendererType>::renderer;
+
+  void SetUp() override {
+    cc::RendererPixelTest<RendererType>::SetUp();
+    scale_from_ = std::get<0>(GetParam());
+    scale_to_ = std::get<1>(GetParam());
+    result_format_ = std::get<2>(GetParam());
+  }
 
   // This tests that copy requests requesting scaled results execute correctly.
   // The test procedure creates a scene similar to the wall art that can be
@@ -53,9 +63,6 @@ class CopyOutputScalingPixelTest
   //
   // The scene is drawn, which also causes the copy request to execute. Then,
   // the resulting bitmap is compared against an expected bitmap.
-  //
-  // TODO(crbug/760348): This is the same as in software_renderer_unittest.cc.
-  // It should be de-duped moved into a common location.
   void RunTest() {
     constexpr gfx::Size viewport_size = gfx::Size(24, 10);
     constexpr int x_block = 4;
@@ -63,12 +70,6 @@ class CopyOutputScalingPixelTest
     constexpr SkColor smaller_pass_colors[4] = {SK_ColorRED, SK_ColorGREEN,
                                                 SK_ColorBLUE, SK_ColorYELLOW};
     constexpr SkColor root_pass_color = SK_ColorWHITE;
-
-    // Test parameters: The scaling ratios for the copy requests.
-    const gfx::Vector2d scale_from(std::get<0>(GetParam()),
-                                   std::get<1>(GetParam()));
-    const gfx::Vector2d scale_to(std::get<2>(GetParam()),
-                                 std::get<3>(GetParam()));
 
     RenderPassList list;
 
@@ -108,7 +109,7 @@ class CopyOutputScalingPixelTest
     {
       base::RunLoop loop;
       std::unique_ptr<CopyOutputRequest> request(new CopyOutputRequest(
-          CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+          result_format_,
           base::BindOnce(
               [](std::unique_ptr<CopyOutputResult>* test_result,
                  const base::Closure& quit_closure,
@@ -118,8 +119,8 @@ class CopyOutputScalingPixelTest
               },
               &result, loop.QuitClosure())));
       request->set_result_selection(
-          copy_output::ComputeResultRect(copy_rect, scale_from, scale_to));
-      request->SetScaleRatio(scale_from, scale_to);
+          copy_output::ComputeResultRect(copy_rect, scale_from_, scale_to_));
+      request->SetScaleRatio(scale_from_, scale_to_);
       list.back()->copy_requests.push_back(std::move(request));
       renderer()->DrawFrame(&list, 1.0f, viewport_size);
       loop.Run();
@@ -128,9 +129,14 @@ class CopyOutputScalingPixelTest
     // Check that the result succeeded and provides a bitmap of the expected
     // size.
     const gfx::Rect expected_result_rect =
-        copy_output::ComputeResultRect(copy_rect, scale_from, scale_to);
+        copy_output::ComputeResultRect(copy_rect, scale_from_, scale_to_);
     EXPECT_EQ(expected_result_rect, result->rect());
-    const SkBitmap result_bitmap = result->AsSkBitmap();
+    EXPECT_EQ(result_format_, result->format());
+    SkBitmap result_bitmap;
+    if (result_format_ == CopyOutputResult::Format::I420_PLANES)
+      result_bitmap = ReadI420ResultToSkBitmap(*result);
+    else
+      result_bitmap = result->AsSkBitmap();
     ASSERT_TRUE(result_bitmap.readyToDraw());
     ASSERT_EQ(expected_result_rect.width(), result_bitmap.width());
     ASSERT_EQ(expected_result_rect.height(), result_bitmap.height());
@@ -142,7 +148,7 @@ class CopyOutputScalingPixelTest
     expected_bitmap.eraseColor(root_pass_color);
     for (int i = 0; i < 4; ++i) {
       gfx::Rect rect = smaller_pass_rects[i] - copy_rect.OffsetFromOrigin();
-      rect = copy_output::ComputeResultRect(rect, scale_from, scale_to);
+      rect = copy_output::ComputeResultRect(rect, scale_from_, scale_to_);
       expected_bitmap.erase(
           smaller_pass_colors[i],
           SkIRect{rect.x(), rect.y(), rect.right(), rect.bottom()});
@@ -150,9 +156,13 @@ class CopyOutputScalingPixelTest
 
     // Do an approximate comparison of the result bitmap to the expected one to
     // confirm the position and size of the color values in the result is
-    // correct. Allow for pixel values to be a bit off: The scaler algorithms
-    // are not using a naïve box filter, and so will blend things together at
-    // edge boundaries.
+    // correct. Allow for pixel values to be a bit off for two reasons:
+    //
+    //   1. The scaler algorithms are not using a naïve box filter, and so will
+    //      blend things together at edge boundaries.
+    //   2. In the case of an I420 format request, the chroma is at half-
+    //      resolution, and so there can be "fuzzy color blending" at the edges
+    //      between the color rects.
     int num_bad_pixels = 0;
     gfx::Point first_failure_position;
     for (int y = 0; y < expected_bitmap.height(); ++y) {
@@ -179,18 +189,64 @@ class CopyOutputScalingPixelTest
         << "\nExpected bitmap: " << cc::GetPNGDataUrl(expected_bitmap)
         << "\nActual bitmap: " << cc::GetPNGDataUrl(result_bitmap);
   }
+
+ private:
+  // Calls result.ReadI420Planes() and then converts the I420 format back to a
+  // SkBitmap for comparison with the expected bitmap.
+  static SkBitmap ReadI420ResultToSkBitmap(const CopyOutputResult& result) {
+    const int result_width = result.rect().width();
+    const int result_height = result.rect().height();
+
+    // Calculate width/height/stride for each plane and allocate temporary
+    // buffers to hold the pixels. Note that the strides for each plane are
+    // being set differently to test that the arguments are correctly plumbed-
+    // through.
+    const int y_width = result_width;
+    const int y_stride = y_width + 7;
+    std::unique_ptr<uint8_t[]> y_data(new uint8_t[y_stride * result_height]);
+    const int chroma_width = (result_width + 1) / 2;
+    const int u_stride = chroma_width + 11;
+    const int v_stride = chroma_width + 17;
+    const int chroma_height = (result_height + 1) / 2;
+    std::unique_ptr<uint8_t[]> u_data(new uint8_t[u_stride * chroma_height]);
+    std::unique_ptr<uint8_t[]> v_data(new uint8_t[v_stride * chroma_height]);
+
+    // Do the read.
+    const bool success = result.ReadI420Planes(
+        y_data.get(), y_stride, u_data.get(), u_stride, v_data.get(), v_stride);
+    CHECK(success);
+
+    // Convert to an SkBitmap.
+    SkBitmap bitmap;
+    bitmap.allocPixels(SkImageInfo::Make(result_width, result_height,
+                                         kBGRA_8888_SkColorType,
+                                         kPremul_SkAlphaType));
+    const int error_code = libyuv::I420ToARGB(
+        y_data.get(), y_stride, u_data.get(), u_stride, v_data.get(), v_stride,
+        static_cast<uint8*>(bitmap.getPixels()), bitmap.rowBytes(),
+        result_width, result_height);
+    CHECK_EQ(0, error_code);
+
+    return bitmap;
+  }
+
+  gfx::Vector2d scale_from_;
+  gfx::Vector2d scale_to_;
+  CopyOutputResult::Format result_format_;
 };
 
 // Parameters common to all test instantiations. These are tuples consisting of
-// {scale_from_x, scale_from_y, scale_to_x, scale_to_y}.
-const auto kParameters = testing::Values(std::make_tuple(1, 1, 1, 1),
-                                         std::make_tuple(1, 1, 2, 1),
-                                         std::make_tuple(1, 1, 3, 1),
-                                         std::make_tuple(1, 1, 1, 2),
-                                         std::make_tuple(1, 1, 1, 3),
-                                         std::make_tuple(2, 1, 1, 1),
-                                         std::make_tuple(1, 2, 1, 1),
-                                         std::make_tuple(2, 2, 1, 1));
+// {scale_from, scale_to, i420_format}.
+const auto kParameters =
+    testing::Combine(testing::Values(gfx::Vector2d(1, 1),
+                                     gfx::Vector2d(2, 1),
+                                     gfx::Vector2d(1, 2),
+                                     gfx::Vector2d(2, 2)),
+                     testing::Values(gfx::Vector2d(1, 1),
+                                     gfx::Vector2d(2, 1),
+                                     gfx::Vector2d(1, 2)),
+                     testing::Values(CopyOutputResult::Format::RGBA_BITMAP,
+                                     CopyOutputResult::Format::I420_PLANES));
 
 using GLCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<GLRenderer>;
 TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {

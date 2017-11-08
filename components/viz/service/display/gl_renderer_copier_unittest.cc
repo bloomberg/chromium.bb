@@ -79,12 +79,14 @@ class GLRendererCopierTest : public testing::Test {
   // These simply forward method calls to GLRendererCopier.
   GLuint TakeCachedObjectOrCreate(const base::UnguessableToken& source,
                                   int which) {
-    return copier_->TakeCachedObjectOrCreate(source, which);
+    GLuint result = 0;
+    copier_->TakeCachedObjectsOrCreate(source, which, 1, &result);
+    return result;
   }
   void CacheObjectOrDelete(const base::UnguessableToken& source,
                            int which,
-                           int name) {
-    copier_->CacheObjectOrDelete(source, which, name);
+                           GLuint name) {
+    copier_->CacheObjectsOrDelete(source, which, 1, &name);
   }
   std::unique_ptr<GLHelper::ScalerInterface> TakeCachedScalerOrCreate(
       const CopyOutputRequest& request) {

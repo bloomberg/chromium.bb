@@ -117,6 +117,10 @@ class VIZ_COMMON_EXPORT CopyOutputRequest {
   // implementation, usually a DirectRenderer.
   void SendResult(std::unique_ptr<CopyOutputResult> result);
 
+  // Returns true if SendResult() will deliver the CopyOutputResult using the
+  // same TaskRunner as that to which the current task was posted.
+  bool SendsResultsInCurrentSequence() const;
+
   // Creates a RGBA_BITMAP request that ignores results, for testing purposes.
   static std::unique_ptr<CopyOutputRequest> CreateStubForTesting();
 

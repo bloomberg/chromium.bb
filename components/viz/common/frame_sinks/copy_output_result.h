@@ -31,6 +31,11 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
     // optionally take ownership of the texture (via TakeTextureOwnership()), if
     // it is needed beyond the lifetime of CopyOutputResult.
     RGBA_TEXTURE,
+    // I420 format planes in system memory. This is intended to be used
+    // internally within the VIZ component to support video capture. When
+    // requesting this format, results can only be delivered on the same task
+    // runner sequence that runs the DirectRenderer implementation.
+    I420_PLANES,
   };
 
   CopyOutputResult(Format format, const gfx::Rect& rect);
@@ -66,6 +71,24 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   virtual const TextureMailbox* GetTextureMailbox() const;
   virtual std::unique_ptr<SingleReleaseCallback> TakeTextureOwnership();
 
+  // Copies the image planes of an I420_PLANES result to the caller-provided
+  // memory. Returns true if successful, or false if: 1) this result is empty,
+  // or 2) the result format is not I420_PLANES and does not provide a
+  // conversion implementation.
+  //
+  // |y_out|, |u_out| and |v_out| point to the start of the memory regions to
+  // receive each plane. These memory regions must have the following sizes:
+  //
+  //   Y plane: y_out_stride * size().height() bytes
+  //   U plane: u_out_stride * CEIL(size().height() / 2) bytes
+  //   V plane: v_out_stride * CEIL(size().height() / 2) bytes
+  virtual bool ReadI420Planes(uint8_t* y_out,
+                              int y_out_stride,
+                              uint8_t* u_out,
+                              int u_out_stride,
+                              uint8_t* v_out,
+                              int v_out_stride) const;
+
  protected:
   // Accessor for subclasses to initialize the cached SkBitmap.
   SkBitmap* cached_bitmap() const { return &cached_bitmap_; }
@@ -81,9 +104,12 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
 };
 
 // Subclass of CopyOutputResult that provides a RGBA_BITMAP result from an
-// SkBitmap.
+// SkBitmap (or an I420_PLANES result based on a SkBitmap).
 class VIZ_COMMON_EXPORT CopyOutputSkBitmapResult : public CopyOutputResult {
  public:
+  CopyOutputSkBitmapResult(Format format,
+                           const gfx::Rect& rect,
+                           const SkBitmap& bitmap);
   CopyOutputSkBitmapResult(const gfx::Rect& rect, const SkBitmap& bitmap);
   ~CopyOutputSkBitmapResult() override;
 

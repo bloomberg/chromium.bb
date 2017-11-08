@@ -60,6 +60,11 @@ void CopyOutputRequest::SendResult(std::unique_ptr<CopyOutputResult> result) {
   }
 }
 
+bool CopyOutputRequest::SendsResultsInCurrentSequence() const {
+  return !result_task_runner_ ||
+         result_task_runner_->RunsTasksInCurrentSequence();
+}
+
 void CopyOutputRequest::SetTextureMailbox(
     const TextureMailbox& texture_mailbox) {
   DCHECK_EQ(result_format_, ResultFormat::RGBA_TEXTURE);

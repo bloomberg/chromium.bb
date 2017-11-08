@@ -117,6 +117,9 @@ bool StructTraits<viz::mojom::CopyOutputResultDataView,
       }
       return true;
     }
+
+    case viz::CopyOutputResult::Format::I420_PLANES:
+      break;  // Not intended for transport across service boundaries.
   }
 
   NOTREACHED();

@@ -224,6 +224,12 @@ void CopyFromCompositingSurfaceHasResult(
       PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
                                     std::move(result));
       break;
+
+    case viz::CopyOutputResult::Format::I420_PLANES:
+      // No code path external to the VIZ component should have asked for this.
+      NOTREACHED();
+      callback.Run(SkBitmap(), READBACK_FAILED);
+      break;
   }
 }
 

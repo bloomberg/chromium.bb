@@ -24,6 +24,8 @@ struct EnumTraits<viz::mojom::CopyOutputResultFormat,
         return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
       case viz::CopyOutputResult::Format::RGBA_TEXTURE:
         return viz::mojom::CopyOutputResultFormat::RGBA_TEXTURE;
+      case viz::CopyOutputResult::Format::I420_PLANES:
+        break;  // Not intended for transport across service boundaries.
     }
     NOTREACHED();
     return viz::mojom::CopyOutputResultFormat::RGBA_BITMAP;
