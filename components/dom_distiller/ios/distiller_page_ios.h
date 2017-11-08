@@ -9,6 +9,7 @@
 #include <objc/objc.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -21,11 +22,9 @@ class WebState;
 
 namespace dom_distiller {
 
-class DistillerWebStateObserver;
-
 // Loads URLs and injects JavaScript into a page, extracting the distilled page
 // content.
-class DistillerPageIOS : public DistillerPage {
+class DistillerPageIOS : public DistillerPage, public web::WebStateObserver {
  public:
   explicit DistillerPageIOS(web::BrowserState* browser_state);
   ~DistillerPageIOS() override;
@@ -57,12 +56,29 @@ class DistillerPageIOS : public DistillerPage {
   // Converts result of WKWebView script evaluation to base::Value
   std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result);
 
+  // web::WebStateObserver implementation.
+  void PageLoaded(
+      web::WebState* web_state,
+      web::PageLoadCompletionStatus load_completion_status) override;
+  void DidStartLoading(web::WebState* web_state) override;
+  void DidStopLoading(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
+
   GURL url_;
   std::string script_;
   web::BrowserState* browser_state_;
   std::unique_ptr<web::WebState> web_state_;
-  std::unique_ptr<DistillerWebStateObserver> web_state_observer_;
+
+  // Used to store whether the owned WebState is currently loading or not.
+  // TODO(crbug.com/782159): this is a work-around as WebState::IsLoading()
+  // is/was not returning the expected value when an SLL interstitial is
+  // blocked. Remove this and use WebState::IsLoading() when WebState has
+  // been fixed.
+  bool loading_ = false;
+
   base::WeakPtrFactory<DistillerPageIOS> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DistillerPageIOS);
 };
 
 }  // namespace dom_distiller
