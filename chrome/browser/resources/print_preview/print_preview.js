@@ -564,8 +564,7 @@ cr.define('print_preview', function() {
       }
       const destination = assert(this.destinationStore_.selectedDestination);
       const whenPrintDone = this.nativeLayer_.print(
-          destination, this.printTicketStore_, this.cloudPrintInterface_,
-          this.documentInfo_,
+          destination, this.printTicketStore_, this.documentInfo_,
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
           this.showSystemDialogBeforeNextPrint_);
       if (this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW ||
@@ -668,6 +667,7 @@ cr.define('print_preview', function() {
           settings.serializedDefaultDestinationSelectionRulesStr);
       this.appState_.setInitialized();
 
+      // This is only visible in the task manager.
       $('document-title').innerText = settings.documentTitle;
       this.hideSystemDialogLink_ = settings.isInAppKioskMode;
       if ($('system-dialog-link')) {

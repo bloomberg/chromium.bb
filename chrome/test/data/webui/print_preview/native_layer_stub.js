@@ -125,7 +125,6 @@ cr.define('print_preview', function() {
     print(
       destination,
       printTicketStore,
-      cloudPrintInterface,
       documentInfo,
       opt_isOpenPdfInPreview,
       opt_showSystemDialog
@@ -133,7 +132,6 @@ cr.define('print_preview', function() {
       this.methodCalled('print', {
         destination: destination,
         printTicketStore: printTicketStore,
-        cloudPrintInterface: cloudPrintInterface,
         documentInfo: documentInfo,
         openPdfInPreview: opt_isOpenPdfInPreview || false,
         showSystemDialog: opt_showSystemDialog || false,
