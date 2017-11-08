@@ -1747,7 +1747,24 @@ static void read_tile_info(AV1Decoder *const pbi,
 #else
     const int no_loopfilter = !lf->filter_level;
 #endif
-    cm->single_tile_decoding = no_loopfilter ? 1 : 0;
+#if CONFIG_CDEF
+    const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
+                        cm->nb_cdef_strengths == 1;
+#endif
+#if CONFIG_LOOP_RESTORATION
+    const int no_restoration =
+        cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
+        cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
+        cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
+#endif
+    cm->single_tile_decoding = no_loopfilter
+#if CONFIG_CDEF
+                               && no_cdef
+#endif
+#if CONFIG_LOOP_RESTORATION
+                               && no_restoration
+#endif
+        ;
 // Read the tile width/height
 #if CONFIG_EXT_PARTITION
     if (cm->sb_size == BLOCK_128X128) {
