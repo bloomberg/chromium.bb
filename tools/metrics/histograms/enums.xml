@@ -6616,6 +6616,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="ContextualSearchPeekPromoOutcome">
+  <obsolete>
+    Removed because the feature no longer exists.
+  </obsolete>
   <summary>The outcome of the Contextual Search Peek Promo.</summary>
   <int value="0" label="Peek Promo was seen, Panel was opened"/>
   <int value="1" label="Peek Promo was seen, Panel was not opened"/>

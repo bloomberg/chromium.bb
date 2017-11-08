@@ -43,19 +43,19 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      int progress_bar_background_resource_id,
                      int progress_bar_resource_id,
                      int search_promo_resource_id,
-                     int peek_promo_ripple_resource_id,
-                     int peek_promo_text_resource_id,
+                     int bar_banner_ripple_resource_id,
+                     int bar_banner_text_resource_id,
                      float dp_to_px,
                      const scoped_refptr<cc::Layer>& content_layer,
                      bool search_promo_visible,
                      float search_promo_height,
                      float search_promo_opacity,
-                     bool search_peek_promo_visible,
-                     float search_peek_promo_height,
-                     float search_peek_promo_padding,
-                     float search_peek_promo_ripple_width,
-                     float search_peek_promo_ripple_opacity,
-                     float search_peek_promo_text_opacity,
+                     bool search_bar_banner_visible,
+                     float search_bar_banner_height,
+                     float search_bar_banner_padding,
+                     float search_bar_banner_ripple_width,
+                     float search_bar_banner_ripple_opacity,
+                     float search_bar_banner_text_opacity,
                      float search_panel_x,
                      float search_panel_y,
                      float search_panel_width,
@@ -139,9 +139,9 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;
   scoped_refptr<cc::UIResourceLayer> search_promo_;
   scoped_refptr<cc::SolidColorLayer> search_promo_container_;
-  scoped_refptr<cc::SolidColorLayer> peek_promo_container_;
-  scoped_refptr<cc::NinePatchLayer> peek_promo_ripple_;
-  scoped_refptr<cc::UIResourceLayer> peek_promo_text_;
+  scoped_refptr<cc::SolidColorLayer> bar_banner_container_;
+  scoped_refptr<cc::NinePatchLayer> bar_banner_ripple_;
+  scoped_refptr<cc::UIResourceLayer> bar_banner_text_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_;
   scoped_refptr<cc::NinePatchLayer> progress_bar_background_;
   scoped_refptr<cc::UIResourceLayer> search_caption_;

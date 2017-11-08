@@ -35,8 +35,6 @@ public class ChromePreferenceManager {
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";
     private static final String CONTEXTUAL_SEARCH_TAP_COUNT = "contextual_search_tap_count";
-    private static final String CONTEXTUAL_SEARCH_PEEK_PROMO_SHOW_COUNT =
-            "contextual_search_peek_promo_show_count";
     private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
     private static final String CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT =
@@ -225,21 +223,6 @@ public class ChromePreferenceManager {
      */
     public void setContextualSearchPromoOpenCount(int count) {
         writeInt(CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT, count);
-    }
-
-    /**
-     * @return Number of times the Peek Promo was shown.
-     */
-    public int getContextualSearchPeekPromoShowCount() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_PEEK_PROMO_SHOW_COUNT, 0);
-    }
-
-    /**
-     * Sets the number of times the Peek Promo was shown.
-     * @param count Number of times the Peek Promo was shown.
-     */
-    public void setContextualSearchPeekPromoShowCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_PEEK_PROMO_SHOW_COUNT, count);
     }
 
     /**

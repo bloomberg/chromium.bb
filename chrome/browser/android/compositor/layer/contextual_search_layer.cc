@@ -20,12 +20,12 @@ namespace {
 
 const SkColor kSearchBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 const SkColor kSearchBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
-const SkColor kPeekPromoRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
+const SkColor kBarBannerRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 const SkColor kTouchHighlightColor = SkColorSetARGB(0x33, 0x99, 0x99, 0x99);
 
-// The alpha blend used in the Peek Promo Background in order to achieve
-// a lighter shade of the color of the Peek Promo Ripple.
-const SkAlpha kPeekPromoBackgroundMaximumAlphaBlend = 0.25f * 255;
+// The alpha blend used in the Bar Banner Background in order to achieve
+// a lighter shade of the color of the Bar Banner Ripple.
+const SkAlpha kBarBannerBackgroundMaximumAlphaBlend = 0.25f * 255;
 
 }  // namespace
 
@@ -50,19 +50,19 @@ void ContextualSearchLayer::SetProperties(
     int progress_bar_background_resource_id,
     int progress_bar_resource_id,
     int search_promo_resource_id,
-    int peek_promo_ripple_resource_id,
-    int peek_promo_text_resource_id,
+    int bar_banner_ripple_resource_id,
+    int bar_banner_text_resource_id,
     float dp_to_px,
     const scoped_refptr<cc::Layer>& content_layer,
     bool search_promo_visible,
     float search_promo_height,
     float search_promo_opacity,
-    bool search_peek_promo_visible,
-    float search_peek_promo_height,
-    float search_peek_promo_padding,
-    float search_peek_promo_ripple_width,
-    float search_peek_promo_ripple_opacity,
-    float search_peek_promo_text_opacity,
+    bool search_bar_banner_visible,
+    float search_bar_banner_height,
+    float search_bar_banner_padding,
+    float search_bar_banner_ripple_width,
+    float search_bar_banner_ripple_opacity,
+    float search_bar_banner_text_opacity,
     float search_panel_x,
     float search_panel_y,
     float search_panel_width,
@@ -101,7 +101,7 @@ void ContextualSearchLayer::SetProperties(
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
 
-  float search_bar_top = search_peek_promo_height;
+  float search_bar_top = search_bar_banner_height;
   float search_bar_bottom = search_bar_top + search_bar_height;
   bool should_render_progress_bar =
       progress_bar_visible && progress_bar_opacity > 0.f;
@@ -128,95 +128,94 @@ void ContextualSearchLayer::SetProperties(
   bool is_rtl = l10n_util::IsLayoutRtl();
 
   // ---------------------------------------------------------------------------
-  // Peek Promo
+  // Bar Banner
   // ---------------------------------------------------------------------------
-  if (search_peek_promo_visible) {
-    // Grabs the Search Opt Out Promo resource.
-    ui::Resource* peek_promo_text_resource = resource_manager_->GetResource(
-        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, peek_promo_text_resource_id);
+  if (search_bar_banner_visible) {
+    // Grabs the Bar Banner resource.
+    ui::Resource* bar_banner_text_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, bar_banner_text_resource_id);
 
-    ui::NinePatchResource* peek_promo_ripple_resource =
+    ui::NinePatchResource* bar_banner_ripple_resource =
         ui::NinePatchResource::From(resource_manager_->GetResource(
-            ui::ANDROID_RESOURCE_TYPE_STATIC, peek_promo_ripple_resource_id));
+            ui::ANDROID_RESOURCE_TYPE_STATIC, bar_banner_ripple_resource_id));
 
     // -----------------------------------------------------------------
-    // Peek Promo Container
+    // Bar Banner Container
     // -----------------------------------------------------------------
-    if (peek_promo_container_->parent() != layer_) {
-      layer_->AddChild(peek_promo_container_);
+    if (bar_banner_container_->parent() != layer_) {
+      layer_->AddChild(bar_banner_container_);
     }
 
-    gfx::Size peek_promo_size(search_panel_width, search_peek_promo_height);
-    peek_promo_container_->SetBounds(peek_promo_size);
-    peek_promo_container_->SetPosition(gfx::PointF(0.f, 0.f));
-    peek_promo_container_->SetMasksToBounds(true);
+    gfx::Size bar_banner_size(search_panel_width, search_bar_banner_height);
+    bar_banner_container_->SetBounds(bar_banner_size);
+    bar_banner_container_->SetPosition(gfx::PointF(0.f, 0.f));
+    bar_banner_container_->SetMasksToBounds(true);
 
     // Apply a blend based on the ripple opacity. The resulting color will
     // be an interpolation between the background color of the Search Bar and
     // a lighter shade of the background color of the Ripple. The range of
     // the alpha value used in the blend will be:
-    // [0.f, kPeekPromoBackgroundMaximumAlphaBlend]
-    peek_promo_container_->SetBackgroundColor(
-        color_utils::AlphaBlend(kPeekPromoRippleBackgroundColor,
-                                kSearchBarBackgroundColor,
-                                kPeekPromoBackgroundMaximumAlphaBlend *
-                                    search_peek_promo_ripple_opacity));
+    // [0.f, kBarBannerBackgroundMaximumAlphaBlend]
+    bar_banner_container_->SetBackgroundColor(color_utils::AlphaBlend(
+        kBarBannerRippleBackgroundColor, kSearchBarBackgroundColor,
+        kBarBannerBackgroundMaximumAlphaBlend *
+            search_bar_banner_ripple_opacity));
 
     // -----------------------------------------------------------------
-    // Peek Promo Ripple
+    // Bar Banner Ripple
     // -----------------------------------------------------------------
-    gfx::Size peek_promo_ripple_size(
-        search_peek_promo_ripple_width, search_peek_promo_height);
-    gfx::Rect peek_promo_ripple_border(
-        peek_promo_ripple_resource->Border(peek_promo_ripple_size));
+    gfx::Size bar_banner_ripple_size(search_bar_banner_ripple_width,
+                                     search_bar_banner_height);
+    gfx::Rect bar_banner_ripple_border(
+        bar_banner_ripple_resource->Border(bar_banner_ripple_size));
 
     // Add padding so the ripple will occupy the whole width at 100%.
-    peek_promo_ripple_size.set_width(
-        peek_promo_ripple_size.width() + peek_promo_ripple_border.width());
+    bar_banner_ripple_size.set_width(bar_banner_ripple_size.width() +
+                                     bar_banner_ripple_border.width());
 
     float ripple_rotation = 0.f;
     float ripple_left = 0.f;
     if (is_rtl) {
       // Rotate the ripple 180 degrees to make it point to the left side.
       ripple_rotation = 180.f;
-      ripple_left = search_panel_width - peek_promo_ripple_size.width();
+      ripple_left = search_panel_width - bar_banner_ripple_size.width();
     }
 
-    peek_promo_ripple_->SetUIResourceId(
-        peek_promo_ripple_resource->ui_resource()->id());
-    peek_promo_ripple_->SetBorder(peek_promo_ripple_border);
-    peek_promo_ripple_->SetAperture(peek_promo_ripple_resource->aperture());
-    peek_promo_ripple_->SetBounds(peek_promo_ripple_size);
-    peek_promo_ripple_->SetPosition(gfx::PointF(ripple_left, 0.f));
-    peek_promo_ripple_->SetOpacity(search_peek_promo_ripple_opacity);
+    bar_banner_ripple_->SetUIResourceId(
+        bar_banner_ripple_resource->ui_resource()->id());
+    bar_banner_ripple_->SetBorder(bar_banner_ripple_border);
+    bar_banner_ripple_->SetAperture(bar_banner_ripple_resource->aperture());
+    bar_banner_ripple_->SetBounds(bar_banner_ripple_size);
+    bar_banner_ripple_->SetPosition(gfx::PointF(ripple_left, 0.f));
+    bar_banner_ripple_->SetOpacity(search_bar_banner_ripple_opacity);
 
     if (ripple_rotation != 0.f) {
       // Apply rotation about the center of the resource.
-      float pivot_x = floor(peek_promo_ripple_size.width() / 2);
-      float pivot_y = floor(peek_promo_ripple_size.height() / 2);
+      float pivot_x = floor(bar_banner_ripple_size.width() / 2);
+      float pivot_y = floor(bar_banner_ripple_size.height() / 2);
       gfx::PointF pivot_origin(pivot_x, pivot_y);
       gfx::Transform transform;
       transform.Translate(pivot_origin.x(), pivot_origin.y());
       transform.RotateAboutZAxis(ripple_rotation);
       transform.Translate(-pivot_origin.x(), -pivot_origin.y());
-      peek_promo_ripple_->SetTransform(transform);
+      bar_banner_ripple_->SetTransform(transform);
     }
 
     // -----------------------------------------------------------------
-    // Peek Promo Text
+    // Bar Banner Text
     // -----------------------------------------------------------------
-    if (peek_promo_text_resource) {
-      peek_promo_text_->SetUIResourceId(
-          peek_promo_text_resource->ui_resource()->id());
-      peek_promo_text_->SetBounds(peek_promo_text_resource->size());
-      peek_promo_text_->SetPosition(
-          gfx::PointF(0.f, search_peek_promo_padding));
-      peek_promo_text_->SetOpacity(search_peek_promo_text_opacity);
+    if (bar_banner_text_resource) {
+      bar_banner_text_->SetUIResourceId(
+          bar_banner_text_resource->ui_resource()->id());
+      bar_banner_text_->SetBounds(bar_banner_text_resource->size());
+      bar_banner_text_->SetPosition(
+          gfx::PointF(0.f, search_bar_banner_padding));
+      bar_banner_text_->SetOpacity(search_bar_banner_text_opacity);
     }
   } else {
-    // Peek Promo Container
-    if (peek_promo_container_.get() && peek_promo_container_->parent())
-      peek_promo_container_->RemoveFromParent();
+    // Bar Banner Container
+    if (bar_banner_container_.get() && bar_banner_container_->parent())
+      bar_banner_container_->RemoveFromParent();
   }
 
   // ---------------------------------------------------------------------------
@@ -727,23 +726,23 @@ ContextualSearchLayer::ContextualSearchLayer(
       arrow_icon_(cc::UIResourceLayer::Create()),
       search_promo_(cc::UIResourceLayer::Create()),
       search_promo_container_(cc::SolidColorLayer::Create()),
-      peek_promo_container_(cc::SolidColorLayer::Create()),
-      peek_promo_ripple_(cc::NinePatchLayer::Create()),
-      peek_promo_text_(cc::UIResourceLayer::Create()),
+      bar_banner_container_(cc::SolidColorLayer::Create()),
+      bar_banner_ripple_(cc::NinePatchLayer::Create()),
+      bar_banner_text_(cc::UIResourceLayer::Create()),
       progress_bar_(cc::NinePatchLayer::Create()),
       progress_bar_background_(cc::NinePatchLayer::Create()),
       search_caption_(cc::UIResourceLayer::Create()),
       text_layer_(cc::UIResourceLayer::Create()),
       divider_line_(cc::SolidColorLayer::Create()),
       touch_highlight_layer_(cc::SolidColorLayer::Create()) {
-  // Search Peek Promo
-  peek_promo_container_->SetIsDrawable(true);
-  peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);
-  peek_promo_ripple_->SetIsDrawable(true);
-  peek_promo_ripple_->SetFillCenter(true);
-  peek_promo_text_->SetIsDrawable(true);
-  peek_promo_container_->AddChild(peek_promo_ripple_);
-  peek_promo_container_->AddChild(peek_promo_text_);
+  // Search Bar Banner
+  bar_banner_container_->SetIsDrawable(true);
+  bar_banner_container_->SetBackgroundColor(kSearchBarBackgroundColor);
+  bar_banner_ripple_->SetIsDrawable(true);
+  bar_banner_ripple_->SetFillCenter(true);
+  bar_banner_text_->SetIsDrawable(true);
+  bar_banner_container_->AddChild(bar_banner_ripple_);
+  bar_banner_container_->AddChild(bar_banner_text_);
 
   // Search Bar Text
   search_context_->SetIsDrawable(true);
