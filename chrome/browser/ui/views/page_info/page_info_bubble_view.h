@@ -126,7 +126,6 @@ class PageInfoBubbleView : public content::WebContentsObserver,
 
   // views::BubbleDialogDelegateView implementation.
   base::string16 GetWindowTitle() const override;
-  void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
   int GetDialogButtons() const override;

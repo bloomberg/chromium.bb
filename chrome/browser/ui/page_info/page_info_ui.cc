@@ -141,10 +141,12 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
 };
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
+    PageInfoUI::SecuritySummaryColor style,
     int summary_id,
     int details_id) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description(
       new PageInfoUI::SecurityDescription());
+  security_description->summary_style = style;
   security_description->summary = l10n_util::GetStringUTF16(summary_id);
   security_description->details = l10n_util::GetStringUTF16(details_id);
   return security_description;
@@ -213,7 +215,8 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
 #if defined(OS_ANDROID)
       // We provide identical summary and detail strings for Android, which
       // deduplicates them in the UI code.
-      return CreateSecurityDescription(IDS_PAGE_INFO_INTERNAL_PAGE,
+      return CreateSecurityDescription(SecuritySummaryColor::GREEN,
+                                       IDS_PAGE_INFO_INTERNAL_PAGE,
                                        IDS_PAGE_INFO_INTERNAL_PAGE);
 #endif
       // Internal pages on desktop have their own UI implementations which
@@ -225,35 +228,43 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
     case PageInfo::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
       switch (connection_status) {
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
-          return CreateSecurityDescription(IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
+          return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                           IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
                                            IDS_PAGE_INFO_NOT_SECURE_DETAILS);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
-          return CreateSecurityDescription(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+          return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                           IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
                                            IDS_PAGE_INFO_NOT_SECURE_DETAILS);
         case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
-          return CreateSecurityDescription(IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
+          return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                           IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
                                            IDS_PAGE_INFO_MIXED_CONTENT_DETAILS);
         default:
-          return CreateSecurityDescription(IDS_PAGE_INFO_SECURE_SUMMARY,
+          return CreateSecurityDescription(SecuritySummaryColor::GREEN,
+                                           IDS_PAGE_INFO_SECURE_SUMMARY,
                                            IDS_PAGE_INFO_SECURE_DETAILS);
       }
     case PageInfo::SITE_IDENTITY_STATUS_MALWARE:
-      return CreateSecurityDescription(IDS_PAGE_INFO_MALWARE_SUMMARY,
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_MALWARE_SUMMARY,
                                        IDS_PAGE_INFO_MALWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
       return CreateSecurityDescription(
-          IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
+          SecuritySummaryColor::RED, IDS_PAGE_INFO_SOCIAL_ENGINEERING_SUMMARY,
           IDS_PAGE_INFO_SOCIAL_ENGINEERING_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SITE_IDENTITY_STATUS_PASSWORD_REUSE:
 #if defined(SAFE_BROWSING_DB_LOCAL)
       return safe_browsing::PasswordProtectionService::ShouldShowSofterWarning()
                  ? CreateSecurityDescription(
+                       SecuritySummaryColor::RED,
                        IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER,
                        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS)
                  : CreateSecurityDescription(
+                       SecuritySummaryColor::RED,
                        IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY,
                        IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
 #endif
@@ -261,7 +272,8 @@ PageInfoUI::IdentityInfo::GetSecurityDescription() const {
     case PageInfo::SITE_IDENTITY_STATUS_UNKNOWN:
     case PageInfo::SITE_IDENTITY_STATUS_NO_CERT:
     default:
-      return CreateSecurityDescription(IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
+      return CreateSecurityDescription(SecuritySummaryColor::RED,
+                                       IDS_PAGE_INFO_NOT_SECURE_SUMMARY,
                                        IDS_PAGE_INFO_NOT_SECURE_DETAILS);
   }
 }

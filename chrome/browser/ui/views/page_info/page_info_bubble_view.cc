@@ -592,12 +592,6 @@ base::string16 PageInfoBubbleView::GetWindowTitle() const {
   return summary_text_;
 }
 
-void PageInfoBubbleView::AddedToWidget() {
-  std::unique_ptr<views::Label> title =
-      views::BubbleFrameView::CreateDefaultTitleLabel(GetWindowTitle());
-  GetBubbleFrameView()->SetTitleView(std::move(title));
-}
-
 bool PageInfoBubbleView::ShouldShowCloseButton() const {
   return true;
 }
@@ -811,9 +805,23 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
   std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
       identity_info.GetSecurityDescription();
 
+  // Set the bubble title, update the title label text, then apply color.
   summary_text_ = security_description->summary;
-  static_cast<views::Label*>(GetBubbleFrameView()->title())
-      ->SetText(GetWindowTitle());
+  GetBubbleFrameView()->UpdateWindowTitle();
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    int text_style = views::style::STYLE_PRIMARY;
+    switch (security_description->summary_style) {
+      case SecuritySummaryColor::RED:
+        text_style = STYLE_RED;
+        break;
+      case SecuritySummaryColor::GREEN:
+        text_style = STYLE_GREEN;
+        break;
+    }
+    static_cast<views::Label*>(GetBubbleFrameView()->title())
+        ->SetEnabledColor(views::style::GetColor(
+            views::style::CONTEXT_DIALOG_TITLE, text_style, GetNativeTheme()));
+  }
 
   if (identity_info.certificate) {
     certificate_ = identity_info.certificate;

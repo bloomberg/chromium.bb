@@ -47,12 +47,15 @@ class PageInfoUI {
     NUM_TAB_IDS,
   };
 
-  // The security summary is styled depending on the security state. At the
-  // moment, the only styling we apply is color, but it could also include e.g.
-  // bolding.
-  enum SecuritySummaryStyle { STYLE_UNSTYLED = 0, STYLE_COLOR = 1 << 1 };
+  enum class SecuritySummaryColor {
+    RED,
+    GREEN,
+  };
 
   struct SecurityDescription {
+    // The text style for |summary| used to color it. This provides an
+    // opinionated guide to the user on the overall security state of the site.
+    SecuritySummaryColor summary_style;
     // A one-line summary of the security state.
     base::string16 summary;
     // A short paragraph with more details about the state, and how
