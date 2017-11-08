@@ -102,6 +102,7 @@ include_rules = [
   "+net",
   "+rlz/features",
   "+services/metrics",
+  "+services/service_manager",
   "+third_party/breakpad/breakpad/src/client/ios",
   "+third_party/breakpad/breakpad/src/common",
   "+third_party/brotli",

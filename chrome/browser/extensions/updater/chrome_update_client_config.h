@@ -45,7 +45,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   net::URLRequestContextGetter* RequestContext() const override;
-  scoped_refptr<update_client::OutOfProcessPatcher> CreateOutOfProcessPatcher()
+  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;

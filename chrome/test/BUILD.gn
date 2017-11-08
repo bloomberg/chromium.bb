@@ -1224,7 +1224,7 @@ test("browser_tests") {
       "../browser/chrome_service_worker_browsertest.cc",
       "../browser/chrome_site_per_process_browsertest.cc",
       "../browser/client_hints/client_hints_browsertest.cc",
-      "../browser/component_updater/component_patcher_operation_out_of_process_browsertest.cc",
+      "../browser/component_updater/component_patcher_operation_browsertest.cc",
       "../browser/content_settings/content_settings_browsertest.cc",
       "../browser/crash_recovery_browsertest.cc",
       "../browser/custom_handlers/protocol_handler_registry_browsertest.cc",

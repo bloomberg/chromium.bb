@@ -34,12 +34,12 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8_t>& pk_hash,
     const base::FilePath& path,
     const scoped_refptr<CrxInstaller>& installer,
-    const scoped_refptr<OutOfProcessPatcher>& oop_patcher)
+    std::unique_ptr<service_manager::Connector> connector)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       installer_(installer),
-      oop_patcher_(oop_patcher),
+      connector_(std::move(connector)),
       error_(UnpackerError::kNone),
       extended_error_(0) {}
 
@@ -104,7 +104,7 @@ bool ComponentUnpacker::BeginPatching() {
       return false;
     }
     patcher_ = base::MakeRefCounted<ComponentPatcher>(
-        unpack_diff_path_, unpack_path_, installer_, oop_patcher_);
+        unpack_diff_path_, unpack_path_, installer_, std::move(connector_));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&ComponentPatcher::Start, patcher_,

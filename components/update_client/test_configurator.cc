@@ -8,10 +8,13 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "components/patch_service/file_patcher_impl.h"
+#include "components/patch_service/patch_service.h"
+#include "components/patch_service/public/interfaces/file_patcher.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/activity_data_service.h"
-#include "components/update_client/out_of_process_patcher.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 namespace update_client {
@@ -33,6 +36,8 @@ TestConfigurator::TestConfigurator()
       ondemand_time_(0),
       enabled_cup_signing_(false),
       enabled_component_updates_(true),
+      connector_factory_(std::make_unique<patch::PatchService>()),
+      connector_(connector_factory_.CreateConnector()),
       context_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
           base::ThreadTaskRunnerHandle::Get())) {}
 
@@ -106,9 +111,9 @@ net::URLRequestContextGetter* TestConfigurator::RequestContext() const {
   return context_.get();
 }
 
-scoped_refptr<OutOfProcessPatcher> TestConfigurator::CreateOutOfProcessPatcher()
-    const {
-  return nullptr;
+std::unique_ptr<service_manager::Connector>
+TestConfigurator::CreateServiceManagerConnector() const {
+  return connector_->Clone();
 }
 
 bool TestConfigurator::EnabledDeltas() const {

@@ -15,12 +15,14 @@
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/patch_service/public/cpp/patch.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -30,9 +32,9 @@ constexpr base::TaskTraits kTaskTraits = {
 
 }  // namespace
 
-class OutOfProcessPatchTest : public InProcessBrowserTest {
+class PatchTest : public InProcessBrowserTest {
  public:
-  OutOfProcessPatchTest() {
+  PatchTest() {
     EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
     EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
     EXPECT_TRUE(unpack_dir_.CreateUniqueTempDir());
@@ -54,7 +56,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, kTaskTraits,
-        base::BindOnce(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
+        base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -67,7 +69,7 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, kTaskTraits,
-        base::BindOnce(&OutOfProcessPatchTest::CopyFile, TestFile(name), path),
+        base::BindOnce(&PatchTest::CopyFile, TestFile(name), path),
         run_loop.QuitClosure());
 
     run_loop.Run();
@@ -91,28 +93,31 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
     quit_closure_ = run_loop.QuitClosure();
     done_called_ = false;
 
+    std::unique_ptr<service_manager::Connector> connector =
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone();
     base::CreateSequencedTaskRunnerWithTraits(kTaskTraits)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(
-                       &OutOfProcessPatchTest::PatchAsyncSequencedTaskRunner,
-                       base::Unretained(this), operation, input, patch, output,
-                       expected_result));
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(&PatchTest::PatchAsyncSequencedTaskRunner,
+                           base::Unretained(this), base::Passed(&connector),
+                           operation, input, patch, output, expected_result));
     run_loop.Run();
     EXPECT_TRUE(done_called_);
   }
 
  private:
-  void PatchAsyncSequencedTaskRunner(const std::string& operation,
-                                     const base::FilePath& input,
-                                     const base::FilePath& patch,
-                                     const base::FilePath& output,
-                                     int expected_result) {
-    scoped_refptr<update_client::OutOfProcessPatcher> patcher =
-        base::MakeRefCounted<component_updater::ChromeOutOfProcessPatcher>();
-
-    patcher->Patch(operation, input, patch, output,
-                   base::BindOnce(&OutOfProcessPatchTest::PatchDone,
-                                  base::Unretained(this), expected_result));
+  void PatchAsyncSequencedTaskRunner(
+      std::unique_ptr<service_manager::Connector> connector,
+      const std::string& operation,
+      const base::FilePath& input,
+      const base::FilePath& patch,
+      const base::FilePath& output,
+      int expected_result) {
+    patch::Patch(connector.get(), operation, input, patch, output,
+                 base::BindOnce(&PatchTest::PatchDone, base::Unretained(this),
+                                expected_result));
   }
 
   void PatchDone(int expected, int result) {
@@ -133,10 +138,10 @@ class OutOfProcessPatchTest : public InProcessBrowserTest {
   base::OnceClosure quit_closure_;
   bool done_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(OutOfProcessPatchTest);
+  DISALLOW_COPY_AND_ASSIGN(PatchTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, CheckBsdiffOperation) {
+IN_PROC_BROWSER_TEST_F(PatchTest, CheckBsdiffOperation) {
   constexpr int kExpectedResult = bsdiff::OK;
 
   base::FilePath input_file = InputFilePath("binary_input.bin");
@@ -149,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, CheckBsdiffOperation) {
   EXPECT_TRUE(base::ContentsEqual(TestFile("binary_output.bin"), output_file));
 }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, CheckCourgetteOperation) {
+IN_PROC_BROWSER_TEST_F(PatchTest, CheckCourgetteOperation) {
   constexpr int kExpectedResult = courgette::C_OK;
 
   base::FilePath input_file = InputFilePath("binary_input.bin");
@@ -162,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, CheckCourgetteOperation) {
   EXPECT_TRUE(base::ContentsEqual(TestFile("binary_output.bin"), output_file));
 }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, InvalidInputFile) {
+IN_PROC_BROWSER_TEST_F(PatchTest, InvalidInputFile) {
   constexpr int kInvalidInputFile = -1;
 
   base::FilePath invalid = InvalidPath("binary_input.bin");
@@ -173,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, InvalidInputFile) {
                kInvalidInputFile);
 }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, InvalidPatchFile) {
+IN_PROC_BROWSER_TEST_F(PatchTest, InvalidPatchFile) {
   constexpr int kInvalidPatchFile = -1;
 
   base::FilePath input_file = InputFilePath("binary_input.bin");
@@ -184,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, InvalidPatchFile) {
                kInvalidPatchFile);
 }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPatchTest, InvalidOutputFile) {
+IN_PROC_BROWSER_TEST_F(PatchTest, InvalidOutputFile) {
   constexpr int kInvalidOutputFile = -1;
 
   base::FilePath input_file = InputFilePath("binary_input.bin");

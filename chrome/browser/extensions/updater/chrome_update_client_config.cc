@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
@@ -17,8 +16,11 @@
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_prefs.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 
@@ -84,7 +86,7 @@ ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     : impl_(base::CommandLine::ForCurrentProcess(),
             content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLRequestContext(),
-            true),
+            /*require_encryption=*/true),
       pref_service_(ExtensionPrefs::Get(context)->pref_service()),
       activity_data_service_(std::make_unique<ExtensionActivityDataService>(
           ExtensionPrefs::Get(context))) {
@@ -154,9 +156,12 @@ net::URLRequestContextGetter* ChromeUpdateClientConfig::RequestContext() const {
   return impl_.RequestContext();
 }
 
-scoped_refptr<update_client::OutOfProcessPatcher>
-ChromeUpdateClientConfig::CreateOutOfProcessPatcher() const {
-  return base::MakeRefCounted<component_updater::ChromeOutOfProcessPatcher>();
+std::unique_ptr<service_manager::Connector>
+ChromeUpdateClientConfig::CreateServiceManagerConnector() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->Clone();
 }
 
 bool ChromeUpdateClientConfig::EnabledDeltas() const {
