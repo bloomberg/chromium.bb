@@ -458,7 +458,7 @@ int drv_bo_invalidate(struct bo *bo, struct map_info *data)
 {
 	int ret = 0;
 	assert(data);
-	assert(data->refcount >= 0);
+	assert(data->refcount > 0);
 
 	if (bo->drv->backend->bo_invalidate)
 		ret = bo->drv->backend->bo_invalidate(bo, data);
@@ -470,7 +470,7 @@ int drv_bo_flush(struct bo *bo, struct map_info *data)
 {
 	int ret = 0;
 	assert(data);
-	assert(data->refcount >= 0);
+	assert(data->refcount > 0);
 	assert(!(bo->use_flags & BO_USE_PROTECTED));
 
 	if (bo->drv->backend->bo_flush)
