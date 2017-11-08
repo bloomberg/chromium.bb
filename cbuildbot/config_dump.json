@@ -9056,173 +9056,6 @@
             "caroline-arcnext"
         ]
     },
-    "caroline-bertha-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "caroline-bertha-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "caroline-bertha-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "caroline-bertha"
-        ]
-    },
-    "caroline-bertha-full": {
-        "_template": "full",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "caroline-bertha-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "caroline-bertha"
-        ]
-    },
-    "caroline-bertha-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "caroline-bertha-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "caroline-bertha"
-        ]
-    },
-    "caroline-bertha-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "caroline-bertha-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "caroline-bertha"
-        ]
-    },
-    "caroline-bertha-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "caroline-bertha-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "caroline-bertha-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "vm_tests": []
-    },
-    "caroline-bertha-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "caroline-bertha-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "caroline-bertha-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "caroline-bertha"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "caroline-bertha-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "caroline-bertha"
-        ]
-    },
     "caroline-chrome-pfq": {
         "_template": "chrome_pfq",
         "active_waterfall": "chromeos",
@@ -15619,173 +15452,6 @@
         "_template": "unittest_stress",
         "boards": [
             "eve-arcnext"
-        ]
-    },
-    "eve-bertha-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "eve-bertha"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "eve-bertha-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "eve-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "eve-bertha-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "eve-bertha"
-        ]
-    },
-    "eve-bertha-full": {
-        "_template": "full",
-        "boards": [
-            "eve-bertha"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "eve-bertha-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "eve-bertha"
-        ]
-    },
-    "eve-bertha-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "eve-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "eve-bertha-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "eve-bertha"
-        ]
-    },
-    "eve-bertha-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "eve-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "eve-bertha-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "eve-bertha"
-        ]
-    },
-    "eve-bertha-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "eve-bertha"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "eve-bertha-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "eve-bertha"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "eve-bertha-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "eve-bertha"
-        ],
-        "vm_tests": []
-    },
-    "eve-bertha-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "eve-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "eve-bertha-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "eve-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "eve-bertha-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "eve-bertha"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "eve-bertha-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "eve-bertha"
         ]
     },
     "eve-chrome-pfq": {
@@ -25585,173 +25251,6 @@
             "kevin-arcnext"
         ]
     },
-    "kevin-bertha-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "important": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kevin-bertha-chromium-pfq-tryjob": {
-        "_template": "chromium_pfq",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "uprev": true,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kevin-bertha-compile-only-pre-cq": {
-        "_template": "compile_only_pre_cq",
-        "boards": [
-            "kevin-bertha"
-        ]
-    },
-    "kevin-bertha-full": {
-        "_template": "full",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kevin-bertha-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "boards": [
-            "kevin-bertha"
-        ]
-    },
-    "kevin-bertha-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "kevin-bertha-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "boards": [
-            "kevin-bertha"
-        ]
-    },
-    "kevin-bertha-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "debug": true,
-        "display_label": "tryjob"
-    },
-    "kevin-bertha-no-vmtest-pre-cq": {
-        "_template": "no_vmtest_pre_cq",
-        "boards": [
-            "kevin-bertha"
-        ]
-    },
-    "kevin-bertha-paladin": {
-        "_template": "paladin",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "kevin-bertha-paladin-tryjob": {
-        "_template": "paladin",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "chroot_replace": true,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
-        ],
-        "important": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "kevin-bertha-pre-cq": {
-        "_template": "pre_cq",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "vm_tests": []
-    },
-    "kevin-bertha-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "kevin-bertha-release-tryjob": {
-        "_template": "release",
-        "active_waterfall": "chromiumos.tryserver",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "chrome_sdk_build_chrome": false,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-arc\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"bvt-installer\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-            "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_args\": null,\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-        ],
-        "paygen": false,
-        "push_image": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "kevin-bertha-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "kevin-bertha"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kevin-bertha-unittest-stress": {
-        "_template": "unittest_stress",
-        "boards": [
-            "kevin-bertha"
-        ]
-    },
     "kevin-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -32510,7 +32009,6 @@
             "candy-release",
             "caroline-arc64-release",
             "caroline-arcnext-release",
-            "caroline-bertha-release",
             "caroline-ndktranslation-release",
             "caroline-release",
             "caroline-userdebug-release",
@@ -32528,7 +32026,6 @@
             "elm-release",
             "enguarde-release",
             "eve-arcnext-release",
-            "eve-bertha-release",
             "eve-kvm-release",
             "eve-release",
             "eve-userdebug-release",
@@ -32555,7 +32052,6 @@
             "kahlee-release",
             "kefka-release",
             "kevin-arcnext-release",
-            "kevin-bertha-release",
             "kevin-release",
             "kip-release",
             "lakitu-gpu-release",
@@ -32678,7 +32174,6 @@
             "candy-release",
             "caroline-arc64-release",
             "caroline-arcnext-release",
-            "caroline-bertha-release",
             "caroline-ndktranslation-release",
             "caroline-release",
             "caroline-userdebug-release",
@@ -32696,7 +32191,6 @@
             "elm-release",
             "enguarde-release",
             "eve-arcnext-release",
-            "eve-bertha-release",
             "eve-kvm-release",
             "eve-release",
             "eve-userdebug-release",
@@ -32723,7 +32217,6 @@
             "kahlee-release",
             "kefka-release",
             "kevin-arcnext-release",
-            "kevin-bertha-release",
             "kevin-release",
             "kip-release",
             "lakitu-gpu-release",
