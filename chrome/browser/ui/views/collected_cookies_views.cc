@@ -49,6 +49,7 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -77,7 +78,6 @@ void StartNewButtonColumnSet(views::GridLayout* layout,
       provider->GetDistanceMetric(views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_layout_id);
-  column_set->AddPaddingColumn(100.0, 0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, button_padding);
@@ -260,13 +260,6 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CollectedCookiesViews, views::WidgetDelegate implementation:
-
-bool CollectedCookiesViews::ShouldShowCloseButton() const {
-  return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::DialogDelegate implementation:
 
 base::string16 CollectedCookiesViews::GetWindowTitle() const {
@@ -300,6 +293,17 @@ ui::ModalType CollectedCookiesViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
+bool CollectedCookiesViews::ShouldShowCloseButton() const {
+  return false;
+}
+
+views::View* CollectedCookiesViews::CreateExtraView() {
+  // The code in |Init|, which runs before this does, needs the button pane to
+  // already exist, so it is created there and this class holds ownership until
+  // this method is called.
+  return buttons_pane_.release();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CollectedCookiesViews, views::ButtonListener implementation:
 
@@ -323,6 +327,9 @@ void CollectedCookiesViews::ButtonPressed(views::Button* sender,
 void CollectedCookiesViews::TabSelectedAt(int index) {
   EnableControls();
   ShowCookieInfo();
+
+  allowed_buttons_pane_->SetVisible(index == 0);
+  blocked_buttons_pane_->SetVisible(index == 1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -400,6 +407,8 @@ void CollectedCookiesViews::Init() {
   infobar_ = new InfobarView();
   layout->AddView(infobar_);
 
+  buttons_pane_ = CreateButtonsPane();
+
   EnableControls();
   ShowCookieInfo();
 }
@@ -429,12 +438,6 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   allowed_cookies_tree_->set_auto_expand_children(true);
   allowed_cookies_tree_->SetController(this);
 
-  block_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(this,
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
-
-  delete_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(this,
-      l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
-
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
   using views::GridLayout;
@@ -462,10 +465,6 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
                   GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
                   kTreeViewHeight);
   layout->AddPaddingRow(0, unrelated_vertical_distance);
-
-  StartNewButtonColumnSet(layout, single_column_layout_id + 1);
-  layout->AddView(block_allowed_button_);
-  layout->AddView(delete_allowed_button_);
 
   return pane;
 }
@@ -503,12 +502,6 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   blocked_cookies_tree_->set_auto_expand_children(true);
   blocked_cookies_tree_->SetController(this);
 
-  allow_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
-  for_session_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
-
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
   using views::GridLayout;
@@ -537,11 +530,50 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
       GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
   layout->AddPaddingRow(0, unrelated_vertical_distance);
 
-  StartNewButtonColumnSet(layout, single_column_layout_id + 1);
-  layout->AddView(allow_blocked_button_);
-  layout->AddView(for_session_blocked_button_);
-
   return pane;
+}
+
+std::unique_ptr<views::View> CollectedCookiesViews::CreateButtonsPane() {
+  auto view = std::make_unique<views::View>();
+  view->SetLayoutManager(new views::FillLayout);
+
+  {
+    auto allowed = std::make_unique<views::View>();
+    views::GridLayout* layout =
+        views::GridLayout::CreateAndInstall(allowed.get());
+
+    block_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
+    delete_allowed_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
+    StartNewButtonColumnSet(layout, 0);
+    layout->AddView(block_allowed_button_);
+    layout->AddView(delete_allowed_button_);
+
+    allowed_buttons_pane_ = allowed.get();
+    view->AddChildView(allowed.release());
+  }
+
+  {
+    auto blocked = std::make_unique<views::View>();
+    views::GridLayout* layout =
+        views::GridLayout::CreateAndInstall(blocked.get());
+    blocked->SetVisible(false);
+
+    allow_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_ALLOW_BUTTON));
+    for_session_blocked_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON));
+    StartNewButtonColumnSet(layout, 0);
+    layout->AddView(allow_blocked_button_);
+    layout->AddView(for_session_blocked_button_);
+
+    blocked_buttons_pane_ = blocked.get();
+    view->AddChildView(blocked.release());
+  }
+
+  return view;
 }
 
 views::View* CollectedCookiesViews::CreateScrollView(views::TreeView* pane) {
