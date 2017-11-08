@@ -19,9 +19,7 @@ CertPolicy::~CertPolicy() {
 // |error| is an exact match to or subset of the errors in the saved CertStatus.
 CertPolicy::Judgment CertPolicy::Check(net::X509Certificate* cert,
                                        net::CertStatus error) const {
-  auto allowed_iter =
-      allowed_.find(net::X509Certificate::CalculateChainFingerprint256(
-          cert->os_cert_handle(), cert->GetIntermediateCertificates()));
+  auto allowed_iter = allowed_.find(cert->CalculateChainFingerprint256());
   if ((allowed_iter != allowed_.end()) && (allowed_iter->second & error) &&
       !(~(allowed_iter->second & error) ^ ~error)) {
     return ALLOWED;
@@ -32,8 +30,7 @@ CertPolicy::Judgment CertPolicy::Check(net::X509Certificate* cert,
 void CertPolicy::Allow(net::X509Certificate* cert, net::CertStatus error) {
   // If this same cert had already been saved with a different error status,
   // this will replace it with the new error status.
-  allowed_[net::X509Certificate::CalculateChainFingerprint256(
-      cert->os_cert_handle(), cert->GetIntermediateCertificates())] = error;
+  allowed_[cert->CalculateChainFingerprint256()] = error;
 }
 
 }  // namespace web

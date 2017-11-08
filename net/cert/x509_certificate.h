@@ -282,17 +282,10 @@ class NET_EXPORT X509Certificate
   // (all zero) fingerprint on failure.
   static SHA256HashValue CalculateFingerprint256(OSCertHandle cert_handle);
 
-  // Calculates the SHA-256 fingerprint of the intermediate CA certificates.
-  // Returns an empty (all zero) fingerprint on failure.
-  static SHA256HashValue CalculateCAFingerprint256(
-      const OSCertHandles& intermediates);
-
   // Calculates the SHA-256 fingerprint for the complete chain, including the
   // leaf certificate and all intermediate CA certificates. Returns an empty
   // (all zero) fingerprint on failure.
-  static SHA256HashValue CalculateChainFingerprint256(
-      OSCertHandle leaf,
-      const OSCertHandles& intermediates);
+  SHA256HashValue CalculateChainFingerprint256() const;
 
   // Returns true if the certificate is self-signed.
   static bool IsSelfSigned(OSCertHandle cert_handle);

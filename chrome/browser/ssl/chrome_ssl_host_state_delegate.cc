@@ -89,9 +89,7 @@ bool ExpireAtSessionEnd() {
 std::string GetKey(const net::X509Certificate& cert, net::CertStatus error) {
   // Since a security decision will be made based on the fingerprint, Chrome
   // should use the SHA-256 fingerprint for the certificate.
-  net::SHA256HashValue fingerprint =
-      net::X509Certificate::CalculateChainFingerprint256(
-          cert.os_cert_handle(), cert.GetIntermediateCertificates());
+  net::SHA256HashValue fingerprint = cert.CalculateChainFingerprint256();
   std::string base64_fingerprint;
   base::Base64Encode(
       base::StringPiece(reinterpret_cast<const char*>(fingerprint.data),
