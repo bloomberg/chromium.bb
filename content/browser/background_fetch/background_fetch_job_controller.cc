@@ -75,19 +75,18 @@ void BackgroundFetchJobController::StartRequest(
 }
 
 void BackgroundFetchJobController::DidStartRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request,
-    const std::string& download_guid) {
+    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   request_manager_->MarkRequestAsStarted(registration_id_, request.get(),
-                                         download_guid);
+                                         request->download_guid());
 }
 
 void BackgroundFetchJobController::DidUpdateRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request,
-    const std::string& download_guid,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  const std::string& download_guid = request->download_guid();
   if (active_request_download_bytes_[download_guid] == bytes_downloaded)
     return;
 
@@ -99,11 +98,10 @@ void BackgroundFetchJobController::DidUpdateRequest(
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request,
-    const std::string& download_guid) {
+    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  active_request_download_bytes_.erase(download_guid);
+  active_request_download_bytes_.erase(request->download_guid());
   complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
 
   // The RequestManager must acknowledge that it stored the data and that there
