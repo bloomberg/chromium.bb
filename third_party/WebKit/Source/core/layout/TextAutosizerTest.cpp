@@ -5,6 +5,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/loader/EmptyClients.h"
+#include "platform/PlatformFrameView.h"
+#include "platform/geometry/IntRect.h"
 #include "public/platform/WebFloatRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,6 +16,12 @@ class TextAutosizerClient : public EmptyChromeClient {
   static TextAutosizerClient* Create() { return new TextAutosizerClient; }
   float WindowToViewportScalar(const float value) const override {
     return value * device_scale_factor_;
+  }
+  IntRect ViewportToScreen(const IntRect& rect,
+                           const PlatformFrameView* view) const override {
+    IntRect scaled_rect(rect);
+    scaled_rect.Scale(1 / device_scale_factor_);
+    return scaled_rect;
   }
   void set_device_scale_factor(float device_scale_factor) {
     device_scale_factor_ = device_scale_factor;
@@ -969,6 +977,46 @@ TEST_F(TextAutosizerTest, ScaledbyDSF) {
   // (specified font-size = 16px) * (thread flow layout width = 800px) /
   // (window width = 200px) * (device scale factor) = 64px * device_scale.
   EXPECT_FLOAT_EQ(64.0f * device_scale,
+                  target->GetLayoutObject()->Style()->ComputedFontSize());
+}
+
+TEST_F(TextAutosizerTest, ClusterHasEnoughTextToAutosizeForZoomDSF) {
+  GetTextAutosizerClient().set_device_scale_factor(1.f);
+  // Change setting triggers updating device scale factor
+  GetDocument().GetSettings()->SetTextAutosizingWindowSizeOverride(
+      IntSize(800, 600));
+  GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(4);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html { font-size: 8px; }
+    </style>
+    <body>
+      <div id='target'>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed
+        do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+        Ut enim ad minim veniam, quis nostrud exercitation ullamco
+        laboris nisi ut aliquip ex ea commodo consequat.
+      </div>
+    </body>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  // ClusterHasEnoughTextToAutosize() returns false because
+  // minimum_text_length_to_autosize < length. Thus, ClusterMultiplier()
+  // returns 1 (not multiplied by the accessibility font scale factor).
+  // computed font-size = specified font-size = 8px.
+  EXPECT_FLOAT_EQ(8.0f, target->GetLayoutObject()->Style()->ComputedFontSize());
+
+  GetTextAutosizerClient().set_device_scale_factor(3);
+  // Change setting triggers updating device scale factor
+  GetDocument().GetSettings()->SetAccessibilityFontScaleFactor(2);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // (accessibility font scale factor = 2) * (specified font-size = 8px) *
+  // (device scale factor = 3) = 48.
+  // ClusterHasEnoughTextToAutosize() returns true and both accessibility font
+  // scale factor and device scale factor are multiplied.
+  EXPECT_FLOAT_EQ(48.0f,
                   target->GetLayoutObject()->Style()->ComputedFontSize());
 }
 }  // namespace blink

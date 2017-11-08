@@ -50,6 +50,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -728,6 +729,14 @@ bool TextAutosizer::ClusterHasEnoughTextToAutosize(
 
   // 4 lines of text is considered enough to autosize.
   float minimum_text_length_to_autosize = WidthFromBlock(width_provider) * 4;
+  if (LocalFrameView* view = document_->View()) {
+    minimum_text_length_to_autosize =
+        document_->GetPage()
+            ->GetChromeClient()
+            .ViewportToScreen(IntRect(0, 0, minimum_text_length_to_autosize, 0),
+                              view)
+            .Width();
+  }
 
   float length = 0;
   LayoutObject* descendant = root->FirstChild();
