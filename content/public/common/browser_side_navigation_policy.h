@@ -9,12 +9,11 @@
 
 // A centralized file for base helper methods and policy decisions about browser
 // side navigation (aka PlzNavigate).
-// Note: For now this houses a single non-member method but we might change to
-// having an actual class if it should make more sense at some point.
 
 namespace content {
 
 CONTENT_EXPORT bool IsBrowserSideNavigationEnabled();
+CONTENT_EXPORT bool IsNavigationMojoResponseEnabled();
 
 }  // namespace content
 
