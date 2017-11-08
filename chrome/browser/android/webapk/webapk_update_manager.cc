@@ -73,6 +73,7 @@ static void StoreWebApkUpdateRequestToFile(
     const JavaParamRef<jstring>& java_webapk_package,
     jint java_webapk_version,
     jboolean java_is_manifest_stale,
+    jint java_update_reason,
     const JavaParamRef<jobject>& java_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -121,10 +122,13 @@ static void StoreWebApkUpdateRequestToFile(
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
 
+  WebApkUpdateReason update_reason =
+      static_cast<WebApkUpdateReason>(java_update_reason);
+
   WebApkInstaller::StoreUpdateRequestToFile(
       base::FilePath(update_request_path), info, primary_icon, badge_icon,
       webapk_package, std::to_string(java_webapk_version),
-      icon_url_to_murmur2_hash, java_is_manifest_stale,
+      icon_url_to_murmur2_hash, java_is_manifest_stale, update_reason,
       base::Bind(&OnStoredUpdateRequest,
                  ScopedJavaGlobalRef<jobject>(java_callback)));
 }
