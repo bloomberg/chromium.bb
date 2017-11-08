@@ -13,7 +13,6 @@
 #include "platform/Length.h"
 
 namespace blink {
-
 namespace {
 
 static CSSIdentifierValue* ConsumeBorderImageRepeatKeyword(

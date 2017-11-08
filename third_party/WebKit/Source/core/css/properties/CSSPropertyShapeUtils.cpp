@@ -12,9 +12,7 @@
 #include "core/frame/WebFeature.h"
 
 namespace blink {
-
 using namespace CSSPropertyParserHelpers;
-
 namespace {
 
 static CSSValue* ConsumeShapeRadius(CSSParserTokenRange& args,

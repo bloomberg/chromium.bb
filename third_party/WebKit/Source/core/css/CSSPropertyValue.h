@@ -23,7 +23,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -72,7 +72,7 @@ class CSSPropertyValue {
                   index_in_shorthands_vector,
                   important,
                   implicit,
-                  CSSPropertyAPI::Get(property_id).IsInherited()),
+                  CSSProperty::Get(property_id).IsInherited()),
         value_(value) {}
 
   // FIXME: Remove this.

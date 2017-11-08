@@ -22,7 +22,7 @@ class CSSPropertyBackgroundUtils {
 
  public:
   // TODO(jiameng): move AddBackgroundValue to anonymous namespace once all
-  // background-related properties have their APIs.
+  // background-related properties have their property classes implemented.
   static void AddBackgroundValue(CSSValue*& list, CSSValue*);
 
   static CSSValue* ConsumeBackgroundAttachment(CSSParserTokenRange&);

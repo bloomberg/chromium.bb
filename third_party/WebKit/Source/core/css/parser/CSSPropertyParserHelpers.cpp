@@ -22,7 +22,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/CSSPropertyBoxShadowUtils.h"
 #include "core/css/properties/CSSPropertyTransformUtils.h"
 #include "core/frame/UseCounter.h"
@@ -1644,29 +1644,29 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   }
 }
 
-const CSSValue* ParseLonghandViaAPI(CSSPropertyID unresolved_property,
-                                    CSSPropertyID current_shorthand,
-                                    const CSSParserContext& context,
-                                    CSSParserTokenRange& range) {
+const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
+                              CSSPropertyID current_shorthand,
+                              const CSSParserContext& context,
+                              CSSParserTokenRange& range) {
   DCHECK(!isShorthandProperty(unresolved_property));
-  CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
-  if (CSSParserFastPaths::IsKeywordPropertyID(property)) {
+  CSSPropertyID property_id = resolveCSSPropertyID(unresolved_property);
+  if (CSSParserFastPaths::IsKeywordPropertyID(property_id)) {
     if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-            property, range.Peek().Id(), context.Mode()))
+            property_id, range.Peek().Id(), context.Mode()))
       return nullptr;
-    CountKeywordOnlyPropertyUsage(property, context, range.Peek().Id());
+    CountKeywordOnlyPropertyUsage(property_id, context, range.Peek().Id());
     return ConsumeIdent(range);
   }
 
-  const CSSPropertyAPI& api = CSSPropertyAPI::Get(property);
-  const CSSValue* result = api.ParseSingleValue(
+  const CSSProperty& property = CSSProperty::Get(property_id);
+  const CSSValue* result = property.ParseSingleValue(
       range, context,
       CSSParserLocalContext(isPropertyAlias(unresolved_property),
                             current_shorthand));
   return result;
 }
 
-bool ConsumeShorthandVia2LonghandAPIs(
+bool ConsumeShorthandVia2Longhands(
     const StylePropertyShorthand& shorthand,
     bool important,
     const CSSParserContext& context,
@@ -1676,13 +1676,13 @@ bool ConsumeShorthandVia2LonghandAPIs(
   const CSSPropertyID* longhands = shorthand.properties();
 
   const CSSValue* start =
-      ParseLonghandViaAPI(longhands[0], shorthand.id(), context, range);
+      ParseLonghand(longhands[0], shorthand.id(), context, range);
 
   if (!start)
     return false;
 
   const CSSValue* end =
-      ParseLonghandViaAPI(longhands[1], shorthand.id(), context, range);
+      ParseLonghand(longhands[1], shorthand.id(), context, range);
 
   if (!end)
     end = start;
@@ -1694,7 +1694,7 @@ bool ConsumeShorthandVia2LonghandAPIs(
   return range.AtEnd();
 }
 
-bool ConsumeShorthandVia4LonghandAPIs(
+bool ConsumeShorthandVia4Longhands(
     const StylePropertyShorthand& shorthand,
     bool important,
     const CSSParserContext& context,
@@ -1703,20 +1703,20 @@ bool ConsumeShorthandVia4LonghandAPIs(
   DCHECK_EQ(shorthand.length(), 4u);
   const CSSPropertyID* longhands = shorthand.properties();
   const CSSValue* top =
-      ParseLonghandViaAPI(longhands[0], shorthand.id(), context, range);
+      ParseLonghand(longhands[0], shorthand.id(), context, range);
 
   if (!top)
     return false;
 
   const CSSValue* right =
-      ParseLonghandViaAPI(longhands[1], shorthand.id(), context, range);
+      ParseLonghand(longhands[1], shorthand.id(), context, range);
 
   const CSSValue* bottom = nullptr;
   const CSSValue* left = nullptr;
   if (right) {
-    bottom = ParseLonghandViaAPI(longhands[2], shorthand.id(), context, range);
+    bottom = ParseLonghand(longhands[2], shorthand.id(), context, range);
     if (bottom) {
-      left = ParseLonghandViaAPI(longhands[3], shorthand.id(), context, range);
+      left = ParseLonghand(longhands[3], shorthand.id(), context, range);
     }
   }
 
@@ -1739,7 +1739,7 @@ bool ConsumeShorthandVia4LonghandAPIs(
   return range.AtEnd();
 }
 
-bool ConsumeShorthandGreedilyViaLonghandAPIs(
+bool ConsumeShorthandGreedilyViaLonghands(
     const StylePropertyShorthand& shorthand,
     bool important,
     const CSSParserContext& context,
@@ -1755,8 +1755,8 @@ bool ConsumeShorthandGreedilyViaLonghandAPIs(
     for (size_t i = 0; !found_longhand && i < shorthand.length(); ++i) {
       if (longhands[i])
         continue;
-      longhands[i] = ParseLonghandViaAPI(shorthand_properties[i],
-                                         shorthand.id(), context, range);
+      longhands[i] = ParseLonghand(shorthand_properties[i], shorthand.id(),
+                                   context, range);
 
       if (longhands[i])
         found_longhand = true;

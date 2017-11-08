@@ -16,7 +16,6 @@
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
-
 namespace {
 
 Vector<String> ParseGridTemplateAreasColumnNames(const String& grid_row_names) {

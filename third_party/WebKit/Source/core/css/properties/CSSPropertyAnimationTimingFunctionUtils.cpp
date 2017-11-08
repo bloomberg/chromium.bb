@@ -9,7 +9,6 @@
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
-
 namespace {
 
 CSSValue* ConsumeSteps(CSSParserTokenRange& range) {

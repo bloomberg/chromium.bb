@@ -9,7 +9,6 @@
 #include "core/frame/UseCounter.h"
 
 namespace blink {
-
 namespace {
 
 bool ValidWidthOrHeightKeyword(CSSValueID id, const CSSParserContext& context) {

@@ -23,7 +23,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefPtr.h"
@@ -59,7 +59,7 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
 
   MutableStylePropertySet* CopyProperties() const;
 
-  const CSSValue* GetPropertyCSSValue(const CSSPropertyAPI&) const;
+  const CSSValue* GetPropertyCSSValue(const CSSProperty&) const;
   const CSSValue* GetPropertyCSSValue(AtomicString custom_property_name) const;
   std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
   GetVariables() const;

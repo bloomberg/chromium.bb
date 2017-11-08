@@ -32,7 +32,7 @@
 #include "core/css/CSSMarkup.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -53,8 +53,8 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
   }
 
 #if DCHECK_IS_ON()
-  DCHECK(CSSPropertyAPI::Get(resolveCSSPropertyID(unresolved_property))
-             .IsEnabled());
+  DCHECK(
+      CSSProperty::Get(resolveCSSPropertyID(unresolved_property)).IsEnabled());
 #endif
 
   // This will return false when !important is present

@@ -224,8 +224,8 @@ CSSValue* CSSPropertyFontUtils::ConsumeFontWeight(
   return CombineToRangeListOrNull(start_weight, end_weight);
 }
 
-// TODO(bugsnash): move this to the FontFeatureSettings API when it is no longer
-// being used by methods outside of the API
+// TODO(bugsnash): move this to the FontFeatureSettings class when it is no
+// longer being used by methods outside of the property class
 CSSValue* CSSPropertyFontUtils::ConsumeFontFeatureSettings(
     CSSParserTokenRange& range) {
   if (range.Peek().Id() == CSSValueNormal)

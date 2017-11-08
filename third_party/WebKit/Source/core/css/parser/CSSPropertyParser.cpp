@@ -16,7 +16,7 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/CSSVariableParser.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 #include "platform/runtime_enabled_features.h"
 
@@ -74,8 +74,8 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     const CSSParserContext* context) {
   DCHECK(context);
   CSSPropertyParser parser(range, context, nullptr);
-  const CSSValue* value = ParseLonghandViaAPI(property, CSSPropertyInvalid,
-                                              *parser.context_, parser.range_);
+  const CSSValue* value = ParseLonghand(property, CSSPropertyInvalid,
+                                        *parser.context_, parser.range_);
   if (!value || !parser.range_.AtEnd())
     return nullptr;
   return value;
@@ -94,7 +94,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
   if (is_shorthand) {
     // Variable references will fail to parse here and will fall out to the
     // variable ref parser below.
-    if (CSSPropertyAPI::Get(property_id)
+    if (CSSProperty::Get(property_id)
             .ParseShorthand(
                 important, range_, *context_,
                 CSSParserLocalContext(isPropertyAlias(unresolved_property),
@@ -102,7 +102,7 @@ bool CSSPropertyParser::ParseValueStart(CSSPropertyID unresolved_property,
                 *parsed_properties_))
       return true;
   } else {
-    if (const CSSValue* parsed_value = ParseLonghandViaAPI(
+    if (const CSSValue* parsed_value = ParseLonghand(
             unresolved_property, CSSPropertyInvalid, *context_, range_)) {
       if (range_.AtEnd()) {
         AddProperty(property_id, CSSPropertyInvalid, *parsed_value, important,
@@ -158,7 +158,7 @@ static CSSPropertyID UnresolvedCSSPropertyID(const CharacterType* property_name,
   if (!hash_table_entry)
     return CSSPropertyInvalid;
   CSSPropertyID property = static_cast<CSSPropertyID>(hash_table_entry->id);
-  if (!CSSPropertyAPI::Get(resolveCSSPropertyID(property)).IsEnabled())
+  if (!CSSProperty::Get(resolveCSSPropertyID(property)).IsEnabled())
     return CSSPropertyInvalid;
   return property;
 }
@@ -226,7 +226,7 @@ bool CSSPropertyParser::ConsumeCSSWideKeyword(CSSPropertyID unresolved_property,
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
   const StylePropertyShorthand& shorthand = shorthandForProperty(property);
   if (!shorthand.length()) {
-    if (!CSSPropertyAPI::Get(property).IsProperty())
+    if (!CSSProperty::Get(property).IsProperty())
       return false;
     AddProperty(property, CSSPropertyInvalid, *value, important,
                 IsImplicitProperty::kNotImplicit, *parsed_properties_);

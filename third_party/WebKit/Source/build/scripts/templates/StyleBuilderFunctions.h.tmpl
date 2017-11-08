@@ -17,7 +17,7 @@ class StyleBuilderFunctions {
  public:
 
   {% for property in properties if property.should_declare_functions
-      and not property.use_api_in_stylebuilder %}
+      and not property.use_property_class_in_stylebuilder %}
   static void applyInitial{{property.property_id}}(StyleResolverState&);
   static void applyInherit{{property.property_id}}(StyleResolverState&);
   static void applyValue{{property.property_id}}(StyleResolverState&, const CSSValue&);

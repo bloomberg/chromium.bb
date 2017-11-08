@@ -101,7 +101,8 @@ AtomicString FontBuilder::GenericFontFamilyName(
 
 float FontBuilder::FontSizeForKeyword(unsigned keyword,
                                       bool is_monospace) const {
-  return FontSize::FontSizeForKeyword(document_, keyword, is_monospace);
+  return FontSizeFunctions::FontSizeForKeyword(document_, keyword,
+                                               is_monospace);
 }
 
 void FontBuilder::SetFamilyDescription(
@@ -240,7 +241,7 @@ float FontBuilder::GetComputedSizeFromSpecifiedSize(
   if (LocalFrame* frame = document_->GetFrame())
     zoom_factor *= frame->TextZoomFactor();
 
-  return FontSize::GetComputedSizeFromSpecifiedSize(
+  return FontSizeFunctions::GetComputedSizeFromSpecifiedSize(
       document_, zoom_factor, font_description.IsAbsoluteSize(),
       specified_size);
 }
@@ -441,7 +442,8 @@ void FontBuilder::CreateFontForDocument(FontSelector* font_selector,
   SetFamilyDescription(font_description,
                        FontBuilder::InitialFamilyDescription());
   SetSize(font_description,
-          FontDescription::Size(FontSize::InitialKeywordSize(), 0.0f, false));
+          FontDescription::Size(FontSizeFunctions::InitialKeywordSize(), 0.0f,
+                                false));
   UpdateSpecifiedSize(font_description, document_style);
   UpdateComputedSize(font_description, document_style);
 

@@ -8,7 +8,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
-
 namespace {
 
 bool ConsumeCSSValueId(CSSParserTokenRange& range, CSSValueID& value) {

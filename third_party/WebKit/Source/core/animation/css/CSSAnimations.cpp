@@ -52,7 +52,7 @@
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/parser/CSSVariableParser.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
@@ -864,7 +864,7 @@ void CSSAnimations::CalculateTransitionUpdateForStandardProperty(
     PropertyHandle property = PropertyHandle(longhand_id);
     DCHECK_GE(longhand_id, firstCSSProperty);
 
-    if (!animate_all && !CSSPropertyAPI::Get(longhand_id).IsInterpolable()) {
+    if (!animate_all && !CSSProperty::Get(longhand_id).IsInterpolable()) {
       continue;
     }
 
@@ -1209,7 +1209,7 @@ const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {
           id == CSSPropertyWebkitTransformOriginY ||
           id == CSSPropertyWebkitTransformOriginZ)
         continue;
-      if (CSSPropertyAPI::Get(id).IsInterpolable())
+      if (CSSProperty::Get(id).IsInterpolable())
         properties.push_back(id);
     }
     property_shorthand = StylePropertyShorthand(

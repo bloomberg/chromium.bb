@@ -30,7 +30,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/frame/UseCounter.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -116,7 +116,7 @@ static bool IsPropertyMatch(const CSSPropertyValueMetadata& metadata,
   // Only enabled properties should be part of the style.
 #if DCHECK_IS_ON()
   DCHECK(!result ||
-         CSSPropertyAPI::Get(resolveCSSPropertyID(property_id)).IsEnabled());
+         CSSProperty::Get(resolveCSSPropertyID(property_id)).IsEnabled());
 #endif
   return result;
 }
