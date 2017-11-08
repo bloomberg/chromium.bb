@@ -7,11 +7,6 @@
 namespace search_provider_logos {
 namespace features {
 
-const base::Feature kUseDdljsonApi{"UseDdljsonApi",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-
-const char kDdljsonOverrideUrlParam[] = "ddljson-override-url";
-
 const base::Feature kThirdPartyDoodles{"ThirdPartyDoodles",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 

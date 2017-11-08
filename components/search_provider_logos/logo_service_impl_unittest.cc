@@ -365,7 +365,7 @@ void LogoServiceImplTest::SetServerResponseWhenFingerprint(
     net::URLRequestStatus::Status request_status,
     net::HttpStatusCode response_code) {
   GURL url_with_fp =
-      GoogleNewAppendQueryparamsToLogoURL(false, DoodleURL(), fingerprint);
+      AppendQueryparamsToDoodleLogoURL(false, DoodleURL(), fingerprint);
   fake_url_fetcher_factory_.SetFakeResponse(
       url_with_fp, response_when_fingerprint, response_code, request_status);
 }
@@ -414,30 +414,6 @@ void LogoServiceImplTest::AddSearchEngine(base::StringPiece keyword,
 }
 
 // Tests -----------------------------------------------------------------------
-
-TEST_F(LogoServiceImplTest, CTAURLHasComma) {
-  GURL url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
-      false, GURL("http://logourl.com/path"), "abc123");
-  EXPECT_EQ("http://logourl.com/path?async=es_dfp:abc123,cta:1",
-            url_with_fp.spec());
-
-  url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
-      false, GURL("http://logourl.com/?a=b"), "");
-  EXPECT_EQ("http://logourl.com/?a=b&async=cta:1", url_with_fp.spec());
-}
-
-TEST_F(LogoServiceImplTest, CTAGrayBackgroundHasCommas) {
-  GURL url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
-      true, GURL("http://logourl.com/path"), "abc123");
-  EXPECT_EQ(
-      "http://logourl.com/path?async=es_dfp:abc123,cta:1,transp:1,graybg:1",
-      url_with_fp.spec());
-
-  url_with_fp = GoogleLegacyAppendQueryparamsToLogoURL(
-      true, GURL("http://logourl.com/?a=b"), "");
-  EXPECT_EQ("http://logourl.com/?a=b&async=cta:1,transp:1,graybg:1",
-            url_with_fp.spec());
-}
 
 TEST_F(LogoServiceImplTest, DownloadAndCacheLogo) {
   StrictMock<MockLogoCallback> cached;

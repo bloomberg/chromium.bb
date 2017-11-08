@@ -24169,6 +24169,7 @@ from previous Chrome versions.
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
   <int value="-1808477331" label="MidiManagerCros:disabled"/>
+  <int value="-1807797669" label="google-doodle-url"/>
   <int value="-1804485171" label="disable-fullscreen-tab-detaching"/>
   <int value="-1802502753" label="enable-manual-password-generation:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>

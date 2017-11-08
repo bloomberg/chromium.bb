@@ -14,39 +14,20 @@
 
 namespace search_provider_logos {
 
-// Returns the URL where the doodle can be downloaded, e.g.
-// https://www.google.com/async/newtab_mobile. This depends on the user's
+// Returns the URL where the Google doodle can be downloaded, e.g.
+// https://www.google.com/async/ddljson. This depends on the user's
 // Google domain.
 GURL GetGoogleDoodleURL(const GURL& google_base_url);
 
-// These return the correct callbacks for appending queryparams and parsing the
-// response ("Legacy" or "New"), based on the value of features::kUseDdljsonApi.
-AppendQueryparamsToLogoURL GetGoogleAppendQueryparamsCallback(
-    bool gray_background);
-ParseLogoResponse GetGoogleParseLogoResponseCallback(const GURL& base_url);
-
 // Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
-// doodles (old newtab_mobile API).
-GURL GoogleLegacyAppendQueryparamsToLogoURL(bool gray_background,
-                                            const GURL& logo_url,
-                                            const std::string& fingerprint);
-
-// Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles
-// (old newtab_mobile API).
-std::unique_ptr<EncodedLogo> GoogleLegacyParseLogoResponse(
-    std::unique_ptr<std::string> response,
-    base::Time response_time,
-    bool* parsing_failed);
-
-// Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
-// or third-party doodles (new ddljson API).
-GURL GoogleNewAppendQueryparamsToLogoURL(bool gray_background,
-                                         const GURL& logo_url,
-                                         const std::string& fingerprint);
+// or third-party doodles.
+GURL AppendQueryparamsToDoodleLogoURL(bool gray_background,
+                                      const GURL& logo_url,
+                                      const std::string& fingerprint);
 
 // Implements ParseLogoResponse, defined in logo_tracker.h, for Google or
-// third-party doodles (new ddljson API).
-std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
+// third-party doodles.
+std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     const GURL& base_url,
     std::unique_ptr<std::string> response,
     base::Time response_time,
