@@ -36,6 +36,9 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 // Separator view. Displayed at 1 pixel height at the bottom.
 @property(nonatomic, strong) UIView* separatorView;
 
+// Lists the accessibility elements that are to be seen by UIAccessibility.
+@property(nonatomic, readonly) NSMutableArray* accessibilityElements;
+
 @end
 
 @implementation BookmarkTableCell
@@ -44,6 +47,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 @synthesize titleText = _titleText;
 @synthesize textDelegate = _textDelegate;
 @synthesize separatorView = _separatorView;
+@synthesize accessibilityElements = _accessibilityElements;
 
 #pragma mark - Initializer
 
@@ -118,6 +122,12 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
     ]];
     _separatorView.translatesAutoresizingMaskIntoConstraints = NO;
     _separatorView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:.12];
+
+    // Setup accessibility elements.
+    _accessibilityElements = [[NSMutableArray alloc] init];
+    self.contentView.isAccessibilityElement = YES;
+    self.contentView.accessibilityTraits |= UIAccessibilityTraitButton;
+    [_accessibilityElements addObject:self.contentView];
   }
   return self;
 }
@@ -126,7 +136,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
 - (void)setNode:(const bookmarks::BookmarkNode*)node {
   self.titleText.text = bookmark_utils_ios::TitleForBookmarkNode(node);
-  self.titleText.accessibilityIdentifier = self.titleText.text;
+  [self updateAccessibilityValues];
 
   self.iconView.image = [UIImage imageNamed:@"bookmark_gray_folder_new"];
   if (node->is_folder()) {
@@ -151,6 +161,9 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
       [self.titleText selectAll:nil];
     }
   });
+  if (![self.accessibilityElements containsObject:self.titleText]) {
+    [self.accessibilityElements addObject:self.titleText];
+  }
   self.titleText.delegate = self;
 }
 
@@ -158,6 +171,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   [self.textDelegate textDidChangeTo:self.titleText.text];
   self.titleText.userInteractionEnabled = NO;
   [self.titleText endEditing:YES];
+  [self.accessibilityElements removeObject:self.titleText];
 }
 
 + (NSString*)reuseIdentifier {
@@ -214,6 +228,30 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   UIColor* backgroundColor = self.placeholderLabel.backgroundColor;
   [super setSelected:selected animated:animated];
   self.placeholderLabel.backgroundColor = backgroundColor;
+  if (selected) {
+    self.contentView.accessibilityTraits |= UIAccessibilityTraitSelected;
+  } else {
+    self.contentView.accessibilityTraits &= ~UIAccessibilityTraitSelected;
+  }
+}
+
+#pragma mark - Accessibility
+
+- (void)updateAccessibilityValues {
+  self.contentView.accessibilityLabel = self.titleText.text;
+  self.contentView.accessibilityIdentifier = self.titleText.text;
+}
+
+- (NSInteger)accessibilityElementCount {
+  return [self.accessibilityElements count];
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index {
+  return [self.accessibilityElements objectAtIndex:index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element {
+  return [self.accessibilityElements indexOfObject:element];
 }
 
 #pragma mark - UITextFieldDelegate
