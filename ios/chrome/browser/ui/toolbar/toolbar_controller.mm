@@ -113,7 +113,6 @@ using ios::material::TimingFunction;
 @implementation ToolbarController
 
 @synthesize readingListModel = readingListModel_;
-@synthesize view = view_;
 @synthesize contentView = contentView_;
 @synthesize backgroundView = backgroundView_;
 @synthesize shadowView = shadowView_;
@@ -121,10 +120,11 @@ using ios::material::TimingFunction;
 @synthesize style = style_;
 @synthesize heightConstraint = heightConstraint_;
 @synthesize dispatcher = dispatcher_;
+@dynamic view;
 
 - (NSLayoutConstraint*)heightConstraint {
   if (!heightConstraint_) {
-    heightConstraint_ = [view_.heightAnchor constraintEqualToConstant:0];
+    heightConstraint_ = [self.view.heightAnchor constraintEqualToConstant:0];
   }
   return heightConstraint_;
 }
@@ -132,7 +132,7 @@ using ios::material::TimingFunction;
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
-  self = [super init];
+  self = [super initWithNibName:nil bundle:nil];
   if (self) {
     style_ = style;
     dispatcher_ = dispatcher;
@@ -153,9 +153,9 @@ using ios::material::TimingFunction;
       toolsMenuButtonFrame.origin.y += statusBarOffset;
     }
 
-    view_ = [[ToolbarView alloc] initWithFrame:viewFrame];
+    self.view = [[ToolbarView alloc] initWithFrame:viewFrame];
     if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-      [view_ setTranslatesAutoresizingMaskIntoConstraints:NO];
+      [self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
     }
 
     UIViewAutoresizing autoresizingMask =
@@ -164,26 +164,27 @@ using ios::material::TimingFunction;
 
     backgroundView_ = [[UIImageView alloc] initWithFrame:backgroundFrame];
 
-    [view_ addSubview:backgroundView_];
-    [view_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [self.view addSubview:backgroundView_];
+    [self.view setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [backgroundView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                          UIViewAutoresizingFlexibleHeight];
 
     contentView_ = [[UIView alloc] initWithFrame:viewFrame];
     contentView_.translatesAutoresizingMaskIntoConstraints = NO;
-    [view_ addSubview:contentView_];
+    [self.view addSubview:contentView_];
     if (@available(iOS 11.0, *)) {
-      UILayoutGuide* safeArea = view_.safeAreaLayoutGuide;
+      UILayoutGuide* safeArea = self.view.safeAreaLayoutGuide;
       [NSLayoutConstraint activateConstraints:@[
         [contentView_.leadingAnchor
             constraintEqualToAnchor:safeArea.leadingAnchor],
         [contentView_.trailingAnchor
             constraintEqualToAnchor:safeArea.trailingAnchor],
-        [contentView_.topAnchor constraintEqualToAnchor:view_.topAnchor],
-        [contentView_.bottomAnchor constraintEqualToAnchor:view_.bottomAnchor],
+        [contentView_.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [contentView_.bottomAnchor
+            constraintEqualToAnchor:self.view.bottomAnchor],
       ]];
     } else {
-      AddSameConstraints(view_, contentView_);
+      AddSameConstraints(self.view, contentView_);
     }
     toolsMenuButton_ =
         [[ToolbarToolsMenuButton alloc] initWithFrame:toolsMenuButtonFrame
@@ -218,7 +219,7 @@ using ios::material::TimingFunction;
                                      UIViewAutoresizingFlexibleTopMargin];
 
     [shadowView_ setUserInteractionEnabled:NO];
-    [view_ addSubview:shadowView_];
+    [self.view addSubview:shadowView_];
     [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
 
     if (idiom == IPHONE_IDIOM) {
@@ -233,7 +234,7 @@ using ios::material::TimingFunction;
 
       [fullBleedShadowView_ setUserInteractionEnabled:NO];
       [fullBleedShadowView_ setAlpha:0];
-      [view_ addSubview:fullBleedShadowView_];
+      [self.view addSubview:fullBleedShadowView_];
       [fullBleedShadowView_
           setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW_FULL_BLEED)];
     }
@@ -242,7 +243,7 @@ using ios::material::TimingFunction;
         [[NSMutableArray alloc] initWithCapacity:kTransitionLayerCapacity];
 
     // UIImageViews do not default to userInteractionEnabled:YES.
-    [view_ setUserInteractionEnabled:YES];
+    [self.view setUserInteractionEnabled:YES];
     [backgroundView_ setUserInteractionEnabled:YES];
 
     UIImage* tile = [self getBackgroundImageForStyle:style];
@@ -299,9 +300,6 @@ using ios::material::TimingFunction;
 }
 
 #pragma mark - Public API
-
-- (void)viewSafeAreaInsetsDidChange {
-}
 
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
   if (toolsPopupController_) {

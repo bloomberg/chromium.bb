@@ -46,7 +46,6 @@
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_view.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_fold_animation.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"

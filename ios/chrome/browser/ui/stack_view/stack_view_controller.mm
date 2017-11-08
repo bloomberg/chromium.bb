@@ -761,11 +761,13 @@ NSString* const kTransitionToolbarAnimationKey =
 
   _toolbarController =
       [[StackViewToolbarController alloc] initWithDispatcher:self.dispatcher];
+  [self addChildViewController:_toolbarController];
   CGRect toolbarFrame = [self.view bounds];
   toolbarFrame.origin.y = CGRectGetMinY([[_toolbarController view] frame]);
   toolbarFrame.size.height = CGRectGetHeight([[_toolbarController view] frame]);
   [[_toolbarController view] setFrame:toolbarFrame];
   [self.view addSubview:[_toolbarController view]];
+  [_toolbarController didMoveToParentViewController:self];
 
   if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
     [[_toolbarController view].leadingAnchor

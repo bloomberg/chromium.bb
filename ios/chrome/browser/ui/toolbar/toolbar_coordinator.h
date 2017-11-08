@@ -35,11 +35,16 @@
                         ToolbarSnapshotProviding>
 
 @property(nonatomic, weak) TabModel* tabModel;
-@property(nonatomic, readonly, strong) UIView* view;
+@property(nonatomic, strong) UIViewController* toolbarViewController;
+// TODO(crbug.com/778226): Remove this property since its an actual
+// webToolbarController. A generic UIViewController property should be used. As
+// of now this is only needed for the ToolbarOwner methods in BVC.
+@property(nonatomic, readonly, strong)
+    WebToolbarController* webToolbarController;
 
 // Returns the different protocols and superclass now implemented by the
 // WebToolbarController to avoid using the toolbar directly.
-- (ToolbarController*)toolbarController;
+//- (ToolbarController*)toolbarController;
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate;
 - (id<ActivityServicePositioner>)activityServicePositioner;
 - (id<TabHistoryPositioner>)tabHistoryPositioner;

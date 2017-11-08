@@ -24,12 +24,12 @@ class ReadingListModel;
 // buttons (forwarding to the delegate). This is not intended to be used
 // on its own, but to be subclassed by more specific toolbars that provide
 // more buttons in the empty space.
-@interface ToolbarController : NSObject<ActivityServicePositioner,
-                                        PopupMenuDelegate,
-                                        BubbleViewAnchorPointProvider>
+@interface ToolbarController : UIViewController<ActivityServicePositioner,
+                                                PopupMenuDelegate,
+                                                BubbleViewAnchorPointProvider>
 
 // The top-level toolbar view.
-@property(nonatomic, readonly, strong) ToolbarView* view;
+@property(nonatomic, strong) ToolbarView* view;
 // The view containing all the content of the toolbar. It respects the trailing
 // and leading anchors of the safe area.
 @property(nonatomic, readonly, strong) UIView* contentView;
@@ -70,6 +70,9 @@ class ReadingListModel;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 // Height and Y offset to account for the status bar. Overridden by subclasses
 // if the toolbar shouldn't extend through the status bar.
@@ -138,11 +141,6 @@ class ReadingListModel;
 // Triggers an animation on the tools menu button to draw the user's
 // attention.
 - (void)triggerToolsMenuButtonAnimation;
-
-// TODO(crbug.com/778236): Remove this declaration once it is a
-// UIViewController.
-// Update the view's layout to take into account the new safe area insets.
-- (void)viewSafeAreaInsetsDidChange;
 
 @end
 

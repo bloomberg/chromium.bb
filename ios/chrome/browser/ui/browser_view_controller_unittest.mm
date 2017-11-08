@@ -135,6 +135,49 @@ using web::WebStateImpl;
 }
 @end
 
+// Fake WebToolbarController for testing.
+@interface TestWebToolbarController : UIViewController
+- (void)setTabCount:(NSInteger)tabCount;
+- (void)updateToolbarState;
+- (void)setShareButtonEnabled:(BOOL)enabled;
+- (id)toolsPopupController;
+- (BOOL)isOmniboxFirstResponder;
+- (BOOL)showingOmniboxPopup;
+- (void)selectedTabChanged;
+- (void)dismissToolsMenuPopup;
+- (void)cancelOmniboxEdit;
+@end
+
+@implementation TestWebToolbarController
+- (void)setTabCount:(NSInteger)tabCount {
+  return;
+}
+- (void)updateToolbarState {
+  return;
+}
+- (void)setShareButtonEnabled:(BOOL)enabled {
+  return;
+}
+- (id)toolsPopupController {
+  return nil;
+}
+- (BOOL)isOmniboxFirstResponder {
+  return NO;
+}
+- (BOOL)showingOmniboxPopup {
+  return NO;
+}
+- (void)selectedTabChanged {
+  return;
+}
+- (void)dismissToolsMenuPopup {
+  return;
+}
+- (void)cancelOmniboxEdit {
+  return;
+}
+@end
+
 #pragma mark -
 
 namespace {
@@ -207,13 +250,16 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     // It will be owned (and destroyed) by the BVC.
     toolbarModelIOS_ = new TestToolbarModelIOS();
 
+    // Create fake WTC.
+    TestWebToolbarController* testWTC = [[TestWebToolbarController alloc] init];
+
     // Set up a stub dependency factory.
     id factory = [OCMockObject
         mockForClass:[BrowserViewControllerDependencyFactory class]];
     [[[factory stub] andReturnValue:OCMOCK_VALUE(toolbarModelIOS_)]
         newToolbarModelIOSWithDelegate:static_cast<ToolbarModelDelegateIOS*>(
                                            [OCMArg anyPointer])];
-    [[[factory stub] andReturn:nil]
+    [[[factory stub] andReturn:testWTC]
         newWebToolbarControllerWithDelegate:[OCMArg any]
                                   urlLoader:[OCMArg any]
                                  dispatcher:[OCMArg any]];

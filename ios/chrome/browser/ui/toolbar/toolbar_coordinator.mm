@@ -20,10 +20,17 @@
 
 @implementation LegacyToolbarCoordinator
 @synthesize tabModel = _tabModel;
+@synthesize toolbarViewController = _toolbarViewController;
 @synthesize webToolbarController = _webToolbarController;
 
-- (ToolbarController*)toolbarController {
-  return self.webToolbarController;
+- (void)stop {
+  self.webToolbarController = nil;
+}
+
+- (UIViewController*)toolbarViewController {
+  _toolbarViewController =
+      static_cast<UIViewController*>(self.webToolbarController);
+  return _toolbarViewController;
 }
 
 - (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
@@ -123,10 +130,6 @@
   [self.webToolbarController triggerToolsMenuButtonAnimation];
 }
 
-- (UIView*)view {
-  return [self.webToolbarController view];
-}
-
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
@@ -152,7 +155,7 @@
 #pragma mark - SideSwipeToolbarInteracting
 
 - (UIView*)toolbarView {
-  return self.view;
+  return self.webToolbarController.view;
 }
 
 - (BOOL)canBeginToolbarSwipe {
@@ -173,23 +176,27 @@
 
 - (UIView*)snapshotForTabSwitcher {
   UIView* toolbarSnapshotView;
-  if ([self.view window]) {
-    toolbarSnapshotView = [self.view snapshotViewAfterScreenUpdates:NO];
+  if ([self.webToolbarController.view window]) {
+    toolbarSnapshotView =
+        [self.webToolbarController.view snapshotViewAfterScreenUpdates:NO];
   } else {
-    toolbarSnapshotView = [[UIView alloc] initWithFrame:self.view.frame];
-    [toolbarSnapshotView layer].contents = static_cast<id>(
-        CaptureViewWithOption(self.view, 0, kClientSideRendering).CGImage);
+    toolbarSnapshotView =
+        [[UIView alloc] initWithFrame:self.webToolbarController.view.frame];
+    [toolbarSnapshotView layer].contents =
+        static_cast<id>(CaptureViewWithOption(self.webToolbarController.view, 0,
+                                              kClientSideRendering)
+                            .CGImage);
   }
   return toolbarSnapshotView;
 }
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width {
-  CGRect oldFrame = self.view.frame;
+  CGRect oldFrame = self.webToolbarController.view.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
-  self.view.frame = newFrame;
+  self.webToolbarController.view.frame = newFrame;
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
-  self.view.frame = oldFrame;
+  self.webToolbarController.view.frame = oldFrame;
   return toolbarSnapshotView;
 }
 
