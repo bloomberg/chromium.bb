@@ -11,6 +11,8 @@ source_set("activity_services") {
     "activity_type_util.mm",
     "appex_constants.h",
     "appex_constants.mm",
+    "canonical_url_retriever.h",
+    "canonical_url_retriever.mm",
     "chrome_activity_item_source.h",
     "chrome_activity_item_source.mm",
     "chrome_activity_item_thumbnail_generator.h",
@@ -37,6 +39,7 @@ source_set("activity_services") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
+    "//ios/web",
     "//net",
     "//ui/base",
     "//url",
@@ -74,6 +77,7 @@ source_set("unit_tests") {
   sources = [
     "activity_service_controller_unittest.mm",
     "activity_type_util_unittest.mm",
+    "canonical_url_retriever_unittest.mm",
     "chrome_activity_item_thumbnail_generator_unittest.mm",
     "share_to_data_builder_unittest.mm",
   ]
@@ -87,6 +91,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services/requirements",
     "//ios/chrome/browser/ui/commands",
+    "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/test",
