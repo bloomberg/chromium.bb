@@ -666,7 +666,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       // The modal sign-in view is shown in for bubble view modes.
-      // See |SigninViewController::ShouldShowModalSigninForMode|.
+      // See |SigninViewController::ShouldShowSigninForMode|.
       NOTREACHED();
       break;
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL:
@@ -690,13 +690,13 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 }
 
 void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
-  if (SigninViewController::ShouldShowModalSigninForMode(mode)) {
+  if (SigninViewController::ShouldShowSigninForMode(mode)) {
     // Hides the user menu if it is currently shown. The user menu automatically
     // closes when it loses focus; however, on Windows, the signin modals do not
     // take away focus, thus we need to manually close the bubble.
     Hide();
-    browser_->signin_view_controller()->ShowModalSignin(mode, browser_,
-                                                        access_point_);
+    browser_->signin_view_controller()->ShowSignin(mode, browser_,
+                                                   access_point_);
   } else {
     ShowView(mode, avatar_menu_.get());
   }

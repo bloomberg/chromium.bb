@@ -23,9 +23,7 @@ void ProcessDiceHeaderObserverImpl::WillStartRefreshTokenFetch(
   if (!web_contents())
     return;
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  if (!signin::IsDiceEnabledForProfile(profile->GetPrefs()))
+  if (!signin::IsDicePrepareMigrationEnabled())
     return;
 
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents());
@@ -41,14 +39,13 @@ void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
     VLOG(1) << "Do not start sync after web sign-in.";
     return;
   }
+  if (!signin::IsDicePrepareMigrationEnabled())
+    return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   Profile* profile = browser->profile();
   DCHECK(profile);
-  if (!signin::IsDiceEnabledForProfile(profile->GetPrefs()))
-    return;
-
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   DCHECK(signin_manager);
   if (signin_manager->IsAuthenticated()) {
