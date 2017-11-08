@@ -346,6 +346,19 @@ void BoundedLabel::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   label_->GetAccessibleNodeData(node_data);
 }
 
+views::View* BoundedLabel::GetTooltipHandlerForPoint(const gfx::Point& point) {
+  if (GetSizeForWidthAndLines(width(), -1).height() <=
+      GetHeightForWidth(width())) {
+    return nullptr;
+  }
+  return HitTestPoint(point) ? this : nullptr;
+}
+
+bool BoundedLabel::GetTooltipText(const gfx::Point& p,
+                                  base::string16* tooltip) const {
+  return label_->GetTooltipText(p, tooltip);
+}
+
 void BoundedLabel::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   label_->SetBoundsRect(bounds());
   views::View::OnBoundsChanged(previous_bounds);
