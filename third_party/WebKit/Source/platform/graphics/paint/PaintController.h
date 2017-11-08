@@ -185,9 +185,11 @@ class PLATFORM_EXPORT PaintController {
                                      sk_sp<const PaintRecord>,
                                      const PropertyTreeState*);
 
+#if DCHECK_IS_ON()
   void ShowDebugData() const;
 #ifndef NDEBUG
   void ShowDebugDataWithRecords() const;
+#endif
 #endif
 
   void SetTracksRasterInvalidations(bool);
@@ -205,7 +207,7 @@ class PLATFORM_EXPORT PaintController {
         skipping_cache_count_(0),
         num_cached_new_items_(0),
         current_cached_subsequence_begin_index_in_new_list_(kNotFound),
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
         num_sequential_matches_(0),
         num_out_of_order_matches_(0),
         num_indexed_items_(0),
@@ -318,7 +320,9 @@ class PLATFORM_EXPORT PaintController {
 
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);
 
-  void ShowDebugDataInternal(bool show_paint_records) const;
+#if DCHECK_IS_ON()
+  void ShowDebugDataInternal(DisplayItemList::JsonFlags) const;
+#endif
 
   // The last complete paint artifact.
   // In SPv2, this includes paint chunks as well as display items.
@@ -379,13 +383,11 @@ class PLATFORM_EXPORT PaintController {
   DisplayItemClient::CacheGenerationOrInvalidationReason
       current_cache_generation_;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   int num_sequential_matches_;
   int num_out_of_order_matches_;
   int num_indexed_items_;
-#endif
 
-#if DCHECK_IS_ON()
   // This is used to check duplicated ids during CreateAndAppend().
   IndicesByClientMap new_display_item_indices_by_client_;
 #endif

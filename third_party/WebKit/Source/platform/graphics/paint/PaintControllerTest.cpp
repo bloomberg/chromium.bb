@@ -121,7 +121,7 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
 
   EXPECT_EQ(2, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(2, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(1, NumIndexedItems());
@@ -179,7 +179,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
   DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
   EXPECT_EQ(6, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(5, NumSequentialMatches());  // second, first foreground, unaffected
   EXPECT_EQ(1, NumOutOfOrderMatches());  // first
   EXPECT_EQ(2, NumIndexedItems());       // first
@@ -243,7 +243,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
   DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
   EXPECT_EQ(4, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(4, NumSequentialMatches());  // second, unaffected
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(2, NumIndexedItems());
@@ -297,7 +297,7 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
 
   EXPECT_EQ(2, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(2, NumSequentialMatches());  // first, second
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());
@@ -358,7 +358,7 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   DrawRect(context, third, kForegroundType, FloatRect(300, 100, 50, 50));
 
   EXPECT_EQ(4, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(4, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(2, NumIndexedItems());
@@ -486,7 +486,7 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
 
   EXPECT_EQ(2, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(2, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(2, NumIndexedItems());
@@ -622,7 +622,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
 
   EXPECT_EQ(1, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(1, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(1, NumIndexedItems());
@@ -1086,7 +1086,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   }
 
   EXPECT_EQ(8, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(0, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());
@@ -1202,7 +1202,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
   }
 
   EXPECT_EQ(6, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(2, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());
@@ -1301,7 +1301,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   EXPECT_EQ(4, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(3, NumSequentialMatches());
   EXPECT_EQ(1, NumOutOfOrderMatches());
   EXPECT_EQ(1, NumIndexedItems());
@@ -1562,7 +1562,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   }
 
   EXPECT_EQ(2, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(0, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());
@@ -1672,7 +1672,7 @@ TEST_P(PaintControllerTest, SkipCache) {
   GetPaintController().EndSkippingCache();
 
   EXPECT_EQ(1, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(1, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());
@@ -1792,7 +1792,7 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
   DrawRect(context, content, kForegroundType, rect3);
 
   EXPECT_EQ(0, NumCachedNewItems());
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   EXPECT_EQ(0, NumSequentialMatches());
   EXPECT_EQ(0, NumOutOfOrderMatches());
   EXPECT_EQ(0, NumIndexedItems());

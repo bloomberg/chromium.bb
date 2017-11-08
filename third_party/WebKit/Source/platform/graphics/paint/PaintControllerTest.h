@@ -25,7 +25,7 @@ class PaintControllerTestBase : public ::testing::Test {
     return paint_controller_->num_cached_new_items_;
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   int NumSequentialMatches() const {
     return paint_controller_->num_sequential_matches_;
   }

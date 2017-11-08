@@ -78,7 +78,7 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   CompositedLayerRasterInvalidator raster_invalidator_;
 
   String debug_name_;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   std::unique_ptr<JSONArray> paint_chunk_debug_data_;
 #endif
 };

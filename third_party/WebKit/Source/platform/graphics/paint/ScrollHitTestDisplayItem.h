@@ -39,7 +39,7 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
   void AppendToWebDisplayItemList(const LayoutSize&,
                                   WebDisplayItemList*) const override;
   bool Equals(const DisplayItem&) const override;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
 

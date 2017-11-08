@@ -27,6 +27,7 @@ class PLATFORM_EXPORT DisplayItemClient {
   // Tests if this DisplayItemClient object has been created and has not been
   // deleted yet.
   bool IsAlive() const;
+  static String SafeDebugName(const DisplayItemClient&, bool known_to_be_safe);
 #else
   DisplayItemClient() {}
   virtual ~DisplayItemClient() {}

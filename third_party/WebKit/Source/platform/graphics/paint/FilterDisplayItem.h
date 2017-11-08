@@ -9,9 +9,6 @@
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/wtf/RefPtr.h"
-#ifndef NDEBUG
-#include "platform/wtf/text/WTFString.h"
-#endif
 #include <memory>
 
 namespace blink {
@@ -36,7 +33,7 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
   bool DrawsContent() const override;
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
   bool Equals(const DisplayItem& other) const final {

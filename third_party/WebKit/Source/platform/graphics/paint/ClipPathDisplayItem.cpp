@@ -33,7 +33,7 @@ void EndClipPathDisplayItem::AppendToWebDisplayItemList(
   list->AppendEndClipPathItem();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginClipPathDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetInteger("pathVerbs", clip_path_.countVerbs());

@@ -73,11 +73,12 @@ class PLATFORM_EXPORT DisplayItemList
   Range<iterator> ItemsInPaintChunk(const PaintChunk&);
   Range<const_iterator> ItemsInPaintChunk(const PaintChunk&) const;
 
+#if DCHECK_IS_ON()
   enum JsonOptions {
     kDefault = 0,
     kShowPaintRecords = 1,
     kSkipNonDrawings = 1 << 1,
-    kShowClientDebugName = 1 << 2,
+    kClientKnownToBeAlive = 1 << 2,
     kShownOnlyDisplayItemTypes = 1 << 3
   };
   typedef unsigned JsonFlags;
@@ -89,8 +90,7 @@ class PLATFORM_EXPORT DisplayItemList
                                size_t end_index,
                                JsonFlags,
                                JSONArray&) const;
-
-  static String ClientDebugName(const DisplayItemClient&, JsonFlags);
+#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

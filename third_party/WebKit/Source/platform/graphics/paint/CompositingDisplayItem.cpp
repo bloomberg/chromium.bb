@@ -25,7 +25,7 @@ void BeginCompositingDisplayItem::AppendToWebDisplayItemList(
           .get());
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginCompositingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetInteger("xferMode", static_cast<int>(xfer_mode_));
