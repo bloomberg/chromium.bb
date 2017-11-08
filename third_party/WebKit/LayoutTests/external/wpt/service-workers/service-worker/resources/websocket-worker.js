@@ -8,7 +8,7 @@ function reportFailure(details) {
 onmessage = event => {
   port = event.source;
 
-  const ws = new WebSocket('ws://localhost:8880/echo');
+  const ws = new WebSocket('wss://{{host}}:{{ports[wss][0]}}/echo');
   ws.onopen = () => {
     ws.send('Hello');
   };
@@ -21,9 +21,9 @@ onmessage = event => {
     received = true;
     ws.close();
   };
-  ws.onclose = () => {
+  ws.onclose = (event) => {
     if (!received) {
-      reportFailure('Closed before receiving reply');
+      reportFailure('Closed before receiving reply: ' + event.code);
       return;
     }
 

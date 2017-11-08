@@ -2,10 +2,10 @@
 <title>Service Worker: WebSockets can be created in a Service Worker</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
-<script src="../resources/test-helpers.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
 promise_test(t => {
-    const SCRIPT = 'resources/simple.js';
+    const SCRIPT = 'resources/websocket-worker.js?pipe=sub';
     const SCOPE = 'resources/blank.html';
     let registration;
     return service_worker_unregister_and_register(t, SCRIPT, SCOPE)
