@@ -309,7 +309,7 @@ scoped_refptr<Gradient> Gradient::CreateLinear(
     const FloatPoint& p1,
     GradientSpreadMethod spread_method,
     ColorInterpolation interpolation) {
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new LinearGradient(p0, p1, spread_method, interpolation));
 }
 
@@ -321,8 +321,8 @@ scoped_refptr<Gradient> Gradient::CreateRadial(
     float aspect_ratio,
     GradientSpreadMethod spread_method,
     ColorInterpolation interpolation) {
-  return WTF::AdoptRef(new RadialGradient(p0, r0, p1, r1, aspect_ratio,
-                                          spread_method, interpolation));
+  return base::AdoptRef(new RadialGradient(p0, r0, p1, r1, aspect_ratio,
+                                           spread_method, interpolation));
 }
 
 scoped_refptr<Gradient> Gradient::CreateConic(
@@ -332,9 +332,9 @@ scoped_refptr<Gradient> Gradient::CreateConic(
     float end_angle,
     GradientSpreadMethod spread_method,
     ColorInterpolation interpolation) {
-  return WTF::AdoptRef(new ConicGradient(position, rotation, start_angle,
-                                         end_angle, spread_method,
-                                         interpolation));
+  return base::AdoptRef(new ConicGradient(position, rotation, start_angle,
+                                          end_angle, spread_method,
+                                          interpolation));
 }
 
 }  // namespace blink

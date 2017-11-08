@@ -183,16 +183,16 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const KURL& url) {
     return origin;
 
   if (ShouldTreatAsUniqueOrigin(url))
-    return WTF::AdoptRef(new SecurityOrigin());
+    return base::AdoptRef(new SecurityOrigin());
 
   if (ShouldUseInnerURL(url))
-    return WTF::AdoptRef(new SecurityOrigin(ExtractInnerURL(url)));
+    return base::AdoptRef(new SecurityOrigin(ExtractInnerURL(url)));
 
-  return WTF::AdoptRef(new SecurityOrigin(url));
+  return base::AdoptRef(new SecurityOrigin(url));
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::CreateUnique() {
-  scoped_refptr<SecurityOrigin> origin = WTF::AdoptRef(new SecurityOrigin());
+  scoped_refptr<SecurityOrigin> origin = base::AdoptRef(new SecurityOrigin());
   DCHECK(origin->IsUnique());
   return origin;
 }
@@ -224,7 +224,7 @@ url::Origin SecurityOrigin::ToUrlOrigin() const {
 }
 
 scoped_refptr<SecurityOrigin> SecurityOrigin::IsolatedCopy() const {
-  return WTF::AdoptRef(new SecurityOrigin(this));
+  return base::AdoptRef(new SecurityOrigin(this));
 }
 
 void SecurityOrigin::SetDomainFromDOM(const String& new_domain) {

@@ -74,7 +74,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
       scoped_refptr<CustomFontData> custom_data = nullptr,
       bool is_text_orientation_fallback = false,
       bool subpixel_ascent_descent = false) {
-    return WTF::AdoptRef(new SimpleFontData(
+    return base::AdoptRef(new SimpleFontData(
         platform_data, std::move(custom_data), is_text_orientation_fallback,
         subpixel_ascent_descent));
   }

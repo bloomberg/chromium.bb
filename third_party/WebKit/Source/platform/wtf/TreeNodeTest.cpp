@@ -34,7 +34,7 @@ namespace WTF {
 class TestTree : public RefCounted<TestTree>, public TreeNode<TestTree> {
  public:
   static scoped_refptr<TestTree> Create() {
-    return WTF::AdoptRef(new TestTree());
+    return base::AdoptRef(new TestTree());
   }
 };
 

@@ -30,7 +30,7 @@ namespace blink {
 class PLATFORM_EXPORT PointLightSource final : public LightSource {
  public:
   static scoped_refptr<PointLightSource> Create(const FloatPoint3D& position) {
-    return WTF::AdoptRef(new PointLightSource(position));
+    return base::AdoptRef(new PointLightSource(position));
   }
 
   const FloatPoint3D& GetPosition() const { return position_; }

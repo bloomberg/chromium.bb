@@ -44,7 +44,7 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
       const TransformOperations& from,
       const TransformOperations& to,
       double progress) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new InterpolatedTransformOperation(from, to, progress));
   }
 

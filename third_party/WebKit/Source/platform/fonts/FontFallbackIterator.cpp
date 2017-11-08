@@ -17,7 +17,7 @@ scoped_refptr<FontFallbackIterator> FontFallbackIterator::Create(
     const FontDescription& description,
     scoped_refptr<FontFallbackList> fallback_list,
     FontFallbackPriority font_fallback_priority) {
-  return WTF::AdoptRef(new FontFallbackIterator(
+  return base::AdoptRef(new FontFallbackIterator(
       description, std::move(fallback_list), font_fallback_priority));
 }
 
@@ -85,14 +85,15 @@ scoped_refptr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
 scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
     const Vector<UChar32>& hint_list) {
   if (fallback_stage_ == kOutOfLuck)
-    return WTF::AdoptRef(new FontDataForRangeSet());
+    return base::AdoptRef(new FontDataForRangeSet());
 
   if (fallback_stage_ == kFallbackPriorityFonts) {
     // Only try one fallback priority font,
     // then proceed to regular system fallback.
     fallback_stage_ = kSystemFonts;
-    scoped_refptr<FontDataForRangeSet> fallback_priority_font_range = WTF::AdoptRef(
-        new FontDataForRangeSet(FallbackPriorityFont(hint_list[0])));
+    scoped_refptr<FontDataForRangeSet> fallback_priority_font_range =
+        base::AdoptRef(
+            new FontDataForRangeSet(FallbackPriorityFont(hint_list[0])));
     if (fallback_priority_font_range->HasFontData())
       return UniqueOrNext(std::move(fallback_priority_font_range), hint_list);
     return Next(hint_list);
@@ -103,7 +104,7 @@ scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
     scoped_refptr<SimpleFontData> system_font = UniqueSystemFontForHintList(hint_list);
     if (system_font) {
       // Fallback fonts are not retained in the FontDataCache.
-      return UniqueOrNext(WTF::AdoptRef(new FontDataForRangeSet(system_font)),
+      return UniqueOrNext(base::AdoptRef(new FontDataForRangeSet(system_font)),
                           hint_list);
     }
 
@@ -120,7 +121,7 @@ scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
       FontCache::CrashWithFontInfo(&font_description_);
     // Don't skip the LastResort font in uniqueOrNext() since HarfBuzzShaper
     // needs to use this one to place missing glyph boxes.
-    return WTF::AdoptRef(new FontDataForRangeSetFromCache(last_resort));
+    return base::AdoptRef(new FontDataForRangeSetFromCache(last_resort));
   }
 
   DCHECK(fallback_stage_ == kFontGroupFonts ||
@@ -149,8 +150,8 @@ scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
       // The fontData object that we have here is tracked in m_fontList of
       // FontFallbackList and gets released in the font cache when the
       // FontFallbackList is destroyed.
-      return UniqueOrNext(WTF::AdoptRef(new FontDataForRangeSet(non_segmented)),
-                          hint_list);
+      return UniqueOrNext(
+          base::AdoptRef(new FontDataForRangeSet(non_segmented)), hint_list);
     }
     return Next(hint_list);
   }

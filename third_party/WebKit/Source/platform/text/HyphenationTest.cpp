@@ -31,7 +31,7 @@ class NoHyphenation : public Hyphenation {
 };
 
 TEST(HyphenationTest, Get) {
-  scoped_refptr<Hyphenation> hyphenation = WTF::AdoptRef(new NoHyphenation);
+  scoped_refptr<Hyphenation> hyphenation = base::AdoptRef(new NoHyphenation);
   LayoutLocale::SetHyphenationForTesting("en-US", hyphenation);
   EXPECT_EQ(hyphenation.get(), LayoutLocale::Get("en-US")->GetHyphenation());
 

@@ -37,7 +37,7 @@ namespace blink {
 class PLATFORM_EXPORT SegmentedFontData : public FontData {
  public:
   static scoped_refptr<SegmentedFontData> Create() {
-    return WTF::AdoptRef(new SegmentedFontData);
+    return base::AdoptRef(new SegmentedFontData);
   }
 
   void AppendFace(scoped_refptr<FontDataForRangeSet> font_data_for_range_set) {

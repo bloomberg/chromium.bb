@@ -423,7 +423,7 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
 class OffHeapInt : public RefCounted<OffHeapInt> {
  public:
   static scoped_refptr<OffHeapInt> Create(int x) {
-    return WTF::AdoptRef(new OffHeapInt(x));
+    return base::AdoptRef(new OffHeapInt(x));
   }
 
   virtual ~OffHeapInt() { ++destructor_calls_; }
@@ -658,7 +658,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
 
    private:
     explicit PersistentChain(int count) {
-      ref_counted_chain_ = WTF::AdoptRef(RefCountedChain::Create(count));
+      ref_counted_chain_ = base::AdoptRef(RefCountedChain::Create(count));
     }
 
     scoped_refptr<RefCountedChain> ref_counted_chain_;
@@ -4626,12 +4626,12 @@ void DestructorsCalledOnGC(bool add_lots) {
   {
     Set set;
     RefCountedWithDestructor* has_destructor = new RefCountedWithDestructor();
-    set.Add(WTF::AdoptRef(has_destructor));
+    set.Add(base::AdoptRef(has_destructor));
     EXPECT_FALSE(RefCountedWithDestructor::was_destructed_);
 
     if (add_lots) {
       for (int i = 0; i < 1000; i++) {
-        set.Add(WTF::AdoptRef(new RefCountedWithDestructor()));
+        set.Add(base::AdoptRef(new RefCountedWithDestructor()));
       }
     }
 
@@ -4652,12 +4652,12 @@ void DestructorsCalledOnClear(bool add_lots) {
   RefCountedWithDestructor::was_destructed_ = false;
   Set set;
   RefCountedWithDestructor* has_destructor = new RefCountedWithDestructor();
-  set.Add(WTF::AdoptRef(has_destructor));
+  set.Add(base::AdoptRef(has_destructor));
   EXPECT_FALSE(RefCountedWithDestructor::was_destructed_);
 
   if (add_lots) {
     for (int i = 0; i < 1000; i++) {
-      set.Add(WTF::AdoptRef(new RefCountedWithDestructor()));
+      set.Add(base::AdoptRef(new RefCountedWithDestructor()));
     }
   }
 
@@ -6090,7 +6090,7 @@ TEST(HeapTest, DequeExpand) {
 class SimpleRefValue : public RefCounted<SimpleRefValue> {
  public:
   static scoped_refptr<SimpleRefValue> Create(int i) {
-    return WTF::AdoptRef(new SimpleRefValue(i));
+    return base::AdoptRef(new SimpleRefValue(i));
   }
 
   int Value() const { return value_; }

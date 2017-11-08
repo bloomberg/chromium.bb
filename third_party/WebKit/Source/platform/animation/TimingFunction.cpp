@@ -26,16 +26,16 @@ CubicBezierTimingFunction* CubicBezierTimingFunction::Preset(
     EaseType ease_type) {
   DEFINE_STATIC_REF(
       CubicBezierTimingFunction, ease,
-      (WTF::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
+      (base::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE))));
   DEFINE_STATIC_REF(
       CubicBezierTimingFunction, ease_in,
-      (WTF::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
+      (base::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN))));
   DEFINE_STATIC_REF(
       CubicBezierTimingFunction, ease_out,
-      (WTF::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
+      (base::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT))));
   DEFINE_STATIC_REF(
       CubicBezierTimingFunction, ease_in_out,
-      (WTF::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
+      (base::AdoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT))));
 
   switch (ease_type) {
     case EaseType::EASE:

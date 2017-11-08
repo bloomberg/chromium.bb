@@ -259,7 +259,7 @@ TEST_F(SecurityOriginTest, Suborigins) {
   origin = SecurityOrigin::CreateFromString("https-so-so://foobar.test.com");
   EXPECT_FALSE(origin->HasSuborigin());
 
-  origin = WTF::AdoptRef<SecurityOrigin>(new SecurityOrigin);
+  origin = base::AdoptRef<SecurityOrigin>(new SecurityOrigin);
   EXPECT_FALSE(origin->HasSuborigin());
 
   origin = SecurityOrigin::CreateFromString("https-so://foobar.test.com");

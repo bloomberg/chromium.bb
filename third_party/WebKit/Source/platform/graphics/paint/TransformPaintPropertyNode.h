@@ -50,7 +50,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       // The scroll compositor element id should be stored on the scroll node.
       DCHECK(!compositor_element_id);
     }
-    return WTF::AdoptRef(new TransformPaintPropertyNode(
+    return base::AdoptRef(new TransformPaintPropertyNode(
         std::move(parent), matrix, origin, flattens_inherited_transform,
         rendering_context_id, direct_compositing_reasons, compositor_element_id,
         std::move(scroll)));
@@ -132,7 +132,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a transform node before it has been updated, to later detect changes.
   scoped_refptr<TransformPaintPropertyNode> Clone() const {
-    return WTF::AdoptRef(new TransformPaintPropertyNode(
+    return base::AdoptRef(new TransformPaintPropertyNode(
         Parent(), matrix_, origin_, flattens_inherited_transform_,
         rendering_context_id_, direct_compositing_reasons_,
         compositor_element_id_, scroll_));

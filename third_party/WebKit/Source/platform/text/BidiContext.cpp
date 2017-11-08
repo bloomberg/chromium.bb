@@ -44,7 +44,7 @@ inline scoped_refptr<BidiContext> BidiContext::CreateUncached(
     bool override,
     BidiEmbeddingSource source,
     BidiContext* parent) {
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new BidiContext(level, direction, override, source, parent));
 }
 

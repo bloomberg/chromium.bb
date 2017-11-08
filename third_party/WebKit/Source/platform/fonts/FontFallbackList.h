@@ -42,7 +42,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
 
  public:
   static scoped_refptr<FontFallbackList> Create() {
-    return WTF::AdoptRef(new FontFallbackList());
+    return base::AdoptRef(new FontFallbackList());
   }
 
   ~FontFallbackList() { ReleaseFontData(); }

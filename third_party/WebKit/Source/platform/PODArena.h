@@ -62,7 +62,7 @@ class PODArena final : public RefCounted<PODArena> {
   class FastMallocAllocator : public Allocator {
    public:
     static scoped_refptr<FastMallocAllocator> Create() {
-      return WTF::AdoptRef(new FastMallocAllocator);
+      return base::AdoptRef(new FastMallocAllocator);
     }
 
     void* Allocate(size_t size) override {
@@ -77,12 +77,12 @@ class PODArena final : public RefCounted<PODArena> {
 
   // Creates a new PODArena configured with a FastMallocAllocator.
   static scoped_refptr<PODArena> Create() {
-    return WTF::AdoptRef(new PODArena);
+    return base::AdoptRef(new PODArena);
   }
 
   // Creates a new PODArena configured with the given Allocator.
   static scoped_refptr<PODArena> Create(scoped_refptr<Allocator> allocator) {
-    return WTF::AdoptRef(new PODArena(std::move(allocator)));
+    return base::AdoptRef(new PODArena(std::move(allocator)));
   }
 
   // Allocates an object from the arena.

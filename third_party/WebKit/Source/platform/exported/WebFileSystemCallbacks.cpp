@@ -49,7 +49,7 @@ class WebFileSystemCallbacksPrivate
  public:
   static scoped_refptr<WebFileSystemCallbacksPrivate> Create(
       std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new WebFileSystemCallbacksPrivate(std::move(callbacks)));
   }
 

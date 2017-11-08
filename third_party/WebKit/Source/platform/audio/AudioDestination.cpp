@@ -63,9 +63,9 @@ scoped_refptr<AudioDestination> AudioDestination::Create(
     unsigned number_of_output_channels,
     const WebAudioLatencyHint& latency_hint,
     scoped_refptr<SecurityOrigin> security_origin) {
-  return WTF::AdoptRef(new AudioDestination(callback, number_of_output_channels,
-                                            latency_hint,
-                                            std::move(security_origin)));
+  return base::AdoptRef(
+      new AudioDestination(callback, number_of_output_channels, latency_hint,
+                           std::move(security_origin)));
 }
 
 AudioDestination::AudioDestination(

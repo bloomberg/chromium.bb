@@ -35,7 +35,7 @@ class PLATFORM_EXPORT Matrix3DTransformOperation final
  public:
   static scoped_refptr<Matrix3DTransformOperation> Create(
       const TransformationMatrix& matrix) {
-    return WTF::AdoptRef(new Matrix3DTransformOperation(matrix));
+    return base::AdoptRef(new Matrix3DTransformOperation(matrix));
   }
 
   TransformationMatrix Matrix() const { return matrix_; }

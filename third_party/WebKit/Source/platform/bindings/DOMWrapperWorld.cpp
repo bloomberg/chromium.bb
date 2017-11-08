@@ -69,7 +69,7 @@ scoped_refptr<DOMWrapperWorld> DOMWrapperWorld::Create(v8::Isolate* isolate,
   int world_id = GenerateWorldIdForType(world_type);
   if (world_id == kInvalidWorldId)
     return nullptr;
-  return WTF::AdoptRef(new DOMWrapperWorld(isolate, world_type, world_id));
+  return base::AdoptRef(new DOMWrapperWorld(isolate, world_type, world_id));
 }
 
 DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
@@ -166,7 +166,7 @@ scoped_refptr<DOMWrapperWorld> DOMWrapperWorld::EnsureIsolatedWorld(
     return world;
   }
 
-  return WTF::AdoptRef(
+  return base::AdoptRef(
       new DOMWrapperWorld(isolate, WorldType::kIsolated, world_id));
 }
 

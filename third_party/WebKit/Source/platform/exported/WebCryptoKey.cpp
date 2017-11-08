@@ -67,7 +67,7 @@ WebCryptoKey WebCryptoKey::Create(WebCryptoKeyHandle* handle,
                                   const WebCryptoKeyAlgorithm& algorithm,
                                   WebCryptoKeyUsageMask usages) {
   WebCryptoKey key;
-  key.private_ = WTF::AdoptRef(new WebCryptoKeyPrivate(
+  key.private_ = base::AdoptRef(new WebCryptoKeyPrivate(
       WTF::WrapUnique(handle), type, extractable, algorithm, usages));
   return key;
 }

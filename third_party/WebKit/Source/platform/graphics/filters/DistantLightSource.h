@@ -31,7 +31,7 @@ class PLATFORM_EXPORT DistantLightSource final : public LightSource {
  public:
   static scoped_refptr<DistantLightSource> Create(float azimuth,
                                                   float elevation) {
-    return WTF::AdoptRef(new DistantLightSource(azimuth, elevation));
+    return base::AdoptRef(new DistantLightSource(azimuth, elevation));
   }
 
   float Azimuth() const { return azimuth_; }

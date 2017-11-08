@@ -29,7 +29,7 @@ class TestSimpleFontData : public SimpleFontData {
                        : FontOrientation::kHorizontal);
     scoped_refptr<OpenTypeVerticalData> vertical_data(
         force_rotation ? OpenTypeVerticalData::Create(platform_data) : nullptr);
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new TestSimpleFontData(platform_data, std::move(vertical_data)));
   }
 

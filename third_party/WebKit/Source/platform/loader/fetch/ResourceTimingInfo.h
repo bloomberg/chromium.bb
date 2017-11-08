@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ResourceTimingInfo
   static scoped_refptr<ResourceTimingInfo> Create(const AtomicString& type,
                                                   const double time,
                                                   bool is_main_resource) {
-    return WTF::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
+    return base::AdoptRef(new ResourceTimingInfo(type, time, is_main_resource));
   }
   static scoped_refptr<ResourceTimingInfo> Adopt(
       std::unique_ptr<CrossThreadResourceTimingInfoData>);

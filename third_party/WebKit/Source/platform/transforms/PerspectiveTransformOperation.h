@@ -34,7 +34,7 @@ class PLATFORM_EXPORT PerspectiveTransformOperation final
     : public TransformOperation {
  public:
   static scoped_refptr<PerspectiveTransformOperation> Create(double p) {
-    return WTF::AdoptRef(new PerspectiveTransformOperation(p));
+    return base::AdoptRef(new PerspectiveTransformOperation(p));
   }
 
   double Perspective() const { return p_; }

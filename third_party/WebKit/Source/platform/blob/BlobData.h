@@ -48,7 +48,7 @@ class BlobDataHandle;
 class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
  public:
   static scoped_refptr<RawData> Create() {
-    return WTF::AdoptRef(new RawData());
+    return base::AdoptRef(new RawData());
   }
 
   const char* data() const { return data_.data(); }
@@ -225,20 +225,20 @@ class PLATFORM_EXPORT BlobDataHandle
  public:
   // For empty blob construction.
   static scoped_refptr<BlobDataHandle> Create() {
-    return WTF::AdoptRef(new BlobDataHandle());
+    return base::AdoptRef(new BlobDataHandle());
   }
 
   // For initial creation.
   static scoped_refptr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
                                               long long size) {
-    return WTF::AdoptRef(new BlobDataHandle(std::move(data), size));
+    return base::AdoptRef(new BlobDataHandle(std::move(data), size));
   }
 
   // For deserialization of script values and ipc messages.
   static scoped_refptr<BlobDataHandle> Create(const String& uuid,
                                               const String& type,
                                               long long size) {
-    return WTF::AdoptRef(new BlobDataHandle(uuid, type, size));
+    return base::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
   static scoped_refptr<BlobDataHandle> Create(const String& uuid,
@@ -246,10 +246,10 @@ class PLATFORM_EXPORT BlobDataHandle
                                        long long size,
                                        mojom::blink::BlobPtrInfo blob_info) {
     if (blob_info.is_valid()) {
-      return WTF::AdoptRef(
+      return base::AdoptRef(
           new BlobDataHandle(uuid, type, size, std::move(blob_info)));
     }
-    return WTF::AdoptRef(new BlobDataHandle(uuid, type, size));
+    return base::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
   String Uuid() const { return uuid_.IsolatedCopy(); }

@@ -129,12 +129,13 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
   if (discard_framebuffer_supported)
     extensions_util->EnsureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-  scoped_refptr<DrawingBuffer> drawing_buffer = WTF::AdoptRef(new DrawingBuffer(
-      std::move(context_provider), using_gpu_compositing,
-      std::move(extensions_util), client, discard_framebuffer_supported,
-      want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
-      want_depth_buffer, want_stencil_buffer, chromium_image_usage,
-      color_params));
+  scoped_refptr<DrawingBuffer> drawing_buffer =
+      base::AdoptRef(new DrawingBuffer(
+          std::move(context_provider), using_gpu_compositing,
+          std::move(extensions_util), client, discard_framebuffer_supported,
+          want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
+          want_depth_buffer, want_stencil_buffer, chromium_image_usage,
+          color_params));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -1263,8 +1264,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return WTF::AdoptRef(new ColorBuffer(this, size, texture_id, image_id,
-                                       std::move(gpu_memory_buffer)));
+  return base::AdoptRef(new ColorBuffer(this, size, texture_id, image_id,
+                                        std::move(gpu_memory_buffer)));
 }
 
 void DrawingBuffer::AttachColorBufferToReadFramebuffer() {

@@ -33,13 +33,13 @@ PlatformSpeechSynthesisVoice::Create(const String& voice_uri,
                                      const String& lang,
                                      bool local_service,
                                      bool is_default) {
-  return WTF::AdoptRef(new PlatformSpeechSynthesisVoice(
+  return base::AdoptRef(new PlatformSpeechSynthesisVoice(
       voice_uri, name, lang, local_service, is_default));
 }
 
 scoped_refptr<PlatformSpeechSynthesisVoice>
 PlatformSpeechSynthesisVoice::Create() {
-  return WTF::AdoptRef(new PlatformSpeechSynthesisVoice);
+  return base::AdoptRef(new PlatformSpeechSynthesisVoice);
 }
 
 PlatformSpeechSynthesisVoice::PlatformSpeechSynthesisVoice(

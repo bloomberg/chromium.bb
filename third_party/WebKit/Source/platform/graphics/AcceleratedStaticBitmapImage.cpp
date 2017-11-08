@@ -28,7 +28,7 @@ AcceleratedStaticBitmapImage::CreateFromSkImage(
     sk_sp<SkImage> image,
     WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper) {
   DCHECK(image->isTextureBacked());
-  return WTF::AdoptRef(new AcceleratedStaticBitmapImage(
+  return base::AdoptRef(new AcceleratedStaticBitmapImage(
       std::move(image), std::move(context_provider_wrapper)));
 }
 
@@ -39,7 +39,7 @@ AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
     unsigned texture_id,
     WeakPtr<WebGraphicsContext3DProviderWrapper>&& context_provider_wrapper,
     IntSize mailbox_size) {
-  return WTF::AdoptRef(new AcceleratedStaticBitmapImage(
+  return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
       mailbox_size));
 }

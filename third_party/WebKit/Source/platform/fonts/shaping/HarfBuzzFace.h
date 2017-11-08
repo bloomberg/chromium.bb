@@ -52,7 +52,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
  public:
   static scoped_refptr<HarfBuzzFace> Create(FontPlatformData* platform_data,
                                      uint64_t unique_id) {
-    return WTF::AdoptRef(new HarfBuzzFace(platform_data, unique_id));
+    return base::AdoptRef(new HarfBuzzFace(platform_data, unique_id));
   }
   ~HarfBuzzFace();
 

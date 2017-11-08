@@ -39,7 +39,7 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
   static scoped_refptr<GradientGeneratedImage> Create(
       scoped_refptr<Gradient> generator,
       const IntSize& size) {
-    return WTF::AdoptRef(
+    return base::AdoptRef(
         new GradientGeneratedImage(std::move(generator), size));
   }
 

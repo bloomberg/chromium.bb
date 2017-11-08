@@ -30,7 +30,7 @@ namespace blink {
 class PLATFORM_EXPORT CustomFontData : public RefCounted<CustomFontData> {
  public:
   static scoped_refptr<CustomFontData> Create() {
-    return WTF::AdoptRef(new CustomFontData());
+    return base::AdoptRef(new CustomFontData());
   }
 
   virtual ~CustomFontData() {}

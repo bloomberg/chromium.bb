@@ -33,7 +33,7 @@ class PLATFORM_EXPORT IdentityTransformOperation final
     : public TransformOperation {
  public:
   static scoped_refptr<IdentityTransformOperation> Create() {
-    return WTF::AdoptRef(new IdentityTransformOperation());
+    return base::AdoptRef(new IdentityTransformOperation());
   }
 
   virtual bool CanBlendWith(const TransformOperation& other) const {
