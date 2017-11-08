@@ -348,6 +348,10 @@ class CommandBufferSetup {
 
     decoder_->set_max_bucket_size(8 << 20);
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    return decoder_->MakeCurrent();
+  }
+
+  void ResetDecoder() {
     // Keep a reference to the translators, which keeps them in the cache even
     // after the decoder is reset. They are expensive to initialize, but they
     // don't keep state.
@@ -358,10 +362,6 @@ class CommandBufferSetup {
     translator = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
     if (translator)
       translator->AddRef();
-    return decoder_->MakeCurrent();
-  }
-
-  void ResetDecoder() {
     decoder_->Destroy(true);
     decoder_.reset();
     if (recreate_context_) {

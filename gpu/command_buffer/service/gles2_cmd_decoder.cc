@@ -630,6 +630,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
+  scoped_refptr<ShaderTranslatorInterface> GetOrCreateTranslator(GLenum type);
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void SetForceShaderNameHashingForTest(bool force) override;
@@ -10753,10 +10754,15 @@ void GLES2DecoderImpl::DoTransformFeedbackVaryings(
 
 scoped_refptr<ShaderTranslatorInterface> GLES2DecoderImpl::GetTranslator(
     GLenum type) {
+  return type == GL_VERTEX_SHADER ? vertex_translator_ : fragment_translator_;
+}
+
+scoped_refptr<ShaderTranslatorInterface>
+GLES2DecoderImpl::GetOrCreateTranslator(GLenum type) {
   if (!InitializeShaderTranslator()) {
     return nullptr;
   }
-  return type == GL_VERTEX_SHADER ? vertex_translator_ : fragment_translator_;
+  return GetTranslator(type);
 }
 
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
@@ -10768,7 +10774,7 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
 
   scoped_refptr<ShaderTranslatorInterface> translator;
   if (!feature_info_->disable_shader_translator())
-      translator = GetTranslator(shader->shader_type());
+    translator = GetOrCreateTranslator(shader->shader_type());
 
   const Shader::TranslatedShaderSourceType source_type =
       feature_info_->feature_flags().angle_translated_shader_source ?
