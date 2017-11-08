@@ -92,6 +92,12 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   scoped_refptr<VideoFrame> GetCurrentFrame() override;
   void PutCurrentFrame() override;
 
+  // Returns |current_frame_|, without offering a guarantee as to how recently
+  // it was updated. In certain applications, one might need to periodically
+  // call UpdateCurrentFrameIfStale on |task_runner_| to drive the updates.
+  // Can be called from any thread.
+  scoped_refptr<VideoFrame> GetCurrentFrameOnAnyThread();
+
   // VideoRendererSink implementation. These methods must be called from the
   // same thread (typically the media thread).
   void Start(RenderCallback* callback) override;
@@ -99,24 +105,18 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame,
                         bool repaint_duplicate_frame = false) override;
 
-  // Returns |current_frame_| if |client_| is set.  If no |client_| is set,
-  // |is_background_rendering_| is true, and |callback_| is set, it requests a
-  // new frame from |callback_|, using the elapsed time between calls to this
-  // function as the render interval; defaulting to 16.6ms if no prior calls
-  // have been made.  A cap of 250Hz (4ms) is in place to prevent clients from
-  // accidentally (or intentionally) spamming the rendering pipeline.
+  // If |client_| is not set, |callback_| is set, and |is_background_rendering_|
+  // is true, it requests a new frame from |callback_|. Uses the elapsed time
+  // between calls to this function as the render interval, defaulting to 16.6ms
+  // if no prior calls have been made. A cap of 250Hz (4ms) is in place to
+  // prevent clients from accidentally (or intentionally) spamming the rendering
+  // pipeline.
   //
   // This method is primarily to facilitate canvas and WebGL based applications
   // where the <video> tag is invisible (possibly not even in the DOM) and thus
   // does not receive a |client_|.  In this case, frame acquisition is driven by
   // the frequency of canvas or WebGL paints requested via JavaScript.
-  scoped_refptr<VideoFrame> GetCurrentFrameAndUpdateIfStale();
-
-  // Returns the timestamp of the current (possibly stale) frame, or
-  // base::TimeDelta() if there is no current frame. This method may be called
-  // from the media thread as long as the VFC is stopped. (Assuming that
-  // PaintSingleFrame() is not also called while stopped.)
-  base::TimeDelta GetCurrentFrameTimestamp() const;
+  void UpdateCurrentFrameIfStale();
 
   // Sets the callback to be run when the new frame has been processed. The
   // callback is only run once and then reset.
@@ -156,6 +156,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame,
                        bool repaint_duplicate_frame);
 
+  void SetCurrentFrame(const scoped_refptr<VideoFrame>& frame);
+
   // Called by |background_rendering_timer_| when enough time elapses where we
   // haven't seen a Render() call.
   void BackgroundRender();
@@ -193,8 +195,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   base::TimeTicks last_background_render_;
   OnNewProcessedFrameCB new_processed_frame_cb_;
 
-  // These values are set on the compositor thread, but also read on the media
-  // thread when the VFC is stopped.
+  // Set on the compositor thread, but also read on the media thread.
+  base::Lock current_frame_lock_;
   scoped_refptr<VideoFrame> current_frame_;
 
   // These values are updated and read from the media and compositor threads.
