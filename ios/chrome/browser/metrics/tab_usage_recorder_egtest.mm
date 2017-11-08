@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/metrics/tab_usage_recorder_test_util.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"

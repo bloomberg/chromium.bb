@@ -699,21 +699,6 @@ using ios::material::TimingFunction;
 #pragma mark -
 #pragma mark Overridden public superclass methods.
 
-- (void)viewSafeAreaInsetsDidChange {
-  [super viewSafeAreaInsetsDidChange];
-  if (!IsIPadIdiom()) {
-    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
-      // The clipping view's height is supposed to match the toolbar's height.
-      // The clipping view can't match the toolbar's height with autoresizing
-      // masks because the clipping view is not a direct child of the toolbar.
-      // Therefore we manually update the clipping view's height whenever the
-      // toolbar's height changes, which as of M63 can only occur if the
-      // safe area insets change.
-      [self layoutClippingView];
-    }
-  }
-}
-
 - (void)layoutClippingView {
   CGRect clippingFrame = [_clippingView frame];
   clippingFrame.size.height =
@@ -2575,6 +2560,23 @@ using ios::material::TimingFunction;
              ->GetVoiceSearchProvider()
              ->IsVoiceSearchEnabled());
   [self.dispatcher preloadVoiceSearch];
+}
+
+#pragma mark - UIViewController
+
+- (void)viewSafeAreaInsetsDidChange {
+  [super viewSafeAreaInsetsDidChange];
+  if (!IsIPadIdiom()) {
+    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+      // The clipping view's height is supposed to match the toolbar's height.
+      // The clipping view can't match the toolbar's height with autoresizing
+      // masks because the clipping view is not a direct child of the toolbar.
+      // Therefore we manually update the clipping view's height whenever the
+      // toolbar's height changes, which as of M63 can only occur if the
+      // safe area insets change.
+      [self layoutClippingView];
+    }
+  }
 }
 
 @end
