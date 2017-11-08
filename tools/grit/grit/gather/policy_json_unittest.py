@@ -81,7 +81,30 @@ class PolicyJsonUnittest(unittest.TestCase):
     expected = self.GetExpectedOutput(original)
     self.failUnless(expected == eval(gatherer.Translate('en')))
 
-  def testSubPolicy(self):
+  # Keeping for backwards compatibility.
+  def testSubPolicyOldFormat(self):
+    original = (
+        "{"
+        "  'policy_definitions': ["
+        "    {"
+        "      'type': 'group',"
+        "      'policies': ["
+        "        {"
+        "          'name': 'Policy1',"
+        "          'caption': 'nothing special',"
+        "        }"
+        "      ]"
+        "    }"
+        "  ],"
+        "  'messages': {}"
+        "}")
+    gatherer = policy_json.PolicyJson(StringIO.StringIO(original))
+    gatherer.Parse()
+    self.failUnless(len(gatherer.GetCliques()) == 1)
+    expected = self.GetExpectedOutput(original)
+    self.failUnless(expected == eval(gatherer.Translate('en')))
+
+  def testSubPolicyNewFormat(self):
     original = (
         "{"
         "  'policy_definitions': ["
