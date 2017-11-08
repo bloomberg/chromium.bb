@@ -622,9 +622,10 @@ std::string LocalNtpSource::GetContentSecurityPolicyScriptSrc() const {
 std::string LocalNtpSource::GetContentSecurityPolicyChildSrc() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (one_google_bar_service_) {
+  if (one_google_bar_service_ || logo_service_) {
     // Allow embedding of the most visited iframe, as well as the account
-    // switcher and the notifications dropdown from the One Google Bar.
+    // switcher and the notifications dropdown from the One Google Bar, and/or
+    // the iframe for interactive Doodles.
     return base::StringPrintf("child-src %s https://*.google.com/;",
                               chrome::kChromeSearchMostVisitedUrl);
   }
