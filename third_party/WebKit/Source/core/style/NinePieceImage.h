@@ -47,10 +47,10 @@ class CORE_EXPORT NinePieceImageData
     : public RefCountedCopyable<NinePieceImageData> {
  public:
   static scoped_refptr<NinePieceImageData> Create() {
-    return WTF::AdoptRef(new NinePieceImageData);
+    return base::AdoptRef(new NinePieceImageData);
   }
   scoped_refptr<NinePieceImageData> Copy() const {
-    return WTF::AdoptRef(new NinePieceImageData(*this));
+    return base::AdoptRef(new NinePieceImageData(*this));
   }
 
   bool operator==(const NinePieceImageData&) const;

@@ -387,7 +387,7 @@ class CORE_EXPORT CSSSelector {
 
   struct RareData : public RefCounted<RareData> {
     static scoped_refptr<RareData> Create(const AtomicString& value) {
-      return WTF::AdoptRef(new RareData(value));
+      return base::AdoptRef(new RareData(value));
     }
     ~RareData();
 

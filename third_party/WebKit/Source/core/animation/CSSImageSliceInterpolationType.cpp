@@ -59,7 +59,7 @@ class CSSImageSliceNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<CSSImageSliceNonInterpolableValue> Create(
       const SliceTypes& types) {
-    return WTF::AdoptRef(new CSSImageSliceNonInterpolableValue(types));
+    return base::AdoptRef(new CSSImageSliceNonInterpolableValue(types));
   }
 
   const SliceTypes& Types() const { return types_; }

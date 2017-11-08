@@ -41,7 +41,7 @@ class RayMode {
 class CSSRayNonInterpolableValue : public NonInterpolableValue {
  public:
   static scoped_refptr<CSSRayNonInterpolableValue> Create(const RayMode& mode) {
-    return WTF::AdoptRef(new CSSRayNonInterpolableValue(mode));
+    return base::AdoptRef(new CSSRayNonInterpolableValue(mode));
   }
 
   const RayMode& Mode() const { return mode_; }

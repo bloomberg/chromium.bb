@@ -27,7 +27,7 @@ class IdleRequestCallbackWrapper
   static scoped_refptr<IdleRequestCallbackWrapper> Create(
       ScriptedIdleTaskController::CallbackId id,
       ScriptedIdleTaskController* controller) {
-    return WTF::AdoptRef(new IdleRequestCallbackWrapper(id, controller));
+    return base::AdoptRef(new IdleRequestCallbackWrapper(id, controller));
   }
   virtual ~IdleRequestCallbackWrapper() {}
 

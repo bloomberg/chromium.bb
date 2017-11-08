@@ -32,7 +32,7 @@ namespace blink {
 class QuotesData : public RefCounted<QuotesData> {
  public:
   static scoped_refptr<QuotesData> Create() {
-    return WTF::AdoptRef(new QuotesData());
+    return base::AdoptRef(new QuotesData());
   }
   static scoped_refptr<QuotesData> Create(UChar open1,
                                           UChar close1,

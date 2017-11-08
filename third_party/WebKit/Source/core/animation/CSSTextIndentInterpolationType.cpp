@@ -39,7 +39,7 @@ class CSSTextIndentNonInterpolableValue : public NonInterpolableValue {
   static scoped_refptr<CSSTextIndentNonInterpolableValue> Create(
       scoped_refptr<NonInterpolableValue> length_non_interpolable_value,
       const IndentMode& mode) {
-    return WTF::AdoptRef(new CSSTextIndentNonInterpolableValue(
+    return base::AdoptRef(new CSSTextIndentNonInterpolableValue(
         std::move(length_non_interpolable_value), mode));
   }
 

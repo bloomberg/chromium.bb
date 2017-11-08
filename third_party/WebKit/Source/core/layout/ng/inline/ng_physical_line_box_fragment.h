@@ -29,7 +29,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
-    return WTF::AdoptRef(new NGPhysicalLineBoxFragment(
+    return base::AdoptRef(new NGPhysicalLineBoxFragment(
         Style(), size_, children_copy, metrics_, break_token_));
   }
 

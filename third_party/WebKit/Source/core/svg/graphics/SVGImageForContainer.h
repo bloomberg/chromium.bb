@@ -65,7 +65,7 @@ class SVGImageForContainer final : public Image {
       const KURL& url) {
     FloatSize container_size_without_zoom(container_size);
     container_size_without_zoom.Scale(1 / zoom);
-    return WTF::AdoptRef(new SVGImageForContainer(
+    return base::AdoptRef(new SVGImageForContainer(
         image, container_size_without_zoom, zoom, url));
   }
 

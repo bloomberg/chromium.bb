@@ -7,7 +7,7 @@
 namespace blink {
 
 scoped_refptr<LayoutTheme> LayoutThemeAndroid::Create() {
-  return WTF::AdoptRef(new LayoutThemeAndroid());
+  return base::AdoptRef(new LayoutThemeAndroid());
 }
 
 LayoutTheme& LayoutTheme::NativeTheme() {

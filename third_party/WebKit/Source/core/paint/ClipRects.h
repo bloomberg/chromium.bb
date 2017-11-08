@@ -36,10 +36,10 @@ class ClipRects : public RefCounted<ClipRects> {
 
  public:
   static scoped_refptr<ClipRects> Create() {
-    return WTF::AdoptRef(new ClipRects);
+    return base::AdoptRef(new ClipRects);
   }
   static scoped_refptr<ClipRects> Create(const ClipRects& other) {
-    return WTF::AdoptRef(new ClipRects(other));
+    return base::AdoptRef(new ClipRects(other));
   }
 
   ClipRects() : fixed_(0) {}

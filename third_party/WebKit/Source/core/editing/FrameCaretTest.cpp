@@ -39,7 +39,7 @@ class FrameCaretTest : public EditingTestBase {
 TEST_F(FrameCaretTest, BlinkAfterTyping) {
   FrameCaret& caret = Selection().FrameCaretForTesting();
   scoped_refptr<scheduler::FakeWebTaskRunner> task_runner =
-      WTF::AdoptRef(new scheduler::FakeWebTaskRunner);
+      base::AdoptRef(new scheduler::FakeWebTaskRunner);
   task_runner->SetTime(0);
   caret.RecreateCaretBlinkTimerForTesting(task_runner.get());
   const double kInterval = 10;

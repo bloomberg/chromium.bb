@@ -40,7 +40,7 @@ class AnimatableFilterOperations final : public AnimatableValue {
  public:
   static scoped_refptr<AnimatableFilterOperations> Create(
       const FilterOperations& operations) {
-    return WTF::AdoptRef(new AnimatableFilterOperations(operations));
+    return base::AdoptRef(new AnimatableFilterOperations(operations));
   }
 
   ~AnimatableFilterOperations() override {}

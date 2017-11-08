@@ -16,7 +16,7 @@ class SVGValueNonInterpolableValue : public NonInterpolableValue {
 
   static scoped_refptr<SVGValueNonInterpolableValue> Create(
       SVGPropertyBase* svg_value) {
-    return WTF::AdoptRef(new SVGValueNonInterpolableValue(svg_value));
+    return base::AdoptRef(new SVGValueNonInterpolableValue(svg_value));
   }
 
   SVGPropertyBase* SvgValue() const { return svg_value_; }

@@ -9,7 +9,7 @@
 namespace blink {
 
 scoped_refptr<LayoutTheme> LayoutThemeLinux::Create() {
-  return WTF::AdoptRef(new LayoutThemeLinux());
+  return base::AdoptRef(new LayoutThemeLinux());
 }
 
 LayoutTheme& LayoutTheme::NativeTheme() {

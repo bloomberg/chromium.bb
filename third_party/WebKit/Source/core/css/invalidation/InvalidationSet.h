@@ -224,7 +224,7 @@ class CORE_EXPORT InvalidationSet
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {
  public:
   static scoped_refptr<DescendantInvalidationSet> Create() {
-    return WTF::AdoptRef(new DescendantInvalidationSet);
+    return base::AdoptRef(new DescendantInvalidationSet);
   }
 
  private:
@@ -235,7 +235,7 @@ class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
  public:
   static scoped_refptr<SiblingInvalidationSet> Create(
       scoped_refptr<DescendantInvalidationSet> descendants) {
-    return WTF::AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
+    return base::AdoptRef(new SiblingInvalidationSet(std::move(descendants)));
   }
 
   unsigned MaxDirectAdjacentSelectors() const {

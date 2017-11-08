@@ -226,7 +226,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   }
 
   if (is_in_parallel_flow) {
-    return WTF::AdoptRef(new NGConstraintSpace(
+    return base::AdoptRef(new NGConstraintSpace(
         static_cast<NGWritingMode>(out_writing_mode), false,
         static_cast<TextDirection>(text_direction_), available_size,
         percentage_resolution_size, parent_percentage_resolution_inline_size,
@@ -240,7 +240,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         floats_bfc_offset, exclusion_space, unpositioned_floats_,
         clearance_offset, baseline_requests_));
   }
-  return WTF::AdoptRef(new NGConstraintSpace(
+  return base::AdoptRef(new NGConstraintSpace(
       out_writing_mode, true, static_cast<TextDirection>(text_direction_),
       available_size, percentage_resolution_size,
       parent_percentage_resolution_inline_size, initial_containing_block_size_,

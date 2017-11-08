@@ -42,10 +42,10 @@ class StyleDifference;
 class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
  public:
   static scoped_refptr<SVGComputedStyle> Create() {
-    return WTF::AdoptRef(new SVGComputedStyle);
+    return base::AdoptRef(new SVGComputedStyle);
   }
   scoped_refptr<SVGComputedStyle> Copy() const {
-    return WTF::AdoptRef(new SVGComputedStyle(*this));
+    return base::AdoptRef(new SVGComputedStyle(*this));
   }
   CORE_EXPORT ~SVGComputedStyle();
 

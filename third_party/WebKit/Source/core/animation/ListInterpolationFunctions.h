@@ -61,11 +61,11 @@ class NonInterpolableList : public NonInterpolableValue {
   ~NonInterpolableList() final {}
 
   static scoped_refptr<NonInterpolableList> Create() {
-    return WTF::AdoptRef(new NonInterpolableList());
+    return base::AdoptRef(new NonInterpolableList());
   }
   static scoped_refptr<NonInterpolableList> Create(
       Vector<scoped_refptr<NonInterpolableValue>>&& list) {
-    return WTF::AdoptRef(new NonInterpolableList(std::move(list)));
+    return base::AdoptRef(new NonInterpolableList(std::move(list)));
   }
 
   size_t length() const { return list_.size(); }

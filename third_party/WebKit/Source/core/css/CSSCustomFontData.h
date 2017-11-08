@@ -34,7 +34,7 @@ class CSSCustomFontData final : public CustomFontData {
   static scoped_refptr<CSSCustomFontData> Create(
       RemoteFontFaceSource* source,
       FallbackVisibility visibility) {
-    return WTF::AdoptRef(new CSSCustomFontData(source, visibility));
+    return base::AdoptRef(new CSSCustomFontData(source, visibility));
   }
 
   ~CSSCustomFontData() override {}

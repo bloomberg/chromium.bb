@@ -26,7 +26,7 @@ namespace blink {
 class TokenizedChunkQueue : public ThreadSafeRefCounted<TokenizedChunkQueue> {
  public:
   static scoped_refptr<TokenizedChunkQueue> Create() {
-    return WTF::AdoptRef(new TokenizedChunkQueue);
+    return base::AdoptRef(new TokenizedChunkQueue);
   }
 
   ~TokenizedChunkQueue();

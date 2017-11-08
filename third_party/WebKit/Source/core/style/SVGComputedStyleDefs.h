@@ -123,10 +123,10 @@ enum EPaintOrder {
 class StyleFillData : public RefCounted<StyleFillData> {
  public:
   static scoped_refptr<StyleFillData> Create() {
-    return WTF::AdoptRef(new StyleFillData);
+    return base::AdoptRef(new StyleFillData);
   }
   scoped_refptr<StyleFillData> Copy() const {
-    return WTF::AdoptRef(new StyleFillData(*this));
+    return base::AdoptRef(new StyleFillData(*this));
   }
 
   bool operator==(const StyleFillData&) const;
@@ -171,11 +171,11 @@ class UnzoomedLength {
 class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
  public:
   static scoped_refptr<StyleStrokeData> Create() {
-    return WTF::AdoptRef(new StyleStrokeData);
+    return base::AdoptRef(new StyleStrokeData);
   }
 
   scoped_refptr<StyleStrokeData> Copy() const {
-    return WTF::AdoptRef(new StyleStrokeData(*this));
+    return base::AdoptRef(new StyleStrokeData(*this));
   }
 
   bool operator==(const StyleStrokeData&) const;
@@ -205,10 +205,10 @@ class CORE_EXPORT StyleStrokeData : public RefCounted<StyleStrokeData> {
 class StyleStopData : public RefCounted<StyleStopData> {
  public:
   static scoped_refptr<StyleStopData> Create() {
-    return WTF::AdoptRef(new StyleStopData);
+    return base::AdoptRef(new StyleStopData);
   }
   scoped_refptr<StyleStopData> Copy() const {
-    return WTF::AdoptRef(new StyleStopData(*this));
+    return base::AdoptRef(new StyleStopData(*this));
   }
 
   bool operator==(const StyleStopData&) const;
@@ -228,10 +228,10 @@ class StyleStopData : public RefCounted<StyleStopData> {
 class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
  public:
   static scoped_refptr<StyleMiscData> Create() {
-    return WTF::AdoptRef(new StyleMiscData);
+    return base::AdoptRef(new StyleMiscData);
   }
   scoped_refptr<StyleMiscData> Copy() const {
-    return WTF::AdoptRef(new StyleMiscData(*this));
+    return base::AdoptRef(new StyleMiscData(*this));
   }
 
   bool operator==(const StyleMiscData&) const;
@@ -254,10 +254,10 @@ class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
 class StyleResourceData : public RefCounted<StyleResourceData> {
  public:
   static scoped_refptr<StyleResourceData> Create() {
-    return WTF::AdoptRef(new StyleResourceData);
+    return base::AdoptRef(new StyleResourceData);
   }
   scoped_refptr<StyleResourceData> Copy() const {
-    return WTF::AdoptRef(new StyleResourceData(*this));
+    return base::AdoptRef(new StyleResourceData(*this));
   }
 
   bool operator==(const StyleResourceData&) const;
@@ -277,10 +277,10 @@ class StyleInheritedResourceData
     : public RefCounted<StyleInheritedResourceData> {
  public:
   static scoped_refptr<StyleInheritedResourceData> Create() {
-    return WTF::AdoptRef(new StyleInheritedResourceData);
+    return base::AdoptRef(new StyleInheritedResourceData);
   }
   scoped_refptr<StyleInheritedResourceData> Copy() const {
-    return WTF::AdoptRef(new StyleInheritedResourceData(*this));
+    return base::AdoptRef(new StyleInheritedResourceData(*this));
   }
 
   bool operator==(const StyleInheritedResourceData&) const;
@@ -301,7 +301,7 @@ class StyleInheritedResourceData
 class StyleGeometryData : public RefCounted<StyleGeometryData> {
  public:
   static scoped_refptr<StyleGeometryData> Create() {
-    return WTF::AdoptRef(new StyleGeometryData);
+    return base::AdoptRef(new StyleGeometryData);
   }
   scoped_refptr<StyleGeometryData> Copy() const;
   bool operator==(const StyleGeometryData&) const;

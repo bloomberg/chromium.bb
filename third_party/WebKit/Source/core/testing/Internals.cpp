@@ -2149,7 +2149,7 @@ bool Internals::canHyphenate(const AtomicString& locale) {
 
 void Internals::setMockHyphenation(const AtomicString& locale) {
   LayoutLocale::SetHyphenationForTesting(locale,
-                                         WTF::AdoptRef(new MockHyphenation));
+                                         base::AdoptRef(new MockHyphenation));
 }
 
 bool Internals::isOverwriteModeEnabled(Document* document) {

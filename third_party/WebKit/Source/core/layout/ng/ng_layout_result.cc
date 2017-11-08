@@ -44,7 +44,7 @@ scoped_refptr<NGLayoutResult> NGLayoutResult::CloneWithoutOffset() const {
       unpositioned_floats_);
   std::unique_ptr<const NGExclusionSpace> exclusion_space(
       WTF::WrapUnique(new NGExclusionSpace(*exclusion_space_)));
-  return WTF::AdoptRef(new NGLayoutResult(
+  return base::AdoptRef(new NGLayoutResult(
       physical_fragment_->CloneWithoutOffset(), oof_positioned_descendants,
       positioned_floats, unpositioned_floats, std::move(exclusion_space),
       bfc_offset_, end_margin_strut_, intrinsic_block_size_, Status()));

@@ -95,7 +95,7 @@ CounterNode::~CounterNode() {
 scoped_refptr<CounterNode> CounterNode::Create(LayoutObject& owner,
                                                bool has_reset_type,
                                                int value) {
-  return WTF::AdoptRef(new CounterNode(owner, has_reset_type, value));
+  return base::AdoptRef(new CounterNode(owner, has_reset_type, value));
 }
 
 CounterNode* CounterNode::NextInPreOrderAfterChildren(

@@ -43,7 +43,7 @@ class CORE_EXPORT AnimatableTransform final : public AnimatableValue {
   static scoped_refptr<AnimatableTransform> Create(
       const TransformOperations& transform,
       double zoom) {
-    return WTF::AdoptRef(new AnimatableTransform(transform, zoom));
+    return base::AdoptRef(new AnimatableTransform(transform, zoom));
   }
   const TransformOperations& GetTransformOperations() const {
     return transform_;

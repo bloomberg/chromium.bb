@@ -24,14 +24,14 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
       unsigned text_offset,
       bool is_forced_break,
       std::unique_ptr<const NGInlineLayoutStateStack> state_stack) {
-    return WTF::AdoptRef(new NGInlineBreakToken(node, item_index, text_offset,
-                                                is_forced_break,
-                                                std::move(state_stack)));
+    return base::AdoptRef(new NGInlineBreakToken(node, item_index, text_offset,
+                                                 is_forced_break,
+                                                 std::move(state_stack)));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
   static scoped_refptr<NGInlineBreakToken> Create(NGLayoutInputNode node) {
-    return WTF::AdoptRef(new NGInlineBreakToken(node));
+    return base::AdoptRef(new NGInlineBreakToken(node));
   }
 
   ~NGInlineBreakToken() override;

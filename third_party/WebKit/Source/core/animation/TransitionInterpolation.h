@@ -46,7 +46,7 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
       InterpolationValue&& end,
       const scoped_refptr<AnimatableValue> compositor_start,
       const scoped_refptr<AnimatableValue> compositor_end) {
-    return WTF::AdoptRef(new TransitionInterpolation(
+    return base::AdoptRef(new TransitionInterpolation(
         property, type, std::move(start), std::move(end),
         std::move(compositor_start), std::move(compositor_end)));
   }

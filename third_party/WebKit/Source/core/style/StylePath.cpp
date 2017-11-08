@@ -23,7 +23,7 @@ StylePath::~StylePath() {}
 
 scoped_refptr<StylePath> StylePath::Create(
     std::unique_ptr<SVGPathByteStream> path_byte_stream) {
-  return WTF::AdoptRef(new StylePath(std::move(path_byte_stream)));
+  return base::AdoptRef(new StylePath(std::move(path_byte_stream)));
 }
 
 StylePath* StylePath::EmptyPath() {
