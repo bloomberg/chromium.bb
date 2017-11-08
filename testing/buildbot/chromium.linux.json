@@ -3457,6 +3457,12 @@
       "ui_base_unittests"
     ]
   },
+  "Fuchsia ARM64 Cast Audio": {
+    "additional_compile_targets": [
+      "cast_shell",
+      "cast_test_lists"
+    ]
+  },
   "Fuchsia x64": {
     "additional_compile_targets": [
       "base_unittests",
@@ -3523,6 +3529,12 @@
         },
         "test": "sql_unittests"
       }
+    ]
+  },
+  "Fuchsia x64 Cast Audio": {
+    "additional_compile_targets": [
+      "cast_shell",
+      "cast_test_lists"
     ]
   },
   "Linux Builder": {
