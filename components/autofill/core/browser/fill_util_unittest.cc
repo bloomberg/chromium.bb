@@ -182,6 +182,27 @@ TEST_F(AutofillFillUtilTest, Type_CreditCardOverrideHtml_ServerPredicitons) {
   EXPECT_EQ(NAME_FULL, field.Type().GetStorableType());
 }
 
+// Tests that a server prediction of *_CITY_AND_NUMBER override html
+// "autocomplete=tel" prediction, which is always *_WHOLE_NUMBER
+TEST_F(AutofillFillUtilTest,
+       Type_ServerPredictionOfCityAndNumber_OverrideHtml) {
+  AutofillField field;
+
+  field.SetHtmlType(HTML_TYPE_TEL, HTML_MODE_NONE);
+
+  field.set_overall_server_type(PHONE_HOME_CITY_AND_NUMBER);
+  EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
+
+  // Other phone number prediction does not override.
+  field.set_overall_server_type(PHONE_HOME_NUMBER);
+  EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER, field.Type().GetStorableType());
+
+  // If html type not specified, we use server prediction.
+  field.SetHtmlType(HTML_TYPE_UNSPECIFIED, HTML_MODE_NONE);
+  field.set_overall_server_type(PHONE_HOME_CITY_AND_NUMBER);
+  EXPECT_EQ(PHONE_HOME_CITY_AND_NUMBER, field.Type().GetStorableType());
+}
+
 TEST_F(AutofillFillUtilTest, IsEmpty) {
   AutofillField field;
   ASSERT_EQ(base::string16(), field.value);
