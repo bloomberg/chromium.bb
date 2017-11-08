@@ -176,13 +176,9 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
              [story.expectations.ALL_WIN, story.expectations.ALL_MAC],
              'crbug.com/676336')
         self.DisableStory(
-             'browse:news:reddit',
-             [story.expectations.ALL_DESKTOP],
-             'crbug.com/759777')
-        self.DisableStory(
              'browse:news:cnn',
-             [story.expectations.ALL_DESKTOP],
-             'mac:crbug.com/728576, all:crbug.com/759777')
+             [story.expectations.ALL_MAC],
+             'mac:crbug.com/728576')
         self.DisableStory(
              'browse:tools:maps',
              [story.expectations.ALL_MAC],
@@ -207,10 +203,6 @@ class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
              [story.expectations.ALL_ANDROID],
              'crbug.com/708300')
         self.DisableStory(
-             'browse:news:cnn',
-             [story.expectations.ANDROID_NEXUS5X],
-             'crbug.com/714650')
-        self.DisableStory(
              'browse:news:globo',
              [story.expectations.ALL_ANDROID],
              'crbug.com/714650')
@@ -228,15 +220,6 @@ class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
              'browse:chrome:newtab',
              [story.expectations.ANDROID_WEBVIEW],
              'Webview does not have NTP')
-        self.DisableStory(
-             'browse:news:cnn',
-             [story.expectations.ANDROID_WEBVIEW],
-             'Crash: crbug.com/767595')
-        self.DisableStory(
-             'browse:news:toi',
-             [story.expectations.ANDROID_NEXUS5X,
-              story.expectations.ANDROID_NEXUS6],
-             'Crash: crbug.com/770920')
     return StoryExpectations()
 
   @classmethod
@@ -258,13 +241,9 @@ class V8RuntimeStatsDesktopBrowsingBenchmark(
              [story.expectations.ALL_WIN, story.expectations.ALL_MAC],
              'crbug.com/676336')
         self.DisableStory(
-             'browse:news:reddit',
-             [story.expectations.ALL_DESKTOP],
-             'crbug.com/759777')
-        self.DisableStory(
              'browse:news:cnn',
-             [story.expectations.ALL_DESKTOP],
-             'mac:crbug.com/728576, all:crbug.com/759777')
+             [story.expectations.ALL_MAC],
+             'mac:crbug.com/728576')
         self.DisableStory(
              'browse:tools:maps',
              [story.expectations.ALL_MAC],
@@ -313,10 +292,6 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
             'browse:shopping:flipkart',
             [story.expectations.ALL_MOBILE],
             'crbug.com/767970, crbug.com/708300')
-        self.DisableStory(
-            'browse:news:cnn',
-            [story.expectations.ALL_MOBILE],
-            'crbug.com/767970')
         self.DisableStory(
              'browse:news:globo',
              [story.expectations.ALL_ANDROID],
