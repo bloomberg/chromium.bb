@@ -7591,6 +7591,7 @@ Called by update_net_error_codes.py.-->
   <int value="16" label="TSS communication error"/>
   <int value="17" label="TSS invalid handle"/>
   <int value="18" label="Keyset wrapped both by TPM and Scrypt"/>
+  <int value="19" label="Failed to clean up ephemeral cryptohome"/>
 </enum>
 
 <enum name="CryptohomeMigrationToGaiaId">
