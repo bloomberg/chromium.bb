@@ -640,6 +640,7 @@ class AppMenu::ZoomView : public AppMenuView {
                                     contents->GetMinimumZoomPercent());
     }
     zoom_label_->SetText(base::FormatPercent(zoom));
+    zoom_label_->NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
     zoom_label_max_width_valid_ = false;
   }
 
