@@ -33,7 +33,8 @@ ScriptPromise UnderlyingSourceBase::pull(ScriptState* script_state) {
 
 ScriptPromise UnderlyingSourceBase::cancelWrapper(ScriptState* script_state,
                                                   ScriptValue reason) {
-  controller_->NoteHasBeenCanceled();
+  if (controller_)
+    controller_->NoteHasBeenCanceled();
   return Cancel(script_state, reason);
 }
 
