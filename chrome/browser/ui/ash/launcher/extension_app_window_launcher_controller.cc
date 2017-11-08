@@ -143,12 +143,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   window->AddObserver(this);
 
   // Find or create an item controller and launcher item.
-  ash::ShelfItemStatus status = app_window->GetBaseWindow()->IsActive()
-                                    ? ash::STATUS_ACTIVE
-                                    : ash::STATUS_RUNNING;
   AppControllerMap::iterator app_controller_iter =
       app_controller_map_.find(shelf_id);
-
   if (app_controller_iter != app_controller_map_.end()) {
     ExtensionAppWindowLauncherItemController* controller =
         app_controller_iter->second;
@@ -161,7 +157,8 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
 
     // Check for any existing pinned shelf item with a matching |shelf_id|.
     if (!owner()->GetItem(shelf_id)) {
-      owner()->CreateAppLauncherItem(std::move(controller), status);
+      owner()->CreateAppLauncherItem(std::move(controller),
+                                     ash::STATUS_RUNNING);
     } else {
       owner()->shelf_model()->SetShelfItemDelegate(shelf_id,
                                                    std::move(controller));
@@ -172,7 +169,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     app_controller_map_[shelf_id]->AddAppWindow(app_window);
   }
 
-  owner()->SetItemStatus(shelf_id, status);
+  owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
 }
 
 void ExtensionAppWindowLauncherController::UnregisterApp(aura::Window* window) {

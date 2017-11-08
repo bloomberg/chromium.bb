@@ -1679,10 +1679,10 @@ TEST_F(ChromeLauncherControllerTest, V1AppRunActivateClose) {
   EXPECT_NE(nullptr,
             launcher_controller_->GetItem(ash::ShelfID(extension1_->id())));
 
-  // Reporting an active status should just update the existing item.
-  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_ACTIVE);
+  // Reporting that the app is running again should have no effect.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::STATUS_ACTIVE, model_->items()[2].status);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
 
   // Reporting that the app is closed should remove its shelf item.
   launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);

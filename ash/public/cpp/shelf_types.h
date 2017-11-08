@@ -129,8 +129,6 @@ enum ShelfItemStatus {
   STATUS_CLOSED,
   // A shelf item that has live instance.
   STATUS_RUNNING,
-  // An active shelf item that has focus.
-  STATUS_ACTIVE,
   // A shelf item that needs user's attention.
   STATUS_ATTENTION,
 };
