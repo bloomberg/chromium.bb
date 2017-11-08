@@ -905,8 +905,10 @@ bool OutputRows(JPEGImageReader* reader, ImageFrame& buffer) {
     SkColorSpaceXform* xform = reader->Decoder()->ColorTransform();
     if (xform) {
       ImageFrame::PixelData* row = buffer.GetAddr(0, y);
-      xform->apply(XformColorFormat(), row, XformColorFormat(), row, width,
-                   kOpaque_SkAlphaType);
+      bool color_converison_successful =
+          xform->apply(XformColorFormat(), row, XformColorFormat(), row, width,
+                       kOpaque_SkAlphaType);
+      DCHECK(color_converison_successful);
     }
   }
 
@@ -1012,8 +1014,10 @@ bool JPEGImageDecoder::OutputScanlines() {
 
       SkColorSpaceXform* xform = ColorTransform();
       if (xform) {
-        xform->apply(XformColorFormat(), row, XformColorFormat(), row,
-                     info->output_width, kOpaque_SkAlphaType);
+        bool color_converison_successful =
+            xform->apply(XformColorFormat(), row, XformColorFormat(), row,
+                         info->output_width, kOpaque_SkAlphaType);
+        DCHECK(color_converison_successful);
       }
     }
     buffer.SetPixelsChanged(true);

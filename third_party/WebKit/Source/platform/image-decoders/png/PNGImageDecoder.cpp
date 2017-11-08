@@ -384,8 +384,10 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     if (SkColorSpaceXform* xform = ColorTransform()) {
       SkColorSpaceXform::ColorFormat color_format =
           SkColorSpaceXform::kRGBA_8888_ColorFormat;
-      xform->apply(color_format, dst_row, color_format, src_ptr, width,
-                   kUnpremul_SkAlphaType);
+      bool color_converison_successful =
+          xform->apply(color_format, dst_row, color_format, src_ptr, width,
+                       kUnpremul_SkAlphaType);
+      DCHECK(color_converison_successful);
       src_ptr = png_bytep(dst_row);
     }
 
@@ -443,8 +445,10 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     // written to the ImageFrame, purely because SkColorSpaceXform supports
     // RGBA (and not RGB).
     if (SkColorSpaceXform* xform = ColorTransform()) {
-      xform->apply(XformColorFormat(), dst_row, XformColorFormat(), dst_row,
-                   width, kOpaque_SkAlphaType);
+      bool color_converison_successful =
+          xform->apply(XformColorFormat(), dst_row, XformColorFormat(), dst_row,
+                       width, kOpaque_SkAlphaType);
+      DCHECK(color_converison_successful);
     }
   }
 

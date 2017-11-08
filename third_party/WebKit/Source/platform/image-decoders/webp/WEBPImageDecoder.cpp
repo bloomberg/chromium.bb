@@ -355,9 +355,9 @@ void WEBPImageDecoder::ApplyPostProcessing(size_t frame_index) {
     for (int y = decoded_height_; y < decoded_height; ++y) {
       const int canvas_y = top + y;
       uint8_t* row = reinterpret_cast<uint8_t*>(buffer.GetAddr(left, canvas_y));
-      xform->apply(kDstFormat, row, kSrcFormat, row, width,
-                   kUnpremul_SkAlphaType);
-
+      bool color_converison_successful = xform->apply(
+          kDstFormat, row, kSrcFormat, row, width, kUnpremul_SkAlphaType);
+      DCHECK(color_converison_successful);
       uint8_t* pixel = row;
       for (int x = 0; x < width; ++x, pixel += 4) {
         const int canvas_x = left + x;
