@@ -192,6 +192,7 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // single process with only one RenderWidgetHost.
   viz::FrameSinkId frame_sink_id =
       root_view->FrameSinkIdAtPoint(&delegate, point, transformed_point);
+
   const FrameSinkIdOwnerMap::iterator iter = owner_map_.find(frame_sink_id);
   // If the point hit a Surface whose namspace is no longer in the map, then
   // it likely means the RenderWidgetHostView has been destroyed but its
