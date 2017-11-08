@@ -534,6 +534,15 @@ ContentBrowserClient::CreateURLLoaderThrottles(
   return std::vector<std::unique_ptr<URLLoaderThrottle>>();
 }
 
+void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
+    RenderFrameHost* frame_host,
+    NonNetworkURLLoaderFactoryMap* factories) {}
+
+void ContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
+    RenderFrameHost* frame_host,
+    const GURL& frame_url,
+    NonNetworkURLLoaderFactoryMap* factories) {}
+
 mojom::NetworkContextPtr ContentBrowserClient::CreateNetworkContext(
     BrowserContext* context,
     bool in_memory,

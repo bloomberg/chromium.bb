@@ -3501,11 +3501,20 @@ void RenderFrameHostImpl::CommitNavigation(
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BACKGROUND,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
-      mojom::URLLoaderFactoryPtr file_factory_proxy;
-      file_factory->BindRequest(mojo::MakeRequest(&file_factory_proxy));
-      non_network_url_loader_factories_.emplace_back(std::move(file_factory));
-      subresource_loader_factories->RegisterFactory(
-          url::kFileScheme, std::move(file_factory_proxy));
+      non_network_url_loader_factories_.emplace(url::kFileScheme,
+                                                std::move(file_factory));
+    }
+
+    GetContentClient()
+        ->browser()
+        ->RegisterNonNetworkSubresourceURLLoaderFactories(
+            this, common_params.url, &non_network_url_loader_factories_);
+
+    for (auto& factory : non_network_url_loader_factories_) {
+      mojom::URLLoaderFactoryPtr factory_proxy;
+      factory.second->Clone(mojo::MakeRequest(&factory_proxy));
+      subresource_loader_factories->RegisterFactory(factory.first,
+                                                    std::move(factory_proxy));
     }
   }
 

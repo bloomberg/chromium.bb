@@ -178,14 +178,20 @@ ChromeExtensionsBrowserClient::MaybeCreateResourceBundleRequestJob(
 }
 
 bool ChromeExtensionsBrowserClient::AllowCrossRendererResourceLoad(
-    net::URLRequest* request,
+    const GURL& url,
+    content::ResourceType resource_type,
+    ui::PageTransition page_transition,
+    int child_id,
     bool is_incognito,
     const Extension* extension,
-    InfoMap* extension_info_map) {
+    const ExtensionSet& extensions,
+    const ProcessMap& process_map) {
   bool allowed = false;
   if (chrome_url_request_util::AllowCrossRendererResourceLoad(
-          request, is_incognito, extension, extension_info_map, &allowed))
+          url, resource_type, page_transition, child_id, is_incognito,
+          extension, extensions, process_map, &allowed)) {
     return allowed;
+  }
 
   // Couldn't determine if resource is allowed. Block the load.
   return false;

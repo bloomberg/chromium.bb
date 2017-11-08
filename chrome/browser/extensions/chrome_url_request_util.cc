@@ -19,7 +19,6 @@
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
 #include "net/base/mime_util.h"
@@ -122,13 +121,18 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 namespace extensions {
 namespace chrome_url_request_util {
 
-bool AllowCrossRendererResourceLoad(net::URLRequest* request,
+bool AllowCrossRendererResourceLoad(const GURL& url,
+                                    content::ResourceType resource_type,
+                                    ui::PageTransition page_transition,
+                                    int child_id,
                                     bool is_incognito,
                                     const Extension* extension,
-                                    InfoMap* extension_info_map,
+                                    const ExtensionSet& extensions,
+                                    const ProcessMap& process_map,
                                     bool* allowed) {
   if (url_request_util::AllowCrossRendererResourceLoad(
-          request, is_incognito, extension, extension_info_map, allowed)) {
+          url, resource_type, page_transition, child_id, is_incognito,
+          extension, extensions, process_map, allowed)) {
     return true;
   }
 

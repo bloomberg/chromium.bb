@@ -18,9 +18,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/file_url_loader.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -51,6 +53,35 @@ constexpr size_t kDefaultFileUrlPipeSize = 65536;
 static_assert(kDefaultFileUrlPipeSize >= net::kMaxBytesToSniff,
               "Default file data pipe size must be at least as large as a MIME-"
               "type sniffing buffer.");
+
+// Policy to control how a FileURLLoader will handle directory URLs.
+enum class DirectoryLoadingPolicy {
+  // File paths which refer to directories are allowed and will load as an
+  // HTML directory listing.
+  kRespondWithListing,
+
+  // File paths which refer to directories are treated as non-existent and
+  // will result in FILE_NOT_FOUND errors.
+  kFail,
+};
+
+// Policy to control whether or not file access constraints imposed by content
+// or its embedder should be honored by a FileURLLoader.
+enum class FileAccessPolicy {
+  // Enforces file acccess policy defined by content and/or its embedder.
+  kRestricted,
+
+  // Ignores file access policy, allowing contents to be loaded from any
+  // resolvable file path given.
+  kUnrestricted,
+};
+
+// Policy to control whether or not a FileURLLoader should follow filesystem
+// links (e.g. Windows shortcuts) where applicable.
+enum class LinkFollowingPolicy {
+  kFollow,
+  kDoNotFollow,
+};
 
 class FileURLDirectoryLoader
     : public mojom::URLLoader,
@@ -249,13 +280,17 @@ class FileURLLoader : public mojom::URLLoader {
   static void CreateAndStart(const base::FilePath& profile_path,
                              const ResourceRequest& request,
                              mojom::URLLoaderRequest loader,
-                             mojom::URLLoaderClientPtrInfo client_info) {
+                             mojom::URLLoaderClientPtrInfo client_info,
+                             DirectoryLoadingPolicy directory_loading_policy,
+                             FileAccessPolicy file_access_policy,
+                             LinkFollowingPolicy link_following_policy) {
     // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* file_url_loader = new FileURLLoader;
     file_url_loader->Start(profile_path, request, std::move(loader),
-                           std::move(client_info));
+                           std::move(client_info), directory_loading_policy,
+                           file_access_policy, link_following_policy);
   }
 
   // mojom::URLLoader:
@@ -272,7 +307,10 @@ class FileURLLoader : public mojom::URLLoader {
   void Start(const base::FilePath& profile_path,
              const ResourceRequest& request,
              mojom::URLLoaderRequest loader,
-             mojom::URLLoaderClientPtrInfo client_info) {
+             mojom::URLLoaderClientPtrInfo client_info,
+             DirectoryLoadingPolicy directory_loading_policy,
+             FileAccessPolicy file_access_policy,
+             LinkFollowingPolicy link_following_policy) {
     ResourceResponseHead head;
     head.request_start = base::TimeTicks::Now();
     head.response_start = base::TimeTicks::Now();
@@ -296,24 +334,36 @@ class FileURLLoader : public mojom::URLLoader {
       return;
     }
 
-    if (info.is_directory && !path.EndsWithSeparator()) {
-      // If the named path is a directory with no trailing slash, redirect to
-      // the same path, but with a trailing slash.
-      std::string new_path = request.url.path() + '/';
-      GURL::Replacements replacements;
-      replacements.SetPathStr(new_path);
-      GURL new_url = request.url.ReplaceComponents(replacements);
+    if (info.is_directory) {
+      if (directory_loading_policy == DirectoryLoadingPolicy::kFail) {
+        client->OnComplete(
+            ResourceRequestCompletionStatus(net::ERR_FILE_NOT_FOUND));
+        return;
+      }
 
-      net::RedirectInfo redirect_info;
-      redirect_info.new_method = "GET";
-      redirect_info.status_code = 301;
-      redirect_info.new_url = new_url;
-      head.encoded_data_length = 0;
-      client->OnReceiveRedirect(redirect_info, head);
+      DCHECK_EQ(directory_loading_policy,
+                DirectoryLoadingPolicy::kRespondWithListing);
+
+      GURL directory_url = request.url;
+      if (!path.EndsWithSeparator()) {
+        // If the named path is a directory with no trailing slash, redirect to
+        // the same path, but with a trailing slash.
+        std::string new_path = directory_url.path() + '/';
+        GURL::Replacements replacements;
+        replacements.SetPathStr(new_path);
+        directory_url = directory_url.ReplaceComponents(replacements);
+
+        net::RedirectInfo redirect_info;
+        redirect_info.new_method = "GET";
+        redirect_info.status_code = 301;
+        redirect_info.new_url = directory_url;
+        head.encoded_data_length = 0;
+        client->OnReceiveRedirect(redirect_info, head);
+      }
 
       // Restart the request with a directory loader.
       ResourceRequest new_request = request;
-      new_request.url = new_url;
+      new_request.url = directory_url;
       FileURLDirectoryLoader::CreateAndStart(
           profile_path, new_request, binding_.Unbind(), client.PassInterface());
       MaybeDeleteSelf();
@@ -322,7 +372,8 @@ class FileURLLoader : public mojom::URLLoader {
 
 #if defined(OS_WIN)
     base::FilePath shortcut_target;
-    if (base::LowerCaseEqualsASCII(path.Extension(), ".lnk") &&
+    if (link_following_policy == LinkFollowingPolicy::kFollow &&
+        base::LowerCaseEqualsASCII(path.Extension(), ".lnk") &&
         base::win::ResolveShortcut(path, &shortcut_target, nullptr)) {
       // Follow Windows shortcuts
       GURL new_url = net::FilePathToFileURL(shortcut_target);
@@ -338,11 +389,13 @@ class FileURLLoader : public mojom::URLLoader {
       ResourceRequest new_request = request;
       new_request.url = redirect_info.new_url;
       return Start(profile_path, request, binding_.Unbind(),
-                   client.PassInterface());
+                   client.PassInterface(), directory_loading_policy,
+                   file_access_policy, link_following_policy);
     }
 #endif  // defined(OS_WIN)
 
-    if (!GetContentClient()->browser()->IsFileAccessAllowed(
+    if (file_access_policy == FileAccessPolicy::kRestricted &&
+        !GetContentClient()->browser()->IsFileAccessAllowed(
             path, base::MakeAbsoluteFilePath(path), profile_path)) {
       client->OnComplete(
           ResourceRequestCompletionStatus(net::ERR_ACCESS_DENIED));
@@ -488,10 +541,6 @@ FileURLLoaderFactory::FileURLLoaderFactory(
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
-void FileURLLoaderFactory::BindRequest(mojom::URLLoaderFactoryRequest loader) {
-  bindings_.AddBinding(this, std::move(loader));
-}
-
 void FileURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderRequest loader,
     int32_t routing_id,
@@ -511,12 +560,30 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&FileURLLoader::CreateAndStart, profile_path_, request,
-                       std::move(loader), client.PassInterface()));
+                       std::move(loader), client.PassInterface(),
+                       DirectoryLoadingPolicy::kRespondWithListing,
+                       FileAccessPolicy::kRestricted,
+                       LinkFollowingPolicy::kFollow));
   }
 }
 
 void FileURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest loader) {
-  BindRequest(std::move(loader));
+  bindings_.AddBinding(this, std::move(loader));
+}
+
+void CreateFileURLLoader(const ResourceRequest& request,
+                         mojom::URLLoaderRequest loader,
+                         mojom::URLLoaderClientPtr client) {
+  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FileURLLoader::CreateAndStart, base::FilePath(), request,
+                     std::move(loader), client.PassInterface(),
+                     DirectoryLoadingPolicy::kFail,
+                     FileAccessPolicy::kUnrestricted,
+                     LinkFollowingPolicy::kDoNotFollow));
 }
 
 }  // namespace content

@@ -8,11 +8,13 @@
 
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/resource_request.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
@@ -21,19 +23,20 @@
 namespace extensions {
 namespace url_request_util {
 
-bool AllowCrossRendererResourceLoad(net::URLRequest* request,
+bool AllowCrossRendererResourceLoad(const GURL& url,
+                                    content::ResourceType resource_type,
+                                    ui::PageTransition page_transition,
+                                    int child_id,
                                     bool is_incognito,
                                     const Extension* extension,
-                                    InfoMap* extension_info_map,
+                                    const ExtensionSet& extensions,
+                                    const ProcessMap& process_map,
                                     bool* allowed) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  std::string resource_path = request->url().path();
+  std::string resource_path = url.path();
 
   // PlzNavigate: this logic is performed for main frame requests in
   // ExtensionNavigationThrottle::WillStartRequest.
-  if (info->GetChildID() != -1 ||
-      info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME ||
+  if (child_id != -1 || resource_type != content::RESOURCE_TYPE_MAIN_FRAME ||
       !content::IsBrowserSideNavigationEnabled()) {
     // Extensions with webview: allow loading certain resources by guest
     // renderers with privileged partition IDs as specified in owner's extension
@@ -41,16 +44,15 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
     std::string owner_extension_id;
     int owner_process_id;
     WebViewRendererState::GetInstance()->GetOwnerInfo(
-        info->GetChildID(), &owner_process_id, &owner_extension_id);
-    const Extension* owner_extension =
-        extension_info_map->extensions().GetByID(owner_extension_id);
+        child_id, &owner_process_id, &owner_extension_id);
+    const Extension* owner_extension = extensions.GetByID(owner_extension_id);
     std::string partition_id;
     bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
-        info->GetChildID(), &partition_id);
+        child_id, &partition_id);
 
     if (AllowCrossRendererResourceLoadHelper(
             is_guest, extension, owner_extension, partition_id, resource_path,
-            info->GetPageTransition(), allowed)) {
+            page_transition, allowed)) {
       return true;
     }
   }
@@ -68,19 +70,17 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   // some extensions want to be able to do things like create their own
   // launchers.
   base::StringPiece resource_root_relative_path =
-      request->url().path_piece().empty()
-          ? base::StringPiece()
-          : request->url().path_piece().substr(1);
+      url.path_piece().empty() ? base::StringPiece()
+                               : url.path_piece().substr(1);
   if (extension->is_hosted_app() &&
       !IconsInfo::GetIcons(extension)
            .ContainsPath(resource_root_relative_path)) {
-    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
-               << "hosted app.";
+    LOG(ERROR) << "Denying load of " << url.spec() << " from hosted app.";
     *allowed = false;
     return true;
   }
 
-  DCHECK_EQ(extension->url(), request->url().GetWithEmptyPath());
+  DCHECK_EQ(extension->url(), url.GetWithEmptyPath());
 
   // Extensions with manifest before v2 did not have web_accessible_resource
   // section, therefore the request needs to be allowed.
@@ -91,14 +91,14 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
 
   // Navigating the main frame to an extension URL is allowed, even if not
   // explicitly listed as web_accessible_resource.
-  if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
+  if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {
     *allowed = true;
     return true;
-  } else if (info->GetResourceType() == content::RESOURCE_TYPE_SUB_FRAME) {
+  } else if (resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
     // When navigating in subframe, allow if it is the same origin
     // as the top-level frame. This can only be the case if the subframe
     // request is coming from the extension process.
-    if (extension_info_map->process_map().Contains(info->GetChildID())) {
+    if (process_map.Contains(child_id)) {
       *allowed = true;
       return true;
     }
@@ -114,35 +114,19 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   // Since not all subresources are required to be listed in a v2
   // manifest, we must allow all subresource loads if there are any web
   // accessible resources. See http://crbug.com/179127.
-  if (!content::IsResourceTypeFrame(info->GetResourceType()) &&
+  if (!content::IsResourceTypeFrame(resource_type) &&
       WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
     *allowed = true;
     return true;
   }
 
-  if (!ui::PageTransitionIsWebTriggerable(info->GetPageTransition())) {
+  if (!ui::PageTransitionIsWebTriggerable(page_transition)) {
     *allowed = false;
     return true;
   }
 
   // Couldn't determine if the resource is allowed or not.
   return false;
-}
-
-bool IsWebViewRequest(net::URLRequest* request) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  // |info| can be NULL sometimes: http://crbug.com/370070.
-  if (!info)
-    return false;
-  if (WebViewRendererState::GetInstance()->IsGuest(info->GetChildID()))
-    return true;
-
-  // GetChildId() is -1 with PlzNavigate for navigation requests, so also try
-  // the ExtensionNavigationUIData data.
-  ExtensionNavigationUIData* data =
-      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
-  return data && data->is_web_view();
 }
 
 bool AllowCrossRendererResourceLoadHelper(bool is_guest,

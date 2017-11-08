@@ -7,6 +7,12 @@
 
 #include <string>
 
+#include "content/public/common/resource_type.h"
+#include "content/public/common/url_loader.mojom.h"
+#include "ui/base/page_transition_types.h"
+
+class GURL;
+
 namespace base {
 class FilePath;
 }
@@ -19,7 +25,8 @@ class URLRequestJob;
 
 namespace extensions {
 class Extension;
-class InfoMap;
+class ExtensionSet;
+class ProcessMap;
 
 // Utilities related to URLRequest jobs for extension resources. See
 // chrome/browser/extensions/extension_protocols_unittest.cc for related tests.
@@ -28,10 +35,14 @@ namespace chrome_url_request_util {
 // Sets allowed=true to allow a chrome-extension:// resource request coming from
 // renderer A to access a resource in an extension running in renderer B.
 // Returns false when it couldn't determine if the resource is allowed or not
-bool AllowCrossRendererResourceLoad(net::URLRequest* request,
+bool AllowCrossRendererResourceLoad(const GURL& url,
+                                    content::ResourceType resource_type,
+                                    ui::PageTransition page_transition,
+                                    int child_id,
                                     bool is_incognito,
                                     const Extension* extension,
-                                    InfoMap* extension_info_map,
+                                    const ExtensionSet& extensions,
+                                    const ProcessMap& process_map,
                                     bool* allowed);
 
 // Creates a URLRequestJob for loading component extension resources out of
