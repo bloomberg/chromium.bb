@@ -9,9 +9,9 @@
 
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
+@protocol CRWWebViewProxy;
 @class OverscrollActionsController;
 
 // Describe the current state of the overscroll action controller.
@@ -59,31 +59,33 @@ extern NSString* const kOverscrollActionsDidEnd;
 
 // The OverscrollActionsController controls the display of an
 // OverscrollActionsView above the headerView provided by the delegate.
+//
 // Pulling down the scrollview will start showing the OverscrollActionView.
 // Finally, the headerView frame will be resized in height during the process of
 // showing the overscrollActionsView.
+//
 // The OverscrollActionsController can be used in two different modes depending
 // on what kind of scrollview it's using:
-// The first mode will use the scrollview provided by the
-// CRWWebControllerObserver. To use this mode the OverscrollActionsController
-// must be initialized with a nil scrollview. The -(instancetype)init
-// initializer will do that for you.
-// The second mode will use the scrollview provided during initialization and
-// will ignore calls from the CRWWebControllerObserver.
-// This second mode will typically be used in native tabs like the error tabs
-// or the NTP.
+//
+// -  the first mode will use a scrollview for the web view provided by the
+//    CRWWebViewProxy; the -invalidate method must be called before the web
+//    view is destroyed.
+//
+// -  the second mode will use a scrollview provided during initialization;
+//    this second mode will typically be used in native tabs like the error
+//    tabs or the NTP.
 
-@interface OverscrollActionsController
-    : NSObject<CRWWebControllerObserver, UIScrollViewDelegate>
+@interface OverscrollActionsController : NSObject<UIScrollViewDelegate>
 
-// Init the OverscrollActionsController with a nil scrollview.
-// If the scrollview is nil then the OverscrollActionsController will be
-// configured to use the scrollview from the CRWWebControllerObserver.
-- (instancetype)init;
-// Designated initializer, when initialized with a scrollview, the
-// OverscrollActionsController will not use the CRWWebControllerObserver to
-// configure the scrollview, it will directly use the passed scrollview.
+// Initializes the OverscrollActionsController with a proxy to the web
+// view scrollview. The CRWWebViewProxy must not be nil.
+- (instancetype)initWithWebViewProxy:(id<CRWWebViewProxy>)webViewProxy;
+
+// Initializes the OverscrollActionsController with a scrollview. The
+// scroll view must not be nil.
 - (instancetype)initWithScrollView:(UIScrollView*)scrollView;
+
+- (instancetype)init NS_UNAVAILABLE;
 
 // The scrollview the overscroll controller will control.
 @property(weak, nonatomic, readonly) UIScrollView* scrollView;

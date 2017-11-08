@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include <algorithm>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
@@ -229,6 +230,10 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 // Applies bounce state to the scroll view.
 - (void)applyBounceState;
 
+- (instancetype)initWithScrollView:(UIScrollView*)scrollView
+                      webViewProxy:(id<CRWWebViewProxy>)webViewProxy
+    NS_DESIGNATED_INITIALIZER;
+
 @end
 
 @implementation OverscrollActionsController
@@ -241,22 +246,24 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 @synthesize panPointScreenOrigin = _panPointScreenOrigin;
 @synthesize panGestureRecognizer = _panGestureRecognizer;
 
-- (instancetype)init {
-  return [self initWithScrollView:nil];
-}
+- (instancetype)initWithScrollView:(UIScrollView*)scrollView
+                      webViewProxy:(id<CRWWebViewProxy>)webViewProxy {
+  DCHECK_NE(!!scrollView, !!webViewProxy)
+      << "exactly one of scrollView and webViewProxy must be non-nil";
 
-- (instancetype)initWithScrollView:(UIScrollView*)scrollView {
-  self = [super init];
-  if (self) {
+  if ((self = [super init])) {
     _overscrollActionView =
         [[OverscrollActionsView alloc] initWithFrame:CGRectZero];
     _overscrollActionView.delegate = self;
-    _scrollview = scrollView;
-    if (_scrollview) {
-      [self setup];
+    if (scrollView) {
+      _scrollview = scrollView;
+    } else {
+      _webViewProxy = webViewProxy;
+      _webViewScrollViewProxy = [_webViewProxy scrollViewProxy];
+      [_webViewScrollViewProxy addObserver:self];
     }
-    _lockIncrementNotifications = [[NSMutableSet alloc] init];
 
+    _lockIncrementNotifications = [[NSMutableSet alloc] init];
     _lockNotificationsCounterparts = @{
       UIKeyboardWillHideNotification : UIKeyboardWillShowNotification,
       kMenuWillHideNotification : kMenuWillShowNotification,
@@ -269,10 +276,27 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       kLocationBarResignsFirstResponderNotification :
           kLocationBarBecomesFirstResponderNotification,
       kSideSwipeDidStopNotification : kSideSwipeWillStartNotification
+
     };
     [self registerNotifications];
+
+    if (_webViewProxy) {
+      // -enableOverscrollAction calls -setup, so it must not be called again
+      // if _webViewProxy is non-nil
+      [self enableOverscrollActions];
+    } else {
+      [self setup];
+    }
   }
   return self;
+}
+
+- (instancetype)initWithWebViewProxy:(id<CRWWebViewProxy>)webViewProxy {
+  return [self initWithScrollView:nil webViewProxy:webViewProxy];
+}
+
+- (instancetype)initWithScrollView:(UIScrollView*)scrollView {
+  return [self initWithScrollView:scrollView webViewProxy:nil];
 }
 
 - (void)dealloc {
@@ -504,25 +528,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
     shouldRecognizeSimultaneouslyWithGestureRecognizer:
         (UIGestureRecognizer*)otherGestureRecognizer {
   return YES;
-}
-
-#pragma mark - CRWWebControllerObserver methods
-
-- (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
-             controller:(CRWWebController*)webController {
-  DCHECK([webViewProxy scrollViewProxy]);
-  _initialHeaderInset = 0;
-  _webViewProxy = webViewProxy;
-  [_webViewScrollViewProxy removeObserver:self];
-  _webViewScrollViewProxy = [webViewProxy scrollViewProxy];
-  [_webViewScrollViewProxy addObserver:self];
-  [self enableOverscrollActions];
-}
-
-- (void)webControllerWillClose:(CRWWebController*)webController {
-  [self disableOverscrollActions];
-  [_webViewScrollViewProxy removeObserver:self];
-  _webViewScrollViewProxy = nil;
 }
 
 #pragma mark - Private
