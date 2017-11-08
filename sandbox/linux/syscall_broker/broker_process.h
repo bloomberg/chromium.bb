@@ -80,8 +80,8 @@ class SANDBOX_EXPORT BrokerProcess {
   bool initialized_;  // Whether we've been through Init() yet.
   const bool fast_check_in_client_;
   const bool quiet_failures_for_tests_;
-  pid_t broker_pid_;                     // The PID of the broker (child).
-  syscall_broker::BrokerPolicy policy_;  // The sandboxing policy.
+  pid_t broker_pid_;  // The PID of the broker (child).
+  syscall_broker::BrokerPolicy broker_policy_;  // Access policy to enforce.
   std::unique_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);

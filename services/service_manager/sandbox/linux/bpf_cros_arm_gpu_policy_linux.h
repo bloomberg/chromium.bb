@@ -21,6 +21,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT CrosArmGpuProcessPolicy
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
+  std::unique_ptr<sandbox::bpf_dsl::Policy> GetBrokerSandboxPolicy() override;
+
  private:
 #if defined(__arm__) || defined(__aarch64__)
   const bool allow_shmat_;  // Allow shmat(2).

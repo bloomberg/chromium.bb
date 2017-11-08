@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "services/service_manager/sandbox/export.h"
+#include "services/service_manager/sandbox/linux/bpf_base_policy_linux.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace service_manager {
@@ -38,8 +39,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxSeccompBPF {
   // is passed to the BPF compiler and the sandbox is engaged. If
   // pre_sandbox_hook() returns true, the sandbox will be engaged
   // afterwards, otherwise the process is terminated.
-  using PreSandboxHook =
-      base::OnceCallback<bool(sandbox::bpf_dsl::Policy*, Options)>;
+  using PreSandboxHook = base::OnceCallback<bool(BPFBasePolicy*, Options)>;
 
   // This is the API to enable a seccomp-bpf sandbox for content/
   // process-types:

@@ -23,6 +23,8 @@ class SERVICE_MANAGER_SANDBOX_EXPORT GpuProcessPolicy : public BPFBasePolicy {
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
+  std::unique_ptr<sandbox::bpf_dsl::Policy> GetBrokerSandboxPolicy() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuProcessPolicy);
 };

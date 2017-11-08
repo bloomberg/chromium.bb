@@ -74,6 +74,11 @@ ResultExpr CrosArmGpuProcessPolicy::EvaluateSyscall(int sysno) const {
   }
 }
 
+std::unique_ptr<sandbox::bpf_dsl::Policy>
+CrosArmGpuProcessPolicy::GetBrokerSandboxPolicy() {
+  return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
+}
+
 CrosArmGpuBrokerProcessPolicy::CrosArmGpuBrokerProcessPolicy()
     : CrosArmGpuProcessPolicy(false) {}
 

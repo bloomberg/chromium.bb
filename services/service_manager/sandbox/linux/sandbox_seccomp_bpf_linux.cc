@@ -125,7 +125,7 @@ inline bool IsChromeOS() {
 }
 
 inline bool IsArchitectureArm() {
-#if defined(__arm__)
+#if defined(ARCH_CPU_ARM_FAMILY)
   return true;
 #else
   return false;
