@@ -317,6 +317,10 @@ const FeatureEntry::FeatureParam kAccountConsistencyDice[] = {
     {signin::kAccountConsistencyFeatureMethodParameter,
      signin::kAccountConsistencyFeatureMethodDice}};
 
+const FeatureEntry::FeatureParam kAccountConsistencyDicePrepareMigration[] = {
+    {signin::kAccountConsistencyFeatureMethodParameter,
+     signin::kAccountConsistencyFeatureMethodDicePrepareMigration}};
+
 const FeatureEntry::FeatureParam kAccountConsistencyDiceMigration[] = {
     {signin::kAccountConsistencyFeatureMethodParameter,
      signin::kAccountConsistencyFeatureMethodDiceMigration}};
@@ -335,6 +339,9 @@ const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
      nullptr /* variation_id */},
     {"Dice (migration)", kAccountConsistencyDiceMigration,
      arraysize(kAccountConsistencyDiceMigration), nullptr /* variation_id */},
+    {"Dice (prepare migration)", kAccountConsistencyDicePrepareMigration,
+     arraysize(kAccountConsistencyDicePrepareMigration),
+     nullptr /* variation_id */},
     {"Dice (fix auth errors)", kAccountConsistencyDiceFixAuthErrors,
      arraysize(kAccountConsistencyDiceFixAuthErrors),
      nullptr /* variation_id */}

@@ -258,12 +258,16 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
 
-    // Calc DICE field trial params.
+    // DICE field trial params:
     std::string dice_method_name;
     switch (account_consistency_method_) {
       case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
         dice_method_name =
             signin::kAccountConsistencyFeatureMethodDiceFixAuthErrors;
+        break;
+      case signin::AccountConsistencyMethod::kDicePrepareMigration:
+        dice_method_name =
+            signin::kAccountConsistencyFeatureMethodDicePrepareMigration;
         break;
       case signin::AccountConsistencyMethod::kDiceMigration:
         dice_method_name =
@@ -339,7 +343,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
   void SignOutWithDice(SignoutType signout_type) {
     NavigateToURL(base::StringPrintf("%s?%i", kSignoutURL, signout_type));
-    if (signin::IsDiceMigrationEnabled()) {
+    if (signin::IsDicePrepareMigrationEnabled()) {
       EXPECT_EQ(1, reconcilor_blocked_count_);
       WaitForReconcilorUnblockedCount(1);
     } else {
@@ -352,9 +356,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // InProcessBrowserTest:
   void SetUp() override {
     ASSERT_TRUE(https_server_.InitializeAndListen());
-    // New profiles are not automatically migrated, in order to test the
-    // non-migrated state.
-    AccountReconcilorFactory::GetInstance()->IgnoreNewProfilesForTesting();
     InProcessBrowserTest::SetUp();
   }
 
@@ -384,9 +385,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
 
-    ASSERT_EQ(
-        account_consistency_method_ == signin::AccountConsistencyMethod::kDice,
-        signin::IsDiceEnabledForProfile(browser()->profile()->GetPrefs()));
+    ASSERT_EQ(account_consistency_method_,
+              signin::GetAccountConsistencyMethod());
   }
 
   void TearDownOnMainThread() override {
@@ -429,7 +429,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   // FakeGaia callbacks:
   void OnSigninRequest(const std::string& dice_request_header) {
-    EXPECT_EQ(signin::IsDiceMigrationEnabled(), IsReconcilorBlocked());
+    EXPECT_EQ(signin::IsDicePrepareMigrationEnabled(), IsReconcilorBlocked());
     dice_request_header_ = dice_request_header;
   }
 
@@ -441,7 +441,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   void OnTokenExchangeRequest() {
     // The token must be exchanged only once.
     EXPECT_FALSE(token_requested_);
-    EXPECT_EQ(signin::IsDiceMigrationEnabled(), IsReconcilorBlocked());
+    EXPECT_EQ(signin::IsDicePrepareMigrationEnabled(), IsReconcilorBlocked());
     token_requested_ = true;
     RunClosureIfValid(&token_requested_quit_closure_);
   }
@@ -531,10 +531,10 @@ class DiceFixAuthErrorsBrowserTest : public DiceBrowserTestBase {
       : DiceBrowserTestBase(AccountConsistencyMethod::kDiceFixAuthErrors) {}
 };
 
-class DiceMigrationBrowserTest : public DiceBrowserTestBase {
+class DicePrepareMigrationBrowserTest : public DiceBrowserTestBase {
  public:
-  DiceMigrationBrowserTest()
-      : DiceBrowserTestBase(AccountConsistencyMethod::kDiceMigration) {}
+  DicePrepareMigrationBrowserTest()
+      : DiceBrowserTestBase(AccountConsistencyMethod::kDicePrepareMigration) {}
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, Signout) {
 }
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
-IN_PROC_BROWSER_TEST_F(DiceMigrationBrowserTest, Signin) {
+IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, Signin) {
   EXPECT_EQ(0, reconcilor_started_count_);
 
   // Navigate to Gaia and sign in.
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(DiceMigrationBrowserTest, Signin) {
   EXPECT_EQ(1, reconcilor_started_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(DiceMigrationBrowserTest, Signout) {
+IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, Signout) {
   // Start from a signed-in state.
   SetupSignedInAccounts();
 

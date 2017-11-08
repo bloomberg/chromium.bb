@@ -169,6 +169,8 @@ std::string GetAccountConsistencyDescription() {
       return "Mirror";
     case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
       return "DICE fixing auth errors";
+    case signin::AccountConsistencyMethod::kDicePrepareMigration:
+      return "DICE preparing migration";
     case signin::AccountConsistencyMethod::kDiceMigration:
       return "DICE migration";
     case signin::AccountConsistencyMethod::kDice:

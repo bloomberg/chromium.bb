@@ -23,9 +23,6 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
   // Returns an instance of the factory singleton.
   static AccountReconcilorFactory* GetInstance();
 
-  // Profiles will never be considered as new profiles. Only used for testing.
-  void IgnoreNewProfilesForTesting();
-
  private:
   friend struct base::DefaultSingletonTraits<AccountReconcilorFactory>;
 
@@ -37,8 +34,6 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile) const override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  bool are_new_profiles_ignored_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_FACTORY_H_

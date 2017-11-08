@@ -107,7 +107,7 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
   // Attaches a DiceURLRequestUserData to the request if it needs to block the
   // AccountReconcilor.
   static void AttachToRequest(net::URLRequest* request) {
-    if (!IsDiceMigrationEnabled())
+    if (!IsDicePrepareMigrationEnabled())
       return;
 
     if (ShouldBlockReconcilorForRequest(request)) {
@@ -154,7 +154,7 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
   // * Main frame  requests.
   // * XHR requests having Gaia URL as referrer.
   static bool ShouldBlockReconcilorForRequest(net::URLRequest* request) {
-    DCHECK(IsDiceMigrationEnabled());
+    DCHECK(IsDicePrepareMigrationEnabled());
     const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
     content::ResourceType resource_type = info->GetResourceType();
