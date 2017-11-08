@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "content/renderer/media_recorder/video_track_recorder.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -98,7 +99,10 @@ class CONTENT_EXPORT MediaRecorderHandler final
   int32_t audio_bits_per_second_;
 
   // Video Codec, VP8 is used by default.
-  VideoTrackRecorder::CodecId codec_id_;
+  VideoTrackRecorder::CodecId video_codec_id_;
+
+  // Audio Codec, OPUS is used by default.
+  AudioTrackRecorder::CodecId audio_codec_id_;
 
   // |client_| has no notion of time, thus may configure us via start(timeslice)
   // to notify it after a certain |timeslice_| has passed. We use a moving
