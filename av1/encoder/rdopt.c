@@ -4876,8 +4876,12 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
         (max_tx_size != TX_32X32 || (is_inter && !USE_MRC_INTER) ||
          (!is_inter && !USE_MRC_INTRA)))
       continue;
-#endif  // CONFIG_MRC_TX
+    // MRC_DCT won't be included in the tx_set_type determined 1 level below
+    // a 32X32 block, but we still want to search MRC_DCT
+    if (!av1_ext_tx_used[tx_set_type][tx_type] && tx_type != MRC_DCT) continue;
+#else
     if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
+#endif  // CONFIG_MRC_TX
     (void)prune;
     // TODO(sarahparker) This speed feature has been temporarily disabled
     // with ext-tx because it is not compatible with the current
