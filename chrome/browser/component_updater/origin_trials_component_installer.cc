@@ -79,6 +79,8 @@ OriginTrialsComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);
 }
 
+void OriginTrialsComponentInstallerPolicy::OnCustomUninstall() {}
+
 void OriginTrialsComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,

@@ -75,6 +75,8 @@ FileTypePoliciesComponentInstallerPolicy::OnCustomInstall(
   return update_client::CrxInstaller::Result(0);  // Nothing custom here.
 }
 
+void FileTypePoliciesComponentInstallerPolicy::OnCustomUninstall() {}
+
 base::FilePath FileTypePoliciesComponentInstallerPolicy::GetInstalledPath(
     const base::FilePath& base) {
   return base.Append(kFileTypePoliciesBinaryPbFileName);

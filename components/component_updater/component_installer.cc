@@ -377,6 +377,9 @@ void ComponentInstaller::UninstallOnTaskRunner() {
     if (!base::DeleteFile(base_dir, false))
       DLOG(ERROR) << "Couldn't delete " << base_dir.value();
   }
+
+  // Customized operations for individual component.
+  installer_policy_->OnCustomUninstall();
 }
 
 void ComponentInstaller::FinishRegistration(
