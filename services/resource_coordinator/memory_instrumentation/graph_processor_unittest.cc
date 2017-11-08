@@ -42,6 +42,20 @@ class GraphProcessorTest : public testing::Test {
                              GlobalDumpGraph::Process* process) {
     GraphProcessor::AssignTracingOverhead(allocator, global_graph, process);
   }
+
+  GlobalDumpGraph::Node::Entry AggregateNumericWithNameForNode(
+      GlobalDumpGraph::Node* node,
+      base::StringPiece name) {
+    return GraphProcessor::AggregateNumericWithNameForNode(node, name);
+  }
+
+  void AggregateNumericsRecursively(GlobalDumpGraph::Node* node) {
+    return GraphProcessor::AggregateNumericsRecursively(node);
+  }
+
+  void PropagateNumericsAndDiagnosticsRecursively(GlobalDumpGraph::Node* node) {
+    return GraphProcessor::PropagateNumericsAndDiagnosticsRecursively(node);
+  }
 };
 
 TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
@@ -82,9 +96,9 @@ TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
   auto* direct = id_to_dump_it->second->FindNode("test1/test2/test3");
   ASSERT_EQ(third_child, direct);
 
-  ASSERT_EQ(third_child->entries().size(), 1ul);
+  ASSERT_EQ(third_child->entries()->size(), 1ul);
 
-  auto size = third_child->entries().find(MemoryAllocatorDump::kNameSize);
+  auto size = third_child->entries()->find(MemoryAllocatorDump::kNameSize);
   ASSERT_EQ(10ul, size->second.value_uint64);
 
   ASSERT_TRUE(weak->flags() & MemoryAllocatorDump::Flags::WEAK);
@@ -464,6 +478,99 @@ TEST_F(GraphProcessorTest, AssignTracingOverhead) {
   AssignTracingOverhead("malloc", &graph, &process);
   ASSERT_NE(process.FindNode("malloc/allocated_objects/tracing_overhead"),
             nullptr);
+}
+
+TEST_F(GraphProcessorTest, AggregateNumericWithNameForNode) {
+  GlobalDumpGraph graph;
+  Process process(1, &graph);
+
+  Node parent(&process, process.root());
+
+  Node c1(&process, &parent);
+  c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+
+  Node c2(&process, &parent);
+  c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+
+  Node c3(&process, &parent);
+  c3.AddEntry("other_numeric", Node::Entry::ScalarUnits::kBytes, 1000);
+
+  parent.InsertChild("c1", &c1);
+  parent.InsertChild("c2", &c2);
+  parent.InsertChild("c3", &c3);
+
+  Node::Entry entry =
+      AggregateNumericWithNameForNode(&parent, "random_numeric");
+  ASSERT_EQ(entry.value_uint64, 356ul);
+  ASSERT_EQ(entry.units, Node::Entry::ScalarUnits::kBytes);
+}
+
+TEST_F(GraphProcessorTest, AggregateNumericsRecursively) {
+  GlobalDumpGraph graph;
+  Process process(1, &graph);
+  Node parent(&process, process.root());
+
+  Node c1(&process, &parent);
+  c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 100);
+
+  // If an entry already exists in the parent, the child should not
+  // ovewrite it.
+  Node c2(&process, &parent);
+  Node c2_c1(&process, &c2);
+  Node c2_c2(&process, &c2);
+  c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+  c2_c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 256);
+
+  // If nothing exists, then the child can aggregrate.
+  Node c3(&process, &parent);
+  Node c3_c1(&process, &c3);
+  Node c3_c2(&process, &c3);
+  c3_c1.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
+  c3_c2.AddEntry("random_numeric", Node::Entry::ScalarUnits::kBytes, 10);
+
+  parent.InsertChild("c1", &c1);
+  parent.InsertChild("c2", &c2);
+  parent.InsertChild("c3", &c3);
+  c2.InsertChild("c1", &c2_c1);
+  c2.InsertChild("c2", &c2_c2);
+  c3.InsertChild("c1", &c3_c1);
+  c3.InsertChild("c2", &c3_c2);
+
+  AggregateNumericsRecursively(&parent);
+  ASSERT_EQ(parent.entries()->size(), 1ul);
+
+  auto entry = parent.entries()->begin()->second;
+  ASSERT_EQ(entry.value_uint64, 376ul);
+  ASSERT_EQ(entry.units, Node::Entry::ScalarUnits::kBytes);
+}
+
+TEST_F(GraphProcessorTest, PropagateNumericsAndDiagnosticsRecursively) {
+  GlobalDumpGraph graph;
+  Process process(1, &graph);
+
+  Node c1(&process, process.root());
+  Node c1_c1(&process, process.root());
+
+  Node c2(&process, process.root());
+
+  Node owner_1(&process, process.root());
+  Node owner_2(&process, process.root());
+
+  process.root()->InsertChild("c1", &c1);
+  process.root()->InsertChild("c2", &c2);
+  process.root()->InsertChild("owner_1", &owner_1);
+  process.root()->InsertChild("owner_2", &owner_2);
+
+  c1.InsertChild("c1", &c1_c1);
+
+  Edge edge_1(&owner_1, &c1_c1, 0);
+  c1_c1.AddOwnedByEdge(&edge_1);
+  owner_1.SetOwnsEdge(&edge_1);
+
+  Edge edge_2(&owner_2, &c2, 0);
+  c2.AddOwnedByEdge(&edge_2);
+  owner_2.SetOwnsEdge(&edge_2);
 }
 
 }  // namespace memory_instrumentation
