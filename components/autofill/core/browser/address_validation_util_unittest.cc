@@ -226,8 +226,6 @@ TEST_F(AutofillAddressValidationTest, ValidateAddress_AdminAreaSpecialLetter) {
 }
 
 TEST_F(AutofillAddressValidationTest, ValidateAddress_ValidZipNoSpace) {
-  // TODO(crbug/752614): postal codes in lower case letters should also be
-  // considered as valid. Now, they are considered as INVALID.
   const std::string postal_code = "H3C6S3";
   AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
   profile.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16(postal_code));
@@ -241,6 +239,20 @@ TEST_F(AutofillAddressValidationTest, ValidateAddress_ValidZipNoSpace) {
             profile.GetValidityState(ADDRESS_HOME_CITY));
   EXPECT_EQ(AutofillProfile::EMPTY,
             profile.GetValidityState(ADDRESS_HOME_DEPENDENT_LOCALITY));
+  EXPECT_EQ(AutofillProfile::VALID, profile.GetValidityState(ADDRESS_HOME_ZIP));
+}
+
+TEST_F(AutofillAddressValidationTest, ValidateAddress_ValidZipLowerCase) {
+  // Postal codes in lower case letters should also be considered as valid.
+  const std::string postal_code = "h3c 6s3";
+  AutofillProfile profile(autofill::test::GetFullValidProfileForCanada());
+  profile.SetRawInfo(ADDRESS_HOME_ZIP, base::UTF8ToUTF16(postal_code));
+
+  EXPECT_EQ(AutofillProfile::VALID, ValidateAddressTest(&profile));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(AutofillProfile::VALID,
+            profile.GetValidityState(ADDRESS_HOME_STATE));
   EXPECT_EQ(AutofillProfile::VALID, profile.GetValidityState(ADDRESS_HOME_ZIP));
 }
 
