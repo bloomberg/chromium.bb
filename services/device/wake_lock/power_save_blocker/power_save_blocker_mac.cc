@@ -69,11 +69,11 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
   // details.
   switch (type_) {
-    case mojom::WakeLockType::PreventAppSuspension:
+    case mojom::WakeLockType::kPreventAppSuspension:
       level = kIOPMAssertionTypeNoIdleSleep;
       break;
-    case mojom::WakeLockType::PreventDisplaySleep:
-    case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+    case mojom::WakeLockType::kPreventDisplaySleep:
+    case mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
       level = kIOPMAssertionTypeNoDisplaySleep;
       break;
     default:

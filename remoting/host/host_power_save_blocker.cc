@@ -30,8 +30,8 @@ HostPowerSaveBlocker::~HostPowerSaveBlocker() {
 
 void HostPowerSaveBlocker::OnClientConnected(const std::string& jid) {
   blocker_.reset(new device::PowerSaveBlocker(
-      device::mojom::WakeLockType::PreventDisplaySleep,
-      device::mojom::WakeLockReason::ReasonOther, "Remoting session is active",
+      device::mojom::WakeLockType::kPreventDisplaySleep,
+      device::mojom::WakeLockReason::kOther, "Remoting session is active",
       ui_task_runner_, file_task_runner_));
 }
 

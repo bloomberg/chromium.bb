@@ -99,8 +99,8 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 }
 
 POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
-  if (type_ == mojom::WakeLockType::PreventDisplaySleep ||
-      type_ == mojom::WakeLockType::PreventDisplaySleepAllowDimming)
+  if (type_ == mojom::WakeLockType::kPreventDisplaySleep ||
+      type_ == mojom::WakeLockType::kPreventDisplaySleepAllowDimming)
     return PowerRequestDisplayRequired;
 
   if (base::win::GetVersion() == base::win::VERSION_WIN7)

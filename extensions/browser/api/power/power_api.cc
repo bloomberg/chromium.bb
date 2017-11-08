@@ -25,13 +25,13 @@ const char kWakeLockDescription[] = "extension";
 device::mojom::WakeLockType LevelToWakeLockType(api::power::Level level) {
   switch (level) {
     case api::power::LEVEL_SYSTEM:
-      return device::mojom::WakeLockType::PreventAppSuspension;
+      return device::mojom::WakeLockType::kPreventAppSuspension;
     case api::power::LEVEL_DISPLAY:  // fallthrough
     case api::power::LEVEL_NONE:
-      return device::mojom::WakeLockType::PreventDisplaySleep;
+      return device::mojom::WakeLockType::kPreventDisplaySleep;
   }
   NOTREACHED() << "Unhandled level " << level;
-  return device::mojom::WakeLockType::PreventDisplaySleep;
+  return device::mojom::WakeLockType::kPreventDisplaySleep;
 }
 
 base::LazyInstance<BrowserContextKeyedAPIFactory<PowerAPI>>::DestructorAtExit
@@ -166,7 +166,7 @@ device::mojom::WakeLock* PowerAPI::GetWakeLock() {
                            mojo::MakeRequest(&wake_lock_provider));
   wake_lock_provider->GetWakeLockWithoutContext(
       LevelToWakeLockType(current_level_),
-      device::mojom::WakeLockReason::ReasonOther, kWakeLockDescription,
+      device::mojom::WakeLockReason::kOther, kWakeLockDescription,
       std::move(request));
   return wake_lock_.get();
 }

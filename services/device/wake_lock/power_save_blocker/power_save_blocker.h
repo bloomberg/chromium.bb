@@ -38,7 +38,7 @@ class PowerSaveBlocker {
   virtual ~PowerSaveBlocker();
 
 #if defined(OS_ANDROID)
-  // On Android, the mojom::WakeLockType::PreventDisplaySleep type of
+  // On Android, the mojom::WakeLockType::kPreventDisplaySleep type of
   // PowerSaveBlocker should associated with a View, so the blocker can be
   // removed by the platform. Note that |view_android| is guaranteed to be
   // valid only for the lifetime of this call; hence it should not be cached

@@ -115,7 +115,7 @@ void WakeLock::CreateWakeLock() {
   wake_lock_ = base::MakeUnique<PowerSaveBlocker>(
       type_, reason_, *description_, main_task_runner_, file_task_runner_);
 
-  if (type_ != mojom::WakeLockType::PreventDisplaySleep)
+  if (type_ != mojom::WakeLockType::kPreventDisplaySleep)
     return;
 
 #if defined(OS_ANDROID)

@@ -10,27 +10,27 @@ enum WakeLockType {
     // requests that the app continue to run in that case, and on all platforms
     // prevents the system from sleeping.
     // Example use cases: downloading a file, playing audio.
-    PreventAppSuspension = 0,
+    kPreventAppSuspension = 0,
 
     // Prevent the display from going to sleep. This also has the side effect of
     // preventing the system from sleeping, but does not necessarily prevent the
     // app from being suspended on some platforms if the user hides it.
     // Example use case: playing video.
-    PreventDisplaySleep = 1,
+    kPreventDisplaySleep = 1,
 
-    // Like PreventDisplaySleep, but permits the display to dim while remaining
+    // Like kPreventDisplaySleep, but permits the display to dim while remaining
     // on. On some platforms, this may be treated identically to
     // PreventDisplaySleep.
-    PreventDisplaySleepAllowDimming = 2,
+    kPreventDisplaySleepAllowDimming = 2,
 };
 
 enum WakeLockReason {
     // Audio is being played.
-    ReasonAudioPlayback = 0,
+    kAudioPlayback = 0,
     // Video is being played.
-    ReasonVideoPlayback = 1,
+    kVideoPlayback = 1,
     // WakeLock for some other reason.
-    ReasonOther = 2,
+    kOther = 2,
 };
 
 // WakeLock receives wake lock preferences from its client.

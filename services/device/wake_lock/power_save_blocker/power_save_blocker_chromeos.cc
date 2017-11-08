@@ -23,11 +23,11 @@ namespace {
 chromeos::PowerPolicyController::WakeLockReason GetWakeLockReason(
     mojom::WakeLockReason reason) {
   switch (reason) {
-    case mojom::WakeLockReason::ReasonAudioPlayback:
+    case mojom::WakeLockReason::kAudioPlayback:
       return chromeos::PowerPolicyController::REASON_AUDIO_PLAYBACK;
-    case mojom::WakeLockReason::ReasonVideoPlayback:
+    case mojom::WakeLockReason::kVideoPlayback:
       return chromeos::PowerPolicyController::REASON_VIDEO_PLAYBACK;
-    case mojom::WakeLockReason::ReasonOther:
+    case mojom::WakeLockReason::kOther:
       return chromeos::PowerPolicyController::REASON_OTHER;
   }
   return chromeos::PowerPolicyController::REASON_OTHER;
@@ -55,15 +55,15 @@ class PowerSaveBlocker::Delegate
 
     auto* controller = chromeos::PowerPolicyController::Get();
     switch (type_) {
-      case mojom::WakeLockType::PreventAppSuspension:
+      case mojom::WakeLockType::kPreventAppSuspension:
         block_id_ = controller->AddSystemWakeLock(GetWakeLockReason(reason_),
                                                   description_);
         break;
-      case mojom::WakeLockType::PreventDisplaySleep:
+      case mojom::WakeLockType::kPreventDisplaySleep:
         block_id_ = controller->AddScreenWakeLock(GetWakeLockReason(reason_),
                                                   description_);
         break;
-      case mojom::WakeLockType::PreventDisplaySleepAllowDimming:
+      case mojom::WakeLockType::kPreventDisplaySleepAllowDimming:
         block_id_ = controller->AddDimWakeLock(GetWakeLockReason(reason_),
                                                description_);
         break;

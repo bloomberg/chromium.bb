@@ -73,7 +73,7 @@ class ArcPowerBridge::WakeLockRequestor {
       connector_->BindInterface(device::mojom::kServiceName,
                                 mojo::MakeRequest(&provider));
       provider->GetWakeLockWithoutContext(
-          type_, device::mojom::WakeLockReason::ReasonOther, "ARC",
+          type_, device::mojom::WakeLockReason::kOther, "ARC",
           mojo::MakeRequest(&wake_lock_));
     }
 
@@ -225,12 +225,12 @@ void ArcPowerBridge::OnPowerStateChanged(
 void ArcPowerBridge::OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) {
   switch (type) {
     case mojom::DisplayWakeLockType::BRIGHT:
-      GetWakeLockRequestor(device::mojom::WakeLockType::PreventDisplaySleep)
+      GetWakeLockRequestor(device::mojom::WakeLockType::kPreventDisplaySleep)
           ->AddRequest();
       break;
     case mojom::DisplayWakeLockType::DIM:
       GetWakeLockRequestor(
-          device::mojom::WakeLockType::PreventDisplaySleepAllowDimming)
+          device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming)
           ->AddRequest();
       break;
     default:
@@ -243,12 +243,12 @@ void ArcPowerBridge::OnAcquireDisplayWakeLock(mojom::DisplayWakeLockType type) {
 void ArcPowerBridge::OnReleaseDisplayWakeLock(mojom::DisplayWakeLockType type) {
   switch (type) {
     case mojom::DisplayWakeLockType::BRIGHT:
-      GetWakeLockRequestor(device::mojom::WakeLockType::PreventDisplaySleep)
+      GetWakeLockRequestor(device::mojom::WakeLockType::kPreventDisplaySleep)
           ->RemoveRequest();
       break;
     case mojom::DisplayWakeLockType::DIM:
       GetWakeLockRequestor(
-          device::mojom::WakeLockType::PreventDisplaySleepAllowDimming)
+          device::mojom::WakeLockType::kPreventDisplaySleepAllowDimming)
           ->RemoveRequest();
       break;
     default:
