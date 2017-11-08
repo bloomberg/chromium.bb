@@ -278,9 +278,14 @@ bool IsLogicalStartOfWord(TextBreakIterator* iter,
   if (!boundary)
     return false;
 
-  iter->following(position);
   // isWordTextBreak returns true after moving across a word and false after
   // moving across a punctuation/space.
+  // If |iter| is already at the end before |iter->following| is called,
+  // IsWordTextBreak behaves differently depending on the ICU version. We have
+  // to check if |iter| is at the end, first.
+  // See https://ssl.icu-project.org/trac/ticket/13447 .
+  if (iter->following(position) == TextBreakIterator::DONE)
+    return false;
   return IsWordTextBreak(iter);
 }
 

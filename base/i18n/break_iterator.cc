@@ -147,7 +147,11 @@ BreakIterator::WordBreakStatus BreakIterator::GetWordBreakStatus() const {
   int32_t status = ubrk_getRuleStatus(static_cast<UBreakIterator*>(iter_));
   if (break_type_ != BREAK_WORD && break_type_ != RULE_BASED)
     return IS_LINE_OR_CHAR_BREAK;
-  return status == UBRK_WORD_NONE ? IS_SKIPPABLE_WORD : IS_WORD_BREAK;
+  // In ICU 60, trying to advance past the end of the text does not change
+  // |status| so that |pos_| has to be checked as well as |status|.
+  // See http://bugs.icu-project.org/trac/ticket/13447 .
+  return (status == UBRK_WORD_NONE || pos_ == npos) ? IS_SKIPPABLE_WORD
+                                                    : IS_WORD_BREAK;
 }
 
 bool BreakIterator::IsEndOfWord(size_t position) const {

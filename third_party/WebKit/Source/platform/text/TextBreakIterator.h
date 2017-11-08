@@ -63,6 +63,9 @@ PLATFORM_EXPORT void ReleaseLineBreakIterator(TextBreakIterator*);
 PLATFORM_EXPORT TextBreakIterator* SentenceBreakIterator(const UChar*,
                                                          int length);
 
+// Before calling this, check if the iterator is not at the end. Otherwise,
+// it may not work as expected.
+// See https://ssl.icu-project.org/trac/ticket/13447 .
 PLATFORM_EXPORT bool IsWordTextBreak(TextBreakIterator*);
 
 const int kTextBreakDone = -1;
