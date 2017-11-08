@@ -50,8 +50,7 @@ TaskQueueImpl::TaskQueueImpl(TaskQueueManager* task_queue_manager,
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers),
       should_report_when_execution_blocked_(
-          spec.should_report_when_execution_blocked),
-      supports_async_deletion_(!!spec.shutdown_task_runner) {
+          spec.should_report_when_execution_blocked) {
   DCHECK(time_domain);
   time_domain->RegisterQueue(this);
 }
@@ -943,6 +942,12 @@ bool TaskQueueImpl::IsUnregistered() const {
 
 base::WeakPtr<TaskQueueManager> TaskQueueImpl::GetTaskQueueManagerWeakPtr() {
   return main_thread_only().task_queue_manager->GetWeakPtr();
+}
+
+scoped_refptr<GracefulQueueShutdownHelper>
+TaskQueueImpl::GetGracefulQueueShutdownHelper() {
+  return main_thread_only()
+      .task_queue_manager->GetGracefulQueueShutdownHelper();
 }
 
 void TaskQueueImpl::SetQueueEnabledForTest(bool enabled) {

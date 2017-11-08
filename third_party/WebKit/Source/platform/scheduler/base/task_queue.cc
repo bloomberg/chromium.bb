@@ -15,9 +15,10 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                      const TaskQueue::Spec& spec)
     : impl_(std::move(impl)),
       thread_id_(base::PlatformThread::CurrentId()),
-      shutdown_task_runner_(spec.shutdown_task_runner),
       task_queue_manager_(impl_ ? impl_->GetTaskQueueManagerWeakPtr()
-                                : nullptr) {}
+                                : nullptr),
+      graceful_queue_shutdown_helper_(
+          impl_ ? impl_->GetGracefulQueueShutdownHelper() : nullptr) {}
 
 TaskQueue::~TaskQueue() {
   // scoped_refptr guarantees us that this object isn't used.
@@ -25,13 +26,8 @@ TaskQueue::~TaskQueue() {
     return;
   if (impl_->IsUnregistered())
     return;
-  // If |shutdown_task_runner_| is not provided, TaskQueue should be
-  // unregistered manually before deletion.
-  DCHECK(shutdown_task_runner_);
-  shutdown_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&TaskQueueManager::GracefullyShutdownTaskQueue,
-                 task_queue_manager_, base::Passed(std::move(impl_))));
+  graceful_queue_shutdown_helper_->GracefullyShutdownTaskQueue(
+      std::move(impl_));
 }
 
 TaskQueue::Task::Task(TaskQueue::PostedTask task,
