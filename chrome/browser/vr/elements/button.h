@@ -9,7 +9,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/vr/elements/textured_element.h"
+#include "chrome/browser/vr/color_scheme.h"
+#include "chrome/browser/vr/elements/invisible_hit_target.h"
+#include "chrome/browser/vr/elements/ui_element.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace gfx {
 class PointF;
@@ -17,28 +20,46 @@ class PointF;
 
 namespace vr {
 
-class ButtonTexture;
+class Rect;
+class VectorIcon;
 
-class Button : public TexturedElement {
+// Button has rounded rect as background and a vector icon as the foregroud.
+// When hovered, background and foreground both move forward on Z axis.
+class Button : public UiElement {
  public:
-  explicit Button(base::Callback<void()> click_handler,
-                  std::unique_ptr<ButtonTexture> texture);
+  Button(base::Callback<void()> click_handler,
+         int draw_phase,
+         float width,
+         float height,
+         const gfx::VectorIcon& icon);
   ~Button() override;
 
-  void OnHoverLeave() override;
-  void OnHoverEnter(const gfx::PointF& position) override;
-  void OnMove(const gfx::PointF& position) override;
-  void OnButtonDown(const gfx::PointF& position) override;
-  void OnButtonUp(const gfx::PointF& position) override;
-  bool HitTest(const gfx::PointF& point) const override;
+  void Render(UiElementRenderer* renderer,
+              const gfx::Transform& model_view_proj_matrix) const final;
+
+  Rect* background() const { return background_; }
+  VectorIcon* foreground() const { return foreground_; }
+  UiElement* hit_plane() const { return hit_plane_; }
+  void SetButtonColors(const ButtonColors& colors);
 
  private:
-  UiTexture* GetTexture() const override;
-  void OnStateUpdated(const gfx::PointF& position);
+  void HandleHoverEnter();
+  void HandleHoverMove(const gfx::PointF& position);
+  void HandleHoverLeave();
+  void HandleButtonDown();
+  void HandleButtonUp();
+  void OnStateUpdated();
 
-  std::unique_ptr<ButtonTexture> texture_;
   bool down_ = false;
+
+  bool hovered_ = false;
+  bool pressed_ = false;
   base::Callback<void()> click_handler_;
+  ButtonColors colors_;
+
+  Rect* background_;
+  VectorIcon* foreground_;
+  UiElement* hit_plane_;
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };

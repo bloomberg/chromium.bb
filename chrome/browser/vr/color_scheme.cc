@@ -27,11 +27,11 @@ void InitializeColorSchemes() {
   normal_scheme.element_background = 0xCCB3B3B3;
   normal_scheme.element_background_hover = 0xFFCCCCCC;
   normal_scheme.element_background_down = 0xFFF3F3F3;
-  normal_scheme.close_button_foreground = normal_scheme.element_foreground;
-  normal_scheme.close_button_background = normal_scheme.element_background;
-  normal_scheme.close_button_background_hover =
+  normal_scheme.button_colors.foreground = normal_scheme.element_foreground;
+  normal_scheme.button_colors.background = normal_scheme.element_background;
+  normal_scheme.button_colors.background_hover =
       normal_scheme.element_background_hover;
-  normal_scheme.close_button_background_down =
+  normal_scheme.button_colors.background_press =
       normal_scheme.element_background_down;
   normal_scheme.loading_indicator_foreground = 0xFF2979FF;
   normal_scheme.loading_indicator_background = 0xFF454545;
@@ -79,13 +79,14 @@ void InitializeColorSchemes() {
   fullscreen_scheme.element_background = 0xCC2B3E48;
   fullscreen_scheme.element_background_hover = 0xCC536B77;
   fullscreen_scheme.element_background_down = 0xCC96AFBB;
-  fullscreen_scheme.close_button_foreground =
+
+  fullscreen_scheme.button_colors.foreground =
       fullscreen_scheme.element_foreground;
-  fullscreen_scheme.close_button_background =
+  fullscreen_scheme.button_colors.background =
       fullscreen_scheme.element_background;
-  fullscreen_scheme.close_button_background_hover =
+  fullscreen_scheme.button_colors.background_hover =
       fullscreen_scheme.element_background_hover;
-  fullscreen_scheme.close_button_background_down =
+  fullscreen_scheme.button_colors.background_press =
       fullscreen_scheme.element_background_down;
 
   gColorSchemes[ColorScheme::kModeIncognito] =
@@ -100,13 +101,13 @@ void InitializeColorSchemes() {
   incognito_scheme.element_background = 0xCC454545;
   incognito_scheme.element_background_hover = 0xCC505050;
   incognito_scheme.element_background_down = 0xCC888888;
-  incognito_scheme.close_button_foreground =
+  incognito_scheme.button_colors.foreground =
       fullscreen_scheme.element_foreground;
-  incognito_scheme.close_button_background =
+  incognito_scheme.button_colors.background =
       fullscreen_scheme.element_background;
-  incognito_scheme.close_button_background_hover =
+  incognito_scheme.button_colors.background_hover =
       fullscreen_scheme.element_background_hover;
-  incognito_scheme.close_button_background_down =
+  incognito_scheme.button_colors.background_press =
       fullscreen_scheme.element_background_down;
   incognito_scheme.separator = 0xFF474747;
   incognito_scheme.secure = 0xFFEDEDED;
@@ -127,6 +128,13 @@ void InitializeColorSchemes() {
 }
 
 }  // namespace
+
+bool ButtonColors::operator==(const ButtonColors& other) const {
+  return background == other.background &&
+         background_hover == other.background_hover &&
+         background_press == other.background_press &&
+         foreground == other.foreground;
+}
 
 const ColorScheme& ColorScheme::GetColorScheme(ColorScheme::Mode mode) {
   InitializeColorSchemes();

@@ -24,6 +24,8 @@ class VectorIconTexture : public UiTexture {
     set_dirty();
   }
 
+  SkColor GetColor() const { return color_; }
+
   void SetIcon(const gfx::VectorIcon& icon) {
     if (icon_no_1x_.path == icon.path)
       return;
@@ -67,6 +69,10 @@ VectorIcon::~VectorIcon() {}
 
 void VectorIcon::SetColor(SkColor color) {
   texture_->SetColor(color);
+}
+
+SkColor VectorIcon::GetColor() const {
+  return texture_->GetColor();
 }
 
 void VectorIcon::SetIcon(const gfx::VectorIcon& icon) {

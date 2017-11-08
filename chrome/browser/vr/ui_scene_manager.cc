@@ -36,7 +36,6 @@
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/elements/url_bar.h"
 #include "chrome/browser/vr/elements/vector_icon.h"
-#include "chrome/browser/vr/elements/vector_icon_button_texture.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/elements/webvr_url_toast.h"
 #include "chrome/browser/vr/model/model.h"
@@ -73,6 +72,16 @@ void BindColor(UiSceneManager* model, Text* text, P p) {
                  base::Unretained(model), p),
       base::Bind([](Text* t, const SkColor& c) { t->SetColor(c); },
                  base::Unretained(text))));
+}
+
+template <typename P>
+void BindColor(UiSceneManager* model, Button* button, P p) {
+  button->AddBinding(base::MakeUnique<Binding<ButtonColors>>(
+      base::Bind([](UiSceneManager* m, P p) { return (m->color_scheme()).*p; },
+                 base::Unretained(model), p),
+      base::Bind(
+          [](Button* b, const ButtonColors& c) { b->SetButtonColors(c); },
+          base::Unretained(button))));
 }
 
 typedef LinearLayout SuggestionItem;
@@ -437,17 +446,17 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
 
   auto button = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnWebVrTimedOut, base::Unretained(this)),
-      base::MakeUnique<VectorIconButtonTexture>(vector_icons::kClose16Icon));
+      kPhaseOverlayForeground, kTimeoutButtonWidth, kTimeoutButtonHeight,
+      vector_icons::kClose16Icon);
   button->set_name(kWebVrTimeoutMessageButton);
-  button->set_draw_phase(kPhaseOverlayForeground);
   button->SetTranslate(0, kTimeoutButtonVerticalOffset,
                        -kTimeoutButtonDistance);
   button->SetRotate(1, 0, 0, kTimeoutButtonRotationRad);
-  button->SetSize(kTimeoutButtonWidth, kTimeoutButtonHeight);
   button->SetTransitionedProperties({OPACITY});
   button->AddBinding(VR_BIND_FUNC(bool, Model, model,
                                   web_vr_timeout_state == kWebVrTimedOut,
                                   Button, button.get(), SetVisible));
+  BindColor(this, button.get(), &ColorScheme::button_colors);
   scene_->AddUiElement(kSplashScreenViewportAwareRoot, std::move(button));
 
   timeout_text = base::MakeUnique<Text>(512, kTimeoutMessageTextFontHeightM,
@@ -553,33 +562,33 @@ void UiSceneManager::CreateViewportAwareRoot() {
 }
 
 void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
-  std::unique_ptr<UiElement> element = base::MakeUnique<Button>(
+  auto voice_search_button = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnVoiceSearchButtonClicked,
                  base::Unretained(this)),
-      base::MakeUnique<VectorIconButtonTexture>(vector_icons::kMicrophoneIcon));
-  element->set_name(kVoiceSearchButton);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetTranslate(kVoiceSearchButtonXOffset, 0.f, 0.f);
-  element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
-  element->set_x_anchoring(RIGHT);
-  element->AddBinding(base::MakeUnique<Binding<bool>>(
+      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
+      vector_icons::kMicrophoneIcon);
+  voice_search_button->set_name(kVoiceSearchButton);
+  voice_search_button->SetTranslate(kVoiceSearchButtonXOffset, 0.f, 0.f);
+  voice_search_button->set_x_anchoring(RIGHT);
+  voice_search_button->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m) {
             return !m->incognito && m->experimental_features_enabled;
           },
           base::Unretained(model)),
       base::Bind([](UiElement* e, const bool& v) { e->SetVisible(v); },
-                 element.get())));
-  scene_->AddUiElement(kUrlBar, std::move(element));
+                 voice_search_button.get())));
+  BindColor(this, voice_search_button.get(), &ColorScheme::button_colors);
+  scene_->AddUiElement(kUrlBar, std::move(voice_search_button));
 
   auto speech_recognition_prompt = base::MakeUnique<UiElement>();
-  element = std::move(speech_recognition_prompt);
-  element->set_name(kSpeechRecognitionPrompt);
-  element->SetTranslate(0.f, 0.f, -kContentDistance);
-  element->set_hit_testable(false);
-  element->AddBinding(VR_BIND_FUNC(bool, Model, model, recognizing_speech,
-                                   UiElement, element.get(), SetVisible));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+  speech_recognition_prompt->set_name(kSpeechRecognitionPrompt);
+  speech_recognition_prompt->SetTranslate(0.f, 0.f, -kContentDistance);
+  speech_recognition_prompt->set_hit_testable(false);
+  speech_recognition_prompt->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, recognizing_speech, UiElement,
+                   speech_recognition_prompt.get(), SetVisible));
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(speech_recognition_prompt));
 
   auto growing_circle = base::MakeUnique<Throbber>();
   growing_circle->set_name(kSpeechRecognitionPromptGrowingCircle);
@@ -619,12 +628,11 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
       &UiSceneManager::OnExitRecognizingSpeechClicked, base::Unretained(this)));
   speech_recognition_prompt_backplane_ = backplane.get();
-  element = std::move(backplane);
-  element->set_name(kSpeechRecognitionPromptBackplane);
-  element->set_draw_phase(kPhaseForeground);
-  element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
-  element->SetTranslate(0.0, 0.0, -kTextureOffset);
-  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(element));
+  backplane->set_name(kSpeechRecognitionPromptBackplane);
+  backplane->set_draw_phase(kPhaseForeground);
+  backplane->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  backplane->SetTranslate(0.0, 0.0, -kTextureOffset);
+  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(backplane));
 }
 
 void UiSceneManager::CreateController(Model* model) {
@@ -808,12 +816,12 @@ void UiSceneManager::CreateWebVrUrlToast() {
 void UiSceneManager::CreateCloseButton() {
   std::unique_ptr<Button> element = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnCloseButtonClicked, base::Unretained(this)),
-      base::MakeUnique<VectorIconButtonTexture>(vector_icons::kClose16Icon));
+      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
+      vector_icons::kClose16Icon);
   element->set_name(kCloseButton);
-  element->set_draw_phase(kPhaseForeground);
   element->SetTranslate(0, kContentVerticalOffset - (kContentHeight / 2) - 0.3f,
                         -kCloseButtonDistance);
-  element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  BindColor(this, element.get(), &ColorScheme::button_colors);
   close_button_ = element.get();
   scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }

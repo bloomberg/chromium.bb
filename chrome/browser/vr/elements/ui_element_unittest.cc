@@ -60,4 +60,24 @@ TEST(UiElements, AnimationAffectsInheritableTransform) {
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }
 
+TEST(UiElements, HitTest) {
+  UiElement element;
+  element.SetSize(1.0, 1.0);
+  element.set_corner_radius(1.0 / 2);
+
+  struct {
+    gfx::PointF location;
+    bool expected;
+  } test_cases[] = {
+      {gfx::PointF(0.f, 0.f), false},   {gfx::PointF(0.f, 1.0f), false},
+      {gfx::PointF(1.0f, 1.0f), false}, {gfx::PointF(1.0f, 0.f), false},
+      {gfx::PointF(0.5f, 0.5f), true},
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(test_cases[i].expected, element.HitTest(test_cases[i].location));
+  }
+}
+
 }  // namespace vr
