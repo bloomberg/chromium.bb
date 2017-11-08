@@ -2622,11 +2622,12 @@ TEST_F(NavigationControllerTest, SameDocument) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  // Ensure main page navigation to same url respects the
-  // was_within_same_document hint provided in the params.
+  // Ensure renderer-initiated main frame navigation to same url replaces the
+  // current entry. This behavior differs from the browser-initiated case.
   FrameHostMsg_DidCommitProvisionalLoad_Params self_params;
   self_params.nav_entry_id = 0;
-  self_params.did_create_new_entry = false;
+  self_params.did_create_new_entry = true;
+  self_params.should_replace_current_entry = true;
   self_params.url = url1;
   self_params.transition = ui::PAGE_TRANSITION_LINK;
   self_params.should_update_history = false;
@@ -2637,7 +2638,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   self_params.page_state = PageState::CreateForTestingWithSequenceNumbers(
       url1, self_params.item_sequence_number,
       self_params.document_sequence_number);
-  self_params.was_within_same_document = true;
+  self_params.was_within_same_document = false;
 
   LoadCommittedDetailsObserver observer(contents());
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, false);
@@ -2646,7 +2647,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   NavigationEntry* entry1 = controller.GetLastCommittedEntry();
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
-  EXPECT_TRUE(observer.is_same_document());
+  EXPECT_FALSE(observer.is_same_document());
   EXPECT_TRUE(observer.did_replace_entry());
   EXPECT_EQ(1, controller.GetEntryCount());
 
@@ -2680,6 +2681,7 @@ TEST_F(NavigationControllerTest, SameDocument) {
   controller.GoBack();
   back_params.nav_entry_id = entry1->GetUniqueID();
   back_params.did_create_new_entry = false;
+  back_params.was_within_same_document = true;
   main_test_rfh()->SendNavigateWithParams(&back_params);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
@@ -2743,11 +2745,12 @@ TEST_F(NavigationControllerTest, SameDocument_Replace) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  // First navigation.
+  // First navigation (using location.replace).
   const GURL url2("http://foo#a");
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = false;
+  params.should_replace_current_entry = true;
   params.url = url2;
   params.transition = ui::PAGE_TRANSITION_LINK;
   params.should_update_history = false;
@@ -2791,12 +2794,13 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
     navigation_entry_committed_counter_ = 0;
   }
 
-  // Navigate within the page.
+  // Navigate within the page using location.replace.
   {
     const GURL url("http://foo2/#a");
     FrameHostMsg_DidCommitProvisionalLoad_Params params;
     params.nav_entry_id = 0;
     params.did_create_new_entry = false;
+    params.should_replace_current_entry = true;
     params.url = url;
     params.transition = ui::PAGE_TRANSITION_LINK;
     params.redirects.push_back(url);

@@ -80,14 +80,17 @@ void FrameNavigationEntry::UpdateEntry(
 
 void FrameNavigationEntry::set_item_sequence_number(
     int64_t item_sequence_number) {
-  // TODO(creis): Assert that this does not change after being assigned, once
-  // location.replace is classified as NEW_PAGE rather than EXISTING_PAGE.
-  // Same for document sequence number.  See https://crbug.com/596707.
+  // Once assigned, the item sequence number shouldn't change.
+  DCHECK(item_sequence_number_ == -1 ||
+         item_sequence_number_ == item_sequence_number);
   item_sequence_number_ = item_sequence_number;
 }
 
 void FrameNavigationEntry::set_document_sequence_number(
     int64_t document_sequence_number) {
+  // Once assigned, the document sequence number shouldn't change.
+  DCHECK(document_sequence_number_ == -1 ||
+         document_sequence_number_ == document_sequence_number);
   document_sequence_number_ = document_sequence_number;
 }
 
