@@ -32,6 +32,21 @@ message WebApkResponse {
 
 // Sent as part of request to create or update a WebAPK.
 message WebApk {
+  enum UpdateReason {
+    NONE = 1;
+    OLD_SHELL_APK = 2;
+    PRIMARY_ICON_HASH_DIFFERS = 3;
+    BADGE_ICON_HASH_DIFFERS = 4;
+    SCOPE_DIFFERS = 5;
+    START_URL_DIFFERS = 6;
+    SHORT_NAME_DIFFERS = 7;
+    NAME_DIFFERS = 8;
+    BACKGROUND_COLOR_DIFFERS = 9;
+    THEME_COLOR_DIFFERS = 10;
+    ORIENTATION_DIFFERS = 11;
+    DISPLAY_MODE_DIFFERS = 12;
+  }
+
   // Package name of the WebAPK.
   optional string package_name = 1;
 
@@ -56,6 +71,9 @@ message WebApk {
   // If set true, this flag indicates that the Web App Manifest of the site is
   // no longer available.
   optional bool stale_manifest = 9;
+
+  // The reason that a WebAPK update is requested.
+  optional UpdateReason update_reason = 10;
 
   reserved 4;
 }

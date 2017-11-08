@@ -85,6 +85,36 @@ std::string ColorToString(int64_t color) {
   return color_utils::SkColorToRgbaString(sk_color);
 }
 
+webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
+    WebApkUpdateReason update_reason) {
+  switch (update_reason) {
+    case WebApkUpdateReason::NONE:
+      return webapk::WebApk::NONE;
+    case WebApkUpdateReason::OLD_SHELL_APK:
+      return webapk::WebApk::OLD_SHELL_APK;
+    case WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS:
+      return webapk::WebApk::PRIMARY_ICON_HASH_DIFFERS;
+    case WebApkUpdateReason::BADGE_ICON_HASH_DIFFERS:
+      return webapk::WebApk::BADGE_ICON_HASH_DIFFERS;
+    case WebApkUpdateReason::SCOPE_DIFFERS:
+      return webapk::WebApk::SCOPE_DIFFERS;
+    case WebApkUpdateReason::START_URL_DIFFERS:
+      return webapk::WebApk::START_URL_DIFFERS;
+    case WebApkUpdateReason::SHORT_NAME_DIFFERS:
+      return webapk::WebApk::SHORT_NAME_DIFFERS;
+    case WebApkUpdateReason::NAME_DIFFERS:
+      return webapk::WebApk::NAME_DIFFERS;
+    case WebApkUpdateReason::BACKGROUND_COLOR_DIFFERS:
+      return webapk::WebApk::BACKGROUND_COLOR_DIFFERS;
+    case WebApkUpdateReason::THEME_COLOR_DIFFERS:
+      return webapk::WebApk::THEME_COLOR_DIFFERS;
+    case WebApkUpdateReason::ORIENTATION_DIFFERS:
+      return webapk::WebApk::ORIENTATION_DIFFERS;
+    case WebApkUpdateReason::DISPLAY_MODE_DIFFERS:
+      return webapk::WebApk::DISPLAY_MODE_DIFFERS;
+  }
+}
+
 // Get Chrome's current ABI. It depends on whether Chrome is running as a 32 bit
 // app or 64 bit, and the device's cpu architecture as well. Note: please keep
 // this function stay in sync with |chromium_android_linker::GetCpuAbi()|.
@@ -122,7 +152,8 @@ std::unique_ptr<std::string> BuildProtoInBackground(
     const std::string& package_name,
     const std::string& version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-    bool is_manifest_stale) {
+    bool is_manifest_stale,
+    WebApkUpdateReason update_reason) {
   std::unique_ptr<webapk::WebApk> webapk(new webapk::WebApk);
   webapk->set_manifest_url(shortcut_info.manifest_url.spec());
   webapk->set_requester_application_package(
@@ -132,6 +163,7 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   webapk->set_package_name(package_name);
   webapk->set_version(version);
   webapk->set_stale_manifest(is_manifest_stale);
+  webapk->set_update_reason(ConvertUpdateReasonToProtoEnum(update_reason));
 
   webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
   web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info.name));
@@ -195,12 +227,13 @@ bool StoreUpdateRequestToFileInBackground(
     const std::string& package_name,
     const std::string& version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-    bool is_manifest_stale) {
+    bool is_manifest_stale,
+    WebApkUpdateReason update_reason) {
   base::AssertBlockingAllowed();
 
   std::unique_ptr<std::string> proto = BuildProtoInBackground(
       shortcut_info, primary_icon, badge_icon, package_name, version,
-      icon_url_to_murmur2_hash, is_manifest_stale);
+      icon_url_to_murmur2_hash, is_manifest_stale, update_reason);
 
   // Create directory if it does not exist.
   base::CreateDirectory(update_request_path.DirName());
@@ -297,7 +330,7 @@ void WebApkInstaller::BuildProto(
       GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&BuildProtoInBackground, shortcut_info, primary_icon,
                  badge_icon, package_name, version, icon_url_to_murmur2_hash,
-                 is_manifest_stale),
+                 is_manifest_stale, WebApkUpdateReason::NONE),
       callback);
 }
 
@@ -311,12 +344,13 @@ void WebApkInstaller::StoreUpdateRequestToFile(
     const std::string& version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
     bool is_manifest_stale,
+    WebApkUpdateReason update_reason,
     const base::Callback<void(bool)> callback) {
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&StoreUpdateRequestToFileInBackground, update_request_path,
                  shortcut_info, primary_icon, badge_icon, package_name, version,
-                 icon_url_to_murmur2_hash, is_manifest_stale),
+                 icon_url_to_murmur2_hash, is_manifest_stale, update_reason),
       callback);
 }
 

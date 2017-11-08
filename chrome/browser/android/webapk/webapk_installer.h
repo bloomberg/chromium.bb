@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
+#include "chrome/browser/android/webapk/webapk_types.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -102,6 +103,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       const std::string& version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
       bool is_manifest_stale,
+      WebApkUpdateReason update_reason,
       const base::Callback<void(bool)> callback);
 
  protected:

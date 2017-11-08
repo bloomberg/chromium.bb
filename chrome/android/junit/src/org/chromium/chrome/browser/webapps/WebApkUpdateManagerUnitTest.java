@@ -150,7 +150,7 @@ public class WebApkUpdateManagerUnitTest {
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebApkInfo info,
                 String primaryIconUrl, String badgeIconUrl, boolean isManifestStale,
-                Callback<Boolean> callback) {
+                @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
             mStoreUpdateRequestCallback = callback;
             mUpdateName = info.name();
             writeRandomTextToFile(updateRequestPath);

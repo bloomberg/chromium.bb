@@ -2111,6 +2111,7 @@ split_static_library("browser") {
       "android/webapk/webapk_installer.h",
       "android/webapk/webapk_metrics.cc",
       "android/webapk/webapk_metrics.h",
+      "android/webapk/webapk_types.h",
       "android/webapk/webapk_update_data_fetcher.cc",
       "android/webapk/webapk_update_data_fetcher.h",
       "android/webapk/webapk_update_manager.cc",
