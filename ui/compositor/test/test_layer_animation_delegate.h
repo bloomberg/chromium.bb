@@ -32,15 +32,30 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   TestLayerAnimationDelegate(const TestLayerAnimationDelegate& other);
   ~TestLayerAnimationDelegate() override;
 
+  // Expects the last PropertyChangeReason to be unset.
+  void ExpectLastPropertyChangeReasonIsUnset();
+
+  // Expects the last PropertyChangeReason to be |reason|. Then, unsets the last
+  // PropertyChangeReason.
+  void ExpectLastPropertyChangeReason(PropertyChangeReason reason);
+
   // Implementation of LayerAnimationDelegate
-  void SetBoundsFromAnimation(const gfx::Rect& bounds) override;
-  void SetTransformFromAnimation(const gfx::Transform& transform) override;
-  void SetOpacityFromAnimation(float opacity) override;
-  void SetVisibilityFromAnimation(bool visibility) override;
-  void SetBrightnessFromAnimation(float brightness) override;
-  void SetGrayscaleFromAnimation(float grayscale) override;
-  void SetColorFromAnimation(SkColor color) override;
-  void SetTemperatureFromAnimation(float temperature) override;
+  void SetBoundsFromAnimation(const gfx::Rect& bounds,
+                              PropertyChangeReason reason) override;
+  void SetTransformFromAnimation(const gfx::Transform& transform,
+                                 PropertyChangeReason reason) override;
+  void SetOpacityFromAnimation(float opacity,
+                               PropertyChangeReason reason) override;
+  void SetVisibilityFromAnimation(bool visibility,
+                                  PropertyChangeReason reason) override;
+  void SetBrightnessFromAnimation(float brightness,
+                                  PropertyChangeReason reason) override;
+  void SetGrayscaleFromAnimation(float grayscale,
+                                 PropertyChangeReason reason) override;
+  void SetColorFromAnimation(SkColor color,
+                             PropertyChangeReason reason) override;
+  void SetTemperatureFromAnimation(float temperature,
+                                   PropertyChangeReason reason) override;
   void ScheduleDrawForAnimation() override;
   const gfx::Rect& GetBoundsForAnimation() const override;
   gfx::Transform GetTransformForAnimation() const override;
@@ -62,6 +77,10 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   void CreateCcLayer();
 
   TestLayerThreadedAnimationDelegate threaded_delegate_;
+
+  bool last_property_change_reason_is_set_ = false;
+  PropertyChangeReason last_property_change_reason_ =
+      PropertyChangeReason::NOT_FROM_ANIMATION;
 
   gfx::Rect bounds_;
   gfx::Transform transform_;

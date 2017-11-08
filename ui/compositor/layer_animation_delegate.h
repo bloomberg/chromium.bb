@@ -7,6 +7,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
+#include "ui/compositor/property_change_reason.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -23,14 +24,22 @@ class LayerThreadedAnimationDelegate;
 // Layer animations interact with the layers using this interface.
 class COMPOSITOR_EXPORT LayerAnimationDelegate {
  public:
-  virtual void SetBoundsFromAnimation(const gfx::Rect& bounds) = 0;
-  virtual void SetTransformFromAnimation(const gfx::Transform& transform) = 0;
-  virtual void SetOpacityFromAnimation(float opacity) = 0;
-  virtual void SetVisibilityFromAnimation(bool visibility) = 0;
-  virtual void SetBrightnessFromAnimation(float brightness) = 0;
-  virtual void SetGrayscaleFromAnimation(float grayscale) = 0;
-  virtual void SetColorFromAnimation(SkColor color) = 0;
-  virtual void SetTemperatureFromAnimation(float temperature) = 0;
+  virtual void SetBoundsFromAnimation(const gfx::Rect& bounds,
+                                      PropertyChangeReason reason) = 0;
+  virtual void SetTransformFromAnimation(const gfx::Transform& transform,
+                                         PropertyChangeReason reason) = 0;
+  virtual void SetOpacityFromAnimation(float opacity,
+                                       PropertyChangeReason reason) = 0;
+  virtual void SetVisibilityFromAnimation(bool visibility,
+                                          PropertyChangeReason reason) = 0;
+  virtual void SetBrightnessFromAnimation(float brightnes,
+                                          PropertyChangeReason reasons) = 0;
+  virtual void SetGrayscaleFromAnimation(float grayscale,
+                                         PropertyChangeReason reason) = 0;
+  virtual void SetColorFromAnimation(SkColor color,
+                                     PropertyChangeReason reason) = 0;
+  virtual void SetTemperatureFromAnimation(float temperature,
+                                           PropertyChangeReason reason) = 0;
   virtual void ScheduleDrawForAnimation() = 0;
   virtual const gfx::Rect& GetBoundsForAnimation() const = 0;
   virtual gfx::Transform GetTransformForAnimation() const = 0;

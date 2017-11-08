@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/compositor/layer.h"
 #include "ui/compositor/test/test_layer_animation_delegate.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 
 namespace ui {
 
@@ -38,39 +40,79 @@ TestLayerAnimationDelegate::TestLayerAnimationDelegate(
 TestLayerAnimationDelegate::~TestLayerAnimationDelegate() {
 }
 
+void TestLayerAnimationDelegate::ExpectLastPropertyChangeReasonIsUnset() {
+  EXPECT_FALSE(last_property_change_reason_is_set_);
+}
+
+void TestLayerAnimationDelegate::ExpectLastPropertyChangeReason(
+    PropertyChangeReason reason) {
+  EXPECT_TRUE(last_property_change_reason_is_set_);
+  EXPECT_EQ(last_property_change_reason_, reason);
+  last_property_change_reason_is_set_ = false;
+}
+
 void TestLayerAnimationDelegate::SetBoundsFromAnimation(
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds,
+    PropertyChangeReason reason) {
   bounds_ = bounds;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
 void TestLayerAnimationDelegate::SetTransformFromAnimation(
-    const gfx::Transform& transform) {
+    const gfx::Transform& transform,
+    PropertyChangeReason reason) {
   transform_ = transform;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
-void TestLayerAnimationDelegate::SetOpacityFromAnimation(float opacity) {
+void TestLayerAnimationDelegate::SetOpacityFromAnimation(
+    float opacity,
+    PropertyChangeReason reason) {
   opacity_ = opacity;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
-void TestLayerAnimationDelegate::SetVisibilityFromAnimation(bool visibility) {
+void TestLayerAnimationDelegate::SetVisibilityFromAnimation(
+    bool visibility,
+    PropertyChangeReason reason) {
   visibility_ = visibility;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
-void TestLayerAnimationDelegate::SetBrightnessFromAnimation(float brightness) {
+void TestLayerAnimationDelegate::SetBrightnessFromAnimation(
+    float brightness,
+    PropertyChangeReason reason) {
   brightness_ = brightness;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
-void TestLayerAnimationDelegate::SetGrayscaleFromAnimation(float grayscale) {
+void TestLayerAnimationDelegate::SetGrayscaleFromAnimation(
+    float grayscale,
+    PropertyChangeReason reason) {
   grayscale_ = grayscale;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
-void TestLayerAnimationDelegate::SetColorFromAnimation(SkColor color) {
+void TestLayerAnimationDelegate::SetColorFromAnimation(
+    SkColor color,
+    PropertyChangeReason reason) {
   color_ = color;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
 void TestLayerAnimationDelegate::SetTemperatureFromAnimation(
-    float temperature) {
+    float temperature,
+    PropertyChangeReason reason) {
   temperature_ = temperature;
+  last_property_change_reason_ = reason;
+  last_property_change_reason_is_set_ = true;
 }
 
 void TestLayerAnimationDelegate::ScheduleDrawForAnimation() {
