@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
-#define CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
+#ifndef CHROME_BROWSER_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
+#define CHROME_BROWSER_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
 
 #include <memory>
 #include <string>
@@ -135,4 +135,4 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
 }  // namespace banners
 
-#endif  // CHROME_BROWSER_ANDROID_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
+#endif  // CHROME_BROWSER_BANNERS_APP_BANNER_INFOBAR_DELEGATE_ANDROID_H_
