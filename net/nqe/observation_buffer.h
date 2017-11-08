@@ -94,6 +94,13 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       std::map<IPHash, int32_t>* host_keyed_percentiles,
       std::map<IPHash, size_t>* host_keyed_counts) const;
 
+  // Removes all observations from the buffer whose corresponding entry in
+  // |deleted_observation_sources| is set to true. For example, if index 1 and
+  // 3 in |deleted_observation_sources| are set to true, then all observations
+  // in the buffer that have source set to either 1 or 3 would be removed.
+  void RemoveObservationsWithSource(
+      bool deleted_observation_sources[NETWORK_QUALITY_OBSERVATION_SOURCE_MAX]);
+
  private:
   // Computes the weighted observations and stores them in
   // |weighted_observations| sorted by ascending |WeightedObservation.value|.
