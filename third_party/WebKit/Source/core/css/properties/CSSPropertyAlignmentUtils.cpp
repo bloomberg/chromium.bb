@@ -9,7 +9,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
-
 namespace {
 
 bool IsSelfPositionKeyword(CSSValueID id) {

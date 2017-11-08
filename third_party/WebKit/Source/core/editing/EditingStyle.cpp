@@ -35,11 +35,11 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/FontSize.h"
+#include "core/css/FontSizeFunctions.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -96,7 +96,7 @@ enum EditingPropertiesType {
 static const Vector<CSSPropertyID>& AllEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
   if (properties.IsEmpty()) {
-    CSSPropertyAPI::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
         properties);
     properties.EraseAt(properties.Find(CSSPropertyTextDecoration));
@@ -107,11 +107,11 @@ static const Vector<CSSPropertyID>& AllEditingProperties() {
 static const Vector<CSSPropertyID>& InheritableEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
   if (properties.IsEmpty()) {
-    CSSPropertyAPI::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
         properties);
     for (size_t index = 0; index < properties.size();) {
-      if (!CSSPropertyAPI::Get(properties[index]).IsInherited()) {
+      if (!CSSProperty::Get(properties[index]).IsInherited()) {
         properties.EraseAt(index);
         continue;
       }
@@ -489,7 +489,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
             EditingStyleUtilities::BackgroundColorValueInEffect(node))
       mutable_style_->SetProperty(CSSPropertyBackgroundColor, value->CssText());
     if (const CSSValue* value = computed_style_at_position->GetPropertyCSSValue(
-            GetCSSPropertyWebkitTextDecorationsInEffectAPI()))
+            GetCSSPropertyWebkitTextDecorationsInEffect()))
       mutable_style_->SetProperty(CSSPropertyTextDecoration, value->CssText());
   }
 
@@ -672,7 +672,7 @@ static const CSSPropertyID kStaticBlockProperties[] = {
 static const Vector<CSSPropertyID>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
   if (properties.IsEmpty())
-    CSSPropertyAPI::FilterEnabledCSSPropertiesIntoVector(
+    CSSProperty::FilterEnabledCSSPropertiesIntoVector(
         kStaticBlockProperties, WTF_ARRAY_LENGTH(kStaticBlockProperties),
         properties);
   return properties;
@@ -1369,7 +1369,7 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
       if (ToCSSPrimitiveValue(value).IsPercentage()) {
         if (const CSSValue* computed_property_value =
                 computed_style_for_element->GetPropertyCSSValue(
-                    CSSPropertyAPI::Get(property.Id()))) {
+                    CSSProperty::Get(property.Id()))) {
           from_computed_style->AddRespectingCascade(
               CSSPropertyValue(property.Id(), *computed_property_value));
         }
@@ -1801,13 +1801,13 @@ int LegacyFontSizeFromCSSValue(Document* document,
               primitive_value.TypeWithCalcResolved());
       int pixel_font_size =
           clampTo<int>(primitive_value.GetDoubleValue() * conversion);
-      int legacy_font_size = FontSize::LegacyFontSize(document, pixel_font_size,
-                                                      is_monospace_font);
+      int legacy_font_size = FontSizeFunctions::LegacyFontSize(
+          document, pixel_font_size, is_monospace_font);
       // Use legacy font size only if pixel value matches exactly to that of
       // legacy font size.
       if (mode == kAlwaysUseLegacyFontSize ||
-          FontSize::FontSizeForKeyword(document, legacy_font_size,
-                                       is_monospace_font) == pixel_font_size)
+          FontSizeFunctions::FontSizeForKeyword(
+              document, legacy_font_size, is_monospace_font) == pixel_font_size)
         return legacy_font_size;
 
       return 0;

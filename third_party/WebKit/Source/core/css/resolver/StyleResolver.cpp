@@ -62,7 +62,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/MatchResult.h"
@@ -1502,8 +1502,8 @@ void StyleResolver::ApplyAllProperty(
 
   for (unsigned i = start_css_property; i <= end_css_property; ++i) {
     CSSPropertyID property_id = static_cast<CSSPropertyID>(i);
-    const CSSPropertyAPI& property_api =
-        CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
+    const CSSProperty& property_class =
+        CSSProperty::Get(resolveCSSPropertyID(property_id));
 
     // StyleBuilder does not allow any expanded shorthands.
     if (isShorthandProperty(property_id))
@@ -1515,7 +1515,7 @@ void StyleResolver::ApplyAllProperty(
     // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
     // We skip applyProperty when a given property is unicode-bidi or
     // direction.
-    if (!property_api.IsAffectedByAll())
+    if (!property_class.IsAffectedByAll())
       continue;
 
     if (!IsPropertyInWhitelist(property_whitelist_type, property_id,
@@ -1524,7 +1524,7 @@ void StyleResolver::ApplyAllProperty(
 
     // When hitting matched properties' cache, only inherited properties will be
     // applied.
-    if (inherited_only && !property_api.IsInherited())
+    if (inherited_only && !property_class.IsInherited())
       continue;
 
     StyleBuilder::ApplyProperty(property_id, state, all_value);

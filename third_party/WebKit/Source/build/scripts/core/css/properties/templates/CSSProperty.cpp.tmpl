@@ -1,0 +1,56 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+// clang-format off
+
+#include "core/css/properties/CSSProperty.h"
+
+{% for property_class in longhand_property_classnames %}
+  {% if property_class != "CSSProperty" %}
+#include "core/css/properties/longhands/{{property_class}}.h"
+  {% endif %}
+{% endfor %}
+{% for property_class in shorthand_property_classnames %}
+#include "core/css/properties/shorthands/{{property_class}}.h"
+{% endfor %}
+
+namespace blink {
+namespace {
+
+{% for _, property_id, classname, namespace in property_classes_by_property_id %}
+  {% if namespace != None %}
+static constexpr {{namespace}}::{{classname}} property_{{property_id.lower()}}({{property_id}});
+  {% else %}
+static constexpr {{classname}} property_{{property_id.lower()}}({{property_id}});
+  {% endif %}
+{% endfor %}
+
+const CSSProperty& GetProperty(CSSPropertyID id) {
+  static constexpr const CSSProperty* const property_classes[] = {
+    {% for property_class_data in property_classes_by_property_id %}
+    &property_{{property_class_data.property_id.lower()}},  // {{property_class_data.property_id}}
+    {% endfor %}
+  };
+  // Subtract 1 because CSSPropertyInvalid does not appear in the array.
+  return *property_classes[id - 1];
+}
+
+} // namespace
+
+{% for property_class_data in property_classes_by_property_id %}
+const CSSProperty& Get{{property_class_data.property_id}}() {
+  return property_{{property_class_data.property_id.lower()}};
+}
+{% endfor %}
+
+const CSSProperty& CSSProperty::Get(CSSPropertyID id) {
+  DCHECK_NE(id, CSSPropertyInvalid);
+  DCHECK_LE(id, {{last_property_id}});  // last_property_id
+  return GetProperty(id);
+}
+
+}  // namespace blink
+

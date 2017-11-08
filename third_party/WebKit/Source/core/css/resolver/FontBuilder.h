@@ -26,7 +26,7 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
-#include "core/css/FontSize.h"
+#include "core/css/FontSizeFunctions.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontVariantNumeric.h"
 #include "platform/heap/Handle.h"
@@ -93,7 +93,8 @@ class CORE_EXPORT FontBuilder {
     return FontDescription::kStandardFamily;
   }
   static FontDescription::Size InitialSize() {
-    return FontDescription::Size(FontSize::InitialKeywordSize(), 0.0f, false);
+    return FontDescription::Size(FontSizeFunctions::InitialKeywordSize(), 0.0f,
+                                 false);
   }
   static float InitialSizeAdjust() { return kFontSizeAdjustNone; }
   static TextRenderingMode InitialTextRendering() { return kAutoTextRendering; }

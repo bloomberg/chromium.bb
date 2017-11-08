@@ -33,7 +33,7 @@
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/style/ComputedStyle.h"
 
 #include <type_traits>
@@ -44,7 +44,7 @@ void AnimatedStyleBuilder::ApplyProperty(CSSPropertyID property,
                                          ComputedStyle& style,
                                          const AnimatableValue* value) {
 #if DCHECK_IS_ON()
-  DCHECK(CSSPropertyAPI::Get(property).IsInterpolable());
+  DCHECK(CSSProperty::Get(property).IsInterpolable());
 #endif
   switch (property) {
     case CSSPropertyOpacity:

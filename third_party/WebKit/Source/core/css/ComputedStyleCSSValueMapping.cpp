@@ -2236,7 +2236,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
   if (property_id == CSSPropertyInvalid)
     return nullptr;
   const SVGComputedStyle& svg_style = style.SvgStyle();
-  property_id = CSSPropertyAPI::Get(property_id)
+  property_id = CSSProperty::Get(property_id)
                     .ResolveDirectionAwareProperty(style.Direction(),
                                                    style.GetWritingMode());
   DCHECK_NE(property_id, CSSPropertyInvalid);

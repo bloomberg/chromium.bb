@@ -16,7 +16,7 @@ state.Style()->{{property.setter}}
   {% if property.converter == 'CSSPrimitiveValue' %}
 {{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
   {%- elif property.converter == 'CSSIdentifierValue' %}
-{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<{{property.type_name}}>());
+{{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<blink::{{property.type_name}}>());
   {%- elif property.converter %}
 {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
   {%- endif %}

@@ -20,7 +20,7 @@ class CSSPropertyGridUtils {
 
  public:
   // TODO(jiameng): move the following functions to anonymous namespace after
-  // all grid-related shorthands have their APIs implemented:
+  // all grid-related shorthands have their property classes implemented:
   // - TrackListType
   // - ConsumeGridLine
   enum TrackListType { kGridTemplate, kGridTemplateNoRepeat, kGridAuto };

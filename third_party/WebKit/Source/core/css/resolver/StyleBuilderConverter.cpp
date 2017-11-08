@@ -302,9 +302,10 @@ FontDescription::Size StyleBuilderConverterBase::ConvertFontSize(
     FontDescription::Size parent_size) {
   if (value.IsIdentifierValue()) {
     CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
-    if (FontSize::IsValidValueID(value_id))
-      return FontDescription::Size(FontSize::KeywordSize(value_id), 0.0f,
-                                   false);
+    if (FontSizeFunctions::IsValidValueID(value_id)) {
+      return FontDescription::Size(FontSizeFunctions::KeywordSize(value_id),
+                                   0.0f, false);
+    }
     if (value_id == CSSValueSmaller)
       return FontDescription::SmallerSize(parent_size);
     if (value_id == CSSValueLarger)

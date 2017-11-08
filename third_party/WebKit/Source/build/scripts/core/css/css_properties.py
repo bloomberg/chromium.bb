@@ -35,13 +35,13 @@ def check_property_parameters(property_to_check):
         assert not(property_to_check['interpolable']), \
             'Shorthand property (' + property_to_check['name'] + ') ' \
             'cannot be interpolable'
-    if property_to_check['api_class'] is not None:
+    if property_to_check['property_class'] is not None:
         if property_to_check['longhands']:
-            assert 'parseSingleValue' not in property_to_check['api_methods'], \
+            assert 'parseSingleValue' not in property_to_check['property_methods'], \
                 'Shorthand property (' + property_to_check['name'] + ') ' \
                 'should not implement parseSingleValue'
         else:
-            assert 'parseShorthand' not in property_to_check['api_methods'], \
+            assert 'parseShorthand' not in property_to_check['property_methods'], \
                 'Longhand property (' + property_to_check['name'] + ') ' \
                 'should not implement parseShorthand'
     assert property_to_check['is_descriptor'] or \
@@ -200,10 +200,10 @@ class CSSProperties(object):
             property_['is_inherited_setter'] = 'Set' + name + 'IsInherited'
 
         # Expand whether there are custom StyleBuilder methods.
-        if property_['api_custom_apply_functions_all']:
-            property_['api_custom_apply_functions_inherit'] = True
-            property_['api_custom_apply_functions_initial'] = True
-            property_['api_custom_apply_functions_value'] = True
+        if property_['custom_apply_functions_all']:
+            property_['custom_apply_functions_inherit'] = True
+            property_['custom_apply_functions_initial'] = True
+            property_['custom_apply_functions_value'] = True
 
         # Expand StyleBuilderConverter params where ncessary.
         if property_['type_name'] in PRIMITIVE_TYPES:

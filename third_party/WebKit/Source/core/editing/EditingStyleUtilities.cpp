@@ -200,7 +200,7 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
         CSSComputedStyleDeclaration::Create(ancestor);
     if (!HasTransparentBackgroundColor(ancestor_style)) {
       return ancestor_style->GetPropertyCSSValue(
-          GetCSSPropertyBackgroundColorAPI());
+          GetCSSPropertyBackgroundColor());
     }
   }
   return nullptr;

@@ -24,7 +24,7 @@
 #include "core/layout/svg/LayoutSVGInlineText.h"
 
 #include "core/css/CSSFontSelector.h"
-#include "core/css/FontSize.h"
+#include "core/css/FontSizeFunctions.h"
 #include "core/css/StyleEngine.h"
 #include "core/editing/TextAffinity.h"
 #include "core/frame/LocalFrameView.h"
@@ -400,7 +400,7 @@ void LayoutSVGInlineText::ComputeNewScaledFontForStyle(
     scaling_factor = 1;
 
   Document& document = layout_object.GetDocument();
-  float scaled_font_size = FontSize::GetComputedSizeFromSpecifiedSize(
+  float scaled_font_size = FontSizeFunctions::GetComputedSizeFromSpecifiedSize(
       &document, scaling_factor, unscaled_font_description.IsAbsoluteSize(),
       unscaled_font_description.SpecifiedSize(), kDoNotApplyMinimumForFontSize);
   if (scaled_font_size == unscaled_font_description.ComputedSize()) {

@@ -53,7 +53,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/DOMException.h"
@@ -1100,10 +1100,10 @@ Response InspectorCSSAgent::getComputedStyleForNode(
   *style = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
     CSSPropertyID property_id = static_cast<CSSPropertyID>(id);
-    CSSPropertyAPI property_api =
-        CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
-    if (!property_api.IsEnabled() || isShorthandProperty(property_id) ||
-        !property_api.IsProperty())
+    CSSProperty property_class =
+        CSSProperty::Get(resolveCSSPropertyID(property_id));
+    if (!property_class.IsEnabled() || isShorthandProperty(property_id) ||
+        !property_class.IsProperty())
       continue;
     (*style)->addItem(
         protocol::CSS::CSSComputedStyleProperty::create()
@@ -2310,17 +2310,17 @@ Response InspectorCSSAgent::getBackgroundColors(
   CSSComputedStyleDeclaration* computed_style_info =
       CSSComputedStyleDeclaration::Create(element, true);
   const CSSValue* font_size =
-      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSizeAPI());
+      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontSize());
   *computed_font_size = font_size->CssText();
   const CSSValue* font_weight =
-      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontWeightAPI());
+      computed_style_info->GetPropertyCSSValue(GetCSSPropertyFontWeight());
   *computed_font_weight = font_weight->CssText();
 
   HTMLElement* body = element->GetDocument().body();
   CSSComputedStyleDeclaration* computed_style_body =
       CSSComputedStyleDeclaration::Create(body, true);
   const CSSValue* body_font_size =
-      computed_style_body->GetPropertyCSSValue(GetCSSPropertyFontSizeAPI());
+      computed_style_body->GetPropertyCSSValue(GetCSSPropertyFontSize());
   *computed_body_font_size = body_font_size->CssText();
 
   return Response::OK();

@@ -30,7 +30,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/properties/CSSPropertyAPI.h"
+#include "core/css/properties/CSSProperty.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -49,7 +49,7 @@ StylePropertySerializer::StylePropertySetForSerializer::
       property_set_->PropertyAt(all_index_);
   for (unsigned i = 0; i < property_set_->PropertyCount(); ++i) {
     StylePropertySet::PropertyReference property = property_set_->PropertyAt(i);
-    if (CSSPropertyAPI::Get(resolveCSSPropertyID(property.Id()))
+    if (CSSProperty::Get(resolveCSSPropertyID(property.Id()))
             .IsAffectedByAll()) {
       if (all_property.IsImportant() && !property.IsImportant())
         continue;
@@ -113,7 +113,7 @@ bool StylePropertySerializer::StylePropertySetForSerializer::
     StylePropertySet::PropertyReference property =
         property_set_->PropertyAt(index);
     if (property.Id() == CSSPropertyAll ||
-        !CSSPropertyAPI::Get(resolveCSSPropertyID(property.Id()))
+        !CSSProperty::Get(resolveCSSPropertyID(property.Id()))
              .IsAffectedByAll())
       return true;
     if (!isCSSPropertyIDWithName(property.Id()))
@@ -134,7 +134,7 @@ bool StylePropertySerializer::StylePropertySetForSerializer::
   // The all property is a shorthand that resets all CSS properties except
   // direction and unicode-bidi. It only accepts the CSS-wide keywords.
   // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
-  if (!CSSPropertyAPI::Get(resolveCSSPropertyID(property_id)).IsAffectedByAll())
+  if (!CSSProperty::Get(resolveCSSPropertyID(property_id)).IsAffectedByAll())
     return longhand_property_used_.test(index);
 
   return true;
@@ -230,14 +230,15 @@ String StylePropertySerializer::AsText() const {
         property_set_.PropertyAt(n);
     CSSPropertyID property_id = property.Id();
 #if DCHECK_IS_ON()
-    const CSSPropertyAPI& property_api =
-        CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
+    const CSSProperty& property_class =
+        CSSProperty::Get(resolveCSSPropertyID(property_id));
     // Only enabled properties should be part of the style.
-    DCHECK(property_api.IsEnabled());
+    DCHECK(property_class.IsEnabled());
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
-           (property_api.IsProperty() && !isShorthandProperty(property_id)));
-    DCHECK(!property_set_.IsDescriptorContext() || property_api.IsDescriptor());
+           (property_class.IsProperty() && !isShorthandProperty(property_id)));
+    DCHECK(!property_set_.IsDescriptorContext() ||
+           property_class.IsDescriptor());
 #endif
 
     switch (property_id) {
