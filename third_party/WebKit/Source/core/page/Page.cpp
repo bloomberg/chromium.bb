@@ -63,6 +63,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/scroll/ScrollbarThemeOverlay.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
@@ -721,6 +722,8 @@ void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
 }
 
 ScrollbarTheme& Page::GetScrollbarTheme() const {
+  if (settings_->GetForceAndroidOverlayScrollbar())
+    return ScrollbarThemeOverlay::MobileTheme();
   return ScrollbarTheme::DeprecatedStaticGetTheme();
 }
 
