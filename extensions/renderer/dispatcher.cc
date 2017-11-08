@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -119,7 +120,6 @@ using blink::WebDocument;
 using blink::WebScopedUserGesture;
 using blink::WebSecurityPolicy;
 using blink::WebString;
-using blink::WebVector;
 using blink::WebView;
 using content::RenderThread;
 

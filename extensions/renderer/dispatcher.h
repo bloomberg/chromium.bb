@@ -31,7 +31,6 @@
 #include "extensions/renderer/user_script_set_manager.h"
 #include "extensions/renderer/v8_schema_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
 #include "v8/include/v8.h"
 
 class ChromeRenderViewTest;
