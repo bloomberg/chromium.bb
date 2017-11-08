@@ -149,7 +149,7 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
     #   nm --no-sort --defined-only libchrome.so > nm.out
     #   grep -v '\$' nm.out | grep ' r ' | sort | cut -d' ' -f1 > addrs
     #   wc -l < addrs; uniq < addrs | wc -l
-    if section not in 'tT' or not _IsRelevantNmName(name):
+    if section not in 'tTW' or not _IsRelevantNmName(name):
       continue
 
     address = int(address_str, 16)

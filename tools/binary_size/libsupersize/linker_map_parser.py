@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import re
 
 import models
 
@@ -14,8 +15,8 @@ import models
 # * The parse time for compressed linker maps is dominated by ungzipping.
 
 
-class MapFileParser(object):
-  """Parses a linker map file (tested only on files from gold linker)."""
+class MapFileParserGold(object):
+  """Parses a linker map file from gold linker."""
   # Map file writer for gold linker:
   # https://github.com/gittup/binutils/blob/HEAD/gold/mapfile.cc
 
@@ -29,7 +30,8 @@ class MapFileParser(object):
     """Parses a linker map file.
 
     Args:
-      lines: Iterable of lines.
+      lines: Iterable of lines, the first of which has been consumed to
+      identify file type.
 
     Returns:
       A tuple of (section_sizes, symbols).
@@ -244,3 +246,122 @@ class MapFileParser(object):
         logging.error('Problem line: %r', line)
         logging.error('In section: %r', section_name)
         raise
+
+
+class _SymbolMaker(object):
+  def __init__(self):
+    self.syms = []
+    self.cur_sym = None
+
+  def Flush(self):
+    if self.cur_sym:
+      self.syms.append(self.cur_sym)
+      self.cur_sym = None
+
+  def Create(self, *args, **kwargs):
+    self.Flush()
+    self.cur_sym = models.Symbol(*args, **kwargs)
+
+
+class MapFileParserLld(object):
+  """Parses a linker map file from LLD."""
+  # TODO(huangs): Add LTO support.
+  # Map file writer for LLD linker (for ELF):
+  # https://github.com/llvm-mirror/lld/blob/HEAD/ELF/MapFile.cpp
+  _MAIN_RE = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
+
+  def __init__(self):
+    self._common_symbols = []
+    self._section_sizes = {}
+    self._lines = None
+
+  def Parse(self, lines):
+    """Parses a linker map file.
+
+    Args:
+      lines: Iterable of lines, the first of which has been consumed to
+      identify file type.
+
+    Returns:
+      A tuple of (section_sizes, symbols).
+    """
+# Address          Size             Align Out     In      Symbol
+# 00000000002002a8 000000000000001c     1 .interp
+# 00000000002002a8 000000000000001c     1         <internal>:(.interp)
+# ...
+# 0000000000201000 0000000000000202    16 .text
+# 0000000000201000 000000000000002a     1         /[...]/crt1.o:(.text)
+# 0000000000201000 0000000000000000     0                 _start
+# 000000000020102a 0000000000000000     1         /[...]/crti.o:(.text)
+# 0000000000201030 00000000000000bd    16         /[...]/crtbegin.o:(.text)
+# 0000000000201030 0000000000000000     0                 deregister_tm_clones
+# 0000000000201060 0000000000000000     0                 register_tm_clones
+# 00000000002010a0 0000000000000000     0                 __do_global_dtors_aux
+# 00000000002010c0 0000000000000000     0                 frame_dummy
+# 00000000002010ed 0000000000000071     1         a.o:(.text)
+# 00000000002010ed 0000000000000071     0                 main
+    sym_maker = _SymbolMaker()
+    cur_section = None
+    cur_section_is_useful = None
+
+    for line in lines:
+      m = MapFileParserLld._MAIN_RE.match(line)
+      if m is None:
+        continue
+      address = int(m.group(1), 16)
+      size = int(m.group(2), 16)
+      indent_size = len(m.group(4))
+      tok = m.group(5)
+
+      if indent_size == 0:
+        sym_maker.Flush()
+        self._section_sizes[tok] = size
+        cur_section = tok
+        cur_section_is_useful = (cur_section in ('.bss', '.rodata', '.text') or
+                                 cur_section.startswith('.data'))
+        cur_obj = None
+
+      elif cur_section_is_useful:
+        if indent_size == 8:
+          sym_maker.Flush()
+          cur_obj = tok.split(':')[0]
+          sym_maker.Create(cur_section, size, address=address)
+          # As of 2017/11 LLD does not distinguish merged strings from other
+          # merged data. Feature request is filed under:
+          # https://bugs.llvm.org/show_bug.cgi?id=35248
+          if cur_obj == '<internal>':
+            sym_maker.cur_sym.object_path = cur_obj
+          else:
+            sym_maker.cur_sym.object_path = '** lld merge section'
+
+        elif indent_size == 16:
+          # If multiple entries exist, take only the first.
+          if not sym_maker.cur_sym.full_name:
+            sym_maker.cur_sym.full_name = tok
+
+        else:
+          logging.error('Problem line: %r', line)
+
+    sym_maker.Flush()
+    return self._section_sizes, sym_maker.syms
+
+
+class MapFileParser(object):
+  """Parses a linker map file, with heuristic linker detection."""
+  def Parse(self, lines):
+    """Parses a linker map file.
+
+    Args:
+      lines: Iterable of lines.
+
+    Returns:
+      A tuple of (section_sizes, symbols).
+    """
+    first_line = next(lines)
+    if first_line.startswith('Address'):
+      inner_parser = MapFileParserLld()
+    elif first_line.startswith('Archive member'):
+      inner_parser = MapFileParserGold()
+    else:
+      raise Exception('.map file is from a unsupported linker.')
+    return inner_parser.Parse(lines)
