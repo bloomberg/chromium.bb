@@ -165,6 +165,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   int old_process_id_;
   int old_provider_id_;
 
+  static int user_data_key_;  // Only address is used.
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);
 };
 

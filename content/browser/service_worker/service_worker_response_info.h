@@ -108,6 +108,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   std::string response_cache_storage_cache_name_;
   ServiceWorkerHeaderList cors_exposed_header_names_;
   bool did_navigation_preload_ = false;
+
+  static int user_data_key_;  // Only address is used.
 };
 
 }  // namespace content
