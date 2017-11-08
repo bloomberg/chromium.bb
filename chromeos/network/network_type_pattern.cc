@@ -82,6 +82,11 @@ NetworkTypePattern NetworkTypePattern::Ethernet() {
 }
 
 // static
+NetworkTypePattern NetworkTypePattern::EthernetOrEthernetEAP() {
+  return NetworkTypePattern(kNetworkTypeEthernet | kNetworkTypeEthernetEap);
+}
+
+// static
 NetworkTypePattern NetworkTypePattern::WiFi() {
   return NetworkTypePattern(kNetworkTypeWifi);
 }

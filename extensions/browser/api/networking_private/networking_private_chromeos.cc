@@ -516,8 +516,11 @@ void NetworkingPrivateChromeOS::GetNetworks(
     int limit,
     const NetworkListCallback& success_callback,
     const FailureCallback& failure_callback) {
+  // When requesting configured Ethernet networks, include EthernetEAP.
   NetworkTypePattern pattern =
-      chromeos::onc::NetworkTypePatternFromOncType(network_type);
+      (!visible_only && network_type == ::onc::network_type::kEthernet)
+          ? NetworkTypePattern::EthernetOrEthernetEAP()
+          : chromeos::onc::NetworkTypePatternFromOncType(network_type);
   std::unique_ptr<base::ListValue> network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);

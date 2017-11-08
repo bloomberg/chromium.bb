@@ -229,6 +229,9 @@ void ShillToONCTranslator::TranslateEthernet() {
   if (shill_network_type == shill::kTypeEthernetEap)
     onc_auth = ::onc::ethernet::k8021X;
   onc_object_->SetKey(::onc::ethernet::kAuthentication, base::Value(onc_auth));
+
+  if (shill_network_type == shill::kTypeEthernetEap)
+    TranslateAndAddNestedObject(::onc::ethernet::kEAP);
 }
 
 void ShillToONCTranslator::TranslateOpenVPN() {

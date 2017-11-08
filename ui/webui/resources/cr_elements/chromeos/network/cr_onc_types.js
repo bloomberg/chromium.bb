@@ -124,6 +124,12 @@ CrOnc.ProxySettingsType = chrome.networkingPrivate.ProxySettingsType;
 CrOnc.Type = chrome.networkingPrivate.NetworkType;
 
 /** @enum {string} */
+CrOnc.Authentication = {
+  NONE: 'None',
+  WEP_8021X: '8021X',
+};
+
+/** @enum {string} */
 CrOnc.IPsecAuthenticationType = {
   CERT: 'Cert',
   PSK: 'PSK',
