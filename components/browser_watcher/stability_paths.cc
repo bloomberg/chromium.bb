@@ -25,7 +25,7 @@
 
 #if defined(OS_WIN)
 
-#include "third_party/crashpad/crashpad/util/win/time.h"
+#include "third_party/crashpad/crashpad/util/misc/time.h"
 
 namespace browser_watcher {
 

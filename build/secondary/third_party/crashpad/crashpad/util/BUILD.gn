@@ -112,6 +112,9 @@ static_library("util") {
     "misc/scoped_forbid_return.cc",
     "misc/scoped_forbid_return.h",
     "misc/symbolic_constants_common.h",
+    "misc/time.cc",
+    "misc/time.h",
+    "misc/time_win.cc",
     "misc/tri_state.h",
     "misc/uuid.cc",
     "misc/uuid.h",
@@ -216,8 +219,6 @@ static_library("util") {
     "win/session_end_watcher.cc",
     "win/session_end_watcher.h",
     "win/termination_codes.h",
-    "win/time.cc",
-    "win/time.h",
     "win/xp_compat.h",
   ]
 
@@ -340,6 +341,7 @@ test("crashpad_util_test") {
     "misc/random_string_test.cc",
     "misc/reinterpret_bytes_test.cc",
     "misc/scoped_forbid_return_test.cc",
+    "misc/time_test.cc",
     "misc/uuid_test.cc",
     "net/http_body_gzip_test.cc",
     "net/http_body_test.cc",
@@ -378,7 +380,6 @@ test("crashpad_util_test") {
     "win/safe_terminate_process_test.cc",
     "win/scoped_process_suspend_test.cc",
     "win/session_end_watcher_test.cc",
-    "win/time_test.cc",
   ]
 
   if (is_mac) {
