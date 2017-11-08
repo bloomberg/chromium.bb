@@ -1081,18 +1081,23 @@ void WallpaperManager::InitializeWallpaper() {
 }
 
 void WallpaperManager::UpdateWallpaper(bool clear_cache) {
+  // TODO(crbug.com/776464): Call |ShowSigninWallpaper| if |last_selected_user_|
+  // is empty, call |ShowUserWallpaper| otherwise.
+  bool device_wallpaper_set =
+      SetDeviceWallpaperIfApplicable(user_manager::SignInAccountId());
   // For GAIA login flow, the last_selected_user_ may not be set before user
   // login. If UpdateWallpaper is called at GAIA login screen, no wallpaper will
   // be set. It could result a black screen on external monitors.
   // See http://crbug.com/265689 for detail.
-  if (last_selected_user_.empty())
+  if (!device_wallpaper_set && last_selected_user_.empty())
     GetPendingWallpaper()->SetDefaultWallpaper(user_manager::SignInAccountId());
 
   for (auto& observer : observers_)
     observer.OnUpdateWallpaperForTesting();
   if (clear_cache)
     wallpaper_cache_.clear();
-  ShowUserWallpaper(last_selected_user_);
+  if (!device_wallpaper_set)
+    ShowUserWallpaper(last_selected_user_);
 }
 
 bool WallpaperManager::IsPendingWallpaper(uint32_t image_id) {
