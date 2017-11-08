@@ -678,12 +678,12 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 
   GURL url(params.url);
 #if BUILDFLAG(ENABLE_PLUGINS)
-  ChromeViewHostMsg_GetPluginInfo_Output output;
-  render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
+  chrome::mojom::PluginInfoPtr plugin_info;
+  GetPluginInfoHost()->GetPluginInfo(
       render_frame->GetRoutingID(), url,
       render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), orig_mime_type,
-      &output));
-  *plugin = CreatePlugin(render_frame, params, output);
+      &plugin_info);
+  *plugin = CreatePlugin(render_frame, params, *plugin_info);
 #else  // !BUILDFLAG(ENABLE_PLUGINS)
   PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
   if (orig_mime_type == kPDFMimeType) {
@@ -736,16 +736,31 @@ void ChromeContentRendererClient::DeferMediaLoad(
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
+
+chrome::mojom::PluginInfoHostAssociatedPtr&
+ChromeContentRendererClient::GetPluginInfoHost() {
+  struct PluginInfoHostHolder {
+    PluginInfoHostHolder() {
+      RenderThread::Get()->GetChannel()->GetRemoteAssociatedInterface(
+          &plugin_info_host);
+    }
+    ~PluginInfoHostHolder() {}
+    chrome::mojom::PluginInfoHostAssociatedPtr plugin_info_host;
+  };
+  CR_DEFINE_STATIC_LOCAL(PluginInfoHostHolder, holder, ());
+  return holder.plugin_info_host;
+}
+
 // static
 WebPlugin* ChromeContentRendererClient::CreatePlugin(
     content::RenderFrame* render_frame,
     const WebPluginParams& original_params,
-    const ChromeViewHostMsg_GetPluginInfo_Output& output) {
-  const WebPluginInfo& info = output.plugin;
-  const std::string& actual_mime_type = output.actual_mime_type;
-  const base::string16& group_name = output.group_name;
-  const std::string& identifier = output.group_identifier;
-  ChromeViewHostMsg_GetPluginInfo_Status status = output.status;
+    const chrome::mojom::PluginInfo& plugin_info) {
+  const WebPluginInfo& info = plugin_info.plugin;
+  const std::string& actual_mime_type = plugin_info.actual_mime_type;
+  const base::string16& group_name = plugin_info.group_name;
+  const std::string& identifier = plugin_info.group_identifier;
+  chrome::mojom::PluginStatus status = plugin_info.status;
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mime_type.Utf8();
   ChromePluginPlaceholder* placeholder = NULL;
@@ -753,7 +768,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   // If the browser plugin is to be enabled, this should be handled by the
   // renderer, so the code won't reach here due to the early exit in
   // OverrideCreatePlugin.
-  if (status == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound ||
+  if (status == chrome::mojom::PluginStatus::kNotFound ||
       orig_mime_type == content::kBrowserPluginMimeType) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
     placeholder = ChromePluginPlaceholder::CreateLoadableMissingPlugin(
@@ -785,10 +800,10 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             ? CONTENT_SETTINGS_TYPE_JAVASCRIPT
             : CONTENT_SETTINGS_TYPE_PLUGINS;
 
-    if ((status == ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized ||
-         status == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked) &&
+    if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
+         status == chrome::mojom::PluginStatus::kBlocked) &&
         observer->IsPluginTemporarilyAllowed(identifier)) {
-      status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+      status = chrome::mojom::PluginStatus::kAllowed;
     }
 
     auto create_blocked_plugin = [&render_frame, &params, &info, &identifier,
@@ -800,12 +815,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     };
     WebLocalFrame* frame = render_frame->GetWebFrame();
     switch (status) {
-      case ChromeViewHostMsg_GetPluginInfo_Status::kNotFound: {
+      case chrome::mojom::PluginStatus::kNotFound: {
         NOTREACHED();
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kAllowed:
-      case ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent: {
+      case chrome::mojom::PluginStatus::kAllowed:
+      case chrome::mojom::PluginStatus::kPlayImportantContent: {
 #if BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
         const bool is_nacl_plugin =
             info.name == ASCIIToUTF16(nacl::kNaClPluginName);
@@ -890,8 +905,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             prerender::PrerenderHelper::IsPrerendering(render_frame);
 
         bool power_saver_setting_on =
-            status ==
-            ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
+            status == chrome::mojom::PluginStatus::kPlayImportantContent;
         PowerSaverInfo power_saver_info =
             PowerSaverInfo::Get(render_frame, power_saver_setting_on, params,
                                 info, frame->GetDocument().Url());
@@ -920,7 +934,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         // is disabled for testing.
         return render_frame->CreatePlugin(info, params, nullptr);
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {
+      case chrome::mojom::PluginStatus::kDisabled: {
         PluginUMAReporter::GetInstance()->ReportPluginDisabled(orig_mime_type,
                                                                url);
         if (info.name ==
@@ -941,14 +955,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_DISABLED, group_name));
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml: {
+      case chrome::mojom::PluginStatus::kFlashHiddenPreferHtml: {
         placeholder = create_blocked_plugin(
             IDR_PREFER_HTML_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_PREFER_HTML_BY_DEFAULT,
                                        group_name));
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked: {
+      case chrome::mojom::PluginStatus::kOutdatedBlocked: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
@@ -960,13 +974,13 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                                            identifier);
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed: {
+      case chrome::mojom::PluginStatus::kOutdatedDisallowed: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kUnauthorized: {
+      case chrome::mojom::PluginStatus::kUnauthorized: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
@@ -978,7 +992,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kBlocked: {
+      case chrome::mojom::PluginStatus::kBlocked: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
@@ -987,7 +1001,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy: {
+      case chrome::mojom::PluginStatus::kBlockedByPolicy: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_BY_POLICY,
@@ -997,7 +1011,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading: {
+      case chrome::mojom::PluginStatus::kBlockedNoLoading: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_NO_LOADING,
@@ -1005,7 +1019,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
-      case ChromeViewHostMsg_GetPluginInfo_Status::kComponentUpdateRequired: {
+      case chrome::mojom::PluginStatus::kComponentUpdateRequired: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
@@ -1017,15 +1031,16 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             placeholder->BindPluginRenderer(), identifier);
         break;
       }
+
+      case chrome::mojom::PluginStatus::kRestartRequired: {
 #if defined(OS_LINUX)
-      case ChromeViewHostMsg_GetPluginInfo_Status::kRestartRequired: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_RESTART_REQUIRED,
                                        group_name));
+#endif
         break;
       }
-#endif
     }
   }
   placeholder->SetStatus(status);

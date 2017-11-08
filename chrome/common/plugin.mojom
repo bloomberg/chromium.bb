@@ -4,12 +4,15 @@
 
 module chrome.mojom;
 
+import "content/public/common/webplugininfo.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/string16.mojom";
+import "url/mojo/origin.mojom";
+import "url/mojo/url.mojom";
+
 
 // Plugin messages sent from renderer to the host.
 interface PluginHost {
-
   // Tells the browser to show the Flash permission bubble in the same tab.
   ShowFlashPermissionBubble();
 
@@ -32,6 +35,47 @@ interface PluginAuthHost {
   // Notifies when a plugin couldn't be loaded because it requires
   // user authorization.
   BlockedUnauthorizedPlugin(mojo.common.mojom.String16 name, string group_id);
+};
+
+// These are only used internally, so the order does not matter.
+enum PluginStatus {
+  kAllowed,
+  // Plugin is blocked, but still can be manually loaded via context menu.
+  kBlocked,
+  // Plugin is blocked by policy, so it cannot be manually loaded.
+  kBlockedByPolicy,
+  // Plugin is blocked, and cannot be manually loaded via context menu.
+  kBlockedNoLoading,
+  kComponentUpdateRequired,
+  kDisabled,
+  // Flash is blocked, but user can click on the placeholder to trigger the
+  // Flash permission prompt.
+  kFlashHiddenPreferHtml,
+  kNotFound,
+  kOutdatedBlocked,
+  kOutdatedDisallowed,
+  kPlayImportantContent,
+  kRestartRequired,
+  kUnauthorized,
+};
+
+struct PluginInfo {
+  PluginStatus status;
+  content.mojom.WebPluginInfo plugin;
+  string actual_mime_type;
+  string group_identifier;
+  mojo.common.mojom.String16 group_name;
+};
+
+interface PluginInfoHost {
+  // Return information about a plugin for the given URL and MIME type.
+  // Includes specific reasons why a plugin can't be used, for example because
+  // it's disabled.
+  [Sync]
+  GetPluginInfo(int32 render_frame_id,
+                url.mojom.Url url,
+                url.mojom.Origin origin,
+                string mime_type) => (PluginInfo plugin_info);
 };
 
 // Plugin messages sent from a host to the renderer.

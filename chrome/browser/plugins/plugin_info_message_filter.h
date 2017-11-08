@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
+#include "chrome/common/plugin.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/prefs/pref_member.h"
@@ -23,9 +24,8 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
-struct ChromeViewHostMsg_GetPluginInfo_Output;
-enum class ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
 class HostContentSettingsMap;
 class Profile;
@@ -56,7 +56,8 @@ class Origin;
 }
 
 // This class filters out incoming IPC messages requesting plugin information.
-class PluginInfoMessageFilter : public content::BrowserMessageFilter {
+class PluginInfoMessageFilter : public content::BrowserMessageFilter,
+                                public chrome::mojom::PluginInfoHost {
  public:
   struct GetPluginInfo_Params;
 
@@ -69,23 +70,22 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 
     int render_process_id() { return render_process_id_; }
 
-    void DecidePluginStatus(
-        const GURL& url,
-        const url::Origin& main_frame_origin,
-        const content::WebPluginInfo& plugin,
-        PluginMetadata::SecurityStatus security_status,
-        const std::string& plugin_identifier,
-        ChromeViewHostMsg_GetPluginInfo_Status* status) const;
+    void DecidePluginStatus(const GURL& url,
+                            const url::Origin& main_frame_origin,
+                            const content::WebPluginInfo& plugin,
+                            PluginMetadata::SecurityStatus security_status,
+                            const std::string& plugin_identifier,
+                            chrome::mojom::PluginStatus* status) const;
     bool FindEnabledPlugin(
         int render_frame_id,
         const GURL& url,
         const url::Origin& main_frame_origin,
         const std::string& mime_type,
-        ChromeViewHostMsg_GetPluginInfo_Status* status,
+        chrome::mojom::PluginStatus* status,
         content::WebPluginInfo* plugin,
         std::string* actual_mime_type,
         std::unique_ptr<PluginMetadata>* plugin_metadata) const;
-    void MaybeGrantAccess(ChromeViewHostMsg_GetPluginInfo_Status status,
+    void MaybeGrantAccess(chrome::mojom::PluginStatus status,
                           const base::FilePath& path) const;
     bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
 
@@ -111,6 +111,11 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
 
+  void DestructOnBrowserThread() const;
+
+  void OnPluginInfoHostRequest(
+      chrome::mojom::PluginInfoHostAssociatedRequest request);
+
   static void RegisterUserPrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
@@ -121,30 +126,30 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   void ShutdownOnUIThread();
   ~PluginInfoMessageFilter() override;
 
-  void OnGetPluginInfo(int render_frame_id,
-                       const GURL& url,
-                       const url::Origin& main_frame_origin,
-                       const std::string& mime_type,
-                       IPC::Message* reply_msg);
+  // chrome::mojom::PluginInfoHost
+  void GetPluginInfo(int32_t render_frame_id,
+                     const GURL& url,
+                     const url::Origin& origin,
+                     const std::string& mime_type,
+                     const GetPluginInfoCallback& callback) override;
 
   // |params| wraps the parameters passed to |OnGetPluginInfo|, because
   // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.
   void PluginsLoaded(const GetPluginInfo_Params& params,
-                     IPC::Message* reply_msg,
+                     GetPluginInfoCallback callback,
                      const std::vector<content::WebPluginInfo>& plugins);
 
   void ComponentPluginLookupDone(
       const GetPluginInfo_Params& params,
-      std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
+      chrome::mojom::PluginInfoPtr output,
+      GetPluginInfoCallback callback,
       std::unique_ptr<PluginMetadata> plugin_metadata,
-      IPC::Message* reply_msg,
       std::unique_ptr<component_updater::ComponentInfo> cus_plugin_info);
 
-  void GetPluginInfoReply(
-      const GetPluginInfo_Params& params,
-      std::unique_ptr<ChromeViewHostMsg_GetPluginInfo_Output> output,
-      std::unique_ptr<PluginMetadata> plugin_metadata,
-      IPC::Message* reply_msg);
+  void GetPluginInfoFinish(const GetPluginInfo_Params& params,
+                           chrome::mojom::PluginInfoPtr output,
+                           GetPluginInfoCallback callback,
+                           std::unique_ptr<PluginMetadata> plugin_metadata);
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Returns whether any internal plugin supporting |mime_type| is registered
@@ -176,6 +181,10 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   const ukm::SourceId ukm_source_id_;
+
+  // Binding is mutable so we can Close it in the const OnDestruct method
+  // (which unfortunately hops ~PluginInfoMesssageFilter to the UI thread).
+  mutable mojo::AssociatedBinding<chrome::mojom::PluginInfoHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };

@@ -44,8 +44,10 @@ class ChromeContentBrowserClientPluginsPart
   static void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host);
 
  private:
-  // ChromeContentBrowserClientParts:
-  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
+  void ExposeInterfacesToRenderer(
+      service_manager::BinderRegistry* registry,
+      content::AssociatedInterfaceRegistry* associated_registry,
+      content::RenderProcessHost* render_process_host) override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentBrowserClientPluginsPart);
 };

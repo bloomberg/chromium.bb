@@ -191,31 +191,31 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
   filter_.set_plugin_enabled(foo_plugin_path_, true);
   filter_.set_plugin_enabled(bar_plugin_path_, true);
   {
-    ChromeViewHostMsg_GetPluginInfo_Status status;
+    chrome::mojom::PluginStatus status;
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     EXPECT_TRUE(context()->FindEnabledPlugin(0, GURL(), url::Origin(),
                                              "foo/bar", &status, &plugin,
                                              &actual_mime_type, NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status);
+    EXPECT_EQ(chrome::mojom::PluginStatus::kAllowed, status);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
   }
 
   filter_.set_plugin_enabled(foo_plugin_path_, false);
   {
-    ChromeViewHostMsg_GetPluginInfo_Status status;
+    chrome::mojom::PluginStatus status;
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     EXPECT_TRUE(context()->FindEnabledPlugin(0, GURL(), url::Origin(),
                                              "foo/bar", &status, &plugin,
                                              &actual_mime_type, NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed, status);
+    EXPECT_EQ(chrome::mojom::PluginStatus::kAllowed, status);
     EXPECT_EQ(bar_plugin_path_.value(), plugin.path.value());
   }
 
   filter_.set_plugin_enabled(bar_plugin_path_, false);
   {
-    ChromeViewHostMsg_GetPluginInfo_Status status;
+    chrome::mojom::PluginStatus status;
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     std::string identifier;
@@ -223,17 +223,17 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_FALSE(context()->FindEnabledPlugin(0, GURL(), url::Origin(),
                                               "foo/bar", &status, &plugin,
                                               &actual_mime_type, NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kDisabled, status);
+    EXPECT_EQ(chrome::mojom::PluginStatus::kDisabled, status);
     EXPECT_EQ(foo_plugin_path_.value(), plugin.path.value());
   }
   {
-    ChromeViewHostMsg_GetPluginInfo_Status status;
+    chrome::mojom::PluginStatus status;
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     EXPECT_FALSE(context()->FindEnabledPlugin(0, GURL(), url::Origin(),
                                               "baz/blurp", &status, &plugin,
                                               &actual_mime_type, NULL));
-    EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kNotFound, status);
+    EXPECT_EQ(chrome::mojom::PluginStatus::kNotFound, status);
     EXPECT_EQ(FILE_PATH_LITERAL(""), plugin.path.value());
   }
 }
@@ -247,22 +247,20 @@ TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
   url::Origin main_frame_origin =
       url::Origin::Create(GURL("http://example.com"));
 
-  ChromeViewHostMsg_GetPluginInfo_Status status;
+  chrome::mojom::PluginStatus status;
   content::WebPluginInfo plugin;
   std::string actual_mime_type;
   EXPECT_TRUE(context()->FindEnabledPlugin(
       0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
       &plugin, &actual_mime_type, NULL));
-  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml,
-            status);
+  EXPECT_EQ(chrome::mojom::PluginStatus::kFlashHiddenPreferHtml, status);
 
   PluginMetadata::SecurityStatus security_status =
       PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
                                 &status);
-  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml,
-            status);
+  EXPECT_EQ(chrome::mojom::PluginStatus::kFlashHiddenPreferHtml, status);
 
   // Now block plugins.
   HostContentSettingsMapFactory::GetForProfile(profile())
@@ -272,7 +270,7 @@ TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
                                 &status);
-  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading, status);
+  EXPECT_EQ(chrome::mojom::PluginStatus::kBlockedNoLoading, status);
 }
 
 TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
@@ -283,13 +281,13 @@ TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
   url::Origin main_frame_origin =
       url::Origin::Create(GURL("http://example.com"));
 
-  ChromeViewHostMsg_GetPluginInfo_Status status;
+  chrome::mojom::PluginStatus status;
   content::WebPluginInfo plugin;
   std::string actual_mime_type;
   ASSERT_TRUE(context()->FindEnabledPlugin(
       0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
       &plugin, &actual_mime_type, nullptr));
-  ASSERT_THAT(status, Eq(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed));
+  ASSERT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 
   HostContentSettingsMapFactory::GetForProfile(profile())
       ->SetContentSettingDefaultScope(main_frame_origin.GetURL(), GURL(),
@@ -304,19 +302,17 @@ TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
                                 &status);
-  EXPECT_THAT(
-      status,
-      Eq(ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent));
+  EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kPlayImportantContent));
 
   // Reset the status to allowed.
-  status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
+  status = chrome::mojom::PluginStatus::kAllowed;
 
   profile()->GetPrefs()->SetBoolean(prefs::kRunAllFlashInAllowMode, true);
 
   context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
                                 security_status, content::kFlashPluginName,
                                 &status);
-  EXPECT_THAT(status, Eq(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed));
+  EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 }
 
 TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {

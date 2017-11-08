@@ -12,7 +12,7 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/common/webplugininfo.h"
+#include "content/public/common/webplugininfo_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
@@ -104,24 +104,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(content::Referrer)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(policy)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::WebPluginMimeType)
-  IPC_STRUCT_TRAITS_MEMBER(mime_type)
-  IPC_STRUCT_TRAITS_MEMBER(file_extensions)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(additional_param_names)
-  IPC_STRUCT_TRAITS_MEMBER(additional_param_values)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::WebPluginInfo)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(path)
-  IPC_STRUCT_TRAITS_MEMBER(version)
-  IPC_STRUCT_TRAITS_MEMBER(desc)
-  IPC_STRUCT_TRAITS_MEMBER(mime_types)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(pepper_permissions)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
