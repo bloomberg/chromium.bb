@@ -47,8 +47,10 @@ void V8TestCallbackInterface::voidMethod() {
   v8::Local<v8::Value> *argv = 0;
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                0,
                                argv,
@@ -95,8 +97,10 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg) {
   v8::Local<v8::Value> argv[] = { boolArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -118,8 +122,10 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const HeapVector<Member<Test
   v8::Local<v8::Value> argv[] = { sequenceArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -141,8 +147,10 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg) {
   v8::Local<v8::Value> argv[] = { floatArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -164,8 +172,10 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                1,
                                argv,
@@ -188,8 +198,10 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
   v8::Local<v8::Value> argv[] = { testInterfaceEmptyArgHandle, stringArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                v8::Undefined(isolate),
                                2,
                                argv,
@@ -212,8 +224,10 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
   v8::Local<v8::Value> argv[] = { stringArgHandle };
 
   v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch exceptionCatcher(isolate);
+  exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
+                               executionContext,
                                thisHandle,
                                1,
                                argv,
