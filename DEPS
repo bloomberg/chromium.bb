@@ -243,7 +243,7 @@ deps = {
   },
 
   'src/third_party/android_tools': {
-      'url': Var('chromium_git') + '/android_tools.git' + '@' + 'ca0bd083872ad925881736fe2bedc3ff855e08f5',
+      'url': Var('chromium_git') + '/android_tools.git' + '@' + '4a9623af577555a8dab891c8789cc3dfe80addae',
       'condition': 'checkout_android',
   },
 
