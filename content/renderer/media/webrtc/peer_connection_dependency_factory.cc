@@ -63,7 +63,10 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
+#include "third_party/webrtc/api/video_codecs/video_decoder_factory.h"
+#include "third_party/webrtc/api/video_codecs/video_encoder_factory.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
+#include "third_party/webrtc/media/engine/convert_legacy_video_factory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/refcountedobject.h"
 #include "third_party/webrtc/rtc_base/ssladapter.h"
@@ -253,10 +256,17 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
     encoder_factory.reset();
 #endif
 
+  // TODO(magjed): Update RTCVideoEncoderFactory/RTCVideoDecoderFactory to new
+  // interface and let Chromium be responsible in what order video codecs are
+  // listed, instead of using
+  // cricket::ConvertVideoEncoderFactory/cricket::ConvertVideoDecoderFactory.
   pc_factory_ = webrtc::CreatePeerConnectionFactory(
-      worker_thread_, signaling_thread_, audio_device_.get(),
-      CreateWebrtcAudioEncoderFactory(), CreateWebrtcAudioDecoderFactory(),
-      encoder_factory.release(), decoder_factory.release());
+      worker_thread_ /* network thread */, worker_thread_, signaling_thread_,
+      audio_device_.get(), CreateWebrtcAudioEncoderFactory(),
+      CreateWebrtcAudioDecoderFactory(),
+      cricket::ConvertVideoEncoderFactory(std::move(encoder_factory)),
+      cricket::ConvertVideoDecoderFactory(std::move(decoder_factory)),
+      nullptr /* audio_mixer */, nullptr /* audio_processing */);
   CHECK(pc_factory_.get());
 
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
