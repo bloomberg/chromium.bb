@@ -468,6 +468,16 @@ void ShelfButton::ChildPreferredSizeChanged(views::View* child) {
   Layout();
 }
 
+void ShelfButton::OnFocus() {
+  AddState(STATE_FOCUSED);
+  Button::OnFocus();
+}
+
+void ShelfButton::OnBlur() {
+  ClearState(STATE_FOCUSED);
+  Button::OnBlur();
+}
+
 void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -547,7 +557,8 @@ void ShelfButton::NotifyClick(const ui::Event& event) {
 
 void ShelfButton::UpdateState() {
   indicator_->SetVisible(!(state_ & STATE_HIDDEN) &&
-                         (state_ & STATE_ATTENTION || state_ & STATE_RUNNING));
+                         (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION ||
+                          state_ & STATE_RUNNING));
 
   const bool is_horizontal_shelf =
       shelf_view_->shelf()->IsHorizontalAlignment();
