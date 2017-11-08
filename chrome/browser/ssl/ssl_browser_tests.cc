@@ -5202,16 +5202,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, OSReportsCaptivePortal_FeatureDisabled) {
 
 // Tests that the committed interstitial flag triggers the code path to show an
 // error PageType instead of an interstitial PageType.
-IN_PROC_BROWSER_TEST_F(SSLUITestCommittedInterstitials, ErrorPageType) {
+IN_PROC_BROWSER_TEST_F(SSLUITestCommittedInterstitials, ErrorPage) {
+  if (!content::IsBrowserSideNavigationEnabled())
+    return;
+
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
       browser(), https_server_expired_.GetURL("/ssl/google.html"));
 
-  // TODO(crbug.com/751951, crbug.com/752372): Get the correct cert error and
-  // security state showing in this test.
-  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
-                     AuthState::SHOWING_ERROR);
+  CheckSecurityState(tab, net::CERT_STATUS_DATE_INVALID,
+                     security_state::DANGEROUS, AuthState::SHOWING_ERROR);
 
   NavigationEntry* entry = tab->GetController().GetVisibleEntry();
   EXPECT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
