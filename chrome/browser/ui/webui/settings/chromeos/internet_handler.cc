@@ -113,8 +113,8 @@ void InternetHandler::ConfigureNetwork(const base::ListValue* args) {
     // Request that the third-party VPN provider used by the |network| show a
     // configuration dialog for it.
     VpnServiceFactory::GetForBrowserContext(GetProfileForPrimaryUser())
-        ->SendShowConfigureDialogToExtension(
-            network->third_party_vpn_provider_extension_id(), network->name());
+        ->SendShowConfigureDialogToExtension(network->vpn_provider_id(),
+                                             network->name());
     return;
   }
 

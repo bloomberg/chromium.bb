@@ -44,7 +44,7 @@ class VpnDefaultView : public TrayItemMore,
   static bool ShouldShow() {
     // Show the VPN entry in the ash tray bubble if at least one third-party VPN
     // provider is installed.
-    if (Shell::Get()->vpn_list()->HaveThirdPartyVPNProviders())
+    if (Shell::Get()->vpn_list()->HaveThirdPartyOrArcVPNProviders())
       return true;
 
     // Also show the VPN entry if at least one VPN network is configured.

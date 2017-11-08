@@ -37,17 +37,17 @@ TEST_F(VpnListTest, BuiltInProvider) {
   VpnList vpn_list;
 
   // The VPN list should only contain the built-in provider.
-  ASSERT_EQ(1u, vpn_list.vpn_providers().size());
-  VPNProvider provider = vpn_list.vpn_providers()[0];
-  EXPECT_FALSE(provider.third_party);
-  EXPECT_TRUE(provider.extension_id.empty());
+  ASSERT_EQ(1u, vpn_list.extension_vpn_providers().size());
+  VPNProvider provider = vpn_list.extension_vpn_providers()[0];
+  EXPECT_EQ(provider.provider_type, VPNProvider::BUILT_IN_VPN);
+  EXPECT_TRUE(provider.app_id.empty());
 }
 
 TEST_F(VpnListTest, ThirdPartyProviders) {
   VpnList vpn_list;
 
   // The VPN list should only contain the built-in provider.
-  EXPECT_EQ(1u, vpn_list.vpn_providers().size());
+  EXPECT_EQ(1u, vpn_list.extension_vpn_providers().size());
 
   // Add some third party (extension-backed) providers.
   std::vector<ThirdPartyVpnProviderPtr> third_party_providers;
@@ -64,14 +64,19 @@ TEST_F(VpnListTest, ThirdPartyProviders) {
   vpn_list.SetThirdPartyVpnProviders(std::move(third_party_providers));
 
   // Mojo types will be converted to internal ash types.
-  VPNProvider provider1("extension_id1", "name1");
-  VPNProvider provider2("extension_id2", "name2");
+  VPNProvider extension_provider1 =
+      VPNProvider::CreateThirdPartyVPNProvider("extension_id1", "name1");
+  VPNProvider extension_provider2 =
+      VPNProvider::CreateThirdPartyVPNProvider("extension_id2", "name2");
 
   // List contains the extension-backed providers. Order doesn't matter.
-  std::vector<VPNProvider> providers = vpn_list.vpn_providers();
-  EXPECT_EQ(3u, providers.size());
-  EXPECT_EQ(1u, std::count(providers.begin(), providers.end(), provider1));
-  EXPECT_EQ(1u, std::count(providers.begin(), providers.end(), provider2));
+  std::vector<VPNProvider> extension_providers =
+      vpn_list.extension_vpn_providers();
+  EXPECT_EQ(3u, extension_providers.size());
+  EXPECT_EQ(1u, std::count(extension_providers.begin(),
+                           extension_providers.end(), extension_provider1));
+  EXPECT_EQ(1u, std::count(extension_providers.begin(),
+                           extension_providers.end(), extension_provider2));
 }
 
 TEST_F(VpnListTest, Observers) {
