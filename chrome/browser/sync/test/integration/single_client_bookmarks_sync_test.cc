@@ -22,10 +22,12 @@ using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
+using bookmarks_helper::CheckHasNoFavicon;
 using bookmarks_helper::CountBookmarksWithTitlesMatching;
 using bookmarks_helper::CountBookmarksWithUrlsMatching;
 using bookmarks_helper::CountFoldersWithTitlesMatching;
 using bookmarks_helper::Create1xFaviconFromPNGFile;
+using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
 using bookmarks_helper::GetBookmarkModel;
 using bookmarks_helper::GetOtherNode;
@@ -265,6 +267,34 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   // Check that the data was not mutated from the original.
   EXPECT_TRUE(original_favicon_bytes.get());
   EXPECT_TRUE(original_favicon_bytes->Equals(final_favicon_bytes));
+}
+
+// Test that a client deletes favicons from sync when they have been removed
+// from the local database.
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, DeleteFaviconFromSync) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
+
+  const GURL page_url("http://www.google.com");
+  const GURL icon_url("http://www.google.com/favicon.ico");
+  const BookmarkNode* bookmark = AddURL(kSingleProfileIndex, "title", page_url);
+  SetFavicon(0, bookmark, icon_url, CreateFavicon(SK_ColorWHITE),
+             bookmarks_helper::FROM_UI);
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
+
+  // Simulate receiving a favicon deletion from sync.
+  DeleteFaviconMappings(kSingleProfileIndex, bookmark,
+                        bookmarks_helper::FROM_SYNC);
+
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
+
+  CheckHasNoFavicon(kSingleProfileIndex, page_url);
+  EXPECT_TRUE(
+      GetBookmarkModel(kSingleProfileIndex)->GetFavicon(bookmark).IsEmpty());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
