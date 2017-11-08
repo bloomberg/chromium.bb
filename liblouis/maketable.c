@@ -99,7 +99,7 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 	}
 }
 
-#define DEBUG 0
+#define DEBUG 1
 
 #if DEBUG
 #define debug(fmt, ...)                                                     \
@@ -110,7 +110,7 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 #define debug(fmt, ...)
 #endif
 
-static int
+extern int
 find_matching_rules(
 		widechar *text, int text_len, widechar *braille, int braille_len, char *data) {
 	unsigned long int hash;
