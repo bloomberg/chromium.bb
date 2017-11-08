@@ -50,12 +50,6 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         }
     }
 
-    /**
-     * Logs the results seen for the heuristics and whether they would have had their condition
-     * satisfied if enabled.
-     * @param wasSearchContentViewSeen Whether the panel contents were seen.
-     * @param wasActivatedByTap Whether the panel was activated by a Tap or not.
-     */
     @Override
     public void logResultsSeen(boolean wasSearchContentViewSeen, boolean wasActivatedByTap) {
         for (ContextualSearchHeuristic heuristic : mHeuristics) {
