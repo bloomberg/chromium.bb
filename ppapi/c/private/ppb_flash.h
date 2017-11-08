@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Apr 18 15:06:12 2013. */
+/* From private/ppb_flash.idl modified Tue Oct 24 12:52:30 2017. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -71,6 +71,7 @@ typedef enum {
    * failed.
    */
   PP_FLASHSETTING_3DENABLED = 1,
+  PP_FLASHSETTING_FIRST = PP_FLASHSETTING_3DENABLED,
   /**
    * Specifies if the given instance is in private/incognito/off-the-record mode
    * (returns true) or "regular" mode (returns false). Returns an undefined
@@ -107,7 +108,8 @@ typedef enum {
    *
    * This should only be enabled if PP_FLASHSETTING_STAGE3DENABLED is true.
    */
-  PP_FLASHSETTING_STAGE3DBASELINEENABLED = 7
+  PP_FLASHSETTING_STAGE3DBASELINEENABLED = 7,
+  PP_FLASHSETTING_LAST = PP_FLASHSETTING_STAGE3DBASELINEENABLED
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 

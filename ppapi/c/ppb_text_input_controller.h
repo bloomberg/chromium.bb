@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_text_input_controller.idl modified Thu Aug  1 09:30:48 2013. */
+/* From ppb_text_input_controller.idl modified Mon Oct 23 15:30:39 2017. */
 
 #ifndef PPAPI_C_PPB_TEXT_INPUT_CONTROLLER_H_
 #define PPAPI_C_PPB_TEXT_INPUT_CONTROLLER_H_
@@ -52,7 +52,8 @@ typedef enum {
   PP_TEXTINPUT_TYPE_EMAIL = 4,
   PP_TEXTINPUT_TYPE_NUMBER = 5,
   PP_TEXTINPUT_TYPE_TELEPHONE = 6,
-  PP_TEXTINPUT_TYPE_URL = 7
+  PP_TEXTINPUT_TYPE_URL = 7,
+  PP_TEXTINPUT_TYPE_LAST = PP_TEXTINPUT_TYPE_URL
 } PP_TextInput_Type;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TextInput_Type, 4);
 /**

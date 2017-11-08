@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_input_event.idl modified Wed May 24 10:14:53 2017. */
+/* From ppb_input_event.idl modified Tue Oct 24 12:49:54 2017. */
 
 #ifndef PPAPI_C_PPB_INPUT_EVENT_H_
 #define PPAPI_C_PPB_INPUT_EVENT_H_
@@ -55,6 +55,7 @@
  */
 typedef enum {
   PP_INPUTEVENT_TYPE_UNDEFINED = -1,
+  PP_INPUTEVENT_TYPE_FIRST = PP_INPUTEVENT_TYPE_UNDEFINED,
   /**
    * Notification that a mouse button was pressed.
    *
@@ -190,7 +191,8 @@ typedef enum {
    *
    * Register for this event using the PP_INPUTEVENT_CLASS_TOUCH class.
    */
-  PP_INPUTEVENT_TYPE_TOUCHCANCEL = 18
+  PP_INPUTEVENT_TYPE_TOUCHCANCEL = 18,
+  PP_INPUTEVENT_TYPE_LAST = PP_INPUTEVENT_TYPE_TOUCHCANCEL
 } PP_InputEvent_Type;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
 
@@ -225,9 +227,11 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
  */
 typedef enum {
   PP_INPUTEVENT_MOUSEBUTTON_NONE = -1,
+  PP_INPUTEVENT_MOUSEBUTTON_FIRST = PP_INPUTEVENT_MOUSEBUTTON_NONE,
   PP_INPUTEVENT_MOUSEBUTTON_LEFT = 0,
   PP_INPUTEVENT_MOUSEBUTTON_MIDDLE = 1,
-  PP_INPUTEVENT_MOUSEBUTTON_RIGHT = 2
+  PP_INPUTEVENT_MOUSEBUTTON_RIGHT = 2,
+  PP_INPUTEVENT_MOUSEBUTTON_LAST = PP_INPUTEVENT_MOUSEBUTTON_RIGHT
 } PP_InputEvent_MouseButton;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
 
