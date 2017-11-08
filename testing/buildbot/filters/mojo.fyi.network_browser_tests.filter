@@ -2299,6 +2299,8 @@
 
 # crbug.com/778793
 -PreviewsBrowserTest.NoScriptPreviewsEnabled
+# Started failing in r514649.
+-PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabled
 
 # crbug.com/756642 Need to add support for URL blacklist.
 -PolicyTest.FileURLBlacklist
@@ -2310,6 +2312,8 @@
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP8
 -WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabsVP9
 -WebrtcEventLogApiTest.TestStartStopWebRtcEventLogging
+# This passes flakily sometimes.
+-WebrtcEventLogApiTest.TestStartTimedWebRtcEventLogging
 
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
