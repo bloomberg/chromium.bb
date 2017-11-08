@@ -40,23 +40,19 @@ import v8_types
 import v8_utilities
 
 CALLBACK_INTERFACE_H_INCLUDES = frozenset([
-    'platform/bindings/DOMWrapperWorld.h',
-    'platform/bindings/ScopedPersistent.h',
+    'platform/bindings/CallbackInterfaceBase.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ScriptController.h',
+    'bindings/core/v8/GeneratedCodeHelper.h',
     'bindings/core/v8/V8BindingForCore.h',
     'core/dom/ExecutionContext.h',
-    'platform/wtf/Assertions.h',
-    'platform/wtf/GetPtr.h',
-    'platform/wtf/RefPtr.h',
+])
+LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
+    'platform/bindings/DOMWrapperWorld.h',
 ])
 LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ScriptController.h',
     'bindings/core/v8/V8BindingForCore.h',
     'bindings/core/v8/V8DOMConfiguration.h',
-    'core/dom/ExecutionContext.h',
-    'platform/wtf/Assertions.h',
 ])
 
 
@@ -81,10 +77,26 @@ IdlTypeBase.callback_cpp_type = property(cpp_type)
 def callback_interface_context(callback_interface, _):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
+
+    # https://heycam.github.io/webidl/#dfn-single-operation-callback-interface
+    is_single_operation = True
+    if (callback_interface.parent or
+            len(callback_interface.attributes) > 0 or
+            len(callback_interface.operations) == 0):
+        is_single_operation = False
+    else:
+        operations = callback_interface.operations
+        basis = operations[0]
+        for op in operations[1:]:
+            if op.name != basis.name:
+                is_single_operation = False
+                break
+
     return {
         'cpp_class': callback_interface.name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
         'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
+        'is_single_operation_callback_interface': is_single_operation,
         'methods': [method_context(operation)
                     for operation in callback_interface.operations],
     }
@@ -98,7 +110,7 @@ def legacy_callback_interface_context(callback_interface, _):
         'constants': [constant_context(constant, callback_interface)
                       for constant in callback_interface.constants],
         'cpp_class': callback_interface.name,
-        'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
+        'header_includes': set(LEGACY_CALLBACK_INTERFACE_H_INCLUDES),
         'interface_name': callback_interface.name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
     }
@@ -138,8 +150,8 @@ def arguments_context(arguments, call_with_this_handle):
         return {
             'handle': '%sHandle' % argument.name,
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='script_state_->GetIsolate()',
-                creation_context='script_state_->GetContext()->Global()'),
+                argument.name, isolate='GetIsolate()',
+                creation_context='argument_creation_context'),
         }
 
     argument_declarations = ['ScriptValue thisValue'] if call_with_this_handle else []

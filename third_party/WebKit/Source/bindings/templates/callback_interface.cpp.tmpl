@@ -1,6 +1,7 @@
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}
+
 #include "{{this_include_header_name}}"
 
 {% for filename in cpp_includes %}
@@ -9,34 +10,23 @@
 
 namespace blink {
 
-{{v8_class}}::{{v8_class}}(v8::Local<v8::Function> callback, ScriptState* scriptState)
-    : script_state_(scriptState) {
-  callback_.Set(scriptState->GetIsolate(), callback);
-}
-
-{{v8_class}}::~{{v8_class}}() {}
-
-void {{v8_class}}::Trace(blink::Visitor* visitor) {
-  {{cpp_class}}::Trace(visitor);
-}
-
+{# TODO(yukishiino): Remove |method.is_custom| once we support the author
+   function\'s return value. #}
 {% for method in methods if not method.is_custom %}
+
+{% set return_success = 'return' if method.cpp_type == 'void' else 'return true' %}
+{% set return_failure = 'return' if method.cpp_type == 'void' else 'return false' %}
+
 {{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}}) {
-  {% set return_default = 'return true'
-         if method.idl_type == 'boolean' else 'return' %}{# void #}
-  if (!script_state_->ContextIsValid())
-    {{return_default}};
-  ExecutionContext* executionContext =
-      ExecutionContext::From(script_state_.get());
-  DCHECK(!executionContext->IsContextPaused());
-  if (!executionContext || executionContext->IsContextDestroyed())
-    {{return_default}};
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
+    {{return_success}};
+  }
 
-  ScriptState::Scope scope(script_state_.get());
-  {% if method.call_with_this_handle %}
-  v8::Local<v8::Value> thisHandle = thisValue.V8Value();
-  {% endif %}
+  ScriptState::Scope scope(CallbackRelevantScriptState());
 
+  v8::Local<v8::Object> argument_creation_context =
+      CallbackRelevantScriptState()->GetContext()->Global();
+  ALLOW_UNUSED_LOCAL(argument_creation_context);
   {% for argument in method.arguments %}
   v8::Local<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
@@ -47,23 +37,31 @@ void {{v8_class}}::Trace(blink::Visitor* visitor) {
   v8::Local<v8::Value> *argv = 0;
   {% endif %}
 
-  v8::Isolate* isolate = script_state_->GetIsolate();
-  {% set this_handle_parameter = 'thisHandle'
-         if method.call_with_this_handle else 'v8::Undefined(isolate)' %}
+  v8::Isolate* isolate = GetIsolate();
+
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               executionContext,
-                               {{this_handle_parameter}},
-                               {{method.arguments | length}},
-                               argv,
-                               isolate);
-  {% if method.idl_type == 'boolean' %}
-  return !exceptionCatcher.HasCaught();
-  {% endif %}
+
+  v8::Local<v8::Value> call_result;
+  if (!V8ScriptRunner::CallFunction(
+          CallbackObject().As<v8::Function>(),
+          ExecutionContext::From(CallbackRelevantScriptState()),
+          v8::Undefined(isolate),
+          {{method.arguments | length}},
+          argv,
+          isolate).ToLocal(&call_result)) {
+    {{return_failure}};
+  }
+
+  // TODO(yukishiino): This function throws the return value away, and it's
+  // wrong. This function should return the return value converting it from
+  // v8::Value to an native type.
+  ALLOW_UNUSED_LOCAL(call_result);
+  {{return_success}};
 }
 
 {% endfor %}
+
 }  // namespace blink
 
 {% endfilter %}{# format_blink_cpp_source_code #}
