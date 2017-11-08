@@ -6,6 +6,9 @@ public_headers = [
   "//device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h",
 ]
 traits_headers = [ "//components/arc/bluetooth/bluetooth_struct_traits.h" ]
+sources = [
+  "//components/arc/bluetooth/bluetooth_struct_traits.cc",
+]
 deps = [
   "//device/bluetooth",
 ]
