@@ -52,43 +52,71 @@ bool CheckVlogIsOn(LoggingSeverity severity, const char (&file)[N]) {
                             ##__VA_ARGS__)                                   \
       .stream()
 
-#define LOG_CHECK_LEVEL(sev) CheckVlogIsOn(rtc::sev, __FILE__)
-#define LOG_CHECK_LEVEL_V(sev) CheckVlogIsOn(sev, __FILE__)
+#define RTC_LOG_CHECK_LEVEL(sev) CheckVlogIsOn(rtc::sev, __FILE__)
+#define RTC_LOG_CHECK_LEVEL_V(sev) CheckVlogIsOn(sev, __FILE__)
 
-#define LOG_V(sev) DIAGNOSTIC_LOG(sev, NONE, 0)
-#undef LOG
-#define LOG(sev) DIAGNOSTIC_LOG(rtc::sev, NONE, 0)
+#define RTC_LOG_V(sev) DIAGNOSTIC_LOG(sev, NONE, 0)
+#undef RTC_LOG
+#define RTC_LOG(sev) DIAGNOSTIC_LOG(rtc::sev, NONE, 0)
 
 // The _F version prefixes the message with the current function name.
 #if defined(__GNUC__) && defined(_DEBUG)
-#define LOG_F(sev) LOG(sev) << __PRETTY_FUNCTION__ << ": "
+#define RTC_LOG_F(sev) RTC_LOG(sev) << __PRETTY_FUNCTION__ << ": "
 #else
-#define LOG_F(sev) LOG(sev) << __FUNCTION__ << ": "
+#define RTC_LOG_F(sev) RTC_LOG(sev) << __FUNCTION__ << ": "
 #endif
 
-#define LOG_E(sev, ctx, err, ...) \
+#define RTC_LOG_E(sev, ctx, err, ...) \
   DIAGNOSTIC_LOG(rtc::sev, ctx, err, ##__VA_ARGS__)
 
-#undef LOG_ERRNO_EX
-#define LOG_ERRNO_EX(sev, err) LOG_E(sev, ERRNO, err)
-#undef LOG_ERRNO
-#define LOG_ERRNO(sev) LOG_ERRNO_EX(sev, errno)
+#undef RTC_LOG_ERRNO_EX
+#define RTC_LOG_ERRNO_EX(sev, err) RTC_LOG_E(sev, ERRNO, err)
+#undef RTC_LOG_ERRNO
+#define RTC_LOG_ERRNO(sev) RTC_LOG_ERRNO_EX(sev, errno)
 
 #if defined(WEBRTC_WIN)
-#define LOG_GLE_EX(sev, err) LOG_E(sev, HRESULT, err)
-#define LOG_GLE(sev) LOG_GLE_EX(sev, GetLastError())
-#define LOG_GLEM(sev, mod) LOG_E(sev, HRESULT, GetLastError(), mod)
-#define LOG_ERR_EX(sev, err) LOG_GLE_EX(sev, err)
-#define LOG_ERR(sev) LOG_GLE(sev)
-#define LAST_SYSTEM_ERROR (::GetLastError())
+#define RTC_LOG_GLE_EX(sev, err) RTC_LOG_E(sev, HRESULT, err)
+#define RTC_LOG_GLE(sev) RTC_LOG_GLE_EX(sev, GetLastError())
+#define RTC_LOG_GLEM(sev, mod) RTC_LOG_E(sev, HRESULT, GetLastError(), mod)
+#define RTC_LOG_ERR_EX(sev, err) RTC_LOG_GLE_EX(sev, err)
+#define RTC_LOG_ERR(sev) RTC_LOG_GLE(sev)
+#define RTC_LAST_SYSTEM_ERROR (::GetLastError())
 #else
-#define LOG_ERR_EX(sev, err) LOG_ERRNO_EX(sev, err)
-#define LOG_ERR(sev) LOG_ERRNO(sev)
-#define LAST_SYSTEM_ERROR (errno)
+#define RTC_LOG_ERR_EX(sev, err) RTC_LOG_ERRNO_EX(sev, err)
+#define RTC_LOG_ERR(sev) RTC_LOG_ERRNO(sev)
+#define RTC_LAST_SYSTEM_ERROR (errno)
 #endif  // OS_WIN
 
+#undef RTC_PLOG
+#define RTC_PLOG(sev, err) RTC_LOG_ERR_EX(sev, err)
+
+// TODO(mbonadei): When WebRTC will stop to use unprefixed LOG
+// macros remove the definition of LOG* macros in the "backwards compatibility"
+// block. See bugs.webrtc.org/8452.
+
+// Start -- Backwards compatibility
+#define LOG_CHECK_LEVEL(sev) RTC_LOG_CHECK_LEVEL(sev)
+#define LOG_CHECK_LEVEL_V(sev) RTC_LOG_CHECK_LEVEL_V(sev)
+#define LOG_V(sev) RTC_LOG_V(sev)
+#undef LOG
+#define LOG(sev) RTC_LOG(sev)
+#define LOG_F(sev) RTC_LOG_F(sev)
+#define LOG_E(sev, ctx, err, ...) RTC_LOG_E(sev, ctx, err, ##__VA_ARGS__)
+#undef LOG_ERRNO_EX
+#define LOG_ERRNO_EX(sev, err) RTC_LOG_ERRNO_EX(sev, err)
+#undef LOG_ERRNO
+#define LOG_ERRNO(sev) RTC_LOG_ERRNO(sev)
+#if defined(WEBRTC_WIN)
+#define LOG_GLE_EX(sev, err) RTC_LOG_GLE_EX(sev, err)
+#define LOG_GLE(sev) RTC_LOG_GLE(sev)
+#define LOG_GLEM(sev, mod) RTC_LOG_GLEM(sev, mod)
+#endif  // OS_WIN
+#define LOG_ERR_EX(sev, err) RTC_LOG_ERR_EX(sev, err)
+#define LOG_ERR(sev) RTC_LOG_ERR(sev)
+#define LAST_SYSTEM_ERROR RTC_LAST_SYSTEM_ERROR
 #undef PLOG
-#define PLOG(sev, err) LOG_ERR_EX(sev, err)
+#define PLOG(sev, err) RTC_PLOG(sev, err)
+// End -- Backwards compatibility
 
 #endif  // LOGGING_INSIDE_WEBRTC
 
