@@ -148,9 +148,7 @@ class TestClientRunner {
 
     driver->RequestQuit(base::MessageLoop::QuitWhenIdleClosure());
 
-    base::MessageLoop::ScopedNestableTaskAllower allow_nested_loops(
-        base::MessageLoop::current());
-    base::RunLoop().Run();
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
 
     proxy.ShutDown();
     io_thread.Stop();
@@ -175,3 +173,4 @@ TEST_F(BrowserAssociatedInterfaceTest, Basic) {
 }
 
 }  // namespace content
+
