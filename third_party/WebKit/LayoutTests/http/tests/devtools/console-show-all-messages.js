@@ -15,6 +15,7 @@
   });
 
   var filterByExecutionContextSetting = Console.ConsoleView.instance()._filter._filterByExecutionContextSetting;
+  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
 
   //we can't use usual ConsoleTestRunner.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
   function dumpVisibleConsoleMessageText() {

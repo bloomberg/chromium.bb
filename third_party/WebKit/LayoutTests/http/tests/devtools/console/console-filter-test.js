@@ -45,6 +45,7 @@
 
     console.log("end");
   `);
+  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
 
   // Add Violation-source message.
   var violationMessage = new ConsoleModel.ConsoleMessage(

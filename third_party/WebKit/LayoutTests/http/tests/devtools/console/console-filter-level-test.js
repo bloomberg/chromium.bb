@@ -21,6 +21,7 @@
     console.warn("abc warn");
     console.warn("def warn");
   `);
+  Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
 
   function dumpVisibleMessages() {
     var menuText = Console.ConsoleView.instance()._filter._levelMenuButton._text;
