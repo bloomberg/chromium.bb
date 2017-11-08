@@ -32,8 +32,8 @@ public class InstanceIDWithSubtype {
      */
     @VisibleForTesting
     @SuppressFBWarnings("MS_MUTABLE_COLLECTION_PKGPROTECT")
-    public static final Map<String, InstanceIDWithSubtype> sSubtypeInstances = new HashMap<>();
-    private static final Object sSubtypeInstancesLock = new Object();
+    protected static final Map<String, InstanceIDWithSubtype> sSubtypeInstances = new HashMap<>();
+    protected static final Object sSubtypeInstancesLock = new Object();
 
     /** Fake subclasses can set this so getInstance creates instances of them. */
     @VisibleForTesting
