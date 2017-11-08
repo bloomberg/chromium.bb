@@ -126,6 +126,13 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
   };
 
+  // Max number of http redirects to follow. The Fetch spec says: "If
+  // request's redirect count is twenty, return a network error."
+  // https://fetch.spec.whatwg.org/#http-redirect-fetch
+  enum {
+    kMaxRedirects = 20,
+  };
+
   // The delegate's methods are called from the message loop of the thread
   // on which the request's Start() method is called. See above for the
   // ordering of callbacks.

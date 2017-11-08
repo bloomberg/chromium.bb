@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
@@ -474,12 +475,13 @@ void ServiceWorkerMetrics::CountControlledPageLoad(
         "ServiceWorker.MainFramePageLoad.CoreTransition",
         static_cast<int>(ui::PageTransitionStripQualifier(page_transition)),
         static_cast<int>(ui::PAGE_TRANSITION_LAST_CORE) + 1);
-    // Currently the max number of HTTP redirects is 20 which is defined as
-    // kMaxRedirects in net/url_request/url_request.cc. So the max number of the
-    // chain length is 21.
+    // Currently the max number of HTTP redirects is 20 as defined in
+    // net::URLRequest::kMaxRedirects in
+    // net/url_request/url_request.h. So the max number of the chain
+    // length is 21.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "ServiceWorker.MainFramePageLoad.RedirectChainLength",
-        redirect_chain_length, 21);
+        redirect_chain_length, net::URLRequest::kMaxRedirects + 1);
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

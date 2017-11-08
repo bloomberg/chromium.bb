@@ -46,6 +46,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_util.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
@@ -57,9 +58,6 @@ namespace {
 // Request ID for browser initiated requests. We start at -2 on the same lines
 // as ResourceDispatcherHostImpl.
 int g_next_request_id = -2;
-
-// Max number of http redirects to follow.  Same number as the net library.
-const int kMaxRedirects = 20;
 
 WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -473,7 +471,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   std::unique_ptr<ResourceRequest> resource_request_;
   int frame_tree_node_id_ = 0;
   net::RedirectInfo redirect_info_;
-  int redirect_limit_ = kMaxRedirects;
+  int redirect_limit_ = net::URLRequest::kMaxRedirects;
   ResourceContext* resource_context_;
   base::Callback<WebContents*()> web_contents_getter_;
   scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter_;

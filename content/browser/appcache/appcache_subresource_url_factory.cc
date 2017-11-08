@@ -18,15 +18,11 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/url_request.h"
 
 namespace content {
 
 namespace {
-
-// Max number of http redirects to follow. The Fetch spec says: "If request's
-// redirect count is twenty, return a network error."
-// https://fetch.spec.whatwg.org/#http-redirect-fetch
-const int kMaxRedirects = 20;
 
 // URLLoader implementation that utilizes either a network loader
 // or an appcache loader depending on where the resources should
@@ -282,7 +278,7 @@ class SubresourceLoader : public mojom::URLLoader,
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   scoped_refptr<URLLoaderFactoryGetter> network_loader_factory_;
   net::RedirectInfo redirect_info_;
-  int redirect_limit_ = kMaxRedirects;
+  int redirect_limit_ = net::URLRequest::kMaxRedirects;
   bool did_receive_network_response_ = false;
   bool has_paused_reading_ = false;
   bool has_set_priority_ = false;

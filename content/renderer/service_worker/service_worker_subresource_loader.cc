@@ -17,16 +17,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
+#include "net/url_request/url_request.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
 
 namespace {
-
-// Max number of http redirects to follow. The Fetch spec says: "If request’s
-// redirect count is twenty, return a network error."
-// https://fetch.spec.whatwg.org/#http-redirect-fetch
-const int kMaxRedirects = 20;
 
 ResourceResponseHead RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
@@ -151,7 +147,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     const GURL& controller_origin,
     scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
         blob_registry)
-    : redirect_limit_(kMaxRedirects),
+    : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
       response_callback_binding_(this),
