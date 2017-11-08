@@ -32,6 +32,9 @@ template("chrome_public_apk_tmpl") {
     forward_variables_from(invoker, "*")
     exclude_xxxhdpi = true
 
+    # Use zh-TW strings for zh-HK (https://crbug.com/780847).
+    support_zh_hk = true
+
     # Whitelist rationale in https://crbug.com/691733.
     xxxhdpi_whitelist = [
       "*shadow*",  # Combination of gradient & transparency cause pixelation.
@@ -123,6 +126,9 @@ template("monochrome_public_apk_tmpl") {
     uncompress_shared_libraries = true
 
     forward_variables_from(invoker, "*")
+
+    # Android N+ better supports multiple locales (https://crbug.com/780847).
+    support_zh_hk = false
 
     if (!defined(deps)) {
       deps = []

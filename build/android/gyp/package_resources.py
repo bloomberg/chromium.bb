@@ -152,6 +152,8 @@ def _ParseArgs(args):
                     help='Convert png files to webp format.')
   parser.add_option('--webp-binary', default='',
                     help='Path to the cwebp binary.')
+  parser.add_option('--support-zh-hk', action='store_true',
+                    help='Tell aapt to support zh-rHK.')
 
   options, positional_args = parser.parse_args(args)
 
@@ -171,7 +173,7 @@ def _ParseArgs(args):
   return options
 
 
-def _ToAaptLocales(locale_whitelist):
+def _ToAaptLocales(locale_whitelist, support_zh_hk):
   """Converts the list of Chrome locales to aapt config locales."""
   ret = set()
   for locale in locale_whitelist:
@@ -184,6 +186,13 @@ def _ToAaptLocales(locale_whitelist):
     language = locale.split('-')[0]
     ret.add(language)
 
+  # We don't actually support zh-HK in Chrome on Android, but we mimic the
+  # native side behavior where we use zh-TW resources when the locale is set to
+  # zh-HK. See https://crbug.com/780847.
+  if support_zh_hk:
+    assert not any('HK' in l for l in locale_whitelist), (
+        'Remove special logic if zh-HK is now supported (crbug.com/780847).')
+    ret.add('zh-rHK')
   return sorted(ret)
 
 
@@ -310,7 +319,8 @@ def _ConstructMostAaptArgs(options):
     package_command += ['--debug-mode']
 
   if options.locale_whitelist:
-    aapt_locales = _ToAaptLocales(options.locale_whitelist)
+    aapt_locales = _ToAaptLocales(
+        options.locale_whitelist, options.support_zh_hk)
     package_command += ['-c', ','.join(aapt_locales)]
 
   return package_command
@@ -412,7 +422,9 @@ def main(args):
   input_strings.extend(package_command)
   if options.png_to_webp:
     # This is necessary to ensure conversion if the option is toggled.
-    input_strings.extend("png_to_webp")
+    input_strings.append('png_to_webp')
+  if options.support_zh_hk:
+    input_strings.append('support_zh_hk')
 
   # The md5_check.py doesn't count file path in md5 intentionally,
   # in order to repackage resources when assets' name changed, we need
