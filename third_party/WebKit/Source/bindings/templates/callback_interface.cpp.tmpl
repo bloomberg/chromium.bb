@@ -50,7 +50,6 @@ void {{v8_class}}::Trace(blink::Visitor* visitor) {
   v8::Isolate* isolate = script_state_->GetIsolate();
   {% set this_handle_parameter = 'thisHandle'
          if method.call_with_this_handle else 'v8::Undefined(isolate)' %}
-  {% if method.idl_type == 'boolean' %}
   v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
@@ -59,14 +58,8 @@ void {{v8_class}}::Trace(blink::Visitor* visitor) {
                                {{method.arguments | length}},
                                argv,
                                isolate);
+  {% if method.idl_type == 'boolean' %}
   return !exceptionCatcher.HasCaught();
-  {% else %}{# void #}
-  V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                               ExecutionContext::From(script_state_.get()),
-                               {{this_handle_parameter}},
-                               {{method.arguments | length}},
-                               argv,
-                               isolate);
   {% endif %}
 }
 
