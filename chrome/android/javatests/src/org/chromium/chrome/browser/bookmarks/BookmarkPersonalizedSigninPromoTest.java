@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -101,7 +100,6 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/782409")
     public void testSigninButtonDefaultAccount() throws Exception {
         addTestAccount();
         openBookmarkManager();
@@ -123,7 +121,6 @@ public class BookmarkPersonalizedSigninPromoTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/782409")
     public void testSigninButtonNotDefaultAccount() throws Exception {
         addTestAccount();
         openBookmarkManager();
