@@ -13,7 +13,7 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Noncopyable.h"
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 #include "platform/json/JSONValues.h"
 #include "platform/wtf/text/WTFString.h"
 #endif
@@ -187,12 +187,7 @@ class PLATFORM_EXPORT DisplayItem {
         type_(type),
         derived_size_(derived_size),
         skipped_cache_(false),
-        is_tombstone_(false)
-#ifndef NDEBUG
-        ,
-        client_debug_string_(client.DebugName())
-#endif
-  {
+        is_tombstone_(false) {
     // derivedSize must fit in m_derivedSize.
     // If it doesn't, enlarge m_derivedSize and fix this assert.
     SECURITY_DCHECK(derived_size < (1 << 8));
@@ -344,10 +339,8 @@ class PLATFORM_EXPORT DisplayItem {
 
   virtual bool DrawsContent() const { return false; }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   static WTF::String TypeAsDebugString(DisplayItem::Type);
-  const WTF::String ClientDebugString() const { return client_debug_string_; }
-  void SetClientDebugString(const WTF::String& s) { client_debug_string_ = s; }
   WTF::String AsDebugString() const;
   virtual void PropertiesAsJSON(JSONObject&) const;
 #endif
@@ -375,10 +368,6 @@ class PLATFORM_EXPORT DisplayItem {
   unsigned derived_size_ : 8;  // size of the actual derived class
   unsigned skipped_cache_ : 1;
   unsigned is_tombstone_ : 1;
-
-#ifndef NDEBUG
-  WTF::String client_debug_string_;
-#endif
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {

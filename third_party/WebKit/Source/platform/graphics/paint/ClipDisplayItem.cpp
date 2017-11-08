@@ -45,7 +45,7 @@ void EndClipDisplayItem::AppendToWebDisplayItemList(
   list->AppendEndClipItem();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void ClipDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetString("clipRect", clip_rect_.ToString());

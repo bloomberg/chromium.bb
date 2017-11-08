@@ -33,7 +33,7 @@ class PLATFORM_EXPORT BeginTransform3DDisplayItem final
   const FloatPoint3D& TransformOrigin() const { return transform_origin_; }
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const final;
 #endif
   bool Equals(const DisplayItem& other) const final {

@@ -22,7 +22,7 @@ void BeginScrollDisplayItem::AppendToWebDisplayItemList(
   list->AppendScrollItem(current_offset_, scroll_container_id);
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginScrollDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   PairedBeginDisplayItem::PropertiesAsJSON(json);
   json.SetString("currentOffset", current_offset_.ToString());

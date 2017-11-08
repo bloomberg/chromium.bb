@@ -25,7 +25,7 @@ class PLATFORM_EXPORT BeginClipPathDisplayItem final
                                   WebDisplayItemList*) const override;
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
   bool Equals(const DisplayItem& other) const final {

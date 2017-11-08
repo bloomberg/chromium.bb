@@ -48,7 +48,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
   bool Equals(const DisplayItem& other) const final;
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
 

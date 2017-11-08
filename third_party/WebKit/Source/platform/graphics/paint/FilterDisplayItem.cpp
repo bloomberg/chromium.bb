@@ -32,7 +32,7 @@ bool BeginFilterDisplayItem::DrawsContent() const {
   return true;
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginFilterDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetString("filterBounds", bounds_.ToString());

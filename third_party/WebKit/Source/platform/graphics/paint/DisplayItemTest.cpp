@@ -9,7 +9,7 @@
 namespace blink {
 namespace {
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 TEST(DisplayItemTest, DebugStringsExist) {
   for (int type = 0; type <= DisplayItem::kTypeLast; type++) {
     String debug_string =
@@ -18,7 +18,7 @@ TEST(DisplayItemTest, DebugStringsExist) {
     EXPECT_NE("Unknown", debug_string);
   }
 }
-#endif  // NDEBUG
+#endif  // DCHECK_IS_ON()
 
 }  // namespace
 }  // namespace blink

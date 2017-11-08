@@ -21,7 +21,7 @@ void BeginTransformDisplayItem::AppendToWebDisplayItemList(
   list->AppendTransformItem(AffineTransformToSkMatrix(transform_));
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginTransformDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   PairedBeginDisplayItem::PropertiesAsJSON(json);
   json.SetString("transform", transform_.ToString());

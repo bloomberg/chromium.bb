@@ -26,7 +26,7 @@ void BeginTransform3DDisplayItem::AppendToWebDisplayItemList(
   list->AppendTransformItem(TransformationMatrix::ToSkMatrix44(transform));
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void BeginTransform3DDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   PairedBeginDisplayItem::PropertiesAsJSON(json);
   json.SetString("transform", transform_.ToString());

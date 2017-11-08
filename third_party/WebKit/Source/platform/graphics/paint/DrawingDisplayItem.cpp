@@ -33,7 +33,7 @@ bool DrawingDisplayItem::DrawsContent() const {
   return record_.get();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetString("rect", VisualRect().ToString());

@@ -31,7 +31,7 @@ void EndFloatClipDisplayItem::AppendToWebDisplayItemList(
   list->AppendEndFloatClipItem();
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
 void FloatClipDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);
   json.SetString("floatClipRect", clip_rect_.ToString());

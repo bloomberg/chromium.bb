@@ -29,7 +29,7 @@ class PLATFORM_EXPORT BeginScrollDisplayItem final
   const IntSize& CurrentOffset() const { return current_offset_; }
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const final;
 #endif
   bool Equals(const DisplayItem& other) const final {

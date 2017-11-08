@@ -10,16 +10,16 @@ namespace blink {
 
 String PaintChunk::ToString() const {
   return String::Format(
-      "begin=%zu, end=%zu, "
-#ifndef NDEBUG
-      "id=%s "
+      "begin=%zu, end=%zu, id=%p:"
+#if DCHECK_IS_ON()
+      "%s "
 #else
-      "id=%d "
+      "%d "
 #endif
       "cacheable=%d props=(%s) bounds=%s known_to_be_opaque=%d "
       "raster_invalidation_rects=%zu",
-      begin_index, end_index,
-#ifndef NDEBUG
+      begin_index, end_index, &id.client,
+#if DCHECK_IS_ON()
       DisplayItem::TypeAsDebugString(id.type).Ascii().data(),
 #else
       static_cast<int>(id.type),

@@ -98,7 +98,7 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
                     background_color.NameForLayoutTreeAsText());
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   if (context.flags & kLayerTreeIncludesDebugInfo)
     json->SetValue("paintChunkContents", paint_chunk_debug_data_->Clone());
 #endif
@@ -145,7 +145,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   // TODO(wangxianzhu): Avoid calling DebugName() in official release build.
   debug_name_ = paint_chunks[0]->id.client.DebugName();
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   paint_chunk_debug_data_ = JSONArray::Create();
   for (const auto* chunk : paint_chunks) {
     auto json = JSONObject::Create();

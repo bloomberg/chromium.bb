@@ -299,13 +299,11 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
                                            new_display_item_indices_by_client_,
                                            new_display_item_list_);
   if (index != kNotFound) {
-#ifndef NDEBUG
     ShowDebugData();
     DLOG(INFO) << "DisplayItem " << display_item.AsDebugString()
                << " has duplicated id with previous "
                << new_display_item_list_[index].AsDebugString()
                << " (index=" << index << ")";
-#endif
     NOTREACHED();
   }
   AddItemToIndexIfNeeded(display_item, new_display_item_list_.size() - 1,
@@ -429,7 +427,7 @@ size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
     if (item.IsTombstone())
       break;
     if (id == item.GetId()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
       ++num_sequential_matches_;
 #endif
       return i;
@@ -444,7 +442,7 @@ size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
       FindMatchingItemFromIndex(id, out_of_order_item_indices_,
                                 current_paint_artifact_.GetDisplayItemList());
   if (found_index != kNotFound) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     ++num_out_of_order_matches_;
 #endif
     return found_index;
@@ -462,20 +460,20 @@ size_t PaintController::FindOutOfOrderCachedItemForward(
     if (item.IsTombstone())
       continue;
     if (id == item.GetId()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
       ++num_sequential_matches_;
 #endif
       return i;
     }
     if (item.IsCacheable()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
       ++num_indexed_items_;
 #endif
       AddItemToIndexIfNeeded(item, i, out_of_order_item_indices_);
     }
   }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   ShowDebugData();
   LOG(ERROR) << id.client.DebugName() << ":"
              << DisplayItem::TypeAsDebugString(id.type);
@@ -660,7 +658,7 @@ void PaintController::CommitNewDisplayItems() {
   // We'll allocate the initial buffer when we start the next paint.
   new_display_item_list_ = DisplayItemList(0);
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   num_sequential_matches_ = 0;
   num_out_of_order_matches_ = 0;
   num_indexed_items_ = 0;
@@ -1006,12 +1004,12 @@ void PaintController::ShowUnderInvalidationError(
     const DisplayItem& new_item,
     const DisplayItem* old_item) const {
   LOG(ERROR) << under_invalidation_message_prefix_ << " " << reason;
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   LOG(ERROR) << "New display item: " << new_item.AsDebugString();
   LOG(ERROR) << "Old display item: "
              << (old_item ? old_item->AsDebugString() : "None");
 #else
-  LOG(ERROR) << "Run debug build to get more details.";
+  LOG(ERROR) << "Run a build with DCHECK on to get more details.";
 #endif
   LOG(ERROR) << "See http://crbug.com/619103.";
 
@@ -1049,10 +1047,10 @@ void PaintController::ShowSequenceUnderInvalidationError(
     int end) {
   LOG(ERROR) << under_invalidation_message_prefix_ << " " << reason;
   LOG(ERROR) << "Subsequence client: " << client.DebugName();
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   ShowDebugData();
 #else
-  LOG(ERROR) << "Run debug build to get more details.";
+  LOG(ERROR) << "Run a build with DCHECK on to get more details.";
 #endif
   LOG(ERROR) << "See http://crbug.com/619103.";
 }

@@ -25,7 +25,7 @@ class PLATFORM_EXPORT BeginTransformDisplayItem final
   const AffineTransform& Transform() const { return transform_; }
 
  private:
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const final;
 #endif
   bool Equals(const DisplayItem& other) const final {
