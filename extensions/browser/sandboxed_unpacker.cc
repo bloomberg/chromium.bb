@@ -354,6 +354,8 @@ void SandboxedUnpacker::StartWithDirectory(const std::string& extension_id,
 SandboxedUnpacker::~SandboxedUnpacker() {
   // To avoid blocking shutdown, don't delete temporary directory here if it
   // hasn't been cleaned up or passed on to another owner yet.
+  // This is OK because ExtensionGarbageCollector will take care of the leaked
+  // |temp_dir_| eventually.
   temp_dir_.Take();
 }
 
