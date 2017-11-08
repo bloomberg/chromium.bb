@@ -926,6 +926,7 @@ target(link_target_type, "renderer") {
       "//third_party/webrtc/api/audio_codecs/isac:audio_encoder_isac",
       "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
       "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",
+      "//third_party/webrtc/api/video_codecs:video_codecs_api",
       "//third_party/webrtc/common_video:common_video",
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/media:rtc_media_base",
