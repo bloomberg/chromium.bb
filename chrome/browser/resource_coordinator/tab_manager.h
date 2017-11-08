@@ -92,9 +92,6 @@ class TabManager : public TabStripModelObserver,
   // Number of discard events since Chrome started.
   int discard_count() const { return discard_count_; }
 
-  // See member comment.
-  bool recent_tab_discard() const { return recent_tab_discard_; }
-
   // Start/Stop the Tab Manager.
   void Start();
   void Stop();
@@ -325,10 +322,6 @@ class TabManager : public TabStripModelObserver,
   // manually test the system.
   void RecordDiscardStatistics();
 
-  // Record whether an out of memory occured during a recent time interval. This
-  // allows the normalization of low memory statistics versus usage.
-  void RecordRecentTabDiscard();
-
   // Purges data structures in the browser that can be easily recomputed.
   void PurgeBrowserMemory();
 
@@ -491,10 +484,6 @@ class TabManager : public TabStripModelObserver,
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
-  // Timer to periodically report whether a tab has been discarded since the
-  // last time the timer has fired.
-  base::RepeatingTimer recent_tab_discard_timer_;
-
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
@@ -507,10 +496,6 @@ class TabManager : public TabStripModelObserver,
 
   // Number of times a tab has been discarded, for statistics.
   int discard_count_;
-
-  // Whether a tab discard event has occurred during the last time interval,
-  // used for statistics normalized by usage.
-  bool recent_tab_discard_;
 
   // Whether a tab can only ever discarded once.
   bool discard_once_;

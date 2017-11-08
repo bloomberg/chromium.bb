@@ -83,7 +83,6 @@ bool ObserveNavEntryCommitted(const GURL& expected_url,
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
   TabManager* tab_manager = g_browser_process->GetTabManager();
-  EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // Disable the protection of recent tabs.
   tab_manager->set_minimum_protection_time_for_tests(
@@ -150,7 +149,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(2)));
-  EXPECT_TRUE(tab_manager->recent_tab_discard());
 
   // Run discard again, make sure it kills the second tab.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(TabManager::kProactiveShutdown));
@@ -223,18 +221,19 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
 }
 
 // On Linux, memory pressure listener is not implemented yet.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
+  TabStripModel* tsm = browser()->tab_strip_model();
 
   // Disable the protection of recent tabs.
   tab_manager->set_minimum_protection_time_for_tests(
       base::TimeDelta::FromMinutes(0));
 
-  // Get three tabs open.
+  // Get two tabs open.
   content::WindowedNotificationObserver load1(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
@@ -252,12 +251,15 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
                       ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
-  EXPECT_FALSE(tab_manager->recent_tab_discard());
+  ASSERT_EQ(tsm->count(), 2);
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
 
   // Nothing should happen with a moderate memory pressure event.
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  EXPECT_FALSE(tab_manager->recent_tab_discard());
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
 
   // A critical memory pressure event should discard a tab.
   base::MemoryPressureListener::NotifyMemoryPressure(
@@ -271,10 +273,11 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
     base::RunLoop().RunUntilIdle();
-    if (tab_manager->recent_tab_discard())
+    if (tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)))
       break;
   }
-  EXPECT_TRUE(tab_manager->recent_tab_discard());
+  EXPECT_TRUE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(0)));
+  EXPECT_FALSE(tab_manager->IsTabDiscarded(tsm->GetWebContentsAt(1)));
 }
 
 #endif
