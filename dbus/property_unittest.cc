@@ -36,8 +36,8 @@ class PropertyTest : public testing::Test {
   struct Properties : public PropertySet {
     Property<std::string> name;
     Property<int16_t> version;
-    Property<std::vector<std::string> > methods;
-    Property<std::vector<ObjectPath> > objects;
+    Property<std::vector<std::string>> methods;
+    Property<std::vector<ObjectPath>> objects;
     Property<std::vector<uint8_t>> bytes;
 
     Properties(ObjectProxy* object_proxy,

@@ -702,8 +702,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // match rules are counted in a map.
   std::map<std::string, int> match_rules_added_;
   std::set<ObjectPath> registered_object_paths_;
-  std::set<std::pair<DBusHandleMessageFunction, void*> >
-      filter_functions_added_;
+  std::set<std::pair<DBusHandleMessageFunction, void*>> filter_functions_added_;
 
   // ObjectProxyTable is used to hold the object proxies created by the
   // bus object. Key is a pair; the first part is a concatenated string of
@@ -711,21 +710,21 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // "org.chromium.TestService/org/chromium/TestObject".
   // The second part is the ObjectProxy::Options for the proxy.
   typedef std::map<std::pair<std::string, int>,
-                   scoped_refptr<dbus::ObjectProxy> > ObjectProxyTable;
+                   scoped_refptr<dbus::ObjectProxy>> ObjectProxyTable;
   ObjectProxyTable object_proxy_table_;
 
   // ExportedObjectTable is used to hold the exported objects created by
   // the bus object. Key is a concatenated string of service name +
   // object path, like "org.chromium.TestService/org/chromium/TestObject".
   typedef std::map<const dbus::ObjectPath,
-                   scoped_refptr<dbus::ExportedObject> > ExportedObjectTable;
+                   scoped_refptr<dbus::ExportedObject>> ExportedObjectTable;
   ExportedObjectTable exported_object_table_;
 
   // ObjectManagerTable is used to hold the object managers created by the
   // bus object. Key is a concatenated string of service name + object path,
   // like "org.chromium.TestService/org/chromium/TestObject".
   typedef std::map<std::string,
-                   scoped_refptr<dbus::ObjectManager> > ObjectManagerTable;
+                   scoped_refptr<dbus::ObjectManager>> ObjectManagerTable;
   ObjectManagerTable object_manager_table_;
 
   // A map of NameOwnerChanged signals to listen for and the callbacks to run
@@ -734,7 +733,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   // Key: Service name
   // Value: Vector of callbacks. Unique and expected to be small. Not using
   //        std::set here because base::Callbacks don't have a '<' operator.
-  typedef std::map<std::string, std::vector<GetServiceOwnerCallback> >
+  typedef std::map<std::string, std::vector<GetServiceOwnerCallback>>
       ServiceOwnerChangedListenerMap;
   ServiceOwnerChangedListenerMap service_owner_changed_listener_map_;
 
