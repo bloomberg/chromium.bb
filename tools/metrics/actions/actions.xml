@@ -2978,6 +2978,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="BrowserActions.TabOpenedNotificationClicked">
+  <owner>ltian@chromium.org</owner>
+  <description>
+    Users click the notification of opening tab in background.
+  </description>
+</action>
+
+<action name="BrowserActions.TabOpenedNotificationCreated">
+  <owner>ltian@chromium.org</owner>
+  <description>
+    Browser Actions creates a notifcation of opening tab in background.
+  </description>
+</action>
+
 <action name="BrowserForSystemProfile">
   <owner>mlerman@chromium.org</owner>
   <description>
