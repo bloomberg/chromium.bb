@@ -278,7 +278,8 @@ void TypedURLSyncBridge::GetData(StorageKeyList storage_keys,
     }
 
     VisitVector visits_vector;
-    FixupURLAndGetVisits(&url_row, &visits_vector);
+    if (!FixupURLAndGetVisits(&url_row, &visits_vector))
+      continue;
     std::unique_ptr<syncer::EntityData> entity_data =
         CreateEntityData(url_row, visits_vector);
     if (!entity_data.get()) {
@@ -307,7 +308,8 @@ void TypedURLSyncBridge::GetAllData(DataCallback callback) {
   auto batch = base::MakeUnique<MutableDataBatch>();
   for (URLRow& url : typed_urls) {
     VisitVector visits_vector;
-    FixupURLAndGetVisits(&url, &visits_vector);
+    if (!FixupURLAndGetVisits(&url, &visits_vector))
+      continue;
     std::unique_ptr<syncer::EntityData> entity_data =
         CreateEntityData(url, visits_vector);
     if (!entity_data.get()) {

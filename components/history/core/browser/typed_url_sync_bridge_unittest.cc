@@ -470,18 +470,21 @@ class TypedURLSyncBridgeTest : public testing::Test {
 // Add two typed urls locally and verify bridge can get them from GetAllData.
 TEST_F(TypedURLSyncBridgeTest, GetAllData) {
   // Add two urls to backend.
-  VisitVector visits1, visits2;
+  VisitVector visits1, visits2, visits3;
   URLRow row1 = MakeTypedUrlRow(kURL, kTitle, 1, 3, false, &visits1);
   URLRow row2 = MakeTypedUrlRow(kURL2, kTitle2, 2, 4, false, &visits2);
+  URLRow expired_row = MakeTypedUrlRow("http://expired.com/", kTitle, 1,
+                                       kExpiredVisit, false, &visits3);
   fake_history_backend_->SetVisitsForUrl(row1, visits1);
   fake_history_backend_->SetVisitsForUrl(row2, visits2);
+  fake_history_backend_->SetVisitsForUrl(expired_row, visits3);
 
   // Create the same data in sync.
   TypedUrlSpecifics typed_url1, typed_url2;
   WriteToTypedUrlSpecifics(row1, visits1, &typed_url1);
   WriteToTypedUrlSpecifics(row2, visits2, &typed_url2);
 
-  // Check that the local cache is still correct.
+  // Check that the local cache is still correct, expired row is filtered out.
   VerifyAllLocalHistoryData({typed_url1, typed_url2});
 }
 
