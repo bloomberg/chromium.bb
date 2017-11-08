@@ -21,8 +21,6 @@ class TestTaskQueue : public TaskQueue {
   base::WeakPtr<TestTaskQueue> GetWeakPtr();
 
  private:
-  bool automatically_shutdown_;
-
   // Used to ensure that task queue is deleted in tests.
   base::WeakPtrFactory<TestTaskQueue> weak_factory_;
 };

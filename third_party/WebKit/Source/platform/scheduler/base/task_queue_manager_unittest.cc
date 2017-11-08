@@ -54,9 +54,9 @@ class TaskQueueManagerForTest : public TaskQueueManager {
       : TaskQueueManager(delegate) {}
 
   using TaskQueueManager::NextTaskDelay;
-  using TaskQueueManager::active_queues_count;
-  using TaskQueueManager::queues_to_shutdown_count;
-  using TaskQueueManager::queues_to_delete_count;
+  using TaskQueueManager::ActiveQueuesCount;
+  using TaskQueueManager::QueuesToShutdownCount;
+  using TaskQueueManager::QueuesToDeleteCount;
 };
 
 class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
@@ -96,12 +96,6 @@ class TaskQueueManagerTest : public ::testing::Test {
 
  protected:
   void TearDown() { manager_.reset(); }
-
-  scoped_refptr<TestTaskQueue> CreateTaskQueueWithShutdownTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner> shutdown_task_runner) {
-    return manager_->CreateTaskQueue<TestTaskQueue>(
-        TaskQueue::Spec("test").SetShutdownTaskRunner(shutdown_task_runner));
-  }
 
   scoped_refptr<TestTaskQueue> CreateTaskQueueWithSpec(TaskQueue::Spec spec) {
     return manager_->CreateTaskQueue<TestTaskQueue>(spec);
@@ -3144,14 +3138,12 @@ TEST_F(TaskQueueManagerTest, GracefulShutdown) {
   test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   std::vector<base::TimeTicks> run_times;
-  scoped_refptr<TestTaskQueue> control_tq = CreateTaskQueue();
-  scoped_refptr<TestTaskQueue> main_tq =
-      CreateTaskQueueWithShutdownTaskRunner(control_tq);
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
   base::WeakPtr<TestTaskQueue> main_tq_weak_ptr = main_tq->GetWeakPtr();
 
-  EXPECT_EQ(2u, manager_->active_queues_count());
-  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
-  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(0u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 
   for (int i = 1; i <= 5; ++i) {
     main_tq->PostDelayedTask(
@@ -3166,9 +3158,9 @@ TEST_F(TaskQueueManagerTest, GracefulShutdown) {
 
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
 
-  EXPECT_EQ(1u, manager_->active_queues_count());
-  EXPECT_EQ(1u, manager_->queues_to_shutdown_count());
-  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(1u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 
   test_task_runner_->RunUntilIdle();
 
@@ -3181,9 +3173,9 @@ TEST_F(TaskQueueManagerTest, GracefulShutdown) {
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(401),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(501)));
 
-  EXPECT_EQ(1u, manager_->active_queues_count());
-  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
-  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+  EXPECT_EQ(0u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(0u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 }
 
 TEST_F(TaskQueueManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
@@ -3203,8 +3195,7 @@ TEST_F(TaskQueueManagerTest, GracefulShutdown_ManagerDeletedInFlight) {
   // pages.
   const int N = 100;
   for (int i = 0; i < N; ++i) {
-    scoped_refptr<TestTaskQueue> tq =
-        CreateTaskQueueWithShutdownTaskRunner(control_tq);
+    scoped_refptr<TestTaskQueue> tq = CreateTaskQueue();
     main_tq_weak_ptrs.push_back(tq->GetWeakPtr());
     main_tqs.push_back(std::move(tq));
   }
@@ -3241,14 +3232,12 @@ TEST_F(TaskQueueManagerTest,
   test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
 
   std::vector<base::TimeTicks> run_times;
-  scoped_refptr<TestTaskQueue> control_tq = CreateTaskQueue();
-  scoped_refptr<TestTaskQueue> main_tq =
-      CreateTaskQueueWithShutdownTaskRunner(control_tq);
+  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
   base::WeakPtr<TestTaskQueue> main_tq_weak_ptr = main_tq->GetWeakPtr();
 
-  EXPECT_EQ(2u, manager_->active_queues_count());
-  EXPECT_EQ(0u, manager_->queues_to_shutdown_count());
-  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(0u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 
   for (int i = 1; i <= 5; ++i) {
     main_tq->PostDelayedTask(
@@ -3263,9 +3252,9 @@ TEST_F(TaskQueueManagerTest,
 
   test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
 
-  EXPECT_EQ(1u, manager_->active_queues_count());
-  EXPECT_EQ(1u, manager_->queues_to_shutdown_count());
-  EXPECT_EQ(0u, manager_->queues_to_delete_count());
+  EXPECT_EQ(1u, manager_->ActiveQueuesCount());
+  EXPECT_EQ(1u, manager_->QueuesToShutdownCount());
+  EXPECT_EQ(0u, manager_->QueuesToDeleteCount());
 
   // Ensure that all queues-to-gracefully-shutdown are properly unregistered.
   manager_.reset();

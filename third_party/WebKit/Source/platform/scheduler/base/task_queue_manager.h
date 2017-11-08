@@ -19,6 +19,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "platform/scheduler/base/enqueue_order.h"
+#include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
 #include "platform/scheduler/base/moveable_auto_lock.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
@@ -162,11 +163,8 @@ class PLATFORM_EXPORT TaskQueueManager
   void UnregisterTaskQueueImpl(
       std::unique_ptr<internal::TaskQueueImpl> task_queue);
 
-  // Notify task queue manager that owning TaskQueue has been deleted.
-  // Task queue manager will continue running tasks and will delete queue when
-  // all tasks are completed.
-  void GracefullyShutdownTaskQueue(
-      std::unique_ptr<internal::TaskQueueImpl> task_queue);
+  scoped_refptr<internal::GracefulQueueShutdownHelper>
+  GetGracefulQueueShutdownHelper() const;
 
   base::WeakPtr<TaskQueueManager> GetWeakPtr();
 
@@ -212,13 +210,14 @@ class PLATFORM_EXPORT TaskQueueManager
   };
 
  protected:
-  size_t active_queues_count() const { return active_queues_.size(); }
+  size_t ActiveQueuesCount() { return active_queues_.size(); }
 
-  size_t queues_to_shutdown_count() const {
+  size_t QueuesToShutdownCount() {
+    TakeQueuesToGracefullyShutdownFromHelper();
     return queues_to_gracefully_shutdown_.size();
   }
 
-  size_t queues_to_delete_count() const { return queues_to_delete_.size(); }
+  size_t QueuesToDeleteCount() { return queues_to_delete_.size(); }
 
  private:
   // Represents a scheduled delayed DoWork (if any). Only public for testing.
@@ -327,6 +326,8 @@ class PLATFORM_EXPORT TaskQueueManager
   std::unique_ptr<internal::TaskQueueImpl> CreateTaskQueueImpl(
       const TaskQueue::Spec& spec);
 
+  void TakeQueuesToGracefullyShutdownFromHelper();
+
   // Deletes queues marked for deletion and empty queues marked for shutdown.
   void CleanUpQueues();
 
@@ -334,7 +335,9 @@ class PLATFORM_EXPORT TaskQueueManager
   std::unique_ptr<RealTimeDomain> real_time_domain_;
 
   // List of task queues managed by this TaskQueueManager.
-  // - active_queues contains queues owned by relevant TaskQueues.
+  // - active_queues contains queues that are still running tasks.
+  //   Most often they are owned by relevant TaskQueues, but
+  //   queues_to_gracefully_shutdown_ are included here too.
   // - queues_to_gracefully_shutdown contains queues which should be deleted
   //   when they become empty.
   // - queues_to_delete contains soon-to-be-deleted queues, because some
@@ -346,6 +349,9 @@ class PLATFORM_EXPORT TaskQueueManager
       queues_to_gracefully_shutdown_;
   std::map<internal::TaskQueueImpl*, std::unique_ptr<internal::TaskQueueImpl>>
       queues_to_delete_;
+
+  const scoped_refptr<internal::GracefulQueueShutdownHelper>
+      graceful_shutdown_helper_;
 
   internal::EnqueueOrderGenerator enqueue_order_generator_;
   base::debug::TaskAnnotator task_annotator_;

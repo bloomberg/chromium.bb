@@ -10,6 +10,8 @@ jumbo_source_set("scheduler") {
     "base/cancelable_closure_holder.h",
     "base/enqueue_order.cc",
     "base/enqueue_order.h",
+    "base/graceful_queue_shutdown_helper.cc",
+    "base/graceful_queue_shutdown_helper.h",
     "base/intrusive_heap.h",
     "base/lazy_now.cc",
     "base/lazy_now.h",
