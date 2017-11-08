@@ -35738,6 +35738,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.Experimental.OomIntervention.InterventionStateOnCrash"
+    enum="OomInterventionUserDecision">
+  <owner>bashi@chromium.org</owner>
+  <summary>
+    Records state of the intervention (accepted or declined) when the foreground
+    renderer is crashed after near-OOM intervention is triggered.
+  </summary>
+</histogram>
+
 <histogram
     name="Memory.Experimental.OomIntervention.NavigationAfterDetectionTime"
     units="ms">
