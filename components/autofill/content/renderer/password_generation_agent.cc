@@ -169,6 +169,7 @@ PasswordGenerationAgent::PasswordGenerationAgent(
   LogBoolean(Logger::STRING_GENERATION_RENDERER_ENABLED, enabled_);
   registry->AddInterface(base::Bind(&PasswordGenerationAgent::BindRequest,
                                     base::Unretained(this)));
+  password_agent_->SetPasswordGenerationAgent(this);
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
@@ -240,6 +241,12 @@ void PasswordGenerationAgent::OnDestruct() {
 
 void PasswordGenerationAgent::OnDynamicFormsSeen() {
   FindPossibleGenerationForm();
+}
+
+void PasswordGenerationAgent::OnFieldAutofilled(
+    const blink::WebInputElement& password_element) {
+  if (generation_element_ == password_element)
+    PasswordNoLongerGenerated();
 }
 
 void PasswordGenerationAgent::AllowToRunFormClassifier() {

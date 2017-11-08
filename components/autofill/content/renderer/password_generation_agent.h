@@ -65,6 +65,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
 
+  // Called right before PasswordAutofillAgent filled |password_element|.
+  void OnFieldAutofilled(const blink::WebInputElement& password_element);
+
   // The length that a password can be before the UI is hidden.
   static const size_t kMaximumOfferSize = 5;
 

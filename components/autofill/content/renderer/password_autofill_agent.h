@@ -42,6 +42,7 @@ const char kDebugAttributeForFormSignature[] = "form_signature";
 const char kDebugAttributeForFieldSignature[] = "field_signature";
 
 class RendererSavePasswordProgressLogger;
+class PasswordGenerationAgent;
 
 // This class is responsible for filling password forms.
 class PasswordAutofillAgent : public content::RenderFrameObserver,
@@ -54,6 +55,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void BindRequest(mojom::PasswordAutofillAgentRequest request);
 
   void SetAutofillAgent(AutofillAgent* autofill_agent);
+
+  void SetPasswordGenerationAgent(PasswordGenerationAgent* generation_agent);
 
   const mojom::PasswordManagerDriverPtr& GetPasswordManagerDriver();
 
@@ -351,6 +354,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   FormsPredictionsMap form_predictions_;
 
   AutofillAgent* autofill_agent_;  // Weak reference.
+  PasswordGenerationAgent* password_generation_agent_;  // Weak reference.
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   PagePasswordsAnalyser page_passwords_analyser_;

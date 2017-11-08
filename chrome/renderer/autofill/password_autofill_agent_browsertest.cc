@@ -2281,6 +2281,37 @@ TEST_F(PasswordAutofillAgentTest,
   ExpectFormSubmittedWithUsernameAndPasswords(kAliceUsername, "NewPass22", "");
 }
 
+TEST_F(PasswordAutofillAgentTest,
+       ResetPasswordGenerationWhenFieldIsAutofilled) {
+  // A user generates password.
+  SetNotBlacklistedMessage(password_generation_, kFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 2);
+  base::string16 password = base::ASCIIToUTF16("NewPass22");
+  password_generation_->GeneratedPasswordAccepted(password);
+
+  // A user fills username and password, the generated value is gone.
+  SimulateOnFillPasswordForm(fill_data_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_driver_.called_password_no_longer_generated());
+
+  // The password field shoudln't reveal the value on focusing.
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebElement element = document.GetElementById(WebString::FromUTF8("password"));
+  ASSERT_FALSE(element.IsNull());
+  WebInputElement password_element = element.To<WebInputElement>();
+  EXPECT_FALSE(password_element.ShouldRevealPassword());
+  EXPECT_TRUE(password_element.IsAutofilled());
+
+  // Make a submission to be sure the autofilled values will be saved.
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSendSubmitEvent(username_element_.Form());
+  static_cast<content::RenderFrameObserver*>(password_autofill_agent_)
+      ->WillSubmitForm(username_element_.Form());
+  ExpectFormSubmittedWithUsernameAndPasswords(kAliceUsername, kAlicePassword,
+                                              "");
+}
+
 // If password generation is enabled for a field, password autofill should not
 // show UI.
 TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
