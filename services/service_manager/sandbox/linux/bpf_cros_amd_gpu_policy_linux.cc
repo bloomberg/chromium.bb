@@ -63,9 +63,14 @@ ResultExpr CrosAmdGpuProcessPolicy::EvaluateSyscall(int sysno) const {
   }
 }
 
-CrosAmdGpuBrokerProcessPolicy ::CrosAmdGpuBrokerProcessPolicy() {}
+std::unique_ptr<sandbox::bpf_dsl::Policy>
+CrosAmdGpuProcessPolicy::GetBrokerSandboxPolicy() {
+  return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
+}
 
-CrosAmdGpuBrokerProcessPolicy ::~CrosAmdGpuBrokerProcessPolicy() {}
+CrosAmdGpuBrokerProcessPolicy::CrosAmdGpuBrokerProcessPolicy() {}
+
+CrosAmdGpuBrokerProcessPolicy::~CrosAmdGpuBrokerProcessPolicy() {}
 
 // A GPU broker policy is the same as a GPU policy with access, open,
 // openat and in the non-Chrome OS case unlink allowed.

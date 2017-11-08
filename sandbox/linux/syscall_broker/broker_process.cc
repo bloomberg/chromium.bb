@@ -39,8 +39,7 @@ BrokerProcess::BrokerProcess(
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests),
       broker_pid_(-1),
-      policy_(denied_errno, permissions) {
-}
+      broker_policy_(denied_errno, permissions) {}
 
 BrokerProcess::~BrokerProcess() {
   if (initialized_) {
@@ -68,35 +67,35 @@ bool BrokerProcess::Init(
   DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
 #endif
   int child_pid = fork();
-  if (child_pid == -1) {
+  if (child_pid == -1)
     return false;
-  }
+
   if (child_pid) {
     // We are the parent and we have just forked our broker process.
     ipc_reader.reset();
     broker_pid_ = child_pid;
-    broker_client_.reset(new BrokerClient(policy_, std::move(ipc_writer),
+    broker_client_.reset(new BrokerClient(broker_policy_, std::move(ipc_writer),
                                           fast_check_in_client_,
                                           quiet_failures_for_tests_));
     initialized_ = true;
     return true;
-  } else {
-    // We are the broker process. Make sure to close the writer's end so that
-    // we get notified if the client disappears.
-    ipc_writer.reset();
-    CHECK(broker_process_init_callback.Run());
-    BrokerHost broker_host(policy_, std::move(ipc_reader));
-    for (;;) {
-      switch (broker_host.HandleRequest()) {
-        case BrokerHost::RequestStatus::LOST_CLIENT:
-          _exit(1);
-        case BrokerHost::RequestStatus::SUCCESS:
-        case BrokerHost::RequestStatus::FAILURE:
-          continue;
-      }
-    }
-    _exit(1);
   }
+
+  // We are the broker process. Make sure to close the writer's end so that
+  // we get notified if the client disappears.
+  ipc_writer.reset();
+  CHECK(broker_process_init_callback.Run());
+  BrokerHost broker_host(broker_policy_, std::move(ipc_reader));
+  for (;;) {
+    switch (broker_host.HandleRequest()) {
+      case BrokerHost::RequestStatus::LOST_CLIENT:
+        _exit(1);
+      case BrokerHost::RequestStatus::SUCCESS:
+      case BrokerHost::RequestStatus::FAILURE:
+        continue;
+    }
+  }
+  _exit(1);
   NOTREACHED();
   return false;
 }
