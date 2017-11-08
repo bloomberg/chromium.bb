@@ -4,6 +4,7 @@
 
 #include "ash/display/cursor_window_controller.h"
 
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/display/display_util.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -34,6 +35,8 @@ class CursorWindowControllerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableNightLight);
     AshTestBase::SetUp();
+    cursor_window_controller_ =
+        Shell::Get()->window_tree_host_manager()->cursor_window_controller();
     SetCursorCompositionEnabled(true);
   }
 
@@ -58,9 +61,11 @@ class CursorWindowControllerTest : public AshTestBase {
   }
 
   void SetCursorCompositionEnabled(bool enabled) {
-    cursor_window_controller_ =
-        Shell::Get()->window_tree_host_manager()->cursor_window_controller();
-    cursor_window_controller_->SetCursorCompositingEnabled(enabled);
+    // Cursor compositing will be enabled when high contrast mode is turned on.
+    // Cursor compositing will be disabled when high contrast mode is the only
+    // feature using it and is turned off.
+    Shell::Get()->accessibility_controller()->SetHighContrastEnabled(enabled);
+    Shell::Get()->UpdateCursorCompositingEnabled();
   }
 
   CursorWindowController* cursor_window_controller() {

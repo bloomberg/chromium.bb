@@ -54,7 +54,7 @@ base::string16 GetDisplaySize(int64_t display_id) {
   // We don't show display size for mirrored display. Fallback
   // to empty string if this happens on release build.
   const display::DisplayIdList id_list =
-      display_manager->GetMirroringDstDisplayIdList();
+      display_manager->GetMirroringDestinationDisplayIdList();
   const bool mirroring =
       display_manager->IsInMirrorMode() &&
       std::find(id_list.begin(), id_list.end(), display_id) != id_list.end();
@@ -138,7 +138,8 @@ base::string16 GetEnterMirrorModeMessage() {
   if (display::Display::HasInternalDisplay()) {
     return l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
-        GetDisplayName(GetDisplayManager()->GetMirroringDstDisplayIdList()[0]));
+        GetDisplayName(
+            GetDisplayManager()->GetMirroringDestinationDisplayIdList()[0]));
   }
 
   return l10n_util::GetStringUTF16(

@@ -10,6 +10,9 @@ namespace switches {
 // TODO(rjkroege): Some of these have an "ash" prefix. When ChromeOS startup
 // scripts have been updated, the leading "ash" prefix should be removed.
 
+// Enables mirroring across multiple displays.
+const char kEnableMultiMirroring[] = "enable-multi-mirroring";
+
 // Enables software based mirroring.
 const char kEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 

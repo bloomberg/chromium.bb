@@ -126,6 +126,16 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Returns the display id of the first display in the outupt list.
   int64_t first_display_id() const { return first_display_id_; }
 
+#if defined(OS_CHROMEOS)
+  TouchDeviceManager* touch_device_manager() const {
+    return touch_device_manager_.get();
+  }
+#endif
+
+  bool is_multi_mirroring_enabled() const {
+    return is_multi_mirroring_enabled_;
+  }
+
   // Sets controller used to add/remove fake displays. If this is set then
   // AddRemoveDisplay() will delegate out to |dev_display_controller_| instead
   // of adding/removing a ManagedDisplayInfo.
@@ -301,7 +311,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   int64_t mirroring_source_id() const { return mirroring_source_id_; }
 
   // Returns a list of mirroring destination display ids.
-  DisplayIdList GetMirroringDstDisplayIdList() const;
+  DisplayIdList GetMirroringDestinationDisplayIdList() const;
 
   const Displays& software_mirroring_display_list() const {
     return software_mirroring_display_list_;
@@ -419,12 +429,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // swapping is an obsolete feature pre-dating multi-display support so remove
   // it.
   const Display& GetSecondaryDisplay() const;
-
-#if defined(OS_CHROMEOS)
-  TouchDeviceManager* touch_device_manager() const {
-    return touch_device_manager_.get();
-  }
-#endif
 
  private:
   friend class test::DisplayManagerTestApi;
@@ -593,6 +597,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
   std::unique_ptr<TouchDeviceManager> touch_device_manager_;
 #endif
+
+  // Whether mirroring across multiple displays is enabled.
+  bool is_multi_mirroring_enabled_;
 
   base::WeakPtrFactory<DisplayManager> weak_ptr_factory_;
 

@@ -91,13 +91,7 @@ class CursorWindowDelegate : public aura::WindowDelegate {
 };
 
 CursorWindowController::CursorWindowController()
-    : is_cursor_compositing_enabled_(false),
-      container_(NULL),
-      cursor_type_(ui::CursorType::kNone),
-      visible_(true),
-      cursor_size_(ui::CursorSize::kNormal),
-      large_cursor_size_in_dip_(ash::kDefaultLargeCursorSize),
-      delegate_(new CursorWindowDelegate()) {}
+    : delegate_(new CursorWindowDelegate()) {}
 
 CursorWindowController::~CursorWindowController() {
   SetContainer(NULL);
@@ -126,10 +120,13 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
     // The active pref service can be null early in startup.
     return false;
   }
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled) ||
          prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
-         prefs->GetBoolean(prefs::kNightLightEnabled);
+         prefs->GetBoolean(prefs::kNightLightEnabled) ||
+         (display_manager->is_multi_mirroring_enabled() &&
+          display_manager->IsInSoftwareMirrorMode());
 }
 
 void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {

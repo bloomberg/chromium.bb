@@ -25319,6 +25319,7 @@ from previous Chrome versions.
   <int value="1466502102" label="DelayNavigation:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
   <int value="1479248574" label="disable-voice-input"/>
+  <int value="1480998407" label="enable-multi-mirroring"/>
   <int value="1481562816" label="disable-password-link"/>
   <int value="1486171015" label="disable-fill-on-account-select"/>
   <int value="1489915799" label="disable-permissions-blacklist"/>
