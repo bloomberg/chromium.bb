@@ -290,13 +290,16 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
       kRefreshMetaTagAtOnloadTestPath, false));
 }
 
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
-  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
-      kUpdateLocationTestPath, false));
+// TODO(toyoshim, creis): The infobar should be dismissed on client redirects.
+// See https://crbug.com/781879.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_UpdateLocation) {
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kUpdateLocationTestPath, false));
 }
 
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
-  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(
-      kUpdateLocationAtOnloadTestPath, false));
+// TODO(toyoshim, creis): The infobar should be dismissed on client redirects.
+// See https://crbug.com/781879.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, DISABLED_UpdateLocationAtOnload) {
+  ASSERT_NO_FATAL_FAILURE(
+      CheckForTranslateUI(kUpdateLocationAtOnloadTestPath, false));
 }
 #endif  // !defined(USE_AURA)

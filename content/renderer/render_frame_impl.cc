@@ -5183,7 +5183,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params->method = "GET";
   params->intended_as_new_entry =
       navigation_state->request_params().intended_as_new_entry;
-  params->did_create_new_entry = commit_type == blink::kWebStandardCommit;
   params->should_replace_current_entry =
       document_loader->ReplacesCurrentHistoryItem();
   params->post_id = -1;
@@ -5199,6 +5198,19 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params->socket_address.set_host(response.RemoteIPAddress().Utf8());
   params->socket_address.set_port(response.RemotePort());
   params->was_within_same_document = navigation_state->WasWithinSameDocument();
+
+  // "Standard" commits from Blink create new NavigationEntries. We also treat
+  // main frame "inert" commits as creating new NavigationEntries if they
+  // replace the current entry on a cross-document navigation (e.g., client
+  // redirects, location.replace, navigation to same URL), since this will
+  // replace all the subframes and could go cross-origin. We don't want to rely
+  // on updating the existing NavigationEntry in this case, since it could leave
+  // stale state around.
+  params->did_create_new_entry =
+      (commit_type == blink::kWebStandardCommit) ||
+      (commit_type == blink::kWebHistoryInertCommit && !frame->Parent() &&
+       params->should_replace_current_entry &&
+       !params->was_within_same_document);
 
   WebDocument frame_document = frame->GetDocument();
   // Set the origin of the frame.  This will be replicated to the corresponding

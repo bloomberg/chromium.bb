@@ -33,6 +33,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_frame_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -51,9 +52,9 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
 
-  void SetUp() override {
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(test_server_.Start());
-    InProcessBrowserTest::SetUp();
   }
 
   PrefService* GetPrefs() {
@@ -474,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, Subframe) {
   ASSERT_FALSE(HistoryContainsURL(auto_subframe));
 }
 
-// HTTP meta-refresh redirects should have separate history entries.
+// HTTP meta-refresh redirects should only have an entry for the landing page.
 IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, RedirectHistory) {
   GURL redirector = ui_test_utils::GetTestUrl(
       base::FilePath().AppendASCII("History"),
@@ -484,12 +485,31 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, RedirectHistory) {
       base::FilePath().AppendASCII("landing.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), redirector, 2);
-  ASSERT_EQ(landing_url,
-            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(
+      landing_url,
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
   std::vector<GURL> urls(GetHistoryContents());
-  ASSERT_EQ(2u, urls.size());
+  ASSERT_EQ(1u, urls.size());
   ASSERT_EQ(landing_url, urls[0]);
-  ASSERT_EQ(redirector, urls[1]);
+}
+
+// Cross-site HTTP meta-refresh redirects should only have an entry for the
+// landing page.
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, CrossSiteRedirectHistory) {
+  // Use the default embedded_test_server() for this test in order to support a
+  // cross-site redirect.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL landing_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL redirector(embedded_test_server()->GetURL(
+      "bar.com", "/client-redirect?" + landing_url.spec()));
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
+                                                            redirector, 2);
+  ASSERT_EQ(
+      landing_url,
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+  std::vector<GURL> urls(GetHistoryContents());
+  ASSERT_EQ(1u, urls.size());
+  ASSERT_EQ(landing_url, urls[0]);
 }
 
 // Verify that navigation brings current page to top of history list.
@@ -609,9 +629,9 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(web_contents, active_web_contents);
-  ASSERT_EQ(history_url, active_web_contents->GetURL());
+  ASSERT_EQ(history_url, active_web_contents->GetVisibleURL());
 
   content::WebContents* second_tab =
       browser()->tab_strip_model()->GetWebContentsAt(1);
-  ASSERT_NE(history_url, second_tab->GetURL());
+  ASSERT_NE(history_url, second_tab->GetVisibleURL());
 }

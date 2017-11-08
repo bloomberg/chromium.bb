@@ -858,7 +858,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
                                    navigation_handle);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
-      details->did_replace_entry = details->is_same_document;
       RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
                                         was_restored, navigation_handle);
       break;
@@ -998,18 +997,6 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     return NAVIGATION_TYPE_NEW_SUBFRAME;
   }
 
-  // Cross-process location.replace navigations should be classified as New with
-  // replacement rather than ExistingPage, since it is not safe to reuse the
-  // NavigationEntry.
-  // TODO(creis): Have the renderer classify location.replace as
-  // did_create_new_entry for all cases and eliminate this special case.  This
-  // requires updating several test expectations.  See https://crbug.com/596707.
-  if (!rfh->GetParent() && GetLastCommittedEntry() &&
-      GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance() &&
-      params.should_replace_current_entry) {
-    return NAVIGATION_TYPE_NEW_PAGE;
-  }
-
   // We only clear the session history when navigating to a new page.
   DCHECK(!params.history_list_was_cleared);
 
@@ -1036,8 +1023,7 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     if (!last_committed)
       return NAVIGATION_TYPE_NAV_IGNORE;
 
-    // This is history.replaceState(), history.reload(), or a client-side
-    // redirect.
+    // This is history.replaceState() or history.reload().
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
@@ -1258,9 +1244,6 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
-  // TODO(creis): Classify location.replace as NEW_PAGE instead of EXISTING_PAGE
-  // in https://crbug.com/596707.
-
   NavigationEntryImpl* entry;
   if (params.intended_as_new_entry) {
     // This was intended as a new entry but the pending entry was lost in the
@@ -1338,7 +1321,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     }
   } else {
     // This is renderer-initiated. The only kinds of renderer-initated
-    // navigations that are EXISTING_PAGE are reloads and location.replace,
+    // navigations that are EXISTING_PAGE are reloads and history.replaceState,
     // which land us at the last committed entry.
     entry = GetLastCommittedEntry();
 
