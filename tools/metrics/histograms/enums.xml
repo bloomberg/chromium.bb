@@ -5617,7 +5617,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="CombinedHttpResponseAndNetErrorCode">
-<!-- Generated from net/base/net_error_list.h -->
+<!-- Generated from net/base/net_error_list.h.
+Called by update_net_error_codes.py.-->
 
   <int value="-806" label="DNS_SORT_ERROR"/>
   <int value="-805" label="DNS_SEARCH_EMPTY"/>
@@ -5717,6 +5718,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-312" label="UNSAFE_PORT"/>
   <int value="-311" label="UNSAFE_REDIRECT"/>
   <int value="-310" label="TOO_MANY_REDIRECTS"/>
+  <int value="-303" label="INVALID_REDIRECT"/>
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
@@ -5735,6 +5737,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-176" label="NO_BUFFER_SPACE"/>
   <int value="-175" label="SSL_VERSION_INTERFERENCE"/>
   <int value="-174" label="READ_IF_READY_NOT_IMPLEMENTED"/>
   <int value="-173" label="WS_UPGRADE"/>
@@ -19778,7 +19781,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="GpuDriverBugWorkaroundEntry">
-<!-- Generated from gpu/config/gpu_driver_bug_list.json -->
+<!-- Generated from gpu/config/gpu_driver_bug_list.json.
+Called by update_gpu_driver_bug_workaround_entries.py.-->
 
   <int value="0"
       label="0: Recorded once every time this histogram is updated."/>
@@ -20072,8 +20076,7 @@ uploading your change for review.  These are checked by presubmit scripts.
              overflow"/>
   <int value="170"
       label="170: Zero copy DXGI video hangs on shutdown on Win &lt; 8.1"/>
-  <int value="172"
-      label="172: Limited enabling of Chromium GL_INTEL_framebuffer_CMAA"/>
+  <int value="172" label="172: Use GL_INTEL_framebuffer_CMAA on ChromeOS"/>
   <int value="174"
       label="174: Adreno 4xx support for EXT_multisampled_render_to_texture
              is buggy on Android 7.0"/>
@@ -20186,6 +20189,9 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="216: Pack parameters work incorrectly with pack buffer bound"/>
   <int value="217"
       label="217: Alignment works incorrectly with unpack buffer bound"/>
+  <int value="218"
+      label="218: Certain Adreno 4xx and 5xx drivers often crash in
+             glProgramBinary."/>
   <int value="219"
       label="219: Zero-copy DXGI video hangs or displays incorrect colors on
              AMD drivers"/>
@@ -20200,6 +20206,55 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="223"
       label="223: Force integer or srgb cube map texture complete on Linux
              AMD"/>
+  <int value="224"
+      label="224: VPx decoding isn't supported well before Windows 10
+             creators update."/>
+  <int value="225"
+      label="225: VPx decoding is too slow on Intel Broadwell, Skylake, and
+             CherryView"/>
+  <int value="226"
+      label="226: Accelerated VPx decoding is hanging on some videos."/>
+  <int value="227" label="227: Certain Apple devices leak stencil buffers"/>
+  <int value="228" label="228: Intel HD 3000 driver crashes frequently on Mac"/>
+  <int value="229"
+      label="229: Overlay sizes bigger than screen aren't accelerated on some
+             Intel drivers"/>
+  <int value="231"
+      label="231: Multisampled color renderbuffers can't be resized on
+             Qualcomm 4xx/5xx"/>
+  <int value="232"
+      label="232: Delayed copy NV12 crashes on Intel on Windows &lt;= 8.1."/>
+  <int value="233"
+      label="233: Delayed copy NV12 displays incorrect colors on NVIDIA
+             drivers."/>
+  <int value="234"
+      label="234: Avoid using EGL_IMAGE_EXTERNAL_FLUSH_EXT with
+             eglCreateImageKHR on NVIDIA"/>
+  <int value="235"
+      label="235: Avoid waiting on a egl fence before pageflipping and rely
+             on implicit sync."/>
+  <int value="236"
+      label="236: glClearColor does not always work on Intel 6xxx Mac drivers"/>
+  <int value="237"
+      label="237: eglSwapBuffers intermittently fails on Android when app
+             goes to background"/>
+  <int value="239"
+      label="239: Reset TexImage2D base level to 0 on Intel Mac 10.12.4"/>
+  <int value="240"
+      label="240: glGetQueryObject(GL_QUERY_RESULT_AVAILABLE) blocks
+             unexpectedly on Adreno"/>
+  <int value="241"
+      label="241: On Intel GPUs MSAA performance is not acceptable for GPU
+             rasterization. Duplicate of 132 for Android"/>
+  <int value="242"
+      label="242: Code produced by local variable initialization often
+             triggers crashes in Marshmallow Adreno driver"/>
+  <int value="243"
+      label="243: Program binaries don't contain transform feedback varyings
+             on Mali GPUs"/>
+  <int value="244"
+      label="244: Rendering to IOSurfaces via OpenGL is broken on NVIDIA GPUs
+             on High Sierra"/>
 </enum>
 
 <enum name="GpuImageUsageState">
@@ -27933,7 +27988,8 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="NetErrorCodes">
-<!-- Generated from net/base/net_error_list.h -->
+<!-- Generated from net/base/net_error_list.h.
+Called by update_net_error_codes.py.-->
 
   <int value="0" label="OK"/>
   <int value="1" label="IO_PENDING"/>
@@ -28041,6 +28097,7 @@ Called by update_use_counter_css.py.-->
   <int value="173" label="WS_UPGRADE"/>
   <int value="174" label="READ_IF_READY_NOT_IMPLEMENTED"/>
   <int value="175" label="SSL_VERSION_INTERFERENCE"/>
+  <int value="176" label="NO_BUFFER_SPACE"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>

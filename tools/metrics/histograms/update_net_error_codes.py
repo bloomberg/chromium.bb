@@ -49,12 +49,14 @@ def main():
   update_histogram_enum.UpdateHistogramFromDict(
       'NetErrorCodes',
       ReadNetErrorCodes(NET_ERROR_LIST_PATH, POSITIVE_ERROR_REGEX),
-      NET_ERROR_LIST_PATH)
+      NET_ERROR_LIST_PATH,
+      os.path.basename(__file__))
 
   update_histogram_enum.UpdateHistogramFromDict(
       'CombinedHttpResponseAndNetErrorCode',
       ReadNetErrorCodes(NET_ERROR_LIST_PATH, NEGATIVE_ERROR_REGEX),
-      NET_ERROR_LIST_PATH)
+      NET_ERROR_LIST_PATH,
+      os.path.basename(__file__))
 
 if __name__ == '__main__':
   main()

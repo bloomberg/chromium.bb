@@ -47,7 +47,8 @@ def main():
   update_histogram_enum.UpdateHistogramFromDict(
       'GpuDriverBugWorkaroundEntry',
       ReadGpuDriverBugEntries(GPU_DRIVER_BUG_WORKAROUND_PATH),
-      GPU_DRIVER_BUG_WORKAROUND_PATH)
+      GPU_DRIVER_BUG_WORKAROUND_PATH,
+      os.path.basename(__file__))
 
 
 if __name__ == '__main__':
