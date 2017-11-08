@@ -830,6 +830,10 @@
     "label": "//ui/ozone/gl:ozone_gl_unittests",
     "type": "console_test_launcher",
   },
+  "pdf_fuzzers": {
+    "label": "//pdf/pdfium/fuzzers:pdf_fuzzers",
+    "type": "additional_compile_target",
+  },
   "pdf_unittests": {
     "label": "//pdf:pdf_unittests",
     "type": "console_test_launcher",

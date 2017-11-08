@@ -1,4 +1,9 @@
 {
+  "Mac Builder": {
+    "additional_compile_targets": [
+      "pdf_fuzzers"
+    ]
+  },
   "Mac10.10 Tests": {
     "gtest_tests": [
       {
