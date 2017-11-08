@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "cc/animation/animation_target.h"
 #include "cc/animation/transform_operations.h"
@@ -47,6 +48,16 @@ enum LayoutAlignment {
   RIGHT,
   TOP,
   BOTTOM,
+};
+
+struct EventHandlers {
+  EventHandlers();
+  ~EventHandlers();
+  base::Callback<void()> hover_enter;
+  base::Callback<void()> hover_leave;
+  base::Callback<void(const gfx::PointF&)> hover_move;
+  base::Callback<void()> button_down;
+  base::Callback<void()> button_up;
 };
 
 class UiElement : public cc::AnimationTarget {
@@ -135,6 +146,10 @@ class UiElement : public cc::AnimationTarget {
 
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
+
+  void set_event_handlers(const EventHandlers& event_handlers) {
+    event_handlers_ = event_handlers;
+  }
 
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
@@ -412,6 +427,8 @@ class UiElement : public cc::AnimationTarget {
   std::vector<std::unique_ptr<BindingBase>> bindings_;
 
   UpdatePhase phase_ = kClean;
+
+  EventHandlers event_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

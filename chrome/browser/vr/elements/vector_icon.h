@@ -25,6 +25,7 @@ class VectorIcon : public TexturedElement {
   ~VectorIcon() override;
 
   void SetColor(SkColor color);
+  SkColor GetColor() const;
   void SetIcon(const gfx::VectorIcon& icon);
 
   static void DrawVectorIcon(gfx::Canvas* canvas,

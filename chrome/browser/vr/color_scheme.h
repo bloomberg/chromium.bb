@@ -9,6 +9,14 @@
 
 namespace vr {
 
+struct ButtonColors {
+  bool operator==(const ButtonColors& other) const;
+  SkColor background;
+  SkColor background_hover;
+  SkColor background_press;
+  SkColor foreground;
+};
+
 struct ColorScheme {
   enum Mode : int {
     kModeNormal = 0,
@@ -36,10 +44,7 @@ struct ColorScheme {
   SkColor element_background_down;
 
   // Specific element background and foregrounds
-  SkColor close_button_foreground;
-  SkColor close_button_background;
-  SkColor close_button_background_hover;
-  SkColor close_button_background_down;
+  ButtonColors button_colors;
   SkColor loading_indicator_foreground;
   SkColor loading_indicator_background;
   SkColor exit_warning_foreground;

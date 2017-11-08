@@ -39,6 +39,9 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 }  // namespace
 
+EventHandlers::EventHandlers() = default;
+EventHandlers::~EventHandlers() = default;
+
 UiElement::UiElement() : id_(AllocateId()) {
   animation_player_.set_target(this);
   layout_offset_.AppendTranslate(0, 0, 0);
@@ -62,15 +65,45 @@ void UiElement::Render(UiElementRenderer* renderer,
 
 void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
-void UiElement::OnHoverEnter(const gfx::PointF& position) {}
+void UiElement::OnHoverEnter(const gfx::PointF& position) {
+  if (event_handlers_.hover_enter) {
+    event_handlers_.hover_enter.Run();
+  } else if (parent()) {
+    parent()->OnHoverEnter(position);
+  }
+}
 
-void UiElement::OnHoverLeave() {}
+void UiElement::OnHoverLeave() {
+  if (event_handlers_.hover_leave) {
+    event_handlers_.hover_leave.Run();
+  } else if (parent()) {
+    parent()->OnHoverLeave();
+  }
+}
 
-void UiElement::OnMove(const gfx::PointF& position) {}
+void UiElement::OnMove(const gfx::PointF& position) {
+  if (event_handlers_.hover_move) {
+    event_handlers_.hover_move.Run(position);
+  } else if (parent()) {
+    parent()->OnMove(position);
+  }
+}
 
-void UiElement::OnButtonDown(const gfx::PointF& position) {}
+void UiElement::OnButtonDown(const gfx::PointF& position) {
+  if (event_handlers_.button_down) {
+    event_handlers_.button_down.Run();
+  } else if (parent()) {
+    parent()->OnButtonDown(position);
+  }
+}
 
-void UiElement::OnButtonUp(const gfx::PointF& position) {}
+void UiElement::OnButtonUp(const gfx::PointF& position) {
+  if (event_handlers_.button_up) {
+    event_handlers_.button_up.Run();
+  } else if (parent()) {
+    parent()->OnButtonUp(position);
+  }
+}
 
 void UiElement::OnFlingStart(std::unique_ptr<blink::WebGestureEvent> gesture,
                              const gfx::PointF& position) {}
@@ -213,8 +246,14 @@ float UiElement::computed_opacity() const {
 }
 
 bool UiElement::HitTest(const gfx::PointF& point) const {
-  return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
-         point.y() <= 1.0f;
+  if (size().width() == size().height() &&
+      corner_radius() == size().width() / 2) {
+    return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
+  } else {
+    // TODO(bshe): handle rounded rect case.
+    return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
+           point.y() <= 1.0f;
+  }
 }
 
 void UiElement::SetMode(ColorScheme::Mode mode) {
