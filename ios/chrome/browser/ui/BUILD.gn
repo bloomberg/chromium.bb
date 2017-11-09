@@ -109,6 +109,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
