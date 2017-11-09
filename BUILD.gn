@@ -78,7 +78,6 @@ if (is_win) {
       "$target_gen_dir/ffmpeg.def",
     ]
     args = [
-             # TODO(ajwong): This was -i <(INTERMEDIATE_DIR). What next?
              "-i",
              rebase_path(target_out_dir, root_build_dir),
              "-o",
@@ -266,14 +265,6 @@ target(link_target_type, "ffmpeg_internal") {
     defines += [
       "_ISOC99_SOURCE",
       "_LARGEFILE_SOURCE",
-
-      # BUG(ihf): ffmpeg compiles with this define. But according to
-      # ajwong: I wouldn't change _FILE_OFFSET_BITS.  That's a scary change
-      # cause it affects the default length of off_t, and fpos_t,
-      # which can cause strange problems if the loading code doesn't
-      # have it set and you start passing FILE*s or file descriptors
-      # between symbol contexts.
-      # "_FILE_OFFSET_BITS=64",
     ]
     cflags += [
       "-std=c99",
