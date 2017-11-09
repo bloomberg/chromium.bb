@@ -37,6 +37,9 @@ class LockScreenActionBackgroundView::NoteBackground
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     std::unique_ptr<views::InkDropImpl> ink_drop =
         CreateDefaultFloodFillInkDropImpl();
+    ink_drop->SetShowHighlightOnHover(false);
+    ink_drop->SetShowHighlightOnFocus(false);
+    ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
     ink_drop->AddObserver(observer_);
     return std::move(ink_drop);
   }
@@ -50,8 +53,6 @@ class LockScreenActionBackgroundView::NoteBackground
     ink_drop_ripple->set_duration_factor(1.5);
     return ink_drop_ripple;
   }
-
-  SkColor GetInkDropBaseColor() const override { return SK_ColorBLACK; }
 
  private:
   views::InkDropObserver* observer_;
