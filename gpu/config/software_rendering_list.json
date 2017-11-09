@@ -1540,7 +1540,6 @@
       "vendor_id": "0x10de",
       "multi_gpu_category": "any",
       "features": [
-        "accelerated_2d_canvas",
         "gpu_rasterization"
       ]
     }
