@@ -29,14 +29,18 @@
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/cloud_devices/common/printer_description.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/filename_util.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 #include "printing/units.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
+
+constexpr base::FilePath::CharType kPdfExtension[] = FILE_PATH_LITERAL("pdf");
 
 class PrintingContextDelegate : public printing::PrintingContext::Delegate {
  public:
@@ -194,9 +198,21 @@ void PdfPrinterHandler::StartPrint(
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
 
+  printing::PrintPreviewDialogController* dialog_controller =
+      printing::PrintPreviewDialogController::GetInstance();
+  content::WebContents* initiator =
+      dialog_controller ? dialog_controller->GetInitiator(preview_web_contents_)
+                        : nullptr;
+  const GURL& initiator_url =
+      initiator ? initiator->GetLastCommittedURL() : GURL::EmptyGURL();
+  bool title_is_url = url_formatter::FormatUrl(initiator_url) == job_title;
+  base::FilePath path = title_is_url ? GetFileNameForURL(initiator_url)
+                                     : GetFileNameForPrintJobTitle(job_title);
+
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
-  SelectFile(GetFileNameForPrintJobTitle(job_title), prompt_user);
+
+  SelectFile(path, initiator, prompt_user);
 }
 
 void PdfPrinterHandler::FileSelected(const base::FilePath& path,
@@ -230,16 +246,44 @@ base::FilePath PdfPrinterHandler::GetFileNameForPrintJobTitle(
 
   base::i18n::ReplaceIllegalCharactersInPath(&print_job_title, '_');
   base::FilePath default_filename(print_job_title);
-  return default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
+  base::FilePath::StringType ext = default_filename.Extension();
+  if (!ext.empty()) {
+    ext = ext.substr(1);
+    if (ext == kPdfExtension)
+      return default_filename;
+  }
+  return default_filename.AddExtension(kPdfExtension);
+}
+
+// static
+base::FilePath PdfPrinterHandler::GetFileNameForURL(const GURL& url) {
+  DCHECK(url.is_valid());
+
+  // TODO(thestig): This code is based on similar code in SavePackage in
+  // content/ that is not exposed via the public content API. Consider looking
+  // for a sane way to share the code.
+  if (url.SchemeIs(url::kDataScheme)) {
+    return base::FilePath::FromUTF8Unsafe("dataurl").ReplaceExtension(
+        kPdfExtension);
+  }
+
+  base::FilePath name =
+      net::GenerateFileName(url, std::string(), std::string(), std::string(),
+                            std::string(), std::string());
+
+  // If host is used as file name, try to decode punycode.
+  if (name.AsUTF8Unsafe() == url.host()) {
+    name = base::FilePath::FromUTF16Unsafe(
+        url_formatter::IDNToUnicode(url.host()));
+  }
+  if (name.AsUTF8Unsafe() == url.host())
+    return name.AddExtension(kPdfExtension);
+  return name.ReplaceExtension(kPdfExtension);
 }
 
 void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
+                                   content::WebContents* initiator,
                                    bool prompt_user) {
-  printing::PrintPreviewDialogController* dialog_controller =
-      printing::PrintPreviewDialogController::GetInstance();
-  content::WebContents* initiator =
-      dialog_controller ? dialog_controller->GetInitiator(preview_web_contents_)
-                        : nullptr;
   if (prompt_user) {
     ChromeSelectFilePolicy policy(initiator);
     if (!policy.CanOpenSelectFileDialog()) {
