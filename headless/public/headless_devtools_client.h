@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "headless/public/headless_export.h"
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace headless {
 
 namespace accessibility {

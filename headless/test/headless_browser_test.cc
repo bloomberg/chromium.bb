@@ -198,7 +198,9 @@ void HeadlessBrowserTest::RunAsynchronousTest() {
       base::MessageLoop::current());
   EXPECT_FALSE(run_loop_);
   run_loop_ = base::MakeUnique<base::RunLoop>();
+  PreRunAsynchronousTest();
   run_loop_->Run();
+  PostRunAsynchronousTest();
   run_loop_ = nullptr;
 }
 
