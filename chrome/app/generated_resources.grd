@@ -5890,36 +5890,6 @@ I don't think this site should be blocked!
         Report an issue
       </message>
 
-      <!-- SRT bubble messages.
-           These strings are for the old Chrome Cleanup version and should be
-           deleted as soon as all Chrome Cleanup UI is fully integrated into
-           Chrome. -->
-      <message name="IDS_SRT_BUBBLE_DOWNLOAD_BUTTON_TEXT" desc="Download button of the Chrome Cleanup Tool bubble">
-        Get the Chrome Cleanup Tool
-      </message>
-      <message name="IDS_SRT_BUBBLE_DISMISS" desc="Dismiss button text of the Chrome Cleanup Tool bubble">
-        Dismiss
-      </message>
-      <message name="IDS_SRT_BUBBLE_RUN_BUTTON_TEXT" desc="Run button of the Chrome Cleanup Tool bubble">
-        Run Chrome Cleanup Tool
-      </message>
-      <message name="IDS_SRT_BUBBLE_TEXT" desc="Text for the Chrome Cleanup Tool bubble view full description.">
-          Is Chrome crashing, showing unusual startup pages, toolbars, or unexpected ads you can't get rid of, or otherwise changing your browsing experience? You may be able to fix the problem by running the Chrome Cleanup Tool.
-      </message>
-      <message name="IDS_SRT_BUBBLE_TEXT_2_UWS_NAMES" desc="Text to put within IDS_SRT_BUBBLE_TEXT_WITH_UWS_NAME when there are 2 UwS found, e.g., Software1 and Software2.">
-          <ph name="UWS_NAME">$1<ex>SoftwareName</ex></ph> and <ph name="UWS_NAME">$2<ex>Software2</ex></ph>
-      </message>
-      <if expr="use_titlecase">
-        <message name="IDS_SRT_MENU_ITEM" desc="In Title Case: Text for the Chrome menu option to be shown when unusual behavior was detected.">
-          Unusual Behavior Detected
-        </message>
-      </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_SRT_MENU_ITEM" desc="Text for the Chrome menu option to be shown when unusual behavior was detected.">
-          Unusual behavior detected
-        </message>
-      </if>
-
       <!-- Chrome Cleanup prompt and web UI -->
       <if expr="is_win">
         <message name="IDS_CHROME_CLEANUP_PROMPT_DETAILS_BUTTON_LABEL" desc="The button in the Chrome Cleanup dialog that lets users see more details, such as what files will be deleted from their computer. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Noun; verb 'See' is omitted.">

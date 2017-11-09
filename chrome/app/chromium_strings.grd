@@ -722,16 +722,6 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <!-- SRT bubble messages.
-           This string is for the old Chrome Cleanup version and should be
-           deleted as soon as all Chrome Cleanup UI is fully integrated into
-           Chrome. -->
-      <if expr="is_win">
-        <message name="IDS_SRT_BUBBLE_TITLE" desc="Text for the title of the software removal tool bubble view.">
-            Chromium has detected unusual behavior
-        </message>
-      </if>
-
       <!-- Chrome Cleanup prompt and web UI.
            Note: these strings should only be used by Google Chrome, but
                  omitting them brings up a hash collision error. -->
