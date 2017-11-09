@@ -947,7 +947,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnySubframe()));
 
-  chrome::GoForward(browser(), WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
 
   // When the subframe appears in the cloned process, it must have a valid
   // process ID.
@@ -958,13 +958,15 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, SubframeHistoryNavigation) {
       MatchSubframe("http://e.com/"), ColumnSpecifier::PROCESS_ID,
       base::kNullProcessId));
   ASSERT_NO_FATAL_FAILURE(
-      WaitForTaskManagerRows(2, MatchSubframe("http://b.com/")));
+      WaitForTaskManagerRows(0, MatchSubframe("http://c.com/")));
   ASSERT_NO_FATAL_FAILURE(
-      WaitForTaskManagerRows(2, MatchSubframe("http://b.com/")));
+      WaitForTaskManagerRows(1, MatchSubframe("http://d.com/")));
   ASSERT_NO_FATAL_FAILURE(
-      WaitForTaskManagerRows(1, MatchSubframe("http://c.com/")));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(5, MatchAnySubframe()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
+      WaitForTaskManagerRows(1, MatchSubframe("http://e.com/")));
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForTaskManagerRows(1, MatchSubframe("http://b.com/")));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(3, MatchAnySubframe()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
 
   // Subframe processes should report some amount of physical memory usage.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(

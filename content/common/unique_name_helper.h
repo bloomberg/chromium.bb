@@ -134,13 +134,37 @@ class CONTENT_EXPORT UniqueNameHelper {
   // egg problem, this method is designed to be called on the *parent* frame of
   // the future new child frame and return the value the new child frame should
   // use.
-  std::string GenerateNameForNewChildFrame(const std::string& name) const;
+  //
+  // |is_created_by_script| indicates if the new child is created via javascript
+  // (as opposed to being created from static html). In this case, the new child
+  // cannot be reliably identified in session history entries. To avoid
+  // accidentally using incorrect session history entries such a child gets a
+  // fresh, random, unique name every time it is created or recreated. See also
+  // https://crbug.com/500260.
+  std::string GenerateNameForNewChildFrame(const std::string& name,
+                                           bool is_created_by_script) const;
 
   // Called after a browsing context name change to generate a new name. Note
   // that this should not be called if the frame is no longer displaying the
   // initial empty document, as unique name changes after that point will break
   // history navigations. See https://crbug.com/607205.
   void UpdateName(const std::string& name);
+
+  // Prevents future changes of the unique name. This avoids changing the
+  // unique name when the frame's assigned name changes in the future.
+  //
+  // Such freeze is desirable in case of frames created from javascript
+  // (see |is_created_by_script| parameter of GenerateNameForNewChildFrame)
+  // because their order of creation can be undeterministic and therefore
+  // their unique name should NOT be derived from their assigned name
+  // (because in case of a conflicting assigned name, their final unique
+  // names would be undetetministic potentially leading to
+  // https://crbug.com/500260).
+  //
+  // TODO(dcheng, lukasza): Consider making frame's unique name immutable (and
+  // if this is possible remove the explicit Freeze method). For more context
+  // see https://crbug.com/607205#c6.
+  void Freeze() { frozen_ = true; }
 
   // Helper to update legacy names generated for PageState v24 and earlier. This
   // function should be invoked starting from the root of the tree, traversing
@@ -155,9 +179,25 @@ class CONTENT_EXPORT UniqueNameHelper {
   static std::string CalculateLegacyNameForTesting(const FrameAdapter* frame,
                                                    const std::string& name);
 
+  // Enters a mode causing future uses of GenerateNameForNewChildFrame to
+  // preserve the original, stable unique name, so that it can be recovered
+  // (e.g. for layout tests) by ExtractStableNameForTesting method below. This
+  // mode is not enabled by default, because it makes unique names longer, and
+  // thus negatively affects memory usage.
+  static void PreserveStableUniqueNameForTesting();
+
+  // Removes the random components of |unique_name|, so it can be used in test
+  // output that needs to be stable across test runs.
+  //
+  // Note: This method only works if |unique_name| was calculated after calling
+  // PreserveStableUniqueNameForTesting (see above).
+  static std::string ExtractStableNameForTesting(
+      const std::string& unique_name);
+
  private:
   FrameAdapter* const frame_;
   std::string unique_name_;
+  bool frozen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UniqueNameHelper);
 };

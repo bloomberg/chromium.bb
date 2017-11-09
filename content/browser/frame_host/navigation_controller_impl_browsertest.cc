@@ -64,9 +64,6 @@ static const char kAddNamedFrameScript[] =
     "var f = document.createElement('iframe');"
     "f.name = 'foo-frame-name';"
     "document.body.appendChild(f);";
-static const char kAddFrameScript[] =
-    "var f = document.createElement('iframe');"
-    "document.body.appendChild(f);";
 static const char kRemoveFrameScript[] =
     "var f = document.querySelector('iframe');"
     "f.parentNode.removeChild(f);";
@@ -1984,8 +1981,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // the initial blank page of an iframe with no committed entry.  Prevents
 // regression of https://crbug.com/600743.
 // Flaky test: See https://crbug.com/610801
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       DISABLED_FrameNavigationEntry_NoCommitNestedAutoSubframe) {
+IN_PROC_BROWSER_TEST_F(
+    NavigationControllerBrowserTest,
+    DISABLED_FrameNavigationEntry_NoCommitNestedAutoSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3200,11 +3198,19 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
+  // There is only 1 child frame in the frame tree, but 2 FNEs, because when the
+  // child frame is dynamically created or recreated from javascript, it will
+  // each time get a fresh, random unique name.
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, entry->root_node()->children.size());
+
   // The entry should have FrameNavigationEntries for the subframes.
-  ASSERT_EQ(1U, entry->root_node()->children.size());
   EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
+  EXPECT_EQ(blank_url, entry->root_node()->children[1]->frame_entry->url());
+  EXPECT_EQ(inner_url,
+            entry->root_node()->children[1]->children[0]->frame_entry->url());
 
   // With injected about:blank iframes, we never restore form values from
   // PageState.
@@ -3218,13 +3224,15 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 }
 
 // Verify that we correctly load a nested iframe created by an injected iframe
-// srcdoc if we go back and recreate the frames.  Also verify that form values
-// are correctly restored for forms within srcdoc frames, unlike forms injected
-// into about:blank pages (as tested in
-// FrameNavigationEntry_RecreatedInjectedBlankSubframe).
+// srcdoc if we go back and recreate the frames.
+//
+// This test is similar to
+// NavigationControllerBrowserTest.FrameNavigationEntry_RecreatedInjectedBlankSubframe
+// and RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation.
 //
 // This test worked before and after the fix for https://crbug.com/657896, but
-// it failed with a preliminary version of the fix.
+// it failed with a preliminary version of the fix (see also
+// https://crbug.com/657896#c9).
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        FrameNavigationEntry_RecreatedInjectedSrcdocSubframe) {
   // 1. Start on a page that injects a nested iframe srcdoc which contains a
@@ -3293,21 +3301,35 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry, controller.GetLastCommittedEntry());
 
+  // There is only 1 child frame in the frame tree, but 2 FNEs, because when the
+  // child frame is dynamically created or recreated from javascript, it will
+  // each time get a fresh, random unique name.
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(2U, entry->root_node()->children.size());
+
   // The entry should have FrameNavigationEntries for the subframes.
-  ASSERT_EQ(1U, entry->root_node()->children.size());
   EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
   EXPECT_EQ(inner_url,
             entry->root_node()->children[0]->children[0]->frame_entry->url());
+  EXPECT_EQ(srcdoc_url, entry->root_node()->children[1]->frame_entry->url());
+  EXPECT_EQ(inner_url,
+            entry->root_node()->children[1]->children[0]->frame_entry->url());
 
-  // With injected iframe srcdoc pages, we do restore form values from
-  // PageState.
-  std::string form_value;
+  // With *injected* iframe srcdoc pages, we don't restore form values from
+  // PageState (because iframes injected by javascript always get a fresh,
+  // random unique name each time they are created or recreated - see
+  // https://crbug.com/500260).
+  //
+  // Note that restoring form values in srcdoc frames created via static html is
+  // expected to work and is tested by
+  // RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation.
+  std::string form_value = "fail";
   EXPECT_TRUE(
       ExecuteScriptAndExtractString(root->child_at(0)->child_at(0),
                                     "window.domAutomationController.send("
                                     "document.getElementById('itext').value);",
                                     &form_value));
-  EXPECT_EQ("modified", form_value);
+  EXPECT_EQ("", form_value);
 }
 
 // Verify that we can load about:blank in an iframe when going back to a page,
@@ -3951,8 +3973,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             subframe->current_frame_host()->GetSiteInstance());
   FrameNavigationEntry* subframe_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(subframe);
-  std::string unnamed_subframe_name = "<!--framePath //<!--frame0-->-->";
-  EXPECT_EQ(unnamed_subframe_name, subframe_entry->frame_unique_name());
+  EXPECT_THAT(subframe_entry->frame_unique_name(),
+              testing::HasSubstr("dynamicFrame"));
 
   // 3. Add a named subframe.
   {
@@ -3975,8 +3997,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             foo_subframe->current_frame_host()->GetSiteInstance());
   FrameNavigationEntry* foo_subframe_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(foo_subframe);
-  std::string named_subframe_name = "foo";
-  EXPECT_EQ(named_subframe_name, foo_subframe_entry->frame_unique_name());
+  EXPECT_THAT(foo_subframe_entry->frame_unique_name(),
+              testing::HasSubstr("dynamicFrame"));
 
   // 4. Navigating in the subframes cross-process shouldn't change their names.
   // TODO(creis): Fix the unnamed case in https://crbug.com/502317.
@@ -3998,7 +4020,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   foo_subframe_entry =
       controller.GetLastCommittedEntry()->GetFrameEntry(foo_subframe);
-  EXPECT_EQ(named_subframe_name, foo_subframe_entry->frame_unique_name());
+  EXPECT_THAT(foo_subframe_entry->frame_unique_name(),
+              testing::HasSubstr("dynamicFrame"));
 }
 
 // Ensure we don't crash when cloning a named window.  This happened in
@@ -5990,16 +6013,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_NE(nullptr, root_entry);
     EXPECT_EQ("", root_entry->frame_unique_name());
     EXPECT_EQ(3U, entry->root_node()->children.size());
+    EXPECT_EQ(2U, entry->root_node()->children[0]->children.size());
 
     // * The first child of the main frame is named and has two more children.
-    FrameTreeNode* frame = root->child_at(0);
+    FrameTreeNode* frame = root->child_at(0)->child_at(0);
     NavigationEntryImpl::TreeNode* tree_node = entry->GetTreeNode(frame);
     FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame);
     EXPECT_NE(nullptr, tree_node);
     EXPECT_NE(nullptr, frame_entry);
-    EXPECT_EQ("1-1-name", frame_entry->frame_unique_name());
+    EXPECT_EQ("1-1: 2-1: name", frame_entry->frame_unique_name());
     EXPECT_EQ(frame_entry, tree_node->frame_entry);
-    EXPECT_EQ(2U, tree_node->children.size());
+    EXPECT_EQ(0U, tree_node->children.size());
   }
 
   // Removing the first child of the main frame should remove the corresponding
@@ -6013,6 +6037,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
     EXPECT_NE(nullptr, root_entry);
     EXPECT_EQ(3U, entry->root_node()->children.size());
+    EXPECT_EQ(2U, entry->root_node()->children[0]->children.size());
 
     // Since child count is known only to the FrameNavigationEntry::TreeNode,
     // traverse the root entry to find the correct one matching the
@@ -6023,15 +6048,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     // Traverse the FrameNavigationEntry tree, since the FrameTreeNode has
     // been deleted and cannot be used for looking up the TreeNode.
     NavigationEntryImpl::TreeNode* tree_node = nullptr;
-    for (auto& node : entry->root_node()->children) {
-      if (node->frame_entry->frame_unique_name() == "1-1-name") {
+    for (auto& node : entry->root_node()->children[0]->children) {
+      if (node->frame_entry->frame_unique_name() == "1-1: 2-1: name") {
         tree_node = node.get();
         break;
       }
     }
-
     EXPECT_TRUE(tree_node);
-    EXPECT_EQ(2U, tree_node->children.size());
+    EXPECT_EQ(0U, tree_node->children.size());
   }
 
   // Now, insert a frame with the same name as the previously removed one
@@ -6042,68 +6066,25 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   std::string add_matching_name_frame_script =
       "var f = document.createElement('iframe');"
       "f.name = '1-1-name';"
+      "f.src = '1-1.html';"
       "document.body.appendChild(f);";
+  TestNavigationObserver observer(web_contents, 1);
   EXPECT_TRUE(ExecuteScript(subframe, add_matching_name_frame_script));
   EXPECT_EQ(1U, subframe->child_count());
+  observer.Wait();
 
   // Verify that the FrameNavigationEntry for the original frame is now gone.
   {
     FrameNavigationEntry* root_entry = entry->GetFrameEntry(root);
     EXPECT_NE(nullptr, root_entry);
-    EXPECT_EQ(2U, entry->root_node()->children.size());
+    EXPECT_EQ(3U, entry->root_node()->children.size());
+
+    // Both children of |entry->root_node()->children[0]| should be removed
+    // by NavigationEntryImpl::ClearStaleFrameEntriesForNewFrame, because
+    // both will have colliding unique names (the removed parent and the newly
+    // added frame both load '1-1.html' - which has 2 named framse).
+    EXPECT_EQ(0U, entry->root_node()->children[0]->children.size());
   }
-}
-
-// Tests that sending a PageState update from a named subframe does not get
-// incorrectly set on previously existing FrameNavigationEntry for the same
-// name. It is similar to EnsureFrameNavigationEntriesClearedOnMismatch, but
-// doesn't navigate the iframes to real URLs when added to the DOM.
-// See https://crbug.com/628677.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       EnsureFrameNavigationEntriesClearedOnMismatchNoSrc) {
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTreeNode* root = web_contents->GetFrameTree()->root();
-
-  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), start_url));
-  NavigationEntryImpl* nav_entry =
-      web_contents->GetController().GetLastCommittedEntry();
-
-  EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
-  EXPECT_EQ(1U, root->child_count());
-  EXPECT_EQ("foo-frame-name", root->child_at(0)->frame_name());
-
-  EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
-  EXPECT_EQ(0U, root->child_count());
-
-  // When a frame is removed from the page, the corresponding
-  // FrameNavigationEntry is not removed. This is done intentionally to support
-  // back-forward navigations in subframes and more intuitive UX on tab restore.
-  EXPECT_EQ(1U, nav_entry->root_node()->children.size());
-  FrameNavigationEntry* frame_entry =
-      nav_entry->root_node()->children[0]->frame_entry.get();
-  EXPECT_EQ("foo-frame-name", frame_entry->frame_unique_name());
-
-  EXPECT_TRUE(ExecuteScript(root, kAddFrameScript));
-  EXPECT_EQ(1U, root->child_count());
-  EXPECT_NE("foo-frame-name", root->child_at(0)->frame_name());
-
-  // Add a nested frame with the previously used name.
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), kAddNamedFrameScript));
-  EXPECT_EQ(1U, root->child_at(0)->child_count());
-  EXPECT_EQ("foo-frame-name", root->child_at(0)->child_at(0)->frame_name());
-
-  EXPECT_EQ(1U, nav_entry->root_node()->children.size());
-
-  EXPECT_EQ(1U, nav_entry->root_node()->children[0]->children.size());
-
-  const auto& tree_node = nav_entry->root_node()->children[0]->children[0];
-  EXPECT_EQ(0U, tree_node->children.size());
-  EXPECT_EQ("foo-frame-name", tree_node->frame_entry->frame_unique_name());
-
-  EXPECT_TRUE(ExecuteScript(root->child_at(0), kRemoveFrameScript));
-  EXPECT_EQ(0U, root->child_at(0)->child_count());
 }
 
 // This test ensures that the comparison of tree position between a
@@ -6131,12 +6112,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(0U, root->child_count());
   EXPECT_EQ(1U, nav_entry->root_node()->children.size());
 
-  // Add another frame with the same name as before. The matching logic
-  // should consider them the same and result in the FrameNavigationEntry
-  // being reused.
+  // Add another frame with the same name as before. The matching logic should
+  // NOT consider them the same and should NOT result in the
+  // FrameNavigationEntry being reused (because the frame injected by javascript
+  // will get a fresh, random unique name each time it is created or recreated).
   EXPECT_TRUE(ExecuteScript(root, kAddNamedFrameScript));
   EXPECT_EQ(1U, root->child_count());
-  EXPECT_EQ(1U, nav_entry->root_node()->children.size());
+  EXPECT_EQ(2U, nav_entry->root_node()->children.size());
   EXPECT_EQ(tree_node, nav_entry->root_node()->children[0].get());
 
   EXPECT_TRUE(ExecuteScript(root, kRemoveFrameScript));
