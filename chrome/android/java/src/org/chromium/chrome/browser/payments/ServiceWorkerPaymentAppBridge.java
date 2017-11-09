@@ -206,7 +206,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     @CalledByNative
     private static void onPaymentAppInvoked(
             Object callback, String methodName, String stringifiedDetails) {
-        if (TextUtils.isEmpty(methodName)) {
+        if (TextUtils.isEmpty(methodName) || TextUtils.isEmpty(stringifiedDetails)) {
             ((PaymentInstrument.InstrumentDetailsCallback) callback).onInstrumentDetailsError();
         } else {
             ((PaymentInstrument.InstrumentDetailsCallback) callback)
