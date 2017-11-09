@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/origin_util.h"
+#include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/common/client_hints/client_hints.h"
@@ -41,8 +42,17 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Get the client hint headers.
-  if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))
+  if (!url.is_valid())
     return nullptr;
+
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return nullptr;
+
+  if (url.SchemeIs(url::kHttpScheme) && !net::IsLocalhost(url.host()))
+    return nullptr;
+
+  DCHECK(url.SchemeIs(url::kHttpsScheme) ||
+         (url.SchemeIs(url::kHttpScheme) && net::IsLocalhost(url.host())));
 
   Profile* profile = Profile::FromBrowserContext(context);
   if (!profile)

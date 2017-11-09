@@ -72,18 +72,16 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
 TEST_F(ClientHintsPreferencesTest, PersistentHints) {
   struct TestCase {
     bool enable_persistent_runtime_feature;
-    bool use_https_url;
     const char* accept_ch_header_value;
     const char* accept_lifetime_header_value;
     int64_t expect_persist_duration_seconds;
   } test_cases[] = {
-      {true, true, "width, dpr, viewportWidth", "", 0},
-      {true, true, "width, dpr, viewportWidth", "-1000", 0},
-      {true, true, "width, dpr, viewportWidth", "1000s", 0},
-      {true, true, "width, dpr, viewportWidth", "1000.5", 0},
-      {false, true, "width, dpr, viewportWidth", "1000", 0},
-      {true, false, "width, dpr, viewportWidth", "1000", 0},
-      {true, true, "width, dpr, viewportWidth", "1000", 1000},
+      {true, "width, dpr, viewportWidth", "", 0},
+      {true, "width, dpr, viewportWidth", "-1000", 0},
+      {true, "width, dpr, viewportWidth", "1000s", 0},
+      {true, "width, dpr, viewportWidth", "1000.5", 0},
+      {false, "width, dpr, viewportWidth", "1000", 0},
+      {true, "width, dpr, viewportWidth", "1000", 1000},
   };
 
   for (const auto& test : test_cases) {
@@ -92,9 +90,7 @@ TEST_F(ClientHintsPreferencesTest, PersistentHints) {
     WebEnabledClientHints enabled_types;
     TimeDelta persist_duration;
 
-    const KURL kurl(test.use_https_url
-                        ? String::FromUTF8("https://www.google.com/")
-                        : String::FromUTF8("http://www.google.com/"));
+    const KURL kurl(String::FromUTF8("https://www.google.com/"));
 
     ResourceResponse response;
     response.SetHTTPHeaderField(HTTPNames::Accept_CH,
