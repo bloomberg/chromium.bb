@@ -12,8 +12,6 @@ import static android.support.test.espresso.intent.matcher.IntentMatchers.hasDat
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 
-import static org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-
 import android.accounts.Account;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -43,7 +41,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.Pref;
@@ -272,7 +269,6 @@ public class HistoryActivityTest {
 
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.TABS_IN_CBD)
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
