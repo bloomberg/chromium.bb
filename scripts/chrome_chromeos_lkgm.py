@@ -83,18 +83,18 @@ class ChromeLGTMCommitter(object):
 
     logging.info('Committing LKGM version: %s (was %s),',
                  self._lkgm, self._old_lkgm)
-
     self._commit_msg = self._COMMIT_MSG_TEMPLATE % dict(version=self._lkgm)
-
     checkout_dir = self._checkout_dir
     try:
       # Overwrite the lkgm file and commit it.
       file_path = os.path.join(checkout_dir, constants.PATH_TO_CHROME_LKGM)
       osutils.WriteFile(file_path, self._lkgm)
       git.AddPath(file_path)
-      git.RunGit(checkout_dir, ['-c', 'user.email=%s' % self._user_email,
-                                '-c', 'user.name=%s' % self._user_email,
-                                'commit', '-m', self._commit_msg])
+      git.RunGit(checkout_dir,
+                 ['-c', 'user.email=%s' % self._user_email,
+                  '-c', 'user.name=%s' % self._user_email,
+                  'commit', '-m', self._commit_msg],
+                 print_cmd=True, redirect_stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       raise LKGMNotCommitted(
           'Could not create git commit with new LKGM: %r' % e)
@@ -108,7 +108,7 @@ class ChromeLGTMCommitter(object):
       # not part of the shallow checkout, -f to skip editing the CL message,
       # --send-mail to mark the CL as ready, and --tbrs to +1 the CL.
       upload_args = ['cl', 'upload', '-v', '-m', self._commit_msg,
-                     '--bypass-hooks', '-f']
+                     '--bypass-hooks', '-f', '--email=%s' % self._user_email]
       if not self._dryrun:
         upload_args += ['--send-mail', '--tbrs=chrome-os-gardeners@google.com']
       git.RunGit(self._checkout_dir, upload_args,
