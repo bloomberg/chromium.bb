@@ -352,13 +352,12 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 }
 
 #if CONFIG_AOM_QM
-qm_val_t *aom_iqmatrix(AV1_COMMON *cm, int qmlevel, int is_chroma,
+qm_val_t *aom_iqmatrix(AV1_COMMON *cm, int qmlevel, int plane,
                        TX_SIZE tx_size) {
-  return &cm->giqmatrix[qmlevel][!!is_chroma][tx_size][0];
+  return &cm->giqmatrix[qmlevel][plane][tx_size][0];
 }
-qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int is_chroma,
-                      TX_SIZE tx_size) {
-  return &cm->gqmatrix[qmlevel][!!is_chroma][tx_size][0];
+qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int plane, TX_SIZE tx_size) {
+  return &cm->gqmatrix[qmlevel][plane][tx_size][0];
 }
 
 #define QM_TOTAL_SIZE 3344
@@ -369,7 +368,7 @@ void aom_qm_init(AV1_COMMON *cm) {
   int q, c, t;
   int current;
   for (q = 0; q < NUM_QM_LEVELS; ++q) {
-    for (c = 0; c < 2; ++c) {
+    for (c = 0; c < av1_num_planes(cm); ++c) {
       current = 0;
       for (t = 0; t < TX_SIZES_ALL; ++t) {
         const int size = tx_size_2d[t];
@@ -379,8 +378,8 @@ void aom_qm_init(AV1_COMMON *cm) {
           cm->giqmatrix[q][c][t] = NULL;
         } else {
           assert(current + size <= QM_TOTAL_SIZE);
-          cm->gqmatrix[q][c][t] = &wt_matrix_ref[q][c][current];
-          cm->giqmatrix[q][c][t] = &iwt_matrix_ref[q][c][current];
+          cm->gqmatrix[q][c][t] = &wt_matrix_ref[q][c >= 1][current];
+          cm->giqmatrix[q][c][t] = &iwt_matrix_ref[q][c >= 1][current];
           current += size;
         }
       }

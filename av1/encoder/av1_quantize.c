@@ -1745,10 +1745,10 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
     x->plane[2].round_QTX = quants->v_round[qindex];
     x->plane[2].dequant_QTX = cpi->dequants.v_dequant_QTX[qindex];
 #if CONFIG_AOM_QM
-    memcpy(&xd->plane[2].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][1],
-           sizeof(cm->gqmatrix[qmlevel][1]));
-    memcpy(&xd->plane[2].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][1],
-           sizeof(cm->giqmatrix[qmlevel][1]));
+    memcpy(&xd->plane[2].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][2],
+           sizeof(cm->gqmatrix[qmlevel][2]));
+    memcpy(&xd->plane[2].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][2],
+           sizeof(cm->giqmatrix[qmlevel][2]));
 #endif
     x->plane[2].dequant_QTX = cpi->dequants.v_dequant_QTX[qindex];
     xd->plane[2].dequant_Q3 = cpi->dequants.v_dequant_Q3[qindex];
