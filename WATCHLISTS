@@ -1869,7 +1869,7 @@
                       'shimazu+worker@chromium.org'],
     'blink_wtf': ['blink-reviews-wtf@chromium.org',
                   'mikhail.pozdnyakov@intel.com'],
-    'blink_xml': ['dominicc+watchlist@chromium.org'],
+    'blink_xml': ['dominicc+watchlist@chromium.org', 'joelhockey@chromium.org'],
     'bookmarks': ['tfarina@chromium.org'],
     'bottombar': ['donnd+watch@chromium.org',
                   'mdjones+watch@chromium.org'],
