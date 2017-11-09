@@ -19,6 +19,7 @@
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
+#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/deadline_task_runner.h"
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
@@ -46,7 +47,6 @@ class RendererSchedulerImplForTest;
 class RendererSchedulerImplTest;
 FORWARD_DECLARE_TEST(RendererSchedulerImplTest, Tracing);
 }  // namespace renderer_scheduler_impl_unittest
-class AutoAdvancingVirtualTimeDomain;
 class RenderWidgetSchedulingState;
 class WebViewSchedulerImpl;
 class TaskQueueThrottler;
@@ -57,7 +57,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
       public QueueingTimeEstimator::Client,
-      public base::trace_event::TraceLog::AsyncEnabledStateObserver {
+      public base::trace_event::TraceLog::AsyncEnabledStateObserver,
+      public AutoAdvancingVirtualTimeDomain::Observer {
  public:
   // Keep RendererScheduler::UseCaseToString in sync with this enum.
   enum class UseCase {
@@ -90,6 +91,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   };
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(v8::RAILMode rail_mode);
+  static const char* VirtualTimePolicyToString(
+      WebViewScheduler::VirtualTimePolicy virtual_time_policy);
 
   RendererSchedulerImpl(scoped_refptr<SchedulerTqmDelegate> main_task_runner);
   ~RendererSchedulerImpl() override;
@@ -127,8 +130,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
-  void VirtualTimePaused() override;
-  void VirtualTimeResumed() override;
   void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
@@ -136,6 +137,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   bool MainThreadSeemsUnresponsive(
       base::TimeDelta main_thread_responsiveness_threshold) override;
   void SetRendererProcessType(RendererProcessType type) override;
+
+  // AutoAdvancingVirtualTimeDomain::Observer implementation:
+  void OnVirtualTimeAdvanced() override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
@@ -184,11 +188,23 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
+  using VirtualTimePolicy = WebViewScheduler::VirtualTimePolicy;
+  using VirtualTimeObserver = WebViewScheduler::VirtualTimeObserver;
+
   // Tells the scheduler that all TaskQueues should use virtual time.
   void EnableVirtualTime();
 
   // Migrates all task queues to real time.
   void DisableVirtualTimeForTesting();
+
+  // Returns true if virtual time is not paused.
+  bool VirtualTimeAllowedToAdvance() const;
+  void SetVirtualTimePolicy(VirtualTimePolicy virtual_time_policy);
+  void SetMaxVirtualTimeTaskStarvationCount(int max_task_starvation_count);
+  void AddVirtualTimeObserver(VirtualTimeObserver*);
+  void RemoveVirtualTimeObserver(VirtualTimeObserver*);
+  void IncrementVirtualTimePauseCount();
+  void DecrementVirtualTimePauseCount();
 
   void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
   void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
@@ -531,6 +547,20 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void PauseRendererImpl();
   void ResumeRendererImpl();
 
+  void NotifyVirtualTimePaused();
+  void SetVirtualTimeStopped(bool virtual_time_stopped);
+  void ApplyVirtualTimePolicy();
+
+  // Pauses the timer queues by inserting a fence that blocks any tasks posted
+  // after this point from running. Orthogonal to PauseTimerQueue. Care must
+  // be taken when using this API to avoid fighting with the TaskQueueThrottler.
+  void VirtualTimePaused();
+
+  // Removes the fence added by VirtualTimePaused allowing timers to execute
+  // normally. Care must be taken when using this API to avoid fighting with the
+  // TaskQueueThrottler.
+  void VirtualTimeResumed();
+
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -610,7 +640,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool use_virtual_time;
     TraceableState<bool, kTracingCategoryNameDefault> is_audio_playing;
     bool compositor_will_send_main_frame_not_expected;
-    bool virtual_time_stopped;
     bool has_navigated;
     bool pause_timers_for_webview;
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
@@ -621,6 +650,22 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     RendererMetricsHelper metrics_helper;
     RendererProcessType process_type;
+
+    base::ObserverList<VirtualTimeObserver> virtual_time_observers;
+    base::TimeTicks initial_virtual_time;
+    VirtualTimePolicy virtual_time_policy;
+
+    // In VirtualTimePolicy::DETERMINISTIC_LOADING virtual time is only allowed
+    // to advance if this is zero.
+    int virtual_time_pause_count;
+
+    // The maximum number amount of delayed task starvation we will allow in
+    // VirtualTimePolicy::ADVANCE or VirtualTimePolicy::DETERMINISTIC_LOADING
+    // unless the run_loop is nested (in which case infinite starvation is
+    // allowed). NB a value of 0 allows infinite starvation.
+    int max_virtual_time_task_starvation_count;
+    bool virtual_time_stopped;
+    bool nested_runloop;
   };
 
   struct AnyThread {
