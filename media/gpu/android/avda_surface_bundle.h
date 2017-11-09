@@ -5,7 +5,7 @@
 #ifndef MEDIA_GPU_ANDROID_AVDA_SURFACE_BUNDLE_H_
 #define MEDIA_GPU_ANDROID_AVDA_SURFACE_BUNDLE_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "media/base/android/android_overlay.h"
 #include "media/base/surface_manager.h"
 #include "media/gpu/android/surface_texture_gl_owner.h"
@@ -22,8 +22,10 @@ namespace media {
 // crashes due to the codec losing its output surface.
 // TODO(watk): Remove AVDA from the name.
 struct MEDIA_GPU_EXPORT AVDASurfaceBundle
-    : public base::RefCountedThreadSafe<AVDASurfaceBundle> {
+    : public base::RefCountedDeleteOnSequence<AVDASurfaceBundle> {
  public:
+  using ScheduleLayoutCB = base::RepeatingCallback<void(gfx::Rect)>;
+
   // Create an empty bundle to be manually populated.
   explicit AVDASurfaceBundle();
   explicit AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay);
@@ -31,6 +33,11 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
       scoped_refptr<SurfaceTextureGLOwner> surface_texture_owner);
 
   const base::android::JavaRef<jobject>& GetJavaSurface() const;
+
+  // Returns a callback that can be used to position this overlay.  It must be
+  // called on the correct thread for the overlay.  It will not keep a ref to
+  // |this|; the cb will do nothing if |this| is destroyed.
+  ScheduleLayoutCB GetScheduleLayoutCB();
 
   // The Overlay or SurfaceTexture.
   std::unique_ptr<AndroidOverlay> overlay;
@@ -41,7 +48,12 @@ struct MEDIA_GPU_EXPORT AVDASurfaceBundle
 
  private:
   ~AVDASurfaceBundle();
-  friend class base::RefCountedThreadSafe<AVDASurfaceBundle>;
+  friend class base::RefCountedDeleteOnSequence<AVDASurfaceBundle>;
+  friend class base::DeleteHelper<AVDASurfaceBundle>;
+
+  void ScheduleLayout(gfx::Rect rect);
+
+  base::WeakPtrFactory<AVDASurfaceBundle> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AVDASurfaceBundle);
 };

@@ -4,19 +4,29 @@
 
 #include "media/gpu/android/avda_surface_bundle.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/android/android_overlay.h"
 
 namespace media {
 
-AVDASurfaceBundle::AVDASurfaceBundle() = default;
+AVDASurfaceBundle::AVDASurfaceBundle()
+    : RefCountedDeleteOnSequence<AVDASurfaceBundle>(
+          base::SequencedTaskRunnerHandle::Get()),
+      weak_factory_(this) {}
 
 AVDASurfaceBundle::AVDASurfaceBundle(std::unique_ptr<AndroidOverlay> overlay)
-    : overlay(std::move(overlay)) {}
+    : RefCountedDeleteOnSequence<AVDASurfaceBundle>(
+          base::SequencedTaskRunnerHandle::Get()),
+      overlay(std::move(overlay)),
+      weak_factory_(this) {}
 
 AVDASurfaceBundle::AVDASurfaceBundle(
     scoped_refptr<SurfaceTextureGLOwner> surface_texture_owner)
-    : surface_texture(std::move(surface_texture_owner)),
-      surface_texture_surface(surface_texture->CreateJavaSurface()) {}
+    : RefCountedDeleteOnSequence<AVDASurfaceBundle>(
+          base::SequencedTaskRunnerHandle::Get()),
+      surface_texture(std::move(surface_texture_owner)),
+      surface_texture_surface(surface_texture->CreateJavaSurface()),
+      weak_factory_(this) {}
 
 AVDASurfaceBundle::~AVDASurfaceBundle() {
   // Explicitly free the surface first, just to be sure that it's deleted before
@@ -42,6 +52,16 @@ const base::android::JavaRef<jobject>& AVDASurfaceBundle::GetJavaSurface()
     return overlay->GetJavaSurface();
   else
     return surface_texture_surface.j_surface();
+}
+
+AVDASurfaceBundle::ScheduleLayoutCB AVDASurfaceBundle::GetScheduleLayoutCB() {
+  return base::BindRepeating(&AVDASurfaceBundle::ScheduleLayout,
+                             weak_factory_.GetWeakPtr());
+}
+
+void AVDASurfaceBundle::ScheduleLayout(gfx::Rect rect) {
+  if (overlay)
+    overlay->ScheduleLayout(rect);
 }
 
 }  // namespace media

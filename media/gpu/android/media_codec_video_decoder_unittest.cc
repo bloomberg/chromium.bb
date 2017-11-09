@@ -62,6 +62,7 @@ class MockServiceContextRef : public service_manager::ServiceContextRef {
 class MockVideoFrameFactory : public VideoFrameFactory {
  public:
   MOCK_METHOD1(Initialize, void(InitCb init_cb));
+  MOCK_METHOD1(MockSetSurfaceBundle, void(scoped_refptr<AVDASurfaceBundle>));
   MOCK_METHOD6(
       MockCreateVideoFrame,
       void(CodecOutputBuffer* raw_output_buffer,
@@ -74,14 +75,24 @@ class MockVideoFrameFactory : public VideoFrameFactory {
                void(base::OnceClosure* closure));
   MOCK_METHOD0(CancelPendingCallbacks, void());
 
+  void SetSurfaceBundle(
+      scoped_refptr<AVDASurfaceBundle> surface_bundle) override {
+    MockSetSurfaceBundle(surface_bundle);
+    if (!surface_bundle) {
+      surface_texture_ = nullptr;
+    } else {
+      surface_texture_ =
+          surface_bundle->overlay ? nullptr : surface_bundle->surface_texture;
+    }
+  }
+
   void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       OutputWithReleaseMailboxCB output_cb) override {
-    MockCreateVideoFrame(output_buffer.get(), surface_texture, timestamp,
+    MockCreateVideoFrame(output_buffer.get(), surface_texture_, timestamp,
                          natural_size, promotion_hint_cb, output_cb);
     last_output_buffer_ = std::move(output_buffer);
   }
@@ -92,6 +103,7 @@ class MockVideoFrameFactory : public VideoFrameFactory {
   }
 
   std::unique_ptr<CodecOutputBuffer> last_output_buffer_;
+  scoped_refptr<SurfaceTextureGLOwner> surface_texture_;
   base::OnceClosure last_closure_;
 };
 

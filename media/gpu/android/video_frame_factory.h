@@ -21,6 +21,7 @@ struct SyncToken;
 
 namespace media {
 
+struct AVDASurfaceBundle;
 class CodecOutputBuffer;
 class SurfaceTextureGLOwner;
 class VideoFrame;
@@ -45,12 +46,17 @@ class MEDIA_GPU_EXPORT VideoFrameFactory {
   // null.
   virtual void Initialize(InitCb init_cb) = 0;
 
+  // Notify us about the current surface bundle that subsequent video frames
+  // should use.
+  virtual void SetSurfaceBundle(
+      scoped_refptr<AVDASurfaceBundle> surface_bundle) = 0;
+
   // Creates a new VideoFrame backed by |output_buffer| and |surface_texture|.
   // |surface_texture| may be null if the buffer is backed by an overlay
   // instead. Runs |output_cb| on the calling sequence to return the frame.
+  // TODO(liberato): update the comment.
   virtual void CreateVideoFrame(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
-      scoped_refptr<SurfaceTextureGLOwner> surface_texture,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,

@@ -35,16 +35,19 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 CodecImage::CodecImage(
     std::unique_ptr<CodecOutputBuffer> output_buffer,
     scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-    DestructionCb destruction_cb)
+    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb)
     : phase_(Phase::kInCodec),
       output_buffer_(std::move(output_buffer)),
       surface_texture_(std::move(surface_texture)),
-      promotion_hint_cb_(std::move(promotion_hint_cb)),
-      destruction_cb_(std::move(destruction_cb)) {}
+      promotion_hint_cb_(std::move(promotion_hint_cb)) {}
 
 CodecImage::~CodecImage() {
-  destruction_cb_.Run(this);
+  if (destruction_cb_)
+    std::move(destruction_cb_).Run(this);
+}
+
+void CodecImage::SetDestructionCb(DestructionCb destruction_cb) {
+  destruction_cb_ = std::move(destruction_cb);
 }
 
 gfx::Size CodecImage::GetSize() {
@@ -200,6 +203,11 @@ bool CodecImage::RenderToOverlay() {
   }
   phase_ = Phase::kInFrontBuffer;
   return true;
+}
+
+void CodecImage::SurfaceDestroyed() {
+  output_buffer_ = nullptr;
+  phase_ = Phase::kInvalidated;
 }
 
 }  // namespace media

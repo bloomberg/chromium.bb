@@ -20,6 +20,7 @@
 #include "media/base/scoped_callback_runner.h"
 #include "media/base/video_frame.h"
 #include "media/gpu//android/codec_image.h"
+#include "media/gpu//android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -57,9 +58,38 @@ void VideoFrameFactoryImpl::Initialize(InitCb init_cb) {
       std::move(init_cb));
 }
 
+void VideoFrameFactoryImpl::SetSurfaceBundle(
+    scoped_refptr<AVDASurfaceBundle> surface_bundle) {
+  scoped_refptr<CodecImageGroup> image_group;
+  if (!surface_bundle) {
+    // Clear everything, just so we're not holding a reference.
+    surface_texture_ = nullptr;
+  } else {
+    // If |surface_bundle| is using a SurfaceTexture, then get it.
+    surface_texture_ =
+        surface_bundle->overlay ? nullptr : surface_bundle->surface_texture;
+
+    // Start a new image group.  Note that there's no reason that we can't have
+    // more than one group per surface bundle; it's okay if we're called
+    // mulitiple times with the same surface bundle.  It just helps to combine
+    // the callbacks if we don't, especially since AndroidOverlay doesn't know
+    // how to remove destruction callbacks.  That's one reason why we don't just
+    // make the CodecImage register itself.  The other is that the threading is
+    // easier if we do it this way, since the image group is constructed on the
+    // proper thread to talk to the overlay.
+    image_group =
+        base::MakeRefCounted<CodecImageGroup>(gpu_task_runner_, surface_bundle);
+  }
+
+  gpu_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuVideoFrameFactory::SetImageGroup,
+                     base::Unretained(gpu_video_frame_factory_.get()),
+                     std::move(image_group)));
+}
+
 void VideoFrameFactoryImpl::CreateVideoFrame(
     std::unique_ptr<CodecOutputBuffer> output_buffer,
-    scoped_refptr<SurfaceTextureGLOwner> surface_texture,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
@@ -69,7 +99,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
       FROM_HERE,
       base::Bind(&GpuVideoFrameFactory::CreateVideoFrame,
                  base::Unretained(gpu_video_frame_factory_.get()),
-                 base::Passed(&output_buffer), surface_texture, timestamp,
+                 base::Passed(&output_buffer), surface_texture_, timestamp,
                  natural_size, std::move(promotion_hint_cb),
                  std::move(output_cb), base::ThreadTaskRunnerHandle::Get()));
 }
@@ -182,10 +212,12 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
                                      size.width(), size.height(), GL_RGBA,
                                      GL_UNSIGNED_BYTE);
   auto image = base::MakeRefCounted<CodecImage>(
-      std::move(output_buffer), surface_texture, std::move(promotion_hint_cb),
-      base::Bind(&GpuVideoFrameFactory::OnImageDestructed,
-                 weak_factory_.GetWeakPtr()));
+      std::move(output_buffer), surface_texture, std::move(promotion_hint_cb));
   images_.push_back(image.get());
+
+  // Add |image| to our current image group.  This makes suer that any overlay
+  // lasts as long as the images.  For SurfaceTexture, it doesn't do much.
+  image_group_->AddCodecImage(image.get());
 
   // Attach the image to the texture.
   // If we're attaching a SurfaceTexture backed image, we set the state to
@@ -262,6 +294,17 @@ void GpuVideoFrameFactory::OnImageDestructed(CodecImage* image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::Erase(images_, image);
   internal::MaybeRenderEarly(&images_);
+}
+
+void GpuVideoFrameFactory::SetImageGroup(
+    scoped_refptr<CodecImageGroup> image_group) {
+  image_group_ = std::move(image_group);
+
+  if (!image_group_)
+    return;
+
+  image_group_->SetDestructionCb(base::BindRepeating(
+      &GpuVideoFrameFactory::OnImageDestructed, weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace media

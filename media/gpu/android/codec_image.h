@@ -23,13 +23,15 @@ namespace media {
 // as needed in order to draw them.
 class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
  public:
-  // A callback for observing CodecImage destruction.
-  using DestructionCb = base::Callback<void(CodecImage*)>;
+  // A callback for observing CodecImage destruction.  This is a repeating cb
+  // since CodecImageGroup calls the same cb for multiple images.
+  using DestructionCb = base::RepeatingCallback<void(CodecImage*)>;
 
   CodecImage(std::unique_ptr<CodecOutputBuffer> output_buffer,
              scoped_refptr<SurfaceTextureGLOwner> surface_texture,
-             PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
-             DestructionCb destruction_cb);
+             PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
+
+  void SetDestructionCb(DestructionCb destruction_cb);
 
   // gl::GLImage implementation
   gfx::Size GetSize() override;
@@ -81,13 +83,18 @@ class MEDIA_GPU_EXPORT CodecImage : public gpu::gles2::GLStreamTextureImage {
   // buffer. Returns false if the buffer was invalidated.
   bool RenderToSurfaceTextureBackBuffer();
 
+  // Called when we're no longer renderable because our surface is gone.  We'll
+  // discard any codec buffer, and generally do nothing.
+  virtual void SurfaceDestroyed();
+
+ protected:
+  ~CodecImage() override;
+
  private:
   // The lifecycle phases of an image.
   // The only possible transitions are from left to right. Both
   // kInFrontBuffer and kInvalidated are terminal.
   enum class Phase { kInCodec, kInBackBuffer, kInFrontBuffer, kInvalidated };
-
-  ~CodecImage() override;
 
   // Renders this image to the surface texture front buffer by first rendering
   // it to the back buffer if it's not already there, and then waiting for the

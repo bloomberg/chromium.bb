@@ -15,7 +15,7 @@
 namespace media {
 
 // AndroidOverlay implementation that supports weak ptrs.
-class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
+class MockAndroidOverlay : public testing::NiceMock<AndroidOverlay>,
                            public DestructionObservable {
  public:
   MockAndroidOverlay();
@@ -48,6 +48,10 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
 
   // Return callbacks that can be used to control the overlay.
   Callbacks GetCallbacks();
+
+  MOCK_METHOD0(MockAddSurfaceDestroyedCallback, void());
+  void AddSurfaceDestroyedCallback(
+      AndroidOverlayConfig::DestroyedCB cb) override;
 
   // Send callbacks.
   void OnOverlayReady();

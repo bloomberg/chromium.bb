@@ -52,4 +52,10 @@ void MockAndroidOverlay::OnPowerEfficientState(bool state) {
   config_->power_cb.Run(this, state);
 }
 
+void MockAndroidOverlay::AddSurfaceDestroyedCallback(
+    AndroidOverlayConfig::DestroyedCB cb) {
+  MockAddSurfaceDestroyedCallback();
+  this->AndroidOverlay::AddSurfaceDestroyedCallback(std::move(cb));
+}
+
 }  // namespace media
