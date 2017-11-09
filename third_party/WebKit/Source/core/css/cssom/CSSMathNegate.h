@@ -18,7 +18,9 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
  public:
   // The constructor defined in the IDL.
   static CSSMathNegate* Create(const CSSNumberish& arg) {
-    return new CSSMathNegate(CSSNumericValue::FromNumberish(arg));
+    // TODO(crbug.com/776173): Implement negate typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathNegate(CSSNumericValue::FromNumberish(arg), type);
   }
 
   String getOperator() const final { return "negate"; }
@@ -37,8 +39,8 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   }
 
  private:
-  explicit CSSMathNegate(CSSNumericValue* value)
-      : CSSMathValue(), value_(value) {}
+  CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
+      : CSSMathValue(type), value_(value) {}
 
   Member<CSSNumericValue> value_;
 };

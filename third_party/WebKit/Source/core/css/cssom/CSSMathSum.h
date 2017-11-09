@@ -25,7 +25,9 @@ class CORE_EXPORT CSSMathSum final : public CSSMathValue {
       return nullptr;
     }
 
-    return new CSSMathSum(args);
+    // TODO(crbug.com/776173): Implement add typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathSum(args, type);
   }
 
   String getOperator() const final { return "sum"; }
@@ -34,7 +36,8 @@ class CORE_EXPORT CSSMathSum final : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kSumType; }
 
  private:
-  explicit CSSMathSum(const HeapVector<CSSNumberish>&) : CSSMathValue() {}
+  CSSMathSum(const HeapVector<CSSNumberish>&, const CSSNumericValueType& type)
+      : CSSMathValue(type) {}
 };
 
 }  // namespace blink

@@ -25,7 +25,9 @@ class CORE_EXPORT CSSMathProduct : public CSSMathValue {
       return nullptr;
     }
 
-    return new CSSMathProduct(args);
+    // TODO(crbug.com/776173): Implement multiply typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathProduct(args, type);
   }
 
   String getOperator() const final { return "product"; }
@@ -34,7 +36,9 @@ class CORE_EXPORT CSSMathProduct : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kProductType; }
 
  private:
-  explicit CSSMathProduct(const HeapVector<CSSNumberish>&) : CSSMathValue() {}
+  CSSMathProduct(const HeapVector<CSSNumberish>&,
+                 const CSSNumericValueType& type)
+      : CSSMathValue(type) {}
 };
 
 }  // namespace blink

@@ -180,4 +180,34 @@ TEST(CSSUnitValueTest, QuarterMillimeterToOtherUnit) {
       kEpsilon);
 }
 
+using UnitType = CSSPrimitiveValue::UnitType;
+using BaseType = CSSNumericValueType::BaseType;
+
+class CSSUnitValueTypeTest
+    : public ::testing::TestWithParam<std::pair<UnitType, BaseType>> {};
+
+TEST_P(CSSUnitValueTypeTest, TypeInitializesCorrectly) {
+  const CSSUnitValue* value = CSSUnitValue::Create(0, GetParam().first);
+  const auto& type = value->Type();
+  for (unsigned i = 0; i < CSSNumericValueType::kNumBaseTypes; i++) {
+    const auto base_type = static_cast<CSSNumericValueType::BaseType>(i);
+    EXPECT_FALSE(type.HasPercentHint());
+    if (base_type == GetParam().second)
+      EXPECT_EQ(type.GetEntry(base_type), 1);
+    else
+      EXPECT_EQ(type.GetEntry(base_type), 0);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    CanonicalUnits,
+    CSSUnitValueTypeTest,
+    ::testing::Values(
+        std::make_pair(UnitType::kPixels, BaseType::kLength),
+        std::make_pair(UnitType::kSeconds, BaseType::kTime),
+        std::make_pair(UnitType::kDegrees, BaseType::kAngle),
+        std::make_pair(UnitType::kHertz, BaseType::kFrequency),
+        std::make_pair(UnitType::kDotsPerInch, BaseType::kResolution),
+        std::make_pair(UnitType::kPercentage, BaseType::kPercent)));
+
 }  // namespace blink

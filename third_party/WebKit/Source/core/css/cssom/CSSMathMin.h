@@ -25,7 +25,9 @@ class CORE_EXPORT CSSMathMin : public CSSMathValue {
       return nullptr;
     }
 
-    return new CSSMathMin(args);
+    // TODO(crbug.com/776173): Implement add typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathMin(args, type);
   }
 
   String getOperator() const final { return "min"; }
@@ -34,7 +36,8 @@ class CORE_EXPORT CSSMathMin : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kMinType; }
 
  private:
-  explicit CSSMathMin(const HeapVector<CSSNumberish>&) : CSSMathValue() {}
+  CSSMathMin(const HeapVector<CSSNumberish>&, const CSSNumericValueType& type)
+      : CSSMathValue(type) {}
 };
 
 }  // namespace blink

@@ -48,9 +48,10 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   const CSSValue* ToCSSValue() const final;
 
  private:
-
   CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
-      : CSSNumericValue(), value_(value), unit_(unit) {}
+      : CSSNumericValue(CSSNumericValueType(unit)),
+        value_(value),
+        unit_(unit) {}
 
   double ConvertFixedLength(CSSPrimitiveValue::UnitType) const;
   double ConvertAngle(CSSPrimitiveValue::UnitType) const;

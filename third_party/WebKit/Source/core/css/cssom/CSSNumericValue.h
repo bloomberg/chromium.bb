@@ -8,6 +8,7 @@
 #include "bindings/core/v8/double_or_css_numeric_value.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSNumericValueType.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
@@ -55,11 +56,15 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) const = 0;
   virtual bool IsCalculated() const = 0;
 
+  const CSSNumericValueType& Type() const { return type_; }
+
  protected:
   static bool IsValidUnit(CSSPrimitiveValue::UnitType);
   static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
 
-  CSSNumericValue() {}
+  CSSNumericValue(const CSSNumericValueType& type) : type_(type) {}
+
+  CSSNumericValueType type_;
 };
 
 }  // namespace blink
