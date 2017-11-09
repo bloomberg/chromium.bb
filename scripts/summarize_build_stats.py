@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime
 import itertools
 import numpy
-import operator
 import re
 import sys
 
@@ -310,11 +309,6 @@ class CLStatsEngine(object):
           for x in blames:
             patch_blame_counts[x] = patch_blame_counts.get(x, 0) + 1
 
-    patch_reason_html = ''
-    for k, v in reversed(sorted(patch_reason_counts.iteritems(),
-                                key=operator.itemgetter(1))):
-      patch_reason_html += '<tr><td>%s</td><td>%d</td></tr>\n' % (k, v)
-
     good_patch_count = len(self.claction_history.GetSubmittedPatches(False))
     false_rejection_count = {}
     bad_cl_candidates = {}
@@ -409,7 +403,6 @@ class CLStatsEngine(object):
         'false_rejection_cq': false_rejection_count[constants.CQ],
         'build_blame_counts': build_blame_counts,
         'patch_blame_counts': patch_blame_counts,
-        'patch_reason_html': patch_reason_html,
     }
 
     s = summary
@@ -643,11 +636,6 @@ The probability of a good patch being incorrectly rejected by the CQ or Pre-CQ i
 
 
 </p>
-
-<h2>Top reasons that good changes were rejected</h2>
-<table>
-{patch_reason_html}
-</table>
 
 <h2>Which issues or CLs caused the most false rejections this week?</h2>
 <i>Note: test flake may be caused by flake in the test itself, or flake in the product.</i><br>
