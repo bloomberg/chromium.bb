@@ -112,6 +112,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                 UserGestureStatus) override;
   void Navigate(const FrameLoadRequest&) override;
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
+  void AddResourceTiming(const ResourceTimingInfo&) override;
   void Detach(FrameDetachType) override;
   bool ShouldClose() override;
   SecurityContext* GetSecurityContext() const override;

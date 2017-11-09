@@ -32,6 +32,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
                 UserGestureStatus) override;
   void Navigate(const FrameLoadRequest& passed_request) override;
   void Reload(FrameLoadType, ClientRedirectPolicy) override;
+  void AddResourceTiming(const ResourceTimingInfo&) override;
   void Detach(FrameDetachType) override;
   RemoteSecurityContext* GetSecurityContext() const override;
   void PrintNavigationErrorMessage(const Frame&, const char* reason) override {}

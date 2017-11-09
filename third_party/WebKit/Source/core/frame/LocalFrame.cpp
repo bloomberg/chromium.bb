@@ -79,6 +79,7 @@
 #include "core/plugins/PluginView.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
@@ -263,6 +264,11 @@ void LocalFrame::Reload(FrameLoadType load_type,
     DCHECK_EQ(kFrameLoadTypeReload, load_type);
     navigation_scheduler_->ScheduleReload();
   }
+}
+
+void LocalFrame::AddResourceTiming(const ResourceTimingInfo& info) {
+  DCHECK(IsAttached());
+  DOMWindowPerformance::performance(*DomWindow())->AddResourceTiming(info);
 }
 
 void LocalFrame::Detach(FrameDetachType type) {

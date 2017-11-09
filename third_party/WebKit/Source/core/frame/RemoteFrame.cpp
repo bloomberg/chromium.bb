@@ -18,6 +18,7 @@
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/plugins/PluginScriptForbiddenScope.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
@@ -77,6 +78,11 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request) {
 void RemoteFrame::Reload(FrameLoadType frame_load_type,
                          ClientRedirectPolicy client_redirect_policy) {
   Client()->Reload(frame_load_type, client_redirect_policy);
+}
+
+void RemoteFrame::AddResourceTiming(const ResourceTimingInfo& info) {
+  DCHECK(info.IsMainResource());
+  // TODO(dcheng): Perform origin check, filter out fields, and forward via IPC.
 }
 
 void RemoteFrame::Detach(FrameDetachType type) {
