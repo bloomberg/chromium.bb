@@ -47,7 +47,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
                          const base::Optional<net::SSLInfo>& ssl_info,
                          mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const content::ResourceResponseHead& head) override;
+                         const ResourceResponseHead& head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
@@ -56,8 +56,8 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const content::ResourceRequestCompletionStatus&
-                  completion_status) override;
+  void OnComplete(
+      const ResourceRequestCompletionStatus& completion_status) override;
 
   // Sets the URL chain when the download is intercepted from navigation.
   void SetURLChain(std::vector<GURL> url_chain);
@@ -85,6 +85,10 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   net::CertStatus cert_status_;
   bool has_strong_validators_;
   GURL origin_;
+  bool is_partial_request_;
+
+  // The abort reason if this class decides to block the download.
+  DownloadInterruptReason abort_reason_;
 
   // Mojo interface ptr to send the completion status to the download sink.
   mojom::DownloadStreamClientPtr client_ptr_;
