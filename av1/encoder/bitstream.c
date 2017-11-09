@@ -1212,7 +1212,12 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
   }
 
-  if (mbmi->uv_mode == UV_DC_PRED) {
+  const int uv_dc_pred =
+#if CONFIG_MONO_VIDEO
+      !cm->seq_params.monochrome &&
+#endif
+      mbmi->uv_mode == UV_DC_PRED;
+  if (uv_dc_pred) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
 #if CONFIG_NEW_MULTISYMBOL
@@ -2007,7 +2012,8 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
                  cm->mi_rows, cm->mi_cols);
 
-  for (plane = 0; plane <= 1; ++plane) {
+  const int num_planes = av1_num_planes(cm);
+  for (plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
     if (palette_size_plane > 0) {
@@ -2030,7 +2036,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if !CONFIG_LV_MAP
     assert(*tok < tok_end);
 #endif
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    for (plane = 0; plane < num_planes; ++plane) {
       if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y)) {
@@ -2457,7 +2463,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     }
   }
 #if CONFIG_LOOP_RESTORATION
-  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
@@ -2526,8 +2532,13 @@ static void encode_restoration_mode(AV1_COMMON *cm,
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+  int all_none = 1, chroma_none = 1;
+  for (int p = 0; p < av1_num_planes(cm); ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
+    if (rsi->frame_restoration_type != RESTORE_NONE) {
+      all_none = 0;
+      chroma_none &= p == 0;
+    }
     switch (rsi->frame_restoration_type) {
       case RESTORE_NONE:
         aom_wb_write_bit(wb, 0);
@@ -2548,9 +2559,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       default: assert(0);
     }
   }
-  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+  if (!all_none) {
     RestorationInfo *rsi = &cm->rst_info[0];
     const int qsize = RESTORATION_TILESIZE_MAX >> 2;
     const int hsize = RESTORATION_TILESIZE_MAX >> 1;
@@ -2559,23 +2568,25 @@ static void encode_restoration_mode(AV1_COMMON *cm,
       aom_wb_write_bit(wb, rsi->restoration_unit_size != hsize);
     }
   }
-  int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
-  if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-            cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
-    aom_wb_write_bit(wb,
-                     cm->rst_info[1].restoration_unit_size !=
-                         cm->rst_info[0].restoration_unit_size);
-    assert(cm->rst_info[1].restoration_unit_size ==
-               cm->rst_info[0].restoration_unit_size ||
-           cm->rst_info[1].restoration_unit_size ==
-               (cm->rst_info[0].restoration_unit_size >> s));
-    assert(cm->rst_info[2].restoration_unit_size ==
-           cm->rst_info[1].restoration_unit_size);
-  } else if (!s) {
-    assert(cm->rst_info[1].restoration_unit_size ==
-           cm->rst_info[0].restoration_unit_size);
-    assert(cm->rst_info[2].restoration_unit_size ==
-           cm->rst_info[1].restoration_unit_size);
+
+  if (av1_num_planes(cm) > 1) {
+    int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
+    if (s && !chroma_none) {
+      aom_wb_write_bit(wb,
+                       cm->rst_info[1].restoration_unit_size !=
+                           cm->rst_info[0].restoration_unit_size);
+      assert(cm->rst_info[1].restoration_unit_size ==
+                 cm->rst_info[0].restoration_unit_size ||
+             cm->rst_info[1].restoration_unit_size ==
+                 (cm->rst_info[0].restoration_unit_size >> s));
+      assert(cm->rst_info[2].restoration_unit_size ==
+             cm->rst_info[1].restoration_unit_size);
+    } else if (!s) {
+      assert(cm->rst_info[1].restoration_unit_size ==
+             cm->rst_info[0].restoration_unit_size);
+      assert(cm->rst_info[2].restoration_unit_size ==
+             cm->rst_info[1].restoration_unit_size);
+    }
   }
 }
 
@@ -3658,7 +3669,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   }
 
 #if CONFIG_MONO_VIDEO
-  seq_params->monochrome = cm->monochrome;
   aom_wb_write_bit(wb, seq_params->monochrome);
 #endif  // CONFIG_MONO_VIDEO
 }

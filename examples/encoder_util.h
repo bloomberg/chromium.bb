@@ -31,6 +31,6 @@ void aom_find_mismatch(const aom_image_t *const img1,
 
 // Returns 1 if the two images match.
 int aom_compare_img(const aom_image_t *const img1,
-                    const aom_image_t *const img2);
+                    const aom_image_t *const img2, int num_planes);
 
 #endif  // EXAMPLES_ENCODER_UTIL_H_

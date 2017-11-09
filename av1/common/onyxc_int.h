@@ -483,10 +483,6 @@ typedef struct AV1Common {
   unsigned int single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_MONO_VIDEO
-  int monochrome;
-#endif  // CONFIG_MONO_VIDEO
-
 #if CONFIG_DEPENDENT_HORZTILES
   int dependent_horz_tiles;
   int tile_group_start_row[MAX_TILE_ROWS][MAX_TILE_COLS];
@@ -1128,6 +1124,15 @@ static INLINE int max_intra_block_height(const MACROBLOCKD *xd,
   return ALIGN_POWER_OF_TWO(max_blocks_high, tx_size_high_log2[tx_size]);
 }
 #endif  // CONFIG_CFL
+
+static INLINE int av1_num_planes(const AV1_COMMON *cm) {
+#if CONFIG_MONO_VIDEO
+  return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
+#else
+  (void)cm;
+  return MAX_MB_PLANE;
+#endif
+}
 
 static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           int mi_col_start, int mi_col_end) {

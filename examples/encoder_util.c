@@ -102,12 +102,11 @@ void aom_find_mismatch(const aom_image_t *const img1,
 }
 
 int aom_compare_img(const aom_image_t *const img1,
-                    const aom_image_t *const img2) {
+                    const aom_image_t *const img2, int num_planes) {
   uint32_t l_w = img1->d_w;
   uint32_t c_w = (img1->d_w + img1->x_chroma_shift) >> img1->x_chroma_shift;
   const uint32_t c_h =
       (img1->d_h + img1->y_chroma_shift) >> img1->y_chroma_shift;
-  uint32_t i;
   int match = 1;
 
   match &= (img1->fmt == img2->fmt);
@@ -120,20 +119,16 @@ int aom_compare_img(const aom_image_t *const img1,
   }
 #endif
 
-  for (i = 0; i < img1->d_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_Y] + i * img1->stride[AOM_PLANE_Y],
-                     img2->planes[AOM_PLANE_Y] + i * img2->stride[AOM_PLANE_Y],
-                     l_w) == 0);
+  for (int plane = 0; plane < num_planes; ++plane) {
+    uint32_t height = plane ? c_h : img1->d_h;
+    uint32_t width = plane ? c_w : l_w;
 
-  for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_U] + i * img1->stride[AOM_PLANE_U],
-                     img2->planes[AOM_PLANE_U] + i * img2->stride[AOM_PLANE_U],
-                     c_w) == 0);
-
-  for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[AOM_PLANE_V] + i * img1->stride[AOM_PLANE_V],
-                     img2->planes[AOM_PLANE_V] + i * img2->stride[AOM_PLANE_V],
-                     c_w) == 0);
+    for (uint32_t i = 0; i < height; ++i) {
+      match &=
+          (memcmp(img1->planes[plane] + i * img1->stride[plane],
+                  img2->planes[plane] + i * img2->stride[plane], width) == 0);
+    }
+  }
 
   return match;
 }

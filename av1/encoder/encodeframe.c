@@ -3608,7 +3608,8 @@ void av1_init_tile_data(AV1_COMP *cpi) {
 
       cpi->tile_tok[tile_row][tile_col] = pre_tok + tile_tok;
       pre_tok = cpi->tile_tok[tile_row][tile_col];
-      tile_tok = allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2);
+      tile_tok = allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2,
+                                  av1_num_planes(cm));
 
 #if CONFIG_EXT_TILE
       tile_data->allow_update_cdf = !cm->large_scale_tile;
@@ -3674,7 +3675,8 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   cpi->tok_count[tile_row][tile_col] =
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
   assert(cpi->tok_count[tile_row][tile_col] <=
-         allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2));
+         allocated_tokens(*tile_info, cm->mib_size_log2 + MI_SIZE_LOG2,
+                          av1_num_planes(cm)));
 }
 
 static void encode_tiles(AV1_COMP *cpi) {
@@ -4824,14 +4826,14 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
   const BLOCK_SIZE block_size = bsize;
+  const int num_planes = av1_num_planes(cm);
 
   if (!is_inter) {
 #if CONFIG_CFL
     xd->cfl->store_y = 1;
 #endif  // CONFIG_CFL
-    int plane;
     mbmi->skip = 1;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       av1_encode_intra_block_plane((AV1_COMMON *)cm, x, block_size, plane, 1,
                                    mi_row, mi_col);
     }
@@ -4850,7 +4852,7 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     }
 
     if (bsize >= BLOCK_8X8) {
-      for (plane = 0; plane <= 1; ++plane) {
+      for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane] > 0) {
           if (!dry_run)
             av1_tokenize_color_map(x, plane, 0, t, bsize, mbmi->tx_size,

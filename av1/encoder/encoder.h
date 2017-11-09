@@ -719,7 +719,7 @@ static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
 }
 
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
-                                           int sb_size_log2) {
+                                           int sb_size_log2, int num_planes) {
   // Calculate the maximum number of max superblocks in the image.
   const int shift = sb_size_log2 - 4;
   const int sb_size = 1 << sb_size_log2;
@@ -727,10 +727,11 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
   const int sb_rows = ALIGN_POWER_OF_TWO(mb_rows, shift) >> shift;
   const int sb_cols = ALIGN_POWER_OF_TWO(mb_cols, shift) >> shift;
 
-  // For transform coefficients, assume 3 planes with no subsampling. We assume
+  // For transform coefficients, assume planes with no subsampling. We assume
   // up to 1 token per pixel, and then allow a head room of 1 EOSB token per
   // 4x4 block per plane, plus EOSB_TOKEN per plane.
-  const int sb_coeff_toks = 3 * (sb_size_square + (sb_size_square / 16) + 1);
+  const int sb_coeff_toks =
+      num_planes * (sb_size_square + (sb_size_square / 16) + 1);
 
   // For palette coefficients, there can be at most one palette for each 8x8
   // block. If w, h are the width and height of the block, the palette has at
@@ -743,11 +744,12 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols,
 
 // Get the allocated token size for a tile. It does the same calculation as in
 // the frame token allocation.
-static INLINE unsigned int allocated_tokens(TileInfo tile, int sb_size_log2) {
+static INLINE unsigned int allocated_tokens(TileInfo tile, int sb_size_log2,
+                                            int num_planes) {
   int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 2) >> 2;
   int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 2) >> 2;
 
-  return get_token_alloc(tile_mb_rows, tile_mb_cols, sb_size_log2);
+  return get_token_alloc(tile_mb_rows, tile_mb_cols, sb_size_log2, num_planes);
 }
 
 #if CONFIG_TEMPMV_SIGNALING

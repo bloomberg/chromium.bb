@@ -1682,7 +1682,7 @@ static float usec_to_fps(uint64_t usec, unsigned int frames) {
 }
 
 static void test_decode(struct stream_state *stream,
-                        enum TestDecodeFatality fatal) {
+                        enum TestDecodeFatality fatal, int is_mono) {
   aom_image_t enc_img, dec_img;
 
   if (stream->mismatch_seen) return;
@@ -1714,7 +1714,7 @@ static void test_decode(struct stream_state *stream,
   ctx_exit_on_error(&stream->encoder, "Failed to get encoder reference frame");
   ctx_exit_on_error(&stream->decoder, "Failed to get decoder reference frame");
 
-  if (!aom_compare_img(&enc_img, &dec_img)) {
+  if (!aom_compare_img(&enc_img, &dec_img, is_mono ? 1 : 3)) {
     int y[4], u[4], v[4];
 #if CONFIG_HIGHBITDEPTH
     if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
@@ -2132,7 +2132,8 @@ int main(int argc, const char **argv_) {
 
         if (got_data && global.test_decode != TEST_DECODE_OFF) {
           FOREACH_STREAM(stream, streams) {
-            test_decode(stream, global.test_decode);
+            test_decode(stream, global.test_decode,
+                        stream->config.cfg.monochrome);
           }
         }
       }

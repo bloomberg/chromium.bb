@@ -486,8 +486,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #else
       const int current_qindex = xd->current_qindex;
 #endif  // CONFIG_EXT_DELTA_Q
-      int j;
-      for (j = 0; j < MAX_MB_PLANE; ++j) {
+      for (int j = 0; j < av1_num_planes(cm); ++j) {
         const int dc_delta_q =
             j == 0 ? cm->y_dc_delta_q
                    : (j == 1 ? cm->u_dc_delta_q : cm->v_dc_delta_q);
@@ -505,14 +504,13 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize);
 
   if (!is_inter_block(mbmi)) {
-    int plane;
-
-    for (plane = 0; plane <= 1; ++plane) {
+    const int num_planes = av1_num_planes(cm);
+    for (int plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
 
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    for (int plane = 0; plane < num_planes; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
       const int stepr = tx_size_high_unit[tx_size];
@@ -593,9 +591,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
     // Reconstruction
     if (!mbmi->skip) {
       int eobtotal = 0;
-      int plane;
-
-      for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+      for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
         const BLOCK_SIZE plane_bsize =
             AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
@@ -1008,7 +1004,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     }
   }
 #if CONFIG_LOOP_RESTORATION
-  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+  for (int plane = 0; plane < av1_num_planes(cm); ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
                                            &rcol0, &rcol1, &rrow0, &rrow1,
@@ -1131,7 +1127,8 @@ static void decode_restoration_mode(AV1_COMMON *cm,
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
 #endif  // CONFIG_INTRABC
-  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+  int all_none = 1, chroma_none = 1;
+  for (int p = 0; p < av1_num_planes(cm); ++p) {
     RestorationInfo *rsi = &cm->rst_info[p];
     if (aom_rb_read_bit(rb)) {
       rsi->frame_restoration_type =
@@ -1140,10 +1137,12 @@ static void decode_restoration_mode(AV1_COMMON *cm,
       rsi->frame_restoration_type =
           aom_rb_read_bit(rb) ? RESTORE_SWITCHABLE : RESTORE_NONE;
     }
+    if (rsi->frame_restoration_type != RESTORE_NONE) {
+      all_none = 0;
+      chroma_none &= p == 0;
+    }
   }
-  if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-      cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
+  if (!all_none) {
     const int qsize = RESTORATION_TILESIZE_MAX >> 2;
     for (int p = 0; p < MAX_MB_PLANE; ++p)
       cm->rst_info[p].restoration_unit_size = qsize;
@@ -1159,16 +1158,18 @@ static void decode_restoration_mode(AV1_COMMON *cm,
       cm->rst_info[p].restoration_unit_size = size;
   }
 
-  int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
-  if (s && (cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
-            cm->rst_info[2].frame_restoration_type != RESTORE_NONE)) {
-    cm->rst_info[1].restoration_unit_size =
-        cm->rst_info[0].restoration_unit_size >> (aom_rb_read_bit(rb) * s);
-  } else {
-    cm->rst_info[1].restoration_unit_size =
-        cm->rst_info[0].restoration_unit_size;
+  if (av1_num_planes(cm) > 1) {
+    int s = AOMMIN(cm->subsampling_x, cm->subsampling_y);
+    if (s && !chroma_none) {
+      cm->rst_info[1].restoration_unit_size =
+          cm->rst_info[0].restoration_unit_size >> (aom_rb_read_bit(rb) * s);
+    } else {
+      cm->rst_info[1].restoration_unit_size =
+          cm->rst_info[0].restoration_unit_size;
+    }
+    cm->rst_info[2].restoration_unit_size =
+        cm->rst_info[1].restoration_unit_size;
   }
-  cm->rst_info[2].restoration_unit_size = cm->rst_info[1].restoration_unit_size;
 }
 
 static void read_wiener_filter(int wiener_win, WienerInfo *wiener_info,

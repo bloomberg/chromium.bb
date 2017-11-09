@@ -845,8 +845,8 @@ static void alloc_compressor_data(AV1_COMP *cpi) {
   aom_free(cpi->tile_tok[0][0]);
 
   {
-    unsigned int tokens =
-        get_token_alloc(cm->mb_rows, cm->mb_cols, MAX_SB_SIZE_LOG2);
+    unsigned int tokens = get_token_alloc(cm->mb_rows, cm->mb_cols,
+                                          MAX_SB_SIZE_LOG2, av1_num_planes(cm));
     CHECK_MEM_ERROR(cm, cpi->tile_tok[0][0],
                     aom_calloc(tokens, sizeof(*cpi->tile_tok[0][0])));
   }
@@ -5499,7 +5499,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MONO_VIDEO
-  cm->monochrome = oxcf->monochrome;
+  cm->seq_params.monochrome = oxcf->monochrome;
 #endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_XIPHRC
