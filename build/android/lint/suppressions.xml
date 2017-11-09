@@ -126,6 +126,7 @@ Still reading?
   </issue>
   <issue id="IconLauncherShape" severity="Error">
     <ignore regexp="chromecast/internal"/>
+    <ignore regexp="chrome/android/webapk/shell_apk/res/mipmap-mdpi/ic_launcher_background.png"/>
   </issue>
   <issue id="IconLocation">
     <ignore regexp="chromecast/internal"/>
