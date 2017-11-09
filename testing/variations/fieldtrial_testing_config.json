@@ -4149,6 +4149,24 @@
             ]
         }
     ],
+    "WebRtcUseEchoCanceller3": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "WebRtcUseEchoCanceller3",
+                    "enable_features": [
+                        "WebRtcUseEchoCanceller3"
+                    ]
+                }
+            ]
+        }
+    ],
     "WheelScrollLatchingAndAsyncWheelEvents": [
         {
             "platforms": [
