@@ -21,6 +21,7 @@
 #include "test/register_state_check.h"
 
 #include "av1/common/mv.h"
+#include "av1/common/common_data.h"
 
 namespace libaom_test {
 

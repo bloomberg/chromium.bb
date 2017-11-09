@@ -132,48 +132,76 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_model(mat, &alpha, &beta, &gamma, &delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+        for (int ii = 0; ii < 2; ++ii) {
+          for (int jj = 0; jj < 5; ++jj) {
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          // Prepare two copies of the destination
-          for (j = 0; j < out_w * out_h; ++j) {
-            int32_t v = rnd_.Rand16();
-            dsta[j] = v;
-            dstb[j] = v;
-          }
-          conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
-        } else {
-          conv_params = get_conv_params(0, 0, 0);
-        }
+            if (use_no_round) {
+              // Prepare two copies of the destination
+              for (j = 0; j < out_w * out_h; ++j) {
+                int32_t v = rnd_.Rand16();
+                dsta[j] = v;
+                dstb[j] = v;
+              }
+              conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
+            } else {
+              conv_params = get_conv_params(0, 0, 0);
+            }
 #endif
-        av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w,
-                          out_h, out_w, sub_x, sub_y, &conv_params, alpha, beta,
-                          gamma, delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            if (jj >= 4) {
+              conv_params.fwd_offset = -1;
+              conv_params.bck_offset = -1;
+            } else {
+              conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
+              conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+            }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+
+            av1_warp_affine_c(mat, input, w, h, stride, output, 32, 32, out_w,
+                              out_h, out_w, sub_x, sub_y, &conv_params, alpha,
+                              beta, gamma, delta);
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
-        }
+            if (use_no_round) {
+              conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
+            }
 #endif
-        test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
-                  out_w, sub_x, sub_y, &conv_params, alpha, beta, gamma, delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            if (jj >= 4) {
+              conv_params.fwd_offset = -1;
+              conv_params.bck_offset = -1;
+            } else {
+              conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
+              conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+            }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
+                      out_w, sub_x, sub_y, &conv_params, alpha, beta, gamma,
+                      delta);
 
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          for (j = 0; j < out_w * out_h; ++j)
-            ASSERT_EQ(dsta[j], dstb[j])
-                << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-                << ", " << (j / out_w) << ") on iteration " << i;
-        } else {
-          for (j = 0; j < out_w * out_h; ++j)
-            ASSERT_EQ(output[j], output2[j])
-                << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-                << ", " << (j / out_w) << ") on iteration " << i;
-        }
+            if (use_no_round) {
+              for (j = 0; j < out_w * out_h; ++j)
+                ASSERT_EQ(dsta[j], dstb[j])
+                    << "Pixel mismatch at index " << j << " = (" << (j % out_w)
+                    << ", " << (j / out_w) << ") on iteration " << i;
+            } else {
+              for (j = 0; j < out_w * out_h; ++j)
+                ASSERT_EQ(output[j], output2[j])
+                    << "Pixel mismatch at index " << j << " = (" << (j % out_w)
+                    << ", " << (j / out_w) << ") on iteration " << i;
+            }
 #else
         for (j = 0; j < out_w * out_h; ++j)
           ASSERT_EQ(output[j], output2[j])
               << "Pixel mismatch at index " << j << " = (" << (j % out_w)
               << ", " << (j / out_w) << ") on iteration " << i;
 #endif
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+          }
+        }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
       }
   }
   delete[] input_;
@@ -313,51 +341,77 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
     for (sub_x = 0; sub_x < 2; ++sub_x)
       for (sub_y = 0; sub_y < 2; ++sub_y) {
         generate_model(mat, &alpha, &beta, &gamma, &delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+        for (int ii = 0; ii < 2; ++ii) {
+          for (int jj = 0; jj < 5; ++jj) {
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          // Prepare two copies of the destination
-          for (j = 0; j < out_w * out_h; ++j) {
-            int32_t v = rnd_.Rand16();
-            dsta[j] = v;
-            dstb[j] = v;
-          }
-          conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
-        } else {
-          conv_params = get_conv_params(0, 0, 0);
-        }
+            if (use_no_round) {
+              // Prepare two copies of the destination
+              for (j = 0; j < out_w * out_h; ++j) {
+                int32_t v = rnd_.Rand16();
+                dsta[j] = v;
+                dstb[j] = v;
+              }
+              conv_params = get_conv_params_no_round(0, 0, 0, dsta, out_w);
+            } else {
+              conv_params = get_conv_params(0, 0, 0);
+            }
 #endif
-        av1_highbd_warp_affine_c(mat, input, w, h, stride, output, 32, 32,
-                                 out_w, out_h, out_w, sub_x, sub_y, bd,
-                                 &conv_params, alpha, beta, gamma, delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            if (jj >= 4) {
+              conv_params.fwd_offset = -1;
+              conv_params.bck_offset = -1;
+            } else {
+              conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
+              conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+            }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            av1_highbd_warp_affine_c(mat, input, w, h, stride, output, 32, 32,
+                                     out_w, out_h, out_w, sub_x, sub_y, bd,
+                                     &conv_params, alpha, beta, gamma, delta);
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          // TODO(angiebird): Change this to test_impl once we have SIMD
-          // implementation
-          conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
-        }
+            if (use_no_round) {
+              // TODO(angiebird): Change this to test_impl once we have SIMD
+              // implementation
+              conv_params = get_conv_params_no_round(0, 0, 0, dstb, out_w);
+            }
 #endif
-        test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
-                  out_w, sub_x, sub_y, bd, &conv_params, alpha, beta, gamma,
-                  delta);
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            if (jj >= 4) {
+              conv_params.fwd_offset = -1;
+              conv_params.bck_offset = -1;
+            } else {
+              conv_params.fwd_offset = quant_dist_lookup_table[ii][jj][0];
+              conv_params.bck_offset = quant_dist_lookup_table[ii][jj][1];
+            }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+            test_impl(mat, input, w, h, stride, output2, 32, 32, out_w, out_h,
+                      out_w, sub_x, sub_y, bd, &conv_params, alpha, beta, gamma,
+                      delta);
 
 #if CONFIG_CONVOLVE_ROUND
-        if (use_no_round) {
-          for (j = 0; j < out_w * out_h; ++j)
-            ASSERT_EQ(dsta[j], dstb[j])
-                << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-                << ", " << (j / out_w) << ") on iteration " << i;
-        } else {
-          for (j = 0; j < out_w * out_h; ++j)
-            ASSERT_EQ(output[j], output2[j])
-                << "Pixel mismatch at index " << j << " = (" << (j % out_w)
-                << ", " << (j / out_w) << ") on iteration " << i;
-        }
+            if (use_no_round) {
+              for (j = 0; j < out_w * out_h; ++j)
+                ASSERT_EQ(dsta[j], dstb[j])
+                    << "Pixel mismatch at index " << j << " = (" << (j % out_w)
+                    << ", " << (j / out_w) << ") on iteration " << i;
+            } else {
+              for (j = 0; j < out_w * out_h; ++j)
+                ASSERT_EQ(output[j], output2[j])
+                    << "Pixel mismatch at index " << j << " = (" << (j % out_w)
+                    << ", " << (j / out_w) << ") on iteration " << i;
+            }
 #else
         for (j = 0; j < out_w * out_h; ++j)
           ASSERT_EQ(output[j], output2[j])
               << "Pixel mismatch at index " << j << " = (" << (j % out_w)
               << ", " << (j / out_w) << ") on iteration " << i;
 #endif
+#if CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
+          }
+        }
+#endif  // CONFIG_JNT_COMP && CONFIG_CONVOLVE_ROUND
       }
   }
 
