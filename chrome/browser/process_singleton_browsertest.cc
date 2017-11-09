@@ -32,9 +32,14 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::AnyOf;
+using ::testing::Eq;
 
 namespace {
 
@@ -44,14 +49,17 @@ namespace {
 // base::Bind to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
-  ChromeStarter(base::TimeDelta timeout, const base::FilePath& user_data_dir)
+  ChromeStarter(base::TimeDelta timeout,
+                const base::FilePath& user_data_dir,
+                const base::CommandLine& initial_command_line_for_relaunch)
       : ready_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                      base::WaitableEvent::InitialState::NOT_SIGNALED),
         done_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         process_terminated_(false),
         timeout_(timeout),
-        user_data_dir_(user_data_dir) {}
+        user_data_dir_(user_data_dir),
+        initial_command_line_for_relaunch_(initial_command_line_for_relaunch) {}
 
   // We must reset some data members since we reuse the same ChromeStarter
   // object and start/stop it a few times. We must start fresh! :-)
@@ -64,53 +72,40 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   }
 
   void StartChrome(base::WaitableEvent* start_event, bool first_run) {
-    // TODO(mattm): maybe stuff should be refactored to use
-    // UITest::LaunchBrowserHelper somehow?
-    base::FilePath program;
-    ASSERT_TRUE(PathService::Get(base::FILE_EXE, &program));
-    base::CommandLine command_line(program);
-    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
+    base::CommandLine command_line_for_relaunch(
+        initial_command_line_for_relaunch_.GetProgram());
+    test_launcher_utils::RemoveCommandLineSwitch(
+        initial_command_line_for_relaunch_, switches::kUserDataDir,
+        &command_line_for_relaunch);
+    command_line_for_relaunch.AppendSwitchPath(switches::kUserDataDir,
+                                               user_data_dir_);
 
-    if (first_run)
-      command_line.AppendSwitch(switches::kForceFirstRun);
-    else
-      command_line.AppendSwitch(switches::kNoFirstRun);
-
-    // Add the normal test-mode switches, except for the ones we're adding
-    // ourselves.
-    base::CommandLine standard_switches(base::CommandLine::NO_PROGRAM);
-    test_launcher_utils::PrepareBrowserCommandLineForTests(&standard_switches);
-    const base::CommandLine::SwitchMap& switch_map =
-        standard_switches.GetSwitches();
-    for (base::CommandLine::SwitchMap::const_iterator i = switch_map.begin();
-         i != switch_map.end(); ++i) {
-      const std::string& switch_name = i->first;
-      if (switch_name == switches::kUserDataDir ||
-          switch_name == switches::kForceFirstRun ||
-          switch_name == switches::kNoFirstRun)
-        continue;
-
-      command_line.AppendSwitchNative(switch_name, i->second);
+    if (first_run) {
+      base::CommandLine tmp_command_line = command_line_for_relaunch;
+      test_launcher_utils::RemoveCommandLineSwitch(
+          tmp_command_line, switches::kNoFirstRun, &command_line_for_relaunch);
+      command_line_for_relaunch.AppendSwitch(switches::kForceFirstRun);
     }
 
     // Try to get all threads to launch the app at the same time.
     // So let the test know we are ready.
     ready_event_.Signal();
     // And then wait for the test to tell us to GO!
-    ASSERT_NE(static_cast<base::WaitableEvent*>(NULL), start_event);
+    ASSERT_NE(nullptr, start_event);
     start_event->Wait();
 
     // Here we don't wait for the app to be terminated because one of the
     // process will stay alive while the others will be restarted. If we would
     // wait here, we would never get a handle to the main process...
-    process_ = base::LaunchProcess(command_line, base::LaunchOptions());
+    process_ =
+        base::LaunchProcess(command_line_for_relaunch, base::LaunchOptions());
     ASSERT_TRUE(process_.IsValid());
 
     // We can wait on the handle here, we should get stuck on one and only
     // one process. The test below will take care of killing that process
     // to unstuck us once it confirms there is only one.
-    int exit_code;
-    process_terminated_ = process_.WaitForExitWithTimeout(timeout_, &exit_code);
+    process_terminated_ =
+        process_.WaitForExitWithTimeout(timeout_, &exit_code_);
     // Let the test know we are done.
     done_event_.Signal();
   }
@@ -120,6 +115,8 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   base::WaitableEvent done_event_;
   base::Process process_;
   bool process_terminated_;
+  // Process exit code. Only meaningful if |process_terminated_| is true.
+  int exit_code_;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeStarter>;
@@ -128,6 +125,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
 
   base::TimeDelta timeout_;
   base::FilePath user_data_dir_;
+  base::CommandLine initial_command_line_for_relaunch_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
 };
@@ -145,18 +143,8 @@ class ProcessSingletonTest : public InProcessBrowserTest {
     EXPECT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   }
 
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-    // Start the threads and create the starters.
-    for (size_t i = 0; i < kNbThreads; ++i) {
-      chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
-      ASSERT_TRUE(chrome_starter_threads_[i]->Start());
-      chrome_starters_[i] = new ChromeStarter(
-          TestTimeouts::action_max_timeout(), temp_profile_dir_.GetPath());
-    }
-  }
-
   void TearDown() override {
+    InProcessBrowserTest::TearDown();
     // Stop the threads.
     for (size_t i = 0; i < kNbThreads; ++i)
       chrome_starter_threads_[i]->Stop();
@@ -225,15 +213,27 @@ class ProcessSingletonTest : public InProcessBrowserTest {
   base::ScopedTempDir temp_profile_dir_;
 };
 
-// Disabled on all platforms after code rot due to http://crbug.com/513534.
-// Originally disabled on some platforms due to http://crbug.com/58219.
-IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, DISABLED_StartupRaceCondition) {
-  // We use this to stop the attempts loop on the first failure.
-  bool failed = false;
-  for (size_t attempt = 0; attempt < kNbAttempts && !failed; ++attempt) {
+// ChromeOS hits DCHECKS on ProcessSingleton rendezvous: crbug.com/782487
+#if defined(OS_CHROMEOS)
+#define MAYBE_StartupRaceCondition DISABLED_StartupRaceCondition
+#else
+#define MAYBE_StartupRaceCondition StartupRaceCondition
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
+  // Start the threads and create the starters.
+  for (size_t i = 0; i < kNbThreads; ++i) {
+    chrome_starter_threads_[i] =
+        std::make_unique<base::Thread>("ChromeStarter");
+    ASSERT_TRUE(chrome_starter_threads_[i]->Start());
+    chrome_starters_[i] = base::MakeRefCounted<ChromeStarter>(
+        TestTimeouts::action_max_timeout(), temp_profile_dir_.GetPath(),
+        GetCommandLineForRelaunch());
+  }
+
+  for (size_t attempt = 0; attempt < kNbAttempts && !HasFailure(); ++attempt) {
     SCOPED_TRACE(testing::Message() << "Attempt: " << attempt << ".");
-    // We use a single event to get all threads to do the AppLaunch at the same
-    // time...
+    // We use a single event to get all threads to do the AppLaunch at the
+    // same time...
     threads_waker_.Reset();
 
     // Test both with and without the first-run dialog, since they exercise
@@ -300,11 +300,19 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, DISABLED_StartupRaceCondition) {
       // If the starter is done but has not marked itself as terminated,
       // it is because it timed out of its WaitForExitCodeWithTimeout(). Only
       // the last one standing should be left waiting... So we failed...
-      EXPECT_TRUE(chrome_starters_[starter_index]->process_terminated_ ||
-                  failed) << "There is more than one main process.";
-      if (!chrome_starters_[starter_index]->process_terminated_) {
-        // This will stop the "for kNbAttempts" loop.
-        failed = true;
+      EXPECT_TRUE(chrome_starters_[starter_index]->process_terminated_)
+          << "There is more than one main process.";
+      if (chrome_starters_[starter_index]->process_terminated_) {
+        // Generally PROCESS_NOTIFIED would be the expected exit code. In some
+        // rare cases the ProcessSingleton race can result in PROFILE_IN_USE
+        // exit code, which we also allow, though it would be ideal if that
+        // never happened.
+        // TODO(mattm): investigate why PROFILE_IN_USE occurs sometimes.
+        EXPECT_THAT(
+            chrome_starters_[starter_index]->exit_code_,
+            AnyOf(Eq(chrome::RESULT_CODE_PROFILE_IN_USE),
+                  Eq(chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED)));
+      } else {
         // But we let the last loop turn finish so that we can properly
         // kill all remaining processes. Starting with this one...
         if (chrome_starters_[starter_index]->process_.IsValid()) {

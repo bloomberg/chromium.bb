@@ -15,6 +15,14 @@ bool KillProcesses(const FilePath::StringType& executable_name,
   NamedProcessIterator iter(executable_name, filter);
   while (const ProcessEntry* entry = iter.NextProcessEntry()) {
     Process process = Process::Open(entry->pid());
+    // Sometimes process open fails. This would cause a DCHECK in
+    // process.Terminate(). Maybe the process has killed itself between the
+    // time the process list was enumerated and the time we try to open the
+    // process?
+    if (!process.IsValid()) {
+      result = false;
+      continue;
+    }
     result &= process.Terminate(exit_code, true);
   }
   return result;
