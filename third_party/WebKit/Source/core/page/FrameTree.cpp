@@ -30,7 +30,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/StringBuilder.h"
 

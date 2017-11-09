@@ -31,7 +31,6 @@
 #include "core/editing/serializers/MarkupFormatter.h"
 #include "core/editing/serializers/Serialization.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {

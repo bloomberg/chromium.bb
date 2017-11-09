@@ -8,7 +8,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

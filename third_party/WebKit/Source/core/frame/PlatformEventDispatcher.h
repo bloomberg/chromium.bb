@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 class PlatformEventController;

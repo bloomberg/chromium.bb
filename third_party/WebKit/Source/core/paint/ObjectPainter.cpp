@@ -14,6 +14,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
