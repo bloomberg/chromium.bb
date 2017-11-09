@@ -23,6 +23,15 @@ TEST_F(PdfPrinterHandlerTest, GetFileNameForPrintJobTitle) {
       // TODO(thestig): Fix for https://crbug.com/782041
       // Should be "example.com.pdf", like the regular file save dialog.
       {"example.com", FILE_PATH_LITERAL("example.pdf")},
+      // TODO(thestig): Fix the weird truncation for https://crbug.com/375330
+      {"Baz.com Mail - this is e-mail - what. does it mean",
+       FILE_PATH_LITERAL("Baz.com Mail - this is e-mail - what.pdf")},
+      {"Baz.com Mail - this is email - what. does. it. mean?",
+       FILE_PATH_LITERAL("Baz.com Mail - this is email - what. does. it.pdf")},
+      {"Baz.com Mail - This is email. What does it mean.",
+       FILE_PATH_LITERAL("Baz.com Mail - This is email.pdf")},
+      {"Baz.com Mail - this is email what does it mean",
+       FILE_PATH_LITERAL("Baz.pdf")},
   };
 
   for (const auto& data : kTestData) {
