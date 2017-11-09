@@ -83,6 +83,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       IPC::Channel::Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
       bool create_pipe_now,
       base::WaitableEvent* shutdown_event);
 
@@ -90,6 +91,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
       std::unique_ptr<ChannelFactory> factory,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
       bool create_pipe_now,
       base::WaitableEvent* shutdown_event);
 
@@ -99,6 +101,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   static std::unique_ptr<SyncChannel> Create(
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
       base::WaitableEvent* shutdown_event);
 
   ~SyncChannel() override;
@@ -139,6 +142,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
     SyncContext(
         Listener* listener,
         const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+        const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
         base::WaitableEvent* shutdown_event);
 
     // Adds information about an outgoing sync message to the context so that
@@ -216,6 +220,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   SyncChannel(
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
       base::WaitableEvent* shutdown_event);
 
   void OnDispatchEventSignaled(base::WaitableEvent* event);

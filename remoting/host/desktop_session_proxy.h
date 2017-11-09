@@ -180,6 +180,7 @@ class DesktopSessionProxy
   scoped_refptr<base::SingleThreadTaskRunner> audio_capture_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
   // Points to the audio capturer receiving captured audio packets.
   base::WeakPtr<IpcAudioCapturer> audio_capturer_;

@@ -95,17 +95,20 @@ class IPC_EXPORT ChannelProxy : public Sender {
       const IPC::ChannelHandle& channel_handle,
       Channel::Mode mode,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner);
 
   static std::unique_ptr<ChannelProxy> Create(
       std::unique_ptr<ChannelFactory> factory,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner);
 
   // Constructs a ChannelProxy without initializing it.
   ChannelProxy(
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner);
 
   ~ChannelProxy() override;
 
@@ -244,7 +247,9 @@ class IPC_EXPORT ChannelProxy : public Sender {
                   public Listener {
    public:
     Context(Listener* listener,
-            const scoped_refptr<base::SingleThreadTaskRunner>& ipc_thread);
+            const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+            const scoped_refptr<base::SingleThreadTaskRunner>&
+                listener_task_runner);
     void ClearIPCTaskRunner();
     base::SingleThreadTaskRunner* ipc_task_runner() const {
       return ipc_task_runner_.get();

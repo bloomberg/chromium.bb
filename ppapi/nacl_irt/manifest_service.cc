@@ -74,7 +74,8 @@ ManifestService::ManifestService(
   filter_ = new ManifestMessageFilter(shutdown_event);
   channel_ = IPC::ChannelProxy::Create(handle, IPC::Channel::MODE_SERVER,
                                        NULL,  // Listener
-                                       io_task_runner.get());
+                                       io_task_runner.get(),
+                                       base::ThreadTaskRunnerHandle::Get());
   channel_->AddFilter(filter_.get());
 }
 

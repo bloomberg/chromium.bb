@@ -258,7 +258,8 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
                       mojo::edk::NamedPlatformHandle(startup_channel_name))))
               .release(),
           IPC::Channel::MODE_CLIENT, &listener,
-          service_process.io_task_runner());
+          service_process.io_task_runner(),
+          base::ThreadTaskRunnerHandle::Get());
 
   base::RunLoop().Run();
   if (!Mock::VerifyAndClearExpectations(&server))
@@ -422,7 +423,8 @@ base::Process CloudPrintProxyPolicyStartupTest::Launch(
               mojo::edk::TransportProtocol::kLegacy,
               mojo::edk::CreateServerHandle(startup_channel_handle_)))
           .release(),
-      IPC::Channel::MODE_SERVER, this, IOTaskRunner());
+      IPC::Channel::MODE_SERVER, this, IOTaskRunner(),
+      base::ThreadTaskRunnerHandle::Get());
 
   base::Process process = SpawnChild(name);
   EXPECT_TRUE(process.IsValid());

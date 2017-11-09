@@ -434,6 +434,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
   channel_ =
       IPC::SyncChannel::Create(this, ChildProcess::current()->io_task_runner(),
+                               base::ThreadTaskRunnerHandle::Get(),
                                ChildProcess::current()->GetShutDownEvent());
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   if (!IsInBrowserProcess())

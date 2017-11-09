@@ -350,12 +350,12 @@ base::LazyInstance<base::ThreadLocalPointer<
 SyncChannel::SyncContext::SyncContext(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
     WaitableEvent* shutdown_event)
-    : ChannelProxy::Context(listener, ipc_task_runner),
+    : ChannelProxy::Context(listener, ipc_task_runner, listener_task_runner),
       received_sync_msgs_(ReceivedSyncMsgQueue::AddContext()),
       shutdown_event_(shutdown_event),
-      restrict_dispatch_group_(kRestrictDispatchGroup_None) {
-}
+      restrict_dispatch_group_(kRestrictDispatchGroup_None) {}
 
 void SyncChannel::SyncContext::OnSendDoneEventSignaled(
     base::RunLoop* nested_loop,
@@ -529,10 +529,11 @@ std::unique_ptr<SyncChannel> SyncChannel::Create(
     Channel::Mode mode,
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
     bool create_pipe_now,
     base::WaitableEvent* shutdown_event) {
   std::unique_ptr<SyncChannel> channel =
-      Create(listener, ipc_task_runner, shutdown_event);
+      Create(listener, ipc_task_runner, listener_task_runner, shutdown_event);
   channel->Init(channel_handle, mode, create_pipe_now);
   return channel;
 }
@@ -542,10 +543,11 @@ std::unique_ptr<SyncChannel> SyncChannel::Create(
     std::unique_ptr<ChannelFactory> factory,
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
     bool create_pipe_now,
     base::WaitableEvent* shutdown_event) {
   std::unique_ptr<SyncChannel> channel =
-      Create(listener, ipc_task_runner, shutdown_event);
+      Create(listener, ipc_task_runner, listener_task_runner, shutdown_event);
   channel->Init(std::move(factory), create_pipe_now);
   return channel;
 }
@@ -554,16 +556,21 @@ std::unique_ptr<SyncChannel> SyncChannel::Create(
 std::unique_ptr<SyncChannel> SyncChannel::Create(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
     WaitableEvent* shutdown_event) {
-  return base::WrapUnique(
-      new SyncChannel(listener, ipc_task_runner, shutdown_event));
+  return base::WrapUnique(new SyncChannel(
+      listener, ipc_task_runner, listener_task_runner, shutdown_event));
 }
 
 SyncChannel::SyncChannel(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& listener_task_runner,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(new SyncContext(listener, ipc_task_runner, shutdown_event)),
+    : ChannelProxy(new SyncContext(listener,
+                                   ipc_task_runner,
+                                   listener_task_runner,
+                                   shutdown_event)),
       sync_handle_registry_(mojo::SyncHandleRegistry::current()) {
   // The current (listener) thread must be distinct from the IPC thread, or else
   // sending synchronous messages will deadlock.

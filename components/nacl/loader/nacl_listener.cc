@@ -222,6 +222,7 @@ class FileTokenMessageFilter : public IPC::MessageFilter {
 
 void NaClListener::Listen() {
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
+                                      base::ThreadTaskRunnerHandle::Get(),
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());

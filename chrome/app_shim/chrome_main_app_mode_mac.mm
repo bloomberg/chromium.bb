@@ -228,7 +228,8 @@ void AppShimController::CreateChannelAndSendLaunchApp(
               mojo::edk::CreateClientHandle(
                   mojo::edk::NamedPlatformHandle(socket_path.value())))),
           g_io_thread->task_runner().get()),
-      this, g_io_thread->task_runner().get());
+      this, g_io_thread->task_runner().get(),
+      base::ThreadTaskRunnerHandle::Get());
 
   bool launched_by_chrome = base::CommandLine::ForCurrentProcess()->HasSwitch(
       app_mode::kLaunchedByChromeProcessId);

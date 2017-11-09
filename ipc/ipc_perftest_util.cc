@@ -112,9 +112,9 @@ int MojoPerfTestClient::Run(MojoHandle handle) {
   LockThreadAffinity thread_locker(kSharedCore);
 
   base::RunLoop run_loop;
-  std::unique_ptr<ChannelProxy> channel =
-      IPC::ChannelProxy::Create(handle_.release(), Channel::MODE_CLIENT,
-                                listener_.get(), GetIOThreadTaskRunner());
+  std::unique_ptr<ChannelProxy> channel = IPC::ChannelProxy::Create(
+      handle_.release(), Channel::MODE_CLIENT, listener_.get(),
+      GetIOThreadTaskRunner(), base::ThreadTaskRunnerHandle::Get());
   listener_->Init(channel.get(), run_loop.QuitWhenIdleClosure());
   run_loop.Run();
   return 0;

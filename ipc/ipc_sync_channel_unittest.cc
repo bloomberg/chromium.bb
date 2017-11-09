@@ -176,9 +176,9 @@ class Worker : public Listener, public Sender {
   }
 
   virtual SyncChannel* CreateChannel() {
-    std::unique_ptr<SyncChannel> channel =
-        SyncChannel::Create(TakeChannelHandle(), mode_, this,
-                            ipc_thread_.task_runner(), true, &shutdown_event_);
+    std::unique_ptr<SyncChannel> channel = SyncChannel::Create(
+        TakeChannelHandle(), mode_, this, ipc_thread_.task_runner(),
+        base::ThreadTaskRunnerHandle::Get(), true, &shutdown_event_);
     return channel.release();
   }
 
@@ -366,8 +366,9 @@ class TwoStepServer : public Worker {
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(TakeChannelHandle(), mode(), this,
-                            ipc_thread().task_runner(), create_pipe_now_,
-                            shutdown_event())
+                            ipc_thread().task_runner(),
+                            base::ThreadTaskRunnerHandle::Get(),
+                            create_pipe_now_, shutdown_event())
             .release();
     return channel;
   }
@@ -392,8 +393,9 @@ class TwoStepClient : public Worker {
   SyncChannel* CreateChannel() override {
     SyncChannel* channel =
         SyncChannel::Create(TakeChannelHandle(), mode(), this,
-                            ipc_thread().task_runner(), create_pipe_now_,
-                            shutdown_event())
+                            ipc_thread().task_runner(),
+                            base::ThreadTaskRunnerHandle::Get(),
+                            create_pipe_now_, shutdown_event())
             .release();
     return channel;
   }
@@ -1280,7 +1282,8 @@ class RestrictedDispatchClient : public Worker {
 
     non_restricted_channel_ = SyncChannel::Create(
         non_restricted_channel_handle_.release(), IPC::Channel::MODE_CLIENT,
-        this, ipc_thread().task_runner(), true, shutdown_event());
+        this, ipc_thread().task_runner(), base::ThreadTaskRunnerHandle::Get(),
+        true, shutdown_event());
 
     server_->ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&RestrictedDispatchServer::OnDoPing,
@@ -1686,7 +1689,8 @@ class RestrictedDispatchPipeWorker : public Worker {
     event2_->Wait();
     other_channel_ = SyncChannel::Create(
         other_channel_handle_.release(), IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner(), true, shutdown_event());
+        ipc_thread().task_runner(), base::ThreadTaskRunnerHandle::Get(), true,
+        shutdown_event());
     other_channel_->SetRestrictDispatchChannelGroup(group_);
     if (!is_first()) {
       event1_->Signal();
@@ -1780,7 +1784,8 @@ class ReentrantReplyServer1 : public Worker {
   void Run() override {
     server2_channel_ = SyncChannel::Create(
         other_channel_handle_.release(), IPC::Channel::MODE_CLIENT, this,
-        ipc_thread().task_runner(), true, shutdown_event());
+        ipc_thread().task_runner(), base::ThreadTaskRunnerHandle::Get(), true,
+        shutdown_event());
     server_ready_->Signal();
     Message* msg = new SyncChannelTestMsg_Reentrant1();
     server2_channel_->Send(msg);
