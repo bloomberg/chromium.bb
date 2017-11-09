@@ -43,16 +43,10 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
-  void SetPrefServiceForTest(PrefService* prefs);
-
  private:
   // Observes either the signin screen prefs or active user prefs and loads
   // initial settings.
   void ObservePrefs(PrefService* prefs);
-
-  // Returns |pref_service_for_test_| if not null, otherwise return
-  // SessionController::GetActivePrefService().
-  PrefService* GetActivePrefService() const;
 
   void UpdateLargeCursorFromPref();
   void UpdateHighContrastFromPref();
@@ -63,8 +57,6 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   bool large_cursor_enabled_ = false;
   int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
   bool high_contrast_enabled_ = false;
-
-  PrefService* pref_service_for_test_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityController);
 };
