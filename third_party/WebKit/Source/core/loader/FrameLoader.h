@@ -176,6 +176,8 @@ class CORE_EXPORT FrameLoader final {
                                        FrameLoadType,
                                        Document*);
 
+  bool ShouldSerializeScrollAnchor();
+  void SaveScrollAnchor();
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
 

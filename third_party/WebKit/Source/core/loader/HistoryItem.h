@@ -32,10 +32,12 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebScrollAnchorData.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 
 namespace blink {
@@ -67,6 +69,7 @@ class CORE_EXPORT HistoryItem final
     ScrollOffset visual_viewport_scroll_offset_;
     ScrollOffset scroll_offset_;
     float page_scale_factor_;
+    ScrollAnchorData scroll_anchor_data_;
   };
 
   ViewState* GetViewState() const { return view_state_.get(); }
@@ -111,6 +114,8 @@ class CORE_EXPORT HistoryItem final
   HistoryScrollRestorationType ScrollRestorationType() {
     return scroll_restoration_type_;
   }
+
+  void SetScrollAnchorData(const ScrollAnchorData&);
 
   void SetFormInfoFromRequest(const ResourceRequest&);
   void SetFormData(scoped_refptr<EncodedFormData>);

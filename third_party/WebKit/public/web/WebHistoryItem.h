@@ -35,6 +35,7 @@
 #include "public/platform/WebHistoryScrollRestorationType.h"
 #include "public/platform/WebPrivatePtr.h"
 #include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebScrollAnchorData.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
@@ -118,6 +119,9 @@ class WebHistoryItem {
   BLINK_EXPORT WebVector<WebString> GetReferencedFilePaths() const;
 
   BLINK_EXPORT bool DidSaveScrollOrScaleState() const;
+
+  BLINK_EXPORT ScrollAnchorData GetScrollAnchorData() const;
+  BLINK_EXPORT void SetScrollAnchorData(const ScrollAnchorData&);
 
 #if INSIDE_BLINK
   BLINK_EXPORT WebHistoryItem(HistoryItem*);

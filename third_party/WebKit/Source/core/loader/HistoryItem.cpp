@@ -93,6 +93,13 @@ void HistoryItem::SetPageScaleFactor(float scale_factor) {
   view_state_->page_scale_factor_ = scale_factor;
 }
 
+void HistoryItem::SetScrollAnchorData(
+    const ScrollAnchorData& scroll_anchor_data) {
+  if (!view_state_)
+    view_state_ = WTF::MakeUnique<ViewState>();
+  view_state_->scroll_anchor_data_ = scroll_anchor_data;
+}
+
 void HistoryItem::SetDocumentState(const Vector<String>& state) {
   DCHECK(!document_state_);
   document_state_vector_ = state;

@@ -29,7 +29,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // compatibility. If re-ordering fields, make sure to retain the original
 // ordinal value.
 // Update the below value if your change introduces fields using it.
-// Next MinVersion: 1
+// Next MinVersion: 2
 
 // Next Ordinal: 4
 struct FileSystemFile {
@@ -77,14 +77,17 @@ enum ScrollRestorationType {
   kManual = 1
 };
 
-// Next Ordinal: 3
+// Next Ordinal: 6
 struct ViewState {
   gfx.mojom.PointF visual_viewport_scroll_offset@0;
   gfx.mojom.Point scroll_offset@1;
   double page_scale_factor@2;
+  // Serialized scroll anchor fields
+  [MinVersion=1] mojo.common.mojom.String16? scroll_anchor_selector@3;
+  [MinVersion=1] gfx.mojom.PointF? scroll_anchor_offset@4;
+  [MinVersion=1] uint64 scroll_anchor_simhash@5 = 0;
 };
 
-// Next Ordinal: 12
 struct FrameState {
   mojo.common.mojom.String16? url_string@0;
   mojo.common.mojom.String16? referrer@1;
