@@ -144,29 +144,20 @@ void AnswerCardSearchProvider::DidFinishNavigation(
     return;
   }
 
-  if (!features::IsAnswerCardDarkRunEnabled()) {
-    if (!has_answer_card) {
-      RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
-      // No answer card in the server response. This invalidates the currently
-      // shown result.
-      DeleteCurrentResult();
-      return;
-    }
-    DCHECK(!result_title.empty());
-    DCHECK(!issued_query.empty());
-    context_for_loading.result_title = result_title;
-    context_for_loading.result_url =
-        GetResultUrl(base::UTF8ToUTF16(issued_query));
-    RecordRequestResult(
-        SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER);
-  } else {
-    // In the dark run mode, every other "server response" contains a card.
-    dark_run_received_answer_ = !dark_run_received_answer_;
-    if (!dark_run_received_answer_)
-      return;
-    // SearchResult requires a non-empty id. This "url" will never be opened.
-    context_for_loading.result_url = "https://www.google.com/?q=something";
+  if (!has_answer_card) {
+    RecordRequestResult(SearchAnswerRequestResult::REQUEST_RESULT_NO_ANSWER);
+    // No answer card in the server response. This invalidates the currently
+    // shown result.
+    DeleteCurrentResult();
+    return;
   }
+  DCHECK(!result_title.empty());
+  DCHECK(!issued_query.empty());
+  context_for_loading.result_title = result_title;
+  context_for_loading.result_url =
+      GetResultUrl(base::UTF8ToUTF16(issued_query));
+  RecordRequestResult(
+      SearchAnswerRequestResult::REQUEST_RESULT_RECEIVED_ANSWER);
 
   context_for_loading.state = RequestState::HAVE_RESULT_LOADING;
   UMA_HISTOGRAM_TIMES("SearchAnswer.NavigationTime",

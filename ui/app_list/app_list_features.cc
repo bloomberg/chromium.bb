@@ -12,8 +12,6 @@ namespace features {
 
 const base::Feature kEnableAnswerCard{"EnableAnswerCard",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableAnswerCardDarkRun{"EnableAnswerCardDarkRun",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
@@ -27,12 +25,6 @@ bool IsAnswerCardEnabled() {
   return base::FeatureList::IsEnabled(kEnableAnswerCard);
 }
 
-bool IsAnswerCardDarkRunEnabled() {
-  static const bool enabled =
-      base::FeatureList::IsEnabled(kEnableAnswerCardDarkRun);
-  return enabled;
-}
-
 bool IsBackgroundBlurEnabled() {
   static const bool enabled =
       base::FeatureList::IsEnabled(kEnableBackgroundBlur);
@@ -41,11 +33,6 @@ bool IsBackgroundBlurEnabled() {
 
 bool IsFullscreenAppListEnabled() {
   return true;
-}
-
-bool IsTouchFriendlySearchResultsPageEnabled() {
-  return IsFullscreenAppListEnabled() ||
-         (IsAnswerCardEnabled() && !IsAnswerCardDarkRunEnabled());
 }
 
 bool IsPlayStoreAppSearchEnabled() {
