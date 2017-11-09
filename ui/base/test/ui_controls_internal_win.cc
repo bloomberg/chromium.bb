@@ -157,22 +157,21 @@ void InputDispatcher::InstallHook() {
 
   int hook_type;
   HOOKPROC hook_function;
-  switch (message_waiting_for_) {
-    case WM_KEYUP:
-      hook_type = WH_KEYBOARD;
-      hook_function = &KeyHook;
-      break;
-    default:
-      // WH_CALLWNDPROCRET does not generate mouse messages for some reason.
-      hook_type = WH_MOUSE;
-      hook_function = &MouseHook;
-      // Things don't go well with mouse events sometimes. Bail out if it takes
+  if (message_waiting_for_ == WM_KEYUP) {
+    hook_type = WH_KEYBOARD;
+    hook_function = &KeyHook;
+  } else {
+    // WH_CALLWNDPROCRET does not generate mouse messages for some reason.
+    hook_type = WH_MOUSE;
+    hook_function = &MouseHook;
+    if (message_waiting_for_ == WM_MOUSEMOVE) {
+      // Things don't go well with move events sometimes. Bail out if it takes
       // too long.
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&InputDispatcher::OnTimeout, weak_factory_.GetWeakPtr()),
           TestTimeouts::action_timeout());
-      break;
+    }
   }
   next_hook_ =
       SetWindowsHookEx(hook_type, hook_function, nullptr, GetCurrentThreadId());
@@ -229,8 +228,8 @@ void InputDispatcher::DispatchedMessage(WPARAM mouse_message) {
           << expected_mouse_location_.y()
           << "); check the math in SendMouseMoveImpl.";
     }
+    MatchingMessageFound();
   }
-  MatchingMessageFound();
 }
 
 void InputDispatcher::MatchingMessageFound() {
