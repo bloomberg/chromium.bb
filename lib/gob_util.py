@@ -25,6 +25,13 @@ import urlparse
 import warnings
 from cStringIO import StringIO
 
+import httplib2
+try:
+  from oauth2client import gce
+except ImportError:  # Newer oauth2client versions put it in .contrib
+  # pylint: disable=import-error,no-name-in-module
+  from oauth2client.contrib import gce
+
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -33,10 +40,13 @@ from chromite.lib import timeout_util
 from chromite.lib import cros_build_lib
 
 
+_GAE_VERSION = 'GAE_VERSION'
+
+
 @cros_build_lib.Memoize
 def _GetNetRC():
   try:
-    return netrc.netrc()
+    return netrc.netrc(None)
   except (IOError, netrc.NetrcParseError):
     try:
       return netrc.netrc(os.devnull)
@@ -53,6 +63,13 @@ def _NetRCAuthenticators(host):
   net_rc = _GetNetRC()
   if net_rc:
     return net_rc.authenticators(host)
+
+
+@cros_build_lib.Memoize
+def _GetAppCredentials():
+  """Returns the singleton Appengine credentials for gerrit code review."""
+  return gce.AppAssertionCredentials(
+      scope='https://www.googleapis.com/auth/gerritcodereview')
 
 
 TRY_LIMIT = 10
@@ -139,20 +156,39 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   bare_host = host.partition(':')[0]
   auth = _NetRCAuthenticators(bare_host)
   if auth:
-    headers.setdefault('Authorization', 'Basic %s' % (
-        base64.b64encode('%s:%s' % (auth[0], auth[2]))))
-  else:
-    logging.debug('No netrc file found')
+    headers.setdefault(
+        'Authorization',
+        'Basic %s' % base64.b64encode('%s:%s' % (auth[0], auth[2])))
+  elif _InAppengine():
+    # TODO(phobbs) how can we choose to only run this on GCE / AppEngine?
+    credentials = _GetAppCredentials()
+    try:
+      headers.setdefault(
+          'Authorization',
+          'Bearer %s' % credentials.get_access_token().access_token)
+    except gce.HttpAccessTokenRefreshError as e:
+      logging.debug('Failed to retreive gce access token: %s', e)
+    # Not in an Appengine or GCE environment.
+    except httplib2.ServerNotFoundError as e:
+      pass
 
+  if not 'Authorization' in headers:
+    logging.debug('No netrc file or Appengine credentials found.')
   if 'Cookie' not in headers:
     cookies = GetCookies(host, path)
     headers['Cookie'] = '; '.join('%s=%s' % (n, v) for n, v in cookies.items())
 
   if 'User-Agent' not in headers:
+    # We may not be in a git repository.
+    try:
+      version = git.GetGitRepoRevision(
+          os.path.dirname(os.path.realpath(__file__)))
+    except cros_build_lib.RunCommandError:
+      version = 'unknown'
     headers['User-Agent'] = ' '.join((
         'chromite.lib.gob_util',
         os.path.basename(sys.argv[0]),
-        git.GetGitRepoRevision(os.path.dirname(os.path.realpath(__file__))),
+        version,
     ))
 
   if body:
@@ -176,6 +212,11 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   }
   conn.request(**conn.req_params)
   return conn
+
+
+def _InAppengine():
+  """Returns whether we're in the Appengine environment."""
+  return _GAE_VERSION in os.environ
 
 
 def FetchUrl(host, path, reqtype='GET', headers=None, body=None,
