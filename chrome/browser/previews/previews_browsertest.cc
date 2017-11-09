@@ -55,7 +55,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_server_;
   GURL test_url_;
   bool noscript_css_requested_;
@@ -76,14 +75,15 @@ IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
 // This test class enables NoScriptPreviews via command line addition.
 class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
  public:
-  PreviewsNoScriptBrowserTest() {}
+  PreviewsNoScriptBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        previews::features::kNoScriptPreviews);
+  }
 
   ~PreviewsNoScriptBrowserTest() override {}
 
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    PreviewsBrowserTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitchASCII("enable-features", "NoScriptPreviews");
-  }
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Previews InfoBar (which this test triggers) does not work on Mac.
