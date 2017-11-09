@@ -40,9 +40,8 @@ MappedFileWriter::MappedFileWriter(const base::FilePath& file_path,
   }
 #endif  // defined(OS_WIN)
 
-  bool is_ok =
-      buffer_.Initialize(std::move(file), {0, static_cast<int64_t>(length)},
-                         base::MemoryMappedFile::READ_WRITE_EXTEND);
+  bool is_ok = buffer_.Initialize(std::move(file), {0, length},
+                                  base::MemoryMappedFile::READ_WRITE_EXTEND);
   LOG_IF(ERROR, !is_ok) << "Can't map file: " << file_path_.value();
 }
 
