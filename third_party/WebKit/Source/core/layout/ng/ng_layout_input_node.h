@@ -12,6 +12,7 @@
 namespace blink {
 
 class ComputedStyle;
+class Document;
 class LayoutObject;
 class LayoutBox;
 class NGBreakToken;
@@ -68,6 +69,8 @@ class CORE_EXPORT NGLayoutInputNode {
 
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
+
+  Document& GetDocument() const;
 
   // Returns the LayoutObject which is associated with this node.
   LayoutObject* GetLayoutObject() const;

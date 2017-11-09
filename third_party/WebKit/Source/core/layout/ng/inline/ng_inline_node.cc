@@ -365,6 +365,10 @@ NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
     block->ResetNGInlineNodeData();
 }
 
+bool NGInlineNode::InLineHeightQuirksMode() const {
+  return GetDocument().InLineHeightQuirksMode();
+}
+
 NGInlineNodeData* NGInlineNode::MutableData() {
   return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
 }

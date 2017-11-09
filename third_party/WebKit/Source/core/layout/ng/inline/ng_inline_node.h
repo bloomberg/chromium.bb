@@ -40,6 +40,11 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   }
   NGLayoutInputNode NextSibling() { return nullptr; }
 
+  // True in quirks mode or limited-quirks mode, which require line-height
+  // quirks.
+  // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
+  bool InLineHeightQuirksMode() const;
+
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
                                        NGBreakToken* = nullptr);
 

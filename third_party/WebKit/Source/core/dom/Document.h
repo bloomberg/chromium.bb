@@ -708,6 +708,7 @@ class CORE_EXPORT Document : public ContainerNode,
     return compatibility_mode_ == kLimitedQuirksMode;
   }
   bool InNoQuirksMode() const { return compatibility_mode_ == kNoQuirksMode; }
+  bool InLineHeightQuirksMode() const { return !InNoQuirksMode(); }
 
   // https://html.spec.whatwg.org/multipage/dom.html#documentreadystate
   enum DocumentReadyState { kLoading, kInteractive, kComplete };

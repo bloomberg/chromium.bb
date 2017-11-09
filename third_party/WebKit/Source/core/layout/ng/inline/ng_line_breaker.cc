@@ -35,7 +35,8 @@ NGLineBreaker::NGLineBreaker(
       shaper_(node.Text().Characters16(), node.Text().length()),
       spacing_(node.Text()),
       handled_floats_end_item_index_(handled_float_index),
-      base_direction_(node_.BaseDirection()) {
+      base_direction_(node_.BaseDirection()),
+      in_line_height_quirks_mode_(node.InLineHeightQuirksMode()) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
@@ -565,7 +566,8 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
       // of them do so. See should_create_line_box_.
       // Force to create a box, because such inline boxes affect line heights.
       item_result->needs_box_when_empty =
-          item_result->inline_size || item_result->margins.inline_start;
+          item_result->inline_size ||
+          (item_result->margins.inline_start && !in_line_height_quirks_mode_);
       line_.should_create_line_box |= item_result->needs_box_when_empty;
     }
   }
@@ -592,7 +594,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleCloseTag(
     line_.position += item_result->inline_size;
 
     item_result->needs_box_when_empty =
-        item_result->inline_size || item_result->margins.inline_end;
+        item_result->inline_size ||
+        (item_result->margins.inline_end && !in_line_height_quirks_mode_);
     line_.should_create_line_box |= item_result->needs_box_when_empty;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());

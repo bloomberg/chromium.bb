@@ -56,7 +56,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           break_token),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space.WritingMode())) {
-  quirks_mode_ = !inline_node.GetLayoutObject()->GetDocument().InNoQuirksMode();
+  quirks_mode_ = inline_node.InLineHeightQuirksMode();
   unpositioned_floats_ = ConstraintSpace().UnpositionedFloats();
 
   if (!is_horizontal_writing_mode_)
