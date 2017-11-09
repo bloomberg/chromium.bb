@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/pollable_thread_safe_flag.h"
+#include "platform/scheduler/renderer/pollable_thread_safe_flag.h"
 
 PollableThreadSafeFlag::PollableThreadSafeFlag(base::Lock* write_lock_)
     : flag_(false), write_lock_(write_lock_) {}
