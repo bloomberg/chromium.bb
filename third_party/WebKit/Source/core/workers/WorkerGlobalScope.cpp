@@ -30,7 +30,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/css/FontFaceSetWorker.h"
 #include "core/css/OffscreenFontSelector.h"
@@ -114,23 +113,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
 
 void WorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
-
-  // Event listeners would keep DOMWrapperWorld objects alive for too long.
-  // Also, they have references to JS objects, which become dangling once Heap
-  // is destroyed.
   closing_ = true;
-  HeapHashSet<Member<V8AbstractEventListener>> listeners;
-  listeners.swap(event_listeners_);
-  while (!listeners.IsEmpty()) {
-    for (const auto& listener : listeners)
-      listener->ClearListenerObject();
-    listeners.clear();
-    // Pick up any additions made while iterating.
-    listeners.swap(event_listeners_);
-  }
-  RemoveAllEventListeners();
-
-  event_queue_->Close();
   WorkerOrWorkletGlobalScope::Dispose();
 }
 
@@ -140,22 +123,6 @@ void WorkerGlobalScope::ExceptionUnhandled(int exception_id) {
   if (WorkerThreadDebugger* debugger =
           WorkerThreadDebugger::From(GetThread()->GetIsolate()))
     debugger->ExceptionThrown(thread_, event);
-}
-
-void WorkerGlobalScope::RegisterEventListener(
-    V8AbstractEventListener* event_listener) {
-  // TODO(sof): remove once crbug.com/677654 has been diagnosed.
-  CHECK(&ThreadState::FromObject(this)->Heap() ==
-        &ThreadState::FromObject(event_listener)->Heap());
-  bool new_entry = event_listeners_.insert(event_listener).is_new_entry;
-  CHECK(new_entry);
-}
-
-void WorkerGlobalScope::DeregisterEventListener(
-    V8AbstractEventListener* event_listener) {
-  auto it = event_listeners_.find(event_listener);
-  CHECK(it != event_listeners_.end() || closing_);
-  event_listeners_.erase(it);
 }
 
 WorkerLocation* WorkerGlobalScope::location() const {
@@ -298,31 +265,6 @@ WorkerGlobalScope::LoadingScriptFromWorkerScriptLoader(
   return LoadResult::kSuccess;
 }
 
-v8::Local<v8::Object> WorkerGlobalScope::Wrap(
-    v8::Isolate*,
-    v8::Local<v8::Object> creation_context) {
-  LOG(FATAL) << "WorkerGlobalScope must never be wrapped with wrap method.  "
-                "The global object of ECMAScript environment is used as the "
-                "wrapper.";
-  return v8::Local<v8::Object>();
-}
-
-v8::Local<v8::Object> WorkerGlobalScope::AssociateWithWrapper(
-    v8::Isolate*,
-    const WrapperTypeInfo*,
-    v8::Local<v8::Object> wrapper) {
-  LOG(FATAL) << "WorkerGlobalScope must never be wrapped with wrap method.  "
-                "The global object of ECMAScript environment is used as the "
-                "wrapper.";
-  return v8::Local<v8::Object>();
-}
-
-bool WorkerGlobalScope::HasPendingActivity() const {
-  // The worker global scope wrapper is kept alive as long as its execution
-  // context is alive.
-  return !ExecutionContext::IsContextDestroyed();
-}
-
 bool WorkerGlobalScope::IsContextThread() const {
   return GetThread()->IsCurrentThread();
 }
@@ -334,10 +276,6 @@ void WorkerGlobalScope::AddConsoleMessage(ConsoleMessage* console_message) {
       console_message->Message(), console_message->Location());
   GetThread()->GetConsoleMessageStorage()->AddConsoleMessage(this,
                                                              console_message);
-}
-
-WorkerEventQueue* WorkerGlobalScope::GetEventQueue() const {
-  return event_queue_.Get();
 }
 
 CoreProbeSink* WorkerGlobalScope::GetProbeSink() {
@@ -381,7 +319,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       user_agent_(creation_params->user_agent),
       v8_cache_options_(creation_params->v8_cache_options),
       thread_(thread),
-      event_queue_(WorkerEventQueue::Create(this)),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
       font_selector_(OffscreenFontSelector::Create(this)) {
@@ -458,21 +395,18 @@ void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
 void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);
-  visitor->Trace(event_queue_);
   visitor->Trace(timers_);
-  visitor->Trace(event_listeners_);
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
-  EventTargetWithInlineData::Trace(visitor);
-  SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);
+  SecurityContext::Trace(visitor);
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }
 
 void WorkerGlobalScope::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
-  EventTargetWithInlineData::TraceWrappers(visitor);
   Supplementable<WorkerGlobalScope>::TraceWrappers(visitor);
+  WorkerOrWorkletGlobalScope::TraceWrappers(visitor);
 }
 
 }  // namespace blink

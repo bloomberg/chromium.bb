@@ -40,7 +40,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/Event.h"
 #include "core/events/BeforeUnloadEvent.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/InstanceCounters.h"
 #include "platform/bindings/V8PrivateProperty.h"
 
@@ -54,13 +54,13 @@ V8AbstractEventListener::V8AbstractEventListener(bool is_attribute,
       is_attribute_(is_attribute),
       world_(&world),
       isolate_(isolate),
-      worker_global_scope_(nullptr) {
+      worker_or_worklet_global_scope_(nullptr) {
   if (IsMainThread())
     InstanceCounters::IncrementCounter(
         InstanceCounters::kJSEventListenerCounter);
   else
-    worker_global_scope_ =
-        ToWorkerGlobalScope(CurrentExecutionContext(isolate));
+    worker_or_worklet_global_scope_ =
+        ToWorkerOrWorkletGlobalScope(CurrentExecutionContext(isolate));
 }
 
 V8AbstractEventListener::~V8AbstractEventListener() {
@@ -108,9 +108,9 @@ void V8AbstractEventListener::HandleEvent(ScriptState* script_state,
 void V8AbstractEventListener::SetListenerObject(
     v8::Local<v8::Object> listener) {
   DCHECK(listener_.IsEmpty());
-  // Balanced in wrapperCleared xor clearListenerObject.
-  if (worker_global_scope_) {
-    worker_global_scope_->RegisterEventListener(this);
+  // Balanced in WrapperCleared xor ClearListenerObject.
+  if (worker_or_worklet_global_scope_) {
+    worker_or_worklet_global_scope_->RegisterEventListener(this);
   } else {
     keep_alive_ = this;
   }
@@ -150,8 +150,8 @@ void V8AbstractEventListener::InvokeEventHandler(
 
     if (!try_catch.CanContinue()) {  // Result of TerminateExecution().
       ExecutionContext* execution_context = ToExecutionContext(context);
-      if (execution_context->IsWorkerGlobalScope())
-        ToWorkerGlobalScope(execution_context)
+      if (execution_context->IsWorkerOrWorkletGlobalScope())
+        ToWorkerOrWorkletGlobalScope(execution_context)
             ->ScriptController()
             ->ForbidExecution();
       return;
@@ -236,8 +236,8 @@ void V8AbstractEventListener::ClearListenerObject() {
   if (!HasExistingListenerObject())
     return;
   listener_.Clear();
-  if (worker_global_scope_) {
-    worker_global_scope_->DeregisterEventListener(this);
+  if (worker_or_worklet_global_scope_) {
+    worker_or_worklet_global_scope_->DeregisterEventListener(this);
   } else {
     keep_alive_.Clear();
   }
@@ -249,7 +249,7 @@ void V8AbstractEventListener::WrapperCleared(
 }
 
 void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
-  visitor->Trace(worker_global_scope_);
+  visitor->Trace(worker_or_worklet_global_scope_);
   EventListener::Trace(visitor);
 }
 

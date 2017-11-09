@@ -145,7 +145,7 @@ bool WorkerOrWorkletScriptController::InitializeContextIfNeeded(
 
   // Create a new v8::Context with the worker/worklet as the global object
   // (aka the inner global).
-  ScriptWrappable* script_wrappable = global_scope_->GetScriptWrappable();
+  auto* script_wrappable = static_cast<ScriptWrappable*>(global_scope_);
   const WrapperTypeInfo* wrapper_type_info =
       script_wrappable->GetWrapperTypeInfo();
   v8::Local<v8::FunctionTemplate> global_interface_template =

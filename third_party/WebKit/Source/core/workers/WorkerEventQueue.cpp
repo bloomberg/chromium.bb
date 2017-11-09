@@ -28,26 +28,26 @@
 
 #include "core/dom/events/Event.h"
 #include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
 
 WorkerEventQueue* WorkerEventQueue::Create(
-    WorkerGlobalScope* worker_global_scope) {
-  return new WorkerEventQueue(worker_global_scope);
+    WorkerOrWorkletGlobalScope* global_scope) {
+  return new WorkerEventQueue(global_scope);
 }
 
-WorkerEventQueue::WorkerEventQueue(WorkerGlobalScope* worker_global_scope)
-    : worker_global_scope_(worker_global_scope), is_closed_(false) {}
+WorkerEventQueue::WorkerEventQueue(WorkerOrWorkletGlobalScope* global_scope)
+    : global_scope_(global_scope) {}
 
 WorkerEventQueue::~WorkerEventQueue() {
   DCHECK(pending_events_.IsEmpty());
 }
 
 void WorkerEventQueue::Trace(blink::Visitor* visitor) {
-  visitor->Trace(worker_global_scope_);
+  visitor->Trace(global_scope_);
   visitor->Trace(pending_events_);
   EventQueue::Trace(visitor);
 }
@@ -65,7 +65,7 @@ bool WorkerEventQueue::EnqueueEvent(const WebTraceLocation& from_here,
   // database concurrently. See also comments in the ctor of
   // DOMWindowEventQueueTimer.
   // TODO(nhiroki): Callers of enqueueEvent() should specify the task type.
-  worker_global_scope_->GetTaskRunner(TaskType::kUnthrottled)
+  global_scope_->GetTaskRunner(TaskType::kUnthrottled)
       ->PostTask(from_here,
                  WTF::Bind(&WorkerEventQueue::DispatchEvent,
                            WrapPersistent(this), WrapWeakPersistent(event)));
@@ -98,7 +98,7 @@ void WorkerEventQueue::DispatchEvent(Event* event) {
   if (!event || !RemoveEvent(event))
     return;
 
-  probe::AsyncTask async_task(worker_global_scope_, event);
+  probe::AsyncTask async_task(global_scope_, event);
   event->target()->DispatchEvent(event);
 }
 
