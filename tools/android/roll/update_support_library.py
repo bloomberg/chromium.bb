@@ -4,63 +4,71 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
+'''
 Updates the Android support repository (m2repository).
-"""
+'''
 
 import argparse
-import fnmatch
 import os
-import subprocess
-import shutil
+import logging
 import sys
 
-DIR_SOURCE_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                               '..', '..', '..'))
-ANDROID_SDK_PATH = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, 'third_party',
-                                                'android_tools', 'sdk'))
-TARGET_NAME = 'extra-android-m2repository'
-# The first version we included was 23.2.1. Any folders that are older than
-# that should not be included by Chrome's git repo. Unstable versions should
-# also be excluded.
-REMOVE_LIST = ['databinding', '13.*', '18.*', '19.*', '20.*', '21.*', '22.*',
-               '23.0.*', '23.1.*', '23.2.0', '*-alpha*', '*-beta*']
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
+
+from pylib.constants import host_paths
+from pylib.utils import logging_utils
+from pylib.utils import maven_downloader
+
+SUPPORT_LIB_REPO = os.path.join(host_paths.DIR_SOURCE_ROOT, 'third_party',
+                                'android_tools', 'sdk', 'extras', 'android',
+                                'm2repository')
 
 
 def main():
   parser = argparse.ArgumentParser(description='Updates the Android support '
                                    'repository in third_party/android_tools')
-  parser.add_argument('--sdk-dir',
-                      help='Directory for the Android SDK.')
+  parser.add_argument('--target-repo',
+                      help='Maven repo where the library will be installed.',
+                      default=SUPPORT_LIB_REPO)
+  parser.add_argument('--debug',
+                      help='Debug mode, synchronous and with extra logging.',
+                      action='store_true')
   args = parser.parse_args()
 
-  sdk_path = ANDROID_SDK_PATH
-  if args.sdk_dir is not None:
-    sdk_path = os.path.abspath(os.path.join(DIR_SOURCE_ROOT, args.sdk_dir))
+  if (args.debug):
+    logging.basicConfig(level=logging.DEBUG)
+  else:
+    logging.basicConfig(level=logging.INFO)
+  logging_utils.ColorStreamHandler.MakeDefault()
 
-  sdk_tool = os.path.abspath(os.path.join(sdk_path, 'tools', 'android'))
-  if not os.path.exists(sdk_tool):
-    print 'SDK tool not found at %s' % sdk_tool
-    return 1
-
-  # Run the android sdk update tool in command line.
-  subprocess.check_call([sdk_tool, 'update', 'sdk' , '--no-ui',
-                         '--filter', TARGET_NAME])
-
-  m2repo = os.path.abspath(os.path.join(sdk_path, 'extras', 'android',
-                                        'm2repository'))
-  # Remove obsolete folders and unused folders according to REMOVE_LIST.
-  count = 0
-  for folder, _, _ in os.walk(m2repo):
-    for pattern in REMOVE_LIST:
-      if fnmatch.fnmatch(os.path.basename(folder), pattern):
-        count += 1
-        print 'Removing %s' % os.path.relpath(folder, sdk_path)
-        shutil.rmtree(folder)
-  if count == 0:
-    print ('No files were removed from the updated support library. '
-           'Did you update it successfully?')
-    return 1
+  maven_downloader.MavenDownloader(args.debug).Install(args.target_repo, [
+      'android.arch.core:common:1.0.0:jar',
+      'android.arch.lifecycle:common:1.0.0:jar',
+      'android.arch.lifecycle:runtime:1.0.0:aar',
+      'com.android.support:animated-vector-drawable:27.0.0:aar',
+      'com.android.support:appcompat-v7:27.0.0:aar',
+      'com.android.support:cardview-v7:27.0.0:aar',
+      'com.android.support:design:27.0.0:aar',
+      'com.android.support:gridlayout-v7:27.0.0:aar',
+      'com.android.support:leanback-v17:27.0.0:aar',
+      'com.android.support:mediarouter-v7:27.0.0:aar',
+      'com.android.support:palette-v7:27.0.0:aar',
+      'com.android.support:preference-leanback-v17:27.0.0:aar',
+      'com.android.support:preference-v14:27.0.0:aar',
+      'com.android.support:preference-v7:27.0.0:aar',
+      'com.android.support:recyclerview-v7:27.0.0:aar',
+      'com.android.support:support-annotations:27.0.0:jar',
+      'com.android.support:support-compat:27.0.0:aar',
+      'com.android.support:support-core-ui:27.0.0:aar',
+      'com.android.support:support-core-utils:27.0.0:aar',
+      'com.android.support:support-fragment:27.0.0:aar',
+      'com.android.support:support-media-compat:27.0.0:aar',
+      'com.android.support:support-v13:27.0.0:aar',
+      'com.android.support:support-vector-drawable:27.0.0:aar',
+      'com.android.support:transition:27.0.0:aar',
+  ], include_poms=True)
 
 
 if __name__ == '__main__':
