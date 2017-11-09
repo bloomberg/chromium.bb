@@ -35,13 +35,13 @@ class DialogOverlayCore {
         // Notify the host that we have failed to get a surface or the surface was destroyed.
         void onOverlayDestroyed();
 
-        // Wait until the host has been told to clean up.  We are allowed to let surfaceDestroyed
+        // Wait until the host has been told to close.  We are allowed to let surfaceDestroyed
         // proceed once this happens.
-        void waitForCleanup();
+        void waitForClose();
 
-        // Notify the host that waitForCleanup() is done waiting, so that it can enforce that
-        // cleanup happens.
-        void enforceCleanup();
+        // Notify the host that waitForClose() is done waiting, so that it can enforce that cleanup
+        // always happens.
+        void enforceClose();
     }
 
     private Host mHost;
@@ -88,7 +88,7 @@ class DialogOverlayCore {
 
     /**
      * Release the underlying surface, and generally clean up, in response to
-     * the client releasing the AndroidOverlay.
+     * the client releasing the AndroidOverlay.  This may be called more than once.
      */
     public void release() {
         // If we've not released the dialog yet, then do so.
@@ -146,8 +146,8 @@ class DialogOverlayCore {
 
             // Notify the host that we've been destroyed, and wait for it to clean up or time out.
             mHost.onOverlayDestroyed();
-            mHost.waitForCleanup();
-            mHost.enforceCleanup();
+            mHost.waitForClose();
+            mHost.enforceClose();
             mHost = null;
         }
 
