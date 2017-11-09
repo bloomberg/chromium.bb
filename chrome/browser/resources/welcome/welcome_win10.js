@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 Polymer({
-  is: 'welcome-win10-inline',
+  is: 'welcome-win10',
 
   properties: {
     // Determines if the combined variant should be displayed. The combined
