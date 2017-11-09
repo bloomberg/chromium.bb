@@ -7,6 +7,12 @@ module device.mojom;
 import "sensor.mojom";
 
 struct SensorInitParams {
+  // The Sensor interface.
+  Sensor sensor;
+
+  // The SensorClient interface used to report sensor events.
+  SensorClient& client_request;
+
   // The shared memory handle used to fetch the sensor reading.
   handle<shared_buffer> memory;
 
@@ -38,14 +44,7 @@ interface SensorProvider {
   //
   // |type| type of the sensor.
   //
-  // |sensor_request| the Sensor interface instance to be initialized.
-  //
   // |init_params| on success will contain the SensorInitParams describing the
-  //               sensor details,
-  //               contains null on failure.
-  // |client_request| on success contains a request to be bound by the client,
-  //                  contains null on failure.
-  GetSensor(SensorType type, Sensor& sensor_request) => (
-      SensorInitParams? init_params,
-      SensorClient&? client_request);
+  //               sensor, contains null on failure.
+  GetSensor(SensorType type) => (SensorInitParams? init_params);
 };

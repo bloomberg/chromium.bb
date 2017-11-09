@@ -28,7 +28,6 @@ class SensorProviderProxyImpl final : public device::mojom::SensorProvider {
  private:
   // SensorProvider implementation.
   void GetSensor(device::mojom::SensorType type,
-                 device::mojom::SensorRequest sensor_request,
                  GetSensorCallback callback) override;
 
   bool CheckPermission(device::mojom::SensorType type) const;
