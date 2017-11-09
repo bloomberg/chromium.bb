@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -24,7 +25,7 @@ class TexturedElement : public UiElement {
   explicit TexturedElement(int maximum_width);
   ~TexturedElement() override;
 
-  void Initialize() final;
+  void Initialize(SkiaSurfaceProvider* provider) final;
 
   void Render(UiElementRenderer* renderer,
               const gfx::Transform& model_view_proj_matrix) const final;
@@ -41,13 +42,15 @@ class TexturedElement : public UiElement {
  private:
   bool UpdateTexture();
 
-  void Flush(SkSurface* surface);
   void OnSetMode() override;
 
   gfx::Size texture_size_;
-  GLuint texture_handle_;
+  GLuint texture_handle_ = 0;
   int maximum_width_;
   bool initialized_ = false;
+
+  sk_sp<SkSurface> surface_;
+  SkiaSurfaceProvider* provider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TexturedElement);
 };

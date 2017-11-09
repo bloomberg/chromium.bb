@@ -128,7 +128,8 @@ class UiSceneManager {
 
   bool ShouldRenderWebVr();
   void OnGlInitialized(unsigned int content_texture_id,
-                       UiElementRenderer::TextureLocation content_location);
+                       UiElementRenderer::TextureLocation content_location,
+                       SkiaSurfaceProvider* provider);
   void OnAppButtonClicked();
   void OnAppButtonGesturePerformed(
       PlatformController::SwipeDirection direction);
