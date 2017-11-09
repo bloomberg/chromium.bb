@@ -260,6 +260,12 @@ public class WebappActivity extends SingleTabActivity {
         // TODO(yusufo): Consider not initializing these for WebAPKs.
         mBrowserSessionDataProvider = new BrowserSessionDataProvider(intent);
         mTrustedWebContentProvider = new TrustedWebContentProvider();
+
+        // When turning on TalkBack on Android, hitting app switcher to bring a WebappActivity to
+        // front will speak "Web App", which is the label of WebappActivity. Therefore, we set title
+        // of the WebappActivity explicitly to make it speak the short name of the Web App.
+        setTitle(mWebappInfo.shortName());
+
         super.preInflationStartup();
     }
 
