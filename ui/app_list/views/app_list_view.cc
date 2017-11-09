@@ -21,6 +21,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_folder_view.h"
@@ -1131,29 +1132,7 @@ void AppListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AppListView::OnKeyEvent(ui::KeyEvent* event) {
-  views::Textfield* search_box = search_box_view_->search_box();
-  bool is_search_box_focused = search_box->HasFocus();
-  bool is_folder_header_view_focused = app_list_main_view_->contents_view()
-                                           ->apps_container_view()
-                                           ->app_list_folder_view()
-                                           ->folder_header_view()
-                                           ->HasTextFocus();
-  if (is_app_list_focus_enabled_ && !is_search_box_focused &&
-      !is_folder_header_view_focused && !SearchBoxView::IsArrowKey(*event)) {
-    views::Textfield* search_box = search_box_view_->search_box();
-    // Redirect key event to |search_box_|.
-    search_box->OnKeyEvent(event);
-    if (event->handled()) {
-      // Set search box focused if the key event is consumed.
-      search_box->RequestFocus();
-      return;
-    }
-    if (event->type() == ui::ET_KEY_PRESSED) {
-      // Insert it into search box if the key event is a character. Released
-      // key should not be handled to prevent inserting duplicate character.
-      search_box->InsertChar(*event);
-    }
-  }
+  RedirectKeyEventToSearchBox(event);
 }
 
 void AppListView::OnTabletModeChanged(bool started) {
@@ -1399,6 +1378,47 @@ void AppListView::DraggingLayout() {
   GetAppsGridView()->UpdateOpacity();
 
   Layout();
+}
+
+void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
+  if (!is_app_list_focus_enabled_)
+    return;
+
+  if (event->handled())
+    return;
+
+  views::Textfield* search_box = search_box_view_->search_box();
+  const bool is_search_box_focused = search_box->HasFocus();
+  const bool is_folder_header_view_focused =
+      app_list_main_view_->contents_view()
+          ->apps_container_view()
+          ->app_list_folder_view()
+          ->folder_header_view()
+          ->HasTextFocus();
+  if (is_search_box_focused || is_folder_header_view_focused) {
+    // Do not redirect the key event to the |search_box_| when focus is on a
+    // text field.
+    return;
+  }
+
+  if (CanProcessLeftRightKeyTraversal(*event) ||
+      CanProcessUpDownKeyTraversal(*event)) {
+    // Do not redirect the arrow keys that are used to do focus traversal.
+    return;
+  }
+
+  // Redirect key event to |search_box_|.
+  search_box->OnKeyEvent(event);
+  if (event->handled()) {
+    // Set search box focused if the key event is consumed.
+    search_box->RequestFocus();
+    return;
+  }
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    // Insert it into search box if the key event is a character. Released
+    // key should not be handled to prevent inserting duplicate character.
+    search_box->InsertChar(*event);
+  }
 }
 
 void AppListView::OnSpeechRecognitionStateChanged(

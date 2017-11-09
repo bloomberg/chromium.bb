@@ -73,6 +73,8 @@ class APP_LIST_EXPORT FolderHeaderView : public views::View,
   // views::TextfieldController overrides:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
 
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

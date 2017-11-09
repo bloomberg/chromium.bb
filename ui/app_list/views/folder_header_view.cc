@@ -12,6 +12,7 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -253,6 +254,15 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
   UpdateFolderNameAccessibleName();
 
   Layout();
+}
+
+bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
+                                      const ui::KeyEvent& key_event) {
+  if (!features::IsAppListFocusEnabled())
+    return false;
+  if (!CanProcessLeftRightKeyTraversal(key_event))
+    return false;
+  return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }
 
 void FolderHeaderView::ButtonPressed(views::Button* sender,

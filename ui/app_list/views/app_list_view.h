@@ -189,6 +189,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Layouts the app list during dragging.
   void DraggingLayout();
 
+  // The search box cannot actively listen to all key events. To control and
+  // input into the search box when it does not have focus, we need to redirect
+  // necessary key events to the search box.
+  void RedirectKeyEventToSearchBox(ui::KeyEvent* event);
+
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
 

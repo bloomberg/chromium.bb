@@ -18,6 +18,7 @@
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/pagination_controller.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
@@ -956,7 +957,7 @@ void AppsGridView::UpdateControlVisibility(
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   if (is_app_list_focus_enabled_) {
     // Let the FocusManager handle Left/Right keys.
-    if (event.key_code() != ui::VKEY_UP && event.key_code() != ui::VKEY_DOWN)
+    if (!CanProcessUpDownKeyTraversal(event))
       return false;
 
     AppListView::AppListState state =

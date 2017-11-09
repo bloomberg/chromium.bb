@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -226,11 +227,16 @@ void SearchResultPageView::AddSearchResultContainerView(
 
 bool SearchResultPageView::OnKeyPressed(const ui::KeyEvent& event) {
   if (is_app_list_focus_enabled_) {
+    // Let the FocusManager handle Left/Right keys.
+    if (!CanProcessUpDownKeyTraversal(event))
+      return false;
+
     views::View* next_focusable_view = nullptr;
     if (event.key_code() == ui::VKEY_UP) {
       next_focusable_view = GetFocusManager()->GetNextFocusableView(
           GetFocusManager()->GetFocusedView(), GetWidget(), true, false);
-    } else if (event.key_code() == ui::VKEY_DOWN) {
+    } else {
+      DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
       next_focusable_view = GetFocusManager()->GetNextFocusableView(
           GetFocusManager()->GetFocusedView(), GetWidget(), false, false);
     }

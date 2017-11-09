@@ -14,6 +14,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/search_box_model.h"
@@ -674,12 +675,9 @@ void SearchBoxView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void SearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
-  app_list_view_->OnKeyEvent(event);
+  app_list_view_->RedirectKeyEventToSearchBox(event);
 
-  if (event->handled() || event->type() != ui::ET_KEY_PRESSED)
-    return;
-
-  if (event->key_code() != ui::VKEY_UP && event->key_code() != ui::VKEY_DOWN)
+  if (!CanProcessUpDownKeyTraversal(*event))
     return;
 
   // If focus is in search box view, up key moves focus to the last element of
@@ -882,7 +880,11 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
         SetSearchBoxActive(true);
         return true;
       }
+      return false;
     }
+
+    if (CanProcessLeftRightKeyTraversal(key_event))
+      return ProcessLeftRightKeyTraversalForTextfield(search_box_, key_event);
     return false;
   }
   // TODO(weidongg/766807) Remove everything below when the flag is enabled by
