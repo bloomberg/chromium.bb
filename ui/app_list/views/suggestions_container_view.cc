@@ -6,7 +6,6 @@
 
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
-#include "ui/app_list/views/all_apps_tile_item_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_result_tile_item_view.h"
@@ -17,10 +16,8 @@ namespace app_list {
 
 SuggestionsContainerView::SuggestionsContainerView(
     ContentsView* contents_view,
-    AllAppsTileItemView* all_apps_button,
     PaginationModel* pagination_model)
     : contents_view_(contents_view),
-      all_apps_button_(all_apps_button),
       pagination_model_(pagination_model) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -28,10 +25,6 @@ SuggestionsContainerView::SuggestionsContainerView(
   DCHECK(contents_view);
   view_delegate_ = contents_view_->app_list_main_view()->view_delegate();
   SetBackground(views::CreateSolidBackground(kLabelBackgroundColor));
-  if (all_apps_button_) {
-    all_apps_button_->SetHoverStyle(TileItemView::HOVER_STYLE_ANIMATE_SHADOW);
-    all_apps_button_->SetParentBackgroundColor(kLabelBackgroundColor);
-  }
 
   CreateAppsGrid(kNumStartPageTiles);
 }
@@ -40,8 +33,6 @@ SuggestionsContainerView::~SuggestionsContainerView() = default;
 
 TileItemView* SuggestionsContainerView::GetTileItemView(int index) {
   DCHECK_GT(num_results(), index);
-  if (all_apps_button_ && index == num_results() - 1)
-    return all_apps_button_;
 
   return search_result_tile_views_[index];
 }
@@ -65,8 +56,6 @@ int SuggestionsContainerView::DoUpdate() {
     for (size_t i = 0; i < search_result_tile_views_.size(); ++i)
       delete search_result_tile_views_[i];
     search_result_tile_views_.clear();
-    if (all_apps_button_)
-      RemoveChildView(all_apps_button_);
 
     CreateAppsGrid(display_results.size());
   }

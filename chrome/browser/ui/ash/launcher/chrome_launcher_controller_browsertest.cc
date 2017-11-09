@@ -106,28 +106,6 @@ class TestEvent : public ui::Event {
   DISALLOW_COPY_AND_ASSIGN(TestEvent);
 };
 
-// Click the "All Apps" button from the app launcher start page. Assumes that
-// the app launcher is open to the start page.
-// |display_origin| is the top-left corner of the active display, in screen
-// coordinates.
-void ClickAllAppsButtonFromStartPage(ui::test::EventGenerator* generator,
-                                     const gfx::Point& display_origin) {
-  AppListServiceAshTestApi service_test;
-
-  app_list::StartPageView* start_page_view = service_test.GetStartPageView();
-  DCHECK(start_page_view);
-
-  app_list::TileItemView* all_apps_button = start_page_view->all_apps_button();
-  gfx::Rect all_apps_rect = all_apps_button->GetBoundsInScreen();
-  all_apps_rect.Offset(-display_origin.x(), -display_origin.y());
-  generator->MoveMouseTo(all_apps_rect.CenterPoint().x(),
-                         all_apps_rect.CenterPoint().y());
-  generator->ClickLeftButton();
-  base::RunLoop().RunUntilIdle();
-  // Run Layout() to effectively complete the animation to the apps page.
-  service_test.LayoutContentsView();
-}
-
 // Find the browser that associated with |app_name|.
 Browser* FindBrowserForApp(const std::string& app_name) {
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -1834,10 +1812,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(service->IsAppListVisible());
 
-  // Click the "all apps" button on the start page.
-  ClickAllAppsButtonFromStartPage(&generator, origin);
-  EXPECT_TRUE(service->IsAppListVisible());
-
   app_list::AppsGridView* grid_view =
       AppListServiceAshTestApi().GetRootGridView();
   ASSERT_TRUE(grid_view);
@@ -2013,10 +1987,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
                         app_list_bounds.CenterPoint().y());
   generator.ClickLeftButton();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(service->IsAppListVisible());
-
-  // Click the "all apps" button on the start page.
-  ClickAllAppsButtonFromStartPage(&generator, gfx::Point());
   EXPECT_TRUE(service->IsAppListVisible());
 
   // Click an app icon in the app grid view.
