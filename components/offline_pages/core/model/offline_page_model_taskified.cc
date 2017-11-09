@@ -17,6 +17,7 @@
 #include "components/offline_pages/core/model/add_page_task.h"
 #include "components/offline_pages/core/model/create_archive_task.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
+#include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
@@ -35,6 +36,14 @@ const base::TimeDelta kClearStorageStartingDelay =
 // The time that the storage cleanup will be triggered again since the last
 // one.
 const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(30);
+
+void WrapInMultipleItemsCallback(const MultipleOfflineIdCallback& callback,
+                                 const MultipleOfflinePageItemResult& pages) {
+  std::vector<int64_t> results;
+  for (const auto& page : pages)
+    results.push_back(page.offline_id);
+  callback.Run(results);
+}
 
 SavePageResult ArchiverResultToSavePageResult(ArchiverResult archiver_result) {
   switch (archiver_result) {
@@ -146,38 +155,76 @@ void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
     const DeletePageCallback& callback) {}
 
 void OfflinePageModelTaskified::GetAllPages(
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingAllPages(store_.get(), callback);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPageByOfflineId(
     int64_t offline_id,
-    const SingleOfflinePageItemCallback& callback) {}
+    const SingleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingOfflineId(store_.get(), callback,
+                                                        offline_id);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingClientIds(store_.get(), callback,
+                                                        client_ids);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesByURL(
     const GURL& url,
     URLSearchMode url_search_mode,
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingUrl(store_.get(), callback, url);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesByNamespace(
     const std::string& name_space,
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingNamespace(store_.get(), callback,
+                                                        name_space);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesRemovedOnCacheReset(
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingPagesRemovedOnCacheReset(
+      store_.get(), callback, policy_controller_.get());
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesSupportedByDownloads(
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingPagesSupportedByDownloads(
+      store_.get(), callback, policy_controller_.get());
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetPagesByRequestOrigin(
     const std::string& request_origin,
-    const MultipleOfflinePageItemCallback& callback) {}
+    const MultipleOfflinePageItemCallback& callback) {
+  auto task = GetPagesTask::CreateTaskMatchingRequestOrigin(
+      store_.get(), callback, request_origin);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetOfflineIdsForClientId(
     const ClientId& client_id,
-    const MultipleOfflineIdCallback& callback) {}
+    const MultipleOfflineIdCallback& callback) {
+  // We're currently getting offline IDs by querying offline items based on
+  // client ids, and then extract the offline IDs from the items. This is fine
+  // since we're not expecting many pages with the same client ID.
+  auto task = GetPagesTask::CreateTaskMatchingClientIds(
+      store_.get(), base::Bind(&WrapInMultipleItemsCallback, callback),
+      {client_id});
+  task_queue_.AddTask(std::move(task));
+}
 
 const base::FilePath& OfflinePageModelTaskified::GetArchiveDirectory(
     const std::string& name_space) const {
