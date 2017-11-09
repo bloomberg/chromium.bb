@@ -149,9 +149,9 @@ bool DesktopProcess::Start(
       desktop_agent_->Start(weak_factory_.GetWeakPtr());
 
   // Connect to the daemon.
-  daemon_channel_ = IPC::ChannelProxy::Create(daemon_channel_handle_.release(),
-                                              IPC::Channel::MODE_CLIENT, this,
-                                              io_task_runner_);
+  daemon_channel_ = IPC::ChannelProxy::Create(
+      daemon_channel_handle_.release(), IPC::Channel::MODE_CLIENT, this,
+      io_task_runner_, base::ThreadTaskRunnerHandle::Get());
 
   // Pass |desktop_pipe| to the daemon.
   daemon_channel_->Send(

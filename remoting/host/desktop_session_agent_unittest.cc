@@ -127,9 +127,8 @@ TEST_F(DesktopSessionAgentTest, StartProcessStatsReport) {
       base::Unretained(&proxy)));
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
-      IPC::Channel::MODE_CLIENT,
-      &listener,
-      task_runner_);
+      IPC::Channel::MODE_CLIENT, &listener, task_runner_,
+      base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       "jid", ScreenResolution(), DesktopEnvironmentOptions())));
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkToAnyMsg_StartProcessStatsReport(
@@ -143,9 +142,8 @@ TEST_F(DesktopSessionAgentTest, StartProcessStatsReportWithInvalidInterval) {
   ProcessStatsListener listener(base::Bind([]() {}));
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
-      IPC::Channel::MODE_CLIENT,
-      &listener,
-      task_runner_);
+      IPC::Channel::MODE_CLIENT, &listener, task_runner_,
+      base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       "jid", ScreenResolution(), DesktopEnvironmentOptions())));
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkToAnyMsg_StartProcessStatsReport(
@@ -173,9 +171,8 @@ TEST_F(DesktopSessionAgentTest, StartThenStopProcessStatsReport) {
   ProcessStatsListener listener(base::Bind([]() {}));
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
-      IPC::Channel::MODE_CLIENT,
-      &listener,
-      task_runner_);
+      IPC::Channel::MODE_CLIENT, &listener, task_runner_,
+      base::ThreadTaskRunnerHandle::Get());
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       "jid", ScreenResolution(), DesktopEnvironmentOptions())));
   ASSERT_TRUE(proxy->Send(new ChromotingNetworkToAnyMsg_StartProcessStatsReport(

@@ -1604,12 +1604,14 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // See crbug.com/526842 for details.
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
-    channel_ = IPC::SyncChannel::Create(
-        this, io_task_runner.get(), &never_signaled_);
+    channel_ = IPC::SyncChannel::Create(this, io_task_runner.get(),
+                                        base::ThreadTaskRunnerHandle::Get(),
+                                        &never_signaled_);
   }
 #endif  // OS_ANDROID
   if (!channel_)
-    channel_.reset(new IPC::ChannelProxy(this, io_task_runner.get()));
+    channel_.reset(new IPC::ChannelProxy(this, io_task_runner.get(),
+                                         base::ThreadTaskRunnerHandle::Get()));
   channel_->Init(std::move(channel_factory), true /* create_pipe_now */);
 
   // Note that Channel send is effectively paused and unpaused at various points

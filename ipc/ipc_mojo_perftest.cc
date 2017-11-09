@@ -189,7 +189,7 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
     PerformanceChannelListener listener("ChannelProxy");
     auto channel_proxy = IPC::ChannelProxy::Create(
         TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
-        GetIOThreadTaskRunner());
+        GetIOThreadTaskRunner(), base::ThreadTaskRunnerHandle::Get());
     listener.Init(channel_proxy.get());
 
     LockThreadAffinity thread_locker(kSharedCore);
@@ -222,7 +222,8 @@ class MojoChannelPerfTest : public IPCChannelMojoTestBase {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     auto channel_proxy = IPC::SyncChannel::Create(
         TakeHandle().release(), IPC::Channel::MODE_SERVER, &listener,
-        GetIOThreadTaskRunner(), false, &shutdown_event);
+        GetIOThreadTaskRunner(), base::ThreadTaskRunnerHandle::Get(), false,
+        &shutdown_event);
     listener.Init(channel_proxy.get());
 
     LockThreadAffinity thread_locker(kSharedCore);

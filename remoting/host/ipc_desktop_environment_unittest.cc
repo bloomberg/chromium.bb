@@ -416,7 +416,7 @@ void IpcDesktopEnvironmentTest::CreateDesktopProcess() {
   mojo::MessagePipe pipe;
   desktop_channel_ = IPC::ChannelProxy::Create(
       pipe.handle0.release(), IPC::Channel::MODE_SERVER, &desktop_listener_,
-      io_task_runner_.get());
+      io_task_runner_.get(), base::ThreadTaskRunnerHandle::Get());
 
   // Create and start the desktop process.
   desktop_process_.reset(new DesktopProcess(

@@ -318,6 +318,7 @@ SyncChannelFilteredSender::SyncChannelFilteredSender(
                                         IPC::Channel::MODE_SERVER,
                                         listener,
                                         ipc_task_runner,
+                                        base::ThreadTaskRunnerHandle::Get(),
                                         false,
                                         shutdown_event)) {}
 

@@ -525,7 +525,8 @@ void PPBNaClPrivate::LaunchSelLdr(
       *translator_channel = IPC::SyncChannel::Create(
           instance_info.channel_handle, IPC::Channel::MODE_CLIENT,
           new NoOpListener, content::RenderThread::Get()->GetIOTaskRunner(),
-          true, content::RenderThread::Get()->GetShutdownEvent());
+          base::ThreadTaskRunnerHandle::Get(), true,
+          content::RenderThread::Get()->GetShutdownEvent());
     } else {
       // Save the channel handle for when StartPpapiProxy() is called.
       NaClPluginInstance* nacl_plugin_instance =

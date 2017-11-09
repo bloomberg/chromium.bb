@@ -396,7 +396,8 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
       base::MakeUnique<mojo::edk::OutgoingBrokerClientInvitation>();
   std::unique_ptr<IPC::ChannelProxy> channel = IPC::ChannelProxy::Create(
       broker_client_invitation_->AttachMessagePipe(mojo_pipe_token).release(),
-      IPC::Channel::MODE_SERVER, this, io_task_runner_);
+      IPC::Channel::MODE_SERVER, this, io_task_runner_,
+      base::ThreadTaskRunnerHandle::Get());
   command_line.AppendSwitchASCII(kMojoPipeToken, mojo_pipe_token);
 
   std::unique_ptr<mojo::edk::PlatformChannelPair> normal_mojo_channel;

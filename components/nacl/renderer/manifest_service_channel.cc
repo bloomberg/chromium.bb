@@ -33,6 +33,7 @@ ManifestServiceChannel::ManifestServiceChannel(
           IPC::Channel::MODE_CLIENT,
           this,
           content::RenderThread::Get()->GetIOTaskRunner(),
+          base::ThreadTaskRunnerHandle::Get(),
           true,
           waitable_event)),
       peer_pid_(base::kNullProcessId),
