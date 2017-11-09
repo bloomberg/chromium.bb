@@ -105,8 +105,4 @@ source_set("unit_tests_mobile") {
     "//testing/gtest",
     "//url",
   ]
-  if (is_win) {
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
-  }
 }
