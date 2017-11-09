@@ -255,6 +255,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
     app_group::main_app::DisableMetrics();
   }
 
+  app_group::main_app::RecordWidgetUsage();
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::Bind(&app_group::main_app::ProcessPendingLogs, callback));
