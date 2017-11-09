@@ -26,6 +26,8 @@ class DesktopLinuxBrowserFrameViewLayout : public OpaqueBrowserFrameViewLayout {
                                ButtonAlignment alignment) const override;
 
  private:
+  int TitlebarTopThickness() const;
+
   views::NavButtonProvider* nav_button_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopLinuxBrowserFrameViewLayout);

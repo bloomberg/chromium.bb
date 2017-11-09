@@ -187,6 +187,11 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     }
   }
 
+  int TitlebarTopThickness() const {
+    return static_cast<OpaqueBrowserFrameViewLayout*>(layout_manager_)
+        ->TitlebarTopThickness(false);
+  }
+
   views::Widget* widget_ = nullptr;
   views::View* root_view_ = nullptr;
   NNBFVL* layout_manager_ = nullptr;
@@ -214,25 +219,28 @@ TEST_F(DesktopLinuxBrowserFrameViewLayoutTest, NativeNavButtons) {
 
   root_view_->Layout();
 
-  int x = 0;
+  const int frame_thickness = TitlebarTopThickness();
+  int x = frame_thickness;
 
   // Close button.
   EXPECT_EQ(kCloseButtonSize, close_button_->size());
   x += kTopAreaSpacing.left() + kCloseButtonMargin.left();
   EXPECT_EQ(x, close_button_->x());
-  EXPECT_EQ(kCloseButtonMargin.top(), close_button_->y());
+  EXPECT_EQ(kCloseButtonMargin.top() + frame_thickness, close_button_->y());
 
   // Maximize button.
   EXPECT_EQ(kMaximizeButtonSize, maximize_button_->size());
   x += kCloseButtonSize.width() + kCloseButtonMargin.right() +
        kInterNavButtonSpacing + kMaximizeButtonMargin.left();
   EXPECT_EQ(x, maximize_button_->x());
-  EXPECT_EQ(kMaximizeButtonMargin.top(), maximize_button_->y());
+  EXPECT_EQ(kMaximizeButtonMargin.top() + frame_thickness,
+            maximize_button_->y());
 
   // Minimize button.
   EXPECT_EQ(kMinimizeButtonSize, minimize_button_->size());
   x += kMaximizeButtonSize.width() + kMaximizeButtonMargin.right() +
        kInterNavButtonSpacing + kMinimizeButtonMargin.left();
   EXPECT_EQ(x, minimize_button_->x());
-  EXPECT_EQ(kMinimizeButtonMargin.top(), minimize_button_->y());
+  EXPECT_EQ(kMinimizeButtonMargin.top() + frame_thickness,
+            minimize_button_->y());
 }
