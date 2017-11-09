@@ -955,10 +955,8 @@ class SkiaColorTransform : public ColorTransformStep {
 
 sk_sp<SkColorSpace> ColorTransformInternal::GetSkColorSpaceIfNecessary(
     const ColorSpace& color_space) {
-  if (color_space.primaries_ != ColorSpace::PrimaryID::ICC_BASED &&
-      color_space.transfer_ != ColorSpace::TransferID::ICC_BASED) {
+  if (color_space.transfer_ != ColorSpace::TransferID::ICC_BASED)
     return nullptr;
-  }
   DCHECK(color_space.icc_profile_sk_color_space_);
   return color_space.icc_profile_sk_color_space_;
 }

@@ -316,10 +316,8 @@ ColorSpace ICCProfile::GetColorSpace() const {
     color_space = GetParametricColorSpace();
     color_space.icc_profile_sk_color_space_ = sk_color_space_;
   } else {
-    color_space.matrix_ = ColorSpace::MatrixID::RGB;
-    color_space.range_ = ColorSpace::RangeID::FULL;
-    color_space.primaries_ = ColorSpace::PrimaryID::ICC_BASED;
-    color_space.transfer_ = ColorSpace::TransferID::ICC_BASED;
+    color_space =
+        ColorSpace::CreateCustom(to_XYZD50_, ColorSpace::TransferID::ICC_BASED);
     color_space.icc_profile_id_ = id_;
     color_space.icc_profile_sk_color_space_ = sk_color_space_;
   }
@@ -370,14 +368,14 @@ void ICCProfile::ComputeColorSpaceAndCache() {
       is_valid_ = true;
       is_parametric_ = true;
       break;
-    case kICCFailedToExtractRawTrFn:
-    case kICCFailedToExtractMatrix:
     case kICCFailedToConvergeToApproximateTrFn:
     case kICCFailedToApproximateTrFnAccurately:
       // Successfully but extracted a color space, but it isn't accurate enough.
       is_valid_ = true;
       is_parametric_ = false;
       break;
+    case kICCFailedToExtractRawTrFn:
+    case kICCFailedToExtractMatrix:
     case kICCFailedToParse:
     case kICCFailedToExtractSkColorSpace:
     case kICCFailedToCreateXform:
