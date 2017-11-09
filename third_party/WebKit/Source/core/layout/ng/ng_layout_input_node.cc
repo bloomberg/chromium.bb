@@ -141,6 +141,10 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
                     : ToNGBlockNode(*this).NextSibling();
 }
 
+Document& NGLayoutInputNode::GetDocument() const {
+  return box_->GetDocument();
+}
+
 LayoutObject* NGLayoutInputNode::GetLayoutObject() const {
   return box_;
 }

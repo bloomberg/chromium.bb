@@ -20,24 +20,33 @@ const char* kNGInlineItemTypeStrings[] = {
 // Returns true if this item is "empty", i.e. if the node contains only empty
 // items it will produce a single zero block-size line box.
 static bool IsEmptyItem(NGInlineItem::NGInlineItemType type,
-                        const ComputedStyle* style) {
+                        const ComputedStyle* style,
+                        LayoutObject* layout_object) {
   if (type == NGInlineItem::kAtomicInline || type == NGInlineItem::kControl ||
       type == NGInlineItem::kText)
     return false;
 
   if (type == NGInlineItem::kOpenTag) {
-    DCHECK(style);
+    DCHECK(style && layout_object);
 
-    if (!style->MarginStart().IsZero() || style->BorderStart().NonZero() ||
-        !style->PaddingStart().IsZero())
+    if (style->BorderStart().NonZero() || !style->PaddingStart().IsZero())
+      return false;
+
+    // Non-zero margin can prevent "empty" only in non-quirks mode.
+    // https://quirks.spec.whatwg.org/#the-line-height-calculation-quirk
+    if (!style->MarginStart().IsZero() &&
+        !layout_object->GetDocument().InLineHeightQuirksMode())
       return false;
   }
 
   if (type == NGInlineItem::kCloseTag) {
-    DCHECK(style);
+    DCHECK(style && layout_object);
 
-    if (!style->MarginEnd().IsZero() || style->BorderEnd().NonZero() ||
-        !style->PaddingEnd().IsZero())
+    if (style->BorderEnd().NonZero() || !style->PaddingEnd().IsZero())
+      return false;
+
+    if (!style->MarginEnd().IsZero() &&
+        !layout_object->GetDocument().InLineHeightQuirksMode())
       return false;
   }
 
@@ -59,7 +68,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       type_(type),
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
-      is_empty_item_(::blink::IsEmptyItem(type, style)) {
+      is_empty_item_(::blink::IsEmptyItem(type, style, layout_object)) {
   DCHECK_GE(end, start);
 }
 
