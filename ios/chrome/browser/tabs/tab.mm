@@ -102,10 +102,11 @@
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
+#import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -449,10 +450,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // a LegacyFullscreenController during teardown.
   if (!_legacyFullscreenController && fullScreenControllerDelegate) {
     _legacyFullscreenController = [[LegacyFullscreenController alloc]
-         initWithDelegate:fullScreenControllerDelegate
-        navigationManager:self.navigationManager
-                sessionID:self.tabId];
-    [self.webController addObserver:_legacyFullscreenController];
+        initWithDelegate:fullScreenControllerDelegate
+                webState:self.webState
+               sessionID:self.tabId];
     // If the content of the page was loaded without knowledge of the
     // toolbar position it will be misplaced under the toolbar instead of
     // right below. This happens e.g. in the case of preloading. This is to make
@@ -535,8 +535,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Clean up legacy fullscreen.
   if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
     self.legacyFullscreenControllerDelegate = nil;
-    if (_legacyFullscreenController)
-      [self.webController removeObserver:_legacyFullscreenController];
     [_legacyFullscreenController invalidate];
     _legacyFullscreenController = nil;
   }

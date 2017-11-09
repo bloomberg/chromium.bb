@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/legacy_fullscreen_controller.h"
 
+#import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -97,14 +98,13 @@ class FullscreenControllerTest : public PlatformTest {
         [[CRWWebViewProxyImpl alloc] initWithWebController:mockWebController_];
     [webViewProxy_ setContentView:mockContentView_];
     webViewScrollViewProxy_ = [webViewProxy_ scrollViewProxy];
+    web_state_.SetWebViewProxy(webViewProxy_);
     controller_ =
         [[LegacyFullscreenController alloc] initWithDelegate:mockDelegate_
-                                           navigationManager:NULL
+                                                    webState:&web_state_
                                                    sessionID:kFakeSessionId];
     DCHECK(controller_);
     [webViewScrollViewProxy_ addObserver:controller_];
-    // Simulate a CRWWebControllerObserver callback.
-    [controller_ setWebViewProxy:webViewProxy_ controller:mockWebController_];
     [controller_ moveHeaderToRestingPosition:YES];
 
     UIView* awesome_view = [[UIView alloc] initWithFrame:contentSize];
@@ -164,6 +164,7 @@ class FullscreenControllerTest : public PlatformTest {
 
  private:
   UIScrollView* scrollview_;
+  web::TestWebState web_state_;
 };
 
 #pragma mark - Programmatic moves

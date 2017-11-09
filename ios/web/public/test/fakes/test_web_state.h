@@ -99,6 +99,7 @@ class TestWebState : public WebState {
   void SetView(UIView* view);
   void SetIsCrashed(bool value);
   void SetIsEvicted(bool value);
+  void SetWebViewProxy(CRWWebViewProxyType web_view_proxy);
 
   // Getters for test data.
   CRWContentView* GetTransientContentView();
@@ -131,6 +132,7 @@ class TestWebState : public WebState {
   std::string mime_type_;
   std::unique_ptr<NavigationManager> navigation_manager_;
   UIView* view_;
+  CRWWebViewProxyType web_view_proxy_;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true> observers_;
