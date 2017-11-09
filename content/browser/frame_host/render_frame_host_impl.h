@@ -678,6 +678,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return frame_host_associated_binding_;
   }
 
+  void SetKeepAliveTimeoutForTesting(base::TimeDelta timeout);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1349,6 +1351,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<LegacyIPCFrameInputHandler> legacy_frame_input_handler_;
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
+  base::TimeDelta keep_alive_timeout_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

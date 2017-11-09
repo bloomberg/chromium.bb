@@ -16,10 +16,6 @@
 
 namespace content {
 
-namespace {
-constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(30);
-}  // namespace
-
 class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
  public:
   explicit Context(RenderProcessHost* process_host)
@@ -41,10 +37,10 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
 
   void DetachLater() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto timeout = kDefaultTimeout;
+    auto timeout = timeout_;
     int timeout_set_by_finch_in_sec = base::GetFieldTrialParamByFeatureAsInt(
         features::kKeepAliveRendererForKeepaliveRequests, "timeout_in_sec",
-        kDefaultTimeout.InSeconds());
+        timeout.InSeconds());
     // Adopt only "reasonable" values.
     if (timeout_set_by_finch_in_sec > 0 && timeout_set_by_finch_in_sec <= 60) {
       timeout = base::TimeDelta::FromSeconds(timeout_set_by_finch_in_sec);
@@ -64,6 +60,8 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     binding_set_.AddBinding(std::move(impl), std::move(request));
   }
 
+  void set_timeout(base::TimeDelta timeout) { timeout_ = timeout; }
+
  private:
   friend class base::RefCounted<Context>;
   ~Context() { Detach(); }
@@ -71,6 +69,7 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
   mojo::StrongBindingSet<mojom::KeepAliveHandle> binding_set_;
   const int process_id_;
   bool detached_ = false;
+  base::TimeDelta timeout_;
 
   base::WeakPtrFactory<Context> weak_ptr_factory_;
 
@@ -100,6 +99,10 @@ KeepAliveHandleFactory::~KeepAliveHandleFactory() {
 void KeepAliveHandleFactory::Create(mojom::KeepAliveHandleRequest request) {
   context_->AddBinding(std::make_unique<KeepAliveHandleImpl>(context_),
                        std::move(request));
+}
+
+void KeepAliveHandleFactory::SetTimeout(base::TimeDelta timeout) {
+  context_->set_timeout(timeout);
 }
 
 }  // namespace content

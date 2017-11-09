@@ -511,6 +511,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
       interface_provider_binding_(this),
+      keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -2807,6 +2808,13 @@ void RenderFrameHostImpl::BindInterfaceProviderRequest(
       std::move(interface_provider_request)));
 }
 
+void RenderFrameHostImpl::SetKeepAliveTimeoutForTesting(
+    base::TimeDelta timeout) {
+  keep_alive_timeout_ = timeout;
+  if (keep_alive_handle_factory_)
+    keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
+}
+
 void RenderFrameHostImpl::OnShowCreatedWindow(int pending_widget_routing_id,
                                               WindowOpenDisposition disposition,
                                               const gfx::Rect& initial_rect,
@@ -2954,6 +2962,7 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
   if (!keep_alive_handle_factory_) {
     keep_alive_handle_factory_ =
         std::make_unique<KeepAliveHandleFactory>(GetProcess());
+    keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
   }
   keep_alive_handle_factory_->Create(std::move(request));
 }
