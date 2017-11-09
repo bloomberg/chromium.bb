@@ -301,58 +301,42 @@ abort:
  * - set cursor position right before the word
  * - put a ^
  * - match rules
- *   - a syllable* rule is not matched if there's not a 1 or ^ at the current position
- *   - a nocross or syllable* rule is not matched if there's a > within or right after the rule
  *   - when a rule has been selected
  *     - if the braille does not match: try inhibiting the rule
  *       - if it's a nocross rule (longer than a single character)
- *         - put a > at the position right after the rule
- *       - else if it's a syllable* rule
- *         - put a | at the position right after the rule
+ *         - if there's a > within or right after the rule and there's no x right before
+ *           the rule
+ *           - already inhibited
+ *         - else: put a ) at the position right after the rule
  *       - else: abort this match
  *     - else (the braille does match)
- *       - if it's a nocross or syllable* rule
+ *       - if it's a nocross rule
+ *         - if there's a > within or right after the rule
+ *           - if there's a x at the position right before the rule
+ *             - put a 1 at that position
+ *             - reset all >
+ *           - else
+ *             - continue with next matched rule
  *         - put a 0 at each position within the rule
  *       - else
  *         - for each position within the rule
- *           - if there's a > or | at the next position
+ *           - if there's a > at the next position
  *             - put a 1
- *             - reset all > and |
+ *             - reset all >
  *           - else put a x
  *       - move cursor to the position right after the rule
- *       - if we're at the end of the word
- *         - if there's a | at the current position
- *           - abort this match
- *         - else put a $
- *       - else if the current rule is a syllable* or if there's a > or | at the next position
+ *       - put a $ if we're at the end of the word
+ *       - change all ) to >
+ *       - else if there's a > or a ) at the next position
  *         - put a 1
- *         - reset all > and |
+ *         - reset all >
  *         - match rules at the new cursor position
  *           - if match was aborted
  *             - revert changes
  *             - try inhibiting the last rule
  *             - go back to the position before the rule
  *             - continue with next matched rule
- *       - else if there's a | at the current position
- *         - put a 0
- *         - match rules at the new cursor position
- *           - if match was aborted
- *             - revert changes
- *             - try inhibiting the last rule
- *             - go back to the position before the rule
- *             - continue with next matched rule
- *       - else
- *         - try setting it to 0 and match rules at the new cursor position
- *         - try setting it to 1 and match rules at the new cursor position
- *         - if both were successful and the results are equal, put a x
- *         - else if only one was successful (one was aborted)
- *           - if the last rule was a nocross rule
- *             - put a 0 at each position within the rule
- *         - else (both were aborted)
- *           - revert changes
- *           - try inhibiting the last rule
- *           - go back to the position before the rule
- *           - continue with next matched rule
+ *       - else put a x
  */
 extern int
 suggestChunks(widechar *text, widechar *braille, char *hyphen_string) {
