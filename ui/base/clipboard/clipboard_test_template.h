@@ -354,7 +354,7 @@ TYPED_TEST(ClipboardTest, URLTest) {
 
   {
     ScopedClipboardWriter clipboard_writer(CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteURL(url);
+    clipboard_writer.WriteText(url);
   }
 
   EXPECT_THAT(this->GetAvailableTypes(CLIPBOARD_TYPE_COPY_PASTE),
@@ -604,7 +604,6 @@ TYPED_TEST(ClipboardTest, WriteEverything) {
   {
     ScopedClipboardWriter writer(CLIPBOARD_TYPE_COPY_PASTE);
     writer.WriteText(UTF8ToUTF16("foo"));
-    writer.WriteURL(UTF8ToUTF16("foo"));
     writer.WriteHTML(UTF8ToUTF16("foo"), "bar");
     writer.WriteBookmark(UTF8ToUTF16("foo"), "bar");
     writer.WriteHyperlink(ASCIIToUTF16("foo"), "bar");
@@ -648,11 +647,6 @@ TYPED_TEST(ClipboardTest, GetSequenceNumber) {
 TYPED_TEST(ClipboardTest, WriteTextEmptyParams) {
   ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
   scw.WriteText(base::string16());
-}
-
-TYPED_TEST(ClipboardTest, WriteURLEmptyParams) {
-  ScopedClipboardWriter scw(CLIPBOARD_TYPE_COPY_PASTE);
-  scw.WriteURL(base::string16());
 }
 
 TYPED_TEST(ClipboardTest, WriteHTMLEmptyParams) {

@@ -38,10 +38,6 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   // Converts |text| to UTF-8 and adds it to the clipboard.
   void WriteText(const base::string16& text);
 
-  // Converts the text of the URL to UTF-8 and adds it to the clipboard, then
-  // notifies the Clipboard that we just wrote a URL.
-  void WriteURL(const base::string16& text);
-
   // Adds HTML to the clipboard.  The url parameter is optional, but especially
   // useful if the HTML fragment contains relative links.
   void WriteHTML(const base::string16& markup, const std::string& source_url);
@@ -71,20 +67,12 @@ class UI_BASE_EXPORT ScopedClipboardWriter {
   void Reset();
 
  private:
-  // Converts |text| to UTF-8 and adds it to the clipboard.  If it's a URL, we
-  // also notify the clipboard of that fact.
-  void WriteTextOrURL(const base::string16& text, bool is_url);
-
   // We accumulate the data passed to the various targets in the |objects_|
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.
   Clipboard::ObjectMap objects_;
   const ClipboardType type_;
 
   SkBitmap bitmap_;
-
-  // We keep around the UTF-8 text of the URL in order to pass it to
-  // Clipboard::DidWriteURL().
-  std::string url_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };
