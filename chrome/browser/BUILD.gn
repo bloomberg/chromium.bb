@@ -1716,6 +1716,7 @@ split_static_library("browser") {
     "//media/mojo:features",
     "//media/mojo/interfaces:mirror_service_remoting",
     "//media/mojo/interfaces:remoting",
+    "//media/mojo/services",
     "//mojo/common",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
