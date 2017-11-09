@@ -1159,8 +1159,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
                           converted_image->refColorSpace());
     std::unique_ptr<uint8_t[]> converted_pixel(
         new uint8_t[image_info.bytesPerPixel()]());
-    converted_image->readPixels(image_info, converted_pixel.get(),
-                                image_info.minRowBytes(), 2, 2);
+    EXPECT_TRUE(converted_image->readPixels(image_info, converted_pixel.get(),
+                                            image_info.minRowBytes(), 2, 2));
 
     // Transform the source pixel and check if the image bitmap color conversion
     // is done correctly.

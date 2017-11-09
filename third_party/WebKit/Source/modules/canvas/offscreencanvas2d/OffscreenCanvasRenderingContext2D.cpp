@@ -143,9 +143,13 @@ scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
   return image;
 }
 
+// TODO(xlai): Handle error cases when, by any reason,
+// OffscreenCanvasRenderingContext2D fails to get ImageData.
 ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SnapshotReason reason) {
   if (!GetImageBuffer())
+    return nullptr;
+  if (Host()->Size().IsEmpty())
     return nullptr;
   scoped_refptr<StaticBitmapImage> snapshot =
       GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
@@ -155,8 +159,13 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SkImageInfo image_info =
         SkImageInfo::Make(this->Width(), this->Height(), kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType);
-    snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
+    sk_sp<SkImage> sk_image =
+        snapshot->PaintImageForCurrentFrame().GetSkImage();
+    bool read_pixels_successful = sk_image->readPixels(
         image_info, image_data->data()->Data(), image_info.minRowBytes(), 0, 0);
+    DCHECK(read_pixels_successful);
+    if (!read_pixels_successful)
+      return nullptr;
   }
   return image_data;
 }

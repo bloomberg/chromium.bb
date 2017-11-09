@@ -682,6 +682,8 @@ void HTMLCanvasElement::PrepareSurfaceForPaintingIfNeeded() {
 
 ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
                                           SnapshotReason reason) const {
+  if (Size().IsEmpty())
+    return nullptr;
   ImageData* image_data;
   if (Is3d()) {
     // Get non-premultiplied data because of inaccurate premultiplied alpha
@@ -698,9 +700,14 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
       if (snapshot) {
         SkImageInfo image_info = SkImageInfo::Make(
             width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-        snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
-            image_info, image_data->data()->Data(), image_info.minRowBytes(), 0,
-            0);
+        sk_sp<SkImage> sk_image =
+            snapshot->PaintImageForCurrentFrame().GetSkImage();
+        bool read_pixels_successful =
+            sk_image->readPixels(image_info, image_data->data()->Data(),
+                                 image_info.minRowBytes(), 0, 0);
+        DCHECK(read_pixels_successful);
+        if (!read_pixels_successful)
+          return nullptr;
       }
     }
     return image_data;
@@ -724,8 +731,14 @@ ImageData* HTMLCanvasElement::ToImageData(SourceDrawingBuffer source_buffer,
   if (snapshot) {
     SkImageInfo image_info = SkImageInfo::Make(
         width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-    snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
+    sk_sp<SkImage> sk_image =
+        snapshot->PaintImageForCurrentFrame().GetSkImage();
+    bool read_pixels_successful = sk_image->readPixels(
         image_info, image_data->data()->Data(), image_info.minRowBytes(), 0, 0);
+    DCHECK(read_pixels_successful || sk_image->bounds().isEmpty() ||
+           image_info.isEmpty());
+    if (!read_pixels_successful)
+      return nullptr;
   }
 
   return image_data;
