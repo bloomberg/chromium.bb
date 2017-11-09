@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 
@@ -72,10 +73,13 @@ bool MemoryMappedFile::Initialize(File file,
   switch (access) {
     case READ_WRITE_EXTEND:
       DCHECK(Region::kWholeFile != region);
-      // Ensure that the extended size is within limits of File.
-      if (region.size > std::numeric_limits<int64_t>::max() - region.offset) {
-        DLOG(ERROR) << "Region bounds exceed maximum for base::File.";
-        return false;
+      {
+        CheckedNumeric<int64_t> region_end(region.offset);
+        region_end += region.size;
+        if (!region_end.IsValid()) {
+          DLOG(ERROR) << "Region bounds exceed maximum for base::File.";
+          return false;
+        }
       }
       // Fall through.
     case READ_ONLY:
@@ -91,10 +95,8 @@ bool MemoryMappedFile::Initialize(File file,
   if (IsValid())
     return false;
 
-  if (region != Region::kWholeFile) {
+  if (region != Region::kWholeFile)
     DCHECK_GE(region.offset, 0);
-    DCHECK_GT(region.size, 0);
-  }
 
   file_ = std::move(file);
 
@@ -112,18 +114,17 @@ bool MemoryMappedFile::IsValid() const {
 
 // static
 void MemoryMappedFile::CalculateVMAlignedBoundaries(int64_t start,
-                                                    int64_t size,
+                                                    size_t size,
                                                     int64_t* aligned_start,
-                                                    int64_t* aligned_size,
+                                                    size_t* aligned_size,
                                                     int32_t* offset) {
   // Sadly, on Windows, the mmap alignment is not just equal to the page size.
-  const int64_t mask =
-      static_cast<int64_t>(SysInfo::VMAllocationGranularity()) - 1;
-  DCHECK_LT(mask, std::numeric_limits<int32_t>::max());
+  auto mask = SysInfo::VMAllocationGranularity() - 1;
+  DCHECK(IsValueInRangeForNumericType<int32_t>(mask));
   *offset = start & mask;
   *aligned_start = start & ~mask;
   *aligned_size = (size + *offset + mask) & ~mask;
 }
-#endif
+#endif  // !defined(OS_NACL)
 
 }  // namespace base
