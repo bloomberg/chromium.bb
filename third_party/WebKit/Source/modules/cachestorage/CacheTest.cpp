@@ -29,9 +29,12 @@
 #include "modules/fetch/ResponseInit.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebURLResponse.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using blink::mojom::CacheStorageError;
 
 namespace blink {
 
@@ -103,7 +106,7 @@ class ScopedFetcherForTests final
 // specific caches.
 class ErrorWebCacheForTests : public WebServiceWorkerCache {
  public:
-  ErrorWebCacheForTests(const WebServiceWorkerCacheError error)
+  ErrorWebCacheForTests(const CacheStorageError error)
       : error_(error),
         expected_url_(nullptr),
         expected_query_params_(nullptr),
@@ -220,7 +223,7 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
     EXPECT_EQ(expected_query_params.cache_name, query_params.cache_name);
   }
 
-  const WebServiceWorkerCacheError error_;
+  const CacheStorageError error_;
 
   const String* expected_url_;
   const QueryParams* expected_query_params_;
@@ -232,7 +235,7 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
 class NotImplementedErrorCache : public ErrorWebCacheForTests {
  public:
   NotImplementedErrorCache()
-      : ErrorWebCacheForTests(kWebServiceWorkerCacheErrorNotImplemented) {}
+      : ErrorWebCacheForTests(CacheStorageError::kErrorNotImplemented) {}
 };
 
 class CacheStorageTest : public ::testing::Test {
@@ -368,14 +371,14 @@ TEST_F(CacheStorageTest, Basics) {
   EXPECT_EQ(kNotImplementedString, GetRejectString(match_promise));
 
   cache = CreateCache(fetcher, test_cache = new ErrorWebCacheForTests(
-                                   kWebServiceWorkerCacheErrorNotFound));
+                                   CacheStorageError::kErrorNotFound));
   match_promise = cache->match(GetScriptState(), StringToRequestInfo(url),
                                options, exception_state);
   ScriptValue script_value = GetResolveValue(match_promise);
   EXPECT_TRUE(script_value.IsUndefined());
 
   cache = CreateCache(fetcher, test_cache = new ErrorWebCacheForTests(
-                                   kWebServiceWorkerCacheErrorExists));
+                                   CacheStorageError::kErrorExists));
   match_promise = cache->match(GetScriptState(), StringToRequestInfo(url),
                                options, exception_state);
   EXPECT_EQ("InvalidAccessError: Entry already exists.",

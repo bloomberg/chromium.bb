@@ -76816,7 +76816,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorkerCache.InitBackendResult"
-    enum="ServiceWorkerCacheErrorType">
+    enum="CacheStorageErrorType">
   <owner>jkarlin@chromium.org</owner>
   <summary>
     The result of opening the backend in the ServiceWorker Cache API.

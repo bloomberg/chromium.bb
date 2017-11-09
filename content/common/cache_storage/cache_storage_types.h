@@ -47,19 +47,6 @@ struct CONTENT_EXPORT CacheStorageBatchOperation {
   CacheStorageCacheQueryParams match_params;
 };
 
-// This enum is used in histograms, so do not change the ordering and always
-// append new types to the end.
-enum CacheStorageError {
-  CACHE_STORAGE_OK = 0,
-  CACHE_STORAGE_ERROR_EXISTS,
-  CACHE_STORAGE_ERROR_STORAGE,
-  CACHE_STORAGE_ERROR_NOT_FOUND,
-  CACHE_STORAGE_ERROR_QUOTA_EXCEEDED,
-  CACHE_STORAGE_ERROR_CACHE_NAME_NOT_FOUND,
-  CACHE_STORAGE_ERROR_QUERY_TOO_LARGE,
-  CACHE_STORAGE_ERROR_LAST = CACHE_STORAGE_ERROR_QUERY_TOO_LARGE
-};
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_CACHE_STORAGE_CACHE_STORAGE_TYPES_H_

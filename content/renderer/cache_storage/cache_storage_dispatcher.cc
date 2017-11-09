@@ -32,7 +32,7 @@
 namespace content {
 
 using base::TimeTicks;
-using blink::WebServiceWorkerCacheError;
+using blink::mojom::CacheStorageError;
 using blink::WebServiceWorkerCacheStorage;
 using blink::WebServiceWorkerRequest;
 using blink::WebString;
@@ -121,7 +121,7 @@ template <typename T>
 void ClearCallbacksMapWithErrors(T* callbacks_map) {
   typename T::iterator iter(callbacks_map);
   while (!iter.IsAtEnd()) {
-    iter.GetCurrentValue()->OnError(blink::kWebServiceWorkerCacheErrorNotFound);
+    iter.GetCurrentValue()->OnError(CacheStorageError::kErrorNotFound);
     callbacks_map->Remove(iter.GetCurrentKey());
     iter.Advance();
   }
@@ -341,10 +341,9 @@ void CacheStorageDispatcher::OnCacheStorageMatchSuccess(
   match_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheStorageHasError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheStorageHasError(int thread_id,
+                                                    int request_id,
+                                                    CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
       has_callbacks_.Lookup(request_id);
@@ -353,10 +352,9 @@ void CacheStorageDispatcher::OnCacheStorageHasError(
   has_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheStorageOpenError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheStorageOpenError(int thread_id,
+                                                     int request_id,
+                                                     CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks =
       open_callbacks_.Lookup(request_id);
@@ -368,7 +366,7 @@ void CacheStorageDispatcher::OnCacheStorageOpenError(
 void CacheStorageDispatcher::OnCacheStorageDeleteError(
     int thread_id,
     int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+    CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
       delete_callbacks_.Lookup(request_id);
@@ -380,7 +378,7 @@ void CacheStorageDispatcher::OnCacheStorageDeleteError(
 void CacheStorageDispatcher::OnCacheStorageMatchError(
     int thread_id,
     int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+    CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks* callbacks =
       match_callbacks_.Lookup(request_id);
@@ -450,10 +448,9 @@ void CacheStorageDispatcher::OnCacheBatchSuccess(
   cache_batch_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheMatchError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheMatchError(int thread_id,
+                                               int request_id,
+                                               CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheMatchCallbacks* callbacks =
       cache_match_callbacks_.Lookup(request_id);
@@ -462,10 +459,9 @@ void CacheStorageDispatcher::OnCacheMatchError(
   cache_match_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheMatchAllError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheMatchAllError(int thread_id,
+                                                  int request_id,
+                                                  CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks =
       cache_match_all_callbacks_.Lookup(request_id);
@@ -474,10 +470,9 @@ void CacheStorageDispatcher::OnCacheMatchAllError(
   cache_match_all_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheKeysError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheKeysError(int thread_id,
+                                              int request_id,
+                                              CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheWithRequestsCallbacks* callbacks =
       cache_keys_callbacks_.Lookup(request_id);
@@ -486,14 +481,13 @@ void CacheStorageDispatcher::OnCacheKeysError(
   cache_keys_times_.erase(request_id);
 }
 
-void CacheStorageDispatcher::OnCacheBatchError(
-    int thread_id,
-    int request_id,
-    blink::WebServiceWorkerCacheError reason) {
+void CacheStorageDispatcher::OnCacheBatchError(int thread_id,
+                                               int request_id,
+                                               CacheStorageError reason) {
   DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheBatchCallbacks* callbacks =
       cache_batch_callbacks_.Lookup(request_id);
-  callbacks->OnError(blink::WebServiceWorkerCacheError(reason));
+  callbacks->OnError(CacheStorageError(reason));
   cache_batch_callbacks_.Remove(request_id);
   cache_batch_times_.erase(request_id);
 }

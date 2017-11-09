@@ -33,12 +33,13 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
+using blink::mojom::CacheStorageError;
 using blink::protocol::Array;
 // Renaming Cache since there is another blink::Cache.
 using ProtocolCache = blink::protocol::CacheStorage::Cache;
@@ -115,20 +116,25 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   return AssertCacheStorage(security_origin, result);
 }
 
-CString ServiceWorkerCacheErrorString(WebServiceWorkerCacheError error) {
+CString CacheStorageErrorString(CacheStorageError error) {
   switch (error) {
-    case kWebServiceWorkerCacheErrorNotImplemented:
+    case CacheStorageError::kErrorNotImplemented:
       return CString("not implemented.");
-    case kWebServiceWorkerCacheErrorNotFound:
+    case CacheStorageError::kErrorNotFound:
       return CString("not found.");
-    case kWebServiceWorkerCacheErrorExists:
+    case CacheStorageError::kErrorExists:
       return CString("cache already exists.");
-    case kWebServiceWorkerCacheErrorQuotaExceeded:
+    case CacheStorageError::kErrorQuotaExceeded:
       return CString("quota exceeded.");
-    case kWebServiceWorkerCacheErrorCacheNameNotFound:
+    case CacheStorageError::kErrorCacheNameNotFound:
       return CString("cache not found.");
-    case kWebServiceWorkerCacheErrorTooLarge:
+    case CacheStorageError::kErrorQueryTooLarge:
       return CString("operation too large.");
+    case CacheStorageError::kErrorStorage:
+      return CString("storage failure.");
+    case CacheStorageError::kSuccess:
+      // This function should only be called upon error.
+      break;
   }
   NOTREACHED();
   return "";
@@ -183,10 +189,10 @@ class RequestCacheNames
     callback_->sendSuccess(std::move(array));
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -309,11 +315,11 @@ class GetCacheResponsesForRequestData
     accumulator_->AddRequestResponsePair(request_, response);
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     accumulator_->SendFailure(ProtocolResponse::Error(
         String::Format("Error requesting responses for cache  %s: %s",
                        params_.cache_name.Utf8().data(),
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -355,11 +361,11 @@ class GetCacheKeysForRequestData
     }
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting requests for cache %s: %s",
                        params_.cache_name.Utf8().data(),
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -386,10 +392,10 @@ class GetCacheForRequestData
                                          WebServiceWorkerCache::QueryParams());
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Error requesting cache %s: %s", params_.cache_name.Utf8().data(),
-        ServiceWorkerCacheErrorString(error).data())));
+        CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -407,10 +413,10 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -427,10 +433,10 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -463,10 +469,10 @@ class GetCacheForDeleteEntry
                                    WebVector<BatchOperation>(operations));
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Error requesting cache %s: %s", cache_name_.Utf8().data(),
-        ServiceWorkerCacheErrorString(error).data())));
+        CacheStorageErrorString(error).data())));
   }
 
  private:
@@ -553,10 +559,10 @@ class CachedResponseMatchCallback
         context_, response.GetBlobDataHandle(), std::move(callback_));
   }
 
-  void OnError(WebServiceWorkerCacheError error) override {
+  void OnError(CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Unable to read cached response: %s",
-                       ServiceWorkerCacheErrorString(error).data())));
+                       CacheStorageErrorString(error).data())));
   }
 
  private:

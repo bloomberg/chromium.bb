@@ -9,8 +9,8 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 
 #include <memory>
 
@@ -24,14 +24,17 @@ class WebServiceWorkerCache;
 // operations complete.
 class WebServiceWorkerCacheStorage {
  public:
-  using CacheStorageCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
+  using CacheStorageCallbacks =
+      WebCallbacks<void, blink::mojom::CacheStorageError>;
   using CacheStorageWithCacheCallbacks =
       WebCallbacks<std::unique_ptr<WebServiceWorkerCache>,
-                   WebServiceWorkerCacheError>;
+                   blink::mojom::CacheStorageError>;
   using CacheStorageKeysCallbacks =
-      WebCallbacks<const WebVector<WebString>&, WebServiceWorkerCacheError>;
+      WebCallbacks<const WebVector<WebString>&,
+                   blink::mojom::CacheStorageError>;
   using CacheStorageMatchCallbacks =
-      WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
+      WebCallbacks<const WebServiceWorkerResponse&,
+                   blink::mojom::CacheStorageError>;
 
   virtual ~WebServiceWorkerCacheStorage() {}
 

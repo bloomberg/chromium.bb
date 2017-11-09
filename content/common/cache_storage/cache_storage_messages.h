@@ -13,7 +13,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -42,8 +42,8 @@ IPC_STRUCT_TRAITS_BEGIN(content::CacheStorageBatchOperation)
   IPC_STRUCT_TRAITS_MEMBER(match_params)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerCacheError,
-                          blink::kWebServiceWorkerCacheErrorLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::CacheStorageError,
+                          blink::mojom::CacheStorageError::kLast)
 
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
@@ -144,19 +144,19 @@ IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageMatchSuccess,
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageHasError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
+                     blink::mojom::CacheStorageError /* reason */)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageOpenError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
+                     blink::mojom::CacheStorageError /* reason */)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageDeleteError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
+                     blink::mojom::CacheStorageError /* reason */)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheStorageMatchError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
+                     blink::mojom::CacheStorageError)
 
 // Sent at successful completion of Cache operations.
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchSuccess,
@@ -179,18 +179,18 @@ IPC_MESSAGE_CONTROL2(CacheStorageMsg_CacheBatchSuccess,
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
+                     blink::mojom::CacheStorageError)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheMatchAllError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
+                     blink::mojom::CacheStorageError)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheKeysError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
+                     blink::mojom::CacheStorageError)
 IPC_MESSAGE_CONTROL3(CacheStorageMsg_CacheBatchError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
+                     blink::mojom::CacheStorageError)
 
 #endif  // CONTENT_COMMON_CACHE_STORAGE_CACHE_STORAGE_MESSAGES_H_

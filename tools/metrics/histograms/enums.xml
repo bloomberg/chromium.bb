@@ -4094,6 +4094,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="CACHE_MISS"/>
 </enum>
 
+<enum name="CacheStorageErrorType">
+  <int value="0" label="OK"/>
+  <int value="1" label="Exists Error"/>
+  <int value="2" label="Storage Error"/>
+  <int value="3" label="Not Found Error"/>
+  <int value="4" label="Quota Exceeded Error"/>
+  <int value="5" label="Cache Name Not Found Error"/>
+  <int value="6" label="Query Too Large Error"/>
+  <int value="7" label="Not Implemented Error"/>
+</enum>
+
 <enum name="CALayerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Unknown failure"/>
@@ -35985,14 +35996,6 @@ Called by update_net_error_codes.py.-->
   <int value="9" label="SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED"/>
   <int value="10" label="SERVICE_UTILITY_SEMANTIC_CAPS_FAILED"/>
   <int value="11" label="SERVICE_UTILITY_FAILED_TO_START"/>
-</enum>
-
-<enum name="ServiceWorkerCacheErrorType">
-  <int value="0" label="OK"/>
-  <int value="1" label="Exists Error"/>
-  <int value="2" label="Storage Error"/>
-  <int value="3" label="Not Found Error"/>
-  <int value="4" label="Quota Exceeded Error"/>
 </enum>
 
 <enum name="ServiceWorkerContextRequestHandlerStatus">

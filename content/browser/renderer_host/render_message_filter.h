@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/message_filter.h"
+#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -142,7 +143,7 @@ class CONTENT_EXPORT RenderMessageFilter
                                   scoped_refptr<net::IOBuffer> buf,
                                   int buf_len,
                                   CacheStorageCacheHandle cache_handle,
-                                  CacheStorageError error);
+                                  blink::mojom::CacheStorageError error);
   void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
 
   bool CheckBenchmarkingEnabled() const;

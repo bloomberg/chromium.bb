@@ -86,6 +86,8 @@
 #include "base/threading/platform_thread.h"
 #endif
 
+using blink::mojom::CacheStorageError;
+
 namespace content {
 namespace {
 
@@ -311,7 +313,7 @@ void RenderMessageFilter::OnCacheStorageOpenCallback(
     int buf_len,
     CacheStorageCacheHandle cache_handle,
     CacheStorageError error) {
-  if (error != CACHE_STORAGE_OK || !cache_handle.value())
+  if (error != CacheStorageError::kSuccess || !cache_handle.value())
     return;
   CacheStorageCache* cache = cache_handle.value();
   cache->WriteSideData(base::BindOnce(&NoOpCacheStorageErrorCallback,
