@@ -65,7 +65,6 @@ enum class AllowDynamic { No, Yes };
 enum class IsFullscreen { No, Yes };
 enum class IsRequired { No, Yes };
 enum class IsSecure { No, Yes };
-enum class IsFrameHidden { No, Yes };
 enum class IsCCPromotable { No, Yes };
 enum class IsExpectingRelayout { No, Yes };
 enum class PromoteAggressively { No, Yes };
@@ -76,7 +75,6 @@ using TestParams = std::tuple<ShouldUseOverlay,
                               IsRequired,
                               IsFullscreen,
                               IsSecure,
-                              IsFrameHidden,
                               IsCCPromotable,
                               IsExpectingRelayout,
                               PromoteAggressively>;
@@ -385,10 +383,9 @@ TEST_P(AndroidVideoSurfaceChooserImplTest, OverlayIsUsedOrNotBasedOnState) {
   chooser_state_.is_required = IsYes(IsRequired, 3);
   chooser_state_.is_fullscreen = IsYes(IsFullscreen, 4);
   chooser_state_.is_secure = IsYes(IsSecure, 5);
-  chooser_state_.is_frame_hidden = IsYes(IsFrameHidden, 6);
-  chooser_state_.is_compositor_promotable = IsYes(IsCCPromotable, 7);
-  chooser_state_.is_expecting_relayout = IsYes(IsExpectingRelayout, 8);
-  chooser_state_.promote_aggressively = IsYes(PromoteAggressively, 9);
+  chooser_state_.is_compositor_promotable = IsYes(IsCCPromotable, 6);
+  chooser_state_.is_expecting_relayout = IsYes(IsExpectingRelayout, 7);
+  chooser_state_.promote_aggressively = IsYes(PromoteAggressively, 8);
 
   MockAndroidOverlay* overlay = overlay_.get();
 
@@ -422,7 +419,6 @@ INSTANTIATE_TEST_CASE_P(NoFullscreenUsesSurfaceTexture,
                                 Values(IsRequired::No),
                                 Values(IsFullscreen::No),
                                 Values(IsSecure::No),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Values(PromoteAggressively::No)));
@@ -435,7 +431,6 @@ INSTANTIATE_TEST_CASE_P(FullscreenUsesOverlay,
                                 Either(IsRequired),
                                 Values(IsFullscreen::Yes),
                                 Values(IsSecure::No),
-                                Values(IsFrameHidden::No),
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
                                 Either(PromoteAggressively)));
@@ -448,7 +443,6 @@ INSTANTIATE_TEST_CASE_P(RequiredUsesOverlay,
                                 Values(IsRequired::Yes),
                                 Either(IsFullscreen),
                                 Either(IsSecure),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
@@ -464,22 +458,8 @@ INSTANTIATE_TEST_CASE_P(SecureUsesOverlayIfPromotable,
                                 Either(IsRequired),
                                 Either(IsFullscreen),
                                 Values(IsSecure::Yes),
-                                Values(IsFrameHidden::No),
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
-                                Either(PromoteAggressively)));
-
-INSTANTIATE_TEST_CASE_P(HiddenFramesUseSurfaceTexture,
-                        AndroidVideoSurfaceChooserImplTest,
-                        Combine(Values(ShouldUseOverlay::No),
-                                Values(ShouldBePowerEfficient::No),
-                                Values(AllowDynamic::Yes),
-                                Values(IsRequired::No),
-                                Either(IsFullscreen),
-                                Either(IsSecure),
-                                Values(IsFrameHidden::Yes),
-                                Either(IsCCPromotable),
-                                Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
 
 // For all dynamic cases, we shouldn't use an overlay if the compositor won't
@@ -495,7 +475,6 @@ INSTANTIATE_TEST_CASE_P(NotCCPromotableNotRequiredUsesSurfaceTexture,
                                 Values(IsRequired::No),
                                 Either(IsFullscreen),
                                 Either(IsSecure),
-                                Values(IsFrameHidden::No),
                                 Values(IsCCPromotable::No),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
@@ -510,7 +489,6 @@ INSTANTIATE_TEST_CASE_P(InsecureExpectingRelayoutUsesSurfaceTexture,
                                 Values(IsRequired::No),
                                 Either(IsFullscreen),
                                 Either(IsSecure),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Values(IsExpectingRelayout::Yes),
                                 Either(PromoteAggressively)));
@@ -524,7 +502,6 @@ INSTANTIATE_TEST_CASE_P(NotDynamicInFullscreenUsesOverlay,
                                 Either(IsRequired),
                                 Values(IsFullscreen::Yes),
                                 Either(IsSecure),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
@@ -538,7 +515,6 @@ INSTANTIATE_TEST_CASE_P(NotDynamicSecureUsesOverlay,
                                 Either(IsRequired),
                                 Either(IsFullscreen),
                                 Values(IsSecure::Yes),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
@@ -552,7 +528,6 @@ INSTANTIATE_TEST_CASE_P(NotDynamicRequiredUsesOverlay,
                                 Values(IsRequired::Yes),
                                 Either(IsFullscreen),
                                 Either(IsSecure),
-                                Either(IsFrameHidden),
                                 Either(IsCCPromotable),
                                 Either(IsExpectingRelayout),
                                 Either(PromoteAggressively)));
@@ -566,7 +541,6 @@ INSTANTIATE_TEST_CASE_P(AggressiveOverlayIsPowerEfficient,
                                 Values(IsRequired::No),
                                 Values(IsFullscreen::No),
                                 Values(IsSecure::No),
-                                Values(IsFrameHidden::No),
                                 Values(IsCCPromotable::Yes),
                                 Values(IsExpectingRelayout::No),
                                 Values(PromoteAggressively::Yes)));

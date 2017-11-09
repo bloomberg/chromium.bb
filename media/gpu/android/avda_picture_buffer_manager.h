@@ -89,11 +89,6 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // Are there any unrendered picture buffers oustanding?
   bool HasUnrenderedPictures() const;
 
-  // If we're using an overlay, then drop all codec buffers for it, and also
-  // drop any reference to the surface bundle.  If we're not using an overlay,
-  // then do nothing.
-  void ImmediatelyForgetOverlay(const PictureBufferMap& buffers);
-
   // Returns the GL texture target that the PictureBuffer textures use.
   // Always use OES textures even though this will cause flickering in dev tools
   // when inspecting a fullscreen video.  See http://crbug.com/592798

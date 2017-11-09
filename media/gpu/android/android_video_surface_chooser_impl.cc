@@ -131,10 +131,6 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
       new_overlay_state = kUsingSurfaceTexture;
   }
 
-  // If our frame is hidden, then don't use overlays.
-  if (current_state_.is_frame_hidden)
-    new_overlay_state = kUsingSurfaceTexture;
-
   // If an overlay is required, then choose one.  The only way we won't is if we
   // don't have a factory or our request fails.
   if (current_state_.is_required) {
