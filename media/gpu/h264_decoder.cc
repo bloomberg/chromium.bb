@@ -1109,10 +1109,24 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   if (max_dpb_mbs == 0)
     return false;
 
-  size_t max_dpb_size = std::min(max_dpb_mbs / (width_mb * height_mb),
-                                 static_cast<int>(H264DPB::kDPBMaxSize));
-  if (max_dpb_size == 0) {
-    DVLOG(1) << "Invalid DPB Size";
+  // MaxDpbFrames from level limits per spec.
+  size_t max_dpb_frames = std::min(max_dpb_mbs / (width_mb * height_mb),
+                                   static_cast<int>(H264DPB::kDPBMaxSize));
+  DVLOG(1) << "MaxDpbFrames: " << max_dpb_frames
+           << ", max_num_ref_frames: " << sps->max_num_ref_frames
+           << ", max_dec_frame_buffering: " << sps->max_dec_frame_buffering;
+
+  // Set DPB size to at least the level limit, or what the stream requires.
+  size_t max_dpb_size =
+      std::max(static_cast<int>(max_dpb_frames),
+               std::max(sps->max_num_ref_frames, sps->max_dec_frame_buffering));
+  // Some non-conforming streams specify more frames are needed than the current
+  // level limit. Allow this, but only up to the maximum number of reference
+  // frames allowed per spec.
+  DVLOG_IF(1, max_dpb_size > max_dpb_frames)
+      << "Invalid stream, DPB size > MaxDpbFrames";
+  if (max_dpb_size == 0 || max_dpb_size > H264DPB::kDPBMaxSize) {
+    DVLOG(1) << "Invalid DPB size: " << max_dpb_size;
     return false;
   }
 
