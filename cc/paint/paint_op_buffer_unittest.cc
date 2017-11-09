@@ -1213,24 +1213,58 @@ std::vector<std::vector<SkPoint>> test_point_arrays = {
      SkPoint::Make(9, 9), SkPoint::Make(50, 50), SkPoint::Make(100, 100)},
 };
 
-std::vector<sk_sp<SkTextBlob>> test_blobs = {
+std::vector<std::vector<PaintTypeface>> test_typefaces = {
+    [] { return std::vector<PaintTypeface>{PaintTypeface::TestTypeface()}; }(),
+    [] {
+      return std::vector<PaintTypeface>{PaintTypeface::TestTypeface(),
+                                        PaintTypeface::TestTypeface()};
+    }(),
+};
+
+std::vector<scoped_refptr<PaintTextBlob>> test_paint_blobs = {
     [] {
       SkPaint font;
       font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      font.setTypeface(test_typefaces[0][0].ToSkTypeface());
 
       SkTextBlobBuilder builder;
-      builder.allocRun(font, 5, 1.2f, 2.3f, &test_rects[0]);
-      return builder.make();
+      int glyph_count = 5;
+      const auto& run =
+          builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
+      // allocRun() allocates only the glyph buffer.
+      std::fill(run.glyphs, run.glyphs + glyph_count, 0);
+      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
+                                                 test_typefaces[0]);
     }(),
     [] {
       SkPaint font;
       font.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+      font.setTypeface(test_typefaces[1][0].ToSkTypeface());
 
       SkTextBlobBuilder builder;
-      builder.allocRun(font, 5, 1.2f, 2.3f, &test_rects[0]);
-      builder.allocRunPos(font, 16, &test_rects[1]);
-      builder.allocRunPosH(font, 8, 0, &test_rects[2]);
-      return builder.make();
+      int glyph_count = 5;
+      const auto& run1 =
+          builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
+      // allocRun() allocates only the glyph buffer.
+      std::fill(run1.glyphs, run1.glyphs + glyph_count, 0);
+
+      glyph_count = 16;
+      const auto& run2 = builder.allocRunPos(font, glyph_count, &test_rects[1]);
+      // allocRun() allocates the glyph buffer, and 2 scalars per glyph for the
+      // pos buffer.
+      std::fill(run2.glyphs, run2.glyphs + glyph_count, 0);
+      std::fill(run2.pos, run2.pos + glyph_count * 2, 0);
+
+      font.setTypeface(test_typefaces[1][1].ToSkTypeface());
+      glyph_count = 8;
+      const auto& run3 =
+          builder.allocRunPosH(font, glyph_count, 0, &test_rects[2]);
+      // allocRun() allocates the glyph buffer, and 1 scalar per glyph for the
+      // pos buffer.
+      std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
+      std::fill(run3.pos, run3.pos + glyph_count, 0);
+      return base::MakeRefCounted<PaintTextBlob>(builder.make(),
+                                                 test_typefaces[1]);
     }(),
 };
 
@@ -1513,10 +1547,10 @@ void PushDrawRRectOps(PaintOpBuffer* buffer) {
 }
 
 void PushDrawTextBlobOps(PaintOpBuffer* buffer) {
-  size_t len = std::min(std::min(test_blobs.size(), test_flags.size()),
+  size_t len = std::min(std::min(test_paint_blobs.size(), test_flags.size()),
                         test_floats.size() - 1);
   for (size_t i = 0; i < len; ++i) {
-    buffer->push<DrawTextBlobOp>(test_blobs[i], test_floats[i],
+    buffer->push<DrawTextBlobOp>(test_paint_blobs[i], test_floats[i],
                                  test_floats[i + 1], test_flags[i]);
   }
   ValidateOps<DrawTextBlobOp>(buffer);
@@ -1747,27 +1781,18 @@ void CompareDrawTextBlobOp(const DrawTextBlobOp* original,
   EXPECT_EQ(original->x, written->x);
   EXPECT_EQ(original->y, written->y);
 
-  // TODO(enne): implement SkTextBlob serialization: http://crbug.com/737629
-  if (!original->blob || !written->blob)
-    return;
+  ASSERT_TRUE(*original->blob);
+  ASSERT_TRUE(*written->blob);
 
-  ASSERT_TRUE(original->blob);
-  ASSERT_TRUE(written->blob);
+  SkBinaryWriteBuffer original_flattened;
+  original->blob->ToSkTextBlob()->flatten(original_flattened);
+  std::vector<char> original_mem(original_flattened.bytesWritten());
+  original_flattened.writeToMemory(original_mem.data());
 
-  // No text blob operator==, so flatten them both and compare.
-  size_t max_size = original->skip;
-
-  std::vector<char> original_mem;
-  original_mem.resize(max_size);
-  SkBinaryWriteBuffer original_flattened(&original_mem[0], max_size);
-  original->blob->flatten(original_flattened);
-  original_mem.resize(original_flattened.bytesWritten());
-
-  std::vector<char> written_mem;
-  written_mem.resize(max_size);
-  SkBinaryWriteBuffer written_flattened(&written_mem[0], max_size);
-  written->blob->flatten(written_flattened);
-  written_mem.resize(written_flattened.bytesWritten());
+  SkBinaryWriteBuffer written_flattened;
+  written->blob->ToSkTextBlob()->flatten(written_flattened);
+  std::vector<char> written_mem(written_flattened.bytesWritten());
+  written_flattened.writeToMemory(written_mem.data());
 
   ASSERT_EQ(original_mem.size(), written_mem.size());
   EXPECT_EQ(original_mem, written_mem);
@@ -2565,7 +2590,10 @@ TEST(PaintOpBufferTest, BoundingRect_DrawTextBlobOp) {
     auto* op = static_cast<DrawTextBlobOp*>(base_op);
 
     ASSERT_TRUE(PaintOp::GetBounds(op, &rect));
-    EXPECT_EQ(rect, op->blob->bounds().makeOffset(op->x, op->y).makeSorted());
+    EXPECT_EQ(rect, op->blob->ToSkTextBlob()
+                        ->bounds()
+                        .makeOffset(op->x, op->y)
+                        .makeSorted());
   }
 }
 

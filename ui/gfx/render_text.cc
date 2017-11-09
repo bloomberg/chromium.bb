@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_shader.h"
+#include "cc/paint/paint_text_blob.h"
 #include "third_party/icu/source/common/unicode/rbbi.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
@@ -241,7 +242,12 @@ void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
   static_assert(sizeof(*pos) == 2 * sizeof(*run_buffer.pos), "");
   memcpy(run_buffer.pos, pos, glyph_count * sizeof(*pos));
 
-  canvas_skia_->drawTextBlob(builder.make(), 0, 0, flags_);
+  // TODO(vmpstr): In order to OOP raster this, we would have to plumb PaintFont
+  // here instead of |flags_|.
+  canvas_skia_->drawTextBlob(
+      base::MakeRefCounted<cc::PaintTextBlob>(builder.make(),
+                                              std::vector<cc::PaintTypeface>{}),
+      0, 0, flags_);
 }
 
 void SkiaTextRenderer::DrawUnderline(int x, int y, int width) {

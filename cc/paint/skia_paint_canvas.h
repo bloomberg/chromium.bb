@@ -14,6 +14,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
+#include "cc/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace cc {
@@ -96,7 +97,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                   SkScalar top,
                   const PaintFlags* flags) override;
 
-  void drawTextBlob(sk_sp<SkTextBlob> blob,
+  void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                     SkScalar x,
                     SkScalar y,
                     const PaintFlags& flags) override;

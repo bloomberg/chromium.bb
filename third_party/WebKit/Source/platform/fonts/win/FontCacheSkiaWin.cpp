@@ -339,12 +339,13 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
   DCHECK_EQ(creation_params.CreationType(), kCreateFontByFamily);
 
   CString name;
-  sk_sp<SkTypeface> tf =
+  PaintTypeface paint_tf =
       CreateTypeface(font_description, creation_params, name);
   // Windows will always give us a valid pointer here, even if the face name
   // is non-existent. We have to double-check and see if the family name was
   // really used.
-  if (!tf || !TypefacesMatchesFamily(tf.get(), creation_params.Family())) {
+  if (!paint_tf || !TypefacesMatchesFamily(paint_tf.ToSkTypeface().get(),
+                                           creation_params.Family())) {
     AtomicString adjusted_name;
     FontSelectionValue variant_weight;
     FontSelectionValue variant_stretch;
@@ -364,34 +365,40 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
     }
 
     if (alternate_font_name == AlternateFontName::kLastResort) {
-      if (!tf)
+      if (!paint_tf)
         return nullptr;
     } else if (TypefacesHasWeightSuffix(creation_params.Family(), adjusted_name,
                                         variant_weight)) {
       FontFaceCreationParams adjusted_params(adjusted_name);
       FontDescription adjusted_font_description = font_description;
       adjusted_font_description.SetWeight(variant_weight);
-      tf = CreateTypeface(adjusted_font_description, adjusted_params, name);
-      if (!tf || !TypefacesMatchesFamily(tf.get(), adjusted_name))
+      paint_tf =
+          CreateTypeface(adjusted_font_description, adjusted_params, name);
+      if (!paint_tf || !TypefacesMatchesFamily(paint_tf.ToSkTypeface().get(),
+                                               adjusted_name)) {
         return nullptr;
+      }
 
     } else if (TypefacesHasStretchSuffix(creation_params.Family(),
                                          adjusted_name, variant_stretch)) {
       FontFaceCreationParams adjusted_params(adjusted_name);
       FontDescription adjusted_font_description = font_description;
       adjusted_font_description.SetStretch(variant_stretch);
-      tf = CreateTypeface(adjusted_font_description, adjusted_params, name);
-      if (!tf || !TypefacesMatchesFamily(tf.get(), adjusted_name))
+      paint_tf =
+          CreateTypeface(adjusted_font_description, adjusted_params, name);
+      if (!paint_tf || !TypefacesMatchesFamily(paint_tf.ToSkTypeface().get(),
+                                               adjusted_name)) {
         return nullptr;
-
+      }
     } else {
       return nullptr;
     }
   }
 
+  const auto& tf = paint_tf.ToSkTypeface();
   std::unique_ptr<FontPlatformData> result =
       WTF::WrapUnique(new FontPlatformData(
-          tf, name.data(), font_size,
+          paint_tf, name.data(), font_size,
           (font_description.Weight() >= BoldThreshold() && !tf->isBold()) ||
               font_description.IsSyntheticBold(),
           ((font_description.Style() == ItalicSlopeValue()) &&
