@@ -245,10 +245,10 @@ const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPCondensedLayoutFeature{
-    "NTPCondensedLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPCondensedLayout", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNTPCondensedTileLayoutFeature{
-    "NTPCondensedTileLayout", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPCondensedTileLayout", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
