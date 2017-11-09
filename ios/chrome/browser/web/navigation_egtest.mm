@@ -502,20 +502,12 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 // Test to load a page that contains a redirect window, then does multiple back
 // and forth navigations.
 - (void)testRedirectWindow {
-  // TODO(crbug.com/772128): This test is very flaky on iOS 11 iPads.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad.");
-  }
   [self verifyBackAndForwardAfterRedirect:"redirectWindow"];
 }
 
 // Test to load a page that contains a redirect refresh, then does multiple back
 // and forth navigations.
 - (void)testRedirectRefresh {
-  // TODO(crbug.com/772128): This test is very flaky on iOS 11 iPads.
-  if (IsIPadIdiom() && base::ios::IsRunningOnIOS11OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad.");
-  }
   [self verifyBackAndForwardAfterRedirect:"redirectRefresh"];
 }
 
