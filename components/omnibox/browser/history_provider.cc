@@ -115,16 +115,21 @@ void HistoryProvider::ConvertOpenTabMatches() {
           base::UTF8ToUTF16(" - ");
       match.description = switch_tab_message + match.description;
       // Add classfication for the prefix.
-      if (match.description_class[0].style != ACMatchClassification::NONE) {
-        match.description_class.insert(
-            match.description_class.begin(),
+      if (match.description_class.empty()) {
+        match.description_class.push_back(
             ACMatchClassification(0, ACMatchClassification::NONE));
-      }
-      // Shift the rest.
-      for (auto& classification : match.description_class) {
-        if (classification.offset != 0 ||
-            classification.style != ACMatchClassification::NONE)
-          classification.offset += switch_tab_message.size();
+      } else {
+        if (match.description_class[0].style != ACMatchClassification::NONE) {
+          match.description_class.insert(
+              match.description_class.begin(),
+              ACMatchClassification(0, ACMatchClassification::NONE));
+        }
+        // Shift the rest.
+        for (auto& classification : match.description_class) {
+          if (classification.offset != 0 ||
+              classification.style != ACMatchClassification::NONE)
+            classification.offset += switch_tab_message.size();
+        }
       }
     }
   }
