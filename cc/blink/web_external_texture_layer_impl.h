@@ -27,6 +27,7 @@ class WebExternalTextureLayerImpl : public blink::WebExternalTextureLayer {
   blink::WebLayer* Layer() override;
   void ClearTexture() override;
   void SetOpaque(bool opaque) override;
+  void SetFlipped(bool flipped) override;
   void SetPremultipliedAlpha(bool premultiplied) override;
   void SetBlendBackgroundColor(bool blend) override;
   void SetNearestNeighbor(bool nearest_neighbor) override;

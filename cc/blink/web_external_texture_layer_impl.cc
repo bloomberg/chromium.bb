@@ -35,6 +35,10 @@ void WebExternalTextureLayerImpl::SetOpaque(bool opaque) {
   static_cast<TextureLayer*>(layer_->layer())->SetContentsOpaque(opaque);
 }
 
+void WebExternalTextureLayerImpl::SetFlipped(bool flipped) {
+  static_cast<TextureLayer*>(layer_->layer())->SetFlipped(flipped);
+}
+
 void WebExternalTextureLayerImpl::SetPremultipliedAlpha(
     bool premultiplied_alpha) {
   static_cast<TextureLayer*>(layer_->layer())
