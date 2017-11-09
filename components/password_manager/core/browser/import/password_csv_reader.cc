@@ -98,8 +98,10 @@ bool PasswordCSVReader::RecordToPasswordForm(
   GURL origin;
   auto origin_in_record = record.find(url_field_name_);
 
-  if (origin_in_record == record.end())
+  if (origin_in_record == record.end() ||
+      !base::IsStringASCII(origin_in_record->second)) {
     return false;
+  }
   origin = GURL(origin_in_record->second);
 
   base::string16 username_value;
