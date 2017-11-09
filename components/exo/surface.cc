@@ -434,9 +434,11 @@ void Surface::Commit() {
   needs_commit_surface_ = true;
   if (delegate_)
     delegate_->OnSurfaceCommit();
+  else
+    CommitSurfaceHierarchy(nullptr, nullptr, false);
 }
 
-gfx::Rect Surface::CommitSurfaceHierarchy(
+void Surface::CommitSurfaceHierarchy(
     std::list<FrameCallback>* frame_callbacks,
     std::list<PresentationCallback>* presentation_callbacks,
     bool synchronized) {
@@ -488,11 +490,13 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
       UpdateBufferTransform();
 
     // Move pending frame callbacks to the end of frame_callbacks.
-    frame_callbacks->splice(frame_callbacks->end(), pending_frame_callbacks_);
+    if (frame_callbacks)
+      frame_callbacks->splice(frame_callbacks->end(), pending_frame_callbacks_);
 
     // Move pending presentation callbacks to the end of presentation_callbacks.
-    presentation_callbacks->splice(presentation_callbacks->end(),
-                                   pending_presentation_callbacks_);
+    if (presentation_callbacks)
+      presentation_callbacks->splice(presentation_callbacks->end(),
+                                     pending_presentation_callbacks_);
 
     UpdateContentSize();
 
@@ -531,7 +535,7 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
     pending_damage_.setEmpty();
   }
 
-  gfx::Rect bounds(content_size_);
+  surface_hierarchy_content_bounds_ = gfx::Rect(content_size_);
 
   // The top most sub-surface is at the front of the RenderPass's quad_list,
   // so we need composite sub-surface in reversed order.
@@ -540,12 +544,12 @@ gfx::Rect Surface::CommitSurfaceHierarchy(
     gfx::Point origin = sub_surface_entry.second;
     // Synchronously commit all pending state of the sub-surface and its
     // descendants.
-    bounds.Union(sub_surface->CommitSurfaceHierarchy(
-                     frame_callbacks, presentation_callbacks, synchronized) +
-                 origin.OffsetFromOrigin());
+    sub_surface->CommitSurfaceHierarchy(frame_callbacks, presentation_callbacks,
+                                        synchronized);
+    surface_hierarchy_content_bounds_.Union(
+        sub_surface->surface_hierarchy_content_bounds() +
+        origin.OffsetFromOrigin());
   }
-
-  return bounds;
 }
 
 void Surface::AppendSurfaceHierarchyContentsToFrame(

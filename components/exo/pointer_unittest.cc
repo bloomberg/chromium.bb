@@ -15,7 +15,11 @@
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/env.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 
@@ -68,6 +72,20 @@ TEST_F(PointerTest, SetCursor) {
 
   // Set pointer surface.
   pointer->SetCursor(pointer_surface.get(), gfx::Point());
+  RunAllPendingInMessageLoop();
+
+  {
+    viz::SurfaceId surface_id = pointer->host_window()->GetSurfaceId();
+    viz::SurfaceManager* surface_manager = aura::Env::GetInstance()
+                                               ->context_factory_private()
+                                               ->GetFrameSinkManager()
+                                               ->surface_manager();
+    ASSERT_TRUE(surface_manager->GetSurfaceForId(surface_id)->HasActiveFrame());
+    const viz::CompositorFrame& frame =
+        surface_manager->GetSurfaceForId(surface_id)->GetActiveFrame();
+    EXPECT_EQ(gfx::Rect(0, 0, 10, 10),
+              frame.render_pass_list.back()->output_rect);
+  }
 
   // Adjust hotspot.
   pointer->SetCursor(pointer_surface.get(), gfx::Point(1, 1));

@@ -146,11 +146,10 @@ class Surface final : public ui::PropertyHandler {
   void Commit();
 
   // This will commit all pending state of the surface and its descendants by
-  // recursively calling CommitSurfaceHierarchy() for each sub-surface. Returns
-  // the bounding box of the surface and its descendants, in the local
-  // coordinate space of the surface. If |synchronized| is set to false, then
-  // synchronized surfaces should not commit pending state.
-  gfx::Rect CommitSurfaceHierarchy(
+  // recursively calling CommitSurfaceHierarchy() for each sub-surface.
+  // If |synchronized| is set to false, then synchronized surfaces should not
+  // commit pending state.
+  void CommitSurfaceHierarchy(
       std::list<FrameCallback>* frame_callbacks,
       std::list<PresentationCallback>* presentation_callbacks,
       bool synchronized);
@@ -209,8 +208,15 @@ class Surface final : public ui::PropertyHandler {
   // Called when the begin frame source has changed.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
 
-  // Returns the active contents size.
+  // Returns the active content size.
   const gfx::Size& content_size() const { return content_size_; }
+
+  // Returns the active content bounds for surface hierarchy. ie. the bounding
+  // box of the surface and its descendants, in the local coordinate space of
+  // the surface.
+  const gfx::Rect& surface_hierarchy_content_bounds() const {
+    return surface_hierarchy_content_bounds_;
+  }
 
   // Returns true if the associated window is in 'stylus-only' mode.
   bool IsStylusOnly();
@@ -296,6 +302,9 @@ class Surface final : public ui::PropertyHandler {
 
   // This is the size of the last committed contents.
   gfx::Size content_size_;
+
+  // This is the bounds of the last committed surface hierarchy contents.
+  gfx::Rect surface_hierarchy_content_bounds_;
 
   // This is true when Attach() has been called and new contents should take
   // effect next time Commit() is called.

@@ -131,11 +131,8 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   }
 
   // Early out if cursor did not change.
-  if (!cursor_changed) {
-    // Cursor scale or rotation may have changed.
-    UpdateCursor();
+  if (!cursor_changed)
     return;
-  }
 
   // If |SurfaceTreeHost::root_surface_| is set then asynchronously capture a
   // snapshot of cursor, otherwise cancel pending capture and immediately set
@@ -149,12 +146,12 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   }
 }
 
-gfx::NativeCursor Pointer::GetCursor() {
-  return cursor_;
-}
-
 void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
   pinch_delegate_ = delegate;
+}
+
+gfx::NativeCursor Pointer::GetCursor() {
+  return cursor_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,10 +161,8 @@ void Pointer::OnSurfaceCommit() {
   SurfaceTreeHost::OnSurfaceCommit();
 
   // Capture new cursor to reflect result of commit.
-  if (focus_surface_ && !host_window()->bounds().IsEmpty())
+  if (focus_surface_)
     CaptureCursor(hotspot_);
-
-  SubmitCompositorFrame();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -333,12 +328,18 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
 // ui::client::CursorClientObserver overrides:
 
 void Pointer::OnCursorSizeChanged(ui::CursorSize cursor_size) {
-  if (focus_surface_)
+  if (!focus_surface_)
+    return;
+
+  if (cursor_ != ui::CursorType::kNull)
     UpdateCursor();
 }
 
 void Pointer::OnCursorDisplayChanged(const display::Display& display) {
-  if (focus_surface_)
+  if (!focus_surface_)
+    return;
+
+  if (cursor_ != ui::CursorType::kNull)
     UpdateCursor();
 }
 
@@ -389,6 +390,9 @@ void Pointer::CaptureCursor(const gfx::Point& hotspot) {
   DCHECK(root_surface());
   DCHECK(focus_surface_);
 
+  // Submit compositor frame to be captured.
+  SubmitCompositorFrame();
+
   // Surface size is in DIPs, while layer size is in pseudo-DIP units that
   // depend on the DSF of the display mode. Scale the layer to capture the
   // surface at a constant pixel size, regardless of the primary display's
@@ -415,14 +419,13 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
   if (!focus_surface_)
     return;
 
-  if (result->IsEmpty()) {
-    cursor_bitmap_.reset();
-  } else {
-    cursor_bitmap_ = result->AsSkBitmap();
-    DCHECK(cursor_bitmap_.readyToDraw());
-    cursor_hotspot_ = hotspot;
-  }
+  // Only successful captures should update the cursor.
+  if (result->IsEmpty())
+    return;
 
+  cursor_bitmap_ = result->AsSkBitmap();
+  DCHECK(cursor_bitmap_.readyToDraw());
+  cursor_hotspot_ = hotspot;
   UpdateCursor();
 }
 
