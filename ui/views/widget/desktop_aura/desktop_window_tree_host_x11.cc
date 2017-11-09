@@ -1514,6 +1514,14 @@ void DesktopWindowTreeHostX11::InitX11Window(
                                              ui::HIDE_TITLEBAR_WHEN_MAXIMIZED);
   }
 
+  if (views::LinuxUI::instance() &&
+      views::LinuxUI::instance()->PreferDarkTheme()) {
+    const unsigned char kDarkGtkThemeVariant[] = "dark";
+    XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_GTK_THEME_VARIANT"),
+                    gfx::GetAtom("UTF8_STRING"), 8, PropModeReplace,
+                    kDarkGtkThemeVariant, arraysize(kDarkGtkThemeVariant) - 1);
+  }
+
   // If we have a parent, record the parent/child relationship. We use this
   // data during destruction to make sure that when we try to close a parent
   // window, we also destroy all child windows.
