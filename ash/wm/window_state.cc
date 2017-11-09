@@ -336,6 +336,14 @@ void WindowState::SetWindowPositionManaged(bool managed) {
   window_->SetProperty(kWindowPositionManagedTypeKey, managed);
 }
 
+bool WindowState::CanConsumeSystemKeys() const {
+  return window_->GetProperty(kCanConsumeSystemKeysKey);
+}
+
+void WindowState::SetCanConsumeSystemKeys(bool can_consume_system_keys) {
+  window_->SetProperty(kCanConsumeSystemKeysKey, can_consume_system_keys);
+}
+
 void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   bounds_changed_by_user_ = bounds_changed_by_user;
   if (bounds_changed_by_user)
