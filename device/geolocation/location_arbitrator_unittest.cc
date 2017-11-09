@@ -61,7 +61,7 @@ void SetPositionFix(FakeLocationProvider* provider,
   position.latitude = latitude;
   position.longitude = longitude;
   position.accuracy = accuracy;
-  position.timestamp = GetTimeNowForTest().ToDoubleT();
+  position.timestamp = GetTimeNowForTest();
   ASSERT_TRUE(ValidateGeoposition(position));
   provider->HandlePositionChanged(position);
 }
@@ -192,8 +192,8 @@ class GeolocationLocationArbitratorTest : public testing::Test {
 
   base::TimeDelta SwitchOnFreshnessCliff() {
     // Add 1, to ensure it meets any greater-than test.
-    return base::TimeDelta::FromMilliseconds(
-        LocationArbitrator::kFixStaleTimeoutMilliseconds + 1);
+    return LocationArbitrator::kFixStaleTimeoutTimeDelta +
+           base::TimeDelta::FromMilliseconds(1);
   }
 
   FakeLocationProvider* cell() { return arbitrator_->cell_; }

@@ -503,7 +503,7 @@ void OverrideGeolocation(double latitude, double longitude) {
   position.longitude = longitude;
   position.altitude = 0.;
   position.accuracy = 0.;
-  position.timestamp = base::Time::Now().ToDoubleT();
+  position.timestamp = base::Time::Now();
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 }

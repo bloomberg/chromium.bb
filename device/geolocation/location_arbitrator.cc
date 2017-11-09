@@ -20,8 +20,8 @@ namespace device {
 
 // To avoid oscillations, set this to twice the expected update interval of a
 // a GPS-type location provider (in case it misses a beat) plus a little.
-const int64_t LocationArbitrator::kFixStaleTimeoutMilliseconds =
-    11 * base::Time::kMillisecondsPerSecond;
+const base::TimeDelta LocationArbitrator::kFixStaleTimeoutTimeDelta =
+    base::TimeDelta::FromSeconds(11);
 
 LocationArbitrator::LocationArbitrator(
     std::unique_ptr<GeolocationDelegate> delegate,
@@ -190,8 +190,8 @@ bool LocationArbitrator::IsNewPositionBetter(
     } else if (from_same_provider) {
       // Same provider, fresher location.
       return true;
-    } else if ((GetTimeNow() - base::Time::FromDoubleT(old_position.timestamp))
-                   .InMilliseconds() > kFixStaleTimeoutMilliseconds) {
+    } else if (GetTimeNow() - old_position.timestamp >
+               kFixStaleTimeoutTimeDelta) {
       // Existing fix is stale.
       return true;
     }

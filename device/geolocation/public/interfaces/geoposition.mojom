@@ -4,6 +4,8 @@
 
 module device.mojom;
 
+import "mojo/common/time.mojom";
+
 // Sentinel values to mark invalid data. (WebKit carries companion is_valid
 // bools for this purpose; we may eventually follow that approach, but
 // sentinels worked OK in the Gears code this is based on.)
@@ -46,11 +48,10 @@ struct Geoposition {
   double heading = kBadHeading;
   // Horizontal component of device velocity in meters per second.
   double speed = kBadSpeed;
-  // Time of position measurement in seconds since Epoch in UTC time. This is
-  // taken from the host computer's system clock (i.e. from Time::Now(), not the
-  // source device's clock). It can be converted to base::Time by
-  // FromDoubleT(double dt), see base/time/time.h
-  double timestamp;
+  // Time of position measurement in seconds since the Windows FILETIME epoch
+  // (1601-01-01 00:00:00 UTC). This is taken from the host computer's system
+  // clock (i.e. from Time::Now(), not the source device's clock).
+  mojo.common.mojom.Time timestamp;
 
   // Error code, see enum above.
   ErrorCode error_code = NONE;

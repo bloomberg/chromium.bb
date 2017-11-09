@@ -183,7 +183,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     pos.latitude = id;
     pos.longitude = -(id + 1);
     pos.altitude = 2 * id;
-    pos.timestamp = base::Time::Now().ToDoubleT();
+    pos.timestamp = base::Time::Now();
     return pos;
   }
 
@@ -395,7 +395,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_EQ(51.0, position.latitude);
   EXPECT_EQ(-0.1, position.longitude);
   EXPECT_EQ(1200.4, position.accuracy);
-  EXPECT_FALSE(position.timestamp == 0.);
+  EXPECT_FALSE(position.timestamp.is_null());
   EXPECT_TRUE(ValidateGeoposition(position));
 
   // 4. Wifi updated again, with one less AP. This is 'close enough' to the

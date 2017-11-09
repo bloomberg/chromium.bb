@@ -103,7 +103,7 @@ Response EmulationHandler::SetGeolocationOverride(
     geoposition->latitude = latitude.fromJust();
     geoposition->longitude = longitude.fromJust();
     geoposition->accuracy = accuracy.fromJust();
-    geoposition->timestamp = base::Time::Now().ToDoubleT();
+    geoposition->timestamp = base::Time::Now();
 
     if (!device::ValidateGeoposition(*geoposition))
       return Response::Error("Invalid geolocation");

@@ -86,7 +86,19 @@ class GeolocationMock {
     this.geoposition_.altitudeAccuracy = altitudeAccuracy;
     this.geoposition_.heading = heading;
     this.geoposition_.speed = speed;
-    this.geoposition_.timestamp = new Date().getTime() / 1000;
+    this.geoposition_.timestamp = new mojo.common.mojom.Time();
+    // The new Date().getTime() returns the number of milliseconds since the
+    // UNIX epoch (1970-01-01 00::00:00 UTC), while |internalValue| of the
+    // device.mojom.Geoposition represents the value of microseconds since the
+    // Windows FILETIME epoch (1601-01-01 00:00:00 UTC). So add the delta when
+    // sets the |internalValue|. See more info in //base/time/time.h.
+    const windowsEpoch = new Date(1601,1,1,0,0,0,0);
+    const unixEpoch = new Date(1970,1,1,0,0,0,0);
+    // |epochDeltaInMs| equals to base::Time::kTimeTToMicrosecondsOffset.
+    const epochDeltaInMs = unixEpoch.getTime() - windowsEpoch.getTime();
+
+    this.geoposition_.timestamp.internalValue =
+        (new Date().getTime() + epochDeltaInMs)  * 1000;
     this.geoposition_.errorMessage = '';
     this.geoposition_.valid = true;
   }
@@ -99,6 +111,7 @@ class GeolocationMock {
   setGeolocationPositionUnavailableError(message) {
     this.geoposition_ = new device.mojom.Geoposition();
     this.geoposition_.valid = false;
+    this.geoposition_.timestamp = new mojo.common.mojom.Time();
     this.geoposition_.errorMessage = message;
     this.geoposition_.errorCode =
         device.mojom.Geoposition.ErrorCode.POSITION_UNAVAILABLE;

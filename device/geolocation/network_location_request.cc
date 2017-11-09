@@ -420,7 +420,7 @@ bool ParseServerResponse(const std::string& response_body,
   // All error paths covered: now start actually modifying postion.
   position->latitude = latitude;
   position->longitude = longitude;
-  position->timestamp = wifi_timestamp.ToDoubleT();
+  position->timestamp = wifi_timestamp;
 
   // Other fields are optional.
   GetAsDouble(*response_object, kAccuracyString, &position->accuracy);

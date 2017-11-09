@@ -208,7 +208,7 @@ void NetworkLocationProvider::RequestPosition() {
     // The timestamp of a position fix is determined by the timestamp
     // of the source data update. (The value of position_.timestamp from
     // the cache could be from weeks ago!)
-    position_.timestamp = wifi_timestamp_.ToDoubleT();
+    position_.timestamp = wifi_timestamp_;
     is_new_data_available_ = false;
 
     // Let listeners know that we now have a position available.
