@@ -409,7 +409,8 @@ bool GetPasswordForm(
     const SyntheticForm& form,
     PasswordForm* password_form,
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-    const FormsPredictionsMap* form_predictions) {
+    const FormsPredictionsMap* form_predictions,
+    UsernameDetectorCache* username_detector_cache) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
   password_form->username_marked_by_site = false;
@@ -547,7 +548,8 @@ bool GetPasswordForm(
           password_manager::features::kEnableHtmlBasedUsernameDetector)) {
     if (username_element.IsNull()) {
       GetUsernameFieldBasedOnHtmlAttributes(
-          all_possible_usernames, password_form->form_data, &username_element);
+          all_possible_usernames, password_form->form_data, &username_element,
+          username_detector_cache);
     }
   }
 
@@ -752,7 +754,8 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
     const WebFormElement& web_form,
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-    const FormsPredictionsMap* form_predictions) {
+    const FormsPredictionsMap* form_predictions,
+    UsernameDetectorCache* username_detector_cache) {
   if (web_form.IsNull())
     return std::unique_ptr<PasswordForm>();
 
@@ -772,7 +775,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
   }
 
   if (!GetPasswordForm(synthetic_form, password_form.get(),
-                       field_value_and_properties_map, form_predictions)) {
+                       field_value_and_properties_map, form_predictions,
+                       username_detector_cache)) {
     return std::unique_ptr<PasswordForm>();
   }
   return password_form;
@@ -781,7 +785,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
 std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const WebLocalFrame& frame,
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
-    const FormsPredictionsMap* form_predictions) {
+    const FormsPredictionsMap* form_predictions,
+    UsernameDetectorCache* username_detector_cache) {
   SyntheticForm synthetic_form;
   synthetic_form.control_elements = form_util::GetUnownedFormFieldElements(
       frame.GetDocument().All(), &synthetic_form.fieldsets);
@@ -799,7 +804,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     return std::unique_ptr<PasswordForm>();
   }
   if (!GetPasswordForm(synthetic_form, password_form.get(),
-                       field_value_and_properties_map, form_predictions)) {
+                       field_value_and_properties_map, form_predictions,
+                       username_detector_cache)) {
     return std::unique_ptr<PasswordForm>();
   }
 
