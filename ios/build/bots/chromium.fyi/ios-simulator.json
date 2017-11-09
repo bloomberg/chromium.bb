@@ -15,5 +15,14 @@
   "configuration": "Debug",
   "sdk": "iphonesimulator11.0",
   "tests": [
+    {
+      "include": "common_tests.json",
+      "test args": [
+        "--enable-features=SlimNavigationManager"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0"
+    }
   ]
 }
