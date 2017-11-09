@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/sequenced_task_runner.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
@@ -45,7 +46,7 @@ struct ComponentConfig {
 class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   explicit CrOSComponentInstallerPolicy(const ComponentConfig& config);
-  ~CrOSComponentInstallerPolicy() override {}
+  ~CrOSComponentInstallerPolicy() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CrOSComponentInstallerTest, IsCompatibleOrNot);
@@ -76,6 +77,8 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
   std::string name;
   std::string env_version;
   uint8_t kSha2Hash_[crypto::kSHA256Length] = {};
+  // Use task_runner_ for scheduling all imageloader operations.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSComponentInstallerPolicy);
 };
