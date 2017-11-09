@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/u2f/fake_hid_impl_for_testing.h"
 #include "device/u2f/mock_u2f_discovery.h"
 #include "device/u2f/u2f_hid_device.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"

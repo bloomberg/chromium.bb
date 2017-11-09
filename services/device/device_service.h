@@ -27,11 +27,11 @@
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
 #else
-#include "device/hid/public/interfaces/hid.mojom.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/interfaces/input_service.mojom.h"
 #endif
 
 namespace base {

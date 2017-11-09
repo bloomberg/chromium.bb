@@ -18,9 +18,9 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
-#include "device/hid/fake_input_service_linux.h"
-#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/cpp/hid/fake_input_service_linux.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/input_service.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {

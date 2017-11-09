@@ -54,7 +54,10 @@ source_set("u2f") {
       "u2f_hid_discovery.h",
     ]
 
-    deps += [ "//device/hid" ]
+    deps += [
+      "//services/device/public/cpp/hid",
+      "//services/device/public/interfaces",
+    ]
   }
 }
 

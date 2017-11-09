@@ -19,7 +19,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/interfaces/input_service.mojom.h"
 
 namespace service_manager {
 class Connector;

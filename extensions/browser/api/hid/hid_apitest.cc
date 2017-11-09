@@ -10,8 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/hid/hid_report_descriptor.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
 #include "extensions/shell/test/shell_apitest.h"
@@ -19,7 +17,9 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/device/public/cpp/hid/hid_report_descriptor.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 using base::ThreadTaskRunnerHandle;

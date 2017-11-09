@@ -53,8 +53,4 @@ source_set("mocks") {
     ":base",
     "//device/usb:test_support",
   ]
-
-  if (!is_android) {
-    deps += [ "//device/hid:mocks" ]
-  }
 }

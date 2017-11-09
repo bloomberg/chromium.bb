@@ -10,10 +10,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "device/hid/hid_device_filter.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/u2f/u2f_discovery.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/cpp/hid/hid_device_filter.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace service_manager {
 class Connector;

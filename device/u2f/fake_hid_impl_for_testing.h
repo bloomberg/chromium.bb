@@ -4,10 +4,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace device {
 

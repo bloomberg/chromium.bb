@@ -7,13 +7,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "device/hid/hid_manager_impl.h"
-#include "device/hid/mock_hid_connection.h"
-#include "device/hid/mock_hid_service.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/device/device_service_test_base.h"
+#include "services/device/hid/hid_manager_impl.h"
+#include "services/device/hid/mock_hid_connection.h"
+#include "services/device/hid/mock_hid_service.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace device {
 
