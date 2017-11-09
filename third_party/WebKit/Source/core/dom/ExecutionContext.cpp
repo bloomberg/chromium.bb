@@ -92,12 +92,12 @@ void ExecutionContext::NotifyContextDestroyed() {
 
 void ExecutionContext::PauseScheduledTasks() {
   PausePausableObjects();
-  TasksWereSuspended();
+  TasksWerePaused();
 }
 
 void ExecutionContext::UnpauseScheduledTasks() {
   UnpausePausableObjects();
-  TasksWereResumed();
+  TasksWereUnpaused();
 }
 
 void ExecutionContext::PausePausableObjectIfNeeded(PausableObject* object) {

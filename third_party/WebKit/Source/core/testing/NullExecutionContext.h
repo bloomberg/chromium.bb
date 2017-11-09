@@ -37,8 +37,8 @@ class NullExecutionContext
   EventTarget* ErrorEventTarget() override { return nullptr; }
   EventQueue* GetEventQueue() const override { return queue_.Get(); }
 
-  bool TasksNeedSuspension() override { return tasks_need_suspension_; }
-  void SetTasksNeedSuspension(bool flag) { tasks_need_suspension_ = flag; }
+  bool TasksNeedPause() override { return tasks_need_pause_; }
+  void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
 
   void DidUpdateSecurityOrigin() override {}
   SecurityContext& GetSecurityContext() override { return *this; }
@@ -66,7 +66,7 @@ class NullExecutionContext
   }
 
  private:
-  bool tasks_need_suspension_;
+  bool tasks_need_pause_;
   bool is_secure_context_;
   Member<EventQueue> queue_;
 

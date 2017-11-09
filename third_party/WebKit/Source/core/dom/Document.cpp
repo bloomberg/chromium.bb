@@ -6401,7 +6401,7 @@ void Document::AddConsoleMessage(ConsoleMessage* console_message) {
   frame_->Console().AddMessage(console_message);
 }
 
-void Document::TasksWereSuspended() {
+void Document::TasksWerePaused() {
   GetScriptRunner()->Suspend();
 
   if (parser_)
@@ -6410,7 +6410,7 @@ void Document::TasksWereSuspended() {
     scripted_animation_controller_->Pause();
 }
 
-void Document::TasksWereResumed() {
+void Document::TasksWereUnpaused() {
   GetScriptRunner()->Resume();
 
   if (parser_)
@@ -6423,7 +6423,7 @@ void Document::TasksWereResumed() {
     DOMWindowPerformance::performance(*dom_window_)->ResumeSuspendedObservers();
 }
 
-bool Document::TasksNeedSuspension() {
+bool Document::TasksNeedPause() {
   Page* page = GetPage();
   return page && page->Paused();
 }

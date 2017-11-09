@@ -25,7 +25,7 @@ class NullEventQueue final : public EventQueue {
 }  // namespace
 
 NullExecutionContext::NullExecutionContext()
-    : tasks_need_suspension_(false),
+    : tasks_need_pause_(false),
       is_secure_context_(true),
       queue_(new NullEventQueue()) {}
 
