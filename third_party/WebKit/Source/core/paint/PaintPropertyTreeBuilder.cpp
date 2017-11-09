@@ -1249,7 +1249,9 @@ static LayoutRect BoundingBoxInPaginationContainer(
         paint_layer->PhysicalBoundingBox(&enclosing_pagination_layer);
   } else {
     // Compute the bounding box without transforms.
-    object_bounding_box_in_flow_thread = object.LocalVisualRect();
+    // The object is guaranteed to be a box due to the logic above.
+    DCHECK(object.IsBox());
+    object_bounding_box_in_flow_thread = ToLayoutBox(object).BorderBoxRect();
     TransformState transform_state(
         TransformState::kApplyTransformDirection,
         FloatPoint(object_bounding_box_in_flow_thread.Location()));
