@@ -12,10 +12,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen_view.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-namespace net {
-class URLFetcher;
+namespace content {
+class SimpleURLLoader;
 }
 
 namespace chromeos {
@@ -27,8 +26,7 @@ class BaseScreenDelegate;
 // Terms of Service before proceeding. Currently, Terms of Service are available
 // for public sessions only.
 class TermsOfServiceScreen : public BaseScreen,
-                             public TermsOfServiceScreenView::Delegate,
-                             public net::URLFetcherDelegate {
+                             public TermsOfServiceScreenView::Delegate {
  public:
   TermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
                        TermsOfServiceScreenView* view);
@@ -50,12 +48,12 @@ class TermsOfServiceScreen : public BaseScreen,
   // Abort the attempt to download the Terms of Service if it takes too long.
   void OnDownloadTimeout();
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback function called when SimpleURLLoader completes.
+  void OnDownloaded(std::unique_ptr<std::string> response_body);
 
   TermsOfServiceScreenView* view_;
 
-  std::unique_ptr<net::URLFetcher> terms_of_service_fetcher_;
+  std::unique_ptr<content::SimpleURLLoader> terms_of_service_loader_;
 
   // Timer that enforces a custom (shorter) timeout on the attempt to download
   // the Terms of Service.

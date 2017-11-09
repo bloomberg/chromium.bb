@@ -14,14 +14,16 @@
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/common/resource_request.h"
+#include "content/public/common/simple_url_loader.h"
+#include "content/public/common/url_loader_factory.mojom.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -87,18 +89,46 @@ void TermsOfServiceScreen::StartDownload() {
     return;
   }
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("terms_of_service_fetch", R"(
+          semantics {
+            sender: "Chrome OS Terms of Service"
+            description:
+              "Chrome OS downloads the latest terms of service document "
+              "from Google servers."
+            trigger:
+              "When a public session starts on managed devices and an admin "
+              "has uploaded a terms of service document for the domain."
+            data:
+              "URL of the terms of service document. "
+              "No user information is sent."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            setting: "Unconditionally enabled on Chrome OS."
+            policy_exception_justification:
+              "Not implemented, considered not useful."
+          })");
   // Start downloading the Terms of Service.
-  terms_of_service_fetcher_ = net::URLFetcher::Create(
-      GURL(terms_of_service_url), net::URLFetcher::GET, this);
-  terms_of_service_fetcher_->SetRequestContext(
-      g_browser_process->system_request_context());
-  // Request a text/plain MIME type as only plain-text Terms of Service are
-  // accepted.
-  terms_of_service_fetcher_->AddExtraRequestHeader("Accept: text/plain");
+  terms_of_service_loader_ = content::SimpleURLLoader::Create();
   // Retry up to three times if network changes are detected during the
   // download.
-  terms_of_service_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
-  terms_of_service_fetcher_->Start();
+  terms_of_service_loader_->SetRetryOptions(
+      3, content::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  content::ResourceRequest resource_request;
+  resource_request.url = GURL(terms_of_service_url);
+  // Request a text/plain MIME type as only plain-text Terms of Service are
+  // accepted.
+  resource_request.headers.SetHeader("Accept", "text/plain");
+  content::mojom::URLLoaderFactory* loader_factory =
+      g_browser_process->system_network_context_manager()
+          ->GetURLLoaderFactory();
+  terms_of_service_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      resource_request, loader_factory, traffic_annotation,
+      base::BindOnce(&TermsOfServiceScreen::OnDownloaded,
+                     base::Unretained(this)));
 
   // Abort the download attempt if it takes longer than one minute.
   download_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(1), this,
@@ -106,41 +136,33 @@ void TermsOfServiceScreen::StartDownload() {
 }
 
 void TermsOfServiceScreen::OnDownloadTimeout() {
-  // Abort the download attempt.
-  terms_of_service_fetcher_.reset();
+  // Destroy the fetcher, which will abort the download attempt.
+  terms_of_service_loader_.reset();
 
   // Show an error message to the user.
   if (view_)
     view_->OnLoadError();
 }
 
-void TermsOfServiceScreen::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source != terms_of_service_fetcher_.get()) {
-    NOTREACHED() << "Callback from foreign URL fetcher";
-    return;
-  }
-
+void TermsOfServiceScreen::OnDownloaded(
+    std::unique_ptr<std::string> response_body) {
   download_timer_.Stop();
 
   // Destroy the fetcher when this method returns.
-  std::unique_ptr<net::URLFetcher> fetcher(
-      std::move(terms_of_service_fetcher_));
+  std::unique_ptr<content::SimpleURLLoader> loader(
+      std::move(terms_of_service_loader_));
   if (!view_)
     return;
 
-  std::string terms_of_service;
-  std::string mime_type;
   // If the Terms of Service could not be downloaded, do not have a MIME type of
   // text/plain or are empty, show an error message to the user.
-  if (!source->GetStatus().is_success() ||
-      !source->GetResponseHeaders()->GetMimeType(&mime_type) ||
-      mime_type != "text/plain" ||
-      !source->GetResponseAsString(&terms_of_service)) {
+  if (!response_body || *response_body == "" || !loader->ResponseInfo() ||
+      loader->ResponseInfo()->mime_type != "text/plain") {
     view_->OnLoadError();
   } else {
     // If the Terms of Service were downloaded successfully, show them to the
     // user.
-    view_->OnLoadSuccess(terms_of_service);
+    view_->OnLoadSuccess(*response_body);
   }
 }
 
