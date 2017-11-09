@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
@@ -342,9 +341,7 @@ std::string GenericURLRequestJob::GetPostData() const {
     int init_result = reader->Init(
         base::Bind(&CompletionCallback, &init_result, &quit_closure));
     if (init_result == net::ERR_IO_PENDING) {
-      base::RunLoop nested_run_loop;
-      base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-          base::MessageLoop::current());
+      base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       quit_closure = nested_run_loop.QuitClosure();
       nested_run_loop.Run();
     }
@@ -366,9 +363,7 @@ std::string GenericURLRequestJob::GetPostData() const {
         base::Bind(&CompletionCallback, &bytes_read, &quit_closure));
 
     if (bytes_read == net::ERR_IO_PENDING) {
-      base::MessageLoop::ScopedNestableTaskAllower allow_nested(
-          base::MessageLoop::current());
-      base::RunLoop nested_run_loop;
+      base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
       quit_closure = nested_run_loop.QuitClosure();
       nested_run_loop.Run();
     }
