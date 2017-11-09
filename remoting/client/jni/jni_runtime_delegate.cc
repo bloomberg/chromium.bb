@@ -106,6 +106,13 @@ void JniRuntimeDelegate::RequestAuthTokenForLogger() {
   Java_JniInterface_fetchAuthToken(env);
 }
 
+OAuthTokenGetter* JniRuntimeDelegate::token_getter() {
+  // TODO(yuweih): Implement this. This is currently only used if the client
+  // uses WebRTC.
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void JniRuntimeDelegate::DetachFromVmAndSignal(base::WaitableEvent* waiter) {
   base::android::DetachFromVM();
   waiter->Signal();

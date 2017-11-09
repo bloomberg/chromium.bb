@@ -55,6 +55,8 @@ static_library("client") {
       "dual_buffer_frame_consumer.h",
       "gesture_interpreter.cc",
       "gesture_interpreter.h",
+      "oauth_token_getter_proxy.cc",
+      "oauth_token_getter_proxy.h",
     ]
     deps += [
       "//remoting/client/display",
@@ -75,6 +77,7 @@ source_set("unit_tests") {
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",
     "empty_cursor_filter_unittest.cc",
+    "oauth_token_getter_proxy_unittest.cc",
     "queued_task_poster_unittest.cc",
     "software_video_renderer_unittest.cc",
   ]

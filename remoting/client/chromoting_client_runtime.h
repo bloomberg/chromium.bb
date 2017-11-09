@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/telemetry_log_writer.h"
 
 namespace base {
@@ -39,11 +40,16 @@ class ChromotingClientRuntime {
     // have been stopped.
     virtual void RuntimeDidShutdown() = 0;
 
+    // TODO(yuweih): Remove this once logger is using OAuthTokenGetter.
     // RequestAuthTokenForLogger is called when the logger is requesting
     // and auth token and the delegate is set. It is expected that the
     // delegate will give the logger and auth token on the network thread like:
     // (network thread): runtime->log_writer()->SetAuthToken(token)
     virtual void RequestAuthTokenForLogger() = 0;
+
+    // For fetching auth token. The implementation must allow being called from
+    // multiple threads. Use OAuthTokenGetterProxy when necessary.
+    virtual OAuthTokenGetter* token_getter() = 0;
   };
 
   static ChromotingClientRuntime* GetInstance();
@@ -76,6 +82,8 @@ class ChromotingClientRuntime {
 
   // Must call and use log_writer on the network thread.
   ChromotingEventLogWriter* log_writer();
+
+  OAuthTokenGetter* token_getter();
 
  private:
   ChromotingClientRuntime();

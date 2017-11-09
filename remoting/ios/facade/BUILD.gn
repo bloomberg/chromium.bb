@@ -14,6 +14,8 @@ source_set("facade") {
     "host_list_fetcher.h",
     "ios_client_runtime_delegate.h",
     "ios_client_runtime_delegate.mm",
+    "ios_oauth_token_getter.h",
+    "ios_oauth_token_getter.mm",
     "remoting_authentication.h",
     "remoting_oauth_authentication.h",
     "remoting_oauth_authentication.mm",

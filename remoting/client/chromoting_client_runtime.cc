@@ -114,5 +114,8 @@ ChromotingEventLogWriter* ChromotingClientRuntime::log_writer() {
   return log_writer_.get();
 }
 
+OAuthTokenGetter* ChromotingClientRuntime::token_getter() {
+  return delegate_->token_getter();
+}
 
 }  // namespace remoting

@@ -17,6 +17,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/chromoting_event.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/client/audio/audio_player.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/client_telemetry_logger.h"
@@ -429,6 +430,8 @@ void ChromotingSession::ConnectToHostOnNetworkThread() {
           protocol::NetworkSettings(
               protocol::NetworkSettings::NAT_TRAVERSAL_FULL),
           protocol::TransportRole::CLIENT);
+  transport_context->set_ice_config_url(
+      ServiceUrls::GetInstance()->ice_config_url(), runtime_->token_getter());
 
 #if defined(ENABLE_WEBRTC_REMOTING_CLIENT)
   if (connection_info_.flags.find("useWebrtc") != std::string::npos) {
