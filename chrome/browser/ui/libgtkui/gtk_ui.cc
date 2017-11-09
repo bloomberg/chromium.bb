@@ -798,6 +798,13 @@ void GtkUi::RemoveDeviceScaleFactorObserver(
   device_scale_factor_observer_list_.RemoveObserver(observer);
 }
 
+bool GtkUi::PreferDarkTheme() const {
+  gboolean dark = false;
+  g_object_get(gtk_settings_get_default(), "gtk-application-prefer-dark-theme",
+               &dark, nullptr);
+  return dark;
+}
+
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
 std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
   if (GtkVersionCheck(3, 14))

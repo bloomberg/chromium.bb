@@ -105,6 +105,7 @@ class GtkUi : public views::LinuxUI {
       views::DeviceScaleFactorObserver* observer) override;
   void RemoveDeviceScaleFactorObserver(
       views::DeviceScaleFactorObserver* observer) override;
+  bool PreferDarkTheme() const override;
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
 #endif

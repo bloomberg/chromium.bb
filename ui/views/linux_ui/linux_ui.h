@@ -172,6 +172,10 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual void RemoveDeviceScaleFactorObserver(
       DeviceScaleFactorObserver* observer) = 0;
 
+  // Only used on GTK to indicate if the dark GTK theme variant is
+  // preferred.
+  virtual bool PreferDarkTheme() const = 0;
+
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   // Returns a new NavButtonProvider, or nullptr if the underlying
   // toolkit does not support drawing client-side navigation buttons.
