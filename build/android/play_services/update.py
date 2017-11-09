@@ -24,6 +24,7 @@ from py_utils import tempfile_ext
 from pylib import constants
 from pylib.constants import host_paths
 from pylib.utils import logging_utils
+from pylib.utils import maven_downloader
 
 sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
 import find_depot_tools  # pylint: disable=import-error,unused-import
@@ -49,17 +50,6 @@ LICENSE_FILE_NAME = 'LICENSE'
 ZIP_FILE_NAME = 'google_play_services_library.zip'
 
 LICENSE_PATTERN = re.compile(r'^Pkg\.License=(?P<text>.*)$', re.MULTILINE)
-
-# Template for a Maven settings.xml which instructs Maven to download to the
-# given directory
-MAVEN_SETTINGS_TEMPLATE = '''\
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-                              https://maven.apache.org/xsd/settings-1.0.0.xsd" >
-  <localRepository>{}</localRepository>
-</settings>
-'''
 
 COM_GOOGLE_ANDROID_GMS = os.path.join('com', 'google', 'android', 'gms')
 EXTRAS_GOOGLE_M2REPOSITORY = os.path.join('extras', 'google', 'm2repository')
@@ -262,43 +252,17 @@ def UpdateSdk(args):
   breakpad.IS_ENABLED = False
 
   config = utils.ConfigParser(args.config)
+  target_repo = os.path.join(args.sdk_root, EXTRAS_GOOGLE_M2REPOSITORY)
 
   # Remove the old SDK.
-  shutil.rmtree(os.path.join(args.sdk_root, EXTRAS_GOOGLE_M2REPOSITORY))
+  # TODO(https://crbug.com/778650) not everything should be deleted.
+  shutil.rmtree(target_repo, ignore_errors=True)
 
-  with tempfile_ext.NamedTemporaryDirectory() as temp_dir:
-    # Configure temp_dir as the Maven repository.
-    settings_path = os.path.join(temp_dir, 'settings.xml')
-    with open(settings_path, 'w') as settings:
-      settings.write(MAVEN_SETTINGS_TEMPLATE.format(temp_dir))
-
-    for client in config.clients:
-      # Download the client.
-      artifact = 'com.google.android.gms:{}:{}:aar'.format(
-          client, config.version_number)
-      try:
-        cmd_helper.Call([
-            'mvn', '--global-settings', settings_path,
-            'org.apache.maven.plugins:maven-dependency-plugin:2.1:get',
-            '-DrepoUrl=https://maven.google.com', '-Dartifact=' + artifact])
-      except OSError as e:
-        if e.errno == os.errno.ENOENT:
-          logging.error('mvn command not found. Please install Maven.')
-          return -1
-        else:
-          raise
-
-      # Copy the client .aar file from temp_dir into the tree.
-      src_path = os.path.join(
-          temp_dir, COM_GOOGLE_ANDROID_GMS,
-          client, config.version_number,
-          '{}-{}.aar'.format(client, config.version_number))
-      dst_path = os.path.join(
-          args.sdk_root, EXTRAS_GOOGLE_M2REPOSITORY, COM_GOOGLE_ANDROID_GMS,
-          client, config.version_number)
-      _MakeDirIfAbsent(dst_path)
-      shutil.copy(src_path, dst_path)
-
+  downloader = maven_downloader.MavenDownloader()
+  artifact_list = [
+      'com.google.android.gms:{}:{}:aar'.format(client, config.version_number)
+      for client in config.clients]
+  downloader.Install(target_repo, artifact_list)
   return 0
 
 
