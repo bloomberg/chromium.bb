@@ -146,12 +146,12 @@ LogoServiceImpl::LogoServiceImpl(
     TemplateURLService* template_url_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    bool use_gray_background)
+    base::RepeatingCallback<bool()> want_gray_logo_getter)
     : LogoService(),
       cache_directory_(cache_directory),
       template_url_service_(template_url_service),
       request_context_getter_(request_context_getter),
-      use_gray_background_(use_gray_background),
+      want_gray_logo_getter_(std::move(want_gray_logo_getter)),
       image_decoder_(std::move(image_decoder)) {}
 
 LogoServiceImpl::~LogoServiceImpl() = default;
@@ -250,11 +250,14 @@ void LogoServiceImpl::GetLogo(LogoCallbacks callbacks) {
         logo_url, base::Bind(&search_provider_logos::ParseFixedLogoResponse),
         base::Bind(&search_provider_logos::UseFixedLogoUrl));
   } else {
+    // We encode the type of doodle (regular or gray) in the URL so that the
+    // logo cache gets cleared when that value changes.
+    GURL prefilled_url = AppendPreliminaryParamsToDoodleURL(
+        want_gray_logo_getter_.Run(), doodle_url);
     logo_tracker_->SetServerAPI(
-        doodle_url,
+        prefilled_url,
         base::Bind(&search_provider_logos::ParseDoodleLogoResponse, base_url),
-        base::Bind(&search_provider_logos::AppendQueryparamsToDoodleLogoURL,
-                   use_gray_background_));
+        base::Bind(&search_provider_logos::AppendFingerprintParamToDoodleURL));
   }
 
   logo_tracker_->GetLogo(std::move(callbacks));

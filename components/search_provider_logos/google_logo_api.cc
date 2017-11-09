@@ -20,9 +20,53 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "components/search_provider_logos/switches.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
 
 namespace search_provider_logos {
+
+namespace {
+// Appends the provided |value| to the "async" query param, according to the
+// format used by the Google doodle servers: "async=param:value,other:foo"
+// Derived from net::AppendOrReplaceQueryParameter, that can't be used because
+// it escapes ":" to "%3A", but the server requires the colon not to be escaped.
+// See: http://crbug.com/413845
+GURL AppendToAsyncQueryparam(const GURL& url, const std::string& value) {
+  const std::string param_name = "async";
+  bool replaced = false;
+  const std::string input = url.query();
+  url::Component cursor(0, input.size());
+  std::string output;
+  url::Component key_range, value_range;
+  while (url::ExtractQueryKeyValue(input.data(), &cursor, &key_range,
+                                   &value_range)) {
+    const base::StringPiece key(input.data() + key_range.begin, key_range.len);
+    std::string key_value_pair(input, key_range.begin,
+                               value_range.end() - key_range.begin);
+    if (!replaced && key == param_name) {
+      // Check |replaced| as only the first match should be replaced.
+      replaced = true;
+      key_value_pair += "," + value;
+    }
+    if (!output.empty()) {
+      output += "&";
+    }
+
+    output += key_value_pair;
+  }
+  if (!replaced) {
+    if (!output.empty()) {
+      output += "&";
+    }
+
+    output += (param_name + "=" + value);
+  }
+  GURL::Replacements replacements;
+  replacements.SetQueryStr(output);
+  return url.ReplaceComponents(replacements);
+}
+
+}  // namespace
 
 GURL GetGoogleDoodleURL(const GURL& google_base_url) {
   const base::CommandLine* command_line =
@@ -42,39 +86,27 @@ GURL GetGoogleDoodleURL(const GURL& google_base_url) {
   return google_base_url.ReplaceComponents(replacements);
 }
 
+GURL AppendFingerprintParamToDoodleURL(const GURL& logo_url,
+                                       const std::string& fingerprint) {
+  if (fingerprint.empty()) {
+    return logo_url;
+  }
+
+  return AppendToAsyncQueryparam(logo_url, "es_dfp:" + fingerprint);
+}
+
+GURL AppendPreliminaryParamsToDoodleURL(bool gray_background,
+                                        const GURL& logo_url) {
+  std::string api_params = "ntp:1";
+  if (gray_background) {
+    api_params += ",graybg:1";
+  }
+
+  return AppendToAsyncQueryparam(logo_url, api_params);
+}
+
 namespace {
 const char kResponsePreamble[] = ")]}'";
-}
-
-GURL AppendQueryparamsToDoodleLogoURL(bool gray_background,
-                                      const GURL& logo_url,
-                                      const std::string& fingerprint) {
-  // Note: we can't just use net::AppendQueryParameter() because it escapes
-  // ":" to "%3A", but the server requires the colon not to be escaped.
-  // See: http://crbug.com/413845
-
-  std::string query(logo_url.query());
-  if (!query.empty())
-    query += "&";
-
-  query += "async=";
-
-  std::vector<std::string> params;
-  params.push_back("ntp:1");
-  if (gray_background) {
-    params.push_back("graybg:1");
-  }
-  if (!fingerprint.empty()) {
-    params.push_back("es_dfp:" + fingerprint);
-  }
-  query += base::JoinString(params, ",");
-
-  GURL::Replacements replacements;
-  replacements.SetQueryStr(query);
-  return logo_url.ReplaceComponents(replacements);
-}
-
-namespace {
 
 GURL ParseUrl(const base::DictionaryValue& parent_dict,
               const std::string& key,
