@@ -1,6 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="header.html">
+<link rel="import" href="copies_settings.html">
+<link rel="import" href="layout_settings.html">
 
 <dom-module id="print-preview-app">
   <template>
@@ -13,7 +15,7 @@
       #sidebar {
         -webkit-border-end: 1px solid #c8c8c8;
         background-color: white;
-        min-width: 310px;
+        width: 310px;
       }
 
       #settings {
@@ -37,8 +39,9 @@
       <div id="settings">
         <div>Destination</div>
         <div>Pages</div>
-        <div>Copies</div>
-        <div>Layout</div>
+        <print-preview-copies-settings model="{{model_}}">
+        </print-preview-copies-settings>
+        <print-preview-layout-settings></print-preview-layout-settings>
         <div>Color</div>
         <div>Paper size</div>
         <div>Margins</div>
