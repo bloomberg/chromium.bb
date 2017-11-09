@@ -63,7 +63,7 @@ static int test_suggestChunks_longWord() {
 	if (!suggestChunks(inbuf, outbuf, hyphen_string))
 		return 1;
 	
-	return 0;
+	return strcmp("^x0xxxxxxx0xxxxx0xxxxxxx0xxxxxxxxx0xxxxx$", hyphen_string);
 }
 
 int main(int argc, char **argv) {
