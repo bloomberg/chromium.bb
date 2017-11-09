@@ -1420,19 +1420,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                  completion:nil];
 }
 
-- (void)showSavePasswordsSettings {
-  // Do not display password settings if settings screen is already displayed.
-  if (_settingsNavigationController)
-    return;
-  _settingsNavigationController =
-      [SettingsNavigationController newSavePasswordsController:_mainBrowserState
-                                                      delegate:self];
-  [[self topPresentedViewController]
-      presentViewController:_settingsNavigationController
-                   animated:YES
-                 completion:nil];
-}
-
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController {
   DCHECK(baseViewController);

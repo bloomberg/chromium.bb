@@ -60,10 +60,6 @@
   [self showAlert:@"showAutofillSettingsFromViewController:"];
 }
 
-- (void)showSavePasswordsSettings {
-  [self showAlert:@"showSavePasswordsSettings"];
-}
-
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController {
   [self showAlert:@"showReportAnIssueFromViewController:"];
