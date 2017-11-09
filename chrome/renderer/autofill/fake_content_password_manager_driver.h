@@ -53,7 +53,13 @@ class FakeContentPasswordManagerDriver
   }
 
   bool called_password_form_submitted() const {
-    return called_password_form_submitted_;
+    return called_password_form_submitted_ && password_form_submitted_ &&
+           !password_form_submitted_->only_for_fallback_saving;
+  }
+
+  bool called_password_form_submitted_only_for_fallback() const {
+    return called_password_form_submitted_ && password_form_submitted_ &&
+           password_form_submitted_->only_for_fallback_saving;
   }
 
   const base::Optional<autofill::PasswordForm>& password_form_submitted()

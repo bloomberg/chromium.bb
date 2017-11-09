@@ -521,6 +521,10 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.submission_event;
   }
 
+  static bool only_for_fallback_saving(const autofill::PasswordForm& r) {
+    return r.only_for_fallback_saving;
+  }
+
   static bool Read(autofill::mojom::PasswordFormDataView data,
                    autofill::PasswordForm* out);
 };

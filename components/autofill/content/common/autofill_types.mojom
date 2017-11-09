@@ -200,6 +200,7 @@ struct PasswordForm {
   bool is_affiliation_based_match;
   bool does_look_like_signup_form;
   PasswordFormSubmissionIndicatorEvent submission_event;
+  bool only_for_fallback_saving;
 };
 
 // TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.

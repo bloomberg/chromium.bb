@@ -183,7 +183,7 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   PossibleUsernamesVector other_possible_usernames;
 
-  // This member is populated in cases where we there are multiple posssible
+  // This member is populated in cases where we there are multiple possible
   // password values. Used in pending password state, to populate a dropdown
   // for possible passwords. Contains all possible passwords. Optional.
   std::vector<base::string16> all_possible_passwords;
@@ -324,6 +324,10 @@ struct PasswordForm {
   // being or has already been submitted. This field is not persisted and filled
   // out only for submitted forms.
   SubmissionIndicatorEvent submission_event;
+
+  // True iff heuristics declined this form for saving (e.g. only credit card
+  // fields were found). But this form can be saved only with the fallback.
+  bool only_for_fallback_saving;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
