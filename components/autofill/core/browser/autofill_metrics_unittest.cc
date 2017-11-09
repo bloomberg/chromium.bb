@@ -179,10 +179,9 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.clear();
     server_credit_cards_.clear();
     if (include_local_credit_card) {
-      std::unique_ptr<CreditCard> credit_card = std::make_unique<CreditCard>(
-          "10000000-0000-0000-0000-000000000001", std::string());
-      test::SetCreditCardInfo(credit_card.get(), nullptr, "4111111111111111",
-                              "12", "24", "1");
+      std::unique_ptr<CreditCard> credit_card =
+          std::make_unique<CreditCard>(test::GetCreditCard());
+      credit_card->set_guid("10000000-0000-0000-0000-000000000001");
       local_credit_cards_.push_back(std::move(credit_card));
     }
     if (include_masked_server_credit_card) {
@@ -5066,11 +5065,16 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_EmptyForm) {
 // Verify that we correctly log user happiness metrics dealing with form
 // interaction.
 TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
+  personal_data_->RecreateCreditCards(
+      true /* include_local_credit_card */,
+      false /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
+  form.origin = GURL("https://example.com/form.html");
+  form.action = GURL("https://example.com/submit.html");
 
   // Construct a valid credit card form with minimal fields.
   FormFieldData field;
@@ -5175,10 +5179,10 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_CreditCardForm) {
   // Simulate editing an autofilled field.
   {
     base::HistogramTester histogram_tester;
-    std::string guid("00000000-0000-0000-0000-000000000001");
+    std::string guid("10000000-0000-0000-0000-000000000001");
     autofill_manager_->FillOrPreviewForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
-        autofill_manager_->MakeFrontendID(std::string(), guid));
+        autofill_manager_->MakeFrontendID(guid, std::string()));
     autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
                                             gfx::RectF(), TimeTicks());
     // Simulate a second keystroke; make sure we don't log the metric twice.

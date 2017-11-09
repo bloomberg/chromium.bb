@@ -1377,22 +1377,12 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
     for (FormFieldData& iter : result.fields) {
       if (iter.SameFieldAs(field)) {
-        base::string16 value =
+        const base::string16 value =
             data_model.GetInfo(autofill_field->Type(), app_locale_);
-        if (fill_util::FillFormField(*autofill_field, value,
-                                     profile_language_code, app_locale_,
-                                     &iter)) {
-          // Mark the cached field as autofilled, so that we can detect when a
-          // user edits an autofilled field (for metrics).
-          autofill_field->is_autofilled = true;
-
-          // Mark the field as autofilled when a non-empty value is assigned to
-          // it. This allows the renderer to distinguish autofilled fields from
-          // fields with non-empty values, such as select-one fields.
-          iter.is_autofilled = true;
-
-          if (!is_credit_card && !value.empty())
-            client_->DidFillOrPreviewField(value, profile_full_name);
+        if (!value.empty()) {
+          FillFieldWithValue(autofill_field, value, profile_language_code,
+                             profile_full_name, &iter,
+                             /*should_notify=*/!is_credit_card);
         }
         break;
       }
@@ -1414,48 +1404,42 @@ void AutofillManager::FillOrPreviewDataModelForm(
 
     DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
 
-    const AutofillField* cached_field = form_structure->field(i);
+    AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type = cached_field->Type().group();
 
     if (field_group_type == NO_GROUP)
       continue;
 
+    // Don't fill expired cards expiration date.
+    if (IsCreditCardExpirationType(cached_field->Type().GetStorableType()) &&
+        static_cast<const CreditCard*>(&data_model)
+            ->IsExpired(AutofillClock::Now())) {
+      continue;
+    }
+
     base::string16 value =
         data_model.GetInfo(cached_field->Type(), app_locale_);
-    if (is_credit_card && cached_field->Type().GetStorableType() ==
-                              CREDIT_CARD_VERIFICATION_CODE) {
+    if (cached_field->Type().GetStorableType() ==
+        CREDIT_CARD_VERIFICATION_CODE) {
       value = cvc;
-    } else if (is_credit_card &&
-               IsCreditCardExpirationType(
-                   cached_field->Type().GetStorableType()) &&
-               static_cast<const CreditCard*>(&data_model)
-                   ->IsExpired(AutofillClock::Now())) {
-      // Don't fill expired cards expiration date.
-      value = base::string16();
     }
+
+    // Do not attempt to fill empty values because it would skew the metrics.
+    if (value.empty())
+      continue;
 
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.
     // Only notify autofilling of empty fields and the field that initiated
     // the filling (note that "select-one" controls may not be empty but will
     // still be autofilled).
-    bool should_notify = !is_credit_card && !value.empty() &&
+    bool should_notify = !is_credit_card &&
                          (result.fields[i].SameFieldAs(field) ||
                           result.fields[i].form_control_type == "select-one" ||
                           result.fields[i].value.empty());
-    if (fill_util::FillFormField(*cached_field, value, profile_language_code,
-                                 app_locale_, &result.fields[i])) {
-      // Mark the cached field as autofilled, so that we can detect when a
-      // user edits an autofilled field (for metrics).
-      form_structure->field(i)->is_autofilled = true;
-
-      // Mark the field as autofilled when a non-empty value is assigned to
-      // it. This allows the renderer to distinguish autofilled fields from
-      // fields with non-empty values, such as select-one fields.
-      result.fields[i].is_autofilled = true;
-
-      if (should_notify)
-        client_->DidFillOrPreviewField(value, profile_full_name);
-    }
+    // Fill the non-empty |value| into the result vector, which will be sent to
+    // the renderer.
+    FillFieldWithValue(cached_field, value, profile_language_code,
+                       profile_full_name, &result.fields[i], should_notify);
   }
 
   autofilled_form_signatures_.push_front(form_structure->FormSignatureAsStr());
@@ -1976,6 +1960,29 @@ void AutofillManager::DisambiguateNameUploadTypes(
 
     AutofillField* field = form->field(current_index);
     field->set_possible_types(matching_types);
+  }
+}
+
+void AutofillManager::FillFieldWithValue(
+    AutofillField* autofill_field,
+    const base::string16& value,
+    const std::string& profile_language_code,
+    const base::string16& profile_full_name,
+    FormFieldData* field_data,
+    bool should_notify) {
+  if (fill_util::FillFormField(*autofill_field, value, profile_language_code,
+                               app_locale_, field_data)) {
+    // Mark the cached field as autofilled, so that we can detect when a
+    // user edits an autofilled field (for metrics).
+    autofill_field->is_autofilled = true;
+
+    // Mark the field as autofilled when a non-empty value is assigned to
+    // it. This allows the renderer to distinguish autofilled fields from
+    // fields with non-empty values, such as select-one fields.
+    field_data->is_autofilled = true;
+
+    if (should_notify)
+      client_->DidFillOrPreviewField(value, profile_full_name);
   }
 }
 
