@@ -71,6 +71,109 @@ TryChromeDialogBrowserTestBase.*
 WebDialogBrowserTest.*
 WebNotificationTrayTest.*
 
+# Tests from //chrome/browser/extensions.
+ActivityLogApiTest.*
+ActivityLogPrerenderTest.*
+AllUrlsApiTest.*
+AppApiTest.*
+# AtExit crash in task_manager::WebContentsTaskProvider::~WebContentsTaskProvider.
+# AppBackgroundPageApiTest.*
+AudioWaitingExtensionTest.*
+AutofillPrivateApiTest.*
+# ash::Shell::GetPrimaryRootWindow() access.
+# AutomationApiTest.*
+BluetoothLowEnergyApiTest.*
+BrailleDisplayPrivateApiTest.*
+BrowserActionApiTest.*
+BrowserActionInteractiveTest.*
+CastStreamingApiTest.*
+CertificateProviderApiTest.*
+ClipboardApiTest.*
+ClipboardExtensionApiTest.*
+CommandLinePrivateApiTest.*
+CommandsApiTest.*
+ContentCapabilitiesTest.*
+ContentScriptApiTest.*
+ContentScriptCssInjectionTest.*
+CrazyExtensionTest.*
+CrossOriginXHR.*
+DebuggerApiTest.*
+# DCHECK in ui::ws::WindowManagerState::DispatchInputEventToWindowImpl().
+# DeclarativeApiTest.*
+DeclarativeContentApiTest.*
+DesktopCaptureApiTest.*
+DialAPITest.*
+DownloadExtensionTest.*
+DownloadsApiTest.*
+EventsApiTest.*
+# DCHECK in ui::ws::WindowManagerState::DispatchInputEventToWindowImpl().
+# ExecuteScriptApiTest.*
+ExperimentalApiTest.*
+ExtensionApiTabTest.*
+ExtensionApiTestWithManagementPolicy.*
+ExtensionApiTestWithSwitch.*
+ExtensionCloudPrintPrivateApiTest.*
+ExtensionContentSettingsApiTest.*
+ExtensionContextMenuApiTest.*
+ExtensionFetchTest.*
+ExtensionIconSourceTest.*
+ExtensionIdltestApiTest.*
+ExtensionManagementApiTest.*
+ExtensionModuleApiTest.*
+ExtensionOverrideTest.*
+ExtensionPageCaptureApiTest.*
+ExtensionPreferenceApiTest.*
+ExtensionResourceRequestPolicyTest.*
+ExtensionSettingsApiTest.*
+ExtensionTerminalPrivateApiTest.*
+# DCHECK in ui::ws::WindowManagerState::DispatchInputEventToWindowImpl().
+# ExtensionWebRequestApiTest.*
+ExtensionWebstorePrivateApiTest.*
+ExtensionWebUITest.*
+GcmApiTest.*
+GeolocationApiTest.*
+GetUpdateStatusApiTest.*
+HistoryApiTest.*
+HotwordPrivateApiTest.*
+ImageWriterPrivateApiTest.*
+IncognitoApiTest.*
+InstanceIDApiTest.*
+JavscriptApiTest.*
+LazyBackgroundPageApiTest.*
+MDnsAPITest.*
+MediaGalleriesGalleryWatchApiTest.*
+MessagingApiTest.*
+NativeBindingsApiTest.*
+NetworkingCastPrivateApiTest.*
+NetworkingPrivateApiTest.*
+NetworkingPrivateChromeOSApiTest.*
+NetworkingPrivateServiceClientApiTest.*
+NotificationIdleTest.*
+NotificationsApiTest.*
+OmniboxApiTest.*
+PageActionApiTest.*
+PasswordsPrivateApiTest.*
+PermissionsApiTest.*
+PlatformKeysTest.*
+PreferencesPrivateApiTest.*
+ProcessesApiTest.*
+ProxySettingsApiTest.*
+ResourcesPrivateApiTest.*
+ScreenlockPrivateApiTest.*
+ServiceWorkerTest.*
+SetIconAPITest.*
+SettingsPrivateApiTest.*
+SocketApiTest.*
+StreamsPrivateApiTest.*
+SyncFileSystemApiTest.*
+SystemIndicatorApiTest.*
+TabCaptureApiTest.*
+VpnProviderApiTest.*
+WebNavigationApiTest.*
+WebRtcFromWebAccessibleResourceTest.*
+WebrtcLoggingPrivateApiTest.*
+WindowOpenApiTest.*
+
 # Tests from elsewhere.
 BrowserDialogTest.*
 CastSessionBrowserTest.*
