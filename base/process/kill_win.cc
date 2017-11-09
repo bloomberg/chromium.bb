@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/activity_tracker.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/memory.h"
@@ -36,6 +37,18 @@ const DWORD kDebuggerTerminatedExitCode = 0x40010004;
 // indication that the task manager has killed something if the
 // process goes away.
 const DWORD kProcessKilledExitCode = 1;
+
+bool CheckForProcessExitAndReport(const Process& process) {
+  if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0) {
+    int exit_code;
+    TerminationStatus status =
+        GetTerminationStatus(process.Handle(), &exit_code);
+    DCHECK_NE(TERMINATION_STATUS_STILL_RUNNING, status);
+    process.Exited(exit_code);
+    return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -139,7 +152,7 @@ void EnsureProcessTerminated(Process process) {
   DCHECK(!process.is_current());
 
   // If already signaled, then we are done!
-  if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0)
+  if (CheckForProcessExitAndReport(process))
     return;
 
   PostDelayedTaskWithTraits(
@@ -147,7 +160,7 @@ void EnsureProcessTerminated(Process process) {
       {TaskPriority::BACKGROUND, TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       Bind(
           [](Process process) {
-            if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0)
+            if (CheckForProcessExitAndReport(process))
               return;
             process.Terminate(kProcessKilledExitCode, false);
           },
