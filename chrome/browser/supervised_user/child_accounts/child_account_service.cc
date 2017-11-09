@@ -144,19 +144,20 @@ void ChildAccountService::AddChildStatusReceivedCallback(
     status_received_callback_list_.push_back(callback);
 }
 
-bool ChildAccountService::IsGoogleAuthenticated() {
+ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
   std::vector<gaia::ListedAccount> accounts;
   std::vector<gaia::ListedAccount> signed_out_accounts;
   if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts,
                                           kGaiaCookieManagerSource)) {
-    return false;
+    return AuthState::PENDING;
   }
-  return !accounts.empty();
+  return accounts.empty() ? AuthState::NOT_AUTHENTICATED
+                          : AuthState::AUTHENTICATED;
 }
 
-std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+std::unique_ptr<base::CallbackList<void()>::Subscription>
 ChildAccountService::ObserveGoogleAuthState(
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void()>& callback) {
   return google_auth_state_observers_.Add(callback);
 }
 
@@ -336,7 +337,7 @@ void ChildAccountService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
-  google_auth_state_observers_.Notify(!accounts.empty());
+  google_auth_state_observers_.Notify();
 }
 
 void ChildAccountService::StartFetchingFamilyInfo() {

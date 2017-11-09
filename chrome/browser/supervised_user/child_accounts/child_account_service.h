@@ -40,6 +40,8 @@ class ChildAccountService : public KeyedService,
                             public SupervisedUserService::Delegate,
                             public GaiaCookieManagerService::Observer {
  public:
+  enum class AuthState { AUTHENTICATED, NOT_AUTHENTICATED, PENDING };
+
   ~ChildAccountService() override;
 
   static bool IsChildAccountDetectionEnabled();
@@ -58,15 +60,15 @@ class ChildAccountService : public KeyedService,
   void AddChildStatusReceivedCallback(const base::Closure& callback);
 
   // Returns whether or not the user is authenticated on Google web properties
-  // based on the state of the cookie jar. Also returns false if the
-  // authentication state can't be determined.
-  bool IsGoogleAuthenticated();
+  // based on the state of the cookie jar. Returns AuthState::PENDING if
+  // authentication state can't be determined at the moment.
+  AuthState GetGoogleAuthState();
 
   // Subscribes to changes to the Google authentication state
   // (see IsGoogleAuthenticated()). Can send a notification even if the
   // authentication state has not changed.
-  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
-  ObserveGoogleAuthState(const base::Callback<void(bool)>& callback);
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  ObserveGoogleAuthState(const base::Callback<void()>& callback);
 
  private:
   friend class ChildAccountServiceFactory;
@@ -125,7 +127,7 @@ class ChildAccountService : public KeyedService,
 
   GaiaCookieManagerService* gaia_cookie_manager_;
 
-  base::CallbackList<void(bool)> google_auth_state_observers_;
+  base::CallbackList<void()> google_auth_state_observers_;
 
   // Callbacks to run when the user status becomes known.
   std::vector<base::Closure> status_received_callback_list_;
