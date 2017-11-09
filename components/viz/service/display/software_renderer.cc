@@ -115,7 +115,7 @@ void SoftwareRenderer::BindFramebufferToOutputSurface() {
   current_canvas_ = root_canvas_;
 }
 
-bool SoftwareRenderer::BindFramebufferToTexture(
+void SoftwareRenderer::BindFramebufferToTexture(
     const cc::ScopedResource* texture) {
   DCHECK(texture->id());
 
@@ -128,7 +128,6 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   current_framebuffer_canvas_ =
       std::make_unique<SkCanvas>(current_framebuffer_lock_->sk_bitmap());
   current_canvas_ = current_framebuffer_canvas_.get();
-  return true;
 }
 
 void SoftwareRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {

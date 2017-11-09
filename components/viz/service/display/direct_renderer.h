@@ -78,12 +78,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   struct VIZ_SERVICE_EXPORT DrawingFrame {
     DrawingFrame();
     ~DrawingFrame();
-    gfx::Rect ComputeScissorRectForRenderPass() const;
 
     const RenderPassList* render_passes_in_draw_order = nullptr;
     const RenderPass* root_render_pass = nullptr;
     const RenderPass* current_render_pass = nullptr;
-    const cc::ScopedResource* current_texture = nullptr;
 
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
@@ -141,7 +139,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       bool use_render_pass_scissor);
   void DrawRenderPassAndExecuteCopyRequests(RenderPass* render_pass);
   void DrawRenderPass(const RenderPass* render_pass);
-  bool UseRenderPass(const RenderPass* render_pass);
+  // Returns true if it detects that we do not need to draw the render pass.
+  // This may be because the RenderPass is already cached, or because it is
+  // entirely clipped out, for instance.
+  bool CanSkipRenderPass(const RenderPass* render_pass) const;
+  void UseRenderPass(const RenderPass* render_pass);
+  gfx::Rect ComputeScissorRectForRenderPass(
+      const RenderPass* render_pass) const;
 
   void DoDrawPolygon(const DrawPolygon& poly,
                      const gfx::Rect& render_pass_scissor,
@@ -155,7 +159,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual bool CanPartialSwap() = 0;
   virtual ResourceFormat BackbufferFormat() const = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
-  virtual bool BindFramebufferToTexture(const cc::ScopedResource* resource) = 0;
+  virtual void BindFramebufferToTexture(const cc::ScopedResource* resource) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       SurfaceInitializationMode initialization_mode,
