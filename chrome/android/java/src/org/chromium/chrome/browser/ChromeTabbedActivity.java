@@ -728,7 +728,7 @@ public class ChromeTabbedActivity
         super.onStartWithNative();
 
         setInitialOverviewState();
-        BrowserActionsService.cancelBrowserActionsNotification();
+        BrowserActionsService.onTabbedModeForegrounded();
 
         resetSavedInstanceState();
     }

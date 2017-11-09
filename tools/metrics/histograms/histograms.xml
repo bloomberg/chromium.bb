@@ -8001,6 +8001,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Maximal amount of memory allocated by decoder.</summary>
 </histogram>
 
+<histogram name="BrowserActions.NumTabCreatedInBackground" units="tabNum">
+  <owner>ltian@chromium.org</owner>
+  <summary>
+    The number of tabs currently opened when users tap &quot;Open in new Chrome
+    tab&quot; from Browser Actions context menu. This includes the new tab
+    created from the tap.
+  </summary>
+</histogram>
+
 <histogram name="BrowserActions.SelectedOption" enum="BrowserActionsMenuOption">
   <owner>ltian@chromium.org</owner>
   <summary>
