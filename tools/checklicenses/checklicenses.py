@@ -657,6 +657,11 @@ EXCLUDED_PATHS = [
     'build/linux/debian_jessie_arm-sysroot/',
     'build/linux/debian_jessie_i386-sysroot/',
     'build/linux/debian_jessie_mips-sysroot/',
+    'build/linux/debian_stretch_arm64-sysroot/',
+    'build/linux/debian_stretch_amd64-sysroot/',
+    'build/linux/debian_stretch_arm-sysroot/',
+    'build/linux/debian_stretch_i386-sysroot/',
+    'build/linux/debian_stretch_mips-sysroot/',
 ]
 
 

@@ -69,6 +69,14 @@ http://ftp.us.debian.org/debian/pool/main/libn/libnss-db/libnss-db_2.2.3pre1-5+b
 http://ftp.us.debian.org/debian/pool/main/libp/libp11/libp11-2_0.2.8-5_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libp/libpthread-stubs/libpthread-stubs0-dev_0.3-4_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libs/libselinux/libselinux1_2.3-2_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-dev_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-drm1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-egl1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-glx1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-tpi1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-wayland1_1.4.1-1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libv/libva/libva-x11-1_1.4.1-1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-6_1.6.2-3_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-dev_1.6.2-3_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libx/libx11/libx11-xcb1_1.6.2-3_amd64.deb
@@ -206,7 +214,7 @@ http://security.debian.org/pool/updates/main/libp/libpng/libpng12-dev_1.2.50-2+d
 http://security.debian.org/pool/updates/main/libt/libtasn1-6/libtasn1-6_4.2-3+deb8u3_amd64.deb
 http://security.debian.org/pool/updates/main/n/nspr/libnspr4_4.12-1+debu8u1_amd64.deb
 http://security.debian.org/pool/updates/main/n/nspr/libnspr4-dev_4.12-1+debu8u1_amd64.deb
-http://security.debian.org/pool/updates/main/n/nss/libnss3_3.26-1+debu8u2_amd64.deb
-http://security.debian.org/pool/updates/main/n/nss/libnss3-dev_3.26-1+debu8u2_amd64.deb
-http://security.debian.org/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u6_amd64.deb
-http://security.debian.org/pool/updates/main/o/openssl/libssl-dev_1.0.1t-1+deb8u6_amd64.deb
+http://security.debian.org/pool/updates/main/n/nss/libnss3_3.26-1+debu8u3_amd64.deb
+http://security.debian.org/pool/updates/main/n/nss/libnss3-dev_3.26-1+debu8u3_amd64.deb
+http://security.debian.org/pool/updates/main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u7_amd64.deb
+http://security.debian.org/pool/updates/main/o/openssl/libssl-dev_1.0.1t-1+deb8u7_amd64.deb
