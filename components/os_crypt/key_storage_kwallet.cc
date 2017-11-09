@@ -79,7 +79,7 @@ KeyStorageKWallet::InitResult KeyStorageKWallet::InitWallet() {
   return InitResult::PERMANENT_FAIL;
 }
 
-std::string KeyStorageKWallet::GetKey() {
+std::string KeyStorageKWallet::GetKeyImpl() {
   // Get handle
   KWalletDBus::Error error =
       kwallet_dbus_->Open(wallet_name_, app_name_, &handle_);

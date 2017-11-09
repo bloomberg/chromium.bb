@@ -16,12 +16,10 @@ class KeyStorageLibsecret : public KeyStorageLinux {
   KeyStorageLibsecret() = default;
   ~KeyStorageLibsecret() override = default;
 
-  // KeyStorageLinux
-  std::string GetKey() override;
-
  protected:
   // KeyStorageLinux
   bool Init() override;
+  std::string GetKeyImpl() override;
 
  private:
   std::string AddRandomPasswordInLibsecret();

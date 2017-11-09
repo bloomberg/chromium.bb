@@ -41,6 +41,9 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
   os_crypt::SelectedLinuxBackend selected_backend =
       os_crypt::SelectBackend(config.store, use_backend, desktop_env);
 
+  // TODO(crbug.com/782851) Schedule the initialisation on each backend's
+  // favourite thread.
+
   // Try initializing the selected backend.
   // In case of GNOME_ANY, prefer Libsecret
   std::unique_ptr<KeyStorageLinux> key_storage;
@@ -89,4 +92,10 @@ std::unique_ptr<KeyStorageLinux> KeyStorageLinux::CreateService(
   // The appropriate store was not available.
   VLOG(1) << "OSCrypt did not initialize a backend.";
   return nullptr;
+}
+
+std::string KeyStorageLinux::GetKey() {
+  // TODO(crbug.com/782851) Schedule this operation on the backend's favourite
+  // thread.
+  return GetKeyImpl();
 }

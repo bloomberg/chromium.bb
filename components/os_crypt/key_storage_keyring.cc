@@ -37,7 +37,7 @@ bool KeyStorageKeyring::Init() {
   return GnomeKeyringLoader::LoadGnomeKeyring();
 }
 
-std::string KeyStorageKeyring::GetKey() {
+std::string KeyStorageKeyring::GetKeyImpl() {
   std::string password;
 
   // Ensure GetKeyDelegate() is executed on the main thread.

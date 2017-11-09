@@ -27,11 +27,15 @@ class KeyStorageLinux {
 
   // Gets the encryption key from the OS password-managing library. If a key is
   // not found, a new key will be generated, stored and returned.
-  virtual std::string GetKey() = 0;
+  std::string GetKey();
 
  protected:
   // Loads the key storage. Returns false if the service is not available.
   virtual bool Init() = 0;
+
+  // The implementation of GetKey() for a specific backend. This will be called
+  // on the backend's preferred thread.
+  virtual std::string GetKeyImpl() = 0;
 
   // The name of the group, if any, containing the key.
   static const char kFolderName[];

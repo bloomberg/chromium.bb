@@ -21,7 +21,7 @@ std::unique_ptr<KeyStorageLinux> CreateNewMock() {
 
 }
 
-std::string OSCryptMockerLinux::GetKey() {
+std::string OSCryptMockerLinux::GetKeyImpl() {
   return key_;
 }
 
