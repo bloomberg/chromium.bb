@@ -289,7 +289,7 @@
     },
     {
       name: "CSSTransformBox",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSTypedOM",
