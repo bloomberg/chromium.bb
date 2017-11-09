@@ -91,8 +91,6 @@ struct NSView;
 class NSWindow;
 class NSTextField;
 #endif  // __OBJC__
-#elif defined(OS_POSIX)
-typedef struct _cairo cairo_t;
 #endif
 
 #if defined(OS_ANDROID)
