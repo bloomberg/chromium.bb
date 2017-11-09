@@ -164,7 +164,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
 
   // Notifies the client about the result of the operation.
   void Notify(internal::ChildProcessLauncherHelper::Process process,
-              mojo::edk::ScopedPlatformHandle server_handle,
               int error_code);
 
   Client* client_;
@@ -177,9 +176,6 @@ class CONTENT_EXPORT ChildProcessLauncher {
   base::TerminationStatus termination_status_;
   int exit_code_;
   bool starting_;
-  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
-      broker_client_invitation_;
-  const mojo::edk::ProcessErrorCallback process_error_callback_;
 
   // Controls whether the child process should be terminated on browser
   // shutdown. Default behavior is to terminate the child.
