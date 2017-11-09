@@ -33,11 +33,13 @@
 namespace blink {
 
 class Event;
-class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 
+// TODO(nhiroki): Rename this class to WorkerOrWorkletEventQueue and add
+// class-level comments.
 class WorkerEventQueue final : public EventQueue {
  public:
-  static WorkerEventQueue* Create(WorkerGlobalScope*);
+  static WorkerEventQueue* Create(WorkerOrWorkletGlobalScope*);
   ~WorkerEventQueue() override;
   void Trace(blink::Visitor*) override;
 
@@ -47,12 +49,12 @@ class WorkerEventQueue final : public EventQueue {
   void Close() override;
 
  private:
-  explicit WorkerEventQueue(WorkerGlobalScope*);
+  explicit WorkerEventQueue(WorkerOrWorkletGlobalScope*);
   bool RemoveEvent(Event*);
   void DispatchEvent(Event*);
 
-  Member<WorkerGlobalScope> worker_global_scope_;
-  bool is_closed_;
+  Member<WorkerOrWorkletGlobalScope> global_scope_;
+  bool is_closed_ = false;
 
   HeapHashSet<Member<Event>> pending_events_;
 };

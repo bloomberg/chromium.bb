@@ -21,7 +21,6 @@
 
 namespace blink {
 
-class EventQueue;
 class Modulator;
 class WorkletModuleResponsesMap;
 class WorkletPendingTasks;
@@ -29,9 +28,8 @@ class WorkerReportingProxy;
 struct GlobalScopeCreationParams;
 
 class CORE_EXPORT WorkletGlobalScope
-    : public ScriptWrappable,
+    : public WorkerOrWorkletGlobalScope,
       public SecurityContext,
-      public WorkerOrWorkletGlobalScope,
       public ActiveScriptWrappable<WorkletGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);
@@ -40,11 +38,6 @@ class CORE_EXPORT WorkletGlobalScope
   ~WorkletGlobalScope() override;
 
   bool IsWorkletGlobalScope() const final { return true; }
-
-  // WorkerOrWorkletGlobalScope
-  ScriptWrappable* GetScriptWrappable() const final {
-    return const_cast<WorkletGlobalScope*>(this);
-  }
 
   void EvaluateClassicScript(
       const KURL& script_url,
@@ -55,15 +48,6 @@ class CORE_EXPORT WorkletGlobalScope
   // the global.
   bool IsClosing() const final { return false; }
 
-  // ScriptWrappable
-  v8::Local<v8::Object> Wrap(v8::Isolate*,
-                             v8::Local<v8::Object> creation_context) final;
-  v8::Local<v8::Object> AssociateWithWrapper(
-      v8::Isolate*,
-      const WrapperTypeInfo*,
-      v8::Local<v8::Object> wrapper) final;
-  bool HasPendingActivity() const override;
-
   ExecutionContext* GetExecutionContext() const;
 
   // ExecutionContext
@@ -72,10 +56,6 @@ class CORE_EXPORT WorkletGlobalScope
   KURL CompleteURL(const String&) const final;
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
-  EventQueue* GetEventQueue() const final {
-    NOTREACHED();
-    return nullptr;
-  }  // WorkletGlobalScopes don't have an event queue.
   bool IsSecureContext(String& error_message) const final;
 
   using SecurityContext::GetSecurityOrigin;
