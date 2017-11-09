@@ -301,7 +301,7 @@ suite('CupsAddPrinterDialogTests', function() {
       printerManufacturer: '',
       printerModel: '',
       printerMakeAndModel: '',
-      printerName: '',
+      printerName: 'printer',
       printerPPDPath: '',
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',

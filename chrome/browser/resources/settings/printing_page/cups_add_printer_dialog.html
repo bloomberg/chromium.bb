@@ -61,7 +61,7 @@
             $i18n{cancelButtonText}
           </paper-button>
           <paper-button class="action-button" id="addPrinterButton"
-              disabled="[[!selectedPrinter]]"
+              disabled="[[!canAddPrinter_(selectedPrinter)]]"
               on-tap="switchToConfiguringDialog_">
             $i18n{addPrinterButtonText}
           </paper-button>
