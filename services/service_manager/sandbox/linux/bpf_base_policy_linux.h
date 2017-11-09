@@ -33,7 +33,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT BPFBasePolicy
   // If the syscall handler for this policy requires a broker process,
   // return the corresponding (less restrictive) sandbox policy to apply
   // to the broker. If a broker is not required, nullptr is returned.
-  virtual std::unique_ptr<sandbox::bpf_dsl::Policy> GetBrokerSandboxPolicy();
+  virtual std::unique_ptr<BPFBasePolicy> GetBrokerSandboxPolicy();
 
   // Get the errno(3) to return for filesystem errors.
   static int GetFSDeniedErrno();

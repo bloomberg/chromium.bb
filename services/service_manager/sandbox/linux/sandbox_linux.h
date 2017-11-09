@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
+#include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "services/service_manager/sandbox/export.h"
 #include "services/service_manager/sandbox/linux/sandbox_seccomp_bpf_linux.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -73,6 +74,12 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
     bool engage_namespace_sandbox = false;
   };
 
+  // Callers can provide this hook to run code right before the policy
+  // is passed to the BPF compiler and the sandbox is engaged. If
+  // pre_sandbox_hook() returns true, the sandbox will be engaged
+  // afterwards, otherwise the process is terminated.
+  using PreSandboxHook = base::OnceCallback<bool(BPFBasePolicy*, Options)>;
+
   // Get our singleton instance.
   static SandboxLinux* GetInstance();
 
@@ -106,7 +113,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // limitations.
   // This function should only be called without any thread running.
   bool InitializeSandbox(SandboxType sandbox_type,
-                         SandboxSeccompBPF::PreSandboxHook hook,
+                         PreSandboxHook hook,
                          const Options& options);
 
   // Stop |thread| in a way that can be trusted by the sandbox.
@@ -135,13 +142,13 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   // never be called with threads started. If we detect that threads have
   // started we will crash.
   bool StartSeccompBPF(service_manager::SandboxType sandbox_type,
-                       SandboxSeccompBPF::PreSandboxHook hook,
-                       const SandboxSeccompBPF::Options& options);
+                       PreSandboxHook hook,
+                       const Options& options);
 
   // Limit the address space of the current process (and its children).
   // to make some vulnerabilities harder to exploit.
   bool LimitAddressSpace(const std::string& process_type,
-                         const SandboxSeccompBPF::Options& options);
+                         const Options& options);
 
   // Returns a file descriptor to proc. The file descriptor is no longer valid
   // after the sandbox has been sealed.
@@ -156,19 +163,27 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxLinux {
   };
 #endif
 
-  // A BrokerProcess is a helper that is started before the sandbox is engaged
-  // and will serve requests to access files over an IPC channel. The client of
-  // this runs from a SIGSYS handler triggered by the seccomp-bpf sandbox.
+  // A BrokerProcess is a helper that is started before the sandbox is engaged,
+  // typically from a pre-sandbox hook, that will serve requests to access
+  // files over an IPC channel. The client  of this runs from a SIGSYS handler
+  // triggered by the seccomp-bpf sandbox.
+  // |client_sandbox_policy| is the policy being run by the client, and is
+  // used to derive the equivalent broker-side policy.
+  // |broker_side_hook| is an alternate pre-sandbox hook to be run before the
+  // broker itself gets sandboxed, to which the broker side policy and
+  // |options| are passed.
+  // Crashes the process if the broker can not be started since continuation
+  // is impossible (and presumably unsafe).
   // This should never be destroyed, as after the sandbox is started it is
   // vital to the process.
+  void StartBrokerProcess(
+      BPFBasePolicy* client_sandbox_policy,
+      std::vector<sandbox::syscall_broker::BrokerFilePermission> permissions,
+      PreSandboxHook broker_side_hook,
+      const Options& options);
+
   sandbox::syscall_broker::BrokerProcess* broker_process() const {
     return broker_process_;
-  }
-
-  void set_broker_process(
-      std::unique_ptr<sandbox::syscall_broker::BrokerProcess> broker_process) {
-    DCHECK(!broker_process_);
-    broker_process_ = broker_process.release();
   }
 
  private:

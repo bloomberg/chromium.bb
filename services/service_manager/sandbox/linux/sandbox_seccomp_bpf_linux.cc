@@ -62,19 +62,6 @@ namespace service_manager {
 #if BUILDFLAG(USE_SECCOMP_BPF)
 namespace {
 
-// This function takes ownership of |policy|.
-void StartSandboxWithPolicy(std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
-                            base::ScopedFD proc_fd) {
-  // Starting the sandbox is a one-way operation. The kernel doesn't allow
-  // us to unload a sandbox policy after it has been started. Nonetheless,
-  // in order to make the use of the "Sandbox" object easier, we allow for
-  // the object to be destroyed after the sandbox has been started. Note that
-  // doing so does not stop the sandbox.
-  SandboxBPF sandbox(std::move(policy));
-  sandbox.SetProcFd(std::move(proc_fd));
-  CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
-}
-
 #if !defined(OS_NACL_NONSFI)
 
 class BlacklistDebugAndNumaPolicy : public BPFBasePolicy {
@@ -132,14 +119,89 @@ inline bool IsArchitectureArm() {
 #endif
 }
 
-// If a BPF policy is engaged for |process_type|, run a few sanity checks.
-void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
+std::unique_ptr<BPFBasePolicy> GetGpuProcessSandbox(
+    bool use_amd_specific_policies) {
+  if (IsChromeOS()) {
+    if (IsArchitectureArm()) {
+      return std::make_unique<CrosArmGpuProcessPolicy>(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kGpuSandboxAllowSysVShm));
+    }
+    if (use_amd_specific_policies)
+      return std::make_unique<CrosAmdGpuProcessPolicy>();
+  }
+  return std::make_unique<GpuProcessPolicy>();
+}
+#endif  // !defined(IN_NACL_HELPER)
+#endif  // !defined(OS_NACL_NONSFI)
+
+}  // namespace
+
+#endif  // USE_SECCOMP_BPF
+
+// Is seccomp BPF globally enabled?
+bool SandboxSeccompBPF::IsSeccompBPFDesired() {
+#if BUILDFLAG(USE_SECCOMP_BPF)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  return !command_line.HasSwitch(switches::kNoSandbox) &&
+         !command_line.HasSwitch(switches::kDisableSeccompFilterSandbox);
+#endif  // USE_SECCOMP_BPF
+  return false;
+}
+
+bool SandboxSeccompBPF::SupportsSandbox() {
+#if BUILDFLAG(USE_SECCOMP_BPF)
+  return SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::SINGLE_THREADED);
+#endif
+  return false;
+}
+
+#if !defined(OS_NACL_NONSFI)
+
+bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
+#if BUILDFLAG(USE_SECCOMP_BPF)
+  return SandboxBPF::SupportsSeccompSandbox(
+      SandboxBPF::SeccompLevel::MULTI_THREADED);
+#endif
+  return false;
+}
+
+std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
+    SandboxType sandbox_type,
+    const SandboxSeccompBPF::Options& options) {
   switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_RENDERER:
-    case service_manager::SANDBOX_TYPE_GPU:
-    case service_manager::SANDBOX_TYPE_PPAPI:
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-    case service_manager::SANDBOX_TYPE_CDM: {
+    case SANDBOX_TYPE_GPU:
+      return GetGpuProcessSandbox(options.use_amd_specific_policies);
+    case SANDBOX_TYPE_RENDERER:
+      return std::make_unique<RendererProcessPolicy>();
+    case SANDBOX_TYPE_PPAPI:
+      return std::make_unique<PpapiProcessPolicy>();
+    case SANDBOX_TYPE_UTILITY:
+    case SANDBOX_TYPE_PROFILING:
+      return std::make_unique<UtilityProcessPolicy>();
+    case SANDBOX_TYPE_CDM:
+      return std::make_unique<CdmProcessPolicy>();
+    case SANDBOX_TYPE_PDF_COMPOSITOR:
+      return std::make_unique<PdfCompositorProcessPolicy>();
+    case SANDBOX_TYPE_NO_SANDBOX:
+    default:
+      NOTREACHED();
+      return std::make_unique<AllowAllPolicy>();
+  }
+}
+
+// If a BPF policy is engaged for |process_type|, run a few sanity checks.
+void SandboxSeccompBPF::RunSandboxSanityChecks(
+    SandboxType sandbox_type,
+    const SandboxSeccompBPF::Options& options) {
+  switch (sandbox_type) {
+    case SANDBOX_TYPE_RENDERER:
+    case SANDBOX_TYPE_GPU:
+    case SANDBOX_TYPE_PPAPI:
+    case SANDBOX_TYPE_PDF_COMPOSITOR:
+    case SANDBOX_TYPE_CDM: {
       int syscall_ret;
       errno = 0;
 
@@ -167,115 +229,6 @@ void RunSandboxSanityChecks(service_manager::SandboxType sandbox_type) {
       break;
   }
 }
-
-std::unique_ptr<BPFBasePolicy> GetGpuProcessSandbox(
-    bool use_amd_specific_policies) {
-  if (IsChromeOS()) {
-    if (IsArchitectureArm()) {
-      return std::make_unique<CrosArmGpuProcessPolicy>(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              service_manager::switches::kGpuSandboxAllowSysVShm));
-    }
-    if (use_amd_specific_policies)
-      return std::make_unique<CrosAmdGpuProcessPolicy>();
-  }
-  return std::make_unique<GpuProcessPolicy>();
-}
-
-// Initialize the seccomp-bpf sandbox.
-bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
-                     base::ScopedFD proc_fd,
-                     SandboxSeccompBPF::PreSandboxHook hook,
-                     const SandboxSeccompBPF::Options& options) {
-  std::unique_ptr<BPFBasePolicy> policy;
-  switch (sandbox_type) {
-    case service_manager::SANDBOX_TYPE_GPU:
-      policy = GetGpuProcessSandbox(options.use_amd_specific_policies);
-      break;
-    case service_manager::SANDBOX_TYPE_RENDERER:
-      policy = std::make_unique<RendererProcessPolicy>();
-      break;
-    case service_manager::SANDBOX_TYPE_PPAPI:
-      policy = std::make_unique<PpapiProcessPolicy>();
-      break;
-    case service_manager::SANDBOX_TYPE_UTILITY:
-    case service_manager::SANDBOX_TYPE_PROFILING:
-      policy = std::make_unique<UtilityProcessPolicy>();
-      break;
-    case service_manager::SANDBOX_TYPE_CDM:
-      policy = std::make_unique<CdmProcessPolicy>();
-      break;
-    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
-      policy = std::make_unique<PdfCompositorProcessPolicy>();
-      break;
-    case service_manager::SANDBOX_TYPE_NO_SANDBOX:
-    default:
-      NOTREACHED();
-      policy = std::make_unique<AllowAllPolicy>();
-      break;
-  }
-  if (hook)
-    CHECK(std::move(hook).Run(policy.get(), options));
-
-  StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
-  RunSandboxSanityChecks(sandbox_type);
-  return true;
-}
-#endif  // !defined(IN_NACL_HELPER)
-#endif  // !defined(OS_NACL_NONSFI)
-
-}  // namespace
-
-#endif  // USE_SECCOMP_BPF
-
-// Is seccomp BPF globally enabled?
-bool SandboxSeccompBPF::IsSeccompBPFDesired() {
-#if BUILDFLAG(USE_SECCOMP_BPF)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(service_manager::switches::kNoSandbox) &&
-         !command_line.HasSwitch(
-             service_manager::switches::kDisableSeccompFilterSandbox);
-#endif  // USE_SECCOMP_BPF
-  return false;
-}
-
-bool SandboxSeccompBPF::SupportsSandbox() {
-#if BUILDFLAG(USE_SECCOMP_BPF)
-  return SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::SINGLE_THREADED);
-#endif
-  return false;
-}
-
-#if !defined(OS_NACL_NONSFI)
-
-bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
-#if BUILDFLAG(USE_SECCOMP_BPF)
-  return SandboxBPF::SupportsSeccompSandbox(
-      SandboxBPF::SeccompLevel::MULTI_THREADED);
-#endif
-  return false;
-}
-
-bool SandboxSeccompBPF::StartSandbox(service_manager::SandboxType sandbox_type,
-                                     base::ScopedFD proc_fd,
-                                     PreSandboxHook hook,
-                                     const Options& options) {
-#if BUILDFLAG(USE_SECCOMP_BPF)
-  if (!IsUnsandboxedSandboxType(sandbox_type) &&
-      IsSeccompBPFDesired() &&  // Global switches policy.
-      SupportsSandbox()) {
-    // If the kernel supports the sandbox, and if the command line says we
-    // should enable it, enable it or die.
-    CHECK(StartBPFSandbox(sandbox_type, std::move(proc_fd), std::move(hook),
-                          options));
-    return true;
-  }
-#endif
-  return false;
-}
-
 #endif  // !defined(OS_NACL_NONSFI)
 
 bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
@@ -284,7 +237,14 @@ bool SandboxSeccompBPF::StartSandboxWithExternalPolicy(
 #if BUILDFLAG(USE_SECCOMP_BPF)
   if (IsSeccompBPFDesired() && SupportsSandbox()) {
     CHECK(policy);
-    StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
+    // Starting the sandbox is a one-way operation. The kernel doesn't allow
+    // us to unload a sandbox policy after it has been started. Nonetheless,
+    // in order to make the use of the "Sandbox" object easier, we allow for
+    // the object to be destroyed after the sandbox has been started. Note that
+    // doing so does not stop the sandbox.
+    SandboxBPF sandbox(std::move(policy));
+    sandbox.SetProcFd(std::move(proc_fd));
+    CHECK(sandbox.StartSandbox(SandboxBPF::SeccompLevel::SINGLE_THREADED));
     return true;
   }
 #endif  // BUILDFLAG(USE_SECCOMP_BPF)

@@ -35,12 +35,6 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxSeccompBPF {
     bool vaapi_accelerated_video_encode_enabled = false;
   };
 
-  // Callers can provide this hook to run code right before the policy
-  // is passed to the BPF compiler and the sandbox is engaged. If
-  // pre_sandbox_hook() returns true, the sandbox will be engaged
-  // afterwards, otherwise the process is terminated.
-  using PreSandboxHook = base::OnceCallback<bool(BPFBasePolicy*, Options)>;
-
   // This is the API to enable a seccomp-bpf sandbox for content/
   // process-types:
   // Is the sandbox globally enabled, can anything use it at all ?
@@ -55,13 +49,15 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxSeccompBPF {
   // Check if the kernel supports TSYNC (thread synchronization) with seccomp.
   static bool SupportsSandboxWithTsync();
 
-  // Start the sandbox and apply the policy for sandbox_type, depending on
-  // command line switches and options. |hook|, if non-empty is run right
-  // before the sandbox is engaged.
-  static bool StartSandbox(service_manager::SandboxType sandbox_type,
-                           base::ScopedFD proc_fd,
-                           PreSandboxHook hook,
-                           const Options& options);
+  // Return a policy suitable for use with StartSandboxWithExternalPolicy.
+  static std::unique_ptr<BPFBasePolicy> PolicyForSandboxType(
+      SandboxType sandbox_type,
+      const SandboxSeccompBPF::Options& options);
+
+  // Prove that the sandbox was engaged by the StartSandbox() call. Crashes
+  // the process if the sandbox failed to engage.
+  static void RunSandboxSanityChecks(SandboxType sandbox_type,
+                                     const SandboxSeccompBPF::Options& options);
 #endif  // !defined(OS_NACL_NONSFI)
 
   // This is the API to enable a seccomp-bpf sandbox by using an
