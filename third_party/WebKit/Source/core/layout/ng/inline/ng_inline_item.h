@@ -86,9 +86,6 @@ class CORE_EXPORT NGInlineItem {
   void SetOffset(unsigned start, unsigned end);
   void SetEndOffset(unsigned);
 
-  LayoutUnit InlineSize() const;
-  LayoutUnit InlineSize(unsigned start, unsigned end) const;
-
   bool HasStartEdge() const;
   bool HasEndEdge() const;
 
