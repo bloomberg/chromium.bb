@@ -1022,7 +1022,13 @@ const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeMinimal,
      switches::kMemlog, switches::kMemlogModeMinimal},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeAll,
-     switches::kMemlog, switches::kMemlogModeAll}};
+     switches::kMemlog, switches::kMemlogModeAll},
+    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeBrowser,
+     switches::kMemlog, switches::kMemlogModeBrowser},
+    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeGpu,
+     switches::kMemlog, switches::kMemlogModeGpu},
+    {flag_descriptions::kEnableOutOfProcessHeapProfilingModeRendererSampling,
+     switches::kMemlog, switches::kMemlogModeRendererSampling}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "4"}};
