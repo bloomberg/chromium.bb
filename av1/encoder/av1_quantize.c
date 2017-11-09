@@ -1533,8 +1533,9 @@ static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
 }
 
 void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
-                         int uv_dc_delta_q, int uv_ac_delta_q,
-                         QUANTS *const quants, Dequants *const deq) {
+                         int u_dc_delta_q, int u_ac_delta_q, int v_dc_delta_q,
+                         int v_ac_delta_q, QUANTS *const quants,
+                         Dequants *const deq) {
   int i, q, quant_Q3, quant_QTX;
 
   for (q = 0; q < QINDEX_RANGE; q++) {
@@ -1557,19 +1558,33 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
       deq->y_dequant_QTX[q][i] = quant_QTX;
       deq->y_dequant_Q3[q][i] = quant_Q3;
 
-      // uv quantizer setup with original coeff shift of Q3
-      quant_Q3 = i == 0 ? av1_dc_quant(q, uv_dc_delta_q, bit_depth)
-                        : av1_ac_quant(q, uv_ac_delta_q, bit_depth);
-      // uv quantizer with TX scale; right now, it's still Q3 as above;
+      // u quantizer setup with original coeff shift of Q3
+      quant_Q3 = i == 0 ? av1_dc_quant(q, u_dc_delta_q, bit_depth)
+                        : av1_ac_quant(q, u_ac_delta_q, bit_depth);
+      // u quantizer with TX scale; right now, it's still Q3 as above;
       quant_QTX = quant_Q3;
-      invert_quant(&quants->uv_quant[q][i], &quants->uv_quant_shift[q][i],
+      invert_quant(&quants->u_quant[q][i], &quants->u_quant_shift[q][i],
                    quant_QTX);
-      quants->uv_quant_fp[q][i] = (1 << 16) / quant_QTX;
-      quants->uv_round_fp[q][i] = (qrounding_factor_fp * quant_QTX) >> 7;
-      quants->uv_zbin[q][i] = ROUND_POWER_OF_TWO(qzbin_factor * quant_QTX, 7);
-      quants->uv_round[q][i] = (qrounding_factor * quant_QTX) >> 7;
-      deq->uv_dequant_QTX[q][i] = quant_QTX;
-      deq->uv_dequant_Q3[q][i] = quant_Q3;
+      quants->u_quant_fp[q][i] = (1 << 16) / quant_QTX;
+      quants->u_round_fp[q][i] = (qrounding_factor_fp * quant_QTX) >> 7;
+      quants->u_zbin[q][i] = ROUND_POWER_OF_TWO(qzbin_factor * quant_QTX, 7);
+      quants->u_round[q][i] = (qrounding_factor * quant_QTX) >> 7;
+      deq->u_dequant_QTX[q][i] = quant_QTX;
+      deq->u_dequant_Q3[q][i] = quant_Q3;
+
+      // v quantizer setup with original coeff shift of Q3
+      quant_Q3 = i == 0 ? av1_dc_quant(q, v_dc_delta_q, bit_depth)
+                        : av1_ac_quant(q, v_ac_delta_q, bit_depth);
+      // v quantizer with TX scale; right now, it's still Q3 as above;
+      quant_QTX = quant_Q3;
+      invert_quant(&quants->v_quant[q][i], &quants->v_quant_shift[q][i],
+                   quant_QTX);
+      quants->v_quant_fp[q][i] = (1 << 16) / quant_QTX;
+      quants->v_round_fp[q][i] = (qrounding_factor_fp * quant_QTX) >> 7;
+      quants->v_zbin[q][i] = ROUND_POWER_OF_TWO(qzbin_factor * quant_QTX, 7);
+      quants->v_round[q][i] = (qrounding_factor * quant_QTX) >> 7;
+      deq->v_dequant_QTX[q][i] = quant_QTX;
+      deq->v_dequant_Q3[q][i] = quant_Q3;
     }
 
 #if CONFIG_NEW_QUANT
@@ -1577,13 +1592,17 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
     for (dq = 0; dq < QUANT_PROFILES; dq++) {
       for (i = 0; i < COEF_BANDS; i++) {
         const int y_quant = deq->y_dequant_QTX[q][i != 0];
-        const int uvquant = deq->uv_dequant_QTX[q][i != 0];
+        const int u_quant = deq->u_dequant_QTX[q][i != 0];
+        const int v_quant = deq->v_dequant_QTX[q][i != 0];
         av1_get_dequant_val_nuq(y_quant, i,
                                 deq->y_dequant_val_nuq_QTX[dq][q][i],
                                 quants->y_cuml_bins_nuq[dq][q][i], dq);
-        av1_get_dequant_val_nuq(uvquant, i,
-                                deq->uv_dequant_val_nuq_QTX[dq][q][i],
-                                quants->uv_cuml_bins_nuq[dq][q][i], dq);
+        av1_get_dequant_val_nuq(u_quant, i,
+                                deq->u_dequant_val_nuq_QTX[dq][q][i],
+                                quants->u_cuml_bins_nuq[dq][q][i], dq);
+        av1_get_dequant_val_nuq(v_quant, i,
+                                deq->v_dequant_val_nuq_QTX[dq][q][i],
+                                quants->v_cuml_bins_nuq[dq][q][i], dq);
       }
     }
 #endif  // CONFIG_NEW_QUANT
@@ -1598,14 +1617,22 @@ void av1_build_quantizer(aom_bit_depth_t bit_depth, int y_dc_delta_q,
       deq->y_dequant_QTX[q][i] = deq->y_dequant_QTX[q][1];
       deq->y_dequant_Q3[q][i] = deq->y_dequant_Q3[q][1];
 
-      quants->uv_quant[q][i] = quants->uv_quant[q][1];
-      quants->uv_quant_fp[q][i] = quants->uv_quant_fp[q][1];
-      quants->uv_round_fp[q][i] = quants->uv_round_fp[q][1];
-      quants->uv_quant_shift[q][i] = quants->uv_quant_shift[q][1];
-      quants->uv_zbin[q][i] = quants->uv_zbin[q][1];
-      quants->uv_round[q][i] = quants->uv_round[q][1];
-      deq->uv_dequant_QTX[q][i] = deq->uv_dequant_QTX[q][1];
-      deq->uv_dequant_Q3[q][i] = deq->uv_dequant_Q3[q][1];
+      quants->u_quant[q][i] = quants->u_quant[q][1];
+      quants->u_quant_fp[q][i] = quants->u_quant_fp[q][1];
+      quants->u_round_fp[q][i] = quants->u_round_fp[q][1];
+      quants->u_quant_shift[q][i] = quants->u_quant_shift[q][1];
+      quants->u_zbin[q][i] = quants->u_zbin[q][1];
+      quants->u_round[q][i] = quants->u_round[q][1];
+      deq->u_dequant_QTX[q][i] = deq->u_dequant_QTX[q][1];
+      deq->u_dequant_Q3[q][i] = deq->u_dequant_Q3[q][1];
+      quants->v_quant[q][i] = quants->u_quant[q][1];
+      quants->v_quant_fp[q][i] = quants->v_quant_fp[q][1];
+      quants->v_round_fp[q][i] = quants->v_round_fp[q][1];
+      quants->v_quant_shift[q][i] = quants->v_quant_shift[q][1];
+      quants->v_zbin[q][i] = quants->v_zbin[q][1];
+      quants->v_round[q][i] = quants->v_round[q][1];
+      deq->v_dequant_QTX[q][i] = deq->v_dequant_QTX[q][1];
+      deq->v_dequant_Q3[q][i] = deq->v_dequant_Q3[q][1];
     }
   }
 }
@@ -1614,8 +1641,9 @@ void av1_init_quantizer(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   QUANTS *const quants = &cpi->quants;
   Dequants *const dequants = &cpi->dequants;
-  av1_build_quantizer(cm->bit_depth, cm->y_dc_delta_q, cm->uv_dc_delta_q,
-                      cm->uv_ac_delta_q, quants, dequants);
+  av1_build_quantizer(cm->bit_depth, cm->y_dc_delta_q, cm->u_dc_delta_q,
+                      cm->u_ac_delta_q, cm->v_dc_delta_q, cm->v_ac_delta_q,
+                      quants, dequants);
 }
 
 void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
@@ -1647,7 +1675,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_q_index);
 #endif
   const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
-  int i;
 #if CONFIG_AOM_QM
   int minqm = cm->min_qmlevel;
   int maxqm = cm->max_qmlevel;
@@ -1683,32 +1710,56 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_NEW_QUANT
 
-  // UV
-  for (i = 1; i < 3; i++) {
-    x->plane[i].quant_QTX = quants->uv_quant[qindex];
-    x->plane[i].quant_fp_QTX = quants->uv_quant_fp[qindex];
-    x->plane[i].round_fp_QTX = quants->uv_round_fp[qindex];
-    x->plane[i].quant_shift_QTX = quants->uv_quant_shift[qindex];
-    x->plane[i].zbin_QTX = quants->uv_zbin[qindex];
-    x->plane[i].round_QTX = quants->uv_round[qindex];
-    x->plane[i].dequant_QTX = cpi->dequants.uv_dequant_QTX[qindex];
+  // U
+  {
+    x->plane[1].quant_QTX = quants->u_quant[qindex];
+    x->plane[1].quant_fp_QTX = quants->u_quant_fp[qindex];
+    x->plane[1].round_fp_QTX = quants->u_round_fp[qindex];
+    x->plane[1].quant_shift_QTX = quants->u_quant_shift[qindex];
+    x->plane[1].zbin_QTX = quants->u_zbin[qindex];
+    x->plane[1].round_QTX = quants->u_round[qindex];
+    x->plane[1].dequant_QTX = cpi->dequants.u_dequant_QTX[qindex];
 #if CONFIG_AOM_QM
-    memcpy(&xd->plane[i].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][1],
+    memcpy(&xd->plane[1].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][1],
            sizeof(cm->gqmatrix[qmlevel][1]));
-    memcpy(&xd->plane[i].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][1],
+    memcpy(&xd->plane[1].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][1],
            sizeof(cm->giqmatrix[qmlevel][1]));
 #endif
-    x->plane[i].dequant_QTX = cpi->dequants.uv_dequant_QTX[qindex];
-    xd->plane[i].dequant_Q3 = cpi->dequants.uv_dequant_Q3[qindex];
+    x->plane[1].dequant_QTX = cpi->dequants.u_dequant_QTX[qindex];
+    xd->plane[1].dequant_Q3 = cpi->dequants.u_dequant_Q3[qindex];
 #if CONFIG_NEW_QUANT
     for (dq = 0; dq < QUANT_PROFILES; dq++) {
-      x->plane[i].cuml_bins_nuq[dq] = quants->uv_cuml_bins_nuq[dq][qindex];
-      x->plane[i].dequant_val_nuq_QTX[dq] =
-          cpi->dequants.uv_dequant_val_nuq_QTX[dq][qindex];
+      x->plane[1].cuml_bins_nuq[dq] = quants->u_cuml_bins_nuq[dq][qindex];
+      x->plane[1].dequant_val_nuq_QTX[dq] =
+          cpi->dequants.u_dequant_val_nuq_QTX[dq][qindex];
     }
 #endif  // CONFIG_NEW_QUANT
   }
-
+  // V
+  {
+    x->plane[2].quant_QTX = quants->v_quant[qindex];
+    x->plane[2].quant_fp_QTX = quants->v_quant_fp[qindex];
+    x->plane[2].round_fp_QTX = quants->v_round_fp[qindex];
+    x->plane[2].quant_shift_QTX = quants->v_quant_shift[qindex];
+    x->plane[2].zbin_QTX = quants->v_zbin[qindex];
+    x->plane[2].round_QTX = quants->v_round[qindex];
+    x->plane[2].dequant_QTX = cpi->dequants.v_dequant_QTX[qindex];
+#if CONFIG_AOM_QM
+    memcpy(&xd->plane[2].seg_qmatrix[segment_id], cm->gqmatrix[qmlevel][1],
+           sizeof(cm->gqmatrix[qmlevel][1]));
+    memcpy(&xd->plane[2].seg_iqmatrix[segment_id], cm->giqmatrix[qmlevel][1],
+           sizeof(cm->giqmatrix[qmlevel][1]));
+#endif
+    x->plane[2].dequant_QTX = cpi->dequants.v_dequant_QTX[qindex];
+    xd->plane[2].dequant_Q3 = cpi->dequants.v_dequant_Q3[qindex];
+#if CONFIG_NEW_QUANT
+    for (dq = 0; dq < QUANT_PROFILES; dq++) {
+      x->plane[2].cuml_bins_nuq[dq] = quants->v_cuml_bins_nuq[dq][qindex];
+      x->plane[2].dequant_val_nuq_QTX[dq] =
+          cpi->dequants.v_dequant_val_nuq_QTX[dq][qindex];
+    }
+#endif  // CONFIG_NEW_QUANT
+  }
   x->skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
   x->qindex = qindex;
 
@@ -1733,8 +1784,10 @@ void av1_set_quantizer(AV1_COMMON *cm, int q) {
   // delta_q changes.
   cm->base_qindex = q;
   cm->y_dc_delta_q = 0;
-  cm->uv_dc_delta_q = 0;
-  cm->uv_ac_delta_q = 0;
+  cm->u_dc_delta_q = 0;
+  cm->u_ac_delta_q = 0;
+  cm->v_dc_delta_q = 0;
+  cm->v_ac_delta_q = 0;
 }
 
 // Table that converts 0-63 Q-range values passed in outside to the Qindex

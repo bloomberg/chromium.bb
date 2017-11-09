@@ -117,8 +117,10 @@ class AvxEncoderParmsGetToDecoder
     if (encode_parms.lossless) {
       EXPECT_EQ(0, common->base_qindex);
       EXPECT_EQ(0, common->y_dc_delta_q);
-      EXPECT_EQ(0, common->uv_dc_delta_q);
-      EXPECT_EQ(0, common->uv_ac_delta_q);
+      EXPECT_EQ(0, common->u_dc_delta_q);
+      EXPECT_EQ(0, common->u_ac_delta_q);
+      EXPECT_EQ(0, common->v_dc_delta_q);
+      EXPECT_EQ(0, common->v_ac_delta_q);
       EXPECT_EQ(ONLY_4X4, common->tx_mode);
     }
     EXPECT_EQ(encode_parms.error_resilient, common->error_resilient_mode);

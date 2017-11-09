@@ -498,8 +498,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #endif  // CONFIG_EXT_DELTA_Q
       int j;
       for (j = 0; j < MAX_MB_PLANE; ++j) {
-        const int dc_delta_q = j == 0 ? cm->y_dc_delta_q : cm->uv_dc_delta_q;
-        const int ac_delta_q = j == 0 ? 0 : cm->uv_ac_delta_q;
+        const int dc_delta_q =
+            j == 0 ? cm->y_dc_delta_q
+                   : (j == 1 ? cm->u_dc_delta_q : cm->v_dc_delta_q);
+        const int ac_delta_q =
+            j == 0 ? 0 : (j == 1 ? cm->u_ac_delta_q : cm->v_ac_delta_q);
         xd->plane[j].seg_dequant_QTX[i][0] = dequant_Q3_to_QTX(
             av1_dc_quant(current_qindex, dc_delta_q, cm->bit_depth),
             cm->bit_depth);
@@ -1370,8 +1373,10 @@ static void setup_quantization(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
   cm->base_qindex = aom_rb_read_literal(rb, QINDEX_BITS);
   cm->y_dc_delta_q = read_delta_q(rb);
-  cm->uv_dc_delta_q = read_delta_q(rb);
-  cm->uv_ac_delta_q = read_delta_q(rb);
+  cm->u_dc_delta_q = read_delta_q(rb);
+  cm->u_ac_delta_q = read_delta_q(rb);
+  cm->v_dc_delta_q = cm->u_dc_delta_q;
+  cm->v_ac_delta_q = cm->u_ac_delta_q;
   cm->dequant_bit_depth = cm->bit_depth;
 #if CONFIG_AOM_QM
   cm->using_qmatrix = aom_rb_read_bit(rb);
@@ -1405,13 +1410,18 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
         av1_dc_quant(qindex, cm->y_dc_delta_q, cm->bit_depth), cm->bit_depth);
     cm->y_dequant_QTX[i][1] = dequant_Q3_to_QTX(
         av1_ac_quant(qindex, 0, cm->bit_depth), cm->bit_depth);
-    cm->uv_dequant_QTX[i][0] = dequant_Q3_to_QTX(
-        av1_dc_quant(qindex, cm->uv_dc_delta_q, cm->bit_depth), cm->bit_depth);
-    cm->uv_dequant_QTX[i][1] = dequant_Q3_to_QTX(
-        av1_ac_quant(qindex, cm->uv_ac_delta_q, cm->bit_depth), cm->bit_depth);
+    cm->u_dequant_QTX[i][0] = dequant_Q3_to_QTX(
+        av1_dc_quant(qindex, cm->u_dc_delta_q, cm->bit_depth), cm->bit_depth);
+    cm->u_dequant_QTX[i][1] = dequant_Q3_to_QTX(
+        av1_ac_quant(qindex, cm->u_ac_delta_q, cm->bit_depth), cm->bit_depth);
+    cm->v_dequant_QTX[i][0] = dequant_Q3_to_QTX(
+        av1_dc_quant(qindex, cm->v_dc_delta_q, cm->bit_depth), cm->bit_depth);
+    cm->v_dequant_QTX[i][1] = dequant_Q3_to_QTX(
+        av1_ac_quant(qindex, cm->v_ac_delta_q, cm->bit_depth), cm->bit_depth);
 #if CONFIG_AOM_QM
     const int lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                         cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
+                         cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
+                         cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
     // NB: depends on base index so there is only 1 set per frame
     // No quant weighting when lossless or signalled not using QM
     const int qmlevel = (lossless || using_qm == 0)
@@ -1427,8 +1437,10 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
       for (int b = 0; b < COEF_BANDS; ++b) {
         av1_get_dequant_val_nuq(cm->y_dequant_QTX[i][b != 0], b,
                                 cm->y_dequant_nuq_QTX[i][dq][b], NULL, dq);
-        av1_get_dequant_val_nuq(cm->uv_dequant_QTX[i][b != 0], b,
-                                cm->uv_dequant_nuq_QTX[i][dq][b], NULL, dq);
+        av1_get_dequant_val_nuq(cm->u_dequant_QTX[i][b != 0], b,
+                                cm->u_dequant_nuq_QTX[i][dq][b], NULL, dq);
+        av1_get_dequant_val_nuq(cm->v_dequant_QTX[i][b != 0], b,
+                                cm->v_dequant_nuq_QTX[i][dq][b], NULL, dq);
       }
     }
 #endif  //  CONFIG_NEW_QUANT
@@ -3250,7 +3262,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                      cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
+                      cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
+                      cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
     xd->qindex[i] = qindex;
   }
   cm->all_lossless = all_lossless(cm, xd);

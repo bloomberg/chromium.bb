@@ -2773,8 +2773,10 @@ static void encode_quantization(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *wb) {
   aom_wb_write_literal(wb, cm->base_qindex, QINDEX_BITS);
   write_delta_q(wb, cm->y_dc_delta_q);
-  write_delta_q(wb, cm->uv_dc_delta_q);
-  write_delta_q(wb, cm->uv_ac_delta_q);
+  assert(cm->u_dc_delta_q == cm->v_dc_delta_q);
+  write_delta_q(wb, cm->u_dc_delta_q);
+  assert(cm->u_ac_delta_q == cm->v_ac_delta_q);
+  write_delta_q(wb, cm->u_ac_delta_q);
 #if CONFIG_AOM_QM
   aom_wb_write_bit(wb, cm->using_qmatrix);
   if (cm->using_qmatrix) {

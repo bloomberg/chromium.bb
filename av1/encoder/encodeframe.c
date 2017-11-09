@@ -4148,7 +4148,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
-                      cm->uv_dc_delta_q == 0 && cm->uv_ac_delta_q == 0;
+                      cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
+                      cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
     xd->qindex[i] = qindex;
   }
   cm->all_lossless = all_lossless(cm, xd);

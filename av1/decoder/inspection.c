@@ -62,7 +62,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   for (i = 0; i < MAX_SEGMENTS; i++) {
     for (j = 0; j < 2; j++) {
       fd->y_dequant[i][j] = cm->y_dequant_QTX[i][j];
-      fd->uv_dequant[i][j] = cm->uv_dequant_QTX[i][j];
+      fd->u_dequant[i][j] = cm->u_dequant_QTX[i][j];
+      fd->v_dequant[i][j] = cm->v_dequant_QTX[i][j];
     }
   }
   for (j = 0; j < cm->mi_rows; j++) {
