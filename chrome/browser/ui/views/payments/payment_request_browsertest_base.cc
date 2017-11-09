@@ -74,10 +74,8 @@ void SelectComboboxRowForValue(views::Combobox* combobox,
 PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() {}
 PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() {}
 
-PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase(
-    const std::string& test_file_path)
-    : test_file_path_(test_file_path),
-      delegate_(nullptr),
+PaymentRequestBrowserTestBase::PaymentRequestBrowserTestBase()
+    : delegate_(nullptr),
       is_incognito_(false),
       is_valid_ssl_(true),
       is_browser_window_active_(true) {}
@@ -100,8 +98,6 @@ void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
   ASSERT_TRUE(https_server_->InitializeAndListen());
   https_server_->ServeFilesFromSourceDirectory("components/test/data/payments");
   https_server_->StartAcceptingConnections();
-
-  NavigateTo(test_file_path_);
 
   // Starting now, PaymentRequest Mojo messages sent by the renderer will
   // create PaymentRequest objects via this test's CreatePaymentRequestForTest,

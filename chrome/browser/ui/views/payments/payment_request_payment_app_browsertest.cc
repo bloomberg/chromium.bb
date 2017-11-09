@@ -12,14 +12,14 @@ namespace payments {
 
 class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestPaymentAppTest()
-      : PaymentRequestBrowserTestBase("/payment_request_bobpay_test.html") {}
+  PaymentRequestPaymentAppTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestPaymentAppTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentAppTest, ShowNotSupportedError) {
+  NavigateTo("/payment_request_bobpay_test.html");
   ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
   ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), "buy();"));
   WaitForObservedEvent();

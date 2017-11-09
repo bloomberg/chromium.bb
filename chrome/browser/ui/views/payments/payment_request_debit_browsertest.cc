@@ -20,8 +20,7 @@ constexpr auto UNKNOWN = ::autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN;
 // Tests for a merchant that requests a debit card.
 class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestDebitTest()
-      : PaymentRequestBrowserTestBase("/payment_request_debit_test.html") {}
+  PaymentRequestDebitTest() {}
 
   const std::string& GetOrCreateBillingAddressId() {
     if (billing_address_id_.empty()) {
@@ -55,6 +54,7 @@ class PaymentRequestDebitTest : public PaymentRequestBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, CanMakePaymentWithDebitCard) {
+  NavigateTo("/payment_request_debit_test.html");
   AddServerCardWithType(DEBIT);
   CallCanMakePayment();
   ExpectBodyContains({"true"});
@@ -62,6 +62,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, CanMakePaymentWithDebitCard) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
                        CanMakePaymentWithUnknownCardType) {
+  NavigateTo("/payment_request_debit_test.html");
   AddServerCardWithType(UNKNOWN);
   CallCanMakePayment();
   ExpectBodyContains({"true"});
@@ -69,6 +70,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
                        CannotMakePaymentWithCreditAndPrepaidCard) {
+  NavigateTo("/payment_request_debit_test.html");
   AddServerCardWithType(CREDIT);
   AddServerCardWithType(PREPAID);
   CallCanMakePayment();
@@ -76,6 +78,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, DebitCardIsPreselected) {
+  NavigateTo("/payment_request_debit_test.html");
   AddServerCardWithType(DEBIT);
   CallCanMakePayment();
   InvokePaymentRequestUI();
@@ -85,6 +88,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, DebitCardIsPreselected) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
                        UnknownCardTypeIsNotPreselected) {
+  NavigateTo("/payment_request_debit_test.html");
   AddServerCardWithType(UNKNOWN);
   InvokePaymentRequestUI();
   EXPECT_FALSE(IsPayButtonEnabled());
@@ -92,6 +96,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDebitTest, PayWithLocalCard) {
+  NavigateTo("/payment_request_debit_test.html");
   // All local cards have "unknown" card type by design.
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(GetOrCreateBillingAddressId());

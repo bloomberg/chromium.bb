@@ -17,9 +17,7 @@ namespace payments {
 
 class PaymentRequestErrorMessageTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestErrorMessageTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_fail_complete_test.html") {}
+  PaymentRequestErrorMessageTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestErrorMessageTest);
@@ -27,6 +25,7 @@ class PaymentRequestErrorMessageTest : public PaymentRequestBrowserTestBase {
 
 // Testing the use of the complete('fail') JS API and the error message.
 IN_PROC_BROWSER_TEST_F(PaymentRequestErrorMessageTest, CompleteFail) {
+  NavigateTo("/payment_request_fail_complete_test.html");
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa

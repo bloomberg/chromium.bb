@@ -11,11 +11,11 @@ namespace payments {
 
 class PaymentRequestBlobUrlTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestBlobUrlTest()
-      : PaymentRequestBrowserTestBase("/payment_request_blob_url_test.html") {}
+  PaymentRequestBlobUrlTest() {}
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestBlobUrlTest, ConnectionTerminated) {
+  NavigateTo("/payment_request_blob_url_test.html");
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
   ASSERT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),

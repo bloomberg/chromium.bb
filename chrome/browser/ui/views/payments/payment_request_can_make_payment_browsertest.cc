@@ -20,9 +20,7 @@ namespace payments {
 class PaymentRequestCanMakePaymentQueryTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentQueryTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_can_make_payment_query_test.html") {}
+  PaymentRequestCanMakePaymentQueryTest() {}
 
   void CallCanMakePayment() {
     ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
@@ -38,6 +36,7 @@ class PaymentRequestCanMakePaymentQueryTest
 // Visa is required, and user has a visa instrument.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
 
@@ -50,6 +49,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // .canMakePayment().
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_InvalidSSL) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
   SetInvalidSsl();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
@@ -64,6 +64,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // mode.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported_InIncognitoMode) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
   SetIncognito();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
@@ -77,6 +78,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // Visa is required, and user doesn't have a visa instrument.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_NotSupported) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
   AddCreditCard(card);
 
@@ -89,6 +91,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 // incognito mode. In this case canMakePayment always returns true.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_NotSupported_InIncognitoMode) {
+  NavigateTo("/payment_request_can_make_payment_query_test.html");
   SetIncognito();
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
@@ -104,9 +107,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 class PaymentRequestCanMakePaymentQueryCCTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCanMakePaymentQueryCCTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_can_make_payment_query_cc_test.html") {}
+  PaymentRequestCanMakePaymentQueryCCTest() {}
 
   // If |visa| is true, then the method data is:
   //
@@ -128,6 +129,7 @@ class PaymentRequestCanMakePaymentQueryCCTest
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest, QueryQuota) {
+  NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
   // Query "visa" payment method.
   CallCanMakePayment(/*visa=*/true);
 
@@ -161,6 +163,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest, QueryQuota) {
 // enforced to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
                        QueryQuotaInIncognito) {
+  NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
   SetIncognito();
 
   // Query "visa" payment method.
@@ -198,9 +201,7 @@ class PaymentRequestCanMakePaymentQueryPMITest
     BOB_PAY_AND_VISA,
   };
 
-  PaymentRequestCanMakePaymentQueryPMITest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_payment_method_identifier_test.html") {
+  PaymentRequestCanMakePaymentQueryPMITest() {
     script_[CheckFor::BASIC_VISA] = "checkBasicVisa();";
     script_[CheckFor::BASIC_CARD] = "checkBasicCard();";
     script_[CheckFor::ALICE_PAY] = "checkAlicePay();";
@@ -224,6 +225,7 @@ class PaymentRequestCanMakePaymentQueryPMITest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCards) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
   // payment method specific data.
   CallCanMakePayment(CheckFor::BASIC_VISA);
@@ -259,6 +261,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCardsInIncognito) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   SetIncognito();
 
   // Query "basic-card" payment method with "supportedNetworks": ["visa"] in the
@@ -290,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // should return false for them.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentApps) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   CallCanMakePayment(CheckFor::ALICE_PAY);
 
   ExpectBodyContains({"false"});
@@ -308,6 +312,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // user has on file.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentAppsAndCards) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
 
   ExpectBodyContains({"false"});
@@ -342,6 +347,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // NotSupportedError to avoid user fingerprinting.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForPaymentAppsInIncognitoMode) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kServiceWorkerPaymentApps);
 
@@ -369,6 +375,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // quota is still enforced to avoid incognito mode detection.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForDisabledPaymentAppsInIncognitoMode) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       features::kServiceWorkerPaymentApps);
@@ -398,6 +405,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 // NotSupportedError to avoid user fingerprinting.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   SetIncognito();
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);

@@ -13,9 +13,7 @@ namespace payments {
 class PaymentRequestCvcUnmaskViewControllerTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCvcUnmaskViewControllerTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestCvcUnmaskViewControllerTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCvcUnmaskViewControllerTest);
@@ -23,6 +21,7 @@ class PaymentRequestCvcUnmaskViewControllerTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        CvcSentToResponse) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -40,6 +39,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 // does not crash.
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        OpenGoBackOpenPay) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -59,6 +59,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        EnterAcceleratorConfirmsCvc) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -86,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCvcUnmaskViewControllerTest,
                        ButtonDisabled) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.

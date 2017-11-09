@@ -11,19 +11,19 @@ namespace payments {
 
 class PaymentRequestDataUrlTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestDataUrlTest()
-      : PaymentRequestBrowserTestBase(
-            "data:text/html,<html><head><meta name=\"viewport\" "
-            "content=\"width=device-width, initial-scale=1, "
-            "maximum-scale=1\"></head><body><button id=\"buy\" onclick=\"try { "
-            "(new PaymentRequest([{supportedMethods: ['basic-card']}], {total: "
-            "{label: 'Total',  amount: {currency: 'USD', value: "
-            "'1.00'}}})).show(); } catch(e) { "
-            "document.getElementById('result').innerHTML = e; }\">Data URL "
-            "Test</button><div id='result'></div></body></html>") {}
+  PaymentRequestDataUrlTest() {}
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestDataUrlTest, SecurityError) {
+  NavigateTo(
+      "data:text/html,<html><head><meta name=\"viewport\" "
+      "content=\"width=device-width, initial-scale=1, "
+      "maximum-scale=1\"></head><body><button id=\"buy\" onclick=\"try { "
+      "(new PaymentRequest([{supportedMethods: ['basic-card']}], {total: "
+      "{label: 'Total',  amount: {currency: 'USD', value: "
+      "'1.00'}}})).show(); } catch(e) { "
+      "document.getElementById('result').innerHTML = e; }\">Data URL "
+      "Test</button><div id='result'></div></body></html>");
   ASSERT_TRUE(content::ExecuteScript(
       GetActiveWebContents(),
       "(function() { document.getElementById('buy').click(); })();"));

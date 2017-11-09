@@ -87,14 +87,14 @@ class PaymentRequestBrowserTestBase
   };
 
  protected:
-  // Test will open a browser window to |test_file_path| (relative to
-  // components/test/data/payments).
-  explicit PaymentRequestBrowserTestBase(const std::string& test_file_path);
+  PaymentRequestBrowserTestBase();
   ~PaymentRequestBrowserTestBase() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
+  // Test will open a browser window to |file_path| (relative to
+  // components/test/data/payments).
   void NavigateTo(const std::string& file_path);
 
   void SetIncognito();
@@ -280,7 +280,6 @@ class PaymentRequestBrowserTestBase
 
  private:
   std::unique_ptr<DialogEventObserver> event_observer_;
-  const std::string test_file_path_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   // Weak, owned by the PaymentRequest object.
   TestChromePaymentRequestDelegate* delegate_;
