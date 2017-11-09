@@ -58,8 +58,11 @@ cr.define('extensions', function() {
       /** @private {!Array<!(ManifestError|RuntimeError)>} */
       entries_: Array,
 
-      /** @private {?(ManifestError|RuntimeError)} */
-      selectedError_: Object,
+      /**
+       * Index into |entries_|.
+       * @private
+       */
+      selectedEntry_: Number,
 
       /** @private {?chrome.developerPrivate.StackFrame}*/
       selectedStackFrame_: {
@@ -72,8 +75,13 @@ cr.define('extensions', function() {
 
     observers: [
       'observeDataChanges_(data.*)',
-      'onSelectedErrorChanged_(selectedError_)',
+      'onSelectedErrorChanged_(selectedEntry_)',
     ],
+
+    /** @return {!ManifestError|!RuntimeError} */
+    getSelectedError: function() {
+      return this.entries_[this.selectedEntry_];
+    },
 
     /**
      * Watches for changes to |data| in order to fetch the corresponding
@@ -82,20 +90,8 @@ cr.define('extensions', function() {
      */
     observeDataChanges_: function() {
       const errors = this.data.manifestErrors.concat(this.data.runtimeErrors);
-      // When setting |this.entries_| for the first time, set the |expanded|
-      // flags so that the first error is selected. This is needed to show
-      // the cr-expand-button images.
-      // TODO(dschuyler): A similar loop is repeated in selectError_(). I
-      // intend to change/improve this by December 2017.
-      for (let i = 0; i < errors.length; ++i) {
-        // Augmenting error with |expanded| intentionally, to use the HTML
-        // binding. (A temporary workaround).
-        errors[i].expanded = i == 0;
-      }
       this.entries_ = errors;
-      if (this.entries_.length) {
-        this.selectError_(this.entries_[0]);
-      }
+      this.selectedEntry_ = this.entries_.length ? 0 : -1;
     },
 
     /** @private */
@@ -142,12 +138,12 @@ cr.define('extensions', function() {
      * @private
      */
     onSelectedErrorChanged_: function() {
-      if (!this.selectedError_) {
+      if (this.selectedEntry_ < 0) {
         this.$['code-section'].code = null;
         return;
       }
 
-      const error = this.selectedError_;
+      const error = this.getSelectedError();
       const args = {
         extensionId: error.extensionId,
         message: error.message,
@@ -191,8 +187,8 @@ cr.define('extensions', function() {
      * @private
      */
     getStackTraceLabel_: function(frame) {
-      let description = getRelativeUrl(frame.url, this.selectedError_) + ':' +
-          frame.lineNumber;
+      let description = getRelativeUrl(frame.url, this.getSelectedError()) +
+          ':' + frame.lineNumber;
 
       if (frame.functionName) {
         const functionName = frame.functionName == '(anonymous function)' ?
@@ -235,15 +231,16 @@ cr.define('extensions', function() {
      * @private
      */
     onStackFrameTap_: function(e) {
-      const frame = (/** @type {!{model:Object}} */ (e)).model.item;
+      const frame = /** @type {!{model:Object}} */ (e).model.item;
 
       this.selectedStackFrame_ = frame;
 
+      const selectedError = this.getSelectedError();
       this.delegate
           .requestFileSource({
-            extensionId: this.selectedError_.extensionId,
-            message: this.selectedError_.message,
-            pathSuffix: getRelativeUrl(frame.url, this.selectedError_),
+            extensionId: selectedError.extensionId,
+            message: selectedError.message,
+            pathSuffix: getRelativeUrl(frame.url, selectedError),
             lineNumber: frame.lineNumber,
           })
           .then(code => {
@@ -253,15 +250,14 @@ cr.define('extensions', function() {
 
     /** @private */
     onDevToolButtonTap_: function() {
+      const selectedError = this.getSelectedError();
       // This guarantees renderProcessId and renderViewId.
-      assert(
-          this.selectedError_.type ==
-          chrome.developerPrivate.ErrorType.RUNTIME);
+      assert(selectedError.type == chrome.developerPrivate.ErrorType.RUNTIME);
       assert(this.selectedStackFrame_);
 
       this.delegate.openDevTools({
-        renderProcessId: this.selectedError_.renderProcessId,
-        renderViewId: this.selectedError_.renderViewId,
+        renderProcessId: selectedError.renderProcessId,
+        renderViewId: selectedError.renderViewId,
         url: this.selectedStackFrame_.url,
         lineNumber: this.selectedStackFrame_.lineNumber || 0,
         columnNumber: this.selectedStackFrame_.columnNumber || 0,
@@ -271,48 +267,40 @@ cr.define('extensions', function() {
     /**
      * Computes the class name for the error item depending on whether its
      * the currently selected error.
-     * @param {!RuntimeError|!ManifestError} selectedError
-     * @param {!RuntimeError|!ManifestError} error
+     * @param {number} index
      * @return {string}
      * @private
      */
-    computeErrorClass_: function(selectedError, error) {
-      return selectedError == error ? 'selected' : '';
+    computeErrorClass_: function(index) {
+      return index == this.selectedEntry_ ? 'selected' : '';
+    },
+
+    /** @private */
+    iconName_: function(index) {
+      return index == this.selectedEntry_ ? 'icon-expand-less' :
+                                            'icon-expand-more';
     },
 
     /**
-     * @param {!RuntimeError|!ManifestError} selected
-     * @param {!RuntimeError|!ManifestError} current
+     * Determine if the iron-collapse should be opened (expanded).
+     * @param {number} index
      * @return {boolean}
      * @private
      */
-    isEqual_: function(selected, current) {
-      return selected == current;
+    isOpened_: function(index) {
+      return index == this.selectedEntry_;
     },
 
     /**
-     * Causes the given error to become the currently-selected error.
-     * @param {!RuntimeError|!ManifestError} error
-     * @private
-     */
-    selectError_: function(error) {
-      this.selectedError_ = error;
-      const items =
-          this.$$('#errors-list').querySelectorAll('cr-expand-button');
-      for (let i = 0; i < items.length; ++i) {
-        items[i].expanded = this.entries_[i] == error;
-      }
-    },
-
-    /**
-     * @param {!{model: !{item: (!RuntimeError|!ManifestError)}}} e
+     * @param {!{model: !{index: number}}} e
      * @private
      */
     onErrorItemAction_: function(e) {
       if (e.type == 'keydown' && !((e.code == 'Space' || e.code == 'Enter')))
         return;
 
-      this.selectError_(e.model.item);
+      this.selectedEntry_ =
+          this.selectedEntry_ == e.model.index ? -1 : e.model.index;
     },
   });
 
