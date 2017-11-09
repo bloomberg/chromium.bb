@@ -10,7 +10,8 @@
 
 namespace content {
 
-AssociatedInterfaceRegistryImpl::AssociatedInterfaceRegistryImpl() {}
+AssociatedInterfaceRegistryImpl::AssociatedInterfaceRegistryImpl()
+    : weak_factory_(this) {}
 
 AssociatedInterfaceRegistryImpl::~AssociatedInterfaceRegistryImpl() {}
 
@@ -38,6 +39,11 @@ void AssociatedInterfaceRegistryImpl::RemoveInterface(const std::string& name) {
   auto it = interfaces_.find(name);
   DCHECK(it != interfaces_.end());
   interfaces_.erase(it);
+}
+
+base::WeakPtr<AssociatedInterfaceRegistryImpl>
+AssociatedInterfaceRegistryImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace content

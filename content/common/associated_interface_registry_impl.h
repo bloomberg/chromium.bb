@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/associated_interface_registry.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -27,8 +28,11 @@ class AssociatedInterfaceRegistryImpl : public AssociatedInterfaceRegistry {
   void AddInterface(const std::string& name, const Binder& binder) override;
   void RemoveInterface(const std::string& name) override;
 
+  base::WeakPtr<AssociatedInterfaceRegistryImpl> GetWeakPtr();
+
  private:
   std::map<std::string, Binder> interfaces_;
+  base::WeakPtrFactory<AssociatedInterfaceRegistryImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedInterfaceRegistryImpl);
 };

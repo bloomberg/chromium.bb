@@ -14,6 +14,9 @@ class EmptyInterfaceRegistry : public InterfaceRegistry {
       const char* name,
       const InterfaceFactory& factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {}
+  void AddAssociatedInterface(
+      const char* name,
+      const AssociatedInterfaceFactory& factory) override {}
 };
 
 }  // namespace

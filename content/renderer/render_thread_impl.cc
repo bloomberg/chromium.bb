@@ -718,7 +718,8 @@ void RenderThreadImpl::Init(
   AddFilter(quota_message_filter_->GetFilter());
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
-  BlinkInterfaceRegistryImpl interface_registry(registry->GetWeakPtr());
+  BlinkInterfaceRegistryImpl interface_registry(
+      registry->GetWeakPtr(), associated_interfaces_.GetWeakPtr());
 
   InitializeWebKit(resource_task_queue, &interface_registry);
   blink_initialized_time_ = base::TimeTicks::Now();

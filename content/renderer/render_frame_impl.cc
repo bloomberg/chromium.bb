@@ -1305,8 +1305,8 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
   // provided at construction time. See: https://crbug.com/729021/.
   CHECK(params.interface_provider.is_bound());
   remote_interfaces_.Bind(std::move(params.interface_provider));
-  blink_interface_registry_.reset(
-      new BlinkInterfaceRegistryImpl(registry_.GetWeakPtr()));
+  blink_interface_registry_.reset(new BlinkInterfaceRegistryImpl(
+      registry_.GetWeakPtr(), associated_interfaces_.GetWeakPtr()));
 
   // Must call after binding our own remote interfaces.
   media_factory_.SetupMojo();
