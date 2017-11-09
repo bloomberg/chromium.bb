@@ -57,6 +57,12 @@ void WebTestWithWebState::AddPendingItem(const GURL& url,
                       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 }
 
+void WebTestWithWebState::AddTransientItem(const GURL& url) {
+  GetWebController(web_state())
+      .webStateImpl->GetNavigationManagerImpl()
+      .AddTransientItem(url);
+}
+
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
   // Sets MIME type to "text/html" once navigation is committed.
   class MimeTypeUpdater : public WebStateObserver {

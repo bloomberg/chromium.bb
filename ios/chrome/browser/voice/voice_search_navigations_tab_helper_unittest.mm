@@ -73,3 +73,15 @@ TEST_F(VoiceSearchNavigationsTest, NavigationAfterVoiceSearch) {
   item = web_state()->GetNavigationManager()->GetLastCommittedItem();
   EXPECT_FALSE(navigations()->IsNavigationFromVoiceSearch(item));
 }
+
+// Tests that transient NavigationItems are handled the same as pending items
+TEST_F(VoiceSearchNavigationsTest, TransientNavigations) {
+  LoadHtml(@"<html></html>", GURL("http://committed_url.test"));
+  const GURL kTransientURL("http://transient.test");
+  AddTransientItem(kTransientURL);
+  web::NavigationItem* item =
+      web_state()->GetNavigationManager()->GetTransientItem();
+  EXPECT_FALSE(navigations()->IsNavigationFromVoiceSearch(item));
+  navigations()->WillLoadVoiceSearchResult();
+  EXPECT_TRUE(navigations()->IsNavigationFromVoiceSearch(item));
+}
