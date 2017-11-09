@@ -11,7 +11,7 @@
 namespace content {
 
 namespace {
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+constexpr net::NetworkTrafficAnnotationTag kAppCacheTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("appcache_update_job", R"(
       semantics {
         sender: "HTML5 AppCache System"
@@ -64,8 +64,8 @@ AppCacheUpdateJob::UpdateRequestBase::Create(
 AppCacheUpdateJob::UpdateRequestBase::UpdateRequestBase() {}
 
 net::NetworkTrafficAnnotationTag
-AppCacheUpdateJob::UpdateRequestBase::GetTrafficAnnotation() const {
-  return kTrafficAnnotation;
+AppCacheUpdateJob::UpdateRequestBase::GetTrafficAnnotation() {
+  return kAppCacheTrafficAnnotation;
 }
 
 }  // namespace content
