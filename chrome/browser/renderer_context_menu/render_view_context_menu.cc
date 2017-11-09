@@ -451,7 +451,7 @@ void WriteURLToClipboard(const GURL& url) {
                 net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
 
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  scw.WriteURL(text);
+  scw.WriteText(text);
 }
 
 bool g_custom_id_ranges_initialized = false;
