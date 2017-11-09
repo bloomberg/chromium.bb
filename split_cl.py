@@ -164,7 +164,10 @@ def SplitCl(description_file, comment_file, changelist, cmd_upload):
 
     author = git.run('config', 'user.email').strip() or None
     refactor_branch = git.current_branch()
+    assert refactor_branch, "Can't run from detached branch."
     refactor_branch_upstream = git.upstream(refactor_branch)
+    assert refactor_branch_upstream, \
+        "Branch %s must have an upstream." % refactor_branch
 
     owners_database = owners.Database(change.RepositoryRoot(), file, os.path)
     owners_database.load_data_needed_for([f.LocalPath() for f in files])
