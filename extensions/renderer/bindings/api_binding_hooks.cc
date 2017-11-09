@@ -219,8 +219,11 @@ APIBindingHooks::RequestResult APIBindingHooks::RunHooks(
   if (delegate_) {
     RequestResult result = delegate_->HandleRequest(
         method_name, signature, context, arguments, type_refs);
-    if (result.code != RequestResult::NOT_HANDLED)
+    // If the native hooks handled the call or set a custom callback, use that.
+    if (result.code != RequestResult::NOT_HANDLED ||
+        !result.custom_callback.IsEmpty()) {
       return result;
+    }
   }
 
   // Harder case: looking up a custom hook registered on the context (since

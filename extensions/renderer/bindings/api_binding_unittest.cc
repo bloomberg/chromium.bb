@@ -1519,4 +1519,49 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
   request_arguments.reset();
 }
 
+// Test native hooks that don't handle the result, but set a custom callback
+// instead.
+TEST_F(APIBindingUnittest, TestHooksWithCustomCallback) {
+  SetFunctions(kFunctions);
+
+  // Register a hook for the test.oneString method.
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
+  auto hook_with_custom_callback =
+      [](const APISignature* signature, v8::Local<v8::Context> context,
+         std::vector<v8::Local<v8::Value>>* arguments,
+         const APITypeReferenceMap& ref_map) {
+        constexpr char kCustomCallback[] =
+            "(function() { this.calledCustomCallback = true; })";
+        v8::Local<v8::Function> custom_callback =
+            FunctionFromString(context, kCustomCallback);
+        APIBindingHooks::RequestResult result(
+            APIBindingHooks::RequestResult::NOT_HANDLED, custom_callback);
+        return result;
+      };
+  hooks->AddHandler("test.oneString", base::Bind(hook_with_custom_callback));
+  SetHooksDelegate(std::move(hooks));
+
+  InitializeBinding();
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  v8::Local<v8::Object> binding_object = binding()->CreateInstance(context);
+
+  // First try calling the oneString() method, which has a custom hook
+  // installed.
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  RunFunction(func, context, 1, args);
+
+  ASSERT_TRUE(last_request());
+  EXPECT_TRUE(last_request()->has_callback);
+  request_handler()->CompleteRequest(last_request()->request_id,
+                                     base::ListValue(), std::string());
+
+  EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
+                                                "calledCustomCallback"));
+}
+
 }  // namespace extensions
