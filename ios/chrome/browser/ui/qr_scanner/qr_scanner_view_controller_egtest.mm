@@ -112,8 +112,6 @@ void ShowQRScanner() {
       grey_accessibilityLabel(l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT)),
       grey_minimumVisiblePercent(0.2), nil);
   [[EarlGrey selectElementWithMatcher:locationbarButton]
-      assertWithMatcher:grey_text(@"Search or type URL")];
-  [[EarlGrey selectElementWithMatcher:locationbarButton]
       performAction:grey_tap()];
 
   // Tap the QR Code scanner button in the keyboard accessory view.

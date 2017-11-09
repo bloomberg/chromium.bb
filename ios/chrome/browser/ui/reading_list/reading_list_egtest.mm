@@ -131,11 +131,12 @@ void TapButtonWithID(int button_id) {
 // Performs |action| on the entry with the title |entryTitle|.
 void performActionOnEntry(const std::string& entryTitle,
                           id<GREYAction> action) {
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(entryTitle)),
-                            grey_sufficientlyVisible(), nil)]
-      performAction:action];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
+                         base::SysUTF8ToNSString(entryTitle)),
+                     grey_ancestor(grey_kindOfClass([ReadingListCell class])),
+                     grey_sufficientlyVisible(), nil)] performAction:action];
 }
 
 // Taps the entry with the title |entryTitle|.

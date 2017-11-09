@@ -345,6 +345,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/passwords:passwords",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/signin",
