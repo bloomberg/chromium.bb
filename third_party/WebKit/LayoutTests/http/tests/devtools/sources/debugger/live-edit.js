@@ -1,21 +1,15 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/live-edit-test.js"></script>
-<script src="resources/edit-me.js"></script>
-<script src="resources/edit-me-2.js"></script>
-<script src="resources/edit-me-when-paused.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function loadScriptWithSyntaxError()
-{
-    var script = document.createElement("script");
-    script.src = "resources/edit-me-syntax-error.js";
-    document.head.appendChild(script);
-}
+(async function() {
+  TestRunner.addResult(`Tests live edit feature.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addScriptTag('resources/edit-me.js');
+  await TestRunner.addScriptTag('resources/edit-me-2.js');
+  await TestRunner.addScriptTag('resources/edit-me-when-paused.js');
 
-function test() {
   var panel = UI.panels.sources;
 
   SourcesTestRunner.runDebuggerTestSuite([
@@ -23,7 +17,9 @@ function test() {
       SourcesTestRunner.showScriptSource('edit-me.js', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
-        replaceInSource(sourceFrame, 'return 0;', 'return "live-edited string";', didEditScriptSource);
+        replaceInSource(
+            sourceFrame, 'return 0;', 'return "live-edited string";',
+            didEditScriptSource);
       }
 
       function didEditScriptSource() {
@@ -31,28 +27,30 @@ function test() {
       }
 
       function didEvaluateInPage(result) {
-        TestRunner.assertEquals('live-edited string', result.description, 'edited function returns wrong result');
+        TestRunner.assertEquals(
+            'live-edited string', result.description,
+            'edited function returns wrong result');
         SourcesTestRunner.dumpSourceFrameContents(panel.visibleView);
         next();
       }
     },
 
-    function testLiveEditSyntaxError(next) {
-      TestRunner.evaluateInPage('loadScriptWithSyntaxError()', showScriptSource);
-
-      function showScriptSource() {
-        SourcesTestRunner.showScriptSource('edit-me-syntax-error.js', didShowScriptSource);
-      }
+    async function testLiveEditSyntaxError(next) {
+      await TestRunner.addScriptTag('resources/edit-me-syntax-error.js');
+      SourcesTestRunner.showScriptSource(
+          'edit-me-syntax-error.js', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
-        SourcesTestRunner.replaceInSource(sourceFrame, ',"I\'m good"', '"I\'m good"');
+        SourcesTestRunner.replaceInSource(
+            sourceFrame, ',"I\'m good"', '"I\'m good"');
         SourcesTestRunner.dumpSourceFrameContents(panel.visibleView);
         next();
       }
     },
 
     function testLiveEditWhenPaused(next) {
-      SourcesTestRunner.showScriptSource('edit-me-when-paused.js', didShowScriptSource);
+      SourcesTestRunner.showScriptSource(
+          'edit-me-when-paused.js', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
         SourcesTestRunner.waitUntilPaused(paused);
@@ -60,7 +58,9 @@ function test() {
       }
 
       function paused(callFrames) {
-        replaceInSource(panel.visibleView, 'return 1;', 'return 2;\n\n\n\n', didEditScriptSource);
+        replaceInSource(
+            panel.visibleView, 'return 1;', 'return 2;\n\n\n\n',
+            didEditScriptSource);
       }
 
       function didEditScriptSource() {
@@ -68,13 +68,15 @@ function test() {
       }
 
       function didEvaluateInPage(result) {
-        TestRunner.assertEquals('3', result.description, 'edited function returns wrong result');
+        TestRunner.assertEquals(
+            '3', result.description, 'edited function returns wrong result');
         next();
       }
     },
 
     function testNoCrashWhenOnlyOneFunctionOnStack(next) {
-      SourcesTestRunner.showScriptSource('edit-me-when-paused.js', didShowScriptSource);
+      SourcesTestRunner.showScriptSource(
+          'edit-me-when-paused.js', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
         SourcesTestRunner.waitUntilPaused(paused);
@@ -83,12 +85,16 @@ function test() {
 
       function paused(callFrames) {
         SourcesTestRunner.captureStackTrace(callFrames);
-        replaceInSource(panel.visibleView, 'debugger;', 'debugger;\n', didEditScriptSource);
+        replaceInSource(
+            panel.visibleView, 'debugger;', 'debugger;\n', didEditScriptSource);
       }
 
       function didEditScriptSource() {
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(
-            InspectorTest, SourcesTestRunner.resumeExecution.bind(InspectorTest, next)));
+        SourcesTestRunner.resumeExecution(
+            SourcesTestRunner.waitUntilPaused.bind(
+                SourcesTestRunner,
+                SourcesTestRunner.resumeExecution.bind(
+                    SourcesTestRunner, next)));
       }
     },
 
@@ -98,18 +104,25 @@ function test() {
 
       function didShowScriptSource(sourceFrame) {
         testSourceFrame = sourceFrame;
-        SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame).then(breakpointAdded);
+        SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
+            .then(breakpointAdded);
         SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointAdded() {
-        replaceInSource(panel.visibleView, 'function f()', 'var a = 1;\nfunction f()', didEditScriptSource);
+        replaceInSource(
+            panel.visibleView, 'function f()', 'var a = 1;\nfunction f()',
+            didEditScriptSource);
       }
 
       function didEditScriptSource() {
         SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(testSourceFrame)
-            .then(() => SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(testSourceFrame))
-            .then(() => Bindings.breakpointManager._allBreakpoints().map(breakpoint => breakpoint.remove()))
+            .then(
+                () => SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(
+                    testSourceFrame))
+            .then(
+                () => Bindings.breakpointManager._allBreakpoints().map(
+                    breakpoint => breakpoint.remove()))
             .then(next);
       }
     },
@@ -121,7 +134,8 @@ function test() {
 
       function didShowScriptSource(sourceFrame) {
         testSourceFrame = sourceFrame;
-        SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(testSourceFrame).then(breakpointAdded);
+        SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(testSourceFrame)
+            .then(breakpointAdded);
         SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
@@ -131,7 +145,9 @@ function test() {
       }
 
       function pausedInF(callFrames) {
-        replaceInSource(panel.visibleView, 'function editMe2F()', 'function editMe2F()\n', didEditScriptSource);
+        replaceInSource(
+            panel.visibleView, 'function editMe2F()', 'function editMe2F()\n',
+            didEditScriptSource);
       }
 
       function didEditScriptSource() {
@@ -145,18 +161,9 @@ function test() {
   ]);
 
   function replaceInSource(sourceFrame, string, replacement, callback) {
-    TestRunner.addSniffer(TestRunner.debuggerModel, '_didEditScriptSource', callback);
+    TestRunner.addSniffer(
+        TestRunner.debuggerModel, '_didEditScriptSource', callback);
     SourcesTestRunner.replaceInSource(sourceFrame, string, replacement);
     SourcesTestRunner.commitSource(sourceFrame);
   }
-};
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>Tests live edit feature.</p>
-
-</body>
-</html>
+})();

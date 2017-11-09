@@ -1,9 +1,4 @@
-CONSOLE MESSAGE: line 2: DYNAMIC document.write()
-CONSOLE MESSAGE: line 2: DYNAMIC <script>
-CONSOLE MESSAGE: line 2: DYNAMIC document.write()
-CONSOLE MESSAGE: line 2: DYNAMIC <script>
-Tests that inline scripts and document.write scripts get different uiSourceCodes with different URLs. Bug 87119
-
+Tests that inline scripts and document.write scripts get different uiSourceCodes with different URLs.
 
 Running: testOpenDevToolsAfterLoad
 Both dynamic scripts were loaded.
