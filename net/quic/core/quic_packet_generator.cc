@@ -55,6 +55,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   size_t write_length,
                                                   QuicStreamOffset offset,
                                                   StreamSendingState state) {
+  QUIC_BUG_IF(!batch_mode_)
+      << "Generator is not in batch mode when trying to write stream data.";
   bool has_handshake = (id == kCryptoStreamId);
   bool fin = state != NO_FIN;
   QUIC_BUG_IF(has_handshake && fin)
@@ -234,9 +236,10 @@ void QuicPacketGenerator::StartBatchOperations() {
 }
 
 void QuicPacketGenerator::FinishBatchOperations() {
-  batch_mode_ = false;
   SendQueuedFrames(/*flush=*/false);
+  packet_creator_.Flush();
   SendRemainingPendingPadding();
+  batch_mode_ = false;
 }
 
 void QuicPacketGenerator::FlushAllQueuedFrames() {
@@ -257,6 +260,8 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 }
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
+  QUIC_BUG_IF(!batch_mode_)
+      << "Generator is not in batch mode when trying to write control frames.";
   if (should_send_ack_) {
     should_send_ack_ =
         !packet_creator_.AddSavedFrame(delegate_->GetUpdatedAckFrame());

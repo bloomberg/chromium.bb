@@ -161,7 +161,7 @@ string SpdyUtils::GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers) {
 // static
 bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
   string url(GetUrlFromHeaderBlock(headers));
-  return url != "" && QuicUrlUtils::IsValidUrl(url);
+  return !url.empty() && QuicUrlUtils::IsValidUrl(url);
 }
 
 // static

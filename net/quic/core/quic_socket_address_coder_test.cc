@@ -41,7 +41,7 @@ TEST_F(QuicSocketAddressCoderTest, DecodeIPv4) {
   QuicSocketAddressCoder coder;
   ASSERT_TRUE(coder.Decode(serialized.data(), serialized.length()));
   EXPECT_EQ(IpAddressFamily::IP_V4, coder.ip().address_family());
-  string expected_addr("\x04\x1f\xc6\x2c", 4);
+  string expected_addr("\x04\x1f\xc6\x2c");
   EXPECT_EQ(expected_addr, coder.ip().ToPackedString());
   EXPECT_EQ(0x1234, coder.port());
 }

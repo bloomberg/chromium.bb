@@ -27,13 +27,10 @@
 using std::string;
 using testing::AnyNumber;
 using testing::AtLeast;
-using testing::CreateFunctor;
-using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
-using testing::WithArgs;
 using testing::_;
 
 namespace net {

@@ -128,7 +128,9 @@ class QUIC_EXPORT_PRIVATE ProofSource {
   // Computes a signature using the private key of the certificate for
   // |hostname|. The value in |in| is signed using the algorithm specified by
   // |signature_algorithm|, which is an |SSL_SIGN_*| value (as defined in TLS
-  // 1.3).
+  // 1.3). Implementations can only assume that |in| is valid during the call to
+  // ComputeTlsSignature - an implementation computing signatures asynchronously
+  // must copy it if the value to be signed is used outside of this function.
   //
   // Callers should expect that |callback| might be invoked synchronously.
   virtual void ComputeTlsSignature(

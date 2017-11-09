@@ -2126,10 +2126,7 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
       {"Unable to read first ack block length.",
        {0x88, 0x88}},
       // num timestamps.
-      {FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input
-           ? "Underflow with first ack block length 34952 largest acked is "
-             "4661."
-           : "Unable to read num received packets.",
+      {"Underflow with first ack block length 34952 largest acked is 4661.",
        {0x00}}
   };
 
@@ -2157,10 +2154,7 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
       {"Unable to read first ack block length.",
        {0x88, 0x88}},
       // num timestamps.
-      {FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input
-           ? "Underflow with first ack block length 34952 largest acked is "
-             "4661."
-           : "Unable to read num received packets.",
+      {"Underflow with first ack block length 34952 largest acked is 4661.",
        {0x00}}
   };
 
@@ -2198,8 +2192,7 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
           : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
-  EXPECT_EQ(!FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input,
-            framer_.ProcessPacket(*encrypted));
+  EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
 }
 

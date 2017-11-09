@@ -535,6 +535,7 @@ class TestConnection : public QuicConnection {
                                          size_t total_length,
                                          QuicStreamOffset offset,
                                          StreamSendingState state) {
+    ScopedPacketBundler bundler(this, NO_ACK);
     producer_.SaveStreamData(id, iov, iov_count, 0u, offset, total_length);
     return QuicConnection::SendStreamData(id, total_length, offset, state);
   }
@@ -543,6 +544,7 @@ class TestConnection : public QuicConnection {
                                             QuicStringPiece data,
                                             QuicStreamOffset offset,
                                             StreamSendingState state) {
+    ScopedPacketBundler bundler(this, NO_ACK);
     if (id != kCryptoStreamId && this->encryption_level() == ENCRYPTION_NONE) {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
@@ -927,7 +929,11 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
 
   void SendAckPacketToPeer() {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-    connection_.SendAck();
+    {
+      QuicConnection::ScopedPacketBundler bundler(&connection_,
+                                                  QuicConnection::NO_ACK);
+      connection_.SendAck();
+    }
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
         .Times(AnyNumber());
   }
@@ -5336,6 +5342,45 @@ TEST_P(QuicConnectionTest, ClientAlwaysSendConnectionId) {
   // Verify connection id is still sent in the packet.
   EXPECT_EQ(PACKET_8BYTE_CONNECTION_ID,
             writer_->last_packet_header().connection_id_length);
+}
+
+TEST_P(QuicConnectionTest, HasPendingControlFramesWhenRetransmittingPackets) {
+  // This test mimics this scenario: writer get blocked when generator tries to
+  // add a control frame, which will be pending. When writer get unblocked, this
+  // pending control frame is sent in a packet before retransmissions.
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  QuicPacketNumber last_packet;
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, &last_packet);    // Packet 1
+  SendStreamDataToPeer(1, "foos", 3, NO_FIN, &last_packet);   // Packet 2
+  SendStreamDataToPeer(1, "foos", 7, NO_FIN, &last_packet);   // Packet 3
+  SendStreamDataToPeer(1, "foos", 11, NO_FIN, &last_packet);  // Packet 4
+  BlockOnNextWrite();
+  connection_.SendStreamDataWithString(1, "foos", 15, NO_FIN);  // Packet 5
+  EXPECT_EQ(1u, connection_.NumQueuedPackets());
+  EXPECT_TRUE(connection_.HasQueuedData());
+
+  // This window update frame will be pending in the generator as writer is
+  // blocked.
+  connection_.SendWindowUpdate(1, 100);
+  // Ack 4, nack 1-3.
+  QuicAckFrame nack = InitAckFrame({{4, 5}});
+  // 3 packets have been NACK'd and lost.
+  LostPacketVector lost_packets;
+  lost_packets.push_back(LostPacket(1, kMaxPacketSize));
+  lost_packets.push_back(LostPacket(2, kMaxPacketSize));
+  lost_packets.push_back(LostPacket(3, kMaxPacketSize));
+
+  EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _))
+      .WillOnce(SetArgPointee<4>(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
+  ProcessAckPacket(&nack);
+
+  // Unblock the writer, packet 5 will be sent first, then the window update
+  // frame is flushed in a single packet. Finally, packets 1 - 3 are
+  // retransmitted.
+  writer_->SetWritable();
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(5);
+  connection_.OnCanWrite();
 }
 
 }  // namespace
