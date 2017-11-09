@@ -53,6 +53,33 @@
     [sheet_ showSheetForWindow:overlayWindow_];
     sheetDidShow_ = YES;
   }
+
+  // The call to -addChildWindow:ordered: below works around a macOS bug
+  // (rdar://35418050) in 10.12 through (at least) 10.13.1: If a window (A) has
+  // a child window (B), and B has a sheet (C), then adding another child
+  // window (D) to A causes the sheet (C) to move behind its parent (B).
+  //
+  // This happens when the client certificate selector appears and then, after
+  // a timeout, the status bubble appears to indicate that the page is still
+  // loading.
+  //
+  //       ╭────────────────────────────╮
+  //       │     Browser window (A)     │
+  //       │ ┌───┬───────────────────┬──┼─┐
+  //       │ │   │ Cert selector (C) │  │ │
+  //       │ │   ╰───────────────────╯  │ │
+  //     ╭ ├─┼─────╮ Overlay window (B) │ │
+  //     ├ ╰─┼─────┴────────────────────╯ │
+  //     │   └────────────────────────────┘
+  //     ╰ Status bubble (D)
+  //
+  // Explicitly adding the sheet as a child window seems to let it participate
+  // in the window ordering process that happens when the root window gains a
+  // child so that it stays in front of its parent as expected.
+
+  if (NSWindow* sheet = [overlayWindow_ attachedSheet])
+    [overlayWindow_ addChildWindow:sheet ordered:NSWindowAbove];
+
   [sheet_ makeSheetKeyAndOrderFront];
 }
 
