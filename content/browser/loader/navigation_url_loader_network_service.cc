@@ -69,7 +69,7 @@ WebContents* GetWebContentsFromFrameTreeNodeID(int frame_tree_node_id) {
   return WebContentsImpl::FromFrameTreeNode(frame_tree_node);
 }
 
-const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+const net::NetworkTrafficAnnotationTag kNavigationUrlLoaderTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("navigation_url_loader", R"(
       semantics {
         sender: "Navigation URL Loader"
@@ -167,7 +167,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
           frame_tree_node_id_, 0 /* request_id? */, mojom::kURLLoadOptionNone,
-          *resource_request_, this, kTrafficAnnotation);
+          *resource_request_, this, kNavigationUrlLoaderTrafficAnnotation);
       SubresourceLoaderParams params;
       params.loader_factory_info = std::move(subresource_factory_for_webui);
       subresource_loader_params_ = std::move(params);
@@ -233,7 +233,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           std::move(start_loader_callback),
           GetContentClient()->browser()->CreateURLLoaderThrottles(
               web_contents_getter_),
-          frame_tree_node_id_, *resource_request_, this, kTrafficAnnotation);
+          frame_tree_node_id_, *resource_request_, this,
+          kNavigationUrlLoaderTrafficAnnotation);
 
       subresource_loader_params_ =
           handler->MaybeCreateSubresourceLoaderParams();
@@ -304,7 +305,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
             web_contents_getter_),
         frame_tree_node_id_, 0 /* request_id? */,
         mojom::kURLLoadOptionSendSSLInfo | mojom::kURLLoadOptionSniffMimeType,
-        *resource_request_, this, kTrafficAnnotation);
+        *resource_request_, this, kNavigationUrlLoaderTrafficAnnotation);
   }
 
   void FollowRedirect() {
