@@ -42,8 +42,7 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
     // verifying the callback argument.
     stats_db_ = std::make_unique<VideoDecodeStatsDBImpl>(
         std::unique_ptr<FakeDB<DecodeStatsProto>>(fake_db_),
-        base::FilePath(FILE_PATH_LITERAL("/fake/path")),
-        true /* allow_writes */);
+        base::FilePath(FILE_PATH_LITERAL("/fake/path")));
     stats_db_->Initialize(base::BindOnce(
         &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
   }
@@ -65,10 +64,9 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   MOCK_METHOD2(MockGetDecodeStatsCb,
                void(bool success, VideoDecodeStatsDB::DecodeStatsEntry* entry));
 
-  void AppendInfoCallback(base::Closure callback, bool success) {
-    ASSERT_TRUE(success);
-    std::move(callback).Run();
-  }
+  MOCK_METHOD1(MockAppendDecodeStatsCb, void(bool success));
+
+  MOCK_METHOD0(MockDestroyStatsCb, void());
 
  protected:
   using VideoDescKey = VideoDecodeStatsDB::VideoDescKey;
@@ -96,26 +94,31 @@ TEST_F(VideoDecodeStatsDBImplTest, ReadExpectingNothing) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
-  VideoDescKey entry(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
 
   // Database is empty. Expect null entry.
   EXPECT_CALL(*this, MockGetDecodeStatsCb(true, nullptr));
   stats_db_->GetDecodeStats(
-      entry, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
-                            base::Unretained(this)));
+      key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
+                          base::Unretained(this)));
 
   fake_db_->GetCallback(true);
 }
 
-TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
+TEST_F(VideoDecodeStatsDBImplTest, WriteReadAndDestroy) {
   EXPECT_CALL(*this, OnInitialize(true));
   fake_db_->InitCallback(true);
 
   VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
   VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2, 10);
 
-  stats_db_->AppendDecodeStats(key, entry);
+  EXPECT_CALL(*this, MockAppendDecodeStatsCb(true));
+  stats_db_->AppendDecodeStats(
+      key, entry,
+      base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
+                     base::Unretained(this)));
   fake_db_->GetCallback(true);
+  fake_db_->UpdateCallback(true);
 
   EXPECT_CALL(*this, MockGetDecodeStatsCb(true, Pointee(EntryEq(entry))));
   stats_db_->GetDecodeStats(
@@ -124,8 +127,13 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
   fake_db_->GetCallback(true);
 
   // Append the same entry again.
-  stats_db_->AppendDecodeStats(key, entry);
+  EXPECT_CALL(*this, MockAppendDecodeStatsCb(true));
+  stats_db_->AppendDecodeStats(
+      key, entry,
+      base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
+                     base::Unretained(this)));
   fake_db_->GetCallback(true);
+  fake_db_->UpdateCallback(true);
 
   // Expect to read what was written (2x the initial entry).
   VideoDecodeStatsDB::DecodeStatsEntry aggregate_entry(2000, 4, 20);
@@ -135,6 +143,56 @@ TEST_F(VideoDecodeStatsDBImplTest, WriteAndRead) {
       key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
                           base::Unretained(this)));
   fake_db_->GetCallback(true);
+
+  // Destructively clear all stats from the DB.
+  stats_db_->DestroyStats(base::BindOnce(
+      &VideoDecodeStatsDBImplTest::MockDestroyStatsCb, base::Unretained(this)));
+  fake_db_->DestroyCallback(true);
+
+  // Re-initialize the DB (required) and attempt to re-read previously written
+  // stats.
+  EXPECT_CALL(*this, OnInitialize(true));
+  stats_db_->Initialize(base::BindOnce(
+      &VideoDecodeStatsDBImplTest::OnInitialize, base::Unretained(this)));
+  fake_db_->InitCallback(true);
+
+  // Database is now empty. Expect null entry.
+  EXPECT_CALL(*this, MockGetDecodeStatsCb(true, nullptr));
+  stats_db_->GetDecodeStats(
+      key, base::BindOnce(&VideoDecodeStatsDBImplTest::GetDecodeStatsCb,
+                          base::Unretained(this)));
+
+  fake_db_->GetCallback(true);
+}
+
+TEST_F(VideoDecodeStatsDBImplTest, FailedWrite) {
+  EXPECT_CALL(*this, OnInitialize(true));
+  fake_db_->InitCallback(true);
+
+  VideoDescKey key(VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60);
+  VideoDecodeStatsDB::DecodeStatsEntry entry(1000, 2, 10);
+
+  // Expect the callback to indicate success = false when the write fails.
+  EXPECT_CALL(*this, MockAppendDecodeStatsCb(false));
+
+  // Append stats, but fail the internal DB update.
+  stats_db_->AppendDecodeStats(
+      key, entry,
+      base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
+                     base::Unretained(this)));
+  fake_db_->GetCallback(true);
+  fake_db_->UpdateCallback(false);
+
+  // Expect the callback to indicate success = false when the write fails
+  // because the intermediate "get" (to increment existing counts) has failed.
+  EXPECT_CALL(*this, MockAppendDecodeStatsCb(false));
+
+  // Append stats, but fail the internal DB update.
+  stats_db_->AppendDecodeStats(
+      key, entry,
+      base::BindOnce(&VideoDecodeStatsDBImplTest::MockAppendDecodeStatsCb,
+                     base::Unretained(this)));
+  fake_db_->GetCallback(false);
 }
 
 }  // namespace media

@@ -36,11 +36,14 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
   // Completes fake initialization, running |init_cb| with the supplied value
   // for success.
   void CompleteInitialize(bool success) {
+    DVLOG(2) << __func__ << " running with success = " << success;
+    EXPECT_FALSE(pendnding_init_cb_.is_null());
     std::move(pendnding_init_cb_).Run(success);
   }
 
   void AppendDecodeStats(const VideoDescKey& key,
-                         const DecodeStatsEntry& new_entry) override {
+                         const DecodeStatsEntry& new_entry,
+                         AppendDecodeStatsCB append_done_cb) override {
     std::string key_str = MakeKeyString(key);
     if (entries_.find(key_str) == entries_.end()) {
       entries_.emplace(std::make_pair(key_str, new_entry));
@@ -52,17 +55,24 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
           known_entry.frames_decoded_power_efficient +
               new_entry.frames_decoded_power_efficient);
     }
+
+    std::move(append_done_cb).Run(true);
   }
 
   void GetDecodeStats(const VideoDescKey& key,
-                      GetDecodeStatsCB callback) override {
+                      GetDecodeStatsCB get_stats_cb) override {
     auto entry_it = entries_.find(MakeKeyString(key));
     if (entry_it == entries_.end()) {
-      std::move(callback).Run(true, nullptr);
+      std::move(get_stats_cb).Run(true, nullptr);
     } else {
-      std::move(callback).Run(
-          true, base::MakeUnique<DecodeStatsEntry>(entry_it->second));
+      std::move(get_stats_cb)
+          .Run(true, base::MakeUnique<DecodeStatsEntry>(entry_it->second));
     }
+  }
+
+  void DestroyStats(base::OnceClosure destroy_done_cb) override {
+    entries_.clear();
+    std::move(destroy_done_cb).Run();
   }
 
  private:
@@ -80,41 +90,25 @@ class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
 // |db| is managed by the CreateDB() caller.
 class FakeVideoDecodeStatsDBFactory : public VideoDecodeStatsDBFactory {
  public:
-  FakeVideoDecodeStatsDBFactory(FakeVideoDecodeStatsDB* db) : db_(db) {}
+  FakeVideoDecodeStatsDBFactory() = default;
   ~FakeVideoDecodeStatsDBFactory() override = default;
 
   std::unique_ptr<VideoDecodeStatsDB> CreateDB() override {
-    return std::unique_ptr<VideoDecodeStatsDB>(db_);
+    return std::make_unique<FakeVideoDecodeStatsDB>();
   }
-
- private:
-  FakeVideoDecodeStatsDB* db_;
 };
 
-// When bool param is true, tests should wait until the end to run
-// database_->CompleteInitialize(). Otherwise run CompleteInitialize() at the
-// test start.
-class VideoDecodePerfHistoryTest : public testing::TestWithParam<bool> {
+class VideoDecodePerfHistoryTest : public testing::Test {
  public:
   void SetUp() override {
-    // Sniff the database pointer so tests can inject entries. The factory will
-    // return this pointer when requested by VideoDecodePerfHistory.
-    database_ = new FakeVideoDecodeStatsDB();
-
-    // Make tests hermetic by creating a new instance. Cannot use unique_ptr
-    // here because the constructor/destructor are private and only accessible
-    // to this test via friending.
-    perf_history_ = new VideoDecodePerfHistory(
-        std::make_unique<FakeVideoDecodeStatsDBFactory>(database_));
+    perf_history_ = std::make_unique<VideoDecodePerfHistory>(
+        std::make_unique<FakeVideoDecodeStatsDBFactory>());
   }
 
-  void TearDown() override {
-    // Avoid leaking between tests.
-    delete perf_history_;
-    perf_history_ = nullptr;
+  void TearDown() override { perf_history_.reset(); }
 
-    // |perf_history_| owns the |database_| and will delete it.
-    database_ = nullptr;
+  FakeVideoDecodeStatsDB* GetFakeDB() {
+    return static_cast<FakeVideoDecodeStatsDB*>(perf_history_->db_.get());
   }
 
   void PreInitializeDB(bool initialize_success) {
@@ -122,13 +116,33 @@ class VideoDecodePerfHistoryTest : public testing::TestWithParam<bool> {
     // API call requiring DB access.
     perf_history_->InitDatabase();
     // Complete initialization by firing callback from our fake DB.
-    database_->CompleteInitialize(initialize_success);
+    GetFakeDB()->CompleteInitialize(initialize_success);
+  }
+
+  // Clearing history internally recreates and re-initializes the database.
+  // Tests may set this as the callback for VideoDecodePerfHistory::ClearHistory
+  // to automatically complete re-initialization and finally call
+  // MockOnClearedHistory (which tests may EXPECT_CALL).
+  void CompleteDBInitOnClearedHistory() {
+    DCHECK_EQ(VideoDecodePerfHistory::InitStatus::PENDING,
+              perf_history_->db_init_status_);
+
+    GetFakeDB()->CompleteInitialize(true /* success */);
+
+    DCHECK_EQ(VideoDecodePerfHistory::InitStatus::COMPLETE,
+              perf_history_->db_init_status_);
+
+    MockOnClearedHistory();
   }
 
   // Tests may set this as the callback for VideoDecodePerfHistory::GetPerfInfo
   // to check the results of the call.
   MOCK_METHOD2(MockGetPerfInfoCB,
                void(bool is_smooth, bool is_power_efficient));
+
+  // Tests should EXPECT_CALL this method prior to ClearHistory() to know that
+  // the operation has completed. See CompleteDBInitOnClearedHistory().
+  MOCK_METHOD0(MockOnClearedHistory, void());
 
  protected:
   using VideoDescKey = VideoDecodeStatsDB::VideoDescKey;
@@ -142,13 +156,17 @@ class VideoDecodePerfHistoryTest : public testing::TestWithParam<bool> {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // The VideoDecodeStatsReporter being tested.
-  VideoDecodePerfHistory* perf_history_;
-
-  // The database |perf_history_| uses to store/query performance stats.
-  FakeVideoDecodeStatsDB* database_;
+  std::unique_ptr<VideoDecodePerfHistory> perf_history_;
 };
 
-TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
+// When bool param is true, tests should wait until the end to run
+// GetFakeDB()->CompleteInitialize(). Otherwise run PreInitializeDB() at the
+// test start.
+class VideoDecodePerfHistoryParamTest
+    : public testing::WithParamInterface<bool>,
+      public VideoDecodePerfHistoryTest {};
+
+TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
@@ -186,14 +204,14 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = false for the NOT smooth entry.
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsNotPowerEfficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kNotSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history optimistically returns is_smooth = true when no entry
@@ -207,7 +225,7 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
 
   // Complete successful deferred DB initialization (see comment at top of test)
   if (defer_initialize) {
-    database_->CompleteInitialize(true);
+    GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     base::RunLoop run_loop;
@@ -216,7 +234,7 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
   }
 }
 
-TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_PowerEfficient) {
+TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
   // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
   // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
   // that EXPECT_CALLs arrive in top-to-bottom order.
@@ -287,12 +305,12 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_PowerEfficient) {
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
       kUnknownProfile, kKownSize, kNotSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Complete successful deferred DB initialization (see comment at top of test)
   if (defer_initialize) {
-    database_->CompleteInitialize(true);
+    GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     base::RunLoop run_loop;
@@ -301,7 +319,7 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_PowerEfficient) {
   }
 }
 
-TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_FailedInitialize) {
+TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_FailedInitialize) {
   bool defer_initialize = GetParam();
   // Fail initialization in advance of API calls when not asked to defer.
   if (!defer_initialize)
@@ -316,12 +334,67 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_FailedInitialize) {
   EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
   perf_history_->GetPerfInfo(
       kProfile, kSize, kFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Fail deferred DB initialization (see comment at top of test).
   if (defer_initialize) {
-    database_->CompleteInitialize(false);
+    GetFakeDB()->CompleteInitialize(false);
+
+    // Allow initialize-deferred API calls to complete.
+    base::RunLoop run_loop;
+    base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
+    run_loop.Run();
+  }
+}
+
+TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
+  // NOTE: The when the DB initialization is deferred, All EXPECT_CALLs are then
+  // delayed until we db_->CompleteInitialize(). testing::InSequence enforces
+  // that EXPECT_CALLs arrive in top-to-bottom order.
+  bool defer_initialize = GetParam();
+  testing::InSequence dummy;
+
+  // Complete initialization in advance of API calls when not asked to defer.
+  if (!defer_initialize)
+    PreInitializeDB(/* success */ true);
+
+  // Add a simple record to the history.
+  const VideoCodecProfile kProfile = VP9PROFILE_PROFILE0;
+  const gfx::Size kSize(100, 200);
+  const int kFrameRate = 30;
+  const int kFramesDecoded = 1000;
+  const int kManyFramesDropped = kFramesDecoded / 2;
+  const int kFramesPowerEfficient = kFramesDecoded;
+  perf_history_->SavePerfRecord(kProfile, kSize, kFrameRate, kFramesDecoded,
+                                kManyFramesDropped, kFramesPowerEfficient);
+
+  // Verify its there before we ClearHistory(). Note that perf is NOT smooth.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kProfile, kSize, kFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Initiate async clearing of history.
+  EXPECT_CALL(*this, MockOnClearedHistory());
+  perf_history_->ClearHistory(base::BindOnce(
+      &VideoDecodePerfHistoryParamTest::CompleteDBInitOnClearedHistory,
+      base::Unretained(this)));
+
+  // Verify record we added above is no longer present.
+  // SUBTLE: The PerfHistory will optimistically respond kIsSmooth when no data
+  // is found. So the signal that the entry was removed is the CB now claims
+  // "smooth" when it claimed NOT smooth just moments before.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kProfile, kSize, kFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Complete successful deferred DB initialization (see comment at top of test)
+  if (defer_initialize) {
+    GetFakeDB()->CompleteInitialize(true);
 
     // Allow initialize-deferred API calls to complete.
     base::RunLoop run_loop;
@@ -331,7 +404,51 @@ TEST_P(VideoDecodePerfHistoryTest, GetPerfInfo_FailedInitialize) {
 }
 
 INSTANTIATE_TEST_CASE_P(VaryDBInitTiming,
-                        VideoDecodePerfHistoryTest,
+                        VideoDecodePerfHistoryParamTest,
                         ::testing::Values(true, false));
+
+TEST_F(VideoDecodePerfHistoryTest, AppendWhileDestroying) {
+  // This test requires the DB to be always pre-initialized.
+  PreInitializeDB(/* success */ true);
+
+  // Add a simple record to the history.
+  const VideoCodecProfile kProfile = VP9PROFILE_PROFILE0;
+  const gfx::Size kSize(100, 200);
+  const int kFrameRate = 30;
+  const int kFramesDecoded = 1000;
+  const int kManyFramesDropped = kFramesDecoded / 2;
+  const int kFramesPowerEfficient = kFramesDecoded;
+
+  // Initiate async clearing of history. Set the Mock callback to be called
+  // directly, bypassing the reinitialization that occurs in
+  // VideoDecodePerfHistoryTest::CompleteDBInitOnClearedHistory. This leaves the
+  // initialization still "pending" while we attempt to SavePerfRecord() below.
+  EXPECT_CALL(*this, MockOnClearedHistory());
+  perf_history_->ClearHistory(
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockOnClearedHistory,
+                     base::Unretained(this)));
+
+  // With DB reinitialization still pending, save a record that indicates
+  // NOT smooth performance.
+  perf_history_->SavePerfRecord(kProfile, kSize, kFrameRate, kFramesDecoded,
+                                kManyFramesDropped, kFramesPowerEfficient);
+
+  // Expect that NOT smooth is eventually reported (after DB reinitialization
+  // completes) when we query this stream description.
+  EXPECT_CALL(*this, MockGetPerfInfoCB(kIsNotSmooth, kIsPowerEfficient));
+  perf_history_->GetPerfInfo(
+      kProfile, kSize, kFrameRate,
+      base::BindOnce(&VideoDecodePerfHistoryParamTest::MockGetPerfInfoCB,
+                     base::Unretained(this)));
+
+  // Finally, complete DB reinitialization that was triggered by clearing the
+  // history.
+  GetFakeDB()->CompleteInitialize(/* success */ true);
+
+  // Allow initialize-deferred API calls to complete.
+  base::RunLoop run_loop;
+  base::PostTask(FROM_HERE, base::BindOnce(run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
+}
 
 }  // namespace media

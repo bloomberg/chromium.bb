@@ -58,20 +58,27 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   void GetPerfInfo(VideoCodecProfile profile,
                    const gfx::Size& natural_size,
                    int frame_rate,
-                   GetPerfInfoCallback callback) override;
+                   GetPerfInfoCallback got_info_cb) override;
 
   // Save a record of the given performance stats for the described stream.
+  // Saving is generally fire-and-forget, but |save_done_cb| may be optionally
+  // for tests to know the save is complete.
   void SavePerfRecord(VideoCodecProfile profile,
                       const gfx::Size& natural_size,
                       int frame_rate,
                       uint32_t frames_decoded,
                       uint32_t frames_dropped,
-                      uint32_t frames_decoded_power_efficient);
+                      uint32_t frames_decoded_power_efficient,
+                      base::OnceClosure save_done_cb = base::OnceClosure());
+
+  // Clear all history from the underlying database. Run |clear_done_cb| when
+  // complete.
+  void ClearHistory(base::OnceClosure clear_done_cb);
 
  private:
   friend class VideoDecodePerfHistoryTest;
 
-  // Track the status of database lazily initialization.
+  // Track the status of database lazy initialization.
   enum InitStatus {
     UNINITIALIZED,
     PENDING,
@@ -89,17 +96,19 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // this value.
   static constexpr double kMinPowerEfficientDecodedFramePercent = .50;
 
-  // Create and initialize the database.
+  // Create and initialize the database. Will return early if initialization is
+  // already PENDING.
   void InitDatabase();
 
   // Callback from |db_->Initialize()|.
   void OnDatabaseInit(bool success);
 
   // Internal callback for database queries made from GetPerfInfo() (mojo API).
-  // Assesses performance from database stats and passes results to |mojo_cb|.
+  // Assesses performance from database stats and passes results to
+  // |got_info_cb|.
   void OnGotStatsForRequest(
       const VideoDecodeStatsDB::VideoDescKey& video_key,
-      GetPerfInfoCallback mojo_cb,
+      GetPerfInfoCallback got_info_cb,
       bool database_success,
       std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> stats);
 
@@ -110,14 +119,23 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   void OnGotStatsForSave(
       const VideoDecodeStatsDB::VideoDescKey& video_key,
       const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
+      base::OnceClosure save_done_cb,
       bool success,
       std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> past_stats);
+
+  // Internal callback for saving to database. Will run |save_done_cb| if
+  // nonempty.
+  void OnSaveDone(base::OnceClosure save_done_cb, bool success);
 
   // Report UKM metrics to grade the claims of the API by evaluating how well
   // |past_stats| predicts |new_stats|.
   void ReportUkmMetrics(const VideoDecodeStatsDB::VideoDescKey& video_key,
                         const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
                         VideoDecodeStatsDB::DecodeStatsEntry* past_stats);
+
+  // Internal callback for ClearHistory(). Reinitializes the database and runs
+  // |clear_done_cb|.
+  void OnClearedHistory(base::OnceClosure clear_done_cb);
 
   // Factory for creating |db_|.
   std::unique_ptr<VideoDecodeStatsDBFactory> db_factory_;

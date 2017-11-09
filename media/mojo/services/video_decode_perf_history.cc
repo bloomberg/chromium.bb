@@ -35,6 +35,7 @@ void VideoDecodePerfHistory::BindRequest(
 }
 
 void VideoDecodePerfHistory::InitDatabase() {
+  DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (db_init_status_ == PENDING)
@@ -53,9 +54,12 @@ void VideoDecodePerfHistory::OnDatabaseInit(bool success) {
 
   db_init_status_ = success ? COMPLETE : FAILED;
 
-  // Run all the deferred API calls as if they're just now coming in.
+  // Post all the deferred API calls as if they're just now coming in. Posting
+  // avoids subtle issues with deferred calls that may otherwise re-enter and
+  // potentially reinitialize the DB (e.g. ClearHistory).
   for (auto& deferred_call : init_deferred_api_calls_) {
-    std::move(deferred_call).Run();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  std::move(deferred_call));
   }
   init_deferred_api_calls_.clear();
 }
@@ -63,7 +67,7 @@ void VideoDecodePerfHistory::OnDatabaseInit(bool success) {
 void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
                                          const gfx::Size& natural_size,
                                          int frame_rate,
-                                         GetPerfInfoCallback callback) {
+                                         GetPerfInfoCallback got_info_cb) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -73,7 +77,7 @@ void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
 
   if (db_init_status_ == FAILED) {
     // Optimistically claim perf is both smooth and power efficient.
-    std::move(callback).Run(true, true);
+    std::move(got_info_cb).Run(true, true);
     return;
   }
 
@@ -81,7 +85,7 @@ void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::GetPerfInfo, weak_ptr_factory_.GetWeakPtr(),
-        profile, natural_size, frame_rate, std::move(callback)));
+        profile, natural_size, frame_rate, std::move(got_info_cb)));
     InitDatabase();
     return;
   }
@@ -91,16 +95,16 @@ void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
   db_->GetDecodeStats(
       video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForRequest,
                                 weak_ptr_factory_.GetWeakPtr(), video_key,
-                                std::move(callback)));
+                                std::move(got_info_cb)));
 }
 
 void VideoDecodePerfHistory::OnGotStatsForRequest(
     const VideoDecodeStatsDB::VideoDescKey& video_key,
-    GetPerfInfoCallback mojo_cb,
+    GetPerfInfoCallback got_info_cb,
     bool database_success,
     std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> stats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!mojo_cb.is_null());
+  DCHECK(!got_info_cb.is_null());
   DCHECK_EQ(db_init_status_, COMPLETE);
 
   bool is_power_efficient;
@@ -144,7 +148,7 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
                          percent_power_efficient)
                    : (database_success ? "no info" : "query FAILED"));
 
-  std::move(mojo_cb).Run(is_smooth, is_power_efficient);
+  std::move(got_info_cb).Run(is_smooth, is_power_efficient);
 }
 
 void VideoDecodePerfHistory::SavePerfRecord(
@@ -153,8 +157,15 @@ void VideoDecodePerfHistory::SavePerfRecord(
     int frame_rate,
     uint32_t frames_decoded,
     uint32_t frames_dropped,
-    uint32_t frames_decoded_power_efficient) {
+    uint32_t frames_decoded_power_efficient,
+    base::OnceClosure save_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(3) << __func__
+           << base::StringPrintf(
+                  " profile:%s size:%s fps:%d decoded:%d dropped:%d",
+                  GetProfileName(profile).c_str(),
+                  natural_size.ToString().c_str(), frame_rate, frames_decoded,
+                  frames_dropped);
 
   if (db_init_status_ == FAILED) {
     DVLOG(3) << __func__ << " Can't save stats. No DB!";
@@ -166,7 +177,7 @@ void VideoDecodePerfHistory::SavePerfRecord(
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
         profile, natural_size, frame_rate, frames_decoded, frames_dropped,
-        frames_decoded_power_efficient));
+        frames_decoded_power_efficient, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
@@ -176,15 +187,16 @@ void VideoDecodePerfHistory::SavePerfRecord(
       frames_decoded, frames_dropped, frames_decoded_power_efficient);
 
   // Get past perf info and report UKM metrics before saving this record.
-  db_->GetDecodeStats(
-      video_key,
-      base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForSave,
-                     weak_ptr_factory_.GetWeakPtr(), video_key, new_stats));
+  db_->GetDecodeStats(video_key,
+                      base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForSave,
+                                     weak_ptr_factory_.GetWeakPtr(), video_key,
+                                     new_stats, std::move(save_done_cb)));
 }
 
 void VideoDecodePerfHistory::OnGotStatsForSave(
     const VideoDecodeStatsDB::VideoDescKey& video_key,
     const VideoDecodeStatsDB::DecodeStatsEntry& new_stats,
+    base::OnceClosure save_done_cb,
     bool success,
     std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> past_stats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -192,12 +204,31 @@ void VideoDecodePerfHistory::OnGotStatsForSave(
 
   if (!success) {
     DVLOG(3) << __func__ << " FAILED! Aborting save.";
+    std::move(save_done_cb).Run();
     return;
   }
 
   ReportUkmMetrics(video_key, new_stats, past_stats.get());
 
-  db_->AppendDecodeStats(video_key, new_stats);
+  db_->AppendDecodeStats(
+      video_key, new_stats,
+      base::BindOnce(&VideoDecodePerfHistory::OnSaveDone,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(save_done_cb)));
+}
+
+void VideoDecodePerfHistory::OnSaveDone(base::OnceClosure save_done_cb,
+                                        bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(chcunningham): Monitor UMA. Experiment with re-initializing DB to
+  // remedy IO failures.
+  DVLOG(3) << __func__ << (success ? " succeeded" : " FAILED!");
+
+  // Don't bother to bubble success. Its not actionable for upper layers. Also,
+  // save_done_cb only used for test sequencing, where DB should always behave
+  // (or fail the test).
+  if (save_done_cb)
+    std::move(save_done_cb).Run();
 }
 
 void VideoDecodePerfHistory::ReportUkmMetrics(
@@ -206,6 +237,50 @@ void VideoDecodePerfHistory::ReportUkmMetrics(
     VideoDecodeStatsDB::DecodeStatsEntry* past_stats) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(chcunningham): Report metrics.
+}
+
+void VideoDecodePerfHistory::ClearHistory(base::OnceClosure clear_done_cb) {
+  DVLOG(2) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (db_init_status_ == FAILED) {
+    DVLOG(3) << __func__ << " Can't clear history - No DB!";
+    std::move(clear_done_cb).Run();
+    return;
+  }
+
+  // Defer this request until the DB is initialized.
+  if (db_init_status_ != COMPLETE) {
+    init_deferred_api_calls_.push_back(base::BindOnce(
+        &VideoDecodePerfHistory::ClearHistory, weak_ptr_factory_.GetWeakPtr(),
+        std::move(clear_done_cb)));
+    InitDatabase();
+    return;
+  }
+
+  // Set status to pending to prevent using the DB while destruction is ongoing.
+  // Once finished, we will re-initialize the DB and run any deferred API calls.
+  db_init_status_ = PENDING;
+  db_->DestroyStats(base::BindOnce(&VideoDecodePerfHistory::OnClearedHistory,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   std::move(clear_done_cb)));
+}
+
+void VideoDecodePerfHistory::OnClearedHistory(base::OnceClosure clear_done_cb) {
+  DVLOG(2) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // DB is effectively uninitialized while destructively clearing the history.
+  // During this period |db_init_status_| should be PENDING to prevent other
+  // APIs from racing to reinitialize.
+  DCHECK_EQ(db_init_status_, PENDING);
+  // With destructive clearing complete, reset to UNITINIALIZED so
+  // InitDatabase() will run initialization and any deferred API calls once
+  // complete.
+  db_init_status_ = UNINITIALIZED;
+  InitDatabase();
+
+  std::move(clear_done_cb).Run();
 }
 
 }  // namespace media

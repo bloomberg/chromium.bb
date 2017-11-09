@@ -37,6 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,6 +211,16 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     return count;
   }
 
+  void OnVideoDecodePerfInfo(base::RunLoop* run_loop,
+                             bool* out_is_smooth,
+                             bool* out_is_power_efficient,
+                             bool is_smooth,
+                             bool is_power_efficient) {
+    *out_is_smooth = is_smooth;
+    *out_is_power_efficient = is_power_efficient;
+    run_loop->QuitWhenIdle();
+  }
+
  private:
   void OnCacheSizeResult(
       base::RunLoop* run_loop,
@@ -260,6 +271,66 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
   VerifyDownloadCount(1u);
 }
 #endif
+
+// Verify VideoDecodePerfHistory is cleared when deleting all history from
+// beginning of time.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
+  media::VideoDecodePerfHistory* video_decode_perf_history =
+      browser()->profile()->GetVideoDecodePerfHistory();
+
+  // Save a video decode record. Note: we avoid using a web page to generate the
+  // stats as this takes at least 5 seconds and even then is not a guarantee
+  // depending on scheduler. Manual injection is quick and non-flaky.
+  const media::VideoCodecProfile kProfile = media::VP9PROFILE_PROFILE0;
+  const gfx::Size kSize(100, 200);
+  const int kFrameRate = 30;
+  const int kFramesDecoded = 1000;
+  const int kFramesDropped = .9 * kFramesDecoded;
+  const int kFramesPowerEfficient = 0;
+
+  {
+    base::RunLoop run_loop;
+    video_decode_perf_history->SavePerfRecord(
+        kProfile, kSize, kFrameRate, kFramesDecoded, kFramesDropped,
+        kFramesPowerEfficient, run_loop.QuitWhenIdleClosure());
+    run_loop.Run();
+  }
+
+  // Verify history exists.
+  // Expect |is_smooth| = false and |is_power_efficient| = false given that 90%
+  // of recorded frames were dropped and 0 were power efficient.
+  bool is_smooth = true;
+  bool is_power_efficient = true;
+  {
+    base::RunLoop run_loop;
+    video_decode_perf_history->GetPerfInfo(
+        kProfile, kSize, kFrameRate,
+        base::BindOnce(&BrowsingDataRemoverBrowserTest::OnVideoDecodePerfInfo,
+                       base::Unretained(this), &run_loop, &is_smooth,
+                       &is_power_efficient));
+    run_loop.Run();
+  }
+  EXPECT_FALSE(is_smooth);
+  EXPECT_FALSE(is_power_efficient);
+
+  // Clear history.
+  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY);
+
+  // Verify history no longer exists. Both |is_smooth| and |is_power_efficient|
+  // should now report true because the VideoDecodePerfHistory optimistically
+  // returns true when it has no data.
+  {
+    base::RunLoop run_loop;
+    video_decode_perf_history->GetPerfInfo(
+        kProfile, kSize, kFrameRate,
+        base::BindOnce(&BrowsingDataRemoverBrowserTest::OnVideoDecodePerfInfo,
+                       base::Unretained(this), &run_loop, &is_smooth,
+                       &is_power_efficient));
+    run_loop.Run();
+  }
+  EXPECT_TRUE(is_smooth);
+  EXPECT_TRUE(is_power_efficient);
+}
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {

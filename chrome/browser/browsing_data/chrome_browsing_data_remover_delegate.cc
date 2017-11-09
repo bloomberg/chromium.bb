@@ -79,6 +79,7 @@
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
+#include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
@@ -358,6 +359,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
 #endif
       clear_auto_sign_in_(sub_task_forward_callback_),
       clear_reporting_cache_(sub_task_forward_callback_),
+      clear_video_perf_history_(sub_task_forward_callback_),
 #if BUILDFLAG(ENABLE_PLUGINS)
       flash_lso_helper_(BrowsingDataFlashLSOHelper::Create(browser_context)),
 #endif
@@ -675,6 +677,21 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           filter_builder.IsEmptyBlacklist()
               ? base::Callback<bool(const std::string&)>()
               : filter_builder.BuildPluginFilter());
+    }
+
+    // Clear VideoDecodePerfHistory only if asked to clear from the beginning of
+    // time. The perf history is a simple summing of decode statistics with no
+    // record of when the stats were written nor what site the video was played
+    // on.
+    if (delete_begin_ == base::Time()) {
+      // TODO(chcunningham): Add UMA to track how often this gets deleted.
+      media::VideoDecodePerfHistory* video_decode_perf_history =
+          profile_->GetVideoDecodePerfHistory();
+      if (video_decode_perf_history) {
+        clear_video_perf_history_.Start();
+        video_decode_perf_history->ClearHistory(
+            clear_video_perf_history_.GetCompletionCallback());
+      }
     }
   }
 
@@ -1127,7 +1144,8 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
          !clear_webrtc_logs_.is_pending() &&
 #endif
          !clear_auto_sign_in_.is_pending() &&
-         !clear_reporting_cache_.is_pending() && !clear_plugin_data_count_;
+         !clear_reporting_cache_.is_pending() &&
+         !clear_video_perf_history_.is_pending() && !clear_plugin_data_count_;
 }
 
 #if defined(OS_ANDROID)

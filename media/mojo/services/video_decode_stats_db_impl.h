@@ -47,21 +47,19 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // |dir| specifies where to store LevelDB files to disk. LevelDB generates a
   // handful of files, so its recommended to provide a dedicated directory to
   // keep them isolated.
-  // |allow_writes| determines whether DB write operations will be allowed. This
-  // is a temporary mechanism to disable writes in production until we've added
-  // the ability to clear the database via chrome://settings/clearBrowserData.
   VideoDecodeStatsDBImpl(
       std::unique_ptr<leveldb_proto::ProtoDatabase<DecodeStatsProto>> db,
-      const base::FilePath& dir,
-      bool allow_writes);
+      const base::FilePath& dir);
   ~VideoDecodeStatsDBImpl() override;
 
   // Implement VideoDecodeStatsDB.
   void Initialize(base::OnceCallback<void(bool)> init_cb) override;
   void AppendDecodeStats(const VideoDescKey& key,
-                         const DecodeStatsEntry& entry) override;
+                         const DecodeStatsEntry& entry,
+                         AppendDecodeStatsCB append_done_cb) override;
   void GetDecodeStats(const VideoDescKey& key,
-                      GetDecodeStatsCB callback) override;
+                      GetDecodeStatsCB get_stats_cb) override;
+  void DestroyStats(base::OnceClosure destroy_done_cb) override;
 
  private:
   friend class VideoDecodeStatsDBTest;
@@ -77,24 +75,34 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
   // update the database once we've read the existing stats entry.
   void WriteUpdatedEntry(const VideoDescKey& key,
                          const DecodeStatsEntry& entry,
+                         AppendDecodeStatsCB append_done_cb,
                          bool read_success,
                          std::unique_ptr<DecodeStatsProto> prev_stats_proto);
 
   // Called when the database has been modified after a call to
-  // |WriteUpdatedEntry|.
-  void OnEntryUpdated(bool success);
+  // |WriteUpdatedEntry|. Will run |append_done_cb| when done.
+  void OnEntryUpdated(AppendDecodeStatsCB append_done_cb, bool success);
 
-  // Called when GetDecodeStats() operation was performed. |callback|
+  // Called when GetDecodeStats() operation was performed. |get_stats_cb|
   // will be run with |success| and a |DecodeStatsEntry| created from
   // |stats_proto| or nullptr if no entry was found for the requested key.
   void OnGotDecodeStats(
-      GetDecodeStatsCB callback,
+      GetDecodeStatsCB get_stats_cb,
       bool success,
       std::unique_ptr<DecodeStatsProto> capabilities_info_proto);
 
+  // Internal callback for ClearStats that logs |success| and runs
+  // |destroy_done_cb|
+  void OnDestroyedStats(base::OnceClosure destroy_done_cb, bool success);
+
   // Indicates whether initialization is completed. Does not indicate whether it
-  // was successful. Failed initialization is signaled by setting |db_| to null.
+  // was successful. Will be reset upon calling DestroyStats(). Failed
+  // initialization is signaled by setting |db_| to null.
   bool db_init_ = false;
+
+  // Tracks whether db_->Destroy() is in progress. Used to assert that
+  // Initialize() is not called until db destruction is complete.
+  bool db_destroy_pending_ = false;
 
   // ProtoDatabase instance. Set to nullptr if fatal database error is
   // encountered.
@@ -102,11 +110,6 @@ class MEDIA_MOJO_EXPORT VideoDecodeStatsDBImpl : public VideoDecodeStatsDB {
 
   // Directory where levelDB should store database files.
   base::FilePath db_dir_;
-
-  // Determines whether DB write operations will be allowed. This is a temporary
-  // mechanism to disable writes in production until we've added the ability to
-  // clear the database via chrome://settings/clearBrowserData.
-  bool allow_writes_;
 
   // Ensures all access to class members come on the same sequence. API calls
   // and callbacks should occur on the same sequence used during construction.
