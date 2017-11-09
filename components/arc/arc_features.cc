@@ -14,7 +14,7 @@ const base::Feature kBootCompletedBroadcastFeature {
 
 // Controls experimental native bridge feature for ARC.
 const base::Feature kNativeBridgeExperimentFeature {
-    "ArcNativeBridgeExperiment", base::FEATURE_DISABLED_BY_DEFAULT
+    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
 // Controls ARC VPN integration.
