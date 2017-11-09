@@ -314,6 +314,13 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_EXT_TILE
+  if (cfg->large_scale_tile && extra_cfg->aq_mode)
+    ERROR(
+        "Adaptive quantization are not supported in large scale tile "
+        "coding.");
+#endif  // CONFIG_EXT_TILE
+
 #if CONFIG_DEPENDENT_HORZTILES
   RANGE_CHECK_HI(extra_cfg, dependent_horz_tiles, 1);
 #endif
