@@ -4,13 +4,15 @@
 
 #include "content/public/test/test_runner_support.h"
 
+#include "content/common/unique_name_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
-std::string GetUniqueNameForFrame(blink::WebLocalFrame* frame) {
-  return RenderFrameImpl::FromWebFrame(frame)->unique_name();
+std::string GetFrameNameForLayoutTests(blink::WebLocalFrame* frame) {
+  std::string unique_name = RenderFrameImpl::FromWebFrame(frame)->unique_name();
+  return UniqueNameHelper::ExtractStableNameForTesting(unique_name);
 }
 
 }  // namespace content

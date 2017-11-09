@@ -30,7 +30,7 @@ std::string DumpFrameHeaderIfNeeded(WebLocalFrame* frame) {
   // Add header for all but the main frame. Skip empty frames.
   if (frame->Parent() && !frame->GetDocument().DocumentElement().IsNull()) {
     result.append("\n--------\nFrame: '");
-    result.append(content::GetUniqueNameForFrame(frame));
+    result.append(content::GetFrameNameForLayoutTests(frame));
     result.append("'\n--------\n");
   }
 
@@ -42,8 +42,8 @@ std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
   WebSize offset = frame->GetScrollOffset();
   if (offset.width > 0 || offset.height > 0) {
     if (frame->Parent()) {
-      result =
-          std::string("frame '") + content::GetUniqueNameForFrame(frame) + "' ";
+      result = std::string("frame '") +
+               content::GetFrameNameForLayoutTests(frame) + "' ";
     }
     base::StringAppendF(&result, "scrolled to %d,%d\n", offset.width,
                         offset.height);

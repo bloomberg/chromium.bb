@@ -46,7 +46,7 @@ namespace {
 
 void PrintFrameDescription(WebTestDelegate* delegate,
                            blink::WebLocalFrame* frame) {
-  std::string name = content::GetUniqueNameForFrame(frame);
+  std::string name = content::GetFrameNameForLayoutTests(frame);
   if (frame == frame->View()->MainFrame()) {
     DCHECK(name.empty());
     delegate->PrintMessage("main frame");
@@ -542,11 +542,8 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   if (test_runner()->httpHeadersToClear()) {
-    const std::set<std::string>* clearHeaders =
-        test_runner()->httpHeadersToClear();
-    for (std::set<std::string>::const_iterator header = clearHeaders->begin();
-         header != clearHeaders->end(); ++header)
-      request.ClearHTTPHeaderField(blink::WebString::FromUTF8(*header));
+    for (const std::string& header : *test_runner()->httpHeadersToClear())
+      request.ClearHTTPHeaderField(blink::WebString::FromUTF8(header));
   }
 
   std::string host = url.host();

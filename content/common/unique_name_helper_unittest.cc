@@ -116,6 +116,12 @@ class TestFrameAdapter : public UniqueNameHelper::FrameAdapter {
     }
   }
 
+  void UpdateName(const std::string& new_name) {
+    unique_name_helper_.UpdateName(new_name);
+  }
+
+  void Freeze() { unique_name_helper_.Freeze(); }
+
  private:
   // Global toggle for the style of name to generate. Used to ensure that test
   // code can consistently trigger the legacy generation path when needed.
@@ -405,6 +411,21 @@ TEST(UniqueNameHelper, GeneratedFramePathHashing) {
             frame_0_1_1_0_0.GetLegacyName());
 
   VerifyPageStateForTargetUpdate(main_frame);
+}
+
+TEST(UniqueNameHelper, UpdateName) {
+  TestFrameAdapter main_frame(nullptr, -1, "my main frame");
+  EXPECT_EQ("", main_frame.GetUniqueName());
+
+  TestFrameAdapter frame_0(&main_frame, 0, "name1");
+  EXPECT_EQ("name1", frame_0.GetUniqueName());
+
+  frame_0.UpdateName("name2");
+  EXPECT_EQ("name2", frame_0.GetUniqueName());
+
+  frame_0.Freeze();
+  frame_0.UpdateName("name3");
+  EXPECT_EQ("name2", frame_0.GetUniqueName());  // No change expected.
 }
 
 }  // namespace
