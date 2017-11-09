@@ -868,7 +868,7 @@
     },
     {
       name: "ResizeObserver",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ResourceLoadScheduler",
