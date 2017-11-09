@@ -54,11 +54,9 @@ PP_Bool ReadImageData(PP_Resource graphics_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
   CHECK(PpapiGlobals::Get()->GetMainThreadMessageLoop()->
       BelongsToCurrentThread());
-  base::RunLoop().Run();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {
@@ -261,3 +259,4 @@ void PPB_Testing_Proxy::OnMsgSetMinimumArrayBufferSizeForShmem(
 
 }  // namespace proxy
 }  // namespace ppapi
+
