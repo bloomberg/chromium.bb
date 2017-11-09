@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
@@ -849,9 +848,7 @@ class HeadlessWebContentsRequestStorageQuotaTest
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
-    base::RunLoop run_loop;
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetRuntime()->AddObserver(this);
     devtools_client_->GetRuntime()->Enable(run_loop.QuitClosure());
     run_loop.Run();
@@ -960,10 +957,8 @@ class ResourceSchedulerTest
     http_handler_->SetHeadlessBrowserContext(browser_context_);
     devtools_client_->GetPage()->AddObserver(this);
 
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate("http://foo.com/index.html");

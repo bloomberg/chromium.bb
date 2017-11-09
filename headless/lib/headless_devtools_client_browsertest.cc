@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -76,9 +75,7 @@ class HeadlessDevToolsClientNavigationTest
             .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .Build();
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
-    base::RunLoop run_loop;
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
     run_loop.Run();
     devtools_client_->GetPage()->Navigate(std::move(params));
@@ -331,11 +328,9 @@ class HeadlessDevToolsClientObserverTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetNetwork()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
@@ -372,11 +367,9 @@ class HeadlessDevToolsClientExperimentalTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     // Check that experimental commands require parameter objects.
     devtools_client_->GetRuntime()
@@ -609,11 +602,9 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
 
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetTarget()->GetExperimental()->AddObserver(this);
@@ -882,12 +873,10 @@ class HeadlessDevToolsNavigationControlTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     devtools_client_->GetNetwork()->Enable();
 
@@ -1018,11 +1007,9 @@ class HeadlessDevToolsMethodCallErrorTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     devtools_client_->GetPage()->Navigate(
         embedded_test_server()->GetURL("/hello.html").spec());
@@ -1060,13 +1047,11 @@ class HeadlessDevToolsNetworkBlockedUrlTest
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetNetwork()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     std::vector<std::string> blockedUrls;
     blockedUrls.push_back("dom_tree_test.css");
@@ -1128,14 +1113,12 @@ class DevToolsHeaderStrippingTest : public HeadlessAsyncDevTooledBrowserTest,
                                     public network::Observer {
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     // Enable network domain in order to get DevTools to add the header.
     devtools_client_->GetNetwork()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     devtools_client_->GetPage()->Navigate(
         "http://not-an-actual-domain.tld/hello.html");
@@ -1169,13 +1152,11 @@ class DevToolsNetworkOfflineEmulationTest
       public network::Observer {
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetNetwork()->AddObserver(this);
     devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
     std::unique_ptr<network::EmulateNetworkConditionsParams> params =
         network::EmulateNetworkConditionsParams::Builder()
@@ -1432,10 +1413,8 @@ class UrlRequestFailedTest : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetPage()->AddObserver(this);
 
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
@@ -1521,10 +1500,8 @@ class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
     EXPECT_TRUE(embedded_test_server()->Start());
     devtools_client_->GetNetwork()->AddObserver(this);
 
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
@@ -1571,10 +1548,8 @@ class DevtoolsInterceptionWithAuthProxyTest
 
     devtools_client_->GetPage()->AddObserver(this);
 
-    base::RunLoop run_loop;
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     devtools_client_->GetPage()->Enable(run_loop.QuitClosure());
-    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
-        base::MessageLoop::current());
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
