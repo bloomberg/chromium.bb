@@ -71,7 +71,7 @@ class WebStateObserver {
   // change. To filter these out, use NavigationContext::IsSameDocument().
   //
   // More than one navigation can be ongoing in the same frame at the same
-  // time. Each will get its own NavigationHandle.
+  // time. Each will get its own NavigationContext.
   //
   // There is no guarantee that DidFinishNavigation() will be called for any
   // particular navigation before DidStartNavigation is called on the next.
