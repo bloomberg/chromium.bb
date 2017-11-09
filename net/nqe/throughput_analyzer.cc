@@ -29,6 +29,12 @@ namespace {
 // degrade accuracy held in the memory.
 static const size_t kMaxRequestsSize = 300;
 
+// Returns true if the request should be discarded because it does not provide
+// meaningful observation.
+bool ShouldDiscardRequest(const URLRequest& request) {
+  return request.method() != "GET";
+}
+
 }  // namespace
 
 namespace nqe {
@@ -135,6 +141,8 @@ void ThroughputAnalyzer::NotifyStartTransaction(const URLRequest& request) {
     // accuracy.
     EndThroughputObservationWindow();
     DCHECK(!IsCurrentlyTrackingThroughput());
+    return;
+  } else if (ShouldDiscardRequest(request)) {
     return;
   }
 

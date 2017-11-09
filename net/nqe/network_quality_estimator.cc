@@ -738,7 +738,8 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
          // response is not cached.
          !request.response_info().response_time.is_null() &&
          !request.was_cached() &&
-         request.creation_time() >= last_connection_change_;
+         request.creation_time() >= last_connection_change_ &&
+         request.method() == "GET";
 }
 
 void NetworkQualityEstimator::RecordExternalEstimateProviderMetrics(
