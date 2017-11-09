@@ -2315,10 +2315,6 @@ crbug.com/763933 virtual/display_list_2d_canvas/fast/canvas/image-object-in-canv
 
 crbug.com/666993 external/wpt/requestidlecallback/callback-idle-periods.html [ Timeout ]
 
-crbug.com/713732 fast/dom/Window/dom-access-from-closure-iframe.html [ NeedsManualRebaseline ]
-crbug.com/713732 fast/dom/Window/dom-access-from-closure-window-with-gc.html [ NeedsManualRebaseline ]
-crbug.com/713732 fast/dom/Window/dom-access-from-closure-window.html [ NeedsManualRebaseline ]
-
 # Crashes with DCHECK enabled, but not on normal Release builds.
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-011.html [ Failure Crash Pass ]
 crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout ]
