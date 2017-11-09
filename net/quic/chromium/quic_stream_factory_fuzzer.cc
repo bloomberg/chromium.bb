@@ -91,6 +91,19 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Initialize this on each loop since some options mutate this.
   HttpServerPropertiesImpl http_server_properties;
 
+  bool store_server_configs_in_properties = data_provider.ConsumeBool();
+  bool mark_quic_broken_when_network_blackholes = data_provider.ConsumeBool();
+  bool connect_using_default_network = data_provider.ConsumeBool();
+  bool migrate_sessions_on_network_change = data_provider.ConsumeBool();
+  bool migrate_sessions_early = data_provider.ConsumeBool();
+  bool allow_server_migration = data_provider.ConsumeBool();
+  bool race_cert_verification = data_provider.ConsumeBool();
+  bool estimate_initial_rtt = data_provider.ConsumeBool();
+  bool enable_token_binding = data_provider.ConsumeBool();
+
+  if (migrate_sessions_early)
+    migrate_sessions_on_network_change = true;
+
   std::unique_ptr<QuicStreamFactory> factory =
       std::make_unique<QuicStreamFactory>(
           env->net_log.net_log(), &host_resolver, env->ssl_config_service.get(),
@@ -99,13 +112,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &env->transport_security_state, env->cert_transparency_verifier.get(),
           nullptr, &env->crypto_client_stream_factory, &env->random_generator,
           &env->clock, kDefaultMaxPacketSize, std::string(),
-          data_provider.ConsumeBool(), data_provider.ConsumeBool(),
+          store_server_configs_in_properties,
+          mark_quic_broken_when_network_blackholes,
           kIdleConnectionTimeoutSeconds, kPingTimeoutSecs,
-          data_provider.ConsumeBool(), data_provider.ConsumeBool(),
-          data_provider.ConsumeBool(), data_provider.ConsumeBool(),
-          data_provider.ConsumeBool(), data_provider.ConsumeBool(),
-          env->connection_options, env->client_connection_options,
-          data_provider.ConsumeBool());
+          connect_using_default_network, migrate_sessions_on_network_change,
+          migrate_sessions_early, allow_server_migration,
+          race_cert_verification, estimate_initial_rtt, env->connection_options,
+          env->client_connection_options, enable_token_binding);
 
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
