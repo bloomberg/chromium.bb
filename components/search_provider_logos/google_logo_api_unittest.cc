@@ -39,18 +39,38 @@ TEST(GoogleNewLogoApiTest, UsesHttps) {
             GetGoogleDoodleURL(GURL("http://www.google.com.cn")));
 }
 
-TEST(GoogleNewLogoApiTest, AppendsQueryParams) {
+TEST(GoogleNewLogoApiTest, AppendPreliminaryParamsParsing) {
+  const std::string base_url = "http://foo.bar/";
+  EXPECT_EQ(GURL("http://foo.bar/?async=ntp:1"),
+            AppendPreliminaryParamsToDoodleURL(false, GURL(base_url)));
+  EXPECT_EQ(GURL("http://foo.bar/?test=param&async=ntp:1"),
+            AppendPreliminaryParamsToDoodleURL(false,
+                                               GURL(base_url + "?test=param")));
+  EXPECT_EQ(GURL("http://foo.bar/?async=inside,ntp:1&test=param"),
+            AppendPreliminaryParamsToDoodleURL(
+                false, GURL(base_url + "?async=inside&test=param")));
+  EXPECT_EQ(GURL("http://foo.bar/?async=inside,ntp:1&async=param"),
+            AppendPreliminaryParamsToDoodleURL(
+                false, GURL(base_url + "?async=inside&async=param")));
+}
+
+TEST(GoogleNewLogoApiTest, AppendPreliminaryParams) {
   const GURL logo_url("https://base.doo/target");
 
   EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1"),
-            AppendQueryparamsToDoodleLogoURL(false, logo_url, std::string()));
+            AppendPreliminaryParamsToDoodleURL(false, logo_url));
   EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1,graybg:1"),
-            AppendQueryparamsToDoodleLogoURL(true, logo_url, std::string()));
-  EXPECT_EQ(GURL("https://base.doo/target?async=ntp:1,es_dfp:fingerprint"),
-            AppendQueryparamsToDoodleLogoURL(false, logo_url, "fingerprint"));
+            AppendPreliminaryParamsToDoodleURL(true, logo_url));
+}
+
+TEST(GoogleNewLogoApiTest, AppendFingerprintParam) {
+  EXPECT_EQ(GURL("https://base.doo/target?async=es_dfp:fingerprint"),
+            AppendFingerprintParamToDoodleURL(GURL("https://base.doo/target"),
+                                              "fingerprint"));
   EXPECT_EQ(
       GURL("https://base.doo/target?async=ntp:1,graybg:1,es_dfp:fingerprint"),
-      AppendQueryparamsToDoodleLogoURL(true, logo_url, "fingerprint"));
+      AppendFingerprintParamToDoodleURL(
+          GURL("https://base.doo/target?async=ntp:1,graybg:1"), "fingerprint"));
 }
 
 TEST(GoogleNewLogoApiTest, ResolvesRelativeUrl) {

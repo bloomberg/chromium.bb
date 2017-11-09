@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -35,11 +36,13 @@ base::FilePath DoodleDirectory() {
 GoogleLogoService::GoogleLogoService(
     TemplateURLService* template_url_service,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-    : LogoServiceImpl(DoodleDirectory(),
-                      template_url_service,
-                      image_fetcher::CreateIOSImageDecoder(),
-                      request_context_getter,
-                      /*use_gray_background=*/false) {}
+    : LogoServiceImpl(
+          DoodleDirectory(),
+          template_url_service,
+          image_fetcher::CreateIOSImageDecoder(),
+          request_context_getter,
+          /*want_gray_logo_getter=*/base::BindRepeating([] { return false; })) {
+}
 
 GoogleLogoService::~GoogleLogoService() {}
 

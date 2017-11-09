@@ -19,13 +19,19 @@ namespace search_provider_logos {
 // Google domain.
 GURL GetGoogleDoodleURL(const GURL& google_base_url);
 
-// Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
-// or third-party doodles.
-GURL AppendQueryparamsToDoodleLogoURL(bool gray_background,
-                                      const GURL& logo_url,
-                                      const std::string& fingerprint);
+// Implements AppendQueryparamsToLogoURL, defined in logo_common.h. Using this
+// relies on the caller having prepared the |logo_url| by calling
+// AppendPreliminaryParamsToDoodleURL().
+GURL AppendFingerprintParamToDoodleURL(const GURL& logo_url,
+                                       const std::string& fingerprint);
 
-// Implements ParseLogoResponse, defined in logo_tracker.h, for Google or
+// Builds the reference URL for the current requested Doodle preset. This URL
+// will have to be processed again to add the fingerprint before making the
+// request to the server, see AppendFingerprintParamToDoodleURL().
+GURL AppendPreliminaryParamsToDoodleURL(bool gray_background,
+                                        const GURL& logo_url);
+
+// Implements ParseLogoResponse, defined in logo_common.h, for Google or
 // third-party doodles.
 std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     const GURL& base_url,
