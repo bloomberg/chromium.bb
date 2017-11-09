@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=2
+CLANG_SUB_REVISION=3
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -799,7 +799,7 @@ def UpdateClang(args):
       for f in glob.glob(os.path.join(toolchain_dir, 'include/c++/*/unwind.h')):
         os.remove(f)
 
-      # Build ASan runtime for Android in a separate build tree.
+      # Build sanitizer runtimes for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
       if not os.path.exists(build_dir):
         os.mkdir(os.path.join(build_dir))
@@ -817,13 +817,11 @@ def UpdateClang(args):
         '-DANDROID=1']
       RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
-      RunCommand(['ninja', 'libclang_rt.asan-%s-android.so' % target_arch])
+      RunCommand(['ninja', 'asan', 'ubsan'])
 
-      # And copy it into the main build tree.
-      runtime = 'libclang_rt.asan-%s-android.so' % target_arch
-      for root, _, files in os.walk(build_dir):
-        if runtime in files:
-          shutil.copy(os.path.join(root, runtime), asan_rt_lib_dst_dir)
+      # And copy them into the main build tree.
+      for f in glob.glob(os.path.join(build_dir, 'lib/linux/*.so')):
+        shutil.copy(f, asan_rt_lib_dst_dir)
 
   # Run tests.
   if args.run_tests or use_head_revision:
