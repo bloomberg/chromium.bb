@@ -13,6 +13,7 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_move_window_util.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
@@ -255,6 +256,22 @@ void HandleMediaPlayPause() {
 
 void HandleMediaPrevTrack() {
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
+}
+
+void HandleMoveWindowBetweenDisplays(const ui::Accelerator& accelerator) {
+  ui::KeyboardCode key_code = accelerator.key_code();
+  DisplayMoveWindowDirection direction;
+  if (key_code == ui::VKEY_LEFT) {
+    direction = DisplayMoveWindowDirection::kLeft;
+  } else if (key_code == ui::VKEY_UP) {
+    direction = DisplayMoveWindowDirection::kAbove;
+  } else if (key_code == ui::VKEY_RIGHT) {
+    direction = DisplayMoveWindowDirection::kRight;
+  } else {
+    DCHECK(key_code == ui::VKEY_DOWN);
+    direction = DisplayMoveWindowDirection::kBelow;
+  }
+  HandleMoveWindowToDisplay(direction);
 }
 
 void HandleToggleMirrorMode() {
@@ -611,6 +628,14 @@ bool CanHandleLock() {
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
   Shell::Get()->session_controller()->LockScreen();
+}
+
+bool CanHandleMoveWindowBetweenDisplays() {
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  // Accelerators to move window between displays on unified desktop mode and
+  // mirror mode is disabled.
+  return !display_manager->IsInUnifiedMode() &&
+         !display_manager->IsInMirrorMode();
 }
 
 PaletteTray* GetPaletteTray() {
@@ -1073,6 +1098,11 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleDisableCapsLock(previous_accelerator);
     case LOCK_SCREEN:
       return CanHandleLock();
+    case MOVE_WINDOW_TO_ABOVE_DISPLAY:
+    case MOVE_WINDOW_TO_BELOW_DISPLAY:
+    case MOVE_WINDOW_TO_LEFT_DISPLAY:
+    case MOVE_WINDOW_TO_RIGHT_DISPLAY:
+      return CanHandleMoveWindowBetweenDisplays();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
     case NEXT_IME:
@@ -1286,6 +1316,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case MEDIA_PREV_TRACK:
       HandleMediaPrevTrack();
+      break;
+    case MOVE_WINDOW_TO_ABOVE_DISPLAY:
+    case MOVE_WINDOW_TO_BELOW_DISPLAY:
+    case MOVE_WINDOW_TO_LEFT_DISPLAY:
+    case MOVE_WINDOW_TO_RIGHT_DISPLAY:
+      HandleMoveWindowBetweenDisplays(accelerator);
       break;
     case NEW_INCOGNITO_WINDOW:
       HandleNewIncognitoWindow();
