@@ -300,8 +300,7 @@ void BackgroundFetchDelegateImpl::OnDownloadReceived(
       break;
     case StartResult::BACKOFF:
       // TODO(delphick): try again later?
-      // TODO(delphick): Due to a bug at the moment, this happens all the time
-      // because successful downloads are not removed, so don't NOTREACHED.
+      NOTREACHED();
       break;
     case StartResult::UNEXPECTED_CLIENT:
       // This really should never happen since we're supplying the
