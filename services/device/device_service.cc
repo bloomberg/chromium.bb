@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "device/geolocation/geolocation_context.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/device/fingerprint/fingerprint.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
@@ -88,6 +89,8 @@ DeviceService::~DeviceService() {
 void DeviceService::OnStart() {
   registry_.AddInterface<mojom::Fingerprint>(base::Bind(
       &DeviceService::BindFingerprintRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::GeolocationContext>(base::Bind(
+      &DeviceService::BindGeolocationContextRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
       &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::ScreenOrientationListener>(
@@ -171,6 +174,11 @@ void DeviceService::BindInputDeviceManagerRequest(
 
 void DeviceService::BindFingerprintRequest(mojom::FingerprintRequest request) {
   Fingerprint::Create(std::move(request));
+}
+
+void DeviceService::BindGeolocationContextRequest(
+    mojom::GeolocationContextRequest request) {
+  GeolocationContext::Create(std::move(request));
 }
 
 void DeviceService::BindPowerMonitorRequest(

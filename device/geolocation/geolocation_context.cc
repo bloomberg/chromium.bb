@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "device/geolocation/geolocation_impl.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace device {
 
@@ -15,7 +16,13 @@ GeolocationContext::GeolocationContext() {}
 
 GeolocationContext::~GeolocationContext() {}
 
-void GeolocationContext::Bind(mojom::GeolocationRequest request) {
+// static
+void GeolocationContext::Create(mojom::GeolocationContextRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<GeolocationContext>(),
+                          std::move(request));
+}
+
+void GeolocationContext::BindGeolocation(mojom::GeolocationRequest request) {
   GeolocationImpl* impl = new GeolocationImpl(std::move(request), this);
   impls_.push_back(base::WrapUnique<GeolocationImpl>(impl));
   if (geoposition_override_)

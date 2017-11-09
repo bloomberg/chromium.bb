@@ -14,15 +14,13 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/url_constants.h"
-#include "device/geolocation/geolocation_context.h"
 #include "device/geolocation/public/cpp/geoposition.h"
+#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "device/geolocation/public/interfaces/geoposition.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
 namespace content {
 namespace protocol {
-
-using GeolocationContext = device::GeolocationContext;
 
 namespace {
 
@@ -96,8 +94,7 @@ Response EmulationHandler::SetGeolocationOverride(
   if (!GetWebContents())
     return Response::InternalError();
 
-  GeolocationContext* geolocation_context =
-      GetWebContents()->GetGeolocationContext();
+  auto* geolocation_context = GetWebContents()->GetGeolocationContext();
   auto geoposition = device::mojom::Geoposition::New();
   if (latitude.isJust() && longitude.isJust() && accuracy.isJust()) {
     geoposition->latitude = latitude.fromJust();
@@ -107,6 +104,7 @@ Response EmulationHandler::SetGeolocationOverride(
 
     if (!device::ValidateGeoposition(*geoposition))
       return Response::Error("Invalid geolocation");
+
   } else {
     geoposition->error_code =
         device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
@@ -119,8 +117,7 @@ Response EmulationHandler::ClearGeolocationOverride() {
   if (!GetWebContents())
     return Response::InternalError();
 
-  GeolocationContext* geolocation_context =
-      GetWebContents()->GetGeolocationContext();
+  auto* geolocation_context = GetWebContents()->GetGeolocationContext();
   geolocation_context->ClearOverride();
   return Response::OK();
 }

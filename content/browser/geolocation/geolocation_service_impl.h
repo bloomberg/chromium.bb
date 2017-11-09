@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "device/geolocation/public/interfaces/geolocation.mojom.h"
+#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/geolocation/geolocation_service.mojom.h"
 
@@ -15,10 +16,6 @@ namespace mojom {
 enum class PermissionStatus;
 }
 }  // namespace blink
-
-namespace device {
-class GeolocationContext;
-}
 
 namespace content {
 class RenderFrameHost;
@@ -47,7 +44,7 @@ class GeolocationServiceImplContext {
 class CONTENT_EXPORT GeolocationServiceImpl
     : public blink::mojom::GeolocationService {
  public:
-  GeolocationServiceImpl(device::GeolocationContext* geolocation_context,
+  GeolocationServiceImpl(device::mojom::GeolocationContext* geolocation_context,
                          PermissionManager* permission_manager,
                          RenderFrameHost* render_frame_host);
   ~GeolocationServiceImpl() override;
@@ -67,7 +64,7 @@ class CONTENT_EXPORT GeolocationServiceImpl
       device::mojom::GeolocationRequest request,
       blink::mojom::PermissionStatus permission_status);
 
-  device::GeolocationContext* geolocation_context_;
+  device::mojom::GeolocationContext* geolocation_context_;
   PermissionManager* permission_manager_;
   RenderFrameHost* render_frame_host_;
 

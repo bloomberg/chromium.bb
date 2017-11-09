@@ -8,7 +8,6 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_features.h"
-#include "device/geolocation/geolocation_context.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy_feature.h"
 
 namespace content {
@@ -58,7 +57,7 @@ void GeolocationServiceImplContext::HandlePermissionStatus(
 }
 
 GeolocationServiceImpl::GeolocationServiceImpl(
-    device::GeolocationContext* geolocation_context,
+    device::mojom::GeolocationContext* geolocation_context,
     PermissionManager* permission_manager,
     RenderFrameHost* render_frame_host)
     : geolocation_context_(geolocation_context),
@@ -102,7 +101,7 @@ void GeolocationServiceImpl::CreateGeolocationWithPermissionStatus(
   if (permission_status != blink::mojom::PermissionStatus::GRANTED)
     return;
 
-  geolocation_context_->Bind(std::move(request));
+  geolocation_context_->BindGeolocation(std::move(request));
 }
 
 }  // namespace content

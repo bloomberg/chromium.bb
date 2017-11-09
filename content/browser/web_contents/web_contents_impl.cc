@@ -120,9 +120,9 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/geolocation/geolocation_context.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -130,7 +130,9 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
 #include "third_party/WebKit/common/sandbox_flags.h"
@@ -539,7 +541,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_subframe_(false),
       force_disable_overscroll_content_(false),
       last_dialog_suppressed_(false),
-      geolocation_context_(new device::GeolocationContext()),
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
@@ -2722,7 +2723,17 @@ RenderFrameHost* WebContentsImpl::GetGuestByInstanceID(
   return guest->GetMainFrame();
 }
 
-device::GeolocationContext* WebContentsImpl::GetGeolocationContext() {
+device::mojom::GeolocationContext* WebContentsImpl::GetGeolocationContext() {
+  if (geolocation_context_)
+    return geolocation_context_.get();
+
+  auto request = mojo::MakeRequest(&geolocation_context_);
+  if (!ServiceManagerConnection::GetForProcess())
+    return geolocation_context_.get();
+
+  service_manager::Connector* connector =
+      ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(device::mojom::kServiceName, std::move(request));
   return geolocation_context_.get();
 }
 
