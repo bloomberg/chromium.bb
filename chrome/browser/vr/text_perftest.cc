@@ -31,7 +31,8 @@ class TextPerfTest : public testing::Test {
   void SetUp() override {
     gl_test_environment_ =
         base::MakeUnique<GlTestEnvironment>(kPixelHalfScreen);
-    provider_ = base::MakeUnique<GaneshSurfaceProvider>();
+    // TODO(782871): Enable Ganesh.
+    provider_ = base::MakeUnique<CpuSurfaceProvider>();
 
     text_element_ = base::MakeUnique<Text>(kMaximumTextWidthPixels,
                                            kFontHeightMeters, kTextWidthMeters);
