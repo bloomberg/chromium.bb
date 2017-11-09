@@ -71,8 +71,7 @@ SupervisedUserGoogleAuthNavigationThrottle::WillStartOrRedirectRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
-  content::NavigationThrottle::ThrottleCheckResult result =
-      ShouldProceed(child_account_service_->IsGoogleAuthenticated());
+  content::NavigationThrottle::ThrottleCheckResult result = ShouldProceed();
 
   if (result.action() == content::NavigationThrottle::DEFER) {
     google_auth_state_subscription_ =
@@ -85,10 +84,8 @@ SupervisedUserGoogleAuthNavigationThrottle::WillStartOrRedirectRequest() {
   return result;
 }
 
-void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged(
-    bool authenticated) {
-  content::NavigationThrottle::ThrottleCheckResult result =
-      ShouldProceed(authenticated);
+void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged() {
+  content::NavigationThrottle::ThrottleCheckResult result = ShouldProceed();
 
   switch (result.action()) {
     case content::NavigationThrottle::PROCEED: {
@@ -114,9 +111,13 @@ void SupervisedUserGoogleAuthNavigationThrottle::OnGoogleAuthStateChanged(
 }
 
 content::NavigationThrottle::ThrottleCheckResult
-SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed(bool authenticated) {
-  if (authenticated)
+SupervisedUserGoogleAuthNavigationThrottle::ShouldProceed() {
+  ChildAccountService::AuthState authStatus =
+      child_account_service_->GetGoogleAuthState();
+  if (authStatus == ChildAccountService::AuthState::AUTHENTICATED)
     return content::NavigationThrottle::PROCEED;
+  if (authStatus == ChildAccountService::AuthState::PENDING)
+    return content::NavigationThrottle::DEFER;
 
 #if !defined(OS_ANDROID)
   // TODO(bauerb): Show a reauthentication dialog.
