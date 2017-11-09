@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/search_result_page_view.h"
@@ -195,6 +196,10 @@ void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   if (features::IsAppListFocusEnabled()) {
+    // Let the FocusManager handle Left/Right keys.
+    if (!CanProcessUpDownKeyTraversal(event))
+      return false;
+
     views::View* next_focusable_view = nullptr;
 
     // Since search result tile item views have horizontal layout, hitting
@@ -209,7 +214,8 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
         search_box_->RequestFocus();
         return true;
       }
-    } else if (event.key_code() == ui::VKEY_DOWN) {
+    } else {
+      DCHECK_EQ(event.key_code(), ui::VKEY_DOWN);
       next_focusable_view = GetFocusManager()->GetNextFocusableView(
           tile_views_.back(), GetWidget(), false, false);
     }
@@ -218,6 +224,9 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
       next_focusable_view->RequestFocus();
       return true;
     }
+
+    // Return false to let FocusManager to handle default focus move by key
+    // events.
     return false;
   }
   // TODO(weidongg/766807) Remove everything below when the flag is enabled by

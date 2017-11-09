@@ -177,7 +177,8 @@ class AppListViewTest : public views::ViewsTestBase {
 
 // TODO(weidongg/766807) Remove all old focus tests after the flag is enabled
 // by default.
-class AppListViewFocusTest : public views::ViewsTestBase {
+class AppListViewFocusTest : public views::ViewsTestBase,
+                             public testing::WithParamInterface<bool> {
  public:
   AppListViewFocusTest() = default;
   ~AppListViewFocusTest() override = default;
@@ -185,6 +186,13 @@ class AppListViewFocusTest : public views::ViewsTestBase {
   // testing::Test
   void SetUp() override {
     views::ViewsTestBase::SetUp();
+
+    // Setup right to left environment if necessary.
+    if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
+      is_rtl_ = GetParam();
+      if (is_rtl_)
+        base::i18n::SetICUDefaultLocale("he");
+    }
 
     // Enable app list focus.
     scoped_feature_list_.InitAndEnableFeature(features::kEnableAppListFocus);
@@ -296,6 +304,111 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     }
   }
 
+  // Test the behavior triggered by left and right key when focus is on the
+  // |textfield|. |text_rtl| indicates whether to type RTL or non-RTL text in
+  // the |textfield| during the test.
+  void TestLeftAndRightKeyOnTextfield(views::Textfield* textfield,
+                                      bool text_rtl) {
+    EXPECT_TRUE(textfield->text().empty());
+    EXPECT_EQ(textfield, focused_view());
+
+    views::View* next_view =
+        view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+            textfield, view_->GetWidget(), false, false);
+    views::View* prev_view =
+        view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+            textfield, view_->GetWidget(), true, false);
+
+    // Only need to hit left or right key once to move focus outside the
+    // textfield when it is empty.
+    SimulateKeyPress(ui::VKEY_RIGHT, false);
+    EXPECT_EQ(is_rtl_ ? prev_view : next_view, focused_view());
+
+    SimulateKeyPress(ui::VKEY_LEFT, false);
+    EXPECT_EQ(textfield, focused_view());
+
+    SimulateKeyPress(ui::VKEY_LEFT, false);
+    EXPECT_EQ(is_rtl_ ? next_view : prev_view, focused_view());
+
+    SimulateKeyPress(ui::VKEY_RIGHT, false);
+    EXPECT_EQ(textfield, focused_view());
+
+    // Type something in textfield.
+    base::string16 text =
+        text_rtl
+            // Arabic word of "test".
+            ? base::UTF8ToUTF16(
+                  "\xd8\xa7\xd8\xae\xd8\xaa\xd8\xa8\xd8\xa7\xd8\xb1")
+            : base::UTF8ToUTF16("test");
+    textfield->InsertText(text);
+    next_view = view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+        textfield, view_->GetWidget(), false, false);
+    prev_view = view_->GetWidget()->GetFocusManager()->GetNextFocusableView(
+        textfield, view_->GetWidget(), true, false);
+    EXPECT_EQ(text.length(), textfield->GetCursorPosition());
+    EXPECT_FALSE(textfield->HasSelection());
+    EXPECT_EQ(textfield, focused_view());
+
+    const ui::KeyboardCode backward_key =
+        text_rtl ? ui::VKEY_RIGHT : ui::VKEY_LEFT;
+    const ui::KeyboardCode forward_key =
+        text_rtl ? ui::VKEY_LEFT : ui::VKEY_RIGHT;
+
+    // Move cursor backward.
+    SimulateKeyPress(backward_key, false);
+    EXPECT_EQ(text.length() - 1, textfield->GetCursorPosition());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Move cursor forward.
+    SimulateKeyPress(forward_key, false);
+    EXPECT_EQ(text.length(), textfield->GetCursorPosition());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Hit forward key to move focus outside the textfield.
+    SimulateKeyPress(forward_key, false);
+    EXPECT_EQ((!is_rtl_ && !text_rtl) || (is_rtl_ && text_rtl) ? next_view
+                                                               : prev_view,
+              focused_view());
+
+    // Hit backward key to move focus back to textfield and select all text.
+    SimulateKeyPress(backward_key, false);
+    EXPECT_EQ(text, textfield->GetSelectedText());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Hit backward key to move cursor to the beginning.
+    SimulateKeyPress(backward_key, false);
+    EXPECT_EQ(0U, textfield->GetCursorPosition());
+    EXPECT_FALSE(textfield->HasSelection());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Hit backward key to move focus outside the textfield.
+    SimulateKeyPress(backward_key, false);
+    EXPECT_EQ((!is_rtl_ && !text_rtl) || (is_rtl_ && text_rtl) ? prev_view
+                                                               : next_view,
+              focused_view());
+
+    // Hit forward key to move focus back to textfield and select all text.
+    SimulateKeyPress(forward_key, false);
+    EXPECT_EQ(text, textfield->GetSelectedText());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Hit forward key to move cursor to the end.
+    SimulateKeyPress(forward_key, false);
+    EXPECT_EQ(text.length(), textfield->GetCursorPosition());
+    EXPECT_FALSE(textfield->HasSelection());
+    EXPECT_EQ(textfield, focused_view());
+
+    // Hitt forward key to move focus outside the textfield.
+    SimulateKeyPress(forward_key, false);
+    EXPECT_EQ((!is_rtl_ && !text_rtl) || (is_rtl_ && text_rtl) ? next_view
+                                                               : prev_view,
+              focused_view());
+
+    // Clean up
+    textfield->SetText(base::UTF8ToUTF16(""));
+    textfield->RequestFocus();
+  }
+
   AppListView* app_list_view() { return view_; }
 
   AppListMainView* main_view() { return view_->app_list_main_view(); }
@@ -332,6 +445,9 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     return view_->GetWidget()->GetFocusManager()->GetFocusedView();
   }
 
+ protected:
+  bool is_rtl_ = false;
+
  private:
   AppListView* view_ = nullptr;  // Owned by native widget.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
@@ -340,6 +456,10 @@ class AppListViewFocusTest : public views::ViewsTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
+
+// Instantiate the Boolean which is used to toggle RTL in the parameterized
+// tests.
+INSTANTIATE_TEST_CASE_P(, AppListViewFocusTest, testing::Bool());
 
 }  // namespace
 
@@ -350,7 +470,7 @@ TEST_F(AppListViewFocusTest, InitialFocus) {
 }
 
 // Tests the linear focus traversal in PEEKING state.
-TEST_F(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
+TEST_P(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
   Show();
   SetAppListState(AppListView::PEEKING);
 
@@ -369,21 +489,17 @@ TEST_F(AppListViewFocusTest, LinearFocusTraversalInPeekingState) {
   // Test traversal triggered by shift+tab.
   TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
 
-  // Test traversal triggered by right, Left and right key are handled by
-  // search box when focus is on it, so focus will not move. Move focus to
-  // next element before testing.
-  forward_view_list.erase(forward_view_list.begin());
-  forward_view_list.front()->RequestFocus();
-  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+  // Test traversal triggered by right.
+  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
+                     ui::VKEY_RIGHT, false);
 
   // Test traversal triggered by left.
-  backward_view_list.erase(backward_view_list.begin());
-  backward_view_list.front()->RequestFocus();
-  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
+                     ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state.
-TEST_F(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
+TEST_P(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
   Show();
   SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
 
@@ -405,21 +521,17 @@ TEST_F(AppListViewFocusTest, LinearFocusTraversalInFullscreenAllAppsState) {
   // Test traversal triggered by shift+tab.
   TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
 
-  // Test traversal triggered by right, Left and right key are handled by
-  // search box when focus is on it, so focus will not move. Move focus to
-  // next element before testing.
-  forward_view_list.erase(forward_view_list.begin());
-  forward_view_list.front()->RequestFocus();
-  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+  // Test traversal triggered by right.
+  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
+                     ui::VKEY_RIGHT, false);
 
   // Test traversal triggered by left.
-  backward_view_list.erase(backward_view_list.begin());
-  backward_view_list.front()->RequestFocus();
-  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
+                     ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in HALF state with opened search box.
-TEST_F(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
+TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
   Show();
 
   // Type something in search box to transition to HALF state and populate
@@ -454,21 +566,24 @@ TEST_F(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
   // Test traversal triggered by shift+tab.
   TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
 
-  // Test traversal triggered by right, Left and right key are handled by
-  // search box when focus is on it, so focus will not move. Move focus to
-  // next element before testing.
-  forward_view_list.erase(forward_view_list.begin());
-  forward_view_list.front()->RequestFocus();
-  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+  // Test traversal triggered by right. When the search box is focused, all
+  // text are selected. Hitting right key will move the cursor to the right end
+  // and unselect the text. Hitting right key again will move the focus to the
+  // next view. Left key is handled in similar way.
+  forward_view_list.insert(forward_view_list.begin(),
+                           search_box_view()->search_box());
+  backward_view_list.insert(backward_view_list.begin(),
+                            search_box_view()->search_box());
+  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
+                     ui::VKEY_RIGHT, false);
 
   // Test traversal triggered by left.
-  backward_view_list.erase(backward_view_list.begin());
-  backward_view_list.front()->RequestFocus();
-  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
+                     ui::VKEY_LEFT, false);
 }
 
 // Tests the linear focus traversal in FULLSCREEN_ALL_APPS state within folder.
-TEST_F(AppListViewFocusTest, LinearFocusTraversalInFolder) {
+TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   Show();
 
   // Transition to FULLSCREEN_ALL_APPS state and open the folder.
@@ -496,19 +611,13 @@ TEST_F(AppListViewFocusTest, LinearFocusTraversalInFolder) {
   // Test traversal triggered by shift+tab.
   TestFocusTraversal(backward_view_list, ui::VKEY_TAB, true);
 
-  // Test traversal triggered by right, Left and right key are handled by
-  // search box when focus is on it, so focus will not move. Move focus to
-  // non-textfield element before testing.
-  forward_view_list.erase(forward_view_list.begin(),
-                          forward_view_list.begin() + 2);
-  forward_view_list.front()->RequestFocus();
-  TestFocusTraversal(forward_view_list, ui::VKEY_RIGHT, false);
+  // Test traversal triggered by right.
+  TestFocusTraversal(is_rtl_ ? backward_view_list : forward_view_list,
+                     ui::VKEY_RIGHT, false);
 
   // Test traversal triggered by left.
-  backward_view_list.erase(backward_view_list.begin());
-  backward_view_list.erase(backward_view_list.end() - 1);
-  backward_view_list.front()->RequestFocus();
-  TestFocusTraversal(backward_view_list, ui::VKEY_LEFT, false);
+  TestFocusTraversal(is_rtl_ ? forward_view_list : backward_view_list,
+                     ui::VKEY_LEFT, false);
 }
 
 // Tests the vertical focus traversal by in PEEKING state.
@@ -880,6 +989,32 @@ TEST_F(AppListViewFocusTest, SetFocusOnSearchboxWhenActivated) {
   // Deactivate the search box won't move focus away.
   search_box_view()->SetSearchBoxActive(false);
   EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
+}
+
+// Tests the left and right key when focus is on the textfield.
+TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(AppListView::FULLSCREEN_ALL_APPS);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+
+  // Set focus on the folder name.
+  views::Textfield* folder_name_view = static_cast<views::Textfield*>(
+      app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
+  folder_name_view->RequestFocus();
+
+  // Test folder name.
+  TestLeftAndRightKeyOnTextfield(folder_name_view, false);
+  TestLeftAndRightKeyOnTextfield(folder_name_view, true);
+
+  // Set focus on the search box.
+  search_box_view()->search_box()->RequestFocus();
+
+  // Test search box.
+  TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), false);
+  TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), true);
 }
 
 // Tests that opening the app list opens in peeking mode by default.

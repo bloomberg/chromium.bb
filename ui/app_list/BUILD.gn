@@ -25,6 +25,8 @@ component("app_list") {
     "app_list_model_observer.h",
     "app_list_switches.cc",
     "app_list_switches.h",
+    "app_list_util.cc",
+    "app_list_util.h",
     "app_list_view_delegate.h",
     "folder_image.cc",
     "folder_image.h",
