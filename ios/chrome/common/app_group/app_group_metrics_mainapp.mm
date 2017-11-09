@@ -20,7 +20,7 @@ namespace app_group {
 
 namespace main_app {
 
-void ProcessPendingLogs(ProceduralBlockWithData callback) {
+void RecordWidgetUsage() {
   NSUserDefaults* shared_defaults = GetGroupUserDefaults();
   int content_extension_count =
       [shared_defaults integerForKey:kContentExtensionDisplayCount];
@@ -32,7 +32,9 @@ void ProcessPendingLogs(ProceduralBlockWithData callback) {
   UMA_HISTOGRAM_COUNTS_1000("IOS.SearchExtension.DisplayCount",
                             search_extension_count);
   [shared_defaults setInteger:0 forKey:kSearchExtensionDisplayCount];
+}
 
+void ProcessPendingLogs(ProceduralBlockWithData callback) {
   base::AssertBlockingAllowed();
   NSFileManager* file_manager = [NSFileManager defaultManager];
   NSURL* store_url = [file_manager

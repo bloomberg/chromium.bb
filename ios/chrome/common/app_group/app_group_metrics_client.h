@@ -11,6 +11,7 @@
 #include "ios/chrome/common/app_group/app_group_constants.h"
 
 namespace app_group {
+// TODO(crbug.com/782685): remove all functions.
 namespace client_app {
 
 // Adds a closed log to the pending log directory. The log will be processed the
