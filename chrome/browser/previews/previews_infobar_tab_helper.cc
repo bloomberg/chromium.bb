@@ -14,6 +14,7 @@
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/offline_pages/features/features.h"
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -109,24 +110,38 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
+  // Check headers for server preview.
+  // TODO(dougarnett): Clean this up when PreviewsState update for response
+  // is pulled up out of renderer (crbug.com/782922) or look to use
+  // PreviewsUserData when it is available.
+  const net::HttpResponseHeaders* headers =
+      navigation_handle->GetResponseHeaders();
+  if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
+    base::Time previews_freshness;
+    headers->GetDateValue(&previews_freshness);
+    PreviewsInfoBarDelegate::Create(
+        web_contents(), previews::PreviewsType::LITE_PAGE, previews_freshness,
+        true /* is_data_saver_user */, is_reload,
+        base::Bind(&AddPreviewNavigationCallback,
+                   web_contents()->GetBrowserContext(),
+                   navigation_handle->GetRedirectChain()[0],
+                   previews::PreviewsType::LITE_PAGE),
+        previews_ui_service);
+    return;
+  }
+
+  // Check for client previews.
   ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
       navigation_handle->GetNavigationData());
   if (nav_data) {
     previews::PreviewsType main_frame_preview =
         previews::GetMainFramePreviewsType(nav_data->previews_state());
-    if (main_frame_preview != previews::PreviewsType::NONE) {
-      base::Time previews_freshness;
-      if (main_frame_preview == previews::PreviewsType::LITE_PAGE) {
-        // Get server preview freshness from response header.
-        const net::HttpResponseHeaders* headers =
-            navigation_handle->GetResponseHeaders();
-        if (headers) {
-          headers->GetDateValue(&previews_freshness);
-        }
-      }
+    if (main_frame_preview != previews::PreviewsType::NONE &&
+        main_frame_preview != previews::PreviewsType::LITE_PAGE) {
       PreviewsInfoBarDelegate::Create(
-          web_contents(), main_frame_preview, previews_freshness,
-          true /* is_data_saver_user */, is_reload,
+          web_contents(), main_frame_preview,
+          base::Time() /* previews_freshness */, true /* is_data_saver_user */,
+          is_reload,
           base::Bind(&AddPreviewNavigationCallback,
                      web_contents()->GetBrowserContext(),
                      navigation_handle->GetRedirectChain()[0],
