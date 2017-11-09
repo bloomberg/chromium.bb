@@ -22,7 +22,6 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -36,7 +35,7 @@ class CONTENT_EXPORT BaseFile {
  public:
   // May be constructed on any thread.  All other routines (including
   // destruction) must occur on the same sequence.
-  BaseFile(const net::NetLogWithSource& net_log);
+  BaseFile(uint32_t download_id);
   ~BaseFile();
 
   // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a
@@ -252,7 +251,8 @@ class CONTENT_EXPORT BaseFile {
   // verify that writes are not overlapping.
   bool is_sparse_file_ = false;
 
-  net::NetLogWithSource net_log_;
+  // ID of the download, used for trace events.
+  uint32_t download_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

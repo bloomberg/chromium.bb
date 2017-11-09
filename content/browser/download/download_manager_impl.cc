@@ -56,8 +56,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
-#include "net/log/net_log_source_type.h"
-#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
@@ -103,7 +101,7 @@ void CreateInterruptedDownload(
     base::WeakPtr<DownloadManagerImpl> download_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<DownloadCreateInfo> failed_created_info(
-      new DownloadCreateInfo(base::Time::Now(), net::NetLogWithSource(),
+      new DownloadCreateInfo(base::Time::Now(),
                              base::WrapUnique(new DownloadSaveInfo)));
   failed_created_info->url_chain.push_back(params->url());
   failed_created_info->result = reason;
@@ -244,22 +242,20 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
-      const net::NetLogWithSource& net_log) override {
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices)
+      override {
     return new DownloadItemImpl(
         delegate, guid, download_id, current_path, target_path, url_chain,
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
         received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-        opened, last_access_time, transient, received_slices, net_log);
+        opened, last_access_time, transient, received_slices);
   }
 
-  DownloadItemImpl* CreateActiveItem(
-      DownloadItemImplDelegate* delegate,
-      uint32_t download_id,
-      const DownloadCreateInfo& info,
-      const net::NetLogWithSource& net_log) override {
-    return new DownloadItemImpl(delegate, download_id, info, net_log);
+  DownloadItemImpl* CreateActiveItem(DownloadItemImplDelegate* delegate,
+                                     uint32_t download_id,
+                                     const DownloadCreateInfo& info) override {
+    return new DownloadItemImpl(delegate, download_id, info);
   }
 
   DownloadItemImpl* CreateSavePageItem(
@@ -268,10 +264,9 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::NetLogWithSource& net_log) override {
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle) override {
     return new DownloadItemImpl(delegate, download_id, path, url, mime_type,
-                                std::move(request_handle), net_log);
+                                std::move(request_handle));
   }
 };
 
@@ -291,7 +286,6 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       initialized_(false),
       browser_context_(browser_context),
       delegate_(nullptr),
-      net_log_(nullptr),
       weak_factory_(this) {
   DCHECK(browser_context);
 }
@@ -305,10 +299,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     const DownloadCreateInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!base::ContainsKey(downloads_, id));
-  net::NetLogWithSource net_log =
-      net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD);
-  DownloadItemImpl* download =
-      item_factory_->CreateActiveItem(this, id, info, net_log);
+  DownloadItemImpl* download = item_factory_->CreateActiveItem(this, id, info);
   downloads_[id] = base::WrapUnique(download);
   downloads_by_guid_[download->GetGuid()] = download;
   return download;
@@ -488,8 +479,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     DCHECK(stream.get());
     download_file.reset(file_factory_->CreateFile(
         std::move(info->save_info), default_download_directory,
-        std::move(stream), download->GetNetLogWithSource(),
-        download->DestinationObserverAsWeakPtr()));
+        std::move(stream), id, download->DestinationObserverAsWeakPtr()));
   }
   // It is important to leave info->save_info intact in the case of an interrupt
   // so that the DownloadItem can salvage what it can out of a failed resumption
@@ -574,11 +564,8 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
   DCHECK(!base::ContainsKey(downloads_, id));
-  net::NetLogWithSource net_log =
-      net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD);
   DownloadItemImpl* download_item = item_factory_->CreateSavePageItem(
-      this, id, main_file_path, page_url, mime_type, std::move(request_handle),
-      net_log);
+      this, id, main_file_path, page_url, mime_type, std::move(request_handle));
   downloads_[download_item->GetId()] = base::WrapUnique(download_item);
   DCHECK(!base::ContainsKey(downloads_by_guid_, download_item->GetGuid()));
   downloads_by_guid_[download_item->GetGuid()] = download_item;
@@ -773,8 +760,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       site_url, tab_url, tab_refererr_url, mime_type, original_mime_type,
       start_time, end_time, etag, last_modified, received_bytes, total_bytes,
       hash, state, danger_type, interrupt_reason, opened, last_access_time,
-      transient, received_slices,
-      net::NetLogWithSource::Make(net_log_, net::NetLogSourceType::DOWNLOAD));
+      transient, received_slices);
   downloads_[id] = base::WrapUnique(item);
   downloads_by_guid_[guid] = item;
   for (auto& observer : observers_)

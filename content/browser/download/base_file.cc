@@ -11,23 +11,60 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
-#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/common/quarantine.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_event_type.h"
+
+#define CONDITIONAL_TRACE(trace)                  \
+  do {                                            \
+    if (download_id_ != DownloadItem::kInvalidId) \
+      TRACE_EVENT_##trace;                        \
+  } while (0)
 
 namespace content {
 
-BaseFile::BaseFile(const net::NetLogWithSource& net_log) : net_log_(net_log) {
+namespace {
+class FileErrorData : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  FileErrorData(const char* operation,
+                int os_error,
+                DownloadInterruptReason interrupt_reason)
+      : operation_(operation),
+        os_error_(os_error),
+        interrupt_reason_(interrupt_reason) {}
+
+  ~FileErrorData() override = default;
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append("{");
+    out->append(
+        base::StringPrintf("\"operation\":\"%s\",", operation_.c_str()));
+    out->append(base::StringPrintf("\"os_error\":\"%d\",", os_error_));
+    out->append(base::StringPrintf(
+        "\"interrupt_reason\":\"%s\",",
+        DownloadInterruptReasonToString(interrupt_reason_).c_str()));
+    out->append("}");
+  }
+
+ private:
+  std::string operation_;
+  int os_error_;
+  DownloadInterruptReason interrupt_reason_;
+  DISALLOW_COPY_AND_ASSIGN(FileErrorData);
+};
+}  // namespace
+
+BaseFile::BaseFile(uint32_t download_id) : download_id_(download_id) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -103,7 +140,10 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   if (data_len == 0)
     return DOWNLOAD_INTERRUPT_REASON_NONE;
 
-  net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN);
+  // Use nestable async event instead of sync event so that all the writes
+  // belong to the same download will be grouped together.
+  CONDITIONAL_TRACE(
+      NESTABLE_ASYNC_BEGIN0("download", "DownloadFileWrite", download_id_));
   int write_result = file_.Write(offset, data, data_len);
   DCHECK_NE(0, write_result);
 
@@ -120,8 +160,8 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
   }
 
   bytes_so_far_ += data_len;
-  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
-                    net::NetLog::Int64Callback("bytes", data_len));
+  CONDITIONAL_TRACE(NESTABLE_ASYNC_END1("download", "DownloadFileWrite",
+                                        download_id_, "bytes", data_len));
 
   if (secure_hash_)
     secure_hash_->Update(data, data_len);
@@ -144,9 +184,9 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
 
   Close();
 
-  net_log_.BeginEvent(
-      net::NetLogEventType::DOWNLOAD_FILE_RENAMED,
-      base::Bind(&FileRenamedNetLogCallback, &full_path_, &new_path));
+  CONDITIONAL_TRACE(BEGIN2("download", "DownloadFileRename", "old_filename",
+                           full_path_.AsUTF8Unsafe(), "new_filename",
+                           new_path.AsUTF8Unsafe()));
 
   base::CreateDirectory(new_path.DirName());
 
@@ -154,7 +194,7 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   // permissions / security descriptors that makes sense in the new directory.
   rename_result = MoveFileAndAdjustPermissions(new_path);
 
-  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_RENAMED);
+  CONDITIONAL_TRACE(END0("download", "DownloadFileRename"));
 
   if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE)
     full_path_ = new_path;
@@ -171,19 +211,22 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
 
 void BaseFile::Detach() {
   detached_ = true;
-  net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DETACHED);
+  CONDITIONAL_TRACE(
+      INSTANT0("download", "DownloadFileDetached", TRACE_EVENT_SCOPE_THREAD));
 }
 
 void BaseFile::Cancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!detached_);
 
-  net_log_.AddEvent(net::NetLogEventType::CANCELLED);
+  CONDITIONAL_TRACE(
+      INSTANT0("download", "DownloadCancelled", TRACE_EVENT_SCOPE_THREAD));
 
   Close();
 
   if (!full_path_.empty()) {
-    net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DELETED);
+    CONDITIONAL_TRACE(
+        INSTANT0("download", "DownloadFileDeleted", TRACE_EVENT_SCOPE_THREAD));
     base::DeleteFile(full_path_, false);
   }
 
@@ -294,9 +337,9 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
     }
   }
 
-  net_log_.BeginEvent(
-      net::NetLogEventType::DOWNLOAD_FILE_OPENED,
-      base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
+  CONDITIONAL_TRACE(NESTABLE_ASYNC_BEGIN2(
+      "download", "DownloadFileOpen", download_id_, "file_name",
+      full_path_.AsUTF8Unsafe(), "bytes_so_far", bytes_so_far_));
 
   // For sparse file, skip hash validation.
   if (is_sparse_file_) {
@@ -356,14 +399,16 @@ void BaseFile::ClearFile() {
   // This should only be called when we have a stream.
   DCHECK(file_.IsValid());
   file_.Close();
-  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_OPENED);
+  CONDITIONAL_TRACE(
+      NESTABLE_ASYNC_END0("download", "DownloadFileOpen", download_id_));
 }
 
 DownloadInterruptReason BaseFile::LogNetError(
     const char* operation,
     net::Error error) {
-  net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_ERROR,
-                    base::Bind(&FileErrorNetLogCallback, operation, error));
+  CONDITIONAL_TRACE(INSTANT2("download", "DownloadFileError",
+                             TRACE_EVENT_SCOPE_THREAD, "operation", operation,
+                             "net_error", error));
   return ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
@@ -384,9 +429,11 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
   DVLOG(1) << __func__ << "() operation:" << operation
            << " os_error:" << os_error
            << " reason:" << DownloadInterruptReasonToString(reason);
-  net_log_.AddEvent(
-      net::NetLogEventType::DOWNLOAD_FILE_ERROR,
-      base::Bind(&FileInterruptedNetLogCallback, operation, os_error, reason));
+  auto error_data =
+      base::MakeUnique<FileErrorData>(operation, os_error, reason);
+  CONDITIONAL_TRACE(INSTANT1("download", "DownloadFileError",
+                             TRACE_EVENT_SCOPE_THREAD, "file_error",
+                             std::move(error_data)));
   return reason;
 }
 
@@ -433,11 +480,12 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
 
-  net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  CONDITIONAL_TRACE(BEGIN0("download", "DownloadFileAnnotate"));
   QuarantineFileResult result = QuarantineFile(
       full_path_, GetEffectiveAuthorityURL(source_url, referrer_url),
       referrer_url, client_guid);
-  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  CONDITIONAL_TRACE(END0("download", "DownloadFileAnnotate"));
+
   switch (result) {
     case QuarantineFileResult::OK:
       return DOWNLOAD_INTERRUPT_REASON_NONE;

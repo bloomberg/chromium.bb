@@ -688,8 +688,6 @@ source_set("browser") {
     "download/download_job_impl.h",
     "download/download_manager_impl.cc",
     "download/download_manager_impl.h",
-    "download/download_net_log_parameters.cc",
-    "download/download_net_log_parameters.h",
     "download/download_request_core.cc",
     "download/download_request_core.h",
     "download/download_request_handle.cc",

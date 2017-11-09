@@ -18,12 +18,10 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/browser/download/download_destination_observer.h"
-#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -178,15 +176,13 @@ class CONTENT_EXPORT DownloadItemImpl
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
-      const net::NetLogWithSource& net_log);
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices);
 
   // Constructing for a regular download.
   // |net_log| is constructed externally for our use.
   DownloadItemImpl(DownloadItemImplDelegate* delegate,
                    uint32_t id,
-                   const DownloadCreateInfo& info,
-                   const net::NetLogWithSource& net_log);
+                   const DownloadCreateInfo& info);
 
   // Constructing for the "Save Page As..." feature:
   // |net_log| is constructed externally for our use.
@@ -196,8 +192,7 @@ class CONTENT_EXPORT DownloadItemImpl
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::NetLogWithSource& net_log);
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle);
 
   ~DownloadItemImpl() override;
 
@@ -306,9 +301,6 @@ class CONTENT_EXPORT DownloadItemImpl
   // for use by download destinations.
   virtual base::WeakPtr<DownloadDestinationObserver>
       DestinationObserverAsWeakPtr();
-
-  // Get the download's NetLogWithSource.
-  virtual const net::NetLogWithSource& GetNetLogWithSource() const;
 
   // DownloadItemImpl routines only needed by SavePackage ----------------------
 
@@ -497,9 +489,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Construction common to all constructors. |active| should be true for new
   // downloads and false for downloads from the history.
-  // |download_type| indicates to the net log system what kind of download
-  // this is.
-  void Init(bool active, DownloadType download_type);
+  // |download_type| indicates to the trace event what kind of download this is.
+  void Init(bool active, DownloadItem::DownloadType download_type);
 
   // Callback from file thread when we initialize the DownloadFile.
   void OnDownloadFileInitialized(DownloadInterruptReason result);
@@ -746,9 +737,6 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // The data slices that have been received so far.
   std::vector<DownloadItem::ReceivedSlice> received_slices_;
-
-  // Net log to use for this download.
-  const net::NetLogWithSource net_log_;
 
   std::unique_ptr<DownloadJob> job_;
 

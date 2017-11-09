@@ -107,8 +107,8 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
     const ResourceResponseHead& head) {
   // TODO(qinmin): instead of using NetLogWithSource, introduce new logging
   // class for download.
-  auto create_info = std::make_unique<DownloadCreateInfo>(
-      base::Time::Now(), net::NetLogWithSource(), std::move(save_info_));
+  auto create_info = base::MakeUnique<DownloadCreateInfo>(
+      base::Time::Now(), std::move(save_info_));
 
   DownloadInterruptReason result =
       head.headers

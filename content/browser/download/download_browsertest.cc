@@ -172,7 +172,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
   DownloadFileWithDelay(std::unique_ptr<DownloadSaveInfo> save_info,
                         const base::FilePath& default_download_directory,
                         std::unique_ptr<DownloadManager::InputStream> stream,
-                        const net::NetLogWithSource& net_log,
+                        uint32_t download_id,
                         base::WeakPtr<DownloadDestinationObserver> observer,
                         base::WeakPtr<DownloadFileWithDelayFactory> owner);
 
@@ -217,7 +217,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const net::NetLogWithSource& net_log,
+      uint32_t download_id,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
   void AddRenameCallback(base::Closure callback);
@@ -238,13 +238,13 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
-    const net::NetLogWithSource& net_log,
+    uint32_t download_id,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        std::move(stream),
-                       net_log,
+                       download_id,
                        observer),
       owner_(owner) {}
 
@@ -297,14 +297,11 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<DownloadManager::InputStream> stream,
-    const net::NetLogWithSource& net_log,
+    uint32_t download_id,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  return new DownloadFileWithDelay(std::move(save_info),
-                                   default_download_directory,
-                                   std::move(stream),
-                                   net_log,
-                                   observer,
-                                   weak_ptr_factory_.GetWeakPtr());
+  return new DownloadFileWithDelay(
+      std::move(save_info), default_download_directory, std::move(stream),
+      download_id, observer, weak_ptr_factory_.GetWeakPtr());
 }
 
 void DownloadFileWithDelayFactory::AddRenameCallback(base::Closure callback) {
@@ -335,12 +332,12 @@ class CountingDownloadFile : public DownloadFileImpl {
   CountingDownloadFile(std::unique_ptr<DownloadSaveInfo> save_info,
                        const base::FilePath& default_downloads_directory,
                        std::unique_ptr<DownloadManager::InputStream> stream,
-                       const net::NetLogWithSource& net_log,
+                       uint32_t download_id,
                        base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
-                         net_log,
+                         download_id,
                          observer) {}
 
   ~CountingDownloadFile() override {
@@ -393,13 +390,11 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const net::NetLogWithSource& net_log,
+      uint32_t download_id,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
-                                    std::move(stream),
-                                    net_log,
-                                    observer);
+                                    std::move(stream), download_id, observer);
   }
 };
 
@@ -409,14 +404,14 @@ class ErrorInjectionDownloadFile : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const net::NetLogWithSource& net_log,
+      uint32_t download_id,
       base::WeakPtr<DownloadDestinationObserver> observer,
       int64_t error_stream_offset,
       int64_t error_stream_length)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
-                         net_log,
+                         download_id,
                          observer),
         error_stream_offset_(error_stream_offset),
         error_stream_length_(error_stream_length) {}
@@ -456,11 +451,11 @@ class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const net::NetLogWithSource& net_log,
+      uint32_t download_id,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     ErrorInjectionDownloadFile* download_file = new ErrorInjectionDownloadFile(
         std::move(save_info), default_download_directory, std::move(stream),
-        net_log, observer, injected_error_offset_, injected_error_length_);
+        download_id, observer, injected_error_offset_, injected_error_length_);
     // If the InjectError() is not called yet, memorize |download_file| and wait
     // for error to be injected.
     if (injected_error_offset_ < 0)

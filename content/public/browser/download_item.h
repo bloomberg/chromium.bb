@@ -84,6 +84,13 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
                                    // TARGET_DISPOSITION_OVERWRITE.
   };
 
+  // How download item is created. Used for trace event.
+  enum DownloadType {
+    TYPE_ACTIVE_DOWNLOAD,
+    TYPE_HISTORY_IMPORT,
+    TYPE_SAVE_PAGE_AS
+  };
+
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
 
