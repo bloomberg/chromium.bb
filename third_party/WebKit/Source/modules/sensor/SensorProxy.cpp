@@ -65,8 +65,7 @@ void SensorProxy::Initialize() {
   state_ = kInitializing;
   auto callback = ConvertToBaseCallback(
       WTF::Bind(&SensorProxy::OnSensorCreated, WrapWeakPersistent(this)));
-  provider_->GetSensorProvider()->GetSensor(type_, mojo::MakeRequest(&sensor_),
-                                            callback);
+  provider_->GetSensorProvider()->GetSensor(type_, std::move(callback));
 }
 
 void SensorProxy::AddConfiguration(SensorConfigurationPtr configuration,
@@ -165,8 +164,7 @@ void SensorProxy::HandleSensorError() {
   }
 }
 
-void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
-                                  SensorClientRequest client_request) {
+void SensorProxy::OnSensorCreated(SensorInitParamsPtr params) {
   DCHECK_EQ(kInitializing, state_);
   if (!params) {
     HandleSensorError();
@@ -183,8 +181,8 @@ void SensorProxy::OnSensorCreated(SensorInitParamsPtr params,
     return;
   }
 
-  DCHECK(sensor_.is_bound());
-  client_binding_.Bind(std::move(client_request));
+  sensor_ = std::move(params->sensor);
+  client_binding_.Bind(std::move(params->client_request));
 
   shared_buffer_handle_ = std::move(params->memory);
   DCHECK(!shared_buffer_);
