@@ -57,12 +57,12 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   }
 
   Node* FirstDistributedNode() const {
-    DCHECK(SupportsDistribution());
+    DCHECK(SupportsAssignment());
     return distributed_nodes_.IsEmpty() ? nullptr
                                         : distributed_nodes_.front().Get();
   }
   Node* LastDistributedNode() const {
-    DCHECK(SupportsDistribution());
+    DCHECK(SupportsAssignment());
     return distributed_nodes_.IsEmpty() ? nullptr
                                         : distributed_nodes_.back().Get();
   }
@@ -101,7 +101,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void ClearDistribution();
   void SaveAndClearDistribution();
 
-  bool SupportsDistribution() const { return IsInV1ShadowTree(); }
+  bool SupportsAssignment() const { return IsInV1ShadowTree(); }
 
   void CheckFallbackAfterInsertedIntoShadowTree();
   void CheckFallbackAfterRemovedFromShadowTree();

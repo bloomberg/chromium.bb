@@ -67,7 +67,7 @@ Node* FlatTreeTraversal::ResolveDistributionStartingAt(
                       ? sibling->nextSibling()
                       : sibling->previousSibling())) {
     if (auto* slot = ToHTMLSlotElementOrNull(*sibling)) {
-      if (slot->SupportsDistribution()) {
+      if (slot->SupportsAssignment()) {
         if (Node* found = (direction == kTraversalDirectionForward
                                ? slot->FirstDistributedNode()
                                : slot->LastDistributedNode()))
@@ -86,7 +86,7 @@ Node* FlatTreeTraversal::V0ResolveDistributionStartingAt(
     const Node& node,
     TraversalDirection direction) {
   DCHECK(!IsHTMLSlotElement(node) ||
-         !ToHTMLSlotElement(node).SupportsDistribution());
+         !ToHTMLSlotElement(node).SupportsAssignment());
   for (const Node* sibling = &node; sibling;
        sibling = (direction == kTraversalDirectionForward
                       ? sibling->nextSibling()
@@ -125,7 +125,7 @@ Node* FlatTreeTraversal::TraverseSiblings(const Node& node,
   // Slotted nodes are already handled in traverseSiblingsForV1HostChild()
   // above, here is for fallback contents.
   if (auto* slot = ToHTMLSlotElementOrNull(node.parentElement())) {
-    if (slot->SupportsDistribution() && slot->AssignedNodes().IsEmpty())
+    if (slot->SupportsAssignment() && slot->AssignedNodes().IsEmpty())
       return TraverseSiblings(*slot, direction);
   }
 
@@ -188,7 +188,7 @@ ContainerNode* FlatTreeTraversal::TraverseParent(
   }
 
   if (auto* slot = ToHTMLSlotElementOrNull(node.parentElement())) {
-    if (slot->SupportsDistribution()) {
+    if (slot->SupportsAssignment()) {
       if (!slot->AssignedNodes().IsEmpty())
         return nullptr;
       return TraverseParent(*slot, details);
