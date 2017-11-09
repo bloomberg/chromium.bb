@@ -10,6 +10,7 @@
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
+#include "services/resource_coordinator/resource_coordinator_clock.h"
 
 namespace resource_coordinator {
 
@@ -29,27 +30,25 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
   MAYBE_MetricsCollectorTest() : CoordinationUnitTestHarness() {}
 
   void SetUp() override {
-    clock_ = new base::SimpleTestTickClock();
+    MetricsCollector* metrics_collector = new MetricsCollector();
+    ResourceCoordinatorClock::SetClockForTesting(
+        std::make_unique<base::SimpleTestTickClock>());
+    clock_ = static_cast<base::SimpleTestTickClock*>(
+        ResourceCoordinatorClock::GetClockForTesting());
+
     // Sets a valid starting time.
     clock_->SetNowTicks(base::TimeTicks::Now());
-    MetricsCollector* metrics_collector = new MetricsCollector();
-    metrics_collector->SetClockForTest(clock_);
     coordination_unit_manager().RegisterObserver(
         base::WrapUnique(metrics_collector));
   }
 
-  void TearDown() override { clock_ = nullptr; }
+  void TearDown() override {
+    clock_ = nullptr;
+    ResourceCoordinatorClock::ResetClockForTesting();
+  }
 
  protected:
   void AdvanceClock(base::TimeDelta delta) { clock_->Advance(delta); }
-
-  TestCoordinationUnitWrapper<PageCoordinationUnitImpl>
-  CreatePageCoordinationUnitWithClock() {
-    auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
-    page_cu->SetClockForTest(
-        std::unique_ptr<base::SimpleTestTickClock>(clock_));
-    return page_cu;
-  }
 
   base::HistogramTester histogram_tester_;
   base::SimpleTestTickClock* clock_ = nullptr;
@@ -59,7 +58,7 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
 };
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -111,7 +110,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -133,7 +132,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
   page_cu->OnMainFrameNavigationCommitted();
@@ -166,7 +165,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
   page_cu->OnMainFrameNavigationCommitted();
@@ -183,7 +182,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -219,7 +218,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -240,7 +239,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -277,7 +276,7 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(
     MAYBE_MetricsCollectorTest,
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   auto frame_cu = CreateCoordinationUnit<FrameCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
   coordination_unit_manager().OnCoordinationUnitCreated(frame_cu.get());
@@ -297,7 +296,7 @@ TEST_F(
 }
 
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
   page_cu->OnMainFrameNavigationCommitted();
@@ -330,7 +329,7 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
 
 TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
-  auto page_cu = CreatePageCoordinationUnitWithClock();
+  auto page_cu = CreateCoordinationUnit<PageCoordinationUnitImpl>();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
   page_cu->OnMainFrameNavigationCommitted();

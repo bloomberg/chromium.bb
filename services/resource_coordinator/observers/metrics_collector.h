@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -55,8 +54,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
                             const mojom::Event event) override;
   void OnPageEventReceived(const PageCoordinationUnitImpl* page_cu,
                            const mojom::Event event) override;
-
-  void SetClockForTest(base::TickClock* test_clock);
 
  private:
   struct MetricsReportRecord {
@@ -112,10 +109,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(CoordinationUnitID cu_id);
 
-  // Note: |clock_| is always |&default_tick_clock_|, except during unit
-  // testing.
-  base::DefaultTickClock default_tick_clock_;
-  base::TickClock* const clock_;
   std::map<CoordinationUnitID, FrameData> frame_data_map_;
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
