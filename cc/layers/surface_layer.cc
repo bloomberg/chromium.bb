@@ -65,12 +65,17 @@ SurfaceLayer::~SurfaceLayer() {
 }
 
 void SurfaceLayer::SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info) {
+  if (primary_surface_info_ == surface_info)
+    return;
   primary_surface_info_ = surface_info;
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsCommit();
 }
 
 void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
+  if (fallback_surface_id_ == surface_id)
+    return;
+
   RemoveReference(std::move(fallback_reference_returner_));
   if (layer_tree_host())
     layer_tree_host()->RemoveSurfaceLayerId(fallback_surface_id_);
@@ -86,12 +91,16 @@ void SurfaceLayer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
 }
 
 void SurfaceLayer::SetDefaultBackgroundColor(SkColor background_color) {
+  if (default_background_color_ == background_color)
+    return;
   default_background_color_ = background_color;
   SetNeedsPushProperties();
 }
 
 void SurfaceLayer::SetStretchContentToFillBounds(
     bool stretch_content_to_fill_bounds) {
+  if (stretch_content_to_fill_bounds_ == stretch_content_to_fill_bounds)
+    return;
   stretch_content_to_fill_bounds_ = stretch_content_to_fill_bounds;
   SetNeedsPushProperties();
 }

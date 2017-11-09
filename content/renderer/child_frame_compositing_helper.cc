@@ -263,6 +263,9 @@ void ChildFrameCompositingHelper::ChildFrameGone() {
 
 void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
+  if (last_primary_surface_id_ == surface_info.id())
+    return;
+
   last_primary_surface_id_ = surface_info.id();
   float scale_factor = surface_info.device_scale_factor();
   // TODO(oshima): This is a stopgap fix so that the compositor does not
@@ -298,6 +301,9 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
 void ChildFrameCompositingHelper::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
+  if (fallback_surface_id_ == surface_info.id())
+    return;
+
   fallback_surface_id_ = surface_info.id();
   // The RWHV creates a destruction dependency on the surface that needs to be
   // satisfied. The reference factory will satisfy it when a new reference has
