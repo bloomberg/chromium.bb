@@ -143,6 +143,15 @@ Polymer({
     this.close();
     this.fire('open-configuring-printer-dialog');
   },
+
+  /**
+   * @param {?CupsPrinterInfo} selectedPrinter
+   * @return {boolean} Whether the add printer button is enabled.
+   * @private
+   */
+  canAddPrinter_: function(selectedPrinter) {
+    return !!selectedPrinter && !!selectedPrinter.printerName;
+  },
 });
 
 Polymer({
