@@ -617,6 +617,7 @@ The pre-CQ <b>rejected {bad_cl_precq_rejected} changes this week</b>, which woul
 
 <h2>CL handling times</h2>
 <p>
+(New!) See also <a href="http://shortn/_cN4FAtq4sP">CQ Weekly Summary Dashboard</a>.<br>
 The CL handling time was <b>{cl_handling_time_50:.2f} hours</b> 50%ile <b>{cl_handling_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_DfXfGnzqow">history</a>.<br>
 Time spent in the CQ was <b>{cq_time_50:.2f} hours</b> 50%ile <b>{cq_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_2yYTGswEKh">history</a>.<br>
 Time spent waiting was <b>{wait_time_50:.2f} hours</b> 50%ile <b>{wait_time_90:.2f} hours</b> 90%ile <a href="http://shortn/_e9vKXdSOjH">history</a>.<br>
