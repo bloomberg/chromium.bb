@@ -41,7 +41,7 @@ class COLOR_SPACE_EXPORT ICCProfile {
   bool operator!=(const ICCProfile& other) const;
 
   // Returns true if this profile was successfully parsed by SkICC.
-  bool IsValid() const;
+  bool IsValid() const { return is_valid_; }
 
 #if defined(OS_MACOSX)
   static ICCProfile FromCGColorSpace(CGColorSpaceRef cg_color_space);
@@ -52,12 +52,12 @@ class COLOR_SPACE_EXPORT ICCProfile {
 
   // Return a ColorSpace that references this ICCProfile. ColorTransforms
   // created using this ColorSpace will match this ICCProfile precisely.
-  const ColorSpace& GetColorSpace() const;
+  ColorSpace GetColorSpace() const;
 
   // Return a ColorSpace that is the best parametric approximation of this
   // ICCProfile. The resulting ColorSpace will reference this ICCProfile only
   // if the parametric approximation is almost exact.
-  const ColorSpace& GetParametricColorSpace() const;
+  ColorSpace GetParametricColorSpace() const;
 
   const std::vector<char>& GetData() const;
 
@@ -103,12 +103,7 @@ class COLOR_SPACE_EXPORT ICCProfile {
                                    size_t size,
                                    uint64_t id);
 
-  static AnalyzeResult ExtractColorSpaces(
-      const std::vector<char>& data,
-      gfx::ColorSpace* parametric_color_space,
-      float* parametric_tr_fn_max_error,
-      sk_sp<SkColorSpace>* useable_sk_color_space);
-
+  AnalyzeResult Initialize();
   void ComputeColorSpaceAndCache();
 
   // This globally identifies this ICC profile. It is used to look up this ICC
@@ -120,18 +115,27 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // The result of attepting to extract a color space from the color profile.
   AnalyzeResult analyze_result_ = kICCFailedToParse;
 
-  // |color_space| always links back to this ICC profile, and its SkColorSpace
-  // is always equal to the SkColorSpace created from this ICCProfile.
-  gfx::ColorSpace color_space_;
+  // True iff we can create a valid ColorSpace (and ColorTransform) from this
+  // object. The transform may be LUT-based (using an SkColorSpaceXform to
+  // compute the lut).
+  bool is_valid_ = false;
 
-  // |parametric_color_space_| will only link back to this ICC profile if it
-  // is accurate, and its SkColorSpace will always be parametrically created.
-  gfx::ColorSpace parametric_color_space_;
+  // True iff |to_XYZD50_| and |transfer_fn_| are accurate representations of
+  // the data in this profile. In this case ColorTransforms created from this
+  // profile will be analytic and not LUT-based.
+  bool is_parametric_ = false;
+
+  // Results of Skia parsing the ICC profile data.
+  sk_sp<SkColorSpace> sk_color_space_;
+
+  // The best-fit parametric primaries and transfer function.
+  SkMatrix44 to_XYZD50_;
+  SkColorSpaceTransferFn transfer_fn_;
 
   // The L-infinity error of the parametric color space fit. This is undefined
   // unless |analyze_result_| is kICCFailedToApproximateTrFnAccurately or
   // kICCExtractedMatrixAndApproximatedTrFn.
-  float parametric_tr_fn_error_ = -1;
+  float transfer_fn_error_ = 0;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
