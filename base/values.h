@@ -611,10 +611,6 @@ class BASE_EXPORT ListValue : public Value {
   // DEPRECATED, use GetList()::size() instead.
   size_t GetSize() const { return list_.size(); }
 
-  // Returns the capacity of storage for Values in this list.
-  // DEPRECATED, use GetList()::capacity() instead.
-  size_t capacity() const { return list_.capacity(); }
-
   // Returns whether the list is empty.
   // DEPRECATED, use GetList()::empty() instead.
   bool empty() const { return list_.empty(); }
