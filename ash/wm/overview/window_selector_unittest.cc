@@ -2612,4 +2612,56 @@ TEST_F(SplitViewWindowSelectorTest, OverviewUnsnappableIndicatorVisibility) {
   EXPECT_TRUE(unsnappable_selector_item->cannot_snap_label_view_->IsDrawn());
 }
 
+// Test that when splitview mode and overview mode are both active at the same
+// time, dragging divider behaviors are correct.
+TEST_F(SplitViewWindowSelectorTest, DragDividerToExitTest) {
+  UpdateDisplay("907x407");
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  ToggleOverview();
+
+  // Drag |window1| selector item to snap to left.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  // Test that overview mode and split view mode are both active.
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Drag the divider toward closing the snapped window.
+  gfx::Rect divider_bounds = GetSplitViewDividerBounds(false /* is_dragging */);
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  split_view_controller()->EndResize(gfx::Point(0, 0));
+
+  // Test that split view mode is ended. Overview mode is still active.
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Now drag |window2| selector item to snap to left.
+  WindowSelectorItem* selector_item2 =
+      GetWindowItemForWindow(grid_index, window2.get());
+  DragWindowTo(selector_item2, gfx::Point(0, 0));
+  // Test that overview mode and split view mode are both active.
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Drag the divider toward closing the overview window grid.
+  divider_bounds = GetSplitViewDividerBounds(false /*is_dragging=*/);
+  const gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  split_view_controller()->StartResize(divider_bounds.CenterPoint());
+  split_view_controller()->EndResize(display_bounds.bottom_right());
+
+  // Test that split view mode is ended. Overview mode is also ended. |window2|
+  // should be activated.
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+}
+
 }  // namespace ash

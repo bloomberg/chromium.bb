@@ -213,11 +213,8 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Adjust the bounds of the left or top snapped window during resizing when
   // its minimum size is larger than current window bounds to make sure it can
-  // be moved outside of the work area in this case. Note, no need to adjust
-  // when it is not during resizing since the window will not be snapped to a
-  // position that smaller than its minimum size.
-  void AdjustLeftOrTopSnappedWindowBoundsDuringResizing(
-      gfx::Rect* left_or_top_rect);
+  // be moved outside of the work area in this case.
+  void AdjustLeftOrTopSnappedWindowBounds(gfx::Rect* left_or_top_rect);
 
   // Returns the closest position ratio based on |distance| and |length|.
   float FindClosestPositionRatio(float distance, float length);
@@ -227,6 +224,10 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // be moved to |kOneThirdPositionRatio| or |kTwoThirdPositionRatio| depends
   // on the minimum size of current snapped windows.
   void GetDividerOptionalPositionRatios(std::vector<float>* positionRatios);
+
+  // Starts/Ends overview mode if the overview mode is inactive/active.
+  void StartOverview();
+  void EndOverview();
 
   // The current left/right snapped window.
   aura::Window* left_window_ = nullptr;
