@@ -53,7 +53,9 @@ class ExtensionHost : public DeferredStartRenderHost,
                 const GURL& url, ViewType host_type);
   ~ExtensionHost() override;
 
+  // This may be null if the extension has been or is being unloaded.
   const Extension* extension() const { return extension_; }
+
   const std::string& extension_id() const { return extension_id_; }
   content::WebContents* host_contents() const { return host_contents_.get(); }
   content::RenderViewHost* render_view_host() const;
