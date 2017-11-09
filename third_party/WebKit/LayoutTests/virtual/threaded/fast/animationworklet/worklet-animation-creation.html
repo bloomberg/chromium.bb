@@ -69,4 +69,18 @@ test(function() {
       'my-animation', [ effect, otherEffect ], document.timeline, options); };
   assert_throws('NotSupportedError', constructorFunc);
 }, 'If the effects are from different documents, object construction should fail');
+
+test(function() {
+  // TODO(crbug.com/781816): Allow KeyframeEffects with no target in AnimationWorklet.
+  let effect = CreateKeyframeEffect(null);
+  let effect2 = CreateKeyframeEffect(document.querySelector('#element'));
+
+  let constructorFunc = function() { new WorkletAnimation(
+      'my-animation', [ effect, effect2 ], document.timeline, {}); };
+  assert_throws('NotSupportedError', constructorFunc);
+
+  let constructorFunc2 = function() { new WorkletAnimation(
+      'my-animation', [ effect2, effect ], document.timeline, {}); };
+  assert_throws('NotSupportedError', constructorFunc2);
+}, 'If an effect has no target, object construction should fail');
 </script>

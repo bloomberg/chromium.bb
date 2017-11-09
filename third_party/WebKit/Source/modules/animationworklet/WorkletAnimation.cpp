@@ -24,6 +24,14 @@ bool ValidateEffects(const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
     return false;
   }
 
+  // TODO(crbug.com/781816): Allow using effects with no target.
+  for (const auto& effect : effects) {
+    if (!effect->Target()) {
+      error_string = "All effect targets must exist";
+      return false;
+    }
+  }
+
   Document& target_document = effects.at(0)->Target()->GetDocument();
   for (const auto& effect : effects) {
     if (effect->Target()->GetDocument() != target_document) {
