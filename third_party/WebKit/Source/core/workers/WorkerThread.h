@@ -171,6 +171,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return nullptr;
   }
 
+  // Can be called on both the main thread and the worker thread.
   scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType type) {
     return global_scope_scheduler_->GetTaskRunner(type);
   }
