@@ -151,6 +151,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   gfx::Rect PrewalkTree(Surface* surface,
                         bool in_moved_pixel_surface,
                         int parent_pass,
+                        bool will_draw,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
   void CopyPasses(const CompositorFrame& frame, Surface* surface);

@@ -26,6 +26,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_classic.h"
 #include "base/memory/ptr_util.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/chromeos/default_touch_transform_setter.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -169,6 +170,14 @@ ShellPortClassic::CreateAcceleratorController() {
       std::make_unique<AcceleratorControllerDelegateClassic>();
   return std::make_unique<AcceleratorController>(
       accelerator_controller_delegate_.get(), nullptr);
+}
+
+void ShellPortClassic::AddVideoDetectorObserver(
+    viz::mojom::VideoDetectorObserverPtr observer) {
+  aura::Env::GetInstance()
+      ->context_factory_private()
+      ->GetHostFrameSinkManager()
+      ->AddVideoDetectorObserver(std::move(observer));
 }
 
 }  // namespace ash

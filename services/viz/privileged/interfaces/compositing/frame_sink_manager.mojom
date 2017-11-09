@@ -14,6 +14,7 @@ import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "services/viz/public/interfaces/compositing/video_detector_observer.mojom";
 
 // The FrameSinkManager interface is a privileged interface that allows the
 // frame sink manager host (browser or window server) to create
@@ -82,6 +83,10 @@ interface FrameSinkManager {
   // Drops the temporary reference for |surface_id|. This will get called when
   // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.
   DropTemporaryReference(SurfaceId surface_id);
+
+  // Requests viz to notify |observer| whenever video activity is detected in
+  // one of the clients. See viz::VideoDetector.
+  AddVideoDetectorObserver(VideoDetectorObserver observer);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

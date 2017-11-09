@@ -81,6 +81,8 @@ void FrameSinkManagerImpl::RegisterFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   surface_manager_.RegisterFrameSinkId(frame_sink_id);
+  if (video_detector_)
+    video_detector_->OnFrameSinkIdRegistered(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::InvalidateFrameSinkId(
@@ -88,6 +90,8 @@ void FrameSinkManagerImpl::InvalidateFrameSinkId(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   compositor_frame_sinks_.erase(frame_sink_id);
   surface_manager_.InvalidateFrameSinkId(frame_sink_id);
+  if (video_detector_)
+    video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::SetFrameSinkDebugLabel(
@@ -421,6 +425,22 @@ void FrameSinkManagerImpl::SwitchActiveAggregatedHitTestRegionList(
     client_->SwitchActiveAggregatedHitTestRegionList(frame_sink_id,
                                                      active_handle_index);
   }
+}
+
+void FrameSinkManagerImpl::AddVideoDetectorObserver(
+    mojom::VideoDetectorObserverPtr observer) {
+  if (!video_detector_)
+    video_detector_ = std::make_unique<VideoDetector>(&surface_manager_);
+  video_detector_->AddObserver(std::move(observer));
+}
+
+VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
+    std::unique_ptr<base::TickClock> tick_clock,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  DCHECK(!video_detector_);
+  video_detector_ = std::make_unique<VideoDetector>(
+      surface_manager(), std::move(tick_clock), task_runner);
+  return video_detector_.get();
 }
 
 }  // namespace viz

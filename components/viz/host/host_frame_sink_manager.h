@@ -118,6 +118,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
                                 const FrameSinkId& owner);
   void DropTemporaryReference(const SurfaceId& surface_id);
 
+  // Asks viz to send updates regarding video activity to |observer|.
+  void AddVideoDetectorObserver(mojom::VideoDetectorObserverPtr observer);
+
   // CompositorFrameSinkSupportManager:
   std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
       mojom::CompositorFrameSinkClient* client,

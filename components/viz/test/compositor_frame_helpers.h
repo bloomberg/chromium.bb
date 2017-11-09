@@ -16,7 +16,7 @@ class CompositorFrame;
 namespace test {
 
 // Creates a valid CompositorFrame.
-CompositorFrame MakeCompositorFrame();
+CompositorFrame MakeCompositorFrame(const gfx::Size& size = gfx::Size(20, 20));
 
 // Creates a CompositorFrame that will be valid once its render_pass_list is
 // initialized.

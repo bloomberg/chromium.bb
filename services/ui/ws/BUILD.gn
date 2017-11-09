@@ -95,6 +95,8 @@ static_library("lib") {
     "user_id_tracker.cc",
     "user_id_tracker.h",
     "user_id_tracker_observer.h",
+    "video_detector_impl.cc",
+    "video_detector_impl.h",
     "window_coordinate_conversions.cc",
     "window_coordinate_conversions.h",
     "window_finder.cc",

@@ -16,6 +16,7 @@ mojom("interfaces") {
     "remote_event_dispatcher.mojom",
     "user_access_manager.mojom",
     "user_activity_monitor.mojom",
+    "video_detector.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
     "window_manager_window_tree_factory.mojom",

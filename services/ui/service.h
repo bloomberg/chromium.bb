@@ -31,6 +31,7 @@
 #include "services/ui/public/interfaces/remote_event_dispatcher.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
+#include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -177,6 +178,8 @@ class Service : public service_manager::Service,
 
   void BindRemoteEventDispatcherRequest(
       mojom::RemoteEventDispatcherRequest request);
+
+  void BindVideoDetectorRequest(mojom::VideoDetectorRequest request);
 
   std::unique_ptr<ws::WindowServer> window_server_;
   std::unique_ptr<PlatformEventSource> event_source_;
