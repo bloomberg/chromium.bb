@@ -64,9 +64,6 @@ QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
 // Congestion window gain for QUIC BBR during PROBE_BW phase.
 QUIC_FLAG(double, FLAGS_quic_bbr_cwnd_gain, 2.0f)
 
-// Allows one self address change.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_allow_one_address_change, false)
-
 // Support bandwidth resumption in QUIC BBR.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_bandwidth_resumption, true)
 
@@ -124,9 +121,6 @@ QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
 // or 1/8 RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, true)
 
-// If true, check for packet number underflow when reading ack blocks.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input, true)
-
 // If true, QUIC v40 is enabled which includes changes to RST_STREAM, ACK
 // and STREAM frames match IETF format.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_41, true)
@@ -140,7 +134,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_accept_random_ipn, false)
 
 // Report the more analogous TLS 1.3 cipher suites rather than TLS 1.2 ECDHE_RSA
 // ciphers in QuicDecrypters.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_tls13_cipher_suites, true)
 
 // If true, read and write QUIC version labels in network byte order.
 QUIC_FLAG(bool,
@@ -149,7 +143,7 @@ QUIC_FLAG(bool,
 
 // If true, send stateless reset token in SHLO. This token is used in IETF
 // public reset packet.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo, true)
 
 // Default enable all cubic fixes in QUIC Cubic by default.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes, true)
@@ -196,3 +190,6 @@ QUIC_FLAG(bool,
 // Explicitly send a connection close if the TLP count is greater than 0 when
 // idle timeout occurs.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_explicit_close_after_tlp, false)
+
+// Enables 3 new connection options to make PROBE_RTT more aggressive
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_less_probe_rtt, false)

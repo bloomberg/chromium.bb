@@ -93,4 +93,8 @@ bool QuicCryptoStream::ExportTokenBindingKeyingMaterial(string* result) const {
       /* context= */ "", 32, result);
 }
 
+void QuicCryptoStream::WriteCryptoData(const QuicStringPiece& data) {
+  WriteOrBufferData(data, /* fin */ false, /* ack_listener */ nullptr);
+}
+
 }  // namespace net

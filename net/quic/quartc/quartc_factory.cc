@@ -120,6 +120,16 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
   QuicConfig quic_config;
   quic_config.SetConnectionOptionsToSend(copt);
   quic_config.SetClientConnectionOptions(copt);
+  if (quartc_session_config.max_time_before_crypto_handshake_secs > 0) {
+    quic_config.set_max_time_before_crypto_handshake(
+        QuicTime::Delta::FromSeconds(
+            quartc_session_config.max_time_before_crypto_handshake_secs));
+  }
+  if (quartc_session_config.max_idle_time_before_crypto_handshake_secs > 0) {
+    quic_config.set_max_idle_time_before_crypto_handshake(
+        QuicTime::Delta::FromSeconds(
+            quartc_session_config.max_idle_time_before_crypto_handshake_secs));
+  }
   return std::unique_ptr<QuartcSessionInterface>(new QuartcSession(
       std::move(quic_connection), quic_config,
       quartc_session_config.unique_remote_server_id, perspective,

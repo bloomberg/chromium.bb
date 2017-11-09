@@ -196,7 +196,6 @@ void QuicSpdyStream::OnPromiseHeaderList(
   session()->connection()->CloseConnection(
       QUIC_INVALID_HEADERS_STREAM_DATA, "Promise headers received by server",
       ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  return;
 }
 
 void QuicSpdyStream::OnTrailingHeadersComplete(

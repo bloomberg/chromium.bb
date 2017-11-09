@@ -100,13 +100,16 @@ int QuicTlsAdapter::Read(char* out, int len) {
   if (len < 0) {
     return -1;
   }
+  if (read_buffer_.empty()) {
+    BIO_set_retry_read(bio());
+    return -1;
+  }
   if (len >= static_cast<int>(read_buffer_.length())) {
     len = read_buffer_.length();
   }
   memcpy(out, read_buffer_.data(), len);
   read_buffer_.erase(0, len);
-  QUIC_LOG(INFO) << "BIO_read: reading " << len << " bytes:\n"
-                 << QuicTextUtils::HexEncode(out, len);
+  QUIC_LOG(INFO) << "BIO_read: reading " << len << " bytes:\n";
   return len;
 }
 
@@ -114,8 +117,7 @@ int QuicTlsAdapter::Write(const char* in, int len) {
   if (len < 0) {
     return -1;
   }
-  QUIC_LOG(INFO) << "BIO_write: writing " << len << " bytes:\n"
-                 << QuicTextUtils::HexEncode(in, len);
+  QUIC_LOG(INFO) << "BIO_write: writing " << len << " bytes:\n";
   write_buffer_.append(in, len);
   return len;
 }

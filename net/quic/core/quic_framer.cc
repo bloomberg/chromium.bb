@@ -1364,10 +1364,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input &&
-      first_block_length > largest_acked + 1) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_sanitize_framer_addrange_input, 1,
-                      2);
+  if (first_block_length > largest_acked + 1) {
     set_detailed_error(QuicStrCat("Underflow with first ack block length ",
                                   first_block_length, " largest acked is ",
                                   largest_acked + 1, ".")
@@ -1391,10 +1388,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
         set_detailed_error("Unable to ack block length.");
         return false;
       }
-      if (FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input &&
-          first_received < gap + current_block_length) {
-        QUIC_FLAG_COUNT_N(quic_reloadable_flag_sanitize_framer_addrange_input,
-                          2, 2);
+      if (first_received < gap + current_block_length) {
         set_detailed_error(
             QuicStrCat("Underflow with ack block length ", current_block_length,
                        ", end of block is ", first_received - gap, ".")

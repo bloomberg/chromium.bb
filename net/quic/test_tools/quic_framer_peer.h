@@ -23,8 +23,6 @@ class QuicFramerPeer {
       QuicPacketNumber packet_number);
   static void SetLastSerializedConnectionId(QuicFramer* framer,
                                             QuicConnectionId connection_id);
-  static void SetLastPacketNumber(QuicFramer* framer,
-                                  QuicPacketNumber packet_number);
   static void SetLargestPacketNumber(QuicFramer* framer,
                                      QuicPacketNumber packet_number);
   static void SetPerspective(QuicFramer* framer, Perspective perspective);
@@ -34,8 +32,6 @@ class QuicFramerPeer {
   static void SwapCrypters(QuicFramer* framer1, QuicFramer* framer2);
 
   static QuicEncrypter* GetEncrypter(QuicFramer* framer, EncryptionLevel level);
-
-  static QuicPacketNumber GetLastPacketNumber(QuicFramer* framer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicFramerPeer);

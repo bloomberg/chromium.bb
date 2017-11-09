@@ -21,7 +21,6 @@
 using base::IntToString;
 using std::string;
 using testing::StrictMock;
-using testing::TestWithParam;
 
 namespace net {
 namespace test {

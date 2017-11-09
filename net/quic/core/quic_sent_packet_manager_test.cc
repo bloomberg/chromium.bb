@@ -16,10 +16,8 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 
 using testing::AnyNumber;
-using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Not;
-using testing::Pair;
 using testing::Pointwise;
 using testing::Return;
 using testing::StrictMock;

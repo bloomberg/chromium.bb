@@ -47,6 +47,11 @@ class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
     // congestion control algorithm chosen by QUIC.
     QuartcCongestionControl congestion_control =
         QuartcCongestionControl::kDefault;
+    // Timeouts for the crypto handshake. Set them to higher values to
+    // prevent closing the session before it started on a slow network.
+    // Zero entries are ignored and QUIC defaults are used in that case.
+    uint32_t max_idle_time_before_crypto_handshake_secs = 0;
+    uint32_t max_time_before_crypto_handshake_secs = 0;
   };
 
   virtual std::unique_ptr<QuartcSessionInterface> CreateQuartcSession(

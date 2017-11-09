@@ -103,7 +103,7 @@ class FakeProofSource : public ProofSource {
     QuicSocketAddress server_address_;
     std::string hostname_;
     uint16_t sig_alg_;
-    QuicStringPiece in_;
+    std::string in_;
     std::unique_ptr<ProofSource::SignatureCallback> callback_;
     ProofSource* delegate_;
   };

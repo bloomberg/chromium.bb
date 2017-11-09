@@ -162,6 +162,11 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   bool IsAtFullBandwidth() const;
   // Computes the target congestion window using the specified gain.
   QuicByteCount GetTargetCongestionWindow(float gain) const;
+  // The target congestion window during PROBE_RTT.
+  QuicByteCount ProbeRttCongestionWindow() const;
+  // Returns true if the current min_rtt should be kept and we should not enter
+  // PROBE_RTT immediately.
+  bool ShouldExtendMinRttExpiry() const;
 
   // Enters the STARTUP mode.
   void EnterStartupMode();
@@ -332,6 +337,19 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // If true, will not exit low gain mode until bytes_in_flight drops below BDP
   // or it's time for high gain mode.
   bool fully_drain_queue_;
+
+  // If true, use a CWND of 0.75*BDP during probe_rtt instead of 4 packets.
+  bool probe_rtt_based_on_bdp_;
+  // If true, skip probe_rtt and update the timestamp of the existing min_rtt to
+  // now if min_rtt over the last cycle is within 12.5% of the current min_rtt.
+  // Even if the min_rtt is 12.5% too low, the 25% gain cycling and 2x CWND gain
+  // should overcome an overly small min_rtt.
+  bool probe_rtt_skipped_if_similar_rtt_;
+  // If true, disable PROBE_RTT entirely as long as the connection was recently
+  // app limited.
+  bool probe_rtt_disabled_if_app_limited_;
+  bool app_limited_since_last_probe_rtt_;
+  QuicTime::Delta min_rtt_since_last_probe_rtt_;
 
   DISALLOW_COPY_AND_ASSIGN(BbrSender);
 };
