@@ -15,14 +15,17 @@ cr.define('extension_load_error_tests', function() {
    * @extends {extension_test_util.ClickMock}
    * @constructor
    */
-  function MockDelegate() {}
-
-  MockDelegate.prototype = {
-    __proto__: extension_test_util.ClickMock.prototype,
+  class MockDelegate extends TestBrowserProxy {
+    constructor() {
+      super(['retryLoadUnpacked']);
+    }
 
     /** @override */
-    retryLoadUnpacked: function() {},
-  };
+    retryLoadUnpacked(guid) {
+      this.methodCalled('retryLoadUnpacked', guid);
+      return Promise.resolve();
+    }
+  }
 
   suite('ExtensionLoadErrorTests', function() {
     /** @type {extensions.LoadError} */
@@ -59,13 +62,15 @@ cr.define('extension_load_error_tests', function() {
       loadError.show();
       expectTrue(isDialogVisible());
 
-      mockDelegate.testClickingCalls(
-          loadError.$$('.action-button'), 'retryLoadUnpacked', [fakeGuid]);
-      expectFalse(isDialogVisible());
+      MockInteractions.tap(loadError.$$('.action-button'));
+      return mockDelegate.whenCalled('retryLoadUnpacked').then(arg => {
+        expectEquals(fakeGuid, arg);
+        expectFalse(isDialogVisible());
 
-      loadError.show();
-      MockInteractions.tap(loadError.$$('.cancel-button'));
-      expectFalse(isDialogVisible());
+        loadError.show();
+        MockInteractions.tap(loadError.$$('.cancel-button'));
+        expectFalse(isDialogVisible());
+      });
     });
 
     test(assert(TestNames.CodeSection), function() {

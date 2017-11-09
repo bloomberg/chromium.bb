@@ -23,9 +23,6 @@
                  flattenhtml="true"
                  allowexternalscript="true"
                  type="chrome_html" />
-      <structure name="IDR_MD_EXTENSIONS_EXTENSIONS_JS"
-                 file="extensions.js"
-                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_CODE_SECTION_HTML"
                  file="code_section.html"
                  type="chrome_html" />

@@ -134,7 +134,7 @@ cr.define('extension_detail_view_tests', function() {
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
           item.$$('#extensions-options'), 'showItemOptionsPage',
-          [extensionData.id]);
+          [extensionData]);
       mockDelegate.testClickingCalls(
           item.$$('#remove-extension'), 'deleteItem', [extensionData.id]);
     });

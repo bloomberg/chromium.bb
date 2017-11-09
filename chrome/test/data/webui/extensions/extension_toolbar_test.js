@@ -8,22 +8,32 @@ cr.define('extension_toolbar_tests', function() {
    * A mock delegate for the toolbar.
    * @constructor
    * @implements {extensions.ToolbarDelegate}
-   * @extends {extension_test_util.ClickMock}
+   * @extends TestBrowserProxy
    */
-  function MockDelegate() {}
-
-  MockDelegate.prototype = {
-    __proto__: extension_test_util.ClickMock.prototype,
-
-    /** @override */
-    setProfileInDevMode: function(inDevMode) {},
-
-    /** @override */
-    loadUnpacked: function() {},
+  class MockDelegate extends TestBrowserProxy {
+    constructor() {
+      super([
+        'loadUnpacked',
+        'setProfileInDevMode',
+        'updateAllExtensions',
+      ]);
+    }
 
     /** @override */
-    updateAllExtensions: function() {},
-  };
+    loadUnpacked() {
+      this.methodCalled('loadUnpacked');
+      return Promise.resolve();
+    }
+
+    /** @override */
+    setProfileInDevMode(inDevMode) {
+      this.methodCalled('setProfileInDevMode', inDevMode);
+    }
+
+    updateAllExtensions() {
+      this.methodCalled('updateAllExtensions');
+    }
+  }
 
   /** @enum {string} */
   var TestNames = {
@@ -39,7 +49,8 @@ cr.define('extension_toolbar_tests', function() {
     var toolbar;
 
     setup(function() {
-      toolbar = document.querySelector('extensions-manager').toolbar;
+      toolbar = document.querySelector('extensions-manager').$$(
+          'extensions-toolbar');
       mockDelegate = new MockDelegate();
       toolbar.set('delegate', mockDelegate);
     });
@@ -66,19 +77,25 @@ cr.define('extension_toolbar_tests', function() {
       toolbar.set('inDevMode', true);
       Polymer.dom.flush();
 
-      mockDelegate.testClickingCalls(
-          toolbar.$['dev-mode'], 'setProfileInDevMode', [false]);
-      mockDelegate.testClickingCalls(
-          toolbar.$['dev-mode'], 'setProfileInDevMode', [true]);
-      mockDelegate.testClickingCalls(
-          toolbar.$$('#load-unpacked'), 'loadUnpacked', []);
-      mockDelegate.testClickingCalls(
-          toolbar.$$('#update-now'), 'updateAllExtensions', []);
-
-      var listener = new extension_test_util.ListenerMock();
-      listener.addListener(toolbar, 'pack-tap');
-      MockInteractions.tap(toolbar.$$('#pack-extensions'));
-      listener.verify();
+      MockInteractions.tap(toolbar.$['dev-mode']);
+      return mockDelegate.whenCalled('setProfileInDevMode').then(function(arg) {
+        assertFalse(arg);
+        mockDelegate.reset();
+        MockInteractions.tap(toolbar.$['dev-mode']);
+        return mockDelegate.whenCalled('setProfileInDevMode');
+      }).then(function(arg) {
+        assertTrue(arg);
+        MockInteractions.tap(toolbar.$$('#load-unpacked'));
+        return mockDelegate.whenCalled('loadUnpacked');
+      }).then(function() {
+        MockInteractions.tap(toolbar.$$('#update-now'));
+        return mockDelegate.whenCalled('updateAllExtensions');
+      }).then(function() {
+        var listener = new extension_test_util.ListenerMock();
+        listener.addListener(toolbar, 'pack-tap');
+        MockInteractions.tap(toolbar.$$('#pack-extensions'));
+        listener.verify();
+      });
     });
   });
 
