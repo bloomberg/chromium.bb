@@ -51,7 +51,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
-#include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
@@ -351,17 +350,17 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 
   PaintFlags flags;
   flags.setBlendMode(op);
+  flags.setFilterQuality(
+      static_cast<SkFilterQuality>(ImageInterpolationQuality()));
   canvas_->save();
-  SkRect source_bounds = src;
-  SkRect sk_bounds = dest;
-  SkMatrix transform;
-  transform.setRectToRect(source_bounds, sk_bounds, SkMatrix::kFill_ScaleToFit);
-  canvas_->concat(transform);
-  flags.setImageFilter(SkPictureImageFilter::MakeForLocalSpace(
-      ToSkPicture(record, source_bounds), source_bounds,
-      static_cast<SkFilterQuality>(ImageInterpolationQuality())));
-  canvas_->saveLayer(&source_bounds, &flags);
-  canvas_->restore();
+  canvas_->concat(
+      SkMatrix::MakeRectToRect(src, dest, SkMatrix::kFill_ScaleToFit));
+  canvas_->drawImage(PaintImageBuilder::WithDefault()
+                         .set_paint_record(record, RoundedIntRect(src),
+                                           PaintImage::GetNextContentId())
+                         .set_id(PaintImage::GetNextId())
+                         .TakePaintImage(),
+                     0, 0, &flags);
   canvas_->restore();
 }
 

@@ -2387,6 +2387,9 @@ crbug.com/678481 http/tests/devtools/appcache/appcache-manifest-with-non-existin
 crbug.com/678481 http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
 crbug.com/678481 virtual/mojo-loading/http/tests/devtools/appcache/appcache-iframe-manifests.html [ Timeout Failure Pass ]
 
+crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units-off-screen.html [ Skip ]
+crbug.com/782858 virtual/display_list_2d_canvas/fast/canvas/canvas-filter-units.html [ Skip ]
+
 crbug.com/701047 [ Mac10.12 ] editing/caret/caret-color.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/deleting/delete-at-paragraph-boundaries-011.html [ Failure ]
 crbug.com/701047 [ Mac10.12 ] editing/deleting/delete-line-001.html [ Failure ]
