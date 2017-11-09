@@ -27,23 +27,21 @@ namespace {
 // (ii)  Connection type of the network as reported by network
 //       change notifier (an enum).
 // (iii) Effective connection type of the network (an enum).
-static const size_t kMaxCacheSize = 10u;
+constexpr size_t kMaxCacheSize = 10u;
 
 // Parses |value| into a map of NetworkIDs and CachedNetworkQualities,
 // and returns the map.
 ParsedPrefs ConvertDictionaryValueToMap(const base::DictionaryValue* value) {
-  ParsedPrefs read_prefs;
-
   DCHECK_GE(kMaxCacheSize, value->size());
 
-  for (base::DictionaryValue::Iterator it(*value); !it.IsAtEnd();
-       it.Advance()) {
+  ParsedPrefs read_prefs;
+  for (const auto& it : value->DictItems()) {
     nqe::internal::NetworkID network_id =
-        nqe::internal::NetworkID::FromString(it.key());
+        nqe::internal::NetworkID::FromString(it.first);
 
     std::string effective_connection_type_string;
     const bool effective_connection_type_available =
-        it.value().GetAsString(&effective_connection_type_string);
+        it.second.GetAsString(&effective_connection_type_string);
     DCHECK(effective_connection_type_available);
 
     base::Optional<EffectiveConnectionType> effective_connection_type =
@@ -132,7 +130,7 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefSequence(
 
   // If the network ID contains a period, then return early since the dictionary
   // prefs cannot contain period in the path.
-  if (network_id_string.find(".") != std::string::npos)
+  if (network_id_string.find('.') != std::string::npos)
     return;
 
   prefs_->SetString(network_id_string,
@@ -143,20 +141,19 @@ void NetworkQualitiesPrefsManager::OnChangeInCachedNetworkQualityOnPrefSequence(
     // Delete one randomly selected value that has a key that is different from
     // |network_id|.
     DCHECK_EQ(kMaxCacheSize + 1, prefs_->size());
-    // Generate a random number between 0 and |kMaxCacheSize| -1 (both
-    // inclusive) since the number of network IDs in |prefs_| other than
-    // |network_id| is |kMaxCacheSize|.
+    // Generate a random number in the range [0, |kMaxCacheSize| - 1] since the
+    // number of network IDs in |prefs_| other than |network_id| is
+    // |kMaxCacheSize|.
     int index_to_delete = base::RandInt(0, kMaxCacheSize - 1);
 
-    for (base::DictionaryValue::Iterator it(*prefs_); !it.IsAtEnd();
-         it.Advance()) {
+    for (const auto& it : prefs_->DictItems()) {
       // Delete the kth element in the dictionary, not including the element
       // that represents the current network. k == |index_to_delete|.
-      if (nqe::internal::NetworkID::FromString(it.key()) == network_id)
+      if (nqe::internal::NetworkID::FromString(it.first) == network_id)
         continue;
 
       if (index_to_delete == 0) {
-        prefs_->RemovePath(it.key(), nullptr);
+        prefs_->RemoveKey(it.first);
         break;
       }
       index_to_delete--;
