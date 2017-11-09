@@ -7067,13 +7067,13 @@ I don't think this site should be blocked!
         Block
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOW_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies was created.">
-        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> allowed.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> allowed
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCK_RULE_CREATED" desc="A notification that is displayed when a content exception to block cookies was created.">
-        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> blocked.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> blocked
       </message>
       <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
-        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> will be cleared on exit.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> will be cleared on exit
       </message>
       <if expr="is_macosx">
         <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
