@@ -68,6 +68,7 @@ extern const char kShowStateValueNormal[];
 extern const char kShowStateValueMinimized[];
 extern const char kShowStateValueMaximized[];
 extern const char kShowStateValueFullscreen[];
+extern const char kShowStateValueLockedFullscreen[];
 extern const char kStatusValueComplete[];
 extern const char kStatusValueLoading[];
 extern const char kWindowTypeValueNormal[];
@@ -103,8 +104,8 @@ extern const char kInvalidWindowStateError[];
 extern const char kScreenshotsDisabled[];
 extern const char kCannotUpdateMuteDisabled[];
 extern const char kCannotUpdateMuteCaptured[];
-
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
+extern const char kMissingLockWindowFullscreenPrivatePermission[];
 
 };  // namespace tabs_constants
 };  // namespace extensions

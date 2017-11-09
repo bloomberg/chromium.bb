@@ -833,6 +833,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdentityPrivate);
   skip.insert(APIPermission::kInputMethodPrivate);
   skip.insert(APIPermission::kLanguageSettingsPrivate);
+  skip.insert(APIPermission::kLockWindowFullscreenPrivate);
   skip.insert(APIPermission::kMediaPlayerPrivate);
   skip.insert(APIPermission::kMediaPerceptionPrivate);
   skip.insert(APIPermission::kMediaRouterPrivate);

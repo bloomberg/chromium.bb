@@ -14181,7 +14181,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="ExtensionPermission3">
-<!-- Generated from extensions/common/permissions/api_permission.h -->
+<!-- Generated from extensions/common/permissions/api_permission.h.-->
 
   <int value="0" label="kInvalid"/>
   <int value="1" label="kUnknown"/>
@@ -14390,6 +14390,8 @@ Called by update_net_error_codes.py.-->
   <int value="204" label="kMediaPerceptionPrivate"/>
   <int value="205" label="kLockScreen"/>
   <int value="206" label="kNewTabPageOverride"/>
+  <int value="207" label="kDeclarativeNetRequest"/>
+  <int value="208" label="kLockWindowFullscreenPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
