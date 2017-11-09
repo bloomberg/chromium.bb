@@ -46,6 +46,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
+#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "net/base/load_states.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/features/features.h"
@@ -524,7 +525,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   RenderFrameHost* GetGuestByInstanceID(
       RenderFrameHost* render_frame_host,
       int browser_plugin_instance_id) override;
-  device::GeolocationContext* GetGeolocationContext() override;
+  device::mojom::GeolocationContext* GetGeolocationContext() override;
   device::mojom::WakeLockContext* GetWakeLockContext() override;
   device::mojom::WakeLock* GetRendererWakeLock() override;
 #if defined(OS_ANDROID)
@@ -1598,7 +1599,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Whether the last JavaScript dialog shown was suppressed. Used for testing.
   bool last_dialog_suppressed_;
 
-  std::unique_ptr<device::GeolocationContext> geolocation_context_;
+  device::mojom::GeolocationContextPtr geolocation_context_;
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 

@@ -18,6 +18,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "device/geolocation/public/interfaces/geolocation_context.mojom.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
@@ -36,10 +37,6 @@ class GURL;
 
 namespace IPC {
 class Message;
-}
-
-namespace device {
-class GeolocationContext;
 }
 
 namespace gfx {
@@ -204,7 +201,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       int browser_plugin_instance_id);
 
   // Gets the GeolocationContext associated with this delegate.
-  virtual device::GeolocationContext* GetGeolocationContext();
+  virtual device::mojom::GeolocationContext* GetGeolocationContext();
 
   // Gets the WakeLock that serves wake lock requests from the renderer.
   virtual device::mojom::WakeLock* GetRendererWakeLock();

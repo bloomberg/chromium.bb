@@ -9,6 +9,7 @@
         "device:input_service": [ "device::mojom::InputDeviceManager" ],
         "device:fingerprint": [ "device::mojom::Fingerprint" ],
         "device:generic_sensor": [ "device::mojom::SensorProvider" ],
+        "device:geolocation": [ "device::mojom::GeolocationContext" ],
         "device:nfc": [ "device::mojom::NFCProvider" ],
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
         "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
