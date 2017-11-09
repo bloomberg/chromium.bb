@@ -3847,6 +3847,26 @@
             ]
         }
     ],
+    "UseHeuristicLanguageModel": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "UseHeuristicLanguageModel"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseMojoAudioOutputStreamFactory": [
         {
             "platforms": [
