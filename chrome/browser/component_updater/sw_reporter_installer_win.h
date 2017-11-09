@@ -33,11 +33,12 @@ class ComponentUpdateService;
 
 constexpr char kSwReporterComponentId[] = "gkmgaooipdjhmangpemjhigmamcehddo";
 
-// These MUST match the values for SwReporterExperimentError in histograms.xml.
-// Exposed for testing.
-enum SwReporterExperimentError {
+// These MUST match the values for SoftwareReporterExperimentError in
+// histograms.xml. Exposed for testing.
+enum SoftwareReporterExperimentError {
   SW_REPORTER_EXPERIMENT_ERROR_BAD_TAG = 0,
   SW_REPORTER_EXPERIMENT_ERROR_BAD_PARAMS = 1,
+  SW_REPORTER_EXPERIMENT_ERROR_MISSING_PARAMS = 2,
   SW_REPORTER_EXPERIMENT_ERROR_MAX,
 };
 
