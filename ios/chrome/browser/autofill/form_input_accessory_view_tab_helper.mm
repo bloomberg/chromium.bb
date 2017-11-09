@@ -21,10 +21,11 @@ void FormInputAccessoryViewTabHelper::CreateForWebState(
     web::WebState* web_state,
     NSArray<id<FormInputAccessoryViewProvider>>* providers) {
   DCHECK(web_state);
-  DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(UserDataKey(),
-                         base::WrapUnique(new FormInputAccessoryViewTabHelper(
-                             web_state, providers)));
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new FormInputAccessoryViewTabHelper(
+                               web_state, providers)));
+  }
 }
 
 void FormInputAccessoryViewTabHelper::CloseKeyboard() {

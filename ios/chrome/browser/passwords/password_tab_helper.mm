@@ -21,9 +21,11 @@ void PasswordTabHelper::CreateForWebState(
     web::WebState* web_state,
     id<PasswordsUiDelegate> passwords_ui_delegate) {
   DCHECK(web_state);
-  DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(UserDataKey(), base::WrapUnique(new PasswordTabHelper(
-                                            web_state, passwords_ui_delegate)));
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new PasswordTabHelper(
+                               web_state, passwords_ui_delegate)));
+  }
 }
 
 void PasswordTabHelper::SetDispatcher(id<ApplicationCommands> dispatcher) {

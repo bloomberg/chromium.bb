@@ -21,10 +21,11 @@ void FormSuggestionTabHelper::CreateForWebState(
     web::WebState* web_state,
     NSArray<id<FormSuggestionProvider>>* providers) {
   DCHECK(web_state);
-  DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(
-      UserDataKey(),
-      base::WrapUnique(new FormSuggestionTabHelper(web_state, providers)));
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new FormSuggestionTabHelper(web_state, providers)));
+  }
 }
 
 id<FormInputAccessoryViewProvider>
