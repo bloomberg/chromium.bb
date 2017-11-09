@@ -25,10 +25,6 @@ Current patches:
     Commented out pkg-config checks for libopus since we use Chromium's
     copy.
 
-  libavcodec/avcodec.h
-    Don't deprecate avcodec_decode_audio4 and avcodec_decode_video2.
-    https://crbug.com/661350
-
   !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
