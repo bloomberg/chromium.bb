@@ -51,11 +51,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     WIDE_GAMUT_COLOR_SPIN,
     // Primaries defined by the primary matrix |custom_primary_matrix_|.
     CUSTOM,
-    // For color spaces defined by an ICC profile which cannot be represented
-    // parametrically. Any ColorTransform using this color space will use the
-    // ICC profile directly to compute a transform LUT.
-    ICC_BASED,
-    LAST = ICC_BASED,
+    LAST = CUSTOM,
   };
 
   enum class TransferID : uint8_t {
@@ -89,7 +85,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
     LINEAR_HDR,
     // A parametric transfer function defined by |custom_transfer_params_|.
     CUSTOM,
-    // See PrimaryID::ICC_BASED.
+    // For color spaces defined by an ICC profile which cannot be represented
+    // parametrically. Any ColorTransform using this color space will use the
+    // ICC profile directly to compute a transform LUT.
     ICC_BASED,
     LAST = ICC_BASED,
   };
@@ -209,6 +207,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
  private:
   void SetCustomTransferFunction(const SkColorSpaceTransferFn& fn);
+  void SetCustomPrimaries(const SkMatrix44& to_XYZD50);
 
   // Returns true if the transfer function is defined by an
   // SkColorSpaceTransferFn which is extended to all real values.

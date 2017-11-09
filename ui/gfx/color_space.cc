@@ -96,13 +96,18 @@ ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM,
                     ColorSpace::TransferID::CUSTOM, ColorSpace::MatrixID::RGB,
                     ColorSpace::RangeID::FULL);
-  for (int row = 0; row < 3; ++row) {
-    for (int col = 0; col < 3; ++col) {
-      result.custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
-    }
-  }
+  result.SetCustomPrimaries(to_XYZD50);
   result.SetCustomTransferFunction(fn);
   return result;
+}
+
+void ColorSpace::SetCustomPrimaries(const SkMatrix44& to_XYZD50) {
+  for (int row = 0; row < 3; ++row) {
+    for (int col = 0; col < 3; ++col) {
+      custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
+    }
+  }
+  primaries_ = PrimaryID::CUSTOM;
 }
 
 void ColorSpace::SetCustomTransferFunction(const SkColorSpaceTransferFn& fn) {
@@ -124,11 +129,7 @@ ColorSpace ColorSpace::CreateCustom(const SkMatrix44& to_XYZD50,
   DCHECK_NE(transfer_id, ColorSpace::TransferID::INVALID);
   ColorSpace result(ColorSpace::PrimaryID::CUSTOM, transfer_id,
                     ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
-  for (int row = 0; row < 3; ++row) {
-    for (int col = 0; col < 3; ++col) {
-      result.custom_primary_matrix_[3 * row + col] = to_XYZD50.get(row, col);
-    }
-  }
+  result.SetCustomPrimaries(to_XYZD50);
   return result;
 }
 
@@ -180,8 +181,7 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
       return false;
     }
   }
-  if (primaries_ == PrimaryID::ICC_BASED ||
-      transfer_ == TransferID::ICC_BASED) {
+  if (transfer_ == TransferID::ICC_BASED) {
     if (icc_profile_id_ != other.icc_profile_id_)
       return false;
   }
@@ -203,26 +203,25 @@ bool ColorSpace::FullRangeEncodedValues() const {
 }
 
 bool ColorSpace::IsParametric() const {
-  return primaries_ != PrimaryID::ICC_BASED &&
-         transfer_ != TransferID::ICC_BASED;
+  return transfer_ != TransferID::ICC_BASED;
 }
 
 ColorSpace ColorSpace::GetParametricApproximation() const {
+  ColorSpace result = *this;
+
+  if (!IsValid())
+    return result;
+
   // If this is parametric already, return it directly.
   if (IsParametric())
-    return *this;
+    return result;
 
-  // Query the ICC profile, if available, for the parametric approximation.
-  ICCProfile icc_profile;
-  if (icc_profile_id_ && GetICCProfile(&icc_profile)) {
-    return icc_profile.GetParametricColorSpace();
-  } else {
-    DLOG(ERROR)
-        << "Unable to acquire ICC profile for parametric approximation.";
-  }
-
-  // Fall back to sRGB if the ICC profile is no longer cached.
-  return CreateSRGB();
+  // If this is not parametric, replace the transfer function with the sRGB
+  // transfer function.
+  result.transfer_ = TransferID::IEC61966_2_1;
+  result.icc_profile_id_ = 0;
+  result.icc_profile_sk_color_space_ = nullptr;
+  return result;
 }
 
 bool ColorSpace::operator!=(const ColorSpace& other) const {
@@ -313,7 +312,6 @@ std::string ColorSpace::ToString() const {
     PRINT_ENUM_CASE(PrimaryID, ADOBE_RGB)
     PRINT_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
     PRINT_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
-    PRINT_ENUM_CASE(PrimaryID, ICC_BASED)
     case PrimaryID::CUSTOM:
       ss << "[";
       for (size_t i = 0; i < 3; ++i) {
@@ -584,7 +582,6 @@ void ColorSpace::GetPrimaryMatrix(SkMatrix44* to_XYZD50) const {
       return;
 
     case ColorSpace::PrimaryID::INVALID:
-    case ColorSpace::PrimaryID::ICC_BASED:
       to_XYZD50->setIdentity();
       return;
 
