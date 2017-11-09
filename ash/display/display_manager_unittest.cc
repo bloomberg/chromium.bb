@@ -3830,8 +3830,8 @@ TEST_F(MultiMirroringTest, HardwareMirrorMode) {
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
-  const int first_mirror_id = 11;
-  const int second_mirror_id = 12;
+  constexpr int first_mirror_id = 11;
+  constexpr int second_mirror_id = 12;
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 500, 500)));
@@ -3972,9 +3972,9 @@ TEST_F(MultiMirroringTest, SwitchToAndFromSoftwareMirrorMode) {
 }
 
 TEST_F(MultiMirroringTest, SourceAndDestinationInSoftwareMirrorMode) {
-  const int first_display_id = 10;
-  const int second_display_id = 11;
-  const int third_display_id = 12;
+  constexpr int first_display_id = 10;
+  constexpr int second_display_id = 11;
+  constexpr int third_display_id = 12;
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.emplace_back(
       CreateDisplayInfo(first_display_id, gfx::Rect(0, 0, 100, 100)));
@@ -4018,8 +4018,8 @@ TEST_F(MultiMirroringTest, CompositingCursorInMultiSoftwareMirroring) {
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
-  const int first_mirror_id = 11;
-  const int second_mirror_id = 12;
+  constexpr int first_mirror_id = 11;
+  constexpr int second_mirror_id = 12;
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(
       CreateDisplayInfo(internal_display_id, gfx::Rect(0, 0, 100, 100)));
@@ -4039,18 +4039,71 @@ TEST_F(MultiMirroringTest, CompositingCursorInMultiSoftwareMirroring) {
 
   // Turn on mirror mode, cursor compositing is enabled and cursor window is
   // composited in internal display's root window.
-  display_manager()->SetMirrorMode(true);
-  RunAllPendingInMessageLoop();
+  ActivateSoftwareMirrorMode(true);
   EXPECT_TRUE(cursor_window_controller->is_cursor_compositing_enabled());
   EXPECT_TRUE(Shell::GetRootWindowForDisplayId(internal_display_id)
                   ->Contains(test_api.GetCursorWindow()));
 
   // Turn off mirror mode, cursor compositing is disabled and cursor window does
   // not exist.
-  display_manager()->SetMirrorMode(false);
-  RunAllPendingInMessageLoop();
+  ActivateSoftwareMirrorMode(false);
   EXPECT_FALSE(cursor_window_controller->is_cursor_compositing_enabled());
   EXPECT_EQ(nullptr, test_api.GetCursorWindow());
+}
+
+TEST_F(MultiMirroringTest, RestoreMirrorMode) {
+  constexpr int64_t id1 = 1;
+  constexpr int64_t id2 = 2;
+  constexpr int64_t id3 = 3;
+  std::unique_ptr<display::DisplaySnapshot> snapshot1 =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(id1)
+          .SetNativeMode(MakeDisplayMode())
+          .Build();
+  std::unique_ptr<display::DisplaySnapshot> snapshot2 =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(id2)
+          .SetNativeMode(MakeDisplayMode())
+          .SetOrigin({0, 1000})
+          .Build();
+  std::unique_ptr<display::DisplaySnapshot> snapshot3 =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(id3)
+          .SetNativeMode(MakeDisplayMode())
+          .SetOrigin({0, 2000})
+          .Build();
+  snapshot1->set_current_mode(snapshot1->native_mode());
+  snapshot2->set_current_mode(snapshot2->native_mode());
+  snapshot3->set_current_mode(snapshot3->native_mode());
+  display::DisplayConfigurator::DisplayStateList outputs;
+  outputs.push_back(snapshot1.get());
+  outputs.push_back(snapshot2.get());
+  outputs.push_back(snapshot3.get());
+
+  // The default state for display id list is EXTENDED.
+  display::DisplayChangeObserver observer(Shell::Get()->display_configurator(),
+                                          display_manager());
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
+            observer.GetStateForDisplayIds(outputs));
+  observer.OnDisplayModeChanged(outputs);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+
+  // Turn on mirror mode. The mirror state is stored.
+  ActivateSoftwareMirrorMode(true);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+            observer.GetStateForDisplayIds(outputs));
+
+  // Remove one display and turn off mirror mode.
+  outputs.erase(outputs.end() - 1);
+  observer.OnDisplayModeChanged(outputs);
+  ActivateSoftwareMirrorMode(false);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+
+  // Add the display we removed before, the mirror mode is restored.
+  outputs.push_back(snapshot3.get());
+  observer.OnDisplayModeChanged(outputs);
+  EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
 }
 
 }  // namespace ash
