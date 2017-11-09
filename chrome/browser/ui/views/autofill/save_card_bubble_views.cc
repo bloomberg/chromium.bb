@@ -111,18 +111,15 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 }
 
 bool SaveCardBubbleViews::Accept() {
-  // The main content ViewStack for local save and happy-path upload save should
-  // only ever have 1 View on it. Upload save can have a second View if CVC
-  // needs to be requested. Assert that the ViewStack has no more than 2 Views
-  // and that if it *does* have 2, it's because CVC is being requested.
-  DCHECK_LE(view_stack_->size(), 2U);
-  DCHECK(view_stack_->size() == 1 || controller_->ShouldRequestCvcFromUser());
+  DCHECK(initial_step_ || controller_->ShouldRequestCvcFromUser());
   if (GetCurrentFlowStep() == UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD) {
-    // If user accepted upload but more info is needed, push the next view onto
-    // the stack and update the bubble.
+    // If user accepted upload but more info is needed, swap the content view
+    // and adjust the layout.
+    initial_step_ = false;
     DCHECK(controller_);
     controller_->ContinueToRequestCvcStage();
-    view_stack_->Push(CreateRequestCvcView(), /*animate=*/true);
+    RemoveAllChildViews(/*delete_children=*/true);
+    AddChildView(CreateRequestCvcView().release());
     GetWidget()->UpdateWindowTitle();
     GetWidget()->UpdateWindowIcon();
     // Disable the Save button until a valid CVC is entered:
@@ -284,18 +281,14 @@ SaveCardBubbleViews::CurrentFlowStep SaveCardBubbleViews::GetCurrentFlowStep()
   if (!controller_->ShouldRequestCvcFromUser())
     return UPLOAD_SAVE_ONLY_STEP;
   // Must be on the CVC fix flow on the upload path.
-  if (view_stack_->size() == 1)
+  if (initial_step_)
     return UPLOAD_SAVE_CVC_FIX_FLOW_STEP_1_OFFER_UPLOAD;
-  if (view_stack_->size() == 2)
-    return UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC;
-  // CVC fix flow should never have more than 3 views on the stack.
-  NOTREACHED();
-  return UNKNOWN_STEP;
+
+  return UPLOAD_SAVE_CVC_FIX_FLOW_STEP_2_REQUEST_CVC;
 }
 
-// Create view containing everything except for the footnote.
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
-  auto view = base::MakeUnique<views::View>();
+  std::unique_ptr<views::View> view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   view->SetLayoutManager(new views::BoxLayout(
@@ -355,7 +348,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 }
 
 std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
-  auto request_cvc_view = base::MakeUnique<views::View>();
+  auto request_cvc_view = std::make_unique<views::View>();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   request_cvc_view->SetLayoutManager(new views::BoxLayout(
@@ -397,11 +390,7 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateRequestCvcView() {
 
 void SaveCardBubbleViews::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical));
-  view_stack_ = new ViewStack();
-  view_stack_->SetBackground(views::CreateThemedSolidBackground(
-      view_stack_, ui::NativeTheme::kColorId_BubbleBackground));
-  view_stack_->Push(CreateMainContentView(), /*animate=*/false);
-  AddChildView(view_stack_);
+  AddChildView(CreateMainContentView().release());
 }
 
 }  // namespace autofill
