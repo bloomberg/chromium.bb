@@ -44,7 +44,7 @@ void U2fSign::TryDevice() {
   if (registered_keys_.size() == 0) {
     // Send registration (Fake enroll) if no keys were provided
     current_device_->Register(
-        kBogusAppParam, kBogusChallenge,
+        U2fRequest::GetBogusAppParam(), U2fRequest::GetBogusChallenge(),
         base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                    registered_keys_.cbegin()));
     return;
@@ -81,7 +81,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
         // No provided key was accepted by this device. Send registration
         // (Fake enroll) request to device.
         current_device_->Register(
-            kBogusAppParam, kBogusChallenge,
+            U2fRequest::GetBogusAppParam(), U2fRequest::GetBogusChallenge(),
             base::Bind(&U2fSign::OnTryDevice, weak_factory_.GetWeakPtr(),
                        registered_keys_.cbegin()));
       }

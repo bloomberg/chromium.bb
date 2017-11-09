@@ -168,7 +168,8 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
 std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateSign(
     const std::vector<uint8_t>& appid_digest,
     const std::vector<uint8_t>& challenge_digest,
-    const std::vector<uint8_t>& key_handle) {
+    const std::vector<uint8_t>& key_handle,
+    bool check_only) {
   if (appid_digest.size() != kAppIdDigestLen ||
       challenge_digest.size() != kChallengeDigestLen ||
       key_handle.size() > kMaxKeyHandleLength) {
@@ -181,7 +182,7 @@ std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateSign(
   data.push_back(static_cast<uint8_t>(key_handle.size()));
   data.insert(data.end(), key_handle.begin(), key_handle.end());
   command->set_ins(kInsU2fSign);
-  command->set_p1(kP1TupRequiredConsumed);
+  command->set_p1(check_only ? kP1CheckOnly : kP1TupRequiredConsumed);
   command->set_data(data);
   return command;
 }

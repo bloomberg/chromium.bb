@@ -31,9 +31,10 @@ void U2fDevice::Register(const std::vector<uint8_t>& app_param,
 void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
                      const std::vector<uint8_t>& challenge_param,
                      const std::vector<uint8_t>& key_handle,
-                     const MessageCallback& callback) {
-  std::unique_ptr<U2fApduCommand> sign_cmd =
-      U2fApduCommand::CreateSign(app_param, challenge_param, key_handle);
+                     const MessageCallback& callback,
+                     bool check_only) {
+  std::unique_ptr<U2fApduCommand> sign_cmd = U2fApduCommand::CreateSign(
+      app_param, challenge_param, key_handle, check_only);
   if (!sign_cmd) {
     callback.Run(U2fReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
     return;

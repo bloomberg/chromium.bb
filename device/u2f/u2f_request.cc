@@ -121,4 +121,16 @@ void U2fRequest::OnWaitComplete() {
   Transition();
 }
 
+// static
+const std::vector<uint8_t>& U2fRequest::GetBogusAppParam() {
+  static const std::vector<uint8_t> kBogusAppParam(32, 0x41);
+  return kBogusAppParam;
+}
+
+// static
+const std::vector<uint8_t>& U2fRequest::GetBogusChallenge() {
+  static const std::vector<uint8_t> kBogusChallenge(32, 0x42);
+  return kBogusChallenge;
+}
+
 }  // namespace device
