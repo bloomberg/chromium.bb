@@ -377,8 +377,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == eob - 1);
     tran_low_t v = tcoeff[scan[c]];
-    aom_write_cdf4(w, AOMMIN(abs(v), 3),
-                   ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4);
+    aom_write_symbol(w, AOMMIN(abs(v), 3),
+                     ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4);
 #else
     coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type);
     tran_low_t v = tcoeff[scan[c]];
@@ -473,8 +473,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #if CONFIG_LV_MAP_MULTI
       for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
         int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
-        aom_write_cdf4(w, k, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
-                       BR_CDF_SIZE);
+        aom_write_symbol(w, k, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
+                         BR_CDF_SIZE);
         if (k < BR_CDF_SIZE - 1) break;
       }
       if (base_range < COEFF_BASE_RANGE) continue;

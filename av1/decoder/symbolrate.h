@@ -41,16 +41,6 @@ static INLINE int av1_read_record_bin(FRAME_COUNTS *counts, aom_reader *r,
   return aom_read_bin(r, cdf, nsymbs, str);
 }
 
-#if CONFIG_LV_MAP_MULTI
-static INLINE int av1_read_record_symbol4(FRAME_COUNTS *counts, aom_reader *r,
-                                          aom_cdf_prob *cdf, int nsymbs,
-                                          const char *str) {
-  (void)str;
-  if (counts) ++counts->symbol_num[0];
-  return aom_read_symbol4(r, cdf, nsymbs, str);
-}
-#endif
-
 #endif
 
 static INLINE int av1_read_record(FRAME_COUNTS *counts, aom_reader *r, int prob,

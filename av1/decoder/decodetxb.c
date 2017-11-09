@@ -171,7 +171,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     (void)nz_map_count;
     int coeff_ctx =
         get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, c == *eob - 1);
-    int level = av1_read_record_symbol4(
+    int level = av1_read_record_symbol(
         counts, r, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][coeff_ctx], 4,
         ACCT_STR);
     levels[get_paded_idx(scan[c], bwl)] = level;
@@ -289,7 +289,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
 #if CONFIG_LV_MAP_MULTI
       for (idx = 0; idx < COEFF_BASE_RANGE / (BR_CDF_SIZE - 1); ++idx) {
-        int k = av1_read_record_symbol4(
+        int k = av1_read_record_symbol(
             counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
             BR_CDF_SIZE, ACCT_STR);
         *level += k;

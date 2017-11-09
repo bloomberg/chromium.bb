@@ -15,6 +15,14 @@
 #include <stddef.h>
 #include "av1/common/odintrin.h"
 
+#if CONFIG_LV_MAP_MULTI
+#define EC_PROB_SHIFT 6
+#define EC_MIN_PROB 4  // must be <= (1<<EC_PROB_SHIFT)/16
+#else
+#define EC_PROB_SHIFT 0
+#define EC_MIN_PROB 0
+#endif
+
 /*OPT: od_ec_window must be at least 32 bits, but if you have fast arithmetic
    on a larger type, you can speed up the decoder by using it here.*/
 typedef uint32_t od_ec_window;

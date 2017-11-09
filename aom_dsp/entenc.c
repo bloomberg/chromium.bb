@@ -147,7 +147,8 @@ void od_ec_enc_clear(od_ec_enc *enc) {
        one to be encoded.
   fh: 32768 minus the cumulative frequency of all symbols up to and including
        the one to be encoded.*/
-static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
+static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh, int s,
+                             int nsyms) {
   od_ec_window l;
   unsigned r;
   unsigned u;
@@ -157,13 +158,17 @@ static void od_ec_encode_q15(od_ec_enc *enc, unsigned fl, unsigned fh) {
   OD_ASSERT(32768U <= r);
   OD_ASSERT(fh < fl);
   OD_ASSERT(fl <= 32768U);
+  const int N = nsyms - 1;
   if (fl < 32768U) {
-    u = (r >> 8) * (uint32_t)fl >> 7;
-    v = (r >> 8) * (uint32_t)fh >> 7;
+    u = ((r >> 8) * (uint32_t)(fl >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+        EC_MIN_PROB * (N - (s - 1));
+    v = ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+        EC_MIN_PROB * (N - (s + 0));
     l += r - u;
     r = u - v;
   } else {
-    r -= (r >> 8) * (uint32_t)fh >> 7;
+    r -= ((r >> 8) * (uint32_t)(fh >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT)) +
+         EC_MIN_PROB * (N - (s + 0));
   }
   od_ec_enc_normalize(enc, l, r);
 #if OD_MEASURE_EC_OVERHEAD
@@ -184,7 +189,7 @@ void od_ec_encode_bool_q15(od_ec_enc *enc, int val, unsigned f) {
   l = enc->low;
   r = enc->rng;
   OD_ASSERT(32768U <= r);
-  v = (r >> 8) * (uint32_t)f >> 7;
+  v = ((r >> 8) * (uint32_t)(f >> EC_PROB_SHIFT) >> (7 - EC_PROB_SHIFT));
   if (val) l += r - v;
   r = val ? v : r - v;
   od_ec_enc_normalize(enc, l, r);
@@ -209,7 +214,7 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *icdf,
   OD_ASSERT(s >= 0);
   OD_ASSERT(s < nsyms);
   OD_ASSERT(icdf[nsyms - 1] == OD_ICDF(32768U));
-  od_ec_encode_q15(enc, s > 0 ? icdf[s - 1] : OD_ICDF(0), icdf[s]);
+  od_ec_encode_q15(enc, s > 0 ? icdf[s - 1] : OD_ICDF(0), icdf[s], s, nsyms);
 }
 
 /*Overwrites a few bits at the very start of an existing stream, after they
