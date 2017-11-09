@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/base/histograms.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -37,8 +38,6 @@ namespace {
 // if more items are locked. That is, locked items ignore this limit.
 // Depending on the memory state of the system, we limit the amount of items
 // differently.
-// TODO(vmpstr): UMA how many image we should keep around. This number seems
-// high.
 const size_t kNormalMaxItemsInCache = 1000;
 const size_t kThrottledMaxItemsInCache = 100;
 const size_t kSuspendedMaxItemsInCache = 0;
@@ -221,6 +220,11 @@ SoftwareImageDecodeCache::~SoftwareImageDecodeCache() {
       this);
   // Unregister this component with memory_coordinator::ClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      base::StringPrintf("Compositing.%s.CachedImagesCount.Software",
+                         GetClientNameForMetrics()),
+      lifetime_max_items_in_cache_, 1, 1000, 20);
 }
 
 ImageDecodeCache::TaskResult SoftwareImageDecodeCache::GetTaskForImageAndRef(
@@ -584,6 +588,8 @@ void SoftwareImageDecodeCache::DrawWithImageFinished(
 void SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit(size_t limit) {
   TRACE_EVENT0("cc",
                "SoftwareImageDecodeCache::ReduceCacheUsageUntilWithinLimit");
+  lifetime_max_items_in_cache_ =
+      std::max(lifetime_max_items_in_cache_, decoded_images_.size());
   for (auto it = decoded_images_.rbegin();
        decoded_images_.size() > limit && it != decoded_images_.rend();) {
     if (it->second->ref_count != 0) {
