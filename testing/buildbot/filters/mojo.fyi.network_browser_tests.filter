@@ -975,9 +975,6 @@
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
 
-# crbug.com/779121 The |url_chain_| contains one empty string at DownloadUrlSBClient::StartCheck().
--DownloadTest.SaveLinkAsReferrerPolicyOrigin
-
 # crbug.com/779153 DCHECK(browser->IsActive()) fails at GetAppMenuButton().
 -IncognitoWindowTrackerBrowserTest.ShowPromo
 
@@ -1008,7 +1005,6 @@
 -ReferrerPolicyTest.HttpsContextMenuRedirect
 
 # crbug.com/781565
--DownloadTest.DontCloseNewTab3
 -DownloadTest.CloseNewTab1
 -DownloadTest.CloseNewTab2
 -DownloadTest.CloseNewTab3
