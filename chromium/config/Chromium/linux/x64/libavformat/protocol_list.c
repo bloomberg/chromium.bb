@@ -1,2 +1,2 @@
-static const URLProtocol *url_protocols[] = {
+static const URLProtocol * const url_protocols[] = {
     NULL };

@@ -7,10 +7,6 @@ Current patches:
   .gitignore
     Has a "Chromium stuff" section.
 
-  compat/atomics/win32/stdatomic.h
-    Commented out atomic_compare_exchange_strong, since it doesn't compile and
-    isn't used.
-
   compat/msvcrt/{snprintf.c,snprintf.h}
   compat/{strtod.c,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
@@ -26,31 +22,13 @@ Current patches:
     Commented out a section that creates symlink for source_path. Using symlink
     causes windows builds to fail (cl.exe cant find the files).
 
-    Pinned older mipsel minimum ISA detection logic, including removal of
-    add_cflags "-mips64", which conflicts with --extra-cflags=-mips64r6 for
-    mips64el. In M56 roll, returned to previous logic here to prevent population
-    of CFLAGS etc with various -mips32r* which broke builds.
-
-    Turned off check for stdatomic.h, since it is banned in chromium.
-
     Commented out pkg-config checks for libopus since we use Chromium's
     copy.
-
-  libavcodec/avcodec.h
-    Don't deprecate avcodec_decode_audio4 and avcodec_decode_video2.
-    https://crbug.com/661350
 
   !!!SECURITY SENSITIVE ISSUE PLEASE VERIFY AFTER EACH FFMPEG ROLL!!!
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
-
-  libavcodec/libopusdec.c, libavcodec/opus.c
-    Changes to support ambisonic_channels.
-
-  libavformat/id3v2.c
-    Change to 'return' in read_chapter to 'goto end' to fix a minor memory leak.
-    crbug.com/689339
 
   libavformat/log.{c,h}
   libavformat/internal.{h}
@@ -67,9 +45,6 @@ Current patches:
     compile error C4114, since EbmlSyntax struct is already defined with const.
     TODO: push upstream.
 
-    Revert upstream 7a9db61da39fbfaa910c10c0719be595a7d06f3d to fix seeking with
-    text tracks.  crbug.com/681886 .
-
   libavformat/mp3dec.c
     Don't change the start_time in mp3_parse_info_tag as Chromium should handle
     it. https://crbug.com/504623
@@ -80,10 +55,6 @@ Current patches:
     See crbug.com/703965 (upstream patch discussion:
     http://ffmpeg.org/pipermail/ffmpeg-devel/2017-April/209953.html).
 
-  libavformat/utils.c
-    Locally disable deprecation warnings related to AVStream.codec access until
-    upstream stops using deprecated fields.
-
   libavformat/wavdec.c
     Exclude code blocks using #if to remove references to symbols not in our
     builds which some toolchains don't elide, for each of
@@ -92,12 +63,12 @@ Current patches:
   libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
 
-  libavutil/timer.h
-    C++11 compatability for string concatenation (http://crbug.com/454590).
-    Add spaces between string literals and tokens.
-
   libavutil/x86/x86inc.asm
     https://chromium-review.googlesource.com/#/c/272274/
     Fixes the conditionals on Linux so that these symbols are hidden and
     adds the Chromium-specific private_extern extension for hiding these
     symbols on OSX.
+
+  libavcodec/mips/aacdec_mips.c
+    update_ltp_mips() function fails to compile:
+        "error: couldn't allocate output register for constraint 'r'"

@@ -104,6 +104,7 @@ static int64_t wrap_timestamp(const AVStream *st, int64_t timestamp)
     return timestamp;
 }
 
+#if FF_API_FORMAT_GET_SET
 MAKE_ACCESSORS(AVStream, stream, AVRational, r_frame_rate)
 MAKE_ACCESSORS(AVStream, stream, char *, recommended_encoder_configuration)
 MAKE_ACCESSORS(AVFormatContext, format, AVCodec *, video_codec)
@@ -117,6 +118,7 @@ MAKE_ACCESSORS(AVFormatContext, format, av_format_control_message, control_messa
 FF_DISABLE_DEPRECATION_WARNINGS
 MAKE_ACCESSORS(AVFormatContext, format, AVOpenCallback, open_cb)
 FF_ENABLE_DEPRECATION_WARNINGS
+#endif
 #endif
 
 int64_t av_stream_get_end_pts(const AVStream *st)
@@ -215,10 +217,12 @@ static const AVCodec *find_probe_decoder(AVFormatContext *s, const AVStream *st,
     return codec;
 }
 
+#if FF_API_FORMAT_GET_SET
 int av_format_get_probe_score(const AVFormatContext *s)
 {
     return s->probe_score;
 }
+#endif
 
 /* an arbitrarily chosen "sane" max packet size -- 50M */
 #define SANE_CHUNK_SIZE (50000000)
@@ -612,6 +616,8 @@ int avformat_open_input(AVFormatContext **ps, const char *filename,
         if (!strcmp(s->iformat->name, "mp3") || !strcmp(s->iformat->name, "aac") ||
             !strcmp(s->iformat->name, "tta")) {
             if ((ret = ff_id3v2_parse_apic(s, &id3v2_extra_meta)) < 0)
+                goto fail;
+            if ((ret = ff_id3v2_parse_chapters(s, &id3v2_extra_meta)) < 0)
                 goto fail;
         } else
             av_log(s, AV_LOG_DEBUG, "demuxer does not support additional id3 data, skipping\n");
@@ -1675,13 +1681,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
             }
             st->inject_global_side_data = 0;
         }
-
-#if FF_API_LAVF_MERGE_SD
-FF_DISABLE_DEPRECATION_WARNINGS
-        if (!(s->flags & AVFMT_FLAG_KEEP_SIDE_DATA))
-            av_packet_merge_side_data(pkt);
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
     }
 
     av_opt_get_dict_val(s, "metadata", AV_OPT_SEARCH_CHILDREN, &metadata);
@@ -3880,12 +3879,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
         }
     }
 
-    // close codecs which were opened in try_decode_frame()
-    for (i = 0; i < ic->nb_streams; i++) {
-        st = ic->streams[i];
-        avcodec_close(st->internal->avctx);
-    }
-
     ff_rfps_calculate(ic);
 
     for (i = 0; i < ic->nb_streams; i++) {
@@ -4076,6 +4069,7 @@ find_stream_info_err:
         st = ic->streams[i];
         if (st->info)
             av_freep(&st->info->duration_error);
+        avcodec_close(ic->streams[i]->internal->avctx);
         av_freep(&ic->streams[i]->info);
         av_bsf_free(&ic->streams[i]->internal->extract_extradata.bsf);
         av_packet_free(&ic->streams[i]->internal->extract_extradata.pkt);
@@ -5249,13 +5243,8 @@ int ff_generate_avci_extradata(AVStream *st)
     return 0;
 }
 
-#if FF_API_NOCONST_GET_SIDE_DATA
-uint8_t *av_stream_get_side_data(AVStream *st,
-                                 enum AVPacketSideDataType type, int *size)
-#else
 uint8_t *av_stream_get_side_data(const AVStream *st,
                                  enum AVPacketSideDataType type, int *size)
-#endif
 {
     int i;
 
@@ -5533,14 +5522,9 @@ int avformat_transfer_internal_stream_timing_info(const AVOutputFormat *ofmt,
                                                   AVStream *ost, const AVStream *ist,
                                                   enum AVTimebaseSource copy_tb)
 {
-// Suppress deprecation warnings related to AVStream.codec access, deprecated in
-// M56 roll. TODO(wolenetz): Remove when upstream no longer uses deprecated
-// access.
-FF_DISABLE_DEPRECATION_WARNINGS
     //TODO: use [io]st->internal->avctx
     const AVCodecContext *dec_ctx = ist->codec;
     AVCodecContext       *enc_ctx = ost->codec;
-FF_ENABLE_DEPRECATION_WARNINGS
 
     enc_ctx->time_base = ist->time_base;
     /*

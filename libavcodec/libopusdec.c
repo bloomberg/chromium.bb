@@ -93,20 +93,17 @@ static av_cold int libopus_decode_init(AVCodecContext *avc)
             mapping = mapping_arr;
         }
     } else if (channel_map == 2) {
-        int ambisonic_channels;
-        if (avc->channels > 227) {
-            av_log(avc, AV_LOG_ERROR, "Too many channels\n");
-            return AVERROR_INVALIDDATA;
-        }
-
-        ambisonic_channels = ff_sqrt(avc->channels);
-        ambisonic_channels *= ambisonic_channels;
-        if (avc->channels != ambisonic_channels &&
-            avc->channels != ambisonic_channels + 2) {
+        int ambisonic_order = ff_sqrt(avc->channels) - 1;
+        if (avc->channels != (ambisonic_order + 1) * (ambisonic_order + 1) &&
+            avc->channels != (ambisonic_order + 1) * (ambisonic_order + 1) + 2) {
             av_log(avc, AV_LOG_ERROR,
                    "Channel mapping 2 is only specified for channel counts"
-                   " which can be written as n or n + 2 for nonnegative integer n,"
-                   " where n is the number of ambisonic channels.\n");
+                   " which can be written as (n + 1)^2 or (n + 2)^2 + 2"
+                   " for nonnegative integer n\n");
+            return AVERROR_INVALIDDATA;
+        }
+        if (avc->channels > 227) {
+            av_log(avc, AV_LOG_ERROR, "Too many channels\n");
             return AVERROR_INVALIDDATA;
         }
         avc->channel_layout = 0;

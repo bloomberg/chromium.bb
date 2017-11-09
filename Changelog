@@ -2,6 +2,14 @@ Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
 version <next>:
+- Bitstream filters for editing metadata in H.264, HEVC and MPEG-2 streams
+- Dropped support for OpenJPEG versions 2.0 and below. Using OpenJPEG now
+  requires 2.1 (or later) and pkg-config.
+- VDA dropped (use VideoToolbox instead)
+- MagicYUV encoder
+
+
+version 3.4:
 - deflicker video filter
 - doubleweave video filter
 - lumakey video filter
@@ -48,6 +56,12 @@ version <next>:
 - convolve video filter
 - VP9 tile threading support
 - KMS screen grabber
+- CUDA thumbnail filter
+- V4L2 mem2mem HW assisted codecs
+- Rockchip MPP hardware decoding
+- vmafmotion video filter
+- use MIME type "G726" for little-endian G.726, "AAL2-G726" for big-endian G.726
+
 
 version 3.3:
 - CrystalHD decoder moved to new decode API

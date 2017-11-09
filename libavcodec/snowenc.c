@@ -22,6 +22,7 @@
 #include "libavutil/libm.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
+#include "libavutil/pixdesc.h"
 #include "avcodec.h"
 #include "internal.h"
 #include "snow_dwt.h"
@@ -50,14 +51,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
        && (avctx->flags & AV_CODEC_FLAG_QSCALE)
        && avctx->global_quality == 0){
         av_log(avctx, AV_LOG_ERROR, "The 9/7 wavelet is incompatible with lossless mode.\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
-#if FF_API_MOTION_EST
-FF_DISABLE_DEPRECATION_WARNINGS
-    if (avctx->me_method == ME_ITER)
-        s->motion_est = FF_ME_ITER;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 
     s->spatial_decomposition_type= s->pred; //FIXME add decorrelator type r transform_type
 
@@ -107,8 +102,9 @@ FF_ENABLE_DEPRECATION_WARNINGS
             return AVERROR(ENOMEM);
     }
     if((avctx->flags&AV_CODEC_FLAG_PASS2) || !(avctx->flags&AV_CODEC_FLAG_QSCALE)){
-        if(ff_rate_control_init(&s->m) < 0)
-            return -1;
+        ret = ff_rate_control_init(&s->m);
+        if(ret < 0)
+            return ret;
     }
     s->pass1_rc= !(avctx->flags & (AV_CODEC_FLAG_QSCALE|AV_CODEC_FLAG_PASS2));
 
@@ -130,9 +126,15 @@ FF_ENABLE_DEPRECATION_WARNINGS
         break;*/
     default:
         av_log(avctx, AV_LOG_ERROR, "pixel format not supported\n");
-        return -1;
+        return AVERROR_PATCHWELCOME;
     }
-    avcodec_get_chroma_sub_sample(avctx->pix_fmt, &s->chroma_h_shift, &s->chroma_v_shift);
+
+    ret = av_pix_fmt_get_chroma_sub_sample(avctx->pix_fmt, &s->chroma_h_shift,
+                                           &s->chroma_v_shift);
+    if (ret) {
+        av_log(avctx, AV_LOG_ERROR, "pixel format invalid or unknown\n");
+        return ret;
+    }
 
     ff_set_cmp(&s->mecc, s->mecc.me_cmp, s->avctx->me_cmp);
     ff_set_cmp(&s->mecc, s->mecc.me_sub_cmp, s->avctx->me_sub_cmp);
@@ -833,7 +835,7 @@ static int encode_subband_c0run(SnowContext *s, SubBand *b, const IDWTELEM *src,
         for(y=0; y<h; y++){
             if(s->c.bytestream_end - s->c.bytestream < w*40){
                 av_log(s->avctx, AV_LOG_ERROR, "encoded frame too large\n");
-                return -1;
+                return AVERROR(ENOMEM);
             }
             for(x=0; x<w; x++){
                 int v, p=0;
@@ -1621,11 +1623,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         s->lambda = 0;
     }//else keep previous frame's qlog until after motion estimation
 
-    if (s->current_picture->data[0]
-#if FF_API_EMU_EDGE
-        && !(s->avctx->flags&CODEC_FLAG_EMU_EDGE)
-#endif
-        ) {
+    if (s->current_picture->data[0]) {
         int w = s->avctx->width;
         int h = s->avctx->height;
 
@@ -1678,11 +1676,6 @@ FF_ENABLE_DEPRECATION_WARNINGS
         s->m.b8_stride= 2*s->m.mb_width+1;
         s->m.f_code=1;
         s->m.pict_type = pic->pict_type;
-#if FF_API_MOTION_EST
-FF_DISABLE_DEPRECATION_WARNINGS
-        s->m.me_method= s->avctx->me_method;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
         s->m.motion_est= s->motion_est;
         s->m.me.scene_change_score=0;
         s->m.me.dia_size = avctx->dia_size;
