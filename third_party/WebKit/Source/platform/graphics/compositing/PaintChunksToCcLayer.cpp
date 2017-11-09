@@ -315,9 +315,9 @@ void ConversionContext::SwitchToEffect(
                   target_transform, current_transform_))));
     }
 
-    // TODO(chrishtr): specify origin of the filter.
-    FloatPoint filter_origin;
-    cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
+    FloatPoint filter_origin = sub_effect->PaintOffset();
+    if (filter_origin != FloatPoint())
+      cc_list_.push<cc::TranslateOp>(filter_origin.X(), filter_origin.Y());
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
@@ -325,7 +325,8 @@ void ConversionContext::SwitchToEffect(
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         sub_effect->Filter().AsCcFilterOperations(), empty));
     cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);
-    cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
+    if (filter_origin != FloatPoint())
+      cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
 
     cc_list_.EndPaintOfPairedBegin();
 

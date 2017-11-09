@@ -1,0 +1,23 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [0, 0, 450, 220],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='box'",
+          "rect": [0, 0, 450, 200],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ]
+}
+

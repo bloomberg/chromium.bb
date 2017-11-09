@@ -978,17 +978,6 @@ Bug(none) paint/invalidation/svg/use-detach.svg [ Failure ]
 Bug(none) paint/invalidation/window-resize-percent-html.html [ Failure ]
 
 # Different invalidation rect or corrupted rendering for filter and reflection.
-Bug(none) paint/invalidation/filter-invalidation-positioned-child.html [ Failure ]
-Bug(none) paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Failure ]
-Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-1.html [ Failure ]
-Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-2.html [ Failure ]
-Bug(none) paint/invalidation/filters/effect-reference-repaint-composite-5.html [ Failure ]
-Bug(none) paint/invalidation/filters/effect-reference-repaint-lighting.html [ Failure ]
-Bug(none) paint/invalidation/reflection-invalidation-after-display.html [ Failure ]
-Bug(none) paint/invalidation/reflection-invalidation-positioned-child.html [ Failure ]
-Bug(none) paint/invalidation/reflection-redraw.html [ Failure ]
-Bug(none) paint/invalidation/scroll-fixed-layer-with-reflection.html [ Failure ]
-Bug(none) paint/invalidation/scroll-fixed-reflected-layer.html [ Failure ]
 Bug(none) paint/invalidation/svg/filter-refresh.svg [ Failure ]
 Bug(none) paint/invalidation/svg/paintorder-filtered.svg [ Failure ]
 
