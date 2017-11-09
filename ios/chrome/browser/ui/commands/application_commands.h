@@ -82,9 +82,6 @@
 - (void)showAutofillSettingsFromViewController:
     (UIViewController*)baseViewController;
 
-// Shows the Save Passwords settings UI.
-- (void)showSavePasswordsSettings;
-
 // Shows the Report an Issue UI, presenting from |baseViewController|.
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController;
