@@ -19,6 +19,13 @@ import sys
 from optparse import OptionParser
 
 
+class SdkError(Exception):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
+
+
 def parse_version(version_str):
   """'10.6' => [10, 6]"""
   return map(int, re.findall(r'(\d+)', version_str))
@@ -54,6 +61,14 @@ def main():
     raise Exception('Error %d running xcode-select' % job.returncode)
   sdk_dir = os.path.join(
       out.rstrip(), 'Platforms/MacOSX.platform/Developer/SDKs')
+  # Xcode must be installed, its license agreement must be accepted, and its
+  # command-line tools must be installed. Stand-alone installations (in
+  # /Library/Developer/CommandLineTools) are not supported.
+  # https://bugs.chromium.org/p/chromium/issues/detail?id=729990#c1
+  if not os.path.isdir(sdk_dir) or not '.app/Contents/Developer' in sdk_dir:
+    raise SdkError('Install Xcode, launch it, accept the license ' +
+      'agreement, and run `sudo xcode-select -s /path/to/Xcode.app` ' +
+      'to continue.')
   sdks = [re.findall('^MacOSX(10\.\d+)\.sdk$', s) for s in os.listdir(sdk_dir)]
   sdks = [s[0] for s in sdks if s]  # [['10.5'], ['10.6']] => ['10.5', '10.6']
   sdks = [s for s in sdks  # ['10.5', '10.6'] => ['10.6']
