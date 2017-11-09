@@ -1436,6 +1436,7 @@ crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure Crash
 crbug.com/589265 images/color-profile-layer-filter.html [ Failure Crash ]
 crbug.com/589265 svg/text/text-layout-crash.html [ Failure ]
 crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure Crash ]
+crbug.com/589265 compositing/perspective-interest-rect.html [ Failure ]
 
 # Some work remains to fully support composited animation and scrolling.
 crbug.com/702350 transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
