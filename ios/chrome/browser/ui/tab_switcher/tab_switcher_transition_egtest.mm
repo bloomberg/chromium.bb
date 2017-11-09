@@ -94,14 +94,15 @@ void SelectTab(NSString* title) {
 }
 
 // net::EmbeddedTestServer handler that responds with the request's query as the
-// title.
+// title and body.
 std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
   http_response->set_content_type("text/html");
   http_response->set_content("<html><head><title>" + request.GetURL().query() +
-                             "</title></head></html>");
+                             "</title></head><body>" +
+                             request.GetURL().query() + "</body></html>");
   return std::move(http_response);
 }
 
@@ -186,13 +187,28 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
 // Tests exiting the switcher by tapping the switcher button.
 - (void)testLeaveSwitcherWithSwitcherButton {
+  NSString* tab1_title = @"NormalTab1";
+  [self setUpTestServer];
+
+  // Load a test URL in the current tab.
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
+
+  // Enter and leave the switcher.
   ShowTabSwitcher();
   ShowTabViewController();
+
+  // Verify that the original tab is visible again.
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)];
 }
 
 // Tests exiting the switcher by tapping the new tab button or selecting new tab
 // from the menu (on phone only).
 - (void)testLeaveSwitcherByOpeningNewNormalTab {
+  NSString* tab1_title = @"NormalTab1";
+  NSString* tab2_title = @"NormalTab2";
+  [self setUpTestServer];
+
   // Enter the switcher and open a new tab using the new tab button.
   ShowTabSwitcher();
   if (IsIPadIdiom()) {
@@ -204,18 +220,32 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
         performAction:grey_tap()];
   }
 
+  // Load a URL in this newly-created tab and verify that the tab is visible.
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)];
+
   if (!IsIPadIdiom()) {
     // On phone, enter the switcher again and open a new tab using the tools
     // menu.  This does not apply on tablet because there is no tools menu
     // in the switcher.
     ShowTabSwitcher();
     [ChromeEarlGreyUI openNewTab];
+
+    // Load a URL in this newly-created tab and verify that the tab is visible.
+    [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]];
+    [ChromeEarlGrey
+        waitForWebViewContainingText:base::SysNSStringToUTF8(tab2_title)];
   }
 }
 
 // Tests exiting the switcher by tapping the new incognito tab button or
 // selecting new incognito tab from the menu (on phone only).
 - (void)testLeaveSwitcherByOpeningNewIncognitoTab {
+  NSString* tab1_title = @"IncognitoTab1";
+  NSString* tab2_title = @"IncognitoTab2";
+  [self setUpTestServer];
+
   // Set up by creating a new incognito tab and closing all normal tabs.
   [ChromeEarlGreyUI openNewIncognitoTab];
   [GetNormalTabModel() closeAllTabs];
@@ -233,17 +263,31 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
         performAction:grey_tap()];
   }
 
+  // Load a URL in this newly-created tab and verify that the tab is visible.
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:tab1_title]];
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)];
+
   if (!IsIPadIdiom()) {
     // On phone, enter the switcher again and open a new incognito tab using the
     // tools menu.  This does not apply on tablet because there is no tools menu
     // in the switcher.
     ShowTabSwitcher();
     [ChromeEarlGreyUI openNewIncognitoTab];
+
+    // Load a URL in this newly-created tab and verify that the tab is visible.
+    [ChromeEarlGrey loadURL:[self makeURLForTitle:tab2_title]];
+    [ChromeEarlGrey
+        waitForWebViewContainingText:base::SysNSStringToUTF8(tab2_title)];
   }
 }
 
 // Tests exiting the switcher by opening a new tab in the other tab model.
 - (void)testLeaveSwitcherByOpeningTabInOtherMode {
+  NSString* normal_title = @"NormalTab";
+  NSString* incognito_title = @"IncognitoTab";
+  [self setUpTestServer];
+
   // Go from normal mode to incognito mode.
   ShowTabSwitcher();
   if (IsIPadIdiom()) {
@@ -257,6 +301,11 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
     [ChromeEarlGreyUI openNewIncognitoTab];
   }
 
+  // Load a URL in this newly-created tab and verify that the tab is visible.
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:incognito_title]];
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(incognito_title)];
+
   // Go from incognito mode to normal mode.
   ShowTabSwitcher();
   if (IsIPadIdiom()) {
@@ -267,6 +316,11 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
   } else {
     [ChromeEarlGreyUI openNewTab];
   }
+
+  // Load a URL in this newly-created tab and verify that the tab is visible.
+  [ChromeEarlGrey loadURL:[self makeURLForTitle:normal_title]];
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(normal_title)];
 }
 
 // Tests exiting the tab switcher by selecting a normal tab.
@@ -285,9 +339,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   ShowTabSwitcher();
   SelectTab(tab1_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)];
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab3_title)];
 }
 
 // Tests exiting the tab switcher by selecting an incognito tab.
@@ -308,9 +366,13 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   ShowTabSwitcher();
   SelectTab(tab1_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab1_title)];
 
   ShowTabSwitcher();
   SelectTab(tab3_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(tab3_title)];
 }
 
 // Tests exiting the tab switcher by selecting a tab in the other tab model.
@@ -342,6 +404,8 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
         performAction:grey_swipeFastInDirection(kGREYDirectionRight)];
   }
   SelectTab(normal_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(normal_title)];
 
   ShowTabSwitcher();
   if (IsIPadIdiom()) {
@@ -351,17 +415,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
         selectElementWithMatcher:TabletTabSwitcherIncognitoTabsPanelButton()]
         performAction:grey_tap()];
   } else {
-    // On phone, get to the incognito card stack by swiping left on the current
-    // normal card.
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(
-                                     grey_accessibilityLabel(normal_title),
-                                     grey_accessibilityTrait(
-                                         UIAccessibilityTraitStaticText),
-                                     nil)]
-        performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+    // On phone, get to the incognito card stack by tapping on the
+    // partially-visible incognito card.  It will need to be tapped a second
+    // time to actually select it.
+    SelectTab(incognito_title);
   }
   SelectTab(incognito_title);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:base::SysNSStringToUTF8(incognito_title)];
 }
 
 // Tests switching back and forth between the normal and incognito BVCs.
