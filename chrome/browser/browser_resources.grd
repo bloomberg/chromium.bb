@@ -66,12 +66,9 @@
         <structure name="IDR_WELCOME_JS" file="resources\welcome\welcome.js" type="chrome_html" preprocess="true"/>
       </if>
       <if expr="is_win">
-        <structure name="IDR_WELCOME_WIN10_INLINE_CSS" file="resources\welcome\win10\inline.css" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_INLINE_HTML" file="resources\welcome\win10\inline.html" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_INLINE_JS" file="resources\welcome\win10\inline.js" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_SECTIONED_CSS" file="resources\welcome\win10\sectioned.css" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_SECTIONED_HTML" file="resources\welcome\win10\sectioned.html" type="chrome_html" />
-        <structure name="IDR_WELCOME_WIN10_SECTIONED_JS" file="resources\welcome\win10\sectioned.js" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_CSS" file="resources\welcome\welcome_win10.css" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_HTML" file="resources\welcome\welcome_win10.html" type="chrome_html" />
+        <structure name="IDR_WELCOME_WIN10_JS" file="resources\welcome\welcome_win10.js" type="chrome_html" />
       </if>
     </structures>
     <includes>
@@ -617,10 +614,8 @@
         <include name="IDR_NACL_BROKER_MANIFEST" file="../../components/nacl/broker/nacl_broker_manifest.json" type="BINDATA" />
       </if>
       <if expr="is_win">
-        <include name="IDR_WELCOME_WIN10_DEFAULT_LARGE_WEBP" file="resources\welcome\win10\default-large.webp" type="BINDATA" />
-        <include name="IDR_WELCOME_WIN10_DEFAULT_SMALL_WEBP" file="resources\welcome\win10\default-small.webp" type="BINDATA" />
-        <include name="IDR_WELCOME_WIN10_PIN_LARGE_WEBP" file="resources\welcome\win10\pin-large.webp" type="BINDATA" />
-        <include name="IDR_WELCOME_WIN10_PIN_SMALL_WEBP" file="resources\welcome\win10\pin-small.webp" type="BINDATA" />
+        <include name="IDR_WELCOME_WIN10_DEFAULT_WEBP" file="resources\welcome\default.webp" type="BINDATA" />
+        <include name="IDR_WELCOME_WIN10_PIN_WEBP" file="resources\welcome\pin.webp" type="BINDATA" />
       </if>
       <include name="IDR_SSL_ERROR_ASSISTANT_PB" file="${root_gen_dir}/chrome/browser/resources/ssl/ssl_error_assistant/ssl_error_assistant.pb" use_base_dir="false" type="BINDATA" />
       <if expr="is_android or is_linux">
