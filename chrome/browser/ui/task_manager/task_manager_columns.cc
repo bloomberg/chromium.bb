@@ -41,8 +41,18 @@ const TableColumnData kColumns[] = {
      arraysize("800 MiB") * kCharWidth, -1, true, false, false},
 #endif
 
+// Make the CPU column min width a bit wider on macOS. When you click a column
+// to make it the primary sort column a caret appears to the right of the
+// column's label. Without a little extra space, the tableview squeezes the
+// caret in by tail-truncating the label, which looks terrible.
+#if defined(OS_MACOSX)
+    {IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+     arraysize("0099.9") * kCharWidth, -1, true, false, true},
+#else
     {IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      arraysize("99.9") * kCharWidth, -1, true, false, true},
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN)
     {IDS_TASK_MANAGER_CPU_TIME_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      arraysize("1234h 42m 30s") * kCharWidth, -1, true, false, false},
