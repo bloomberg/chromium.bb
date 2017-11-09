@@ -294,6 +294,8 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(GLES2Interface* impl) {
       gles_bind(&GLES2Interface::BindFragmentInputLocationCHROMIUM, impl);
   functions->fCoverageModulation =
       gles_bind(&GLES2Interface::CoverageModulationCHROMIUM, impl);
+  functions->fWindowRectangles =
+      gles_bind(&GLES2Interface::WindowRectanglesEXT, impl);
   return interface;
 }
 
