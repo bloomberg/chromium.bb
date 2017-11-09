@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8PaymentHandlerResponse.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/PaymentHandlerResponse.h"
 #include "modules/payments/PaymentHandlerUtils.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
@@ -48,6 +49,17 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
     return;
   }
 
+  // Check payment response validity.
+  if (!response.hasMethodName() || !response.hasDetails()) {
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
+                               "'PaymentHandlerResponse.methodName' and "
+                               "'PaymentHandlerResponse.details' must not "
+                               "be empty in payment response."));
+    OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
+    return;
+  }
+
   WebPaymentHandlerResponse web_data;
   web_data.method_name = response.methodName();
 
@@ -55,6 +67,10 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   if (!v8::JSON::Stringify(response.details().GetContext(),
                            response.details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kErrorMessageLevel,
+        "Failed to stringify PaymentHandlerResponse.details in payment "
+        "response."));
     OnResponseRejected(mojom::ServiceWorkerResponseError::kUnknown);
     return;
   }
