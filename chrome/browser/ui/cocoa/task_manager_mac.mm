@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/mac/bundle_locations.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -248,7 +249,14 @@ bool ShouldUseViewsTaskManager() {
   [[column.get() headerCell] setAlignment:textAlignment];
   [[column.get() dataCell] setAlignment:textAlignment];
 
-  NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
+  const CGFloat smallSystemFontSize = [NSFont smallSystemFontSize];
+  NSFont* font = nil;
+  if (@available(macOS 10.11, *)) {
+    font = [NSFont monospacedDigitSystemFontOfSize:smallSystemFontSize
+                                            weight:NSFontWeightRegular];
+  } else {
+    font = [NSFont systemFontOfSize:smallSystemFontSize];
+  }
   [[column.get() dataCell] setFont:font];
 
   [column.get() setHidden:!columnData.default_visibility];
@@ -320,7 +328,7 @@ bool ShouldUseViewsTaskManager() {
 
 // Callback for the table header context menu. Toggles visibility of the table
 // column associated with the clicked menu item.
-- (void)toggleColumn:(id)item {
+- (void)toggleColumn:(NSMenuItem*)item {
   DCHECK([item isKindOfClass:[NSMenuItem class]]);
   if (![item isKindOfClass:[NSMenuItem class]])
     return;
