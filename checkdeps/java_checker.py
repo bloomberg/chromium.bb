@@ -47,6 +47,8 @@ class JavaChecker(object):
 
   def _GetClassFullName(self, filepath):
     """Get the full class name of a file with package name."""
+    if not os.path.isfile(filepath):
+      return None
     with codecs.open(filepath, encoding='utf-8') as f:
       short_class_name, _ = os.path.splitext(os.path.basename(filepath))
       for line in f:
