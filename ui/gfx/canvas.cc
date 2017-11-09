@@ -9,7 +9,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "build/config/linux/pangocairo/features.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -35,13 +34,6 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
     : image_scale_(image_scale) {
   Size pixel_size = ScaleToCeiledSize(size, image_scale);
   canvas_ = CreateOwnedCanvas(pixel_size, is_opaque);
-
-#if !BUILDFLAG(USE_PANGOCAIRO)
-  // skia::PlatformCanvas instances are initialized to 0 by Cairo, but
-  // uninitialized on other platforms.
-  if (!is_opaque)
-    canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
-#endif
 
   SkScalar scale_scalar = SkFloatToScalar(image_scale);
   canvas_->scale(scale_scalar, scale_scalar);

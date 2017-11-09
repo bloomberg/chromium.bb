@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//device/vr/features/features.gni")
 import("//testing/test.gni")
@@ -219,7 +218,6 @@ component("gfx") {
       "skia_paint_util.cc",
       "skia_paint_util.h",
     ]
-    deps += [ "//build/config/linux/pangocairo:features" ]
   }
 
   configs += [
@@ -385,10 +383,6 @@ component("gfx") {
     configs += [ "//build/config/linux:x11" ]
   } else {
     sources -= [ "path_x11.cc" ]
-  }
-
-  if (use_pangocairo) {
-    configs += [ "//build/config/linux/pangocairo" ]
   }
 
   if (is_fuchsia) {
