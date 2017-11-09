@@ -44,7 +44,7 @@ typedef struct TileData {
   CFL_CTX cfl;
 #endif
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
-  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
 #if CONFIG_MRC_TX
   DECLARE_ALIGNED(16, uint8_t, mrc_mask[MAX_SB_SQUARE]);
 #endif  // CONFIG_MRC_TX
@@ -61,7 +61,7 @@ typedef struct TileWorkerData {
   CFL_CTX cfl;
 #endif
   FRAME_CONTEXT tctx;
-  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_SB_SQUARE]);
+  DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
 #if CONFIG_MRC_TX
   DECLARE_ALIGNED(16, uint8_t, mrc_mask[MAX_SB_SQUARE]);
 #endif  // CONFIG_MRC_TX

@@ -1389,7 +1389,7 @@ static INLINE int is_neighbor_overlappable(const MB_MODE_INFO *mbmi) {
 static INLINE int av1_allow_palette(int allow_screen_content_tools,
                                     BLOCK_SIZE sb_type) {
   return allow_screen_content_tools && sb_type >= BLOCK_8X8 &&
-         sb_type <= BLOCK_LARGEST;
+         sb_type <= BLOCK_64X64;
 }
 
 // Returns sub-sampled dimensions of the given block.

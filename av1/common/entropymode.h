@@ -38,14 +38,6 @@ extern "C" {
 // a value from 0 to 4 using 'palette_color_index_context_lookup' table.
 #define PALETTE_COLOR_INDEX_CONTEXTS 5
 
-// Maximum number of colors in a palette.
-#define PALETTE_MAX_SIZE 8
-// Minimum number of colors in a palette.
-#define PALETTE_MIN_SIZE 2
-
-// Palette mode is available for block sizes >= 8x8.
-#define PALETTE_BLOCK_SIZES (BLOCK_LARGEST - BLOCK_8X8 + 1)
-
 // Palette Y mode context for a block is determined by number of neighboring
 // blocks (top and/or left) using a palette for Y plane. So, possible Y mode'
 // context values are:
@@ -59,8 +51,6 @@ extern "C" {
 // 0 if this block doesn't use palette for Y plane.
 // 1 if this block uses palette for Y plane (i.e. Y palette size > 0).
 #define PALETTE_UV_MODE_CONTEXTS 2
-
-#define PALETTE_MAX_BLOCK_SIZE (64 * 64)
 
 #if CONFIG_KF_CTX
 #define KF_MODE_CONTEXTS 5

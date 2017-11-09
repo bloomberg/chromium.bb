@@ -110,8 +110,8 @@ typedef struct {
 } MvLimits;
 
 typedef struct {
-  uint8_t best_palette_color_map[MAX_SB_SQUARE];
-  float kmeans_data_buf[2 * MAX_SB_SQUARE];
+  uint8_t best_palette_color_map[MAX_PALETTE_SQUARE];
+  float kmeans_data_buf[2 * MAX_PALETTE_SQUARE];
 } PALETTE_BUFFER;
 
 typedef struct {

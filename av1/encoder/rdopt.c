@@ -3030,7 +3030,7 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
 #endif  // CONFIG_FILTER_INTRA
 
-    if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return 0;
+    if (rows * cols > MAX_PALETTE_SQUARE) return 0;
 
 #if CONFIG_PALETTE_DELTA_ENCODING
     uint16_t color_cache[2 * PALETTE_MAX_SIZE];
@@ -5118,7 +5118,7 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
   int plane_block_width, plane_block_height, rows, cols;
   av1_get_block_dimensions(bsize, 1, xd, &plane_block_width,
                            &plane_block_height, &rows, &cols);
-  if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return;
+  if (rows * cols > MAX_PALETTE_SQUARE) return;
 
   mbmi->uv_mode = UV_DC_PRED;
 #if CONFIG_FILTER_INTRA

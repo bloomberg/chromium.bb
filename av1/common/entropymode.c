@@ -1195,11 +1195,6 @@ const aom_cdf_prob
       { AOM_CDF7(23039, 27333, 30220, 30708, 31070, 31826) },
       { AOM_CDF7(13696, 18911, 23620, 25371, 29821, 31617) },
       { AOM_CDF7(12543, 20838, 27455, 28762, 29763, 31546) },
-#if CONFIG_EXT_PARTITION
-      { AOM_CDF7(12543, 20838, 27455, 28762, 29763, 31546) },
-      { AOM_CDF7(12543, 20838, 27455, 28762, 29763, 31546) },
-      { AOM_CDF7(12543, 20838, 27455, 28762, 29763, 31546) },
-#endif
     };
 
 const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
@@ -1214,26 +1209,24 @@ const aom_cdf_prob default_palette_uv_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(
   { AOM_CDF7(8576, 13585, 17632, 20884, 23948, 27152) },
   { AOM_CDF7(15360, 24200, 26978, 30846, 31409, 32545) },
   { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
-#if CONFIG_EXT_PARTITION
-  { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
-  { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
-  { AOM_CDF7(9216, 14276, 19043, 22689, 25799, 28712) },
-#endif
 };
 
 // When palette mode is enabled, following probability tables indicate the
 // probabilities to code the "is_palette" bit (i.e. the bit that indicates
 // if this block uses palette mode or DC_PRED mode).
-const aom_prob av1_default_palette_y_mode_prob
-    [PALETTE_BLOCK_SIZES][PALETTE_Y_MODE_CONTEXTS] = {
-      { 240, 180, 100 }, { 240, 180, 100 }, { 240, 180, 100 },
-      { 240, 180, 100 }, { 240, 180, 100 }, { 240, 180, 100 },
-      { 240, 180, 100 }, { 240, 180, 100 }, { 240, 180, 100 },
-      { 240, 180, 100 },
-#if CONFIG_EXT_PARTITION
-      { 240, 180, 100 }, { 240, 180, 100 }, { 240, 180, 100 },
-#endif  // CONFIG_EXT_PARTITION
-    };
+const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
+                                              [PALETTE_Y_MODE_CONTEXTS] = {
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                                { 240, 180, 100 },
+                                              };
 
 const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
   253, 229
@@ -1273,24 +1266,12 @@ const aom_cdf_prob default_palette_y_mode_cdf[PALETTE_BLOCK_SIZES]
                                                { { AOM_CDF2(128 * 240) },
                                                  { AOM_CDF2(128 * 180) },
                                                  { AOM_CDF2(128 * 100) } },
-#if CONFIG_EXT_PARTITION
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
-                                               { { AOM_CDF2(128 * 240) },
-                                                 { AOM_CDF2(128 * 180) },
-                                                 { AOM_CDF2(128 * 100) } },
-#endif  // CONFIG_EXT_PARTITION
                                              };
 
 const aom_cdf_prob
     default_palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)] = {
       { AOM_CDF2(128 * 253) }, { AOM_CDF2(128 * 229) }
     };
-
 #endif
 
 const aom_cdf_prob default_palette_y_color_index_cdf

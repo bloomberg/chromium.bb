@@ -840,9 +840,8 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+  assert(av1_allow_palette(cm->allow_screen_content_tools, bsize));
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-
-  assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
   const int block_palette_idx = bsize - BLOCK_8X8;
   int modev;
 

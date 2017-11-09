@@ -49,10 +49,12 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
 #endif
   }
 
-  for (i = 0; i < 2; ++i) {
-    CHECK_MEM_ERROR(
-        cm, ctx->color_index_map[i],
-        aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
+  if (num_pix <= MAX_PALETTE_SQUARE) {
+    for (i = 0; i < 2; ++i) {
+      CHECK_MEM_ERROR(
+          cm, ctx->color_index_map[i],
+          aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
+    }
   }
 #if CONFIG_MRC_TX
   CHECK_MEM_ERROR(cm, ctx->mrc_mask,
