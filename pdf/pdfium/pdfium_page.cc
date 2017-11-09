@@ -339,14 +339,14 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
       FPDF_DEST dest = FPDFAction_GetDest(engine_->doc(), action);
       if (dest)
         return GetDestinationTarget(dest, target);
-      // TODO(thestig): We don't fully support all types of the in-document
-      // links. Need to implement that. There is a bug to track that:
-      // https://crbug.com/55776
+      // TODO(crbug.com/55776): We don't fully support all types of the
+      // in-document links.
       return NONSELECTABLE_AREA;
     }
     case PDFACTION_URI:
       return GetURITarget(action, target);
-    // TODO(thestig): Support remaining types for https://crbug.com/55776
+    // TODO(crbug.com/767191): Support PDFACTION_LAUNCH.
+    // TODO(crbug.com/142344): Support PDFACTION_REMOTEGOTO.
     case PDFACTION_LAUNCH:
     case PDFACTION_REMOTEGOTO:
     default:
