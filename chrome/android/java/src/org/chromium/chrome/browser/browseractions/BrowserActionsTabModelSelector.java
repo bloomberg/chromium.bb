@@ -236,4 +236,12 @@ public class BrowserActionsTabModelSelector
         mTabSaver.destroy();
         sInstance = null;
     }
+
+    /**
+     * Add a {@link TabPersistentStoreObserver} to {@link TabPersistentStore}.
+     * @param observer The observer to add.
+     */
+    public void addTabPersistentStoreObserver(TabPersistentStoreObserver observer) {
+        mTabSaver.addObserver(observer);
+    }
 }

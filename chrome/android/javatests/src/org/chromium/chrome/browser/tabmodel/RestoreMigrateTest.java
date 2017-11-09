@@ -49,7 +49,8 @@ public class RestoreMigrateTest {
                 new Callable<byte[]>() {
                     @Override
                     public byte[] call() throws Exception {
-                        return TabPersistentStore.serializeTabModelSelector(selector, null);
+                        return TabPersistentStore.serializeTabModelSelector(selector, null)
+                                .listData;
                     }
                 });
         File f = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
