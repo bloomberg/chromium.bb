@@ -118,6 +118,10 @@ void WebUIImpl::OnWebUISend(RenderFrameHost* sender,
     return;
   }
 
+  // Ignore IPCs from swapped-out frames.  See also https://crbug.com/780920.
+  if (!sender->IsCurrent())
+    return;
+
   ProcessWebUIMessage(source_url, message, args);
 }
 
