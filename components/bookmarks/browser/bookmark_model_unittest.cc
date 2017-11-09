@@ -25,6 +25,7 @@
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -1198,6 +1199,24 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURLSkipsManagedNodes) {
   const BookmarkNode* managed = model_->AddURL(managed_parent, 0, title, url);
   EXPECT_GE(managed->date_added(), user->date_added());
   EXPECT_EQ(user, model_->GetMostRecentlyAddedUserNodeForURL(url));
+}
+
+// Verifies that renaming a bookmark folder does not add the folder node to the
+// autocomplete index. crbug.com/778266
+TEST_F(BookmarkModelTest, RenamedFolderNodeExcludedFromIndex) {
+  // Add a folder.
+  const BookmarkNode* folder =
+      model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("MyFavorites"));
+
+  // Change the folder title.
+  model_->SetTitle(folder, ASCIIToUTF16("MyBookmarks"));
+
+  // There should be no matching bookmarks.
+  std::vector<TitledUrlMatch> matches;
+  model_->GetBookmarksMatching(ASCIIToUTF16("MyB"), /*max_count = */ 1,
+                               query_parser::MatchingAlgorithm::DEFAULT,
+                               &matches);
+  EXPECT_TRUE(matches.empty());
 }
 
 TEST(BookmarkNodeTest, NodeMetaInfo) {
