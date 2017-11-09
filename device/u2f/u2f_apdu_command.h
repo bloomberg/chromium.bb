@@ -53,10 +53,14 @@ class U2fApduCommand {
   static std::unique_ptr<U2fApduCommand> CreateVersion();
   // Early U2F drafts defined a non-ISO 7816-4 conforming layout.
   static std::unique_ptr<U2fApduCommand> CreateLegacyVersion();
+
+  // Returns an APDU command for sign(). If optional parameter |check_only| is
+  // set to true, then control byte is set to 0X07.
   static std::unique_ptr<U2fApduCommand> CreateSign(
       const std::vector<uint8_t>& appid_digest,
       const std::vector<uint8_t>& challenge_digest,
-      const std::vector<uint8_t>& key_handle);
+      const std::vector<uint8_t>& key_handle,
+      bool check_only = false);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeBasic);
@@ -88,7 +92,10 @@ class U2fApduCommand {
   static constexpr uint8_t kP1TupConsumed = 0x02;
   static constexpr uint8_t kP1TupRequiredConsumed =
       kP1TupRequired | kP1TupConsumed;
-
+  // Control byte used for check-only setting. The check-only command is used to
+  // determine if the provided key handle was originally created by this token
+  // and whether it was created for the provided application parameter.
+  static constexpr uint8_t kP1CheckOnly = 0x07;
   static constexpr size_t kMaxKeyHandleLength = 255;
   static constexpr size_t kChallengeDigestLen = 32;
   static constexpr size_t kAppIdDigestLen = 32;

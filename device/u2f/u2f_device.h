@@ -47,7 +47,9 @@ class U2fDevice {
   void Sign(const std::vector<uint8_t>& appid_digest,
             const std::vector<uint8_t>& challenge_digest,
             const std::vector<uint8_t>& key_handle,
-            const MessageCallback& callback);
+            const MessageCallback& callback,
+            bool check_only = false);
+
   virtual void TryWink(const WinkCallback& callback) = 0;
   virtual std::string GetId() const = 0;
 
