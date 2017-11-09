@@ -450,6 +450,12 @@ cast_executable("cast_shell") {
 if (is_fuchsia) {
   fuchsia_executable_runner("cast_shell_fuchsia") {
     exe_target = ":cast_shell"
+
+    if (chromecast_branding != "public") {
+      data_deps = [
+        "//chromecast/internal:fuchsia_internal_data_deps",
+      ]
+    }
   }
 }
 
