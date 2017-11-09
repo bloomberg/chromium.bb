@@ -350,23 +350,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
-   * Selects text starting from |selectFrom| in the specified field.
-   * @param {string} formName The name of the form to select in.
-   * @param {string} fieldName The name of the field to select in.
-   * @param {number} selectFrom The starting index for selection.
-   * @return {boolean} Whether the operation was successful.
-   */
-  __gCrWeb['selectText'] = function(formName, fieldName, selectFrom) {
-    var form = __gCrWeb.common.getFormElementFromIdentifier(formName);
-    var el = __gCrWeb.getElementByNameWithParent(form, fieldName);
-    if (!el)
-      return false;
-    el.selectionStart = selectFrom;
-    el.selectionEnd = el.value.length;
-    return true;
-  };
-
-  /**
    * Fills all password fields in the form identified by |formName|
    * with |password| and marks them as autofilled.
    *
