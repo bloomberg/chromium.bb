@@ -60,7 +60,9 @@ DownloadResponseHandler::DownloadResponseHandler(
       referrer_(resource_request->referrer),
       is_transient_(is_transient),
       fetch_error_body_(fetch_error_body),
-      has_strong_validators_(false) {
+      has_strong_validators_(false),
+      is_partial_request_(save_info_->offset > 0),
+      abort_reason_(DOWNLOAD_INTERRUPT_REASON_NONE) {
   if (!is_parallel_request)
     RecordDownloadCount(UNTHROTTLED_COUNT);
   if (resource_request->request_initiator.has_value())
@@ -136,7 +138,15 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
 
 void DownloadResponseHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const content::ResourceResponseHead& head) {
+    const ResourceResponseHead& head) {
+  if (is_partial_request_) {
+    // A redirect while attempting a partial resumption indicates a potential
+    // middle box. Trigger another interruption so that the DownloadItem can
+    // retry.
+    abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
+    OnComplete(ResourceRequestCompletionStatus(net::OK));
+    return;
+  }
   url_chain_.push_back(redirect_info.new_url);
   method_ = redirect_info.new_method;
   referrer_ = GURL(redirect_info.new_referrer);
@@ -170,10 +180,10 @@ void DownloadResponseHandler::OnStartLoadingResponseBody(
 }
 
 void DownloadResponseHandler::OnComplete(
-    const content::ResourceRequestCompletionStatus& completion_status) {
+    const ResourceRequestCompletionStatus& completion_status) {
   DownloadInterruptReason reason = HandleRequestCompletionStatus(
       static_cast<net::Error>(completion_status.error_code),
-      has_strong_validators_, cert_status_, DOWNLOAD_INTERRUPT_REASON_NONE);
+      has_strong_validators_, cert_status_, abort_reason_);
 
   if (client_ptr_) {
     client_ptr_->OnStreamCompleted(

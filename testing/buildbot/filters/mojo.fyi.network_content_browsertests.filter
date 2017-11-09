@@ -18,7 +18,6 @@
 # http://crbug.com/715630
 -DownloadContentTest.CookiePolicy
 -DownloadContentTest.DownloadAttributeSameSiteCookie
--DownloadContentTest.RedirectWhileResume
 # This started failing when the test got added in r514724.
 -DownloadContentTest.ForceDownloadMhtml
 -DragDownloadFileTest.DragDownloadFileTest_Complete
