@@ -152,8 +152,18 @@ public class AwAutofillProvider extends AutofillProvider {
         public AutofillValue getFieldNewValue(int index) {
             FormFieldData field = mFormData.mFields.get(index);
             if (field == null) return null;
-            String value = field.getValue();
-            return AutofillValue.forText(value);
+            switch (field.getControlType()) {
+                case FormFieldData.TYPE_LIST:
+                    int i = findIndex(field.mOptionValues, field.getValue());
+                    if (i == -1) return null;
+                    return AutofillValue.forList(i);
+                case FormFieldData.TYPE_TOGGLE:
+                    return AutofillValue.forToggle(field.isChecked());
+                case FormFieldData.TYPE_TEXT:
+                    return AutofillValue.forText(field.getValue());
+                default:
+                    return null;
+            }
         }
 
         public int getVirtualId(short index) {
