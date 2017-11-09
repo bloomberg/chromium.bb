@@ -497,9 +497,7 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
 
 void AccumulateWithNestedLoop(MessageAccumulator* accumulator,
                               const base::Closure& closure) {
-  base::RunLoop nested_run_loop;
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
+  base::RunLoop nested_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   accumulator->set_closure(nested_run_loop.QuitClosure());
   nested_run_loop.Run();
   closure.Run();
