@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -180,26 +181,22 @@ void PdfPrinterHandler::StartPrint(
   if (!print_to_pdf_path_.empty()) {
     // User has already selected a path, no need to show the dialog again.
     PostPrintToPdfTask();
-  } else if (!select_file_dialog_.get() ||
-             !select_file_dialog_->IsRunning(platform_util::GetTopLevel(
-                 preview_web_contents_->GetNativeView()))) {
-    DCHECK(!print_callback_);
-    print_callback_ = std::move(callback);
-#if defined(OS_WIN)
-    base::FilePath::StringType print_job_title(job_title);
-#elif defined(OS_POSIX)
-    base::FilePath::StringType print_job_title = base::UTF16ToUTF8(job_title);
-#endif
-
-    base::i18n::ReplaceIllegalCharactersInPath(&print_job_title, '_');
-    base::FilePath default_filename(print_job_title);
-    default_filename =
-        default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
-
-    base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
-    SelectFile(default_filename, prompt_user);
+    return;
   }
+
+  if (select_file_dialog_ &&
+      select_file_dialog_->IsRunning(
+          platform_util::GetTopLevel(preview_web_contents_->GetNativeView()))) {
+    // Dialog is already showing.
+    return;
+  }
+
+  DCHECK(!print_callback_);
+  print_callback_ = std::move(callback);
+
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
+  SelectFile(GetFileNameForPrintJobTitle(job_title), prompt_user);
 }
 
 void PdfPrinterHandler::FileSelected(const base::FilePath& path,
@@ -220,6 +217,20 @@ void PdfPrinterHandler::FileSelectionCanceled(void* params) {
 void PdfPrinterHandler::SetPdfSavedClosureForTesting(
     const base::Closure& closure) {
   pdf_file_saved_closure_ = closure;
+}
+
+// static
+base::FilePath PdfPrinterHandler::GetFileNameForPrintJobTitle(
+    const base::string16& job_title) {
+#if defined(OS_WIN)
+  base::FilePath::StringType print_job_title(job_title);
+#elif defined(OS_POSIX)
+  base::FilePath::StringType print_job_title = base::UTF16ToUTF8(job_title);
+#endif
+
+  base::i18n::ReplaceIllegalCharactersInPath(&print_job_title, '_');
+  base::FilePath default_filename(print_job_title);
+  return default_filename.ReplaceExtension(FILE_PATH_LITERAL("pdf"));
 }
 
 void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,

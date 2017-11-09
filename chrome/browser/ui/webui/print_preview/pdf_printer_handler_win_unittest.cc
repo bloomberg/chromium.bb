@@ -113,10 +113,10 @@ bool GetSaveFileNameImpl(FakePdfPrinterHandler* handler, OPENFILENAME* ofn) {
 
 }  // namespace
 
-class PdfPrinterHandlerTest : public BrowserWithTestWindowTest {
+class PdfPrinterHandlerWinTest : public BrowserWithTestWindowTest {
  public:
-  PdfPrinterHandlerTest() {}
-  ~PdfPrinterHandlerTest() override {}
+  PdfPrinterHandlerWinTest() {}
+  ~PdfPrinterHandlerWinTest() override {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -134,16 +134,16 @@ class PdfPrinterHandlerTest : public BrowserWithTestWindowTest {
   std::unique_ptr<FakePdfPrinterHandler> pdf_printer_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PdfPrinterHandlerTest);
+  DISALLOW_COPY_AND_ASSIGN(PdfPrinterHandlerWinTest);
 };
 
-TEST_F(PdfPrinterHandlerTest, TestSaveAsPdf) {
+TEST_F(PdfPrinterHandlerWinTest, TestSaveAsPdf) {
   pdf_printer_->StartPrintToPdf(L"111111111111111111111.html");
   EXPECT_TRUE(pdf_printer_->init_called());
   EXPECT_TRUE(pdf_printer_->save_failed());
 }
 
-TEST_F(PdfPrinterHandlerTest, TestSaveAsPdfLongFileName) {
+TEST_F(PdfPrinterHandlerWinTest, TestSaveAsPdfLongFileName) {
   pdf_printer_->StartPrintToPdf(
       L"11111111111111111111111111111111111111111111111111111111111111111111111"
       L"11111111111111111111111111111111111111111111111111111111111111111111111"

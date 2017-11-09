@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -65,6 +66,10 @@ class PdfPrinterHandler : public PrinterHandler,
 
   // Sets |pdf_file_saved_closure_| to |closure|.
   void SetPdfSavedClosureForTesting(const base::Closure& closure);
+
+  // Exposed for testing.
+  static base::FilePath GetFileNameForPrintJobTitle(
+      const base::string16& job_title);
 
  protected:
   virtual void SelectFile(const base::FilePath& default_filename,
