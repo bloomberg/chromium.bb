@@ -92,7 +92,7 @@ base::ListValue* AddSection(base::ListValue* parent_list,
   // use-after-free in |*SyncStat::SetValue|. This is why the following DCHECK
   // is necessary to ensure no reallocation takes place.
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
-  DCHECK_LT(parent_list->GetSize(), parent_list->capacity());
+  DCHECK_LT(parent_list->GetSize(), parent_list->GetList().capacity());
   parent_list->Append(std::move(section));
   return section_contents;
 }
@@ -110,7 +110,7 @@ base::ListValue* AddSensitiveSection(base::ListValue* parent_list,
   // |parent_list| and its members will be invalidated. This would result in
   // use-after-free in |*SyncStat::SetValue|. This is why the following DCHECK
   // is necessary to ensure no reallocation takes place.
-  DCHECK_LT(parent_list->GetSize(), parent_list->capacity());
+  DCHECK_LT(parent_list->GetSize(), parent_list->GetList().capacity());
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
   parent_list->Append(std::move(section));
   return section_contents;
@@ -145,7 +145,7 @@ StringSyncStat::StringSyncStat(base::ListValue* section,
   // other SyncStats will be invalidated. This is why the following dcheck is
   // necessary, so that it is guaranteed that a reallocation will not happen.
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
-  DCHECK_LT(section->GetSize(), section->capacity());
+  DCHECK_LT(section->GetSize(), section->GetList().capacity());
   section->Append(base::WrapUnique(stat_));
   section->GetDictionary(section->GetSize() - 1, &stat_);
 }
@@ -180,7 +180,7 @@ BoolSyncStat::BoolSyncStat(base::ListValue* section, const std::string& key) {
   // other SyncStats will be invalidated. This is why the following dcheck is
   // necessary, so that it is guaranteed that a reallocation will not happen.
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
-  DCHECK_LT(section->GetSize(), section->capacity());
+  DCHECK_LT(section->GetSize(), section->GetList().capacity());
   section->Append(base::WrapUnique(stat_));
   section->GetDictionary(section->GetSize() - 1, &stat_);
 }
@@ -210,7 +210,7 @@ IntSyncStat::IntSyncStat(base::ListValue* section, const std::string& key) {
   // other SyncStats will be invalidated. This is why the following dcheck is
   // necessary, so that it is guaranteed that a reallocation will not happen.
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
-  DCHECK_LT(section->GetSize(), section->capacity());
+  DCHECK_LT(section->GetSize(), section->GetList().capacity());
   section->Append(base::WrapUnique(stat_));
   section->GetDictionary(section->GetSize() - 1, &stat_);
 }
