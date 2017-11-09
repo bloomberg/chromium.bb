@@ -18,26 +18,26 @@ FakeNavigationContext::FakeNavigationContext() = default;
 FakeNavigationContext::~FakeNavigationContext() = default;
 
 WebState* FakeNavigationContext::GetWebState() {
-  return nullptr;
+  return web_state_.get();
 }
 const GURL& FakeNavigationContext::GetUrl() const {
-  return GURL::EmptyGURL();
+  return url_;
 }
 
 ui::PageTransition FakeNavigationContext::GetPageTransition() const {
-  return ui::PAGE_TRANSITION_LINK;
+  return page_transition_;
 }
 
 bool FakeNavigationContext::IsSameDocument() const {
-  return false;
+  return same_document_;
 }
 
 bool FakeNavigationContext::IsPost() const {
-  return false;
+  return is_post_;
 }
 
 NSError* FakeNavigationContext::GetError() const {
-  return nil;
+  return error_;
 }
 
 net::HttpResponseHeaders* FakeNavigationContext::GetResponseHeaders() const {
@@ -45,12 +45,40 @@ net::HttpResponseHeaders* FakeNavigationContext::GetResponseHeaders() const {
 }
 
 bool FakeNavigationContext::IsRendererInitiated() const {
-  return false;
+  return renderer_initiated_;
+}
+
+void FakeNavigationContext::SetWebState(std::unique_ptr<WebState> web_state) {
+  web_state_ = std::move(web_state);
+}
+
+void FakeNavigationContext::SetUrl(const GURL& url) {
+  url_ = url;
+}
+
+void FakeNavigationContext::SetPageTransition(ui::PageTransition transition) {
+  page_transition_ = transition;
+}
+
+void FakeNavigationContext::SetIsSameDocument(bool same_document) {
+  same_document_ = same_document;
+}
+
+void FakeNavigationContext::SetIsPost(bool is_post) {
+  is_post_ = is_post;
+}
+
+void FakeNavigationContext::SetError(NSError* error) {
+  error_ = error;
 }
 
 void FakeNavigationContext::SetResponseHeaders(
     const scoped_refptr<net::HttpResponseHeaders>& response_headers) {
   response_headers_ = response_headers;
+}
+
+void FakeNavigationContext::SetIsRendererInitiated(bool renderer_initiated) {
+  renderer_initiated_ = renderer_initiated;
 }
 
 }  // namespace web

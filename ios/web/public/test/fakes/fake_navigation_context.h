@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #import "ios/web/public/web_state/navigation_context.h"
-
-class GURL;
+#import "ios/web/public/web_state/web_state.h"
+#include "url/gurl.h"
 
 namespace web {
 
@@ -32,11 +32,25 @@ class FakeNavigationContext : public NavigationContext {
   bool IsRendererInitiated() const override;
 
   // Setters for navigation context data members.
+  void SetWebState(std::unique_ptr<WebState> web_state);
+  void SetUrl(const GURL& url);
+  void SetPageTransition(ui::PageTransition transition);
+  void SetIsSameDocument(bool same_document);
+  void SetIsPost(bool is_post);
+  void SetError(NSError* error);
   void SetResponseHeaders(
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
+  void SetIsRendererInitiated(bool renderer_initiated);
 
  private:
+  std::unique_ptr<WebState> web_state_;
+  GURL url_;
+  ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
+  bool same_document_ = false;
+  bool is_post_ = false;
+  __strong NSError* error_ = nil;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  bool renderer_initiated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNavigationContext);
 };
