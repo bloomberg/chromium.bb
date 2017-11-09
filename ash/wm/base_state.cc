@@ -30,7 +30,7 @@ void BaseState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
     return;
   }
   if ((window_state->IsTrustedPinned() || window_state->IsPinned()) &&
-      event->type() != WM_EVENT_NORMAL) {
+      (event->type() != WM_EVENT_NORMAL && event->IsTransitionEvent())) {
     // PIN state can be exited only by normal event.
     return;
   }

@@ -148,6 +148,9 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
           static_cast<const SetBoundsEvent*>(event);
       if (set_bounds_locally_) {
         window_state->SetBoundsDirect(set_bounds_event->requested_bounds());
+      } else if (window_state->IsPinned() || window_state->IsTrustedPinned()) {
+        // In pinned state, it should ignore the SetBounds from window manager
+        // or user.
       } else {
         delegate_->HandleBoundsRequest(window_state->GetStateType(),
                                        set_bounds_event->requested_bounds());

@@ -263,6 +263,16 @@ TEST_F(ClientControlledStateTest, Pinned) {
   EXPECT_EQ(mojom::WindowStateType::PINNED, window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
 
+  // WM/User cannot change the bounds of the pinned window.
+  constexpr gfx::Rect new_bounds(100, 100, 200, 100);
+  widget()->SetBounds(new_bounds);
+  EXPECT_TRUE(delegate()->requested_bounds().IsEmpty());
+  // But client can change the bounds of the pinned window.
+  state()->set_bounds_locally(true);
+  widget()->SetBounds(new_bounds);
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(new_bounds, widget()->GetWindowBoundsInScreen());
+
   widget()->Restore();
   EXPECT_FALSE(window_state()->IsPinned());
   EXPECT_EQ(mojom::WindowStateType::NORMAL, window_state()->GetStateType());
@@ -311,6 +321,16 @@ TEST_F(ClientControlledStateTest, TrustedPinnedBasic) {
   EXPECT_EQ(mojom::WindowStateType::TRUSTED_PINNED,
             window_state()->GetStateType());
   EXPECT_TRUE(GetScreenPinningController()->IsPinned());
+
+  // WM/User cannot change the bounds of the trusted-pinned window.
+  constexpr gfx::Rect new_bounds(100, 100, 200, 100);
+  widget()->SetBounds(new_bounds);
+  EXPECT_TRUE(delegate()->requested_bounds().IsEmpty());
+  // But client can change the bounds of the trusted-pinned window.
+  state()->set_bounds_locally(true);
+  widget()->SetBounds(new_bounds);
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(new_bounds, widget()->GetWindowBoundsInScreen());
 
   widget()->Restore();
   EXPECT_FALSE(window_state()->IsPinned());
