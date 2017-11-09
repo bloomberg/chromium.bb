@@ -698,7 +698,8 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
     base::ScopedBlockingCall scoped_blocking_call(
         base::BlockingType::MAY_BLOCK);
     HostsParseWinResult result = HOSTS_PARSE_WIN_UNREADABLE_HOSTS_FILE;
-    if (ParseHostsFile(path_, &hosts_))
+    int64_t file_size;
+    if (ParseHostsFile(path_, &hosts_, &file_size))
       result = AddLocalhostEntries(&hosts_);
     success_ = (result == HOSTS_PARSE_WIN_OK);
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.HostsParseWin",
