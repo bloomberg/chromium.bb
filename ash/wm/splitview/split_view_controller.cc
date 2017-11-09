@@ -249,7 +249,7 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
   // window's minimum size is larger than current acquired window bounds, which
   // will lead to the divider pass over the window. This is no need for
   // |right_or_bottom_rect| since its origin of the bounds is flexible.
-  AdjustLeftOrTopSnappedWindowBoundsDuringResizing(&left_or_top_rect);
+  AdjustLeftOrTopSnappedWindowBounds(&left_or_top_rect);
 
   if (IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_))
     return (snap_position == LEFT) ? left_or_top_rect : right_or_bottom_rect;
@@ -316,14 +316,19 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   MoveDividerToClosestFixedPosition();
   NotifyDividerPositionChanged();
 
+  // Need to update snapped windows bounds even if the split view mode may have
+  // to exit. Otherwise it's possible for a snapped window stuck in the edge of
+  // of the screen while overview mode is active.
+  UpdateSnappedWindowsAndDividerBounds();
+
   // Check if one of the snapped windows needs to be closed.
   if (ShouldEndSplitViewAfterResizing()) {
     aura::Window* active_window = GetActiveWindowAfterResizingUponExit();
-    if (active_window)
-      wm::ActivateWindow(active_window);
     EndSplitView();
-  } else {
-    UpdateSnappedWindowsAndDividerBounds();
+    if (active_window) {
+      EndOverview();
+      wm::ActivateWindow(active_window);
+    }
   }
 }
 
@@ -384,8 +389,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
     // full-screened. Also end overview mode if overview mode is active at the
     // moment.
     EndSplitView();
-    if (Shell::Get()->window_selector_controller()->IsSelecting())
-      Shell::Get()->window_selector_controller()->ToggleOverview();
+    EndOverview();
   } else if (window_state->IsMinimized()) {
     OnSnappedWindowMinimizedOrDestroyed(window_state->window());
   }
@@ -782,15 +786,12 @@ void SplitViewController::OnSnappedWindowMinimizedOrDestroyed(
     state_ = left_window_ ? LEFT_SNAPPED : RIGHT_SNAPPED;
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
     NotifySplitViewStateChanged(previous_state, state_);
-    Shell::Get()->window_selector_controller()->ToggleOverview();
+    StartOverview();
   }
 }
 
-void SplitViewController::AdjustLeftOrTopSnappedWindowBoundsDuringResizing(
+void SplitViewController::AdjustLeftOrTopSnappedWindowBounds(
     gfx::Rect* left_or_top_rect) {
-  if (!is_resizing_)
-    return;
-
   aura::Window* left_or_top_window =
       IsLeftWindowOnTopOrLeftOfScreen(screen_orientation_) ? left_window_
                                                            : right_window_;
@@ -859,6 +860,16 @@ void SplitViewController::GetDividerOptionalPositionRatios(
 
   if (min_size_right_ratio <= kOneThirdPositionRatio)
     position_ratios->push_back(kTwoThirdPositionRatio);
+}
+
+void SplitViewController::StartOverview() {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    Shell::Get()->window_selector_controller()->ToggleOverview();
+}
+
+void SplitViewController::EndOverview() {
+  if (Shell::Get()->window_selector_controller()->IsSelecting())
+    Shell::Get()->window_selector_controller()->ToggleOverview();
 }
 
 }  // namespace ash
