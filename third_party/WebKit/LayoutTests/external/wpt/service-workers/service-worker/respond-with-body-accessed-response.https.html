@@ -1,14 +1,8 @@
 <!DOCTYPE html>
 <title>Service Worker responds with .body accessed response.</title>
-<!--
-  We put this test in serviceworker/chromium/ directory because the behavior of
-  Response.body is still under the spec discussion.
-  FIXME: When the spec will be released, move this test to serviceworker/
-  directory.
--->
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
 let frame;
 

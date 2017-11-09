@@ -1,5 +1,5 @@
-importScripts('../../../resources/get-host-info.js');
-importScripts('../../resources/test-helpers.js');
+importScripts('/common/get-host-info.sub.js');
+importScripts('test-helpers.sub.js');
 
 function getQueryParams(url) {
   var search = (new URL(url)).search;
@@ -20,7 +20,7 @@ function createResponse(params) {
     return fetch('respond-with-body-accessed-response.jsonp');
   }
   if (params['type'] == 'opaque') {
-    return fetch(get_host_info()['HTTP_REMOTE_ORIGIN'] + base_path() +
+    return fetch(get_host_info()['HTTPS_REMOTE_ORIGIN'] + base_path() +
           'respond-with-body-accessed-response.jsonp',
           {mode: 'no-cors'});
   }
