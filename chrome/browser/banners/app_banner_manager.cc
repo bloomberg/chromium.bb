@@ -577,8 +577,16 @@ void AppBannerManager::OnBannerPromptReply(
   // requested in the beforeinstallprompt event handler), we keep going and show
   // the banner immediately.
   referrer_ = referrer;
-  if (reply == blink::mojom::AppBannerPromptReply::CANCEL)
+  if (reply == blink::mojom::AppBannerPromptReply::CANCEL) {
     TrackBeforeInstallEvent(BEFORE_INSTALL_EVENT_PREVENT_DEFAULT_CALLED);
+    if (IsDebugMode()) {
+      web_contents()->GetMainFrame()->AddMessageToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
+          "Banner not shown: beforeinstallpromptevent.preventDefault() called. "
+          "The page must call beforeinstallpromptevent.prompt() to show the "
+          "banner.");
+    }
+  }
 
   if (IsExperimentalAppBannersEnabled() ||
       reply == blink::mojom::AppBannerPromptReply::CANCEL) {
