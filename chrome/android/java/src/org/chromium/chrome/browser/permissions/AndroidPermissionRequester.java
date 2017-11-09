@@ -14,8 +14,10 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
@@ -173,8 +175,12 @@ public class AndroidPermissionRequester {
             Collections.addAll(
                     permissionsToRequest, contentSettingsTypesToPermissionsMap.valueAt(i));
         }
-        windowAndroid.requestPermissions(
-                permissionsToRequest.toArray(new String[permissionsToRequest.size()]), callback);
+        String[] permissions =
+                permissionsToRequest.toArray(new String[permissionsToRequest.size()]);
+        windowAndroid.requestPermissions(permissions, callback);
+        if (windowAndroid.getActivity().get() instanceof WebApkActivity) {
+            WebApkUma.recordAndroidRuntimePermissionPromptInWebApkAsync(permissions);
+        }
         return true;
     }
 }

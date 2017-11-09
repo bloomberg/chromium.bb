@@ -4,12 +4,14 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.Manifest;
 import android.content.ContentResolver;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.provider.Settings;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -20,6 +22,8 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -58,6 +62,14 @@ public class WebApkUma {
     public static final int GOOGLE_PLAY_INSTALL_REQUEST_FAILED_NETWORK_ERROR = 13;
     public static final int GOOGLE_PLAY_INSTALL_REQUSET_FAILED_RESOLVE_ERROR = 14;
     public static final int GOOGLE_PLAY_INSTALL_RESULT_MAX = 14;
+
+    // This enum is used to back UMA histograms, and should therefore be treated as append-only.
+    private static final int PERMISSION_OTHER = 0;
+    private static final int PERMISSION_LOCATION = 1;
+    private static final int PERMISSION_MICROPHONE = 2;
+    private static final int PERMISSION_CAMERA = 3;
+    private static final int PERMISSION_STORAGE = 4;
+    private static final int PERMISSION_COUNT = 5;
 
     public static final String HISTOGRAM_UPDATE_REQUEST_SENT =
             "WebApk.Update.RequestSent";
@@ -151,6 +163,47 @@ public class WebApkUma {
                 ? "WebApk.ShellApkVersion.BrowserApk"
                 : "WebApk.ShellApkVersion.UnboundApk";
         RecordHistogram.recordSparseSlowlyHistogram(name, shellApkVersion);
+    }
+
+    /**
+     * Records the requests of Android runtime permissions which haven't been granted to Chrome when
+     * Chrome is running in WebAPK runtime.
+     */
+    public static void recordAndroidRuntimePermissionPromptInWebApkAsync(
+            final String[] permissions) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                Set<Integer> permissionGroup = new HashSet<Integer>();
+                for (String permission : permissions) {
+                    permissionGroup.add(getPermissionGroup(permission));
+                }
+                for (Integer permission : permissionGroup) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "WebApk.Permission.ChromeWithoutPermission", permission,
+                            PERMISSION_COUNT);
+                }
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private static int getPermissionGroup(String permission) {
+        if (TextUtils.equals(permission, Manifest.permission.ACCESS_COARSE_LOCATION)
+                || TextUtils.equals(permission, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            return PERMISSION_LOCATION;
+        }
+        if (TextUtils.equals(permission, Manifest.permission.RECORD_AUDIO)) {
+            return PERMISSION_MICROPHONE;
+        }
+        if (TextUtils.equals(permission, Manifest.permission.CAMERA)) {
+            return PERMISSION_CAMERA;
+        }
+        if (TextUtils.equals(permission, Manifest.permission.READ_EXTERNAL_STORAGE)
+                || TextUtils.equals(permission, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            return PERMISSION_STORAGE;
+        }
+        return PERMISSION_OTHER;
     }
 
     /**

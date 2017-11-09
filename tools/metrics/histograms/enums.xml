@@ -41892,6 +41892,14 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="2" label="Activity for WebAPK not found."/>
 </enum>
 
+<enum name="WebApkPermissionType">
+  <int value="0" label="Other"/>
+  <int value="1" label="LOCATION"/>
+  <int value="2" label="MICROPHONE"/>
+  <int value="3" label="CAMERA"/>
+  <int value="4" label="STORAGE"/>
+</enum>
+
 <enum name="WebApkUpdateRequestQueued">
   <int value="0" label="Queued for the first time"/>
   <int value="1" label="Queued for the second time"/>

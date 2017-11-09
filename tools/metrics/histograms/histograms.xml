@@ -92081,6 +92081,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Permission.ChromeWithoutPermission"
+    enum="WebApkPermissionType">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records the amount of requests of Android runtime permissions which haven't
+    been granted to Chrome when Chrome is running in WebAPK runtime.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Session.TotalDuration" units="ms">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
