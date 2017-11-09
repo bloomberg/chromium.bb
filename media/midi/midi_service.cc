@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_switches.h"
 #include "media/midi/task_service.h"
@@ -14,13 +15,13 @@ namespace midi {
 
 namespace {
 
-bool IsDynamicInstantiationEnabled() {
 // TODO(toyoshim): Support on all platforms. See https://crbug.com/672793.
-#if defined(OS_LINUX) || defined(OS_WIN)
-  return true;
-#else
+bool IsDynamicInstantiationEnabled() {
+#if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(
       features::kMidiManagerDynamicInstantiation);
+#else
+  return true;
 #endif
 }
 

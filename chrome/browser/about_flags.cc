@@ -2936,11 +2936,13 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(ash::switches::kAshForceEnableStylusTools)},
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID)
     {"enable-midi-manager-dynamic-instantiation",
      flag_descriptions::kEnableMidiManagerDynamicInstantiationName,
      flag_descriptions::kEnableMidiManagerDynamicInstantiationDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(midi::features::kMidiManagerDynamicInstantiation)},
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
     {"new-usb-backend", flag_descriptions::kNewUsbBackendName,

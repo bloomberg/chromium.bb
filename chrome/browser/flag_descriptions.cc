@@ -429,11 +429,6 @@ const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "
     "policies.";
 
-const char kEnableMidiManagerDynamicInstantiationName[] =
-    "MIDIManager dynamic instantiation for Web MIDI.";
-const char kEnableMidiManagerDynamicInstantiationDescription[] =
-    "Enable MIDIManager dynamic instantiation for Web MIDI.";
-
 const char kEnableMultiMirroringName[] =
     "Display mirroring across multiple displays.";
 const char kEnableMultiMirroringDescription[] =
@@ -1800,6 +1795,11 @@ const char kEnableFaviconsFromWebManifestName[] =
     "Load favicons from Web Manifests";
 const char kEnableFaviconsFromWebManifestDescription[] =
     "Fetch Web Manifests on page load to read favicons from them.";
+
+const char kEnableMidiManagerDynamicInstantiationName[] =
+    "MIDIManager dynamic instantiation for Web MIDI.";
+const char kEnableMidiManagerDynamicInstantiationDescription[] =
+    "Enable MIDIManager dynamic instantiation for Web MIDI.";
 
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
