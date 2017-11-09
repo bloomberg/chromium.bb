@@ -10,6 +10,8 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/paint/PaintTextBlob.h"
+#include "platform/graphics/paint/PaintTypeface.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
@@ -85,9 +87,9 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
 
   enum class BlobRotation { kNoRotation, kCCWRotation };
   struct BlobInfo {
-    BlobInfo(sk_sp<SkTextBlob> b, BlobRotation r)
+    BlobInfo(scoped_refptr<PaintTextBlob> b, BlobRotation r)
         : blob(std::move(b)), rotation(r) {}
-    sk_sp<SkTextBlob> blob;
+    scoped_refptr<PaintTextBlob> blob;
     BlobRotation rotation;
   };
 
@@ -138,7 +140,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
   const Type type_;
 
   // Current text blob state.
-  SkTextBlobBuilder builder_;
+  PaintTextBlobBuilder builder_;
   BlobRotation builder_rotation_ = BlobRotation::kNoRotation;
   size_t builder_run_count_ = 0;
 

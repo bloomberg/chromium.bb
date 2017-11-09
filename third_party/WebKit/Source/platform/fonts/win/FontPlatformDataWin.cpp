@@ -44,15 +44,17 @@ namespace blink {
 // if available.
 const float kMaxSizeForEmbeddedBitmap = 24.0f;
 
-void FontPlatformData::SetupPaint(SkPaint* paint, float, const Font*) const {
+void FontPlatformData::SetupPaintFont(PaintFont* font,
+                                      float,
+                                      const Font*) const {
   const float ts = text_size_ >= 0 ? text_size_ : 12;
-  paint->setTextSize(SkFloatToScalar(text_size_));
-  paint->setTypeface(typeface_);
-  paint->setFakeBoldText(synthetic_bold_);
-  paint->setTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
+  font->SetTextSize(SkFloatToScalar(text_size_));
+  font->SetTypeface(paint_typeface_);
+  font->SetFakeBoldText(synthetic_bold_);
+  font->SetTextSkewX(synthetic_italic_ ? -SK_Scalar1 / 4 : 0);
 
   uint32_t text_flags = PaintTextFlags();
-  uint32_t flags = paint->getFlags();
+  uint32_t flags = font->flags();
   static const uint32_t kTextFlagsMask =
       SkPaint::kAntiAlias_Flag | SkPaint::kLCDRenderText_Flag |
       SkPaint::kEmbeddedBitmapText_Flag | SkPaint::kSubpixelText_Flag;
@@ -73,9 +75,9 @@ void FontPlatformData::SetupPaint(SkPaint* paint, float, const Font*) const {
   SkASSERT(!(text_flags & ~kTextFlagsMask));
   flags |= text_flags;
 
-  paint->setFlags(flags);
+  font->SetFlags(flags);
 
-  paint->setEmbeddedBitmapText(!avoid_embedded_bitmaps_);
+  font->SetEmbeddedBitmapText(!avoid_embedded_bitmaps_);
 }
 
 static bool IsWebFont(const String& family_name) {

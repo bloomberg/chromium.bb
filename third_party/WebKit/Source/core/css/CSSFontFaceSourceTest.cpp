@@ -18,8 +18,9 @@ class DummyFontFaceSource : public CSSFontFaceSource {
   scoped_refptr<SimpleFontData> CreateFontData(
       const FontDescription&,
       const FontSelectionCapabilities&) override {
-    return SimpleFontData::Create(
-        FontPlatformData(SkTypeface::MakeDefault(), "", 0, false, false));
+    return SimpleFontData::Create(FontPlatformData(
+        PaintTypeface::FromSkTypeface(SkTypeface::MakeDefault()), "", 0, false,
+        false));
   }
 
   DummyFontFaceSource() {}
