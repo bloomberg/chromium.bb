@@ -7,14 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
 @class CRWWebViewScrollViewProxy;
 @class LegacyFullscreenController;
 
 namespace web {
-class NavigationManager;
+class WebState;
 }
 
 // Notification when the application is set up for testing.
@@ -67,7 +67,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // view, the delegate will simply move it out of view as needed. The delegate is
 // called every time the header view needs to be moved.
 @interface LegacyFullscreenController
-    : NSObject<CRWWebControllerObserver, CRWWebViewScrollViewProxyObserver>
+    : NSObject<CRWWebViewScrollViewProxyObserver>
 
 // If set to YES this slightly alters the behaviour on drag down to pull the
 // header to visible on the fist pixel moved. If set to NO (the default) there
@@ -76,7 +76,7 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 
 // Designated initializer.
 - (id)initWithDelegate:(id<LegacyFullscreenControllerDelegate>)delegate
-     navigationManager:(web::NavigationManager*)navigationManager
+              webState:(web::WebState*)webState
              sessionID:(NSString*)sessionID;
 
 // Used to clear state maintained by the controller and de-register from

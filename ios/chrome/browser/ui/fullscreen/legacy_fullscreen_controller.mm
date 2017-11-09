@@ -7,7 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
-
+#include "base/scoped_observer.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
 #import "ios/chrome/browser/ui/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -20,7 +20,8 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,8 +29,6 @@
 
 NSString* const kSetupForTestingWillCloseAllTabsNotification =
     @"kSetupForTestingWillCloseAllTabsNotification";
-
-using web::NavigationManager;
 
 namespace {
 
@@ -60,7 +59,8 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 
 }  // anonymous namespace.
 
-@interface LegacyFullscreenController ()<UIGestureRecognizerDelegate> {
+@interface LegacyFullscreenController ()<CRWWebStateObserver,
+                                         UIGestureRecognizerDelegate> {
   // Used to detect movement in the scrollview produced by this class.
   int selfTriggered_;
   // Used to detect if the keyboard is visible.
@@ -74,12 +74,18 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   uint fullScreenLock_;
   // CRWWebViewProxy object allows web view manipulations.
   id<CRWWebViewProxy> webViewProxy_;
+  // The WebStateObserverBridge used to listen to WebState.
+  std::unique_ptr<web::WebStateObserverBridge> observerBridge_;
+  // The ScopedObserver used to track registration with WebState.
+  std::unique_ptr<ScopedObserver<web::WebState, web::WebStateObserver>>
+      scopedObserver_;
 }
 
 // Access to the UIWebView's UIScrollView.
 @property(weak, nonatomic, readonly) CRWWebViewScrollViewProxy* scrollViewProxy;
 // The navigation controller of the page.
-@property(nonatomic, readonly, assign) NavigationManager* navigationManager;
+@property(nonatomic, readonly, assign)
+    web::NavigationManager* navigationManager;
 // The gesture recognizer set on the scrollview to detect tap. Must be readwrite
 // for property releaser to work.
 @property(nonatomic, readwrite, strong)
@@ -194,7 +200,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
     userInteractionGestureRecognizer_;
 
 - (id)initWithDelegate:(id<LegacyFullscreenControllerDelegate>)delegate
-     navigationManager:(NavigationManager*)navigationManager
+              webState:(web::WebState*)webState
              sessionID:(NSString*)sessionID {
   if (!gEnabledForTests)
     return nil;
@@ -203,7 +209,12 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
     DCHECK(delegate);
     delegate_ = delegate;
     sessionID_ = [sessionID copy];
-    navigationManager_ = navigationManager;
+    navigationManager_ = webState->GetNavigationManager();
+    observerBridge_ = std::make_unique<web::WebStateObserverBridge>(self);
+    scopedObserver_ =
+        std::make_unique<ScopedObserver<web::WebState, web::WebStateObserver>>(
+            observerBridge_.get());
+    scopedObserver_->Add(webState);
 
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center addObserver:self
@@ -301,6 +312,9 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
                    name:kOverscrollActionsDidEnd
                  object:nil];
     [self moveHeaderToRestingPosition:YES];
+
+    webViewProxy_ = webState->GetWebViewProxy();
+    [[webViewProxy_ scrollViewProxy] addObserver:self];
   }
   return self;
 }
@@ -310,10 +324,14 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   navigationManager_ = NULL;
   [self.scrollViewProxy removeObserver:self];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  scopedObserver_.reset();
+  observerBridge_.reset();
 }
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  scopedObserver_.reset();
+  observerBridge_.reset();
 }
 
 - (CRWWebViewScrollViewProxy*)scrollViewProxy {
@@ -690,22 +708,19 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 }
 
 #pragma mark -
-#pragma mark CRWWebControllerObserver methods
+#pragma mark CRWWebStateObserver methods
 
-- (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
-             controller:(CRWWebController*)webController {
-  DCHECK([webViewProxy scrollViewProxy]);
-  webViewProxy_ = webViewProxy;
-  [[webViewProxy scrollViewProxy] addObserver:self];
-}
-
-- (void)pageLoaded:(CRWWebController*)webController {
-  [self enableFullScreen];
-  web::WebState* webState = webController.webState;
-  if (webState) {
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  if (success) {
+    [self enableFullScreen];
     BOOL MIMETypeIsPDF = webState->GetContentsMimeType() == "application/pdf";
     [webViewProxy_ setShouldUseInsetForTopPadding:MIMETypeIsPDF];
   }
+}
+
+- (void)webStateDestroyed:(web::WebState*)webState {
+  scopedObserver_.reset();
+  observerBridge_.reset();
 }
 
 #pragma mark -
