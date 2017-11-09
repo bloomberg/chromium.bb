@@ -1099,19 +1099,19 @@
     ],
 
     'chromeos_with_codecs_debug_bot': [
-      'chromeos_with_codecs', 'debug_bot',
+      'chromeos_with_codecs', 'debug_bot', 'use_vaapi',
     ],
 
     'chromeos_with_codecs_debug_trybot': [
-      'chromeos_with_codecs', 'debug_trybot',
+      'chromeos_with_codecs', 'debug_trybot', 'use_vaapi',
     ],
 
     'chromeos_with_codecs_release_bot': [
-      'chromeos_with_codecs', 'release_bot',
+      'chromeos_with_codecs', 'release_bot', 'use_vaapi',
     ],
 
     'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot',
+      'chromeos_with_codecs', 'release_trybot', 'use_vaapi',
     ],
 
     'clang_debug_trybot_x86': [
@@ -2144,6 +2144,10 @@
 
     'use_lld': {
       'gn_args': 'use_lld=true',
+    },
+
+    'use_vaapi': {
+      'gn_args': 'use_vaapi=true',
     },
 
     'v8_concurrent_marking': {

@@ -163,6 +163,14 @@ DEBIAN_PACKAGES="\
   libtasn1-6
   libudev-dev
   libudev1
+  libva1
+  libva-dev
+  libva-drm1
+  libva-egl1
+  libva-glx1
+  libva-tpi1
+  libva-wayland1
+  libva-x11-1
   libwayland-client0
   libwayland-cursor0
   libwayland-dev
