@@ -134,6 +134,7 @@ LatencyInfo::LatencyInfo() : LatencyInfo(SourceEventType::UNKNOWN) {}
 
 LatencyInfo::LatencyInfo(SourceEventType type)
     : trace_id_(-1),
+      ukm_source_id_(ukm::kInvalidSourceId),
       coalesced_(false),
       began_(false),
       terminated_(false),
@@ -145,6 +146,8 @@ LatencyInfo::~LatencyInfo() {}
 
 LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
     : trace_id_(trace_id),
+      ukm_source_id_(ukm::kInvalidSourceId),
+      coalesced_(false),
       began_(false),
       terminated_(terminated),
       source_event_type_(SourceEventType::UNKNOWN) {}
@@ -164,10 +167,14 @@ bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
 
 void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
                                   LatencyComponentType type) {
-  // Don't clobber an existing trace_id_.
+  // Don't clobber an existing trace_id_ or ukm_source_id_.
   if (trace_id_ == -1) {
+    DCHECK_EQ(ukm_source_id_, ukm::kInvalidSourceId);
     DCHECK(latency_components().empty());
     trace_id_ = other.trace_id();
+    ukm_source_id_ = other.ukm_source_id();
+  } else {
+    DCHECK_NE(ukm_source_id_, ukm::kInvalidSourceId);
   }
 
   for (const auto& lc : other.latency_components()) {
@@ -191,9 +198,13 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
 }
 
 void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
-  // Don't clobber an existing trace_id_.
+  // Don't clobber an existing trace_id_ or ukm_source_id_.
   if (trace_id_ == -1) {
     trace_id_ = other.trace_id();
+  }
+
+  if (ukm_source_id_ == ukm::kInvalidSourceId) {
+    ukm_source_id_ = other.ukm_source_id();
   }
 
   for (const auto& lc : other.latency_components()) {

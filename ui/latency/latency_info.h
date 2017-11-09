@@ -14,6 +14,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/point_f.h"
 
 #if !defined(OS_IOS)
@@ -223,6 +224,8 @@ class LatencyInfo {
   bool coalesced() const { return coalesced_; }
   int64_t trace_id() const { return trace_id_; }
   void set_trace_id(int64_t trace_id) { trace_id_ = trace_id; }
+  ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
+  void set_ukm_source_id(ukm::SourceId id) { ukm_source_id_ = id; }
 
  private:
   void AddLatencyNumberWithTimestampImpl(LatencyComponentType component,
@@ -244,6 +247,9 @@ class LatencyInfo {
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;
+  // UKM Source id to be used for recording UKM metrics associated with this
+  // event.
+  ukm::SourceId ukm_source_id_;
   // Whether this event has been coalesced into another event.
   bool coalesced_;
   // Whether a begin component has been added.

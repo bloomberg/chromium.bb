@@ -6,10 +6,15 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/latency/latency_histogram_macros.h"
 
 namespace ui {
 namespace {
+
+constexpr int kSamplingInterval = 10;
 
 std::string LatencySourceEventTypeToInputModalityString(
     ui::SourceEventType type) {
@@ -39,6 +44,12 @@ void RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
 }
 
 }  // namespace
+
+LatencyTracker::LatencyTracker(bool metric_sampling)
+    : metric_sampling_(metric_sampling) {
+  if (metric_sampling)
+    metric_sampling_events_since_last_sample_ = rand() % kSamplingInterval;
+}
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent gpu_swap_end_component;
@@ -82,17 +93,34 @@ void LatencyTracker::ReportRapporScrollLatency(
     const std::string& name,
     const LatencyInfo::LatencyComponent& start_component,
     const LatencyInfo::LatencyComponent& end_component) {
-  // TODO(mfomitchev): crbug.com/717629: Make RAPPOR or UKM reporting work with
-  // Mus.
+  // Only supported by RenderWidgetHostLatencyTracker.
 }
 
 void LatencyTracker::ReportUkmScrollLatency(
     const std::string& event_name,
     const std::string& metric_name,
     const LatencyInfo::LatencyComponent& start_component,
-    const LatencyInfo::LatencyComponent& end_component) {
-  // TODO(mfomitchev): crbug.com/717629: Make RAPPOR or UKM reporting work with
-  // Mus.
+    const LatencyInfo::LatencyComponent& end_component,
+    const ukm::SourceId ukm_source_id) {
+  CONFIRM_VALID_TIMING(start_component, end_component)
+
+  // Only report a subset of this metric as the volume is too high.
+  if (event_name == "Event.ScrollUpdate.Touch") {
+    metric_sampling_events_since_last_sample_++;
+    metric_sampling_events_since_last_sample_ %= kSamplingInterval;
+    if (metric_sampling_ && metric_sampling_events_since_last_sample_)
+      return;
+  }
+
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  if (ukm_source_id == ukm::kInvalidSourceId || !ukm_recorder)
+    return;
+
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_recorder->GetEntryBuilder(ukm_source_id, event_name.c_str());
+  builder->AddMetric(metric_name.c_str(), (end_component.last_event_time -
+                                           start_component.first_event_time)
+                                              .InMicroseconds());
 }
 
 void LatencyTracker::ComputeEndToEndLatencyHistograms(
@@ -133,7 +161,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     ReportUkmScrollLatency("Event.ScrollBegin." + input_modality,
                            "TimeToScrollUpdateSwapBegin", original_component,
-                           gpu_swap_begin_component);
+                           gpu_swap_begin_component, latency.ukm_source_id());
 
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -159,7 +187,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
 
     ReportUkmScrollLatency("Event.ScrollUpdate." + input_modality,
                            "TimeToScrollUpdateSwapBegin", original_component,
-                           gpu_swap_begin_component);
+                           gpu_swap_begin_component, latency.ukm_source_id());
   } else if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0,
                                  &original_component)) {
     if (input_modality == "KeyPress") {

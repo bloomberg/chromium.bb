@@ -17,6 +17,10 @@ source_set("latency") {
     "//base",
     "//ui/gfx",
   ]
+
+  public_deps = [
+    "//services/metrics/public/cpp:metrics_cpp",
+  ]
 }
 
 source_set("test_support") {

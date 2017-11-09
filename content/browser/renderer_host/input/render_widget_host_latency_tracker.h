@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/latency/latency_info.h"
 #include "ui/latency/latency_tracker.h"
 
@@ -80,13 +79,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
       const ui::LatencyInfo::LatencyComponent& start_component,
       const ui::LatencyInfo::LatencyComponent& end_component) override;
 
-  // ui::LatencyTracker:
-  void ReportUkmScrollLatency(
-      const std::string& event_name,
-      const std::string& metric_name,
-      const ui::LatencyInfo::LatencyComponent& start_component,
-      const ui::LatencyInfo::LatencyComponent& end_component) override;
-
   ukm::SourceId ukm_source_id_;
   int64_t last_event_id_;
   int64_t latency_component_id_;
@@ -98,12 +90,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker
   // Whether the touch start for the current stream of touch events had its
   // default action prevented. Only valid for single finger gestures.
   bool touch_start_default_prevented_;
-
-  // Whether the sampling is needed for high volume metrics. This will be off
-  // when we are in unit tests. This is a temporary field so we can come up with
-  // a more permanent solution for crbug.com/739169.
-  bool metric_sampling_;
-  int metric_sampling_events_since_last_sample_;
 
   RenderWidgetHostDelegate* render_widget_host_delegate_;
 
