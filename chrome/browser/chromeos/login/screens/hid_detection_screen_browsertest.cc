@@ -8,9 +8,9 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "device/hid/fake_input_service_linux.h"
-#include "device/hid/public/interfaces/input_service.mojom.h"
+#include "services/device/public/cpp/hid/fake_input_service_linux.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/input_service.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace chromeos {

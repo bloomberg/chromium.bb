@@ -12,12 +12,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/hid/hid_connection_resource.h"
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/hid.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace extensions {
 

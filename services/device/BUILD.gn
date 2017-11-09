@@ -47,8 +47,8 @@ source_set("lib") {
     deps += [ ":device_service_jni_headers" ]
   } else {
     deps += [
-      "//device/hid",
       "//services/device/battery",
+      "//services/device/hid",
       "//services/device/vibration",
     ]
   }
@@ -134,11 +134,30 @@ source_set("tests") {
       "hid/hid_manager_unittest.cc",
     ]
     deps += [
-      "//device/hid",
-      "//device/hid:mocks",
       "//services/device/battery",
+      "//services/device/hid:mocks",
+      "//services/device/public/cpp/hid",
       "//services/device/vibration",
     ]
+
+    if (!is_linux_without_udev && !is_android) {
+      sources += [
+        "hid/hid_service_unittest.cc",
+        "hid/input_service_linux_unittest.cc",
+        "hid/test_report_descriptors.cc",
+        "hid/test_report_descriptors.h",
+        "public/cpp/hid/hid_device_filter_unittest.cc",
+        "public/cpp/hid/hid_report_descriptor_unittest.cc",
+      ]
+      if (!is_ios) {
+        sources += [ "hid/hid_connection_unittest.cc" ]
+        deps += [
+          "//device:usb_test_gadget",
+          "//device/usb",
+          "//net:test_support",
+        ]
+      }
+    }
   }
 
   if (is_serial_enabled_platform) {

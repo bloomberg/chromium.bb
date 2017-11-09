@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/u2f/u2f_device.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace device {
 

@@ -110,31 +110,32 @@ test("device_unittests") {
     "//url",
   ]
 
-  # HID and Serial:
+  # U2F and Serial:
   # Android doesn't compile.
   # Linux, requires udev.
   if (!is_linux_without_udev && !is_android) {
     sources += [
-      "hid/hid_connection_unittest.cc",
-      "hid/hid_device_filter_unittest.cc",
-      "hid/hid_report_descriptor_unittest.cc",
-      "hid/hid_service_unittest.cc",
-      "hid/input_service_linux_unittest.cc",
-      "hid/test_report_descriptors.cc",
-      "hid/test_report_descriptors.h",
-      "serial/serial_io_handler_posix_unittest.cc",
       "u2f/fake_hid_impl_for_testing.cc",
       "u2f/fake_hid_impl_for_testing.h",
       "u2f/u2f_hid_device_unittest.cc",
       "u2f/u2f_hid_discovery_unittest.cc",
     ]
     deps += [
-      "//device/hid",
-      "//device/hid:mocks",
-      "//device/serial",
+      "//services/device/public/cpp/hid",
+      "//services/device/public/interfaces",
       "//services/service_manager/public/cpp",
       "//services/service_manager/public/interfaces",
     ]
+
+    # Serial is supported in below platforms. See //device/servial/BUILD.gn
+    if (is_win || is_linux || is_mac) {
+      sources += [
+        "serial/serial_io_handler_posix_unittest.cc",
+      ]
+      deps += [
+        "//device/serial",
+      ]
+    }
   }
 
   if (use_udev) {
@@ -147,8 +148,6 @@ test("device_unittests") {
     sources += [
       "test/test_device_client.cc",
       "test/test_device_client.h",
-      "test/usb_test_gadget.h",
-      "test/usb_test_gadget_impl.cc",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",
       "usb/mojo/mock_permission_provider.cc",
@@ -160,6 +159,7 @@ test("device_unittests") {
       "usb/webusb_descriptors_unittest.cc",
     ]
     deps += [
+      ":usb_test_gadget",
       "//device/base",
       "//device/base:mocks",
       "//device/usb",
@@ -172,7 +172,6 @@ test("device_unittests") {
 
     if (!is_android) {
       sources += [ "usb/usb_ids_unittest.cc" ]
-      deps += [ "//device/hid" ]
     }
   }
 
@@ -267,6 +266,21 @@ test("device_unittests") {
       "//device/vr:mojo_bindings",
     ]
   }
+}
+
+source_set("usb_test_gadget") {
+  testonly = true
+
+  sources = [
+    "test/usb_test_gadget.h",
+    "test/usb_test_gadget_impl.cc",
+  ]
+
+  deps = [
+    "//device/base",
+    "//device/usb",
+    "//net:test_support",
+  ]
 }
 
 if (is_android) {

@@ -12,12 +12,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "device/hid/hid_device_filter.h"
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/common/api/hid.h"
 #include "extensions/utility/scoped_callback_runner.h"
+#include "services/device/public/cpp/hid/hid_device_filter.h"
 
 namespace hid = extensions::api::hid;
 

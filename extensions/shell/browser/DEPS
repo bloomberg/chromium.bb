@@ -21,7 +21,6 @@ include_rules = [
   # For device backend support.
   "+device/base",
   "+device/bluetooth",
-  "+device/hid",
   "+device/usb",
 
   "+gin",

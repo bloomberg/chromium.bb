@@ -10,12 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/hid/hid_connection.h"
 #include "extensions/browser/api/api_resource.h"
-
-namespace device {
-class HidConnection;
-}
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace extensions {
 

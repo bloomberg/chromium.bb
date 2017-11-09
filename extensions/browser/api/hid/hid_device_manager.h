@@ -13,12 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
-#include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/hid.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/interfaces/hid.mojom.h"
 
 namespace device {
 class HidDeviceFilter;
