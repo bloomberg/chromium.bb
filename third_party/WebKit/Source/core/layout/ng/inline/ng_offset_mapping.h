@@ -86,9 +86,9 @@ class NGMappingUnitRange {
   const NGOffsetMappingUnit* end_;
 };
 
-// An NGOffsetMapping stores the units of a LayoutNGBlockFlow in sorted
-// order in a vector. For each text node, the index range of the units owned by
-// the node is also stored.
+// Each inline formatting context laid out with LayoutNG has an NGOffsetMapping
+// object that stores the mapping information between DOM positions and offsets
+// in the text content string of the context.
 // See design doc https://goo.gl/CJbxky for details.
 class CORE_EXPORT NGOffsetMapping {
  public:
@@ -106,20 +106,22 @@ class CORE_EXPORT NGOffsetMapping {
 
   // ------ Mapping APIs from DOM to text content ------
 
-  // Note: any Position passed to the APIs must be in either of the two types:
-  // 1. Offset-in-anchor in text node
-  // 2. Before/After-anchor of node with display:inline style
+  // NGOffsetMapping APIs only accept the following positions:
+  // 1. Offset-in-anchor in a text node;
+  // 2. Before/After-anchor of an inline-level element.
   static bool AcceptsPosition(const Position&);
 
-  // Returns the mapping object of the block laying out the given position.
+  // Returns the mapping object of the inline formatting context laying out the
+  // given position.
   static const NGOffsetMapping* GetFor(const Position&);
 
-  // Returns the mapping object of the block containing the given legacy
-  // LayoutObject, if it's laid out with NG. This makes the retrieval of the
-  // mapping object easier when we are holding LayoutObject instead of Node.
+  // Returns the mapping object of the inline formatting context containing the
+  // given LayoutObject, if it's laid out with LayoutNG. This makes the
+  // retrieval of the mapping object easier when we already have a LayoutObject
+  // at hand.
   static const NGOffsetMapping* GetFor(const LayoutObject*);
 
-  // Returns the NGOffsetMappingUnit that contains the given position.
+  // Returns the NGOffsetMappingUnit whose DOM range contains the position.
   // If there are multiple qualifying units, returns the last one.
   const NGOffsetMappingUnit* GetMappingUnitForPosition(const Position&) const;
 
@@ -129,22 +131,23 @@ class CORE_EXPORT NGOffsetMapping {
   NGMappingUnitRange GetMappingUnitsForDOMRange(const EphemeralRange&) const;
 
   // Returns the text content offset corresponding to the given position.
-  // Returns nullopt when the position is not laid out in this block.
+  // Returns nullopt when the position is not laid out in this context.
   Optional<unsigned> GetTextContentOffset(const Position&) const;
 
   // Starting from the given position, searches for non-collapsed content in
-  // the same node in forward/backward direction and returns the position
+  // the anchor node in forward/backward direction and returns the position
   // before/after it; Returns null if there is no more non-collapsed content in
-  // the same node.
+  // the anchor node.
   Position StartOfNextNonCollapsedContent(const Position&) const;
   Position EndOfLastNonCollapsedContent(const Position&) const;
 
-  // Returns true if the position is right before/after non-collapsed content.
-  // Note that false is returned if the position is already at node end/start.
+  // Returns true if the position is right before/after non-collapsed content in
+  // the anchor node. Note that false is returned if the position is already at
+  // the end/start of the anchor node.
   bool IsBeforeNonCollapsedContent(const Position&) const;
   bool IsAfterNonCollapsedContent(const Position&) const;
 
-  // Maps the given position to text content, and then returns the text
+  // Maps the given position to a text content offset, and then returns the text
   // content character before the offset. Returns nullopt if it does not exist.
   Optional<UChar> GetCharacterBefore(const Position&) const;
 
@@ -165,9 +168,17 @@ class CORE_EXPORT NGOffsetMapping {
   Position GetFirstPosition(unsigned) const;
   Position GetLastPosition(unsigned) const;
 
+  // TODO(xiaochengh): Add offset-to-DOM APIs skipping generated contents.
+
  private:
+  // The NGOffsetMappingUnits of the inline formatting context in osrted order.
   UnitVector units_;
+
+  // Stores the unit range for each node in inline formatting context.
   RangeMap ranges_;
+
+  // The text content string of the inline formatting context. Same string as
+  // |NGInlineNodeData::text_content_|.
   String text_;
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
