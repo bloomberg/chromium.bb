@@ -501,7 +501,8 @@ PermissionStatus AwPermissionManager::GetPermissionStatus(
   if (permission == PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
     return result_cache_->GetResult(permission, requesting_origin,
                                     embedding_origin);
-  } else if (permission == PermissionType::MIDI) {
+  } else if (permission == PermissionType::MIDI ||
+             permission == PermissionType::SENSORS) {
     return PermissionStatus::GRANTED;
   }
 
