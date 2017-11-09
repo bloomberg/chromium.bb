@@ -423,6 +423,21 @@
       "A948368FC53BE437A55FEB414106E207925482F5"  // File Manager
     ]
   },
+  "lockWindowFullscreenPrivate": {
+    "channel": "stable",
+    "component_extensions_auto_granted": false,
+    "extension_types": ["extension"],
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "6A4A0389E8D47118E96E6221B0B7221CA3715801",  // Apitest extension
+      "EC8EA268128FECE14CEC68B90686D87755D87083",  // Assessment Assistant
+      "AA1C88257F51F7A9AFB947720AACE8CA7E9CF85C",  // Assessment Assistant (dev)
+      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8",  // Share to Classroom
+      "EFCF5358672FEE04789FD2EC3638A67ADEDB6C8C",  // Share to Classroom (test)
+      "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B"   // Share to Classroom
+                                                   // (staging)
+    ]
+  },
   "webcamPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"]

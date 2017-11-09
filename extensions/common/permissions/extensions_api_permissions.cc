@@ -80,6 +80,8 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
        "app.window.fullscreen.overrideEsc"},
       {APIPermission::kIdle, "idle"},
       {APIPermission::kLockScreen, "lockScreen"},
+      {APIPermission::kLockWindowFullscreenPrivate,
+       "lockWindowFullscreenPrivate", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kMediaPerceptionPrivate, "mediaPerceptionPrivate"},
       {APIPermission::kMetricsPrivate, "metricsPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},

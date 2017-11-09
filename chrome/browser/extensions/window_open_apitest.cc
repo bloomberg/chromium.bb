@@ -37,10 +37,23 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/base_window.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
+#include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/extensions/window_controller_list.h"
+#include "ui/aura/window.h"
+#endif
 
 using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
+
+namespace aura {
+class Window;
+}
 
 class WindowOpenApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
@@ -369,3 +382,88 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
     EXPECT_EQ("HOWDIE!!!", result);
   }
 }
+
+#if defined(OS_CHROMEOS)
+
+namespace {
+
+ash::mojom::WindowPinType GetCurrentWindowPinType() {
+  extensions::WindowController* controller = nullptr;
+  for (auto* iter :
+       extensions::WindowControllerList::GetInstance()->windows()) {
+    if (iter->window()->IsActive()) {
+      controller = iter;
+      break;
+    }
+  }
+  EXPECT_TRUE(controller);
+  aura::Window* window = controller->window()->GetNativeWindow();
+  ash::mojom::WindowPinType type = window->GetProperty(ash::kWindowPinTypeKey);
+  return type;
+}
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, OpenLockedFullscreenWindow) {
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/with_permission",
+                                      "openLockedFullscreenWindow"))
+      << message_;
+
+  // Make sure the newly created window is "trusted pinned" (which means that
+  // it's in locked fullscreen mode).
+  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
+            GetCurrentWindowPinType());
+}
+
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, UpdateWindowToLockedFullscreen) {
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/with_permission",
+                                      "updateWindowToLockedFullscreen"))
+      << message_;
+
+  // Make sure the current window is put into the "trusted pinned" state.
+  EXPECT_EQ(ash::mojom::WindowPinType::TRUSTED_PINNED,
+            GetCurrentWindowPinType());
+}
+
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
+                       OpenLockedFullscreenWindowWithoutPermission) {
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/without_permission",
+                                      "openLockedFullscreenWindow"))
+      << message_;
+
+  // Make sure no new windows get created (so only the one created by default
+  // exists) since the call to chrome.windows.create fails on the javascript
+  // side.
+  EXPECT_EQ(1u,
+            extensions::WindowControllerList::GetInstance()->windows().size());
+}
+
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
+                       UpdateWindowToLockedFullscreenWithoutPermission) {
+  ASSERT_TRUE(RunExtensionTestWithArg("locked_fullscreen/without_permission",
+                                      "updateWindowToLockedFullscreen"))
+      << message_;
+
+  // chrome.windows.update call fails since this extension doesn't have the
+  // correct permission and hence the current window has NONE as WindowPinType.
+  EXPECT_EQ(ash::mojom::WindowPinType::NONE,
+            GetCurrentWindowPinType());
+}
+#endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_CHROMEOS)
+// Loading an extension requiring the 'lockWindowFullscreenPrivate' permission
+// on non Chrome OS platforms should always fail since the API is available only
+// on Chrome OS.
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest,
+                       OpenLockedFullscreenWindowNonChromeOS) {
+  const extensions::Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("locked_fullscreen/with_permission"),
+      ExtensionBrowserTest::kFlagIgnoreManifestWarnings);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(1u, extension->install_warnings().size());
+  EXPECT_EQ(std::string("'lockWindowFullscreenPrivate' "
+                        "is not allowed for specified platform."),
+            extension->install_warnings().front().message);
+}
+#endif

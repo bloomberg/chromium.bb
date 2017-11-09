@@ -61,6 +61,7 @@ const char kShowStateValueNormal[] = "normal";
 const char kShowStateValueMinimized[] = "minimized";
 const char kShowStateValueMaximized[] = "maximized";
 const char kShowStateValueFullscreen[] = "fullscreen";
+const char kShowStateValueLockedFullscreen[] = "locked-fullscreen";
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
 
@@ -111,6 +112,9 @@ const char kCannotUpdateMuteCaptured[] =
     "being captured";
 const char kCannotDetermineLanguageOfUnloadedTab[] =
     "Cannot determine language: tab not loaded";
+const char kMissingLockWindowFullscreenPrivatePermission[] =
+    "Cannot lock window to fullscreen or close a locked fullscreen window "
+    "without lockWindowFullscreenPrivate manifest permission";
 
 }  // namespace tabs_constants
 }  // namespace extensions
