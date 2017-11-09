@@ -356,10 +356,13 @@ void BookmarkModel::SetTitle(const BookmarkNode* node,
     observer.OnWillChangeBookmarkNode(this, node);
 
   // The title index doesn't support changing the title, instead we remove then
-  // add it back.
-  index_->Remove(node);
+  // add it back. Only do this for URL nodes. A directory node can have its
+  // title changed but should be excluded from the index.
+  if (node->is_url())
+    index_->Remove(node);
   AsMutable(node)->SetTitle(title);
-  index_->Add(node);
+  if (node->is_url())
+    index_->Add(node);
 
   if (store_.get())
     store_->ScheduleSave();
