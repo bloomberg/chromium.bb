@@ -86,6 +86,9 @@ void ExpectEquality(const ExplodedFrameState& expected,
   EXPECT_EQ(expected.item_sequence_number, actual.item_sequence_number);
   EXPECT_EQ(expected.document_sequence_number, actual.document_sequence_number);
   EXPECT_EQ(expected.page_scale_factor, actual.page_scale_factor);
+  EXPECT_EQ(expected.scroll_anchor_selector, actual.scroll_anchor_selector);
+  EXPECT_EQ(expected.scroll_anchor_offset, actual.scroll_anchor_offset);
+  EXPECT_EQ(expected.scroll_anchor_simhash, actual.scroll_anchor_simhash);
   ExpectEquality(expected.http_body, actual.http_body);
   ExpectEquality(expected.children, actual.children);
 }
@@ -120,6 +123,9 @@ class PageStateSerializationTest : public testing::Test {
     frame_state->item_sequence_number = 1;
     frame_state->document_sequence_number = 2;
     frame_state->page_scale_factor = 2.0;
+    frame_state->scroll_anchor_selector = base::UTF8ToUTF16("#selector");
+    frame_state->scroll_anchor_offset = gfx::PointF(2.5, 3.5);
+    frame_state->scroll_anchor_simhash = 12345;
   }
 
   void PopulateHttpBody(
@@ -408,6 +414,26 @@ TEST_F(PageStateSerializationTest, LegacyEncodePageStateFrozen) {
   ExpectEquality(actual_encoded_state, expected_encoded_state);
 }
 
+TEST_F(PageStateSerializationTest, ScrollAnchorSelectorLengthLimited) {
+  ExplodedPageState input;
+  PopulateFrameState(&input.top);
+
+  std::string excessive_length_string(kMaxScrollAnchorSelectorLength + 1, 'a');
+
+  input.top.scroll_anchor_selector = base::UTF8ToUTF16(excessive_length_string);
+
+  std::string encoded;
+  EncodePageState(input, &encoded);
+
+  ExplodedPageState output;
+  DecodePageState(encoded, &output);
+
+  // We should drop all the scroll anchor data if the length is over the limit.
+  EXPECT_FALSE(output.top.scroll_anchor_selector);
+  EXPECT_EQ(output.top.scroll_anchor_offset, gfx::PointF());
+  EXPECT_EQ(output.top.scroll_anchor_simhash, 0ul);
+}
+
 // Change to #if 1 to enable this code. Run this test to generate data, based on
 // the current serialization format, for the BackwardsCompat_vXX tests. This
 // will generate an expected.dat in the temp directory, which should be moved
@@ -512,10 +538,20 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_v26) {
   TestBackwardsCompat(26);
 }
 
+TEST_F(PageStateSerializationTest, BackwardsCompat_v27) {
+  TestBackwardsCompat(27);
+}
+
+// Add your new backwards compat test for future versions *above* this
+// comment block; field-specific tests go *below* this comment block.
+// Any field additions require a new version and backcompat test; only fields
+// with external type definitions require their own dedicated test.
+// See DumpExpectedPageStateForBackwardsCompat for more details.
 // If any of the below tests fail, you likely made a backwards incompatible
 // change to a definition that page_state.mojom relies on. Ideally you should
 // find a way to avoid making this change; if that's not possible, contact the
 // page state serialization owners to figure out a resolution.
+
 TEST_F(PageStateSerializationTest, BackwardsCompat_ReferencedFiles) {
   ExplodedPageState state;
   state.referenced_files.push_back(base::UTF8ToUTF16("file.txt"));
@@ -634,10 +670,8 @@ TEST_F(PageStateSerializationTest, BackwardsCompat_HttpBody) {
   ExpectEquality(state, saved_state);
 }
 
-// Add your new backwards compat test for future versions/fields here.
-// Any field additions require a new version and backcompat test; only fields
-// with external type definitions require their own dedicated test.
-// See DumpExpectedPageStateForBackwardsCompat for more details.
+// Add new backwards compat field-specific tests here.  See comment above for
+// where to put backwards compat version tests.
 
 }  // namespace
 }  // namespace content

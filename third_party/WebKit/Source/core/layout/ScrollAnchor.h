@@ -8,9 +8,11 @@
 #include "core/CoreExport.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class Document;
 class LayoutObject;
 class ScrollableArea;
 
@@ -57,6 +59,31 @@ class CORE_EXPORT ScrollAnchor final {
   // Which corner of the anchor object we are currently anchored to.
   // Only meaningful if anchorObject() is non-null.
   Corner GetCorner() const { return corner_; }
+
+  struct SerializedAnchor {
+    SerializedAnchor() : simhash(0) {}
+    SerializedAnchor(const String& s, const LayoutPoint& p)
+        : selector(s), relative_offset(p), simhash(0) {}
+    SerializedAnchor(const String& s, const LayoutPoint& p, uint64_t hash)
+        : selector(s), relative_offset(p), simhash(hash) {}
+
+    bool IsValid() { return !selector.IsEmpty(); }
+
+    // Used to locate an element previously used as a scroll anchor.
+    const String selector;
+    // Used to restore the previous offset of the element within its scroller.
+    const LayoutPoint relative_offset;
+    // Used to compare the similarity of a prospective anchor's contents to the
+    // contents at the time the previous anchor was saved.
+    const uint64_t simhash;
+  };
+
+  // Attempt to restore |serialized_anchor| by scrolling to the element
+  // identified by its selector, adjusting by its relative_offset.
+  bool RestoreAnchor(Document*, const SerializedAnchor&);
+
+  // Create a serialized representation of the current anchor_object_.
+  const SerializedAnchor SerializeAnchor();
 
   // Checks if we hold any references to the specified object.
   bool RefersTo(const LayoutObject*) const;

@@ -1890,6 +1890,13 @@ void LocalFrameView::RestoreScrollbar() {
   SetScrollbarsSuppressed(false);
 }
 
+bool LocalFrameView::RestoreScrollAnchor(
+    const ScrollAnchor::SerializedAnchor& serialized_anchor) {
+  if (!RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled())
+    return false;
+  return scroll_anchor_.RestoreAnchor(frame_->GetDocument(), serialized_anchor);
+}
+
 void LocalFrameView::ProcessUrlFragment(const KURL& url,
                                         UrlFragmentBehavior behavior) {
   // If our URL has no ref, then we have no place we need to jump to.
@@ -2048,6 +2055,8 @@ void LocalFrameView::DidScrollTimerFired(TimerBase*) {
   if (frame_->GetDocument() &&
       !frame_->GetDocument()->GetLayoutViewItem().IsNull())
     frame_->GetDocument()->Fetcher()->UpdateAllImageResourcePriorities();
+
+  GetFrame().Loader().SaveScrollAnchor();
 }
 
 void LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded() {

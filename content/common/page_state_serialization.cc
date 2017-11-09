@@ -4,8 +4,6 @@
 
 #include "content/common/page_state_serialization.h"
 
-#include <stddef.h>
-
 #include <algorithm>
 #include <limits>
 
@@ -220,7 +218,7 @@ struct SerializeObject {
 // 24: Add did save scroll or scale state.
 // 25: Limit the length of unique names: https://crbug.com/626202
 // 26: Switch to mojo-based serialization.
-//
+// 27: Add serialized scroll anchor to FrameState.
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
@@ -228,7 +226,7 @@ const int kMinVersion = 11;
 // NOTE: When changing the version, please add a backwards compatibility test.
 // See PageStateSerializationTest.DumpExpectedPageStateForBackwardsCompat for
 // instructions on how to generate the new test case.
-const int kCurrentVersion = 26;
+const int kCurrentVersion = 27;
 
 // A bunch of convenience functions to write to/read from SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -833,6 +831,15 @@ void WriteFrameState(const ExplodedFrameState& state,
     frame->view_state->visual_viewport_scroll_offset =
         state.visual_viewport_scroll_offset;
     frame->view_state->page_scale_factor = state.page_scale_factor;
+    // We discard all scroll anchor data if the selector is over the length
+    // limit. We don't want to bloat the size of FrameState, and the other
+    // fields are useless without the selector.
+    if (state.scroll_anchor_selector && state.scroll_anchor_selector->length() <
+                                            kMaxScrollAnchorSelectorLength) {
+      frame->view_state->scroll_anchor_selector = state.scroll_anchor_selector;
+      frame->view_state->scroll_anchor_offset = state.scroll_anchor_offset;
+      frame->view_state->scroll_anchor_simhash = state.scroll_anchor_simhash;
+    }
   }
 
   frame->item_sequence_number = state.item_sequence_number;
@@ -872,6 +879,13 @@ void ReadFrameState(mojom::FrameState* frame, ExplodedFrameState* state) {
         frame->view_state->visual_viewport_scroll_offset;
     state->scroll_offset = frame->view_state->scroll_offset;
     state->page_scale_factor = frame->view_state->page_scale_factor;
+  }
+
+  if (frame->view_state) {
+    state->scroll_anchor_selector = frame->view_state->scroll_anchor_selector;
+    state->scroll_anchor_offset =
+        frame->view_state->scroll_anchor_offset.value_or(gfx::PointF());
+    state->scroll_anchor_simhash = frame->view_state->scroll_anchor_simhash;
   }
 
   state->item_sequence_number = frame->item_sequence_number;
@@ -979,7 +993,8 @@ ExplodedFrameState::ExplodedFrameState()
       item_sequence_number(0),
       document_sequence_number(0),
       page_scale_factor(0.0),
-      referrer_policy(blink::kWebReferrerPolicyDefault) {}
+      referrer_policy(blink::kWebReferrerPolicyDefault),
+      scroll_anchor_simhash(0) {}
 
 ExplodedFrameState::ExplodedFrameState(const ExplodedFrameState& other) {
   assign(other);
@@ -1008,6 +1023,9 @@ void ExplodedFrameState::assign(const ExplodedFrameState& other) {
   page_scale_factor = other.page_scale_factor;
   referrer_policy = other.referrer_policy;
   http_body = other.http_body;
+  scroll_anchor_selector = other.scroll_anchor_selector;
+  scroll_anchor_offset = other.scroll_anchor_offset;
+  scroll_anchor_simhash = other.scroll_anchor_simhash;
   children = other.children;
 }
 
