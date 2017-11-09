@@ -565,11 +565,10 @@ TEST_F(ExperimentalSwReporterInstallerTest, EmptyManifest) {
       default_version_, default_path_,
       base::DictionaryValue::From(base::JSONReader::Read(kTestManifest)));
 
-  // The SwReporter should not be launched, but no error should be logged.
-  // (This tests the case where a non-experimental version of the reporter,
-  // which does not have "launch_params" in its manifest, is already present.)
+  // The SwReporter should not be launched, and an error should be logged.
   EXPECT_TRUE(launched_invocations_.empty());
-  histograms_.ExpectTotalCount(kErrorHistogramName, 0);
+  histograms_.ExpectUniqueSample(
+      kErrorHistogramName, SW_REPORTER_EXPERIMENT_ERROR_MISSING_PARAMS, 1);
 }
 
 TEST_F(ExperimentalSwReporterInstallerTest, EmptyLaunchParams) {

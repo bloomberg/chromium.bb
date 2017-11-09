@@ -117,7 +117,7 @@ void ReportUploadsWithUma(const base::string16& upload_results) {
   UMA_HISTOGRAM_BOOLEAN("SoftwareReporter.LastUploadResult", last_result);
 }
 
-void ReportExperimentError(SwReporterExperimentError error) {
+void ReportExperimentError(SoftwareReporterExperimentError error) {
   UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.ExperimentErrors", error,
                             SW_REPORTER_EXPERIMENT_ERROR_MAX);
 }
@@ -186,11 +186,12 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
                                std::unique_ptr<base::DictionaryValue> manifest,
                                const SwReporterRunner& reporter_runner) {
   // The experiment requires launch_params so if they aren't present just
-  // return. This isn't an error because the user could get into the experiment
-  // group before they've downloaded the experiment component.
+  // return.
   base::Value* launch_params = nullptr;
-  if (!manifest->Get("launch_params", &launch_params))
+  if (!manifest->Get("launch_params", &launch_params)) {
+    ReportExperimentError(SW_REPORTER_EXPERIMENT_ERROR_MISSING_PARAMS);
     return;
+  }
 
   const base::ListValue* parameter_list = nullptr;
   if (!launch_params->GetAsList(&parameter_list) || parameter_list->empty()) {
