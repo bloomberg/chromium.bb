@@ -16,10 +16,11 @@ DEFINE_WEB_STATE_USER_DATA_KEY(LegacyTabHelper);
 // static
 void LegacyTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
-  DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(UserDataKey(),
-                         std::unique_ptr<base::SupportsUserData::Data>(
-                             new LegacyTabHelper(web_state)));
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           std::unique_ptr<base::SupportsUserData::Data>(
+                               new LegacyTabHelper(web_state)));
+  }
 }
 
 // static

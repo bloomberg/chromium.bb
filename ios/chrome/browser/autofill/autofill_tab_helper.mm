@@ -22,10 +22,11 @@ void AutofillTabHelper::CreateForWebState(
     web::WebState* web_state,
     password_manager::PasswordGenerationManager* password_generation_manager) {
   DCHECK(web_state);
-  DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(UserDataKey(),
-                         base::WrapUnique(new AutofillTabHelper(
-                             web_state, password_generation_manager)));
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new AutofillTabHelper(
+                               web_state, password_generation_manager)));
+  }
 }
 
 id<FormSuggestionProvider> AutofillTabHelper::GetSuggestionProvider() {
