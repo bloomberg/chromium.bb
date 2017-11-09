@@ -127,56 +127,6 @@ bool IsGpuVSyncSignalSupported() {
 #endif  // defined(OS_WIN)
 }
 
-scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
-    gpu::SurfaceHandle surface_handle,
-    bool need_alpha_channel,
-    bool need_stencil_bits,
-    bool support_locking,
-    ui::ContextProviderCommandBuffer* shared_context_provider,
-    ui::command_buffer_metrics::ContextType type) {
-  DCHECK(
-      content::GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor());
-  DCHECK(gpu_channel_host);
-
-  // All browser contexts get the same stream id because we don't use sync
-  // tokens for browser surfaces.
-  int32_t stream_id = content::kGpuStreamIdDefault;
-  gpu::SchedulingPriority stream_priority = content::kGpuStreamPriorityUI;
-
-  // This is called from a few places to create different contexts:
-  // - The shared main thread context (offscreen).
-  // - The compositor context, which is used by the browser compositor
-  //   (offscreen) for synchronization mostly, and by the display compositor
-  //   (onscreen, except for with mus) for actual GL drawing.
-  // - The compositor worker context (offscreen) used for GPU raster.
-  // So ask for capabilities needed by any of these cases (we can optimize by
-  // branching on |surface_handle| being null if these needs diverge).
-  //
-  // The default framebuffer for an offscreen context is not used, so it does
-  // not need alpha, stencil, depth, antialiasing. The display compositor does
-  // not use these things either (except for alpha when using mus for
-  // non-opaque ui that overlaps the system's window borders or stencil bits
-  // for overdraw feedback), so we can request only that when needed.
-  gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = need_alpha_channel ? 8 : -1;
-  attributes.depth_size = 0;
-  attributes.stencil_size = need_stencil_bits ? 8 : 0;
-  attributes.samples = 0;
-  attributes.sample_buffers = 0;
-  attributes.bind_generates_resource = false;
-  attributes.lose_context_when_out_of_memory = true;
-  attributes.buffer_preserved = false;
-
-  constexpr bool automatic_flushes = false;
-
-  GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
-  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-      std::move(gpu_channel_host), stream_id, stream_priority, surface_handle,
-      url, automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-      attributes, shared_context_provider, type);
-}
-
 #if defined(OS_MACOSX)
 bool IsCALayersDisabledFromCommandLine() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -267,8 +217,10 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
   software_backing_ = std::make_unique<viz::OutputDeviceBacking>();
 #endif
 
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+  if (command_line->HasSwitch(switches::kDisableGpu) ||
+      command_line->HasSwitch(switches::kDisableGpuCompositing)) {
     DisableGpuCompositing(nullptr);
+  }
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -373,9 +325,7 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
 
   const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
   const bool use_gpu_compositing =
-      !compositor->force_software_compositor() &&
-      !is_gpu_compositing_disabled_ &&
-      GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor();
+      !compositor->force_software_compositor() && !is_gpu_compositing_disabled_;
   if (use_gpu_compositing && !use_vulkan) {
     gpu_channel_factory_->EstablishGpuChannel(base::Bind(
         &GpuProcessTransportFactory::EstablishedGpuChannel,
@@ -392,9 +342,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (!compositor)
     return;
 
-  // CanUseGpuBrowserCompositor can change as a result of EstablishGpuChannel().
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+  if (gpu_channel_host &&
+      gpu_channel_host->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
+          gpu::kGpuFeatureStatusEnabled) {
     use_gpu_compositing = false;
+  }
   // Gpu compositing may have been disabled in the meantime.
   if (is_gpu_compositing_disabled_)
     use_gpu_compositing = false;
@@ -1003,8 +956,15 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
 
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
       gpu_channel_factory_->EstablishGpuChannelSync(nullptr);
-  if (!gpu_channel_host)
+  if (!gpu_channel_host ||
+      gpu_channel_host->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
+          gpu::kGpuFeatureStatusEnabled) {
+    DisableGpuCompositing(nullptr);
+    if (gpu_channel_host)
+      gpu_channel_host->DestroyChannel();
     return nullptr;
+  }
 
   // We need a separate context from the compositor's so that skia and gl_helper
   // don't step on each other.
@@ -1090,6 +1050,56 @@ void GpuProcessTransportFactory::OnContextLost() {
       FROM_HERE,
       base::BindOnce(&GpuProcessTransportFactory::OnLostMainThreadSharedContext,
                      callback_factory_.GetWeakPtr()));
+}
+
+scoped_refptr<ui::ContextProviderCommandBuffer>
+GpuProcessTransportFactory::CreateContextCommon(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    gpu::SurfaceHandle surface_handle,
+    bool need_alpha_channel,
+    bool need_stencil_bits,
+    bool support_locking,
+    ui::ContextProviderCommandBuffer* shared_context_provider,
+    ui::command_buffer_metrics::ContextType type) {
+  DCHECK(gpu_channel_host);
+  DCHECK(!is_gpu_compositing_disabled_);
+
+  // All browser contexts get the same stream id because we don't use sync
+  // tokens for browser surfaces.
+  int32_t stream_id = content::kGpuStreamIdDefault;
+  gpu::SchedulingPriority stream_priority = content::kGpuStreamPriorityUI;
+
+  // This is called from a few places to create different contexts:
+  // - The shared main thread context (offscreen).
+  // - The compositor context, which is used by the browser compositor
+  //   (offscreen) for synchronization mostly, and by the display compositor
+  //   (onscreen, except for with mus) for actual GL drawing.
+  // - The compositor worker context (offscreen) used for GPU raster.
+  // So ask for capabilities needed by any of these cases (we can optimize by
+  // branching on |surface_handle| being null if these needs diverge).
+  //
+  // The default framebuffer for an offscreen context is not used, so it does
+  // not need alpha, stencil, depth, antialiasing. The display compositor does
+  // not use these things either (except for alpha when using mus for
+  // non-opaque ui that overlaps the system's window borders or stencil bits
+  // for overdraw feedback), so we can request only that when needed.
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = need_alpha_channel ? 8 : -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = need_stencil_bits ? 8 : 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+  attributes.buffer_preserved = false;
+
+  constexpr bool automatic_flushes = false;
+
+  GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
+  return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+      std::move(gpu_channel_host), stream_id, stream_priority, surface_handle,
+      url, automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+      attributes, shared_context_provider, type);
 }
 
 }  // namespace content
