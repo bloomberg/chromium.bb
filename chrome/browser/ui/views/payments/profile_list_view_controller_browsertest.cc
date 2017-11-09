@@ -25,12 +25,11 @@ autofill::AutofillProfile CreateProfileWithPartialAddress() {
 
 class PaymentRequestProfileListTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestProfileListTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_free_shipping_test.html") {}
+  PaymentRequestProfileListTest() {}
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestProfileListTest, PrioritizeCompleteness) {
+  NavigateTo("/payment_request_free_shipping_test.html");
   autofill::AutofillProfile complete = autofill::test::GetFullProfile();
   autofill::AutofillProfile partial = CreateProfileWithPartialAddress();
   partial.set_use_count(1000);

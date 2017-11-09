@@ -17,9 +17,7 @@ namespace payments {
 class PaymentRequestShippingOptionViewControllerTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestShippingOptionViewControllerTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_dynamic_shipping_test.html") {}
+  PaymentRequestShippingOptionViewControllerTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingOptionViewControllerTest);
@@ -27,6 +25,7 @@ class PaymentRequestShippingOptionViewControllerTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingOptionViewControllerTest,
                        SelectingVariousShippingOptions) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // In MI state, shipping is $5.00.
   autofill::AutofillProfile michigan = autofill::test::GetFullProfile2();
   michigan.set_use_count(100U);

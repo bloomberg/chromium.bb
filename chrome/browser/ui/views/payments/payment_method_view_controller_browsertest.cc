@@ -15,15 +15,14 @@ namespace payments {
 
 class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentMethodViewControllerTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentMethodViewControllerTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodViewControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
   autofill::CreditCard card = autofill::test::GetCreditCard();
@@ -50,6 +49,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, OneCardSelected) {
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
                        OneCardSelectedOutOfMany) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
 
@@ -111,6 +111,7 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   AddCreditCard(autofill::test::GetCreditCard());
 
   InvokePaymentRequestUI();

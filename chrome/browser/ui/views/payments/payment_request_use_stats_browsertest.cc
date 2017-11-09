@@ -30,9 +30,7 @@ const base::Time kSomeLaterDate = base::Time::FromDoubleT(1497552271);
 class PaymentRequestAutofillInstrumentUseStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestAutofillInstrumentUseStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestAutofillInstrumentUseStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestAutofillInstrumentUseStatsTest);
@@ -42,6 +40,7 @@ class PaymentRequestAutofillInstrumentUseStatsTest
 // Request are properly updated upon completion.
 IN_PROC_BROWSER_TEST_F(PaymentRequestAutofillInstrumentUseStatsTest,
                        RecordUse) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kSomeDate);
 
@@ -74,9 +73,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAutofillInstrumentUseStatsTest,
 class PaymentRequestShippingAddressUseStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestShippingAddressUseStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_free_shipping_test.html") {}
+  PaymentRequestShippingAddressUseStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingAddressUseStatsTest);
@@ -85,6 +82,7 @@ class PaymentRequestShippingAddressUseStatsTest
 // Tests that use stats for the shipping address used in a Payment Request are
 // properly updated upon completion.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressUseStatsTest, RecordUse) {
+  NavigateTo("/payment_request_free_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kSomeDate);
 
@@ -124,8 +122,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressUseStatsTest, RecordUse) {
 class PaymentRequestContactAddressUseStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestContactAddressUseStatsTest()
-      : PaymentRequestBrowserTestBase("/payment_request_name_test.html") {}
+  PaymentRequestContactAddressUseStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestContactAddressUseStatsTest);
@@ -134,6 +131,7 @@ class PaymentRequestContactAddressUseStatsTest
 // Tests that use stats for the contact address used in a Payment Request are
 // properly updated upon completion.
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactAddressUseStatsTest, RecordUse) {
+  NavigateTo("/payment_request_name_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kSomeDate);
 
@@ -172,9 +170,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactAddressUseStatsTest, RecordUse) {
 class PaymentRequestSameShippingAndContactAddressUseStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestSameShippingAndContactAddressUseStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_contact_details_and_free_shipping_test.html") {}
+  PaymentRequestSameShippingAndContactAddressUseStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -185,6 +181,7 @@ class PaymentRequestSameShippingAndContactAddressUseStatsTest
 // contact address in a Payment Request are properly updated upon completion.
 IN_PROC_BROWSER_TEST_F(PaymentRequestSameShippingAndContactAddressUseStatsTest,
                        RecordUse) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kSomeDate);
 

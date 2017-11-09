@@ -19,9 +19,7 @@ namespace payments {
 class PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -32,6 +30,7 @@ class PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest
 // Payment Request is completed with a credit card.
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest,
                        TestSelectedPaymentMethod) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -79,8 +78,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerSelectedPaymentInstrumentTest,
 class PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest()
-      : PaymentRequestBrowserTestBase("/payment_request_bobpay_test.html") {}
+  PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -89,6 +87,7 @@ class PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
                        OnlyBobpaySupported) {
+  NavigateTo("/payment_request_bobpay_test.html");
   base::HistogramTester histogram_tester;
 
   ResetEventObserver(DialogEvent::NOT_SUPPORTED_ERROR);
@@ -135,9 +134,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoSupportedPaymentMethodTest,
 class PaymentRequestJourneyLoggerMultipleShowTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerMultipleShowTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_multiple_show_test.html") {}
+  PaymentRequestJourneyLoggerMultipleShowTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerMultipleShowTest);
@@ -145,6 +142,7 @@ class PaymentRequestJourneyLoggerMultipleShowTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
                        ShowSameRequest) {
+  NavigateTo("/payment_request_multiple_show_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -204,6 +202,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
                        StartNewRequest) {
+  NavigateTo("/payment_request_multiple_show_test.html");
   // Enable payment handlers, also known as service worker payment apps. The
   // rest of the test is identical to "StartNewRequestWithoutPaymentAppsFeature"
   // testcase above.
@@ -306,6 +305,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
                        StartNewRequestWithoutPaymentAppsFeature) {
+  NavigateTo("/payment_request_multiple_show_test.html");
   // Disable payment handlers, also known as service worker payment apps. The
   // rest of the test is identical to "StartNewRequest" testcase above.
   base::test::ScopedFeatureList scoped_feature_list;
@@ -409,9 +409,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerMultipleShowTest,
 class PaymentRequestJourneyLoggerAllSectionStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerAllSectionStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_contact_details_and_free_shipping_test.html") {}
+  PaymentRequestJourneyLoggerAllSectionStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestJourneyLoggerAllSectionStatsTest);
@@ -421,6 +419,7 @@ class PaymentRequestJourneyLoggerAllSectionStatsTest
 // when a Payment Request is completed.
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
                        NumberOfSuggestionsShown_Completed) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -481,6 +480,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
 // when a Payment Request is aborted by the user.
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
                        NumberOfSuggestionsShown_UserAborted) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -540,9 +540,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerAllSectionStatsTest,
 class PaymentRequestJourneyLoggerNoShippingSectionStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerNoShippingSectionStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_contact_details_test.html") {}
+  PaymentRequestJourneyLoggerNoShippingSectionStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -553,6 +551,7 @@ class PaymentRequestJourneyLoggerNoShippingSectionStatsTest
 // when a Payment Request is completed.
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
                        NumberOfSuggestionsShown_Completed) {
+  NavigateTo("/payment_request_contact_details_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -614,6 +613,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
 // when a Payment Request is aborted by the user.
 IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
                        NumberOfSuggestionsShown_UserAborted) {
+  NavigateTo("/payment_request_contact_details_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -674,9 +674,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestJourneyLoggerNoShippingSectionStatsTest,
 class PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_free_shipping_test.html") {}
+  PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
@@ -688,6 +686,7 @@ class PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest
 IN_PROC_BROWSER_TEST_F(
     PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest,
     NumberOfSuggestionsShown_Completed) {
+  NavigateTo("/payment_request_free_shipping_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -751,6 +750,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PaymentRequestJourneyLoggerNoContactDetailSectionStatsTest,
     NumberOfSuggestionsShown_UserAborted) {
+  NavigateTo("/payment_request_free_shipping_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -813,15 +813,14 @@ IN_PROC_BROWSER_TEST_F(
 
 class PaymentRequestNotShownTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestNotShownTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_can_make_payment_metrics_test.html") {}
+  PaymentRequestNotShownTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestNotShownTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   ResetEventObserverForSequence({DialogEvent::CAN_MAKE_PAYMENT_CALLED,
@@ -863,8 +862,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNotShownTest, OnlyNotShownMetricsLogged) {
 class PaymentRequestCompleteSuggestionsForEverythingTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCompleteSuggestionsForEverythingTest()
-      : PaymentRequestBrowserTestBase("/payment_request_email_test.html") {}
+  PaymentRequestCompleteSuggestionsForEverythingTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCompleteSuggestionsForEverythingTest);
@@ -872,6 +870,7 @@ class PaymentRequestCompleteSuggestionsForEverythingTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
                        UserHadCompleteSuggestionsForEverything) {
+  NavigateTo("/payment_request_email_test.html");
   base::HistogramTester histogram_tester;
 
   // Add an address and a credit card on file.
@@ -919,6 +918,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
                        UserDidNotHaveCompleteSuggestionsForEverything_NoCard) {
+  NavigateTo("/payment_request_email_test.html");
   base::HistogramTester histogram_tester;
 
   // Add an address.
@@ -963,6 +963,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompleteSuggestionsForEverythingTest,
 IN_PROC_BROWSER_TEST_F(
     PaymentRequestCompleteSuggestionsForEverythingTest,
     UserDidNotHaveCompleteSuggestionsForEverything_CardNetworkNotSupported) {
+  NavigateTo("/payment_request_email_test.html");
   base::HistogramTester histogram_tester;
 
   // Add an address and an AMEX credit card on file. AMEX is not supported by
@@ -1011,15 +1012,14 @@ IN_PROC_BROWSER_TEST_F(
 
 class PaymentRequestIframeTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestIframeTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_free_shipping_with_iframe_test.html") {}
+  PaymentRequestIframeTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestIframeTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_UserAborted) {
+  NavigateTo("/payment_request_free_shipping_with_iframe_test.html");
   base::HistogramTester histogram_tester;
 
   // Show a Payment Request.
@@ -1063,6 +1063,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_UserAborted) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_Completed) {
+  NavigateTo("/payment_request_free_shipping_with_iframe_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.
@@ -1117,6 +1118,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, IframeNavigation_Completed) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, HistoryPushState_UserAborted) {
+  NavigateTo("/payment_request_free_shipping_with_iframe_test.html");
   base::HistogramTester histogram_tester;
 
   // Show a Payment Request.
@@ -1162,6 +1164,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, HistoryPushState_UserAborted) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestIframeTest, HistoryPushState_Completed) {
+  NavigateTo("/payment_request_free_shipping_with_iframe_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address.

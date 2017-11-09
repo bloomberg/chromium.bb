@@ -16,9 +16,7 @@ namespace {
 class PaymentRequestShippingAddressInstanceTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestShippingAddressInstanceTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_shipping_address_instance_test.html") {}
+  PaymentRequestShippingAddressInstanceTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestShippingAddressInstanceTest);
@@ -27,6 +25,7 @@ class PaymentRequestShippingAddressInstanceTest
 // If the page creates multiple PaymentRequest objects, it should not crash.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressInstanceTest,
                        ShouldBeSameInstance) {
+  NavigateTo("/payment_request_shipping_address_instance_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   autofill::CreditCard card = autofill::test::GetCreditCard();

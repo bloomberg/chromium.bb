@@ -42,9 +42,7 @@ const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);
 class PaymentRequestCreditCardEditorTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCreditCardEditorTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestCreditCardEditorTest() {}
 
   PersonalDataLoadedObserverMock personal_data_observer_;
 
@@ -53,6 +51,7 @@ class PaymentRequestCreditCardEditorTest
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -108,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringValidData) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnterConfirmsValidData) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -165,6 +165,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   OpenCreditCardEditorScreen();
@@ -177,6 +178,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, CancelFromEditor) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringExpiredCard) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -222,6 +224,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -302,6 +305,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EditingMaskedCard_ClickOnPaymentsLink) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -347,6 +351,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringNothingInARequiredField) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -379,6 +384,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringInvalidCardNumber) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -410,6 +416,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringUnsupportedCardType) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
 
@@ -443,6 +450,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EnteringInvalidCardNumber_AndFixingIt) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
@@ -501,6 +509,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   // Add expired card.
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_use_count(5U);
@@ -594,6 +603,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EditingCardWithoutBillingAddress) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   // Make sure to clear billing address.
   card.set_billing_address_id("");
@@ -655,6 +665,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        EditingCardWithoutCardholderName) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
@@ -717,6 +728,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        ChangeCardholderName) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
   AddAutofillProfile(billing_profile);
   autofill::CreditCard card = autofill::test::GetCreditCard();
@@ -768,6 +780,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        CreateNewBillingAddress) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   // Make sure to clear billing address and have none available.
   card.set_billing_address_id("");
@@ -855,6 +868,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        NonexistentBillingAddres) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   // Set a billing address that is not yet added to the personal data.
   autofill::AutofillProfile billing_profile(autofill::test::GetFullProfile());
@@ -889,6 +903,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
                        RefuseExistingCardNumber) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::CreditCard card = autofill::test::GetCreditCard();
   AddCreditCard(card);
 
@@ -914,6 +929,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   OpenCreditCardEditorScreen();
@@ -931,6 +947,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EnteringEmptyData) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, DoneButtonDisabled) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::TestAutofillClock test_clock;
   test_clock.SetNow(kJune2017);
   InvokePaymentRequestUI();

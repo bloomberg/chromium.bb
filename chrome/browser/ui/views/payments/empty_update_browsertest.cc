@@ -13,15 +13,14 @@ namespace payments {
 
 class PaymentRequestEmptyUpdateTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestEmptyUpdateTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_empty_update_test.html") {}
+  PaymentRequestEmptyUpdateTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestEmptyUpdateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestEmptyUpdateTest, NoCrash) {
+  NavigateTo("/payment_request_empty_update_test.html");
   AddAutofillProfile(autofill::test::GetFullProfile());
   InvokePaymentRequestUI();
   OpenShippingAddressSectionScreen();

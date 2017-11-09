@@ -14,9 +14,7 @@ namespace payments {
 
 class PaymentRequestNoUpdateWithTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestNoUpdateWithTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_update_with_test.html") {}
+  PaymentRequestNoUpdateWithTest() {}
 
   void RunJavaScriptFunctionToOpenPaymentRequestUI(
       const std::string& function_name) {
@@ -35,6 +33,7 @@ class PaymentRequestNoUpdateWithTest : public PaymentRequestBrowserTestBase {
 // A merchant that does not listen to shipping address update events will not
 // cause timeouts in UI.
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutListeners) {
+  NavigateTo("/payment_request_no_update_with_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   AddAutofillProfile(autofill::test::GetFullProfile2());
@@ -66,6 +65,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutListeners) {
 // updateWith() on the event, will not cause timeouts in UI.
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest,
                        BuyWithoutCallingUpdateWith) {
+  NavigateTo("/payment_request_no_update_with_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   AddAutofillProfile(autofill::test::GetFullProfile2());
@@ -96,6 +96,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest,
 // A merchant that invokes updateWith() directly without using a promise will
 // not cause timeouts in UI.
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoUpdateWithTest, BuyWithoutPromises) {
+  NavigateTo("/payment_request_no_update_with_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   AddAutofillProfile(autofill::test::GetFullProfile2());

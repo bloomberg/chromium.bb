@@ -30,14 +30,13 @@ std::string GetLocale() {
 class PaymentRequestContactInfoEditorTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestContactInfoEditorTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_contact_details_test.html") {}
+  PaymentRequestContactInfoEditorTest() {}
 
   PersonalDataLoadedObserverMock personal_data_observer_;
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
+  NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();
 
@@ -80,6 +79,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, HappyPath) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
                        EnterAcceleratorHappyPath) {
+  NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();
 
@@ -119,6 +119,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
+  NavigateTo("/payment_request_contact_details_test.html");
   InvokePaymentRequestUI();
   OpenContactInfoEditorScreen();
 
@@ -172,6 +173,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, Validation) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
+  NavigateTo("/payment_request_contact_details_test.html");
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 
@@ -221,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest, ModifyExisting) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
                        ModifyExistingSelectsIt) {
+  NavigateTo("/payment_request_contact_details_test.html");
   autofill::PersonalDataManager* personal_data_manager = GetDataManager();
   personal_data_manager->AddObserver(&personal_data_observer_);
 

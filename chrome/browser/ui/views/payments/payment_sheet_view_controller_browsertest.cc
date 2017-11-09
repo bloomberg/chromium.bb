@@ -18,9 +18,7 @@ namespace payments {
 class PaymentSheetViewControllerNoShippingTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentSheetViewControllerNoShippingTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentSheetViewControllerNoShippingTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerNoShippingTest);
@@ -28,6 +26,7 @@ class PaymentSheetViewControllerNoShippingTest
 
 // With no data present, the pay button should be disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest, NoData) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   EXPECT_FALSE(IsPayButtonEnabled());
@@ -36,6 +35,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest, NoData) {
 // With a supported card (Visa) present, the pay button should be enabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
                        SupportedCard) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -50,6 +50,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 // be disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
                        UnsupportedCard) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   AddCreditCard(autofill::test::GetCreditCard2());  // Amex card.
 
   InvokePaymentRequestUI();
@@ -60,6 +61,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 // present.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
                        NoShippingNoContactRows) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
@@ -80,9 +82,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerNoShippingTest,
 class PaymentSheetViewControllerContactDetailsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentSheetViewControllerContactDetailsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_contact_details_and_free_shipping_test.html") {}
+  PaymentSheetViewControllerContactDetailsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentSheetViewControllerContactDetailsTest);
@@ -90,6 +90,7 @@ class PaymentSheetViewControllerContactDetailsTest
 
 // With no data present, the pay button should be disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest, NoData) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   InvokePaymentRequestUI();
 
   EXPECT_FALSE(IsPayButtonEnabled());
@@ -99,6 +100,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest, NoData) {
 // because there is no contact details.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        SupportedCard_NoContactInfo) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
 
   InvokePaymentRequestUI();
@@ -109,6 +111,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // enough information to enable the pay button.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        SupportedCard_CompleteContactInfo) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.
@@ -123,6 +126,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // button is disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        UnsupportedCard_CompleteContactInfo) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   AddCreditCard(autofill::test::GetCreditCard2());  // Amex card.
   AddAutofillProfile(autofill::test::GetFullProfile());
 
@@ -134,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // pay button is disabled.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        SupportedCard_IncompleteContactInfo) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   AddCreditCard(autofill::test::GetCreditCard());  // Visa card.
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
@@ -150,6 +155,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 // If shipping and contact info are requested, show all the rows.
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        AllRowsPresent) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   InvokePaymentRequestUI();
 
   EXPECT_NE(nullptr, dialog_view()->GetViewByID(static_cast<int>(
@@ -175,6 +181,7 @@ IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentSheetViewControllerContactDetailsTest,
                        AllClickableRowsPresent) {
+  NavigateTo("/payment_request_contact_details_and_free_shipping_test.html");
   autofill::AutofillProfile profile(autofill::test::GetFullProfile());
   AddAutofillProfile(profile);
   autofill::CreditCard card(autofill::test::GetCreditCard());  // Visa card.

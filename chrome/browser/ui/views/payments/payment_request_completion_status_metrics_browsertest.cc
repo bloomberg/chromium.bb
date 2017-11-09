@@ -21,15 +21,14 @@ namespace payments {
 class PaymentRequestCompletionStatusMetricsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestCompletionStatusMetricsTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_can_make_payment_metrics_test.html") {}
+  PaymentRequestCompletionStatusMetricsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestCompletionStatusMetricsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest, Completed) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Setup a credit card with an associated billing address so CanMakePayment
@@ -77,6 +76,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest, Completed) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        MerchantAborted_Reload) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -121,6 +121,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        MerchantAborted_Navigation) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -167,6 +168,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        MerchantAborted_Abort) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -214,6 +216,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        UserAborted_Navigation) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -255,6 +258,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        UserAborted_CancelButton) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -296,6 +300,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        UserAborted_TabClosed) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -339,6 +344,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
                        UserAborted_Reload) {
+  NavigateTo("/payment_request_can_make_payment_metrics_test.html");
   base::HistogramTester histogram_tester;
 
   // Start the Payment Request.
@@ -383,8 +389,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
 class PaymentRequestInitiatedCompletionStatusMetricsTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestInitiatedCompletionStatusMetricsTest()
-      : PaymentRequestBrowserTestBase("/initiated_test.html") {}
+  PaymentRequestInitiatedCompletionStatusMetricsTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestInitiatedCompletionStatusMetricsTest);
@@ -392,9 +397,8 @@ class PaymentRequestInitiatedCompletionStatusMetricsTest
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestInitiatedCompletionStatusMetricsTest,
                        Aborted_NotShown) {
-  // The Payment Request will have been initiated on page load, so it won't be
-  // logged.
   base::HistogramTester histogram_tester;
+  NavigateTo("/initiated_test.html");
 
   // Navigate away.
   NavigateTo("/payment_request_email_test.html");
@@ -406,7 +410,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestInitiatedCompletionStatusMetricsTest,
   std::vector<base::Bucket> buckets =
       histogram_tester.GetAllSamples("PaymentRequest.Events");
   ASSERT_EQ(1U, buckets.size());
-  EXPECT_EQ(JourneyLogger::EVENT_INITIATED | JourneyLogger::EVENT_USER_ABORTED,
+  EXPECT_EQ(JourneyLogger::EVENT_INITIATED | JourneyLogger::EVENT_USER_ABORTED |
+                JourneyLogger::EVENT_REQUEST_METHOD_BASIC_CARD |
+                JourneyLogger::EVENT_REQUEST_METHOD_OTHER,
             buckets[0].min);
 }
 

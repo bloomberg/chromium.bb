@@ -50,9 +50,7 @@ const base::Time kJanuary2017 = base::Time::FromDoubleT(1484505871);
 class PaymentRequestShippingAddressEditorTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestShippingAddressEditorTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_dynamic_shipping_test.html") {}
+  PaymentRequestShippingAddressEditorTest() {}
 
   void SetFieldTestValue(autofill::ServerFieldType type) {
     base::string16 textfield_text;
@@ -197,6 +195,7 @@ class PaymentRequestShippingAddressEditorTest
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -240,6 +239,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, SyncData) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        EnterAcceleratorSyncData) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -285,6 +285,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -334,6 +335,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest, AsyncData) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        SwitchingCountryUpdatesViewAndKeepsValues) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -442,6 +444,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FailToLoadRegionData) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -479,6 +482,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        TimingOutRegionData) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -519,6 +523,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        SelectingIncompleteAddress) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add incomplete address.
   autofill::AutofillProfile profile;
   profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), kLocale);
@@ -587,6 +592,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FocusFirstField_Name) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
 
@@ -609,6 +615,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        FocusFirstInvalidField_NotName) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with only the name set, so that another view takes focus.
   autofill::AutofillProfile profile;
   profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), "fr_CA");
@@ -639,6 +646,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that the editor accepts an international phone from another country.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        AddInternationalPhoneNumberFromOtherCountry) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   SetRegionDataLoader(&test_region_data_loader_);
   test_region_data_loader_.set_synchronous_callback(true);
@@ -663,6 +671,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that the editor doesn't accept a local phone from another country.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        AddLocalPhoneNumberFromOtherCountry) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   InvokePaymentRequestUI();
   OpenShippingAddressEditorScreen();
 
@@ -678,6 +687,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // Tests that updating the country to one with no states clears the state value.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        UpdateToCountryWithoutState) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US.
   autofill::AutofillProfile california = autofill::test::GetFullProfile();
   california.set_use_count(50U);
@@ -741,6 +751,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 IN_PROC_BROWSER_TEST_F(
     PaymentRequestShippingAddressEditorTest,
     NoErrorLabelForInternationalPhoneNumberFromOtherCountry) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a valid AU phone number in international
   // format.
   autofill::AutofillProfile california = autofill::test::GetFullProfile();
@@ -762,6 +773,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests that there is an error label for an local phone from another country.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        ErrorLabelForLocalPhoneNumberFromOtherCountry) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Create a profile in the US and add a valid AU phone number in local format.
   autofill::AutofillProfile california = autofill::test::GetFullProfile();
   california.set_use_count(50U);
@@ -786,6 +798,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // user pick a state. This should also disable the "Done" button.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        CountryButNoState) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with a country but no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_STATE, base::ASCIIToUTF16(""),
@@ -833,6 +846,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // country, the address is considered valid.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        CountryAndInvalidState) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address with a country but no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_STATE,
@@ -857,6 +871,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // button.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryNoState) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country or no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -906,6 +921,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // This should also disable the "Done" button.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryInvalidState) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country or no state.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -956,6 +972,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // This should also enable the "Done" button.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_SyncRegionLoad) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -1006,6 +1023,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // This should also enable the "Done" button.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryValidState_AsyncRegionLoad) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -1056,6 +1074,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // profile is a region code.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionCode) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -1087,6 +1106,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 // profile is a region name.
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        DefaultRegion_RegionName) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::ADDRESS_HOME_COUNTRY, base::ASCIIToUTF16(""),
@@ -1116,6 +1136,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
                        NoCountryProfileDoesntSetCountryToLocale) {
+  NavigateTo("/payment_request_dynamic_shipping_test.html");
   // Add address without a country but a valid state for the default country.
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   profile.SetInfo(autofill::NAME_FULL, base::ASCIIToUTF16(kNameFull), kLocale);

@@ -27,9 +27,7 @@ namespace payments {
 class PaymentRequestWebContentsManagerTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestWebContentsManagerTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_multiple_requests.html") {}
+  PaymentRequestWebContentsManagerTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestWebContentsManagerTest);
@@ -37,6 +35,7 @@ class PaymentRequestWebContentsManagerTest
 
 // If the page creates multiple PaymentRequest objects, it should not crash.
 IN_PROC_BROWSER_TEST_F(PaymentRequestWebContentsManagerTest, MultipleRequests) {
+  NavigateTo("/payment_request_multiple_requests.html");
   const std::vector<PaymentRequest*> payment_requests =
       GetPaymentRequests(GetActiveWebContents());
   EXPECT_EQ(5U, payment_requests.size());
@@ -44,15 +43,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestWebContentsManagerTest, MultipleRequests) {
 
 class PaymentRequestNoShippingTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestNoShippingTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestNoShippingTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestNoShippingTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InactiveBrowserWindow) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   SetBrowserWindowInactive();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -67,6 +65,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InactiveBrowserWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -77,6 +76,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateToSame) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -87,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateToSame) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -97,6 +98,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndReload) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndClickCancel) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
@@ -107,6 +109,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndClickCancel) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
                        OrderSummaryAndClickCancel) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   InvokePaymentRequestUI();
 
   OpenOrderSummaryScreen();
@@ -118,6 +121,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   autofill::CreditCard card = autofill::test::GetCreditCard();
@@ -149,6 +153,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
 }
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InvalidSSL) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   SetInvalidSsl();
 
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
@@ -170,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, InvalidSSL) {
 
 class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestAbortTest()
-      : PaymentRequestBrowserTestBase("/payment_request_abort_test.html") {}
+  PaymentRequestAbortTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestAbortTest);
@@ -179,6 +183,7 @@ class PaymentRequestAbortTest : public PaymentRequestBrowserTestBase {
 
 // Testing the use of the abort() JS API.
 IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
+  NavigateTo("/payment_request_abort_test.html");
   InvokePaymentRequestUI();
 
   ResetEventObserverForSequence(
@@ -201,6 +206,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest, OpenThenAbort) {
 
 IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest,
                        AbortUnsuccessfulAfterCVCPromptShown) {
+  NavigateTo("/payment_request_abort_test.html");
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
   autofill::CreditCard card = autofill::test::GetCreditCard();
@@ -225,9 +231,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAbortTest,
 class PaymentRequestPaymentMethodIdentifierTest
     : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestPaymentMethodIdentifierTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_payment_method_identifier_test.html") {}
+  PaymentRequestPaymentMethodIdentifierTest() {}
 
   void InvokePaymentRequestWithJs(const std::string& js) {
     ResetEventObserver(DialogEvent::DIALOG_OPENED);
@@ -244,6 +248,7 @@ class PaymentRequestPaymentMethodIdentifierTest
 // One network is specified in 'basic-card' data, one in supportedMethods.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NetworksSpecified) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs("buy();");
 
   std::vector<PaymentRequest*> requests =
@@ -262,6 +267,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 // supported.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NoNetworksSpecified) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs("buyBasicCard();");
 
   std::vector<PaymentRequest*> requests =
@@ -285,6 +291,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 // the expected order when in different supportedMethods lists.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NetworkThenBasicCard_DifferentList) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
       "  supportedMethods: ['mastercard'],"
@@ -314,6 +321,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 // the expected order when in the same supportedMethods list.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NetworkThenBasicCard_SameList) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
       "  supportedMethods: ['visa', 'basic-card']"
@@ -341,6 +349,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 // the same networks does not yield duplicates and has the expected order.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        BasicCard_NetworkThenBasicCardWithSameNetwork) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
       "  supportedMethods: ['mastercard', 'visa']"
@@ -365,6 +374,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
 // A url-based payment method identifier is only supported if it has an https
 // scheme.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
       "  supportedMethods: ['https://bobpay.xyz']"
@@ -385,6 +395,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
 // yields the correct supported methods in payment request.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
                        MultiplePaymentMethodIdentifiers) {
+  NavigateTo("/payment_request_payment_method_identifier_test.html");
   InvokePaymentRequestWithJs(
       "buyHelper([{"
       "  supportedMethods: ['https://bobpay.xyz', 'https://bobpay.xyz']"
@@ -438,14 +449,13 @@ class PaymentsRequestVisualTest
 };
 
 IN_PROC_BROWSER_TEST_F(PaymentsRequestVisualTest, InvokeDialog_NoShipping) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   RunDialog();
 }
 
 class PaymentRequestSettingsLinkTest : public PaymentRequestBrowserTestBase {
  protected:
-  PaymentRequestSettingsLinkTest()
-      : PaymentRequestBrowserTestBase(
-            "/payment_request_no_shipping_test.html") {}
+  PaymentRequestSettingsLinkTest() {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSettingsLinkTest);
@@ -453,6 +463,7 @@ class PaymentRequestSettingsLinkTest : public PaymentRequestBrowserTestBase {
 
 // Tests that clicking the settings link brings the user to settings.
 IN_PROC_BROWSER_TEST_F(PaymentRequestSettingsLinkTest, ClickSettingsLink) {
+  NavigateTo("/payment_request_no_shipping_test.html");
   // Setup a credit card with an associated billing address.
   autofill::AutofillProfile billing_address = autofill::test::GetFullProfile();
   AddAutofillProfile(billing_address);
