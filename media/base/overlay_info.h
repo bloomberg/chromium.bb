@@ -41,9 +41,6 @@ struct MEDIA_EXPORT OverlayInfo {
 
   // Is the player in fullscreen?
   bool is_fullscreen = false;
-
-  // Is the player's frame hidden / closed?
-  bool is_frame_hidden = false;
 };
 
 using ProvideOverlayInfoCB = base::Callback<void(const OverlayInfo&)>;

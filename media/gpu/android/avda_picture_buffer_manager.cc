@@ -266,13 +266,4 @@ bool AVDAPictureBufferManager::HasUnrenderedPictures() const {
   return false;
 }
 
-void AVDAPictureBufferManager::ImmediatelyForgetOverlay(
-    const PictureBufferMap& buffers) {
-  if (!shared_state_ || !shared_state_->overlay())
-    return;
-
-  ReleaseCodecBuffers(buffers);
-  shared_state_->ClearOverlay(shared_state_->overlay());
-}
-
 }  // namespace media
