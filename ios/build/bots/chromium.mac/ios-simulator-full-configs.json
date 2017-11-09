@@ -22,7 +22,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "11.0",
+      "os": "10.0",
       "xcode version": "9.0"
     },
     {
