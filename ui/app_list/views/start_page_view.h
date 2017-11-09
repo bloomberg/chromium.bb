@@ -40,7 +40,6 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
 
   views::View* instant_container() const { return instant_container_; }
   const std::vector<SearchResultTileItemView*>& tile_views() const;
-  TileItemView* all_apps_button() const;
 
   // Overridden from AppListPage:
   gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
