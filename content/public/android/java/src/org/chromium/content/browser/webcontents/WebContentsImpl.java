@@ -512,7 +512,7 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         mSmartClipCallback.storeRequestRect(new Rect(x, y, x + width, y + height));
         RenderCoordinates coordinateSpace = getRenderCoordinates();
         float dpi = coordinateSpace.getDeviceScaleFactor();
-        y -= coordinateSpace.getContentOffsetYPix();
+        y = (int) (y - coordinateSpace.getContentOffsetYPix());
         nativeRequestSmartClipExtract(mNativeWebContentsAndroid, mSmartClipCallback,
                 (int) (x / dpi), (int) (y / dpi), (int) (width / dpi), (int) (height / dpi));
     }
