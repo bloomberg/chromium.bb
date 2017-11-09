@@ -14,7 +14,7 @@ namespace test {
 
 class ScopedRestoreICUDefaultLocale {
  public:
-  ScopedRestoreICUDefaultLocale();
+  ScopedRestoreICUDefaultLocale(const std::string& locale = std::string());
   ~ScopedRestoreICUDefaultLocale();
 
  private:

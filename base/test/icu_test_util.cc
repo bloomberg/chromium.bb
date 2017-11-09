@@ -13,8 +13,12 @@
 namespace base {
 namespace test {
 
-ScopedRestoreICUDefaultLocale::ScopedRestoreICUDefaultLocale()
-    : default_locale_(uloc_getDefault()) {}
+ScopedRestoreICUDefaultLocale::ScopedRestoreICUDefaultLocale(
+    const std::string& locale)
+    : default_locale_(uloc_getDefault()) {
+  if (!locale.empty())
+    i18n::SetICUDefaultLocale(locale.data());
+}
 
 ScopedRestoreICUDefaultLocale::~ScopedRestoreICUDefaultLocale() {
   i18n::SetICUDefaultLocale(default_locale_.data());
