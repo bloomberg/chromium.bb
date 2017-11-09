@@ -291,8 +291,13 @@ void MediaCodecVideoDecoder::TransitionToTargetSurface() {
   DCHECK(SurfaceTransitionPending());
   DCHECK(device_info_->IsSetOutputSurfaceSupported());
 
-  if (!codec_->SetSurface(target_surface_bundle_))
+  if (!codec_->SetSurface(target_surface_bundle_)) {
+    video_frame_factory_->SetSurfaceBundle(nullptr);
     EnterTerminalState(State::kError);
+    return;
+  }
+
+  video_frame_factory_->SetSurfaceBundle(target_surface_bundle_);
 }
 
 void MediaCodecVideoDecoder::CreateCodec() {
@@ -307,6 +312,9 @@ void MediaCodecVideoDecoder::CreateCodec() {
   config->requires_secure_codec = decoder_config_.is_encrypted();
   config->initial_expected_coded_size = decoder_config_.coded_size();
   config->surface_bundle = target_surface_bundle_;
+  // Note that this might be the same surface bundle that we've been using, if
+  // we're reinitializing the codec without changing surfaces.  That's fine.
+  video_frame_factory_->SetSurfaceBundle(target_surface_bundle_);
   codec_allocator_->CreateMediaCodecAsync(
       codec_allocator_weak_factory_.GetWeakPtr(), std::move(config));
 }
@@ -536,12 +544,8 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     return true;
 
   video_frame_factory_->CreateVideoFrame(
-      std::move(output_buffer),
-      codec_->SurfaceBundle()->overlay
-          ? nullptr
-          : surface_texture_bundle_->surface_texture,
-      presentation_time, decoder_config_.natural_size(),
-      CreatePromotionHintCB(),
+      std::move(output_buffer), presentation_time,
+      decoder_config_.natural_size(), CreatePromotionHintCB(),
       base::Bind(&MediaCodecVideoDecoder::ForwardVideoFrame,
                  weak_factory_.GetWeakPtr(), reset_generation_));
   return true;
@@ -712,22 +716,23 @@ MediaCodecVideoDecoder::CreatePromotionHintCB() const {
   // While we could simplify it a bit, this is the general form that we'll use
   // when handling promotion hints.
 
-  // TODO(liberato): Keeping the surface bundle around as long as the images
-  // doesn't work so well if the surface is destroyed.  In that case, the right
-  // thing to do is (a) wait for any codec to quit using the surface, and (b)
-  // clear |overlay| out of the surface bundle.
-  // Having the surface bundle register for destruction callbacks, instead of
-  // us, makes sense.
+  // Note that this keeps only a wp to the surface bundle via |layout_cb|.  It
+  // also continues to work even if |this| is destroyed; images might want to
+  // move an overlay around even after MCVD has been torn down.  For example
+  // inline L1 content will fall into this case.
   return BindToCurrentLoop(base::BindRepeating(
-      [](scoped_refptr<AVDASurfaceBundle> surface_bundle,
+      [](AVDASurfaceBundle::ScheduleLayoutCB layout_cb,
          PromotionHintAggregator::Hint hint) {
         // If we're promotable, and we have a surface bundle, then also
         // position the overlay.  We could do this even if the overlay is
         // not promotable, but it wouldn't have any visible effect.
-        if (hint.is_promotable && surface_bundle)
-          surface_bundle->overlay->ScheduleLayout(hint.screen_rect);
+        if (hint.is_promotable)
+          layout_cb.Run(hint.screen_rect);
+
+        // If we want to send |hint| to MCVD, then we should do it via wp.  MCVD
+        // might have been destroyed already, which is okay.
       },
-      codec_->SurfaceBundle()));
+      codec_->SurfaceBundle()->GetScheduleLayoutCB()));
 }
 
 }  // namespace media
