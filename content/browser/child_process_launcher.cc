@@ -31,8 +31,6 @@ ChildProcessLauncher::ChildProcessLauncher(
       termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
       exit_code_(RESULT_CODE_NORMAL_EXIT),
       starting_(true),
-      broker_client_invitation_(std::move(broker_client_invitation)),
-      process_error_callback_(process_error_callback),
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER)
@@ -45,9 +43,9 @@ ChildProcessLauncher::ChildProcessLauncher(
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 
   helper_ = new ChildProcessLauncherHelper(
-                child_process_id, client_thread_id_,
-              std::move(command_line), std::move(delegate),
-                       weak_factory_.GetWeakPtr(), terminate_on_shutdown);
+      child_process_id, client_thread_id_, std::move(command_line),
+      std::move(delegate), weak_factory_.GetWeakPtr(), terminate_on_shutdown,
+      std::move(broker_client_invitation), process_error_callback);
   helper_->StartLaunchOnClientThread();
 }
 
@@ -73,24 +71,12 @@ void ChildProcessLauncher::SetProcessPriority(
 
 void ChildProcessLauncher::Notify(
     ChildProcessLauncherHelper::Process process,
-    mojo::edk::ScopedPlatformHandle server_handle,
     int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   starting_ = false;
   process_ = std::move(process);
 
-  // Take ownership of the broker client invitation here so it's destroyed when
-  // we go out of scope regardless of the outcome below.
-  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation> invitation =
-      std::move(broker_client_invitation_);
   if (process_.process.IsValid()) {
-    // Set up Mojo IPC to the new process.
-    DCHECK(invitation);
-    invitation->Send(
-        process_.process.Handle(),
-        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
-                                    std::move(server_handle)),
-        process_error_callback_);
     client_->OnProcessLaunched();
   } else {
     termination_status_ = base::TERMINATION_STATUS_LAUNCH_FAILED;

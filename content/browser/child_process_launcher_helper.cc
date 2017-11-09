@@ -56,14 +56,18 @@ ChildProcessLauncherHelper::ChildProcessLauncherHelper(
     std::unique_ptr<base::CommandLine> command_line,
     std::unique_ptr<SandboxedProcessLauncherDelegate> delegate,
     const base::WeakPtr<ChildProcessLauncher>& child_process_launcher,
-    bool terminate_on_shutdown)
+    bool terminate_on_shutdown,
+    std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation>
+        broker_client_invitation,
+    const mojo::edk::ProcessErrorCallback& process_error_callback)
     : child_process_id_(child_process_id),
       client_thread_id_(client_thread_id),
       command_line_(std::move(command_line)),
       delegate_(std::move(delegate)),
       child_process_launcher_(child_process_launcher),
-      terminate_on_shutdown_(terminate_on_shutdown) {
-}
+      terminate_on_shutdown_(terminate_on_shutdown),
+      broker_client_invitation_(std::move(broker_client_invitation)),
+      process_error_callback_(process_error_callback) {}
 
 ChildProcessLauncherHelper::~ChildProcessLauncherHelper() {
 }
@@ -123,6 +127,20 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
                                      begin_launch_time_);
   }
 
+  // Take ownership of the broker client invitation here so it's destroyed when
+  // we go out of scope regardless of the outcome below.
+  std::unique_ptr<mojo::edk::OutgoingBrokerClientInvitation> invitation =
+      std::move(broker_client_invitation_);
+  if (process.process.IsValid()) {
+    // Set up Mojo IPC to the new process.
+    DCHECK(invitation);
+    invitation->Send(
+        process.process.Handle(),
+        mojo::edk::ConnectionParams(mojo::edk::TransportProtocol::kLegacy,
+                                    std::move(mojo_server_handle_)),
+        process_error_callback_);
+  }
+
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
       base::BindOnce(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
@@ -133,8 +151,7 @@ void ChildProcessLauncherHelper::PostLaunchOnClientThread(
     ChildProcessLauncherHelper::Process process,
     int error_code) {
   if (child_process_launcher_) {
-    child_process_launcher_->Notify(
-        std::move(process), std::move(mojo_server_handle_), error_code);
+    child_process_launcher_->Notify(std::move(process), error_code);
   } else if (process.process.IsValid() && terminate_on_shutdown_) {
     // Client is gone, terminate the process.
     ForceNormalProcessTerminationAsync(std::move(process));
