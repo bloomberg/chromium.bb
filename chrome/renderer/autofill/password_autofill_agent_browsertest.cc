@@ -1047,8 +1047,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_PasswordChangeForm) {
 
 TEST_F(PasswordAutofillAgentTest,
        SendPasswordFormsTest_CannotCreatePasswordForm) {
-  // This test checks that a request to the store is sent even if we fail to
-  // create a |PasswordForm|.
+  // This test checks that a request to the store is sent even if it is a credit
+  // card form.
   fake_driver_.reset_password_forms_calls();
   LoadHTML(kCreditCardFormHTML);
   base::RunLoop().RunUntilIdle();
@@ -1057,7 +1057,7 @@ TEST_F(PasswordAutofillAgentTest,
   EXPECT_FALSE(fake_driver_.password_forms_parsed()->empty());
   EXPECT_TRUE(fake_driver_.called_password_forms_rendered());
   ASSERT_TRUE(fake_driver_.password_forms_rendered());
-  EXPECT_TRUE(fake_driver_.password_forms_rendered()->empty());
+  EXPECT_FALSE(fake_driver_.password_forms_rendered()->empty());
 }
 
 TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_ReloadTab) {
@@ -2460,7 +2460,7 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
       ->WillSubmitForm(form_element);
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(fake_driver_.called_password_form_submitted());
+  ASSERT_TRUE(fake_driver_.called_password_form_submitted_only_for_fallback());
 }
 
 // Tests that only the password field is autocompleted when the browser sends

@@ -73,6 +73,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   std::ostringstream submission_event_string_stream;
   submission_event_string_stream << form.submission_event;
   target->SetString("submission_event", submission_event_string_stream.str());
+  target->SetBoolean("only_for_fallback_saving", form.only_for_fallback_saving);
 }
 
 }  // namespace
@@ -95,7 +96,8 @@ PasswordForm::PasswordForm()
       is_public_suffix_match(false),
       is_affiliation_based_match(false),
       does_look_like_signup_form(false),
-      submission_event(SubmissionIndicatorEvent::NONE) {}
+      submission_event(SubmissionIndicatorEvent::NONE),
+      only_for_fallback_saving(false) {}
 
 PasswordForm::PasswordForm(const PasswordForm& other) = default;
 
@@ -150,7 +152,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          app_display_name == form.app_display_name &&
          app_icon_url == form.app_icon_url &&
          does_look_like_signup_form == form.does_look_like_signup_form &&
-         submission_event == form.submission_event;
+         submission_event == form.submission_event &&
+         only_for_fallback_saving == form.only_for_fallback_saving;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

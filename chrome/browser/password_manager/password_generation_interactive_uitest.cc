@@ -207,10 +207,19 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);
 
-  // Change username and submit.
+  // Change username.
+  std::string focus("document.getElementById('username_field').focus();");
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), focus));
+  content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('U'),
+                            ui::DomCode::US_U, ui::VKEY_U, false, false, false,
+                            false);
+  content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('N'),
+                            ui::DomCode::US_N, ui::VKEY_N, false, false, false,
+                            false);
+
+  // Submit form.
   NavigationObserver observer(WebContents());
   std::string submit_script =
-      "document.getElementById('username_field').value = 'something';"
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit_script));
   observer.Wait();
@@ -223,6 +232,6 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
       password_store->stored_passwords();
   EXPECT_EQ(1u, stored_passwords.size());
   EXPECT_EQ(1u, stored_passwords.begin()->second.size());
-  EXPECT_EQ(base::UTF8ToUTF16("something"),
+  EXPECT_EQ(base::UTF8ToUTF16("UN"),
             (stored_passwords.begin()->second)[0].username_value);
 }
