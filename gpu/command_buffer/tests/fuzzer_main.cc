@@ -433,6 +433,33 @@ class CommandBufferSetup {
     context_stub->SetUseStubApi(true);
     context_ = context_stub;
 #endif
+
+// When not using the passthrough decoder, ANGLE should not be generating
+// errors (the decoder should prevent those from happening). We register a
+// callback to catch them if it does.
+#if defined(GPU_FUZZER_USE_ANGLE) && \
+    !defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
+    context_->MakeCurrent(surface_.get());
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr,
+                          GL_FALSE);
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR,
+                          GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
+
+    glDebugMessageCallback(&LogGLDebugMessage, nullptr);
+#endif
+  }
+
+  static void APIENTRY LogGLDebugMessage(GLenum source,
+                                         GLenum type,
+                                         GLuint id,
+                                         GLenum severity,
+                                         GLsizei length,
+                                         const GLchar* message,
+                                         GLvoid* user_param) {
+    LOG_IF(FATAL, (id != GL_OUT_OF_MEMORY)) << "GL Driver Message: " << message;
   }
 
   base::AtExitManager atexit_manager_;
