@@ -27,7 +27,8 @@ bool MemoryMappedFile::MapFileRegionToMemory(
     return false;
 
   int flags = 0;
-  ULARGE_INTEGER size = {};
+  uint32_t size_low = 0;
+  uint32_t size_high = 0;
   switch (access) {
     case READ_ONLY:
       flags |= PAGE_READONLY;
@@ -37,12 +38,13 @@ bool MemoryMappedFile::MapFileRegionToMemory(
       break;
     case READ_WRITE_EXTEND:
       flags |= PAGE_READWRITE;
-      size.QuadPart = region.size;
+      size_high = static_cast<uint32_t>(region.size >> 32);
+      size_low = static_cast<uint32_t>(region.size & 0xFFFFFFFF);
       break;
   }
 
   file_mapping_.Set(::CreateFileMapping(file_.GetPlatformFile(), NULL, flags,
-                                        size.HighPart, size.LowPart, NULL));
+                                        size_high, size_low, NULL));
   if (!file_mapping_.IsValid())
     return false;
 
@@ -53,8 +55,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
   if (region == MemoryMappedFile::Region::kWholeFile) {
     DCHECK_NE(READ_WRITE_EXTEND, access);
     int64_t file_len = file_.GetLength();
-    if (file_len <= 0 ||
-        !IsValueInRangeForNumericType<size_t>(static_cast<uint64_t>(file_len)))
+    if (file_len <= 0 || file_len > std::numeric_limits<int32_t>::max())
       return false;
     length_ = static_cast<size_t>(file_len);
   } else {
@@ -66,20 +67,20 @@ bool MemoryMappedFile::MapFileRegionToMemory(
     // We map here the outer region [|aligned_start|, |aligned_start+size|]
     // which contains |region| and then add up the |data_offset| displacement.
     int64_t aligned_start = 0;
-    size_t ignored = 0U;
+    int64_t ignored = 0;
     CalculateVMAlignedBoundaries(
         region.offset, region.size, &aligned_start, &ignored, &data_offset);
     int64_t size = region.size + data_offset;
 
     // Ensure that the casts below in the MapViewOfFile call are sane.
     if (aligned_start < 0 || size < 0 ||
-        !IsValueInRangeForNumericType<SIZE_T>(static_cast<uint64_t>(size))) {
+        static_cast<uint64_t>(size) > std::numeric_limits<SIZE_T>::max()) {
       DLOG(ERROR) << "Region bounds are not valid for MapViewOfFile";
       return false;
     }
     map_start.QuadPart = aligned_start;
     map_size = static_cast<SIZE_T>(size);
-    length_ = region.size;
+    length_ = static_cast<size_t>(region.size);
   }
 
   data_ = static_cast<uint8_t*>(
