@@ -23,8 +23,7 @@ import org.chromium.components.sync.ModelType;
  * A simpler version of {@link ClearBrowsingDataPreferences} with fewer dialog options and more
  * explanatory text.
  */
-public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferencesTab {
-
+public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferences {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,13 +33,10 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
         ClearBrowsingDataTabCheckBoxPreference cookiesCheckbox =
                 (ClearBrowsingDataTabCheckBoxPreference) findPreference(PREF_COOKIES);
 
-        historyCheckbox.setLinkClickDelegate(new Runnable() {
-            @Override
-            public void run() {
-                new TabDelegate(false /* incognito */)
-                        .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD,
-                                TabModel.TabLaunchType.FROM_CHROME_UI);
-            }
+        historyCheckbox.setLinkClickDelegate(() -> {
+            new TabDelegate(false /* incognito */)
+                    .launchUrl(UrlConstants.MY_ACTIVITY_URL_IN_CBD,
+                            TabModel.TabLaunchType.FROM_CHROME_UI);
         });
 
         if (ChromeSigninController.get().isSignedIn()) {
@@ -62,14 +58,14 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
     }
 
     @Override
-    protected DialogOption[] getDialogOptions() {
-        return new DialogOption[] {DialogOption.CLEAR_HISTORY,
-                DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_CACHE};
+    protected int getPreferenceType() {
+        return ClearBrowsingDataTab.BASIC;
     }
 
     @Override
-    protected int getPreferenceType() {
-        return ClearBrowsingDataTab.BASIC;
+    protected DialogOption[] getDialogOptions() {
+        return new DialogOption[] {DialogOption.CLEAR_HISTORY,
+                DialogOption.CLEAR_COOKIES_AND_SITE_DATA, DialogOption.CLEAR_CACHE};
     }
 
     @Override

@@ -598,11 +598,6 @@ static void SetLastClearBrowsingDataTab(JNIEnv* env,
                                tab_index);
 }
 
-static void MigrateBrowsingDataPreferences(JNIEnv* env,
-                                           const JavaParamRef<jobject>& obj) {
-  browsing_data::MigratePreferencesToBasic(GetOriginalProfile()->GetPrefs());
-}
-
 static void SetAutoplayEnabled(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jboolean allow) {

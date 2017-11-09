@@ -584,18 +584,6 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_CLEAR_BROWSING_DATA_SUMMARY" desc="Summary of the settings item that opens the Clear Browsing Data dialog.">
         Clear history, cookies, site data, cache…
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SITE_SETTINGS" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that not all data can be cleared through this dialog.">
-        Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SYNC_AND_SITE_SETTINGS" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that synced data types are deleted across devices, and also that not all data can be cleared through this dialog.">
-        This clears synced data from all devices. Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more<ph name="END_LINK">&lt;/link&gt;</ph>
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that deleting cookies will not sign them out of their Google account.">
-        You won’t be signed out of your Google account.
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_FOOTNOTE_SIGNED_AND_OTHER_FORMS_OF_HISTORY" desc="A summary string at the bottom of the Clear Browsing Data dialog, informing the user that deleting cookies will not sign them out of their Google account, and also that there are other forms of browsing history present.">
-        You won’t be signed out of your Google account. Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK">&lt;link&gt;</ph>history.google.com<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_DIALOG_TITLE" desc="Title of a dialog that is shown after the deletion of browsing history finished.">
         Cleared Chrome data
       </message>
@@ -612,9 +600,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
         Cookies and site data
-      </message>
-      <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites.">
-        This will sign you out of most websites.
       </message>
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC" desc="A summary for the 'Cookies and site data' option in the 'Clear Browsing Data' screen, explaining that deleting cookies and site data will sign the user out of most websites.">
         Signs you out of most sites.
@@ -648,24 +633,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_MESSAGE" desc='Message on the progress dialog used when waiting for "clear browsing data" to complete.'>
         Please wait…
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_TITLE" desc="Label of the dropdown that selects the time period for which browsing data will be deleted. This sentence can be followed by any option, such as 'Clear data from the past day' or 'Clear data from the past hour'.">
-        Clear data from the
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_HOUR" desc="The option to delete browsing data from the past hour. This is the direct object of the sentence 'Clear data from the past hour'.">
-        past hour
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_DAY" desc="The option to delete browsing data from the past day. This is the direct object of the sentence 'Clear data from the past day'.">
-        past day
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_WEEK" desc="The option to delete browsing data from the past week. This is the direct object of the sentence 'Clear data from the past week'.">
-        past week
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_FOUR_WEEKS" desc="The option to delete browsing data from the last 4 weeks. This is the direct object of the sentence 'Clear data from the last 4 weeks'.">
-        last 4 weeks
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_PERIOD_EVERYTHING" desc="The option to delete browsing data from the beginning of time. This is the direct object of the sentence 'Clear data from the beginning of time'.">
-        beginning of time
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_TAB_PERIOD_TITLE" desc="Label of the dropdown that selects the time range for which browsing data will be deleted.">
         Time range
