@@ -283,6 +283,23 @@ TEST_P(CompositedLayerMappingTest, LargeScaleInterestRect) {
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 
+TEST_P(CompositedLayerMappingTest, PerspectiveInterestRect) {
+  SetBodyInnerHTML(R"HTML(<div style='left: 400px; position: absolute;'>
+    <div id=target style='transform: perspective(1000px) rotateX(-100deg);'>
+      <div style='width: 1200px; height: 835px; background: lightblue;
+          border: 1px solid black'></div>
+    </div>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  Element* element = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
+  EXPECT_EQ(IntRect(0, 0, 1202, 837),
+            RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
+}
+
 TEST_P(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
   // It's rotated 90 degrees about the X axis, which means its visual content
   // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
