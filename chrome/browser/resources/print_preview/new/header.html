@@ -66,14 +66,15 @@
     </style>
     <h1 class="title">$i18n{title}</h1>
     <span class="summary"
-        aria-label="[[getSummaryLabel_(model, printInProgress_)]]"
-        inner-h-t-m-l="[[getSummary_(model, printInProgress_)]]">
+        aria-label="[[getSummaryLabel_(currentErrorOrState_, labelInfo_)]]"
+        inner-h-t-m-l="[[getSummary_(currentErrorOrState_, labelInfo_)]]">
     </span>
     <div id="button-strip">
       <button class="cancel" on-tap="onCancelButtonTap_">
         $i18n{cancel}
       </button>
-      <button class="print default" on-tap="onPrintButtonTap_">
+      <button class="print default" on-tap="onPrintButtonTap_"
+          disabled$="[[printButtonDisabled_(currentErrorOrState_)]]">
         [[getPrintButton_(model.destinationId)]]
       </button>
     </div>

@@ -1,0 +1,63 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="settings_section.html">
+<link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="checkbox_radio_css.html">
+
+<dom-module id="print-preview-copies-settings">
+  <template>
+    <style include="print-preview-shared checkbox-radio">
+      input:invalid {
+        background: rgb(255, 240, 240);
+        color: rgb(140, 20, 20);
+      }
+
+      input[type='number'] {
+        -webkit-margin-end: 16px;
+        margin-bottom: 2.5px;
+        margin-top: 2.5px;
+      }
+
+      .settings-box {
+        align-items: center;
+        display: inline-flex;
+        width: 100%;
+      }
+
+      span.hint {
+        background: white;
+        color: rgb(140, 20, 20);
+        font-size: 0.9em;
+        font-weight: bold;
+        height: auto;
+        margin-bottom: -5px;
+        margin-top: 5px;
+        padding-bottom: 5px;
+        user-select: text;
+      }
+    </style>
+    <print-preview-settings-section>
+      <span slot="title" id="copies-label">$i18n{copiesLabel}</span>
+      <div slot="controls">
+        <div class="settings-box" id="copies-settings-box">
+          <input class="user-value" type="number"
+              value="{{copiesString_::input}}" maxlength="3" max="999" min="1"
+              on-blur="onCopiesBlur_" on-keydown="onCopiesKeydown_"
+              aria-labelledby="copies-label" id="copies">
+          <div class="collate-container checkbox" aria-live="polite"
+              hidden$="[[collateHidden_(copiesString_, copiesValid_)]]">
+            <label>
+              <input class="collate" type="checkbox" checked
+                     aria-labelledby="copies-collate-label">
+              <span id="copies-collate-label">$i18n{optionCollate}</span>
+            </label>
+          </div>
+        </div>
+        <span class="hint" aria-live="polite"
+            hidden$="[[hintHidden_(copiesString_, copiesValid_)]]">
+          $i18n{copiesInstruction}</span>
+        </span>
+      </div>
+    </print-preview-settings-section>
+  </template>
+  <script src="copies_settings.js"></script>
+</dom-module>

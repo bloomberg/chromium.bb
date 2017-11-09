@@ -1,0 +1,38 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="print-preview-settings-section">
+  <template>
+    <style>
+      :host {
+        display: table-row;
+      }
+
+      ::slotted([slot=controls]) {
+        -webkit-padding-end: 20px;
+        display: table-cell;
+        width: 99%;
+      }
+
+      ::slotted([slot=title]) {
+        -webkit-padding-end: 20px;
+        -webkit-padding-start: 20px;
+        color: #646464;
+        display: table-cell;
+        font-size: 1em;
+        margin-bottom: 0;
+        margin-top: 0;
+        min-width: 70px;
+        vertical-align: middle;
+      }
+
+      :host ::slotted([slot=title]),
+      :host ::slotted([slot=controls]) {
+        padding-bottom: 5px;
+        padding-top: 5px;
+      }
+    </style>
+    <slot name="title"></slot>
+    <slot name="controls"></slot>
+  </template>
+  <script src="settings_section.js"></script>
+</dom-module>

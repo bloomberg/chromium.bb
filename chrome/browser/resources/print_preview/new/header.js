@@ -23,7 +23,31 @@ Polymer({
       type: Boolean,
       notify: true,
       value: false,
-    }
+    },
+
+    /**
+     * @private {?string} Null value indicates that there is no error or
+     *     state to display in the summary.
+     */
+    currentErrorOrState_: {
+      type: String,
+      computed: 'computeErrorOrStateString_(model.previewLoading, ' +
+          'model.previewFailed, model.cloudPrintError, ' +
+          'model.privetExtensionError, model.invalidSettings, ' +
+          'model.printTicketInvalid, printInProgress_)'
+    },
+
+    /**
+     * @private {{numPages: number,
+     *            numSheets: number,
+     *            pagesLabel: string,
+     *            summaryLabel: string}}
+     */
+    labelInfo_: {
+      type: Object,
+      computed: 'getLabelInfo_(currentErrorOrState_, model.destinationId, ' +
+          'model.copies, model.pageRange, model.duplex)'
+    },
   },
 
   /** @private */
@@ -52,6 +76,26 @@ Polymer({
   getPrintButton_: function() {
     return loadTimeData.getString(
         this.isPdfOrDrive_() ? 'saveButton' : 'printButton');
+  },
+
+  /**
+   * @return {?string}
+   * @private
+   */
+  computeErrorOrStateString_: function() {
+    if (this.model.cloudPrintError != '')
+      return this.model.cloudPrintError;
+    if (this.model.privetExtensionError != '')
+      return this.model.privetExtensionError;
+    if (this.model.invalidSettings || this.model.previewFailed ||
+        this.model.previewLoading || this.model.printTicketInvalid) {
+      return '';
+    }
+    if (this.printInProgress_) {
+      return loadTimeData.getString(
+          this.isPdfOrDrive_() ? 'saving' : 'printing');
+    }
+    return null;
   },
 
   /**
@@ -93,23 +137,11 @@ Polymer({
   },
 
   /**
-   * @return {?string}
+   * @return {boolean}
    * @private
    */
-  checkForErrorOrStateString_: function() {
-    if (this.model.cloudPrintError != '')
-      return this.model.cloudPrintError;
-    if (this.model.privetExtensionError != '')
-      return this.model.privetExtensionError;
-    if (this.model.invalidSettings || this.model.previewFailed ||
-        this.model.previewLoading || this.model.printTicketInvalid) {
-      return '';
-    }
-    if (this.printInProgress_) {
-      return loadTimeData.getString(
-          this.isPdfOrDrive_() ? 'saving' : 'printing');
-    }
-    return null;
+  printButtonDisabled_: function() {
+    return this.currentErrorOrState_ != null;
   },
 
   /**
@@ -117,10 +149,10 @@ Polymer({
    * @private
    */
   getSummary_: function() {
-    let html = this.checkForErrorOrStateString_();
+    let html = this.currentErrorOrState_;
     if (html != null)
       return html;
-    const labelInfo = this.getLabelInfo_();
+    const labelInfo = this.labelInfo_;
     if (labelInfo.numPages != labelInfo.numSheets) {
       html = loadTimeData.getStringF(
           'printPreviewSummaryFormatLong',
@@ -144,10 +176,9 @@ Polymer({
    * @private
    */
   getSummaryLabel_: function() {
-    const label = this.checkForErrorOrStateString_();
-    if (label != null)
-      return label;
-    const labelInfo = this.getLabelInfo_();
+    if (this.currentErrorOrState_ != null)
+      return this.currentErrorOrState_;
+    const labelInfo = this.labelInfo_;
     if (labelInfo.numPages != labelInfo.numSheets) {
       return loadTimeData.getStringF(
           'printPreviewSummaryFormatLong', labelInfo.numSheets.toLocaleString(),

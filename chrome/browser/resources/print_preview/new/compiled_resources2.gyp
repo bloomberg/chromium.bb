@@ -7,6 +7,8 @@
       'target_name': 'app',
       'dependencies': [
         'header',
+        'copies_settings',
+        'layout_settings',
         'model',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -16,6 +18,19 @@
       'dependencies': [
         'model',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'copies_settings',
+      'dependencies': [
+        'model',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'layout_settings',
+      'dependencies': [
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
