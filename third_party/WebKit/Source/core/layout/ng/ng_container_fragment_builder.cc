@@ -109,16 +109,29 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 NGContainerFragmentBuilder&
 NGContainerFragmentBuilder::AddOutOfFlowChildCandidate(
     NGBlockNode child,
-    const NGLogicalOffset& child_offset,
-    Optional<TextDirection> direction) {
+    const NGLogicalOffset& child_offset) {
   DCHECK(child);
-
-  oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate{
+  oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate(
       NGOutOfFlowPositionedDescendant{
-          child, NGStaticPosition::Create(WritingMode(),
-                                          direction ? *direction : Direction(),
+          child, NGStaticPosition::Create(WritingMode(), Direction(),
                                           NGPhysicalOffset())},
-      child_offset});
+      child_offset));
+
+  child.SaveStaticOffsetForLegacy(child_offset);
+  return *this;
+}
+
+NGContainerFragmentBuilder&
+NGContainerFragmentBuilder::AddInlineOutOfFlowChildCandidate(
+    NGBlockNode child,
+    const NGLogicalOffset& child_offset,
+    TextDirection line_direction) {
+  DCHECK(child);
+  oof_positioned_candidates_.push_back(NGOutOfFlowPositionedCandidate(
+      NGOutOfFlowPositionedDescendant{
+          child, NGStaticPosition::Create(WritingMode(), line_direction,
+                                          NGPhysicalOffset())},
+      child_offset, line_direction));
 
   child.SaveStaticOffsetForLegacy(child_offset);
   return *this;
@@ -141,8 +154,10 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   NGPhysicalSize builder_physical_size{Size().ConvertToPhysical(WritingMode())};
 
   for (NGOutOfFlowPositionedCandidate& candidate : oof_positioned_candidates_) {
+    TextDirection direction =
+        candidate.is_line_relative ? candidate.line_direction : Direction();
     NGPhysicalOffset child_offset = candidate.child_offset.ConvertToPhysical(
-        WritingMode(), Direction(), builder_physical_size, NGPhysicalSize());
+        WritingMode(), direction, builder_physical_size, NGPhysicalSize());
 
     NGStaticPosition builder_relative_position;
     builder_relative_position.type = candidate.descendant.static_position.type;
