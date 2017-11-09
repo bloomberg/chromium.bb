@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -97,207 +98,266 @@ TEST_F(SchedulerTest, ContinuedTasksRunFirst) {
   EXPECT_TRUE(ran2);
 }
 
-TEST_F(SchedulerTest, SequencesRunInPriorityOrder) {
-  SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kLow);
-  bool ran1 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
-                                            GetClosure([&] { ran1 = true; }),
-                                            std::vector<SyncToken>()));
+class SchedulerTaskRunOrderTest : public SchedulerTest {
+ public:
+  SchedulerTaskRunOrderTest() {}
+  ~SchedulerTaskRunOrderTest() override {
+    for (auto info_it : sequence_info_) {
+      info_it.second.release_state->Destroy();
+      scheduler()->DestroySequence(info_it.second.sequence_id);
+    }
+  }
 
-  SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  bool ran2 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
-                                            GetClosure([&] { ran2 = true; }),
-                                            std::vector<SyncToken>()));
+ protected:
+  void CreateSequence(int sequence_key, SchedulingPriority priority) {
+    SequenceId sequence_id = scheduler()->CreateSequence(priority);
+    CommandBufferId command_buffer_id =
+        CommandBufferId::FromUnsafeValue(sequence_key);
+    scoped_refptr<SyncPointClientState> release_state =
+        sync_point_manager()->CreateSyncPointClientState(
+            kNamespaceId, command_buffer_id, sequence_id);
 
-  SequenceId sequence_id3 =
-      scheduler()->CreateSequence(SchedulingPriority::kHigh);
-  bool ran3 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
-                                            GetClosure([&] { ran3 = true; }),
-                                            std::vector<SyncToken>()));
+    sequence_info_.emplace(std::make_pair(
+        sequence_key,
+        SequenceInfo(sequence_id, command_buffer_id, release_state)));
+  }
 
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran3);
+  void DestroySequence(int sequence_key) {
+    auto info_it = sequence_info_.find(sequence_key);
+    ASSERT_TRUE(info_it != sequence_info_.end());
 
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran2);
+    info_it->second.release_state->Destroy();
+    scheduler()->DestroySequence(info_it->second.sequence_id);
 
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran1);
+    sequence_info_.erase(info_it);
+  }
+
+  void CreateSyncToken(int sequence_key, int release_sync) {
+    auto info_it = sequence_info_.find(sequence_key);
+    ASSERT_TRUE(info_it != sequence_info_.end());
+
+    uint64_t release = release_sync + 1;
+    sync_tokens_.emplace(std::make_pair(
+        release_sync, SyncToken(kNamespaceId, 0,
+                                info_it->second.command_buffer_id, release)));
+  }
+
+  void ScheduleTask(int sequence_key, int wait_sync, int release_sync) {
+    const int task_id = num_tasks_scheduled_++;
+
+    std::vector<SyncToken> wait;
+    if (wait_sync >= 0) {
+      wait.push_back(sync_tokens_[wait_sync]);
+    }
+
+    uint64_t release = 0;
+    if (release_sync >= 0) {
+      CreateSyncToken(sequence_key, release_sync);
+      release = release_sync + 1;
+    }
+
+    auto info_it = sequence_info_.find(sequence_key);
+    ASSERT_TRUE(info_it != sequence_info_.end());
+
+    scheduler()->ScheduleTask(Scheduler::Task(
+        info_it->second.sequence_id,
+        GetClosure([this, task_id, sequence_key, release] {
+          if (release) {
+            auto info_it = sequence_info_.find(sequence_key);
+            ASSERT_TRUE(info_it != sequence_info_.end());
+            info_it->second.release_state->ReleaseFenceSync(release);
+          }
+          this->tasks_executed_.push_back(task_id);
+        }),
+        wait));
+  }
+
+  void RunAllPendingTasks() {
+    while (task_runner()->HasPendingTask())
+      task_runner()->RunPendingTasks();
+  }
+
+  const std::vector<int>& tasks_executed() { return tasks_executed_; }
+
+ private:
+  const CommandBufferNamespace kNamespaceId = CommandBufferNamespace::GPU_IO;
+
+  int num_tasks_scheduled_ = 0;
+
+  struct SequenceInfo {
+    SequenceInfo(SequenceId sequence_id,
+                 CommandBufferId command_buffer_id,
+                 scoped_refptr<SyncPointClientState> release_state)
+        : sequence_id(sequence_id),
+          command_buffer_id(command_buffer_id),
+          release_state(release_state) {}
+
+    SequenceId sequence_id;
+    CommandBufferId command_buffer_id;
+    scoped_refptr<SyncPointClientState> release_state;
+  };
+
+  std::map<int, const SequenceInfo> sequence_info_;
+  std::map<int, const SyncToken> sync_tokens_;
+
+  std::vector<int> tasks_executed_;
+};
+
+TEST_F(SchedulerTaskRunOrderTest, SequencesRunInPriorityOrder) {
+  CreateSequence(0, SchedulingPriority::kLow);
+  CreateSequence(1, SchedulingPriority::kNormal);
+  CreateSequence(2, SchedulingPriority::kHigh);
+
+  ScheduleTask(0, -1, -1);  // task 0: seq 0, no wait, no release
+  ScheduleTask(1, -1, -1);  // task 1: seq 1, no wait, no release
+  ScheduleTask(2, -1, -1);  // task 2: seq 2, no wait, no release
+
+  RunAllPendingTasks();
+
+  const int expected_task_order[] = {2, 1, 0};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
 }
 
-TEST_F(SchedulerTest, SequencesOfSamePriorityRunInOrder) {
-  SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  bool ran1 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
-                                            GetClosure([&] { ran1 = true; }),
-                                            std::vector<SyncToken>()));
+TEST_F(SchedulerTaskRunOrderTest, SequencesOfSamePriorityRunInOrder) {
+  CreateSequence(0, SchedulingPriority::kNormal);
+  CreateSequence(1, SchedulingPriority::kNormal);
+  CreateSequence(2, SchedulingPriority::kNormal);
+  CreateSequence(3, SchedulingPriority::kNormal);
 
-  SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  bool ran2 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
-                                            GetClosure([&] { ran2 = true; }),
-                                            std::vector<SyncToken>()));
+  ScheduleTask(0, -1, -1);  // task 0: seq 0, no wait, no release
+  ScheduleTask(1, -1, -1);  // task 1: seq 1, no wait, no release
+  ScheduleTask(2, -1, -1);  // task 2: seq 2, no wait, no release
+  ScheduleTask(3, -1, -1);  // task 3: seq 2, no wait, no release
 
-  SequenceId sequence_id3 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  bool ran3 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
-                                            GetClosure([&] { ran3 = true; }),
-                                            std::vector<SyncToken>()));
+  RunAllPendingTasks();
 
-  SequenceId sequence_id4 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  bool ran4 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id4,
-                                            GetClosure([&] { ran4 = true; }),
-                                            std::vector<SyncToken>()));
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran1);
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran2);
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran3);
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran4);
+  const int expected_task_order[] = {0, 1, 2, 3};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
 }
 
-TEST_F(SchedulerTest, SequenceWaitsForFence) {
-  SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kHigh);
-  SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
+TEST_F(SchedulerTaskRunOrderTest, SequenceWaitsForFence) {
+  CreateSequence(0, SchedulingPriority::kHigh);
+  CreateSequence(1, SchedulingPriority::kNormal);
 
-  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
-  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
+  ScheduleTask(1, -1, 0);  // task 0: seq 1, no wait, release 0
+  ScheduleTask(0, 0, -1);  // task 1: seq 0, wait 0, no release
 
-  scoped_refptr<SyncPointClientState> release_state =
-      sync_point_manager()->CreateSyncPointClientState(
-          namespace_id, command_buffer_id, sequence_id2);
+  RunAllPendingTasks();
 
-  uint64_t release = 1;
-  bool ran2 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
-                                              release_state->ReleaseFenceSync(
-                                                  release);
-                                              ran2 = true;
-                                            }),
-                                            std::vector<SyncToken>()));
-
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
-
-  bool ran1 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(
-      sequence_id1, GetClosure([&] { ran1 = true; }), {sync_token}));
-
-  task_runner()->RunPendingTasks();
-  EXPECT_FALSE(ran1);
-  EXPECT_TRUE(ran2);
-  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(sync_token));
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran1);
-
-  release_state->Destroy();
+  const int expected_task_order[] = {0, 1};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
 }
 
-TEST_F(SchedulerTest, SequenceDoesNotWaitForInvalidFence) {
-  SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
+TEST_F(SchedulerTaskRunOrderTest, SequenceDoesNotWaitForInvalidFence) {
+  CreateSequence(0, SchedulingPriority::kNormal);
+  CreateSequence(1, SchedulingPriority::kNormal);
 
-  SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
-  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
-  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
-  scoped_refptr<SyncPointClientState> release_state =
-      sync_point_manager()->CreateSyncPointClientState(
-          namespace_id, command_buffer_id, sequence_id2);
+  CreateSyncToken(1, 0);  // declare sync_token 0 on seq 1
 
-  uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
+  ScheduleTask(0, 0, -1);  // task 0: seq 0, wait 0, no release
+  ScheduleTask(1, -1, 0);  // task 1: seq 1, no wait, release 0
 
-  bool ran1 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(
-      sequence_id1, GetClosure([&] { ran1 = true; }), {sync_token}));
+  RunAllPendingTasks();
 
-  // Release task is scheduled after wait task so release is treated as non-
-  // existent.
-  bool ran2 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
-                                              release_state->ReleaseFenceSync(
-                                                  release);
-                                              ran2 = true;
-                                            }),
-                                            std::vector<SyncToken>()));
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran1);
-  EXPECT_FALSE(ran2);
-  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
-
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran2);
-  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(sync_token));
-
-  release_state->Destroy();
+  // Task 0 does not wait on unrelease sync token 0.
+  const int expected_task_order[] = {0, 1};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
 }
 
-TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
-  SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kNormal);
+TEST_F(SchedulerTaskRunOrderTest, ReleaseSequenceIsPrioritized) {
+  CreateSequence(0, SchedulingPriority::kNormal);
+  CreateSequence(1, SchedulingPriority::kLow);
+  CreateSequence(2, SchedulingPriority::kHigh);
 
-  bool ran1 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
-                                            GetClosure([&] { ran1 = true; }),
-                                            std::vector<SyncToken>()));
+  ScheduleTask(0, -1, -1);  // task 0: seq 0, no wait, no release
+  ScheduleTask(1, -1, 0);   // task 1: seq 1, no wait, release 0
+  ScheduleTask(2, 0, -1);   // task 2: seq 2, wait 0, no release
 
-  SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kLow);
-  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
-  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
-  scoped_refptr<SyncPointClientState> release_state =
-      sync_point_manager()->CreateSyncPointClientState(
-          namespace_id, command_buffer_id, sequence_id2);
+  RunAllPendingTasks();
 
-  uint64_t release = 1;
-  bool ran2 = false;
-  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
-                                              release_state->ReleaseFenceSync(
-                                                  release);
-                                              ran2 = true;
-                                            }),
-                                            std::vector<SyncToken>()));
+  const int expected_task_order[] = {1, 2, 0};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
+}
 
-  bool ran3 = false;
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
-  SequenceId sequence_id3 =
-      scheduler()->CreateSequence(SchedulingPriority::kHigh);
-  scheduler()->ScheduleTask(Scheduler::Task(
-      sequence_id3, GetClosure([&] { ran3 = true; }), {sync_token}));
+TEST_F(SchedulerTaskRunOrderTest, ReleaseSequenceHasPriorityOfWaiter) {
+  CreateSequence(0, SchedulingPriority::kLow);
+  CreateSequence(1, SchedulingPriority::kNormal);
+  CreateSequence(2, SchedulingPriority::kHigh);
 
-  task_runner()->RunPendingTasks();
-  EXPECT_FALSE(ran1);
-  EXPECT_TRUE(ran2);
-  EXPECT_FALSE(ran3);
-  EXPECT_TRUE(sync_point_manager()->IsSyncTokenReleased(sync_token));
+  ScheduleTask(0, -1, 0);   // task 0: seq 0, no wait, release 0
+  ScheduleTask(1, 0, -1);   // task 1: seq 1, wait 0, no release
+  ScheduleTask(2, -1, -1);  // task 2: seq 2, no wait, no release
 
-  task_runner()->RunPendingTasks();
-  EXPECT_FALSE(ran1);
-  EXPECT_TRUE(ran3);
+  RunAllPendingTasks();
 
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran1);
+  const int expected_task_order[] = {2, 0, 1};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
+}
 
-  release_state->Destroy();
+TEST_F(SchedulerTaskRunOrderTest, ReleaseSequenceRevertsToDefaultPriority) {
+  CreateSequence(0, SchedulingPriority::kNormal);
+  CreateSequence(1, SchedulingPriority::kLow);
+  CreateSequence(2, SchedulingPriority::kHigh);
+
+  ScheduleTask(0, -1, -1);  // task 0: seq 0, no wait, no release
+  ScheduleTask(1, -1, 0);   // task 1: seq 1, no wait, release 0
+  ScheduleTask(2, 0, -1);   // task 2: seq 2, wait 0, no release
+
+  DestroySequence(2);
+
+  RunAllPendingTasks();
+
+  const int expected_task_order[] = {0, 1};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
+}
+
+TEST_F(SchedulerTaskRunOrderTest, ReleaseSequenceCircularRelease) {
+  CreateSequence(0, SchedulingPriority::kLow);
+  CreateSequence(1, SchedulingPriority::kNormal);
+  CreateSequence(2, SchedulingPriority::kHigh);
+
+  ScheduleTask(0, -1, -1);  // task 0: seq 0, no wait, no release
+  ScheduleTask(1, -1, -1);  // task 1: seq 1, no wait, no release
+  ScheduleTask(2, -1, -1);  // task 2: seq 2, no wait, no release
+
+  ScheduleTask(0, -1, 0);   // task 3: seq 0, no wait, release 0
+  ScheduleTask(0, -1, -1);  // task 4: seq 0, no wait, no release
+
+  ScheduleTask(1, 0, 1);    // task 5: seq 1, wait 0, release 1
+  ScheduleTask(1, -1, -1);  // task 6: seq 1, no wait, no release
+
+  ScheduleTask(2, 1, 2);    // task 7: seq 2, wait 1, release 2
+  ScheduleTask(2, -1, -1);  // task 8: seq 2, no wait, no release
+
+  ScheduleTask(0, 2, 3);   // task 9: seq 0, wait 2, releases 3
+  ScheduleTask(1, 3, 4);   // task 10: seq 1, wait 3, releases 4
+  ScheduleTask(2, 4, -1);  // task 11: seq 2, wait 4, no release
+
+  ScheduleTask(0, -1, -1);  // task 12: seq 0, no wait, no release
+  ScheduleTask(1, -1, -1);  // task 13: seq 1, no wait, no release
+  ScheduleTask(2, -1, -1);  // task 14: seq 2, no wait, no release
+
+  RunAllPendingTasks();
+
+  const int expected_task_order[] = {0, 1, 2,  3,  4,  5,  6, 7,
+                                     8, 9, 10, 11, 14, 13, 12};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
+}
+
+TEST_F(SchedulerTaskRunOrderTest, WaitOnSelfShouldNotBlockSequence) {
+  CreateSequence(0, SchedulingPriority::kHigh);
+  CreateSyncToken(0, 0);  // declare sync_token 0 on seq 1
+
+  // Dummy order number to avoid the wait_order_num <= processed_order_num + 1
+  // check in SyncPointOrderData::ValidateReleaseOrderNum.
+  sync_point_manager()->GenerateOrderNumber();
+
+  ScheduleTask(0, 0, -1);  // task 0: seq 0, wait 0, no release
+
+  RunAllPendingTasks();
+
+  const int expected_task_order[] = {0};
+  EXPECT_THAT(tasks_executed(), testing::ElementsAreArray(expected_task_order));
 }
 
 TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
@@ -390,32 +450,6 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
 
   release_state1->Destroy();
   release_state2->Destroy();
-}
-
-TEST_F(SchedulerTest, WaitOnSelfShouldNotBlockSequence) {
-  SequenceId sequence_id =
-      scheduler()->CreateSequence(SchedulingPriority::kHigh);
-  CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
-
-  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
-  scoped_refptr<SyncPointClientState> release_state =
-      sync_point_manager()->CreateSyncPointClientState(
-          namespace_id, command_buffer_id, sequence_id);
-
-  // Dummy order number to avoid the wait_order_num <= processed_order_num + 1
-  // check in SyncPointOrderData::ValidateReleaseOrderNum.
-  sync_point_manager()->GenerateOrderNumber();
-
-  uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
-  bool ran = false;
-  scheduler()->ScheduleTask(Scheduler::Task(
-      sequence_id, GetClosure([&]() { ran = true; }), {sync_token}));
-  task_runner()->RunPendingTasks();
-  EXPECT_TRUE(ran);
-  EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
-
-  release_state->Destroy();
 }
 
 TEST_F(SchedulerTest, ClientWaitIsPrioritized) {
