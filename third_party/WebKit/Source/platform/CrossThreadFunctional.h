@@ -29,15 +29,14 @@ namespace blink {
 //     Bind(&Func1, 42, str.IsolatedCopy());
 
 template <typename FunctionType, typename... Ps>
-Function<base::MakeUnboundRunType<FunctionType, Ps...>,
-         WTF::kCrossThreadAffinity>
+WTF::CrossThreadFunction<base::MakeUnboundRunType<FunctionType, Ps...>>
 CrossThreadBind(FunctionType function, Ps&&... parameters) {
   static_assert(
       WTF::internal::CheckGCedTypeRestrictions<std::index_sequence_for<Ps...>,
                                                std::decay_t<Ps>...>::ok,
       "A bound argument uses a bad pattern.");
   using UnboundRunType = base::MakeUnboundRunType<FunctionType, Ps...>;
-  return WTF::Function<UnboundRunType, WTF::kCrossThreadAffinity>(
+  return WTF::CrossThreadFunction<UnboundRunType>(
       base::Bind(function, CrossThreadCopier<std::decay_t<Ps>>::Copy(
                                std::forward<Ps>(parameters))...));
 }

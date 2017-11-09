@@ -48,13 +48,10 @@ TEST(PersistentTest, CrossThreadBindCancellation) {
       &Receiver::Increment, WrapCrossThreadWeakPersistent(receiver),
       WTF::CrossThreadUnretained(&counter));
 
-  function.Run();
-  EXPECT_EQ(1, counter);
-
   receiver = nullptr;
   PreciselyCollectGarbage();
-  function.Run();
-  EXPECT_EQ(1, counter);
+  std::move(function).Run();
+  EXPECT_EQ(0, counter);
 }
 
 }  // namespace
