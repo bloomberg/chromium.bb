@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -645,6 +646,7 @@ public class AwAutofillTest {
             values.append(child2.getId(), AutofillValue.forList(1));
             values.append(child3.getId(), AutofillValue.forText("aaa"));
             cnt = getCallbackCount();
+            clearChangedValues();
             invokeAutofill(values);
             waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED,
@@ -663,6 +665,10 @@ public class AwAutofillTest {
             String value3 = executeJavaScriptAndWaitForResult(
                     "document.getElementById('textarea1').value;");
             assertEquals("\"aaa\"", value3);
+            ArrayList<Pair<Integer, AutofillValue>> changedValues = getChangedValues();
+            assertEquals("example@example.com", changedValues.get(0).second.getTextValue());
+            assertTrue(changedValues.get(1).second.getToggleValue());
+            assertEquals(1, changedValues.get(2).second.getListValue());
         } finally {
             webServer.shutdown();
         }
