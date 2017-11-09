@@ -544,9 +544,10 @@ void Compositor::UpdateLayerTreeHost() {
 
 void Compositor::RequestNewLayerTreeFrameSink() {
   DCHECK(!layer_tree_frame_sink_requested_);
-  layer_tree_frame_sink_requested_ = true;
   if (widget_valid_)
     context_factory_->CreateLayerTreeFrameSink(weak_ptr_factory_.GetWeakPtr());
+  else
+    layer_tree_frame_sink_requested_ = true;
 }
 
 void Compositor::DidFailToInitializeLayerTreeFrameSink() {
