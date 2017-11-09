@@ -6649,12 +6649,18 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
 #endif
 
+#if CONFIG_EXT_TILE
+  if (!cm->large_scale_tile) {
+#endif  // CONFIG_EXT_TILE
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
   if (!cm->error_resilient_mode)
     cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+#if CONFIG_EXT_TILE
+  }
+#endif  // CONFIG_EXT_TILE
 
   // No frame encoded, or frame was dropped, release scaled references.
   if ((*size == 0) && (frame_is_intra_only(cm) == 0)) {

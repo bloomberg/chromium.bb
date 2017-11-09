@@ -3869,16 +3869,24 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-  // Non frame parallel update frame context here.
-  if (!cm->frame_parallel_decode ||
-      cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_FORWARD) {
+// Non frame parallel update frame context here.
+#if CONFIG_EXT_TILE
+  if (!cm->large_scale_tile) {
+#endif  // CONFIG_EXT_TILE
+    // TODO(yunqingwang): If cm->frame_parallel_decode = 0, then the following
+    // update always happens. Seems it is done more than necessary.
+    if (!cm->frame_parallel_decode ||
+        cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_FORWARD) {
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
+      cm->frame_contexts[cm->new_fb_idx] = *cm->fc;
 #else
     if (!cm->error_resilient_mode)
       cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
 #endif
+    }
+#if CONFIG_EXT_TILE
   }
+#endif  // CONFIG_EXT_TILE
 }
 
 #if CONFIG_OBU
