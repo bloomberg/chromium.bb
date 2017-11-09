@@ -6,11 +6,10 @@
 #define ScopedVirtualTimePauser_h
 
 #include "platform/PlatformExport.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 namespace scheduler {
-class WebViewSchedulerImpl;
+class RendererSchedulerImpl;
 }  // namespace scheduler
 
 // A move only RAII style helper which makes it easier for subsystems to pause
@@ -19,8 +18,7 @@ class PLATFORM_EXPORT ScopedVirtualTimePauser {
  public:
   // Note simply creating a ScopedVirtualTimePauser doesn't cause VirtualTime to
   // pause, instead you need to call PauseVirtualTime.
-  explicit ScopedVirtualTimePauser(
-      WTF::WeakPtr<scheduler::WebViewSchedulerImpl>);
+  explicit ScopedVirtualTimePauser(scheduler::RendererSchedulerImpl*);
 
   ScopedVirtualTimePauser();
   ~ScopedVirtualTimePauser();
@@ -38,7 +36,7 @@ class PLATFORM_EXPORT ScopedVirtualTimePauser {
 
  private:
   bool paused_ = false;
-  WTF::WeakPtr<scheduler::WebViewSchedulerImpl> scheduler_;
+  scheduler::RendererSchedulerImpl* scheduler_;  // NOT OWNED
 };
 
 }  // namespace blink

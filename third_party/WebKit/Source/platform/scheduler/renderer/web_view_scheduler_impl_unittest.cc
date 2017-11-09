@@ -498,25 +498,25 @@ TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
 TEST_F(WebViewSchedulerImplTest, VirtualTimePauseCount_DETERMINISTIC_LOADING) {
   web_view_scheduler_->SetVirtualTimePolicy(
       VirtualTimePolicy::DETERMINISTIC_LOADING);
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->IncrementVirtualTimePauseCount();
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->IncrementVirtualTimePauseCount();
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->IncrementVirtualTimePauseCount();
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->IncrementVirtualTimePauseCount();
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->DecrementVirtualTimePauseCount();
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->DecrementVirtualTimePauseCount();
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->DecrementVirtualTimePauseCount();
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->DecrementVirtualTimePauseCount();
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->IncrementVirtualTimePauseCount();
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->IncrementVirtualTimePauseCount();
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->DecrementVirtualTimePauseCount();
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->DecrementVirtualTimePauseCount();
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
 TEST_F(WebViewSchedulerImplTest,
@@ -531,19 +531,19 @@ TEST_F(WebViewSchedulerImplTest,
   {
     ScopedVirtualTimePauser virtual_time_pauser =
         web_frame_scheduler->CreateScopedVirtualTimePauser();
-    EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+    EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
     virtual_time_pauser.PauseVirtualTime(true);
-    EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+    EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
     virtual_time_pauser.PauseVirtualTime(false);
-    EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+    EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
     virtual_time_pauser.PauseVirtualTime(true);
-    EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+    EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
   }
 
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
 TEST_F(WebViewSchedulerImplTest,
@@ -560,29 +560,29 @@ TEST_F(WebViewSchedulerImplTest,
   ScopedVirtualTimePauser virtual_time_pauser2 =
       web_frame_scheduler->CreateScopedVirtualTimePauser();
 
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
   virtual_time_pauser1.PauseVirtualTime(true);
   virtual_time_pauser2.PauseVirtualTime(true);
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   virtual_time_pauser2.PauseVirtualTime(false);
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   virtual_time_pauser1.PauseVirtualTime(false);
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
 TEST_F(WebViewSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
   web_view_scheduler_->SetVirtualTimePolicy(
       VirtualTimePolicy::DETERMINISTIC_LOADING);
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->OnBeginNestedRunLoop();
-  EXPECT_FALSE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->OnBeginNestedRunLoop();
+  EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
-  web_view_scheduler_->OnExitNestedRunLoop();
-  EXPECT_TRUE(web_view_scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->OnExitNestedRunLoop();
+  EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
 TEST_F(WebViewSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
@@ -771,7 +771,7 @@ TEST_F(WebViewSchedulerImplTest,
   web_view_scheduler_->EnableVirtualTime();
   web_view_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
   web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
-  web_view_scheduler_->OnBeginNestedRunLoop();
+  scheduler_->OnBeginNestedRunLoop();
 
   int count = 0;
   int delayed_task_run_at_count = 0;

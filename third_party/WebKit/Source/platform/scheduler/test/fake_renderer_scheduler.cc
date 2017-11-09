@@ -107,10 +107,6 @@ void FakeRendererScheduler::RemoveTaskObserver(
 
 void FakeRendererScheduler::Shutdown() {}
 
-void FakeRendererScheduler::VirtualTimePaused() {}
-
-void FakeRendererScheduler::VirtualTimeResumed() {}
-
 void FakeRendererScheduler::SetStoppingWhenBackgroundedEnabled(bool enabled) {}
 
 void FakeRendererScheduler::SetTopLevelBlameContext(

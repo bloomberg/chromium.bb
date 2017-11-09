@@ -249,14 +249,18 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                        renderer_scheduler_impl,
                        AudioPlayingStateToString),
       compositor_will_send_main_frame_not_expected(false),
-      virtual_time_stopped(false),
       has_navigated(false),
       pause_timers_for_webview(false),
       background_status_changed_at(now),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       metrics_helper(renderer_scheduler_impl, now, renderer_backgrounded),
-      process_type(RendererProcessType::kRenderer) {}
+      process_type(RendererProcessType::kRenderer),
+      virtual_time_policy(VirtualTimePolicy::ADVANCE),
+      virtual_time_pause_count(0),
+      max_virtual_time_task_starvation_count(0),
+      virtual_time_stopped(false),
+      nested_runloop(false) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -1463,9 +1467,74 @@ WakeUpBudgetPool* RendererSchedulerImpl::GetWakeUpBudgetPoolForTesting() {
   return main_thread_only().wake_up_budget_pool;
 }
 
+void RendererSchedulerImpl::EnableVirtualTime() {
+  if (main_thread_only().use_virtual_time)
+    return;
+  main_thread_only().use_virtual_time = true;
+  DCHECK(!virtual_time_domain_);
+  main_thread_only().initial_virtual_time = tick_clock()->NowTicks();
+  virtual_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
+      main_thread_only().initial_virtual_time, &helper_));
+  RegisterTimeDomain(virtual_time_domain_.get());
+  virtual_time_domain_->SetObserver(this);
+
+  DCHECK(!virtual_time_control_task_queue_);
+  virtual_time_control_task_queue_ =
+      helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
+          MainThreadTaskQueue::QueueType::CONTROL));
+  virtual_time_control_task_queue_->SetQueuePriority(
+      TaskQueue::CONTROL_PRIORITY);
+  virtual_time_control_task_queue_->SetTimeDomain(virtual_time_domain_.get());
+
+  main_thread_only().use_virtual_time = true;
+  ForceUpdatePolicy();
+
+  virtual_time_domain_->SetCanAdvanceVirtualTime(
+      !main_thread_only().virtual_time_stopped);
+
+  if (main_thread_only().virtual_time_stopped)
+    VirtualTimePaused();
+}
+
+void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
+  if (!main_thread_only().use_virtual_time)
+    return;
+  // Reset virtual time and all tasks queues back to their initial state.
+  main_thread_only().use_virtual_time = false;
+
+  if (main_thread_only().virtual_time_stopped) {
+    main_thread_only().virtual_time_stopped = false;
+    VirtualTimeResumed();
+  }
+
+  ForceUpdatePolicy();
+
+  virtual_time_control_task_queue_->ShutdownTaskQueue();
+  virtual_time_control_task_queue_ = nullptr;
+  UnregisterTimeDomain(virtual_time_domain_.get());
+  virtual_time_domain_.reset();
+  virtual_time_control_task_queue_ = nullptr;
+  ApplyVirtualTimePolicy();
+}
+
+void RendererSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
+  if (main_thread_only().virtual_time_stopped == virtual_time_stopped)
+    return;
+  main_thread_only().virtual_time_stopped = virtual_time_stopped;
+
+  if (!main_thread_only().use_virtual_time)
+    return;
+
+  virtual_time_domain_->SetCanAdvanceVirtualTime(!virtual_time_stopped);
+
+  if (virtual_time_stopped) {
+    VirtualTimePaused();
+  } else {
+    VirtualTimeResumed();
+  }
+}
+
 void RendererSchedulerImpl::VirtualTimePaused() {
-  DCHECK(!main_thread_only().virtual_time_stopped);
-  main_thread_only().virtual_time_stopped = true;
   for (const auto& pair : task_runners_) {
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
@@ -1473,11 +1542,13 @@ void RendererSchedulerImpl::VirtualTimePaused() {
       pair.first->InsertFence(TaskQueue::InsertFencePosition::NOW);
     }
   }
+  for (auto& observer : main_thread_only().virtual_time_observers) {
+    observer.OnVirtualTimePaused(virtual_time_domain_->Now() -
+                                 main_thread_only().initial_virtual_time);
+  }
 }
 
 void RendererSchedulerImpl::VirtualTimeResumed() {
-  DCHECK(main_thread_only().virtual_time_stopped);
-  main_thread_only().virtual_time_stopped = false;
   for (const auto& pair : task_runners_) {
     if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
@@ -1485,6 +1556,99 @@ void RendererSchedulerImpl::VirtualTimeResumed() {
       pair.first->RemoveFence();
     }
   }
+}
+
+bool RendererSchedulerImpl::VirtualTimeAllowedToAdvance() const {
+  return !main_thread_only().virtual_time_stopped;
+}
+
+void RendererSchedulerImpl::IncrementVirtualTimePauseCount() {
+  main_thread_only().virtual_time_pause_count++;
+  ApplyVirtualTimePolicy();
+}
+
+void RendererSchedulerImpl::DecrementVirtualTimePauseCount() {
+  main_thread_only().virtual_time_pause_count--;
+  DCHECK_GE(main_thread_only().virtual_time_pause_count, 0);
+  ApplyVirtualTimePolicy();
+}
+
+void RendererSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
+  main_thread_only().virtual_time_policy = policy;
+
+  switch (policy) {
+    case VirtualTimePolicy::ADVANCE:
+      SetVirtualTimeStopped(false);
+      break;
+
+    case VirtualTimePolicy::PAUSE:
+      SetVirtualTimeStopped(true);
+      break;
+
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      ApplyVirtualTimePolicy();
+      break;
+  }
+}
+
+void RendererSchedulerImpl::AddVirtualTimeObserver(
+    VirtualTimeObserver* observer) {
+  main_thread_only().virtual_time_observers.AddObserver(observer);
+}
+
+void RendererSchedulerImpl::RemoveVirtualTimeObserver(
+    VirtualTimeObserver* observer) {
+  main_thread_only().virtual_time_observers.RemoveObserver(observer);
+}
+
+void RendererSchedulerImpl::OnVirtualTimeAdvanced() {
+  DCHECK(!main_thread_only().virtual_time_stopped);
+
+  for (auto& observer : main_thread_only().virtual_time_observers) {
+    observer.OnVirtualTimeAdvanced(virtual_time_domain_->Now() -
+                                   main_thread_only().initial_virtual_time);
+  }
+}
+
+void RendererSchedulerImpl::ApplyVirtualTimePolicy() {
+  switch (main_thread_only().virtual_time_policy) {
+    case VirtualTimePolicy::ADVANCE:
+      if (virtual_time_domain_) {
+        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
+            main_thread_only().nested_runloop
+                ? 0
+                : main_thread_only().max_virtual_time_task_starvation_count);
+      }
+      SetVirtualTimeStopped(false);
+      break;
+    case VirtualTimePolicy::PAUSE:
+      if (virtual_time_domain_)
+        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
+      SetVirtualTimeStopped(true);
+      break;
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      if (virtual_time_domain_) {
+        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
+            main_thread_only().nested_runloop
+                ? 0
+                : main_thread_only().max_virtual_time_task_starvation_count);
+      }
+
+      // We pause virtual time while the run loop is nested because that implies
+      // something modal is happening such as the DevTools debugger pausing the
+      // system. We also pause while the renderer is waiting for various
+      // asynchronous things e.g. resource load or navigation.
+      SetVirtualTimeStopped(main_thread_only().virtual_time_pause_count != 0 ||
+                            main_thread_only().nested_runloop);
+      break;
+  }
+}
+
+void RendererSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
+    int max_task_starvation_count) {
+  main_thread_only().max_virtual_time_task_starvation_count =
+      max_task_starvation_count;
+  ApplyVirtualTimePolicy();
 }
 
 void RendererSchedulerImpl::SetStoppingWhenBackgroundedEnabled(bool enabled) {
@@ -1602,6 +1766,12 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetBoolean("is_audio_playing", main_thread_only().is_audio_playing);
   state->SetBoolean("virtual_time_stopped",
                     main_thread_only().virtual_time_stopped);
+  state->SetDouble("virtual_time_pause_count",
+                   main_thread_only().virtual_time_pause_count);
+  state->SetString(
+      "virtual_time_policy",
+      VirtualTimePolicyToString(main_thread_only().virtual_time_policy));
+  state->SetBoolean("virtual_time", main_thread_only().use_virtual_time);
 
   state->BeginDictionary("web_view_schedulers");
   for (WebViewSchedulerImpl* web_view_scheduler :
@@ -1996,17 +2166,13 @@ void RendererSchedulerImpl::OnBeginNestedRunLoop() {
   seqlock_queueing_time_estimator_.data.OnBeginNestedRunLoop();
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    web_view_scheduler->OnBeginNestedRunLoop();
-  }
+  main_thread_only().nested_runloop = true;
+  ApplyVirtualTimePolicy();
 }
 
 void RendererSchedulerImpl::OnExitNestedRunLoop() {
-  for (WebViewSchedulerImpl* web_view_scheduler :
-       main_thread_only().web_view_schedulers) {
-    web_view_scheduler->OnExitNestedRunLoop();
-  }
+  main_thread_only().nested_runloop = false;
+  ApplyVirtualTimePolicy();
 }
 
 void RendererSchedulerImpl::AddTaskTimeObserver(
@@ -2058,50 +2224,7 @@ void RendererSchedulerImpl::OnReportSplitExpectedQueueingTime(
 }
 
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {
-  if (!virtual_time_domain_) {
-    virtual_time_domain_.reset(
-        new AutoAdvancingVirtualTimeDomain(tick_clock()->NowTicks(), &helper_));
-    RegisterTimeDomain(virtual_time_domain_.get());
-  }
   return virtual_time_domain_.get();
-}
-
-void RendererSchedulerImpl::EnableVirtualTime() {
-  main_thread_only().use_virtual_time = true;
-
-  DCHECK(!virtual_time_control_task_queue_);
-  virtual_time_control_task_queue_ =
-      helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-          MainThreadTaskQueue::QueueType::CONTROL));
-  virtual_time_control_task_queue_->SetQueuePriority(
-      TaskQueue::CONTROL_PRIORITY);
-  virtual_time_control_task_queue_->SetTimeDomain(GetVirtualTimeDomain());
-
-  ForceUpdatePolicy();
-}
-
-void RendererSchedulerImpl::DisableVirtualTimeForTesting() {
-  // Reset virtual time and all tasks queues back to their initial state.
-  main_thread_only().use_virtual_time = false;
-
-  if (main_thread_only().virtual_time_stopped) {
-    main_thread_only().virtual_time_stopped = false;
-
-    for (const auto& pair : task_runners_) {
-      if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
-        DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
-        DCHECK(pair.first->HasActiveFence());
-        pair.first->RemoveFence();
-      }
-    }
-  }
-
-  ForceUpdatePolicy();
-
-  virtual_time_control_task_queue_->ShutdownTaskQueue();
-  virtual_time_control_task_queue_ = nullptr;
-  UnregisterTimeDomain(virtual_time_domain_.get());
-  virtual_time_domain_.reset();
 }
 
 bool RendererSchedulerImpl::ShouldDisableThrottlingBecauseOfAudio(
@@ -2206,6 +2329,22 @@ const char* RendererSchedulerImpl::TimeDomainTypeToString(
       return "throttled";
     case TimeDomainType::VIRTUAL:
       return "virtual";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* RendererSchedulerImpl::VirtualTimePolicyToString(
+    VirtualTimePolicy virtual_time_policy) {
+  switch (virtual_time_policy) {
+    case VirtualTimePolicy::ADVANCE:
+      return "ADVANCE";
+    case VirtualTimePolicy::PAUSE:
+      return "PAUSE";
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      return "DETERMINISTIC_LOADING";
     default:
       NOTREACHED();
       return nullptr;

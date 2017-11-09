@@ -4,15 +4,15 @@
 
 #include "platform/ScopedVirtualTimePauser.h"
 
-#include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {
 
 ScopedVirtualTimePauser::ScopedVirtualTimePauser() : scheduler_(nullptr) {}
 
 ScopedVirtualTimePauser::ScopedVirtualTimePauser(
-    WTF::WeakPtr<scheduler::WebViewSchedulerImpl> scheduler)
-    : scheduler_(std::move(scheduler)) {}
+    scheduler::RendererSchedulerImpl* scheduler)
+    : scheduler_(scheduler) {}
 
 ScopedVirtualTimePauser::~ScopedVirtualTimePauser() {
   if (paused_ && scheduler_)

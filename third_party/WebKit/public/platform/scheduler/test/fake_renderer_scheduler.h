@@ -54,8 +54,6 @@ class FakeRendererScheduler : public RendererScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
-  void VirtualTimePaused() override;
-  void VirtualTimeResumed() override;
   void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
