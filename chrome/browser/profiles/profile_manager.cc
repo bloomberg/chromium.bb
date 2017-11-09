@@ -1584,12 +1584,16 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
     bool has_entry = storage.GetProfileAttributesWithPath(profile->GetPath(),
                                                           &entry);
     if (has_entry) {
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+      bool was_authenticated_status = entry->IsAuthenticated();
+#endif
       // The ProfileAttributesStorage's info must match the Signin Manager.
       entry->SetAuthInfo(account_info.gaia, username);
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
       // in.
-      if (signin_util::IsForceSigninEnabled() && !entry->IsAuthenticated()) {
+      if (signin_util::IsForceSigninEnabled() && was_authenticated_status &&
+          !entry->IsAuthenticated()) {
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::BindOnce(&SignOut,
