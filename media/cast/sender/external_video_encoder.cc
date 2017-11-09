@@ -9,9 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
@@ -19,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -110,7 +106,6 @@ class ExternalVideoEncoder::VEAClientImpl
         codec_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
         key_frame_quantizer_parsable_(false),
         requested_bit_rate_(-1),
-        has_seen_zero_length_encoded_frame_(false),
         max_allowed_input_buffers_(0),
         allocate_input_buffer_in_progress_(false) {}
 
@@ -308,6 +303,7 @@ class ExternalVideoEncoder::VEAClientImpl
       }
       encoded_frame->data.append(
           static_cast<const char*>(output_buffer->memory()), payload_size);
+      DCHECK(!encoded_frame->data.empty()) << "BUG: Encoder must provide data.";
 
       // If FRAME_DURATION metadata was provided in the source VideoFrame,
       // compute the utilization metrics.
@@ -381,27 +377,6 @@ class ExternalVideoEncoder::VEAClientImpl
         }
       } else {
         quantizer_estimator_.Reset();
-      }
-
-      // TODO(miu): Determine when/why encoding can produce zero-length data,
-      // which causes crypto crashes.  http://crbug.com/519022
-      if (!has_seen_zero_length_encoded_frame_ && encoded_frame->data.empty()) {
-        has_seen_zero_length_encoded_frame_ = true;
-
-        const char kZeroEncodeDetails[] = "zero-encode-details";
-        const std::string details = base::StringPrintf(
-            ("%c/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,q=%" PRIuS
-             ",act=%c,ref=%" PRIu32),
-            codec_profile_ == media::VP8PROFILE_ANY ? 'V' : 'H',
-            key_frame ? 'K' : 'D', encoded_frame->frame_id.lower_32_bits(),
-            encoded_frame->rtp_timestamp.lower_32_bits(),
-            request.target_bit_rate / 1000, in_progress_frame_encodes_.size(),
-            encoder_active_ ? 'Y' : 'N',
-            encoded_frame->referenced_frame_id.lower_32_bits() % 1000);
-        base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);
-        // Please forward crash reports to http://crbug.com/519022:
-        base::debug::DumpWithoutCrashing();
-        base::debug::ClearCrashKey(kZeroEncodeDetails);
       }
 
       encoded_frame->encode_completion_time =
@@ -585,11 +560,6 @@ class ExternalVideoEncoder::VEAClientImpl
 
   // Used to compute utilization metrics for each frame.
   QuantizerEstimator quantizer_estimator_;
-
-  // Set to true once a frame with zero-length encoded data has been
-  // encountered.
-  // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
-  bool has_seen_zero_length_encoded_frame_;
 
   // The coded size of the video frame required by Encoder. This size is
   // obtained from VEA through |RequireBitstreamBuffers()|.

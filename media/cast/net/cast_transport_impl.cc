@@ -195,9 +195,7 @@ namespace {
 void EncryptAndSendFrame(const EncodedFrame& frame,
                          TransportEncryptionHandler* encryptor,
                          RtpSender* sender) {
-  // TODO(miu): We probably shouldn't attempt to send an empty frame, but this
-  // issue is still under investigation.  http://crbug.com/519022
-  if (encryptor->is_activated() && !frame.data.empty()) {
+  if (encryptor->is_activated()) {
     EncodedFrame encrypted_frame;
     frame.CopyMetadataTo(&encrypted_frame);
     if (encryptor->Encrypt(frame.frame_id, frame.data, &encrypted_frame.data)) {
