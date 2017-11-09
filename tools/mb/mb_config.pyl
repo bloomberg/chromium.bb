@@ -32,7 +32,7 @@
     },
 
     'chromium.android': {
-      'Android ASAN (dbg)': 'android_clang_asan_errorprone_findbugs_debug_bot_minimal_symbols',
+      'Android ASAN (dbg)': 'android_clang_asan_debug_bot_minimal_symbols',
       'Android Cronet ARM64 Builder': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet ARM64 Builder (dbg)': 'android_cronet_debug_static_bot_arm64',
       'Android Cronet ARMv6 Builder': 'android_cronet_release_bot_minimal_symbols_armv6',
@@ -320,7 +320,7 @@
       'Android Arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android Builder (dbg)': 'android_debug_static_bot',
       'Android Builder': 'android_release_bot_minimal_symbols',
-      'Android Clang Builder (dbg)': 'android_clang_asan_errorprone_findbugs_debug_bot_minimal_symbols',
+      'Android Clang Builder (dbg)': 'android_clang_asan_debug_bot_minimal_symbols',
       'Android Tests (dbg)': 'android_debug_static_bot',
       'Android Tests': 'android_release_bot_minimal_symbols',
       'Cast Android (dbg)': 'android_cast_debug_static_bot',
@@ -537,7 +537,7 @@
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_arm64',
       'android_blink_rel': 'android_release_trybot',
-      'android_clang_dbg_recipe': 'android_clang_asan_errorprone_findbugs_debug_trybot',
+      'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot',
       'android_compile_dbg': 'android_debug_trybot',
       'android_compile_mips_dbg': 'android_debug_trybot_mipsel',
       'android_compile_x64_dbg': 'android_debug_trybot_x64',
@@ -764,13 +764,13 @@
       'android', 'cast', 'clang', 'debug_static_bot',
     ],
 
-    'android_clang_asan_errorprone_findbugs_debug_bot_minimal_symbols': [
-      'android', 'clang', 'asan', 'errorprone', 'findbugs', 'debug_bot', 'minimal_symbols',
+    'android_clang_asan_debug_bot_minimal_symbols': [
+      'android', 'clang', 'asan', 'debug_bot', 'minimal_symbols',
       'strip_debug_info',
     ],
 
-    'android_clang_asan_errorprone_findbugs_debug_trybot': [
-      'android', 'clang', 'asan', 'errorprone', 'findbugs', 'debug_trybot',
+    'android_clang_asan_debug_trybot': [
+      'android', 'clang', 'asan', 'debug_trybot',
     ],
 
     'android_clang_tot_asan': [
@@ -1911,16 +1911,8 @@
       'gn_args': 'error',
     },
 
-    'errorprone': {
-      'gn_args': 'use_errorprone_java_compiler=true',
-    },
-
     'ffmpeg_branding_chromeos': {
       'gn_args': 'ffmpeg_branding="ChromeOS"',
-    },
-
-    'findbugs': {
-      'gn_args': 'run_findbugs=true',
     },
 
     'full_symbols': {

@@ -76,8 +76,6 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="printing/android/java/src"/>
 <classpathentry kind="src" path="tools/binary_size/java/src"/>
 <classpathentry kind="src" path="tools/android/memconsumer/java/src"/>
-<classpathentry kind="src" path="tools/android/findbugs_plugin/test/java/src"/>
-<classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>
 <classpathentry kind="src" path="remoting/android/java/src"/>
 <classpathentry kind="src" path="remoting/android/apk/src"/>
 <classpathentry kind="src" path="remoting/android/javatests/src"/>
