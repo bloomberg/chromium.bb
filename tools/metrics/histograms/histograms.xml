@@ -87709,6 +87709,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Translate.CLD2.LanguageAccuracy" units="%">
+  <obsolete>
+    Deprecated as of 11/2017, since cld2 is deprecated.
+  </obsolete>
   <owner>rkaplow@google.com</owner>
   <summary>
     Accuracy of the language detected by CLD2. Only recorded if the detection
@@ -87717,6 +87720,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Translate.CLD2.LanguageDetected" enum="CLD2LanguageCode">
+  <obsolete>
+    Deprecated as of 11/2017, since cld2 is deprecated.
+  </obsolete>
   <owner>rkaplow@google.com</owner>
   <summary>Language of page detected by CLD2.</summary>
 </histogram>

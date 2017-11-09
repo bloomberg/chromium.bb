@@ -19,7 +19,6 @@ static_library("renderer") {
     "//content/public/renderer",
     "//services/service_manager/public/cpp",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld",
     "//url",
     "//v8",
   ]

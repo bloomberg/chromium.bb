@@ -284,7 +284,7 @@ source_set("renderer") {
     "//mojo/public/js",
     "//skia",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld",
+    "//third_party/cld_3/src/src:cld_3",
   ]
 
   if (proprietary_codecs && enable_wifi_display) {

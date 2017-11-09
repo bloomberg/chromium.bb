@@ -245,8 +245,6 @@ exec_script_whitelist =
       "//third_party/catapult/tracing/BUILD.gn",
       "//third_party/google_input_tools/inputview.gni",
 
-      # CLD2 should be removed soon, delete this when we do.
-      "//third_party/cld_2/BUILD.gn",
       "//tools/grit/grit_rule.gni",
 
       # Not gypi-to-gn.

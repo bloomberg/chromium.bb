@@ -146,7 +146,7 @@ static_library("test_support") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/cld",
+    "//third_party/cld_3/src/src:cld_3",
   ]
 
   public_deps = [

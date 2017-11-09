@@ -390,7 +390,7 @@ if (is_win) {
       "//net:net_resources",
       "//ppapi/features",
       "//services/service_manager/embedder",
-      "//third_party/cld",
+      "//third_party/cld_3/src/src:cld_3",
       "//third_party/wtl",
       "//ui/views",
     ]
@@ -1172,7 +1172,7 @@ if (is_win) {
       "//content/public/common:service_names",
       "//headless:headless_shell_lib",
       "//services/service_manager/embedder",
-      "//third_party/cld",
+      "//third_party/cld_3/src/src:cld_3",
     ]
 
     if (is_component_build) {
