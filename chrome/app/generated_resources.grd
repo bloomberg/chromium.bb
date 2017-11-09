@@ -7885,6 +7885,9 @@ I don't think this site should be blocked!
       <message name="IDS_SUPERVISED_USER_NOT_ALLOWED_BY_POLICY" desc="The error message shown when the user tries to use the supervised user profile when it's disabled by policy">
         Supervised users have been disabled by your administrator.
       </message>
+      <message name="IDS_USER_NOT_ALLOWED_BY_POLICY" desc="The error message shown when the user tries to use a profile that is blocked by policy">
+        This user has been disabled by your administrator.
+      </message>
       <if expr="is_android">
         <message name="IDS_SYNC_USER_NAME_IN_USE_ERROR" desc="Mobile: An error message shown when a user tries to sign in to sync using a user name that's already in use by another profile.">
           This account is already being used on this device.
