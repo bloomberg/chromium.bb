@@ -474,12 +474,8 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
     // merge. We consider a profile as pre-existing if it has been actived
     // previously. A pre-existed profile can still be used if it has been signed
     // in with an email address matched RestrictSigninToPattern policy already.
-    // TODO(crbug.com/775546, zmin): Improving the error message here.
     DisplayErrorMessage(
-        l10n_util::GetStringFUTF16(
-            IDS_PLUGIN_BLOCKED_BY_POLICY,
-            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN)),
-        web_ui());
+        l10n_util::GetStringUTF16(IDS_USER_NOT_ALLOWED_BY_POLICY), web_ui());
   } else {
     // Fresh sign in via user manager without existing email address.
     UserManagerProfileDialog::ShowSigninDialog(browser_context, profile_path);
