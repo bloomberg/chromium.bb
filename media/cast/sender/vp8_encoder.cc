@@ -4,11 +4,7 @@
 
 #include "media/cast/sender/vp8_encoder.h"
 
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/strings/stringprintf.h"
 #include "media/base/video_frame.h"
 #include "media/cast/constants.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
@@ -74,7 +70,6 @@ Vp8Encoder::Vp8Encoder(const FrameSenderConfig& video_config)
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
       next_frame_id_(FrameId::first()),
-      has_seen_zero_length_encoded_frame_(false),
       encoding_speed_acc_(
           base::TimeDelta::FromMicroseconds(kEncodingSpeedAccHalfLife)),
       encoding_speed_(kHighestEncodingSpeed) {
@@ -290,25 +285,6 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   }
   DCHECK(!encoded_frame->data.empty())
       << "BUG: Encoder must provide data since lagged encoding is disabled.";
-
-  // TODO(miu): Determine when/why encoding can produce zero-length data,
-  // which causes crypto crashes.  http://crbug.com/519022
-  if (!has_seen_zero_length_encoded_frame_ && encoded_frame->data.empty()) {
-    has_seen_zero_length_encoded_frame_ = true;
-
-    const char kZeroEncodeDetails[] = "zero-encode-details";
-    const std::string details = base::StringPrintf(
-        "SV/%c,id=%" PRIu32 ",rtp=%" PRIu32 ",br=%d,kfr=%c",
-        encoded_frame->dependency == EncodedFrame::KEY ? 'K' : 'D',
-        encoded_frame->frame_id.lower_32_bits(),
-        encoded_frame->rtp_timestamp.lower_32_bits(),
-        static_cast<int>(config_.rc_target_bitrate),
-        key_frame_requested_ ? 'Y' : 'N');
-    base::debug::SetCrashKeyValue(kZeroEncodeDetails, details);
-    // Please forward crash reports to http://crbug.com/519022:
-    base::debug::DumpWithoutCrashing();
-    base::debug::ClearCrashKey(kZeroEncodeDetails);
-  }
 
   // Compute encoder utilization as the real-world time elapsed divided by the
   // frame duration.

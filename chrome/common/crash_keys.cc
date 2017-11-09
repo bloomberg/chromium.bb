@@ -84,8 +84,6 @@ const char kToolbarNibInfo[] = "toolbar-nib-info";
 
 const char kViewCount[] = "view-count";
 
-const char kZeroEncodeDetails[] = "zero-encode-details";
-
 const char kUserCloudPolicyManagerConnectTrace[] =
     "user-cloud-policy-manager-connect-trace";
 
@@ -175,9 +173,6 @@ size_t RegisterChromeCrashKeys() {
 #endif
     {kBug464926CrashKey, kSmallSize},
     {kViewCount, kSmallSize},
-
-    // media/:
-    {kZeroEncodeDetails, kSmallSize},
 
     // gin/:
     {"v8-ignition", kSmallSize},

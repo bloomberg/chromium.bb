@@ -77,11 +77,6 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // This is bound to the thread where Initialize() is called.
   base::ThreadChecker thread_checker_;
 
-  // Set to true once a frame with zero-length encoded data has been
-  // encountered.
-  // TODO(miu): Remove after discovering cause.  http://crbug.com/519022
-  bool has_seen_zero_length_encoded_frame_;
-
   // The accumulator (time averaging) of the encoding speed.
   FeedbackSignalAccumulator<base::TimeDelta> encoding_speed_acc_;
 
