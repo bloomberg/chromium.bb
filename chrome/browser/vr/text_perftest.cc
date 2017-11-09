@@ -5,11 +5,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/base/lap_timer.h"
+#include "chrome/browser/vr/cpu_surface_provider.h"
 #include "chrome/browser/vr/elements/text.h"
+#include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/gl_test_environment.h"
+#include "skia/ext/texture_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/skia/include/core/SkSurface.h"
 
 namespace vr {
 
@@ -27,9 +31,11 @@ class TextPerfTest : public testing::Test {
   void SetUp() override {
     gl_test_environment_ =
         base::MakeUnique<GlTestEnvironment>(kPixelHalfScreen);
+    provider_ = base::MakeUnique<GaneshSurfaceProvider>();
+
     text_element_ = base::MakeUnique<Text>(kMaximumTextWidthPixels,
                                            kFontHeightMeters, kTextWidthMeters);
-    text_element_->Initialize();
+    text_element_->Initialize(provider_.get());
   }
 
   void TearDown() override {
@@ -57,6 +63,7 @@ class TextPerfTest : public testing::Test {
 
  private:
   std::unique_ptr<GlTestEnvironment> gl_test_environment_;
+  std::unique_ptr<SkiaSurfaceProvider> provider_;
 };
 
 TEST_F(TextPerfTest, RenderLoremIpsum100Chars) {

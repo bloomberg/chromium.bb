@@ -5,8 +5,8 @@
 #include "chrome/browser/vr/elements/textured_element.h"
 
 #include "base/trace_event/trace_event.h"
-#include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
+#include "chrome/browser/vr/skia_surface_provider.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -19,14 +19,15 @@ static bool g_rerender_if_not_dirty_for_testing_ = false;
 }
 
 TexturedElement::TexturedElement(int maximum_width)
-    : texture_handle_(unsigned(-1)), maximum_width_(maximum_width) {}
+    : maximum_width_(maximum_width) {}
 
 TexturedElement::~TexturedElement() = default;
 
-void TexturedElement::Initialize() {
+void TexturedElement::Initialize(SkiaSurfaceProvider* provider) {
   TRACE_EVENT0("gpu", "TexturedElement::Initialize");
-  glGenTextures(1, &texture_handle_);
-  DCHECK(GetTexture() != nullptr);
+  DCHECK(provider);
+  provider_ = provider;
+  DCHECK(GetTexture());
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
   GetTexture()->OnInitialized();
   initialized_ = true;
@@ -47,10 +48,10 @@ bool TexturedElement::UpdateTexture() {
       !(GetTexture()->dirty() || g_rerender_if_not_dirty_for_testing_) ||
       !IsVisible())
     return false;
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
-      texture_size_.width(), texture_size_.height());
-  GetTexture()->DrawAndLayout(surface->getCanvas(), texture_size_);
-  Flush(surface.get());
+  surface_ = provider_->MakeSurface(texture_size_);
+  DCHECK(surface_.get());
+  GetTexture()->DrawAndLayout(surface_->getCanvas(), texture_size_);
+  texture_handle_ = provider_->FlushSurface(surface_.get(), texture_handle_);
   // Update the element size's aspect ratio to match the texture.
   UpdateElementSize();
   return true;
@@ -79,25 +80,6 @@ void TexturedElement::Render(
                              UiElementRenderer::kTextureLocationLocal,
                              model_view_proj_matrix, copy_rect,
                              computed_opacity(), size(), corner_radius());
-}
-
-void TexturedElement::Flush(SkSurface* surface) {
-  cc::SkiaPaintCanvas paint_canvas(surface->getCanvas());
-  paint_canvas.flush();
-  SkPixmap pixmap;
-  CHECK(surface->peekPixels(&pixmap));
-
-  SkColorType type = pixmap.colorType();
-  DCHECK(type == kRGBA_8888_SkColorType || type == kBGRA_8888_SkColorType);
-  GLint format = (type == kRGBA_8888_SkColorType ? GL_RGBA : GL_BGRA);
-
-  glBindTexture(GL_TEXTURE_2D, texture_handle_);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, format, pixmap.width(), pixmap.height(), 0,
-               format, GL_UNSIGNED_BYTE, pixmap.addr());
 }
 
 void TexturedElement::OnSetMode() {
