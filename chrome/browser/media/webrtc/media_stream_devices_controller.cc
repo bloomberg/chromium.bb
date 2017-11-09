@@ -34,6 +34,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
@@ -308,8 +309,12 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 
   // Log a deprecation warning for pepper requests made when a feature policy is
   // in place. Other types of requests (namely getUserMedia requests) have a
-  // deprecation warning logged in blink.
-  if (request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY) {
+  // deprecation warning logged in blink. Only do this if
+  // kUseFeaturePolicyForPermissions isn't yet enabled. When it is enabled, we
+  // log an error in PermissionContextBase as a part of the request.
+  if (request_.request_type == content::MEDIA_OPEN_DEVICE_PEPPER_ONLY &&
+      !base::FeatureList::IsEnabled(
+          features::kUseFeaturePolicyForPermissions)) {
     DCHECK_NE(CONTENT_SETTING_DEFAULT, audio_setting_);
     DCHECK_NE(CONTENT_SETTING_DEFAULT, video_setting_);
     content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
