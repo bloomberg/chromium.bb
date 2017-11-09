@@ -972,6 +972,7 @@ component("ash") {
     "//components/strings",
     "//components/user_manager",
     "//components/vector_icons",
+    "//components/viz/host",
     "//components/viz/service",
     "//components/wallpaper",
     "//device/bluetooth",

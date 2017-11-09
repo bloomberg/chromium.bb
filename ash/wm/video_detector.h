@@ -18,6 +18,8 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
 
@@ -25,19 +27,16 @@ namespace aura {
 class Window;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace ash {
 
-// Watches for updates to windows and tries to detect when a video is playing.
-// We err on the side of false positives and can be fooled by things like
-// continuous scrolling of a page.
+// Receives notifications from viz::VideoDetector about whether it is likely
+// that a video is being played on screen. If video activity is detected, this
+// class will classify it as full screen or windowed.
 class ASH_EXPORT VideoDetector : public aura::EnvObserver,
                                  public aura::WindowObserver,
                                  public SessionObserver,
-                                 public ShellObserver {
+                                 public ShellObserver,
+                                 public viz::mojom::VideoDetectorObserver {
  public:
   // State of detected video activity.
   enum class State {
@@ -60,42 +59,18 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
     virtual ~Observer() {}
   };
 
-  // Minimum dimensions in pixels that a window update must have to be
-  // considered a potential video frame.
-  static const int kMinUpdateWidth;
-  static const int kMinUpdateHeight;
-
-  // Number of video-sized updates that we must see within a second in a window
-  // before we assume that a video is playing.
-  static const int kMinFramesPerSecond;
-
-  // Timeout after which video is no longer considered to be playing.
-  static const int kVideoTimeoutMs;
-
-  // Duration video must be playing in a window before it is reported to
-  // observers.
-  static const int kMinVideoDurationMs;
-
-  VideoDetector();
+  VideoDetector(viz::mojom::VideoDetectorObserverRequest request);
   ~VideoDetector() override;
 
   State state() const { return state_; }
 
-  void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
-
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Runs HandleVideoInactive() and returns true, or returns false if
-  // |video_inactive_timer_| wasn't running.
-  bool TriggerTimeoutForTest() WARN_UNUSED_RESULT;
 
   // EnvObserver overrides.
   void OnWindowInitialized(aura::Window* window) override;
 
   // aura::WindowObserver overrides.
-  void OnDelegatedFrameDamage(aura::Window* window,
-                              const gfx::Rect& region) override;
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
 
@@ -106,14 +81,11 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   void OnFullscreenStateChanged(bool is_fullscreen,
                                 aura::Window* root_window) override;
 
+  // viz::mojom::VideoDetectorObserver implementation.
+  void OnVideoActivityStarted() override;
+  void OnVideoActivityEnded() override;
+
  private:
-  // Called when video activity is observed in |window|.
-  void HandleVideoActivity(aura::Window* window, base::TimeTicks now);
-
-  // Called by |inactive_timer_| |kVideoTimeoutMs| after the last-observed video
-  // activity.
-  void HandleVideoInactive();
-
   // Updates |state_| and notifies |observers_| if it changed.
   void UpdateState();
 
@@ -126,24 +98,14 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // Currently-fullscreen root windows.
   std::set<aura::Window*> fullscreen_root_windows_;
 
-  // Maps from a window that we're tracking to information about it.
-  class WindowInfo;
-  using WindowInfoMap = std::map<aura::Window*, std::unique_ptr<WindowInfo>>;
-  WindowInfoMap window_infos_;
-
   base::ObserverList<Observer> observers_;
-
-  // Calls HandleVideoInactive().
-  base::OneShotTimer video_inactive_timer_;
-
-  // If set, used when the current time is needed.  This can be set by tests to
-  // simulate the passage of time.
-  base::TimeTicks now_for_test_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_manager_;
   ScopedSessionObserver scoped_session_observer_;
 
   bool is_shutting_down_;
+
+  mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };

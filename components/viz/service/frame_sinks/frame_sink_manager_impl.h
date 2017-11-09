@@ -16,6 +16,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
+#include "components/viz/service/frame_sinks/video_detector.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/surfaces/surface_observer.h"
@@ -23,6 +24,7 @@
 #include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 
 namespace cc {
 
@@ -86,6 +88,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   void AssignTemporaryReference(const SurfaceId& surface_id,
                                 const FrameSinkId& owner) override;
   void DropTemporaryReference(const SurfaceId& surface_id) override;
+  void AddVideoDetectorObserver(
+      mojom::VideoDetectorObserverPtr observer) override;
 
   // CompositorFrameSinkSupport, hierarchy, and BeginFrameSource can be
   // registered and unregistered in any order with respect to each other.
@@ -154,6 +158,12 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   // This method is virtual so the implementation can be modified in unit tests.
   virtual uint64_t GetActiveFrameIndex(const SurfaceId& surface_id);
 
+  // Instantiates |video_detector_| for tests where we simulate the passage of
+  // time.
+  VideoDetector* CreateVideoDetectorForTesting(
+      std::unique_ptr<base::TickClock> tick_clock,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
  private:
   friend class cc::test::SurfaceSynchronizationTest;
 
@@ -220,6 +230,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
   // This will point to |client_ptr_| if using Mojo or a provided client if
   // directly connected. Use this to make function calls.
   mojom::FrameSinkManagerClient* client_ = nullptr;
+
+  // |video_detector_| is instantiated lazily in order to avoid overhead on
+  // platforms that don't need video detection.
+  std::unique_ptr<VideoDetector> video_detector_;
 
   mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<mojom::FrameSinkManager> binding_;

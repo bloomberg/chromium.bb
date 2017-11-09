@@ -612,4 +612,9 @@ bool SurfaceManager::IsMarkedForDestruction(const SurfaceId& surface_id) {
   return surfaces_to_destroy_.count(surface_id) != 0;
 }
 
+void SurfaceManager::SurfaceWillBeDrawn(Surface* surface) {
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceWillBeDrawn(surface);
+}
+
 }  // namespace viz

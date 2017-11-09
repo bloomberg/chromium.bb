@@ -33,6 +33,7 @@
 #include "ash/wm/workspace/workspace_event_handler_classic.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/public/interfaces/video_detector.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -260,6 +261,18 @@ ShellPortMus::CreateAcceleratorController() {
       std::make_unique<AcceleratorControllerDelegateClassic>();
   return std::make_unique<AcceleratorController>(
       accelerator_controller_delegate_.get(), nullptr);
+}
+
+void ShellPortMus::AddVideoDetectorObserver(
+    viz::mojom::VideoDetectorObserverPtr observer) {
+  // We may not have access to the connector in unit tests.
+  if (!window_manager_->connector())
+    return;
+
+  ui::mojom::VideoDetectorPtr video_detector;
+  window_manager_->connector()->BindInterface(ui::mojom::kServiceName,
+                                              &video_detector);
+  video_detector->AddObserver(std::move(observer));
 }
 
 }  // namespace mus

@@ -68,6 +68,7 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       next_wm_change_id_(0),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
       host_frame_sink_manager_(base::MakeUnique<viz::HostFrameSinkManager>()),
+      video_detector_(host_frame_sink_manager_.get()),
       display_creation_config_(DisplayCreationConfig::UNKNOWN) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());

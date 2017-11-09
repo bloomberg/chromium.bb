@@ -85,6 +85,8 @@ class ShellPortMus : public ShellPort {
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override;
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
+  void AddVideoDetectorObserver(
+      viz::mojom::VideoDetectorObserverPtr observer) override;
 
  protected:
   WindowManager* window_manager_;

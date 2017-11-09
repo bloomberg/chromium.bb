@@ -7,6 +7,7 @@
 
 namespace viz {
 
+class Surface;
 class SurfaceId;
 class SurfaceInfo;
 struct BeginFrameAck;
@@ -46,6 +47,9 @@ class SurfaceObserver {
   // TODO(crbug.com/776098): This is only used in tests. We can probably remove
   // it.
   virtual void OnSurfaceSubtreeDamaged(const SurfaceId& surface_id) = 0;
+
+  // Called whenever |surface| will be drawn in the next display frame.
+  virtual void OnSurfaceWillBeDrawn(Surface* surface) {}
 };
 
 }  // namespace viz

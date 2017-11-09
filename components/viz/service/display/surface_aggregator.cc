@@ -769,6 +769,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                                          bool in_moved_pixel_surface,
                                          int parent_pass_id,
+                                         bool will_draw,
                                          PrewalkResult* result) {
   // This is for debugging a possible use after free.
   // TODO(jbauman): Remove this once we have enough information.
@@ -781,6 +782,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   contained_surfaces_[surface->surface_id()] = surface->GetActiveFrameIndex();
   if (!surface->HasActiveFrame())
     return gfx::Rect();
+
+  if (will_draw)
+    manager_->SurfaceWillBeDrawn(surface);
+
   const CompositorFrame& frame = surface->GetActiveFrame();
   int child_id = 0;
   // TODO(jbauman): hack for unit tests that don't set up rp
@@ -935,7 +940,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
     if (surface) {
       surface_damage.Union(PrewalkTree(surface, surface_info.has_moved_pixels,
-                                       surface_info.parent_pass_id, result));
+                                       surface_info.parent_pass_id, will_draw,
+                                       result));
     }
 
     if (surface_damage.IsEmpty())
@@ -953,12 +959,13 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   }
 
   CHECK(debug_weak_this.get());
+
   for (const auto& surface_id : frame.metadata.referenced_surfaces) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
       Surface* undrawn_surface = manager_->GetSurfaceForId(surface_id);
       if (undrawn_surface)
-        PrewalkTree(undrawn_surface, false, 0, result);
+        PrewalkTree(undrawn_surface, false, 0, false /* will_draw */, result);
     }
   }
 
@@ -1075,7 +1082,8 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
   PrewalkResult prewalk_result;
-  root_damage_rect_ = PrewalkTree(surface, false, 0, &prewalk_result);
+  root_damage_rect_ =
+      PrewalkTree(surface, false, 0, true /* will_draw */, &prewalk_result);
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;

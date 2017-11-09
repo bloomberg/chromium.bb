@@ -325,6 +325,8 @@ void Service::OnStart() {
   }
   registry_.AddInterface<mojom::RemoteEventDispatcher>(base::Bind(
       &Service::BindRemoteEventDispatcherRequest, base::Unretained(this)));
+  registry_.AddInterface<mojom::VideoDetector>(
+      base::Bind(&Service::BindVideoDetectorRequest, base::Unretained(this)));
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
@@ -540,6 +542,10 @@ void Service::BindRemoteEventDispatcherRequest(
   mojo::MakeStrongBinding(
       base::MakeUnique<ws::RemoteEventDispatcherImpl>(window_server_.get()),
       std::move(request));
+}
+
+void Service::BindVideoDetectorRequest(mojom::VideoDetectorRequest request) {
+  window_server_->video_detector()->AddBinding(std::move(request));
 }
 
 }  // namespace ui
