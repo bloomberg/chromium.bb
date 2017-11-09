@@ -111,8 +111,8 @@ printRule(TranslationTableRule *rule, widechar *rule_string) {
 #endif
 
 static int
-find_matching_rules(
-		widechar *text, int text_len, widechar *braille, int braille_len, char *data) {
+find_matching_rules(widechar *text, int text_len, widechar *braille, int braille_len,
+		char *data, int clear_data) {
 	unsigned long int hash;
 	TranslationTableOffset offset;
 	TranslationTableRule *rule;
@@ -134,7 +134,6 @@ find_matching_rules(
 
 	/* finish */
 	if (text_len == 0 && braille_len == 0) {
-		if (data[-1] != '1') return 0;
 		data[-1] = '$';
 		return 1;
 	}
@@ -142,6 +141,13 @@ find_matching_rules(
 	/* save data */
 	data_save = (char *)malloc(text_len * sizeof(char));
 	memcpy(data_save, data, text_len);
+
+	for (k = 0; k < text_len; k++)
+		if (data[k] == ')')
+			data[k] = '>';
+		else if (clear_data)
+			data[k] = '-';
+	debug("%s", data);
 
 	/* iterate over rules */
 	for (hash_len = 2; hash_len >= 1; hash_len--) {
@@ -190,8 +196,6 @@ find_matching_rules(
 				if (rule->charslen == text_len) break;
 				goto next_rule;
 			case CTO_NoCross:
-				for (k = 0; k < rule->charslen - 1; k++)
-					if (data[k + 1] == '>') goto next_rule;
 				break;
 			case CTO_Letter:
 			case CTO_UpperCase:
@@ -216,6 +220,16 @@ find_matching_rules(
 						braille[k])
 					goto inhibit;
 
+			/* don't let this rule be inhibited by an earlier rule */
+			int inhibit_all = 0;
+			if (rule->opcode == CTO_NoCross)
+				for (k = 0; k < rule->charslen - 1; k++)
+					if (data[k + 1] == '>')
+						if (data[-1] == 'x')
+							inhibit_all = 1;
+						else
+							goto next_rule;
+
 			/* fill data */
 			switch (rule->opcode) {
 			case CTO_NoCross:  // deferred: see success
@@ -226,12 +240,11 @@ find_matching_rules(
 					if (data[k + 1] == '>') {
 						data[k++] = '1';
 						memset(&data[k], '-', text_len - k);
-						break;
 					} else
 						data[k++] = 'x';
 				}
 			}
-			if (data[rule->charslen] == '>') {
+			if (data[rule->charslen] == '>' || data[rule->charslen] == ')') {
 				data[rule->charslen - 1] = '1';
 				memset(&data[rule->charslen], '-', text_len - rule->charslen);
 			} else
@@ -239,51 +252,20 @@ find_matching_rules(
 			debug("%s", data);
 
 			/* recur */
-			switch (data[rule->charslen - 1]) {
-			case 'x':
-				data[rule->charslen - 1] = '0';
-				debug("%s", data);
-				if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
-							&braille[rule->dotslen], braille_len - rule->dotslen,
-							&data[rule->charslen])) {
-					char *data_tmp = (char *)malloc(
-							(text_len - rule->charslen + 1) * sizeof(char));
-					memcpy(data_tmp, &data[rule->charslen - 1],
-							text_len - rule->charslen + 1);
-					data[rule->charslen - 1] = '1';
-					debug("%s", data);
-					memset(&data[rule->charslen], '-', text_len - rule->charslen);
-					if (find_matching_rules(&text[rule->charslen],
-								text_len - rule->charslen, &braille[rule->dotslen],
-								braille_len - rule->dotslen, &data[rule->charslen]) &&
-							memcmp(&data_tmp[1], &data[rule->charslen],
-									text_len - rule->charslen) == 0)
-						data[rule->charslen - 1] = 'x';
-					else
-						memcpy(&data[rule->charslen - 1], data_tmp,
-								text_len - rule->charslen + 1);
-					debug("%s", data);
-					free(data_tmp);
-					goto success;
-				} else {
-					data[rule->charslen - 1] = '1';
-					memset(&data[rule->charslen], '-', text_len - rule->charslen);
-					debug("%s", data);
-				}
-			case '0':
-			case '1':
-				if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
-							&braille[rule->dotslen], braille_len - rule->dotslen,
-							&data[rule->charslen]))
-					goto success;
-			}
+			if (find_matching_rules(&text[rule->charslen], text_len - rule->charslen,
+						&braille[rule->dotslen], braille_len - rule->dotslen,
+						&data[rule->charslen], inhibit_all))
+				goto success;
 
 		inhibit:
 			debug("** rule inhibited **");
 			switch (rule->opcode) {
 			case CTO_NoCross:
 				if (rule->charslen < 2) goto abort;
-				data[rule->charslen - 1] = '>';
+				/* inhibited by earlier rule */
+				for (k = 0; k < rule->charslen - 1; k++)
+					if (data[k + 1] == '>' && data[-1] != 'x') goto next_rule;
+				data[rule->charslen - 1] = ')';
 				debug("%s", data);
 				goto next_rule;
 			default:
@@ -292,6 +274,7 @@ find_matching_rules(
 
 		success:
 			/* fill data (deferred) */
+			if (inhibit_all) data[-1] = '1';
 			switch (rule->opcode) {
 			case CTO_NoCross:
 				memset(data, '0', rule->charslen - 1);
@@ -382,7 +365,8 @@ suggestChunks(widechar *text, widechar *braille, char *hyphen_string) {
 	hyphen_string[0] = '^';
 	hyphen_string[text_len + 1] = '\0';
 	memset(&hyphen_string[1], '-', text_len);
-	return find_matching_rules(text, text_len, braille, braille_len, &hyphen_string[1]);
+	return find_matching_rules(
+			text, text_len, braille, braille_len, &hyphen_string[1], 0);
 }
 
 extern void
