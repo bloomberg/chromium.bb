@@ -45,6 +45,8 @@ source_set("lib") {
     "observers/metrics_collector.h",
     "observers/page_signal_generator_impl.cc",
     "observers/page_signal_generator_impl.h",
+    "resource_coordinator_clock.cc",
+    "resource_coordinator_clock.h",
     "resource_coordinator_service.cc",
     "resource_coordinator_service.h",
   ]

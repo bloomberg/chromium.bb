@@ -6,7 +6,6 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PAGE_COORDINATION_UNIT_IMPL_H_
 
 #include "base/macros.h"
-#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 
@@ -56,8 +55,6 @@ class PageCoordinationUnitImpl
   // PageCoordinationUnit.
   base::TimeDelta TimeSinceLastVisibilityChange() const;
 
-  void SetClockForTest(std::unique_ptr<base::TickClock> test_clock);
-
   const std::set<FrameCoordinationUnitImpl*>&
   frame_coordination_units_for_testing() const {
     return frame_coordination_units_;
@@ -79,7 +76,6 @@ class PageCoordinationUnitImpl
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
-  std::unique_ptr<base::TickClock> clock_;
   base::TimeTicks visibility_change_time_;
   // Main frame navigation committed time.
   base::TimeTicks navigation_committed_time_;

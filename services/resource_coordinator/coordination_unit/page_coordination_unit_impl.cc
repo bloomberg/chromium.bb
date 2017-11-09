@@ -9,14 +9,14 @@
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/resource_coordinator_clock.h"
 
 namespace resource_coordinator {
 
 PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
     std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : CoordinationUnitInterface(id, std::move(service_ref)),
-      clock_(new base::DefaultTickClock()) {}
+    : CoordinationUnitInterface(id, std::move(service_ref)) {}
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() {
   for (auto* child_frame : frame_coordination_units_)
@@ -117,22 +117,17 @@ bool PageCoordinationUnitImpl::GetExpectedTaskQueueingDuration(
 base::TimeDelta PageCoordinationUnitImpl::TimeSinceLastNavigation() const {
   if (navigation_committed_time_.is_null())
     return base::TimeDelta();
-  return clock_->NowTicks() - navigation_committed_time_;
+  return ResourceCoordinatorClock::NowTicks() - navigation_committed_time_;
 }
 
 base::TimeDelta PageCoordinationUnitImpl::TimeSinceLastVisibilityChange()
     const {
-  return clock_->NowTicks() - visibility_change_time_;
-}
-
-void PageCoordinationUnitImpl::SetClockForTest(
-    std::unique_ptr<base::TickClock> test_clock) {
-  clock_ = std::move(test_clock);
+  return ResourceCoordinatorClock::NowTicks() - visibility_change_time_;
 }
 
 void PageCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
   if (event == mojom::Event::kNavigationCommitted)
-    navigation_committed_time_ = clock_->NowTicks();
+    navigation_committed_time_ = ResourceCoordinatorClock::NowTicks();
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
 }
@@ -141,7 +136,7 @@ void PageCoordinationUnitImpl::OnPropertyChanged(
     const mojom::PropertyType property_type,
     int64_t value) {
   if (property_type == mojom::PropertyType::kVisible)
-    visibility_change_time_ = clock_->NowTicks();
+    visibility_change_time_ = ResourceCoordinatorClock::NowTicks();
   for (auto& observer : observers())
     observer.OnPagePropertyChanged(this, property_type, value);
 }
