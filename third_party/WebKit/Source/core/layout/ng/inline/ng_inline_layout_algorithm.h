@@ -51,8 +51,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
-  TextDirection CurrentDirection(TextDirection default_direction) const;
-
   void BidiReorder(NGInlineItemResults*);
 
   void PlaceItems(NGLineInfo*, const NGExclusionSpace&);

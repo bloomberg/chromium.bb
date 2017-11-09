@@ -71,13 +71,6 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   PlaceItems(line_info, *exclusion_space);
 }
 
-TextDirection NGInlineLayoutAlgorithm::CurrentDirection(
-    TextDirection default_direction) const {
-  if (!box_states_)
-    return default_direction;
-  return box_states_->LineBoxState().style->Direction();
-}
-
 void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   // TODO(kojii): UAX#9 L1 is not supported yet. Supporting L1 may change
   // embedding levels of parts of runs, which requires to split items.
@@ -217,9 +210,9 @@ void NGInlineLayoutAlgorithm::PlaceItems(
       DCHECK_GT(line_box_.size(), list_marker_index.value());
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
-      container_builder_.AddOutOfFlowChildCandidate(
+      container_builder_.AddInlineOutOfFlowChildCandidate(
           node, NGLogicalOffset(position, LayoutUnit()),
-          CurrentDirection(line_info->BaseDirection()));
+          line_info->BaseDirection());
       continue;
     } else {
       continue;
@@ -676,8 +669,8 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
     } else if (is_empty_inline &&
                item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
-      container_builder_.AddOutOfFlowChildCandidate(
-          node, NGLogicalOffset(), CurrentDirection(node.Style().Direction()));
+      container_builder_.AddInlineOutOfFlowChildCandidate(
+          node, NGLogicalOffset(), Style().Direction());
     }
 
     // Abort if we've found something that makes this a non-empty inline.
