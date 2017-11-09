@@ -169,6 +169,11 @@ SkImageInfo GetSkImageInfo(const scoped_refptr<StaticBitmapImage>& image) {
 scoped_refptr<Uint8Array> CopyImageData(
     const scoped_refptr<StaticBitmapImage>& input,
     const SkImageInfo& info) {
+  if (info.isEmpty())
+    return nullptr;
+  sk_sp<SkImage> sk_image = input->PaintImageForCurrentFrame().GetSkImage();
+  if (sk_image->bounds().isEmpty())
+    return nullptr;
   unsigned width = static_cast<unsigned>(input->width());
   scoped_refptr<ArrayBuffer> dst_buffer =
       ArrayBuffer::CreateOrNull(width * input->height(), info.bytesPerPixel());
@@ -179,8 +184,11 @@ scoped_refptr<Uint8Array> CopyImageData(
       Uint8Array::Create(std::move(dst_buffer), 0, byte_length);
   if (!dst_pixels)
     return nullptr;
-  input->PaintImageForCurrentFrame().GetSkImage()->readPixels(
+  bool read_pixels_successful = sk_image->readPixels(
       info, dst_pixels->Data(), width * info.bytesPerPixel(), 0, 0);
+  DCHECK(read_pixels_successful);
+  if (!read_pixels_successful)
+    return nullptr;
   return dst_pixels;
 }
 

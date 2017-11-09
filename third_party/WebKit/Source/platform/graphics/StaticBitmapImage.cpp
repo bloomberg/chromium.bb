@@ -60,7 +60,6 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
   if (SkColorSpace::Equals(src_color_space.get(), dst_color_space.get()))
     return this;
 
-  // transfer_function_behavior = SkTransferFunctionBehavior::kIgnore;
   sk_sp<SkImage> converted_skia_image =
       skia_image->makeColorSpace(dst_color_space, transfer_function_behavior);
   DCHECK(converted_skia_image.get());
