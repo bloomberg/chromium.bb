@@ -286,6 +286,11 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
       MutableStylePropertySet::Create(kHTMLStandardMode);
   if (!style)
     return;
+
+  if (EqualIgnoringASCIICase(new_font, "inherit")) {
+    return;
+  }
+
   CSSParser::ParseValue(style, CSSPropertyFont, new_font, true);
 
   FontDescription desc =
