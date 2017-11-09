@@ -52,6 +52,12 @@ ExtensionsBrowserClient::GetExtensionNavigationUIData(
   return nullptr;
 }
 
+bool ExtensionsBrowserClient::IsExtensionEnabled(
+    const std::string& extension_id,
+    content::BrowserContext* context) const {
+  return false;
+}
+
 ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
   return g_client;
 }
