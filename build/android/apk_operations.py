@@ -81,7 +81,8 @@ def _UninstallApk(devices, install_dict, package_name):
 
 
 def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
-               url=None, apk=None, wait_for_java_debugger=False):
+               url=None, apk=None, wait_for_java_debugger=False,
+               debug_process_name=None):
   if argv and command_line_flags_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
@@ -94,13 +95,18 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
     if not view_activity:
       raise Exception('APK does not support launching with URLs.')
 
+  if not debug_process_name:
+    debug_process_name = package_name
+  elif debug_process_name.startswith(':'):
+    debug_process_name = package_name + debug_process_name
+  elif '.' not in debug_process_name:
+    debug_process_name = package_name + ':' + debug_process_name
+
   def launch(device):
     # Set debug app in order to enable reading command line flags on user
     # builds.
-    cmd = ['am', 'set-debug-app', package_name]
+    cmd = ['am', 'set-debug-app', debug_process_name]
     if wait_for_java_debugger:
-      # To wait for debugging on a non-primary process:
-      #     am set-debug-app org.chromium.chrome:privileged_process0
       cmd[-1:-1] = ['-w']
     # Ignore error since it will fail if apk is not debuggable.
     device.RunShellCommand(cmd, check_return=False)
@@ -870,13 +876,18 @@ class _LaunchCommand(_Command):
                        help='Pause execution until debugger attaches. Applies '
                             'only to the main process. To have renderers wait, '
                             'use --args="--renderer-wait-for-java-debugger"')
+    group.add_argument('--debug-process-name',
+                       help='Name of the process to debug. Can be '
+                            'fully-qualified, or just name. '
+                            'E.g. privileged_process0')
     group.add_argument('url', nargs='?', help='A URL to launch with.')
 
   def Run(self):
     _LaunchUrl(self.devices, self.args.package_name, argv=self.args.args,
                command_line_flags_file=self.args.command_line_flags_file,
                url=self.args.url, apk=self.apk_helper,
-               wait_for_java_debugger=self.args.wait_for_java_debugger)
+               wait_for_java_debugger=self.args.wait_for_java_debugger,
+               debug_process_name=self.args.debug_process_name)
 
 
 class _StopCommand(_Command):
