@@ -90,7 +90,6 @@ class _BeginningToEndPlayPage(_MediaPage):
                traffic_setting=traffic_setting_module.NONE):
     tags.append('beginning_to_end')
     tags.append('src')
-    self.add_browser_metrics = True
     super(_BeginningToEndPlayPage, self).__init__(
         url, page_set, tags, extra_browser_args,
         traffic_setting=traffic_setting)
@@ -112,7 +111,6 @@ class _SeekPage(_MediaPage):
                traffic_setting=traffic_setting_module.NONE):
     tags.append('seek')
     tags.append('src')
-    self.skip_basic_metrics = True
     self._action_timeout = action_timeout_in_seconds
     super(_SeekPage, self).__init__(
         url, page_set, tags, extra_browser_args,
@@ -146,7 +144,6 @@ class _BackgroundPlaybackPage(_MediaPage):
                background_time=10,
                traffic_setting=traffic_setting_module.NONE):
     self._background_time = background_time
-    self.skip_basic_metrics = True
     tags.append('background')
     tags.append('src')
     # disable-media-suspend is required since for Android background playback
