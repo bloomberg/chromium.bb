@@ -53,8 +53,8 @@ TestService::TestService(const Options& options)
       num_exported_methods_(0),
       send_immediate_properties_changed_(false),
       has_ownership_(false),
-      exported_object_(NULL),
-      exported_object_manager_(NULL) {
+      exported_object_(nullptr),
+      exported_object_manager_(nullptr) {
   if (service_name_.empty()) {
     service_name_ = "org.chromium.TestService-" + base::GenerateGUID();
   }
@@ -393,8 +393,8 @@ void TestService::GetProperty(MethodCall* method_call,
     // Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>
     std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
-    MessageWriter variant_writer(NULL);
-    MessageWriter variant_array_writer(NULL);
+    MessageWriter variant_writer(nullptr);
+    MessageWriter variant_array_writer(nullptr);
 
     writer.OpenVariant("as", &variant_writer);
     variant_writer.OpenArray("s", &variant_array_writer);
@@ -411,8 +411,8 @@ void TestService::GetProperty(MethodCall* method_call,
     // Variant<[objectpath:"/TestObjectPath"]>
     std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
-    MessageWriter variant_writer(NULL);
-    MessageWriter variant_array_writer(NULL);
+    MessageWriter variant_writer(nullptr);
+    MessageWriter variant_array_writer(nullptr);
 
     writer.OpenVariant("ao", &variant_writer);
     variant_writer.OpenArray("o", &variant_array_writer);
@@ -426,8 +426,8 @@ void TestService::GetProperty(MethodCall* method_call,
     // Variant<[0x54, 0x65, 0x73, 0x74]>
     std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
     MessageWriter writer(response.get());
-    MessageWriter variant_writer(NULL);
-    MessageWriter variant_array_writer(NULL);
+    MessageWriter variant_writer(nullptr);
+    MessageWriter variant_array_writer(nullptr);
 
     writer.OpenVariant("ay", &variant_writer);
     const uint8_t bytes[] = {0x54, 0x65, 0x73, 0x74};
@@ -551,10 +551,10 @@ void TestService::GetManagedObjects(
   // }
 
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
-  MessageWriter object_array_writer(NULL);
-  MessageWriter object_dict_entry_writer(NULL);
+  MessageWriter array_writer(nullptr);
+  MessageWriter dict_entry_writer(nullptr);
+  MessageWriter object_array_writer(nullptr);
+  MessageWriter object_dict_entry_writer(nullptr);
 
   writer.OpenArray("{oa{sa{sv}}}", &array_writer);
 
@@ -591,10 +591,10 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer) {
   //   "Bytes": Variant<[0x54, 0x65, 0x73, 0x74]>
   // }
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
-  MessageWriter variant_writer(NULL);
-  MessageWriter variant_array_writer(NULL);
+  MessageWriter array_writer(nullptr);
+  MessageWriter dict_entry_writer(nullptr);
+  MessageWriter variant_writer(nullptr);
+  MessageWriter variant_array_writer(nullptr);
 
   writer->OpenArray("{sv}", &array_writer);
 
@@ -651,8 +651,8 @@ void TestService::AddObjectInternal(const ObjectPath& object_path) {
   MessageWriter writer(&signal);
   writer.AppendObjectPath(object_path);
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
+  MessageWriter array_writer(nullptr);
+  MessageWriter dict_entry_writer(nullptr);
 
   writer.OpenArray("{sa{sv}}", &array_writer);
   array_writer.OpenDictEntry(&dict_entry_writer);
@@ -694,8 +694,8 @@ void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
   MessageWriter writer(&signal);
   writer.AppendString("org.chromium.TestInterface");
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
+  MessageWriter array_writer(nullptr);
+  MessageWriter dict_entry_writer(nullptr);
 
   writer.OpenArray("{sv}", &array_writer);
   array_writer.OpenDictEntry(&dict_entry_writer);
@@ -704,7 +704,7 @@ void TestService::SendPropertyChangedSignalInternal(const std::string& name) {
   array_writer.CloseContainer(&dict_entry_writer);
   writer.CloseContainer(&array_writer);
 
-  MessageWriter invalidated_array_writer(NULL);
+  MessageWriter invalidated_array_writer(nullptr);
 
   writer.OpenArray("s", &invalidated_array_writer);
   writer.CloseContainer(&invalidated_array_writer);
@@ -723,13 +723,13 @@ void TestService::SendPropertyInvalidatedSignalInternal() {
   MessageWriter writer(&signal);
   writer.AppendString("org.chromium.TestInterface");
 
-  MessageWriter array_writer(NULL);
-  MessageWriter dict_entry_writer(NULL);
+  MessageWriter array_writer(nullptr);
+  MessageWriter dict_entry_writer(nullptr);
 
   writer.OpenArray("{sv}", &array_writer);
   writer.CloseContainer(&array_writer);
 
-  MessageWriter invalidated_array_writer(NULL);
+  MessageWriter invalidated_array_writer(nullptr);
 
   writer.OpenArray("s", &invalidated_array_writer);
   invalidated_array_writer.AppendString("Name");

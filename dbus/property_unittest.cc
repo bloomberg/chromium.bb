@@ -331,9 +331,9 @@ TEST_F(PropertyTest, Invalidate) {
 TEST(PropertyTestStatic, ReadWriteStringMap) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
-  MessageWriter variant_writer(NULL);
-  MessageWriter variant_array_writer(NULL);
-  MessageWriter struct_entry_writer(NULL);
+  MessageWriter variant_writer(nullptr);
+  MessageWriter variant_array_writer(nullptr);
+  MessageWriter struct_entry_writer(nullptr);
 
   writer.OpenVariant("a{ss}", &variant_writer);
   variant_writer.OpenArray("{ss}", &variant_array_writer);
@@ -378,9 +378,9 @@ TEST(PropertyTestStatic, SerializeStringMap) {
 TEST(PropertyTestStatic, ReadWriteNetAddressArray) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
-  MessageWriter variant_writer(NULL);
-  MessageWriter variant_array_writer(NULL);
-  MessageWriter struct_entry_writer(NULL);
+  MessageWriter variant_writer(nullptr);
+  MessageWriter variant_array_writer(nullptr);
+  MessageWriter struct_entry_writer(nullptr);
 
   writer.OpenVariant("a(ayq)", &variant_writer);
   variant_writer.OpenArray("(ayq)", &variant_array_writer);

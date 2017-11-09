@@ -226,12 +226,12 @@ class ObjectManagerTest
 TEST_F(ObjectManagerTest, InitialObject) {
   ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       ObjectPath("/org/chromium/TestObject"));
-  EXPECT_TRUE(object_proxy != NULL);
+  EXPECT_NE(nullptr, object_proxy);
 
   Properties* properties = static_cast<Properties*>(
       object_manager_->GetProperties(ObjectPath("/org/chromium/TestObject"),
                                      "org.chromium.TestInterface"));
-  EXPECT_TRUE(properties != NULL);
+  EXPECT_NE(nullptr, properties);
 
   EXPECT_EQ("TestService", properties->name.value());
   EXPECT_EQ(10, properties->version.value());
@@ -251,21 +251,21 @@ TEST_F(ObjectManagerTest, InitialObject) {
 TEST_F(ObjectManagerTest, UnknownObjectProxy) {
   ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       ObjectPath("/org/chromium/UnknownObject"));
-  EXPECT_TRUE(object_proxy == NULL);
+  EXPECT_EQ(nullptr, object_proxy);
 }
 
 TEST_F(ObjectManagerTest, UnknownObjectProperties) {
   Properties* properties = static_cast<Properties*>(
       object_manager_->GetProperties(ObjectPath("/org/chromium/UnknownObject"),
                                      "org.chromium.TestInterface"));
-  EXPECT_TRUE(properties == NULL);
+  EXPECT_EQ(nullptr, properties);
 }
 
 TEST_F(ObjectManagerTest, UnknownInterfaceProperties) {
   Properties* properties = static_cast<Properties*>(
       object_manager_->GetProperties(ObjectPath("/org/chromium/TestObject"),
                                      "org.chromium.UnknownService"));
-  EXPECT_TRUE(properties == NULL);
+  EXPECT_EQ(nullptr, properties);
 }
 
 TEST_F(ObjectManagerTest, GetObjects) {
@@ -314,12 +314,12 @@ TEST_F(ObjectManagerTest, SecondObject) {
 
   ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       ObjectPath("/org/chromium/SecondObject"));
-  EXPECT_TRUE(object_proxy != NULL);
+  EXPECT_NE(nullptr, object_proxy);
 
   Properties* properties = static_cast<Properties*>(
       object_manager_->GetProperties(ObjectPath("/org/chromium/SecondObject"),
                                      "org.chromium.TestInterface"));
-  EXPECT_TRUE(properties != NULL);
+  EXPECT_NE(nullptr, properties);
 
   std::vector<ObjectPath> object_paths = object_manager_->GetObjects();
   ASSERT_EQ(2U, object_paths.size());
@@ -349,12 +349,12 @@ TEST_F(ObjectManagerTest, RemoveSecondObject) {
 
   ObjectProxy* object_proxy = object_manager_->GetObjectProxy(
       ObjectPath("/org/chromium/SecondObject"));
-  EXPECT_TRUE(object_proxy == NULL);
+  EXPECT_EQ(nullptr, object_proxy);
 
   Properties* properties = static_cast<Properties*>(
       object_manager_->GetProperties(ObjectPath("/org/chromium/SecondObject"),
                                      "org.chromium.TestInterface"));
-  EXPECT_TRUE(properties == NULL);
+  EXPECT_EQ(nullptr, properties);
 
   object_paths = object_manager_->GetObjects();
   ASSERT_EQ(1U, object_paths.size());
