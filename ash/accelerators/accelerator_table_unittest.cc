@@ -19,8 +19,10 @@ namespace {
 constexpr int kNonSearchAcceleratorsNum = 93;
 // The hash of non-Search-based accelerators as of 2017-10-26.
 // See HashAcceleratorData().
+// TODO: adding Search-based accelerators should not update this hash
+// (crbug.com/778432).
 constexpr char kNonSearchAcceleratorsHash[] =
-    "f49b50d5990e0d2af99160176c6215f7";
+    "ccfca1c73d60f4837cef74800374a1c9";
 
 struct Cmp {
   bool operator()(const AcceleratorData& lhs, const AcceleratorData& rhs) {

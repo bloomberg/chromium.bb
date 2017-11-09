@@ -208,6 +208,16 @@ struct I18nContentToMessage {
     {"keyboardOverlayMaximizeWindow", IDS_KEYBOARD_OVERLAY_MAXIMIZE_WINDOW},
     {"keyboardOverlayMinimizeWindow", IDS_KEYBOARD_OVERLAY_MINIMIZE_WINDOW},
     {"keyboardOverlayMirrorMonitors", IDS_KEYBOARD_OVERLAY_MIRROR_MONITORS},
+    // TODO(warx): keyboard overlay name for move window between displays
+    // shortcuts need to be updated when new keyboard shortcuts helper is there.
+    {"keyboardOverlayMoveWindowToAboveDisplay",
+     IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_ABOVE_DISPLAY},
+    {"keyboardOverlayMoveWindowToBelowDisplay",
+     IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_BELOW_DISPLAY},
+    {"keyboardOverlayMoveWindowToLeftDisplay",
+     IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_LEFT_DISPLAY},
+    {"keyboardOverlayMoveWindowToRightDisplay",
+     IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_RIGHT_DISPLAY},
     {"keyboardOverlayNewIncognitoWindow",
      IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW},
     {"keyboardOverlayNewTab", IDS_KEYBOARD_OVERLAY_NEW_TAB},

@@ -3379,6 +3379,18 @@ Battery full
   <message name="IDS_KEYBOARD_OVERLAY_BRIGHT_UP_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'bright up' key that turns the screen's brightness up.">
     bright up
   </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_ABOVE_DISPLAY" desc="The text in the keyboard overlay to explain the shortcut (move active window to above display).">
+    Window up
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_BELOW_DISPLAY" desc="The text in the keyboard overlay to explain the shortcut (move active window to below display).">
+    Window down
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_LEFT_DISPLAY" desc="The text in the keyboard overlay to explain the shortcut (move active window to left display).">
+    Window left
+  </message>
+  <message name="IDS_KEYBOARD_OVERLAY_MOVE_WINDOW_TO_RIGHT_DISPLAY" desc="The text in the keyboard overlay to explain the shortcut (move active window to right display).">
+    Window right
+  </message>
   <message name="IDS_KEYBOARD_OVERLAY_MUTE_KEY_LABEL" desc="The text in the keyboard overlay to show the label of the 'mute' key that mutes the system's sound.">
     mute
   </message>

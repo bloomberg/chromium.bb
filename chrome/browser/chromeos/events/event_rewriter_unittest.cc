@@ -1365,19 +1365,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {
         ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN, ui::DomKey::ARROW_DOWN},
        {ui::VKEY_END, ui::DomCode::END, ui::EF_NONE, ui::DomKey::END}},
 
-      // Search+Alt+Up -> Alt+Up
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_UP, ui::DomCode::ARROW_UP,
-        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::ARROW_UP},
-       {ui::VKEY_UP, ui::DomCode::ARROW_UP, ui::EF_ALT_DOWN,
-        ui::DomKey::ARROW_UP}},
-      // Search+Alt+Down -> Alt+Down
-      {ui::ET_KEY_PRESSED,
-       {ui::VKEY_DOWN, ui::DomCode::ARROW_DOWN,
-        ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, ui::DomKey::ARROW_DOWN},
-       {ui::VKEY_DOWN, ui::DomCode::ARROW_DOWN, ui::EF_ALT_DOWN,
-        ui::DomKey::ARROW_DOWN}},
-      // Search+Ctrl+Alt+Up -> Search+Ctrl+Alt+Up
+      // Search+Ctrl+Alt+Up -> Ctrl+Alt+Up
       {ui::ET_KEY_PRESSED,
        {ui::VKEY_UP, ui::DomCode::ARROW_UP,
         ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,

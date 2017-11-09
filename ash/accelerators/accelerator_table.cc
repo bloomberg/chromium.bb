@@ -156,6 +156,16 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN, FOCUS_NEXT_PANE},
     {true, ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN, FOCUS_PREVIOUS_PANE},
 
+    // Window movement between displays shortcuts.
+    {true, ui::VKEY_UP, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     MOVE_WINDOW_TO_ABOVE_DISPLAY},
+    {true, ui::VKEY_DOWN, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     MOVE_WINDOW_TO_BELOW_DISPLAY},
+    {true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     MOVE_WINDOW_TO_LEFT_DISPLAY},
+    {true, ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
+     MOVE_WINDOW_TO_RIGHT_DISPLAY},
+
     // Media Player shortcuts.
     {true, ui::VKEY_MEDIA_NEXT_TRACK, ui::EF_NONE, MEDIA_NEXT_TRACK},
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
