@@ -82,6 +82,11 @@ class AudioPostProcessor {
   // settings accordingly.
   virtual void SetContentType(AudioContentType content_type) {}
 
+  // Called when device is playing as part of a stereo pair.
+  // |channel| is the playout channel on this device (0 for left, 1 for right).
+  // or -1 if the device is not part of a stereo pair.
+  virtual void SetPlayoutChannel(int channel) {}
+
   virtual ~AudioPostProcessor() = default;
 };
 
