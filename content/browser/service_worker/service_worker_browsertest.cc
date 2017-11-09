@@ -90,6 +90,8 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
+using blink::mojom::CacheStorageError;
+
 namespace content {
 
 namespace {
@@ -2692,7 +2694,7 @@ class CacheStorageSideDataSizeChecker
                                   const base::Closure& continuation,
                                   CacheStorageCacheHandle cache_handle,
                                   CacheStorageError error) {
-    ASSERT_EQ(CACHE_STORAGE_OK, error);
+    ASSERT_EQ(CacheStorageError::kSuccess, error);
     std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
         new ServiceWorkerFetchRequest());
     scoped_request->url = url_;
@@ -2710,7 +2712,7 @@ class CacheStorageSideDataSizeChecker
       CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> response,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
-    ASSERT_EQ(CACHE_STORAGE_OK, error);
+    ASSERT_EQ(CacheStorageError::kSuccess, error);
     blob_data_handle_ = std::move(blob_data_handle);
     blob_reader_ = blob_data_handle_->CreateReader(file_system_context_);
     const storage::BlobReader::Status status = blob_reader_->CalculateSize(

@@ -17,7 +17,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/network/http_names.h"
 #include "platform/wtf/PtrUtil.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
 namespace blink {
@@ -62,11 +62,11 @@ class CacheStorage::Callbacks final
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound)
       resolver_->Resolve(false);
     else
       resolver_->Reject(CacheStorageError::CreateException(reason));
@@ -101,14 +101,16 @@ class CacheStorage::WithCacheCallbacks final
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound ||
+        reason == mojom::CacheStorageError::kErrorStorage) {
       resolver_->Resolve();
-    else
+    } else {
       resolver_->Reject(CacheStorageError::CreateException(reason));
+    }
     resolver_.Clear();
   }
 
@@ -137,15 +139,17 @@ class CacheStorage::MatchCallbacks
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound ||
-        reason == kWebServiceWorkerCacheErrorCacheNameNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound ||
+        reason == mojom::CacheStorageError::kErrorStorage ||
+        reason == mojom::CacheStorageError::kErrorCacheNameNotFound) {
       resolver_->Resolve();
-    else
+    } else {
       resolver_->Reject(CacheStorageError::CreateException(reason));
+    }
     resolver_.Clear();
   }
 
@@ -175,14 +179,16 @@ class CacheStorage::DeleteCallbacks final
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound ||
+        reason == mojom::CacheStorageError::kErrorStorage) {
       resolver_->Resolve(false);
-    else
+    } else {
       resolver_->Reject(CacheStorageError::CreateException(reason));
+    }
     resolver_.Clear();
   }
 
@@ -213,7 +219,7 @@ class CacheStorage::KeysCallbacks final
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;

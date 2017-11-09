@@ -25,6 +25,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/http_names.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
 
@@ -50,11 +51,11 @@ class CacheMatchCallbacks : public WebServiceWorkerCache::CacheMatchCallbacks {
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound)
       resolver_->Resolve();
     else
       resolver_->Reject(CacheStorageError::CreateException(reason));
@@ -88,7 +89,7 @@ class CacheWithResponsesCallbacks
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
@@ -116,11 +117,11 @@ class CacheDeleteCallback : public WebServiceWorkerCache::CacheBatchCallbacks {
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;
-    if (reason == kWebServiceWorkerCacheErrorNotFound)
+    if (reason == mojom::CacheStorageError::kErrorNotFound)
       resolver_->Resolve(false);
     else
       resolver_->Reject(CacheStorageError::CreateException(reason));
@@ -154,7 +155,7 @@ class CacheWithRequestsCallbacks
     resolver_.Clear();
   }
 
-  void OnError(WebServiceWorkerCacheError reason) override {
+  void OnError(mojom::CacheStorageError reason) override {
     if (!resolver_->GetExecutionContext() ||
         resolver_->GetExecutionContext()->IsContextDestroyed())
       return;

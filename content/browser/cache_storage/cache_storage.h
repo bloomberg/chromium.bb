@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
+#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -49,9 +50,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   constexpr static int64_t kSizeUnknown = -1;
 
   using BoolAndErrorCallback =
-      base::OnceCallback<void(bool, CacheStorageError)>;
+      base::OnceCallback<void(bool, blink::mojom::CacheStorageError)>;
   using CacheAndErrorCallback =
-      base::OnceCallback<void(CacheStorageCacheHandle, CacheStorageError)>;
+      base::OnceCallback<void(CacheStorageCacheHandle,
+                              blink::mojom::CacheStorageError)>;
   using IndexCallback = base::OnceCallback<void(const CacheStorageIndex&)>;
   using SizeCallback = base::OnceCallback<void(int64_t)>;
 
@@ -82,9 +84,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   void HasCache(const std::string& cache_name, BoolAndErrorCallback callback);
 
   // Deletes the cache if it exists. If it doesn't exist,
-  // CACHE_STORAGE_ERROR_NOT_FOUND is returned. Any existing
-  // CacheStorageCacheHandle(s) to the cache will remain valid but future
-  // CacheStorage operations won't be able to access the cache. The cache
+  // blink::mojom::CacheStorageError::kErrorNotFound is returned. Any
+  // existing CacheStorageCacheHandle(s) to the cache will remain valid but
+  // future CacheStorage operations won't be able to access the cache. The cache
   // isn't actually erased from disk until the last handle is dropped.
   // TODO(jkarlin): Rename to DoomCache.
   void DeleteCache(const std::string& cache_name,
@@ -102,7 +104,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // Calls match on all of the caches in parallel, calling |callback| with the
   // response from the first cache (in order of cache creation) to have the
   // entry. If no response is found then |callback| is called with
-  // CACHE_STORAGE_ERROR_NOT_FOUND.
+  // blink::mojom::CacheStorageError::kErrorNotFound.
   void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCacheQueryParams& match_params,
                       CacheStorageCache::ResponseCallback callback);
@@ -193,7 +195,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                       CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
                           CacheStorageCache::ResponseCallback callback,
-                          CacheStorageError error,
+                          blink::mojom::CacheStorageError error,
                           std::unique_ptr<ServiceWorkerResponse> response,
                           std::unique_ptr<storage::BlobDataHandle> handle);
 
@@ -205,7 +207,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
       CacheStorageCacheHandle cache_handle,
       CacheMatchResponse* out_match_response,
       const base::RepeatingClosure& barrier_closure,
-      CacheStorageError error,
+      blink::mojom::CacheStorageError error,
       std::unique_ptr<ServiceWorkerResponse> service_worker_response,
       std::unique_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
