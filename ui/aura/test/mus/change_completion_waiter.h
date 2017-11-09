@@ -18,9 +18,7 @@ namespace test {
 // A class which will Wait for next change of |type| to complete.
 class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
  public:
-  ChangeCompletionWaiter(WindowTreeClient* client,
-                         ChangeType type,
-                         bool success);
+  ChangeCompletionWaiter(ChangeType type, bool success);
   ~ChangeCompletionWaiter() override;
 
   // Wait for the first change that occurred after construction of this object
@@ -55,8 +53,10 @@ class ChangeCompletionWaiter : public WindowTreeClientTestObserver {
   DISALLOW_COPY_AND_ASSIGN(ChangeCompletionWaiter);
 };
 
-// Waits until there are no more pending changes.
-void WaitForAllChangesToComplete(WindowTreeClient* client);
+// Under mus and mash, waits until there are no more pending changes on the
+// default window tree (e.g. window bounds, window visibility, cursor). Returns
+// immediately under classic ash because window operations are synchronous.
+void WaitForAllChangesToComplete();
 
 }  // namespace test
 }  // namespace aura
