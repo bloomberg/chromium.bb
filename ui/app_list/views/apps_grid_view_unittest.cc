@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -37,6 +38,7 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/aura/window.h"
@@ -842,6 +844,31 @@ TEST_P(AppsGridViewTest, SelectionUpFromFirstAppSelectsNothing) {
 
   // Check that there is no selection in AppsGridView.
   EXPECT_TRUE(CheckNoSelection());
+}
+
+// Tests that UMA is properly collected when either a suggested or normal app is
+// launched.
+TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(5);
+
+  // Select the first suggested app and launch it.
+  contents_view_->app_list_main_view()->ActivateApp(GetItemViewAt(0)->item(),
+                                                    0);
+
+  // Test that histograms recorded that a regular app launched.
+  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 0, 1);
+  // Test that histograms did not record that a suggested launched.
+  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 1, 0);
+
+  // Launch a suggested app.
+  suggestions_container_->child_at(0)->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
+
+  // Test that histograms recorded that a suggested app launched, and that the
+  // count for regular apps launched is unchanged.
+  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 0, 1);
+  histogram_tester.ExpectBucketCount("Apps.AppListAppLaunchedFullscreen", 1, 1);
 }
 
 // Tests that moving selection backwards (left in ltr, right in rtl) from the

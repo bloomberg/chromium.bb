@@ -44,7 +44,9 @@ void ArcAppResult::ExecuteLaunchCommand(int event_flags) {
 }
 
 void ArcAppResult::Open(int event_flags) {
-  RecordHistogram(APP_SEARCH_RESULT);
+  // Record the search metric if the result is not a suggested app.
+  if (display_type() != DISPLAY_RECOMMENDATION)
+    RecordHistogram(APP_SEARCH_RESULT);
 
   if (!arc::LaunchApp(profile(), app_id(), event_flags,
                       controller()->GetAppListDisplayId())) {
