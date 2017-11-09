@@ -62,8 +62,6 @@ class ResourceFetcher;
 class SecurityOrigin;
 class ScriptState;
 
-using SuspendableObject = PausableObject;
-
 enum class TaskType : unsigned;
 
 enum ReasonForCallingCanExecuteScripts {
@@ -148,10 +146,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // TODO(haraken): Remove these methods by making the customers inherit from
   // PausableObject. PausableObject is a standard way to observe context
   // suspension/resumption.
-  // TODO(hajimehoshi): Rename them to use the terms Pause/Unpause
-  virtual bool TasksNeedSuspension() { return false; }
-  virtual void TasksWereSuspended() {}
-  virtual void TasksWereResumed() {}
+  virtual bool TasksNeedPause() { return false; }
+  virtual void TasksWerePaused() {}
+  virtual void TasksWereUnpaused() {}
 
   bool IsContextPaused() const { return is_context_paused_; }
   bool IsContextDestroyed() const { return is_context_destroyed_; }
