@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_LINUX)
+#include <asm-generic/ioctls.h>
 #include <linux/serial.h>
 
 // The definition of struct termios2 is copied from asm-generic/termbits.h
