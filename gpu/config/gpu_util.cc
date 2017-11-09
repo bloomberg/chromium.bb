@@ -319,7 +319,6 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
       use_swift_shader_for_webgl = true;
   }
 
-  // Currently only computed and used for a few features.
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       GetGpuRasterizationFeatureStatus(blacklisted_features, *command_line);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL] =
@@ -346,6 +345,11 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] =
       GetGpuCompositingFeatureStatus(blacklisted_features, use_swift_shader,
                                      use_swift_shader_for_webgl);
+#if DCHECK_IS_ON()
+  for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
+    DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
+  }
+#endif
 
   if (gpu_feature_info.status_values[GPU_FEATURE_TYPE_GPU_COMPOSITING] !=
       kGpuFeatureStatusEnabled) {
