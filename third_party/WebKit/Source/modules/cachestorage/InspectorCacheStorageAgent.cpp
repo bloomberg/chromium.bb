@@ -39,7 +39,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
-using blink::mojom::CacheStorageError;
 using blink::protocol::Array;
 // Renaming Cache since there is another blink::Cache.
 using ProtocolCache = blink::protocol::CacheStorage::Cache;
@@ -116,23 +115,23 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   return AssertCacheStorage(security_origin, result);
 }
 
-CString CacheStorageErrorString(CacheStorageError error) {
+CString CacheStorageErrorString(mojom::CacheStorageError error) {
   switch (error) {
-    case CacheStorageError::kErrorNotImplemented:
+    case mojom::CacheStorageError::kErrorNotImplemented:
       return CString("not implemented.");
-    case CacheStorageError::kErrorNotFound:
+    case mojom::CacheStorageError::kErrorNotFound:
       return CString("not found.");
-    case CacheStorageError::kErrorExists:
+    case mojom::CacheStorageError::kErrorExists:
       return CString("cache already exists.");
-    case CacheStorageError::kErrorQuotaExceeded:
+    case mojom::CacheStorageError::kErrorQuotaExceeded:
       return CString("quota exceeded.");
-    case CacheStorageError::kErrorCacheNameNotFound:
+    case mojom::CacheStorageError::kErrorCacheNameNotFound:
       return CString("cache not found.");
-    case CacheStorageError::kErrorQueryTooLarge:
+    case mojom::CacheStorageError::kErrorQueryTooLarge:
       return CString("operation too large.");
-    case CacheStorageError::kErrorStorage:
+    case mojom::CacheStorageError::kErrorStorage:
       return CString("storage failure.");
-    case CacheStorageError::kSuccess:
+    case mojom::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
   }
@@ -189,7 +188,7 @@ class RequestCacheNames
     callback_->sendSuccess(std::move(array));
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
                        CacheStorageErrorString(error).data())));
@@ -315,7 +314,7 @@ class GetCacheResponsesForRequestData
     accumulator_->AddRequestResponsePair(request_, response);
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     accumulator_->SendFailure(ProtocolResponse::Error(
         String::Format("Error requesting responses for cache  %s: %s",
                        params_.cache_name.Utf8().data(),
@@ -361,7 +360,7 @@ class GetCacheKeysForRequestData
     }
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting requests for cache %s: %s",
                        params_.cache_name.Utf8().data(),
@@ -392,7 +391,7 @@ class GetCacheForRequestData
                                          WebServiceWorkerCache::QueryParams());
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Error requesting cache %s: %s", params_.cache_name.Utf8().data(),
         CacheStorageErrorString(error).data())));
@@ -413,7 +412,7 @@ class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
                        CacheStorageErrorString(error).data())));
@@ -433,7 +432,7 @@ class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
 
   void OnSuccess() override { callback_->sendSuccess(); }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Error requesting cache names: %s",
                        CacheStorageErrorString(error).data())));
@@ -469,7 +468,7 @@ class GetCacheForDeleteEntry
                                    WebVector<BatchOperation>(operations));
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(String::Format(
         "Error requesting cache %s: %s", cache_name_.Utf8().data(),
         CacheStorageErrorString(error).data())));
@@ -559,7 +558,7 @@ class CachedResponseMatchCallback
         context_, response.GetBlobDataHandle(), std::move(callback_));
   }
 
-  void OnError(CacheStorageError error) override {
+  void OnError(mojom::CacheStorageError error) override {
     callback_->sendFailure(ProtocolResponse::Error(
         String::Format("Unable to read cached response: %s",
                        CacheStorageErrorString(error).data())));
