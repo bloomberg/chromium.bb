@@ -6,19 +6,25 @@
 
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_tree_client.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 
 namespace aura {
 namespace test {
 namespace {
 
+WindowTreeClient* GetWindowTreeClient() {
+  return EnvTestHelper().GetWindowTreeClient();
+}
+
 // A class which will Wait until there are no more in-flight-changes. That is,
 // all changes sent to mus have been acked.
 class AllChangesCompletedWaiter : public WindowTreeClientTestObserver {
  public:
-  explicit AllChangesCompletedWaiter(WindowTreeClient* client);
+  AllChangesCompletedWaiter();
   ~AllChangesCompletedWaiter() override;
 
   void Wait();
@@ -37,8 +43,8 @@ class AllChangesCompletedWaiter : public WindowTreeClientTestObserver {
   DISALLOW_COPY_AND_ASSIGN(AllChangesCompletedWaiter);
 };
 
-AllChangesCompletedWaiter::AllChangesCompletedWaiter(WindowTreeClient* client)
-    : client_(client) {}
+AllChangesCompletedWaiter::AllChangesCompletedWaiter()
+    : client_(GetWindowTreeClient()) {}
 
 AllChangesCompletedWaiter::~AllChangesCompletedWaiter() = default;
 
@@ -64,14 +70,12 @@ void AllChangesCompletedWaiter::OnChangeCompleted(uint32_t change_id,
 
 }  // namespace
 
-ChangeCompletionWaiter::ChangeCompletionWaiter(WindowTreeClient* client,
-                                               ChangeType type,
-                                               bool success)
+ChangeCompletionWaiter::ChangeCompletionWaiter(ChangeType type, bool success)
     : state_(WaitState::NOT_STARTED),
-      client_(client),
+      client_(GetWindowTreeClient()),
       type_(type),
       success_(success) {
-  client->AddTestObserver(this);
+  client_->AddTestObserver(this);
 }
 
 ChangeCompletionWaiter::~ChangeCompletionWaiter() {
@@ -106,8 +110,10 @@ void ChangeCompletionWaiter::OnChangeCompleted(uint32_t change_id,
   }
 }
 
-void WaitForAllChangesToComplete(WindowTreeClient* client) {
-  AllChangesCompletedWaiter(client).Wait();
+void WaitForAllChangesToComplete() {
+  if (Env::GetInstance()->mode() == Env::Mode::LOCAL)
+    return;
+  AllChangesCompletedWaiter().Wait();
 }
 
 }  // namespace test

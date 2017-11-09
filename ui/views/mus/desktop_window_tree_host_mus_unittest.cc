@@ -195,8 +195,7 @@ TEST_F(DesktopWindowTreeHostMusTest, HideWindowTreeHostWindowChangesActive) {
 TEST_F(DesktopWindowTreeHostMusTest, BecomesActiveOnMousePress) {
   std::unique_ptr<Widget> widget(CreateWidget());
   widget->ShowInactive();
-  aura::test::WaitForAllChangesToComplete(
-      MusClient::Get()->window_tree_client());
+  aura::test::WaitForAllChangesToComplete();
 
   EXPECT_FALSE(widget->IsActive());
   EXPECT_FALSE(widget->GetNativeWindow()->HasFocus());
@@ -261,7 +260,6 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTop) {
   widget2->Show();
 
   aura::test::ChangeCompletionWaiter waiter(
-      MusClient::Get()->window_tree_client(),
       aura::ChangeType::REORDER, true);
   widget1->StackAtTop();
   waiter.Wait();
@@ -279,7 +277,6 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAtTopAlreadyOnTop) {
   widget2->Show();
 
   aura::test::ChangeCompletionWaiter waiter(
-      MusClient::Get()->window_tree_client(),
       aura::ChangeType::REORDER, true);
   widget2->StackAtTop();
   waiter.Wait();
@@ -293,7 +290,6 @@ TEST_F(DesktopWindowTreeHostMusTest, StackAbove) {
   widget2->Show();
 
   aura::test::ChangeCompletionWaiter waiter(
-      MusClient::Get()->window_tree_client(),
       aura::ChangeType::REORDER, true);
   widget1->StackAboveWidget(widget2.get());
   waiter.Wait();
@@ -303,8 +299,7 @@ TEST_F(DesktopWindowTreeHostMusTest, SetOpacity) {
   std::unique_ptr<Widget> widget1(CreateWidget(nullptr));
   widget1->Show();
 
-  aura::test::ChangeCompletionWaiter waiter(
-      MusClient::Get()->window_tree_client(), aura::ChangeType::OPACITY, true);
+  aura::test::ChangeCompletionWaiter waiter(aura::ChangeType::OPACITY, true);
   widget1->SetOpacity(0.5f);
   waiter.Wait();
 }
