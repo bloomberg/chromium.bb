@@ -38,6 +38,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
     // If set to true, we should use LCD text.
     bool use_lcd_text = true;
+    bool clear_canvas_before_raster = true;
 
     // The ImageProvider used to replace images during playback.
     ImageProvider* image_provider = nullptr;
