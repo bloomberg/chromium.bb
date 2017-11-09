@@ -75,7 +75,10 @@ void RasterSource::PlaybackToCanvas(SkCanvas* input_canvas,
     raster_canvas = color_transform_canvas.get();
   }
 
-  ClearCanvasForPlayback(raster_canvas);
+  // Some tests want to avoid complicated clearing logic for consistency.
+  if (settings.clear_canvas_before_raster)
+    ClearCanvasForPlayback(raster_canvas);
+
   RasterCommon(raster_canvas, settings.image_provider);
 }
 
