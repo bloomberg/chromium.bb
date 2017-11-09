@@ -1,7 +1,0 @@
-$color: red;
-@for $i from 1 through 3 {
-    .box#{$i} {
-        color: $color;
-        margin: 10px;
-    }
-}

@@ -6506,7 +6506,6 @@ crbug.com/591099 http/tests/devtools/network/waterfall-images.html [ Failure Pas
 crbug.com/591099 http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.js [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/runtime/runtime-getProperties.js [ Failure Pass ]
-crbug.com/591099 http/tests/devtools/sass/test-ssp-breaking-edits.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/search/search-in-non-existing-resource.html [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/search/search-in-resource.html [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/search/search-in-script.html [ Failure Pass ]
