@@ -115,6 +115,8 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   bool ShouldPaintAsThemed() const override;
   void UpdateProfileIcons() override;
 
+  OpaqueBrowserFrameViewLayout* layout() { return layout_; }
+
   // If native window frame buttons are enabled, redraws the image resources
   // associated with |{minimize,maximize,restore,close}_button_|.
   virtual void MaybeRedrawFrameButtons();

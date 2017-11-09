@@ -26,8 +26,9 @@ DesktopLinuxBrowserFrameView::DesktopLinuxBrowserFrameView(
 DesktopLinuxBrowserFrameView::~DesktopLinuxBrowserFrameView() {}
 
 void DesktopLinuxBrowserFrameView::MaybeRedrawFrameButtons() {
-  nav_button_provider_->RedrawImages(GetTopAreaHeight(), IsMaximized(),
-                                     ShouldPaintAsActive());
+  nav_button_provider_->RedrawImages(
+      GetTopAreaHeight() - layout()->TitlebarTopThickness(!IsMaximized()),
+      IsMaximized(), ShouldPaintAsActive());
   for (auto type : {
            chrome::FrameButtonDisplayType::kMinimize,
            IsMaximized() ? chrome::FrameButtonDisplayType::kRestore
