@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutTableCell.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/style/ComputedStyle.h"
@@ -270,6 +271,10 @@ LayoutUnit ComputeBlockSizeForFragment(
   if (constraint_space.IsFixedSizeBlock())
     return constraint_space.AvailableSize().block_size;
 
+  if (style.Display() == EDisplay::kTableCell) {
+    // All handled by the table layout code or not applicable
+    return content_size;
+  }
   LayoutUnit extent =
       ResolveBlockLength(constraint_space, style, style.LogicalHeight(),
                          content_size, LengthResolveType::kContentSize);
@@ -552,8 +557,22 @@ NGBoxStrut CalculateBorderScrollbarPadding(
   // cause trouble.
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
-  return ComputeBorders(constraint_space, style) +
-         ComputePadding(constraint_space, style) + node.GetScrollbarSizes();
+  NGBoxStrut border_intrinsic_padding;
+  if (node.GetLayoutObject()->IsTableCell()) {
+    // Use values calculated by the table layout code
+    const LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutObject());
+    // TODO(karlo): intrinsic padding can sometimes be negative; that
+    // seems insane, but works in the old code; in NG it trips
+    // DCHECKs.
+    border_intrinsic_padding = NGBoxStrut(
+        cell->BorderStart(), cell->BorderEnd(),
+        cell->BorderBefore() + LayoutUnit(cell->IntrinsicPaddingBefore()),
+        cell->BorderAfter() + LayoutUnit(cell->IntrinsicPaddingAfter()));
+  } else {
+    border_intrinsic_padding = ComputeBorders(constraint_space, style);
+  }
+  return border_intrinsic_padding + ComputePadding(constraint_space, style) +
+         node.GetScrollbarSizes();
 }
 
 NGLogicalSize CalculateContentBoxSize(
