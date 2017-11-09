@@ -64,7 +64,7 @@ around a website -- with the power of extension APIs. With the launch of
 platform apps and the app-specific APIs, legacy packaged apps are deprecated.
 
 A packaged app can be identified by the presence of an
-`app.launch.local_url` key in `manifest.json`, which identifies the resource
+`app.launch.local_path` key in `manifest.json`, which identifies the resource
 in the .crx that's loaded when the app is launched.
 
 *Packaged apps are deprecated everywhere.*
