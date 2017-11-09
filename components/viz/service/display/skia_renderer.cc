@@ -215,7 +215,7 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   }
 }
 
-void SkiaRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
+bool SkiaRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
   DCHECK(texture->id());
 
   // Explicitly release lock, otherwise we can crash when try to lock
@@ -235,6 +235,7 @@ void SkiaRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
           current_framebuffer_lock_->format(), false, true, 0));
 
   current_canvas_ = current_framebuffer_surface_lock_->surface()->getCanvas();
+  return true;
 }
 
 void SkiaRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
