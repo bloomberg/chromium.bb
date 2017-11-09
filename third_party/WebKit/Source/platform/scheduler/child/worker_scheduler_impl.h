@@ -9,10 +9,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/base/task_time_observer.h"
-#include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
 #include "platform/scheduler/child/worker_scheduler.h"
+#include "platform/scheduler/util/thread_load_tracker.h"
 
 namespace blink {
 namespace scheduler {

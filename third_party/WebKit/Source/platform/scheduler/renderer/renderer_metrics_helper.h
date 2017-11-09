@@ -9,9 +9,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
-#include "platform/scheduler/base/thread_load_tracker.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 #include "platform/scheduler/renderer/task_duration_metric_reporter.h"
+#include "platform/scheduler/util/thread_load_tracker.h"
 
 namespace blink {
 

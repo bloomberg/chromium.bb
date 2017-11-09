@@ -30,8 +30,6 @@ jumbo_source_set("scheduler") {
     "base/task_queue_selector.cc",
     "base/task_queue_selector.h",
     "base/task_time_observer.h",
-    "base/thread_load_tracker.cc",
-    "base/thread_load_tracker.h",
     "base/time_converter.h",
     "base/time_domain.cc",
     "base/time_domain.h",
@@ -116,6 +114,8 @@ jumbo_source_set("scheduler") {
     "renderer/web_view_scheduler_impl.h",
     "renderer/webthread_impl_for_renderer_scheduler.cc",
     "renderer/webthread_impl_for_renderer_scheduler.h",
+    "util/thread_load_tracker.cc",
+    "util/thread_load_tracker.h",
     "util/tracing_helper.cc",
     "util/tracing_helper.h",
     "utility/webthread_impl_for_utility_thread.cc",
@@ -176,7 +176,6 @@ jumbo_source_set("unit_tests") {
     "base/task_queue_selector_unittest.cc",
     "base/test_count_uses_time_source.cc",
     "base/test_count_uses_time_source.h",
-    "base/thread_load_tracker_unittest.cc",
     "base/time_domain_unittest.cc",
     "base/work_queue_sets_unittest.cc",
     "base/work_queue_unittest.cc",
@@ -202,6 +201,7 @@ jumbo_source_set("unit_tests") {
     "renderer/web_frame_scheduler_impl_unittest.cc",
     "renderer/web_view_scheduler_impl_unittest.cc",
     "renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
+    "util/thread_load_tracker_unittest.cc",
     "util/tracing_helper_unittest.cc",
   ]
 
