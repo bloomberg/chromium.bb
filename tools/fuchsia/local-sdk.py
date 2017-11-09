@@ -30,8 +30,8 @@ def EnsureEmptyDir(path):
     os.makedirs(path)
 
 
-def BuildForArch(arch):
-  Run('scripts/build-zircon.sh', '-t', arch)
+def BuildForArch(project, arch):
+  Run('scripts/build-zircon.sh', '-p', project)
   Run('packages/gn/gen.py', '--target_cpu=' + arch,
       '--packages=packages/gn/sdk','--ignore-skia', '--release')
   Run('buildtools/ninja', '-C', 'out/release-' + arch)
@@ -49,8 +49,8 @@ def main(args):
   # Switch to the Fuchsia tree and build an SDK.
   os.chdir(fuchsia_root)
 
-  BuildForArch('x86-64')
-  BuildForArch('aarch64')
+  BuildForArch('zircon-pc-x86-64', 'x86-64')
+  BuildForArch('zircon-qemu-arm64', 'aarch64')
 
   tempdir = tempfile.mkdtemp()
   sdk_tar = os.path.join(tempdir, 'fuchsia-sdk.tgz')
