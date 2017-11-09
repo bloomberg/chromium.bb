@@ -136,6 +136,7 @@ using content::DownloadUrlParameters;
 using content::WebContents;
 using extensions::Extension;
 using net::URLRequestMockHTTPJob;
+using net::test_server::EmbeddedTestServer;
 
 namespace {
 
@@ -1318,7 +1319,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeTypeSelect) {
 // did not initiate.
 IN_PROC_BROWSER_TEST_F(DownloadTest, NoDownload) {
   base::FilePath file(FILE_PATH_LITERAL("download-test2.html"));
-  GURL url(URLRequestMockHTTPJob::GetMockUrl("download-test2.html"));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/download-test2.html");
   base::FilePath file_path(DestinationFile(browser(), file));
 
   // Open a web page and wait.
@@ -1678,7 +1682,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DontCloseNewTab3) {
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
   // Download a file and wait.
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
+  GURL url =
+      embedded_test_server()->GetURL("/" + std::string(kDownloadTest1Path));
+
   DownloadAndWaitWithDisposition(browser(), url,
                                  WindowOpenDisposition::CURRENT_TAB,
                                  ui_test_utils::BROWSER_TEST_NONE);
@@ -2846,8 +2852,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   ASSERT_TRUE(download_items.empty());
 
   // Navigate to the initial page, where Save Link As will be executed.
-  GURL url = net::URLRequestMockHTTPJob::GetMockHttpsUrl(
-      std::string("referrer_policy/referrer-policy-start.html?policy=origin") +
+  GURL url = embedded_test_server()->GetURL(
+      std::string("/referrer_policy/referrer-policy-start.html?policy=origin") +
       "&redirect=" + embedded_test_server()->GetURL("/echoreferrer").spec() +
       "&link=true&target=");
   ASSERT_TRUE(url.is_valid());
@@ -2887,7 +2893,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveLinkAsReferrerPolicyOrigin) {
   // Check that the file contains the expected referrer.
   base::FilePath file(download_items[0]->GetTargetFilePath());
   std::string expected_contents =
-      net::URLRequestMockHTTPJob::GetMockHttpsUrl(std::string()).spec();
+      embedded_test_server()->GetURL(std::string("/")).spec();
   EXPECT_TRUE(VerifyFile(file, expected_contents, expected_contents.length()));
 }
 
@@ -2902,12 +2908,20 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
   GetDownloads(browser(), &download_items);
   ASSERT_TRUE(download_items.empty());
 
-  GURL url = net::URLRequestMockHTTPJob::GetMockHttpsUrl("title1.html");
-  GURL img_url = embedded_test_server()->GetURL("/echoreferrer");
+  // Navigate to site using secure HTTPS schema, which serves as referrer URL
+  // of the next request.
+  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
+  https_server.ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(https_server.Start());
+  GURL url = https_server.GetURL("/title1.html"); /* HTTPS */
   ASSERT_TRUE(url.is_valid());
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // Try to download an image via a context menu.
+  // Try to download an image via a context menu from the secure HTTPS site.
+  // The download request uses insecure HTTP. The referrer URL is downgraded,
+  // resulting in the referrer URL being sanitized from the download request.
+  GURL img_url = embedded_test_server()->GetURL("/echoreferrer"); /* HTTP */
+
   std::unique_ptr<content::DownloadTestObserver> waiter_context_menu(
       new content::DownloadTestObserverTerminal(
           DownloadManagerForBrowser(browser()), 1,
@@ -2934,7 +2948,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SaveImageAsReferrerPolicyDefault) {
   ASSERT_EQ(img_url, download_items[0]->GetOriginalUrl());
   base::FilePath file = download_items[0]->GetTargetFilePath();
   // The contents of the file is the value of the Referer header if there was
-  // one.
+  // one. Since the URL is downgraded from HTTPS to HTTP, the referrer is
+  // removed.
   EXPECT_TRUE(VerifyFile(file, "", 0));
 }
 
@@ -3009,9 +3024,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   content::WindowedNotificationObserver infobar_added_1(
         chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
         content::NotificationService::AllSources());
-  ui_test_utils::NavigateToURL(browser(),
-                               net::URLRequestMockHTTPJob::GetMockUrl(
-                                   "downloads/download-a_zip_file.html"));
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/downloads/download-a_zip_file.html");
+  ui_test_utils::NavigateToURL(browser(), url);
   infobar_added_1.Wait();
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
