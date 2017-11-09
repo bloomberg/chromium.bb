@@ -11,6 +11,9 @@
 @class AlertCoordinator;
 @class DialogPresenter;
 
+// The maximum characters to use for the JavaScript dialog message text.
+extern const size_t kJavaScriptDialogMaxMessageLength;
+
 class JavaScriptDialogPresenterImpl final
     : public web::JavaScriptDialogPresenter {
  public:
@@ -25,6 +28,13 @@ class JavaScriptDialogPresenterImpl final
                            const web::DialogClosedCallback& callback) override;
 
   void CancelDialogs(web::WebState* web_state) override;
+
+  // JavaScript dialogs presented by this class cap the message text length to
+  // kJavaScriptDialogMaxMessageLength.  This utility function performs that
+  // operation on an input NSString.
+  // TODO(crbug.com/674649): Remove this after switching to custom dialog
+  // implementation.
+  static NSString* GetTruncatedMessageText(NSString* message_text);
 
  private:
   // The underlying DialogPresenter handling the dialog UI.
