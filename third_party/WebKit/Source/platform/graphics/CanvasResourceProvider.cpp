@@ -9,8 +9,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/CanvasResource.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
@@ -317,11 +315,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     switch (resourceTypeFallbackList[i]) {
       case kTextureGpuMemoryBufferResourceType:
         DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
-        if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled() &&
-            !context_provider_wrapper->ContextProvider()
-                 ->GetGpuFeatureInfo()
-                 .IsWorkaroundEnabled(
-                     gpu::DISABLE_GPU_MEMORY_BUFFERS_AS_RENDER_TARGETS)) {
+        if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
           if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
                   colorParams.GetBufferFormat(),
                   context_provider_wrapper->ContextProvider()

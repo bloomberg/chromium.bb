@@ -2665,23 +2665,6 @@
       "features": [
         "disable_program_caching_for_transform_feedback"
       ]
-    },
-    {
-      "id": 244,
-      "description": "Rendering to IOSurfaces via OpenGL is broken on NVIDIA GPUs on High Sierra",
-      "cr_bugs": [773705, 778770],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": ">=",
-          "value": "10.13"
-        }
-      },
-      "vendor_id": "0x10de",
-      "multi_gpu_category": "any",
-      "features": [
-        "disable_gpu_memory_buffers_as_render_targets"
-      ]
     }
   ]
 }
