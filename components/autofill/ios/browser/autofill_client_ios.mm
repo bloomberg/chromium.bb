@@ -142,9 +142,7 @@ scoped_refptr<AutofillWebDataService> AutofillClientIOS::GetDatabase() {
 }
 
 void AutofillClientIOS::DidInteractWithNonsecureCreditCardInput(
-    content::RenderFrameHost* rfh) {
-  web_state_->OnCreditCardInputShownOnHttp();
-}
+    content::RenderFrameHost* rfh) {}
 
 bool AutofillClientIOS::IsContextSecure() {
   // This implementation differs slightly from other platforms. Other platforms'

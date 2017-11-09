@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/observer_list.h"
@@ -70,8 +71,6 @@ class TestWebState : public WebState {
   CRWWebViewProxyType GetWebViewProxy() const override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
-  void OnPasswordInputShownOnHttp() override {}
-  void OnCreditCardInputShownOnHttp() override {}
 
   void AddObserver(WebStateObserver* observer) override;
 
@@ -80,6 +79,7 @@ class TestWebState : public WebState {
   void AddPolicyDecider(WebStatePolicyDecider* decider) override {}
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override {}
   WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
+  void DidChangeVisibleSecurityState() override {}
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
   void TakeSnapshot(const SnapshotCallback& callback,

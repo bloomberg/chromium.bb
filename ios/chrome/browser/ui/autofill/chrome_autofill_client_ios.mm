@@ -24,9 +24,11 @@
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_utils.h"
+#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -126,6 +128,12 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
   if (password_generation_manager_) {
     password_generation_manager_->DetectFormsEligibleForGeneration(forms);
   }
+}
+
+void ChromeAutofillClientIOS::DidInteractWithNonsecureCreditCardInput(
+    content::RenderFrameHost* rfh) {
+  InsecureInputTabHelper::GetOrCreateForWebState(web_state())
+      ->DidInteractWithNonsecureCreditCardInput();
 }
 
 }  // namespace autofill

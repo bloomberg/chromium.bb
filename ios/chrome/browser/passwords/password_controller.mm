@@ -41,6 +41,7 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/notify_auto_signin_view_controller.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
+#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -632,7 +633,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     if (webStateObserverBridge_) {
       web::WebState* web_state = webStateObserverBridge_->web_state();
       if (web_state && !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
-        web_state->OnPasswordInputShownOnHttp();
+        InsecureInputTabHelper::GetOrCreateForWebState(web_state)
+            ->DidShowPasswordFieldInInsecureContext();
       }
     }
 

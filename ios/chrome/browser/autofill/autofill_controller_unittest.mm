@@ -23,10 +23,12 @@
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_controller.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -120,7 +122,7 @@ NSString* const kCreditCardFormHtml =
 
 // An HTML page without a card-type form.
 static NSString* kNoCreditCardFormHtml =
-    @"<h2>The rain in Spain stays <i>mainly</i> in the plain.</h2>";
+    @"<input type=\"text\" autofocus autocomplete=\"username\"></form>";
 
 // A credit card-type form with the autofocus attribute (which is detected at
 // page load).
@@ -607,48 +609,63 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
 };
 
 // Checks that an HTTP page containing a credit card results in a navigation
-// entry with the "credit card displayed" bit set to true.
-// TODO(crbug.com/689082): disabled due to flakyness.
-TEST_F(AutofillControllerTest, DISABLED_HttpCreditCard) {
+// entry with the "credit card interaction" bit set to true.
+TEST_F(AutofillControllerTest, HttpCreditCard) {
   LoadHtml(kCreditCardAutofocusFormHtml, GURL("http://chromium.test"));
+  WaitForSuggestionRetrieval();
 
   web::SSLStatus ssl_status =
       web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  EXPECT_TRUE(ssl_status.content_status &
-              web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl_status.user_data.get());
+  EXPECT_TRUE(input_events &&
+              input_events->input_events()->credit_card_field_edited);
 };
 
 // Checks that an HTTP page without a credit card form does not result in a
-// navigation entry with the "credit card displayed" bit set to true.
+// navigation entry with the "credit card interaction" bit set to true.
 TEST_F(AutofillControllerTest, HttpNoCreditCard) {
   LoadHtml(kNoCreditCardFormHtml, GURL("http://chromium.test"));
+  WaitForSuggestionRetrieval();
 
   web::SSLStatus ssl_status =
       web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  EXPECT_FALSE(ssl_status.content_status &
-               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl_status.user_data.get());
+  EXPECT_FALSE(input_events &&
+               input_events->input_events()->credit_card_field_edited);
 };
 
 // Checks that an HTTPS page containing a credit card form does not result in a
-// navigation entry with the "credit card displayed" bit set to true.
+// navigation entry with the "credit card interaction" bit set to true.
 TEST_F(AutofillControllerTest, HttpsCreditCard) {
   LoadHtml(kCreditCardAutofocusFormHtml, GURL("https://chromium.test"));
+  WaitForSuggestionRetrieval();
 
   web::SSLStatus ssl_status =
       web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  EXPECT_FALSE(ssl_status.content_status &
-               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl_status.user_data.get());
+  EXPECT_FALSE(input_events &&
+               input_events->input_events()->credit_card_field_edited);
 };
 
 // Checks that an HTTPS page without a credit card form does not result in a
-// navigation entry with the "credit card displayed" bit set to true.
+// navigation entry with the "credit card interaction" bit set to true.
 TEST_F(AutofillControllerTest, HttpsNoCreditCard) {
   LoadHtml(kNoCreditCardFormHtml, GURL("https://chromium.test"));
+  WaitForSuggestionRetrieval();
 
   web::SSLStatus ssl_status =
       web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
-  EXPECT_FALSE(ssl_status.content_status &
-               web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl_status.user_data.get());
+  EXPECT_FALSE(input_events &&
+               input_events->input_events()->credit_card_field_edited);
 };
 
 }  // namespace
