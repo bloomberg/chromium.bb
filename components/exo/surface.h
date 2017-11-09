@@ -149,11 +149,15 @@ class Surface final : public ui::PropertyHandler {
   // recursively calling CommitSurfaceHierarchy() for each sub-surface.
   // If |synchronized| is set to false, then synchronized surfaces should not
   // commit pending state.
-  void CommitSurfaceHierarchy(
-      std::list<FrameCallback>* frame_callbacks,
-      std::list<PresentationCallback>* presentation_callbacks,
-      bool synchronized);
+  void CommitSurfaceHierarchy(bool synchronized);
 
+  // This will append current callbacks for surface and its descendants to
+  // |frame_callbacks| and |presentation_callbacks|.
+  void AppendSurfaceHierarchyCallbacks(
+      std::list<FrameCallback>* frame_callbacks,
+      std::list<PresentationCallback>* presentation_callbacks);
+
+  // This will append contents for surface and its descendants to frame.
   void AppendSurfaceHierarchyContentsToFrame(
       const gfx::Point& origin,
       float device_scale_factor,
@@ -326,6 +330,7 @@ class Surface final : public ui::PropertyHandler {
   // |active_frame_callbacks_| when the effect of the Commit() is scheduled to
   // be drawn. They fire at the first begin frame notification after this.
   std::list<FrameCallback> pending_frame_callbacks_;
+  std::list<FrameCallback> frame_callbacks_;
 
   // These lists contains the callbacks to notify the client when surface
   // contents have been presented. These callbacks move to
@@ -335,6 +340,7 @@ class Surface final : public ui::PropertyHandler {
   // after receiving VSync parameters update for the previous frame. They fire
   // at the next VSync parameters update after that.
   std::list<PresentationCallback> pending_presentation_callbacks_;
+  std::list<PresentationCallback> presentation_callbacks_;
 
   // This is the state that has yet to be committed.
   State pending_state_;

@@ -208,12 +208,15 @@ Surface::~Surface() {
 
   // Call all frame callbacks with a null frame time to indicate that they
   // have been cancelled.
-  for (const auto& frame_callback : pending_frame_callbacks_)
+  frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
+  for (const auto& frame_callback : frame_callbacks_)
     frame_callback.Run(base::TimeTicks());
 
   // Call all presentation callbacks with a null presentation time to indicate
   // that they have been cancelled.
-  for (const auto& presentation_callback : pending_presentation_callbacks_)
+  presentation_callbacks_.splice(presentation_callbacks_.end(),
+                                 pending_presentation_callbacks_);
+  for (const auto& presentation_callback : presentation_callbacks_)
     presentation_callback.Run(base::TimeTicks(), base::TimeDelta(), 0);
 
   WMHelper::GetInstance()->ResetDragDropDelegate(window_.get());
@@ -435,13 +438,10 @@ void Surface::Commit() {
   if (delegate_)
     delegate_->OnSurfaceCommit();
   else
-    CommitSurfaceHierarchy(nullptr, nullptr, false);
+    CommitSurfaceHierarchy(false);
 }
 
-void Surface::CommitSurfaceHierarchy(
-    std::list<FrameCallback>* frame_callbacks,
-    std::list<PresentationCallback>* presentation_callbacks,
-    bool synchronized) {
+void Surface::CommitSurfaceHierarchy(bool synchronized) {
   if (needs_commit_surface_ && (synchronized || !IsSynchronized())) {
     needs_commit_surface_ = false;
     synchronized = true;
@@ -489,14 +489,13 @@ void Surface::CommitSurfaceHierarchy(
     if (needs_update_buffer_transform)
       UpdateBufferTransform();
 
-    // Move pending frame callbacks to the end of frame_callbacks.
-    if (frame_callbacks)
-      frame_callbacks->splice(frame_callbacks->end(), pending_frame_callbacks_);
+    // Move pending frame callbacks to the end of |frame_callbacks_|.
+    frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
 
-    // Move pending presentation callbacks to the end of presentation_callbacks.
-    if (presentation_callbacks)
-      presentation_callbacks->splice(presentation_callbacks->end(),
-                                     pending_presentation_callbacks_);
+    // Move pending presentation callbacks to the end of
+    // |presentation_callbacks_|.
+    presentation_callbacks_.splice(presentation_callbacks_.end(),
+                                   pending_presentation_callbacks_);
 
     UpdateContentSize();
 
@@ -537,18 +536,31 @@ void Surface::CommitSurfaceHierarchy(
 
   surface_hierarchy_content_bounds_ = gfx::Rect(content_size_);
 
-  // The top most sub-surface is at the front of the RenderPass's quad_list,
-  // so we need composite sub-surface in reversed order.
   for (const auto& sub_surface_entry : base::Reversed(sub_surfaces_)) {
     auto* sub_surface = sub_surface_entry.first;
     gfx::Point origin = sub_surface_entry.second;
     // Synchronously commit all pending state of the sub-surface and its
     // descendants.
-    sub_surface->CommitSurfaceHierarchy(frame_callbacks, presentation_callbacks,
-                                        synchronized);
+    sub_surface->CommitSurfaceHierarchy(synchronized);
     surface_hierarchy_content_bounds_.Union(
         sub_surface->surface_hierarchy_content_bounds() +
         origin.OffsetFromOrigin());
+  }
+}
+
+void Surface::AppendSurfaceHierarchyCallbacks(
+    std::list<FrameCallback>* frame_callbacks,
+    std::list<PresentationCallback>* presentation_callbacks) {
+  // Move frame callbacks to the end of |frame_callbacks|.
+  frame_callbacks->splice(frame_callbacks->end(), frame_callbacks_);
+  // Move presentation callbacks to the end of |presentation_callbacks|.
+  presentation_callbacks->splice(presentation_callbacks->end(),
+                                 presentation_callbacks_);
+
+  for (const auto& sub_surface_entry : base::Reversed(sub_surfaces_)) {
+    auto* sub_surface = sub_surface_entry.first;
+    sub_surface->AppendSurfaceHierarchyCallbacks(frame_callbacks,
+                                                 presentation_callbacks);
   }
 }
 

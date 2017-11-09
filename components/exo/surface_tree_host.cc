@@ -211,8 +211,7 @@ void SurfaceTreeHost::UpdateNeedsBeginFrame() {
 
 void SurfaceTreeHost::OnSurfaceCommit() {
   DCHECK(presentation_callbacks_.empty());
-  root_surface_->CommitSurfaceHierarchy(&frame_callbacks_,
-                                        &presentation_callbacks_, false);
+  root_surface_->CommitSurfaceHierarchy(false);
   UpdateHostWindowBounds();
 }
 
@@ -272,6 +271,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
     current_begin_frame_ack_.has_damage = true;
   }
   frame.metadata.begin_frame_ack = current_begin_frame_ack_;
+  root_surface_->AppendSurfaceHierarchyCallbacks(&frame_callbacks_,
+                                                 &presentation_callbacks_);
   if (!presentation_callbacks_.empty()) {
     // If overflow happens, we increase it again.
     if (!++presentation_token_)
