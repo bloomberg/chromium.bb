@@ -130,7 +130,7 @@ ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
     const {
   std::unique_ptr<CrossThreadResourceRequestData> data =
-      WTF::MakeUnique<CrossThreadResourceRequestData>();
+      std::make_unique<CrossThreadResourceRequestData>();
   data->url_ = Url().Copy();
   data->timeout_interval_ = TimeoutInterval();
   data->site_for_cookies_ = SiteForCookies().Copy();

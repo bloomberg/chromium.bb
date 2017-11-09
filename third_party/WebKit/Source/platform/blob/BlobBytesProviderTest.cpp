@@ -4,6 +4,10 @@
 
 #include "platform/blob/BlobBytesProvider.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
@@ -50,7 +54,7 @@ class BlobBytesProviderTest : public ::testing::Test {
 };
 
 TEST_F(BlobBytesProviderTest, RequestAsReply) {
-  auto provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
   Vector<uint8_t> received_bytes;
   provider->RequestAsReply(
       base::Bind([](Vector<uint8_t>* bytes_out,
@@ -59,7 +63,7 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
   EXPECT_EQ(test_bytes1_, received_bytes);
 
   received_bytes.clear();
-  provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  provider = std::make_unique<BlobBytesProvider>(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
   provider->RequestAsReply(
@@ -83,7 +87,7 @@ class RequestAsFile : public BlobBytesProviderTest,
  public:
   void SetUp() override {
     BlobBytesProviderTest::SetUp();
-    test_provider_ = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+    test_provider_ = std::make_unique<BlobBytesProvider>(test_data1_);
     test_provider_->AppendData(test_data2_);
     test_provider_->AppendData(test_data3_);
 
@@ -213,7 +217,7 @@ INSTANTIATE_TEST_CASE_P(BlobBytesProviderTest,
                         ::testing::ValuesIn(file_tests));
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
-  auto provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
 
@@ -245,7 +249,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_InvaldFile) {
-  auto provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
 
   provider->RequestAsFile(
       0, 16, base::File(), 0,
@@ -255,7 +259,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_InvaldFile) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_UnwritableFile) {
-  auto provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
 
   base::FilePath path;
   base::CreateTemporaryFile(&path);
@@ -273,7 +277,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_UnwritableFile) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsStream) {
-  auto provider = WTF::MakeUnique<BlobBytesProvider>(test_data1_);
+  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
 

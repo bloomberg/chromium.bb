@@ -73,9 +73,9 @@ class DrawingBufferTest : public Test {
 
   void Init(UseMultisampling use_multisampling) {
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
-        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
+        std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     bool gpu_compositing = true;
@@ -400,9 +400,9 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest,
     platform_.reset(new ScopedTestingPlatformSupport<FakePlatformSupport>);
 
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
-        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
+        std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     image_id0_ = gl_->NextImageIdToBeCreated();
@@ -648,10 +648,10 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
     SCOPED_TRACE(cases[i].test_case_name);
-    auto gl = WTF::MakeUnique<DepthStencilTrackingGLES2Interface>();
+    auto gl = std::make_unique<DepthStencilTrackingGLES2Interface>();
     DepthStencilTrackingGLES2Interface* tracking_gl = gl.get();
     auto provider =
-        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
+        std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::kPreserve;
 
     bool premultiplied_alpha = false;

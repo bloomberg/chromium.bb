@@ -25,9 +25,9 @@ class DrawingBufferSoftwareCompositingTest : public Test {
  protected:
   void SetUp() override {
     IntSize initial_size(kInitialWidth, kInitialHeight);
-    auto gl = WTF::MakeUnique<GLES2InterfaceForTests>();
+    auto gl = std::make_unique<GLES2InterfaceForTests>();
     auto provider =
-        WTF::MakeUnique<WebGraphicsContext3DProviderForTests>(std::move(gl));
+        std::make_unique<WebGraphicsContext3DProviderForTests>(std::move(gl));
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     bool gpu_compositing = false;

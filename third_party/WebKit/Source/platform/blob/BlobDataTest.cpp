@@ -67,7 +67,7 @@ class MockBlob : public Blob {
   explicit MockBlob(const String& uuid) : uuid_(uuid) {}
 
   void Clone(BlobRequest request) override {
-    mojo::MakeStrongBinding(WTF::MakeUnique<MockBlob>(uuid_),
+    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid_),
                             std::move(request));
   }
 
@@ -101,7 +101,7 @@ class MockBlobRegistry : public BlobRegistry {
                 RegisterCallback callback) override {
     registrations.push_back(Registration{
         uuid, content_type, content_disposition, std::move(elements)});
-    mojo::MakeStrongBinding(WTF::MakeUnique<MockBlob>(uuid), std::move(blob));
+    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid), std::move(blob));
     std::move(callback).Run();
   }
 
@@ -109,7 +109,7 @@ class MockBlobRegistry : public BlobRegistry {
                        const String& uuid,
                        GetBlobFromUUIDCallback callback) override {
     binding_requests.push_back(BindingRequest{uuid});
-    mojo::MakeStrongBinding(WTF::MakeUnique<MockBlob>(uuid), std::move(blob));
+    mojo::MakeStrongBinding(std::make_unique<MockBlob>(uuid), std::move(blob));
     std::move(callback).Run();
   }
 
@@ -158,7 +158,7 @@ class MojoBlobTestPlatform : public TestingPlatformSupport {
  public:
   explicit MojoBlobTestPlatform(BlobRegistry* mock_registry)
       : interface_provider_(
-            WTF::MakeUnique<MojoBlobInterfaceProvider>(mock_registry)) {}
+            std::make_unique<MojoBlobInterfaceProvider>(mock_registry)) {}
 
   InterfaceProvider* GetInterfaceProvider() override {
     return interface_provider_.get();

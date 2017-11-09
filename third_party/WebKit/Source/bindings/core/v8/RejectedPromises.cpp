@@ -232,7 +232,7 @@ void RejectedPromises::HandlerAdded(v8::PromiseRejectMessage data) {
 
 std::unique_ptr<RejectedPromises::MessageQueue>
 RejectedPromises::CreateMessageQueue() {
-  return WTF::MakeUnique<MessageQueue>();
+  return std::make_unique<MessageQueue>();
 }
 
 void RejectedPromises::Dispose() {

@@ -148,7 +148,7 @@ void ThreadHeapStats::DecreaseAllocatedSpace(size_t delta) {
 
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
-      region_tree_(WTF::MakeUnique<RegionTree>()),
+      region_tree_(std::make_unique<RegionTree>()),
       heap_does_not_contain_cache_(
           WTF::WrapUnique(new HeapDoesNotContainCache)),
       free_page_pool_(WTF::WrapUnique(new PagePool)),

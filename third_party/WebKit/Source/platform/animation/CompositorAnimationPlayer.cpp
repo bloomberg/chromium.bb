@@ -13,13 +13,13 @@
 namespace blink {
 
 std::unique_ptr<CompositorAnimationPlayer> CompositorAnimationPlayer::Create() {
-  return WTF::MakeUnique<CompositorAnimationPlayer>(
+  return std::make_unique<CompositorAnimationPlayer>(
       cc::AnimationPlayer::Create(cc::AnimationIdProvider::NextPlayerId()));
 }
 
 std::unique_ptr<CompositorAnimationPlayer>
 CompositorAnimationPlayer::CreateWorkletPlayer(const String& name) {
-  return WTF::MakeUnique<CompositorAnimationPlayer>(
+  return std::make_unique<CompositorAnimationPlayer>(
       cc::WorkletAnimationPlayer::Create(
           cc::AnimationIdProvider::NextPlayerId(),
           std::string(name.Ascii().data(), name.length())));

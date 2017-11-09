@@ -104,7 +104,7 @@ const char* ThreadState::GcReasonString(BlinkGC::GCReason reason) {
 
 ThreadState::ThreadState()
     : thread_(CurrentThread()),
-      persistent_region_(WTF::MakeUnique<PersistentRegion>()),
+      persistent_region_(std::make_unique<PersistentRegion>()),
       start_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       end_of_stack_(reinterpret_cast<intptr_t*>(WTF::GetStackStart())),
       safe_point_scope_marker_(nullptr),

@@ -627,7 +627,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       CodeGenerationCheckCallbackInMainThread);
   if (RuntimeEnabledFeatures::V8IdleTasksEnabled()) {
     V8PerIsolateData::EnableIdleTasks(
-        isolate, WTF::MakeUnique<V8IdleTaskRunner>(scheduler));
+        isolate, std::make_unique<V8IdleTaskRunner>(scheduler));
   }
 
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInMainThread);
@@ -645,7 +645,7 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       ScriptWrappableVisitor::PerformCleanup);
 
   V8PerIsolateData::From(isolate)->SetThreadDebugger(
-      WTF::MakeUnique<MainThreadDebugger>(isolate));
+      std::make_unique<MainThreadDebugger>(isolate));
 
   BindingSecurity::InitWrapperCreationSecurityCheck();
 }
