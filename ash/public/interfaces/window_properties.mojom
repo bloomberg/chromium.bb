@@ -4,6 +4,11 @@
 
 module ash.mojom;
 
+// V1 apps can intercept system keys. This will let the app handle F-keys instead
+// of the window manager.
+const string kCanConsumeSystemKeys_Property =
+  "ash:can-consume-system-keys";
+
 // This is put on windows to indicate that ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.

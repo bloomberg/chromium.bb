@@ -67,6 +67,10 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     aura::PropertyConverter* converter = delegate->GetPropertyConverter();
 
     converter->RegisterPrimitiveProperty(
+        ash::kCanConsumeSystemKeysKey,
+        ash::mojom::kCanConsumeSystemKeys_Property,
+        aura::PropertyConverter::CreateAcceptAnyValueCallback());
+    converter->RegisterPrimitiveProperty(
         ash::kPanelAttachedKey,
         ui::mojom::WindowManager::kPanelAttached_Property,
         aura::PropertyConverter::CreateAcceptAnyValueCallback());

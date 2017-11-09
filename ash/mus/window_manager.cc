@@ -39,6 +39,7 @@
 #include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
@@ -87,6 +88,9 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       show_primary_host_on_connect_(show_primary_host_on_connect),
       wm_state_(std::make_unique<::wm::WMState>()),
       property_converter_(std::make_unique<aura::PropertyConverter>()) {
+  property_converter_->RegisterPrimitiveProperty(
+      kCanConsumeSystemKeysKey, ash::mojom::kCanConsumeSystemKeys_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter_->RegisterPrimitiveProperty(
       kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
