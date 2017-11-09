@@ -86,7 +86,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
       self.locking_mechanism(self.fd, flags|fcntl.LOCK_NB)
       return
     except EnvironmentError as e:
-      if e.errno == errno.EDEADLOCK:
+      if e.errno == errno.EDEADLK:
         self.unlock()
       elif e.errno != errno.EAGAIN:
         raise
@@ -101,7 +101,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     try:
       self.locking_mechanism(self.fd, flags)
     except EnvironmentError as e:
-      if e.errno != errno.EDEADLOCK:
+      if e.errno != errno.EDEADLK:
         raise
       self.unlock()
       self.locking_mechanism(self.fd, flags)
