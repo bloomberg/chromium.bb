@@ -221,14 +221,17 @@ void HTMLAreaElement::SetFocused(bool should_be_focused,
   ToLayoutImage(layout_object)->AreaElementFocusChanged(this);
 }
 
-void HTMLAreaElement::UpdateFocusAppearance(
-    SelectionBehaviorOnFocus selection_behavior) {
+void HTMLAreaElement::UpdateFocusAppearanceWithOptions(
+    SelectionBehaviorOnFocus selection_behavior,
+    const FocusOptions& options) {
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   if (!IsFocusable())
     return;
 
-  if (HTMLImageElement* image_element = this->ImageElement())
-    image_element->UpdateFocusAppearance(selection_behavior);
+  if (HTMLImageElement* image_element = this->ImageElement()) {
+    image_element->UpdateFocusAppearanceWithOptions(selection_behavior,
+                                                    options);
+  }
 }
 
 }  // namespace blink

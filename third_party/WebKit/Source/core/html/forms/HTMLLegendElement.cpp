@@ -61,7 +61,7 @@ void HTMLLegendElement::focus(const FocusParams& params) {
   // To match other browsers' behavior, never restore previous selection.
   if (HTMLFormControlElement* control = AssociatedControl()) {
     control->focus(FocusParams(SelectionBehaviorOnFocus::kReset, params.type,
-                               params.source_capabilities));
+                               params.source_capabilities, params.options));
   }
 }
 
