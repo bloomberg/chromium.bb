@@ -5,6 +5,10 @@
 #include "chrome/browser/ui/webui/memory_internals_ui.h"
 
 #include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/allocator/features.h"
 #include "base/bind.h"
@@ -37,27 +41,42 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
+using profiling::ProfilingProcessHost;
+
 namespace {
 
 // Returns the string to display at the top of the page for help.
 std::string GetMessageString() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  switch (profiling::ProfilingProcessHost::GetCurrentMode()) {
-    case profiling::ProfilingProcessHost::Mode::kMinimal:
+  switch (ProfilingProcessHost::GetCurrentMode()) {
+    case ProfilingProcessHost::Mode::kAll:
+      return std::string("Memory logging is enabled for all processes.");
+
+    case ProfilingProcessHost::Mode::kBrowser:
+      return std::string(
+          "Memory logging is enabled for just the browser process.");
+
+    case ProfilingProcessHost::Mode::kGpu:
+      return std::string("Memory logging is enabled for just the gpu process.");
+
+    case ProfilingProcessHost::Mode::kMinimal:
       return std::string(
           "Memory logging is enabled for the browser and GPU processes.");
 
-    case profiling::ProfilingProcessHost::Mode::kAll:
-      return std::string("Memory logging is enabled for all processes.");
+    case ProfilingProcessHost::Mode::kRendererSampling:
+      return std::string(
+          "Memory logging is enabled for an automatic sample of renderer "
+          "processes. This UI is disabled.");
 
-    case profiling::ProfilingProcessHost::Mode::kNone:
+    case ProfilingProcessHost::Mode::kNone:
     default:
-      return std::string("Memory logging is not enabled. Start with --") +
-             switches::kMemlog + "=" + switches::kMemlogModeAll +
-             " to log all processes, or --" + switches::kMemlog + "=" +
-             switches::kMemlogModeMinimal +
-             " to log only the browser and GPU processes. "
-             "This is also configurable in chrome://flags";
+      return base::StringPrintf(
+          "Memory logging is not enabled. Start with --%s=%s"
+          " to log all processes, or --%s=%s to log only the browser and GPU "
+          "processes. "
+          "Other options available in chrome://flags",
+          switches::kMemlog, switches::kMemlogModeAll, switches::kMemlog,
+          switches::kMemlogModeMinimal);
   }
 #elif defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   return "Memory logging is not available in this build because a memory "
@@ -177,7 +196,7 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
 
   int pid = pid_value.GetInt();
   base::FilePath default_file = base::FilePath().AppendASCII(
-      base::StringPrintf("memlog_%lld.json.gz", static_cast<long long>(pid)));
+      base::StringPrintf("memlog_%d.json.gz", pid));
 
 #if defined(OS_ANDROID)
   // On Android write to the user data dir.
@@ -186,7 +205,7 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
-  profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
+  ProfilingProcessHost::GetInstance()->RequestProcessDump(
       pid, std::move(output_path), base::OnceClosure());
   (void)web_ui_;  // Avoid warning about not using private web_ui_ member.
 #else
@@ -214,7 +233,7 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
     return;
 
   int pid = pid_value.GetInt();
-  profiling::ProfilingProcessHost::GetInstance()->RequestProcessReport(
+  ProfilingProcessHost::GetInstance()->RequestProcessReport(
       pid, "MEMLOG_MANUAL_TRIGGER");
 }
 
@@ -222,22 +241,15 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     base::WeakPtr<MemoryInternalsDOMHandler> dom_handler) {
   std::vector<base::Value> result;
 
-  if (profiling::ProfilingProcessHost::GetCurrentMode() !=
-      profiling::ProfilingProcessHost::Mode::kNone) {
+  if (ProfilingProcessHost::GetCurrentMode() !=
+      ProfilingProcessHost::Mode::kNone) {
     // Add child processes (this does not include renderers).
     for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
       // Note that ChildProcessData.id is a child ID and not an OS PID.
       const content::ChildProcessData& data = iter.GetData();
 
-      bool show_process = true;
-      if (profiling::ProfilingProcessHost::GetCurrentMode() ==
-          profiling::ProfilingProcessHost::Mode::kMinimal) {
-        show_process =
-            data.process_type == content::ProcessType::PROCESS_TYPE_BROWSER ||
-            data.process_type == content::ProcessType::PROCESS_TYPE_GPU;
-      }
-
-      if (show_process) {
+      if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
+              data.process_type)) {
         result.push_back(MakeProcessInfo(base::GetProcId(data.handle),
                                          GetChildDescription(data)));
       }
@@ -253,22 +265,21 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
 void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
     std::vector<base::Value> children) {
   // This function will be called with the child processes that are not
-  // renderers. It will full in the browser and renderer processes on the UI
+  // renderers. It will fill in the browser and renderer processes on the UI
   // thread (RenderProcessHost is UI-thread only) and return the full list.
   base::Value process_list_value(base::Value::Type::LIST);
   std::vector<base::Value>& process_list = process_list_value.GetList();
 
-  profiling::ProfilingProcessHost::Mode profiling_mode =
-      profiling::ProfilingProcessHost::GetCurrentMode();
-
   // Add browser process.
-  if (profiling_mode != profiling::ProfilingProcessHost::Mode::kNone) {
+  if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
+          content::ProcessType::PROCESS_TYPE_BROWSER)) {
     process_list.push_back(
         MakeProcessInfo(base::GetCurrentProcId(), "Browser"));
   }
 
   // Append renderer processes.
-  if (profiling_mode == profiling::ProfilingProcessHost::Mode::kAll) {
+  if (ProfilingProcessHost::GetInstance()->ShouldProfileProcessType(
+          content::ProcessType::PROCESS_TYPE_RENDERER)) {
     auto iter = content::RenderProcessHost::AllHostsIterator();
     while (!iter.IsAtEnd()) {
       base::ProcessHandle renderer_handle = iter.GetCurrentValue()->GetHandle();
@@ -302,8 +313,8 @@ void MemoryInternalsDOMHandler::FileSelected(const base::FilePath& path,
                                              void* params) {
   // The PID to dump was stashed in the params.
   int pid = reinterpret_cast<intptr_t>(params);
-  profiling::ProfilingProcessHost::GetInstance()->RequestProcessDump(
-      pid, path, base::OnceClosure());
+  ProfilingProcessHost::GetInstance()->RequestProcessDump(pid, path,
+                                                          base::OnceClosure());
   select_file_dialog_ = nullptr;
 }
 
