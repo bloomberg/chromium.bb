@@ -43,7 +43,6 @@
 #include "content/browser/download/download_item_impl_delegate.h"
 #include "content/browser/download/download_job_factory.h"
 #include "content/browser/download/download_job_impl.h"
-#include "content/browser/download/download_net_log_parameters.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_task_runner.h"
@@ -61,10 +60,6 @@
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_event_type.h"
-#include "net/log/net_log_parameters_callback.h"
-#include "net/log/net_log_source.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
@@ -126,6 +121,101 @@ bool IsCancellation(DownloadInterruptReason reason) {
   return reason == DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN ||
          reason == DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
 }
+
+std::string GetDownloadTypeNames(DownloadItem::DownloadType type) {
+  switch (type) {
+    case DownloadItem::TYPE_ACTIVE_DOWNLOAD:
+      return "NEW_DOWNLOAD";
+    case DownloadItem::TYPE_HISTORY_IMPORT:
+      return "HISTORY_IMPORT";
+    case DownloadItem::TYPE_SAVE_PAGE_AS:
+      return "SAVE_PAGE_AS";
+    default:
+      NOTREACHED();
+      return "INVALID_TYPE";
+  }
+}
+
+std::string GetDownloadDangerNames(DownloadDangerType type) {
+  switch (type) {
+    case DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
+      return "NOT_DANGEROUS";
+    case DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+      return "DANGEROUS_FILE";
+    case DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:
+      return "DANGEROUS_URL";
+    case DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
+      return "DANGEROUS_CONTENT";
+    case DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
+      return "MAYBE_DANGEROUS_CONTENT";
+    case DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+      return "UNCOMMON_CONTENT";
+    case DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+      return "USER_VALIDATED";
+    case DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
+      return "DANGEROUS_HOST";
+    case DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+      return "POTENTIALLY_UNWANTED";
+    default:
+      NOTREACHED();
+      return "UNKNOWN_DANGER_TYPE";
+  }
+}
+
+class DownloadItemActivatedData
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  DownloadItemActivatedData(DownloadItem::DownloadType download_type,
+                            uint32_t download_id,
+                            std::string original_url,
+                            std::string final_url,
+                            std::string file_name,
+                            DownloadDangerType danger_type,
+                            int64_t start_offset,
+                            bool has_user_gesture)
+      : download_type_(download_type),
+        download_id_(download_id),
+        original_url_(original_url),
+        final_url_(final_url),
+        file_name_(file_name),
+        danger_type_(danger_type),
+        start_offset_(start_offset),
+        has_user_gesture_(has_user_gesture) {}
+
+  ~DownloadItemActivatedData() override = default;
+
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append("{");
+    out->append(base::StringPrintf(
+        "\"type\":\"%s\",", GetDownloadTypeNames(download_type_).c_str()));
+    out->append(base::StringPrintf("\"id\":\"%d\",", download_id_));
+    out->append(
+        base::StringPrintf("\"original_url\":\"%s\",", original_url_.c_str()));
+    out->append(
+        base::StringPrintf("\"final_url\":\"%s\",", final_url_.c_str()));
+    out->append(
+        base::StringPrintf("\"file_name\":\"%s\",", file_name_.c_str()));
+    out->append(
+        base::StringPrintf("\"danger_type\":\"%s\",",
+                           GetDownloadDangerNames(danger_type_).c_str()));
+    out->append(
+        base::StringPrintf("\"start_offset\":\"%" PRId64 "\",", start_offset_));
+    out->append(base::StringPrintf("\"has_user_gesture\":\"%s\"",
+                                   has_user_gesture_ ? "true" : "false"));
+    out->append("}");
+  }
+
+ private:
+  DownloadItem::DownloadType download_type_;
+  uint32_t download_id_;
+  std::string original_url_;
+  std::string final_url_;
+  std::string file_name_;
+  DownloadDangerType danger_type_;
+  int64_t start_offset_;
+  bool has_user_gesture_;
+  DISALLOW_COPY_AND_ASSIGN(DownloadItemActivatedData);
+};
 
 }  // namespace
 
@@ -220,8 +310,7 @@ DownloadItemImpl::DownloadItemImpl(
     bool opened,
     base::Time last_access_time,
     bool transient,
-    const std::vector<DownloadItem::ReceivedSlice>& received_slices,
-    const net::NetLogWithSource& net_log)
+    const std::vector<DownloadItem::ReceivedSlice>& received_slices)
     : request_info_(url_chain,
                     referrer_url,
                     site_url,
@@ -255,21 +344,19 @@ DownloadItemImpl::DownloadItemImpl(
       last_modified_time_(last_modified),
       etag_(etag),
       received_slices_(received_slices),
-      net_log_(net_log),
       is_updating_observers_(false),
       weak_ptr_factory_(this) {
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
   DCHECK(base::IsValidGUID(guid_));
-  Init(false /* not actively downloading */, SRC_HISTORY_IMPORT);
+  Init(false /* not actively downloading */, TYPE_HISTORY_IMPORT);
 }
 
 // Constructing for a regular download:
 DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                                    uint32_t download_id,
-                                   const DownloadCreateInfo& info,
-                                   const net::NetLogWithSource& net_log)
+                                   const DownloadCreateInfo& info)
     : request_info_(info.url_chain,
                     info.referrer_url,
                     info.site_url,
@@ -300,21 +387,13 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                             : TARGET_DISPOSITION_OVERWRITE),
       last_modified_time_(info.last_modified),
       etag_(info.etag),
-      net_log_(net_log),
       is_updating_observers_(false),
       fetch_error_body_(info.fetch_error_body),
       weak_ptr_factory_(this) {
   delegate_->Attach();
-  Init(true /* actively downloading */, SRC_ACTIVE_DOWNLOAD);
+  Init(true /* actively downloading */, TYPE_ACTIVE_DOWNLOAD);
 
-  // Link the event sources.
-  net_log_.AddEvent(
-      net::NetLogEventType::DOWNLOAD_URL_REQUEST,
-      info.request_net_log.source().ToEventParametersCallback());
-
-  info.request_net_log.AddEvent(
-      net::NetLogEventType::DOWNLOAD_STARTED,
-      net_log_.source().ToEventParametersCallback());
+  TRACE_EVENT_INSTANT0("download", "DownloadStarted", TRACE_EVENT_SCOPE_THREAD);
 }
 
 // Constructing for the "Save Page As..." feature:
@@ -324,8 +403,7 @@ DownloadItemImpl::DownloadItemImpl(
     const base::FilePath& path,
     const GURL& url,
     const std::string& mime_type,
-    std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-    const net::NetLogWithSource& net_log)
+    std::unique_ptr<DownloadRequestHandleInterface> request_handle)
     : request_info_(url),
       guid_(base::GenerateGUID()),
       download_id_(download_id),
@@ -335,13 +413,12 @@ DownloadItemImpl::DownloadItemImpl(
       state_(IN_PROGRESS_INTERNAL),
       delegate_(delegate),
       destination_info_(path, path, 0, false, std::string(), base::Time()),
-      net_log_(net_log),
       is_updating_observers_(false),
       weak_ptr_factory_(this) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
                                        DownloadCreateInfo(), true);
   delegate_->Attach();
-  Init(true /* actively downloading */, SRC_SAVE_PAGE_AS);
+  Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
 
 DownloadItemImpl::~DownloadItemImpl() {
@@ -398,9 +475,9 @@ void DownloadItemImpl::ValidateDangerousDownload() {
 
   danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
-  net_log_.AddEvent(
-      net::NetLogEventType::DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-      base::Bind(&ItemCheckedNetLogCallback, GetDangerType()));
+  TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",
+                       TRACE_EVENT_SCOPE_THREAD, "danger_type",
+                       GetDownloadDangerNames(danger_type_).c_str());
 
   UpdateObservers();  // TODO(asanka): This is potentially unsafe. The download
                       // may not be in a consistent state or around at all after
@@ -1153,10 +1230,6 @@ DownloadItemImpl::DestinationObserverAsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-const net::NetLogWithSource& DownloadItemImpl::GetNetLogWithSource() const {
-  return net_log_;
-}
-
 void DownloadItemImpl::SetTotalBytes(int64_t total_bytes) {
   total_bytes_ = total_bytes;
 }
@@ -1220,11 +1293,9 @@ void DownloadItemImpl::DestinationUpdate(
 
   UpdateProgress(bytes_so_far, bytes_per_sec);
   received_slices_ = received_slices;
-  if (net_log_.IsCapturing()) {
-    net_log_.AddEvent(
-        net::NetLogEventType::DOWNLOAD_ITEM_UPDATED,
-        net::NetLog::Int64Callback("bytes_so_far", GetReceivedBytes()));
-  }
+  TRACE_EVENT_INSTANT1("download", "DownloadItemUpdated",
+                       TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",
+                       GetReceivedBytes());
 
   UpdateObservers();
 }
@@ -1267,11 +1338,11 @@ void DownloadItemImpl::DestinationCompleted(
 // **** Download progression cascade
 
 void DownloadItemImpl::Init(bool active,
-                            DownloadType download_type) {
+                            DownloadItem::DownloadType download_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::string file_name;
-  if (download_type == SRC_HISTORY_IMPORT) {
+  if (download_type == TYPE_HISTORY_IMPORT) {
     // target_path_ works for History and Save As versions.
     file_name = GetTargetFilePath().AsUTF8Unsafe();
   } else {
@@ -1285,14 +1356,17 @@ void DownloadItemImpl::Init(bool active,
       file_name = GetURL().ExtractFileName();
   }
 
-  net::NetLogParametersCallback active_data =
-      base::Bind(&ItemActivatedNetLogCallback, this, download_type, &file_name);
+  auto active_data = base::MakeUnique<DownloadItemActivatedData>(
+      download_type, GetId(), GetOriginalUrl().spec(), GetURL().spec(),
+      file_name, GetDangerType(), GetReceivedBytes(), HasUserGesture());
+
   if (active) {
-    net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
-                              active_data);
+    TRACE_EVENT_ASYNC_BEGIN1("download", "DownloadItemActive", download_id_,
+                             "download_item", std::move(active_data));
   } else {
-    net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
-                            active_data);
+    TRACE_EVENT_INSTANT1("download", "DownloadItemActive",
+                         TRACE_EVENT_SCOPE_THREAD, "download_item",
+                         std::move(active_data));
   }
 
   DVLOG(20) << __func__ << "() " << DebugString(true);
@@ -2015,37 +2089,39 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
       DCHECK(GetFullPath() == GetTargetFilePath())
           << "Current output path must match target path.";
 
-      net_log_.AddEvent(
-          net::NetLogEventType::DOWNLOAD_ITEM_COMPLETING,
-          base::Bind(&ItemCompletingNetLogCallback, GetReceivedBytes(),
-                     &destination_info_.hash));
+      TRACE_EVENT_INSTANT2("download", "DownloadItemCompleting",
+                           TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",
+                           GetReceivedBytes(), "final_hash",
+                           destination_info_.hash);
       break;
 
     case COMPLETE_INTERNAL:
-      net_log_.AddEvent(
-          net::NetLogEventType::DOWNLOAD_ITEM_FINISHED,
-          base::Bind(&ItemFinishedNetLogCallback, auto_opened_));
+      TRACE_EVENT_INSTANT1("download", "DownloadItemFinished",
+                           TRACE_EVENT_SCOPE_THREAD, "auto_opened",
+                           auto_opened_ ? "yes" : "no");
       break;
 
     case INTERRUPTED_INTERNAL:
       DCHECK(!download_file_)
           << "Download file must be released prior to interruption.";
       DCHECK_NE(last_reason_, DOWNLOAD_INTERRUPT_REASON_NONE);
-      net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_INTERRUPTED,
-                        base::Bind(&ItemInterruptedNetLogCallback, last_reason_,
-                                   GetReceivedBytes()));
+      TRACE_EVENT_INSTANT2("download", "DownloadItemInterrupted",
+                           TRACE_EVENT_SCOPE_THREAD, "interrupt_reason",
+                           DownloadInterruptReasonToString(last_reason_),
+                           "bytes_so_far", GetReceivedBytes());
       break;
 
     case RESUMING_INTERNAL:
-      net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_RESUMED,
-                        base::Bind(&ItemResumingNetLogCallback, false,
-                                   last_reason_, GetReceivedBytes()));
+      TRACE_EVENT_INSTANT2("download", "DownloadItemResumed",
+                           TRACE_EVENT_SCOPE_THREAD, "interrupt_reason",
+                           DownloadInterruptReasonToString(last_reason_),
+                           "bytes_so_far", GetReceivedBytes());
       break;
 
     case CANCELLED_INTERNAL:
-      net_log_.AddEvent(
-          net::NetLogEventType::DOWNLOAD_ITEM_CANCELED,
-          base::Bind(&ItemCanceledNetLogCallback, GetReceivedBytes()));
+      TRACE_EVENT_INSTANT1("download", "DownloadItemCancelled",
+                           TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",
+                           GetReceivedBytes());
       break;
 
     case MAX_DOWNLOAD_INTERNAL_STATE:
@@ -2065,22 +2141,25 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state) {
 
   // Termination
   if (is_done && !was_done)
-    net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE);
+    TRACE_EVENT_ASYNC_END0("download", "DownloadItemActive", download_id_);
 
   // Resumption
   if (was_done && !is_done) {
     std::string file_name(GetTargetFilePath().BaseName().AsUTF8Unsafe());
-    net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,
-                              base::Bind(&ItemActivatedNetLogCallback, this,
-                                         SRC_ACTIVE_DOWNLOAD, &file_name));
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+        "download", "DownloadItemActive", download_id_, "download_item",
+        base::MakeUnique<DownloadItemActivatedData>(
+            TYPE_ACTIVE_DOWNLOAD, GetId(), GetOriginalUrl().spec(),
+            GetURL().spec(), file_name, GetDangerType(), GetReceivedBytes(),
+            HasUserGesture()));
   }
 }
 
 void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
   if (danger_type != danger_type_) {
-    net_log_.AddEvent(
-        net::NetLogEventType::DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-        base::Bind(&ItemCheckedNetLogCallback, danger_type));
+    TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",
+                         TRACE_EVENT_SCOPE_THREAD, "danger_type",
+                         GetDownloadDangerNames(danger_type).c_str());
   }
   // Only record the Malicious UMA stat if it's going from {not malicious} ->
   // {malicious}.
@@ -2103,9 +2182,10 @@ void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
             << DebugString(true);
   DCHECK(!new_path.empty());
 
-  net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_ITEM_RENAMED,
-                    base::Bind(&ItemRenamedNetLogCallback,
-                               &destination_info_.current_path, &new_path));
+  TRACE_EVENT_INSTANT2("download", "DownloadItemRenamed",
+                       TRACE_EVENT_SCOPE_THREAD, "old_filename",
+                       destination_info_.current_path.AsUTF8Unsafe(),
+                       "new_filename", new_path.AsUTF8Unsafe());
 
   destination_info_.current_path = new_path;
 }

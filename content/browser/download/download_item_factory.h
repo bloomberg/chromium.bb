@@ -23,10 +23,6 @@ namespace base {
 class FilePath;
 }
 
-namespace net {
-class NetLogWithSource;
-}
-
 namespace content {
 
 class DownloadItem;
@@ -65,14 +61,12 @@ public:
       bool opened,
       base::Time last_access_time,
       bool transient,
-      const std::vector<DownloadItem::ReceivedSlice>& received_slices,
-      const net::NetLogWithSource& net_log) = 0;
+      const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
-      const DownloadCreateInfo& info,
-      const net::NetLogWithSource& net_log) = 0;
+      const DownloadCreateInfo& info) = 0;
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
@@ -80,8 +74,7 @@ public:
       const base::FilePath& path,
       const GURL& url,
       const std::string& mime_type,
-      std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::NetLogWithSource& net_log) = 0;
+      std::unique_ptr<DownloadRequestHandleInterface> request_handle) = 0;
 };
 
 }  // namespace content

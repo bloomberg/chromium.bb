@@ -32,8 +32,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(DownloadItemImplDelegate* delegate)
                        false,
                        base::Time(),
                        true,
-                       DownloadItem::ReceivedSlices(),
-                       net::NetLogWithSource()) {}
+                       DownloadItem::ReceivedSlices()) {}
 
 MockDownloadItemImpl::~MockDownloadItemImpl() = default;
 

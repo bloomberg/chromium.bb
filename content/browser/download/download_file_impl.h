@@ -30,7 +30,6 @@
 #include "content/public/common/download_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "net/log/net_log_with_source.h"
 
 namespace content {
 class ByteStreamReader;
@@ -49,7 +48,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
                    std::unique_ptr<DownloadManager::InputStream> stream,
-                   const net::NetLogWithSource& net_log,
+                   uint32_t download_id,
                    base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
@@ -206,7 +205,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
                    const base::FilePath& default_downloads_directory,
-                   const net::NetLogWithSource& net_log,
+                   uint32_t download_id,
                    base::WeakPtr<DownloadDestinationObserver> observer);
 
   // Options for RenameWithRetryInternal.
@@ -306,8 +305,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Print the internal states for debugging.
   void DebugStates() const;
 
-  net::NetLogWithSource net_log_;
-
   // The base file instance.
   BaseFile file_;
 
@@ -355,6 +352,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // when network service is disabled as download pause/resumption is handled
   // by DownloadRequestCore in that case.
   bool is_paused_;
+
+  uint32_t download_id_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

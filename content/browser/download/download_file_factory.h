@@ -16,10 +16,6 @@
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
-namespace net {
-class NetLogWithSource;
-}
-
 namespace content {
 
 class DownloadDestinationObserver;
@@ -34,7 +30,7 @@ class CONTENT_EXPORT DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<DownloadManager::InputStream> stream,
-      const net::NetLogWithSource& net_log,
+      uint32_t download_id,
       base::WeakPtr<DownloadDestinationObserver> observer);
 };
 

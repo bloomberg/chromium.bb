@@ -190,8 +190,8 @@ std::unique_ptr<DownloadCreateInfo>
 DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
   DCHECK(!started_);
   started_ = true;
-  std::unique_ptr<DownloadCreateInfo> create_info(new DownloadCreateInfo(
-      base::Time::Now(), request()->net_log(), std::move(save_info_)));
+  std::unique_ptr<DownloadCreateInfo> create_info(
+      new DownloadCreateInfo(base::Time::Now(), std::move(save_info_)));
 
   if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = request()->GetSocketAddress().host();

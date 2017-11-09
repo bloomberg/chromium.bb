@@ -30,10 +30,6 @@
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/ssl_status.h"
 
-namespace net {
-class NetLog;
-}
-
 namespace content {
 class DownloadFileFactory;
 class DownloadItemFactory;
@@ -250,8 +246,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   // Allows an embedder to control behavior. Guaranteed to outlive this object.
   DownloadManagerDelegate* delegate_;
-
-  net::NetLog* net_log_;
 
   std::vector<UniqueUrlDownloadHandlerPtr> url_download_handlers_;
 

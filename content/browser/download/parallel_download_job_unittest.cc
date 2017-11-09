@@ -452,7 +452,7 @@ TEST_F(ParallelDownloadJobTest, ParallelRequestNotCreatedUntilFileInitialized) {
       std::move(save_info), base::FilePath(),
       std::make_unique<DownloadManager::InputStream>(
           std::unique_ptr<ByteStreamReader>(input_stream)),
-      net::NetLogWithSource(), observer_factory.GetWeakPtr());
+      DownloadItem::kInvalidId, observer_factory.GetWeakPtr());
   CreateParallelJob(0, 100, DownloadItem::ReceivedSlices(), 2, 0, 0);
   job_->Start(download_file.get(),
               base::Bind(&ParallelDownloadJobTest::OnFileInitialized,
