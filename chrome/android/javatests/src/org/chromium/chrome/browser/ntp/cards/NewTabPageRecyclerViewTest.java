@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -12,7 +15,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,7 +26,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
@@ -37,11 +38,11 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -60,10 +61,8 @@ import java.util.concurrent.TimeoutException;
  * Instrumentation tests for {@link NewTabPageRecyclerView}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
-})
+@CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+@Features.DisableFeatures("NetworkPrediction")
 @RetryOnFailure
 public class NewTabPageRecyclerViewTest {
     @Rule
@@ -113,7 +112,7 @@ public class NewTabPageRecyclerViewTest {
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
 
-        Assert.assertTrue(mTab.getNativePage() instanceof NewTabPage);
+        assertTrue(mTab.getNativePage() instanceof NewTabPage);
         mNtp = (NewTabPage) mTab.getNativePage();
     }
 
@@ -140,7 +139,7 @@ public class NewTabPageRecyclerViewTest {
                 TouchCommon.singleClickView(suggestionView);
             }
         });
-        Assert.assertEquals(suggestion.mUrl, mTab.getUrl());
+        assertEquals(suggestion.mUrl, mTab.getUrl());
     }
 
     @Test
@@ -148,11 +147,11 @@ public class NewTabPageRecyclerViewTest {
     @Feature({"NewTabPage"})
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
-        Assert.assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
-        Assert.assertEquals(RecyclerView.NO_POSITION,
+        assertEquals(3, mSource.getSuggestionsForCategory(TEST_CATEGORY).size());
+        assertEquals(RecyclerView.NO_POSITION,
                 getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED));
-        Assert.assertEquals(1, mSource.getCategories().length);
-        Assert.assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
+        assertEquals(1, mSource.getCategories().length);
+        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
 
         // Dismiss the sign in promo.
         int signinPromoPosition = getAdapter().getFirstPositionForType(ItemViewType.PROMO);
@@ -164,16 +163,16 @@ public class NewTabPageRecyclerViewTest {
             if (cardPosition == RecyclerView.NO_POSITION) break;
             dismissItemAtPosition(cardPosition);
         }
-        Assert.assertEquals(0, mSource.getCategories().length);
+        assertEquals(0, mSource.getCategories().length);
 
         // Click the refresh button on the all dismissed item.
         int allDismissedPosition = getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED);
-        Assert.assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
+        assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
         View allDismissedView = getViewHolderAtPosition(allDismissedPosition).itemView;
         TouchCommon.singleClickView(allDismissedView.findViewById(R.id.action_button));
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), allDismissedView);
-        Assert.assertEquals(1, mSource.getCategories().length);
-        Assert.assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
+        assertEquals(1, mSource.getCategories().length);
+        assertEquals(TEST_CATEGORY, mSource.getCategories()[0]);
     }
 
     @Test
@@ -182,7 +181,7 @@ public class NewTabPageRecyclerViewTest {
     public void testDismissArticleWithContextMenu() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
-        Assert.assertEquals(10, suggestions.size());
+        assertEquals(10, suggestions.size());
 
         // Scroll a suggestion into view.
         int suggestionPosition = getLastCardPosition();
@@ -193,7 +192,7 @@ public class NewTabPageRecyclerViewTest {
         RecyclerViewTestUtils.waitForViewToDetach(getRecyclerView(), suggestionView);
 
         suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
-        Assert.assertEquals(9, suggestions.size());
+        assertEquals(9, suggestions.size());
     }
 
     @Test
@@ -206,7 +205,7 @@ public class NewTabPageRecyclerViewTest {
 
         // Scroll the status card into view.
         int cardPosition = getAdapter().getFirstCardPosition();
-        Assert.assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
+        assertEquals(ItemViewType.STATUS, getAdapter().getItemViewType(cardPosition));
 
         View statusCardView = getViewHolderAtPosition(cardPosition).itemView;
 
@@ -227,7 +226,7 @@ public class NewTabPageRecyclerViewTest {
 
         // Scroll the action item into view.
         int actionItemPosition = getAdapter().getFirstCardPosition() + 1;
-        Assert.assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
+        assertEquals(ItemViewType.ACTION, getAdapter().getItemViewType(actionItemPosition));
         View actionItemView = getViewHolderAtPosition(actionItemPosition).itemView;
 
         // Dismiss the action item using the context menu.
@@ -241,64 +240,34 @@ public class NewTabPageRecyclerViewTest {
     @MediumTest
     @Feature({"NewTabPage"})
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
-    public void testSnapScroll_noCondensedLayout() {
+    public void testSnapScroll() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res = InstrumentationRegistry.getTargetContext().getResources();
-        int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
-                + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+        Resources resources = InstrumentationRegistry.getTargetContext().getResources();
+        int toolbarHeight = resources.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
+                + resources.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
         int searchBoxTop = searchBox.getTop() + searchBox.getPaddingTop();
         int searchBoxTransitionLength =
-                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
+                resources.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
 
-        // Two different snapping regions with the default behavior: snapping back up to the
-        // watershed point in the middle, snapping forward after that.
-        Assert.assertEquals(0, getSnapPosition(0));
-        Assert.assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
-        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight / 2));
-        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
-        Assert.assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+        // Two different snapping regions: snapping back up to the watershed point in the middle,
+        // snapping forward after that.
+        assertEquals(0, getSnapPosition(0));
+        assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight / 2));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
 
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
-        Assert.assertEquals(
-                searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
-        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage"})
-    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.NTP_CONDENSED_LAYOUT})
-    public void testSnapScroll_condensedLayout() {
-        setSuggestionsAndWaitForUpdate(0);
-
-        Resources res = InstrumentationRegistry.getTargetContext().getResources();
-        int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
-                + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
-        View searchBox = getNtpView().findViewById(R.id.search_box);
-        int searchBoxTop = searchBox.getTop() + searchBox.getPaddingTop();
-        int searchBoxTransitionLength =
-                res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
-
-        // With the condensed layout, the snapping regions overlap, so the effect is that of a
-        // single snapping region.
-        Assert.assertEquals(0, getSnapPosition(0));
-        Assert.assertEquals(0, getSnapPosition(toolbarHeight / 2 - 1));
-        Assert.assertEquals(searchBoxTop, getSnapPosition(toolbarHeight / 2));
-        Assert.assertEquals(
-                searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        Assert.assertEquals(searchBoxTop, getSnapPosition(toolbarHeight));
-        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
     }
 
     @Test
@@ -319,22 +288,22 @@ public class NewTabPageRecyclerViewTest {
         // No snapping on tablets.
         // Note: This ignores snapping for the peeking cards, which is currently disabled
         // by default.
-        Assert.assertEquals(0, getSnapPosition(0));
-        Assert.assertEquals(toolbarHeight / 2 - 1, getSnapPosition(toolbarHeight / 2 - 1));
-        Assert.assertEquals(toolbarHeight / 2, getSnapPosition(toolbarHeight / 2));
-        Assert.assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
-        Assert.assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
+        assertEquals(0, getSnapPosition(0));
+        assertEquals(toolbarHeight / 2 - 1, getSnapPosition(toolbarHeight / 2 - 1));
+        assertEquals(toolbarHeight / 2, getSnapPosition(toolbarHeight / 2));
+        assertEquals(toolbarHeight, getSnapPosition(toolbarHeight));
+        assertEquals(toolbarHeight + 1, getSnapPosition(toolbarHeight + 1));
 
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
+        assertEquals(searchBoxTop - searchBoxTransitionLength - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength - 1));
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength,
+        assertEquals(searchBoxTop - searchBoxTransitionLength,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength));
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength / 2 - 1,
+        assertEquals(searchBoxTop - searchBoxTransitionLength / 2 - 1,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2 - 1));
-        Assert.assertEquals(searchBoxTop - searchBoxTransitionLength / 2,
+        assertEquals(searchBoxTop - searchBoxTransitionLength / 2,
                 getSnapPosition(searchBoxTop - searchBoxTransitionLength / 2));
-        Assert.assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
-        Assert.assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
+        assertEquals(searchBoxTop, getSnapPosition(searchBoxTop));
+        assertEquals(searchBoxTop + 1, getSnapPosition(searchBoxTop + 1));
     }
 
     private int getSnapPosition(int scrollPosition) {
@@ -427,11 +396,11 @@ public class NewTabPageRecyclerViewTest {
 
     private void invokeContextMenu(View view, int contextMenuItemId) {
         TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
-        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+        assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }
 
     private static void assertArrayEquals(int[] expected, int[] actual) {
-        Assert.assertEquals(Arrays.toString(expected), Arrays.toString(actual));
+        assertEquals(Arrays.toString(expected), Arrays.toString(actual));
     }
 }

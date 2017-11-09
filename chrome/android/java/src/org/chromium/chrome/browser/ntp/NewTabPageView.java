@@ -91,6 +91,11 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
      */
     private static final String PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT = "condensed_layout_logo_height";
 
+    /**
+     * Default experiment parameter value for the logo height in dp in the condensed layout.
+     */
+    private static final int PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP = 50;
+
     private NewTabPageRecyclerView mRecyclerView;
 
     private NewTabPageLayout mNewTabPageLayout;
@@ -270,7 +275,8 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
 
         mSearchProviderLogoView = mNewTabPageLayout.findViewById(R.id.search_provider_logo);
         int experimentalLogoHeightDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT, 0);
+                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_LOGO_HEIGHT,
+                PARAM_DEFAULT_VALUE_CONDENSED_LAYOUT_LOGO_HEIGHT_DP);
         if (experimentalLogoHeightDp > 0) {
             ViewGroup.LayoutParams logoParams = mSearchProviderLogoView.getLayoutParams();
             logoParams.height = dpToPx(getContext(), experimentalLogoHeightDp);
@@ -953,7 +959,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         boolean condensedLayoutEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT);
         boolean showLogoInCondensedLayout = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_SHOW_LOGO, false);
+                ChromeFeatureList.NTP_CONDENSED_LAYOUT, PARAM_CONDENSED_LAYOUT_SHOW_LOGO, true);
         return mSearchProviderHasLogo && (!condensedLayoutEnabled || showLogoInCondensedLayout);
     }
 

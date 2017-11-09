@@ -71,7 +71,7 @@ public final class SuggestionsConfig {
         if (isScreenSmall) {
             return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.NTP_CONDENSED_TILE_LAYOUT,
-                    PARAM_CONDENSED_TILE_LAYOUT_FOR_SMALL_SCREENS_ENABLED, false);
+                    PARAM_CONDENSED_TILE_LAYOUT_FOR_SMALL_SCREENS_ENABLED, true);
         }
 
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
