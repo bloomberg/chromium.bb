@@ -48,12 +48,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     // EXTRA_ORIGIN (a WebsiteAddress) to be present (but not both). If
     // EXTRA_SITE is present, the fragment will display the permissions in that
     // Website object. If EXTRA_ORIGIN is present, the fragment will find all
-    // permissions for that website address and display those. If EXTRA_LOCATION
-    // is present, the fragment will add a Location toggle, even if the site
-    // specifies no Location permission.
+    // permissions for that website address and display those.
     public static final String EXTRA_SITE = "org.chromium.chrome.preferences.site";
     public static final String EXTRA_ORIGIN = "org.chromium.chrome.preferences.origin";
-    public static final String EXTRA_LOCATION = "org.chromium.chrome.preferences.location";
 
     public static final String EXTRA_WEB_CONTENTS = "org.chromium.chrome.preferences.web_contents";
     public static final String EXTRA_USB_INFO = "org.chromium.chrome.preferences.usb_info";
@@ -620,17 +617,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     private void setUpLocationPreference(Preference preference) {
         ContentSetting permission = mSite.getGeolocationPermission();
-        Object locationAllowed = getArguments().getSerializable(EXTRA_LOCATION);
         if (shouldUseDSEGeolocationSetting()) {
             String origin = mSite.getAddress().getOrigin();
             mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
             setUpListPreference(preference, ContentSetting.ALLOW);
             updateLocationPreferenceForDSESetting(preference);
-        } else if (permission == null && locationAllowed != null) {
-            String origin = mSite.getAddress().getOrigin();
-            mSite.setGeolocationInfo(new GeolocationInfo(origin, origin, false));
-            setUpListPreference(preference, (boolean) locationAllowed
-                    ? ContentSetting.ALLOW : ContentSetting.BLOCK);
         } else {
             setUpListPreference(preference, permission);
         }
