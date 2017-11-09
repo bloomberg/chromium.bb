@@ -24,8 +24,10 @@
 #include "base/os_compat_nacl.h"
 #endif
 
+// Ensure the Mac build does not include this module. Instead, non-POSIX
+// implementation is used to support Time::Exploded.
 #if defined(OS_MACOSX)
-static_assert(sizeof(time_t) >= 8, "Y2038 problem!");
+#error "This implementation is for POSIX platforms other than Mac."
 #endif
 
 namespace {
