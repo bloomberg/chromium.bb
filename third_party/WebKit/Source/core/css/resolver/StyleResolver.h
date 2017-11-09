@@ -39,7 +39,6 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/ListHashSet.h"
 #include "platform/wtf/RefPtr.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -11,7 +11,6 @@
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

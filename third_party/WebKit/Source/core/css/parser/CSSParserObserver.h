@@ -26,7 +26,6 @@
 #define CSSParserObserver_h
 
 #include "core/css/CSSPropertySourceData.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

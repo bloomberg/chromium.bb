@@ -15,7 +15,6 @@
 #include "platform/AsyncMethodRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 

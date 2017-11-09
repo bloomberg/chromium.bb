@@ -43,7 +43,6 @@
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebEventListenerProperties.h"

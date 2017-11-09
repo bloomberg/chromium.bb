@@ -9,7 +9,6 @@
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
 
 namespace blink {
 
