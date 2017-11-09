@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
-#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -191,15 +190,9 @@ class DeclarativeNetRequestBrowserTest
 using DeclarativeNetRequestBrowserTest_Packed =
     DeclarativeNetRequestBrowserTest;
 
-#if defined(OS_WIN) && !defined(NDEBUG)
-// TODO: test times out on win7-debug. http://crbug.com/782326.
-#define MAYBE_BlockRequests_UrlFilter DISABLED_BlockRequests_UrlFilter
-#else
-#define MAYBE_BlockRequests_UrlFilter BlockRequests_UrlFilter
-#endif
 // Tests the "urlFilter" property of a declarative rule condition.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       MAYBE_BlockRequests_UrlFilter) {
+                       BlockRequests_UrlFilter) {
   struct {
     std::string url_filter;
     int id;
@@ -209,8 +202,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"|http://*.us", 3},
       {"pages_with_script/page2.html|", 4},
       {"|http://msn*/pages_with_script/page.html|", 5},
-      {"pages_with_script/page2.html?q=bye^", 6},
-      {"%20", 7},  // Block any urls with space.
+      {"%20", 6},  // Block any urls with space.
   };
 
   // Rule |i| is the rule with id |i|.
@@ -231,36 +223,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"msn.com", "/pages_with_script/page.html", false},  // Rule 5
       {"msn.com", "/pages_with_script/page.html?q=hello", true},
       {"a.msn.com", "/pages_with_script/page.html", true},
-
-      // '^' (Separator character) matches anything except a letter, a digit or
-      // one of the following: _ - . %.
-      {"google.com", "/pages_with_script/page2.html?q=bye&x=1",
-       false},  // Rule 6
-      {"google.com", "/pages_with_script/page2.html?q=bye#x=1",
-       false},                                                        // Rule 6
-      {"google.com", "/pages_with_script/page2.html?q=bye:", false},  // Rule 6
-      {"google.com", "/pages_with_script/page2.html?q=bye3", true},
-      {"google.com", "/pages_with_script/page2.html?q=byea", true},
-      {"google.com", "/pages_with_script/page2.html?q=bye_", true},
-      {"google.com", "/pages_with_script/page2.html?q=bye-", true},
-      {"google.com", "/pages_with_script/page2.html?q=bye%", true},
-      {"google.com", "/pages_with_script/page2.html?q=bye.", true},
-
-      {"abc.com", "/pages_with_script/page.html?q=hi bye", false},    // Rule 7
-      {"abc.com", "/pages_with_script/page.html?q=hi%20bye", false},  // Rule 7
+      {"abc.com", "/pages_with_script/page.html?q=hi bye", false},    // Rule 6
+      {"abc.com", "/pages_with_script/page.html?q=hi%20bye", false},  // Rule 6
       {"abc.com", "/pages_with_script/page.html?q=hibye", true},
   };
-
-  // Verify that all test urls load successfully without the DNR extension.
-  for (const auto& test_case : test_cases) {
-    GURL url =
-        embedded_test_server()->GetURL(test_case.hostname, test_case.path);
-    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
-
-    ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
-    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
-  }
 
   // Load the extension.
   std::vector<TestRule> rules;
@@ -276,6 +242,46 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   for (const auto& test_case : test_cases) {
     GURL url =
         embedded_test_server()->GetURL(test_case.hostname, test_case.path);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_EQ(test_case.expect_main_frame_loaded,
+              WasFrameWithScriptLoaded(GetMainFrame()));
+
+    content::PageType expected_page_type = test_case.expect_main_frame_loaded
+                                               ? content::PAGE_TYPE_NORMAL
+                                               : content::PAGE_TYPE_ERROR;
+    EXPECT_EQ(expected_page_type, GetPageType());
+  }
+}
+
+// Tests the matching behavior of the separator ('^') character.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       BlockRequests_Separator) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter =
+      std::string("pages_with_script/page2.html?q=bye^");
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+
+  // '^' (Separator character) matches anything except a letter, a digit or
+  // one of the following: _ - . %.
+  struct {
+    std::string url_path;
+    bool expect_main_frame_loaded;
+  } test_cases[] = {
+      {"/pages_with_script/page2.html?q=bye&x=1", false},
+      {"/pages_with_script/page2.html?q=bye#x=1", false},
+      {"/pages_with_script/page2.html?q=bye:", false},
+      {"/pages_with_script/page2.html?q=bye3", true},
+      {"/pages_with_script/page2.html?q=byea", true},
+      {"/pages_with_script/page2.html?q=bye_", true},
+      {"/pages_with_script/page2.html?q=bye-", true},
+      {"/pages_with_script/page2.html?q=bye%", true},
+      {"/pages_with_script/page2.html?q=bye.", true},
+  };
+
+  for (const auto& test_case : test_cases) {
+    GURL url = embedded_test_server()->GetURL("google.com", test_case.url_path);
     SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
 
     ui_test_utils::NavigateToURL(browser(), url);
