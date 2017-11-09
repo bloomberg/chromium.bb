@@ -263,6 +263,15 @@ Request* Request::CreateRequestWithRequestOrString(
     request->SetCacheMode(mojom::FetchCacheMode::kOnlyIfCached);
   }
 
+  // If |request|’s cache mode is "only-if-cached" and |request|’s mode is not
+  // "same-origin", then throw a TypeError.
+  if (request->CacheMode() == mojom::FetchCacheMode::kOnlyIfCached &&
+      request->Mode() != network::mojom::FetchRequestMode::kSameOrigin) {
+    exception_state.ThrowTypeError(
+        "'only-if-cached' can be set only with 'same-origin' mode");
+    return nullptr;
+  }
+
   // "If |init|'s redirect member is present, set |request|'s redirect mode
   // to it."
   if (init.Redirect() == "follow") {

@@ -7,9 +7,9 @@ PASS RequestInit's referrer is invalid
 PASS RequestInit's method is invalid
 PASS RequestInit's method is forbidden
 PASS RequestInit's mode is no-cors and method is not simple
-FAIL RequestInit's cache mode is only-if-cached and mode is not same-origin assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
-FAIL Request with cache mode: only-if-cached and fetch mode cors assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
-FAIL Request with cache mode: only-if-cached and fetch mode no-cors assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
+PASS RequestInit's cache mode is only-if-cached and mode is not same-origin
+PASS Request with cache mode: only-if-cached and fetch mode cors
+PASS Request with cache mode: only-if-cached and fetch mode no-cors
 PASS Bad referrerPolicy init parameter value
 FAIL Bad mode init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
 FAIL Bad credentials init parameter value assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
