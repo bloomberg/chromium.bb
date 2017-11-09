@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/render_frame_host.h"
@@ -140,25 +141,10 @@ class NonSpareRendererContentBrowserClient : public TestContentBrowserClient {
 class RenderProcessHostWithKeepAliveOptionEnabledTest
     : public RenderProcessHostTest {
  public:
-  void SetUpOnMainThread() override {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kKeepAliveRendererForKeepaliveRequests,
-        {std::make_pair("timeout_in_sec", "30")});
-    RenderProcessHostTest::SetUpOnMainThread();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-class RenderProcessHostWithShortKeepAliveOptionEnabledTest
-    : public RenderProcessHostTest {
- public:
-  void SetUpOnMainThread() override {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kKeepAliveRendererForKeepaliveRequests,
-        {std::make_pair("timeout_in_sec", "1")});
-    RenderProcessHostTest::SetUpOnMainThread();
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kKeepAliveRendererForKeepaliveRequests);
+    RenderProcessHostTest::SetUp();
   }
 
  private:
@@ -734,20 +720,24 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
     rph->RemoveObserver(this);
 }
 
-// TODO(yhirano): reenable, fails on TSAN bots, http://crbug.com/782037 .
 IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
-                       DISABLED_KeepAliveRendererProcess) {
+                       KeepAliveRendererProcess) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
-  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderProcessHostImpl* rph =
+      static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
 
   host_destructions_ = 0;
   process_exits_ = 0;
   rph->AddObserver(this);
+  rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
   base::TimeTicks start = base::TimeTicks::Now();
   NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
 
@@ -758,19 +748,24 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostWithShortKeepAliveOptionEnabledTest,
+IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
                        KeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
-  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
+
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
+
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderProcessHostImpl* rph =
+      static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
 
   host_destructions_ = 0;
   process_exits_ = 0;
   rph->AddObserver(this);
+  rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(1));
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
   base::TimeTicks start = base::TimeTicks::Now();
   NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
 
@@ -781,20 +776,25 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostWithShortKeepAliveOptionEnabledTest,
     rph->RemoveObserver(this);
 }
 
-IN_PROC_BROWSER_TEST_F(RenderProcessHostWithShortKeepAliveOptionEnabledTest,
+IN_PROC_BROWSER_TEST_F(RenderProcessHostWithKeepAliveOptionEnabledTest,
                        FetchKeepAliveRendererProcess_Hung) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(HandleHungBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
-  RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
-      shell()->web_contents()->GetMainFrame()->GetProcess());
+
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/fetch-keepalive.html"));
+
+  RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderProcessHostImpl* rph =
+      static_cast<RenderProcessHostImpl*>(rfh->GetProcess());
 
   host_destructions_ = 0;
   process_exits_ = 0;
   rph->AddObserver(this);
+  rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(1));
 
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/fetch-keepalive.html"));
   base::TimeTicks start = base::TimeTicks::Now();
   NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
 
