@@ -236,7 +236,7 @@ void HTMLLabelElement::focus(const FocusParams& params) {
   // To match other browsers, always restore previous selection.
   if (HTMLElement* element = control()) {
     element->focus(FocusParams(SelectionBehaviorOnFocus::kRestore, params.type,
-                               params.source_capabilities));
+                               params.source_capabilities, params.options));
   }
 }
 

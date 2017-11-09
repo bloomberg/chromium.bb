@@ -33,7 +33,7 @@ interface HTMLElement : Element {
     [RuntimeCallStatsCounter=HTMLElementClick] void click();
     [CEReactions, CustomElementCallbacks] attribute long tabIndex;
     [CEReactions, RuntimeEnabled=InertAttribute, Reflect] attribute boolean inert;
-    void focus();
+    void focus(optional FocusOptions options);
     void blur();
     [CEReactions, Reflect] attribute DOMString accessKey;
     [CEReactions, CustomElementCallbacks] attribute boolean draggable;

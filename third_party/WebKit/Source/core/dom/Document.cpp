@@ -4538,7 +4538,8 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       goto SetFocusedElementDone;
     }
     CancelFocusAppearanceUpdate();
-    focused_element_->UpdateFocusAppearance(params.selection_behavior);
+    focused_element_->UpdateFocusAppearanceWithOptions(
+        params.selection_behavior, params.options);
 
     // Dispatch the focus event and let the node do any other focus related
     // activities (important for text fields)
