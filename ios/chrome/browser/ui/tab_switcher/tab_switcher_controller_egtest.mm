@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/earl_grey/accessibility_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -33,12 +34,12 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
 using chrome_test_util::TabletTabSwitcherCloseButton;
 using chrome_test_util::TabletTabSwitcherCloseTabButton;
-using chrome_test_util::TabletTabSwitcherIncognitoButton;
+using chrome_test_util::TabletTabSwitcherIncognitoTabsPanelButton;
 using chrome_test_util::TabletTabSwitcherNewIncognitoTabButton;
 using chrome_test_util::TabletTabSwitcherNewTabButton;
 using chrome_test_util::TabletTabSwitcherOpenButton;
 using chrome_test_util::TabletTabSwitcherOpenTabsPanelButton;
-using chrome_test_util::TabletTabSwitcherOtherDevicesButton;
+using chrome_test_util::TabletTabSwitcherOtherDevicesPanelButton;
 using web::test::HttpServer;
 
 @interface TabSwitcherControllerTestCase : ChromeTestCase
@@ -171,6 +172,45 @@ using web::test::HttpServer;
   [self assertTabSwitcherIsInactive];
 }
 
+// Tests leaving the tab switcher while on the "Other Devices" panel.
+- (void)testLeavingSwitcherFromOtherDevices {
+  if (!IsIPadIdiom())
+    return;
+
+  [self assertTabSwitcherIsInactive];
+
+  // Enter the tab switcher and press the "Other Devices" button.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [self assertTabSwitcherIsActive];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+
+  // Leave the tab switcher and verify that the normal BVC is shown.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherCloseButton()]
+      performAction:grey_tap()];
+  [self assertTabSwitcherIsInactive];
+  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
+                  @"Expected to be in normal mode");
+
+  // Open a new incognito tab and reopen the tab switcher.
+  [ChromeEarlGreyUI openNewIncognitoTab];
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
+      performAction:grey_tap()];
+  [self assertTabSwitcherIsActive];
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
+      performAction:grey_tap()];
+
+  // Leave the tab switcher and verify that the incognito BVC is shown.
+  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherCloseButton()]
+      performAction:grey_tap()];
+  [self assertTabSwitcherIsInactive];
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Expected to be in incognito mode");
+}
+
 // Tests that elements on iPad tab switcher are accessible.
 // TODO: (crbug.com/691095) Open tabs label is not accessible
 - (void)DISABLED_testAccessibilityOnTabSwitcher {
@@ -209,7 +249,8 @@ using web::test::HttpServer;
             IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE];
 
   // Press incognito tabs button.
-  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherIncognitoButton()]
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherIncognitoTabsPanelButton()]
       performAction:grey_tap()];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
@@ -236,7 +277,8 @@ using web::test::HttpServer;
             IDS_IOS_TAB_SWITCHER_NO_LOCAL_NON_INCOGNITO_TABS_TITLE];
 
   // Press other devices button.
-  [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOtherDevicesButton()]
+  [[EarlGrey
+      selectElementWithMatcher:TabletTabSwitcherOtherDevicesPanelButton()]
       performAction:grey_tap()];
 
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
