@@ -59,7 +59,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  std::unique_ptr<viz::SharedBitmap> CreateOrRecycleBitmap();
+  std::unique_ptr<viz::SharedBitmap> CreateOrRecycleBitmap(const IntSize& size);
 
   scoped_refptr<StaticBitmapImage> image_;
   std::unique_ptr<WebExternalTextureLayer> layer_;

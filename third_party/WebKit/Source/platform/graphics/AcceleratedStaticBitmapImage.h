@@ -39,6 +39,11 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   bool CurrentFrameKnownToBeOpaque(MetadataMode = kUseCurrentMetadata) override;
   IntSize Size() const override;
   bool IsTextureBacked() const override { return true; }
+  scoped_refptr<StaticBitmapImage> MakeAccelerated(
+      WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) override {
+    NOTREACHED();  // IsTextureBacked() is already true.
+    return nullptr;
+  }
 
   void Draw(PaintCanvas*,
             const PaintFlags&,

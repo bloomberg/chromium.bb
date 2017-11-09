@@ -26,13 +26,18 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // associated.
   static scoped_refptr<StaticBitmapImage> Create(
       sk_sp<SkImage>,
-      WeakPtr<WebGraphicsContext3DProviderWrapper>&& = nullptr);
+      WeakPtr<WebGraphicsContext3DProviderWrapper> = nullptr);
   static scoped_refptr<StaticBitmapImage> Create(PaintImage);
 
   bool IsStaticBitmapImage() const override { return true; }
 
   // Methods overridden by all sub-classes
   virtual ~StaticBitmapImage() {}
+  // Creates a gpu copy of the image using the given ContextProvider. Should
+  // not be called if IsTextureBacked() is already true. May return null if the
+  // conversion failed (for instance if the context had an error).
+  virtual scoped_refptr<StaticBitmapImage> MakeAccelerated(
+      WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper) = 0;
 
   // Methods have common implementation for all sub-classes
   bool CurrentFrameIsComplete() override { return true; }
