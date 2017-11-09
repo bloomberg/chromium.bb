@@ -132,6 +132,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   KioskDelegate* GetKioskDelegate() override;
   bool IsLockScreenContext(content::BrowserContext* context) override;
   std::string GetApplicationLocale() override;
+  bool IsExtensionEnabled(const std::string& extension_id,
+                          content::BrowserContext* context) const override;
 
   static void set_did_chrome_update_for_testing(bool did_update);
 
