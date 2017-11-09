@@ -82,7 +82,7 @@ static INLINE const int32_t *cospi_arr(int n) {
 
 static INLINE int32_t round_shift(int32_t value, int bit) {
   assert(bit >= 1);
-  return (value + (1 << (bit - 1))) >> bit;
+  return (int32_t)(((int64_t)value + (1 << (bit - 1))) >> bit);
 }
 
 static INLINE void round_shift_array(int32_t *arr, int size, int bit) {
@@ -104,7 +104,8 @@ static INLINE void round_shift_array(int32_t *arr, int size, int bit) {
 
 static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
                                int bit) {
-  int32_t result_32 = (int32_t)((int64_t)w0 * in0 + w1 * in1);
+  int32_t result_32 = (int32_t)clamp64((int64_t)w0 * in0 + (int64_t)w1 * in1,
+                                       INT32_MIN, INT32_MAX);
   return round_shift(result_32, bit);
 }
 
