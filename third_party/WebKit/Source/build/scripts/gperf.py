@@ -43,6 +43,8 @@ def use_jinja_gperf_template(template_path, gperf_extra_args=None):
     def wrapper(generator):
         def generator_internal(*args, **kwargs):
             parameters = generator(*args, **kwargs)
+            assert 'gperf_path' in parameters, 'Must specify gperf_path in ' \
+                'template map returned from decorated function'
             gperf_path = parameters['gperf_path']
             gperf_input = template_expander.apply_template(template_path,
                                                            parameters)

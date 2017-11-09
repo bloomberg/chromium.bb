@@ -1,0 +1,28 @@
+// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CSSValueKeywords_h
+#define CSSValueKeywords_h
+
+#include "core/css/parser/CSSParserMode.h"
+#include <string.h>
+
+namespace blink {
+
+enum CSSValueID {
+  CSSValueInvalid = 0,
+{% for keyword in value_keywords %}
+  {{keyword.enum_name}} = {{keyword.enum_value}},
+{% endfor %}
+};
+
+const int numCSSValueKeywords = {{value_keywords_count}};
+const size_t maxCSSValueKeywordLength = {{max_value_keyword_length}};
+
+const char* getValueName(CSSValueID);
+bool isValueAllowedInMode(unsigned short id, CSSParserMode mode);
+
+} // namespace blink
+
+#endif  // CSSValueKeywords_h
