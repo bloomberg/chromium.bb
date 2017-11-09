@@ -115,10 +115,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    if (!features::IsAppListFocusEnabled()) {
-      Button::GetAccessibleNodeData(node_data);
-      return;
-    }
+    // Default button role is atomic for ChromeVox, so assign a generic
+    // container role to allow accessibility focus to get into this view.
     node_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
     node_data->SetName(accessible_name());
   }
@@ -224,7 +222,14 @@ views::View* SearchResultAnswerCardView::GetSelectedView() const {
 }
 
 views::View* SearchResultAnswerCardView::SetFirstResultSelected(bool selected) {
+  if (num_results() <= 0)
+    return nullptr;
   search_answer_container_view_->SetSelected(selected);
+  return search_answer_container_view_;
+}
+
+views::View* SearchResultAnswerCardView::GetSearchAnswerContainerViewForTest()
+    const {
   return search_answer_container_view_;
 }
 

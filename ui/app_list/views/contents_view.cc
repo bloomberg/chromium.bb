@@ -85,8 +85,10 @@ void ContentsView::Init(AppListModel* model) {
   AppListModel::SearchResults* results = view_delegate->GetModel()->results();
 
   if (features::IsAnswerCardEnabled()) {
+    search_result_answer_card_view_ =
+        new SearchResultAnswerCardView(view_delegate);
     search_results_page_view_->AddSearchResultContainerView(
-        results, new SearchResultAnswerCardView(view_delegate));
+        results, search_result_answer_card_view_);
   }
 
   search_result_tile_item_list_view_ = new SearchResultTileItemListView(

@@ -126,7 +126,8 @@ class SearchResultListViewTest : public views::ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(SearchResultListViewTest);
 };
 
-TEST_F(SearchResultListViewTest, Basic) {
+// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
+TEST_F(SearchResultListViewTest, DISABLED_Basic) {
   SetUpSearchResults();
 
   const int results = GetResultCount();
@@ -164,7 +165,8 @@ TEST_F(SearchResultListViewTest, Basic) {
   EXPECT_EQ(results - 1, GetSelectedIndex());
 }
 
-TEST_F(SearchResultListViewTest, AutoLaunch) {
+// TODO(crbug.com/781407) Re-enable the test once voice search is back.
+TEST_F(SearchResultListViewTest, DISABLED_AutoLaunch) {
   SetLongAutoLaunchTimeout();
   SetUpSearchResults();
 
@@ -179,7 +181,8 @@ TEST_F(SearchResultListViewTest, AutoLaunch) {
   EXPECT_EQ(base::TimeDelta(), GetAutoLaunchTimeout());
 }
 
-TEST_F(SearchResultListViewTest, CancelAutoLaunch) {
+// TODO(crbug.com/781407) Re-enable the test once voice search is back.
+TEST_F(SearchResultListViewTest, DISABLED_CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   SetUpSearchResults();
 

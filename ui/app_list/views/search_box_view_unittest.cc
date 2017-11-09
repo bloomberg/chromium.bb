@@ -230,7 +230,8 @@ TEST_F(SearchBoxViewTest, Basic) {
   EXPECT_TRUE(GetLastQueryAndReset().empty());
 }
 
-TEST_F(SearchBoxViewTest, CancelAutoLaunch) {
+// TODO(crbug.com/781407) Re-enable the test once voice search is back.
+TEST_F(SearchBoxViewTest, DISABLED_CancelAutoLaunch) {
   SetLongAutoLaunchTimeout();
   ASSERT_NE(base::TimeDelta(), GetAutoLaunchTimeout());
 

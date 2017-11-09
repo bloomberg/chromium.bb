@@ -187,7 +187,7 @@ void SearchResultView::SetSelected(bool selected) {
     return;
   selected_ = selected;
 
-  if (features::IsAppListFocusEnabled() && selected_) {
+  if (is_app_list_focus_enabled_ && selected_) {
     ScrollRectToVisible(GetLocalBounds());
     NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
   }
@@ -317,6 +317,10 @@ bool SearchResultView::OnKeyPressed(const ui::KeyEvent& event) {
 
   switch (event.key_code()) {
     case ui::VKEY_TAB: {
+      if (is_app_list_focus_enabled_) {
+        // Let FocusManager handle default focus move.
+        return false;
+      }
       int new_selected =
           actions_view_->selected_action() + (event.IsShiftDown() ? -1 : 1);
       actions_view_->SetSelectedAction(new_selected);

@@ -32,6 +32,8 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   views::View* GetSelectedView() const override;
   views::View* SetFirstResultSelected(bool selected) override;
 
+  views::View* GetSearchAnswerContainerViewForTest() const;
+
  private:
   class SearchAnswerContainerView;
 

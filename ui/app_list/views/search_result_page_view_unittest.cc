@@ -176,7 +176,8 @@ INSTANTIATE_TEST_CASE_P(
                       AnswerCardState::ANSWER_CARD_ON_WITHOUT_RESULT,
                       AnswerCardState::ANSWER_CARD_ON_WITH_RESULT));
 
-TEST_P(SearchResultPageViewTest, TabMovement) {
+// TODO(crbug.com/766807): Remove the test once new focus model is stable.
+TEST_P(SearchResultPageViewTest, DISABLED_TabMovement) {
   SetUpFocusTestEnv();
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(0, tile_list_view()->selected_index());
@@ -216,12 +217,12 @@ TEST_P(SearchResultPageViewTest, TabMovement) {
   EXPECT_EQ(-1, list_view()->selected_index());
 
   // Navigate off top of list.
-    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-    EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
-    EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
-    EXPECT_EQ(-1, GetSelectedIndex());
-    EXPECT_EQ(-1, tile_list_view()->selected_index());
-    EXPECT_EQ(-1, list_view()->selected_index());
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_TRUE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_FALSE(KeyPress(ui::VKEY_TAB, true));
+  EXPECT_EQ(-1, GetSelectedIndex());
+  EXPECT_EQ(-1, tile_list_view()->selected_index());
+  EXPECT_EQ(-1, list_view()->selected_index());
 }
 
 TEST_P(SearchResultPageViewTest, ResultsSorted) {
@@ -265,7 +266,8 @@ TEST_P(SearchResultPageViewTest, ResultsSorted) {
   EXPECT_EQ(tile_list_view(), view()->result_container_views()[1]);
 }
 
-TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
+// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
+TEST_P(SearchResultPageViewTest, DISABLED_UpdateWithSelection) {
   const int kCardResultNum = test_with_answer_card_result() ? 1 : 0;
   {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
@@ -356,7 +358,8 @@ TEST_P(SearchResultPageViewTest, UpdateWithSelection) {
 
 using SearchResultPageViewFullscreenTest = SearchResultPageViewTest;
 
-TEST_F(SearchResultPageViewFullscreenTest, LeftRightMovement) {
+// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
+TEST_F(SearchResultPageViewFullscreenTest, DISABLED_LeftRightMovement) {
   SetUpFocusTestEnv();
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(0, tile_list_view()->selected_index());
@@ -403,7 +406,8 @@ TEST_F(SearchResultPageViewFullscreenTest, LeftRightMovement) {
   EXPECT_EQ(-1, list_view()->selected_index());
 }
 
-TEST_F(SearchResultPageViewFullscreenTest, UpDownMovement) {
+// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
+TEST_F(SearchResultPageViewFullscreenTest, DISABLED_UpDownMovement) {
   SetUpFocusTestEnv();
   EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(0, tile_list_view()->selected_index());
