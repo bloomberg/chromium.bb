@@ -4316,10 +4316,6 @@ find_and_parse_output_edid(struct drm_head *head,
 			edid_blob->data,
 			edid_blob->length);
 	if (!rc) {
-		weston_log("EDID data '%s', '%s', '%s'\n",
-			   head->edid.pnp_id,
-			   head->edid.monitor_name,
-			   head->edid.serial_number);
 		if (head->edid.pnp_id[0] != '\0')
 			*make = head->edid.pnp_id;
 		if (head->edid.monitor_name[0] != '\0')
@@ -5024,6 +5020,21 @@ drm_head_assign_connector_info(struct drm_head *head,
 	return 0;
 }
 
+static void
+drm_head_log_info(struct drm_head *head, const char *msg)
+{
+	if (head->base.connected) {
+		weston_log("DRM: head '%s' %s, connector %d is connected, "
+			   "EDID make '%s', model '%s', serial '%s'\n",
+			   head->base.name, msg, head->connector_id,
+			   head->base.make, head->base.model,
+			   head->base.serial_number ?: "");
+	} else {
+		weston_log("DRM: head '%s' %s, connector %d is disconnected.\n",
+			   head->base.name, msg, head->connector_id);
+	}
+}
+
 /** Update connector and monitor information
  *
  * @param head The head to update.
@@ -5047,6 +5058,9 @@ drm_head_update_info(struct drm_head *head)
 
 	if (drm_head_assign_connector_info(head, connector) < 0)
 		drmModeFreeConnector(connector);
+
+	if (head->base.device_changed)
+		drm_head_log_info(head, "updated");
 }
 
 /**
@@ -5103,10 +5117,7 @@ drm_head_create(struct drm_backend *backend, uint32_t connector_id,
 	}
 
 	weston_compositor_add_head(backend->compositor, &head->base);
-
-	weston_log("DRM: found head '%s', connector %d %s.\n",
-		   head->base.name, head->connector_id,
-		   head->base.connected ? "connected" : "disconnected");
+	drm_head_log_info(head, "found");
 
 	return head;
 
