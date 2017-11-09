@@ -249,7 +249,17 @@ public class SuggestionsSection extends InnerNode {
         int newSuggestionsCount = getSuggestionsCount();
         if ((newSuggestionsCount == 0) == (oldSuggestionsCount == 0)) return;
 
-        if (!FeatureUtilities.isChromeHomeEnabled()) {
+        // We should be able to check here whether Chrome Home is enabled or not, however because
+        // of https://crbug.com/778004, we check whether mStatus is null. That crash is caused by
+        // the SuggestionsSection being created when Chrome Home was enabled (and so mStatus is
+        // null) and then this method being called when Chrome Home is disabled.
+        // When Chrome Home is disabled while Chrome is running the Activity is restarted, the
+        // SnippetsBridge is destroyed and things should be kept consistent, however the crash
+        // reports suggest otherwise.
+        // We put an assert in here to cause a crash in debug builds only - so hopefully we can
+        // track down what's going wrong.
+        assert (mStatus == null) == FeatureUtilities.isChromeHomeEnabled();
+        if (mStatus != null) {
             mStatus.setVisible(!hasSuggestions());
         }
 
