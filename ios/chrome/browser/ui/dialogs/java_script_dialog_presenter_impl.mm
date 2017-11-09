@@ -4,12 +4,16 @@
 
 #include "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
+#include "ui/gfx/text_elider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const size_t kJavaScriptDialogMaxMessageLength = 150;
 
 JavaScriptDialogPresenterImpl::JavaScriptDialogPresenterImpl(
     DialogPresenter* dialogPresenter)
@@ -30,6 +34,8 @@ void JavaScriptDialogPresenterImpl::RunJavaScriptDialog(
     callback.Run(NO, nil);
     return;
   }
+  message_text =
+      JavaScriptDialogPresenterImpl::GetTruncatedMessageText(message_text);
   switch (dialog_type) {
     case web::JAVASCRIPT_DIALOG_TYPE_ALERT: {
       web::DialogClosedCallback scoped_callback = callback;
@@ -77,4 +83,14 @@ void JavaScriptDialogPresenterImpl::RunJavaScriptDialog(
 
 void JavaScriptDialogPresenterImpl::CancelDialogs(web::WebState* web_state) {
   [dialog_presenter_ cancelDialogForWebState:web_state];
+}
+
+// static
+NSString* JavaScriptDialogPresenterImpl::GetTruncatedMessageText(
+    NSString* message_text) {
+  if (message_text.length <= kJavaScriptDialogMaxMessageLength)
+    return message_text;
+  return base::SysUTF16ToNSString(gfx::TruncateString(
+      base::SysNSStringToUTF16(message_text), kJavaScriptDialogMaxMessageLength,
+      gfx::CHARACTER_BREAK));
 }
