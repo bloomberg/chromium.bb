@@ -65,6 +65,7 @@ class FakePdfPrinterHandler : public PdfPrinterHandler {
   // Simplified version of select file to avoid checking preferences and sticky
   // settings in the test
   void SelectFile(const base::FilePath& default_filename,
+                  content::WebContents* /* initiator */,
                   bool prompt_user) override {
     ui::SelectFileDialog::FileTypeInfo file_type_info;
     file_type_info.extensions.resize(1);

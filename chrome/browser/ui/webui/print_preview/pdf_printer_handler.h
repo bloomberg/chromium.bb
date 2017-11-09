@@ -32,6 +32,7 @@ namespace printing {
 class StickySettings;
 }
 
+class GURL;
 class Profile;
 
 class PdfPrinterHandler : public PrinterHandler,
@@ -70,9 +71,11 @@ class PdfPrinterHandler : public PrinterHandler,
   // Exposed for testing.
   static base::FilePath GetFileNameForPrintJobTitle(
       const base::string16& job_title);
+  static base::FilePath GetFileNameForURL(const GURL& url);
 
  protected:
   virtual void SelectFile(const base::FilePath& default_filename,
+                          content::WebContents* initiator,
                           bool prompt_user);
 
   // The print preview web contents. Protected so unit tests can access it.
