@@ -4615,20 +4615,25 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
 #if CONFIG_LOOP_RESTORATION
   int no_restoration = 0;
-#endif
   if (is_lossless_requested(&cpi->oxcf)
 #if CONFIG_EXT_TILE
       || cm->single_tile_decoding
 #endif
       ) {
     no_loopfilter = 1;
-#if CONFIG_CDEF
-    no_cdef = 1;
-#endif
-#if CONFIG_LOOP_RESTORATION
     no_restoration = 1;
-#endif
   }
+#endif
+
+#if CONFIG_CDEF
+  if (is_lossless_requested(&cpi->oxcf) || !cpi->oxcf.using_cdef
+#if CONFIG_EXT_TILE
+      || cm->single_tile_decoding
+#endif
+      ) {
+    no_cdef = 1;
+  }
+#endif
 
   if (no_loopfilter) {
 #if CONFIG_LOOPFILTER_LEVEL

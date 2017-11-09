@@ -427,6 +427,19 @@ enum aome_enc_control_id {
    */
   AOME_SET_ENABLEAUTOBWDREF,
 
+  /*!\brief Codec control function to encode with CDEF.
+   *
+   * CDEF is the constrained directional enhancement filter which is an
+   * in-loop filter aiming to remove coding artifacts
+   *                          0 = do not apply CDEF
+   *                          1 = apply CDEF
+   *
+   *  By default, the encoder applies CDEF.
+   *
+   * Experiment: AOM_CDEF
+   */
+  AV1E_SET_ENABLE_CDEF,
+
   /*!\brief Codec control function to encode with quantisation matrices.
    *
    * AOM can operate with default quantisation matrices dependent on
@@ -725,6 +738,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_GF_CBR_BOOST_PCT, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_LOSSLESS, unsigned int)
 #define AOM_CTRL_AV1E_SET_LOSSLESS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_CDEF, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_CDEF
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_QM, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_QM
