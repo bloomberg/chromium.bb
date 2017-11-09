@@ -604,7 +604,14 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
   };
 
   var form = __gCrWeb.common.getFormElementFromIdentifier(data.formName);
-  var controlElements = __gCrWeb.common.getFormControlElements(form);
+  var controlElements = [];
+  if (form) {
+    controlElements = __gCrWeb.common.getFormControlElements(form);
+  } else {
+    var fieldsets = [];
+    controlElements =
+        getUnownedAutofillableFormFieldElements_(document.all, fieldsets);
+  }
   for (var i = 0; i < controlElements.length; ++i) {
     var element = controlElements[i];
     if (!__gCrWeb.autofill.isAutofillableElement(element)) {
@@ -644,18 +651,20 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldName) {
     element.addEventListener('input', controlElementInputListener);
   }
 
-  // Remove Autofill styling when form receives 'reset' event.
-  // Individual control elements may be left with 'input' event listeners but
-  // they are harmless.
-  var formResetListener = function(evt) {
-    var controlElements = __gCrWeb.common.getFormControlElements(evt.target);
-    for (var i = 0; i < controlElements.length; ++i) {
-      controlElements[i].removeAttribute('chrome-autofilled');
-      controlElements[i].isAutofilled = false;
-    }
-    evt.target.removeEventListener('reset', formResetListener);
-  };
-  form.addEventListener('reset', formResetListener);
+  if (form) {
+    // Remove Autofill styling when form receives 'reset' event.
+    // Individual control elements may be left with 'input' event listeners but
+    // they are harmless.
+    var formResetListener = function(evt) {
+      var controlElements = __gCrWeb.common.getFormControlElements(evt.target);
+      for (var i = 0; i < controlElements.length; ++i) {
+        controlElements[i].removeAttribute('chrome-autofilled');
+        controlElements[i].isAutofilled = false;
+      }
+      evt.target.removeEventListener('reset', formResetListener);
+    };
+    form.addEventListener('reset', formResetListener);
+  }
 };
 
 /**
