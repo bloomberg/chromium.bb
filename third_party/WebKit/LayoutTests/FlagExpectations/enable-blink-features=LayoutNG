@@ -6661,7 +6661,6 @@ crbug.com/591099 http/tests/security/xss-DENIED-object-element.html [ Failure Pa
 crbug.com/591099 http/tests/security/xss-exception.html [ Failure Pass ]
 crbug.com/591099 http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure Pass ]
 crbug.com/591099 http/tests/security/xssAuditor/cached-frame.html [ Crash Failure Pass ]
-crbug.com/591099 http/tests/serviceworker/chromium/frame-detached-by-navigation.html [ Crash Failure ]
 crbug.com/591099 http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ Pass Timeout ]
 crbug.com/591099 http/tests/shapes/shape-outside-image-shape-margin.html [ Failure Pass ]
 crbug.com/591099 http/tests/shapes/shape-outside-svg-image-shape-margin.html [ Failure Pass ]
