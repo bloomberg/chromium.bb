@@ -37,10 +37,8 @@ class WebState;
 
 // Finds a FormSuggestionProvider that can supply suggestions for the specified
 // form, requests them, and updates the view accordingly.
-- (void)retrieveSuggestionsForFormNamed:(const std::string&)formName
-                              fieldName:(const std::string&)fieldName
-                                   type:(const std::string&)type
-                               webState:(web::WebState*)webState;
+- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+                          webState:(web::WebState*)webState;
 
 // Instructs the controller to detach itself from the WebState.
 - (void)detachFromWebState;

@@ -118,11 +118,7 @@ class TestWebStateObserver : public WebStateObserver {
                          const std::string& form_name,
                          bool user_initiated) override;
   void FormActivityRegistered(WebState* web_state,
-                              const std::string& form_name,
-                              const std::string& field_name,
-                              const std::string& type,
-                              const std::string& value,
-                              bool input_missing) override;
+                              const FormActivityParams& params) override;
   void FaviconUrlUpdated(WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void RenderProcessGone(WebState* web_state) override;

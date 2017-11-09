@@ -62,6 +62,7 @@
 #include "ios/web/public/web_kit_constants.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/page_display_state.h"
@@ -2487,20 +2488,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (BOOL)handleFormActivityMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context {
-  std::string formName;
-  std::string fieldName;
-  std::string type;
-  std::string value;
-  bool inputMissing = false;
-  if (!message->GetString("formName", &formName) ||
-      !message->GetString("fieldName", &fieldName) ||
-      !message->GetString("type", &type) ||
-      !message->GetString("value", &value)) {
-    inputMissing = true;
+  web::FormActivityParams params;
+  if (!message->GetString("formName", &params.form_name) ||
+      !message->GetString("fieldName", &params.field_name) ||
+      !message->GetString("fieldType", &params.field_type) ||
+      !message->GetString("type", &params.type) ||
+      !message->GetString("value", &params.value)) {
+    params.input_missing = true;
   }
 
-  _webStateImpl->OnFormActivityRegistered(formName, fieldName, type, value,
-                                          inputMissing);
+  _webStateImpl->OnFormActivityRegistered(params);
   return YES;
 }
 

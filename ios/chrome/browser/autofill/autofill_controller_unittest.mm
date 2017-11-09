@@ -58,15 +58,10 @@
 @synthesize suggestions = _suggestions;
 @synthesize suggestionRetrievalComplete = _suggestionRetrievalComplete;
 
-- (void)retrieveSuggestionsForFormNamed:(const std::string&)formName
-                              fieldName:(const std::string&)fieldName
-                                   type:(const std::string&)type
-                               webState:(web::WebState*)webState {
+- (void)retrieveSuggestionsForForm:(const web::FormActivityParams&)params
+                          webState:(web::WebState*)webState {
   self.suggestionRetrievalComplete = NO;
-  [super retrieveSuggestionsForFormNamed:formName
-                               fieldName:fieldName
-                                    type:type
-                                webState:webState];
+  [super retrieveSuggestionsForForm:params webState:webState];
 }
 
 - (void)updateKeyboardWithSuggestions:(NSArray*)suggestions {

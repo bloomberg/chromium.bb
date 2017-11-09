@@ -41,11 +41,7 @@ class InsecureInputTabHelper
 
   // WebStateObserver implementation.
   void FormActivityRegistered(web::WebState* web_state,
-                              const std::string& form_name,
-                              const std::string& field_name,
-                              const std::string& type,
-                              const std::string& value,
-                              bool input_missing) override;
+                              const web::FormActivityParams& params) override;
 
   DISALLOW_COPY_AND_ASSIGN(InsecureInputTabHelper);
 };

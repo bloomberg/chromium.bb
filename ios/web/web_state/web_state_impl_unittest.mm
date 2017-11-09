@@ -23,6 +23,7 @@
 #import "ios/web/public/test/fakes/test_web_state_observer.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state/context_menu_params.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #include "ios/web/public/web_state/global_web_state_observer.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -313,7 +314,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that DocumentSubmitted() is called.
   ASSERT_FALSE(observer->submit_document_info());
-  std::string kTestFormName("form-name");
+  const std::string kTestFormName("form-name");
   BOOL user_initiated = true;
   web_state_->OnDocumentSubmitted(kTestFormName, user_initiated);
   ASSERT_TRUE(observer->submit_document_info());
@@ -323,18 +324,25 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that FormActivityRegistered() is called.
   ASSERT_FALSE(observer->form_activity_info());
-  std::string kTestFieldName("field-name");
-  std::string kTestTypeType("type");
-  std::string kTestValue("value");
-  web_state_->OnFormActivityRegistered(kTestFormName, kTestFieldName,
-                                       kTestTypeType, kTestValue, true);
+  FormActivityParams params;
+  params.form_name = kTestFormName;
+  params.field_name = "field-name";
+  params.field_type = "field-type";
+  params.type = "type";
+  params.value = "value";
+  params.input_missing = true;
+  web_state_->OnFormActivityRegistered(params);
   ASSERT_TRUE(observer->form_activity_info());
   EXPECT_EQ(web_state_.get(), observer->form_activity_info()->web_state);
-  EXPECT_EQ(kTestFormName, observer->form_activity_info()->form_name);
-  EXPECT_EQ(kTestFieldName, observer->form_activity_info()->field_name);
-  EXPECT_EQ(kTestTypeType, observer->form_activity_info()->type);
-  EXPECT_EQ(kTestValue, observer->form_activity_info()->value);
-  EXPECT_TRUE(observer->form_activity_info()->input_missing);
+  EXPECT_EQ(params.form_name,
+            observer->form_activity_info()->form_activity.form_name);
+  EXPECT_EQ(params.field_name,
+            observer->form_activity_info()->form_activity.field_name);
+  EXPECT_EQ(params.field_type,
+            observer->form_activity_info()->form_activity.field_type);
+  EXPECT_EQ(params.type, observer->form_activity_info()->form_activity.type);
+  EXPECT_EQ(params.value, observer->form_activity_info()->form_activity.value);
+  EXPECT_TRUE(observer->form_activity_info()->form_activity.input_missing);
 
   // Test that FaviconUrlUpdated() is called.
   ASSERT_FALSE(observer->update_favicon_url_candidates_info());

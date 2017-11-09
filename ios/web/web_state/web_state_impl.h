@@ -42,6 +42,7 @@ namespace web {
 class BrowserState;
 struct ContextMenuParams;
 struct FaviconURL;
+struct FormActivityParams;
 struct LoadCommittedDetails;
 class NavigationContext;
 class NavigationManager;
@@ -106,11 +107,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnDocumentSubmitted(const std::string& form_name, bool user_initiated);
 
   // Called when form activity is registered.
-  void OnFormActivityRegistered(const std::string& form_name,
-                                const std::string& field_name,
-                                const std::string& type,
-                                const std::string& value,
-                                bool input_missing);
+  void OnFormActivityRegistered(const FormActivityParams& params);
 
   // Called when new FaviconURL candidates are received.
   void OnFaviconUrlUpdated(const std::vector<FaviconURL>& candidates);

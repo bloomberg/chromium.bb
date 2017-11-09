@@ -9,6 +9,7 @@
 
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/load_committed_details.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -98,11 +99,7 @@ struct TestFormActivityInfo {
   TestFormActivityInfo();
   ~TestFormActivityInfo();
   WebState* web_state;
-  std::string form_name;
-  std::string field_name;
-  std::string type;
-  std::string value;
-  bool input_missing;
+  FormActivityParams form_activity;
 };
 
 // Arguments passed to |FaviconUrlUpdated|.

@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/web/public/url_scheme_util.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -181,10 +182,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 - (BOOL)executeFormAssistAction:(NSString*)actionName;
 
 // Asynchronously retrieves an accessory view from |_providers|.
-- (void)retrieveAccessoryViewForForm:(const std::string&)formName
-                               field:(const std::string&)fieldName
-                               value:(const std::string&)value
-                                type:(const std::string&)type
+- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
                             webState:(web::WebState*)webState;
 
 // Clears the current custom accessory view and restores the default.
@@ -485,28 +483,21 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 }
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivityWithFormNamed:(const std::string&)formName
-                               fieldName:(const std::string&)fieldName
-                                    type:(const std::string&)type
-                                   value:(const std::string&)value
-                            inputMissing:(BOOL)inputMissing {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  if (inputMissing || trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
+  if (params.input_missing ||
+      trustLevel != web::URLVerificationTrustLevel::kAbsolute ||
       !web::UrlHasWebScheme(pageURL) || !webState->ContentIsHTML()) {
     [self reset];
     return;
   }
 
-  if ((type == "blur" || type == "change")) {
+  if ((params.type == "blur" || params.type == "change")) {
     return;
   }
 
-  [self retrieveAccessoryViewForForm:formName
-                               field:fieldName
-                               value:value
-                                type:type
-                            webState:webState];
+  [self retrieveAccessoryViewForForm:params webState:webState];
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
@@ -524,16 +515,10 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
       new autofill::KeyboardAccessoryMetricsLogger());
 }
 
-- (void)retrieveAccessoryViewForForm:(const std::string&)formName
-                               field:(const std::string&)fieldName
-                               value:(const std::string&)value
-                                type:(const std::string&)type
+- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
                             webState:(web::WebState*)webState {
   __weak FormInputAccessoryViewController* weakSelf = self;
-  std::string strongFormName = formName;
-  std::string strongFieldName = fieldName;
-  std::string strongValue = value;
-  std::string strongType = type;
+  web::FormActivityParams strongParams = params;
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide an accessory view for the specified form/field
@@ -550,10 +535,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
             return;
           id<FormInputAccessoryViewProvider> provider =
               strongSelf->_providers[i];
-          [provider checkIfAccessoryViewIsAvailableForFormNamed:strongFormName
-                                                      fieldName:strongFieldName
-                                                       webState:webState
-                                              completionHandler:completion];
+          [provider checkIfAccessoryViewIsAvailableForForm:strongParams
+                                                  webState:webState
+                                         completionHandler:completion];
         };
     [findProviderBlocks addObject:block];
   }
@@ -585,12 +569,9 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
             inputAccessoryViewControllerDidReset:self];
         strongSelf->_currentProvider = provider;
         [strongSelf->_currentProvider
-            retrieveAccessoryViewForFormNamed:strongFormName
-                                    fieldName:strongFieldName
-                                        value:strongValue
-                                         type:strongType
-                                     webState:webState
-                     accessoryViewUpdateBlock:readyCompletion];
+            retrieveAccessoryViewForForm:strongParams
+                                webState:webState
+                accessoryViewUpdateBlock:readyCompletion];
       };
 
   // Run all the blocks in |findProviderBlocks| until one invokes its

@@ -15,6 +15,7 @@
 namespace web {
 
 struct FaviconURL;
+struct FormActivityParams;
 class NavigationContext;
 struct LoadCommittedDetails;
 class WebState;
@@ -142,14 +143,10 @@ class WebStateObserver {
                                  const std::string& form_name,
                                  bool user_initiated) {}
 
-  // Called when the user is typing on a form field, with |error| indicating if
-  // there is any error when parsing the form field information.
+  // Called when the user is typing on a form field, with |params.input_missing|
+  // indicating if there is any error when parsing the form field information.
   virtual void FormActivityRegistered(WebState* web_state,
-                                      const std::string& form_name,
-                                      const std::string& field_name,
-                                      const std::string& type,
-                                      const std::string& value,
-                                      bool input_missing) {}
+                                      const FormActivityParams& params) {}
 
   // Invoked when new favicon URL candidates are received.
   virtual void FaviconUrlUpdated(WebState* web_state,

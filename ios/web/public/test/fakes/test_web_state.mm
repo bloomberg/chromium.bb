@@ -252,14 +252,9 @@ void TestWebState::OnRenderProcessGone() {
     observer.RenderProcessGone(this);
 }
 
-void TestWebState::OnFormActivity(const std::string& form_name,
-                                  const std::string& field_name,
-                                  const std::string& type,
-                                  const std::string& value,
-                                  bool input_missing) {
+void TestWebState::OnFormActivity(const FormActivityParams& params) {
   for (auto& observer : observers_) {
-    observer.FormActivityRegistered(this, form_name, field_name, type, value,
-                                    input_missing);
+    observer.FormActivityRegistered(this, params);
   }
 }
 

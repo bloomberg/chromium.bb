@@ -26,11 +26,13 @@ goog.require('__crWeb.message');
   var formActivity_ = function(evt) {
     var srcElement = evt.srcElement;
     var value = srcElement.value || '';
+    var fieldType = srcElement.type || '';
 
     var msg = {
       'command': 'form.activity',
       'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement.form),
       'fieldName': __gCrWeb.common.getFieldIdentifier(srcElement),
+      'fieldType': fieldType,
       'type': evt.type,
       'value': value
     };
