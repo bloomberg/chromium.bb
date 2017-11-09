@@ -871,7 +871,10 @@ code_generator("make_core_generated_css_value_keywords") {
     "css/CSSValueKeywords.json5",
     "css/SVGCSSValueKeywords.json5",
   ]
-  templates = []
+  templates = [
+    "../build/scripts/core/css/templates/CSSValueKeywords.cpp.tmpl",
+    "../build/scripts/core/css/templates/CSSValueKeywords.h.tmpl",
+  ]
   outputs = [
     "$blink_core_output_dir/CSSValueKeywords.cpp",
     "$blink_core_output_dir/CSSValueKeywords.h",
