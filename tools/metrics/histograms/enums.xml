@@ -4720,6 +4720,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="CLD2LanguageCode">
+  <obsolete>
+    Deprecated as of 11/2017, since cld2 is deprecated.
+  </obsolete>
   <summary>
     See Language in third_party/cld_2/src/internal/generated_language.h.
   </summary>

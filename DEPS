@@ -287,9 +287,6 @@ deps = {
       'condition': 'checkout_linux',
   },
 
-  'src/third_party/cld_2/src':
-    Var('chromium_git') + '/external/github.com/CLD2Owners/cld2.git' + '@' + '84b58a5d7690ebf05a91406f371ce00c3daf31c0',
-
   'src/third_party/cld_3/src':
     Var('chromium_git') + '/external/github.com/google/cld_3.git' + '@' + 'ae02d6b8a2af41e87c956c7c7d3f651a8b7b9e79',
 

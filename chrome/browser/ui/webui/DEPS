@@ -14,7 +14,6 @@ include_rules = [
 
   # Generated files
   "+js2webui/chrome/test/data",
-  "+third_party/cld",
 
   # Other libraries.
   "+third_party/angle",       # For ANGLE version.

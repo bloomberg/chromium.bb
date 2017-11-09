@@ -20,16 +20,7 @@
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/chinese_script_classifier.h"
-#include "third_party/cld/cld_version.h"
-
-#if BUILDFLAG(CLD_VERSION) == 2
-#include "third_party/cld_2/src/public/compact_lang_det.h"
-#include "third_party/cld_2/src/public/encodings.h"
-#elif BUILDFLAG(CLD_VERSION) == 3
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
-#else
-# error "CLD_VERSION must be 2 or 3"
-#endif
 
 namespace {
 
@@ -88,94 +79,6 @@ std::string DetermineTextLanguage(const base::string16& text,
   std::string language = translate::kUnknownLanguageCode;
   const std::string utf8_text(base::UTF16ToUTF8(text));
 
-#if BUILDFLAG(CLD_VERSION) == 2
-  int num_bytes_evaluated = 0;
-  bool is_reliable = false;
-  const bool is_plain_text = true;
-
-  // Language or CLD2::Language
-  int cld_language = 0;
-  bool is_valid_language = false;
-
-  const int num_utf8_bytes = static_cast<int>(utf8_text.size());
-  const char* raw_utf8_bytes = utf8_text.c_str();
-
-  CLD2::Language language3[3] = {
-    CLD2::UNKNOWN_LANGUAGE, CLD2::UNKNOWN_LANGUAGE, CLD2::UNKNOWN_LANGUAGE};
-  int percent3[3] = {0, 0, 0};
-  int flags = 0;   // No flags, see compact_lang_det.h for details.
-  int text_bytes;  // Amount of non-tag/letters-only text (assumed 0).
-  double normalized_score3[3] = {0.0, 0.0, 0.0};
-
-  const char* tld_hint = "";
-  int encoding_hint = CLD2::UNKNOWN_ENCODING;
-  CLD2::Language language_hint = CLD2::GetLanguageFromName(html_lang.c_str());
-  CLD2::CLDHints cldhints = {code.c_str(), tld_hint, encoding_hint,
-                             language_hint};
-
-  CLD2::ExtDetectLanguageSummaryCheckUTF8(
-      raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
-      language3, percent3, normalized_score3,
-      nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable,
-      &num_bytes_evaluated);
-
-  if (num_bytes_evaluated < num_utf8_bytes &&
-      language3[0] == CLD2::UNKNOWN_LANGUAGE) {
-    // Invalid UTF8 encountered, see bug http://crbug.com/444258.
-    // Retry using only the valid characters. This time the check for valid
-    // UTF8 can be skipped since the precise number of valid bytes is known.
-    CLD2::ExtDetectLanguageSummary(
-        raw_utf8_bytes, num_bytes_evaluated, is_plain_text, &cldhints, flags,
-        language3, percent3, normalized_score3,
-        nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable);
-  }
-  // Choose top language.
-  cld_language = language3[0];
-
-  is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
-                      cld_language != CLD2::UNKNOWN_LANGUAGE &&
-                      cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
-
-  UMA_HISTOGRAM_ENUMERATION("Translate.CLD2.LanguageDetected",
-                            cld_language, CLD2::NUM_LANGUAGES);
-  if (is_valid_language)
-    UMA_HISTOGRAM_PERCENTAGE("Translate.CLD2.LanguageAccuracy", percent3[0]);
-
-  if (is_cld_reliable != NULL)
-    *is_cld_reliable = is_reliable;
-
-  // We don't trust the result if the CLD reports that the detection is not
-  // reliable, or if the actual text used to detect the language was less than
-  // 100 bytes (short texts can often lead to wrong results).
-  // TODO(toyoshim): CLD provides |is_reliable| flag. But, it just says that
-  // the determined language code is correct with 50% confidence. Chrome should
-  // handle the real confidence value to judge.
-  if (is_reliable && num_bytes_evaluated >= 100 && is_valid_language) {
-    // We should not use LanguageCode_ISO_639_1 because it does not cover all
-    // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for traditional Chinese among others.
-    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
-    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
-    // for Simplified Chinese.
-    //
-    // (1) CLD2's LanguageCode returns general Chinese 'zh' for
-    // CLD2::CHINESE, but Translate server doesn't accept it. This is
-    // converted to 'zh-CN' in the same way as CLD1's
-    // LanguageCodeWithDialects.
-    //
-    // (2) CLD2's LanguageCode returns zh-Hant instead of zh-TW for
-    // CLD2::CHINESE_T. This is technically more precise for the language
-    // code of traditional Chinese, while Translate server hasn't accepted
-    // zh-Hant yet.
-    if (cld_language == CLD2::CHINESE)
-      language = "zh-CN";
-    else if (cld_language == CLD2::CHINESE_T)
-      language = "zh-TW";
-    else
-      language = CLD2::LanguageCode(static_cast<CLD2::Language>(cld_language));
-  }
-
-#elif BUILDFLAG(CLD_VERSION) == 3
   // Make a prediction.
   chrome_lang_id::NNetLanguageIdentifier lang_id;
   const chrome_lang_id::NNetLanguageIdentifier::Result lang_id_result =
@@ -227,9 +130,6 @@ std::string DetermineTextLanguage(const base::string16& text,
       }
     }
   }
-#else
-# error "CLD_VERSION must be 2 or 3"
-#endif
 
   VLOG(1) << "Detected language: " << language;
   return language;

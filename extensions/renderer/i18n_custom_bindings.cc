@@ -21,16 +21,7 @@
 #include "extensions/common/message_bundle.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
-#include "third_party/cld/cld_version.h"
-
-#if BUILDFLAG(CLD_VERSION) == 2
-#include "third_party/cld_2/src/public/compact_lang_det.h"
-#include "third_party/cld_2/src/public/encodings.h"
-#elif BUILDFLAG(CLD_VERSION) == 3
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
-#else
-# error "CLD_VERSION must be 2 or 3"
-#endif
 
 namespace extensions {
 
@@ -109,30 +100,6 @@ v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
   return handle_scope.Escape(result);
 }
 
-#if BUILDFLAG(CLD_VERSION) == 2
-void InitDetectedLanguages(
-    CLD2::Language* languages,
-    int* percents,
-    std::vector<std::unique_ptr<DetectedLanguage>>* detected_languages) {
-  for (int i = 0; i < kCldNumLangs; i++) {
-    std::string language_code;
-    // Convert LanguageCode 'zh' to 'zh-CN' and 'zh-Hant' to 'zh-TW' for
-    // Translate server usage. see DetermineTextLanguage in
-    // components/translate/core/language_detection/language_detection_util.cc
-    if (languages[i] == CLD2::UNKNOWN_LANGUAGE) {
-      // Break from the loop since there is no need to save
-      // unknown languages
-      break;
-    } else {
-      language_code =
-          CLD2::LanguageCode(static_cast<CLD2::Language>(languages[i]));
-    }
-    detected_languages->push_back(
-        std::make_unique<DetectedLanguage>(language_code, percents[i]));
-  }
-}
-
-#elif BUILDFLAG(CLD_VERSION) == 3
 void InitDetectedLanguages(
     const std::vector<chrome_lang_id::NNetLanguageIdentifier::Result>&
         lang_results,
@@ -177,9 +144,6 @@ void InitDetectedLanguages(
     *is_reliable = false;
   }
 }
-#else
-# error "CLD_VERSION must be 2 or 3"
-#endif
 
 }  // namespace
 
@@ -272,45 +236,6 @@ void I18NCustomBindings::DetectTextLanguage(
   CHECK(args[0]->IsString());
 
   std::string text = *v8::String::Utf8Value(args[0]);
-#if BUILDFLAG(CLD_VERSION) == 2
-  CLD2::CLDHints cldhints = {nullptr, "", CLD2::UNKNOWN_ENCODING,
-                             CLD2::UNKNOWN_LANGUAGE};
-
-  bool is_plain_text = true;  // assume the text is a plain text
-  int flags = 0;              // no flags, see compact_lang_det.h for details
-  int text_bytes;             // amount of non-tag/letters-only text (assumed 0)
-  int valid_prefix_bytes;     // amount of valid UTF8 character in the string
-  double normalized_score[kCldNumLangs];
-
-  CLD2::Language languages[kCldNumLangs];
-  int percents[kCldNumLangs];
-  bool is_reliable = false;
-
-  // populating languages and percents
-  int cld_language = CLD2::ExtDetectLanguageSummaryCheckUTF8(
-      text.c_str(), static_cast<int>(text.size()), is_plain_text, &cldhints,
-      flags, languages, percents, normalized_score,
-      nullptr,  // assumed no ResultChunkVector is used
-      &text_bytes, &is_reliable, &valid_prefix_bytes);
-
-  // Check if non-UTF8 character is encountered
-  // See bug http://crbug.com/444258.
-  if (valid_prefix_bytes < static_cast<int>(text.size()) &&
-      cld_language == CLD2::UNKNOWN_LANGUAGE) {
-    // Detect Language upto before the first non-UTF8 character
-    CLD2::ExtDetectLanguageSummary(
-        text.c_str(), valid_prefix_bytes, is_plain_text, &cldhints, flags,
-        languages, percents, normalized_score,
-        nullptr,  // assumed no ResultChunkVector is used
-        &text_bytes, &is_reliable);
-  }
-
-  LanguageDetectionResult result(is_reliable);
-  // populate LanguageDetectionResult with languages and percents
-  InitDetectedLanguages(languages, percents, &result.languages);
-  args.GetReturnValue().Set(result.ToValue(context()));
-
-#elif BUILDFLAG(CLD_VERSION) == 3
   chrome_lang_id::NNetLanguageIdentifier nnet_lang_id(/*min_num_bytes=*/0,
                                                       /*max_num_bytes=*/512);
   std::vector<chrome_lang_id::NNetLanguageIdentifier::Result> lang_results =
@@ -330,9 +255,6 @@ void I18NCustomBindings::DetectTextLanguage(
   // and the corresponding percentages.
   InitDetectedLanguages(lang_results, &result);
   args.GetReturnValue().Set(result.ToValue(context()));
-#else
-# error "CLD_VERSION must be 2 or 3"
-#endif
 }
 
 }  // namespace extensions

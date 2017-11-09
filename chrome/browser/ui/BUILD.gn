@@ -495,7 +495,6 @@ split_static_library("ui") {
     "//third_party/adobe/flash:flapper_version_h",
     "//third_party/brotli:dec",
     "//third_party/cacheinvalidation",
-    "//third_party/cld:cld_version",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/re2",

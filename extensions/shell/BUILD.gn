@@ -66,7 +66,7 @@ source_set("app_shell_lib") {
     "//extensions/utility",
     "//skia",
     "//third_party/WebKit/public:blink",
-    "//third_party/cld",
+    "//third_party/cld_3/src/src:cld_3",
     "//ui/base",
     "//ui/base/ime",
     "//v8",
