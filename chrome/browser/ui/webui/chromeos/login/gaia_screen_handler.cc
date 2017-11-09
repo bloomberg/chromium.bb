@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -370,6 +371,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     // (see https://crbug.com/709244 ).
     params.SetString("chromeOSApiVersion", "2");
   }
+  params.SetString("lsbReleaseBoard", base::SysInfo::GetLsbReleaseBoard());
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
