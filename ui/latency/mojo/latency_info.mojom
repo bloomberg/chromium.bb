@@ -114,6 +114,7 @@ struct LatencyInfo {
   string trace_name;
   array<LatencyComponentPair> latency_components;
   int64 trace_id;
+  int64 ukm_source_id;
   bool coalesced;
   bool began;
   bool terminated;

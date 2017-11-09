@@ -35,10 +35,6 @@ namespace cc {
 class UkmManager;
 }
 
-namespace content {
-class RenderWidgetHostLatencyTracker;
-}  // namespace content
-
 namespace password_manager {
 class PasswordManagerMetricsRecorder;
 }  // namespace password_manager
@@ -50,6 +46,10 @@ class PreviewsUKMObserver;
 namespace metrics {
 class UkmRecorderInterface;
 }
+
+namespace ui {
+class LatencyTracker;
+}  // namespace ui
 
 namespace ukm {
 
@@ -98,9 +98,9 @@ class METRICS_EXPORT UkmRecorder {
   friend UseCounterPageLoadMetricsObserver;
   friend blink::AutoplayUmaHelper;
   friend cc::UkmManager;
-  friend content::RenderWidgetHostLatencyTracker;
   friend internal::UkmEntryBuilderBase;
   friend metrics::UkmRecorderInterface;
+  friend ui::LatencyTracker;
   friend password_manager::PasswordManagerMetricsRecorder;
   friend previews::PreviewsUKMObserver;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryWithEmptyMetrics);

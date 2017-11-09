@@ -14,7 +14,7 @@ namespace ui {
 // components logged by content::RenderWidgetHostLatencyTracker.
 class LatencyTracker {
  public:
-  LatencyTracker() = default;
+  explicit LatencyTracker(bool metric_sampling);
   ~LatencyTracker() = default;
 
   // Terminates latency tracking for events that triggered rendering, also
@@ -28,17 +28,24 @@ class LatencyTracker {
       const LatencyInfo::LatencyComponent& start_component,
       const LatencyInfo::LatencyComponent& end_component);
 
-  virtual void ReportUkmScrollLatency(
+ private:
+  void ReportUkmScrollLatency(
       const std::string& event_name,
       const std::string& metric_name,
       const LatencyInfo::LatencyComponent& start_component,
-      const LatencyInfo::LatencyComponent& end_component);
+      const LatencyInfo::LatencyComponent& end_component,
+      const ukm::SourceId ukm_source_id);
 
- private:
   void ComputeEndToEndLatencyHistograms(
       const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
       const LatencyInfo::LatencyComponent& gpu_swap_end_component,
       const LatencyInfo& latency);
+
+  // Whether the sampling is needed for high volume metrics. This will be off
+  // when we are in unit tests. This is a temporary field so we can come up with
+  // a more permanent solution for crbug.com/739169.
+  bool metric_sampling_;
+  int metric_sampling_events_since_last_sample_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(LatencyTracker);
 };
