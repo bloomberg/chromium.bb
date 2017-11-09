@@ -172,7 +172,7 @@ template("chrome_extra_paks") {
       sources += [ "$root_gen_dir/chrome/print_preview_resources.pak" ]
       deps += [ "//chrome/browser/resources:print_preview_resources" ]
     }
-    if (enable_vr) {
+    if (enable_gvr_services) {
       sources += [ "$root_gen_dir/chrome/vr_shell_resources.pak" ]
       deps += [ "//chrome/browser/resources:vr_shell_resources" ]
     }

@@ -22,7 +22,6 @@ static_library("vr_common") {
     "color_scheme.h",
     "content_input_delegate.cc",
     "content_input_delegate.h",
-    "controller_mesh.cc",
     "controller_mesh.h",
     "databinding/binding.h",
     "databinding/binding_base.cc",
@@ -156,9 +155,13 @@ static_library("vr_common") {
     "web_contents_event_forwarder.h",
   ]
 
-  public_deps = [
-    "//chrome/browser/resources:vr_shell_resources",
-  ]
+  if (enable_gvr_services) {
+    sources += [ "controller_mesh.cc" ]
+
+    public_deps = [
+      "//chrome/browser/resources:vr_shell_resources",
+    ]
+  }
 
   deps = [
     "//base",
@@ -285,6 +288,12 @@ source_set("vr_test_support") {
     "test/vr_common_test_suite.cc",
     "test/vr_common_test_suite.h",
   ]
+
+  if (!enable_gvr_services) {
+    # For testing, we add back controller_mesh.cc on platforms where it isn't
+    # included by vr_common.
+    sources += [ "controller_mesh.cc" ]
+  }
 
   public_deps = [
     ":vr_common",
