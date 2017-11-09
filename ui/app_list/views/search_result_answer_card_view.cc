@@ -183,8 +183,7 @@ int SearchResultAnswerCardView::DoUpdate() {
       AppListModel::FilterSearchResultsByDisplayType(
           results(), SearchResult::DISPLAY_CARD, 1);
 
-  const bool have_result =
-      !display_results.empty() && !features::IsAnswerCardDarkRunEnabled();
+  const bool have_result = !display_results.empty();
 
   const bool title_changed = search_answer_container_view_->SetSearchResult(
       have_result ? display_results[0] : nullptr);

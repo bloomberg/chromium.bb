@@ -119,10 +119,6 @@ class AnswerCardSearchProvider : public SearchProvider,
   // Time when the current server response loaded.
   base::TimeTicks answer_loaded_time_;
 
-  // When in the dark run mode, indicates whether we mimic that the server
-  // response contains an answer.
-  bool dark_run_received_answer_ = false;
-
   // Unowned pointer to template URL service.
   TemplateURLService* const template_url_service_;
 
