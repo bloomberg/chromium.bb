@@ -67,10 +67,7 @@ foreach $w (@tx_dims) {
   }
 }
 
-@pred_names = qw/dc dc_top dc_left dc_128 v h d207e d63e d45e d117 d135 d153 paeth smooth/;
-if (aom_config("CONFIG_SMOOTH_HV") eq "yes") {
-  push @pred_names, qw/smooth_v smooth_h/;
-}
+@pred_names = qw/dc dc_top dc_left dc_128 v h d207e d63e d45e d117 d135 d153 paeth smooth smooth_v smooth_h/;
 
 #
 # Intra prediction

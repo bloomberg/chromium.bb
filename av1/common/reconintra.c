@@ -58,10 +58,8 @@ static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_LEFT | NEED_BOTTOMLEFT,              // D207
   NEED_ABOVE | NEED_ABOVERIGHT,             // D63
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH
-#if CONFIG_SMOOTH_HV
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_V
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_H
-#endif                                      // CONFIG_SMOOTH_HV
   NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // PAETH
 };
 
@@ -717,10 +715,8 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred[PAETH_PRED], paeth);
   INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
-#if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v);
   INIT_ALL_SIZES(pred[SMOOTH_H_PRED], smooth_h);
-#endif  // CONFIG_SMOOTH_HV
 
   INIT_ALL_SIZES(dc_pred[0][0], dc_128);
   INIT_ALL_SIZES(dc_pred[0][1], dc_top);
@@ -739,10 +735,8 @@ static void av1_init_intra_predictors_internal(void) {
 
   INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth);
   INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
-#if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v);
   INIT_ALL_SIZES(pred_high[SMOOTH_H_PRED], highbd_smooth_h);
-#endif  // CONFIG_SMOOTH_HV
 
   INIT_ALL_SIZES(dc_pred_high[0][0], highbd_dc_128);
   INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);
@@ -1472,12 +1466,8 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
 
 #if CONFIG_INTRA_EDGE
 static int is_smooth(MB_MODE_INFO *mbmi) {
-#if CONFIG_SMOOTH_HV
   return (mbmi->mode == SMOOTH_PRED || mbmi->mode == SMOOTH_V_PRED ||
           mbmi->mode == SMOOTH_H_PRED);
-#else
-  return mbmi->mode == SMOOTH_PRED;
-#endif
 }
 
 static int get_filt_type(const MACROBLOCKD *xd) {

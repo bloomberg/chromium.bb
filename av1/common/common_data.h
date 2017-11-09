@@ -1793,11 +1793,7 @@ static const struct {
 
 #if CONFIG_KF_CTX
 static const int intra_mode_context[INTRA_MODES] = {
-  0, 1, 2, 3, 4, 4, 4, 4, 3, 0,
-#if CONFIG_SMOOTH_HV
-  1, 2,
-#endif
-  0,
+  0, 1, 2, 3, 4, 4, 4, 4, 3, 0, 1, 2, 0,
 };
 #endif
 

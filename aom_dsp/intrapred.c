@@ -250,7 +250,6 @@ static INLINE void smooth_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
   }
 }
 
-#if CONFIG_SMOOTH_HV
 static INLINE void smooth_v_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
                                       int bh, const uint8_t *above,
                                       const uint8_t *left) {
@@ -308,7 +307,6 @@ static INLINE void smooth_h_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
     dst += stride;
   }
 }
-#endif  // CONFIG_SMOOTH_HV
 
 static INLINE void dc_128_predictor(uint8_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint8_t *above,
@@ -791,7 +789,6 @@ static INLINE void highbd_smooth_predictor(uint16_t *dst, ptrdiff_t stride,
   }
 }
 
-#if CONFIG_SMOOTH_HV
 static INLINE void highbd_smooth_v_predictor(uint16_t *dst, ptrdiff_t stride,
                                              int bw, int bh,
                                              const uint16_t *above,
@@ -851,7 +848,6 @@ static INLINE void highbd_smooth_h_predictor(uint16_t *dst, ptrdiff_t stride,
     dst += stride;
   }
 }
-#endif  // CONFIG_SMOOTH_HV
 
 static INLINE void highbd_dc_128_predictor(uint16_t *dst, ptrdiff_t stride,
                                            int bw, int bh,
@@ -1059,10 +1055,8 @@ intra_pred_above_4x4(d153)
 intra_pred_allsizes(v)
 intra_pred_allsizes(h)
 intra_pred_allsizes(smooth)
-#if CONFIG_SMOOTH_HV
 intra_pred_allsizes(smooth_v)
 intra_pred_allsizes(smooth_h)
-#endif  // CONFIG_SMOOTH_HV
 intra_pred_allsizes(paeth)
 intra_pred_allsizes(dc_128)
 intra_pred_allsizes(dc_left)

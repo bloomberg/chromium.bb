@@ -54,15 +54,13 @@ static const int mode_2_counter[] = {
   9,  // D207_PRED
   9,  // D63_PRED
   9,  // SMOOTH_PRED
-#if CONFIG_SMOOTH_HV
-  9,    // SMOOTH_V_PRED
-  9,    // SMOOTH_H_PRED
-#endif  // CONFIG_SMOOTH_HV
-  9,    // PAETH_PRED
-  0,    // NEARESTMV
-  0,    // NEARMV
-  3,    // GLOBALMV
-  1,    // NEWMV
+  9,  // SMOOTH_V_PRED
+  9,  // SMOOTH_H_PRED
+  9,  // PAETH_PRED
+  0,  // NEARESTMV
+  0,  // NEARMV
+  3,  // GLOBALMV
+  1,  // NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
   0,    // SR_NEAREST_NEARMV
         //  1,    // SR_NEAREST_NEWMV

@@ -311,7 +311,6 @@ EXPERIMENT_LIST="
     aom_qm
     ext_qm
     ext_comp_refs
-    smooth_hv
     bgsprite
     var_tx_no_tx_mode
     simplify_tx_mode
@@ -513,7 +512,6 @@ post_process_cmdline() {
       soft_enable reference_buffer
       soft_enable loopfiltering_across_tiles
       soft_enable palette_throughput
-      soft_enable smooth_hv
       soft_enable tempmv_signaling
       soft_enable ext_comp_refs
       soft_enable ext_delta_q
@@ -547,7 +545,6 @@ post_process_cmdline() {
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
-    enabled cfl && enable_feature smooth_hv
     enabled cdef_singlepass && enable_feature cdef
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker

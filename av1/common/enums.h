@@ -481,20 +481,18 @@ typedef enum ATTRIBUTE_PACKED {
 // Note: All directional predictors must be between V_PRED and D63_PRED (both
 // inclusive).
 typedef enum ATTRIBUTE_PACKED {
-  DC_PRED,      // Average of above and left pixels
-  V_PRED,       // Vertical
-  H_PRED,       // Horizontal
-  D45_PRED,     // Directional 45  deg = round(arctan(1/1) * 180/pi)
-  D135_PRED,    // Directional 135 deg = 180 - 45
-  D117_PRED,    // Directional 117 deg = 180 - 63
-  D153_PRED,    // Directional 153 deg = 180 - 27
-  D207_PRED,    // Directional 207 deg = 180 + 27
-  D63_PRED,     // Directional 63  deg = round(arctan(2/1) * 180/pi)
-  SMOOTH_PRED,  // Combination of horizontal and vertical interpolation
-#if CONFIG_SMOOTH_HV
+  DC_PRED,        // Average of above and left pixels
+  V_PRED,         // Vertical
+  H_PRED,         // Horizontal
+  D45_PRED,       // Directional 45  deg = round(arctan(1/1) * 180/pi)
+  D135_PRED,      // Directional 135 deg = 180 - 45
+  D117_PRED,      // Directional 117 deg = 180 - 63
+  D153_PRED,      // Directional 153 deg = 180 - 27
+  D207_PRED,      // Directional 207 deg = 180 + 27
+  D63_PRED,       // Directional 63  deg = round(arctan(2/1) * 180/pi)
+  SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
   SMOOTH_V_PRED,  // Vertical interpolation
   SMOOTH_H_PRED,  // Horizontal interpolation
-#endif            // CONFIG_SMOOTH_HV
   PAETH_PRED,     // Predict from the direction of smallest gradient
   NEARESTMV,
   NEARMV,
@@ -526,20 +524,18 @@ typedef enum ATTRIBUTE_PACKED {
 // TODO(ltrudeau) Do we really want to pack this?
 // TODO(ltrudeau) Do we match with PREDICTION_MODE?
 typedef enum ATTRIBUTE_PACKED {
-  UV_DC_PRED,      // Average of above and left pixels
-  UV_V_PRED,       // Vertical
-  UV_H_PRED,       // Horizontal
-  UV_D45_PRED,     // Directional 45  deg = round(arctan(1/1) * 180/pi)
-  UV_D135_PRED,    // Directional 135 deg = 180 - 45
-  UV_D117_PRED,    // Directional 117 deg = 180 - 63
-  UV_D153_PRED,    // Directional 153 deg = 180 - 27
-  UV_D207_PRED,    // Directional 207 deg = 180 + 27
-  UV_D63_PRED,     // Directional 63  deg = round(arctan(2/1) * 180/pi)
-  UV_SMOOTH_PRED,  // Combination of horizontal and vertical interpolation
-#if CONFIG_SMOOTH_HV
+  UV_DC_PRED,        // Average of above and left pixels
+  UV_V_PRED,         // Vertical
+  UV_H_PRED,         // Horizontal
+  UV_D45_PRED,       // Directional 45  deg = round(arctan(1/1) * 180/pi)
+  UV_D135_PRED,      // Directional 135 deg = 180 - 45
+  UV_D117_PRED,      // Directional 117 deg = 180 - 63
+  UV_D153_PRED,      // Directional 153 deg = 180 - 27
+  UV_D207_PRED,      // Directional 207 deg = 180 + 27
+  UV_D63_PRED,       // Directional 63  deg = round(arctan(2/1) * 180/pi)
+  UV_SMOOTH_PRED,    // Combination of horizontal and vertical interpolation
   UV_SMOOTH_V_PRED,  // Vertical interpolation
   UV_SMOOTH_H_PRED,  // Horizontal interpolation
-#endif               // CONFIG_SMOOTH_HV
   UV_PAETH_PRED,     // Predict from the direction of smallest gradient
   UV_CFL_PRED,       // Chroma-from-Luma
   UV_INTRA_MODES,
