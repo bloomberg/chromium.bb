@@ -13,7 +13,6 @@
   * [gitiles](#recipe_modules-gitiles)
   * [gsutil](#recipe_modules-gsutil)
   * [infra_paths](#recipe_modules-infra_paths)
-  * [luci_migration](#recipe_modules-luci_migration)
   * [presubmit](#recipe_modules-presubmit)
   * [rietveld](#recipe_modules-rietveld)
   * [tryserver](#recipe_modules-tryserver)
@@ -32,7 +31,6 @@
   * [gitiles:examples/full](#recipes-gitiles_examples_full)
   * [gsutil:examples/full](#recipes-gsutil_examples_full)
   * [infra_paths:examples/full](#recipes-infra_paths_examples_full)
-  * [luci_migration:tests/full](#recipes-luci_migration_tests_full)
   * [presubmit:examples/full](#recipes-presubmit_examples_full)
   * [rietveld:examples/full](#recipes-rietveld_examples_full)
   * [tryserver:examples/full](#recipes-tryserver_examples_full)
@@ -614,30 +612,6 @@ It returns git_cache path if it is defined (Buildbot world), otherwise
 uses the more generic [CACHE]/git path (LUCI world).
 
 &mdash; **def [initialize](/recipes/recipe_modules/infra_paths/api.py#11)(self):**
-### *recipe_modules* / [luci\_migration](/recipes/recipe_modules/luci_migration)
-
-[DEPS](/recipes/recipe_modules/luci_migration/__init__.py#5): [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties]
-
-#### **class [LuciMigrationApi](/recipes/recipe_modules/luci_migration/api.py#8)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
-
-This module assists in migrating builders from Buildbot to pure LUCI stack.
-
-Finishing migration means you no longer depend on this module.
-
-&emsp; **@property**<br>&mdash; **def [is\_luci](/recipes/recipe_modules/luci_migration/api.py#18)(self):**
-
-True if runs on LUCI stack.
-
-&emsp; **@property**<br>&mdash; **def [is\_prod](/recipes/recipe_modules/luci_migration/api.py#23)(self):**
-
-True if this builder is in production.
-
-Typical usage is to modify steps which produce external side-effects so that
-non-production runs of the recipe do not affect production data.
-
-Examples:
-  * Uploading to an alternate google storage file name when in non-prod mode
-  * Appending a 'non-production' tag to external RPCs
 ### *recipe_modules* / [presubmit](/recipes/recipe_modules/presubmit)
 
 [DEPS](/recipes/recipe_modules/presubmit/__init__.py#1): [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/step][recipe_engine/recipe_modules/step]
@@ -843,11 +817,6 @@ Move things around in a loop!
 [DEPS](/recipes/recipe_modules/infra_paths/examples/full.py#7): [infra\_paths](#recipe_modules-infra_paths), [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
 &mdash; **def [RunSteps](/recipes/recipe_modules/infra_paths/examples/full.py#16)(api):**
-### *recipes* / [luci\_migration:tests/full](/recipes/recipe_modules/luci_migration/tests/full.py)
-
-[DEPS](/recipes/recipe_modules/luci_migration/tests/full.py#7): [luci\_migration](#recipe_modules-luci_migration), [recipe\_engine/step][recipe_engine/recipe_modules/step]
-
-&mdash; **def [RunSteps](/recipes/recipe_modules/luci_migration/tests/full.py#13)(api):**
 ### *recipes* / [presubmit:examples/full](/recipes/recipe_modules/presubmit/examples/full.py)
 
 [DEPS](/recipes/recipe_modules/presubmit/examples/full.py#5): [presubmit](#recipe_modules-presubmit)
