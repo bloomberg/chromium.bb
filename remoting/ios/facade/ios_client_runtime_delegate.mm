@@ -18,11 +18,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
+#include "remoting/client/oauth_token_getter_proxy.h"
+#include "remoting/ios/facade/ios_oauth_token_getter.h"
 
 namespace remoting {
 
 IosClientRuntimeDelegate::IosClientRuntimeDelegate() : weak_factory_(this) {
   runtime_ = ChromotingClientRuntime::GetInstance();
+  token_getter_ = std::make_unique<OAuthTokenGetterProxy>(
+      std::make_unique<IosOauthTokenGetter>(), runtime_->ui_task_runner());
 }
 
 IosClientRuntimeDelegate::~IosClientRuntimeDelegate() {}
@@ -60,6 +64,10 @@ void IosClientRuntimeDelegate::RequestAuthTokenForLogger() {
           }
         }];
   }
+}
+
+OAuthTokenGetter* IosClientRuntimeDelegate::token_getter() {
+  return token_getter_.get();
 }
 
 void IosClientRuntimeDelegate::SetAuthToken(const std::string& access_token) {

@@ -42,6 +42,7 @@ class JniRuntimeDelegate : public ChromotingClientRuntime::Delegate {
   void RuntimeWillShutdown() override;
   void RuntimeDidShutdown() override;
   void RequestAuthTokenForLogger() override;
+  OAuthTokenGetter* token_getter() override;
 
  private:
   JniRuntimeDelegate();
