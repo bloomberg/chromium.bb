@@ -1285,12 +1285,12 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
                              int usehp) {
   int mag, d, fr, hp;
 #if CONFIG_NEW_MULTISYMBOL
-  const int sign = aom_read_bit(r, ACCT_STR);
+  const int sign = aom_read_symbol(r, mvcomp->sign_cdf, 2, ACCT_STR);
 #else
   const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
 #endif
   const int mv_class =
-      aom_read_symbol(r, mvcomp->class_cdf, MV_CLASSES, ACCT_STR);
+      aom_read_symbol(r, mvcomp->classes_cdf, MV_CLASSES, ACCT_STR);
   const int class0 = mv_class == MV_CLASS_0;
 
   // Integer part
@@ -1307,7 +1307,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     d = 0;
 #if CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < n; ++i)
-      d |= aom_read_symbol(r, mvcomp->bits_cdf[(i + 1) / 2], 2, ACCT_STR) << i;
+      d |= aom_read_symbol(r, mvcomp->bits_cdf[i], 2, ACCT_STR) << i;
 #else
     for (i = 0; i < n; ++i) d |= aom_read(r, mvcomp->bits[i], ACCT_STR) << i;
 #endif
@@ -1349,7 +1349,7 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
   MV_JOINT_TYPE joint_type;
   MV diff = { 0, 0 };
   joint_type =
-      (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joint_cdf, MV_JOINTS, ACCT_STR);
+      (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joints_cdf, MV_JOINTS, ACCT_STR);
 
   if (mv_joint_vertical(joint_type))
     diff.row = read_mv_component(r, &ctx->comps[0],

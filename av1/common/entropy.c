@@ -1649,13 +1649,14 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
   int j;
   for (j = 0; j < NMV_CONTEXTS; ++j) {
-    AVERAGE_TILE_CDFS(nmvc[j].joint_cdf)
+    AVERAGE_TILE_CDFS(nmvc[j].joints_cdf)
 
     for (k = 0; k < 2; ++k) {
-      AVERAGE_TILE_CDFS(nmvc[j].comps[k].class_cdf)
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].classes_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_fp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].fp_cdf)
 #if CONFIG_NEW_MULTISYMBOL
+      AVERAGE_TILE_CDFS(nmvc[j].comps[k].sign_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_cdf)

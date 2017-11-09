@@ -44,13 +44,13 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
 // Sign
 #if CONFIG_NEW_MULTISYMBOL
-  aom_write_bit(w, sign);
+  aom_write_symbol(w, sign, mvcomp->sign_cdf, 2);
 #else
   aom_write(w, sign, mvcomp->sign);
 #endif
 
   // Class
-  aom_write_symbol(w, mv_class, mvcomp->class_cdf, MV_CLASSES);
+  aom_write_symbol(w, mv_class, mvcomp->classes_cdf, MV_CLASSES);
 
   // Integer bits
   if (mv_class == MV_CLASS_0) {
@@ -64,7 +64,7 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
 #if CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < n; ++i)
-      aom_write_symbol(w, (d >> i) & 1, mvcomp->bits_cdf[(i + 1) / 2], 2);
+      aom_write_symbol(w, (d >> i) & 1, mvcomp->bits_cdf[i], 2);
 #else
     for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
 #endif
@@ -100,24 +100,41 @@ static void build_nmv_component_cost_table(int *mvcost,
   int class0_fp_cost[CLASS0_SIZE][MV_FP_SIZE], fp_cost[MV_FP_SIZE];
   int class0_hp_cost[2], hp_cost[2];
 
+#if CONFIG_NEW_MULTISYMBOL
+  av1_cost_tokens_from_cdf(sign_cost, mvcomp->sign_cdf, NULL);
+#else
   sign_cost[0] = av1_cost_zero(mvcomp->sign);
   sign_cost[1] = av1_cost_one(mvcomp->sign);
-  av1_cost_tokens(class_cost, mvcomp->classes, av1_mv_class_tree);
+#endif  // CONFIG_NEW_MULTISYMBOL
+  av1_cost_tokens_from_cdf(class_cost, mvcomp->classes_cdf, NULL);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_cost_tokens_from_cdf(class0_cost, mvcomp->class0_cdf, NULL);
+#else
   av1_cost_tokens(class0_cost, mvcomp->class0, av1_mv_class0_tree);
+#endif  // CONFIG_NEW_MULTISYMBOL
   for (i = 0; i < MV_OFFSET_BITS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+    av1_cost_tokens_from_cdf(bits_cost[i], mvcomp->bits_cdf[i], NULL);
+#else
     bits_cost[i][0] = av1_cost_zero(mvcomp->bits[i]);
     bits_cost[i][1] = av1_cost_one(mvcomp->bits[i]);
+#endif  // CONFIG_NEW_MULTISYMBOL
   }
 
   for (i = 0; i < CLASS0_SIZE; ++i)
-    av1_cost_tokens(class0_fp_cost[i], mvcomp->class0_fp[i], av1_mv_fp_tree);
-  av1_cost_tokens(fp_cost, mvcomp->fp, av1_mv_fp_tree);
+    av1_cost_tokens_from_cdf(class0_fp_cost[i], mvcomp->class0_fp_cdf[i], NULL);
+  av1_cost_tokens_from_cdf(fp_cost, mvcomp->fp_cdf, NULL);
 
   if (precision > MV_SUBPEL_LOW_PRECISION) {
+#if CONFIG_NEW_MULTISYMBOL
+    av1_cost_tokens_from_cdf(class0_hp_cost, mvcomp->class0_hp_cdf, NULL);
+    av1_cost_tokens_from_cdf(hp_cost, mvcomp->hp_cdf, NULL);
+#else
     class0_hp_cost[0] = av1_cost_zero(mvcomp->class0_hp);
     class0_hp_cost[1] = av1_cost_one(mvcomp->class0_hp);
     hp_cost[0] = av1_cost_zero(mvcomp->hp);
     hp_cost[1] = av1_cost_one(mvcomp->hp);
+#endif  // CONFIG_NEW_MULTISYMBOL
   }
   mvcost[0] = 0;
   for (v = 1; v <= MV_MAX; ++v) {
@@ -199,7 +216,7 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
     usehp = MV_SUBPEL_NONE;
   }
 #endif
-  aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
+  aom_write_symbol(w, j, mvctx->joints_cdf, MV_JOINTS);
   if (mv_joint_vertical(j))
     encode_mv_component(w, diff.row, &mvctx->comps[0], usehp);
 
@@ -225,7 +242,7 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
 
-  aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
+  aom_write_symbol(w, j, mvctx->joints_cdf, MV_JOINTS);
   if (mv_joint_vertical(j))
     encode_mv_component(w, diff.row, &mvctx->comps[0], MV_SUBPEL_NONE);
 
@@ -237,7 +254,7 @@ void av1_encode_dv(aom_writer *w, const MV *mv, const MV *ref,
 void av1_build_nmv_cost_table(int *mvjoint, int *mvcost[2],
                               const nmv_context *ctx,
                               MvSubpelPrecision precision) {
-  av1_cost_tokens(mvjoint, ctx->joints, av1_mv_joint_tree);
+  av1_cost_tokens_from_cdf(mvjoint, ctx->joints_cdf, NULL);
   build_nmv_component_cost_table(mvcost[0], &ctx->comps[0], precision);
   build_nmv_component_cost_table(mvcost[1], &ctx->comps[1], precision);
 }

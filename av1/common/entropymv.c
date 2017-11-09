@@ -43,7 +43,7 @@ const aom_tree_index av1_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
 
 static const nmv_context default_nmv_context = {
   { 32, 64, 96 },                    // joints
-  { AOM_CDF4(4096, 11264, 19328) },  // joint_cdf
+  { AOM_CDF4(4096, 11264, 19328) },  // joints_cdf
   { {
         // Vertical component
         128,                                                   // sign
@@ -60,14 +60,19 @@ static const nmv_context default_nmv_context = {
         160,                                    // class0_hp bit
         128,                                    // hp
 #if CONFIG_NEW_MULTISYMBOL
+        { AOM_CDF2(128 * 128) },
         { AOM_CDF2(160 * 128) },
         { AOM_CDF2(128 * 128) },
         { AOM_CDF2(216 * 128) },
-        { { AOM_CDF2(128 * 196) },
-          { AOM_CDF2(128 * 198) },
-          { AOM_CDF2(128 * 208) },
+        { { AOM_CDF2(128 * 136) },
+          { AOM_CDF2(128 * 140) },
+          { AOM_CDF2(128 * 148) },
+          { AOM_CDF2(128 * 160) },
+          { AOM_CDF2(128 * 176) },
+          { AOM_CDF2(128 * 192) },
           { AOM_CDF2(128 * 224) },
-          { AOM_CDF2(128 * 245) },
+          { AOM_CDF2(128 * 234) },
+          { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
 #endif
     },
@@ -87,14 +92,19 @@ static const nmv_context default_nmv_context = {
         160,                                    // class0_hp bit
         128,                                    // hp
 #if CONFIG_NEW_MULTISYMBOL
+        { AOM_CDF2(128 * 128) },
         { AOM_CDF2(160 * 128) },
         { AOM_CDF2(128 * 128) },
         { AOM_CDF2(216 * 128) },
-        { { AOM_CDF2(128 * 196) },
-          { AOM_CDF2(128 * 198) },
-          { AOM_CDF2(128 * 208) },
+        { { AOM_CDF2(128 * 136) },
+          { AOM_CDF2(128 * 140) },
+          { AOM_CDF2(128 * 148) },
+          { AOM_CDF2(128 * 160) },
+          { AOM_CDF2(128 * 176) },
+          { AOM_CDF2(128 * 192) },
           { AOM_CDF2(128 * 224) },
-          { AOM_CDF2(128 * 245) },
+          { AOM_CDF2(128 * 234) },
+          { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
 #endif
     } },

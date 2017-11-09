@@ -87,7 +87,7 @@ extern const aom_tree_index av1_mv_fp_tree[];
 typedef struct {
   aom_prob sign;
   aom_prob classes[MV_CLASSES - 1];
-  aom_cdf_prob class_cdf[CDF_SIZE(MV_CLASSES)];
+  aom_cdf_prob classes_cdf[CDF_SIZE(MV_CLASSES)];
   aom_prob class0[CLASS0_SIZE - 1];
   aom_prob bits[MV_OFFSET_BITS];
   aom_prob class0_fp[CLASS0_SIZE][MV_FP_SIZE - 1];
@@ -97,16 +97,17 @@ typedef struct {
   aom_prob class0_hp;
   aom_prob hp;
 #if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob sign_cdf[CDF_SIZE(2)];
   aom_cdf_prob class0_hp_cdf[CDF_SIZE(2)];
   aom_cdf_prob hp_cdf[CDF_SIZE(2)];
   aom_cdf_prob class0_cdf[CDF_SIZE(CLASS0_SIZE)];
-  aom_cdf_prob bits_cdf[MV_BITS_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob bits_cdf[MV_OFFSET_BITS][CDF_SIZE(2)];
 #endif
 } nmv_component;
 
 typedef struct {
   aom_prob joints[MV_JOINTS - 1];
-  aom_cdf_prob joint_cdf[CDF_SIZE(MV_JOINTS)];
+  aom_cdf_prob joints_cdf[CDF_SIZE(MV_JOINTS)];
   nmv_component comps[2];
 } nmv_context;
 
