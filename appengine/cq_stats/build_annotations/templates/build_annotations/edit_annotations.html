@@ -105,6 +105,20 @@
         </tr>
     {% endfor %}
   </table>
+  <input type="checkbox" name="finalize"
+         {% comment %}
+           Finalize messages cannot be unfinalized (yet?), so disable the
+           checkbox if there already exists a finalize message for this build.
+         {% endcomment %}
+         {% if finalize_form.finalize %} checked disabled {% endif %}
+         title="Check this when you want to assert that all failures have been annotated."/>
+  <label for="finalize">
+    {% if not finalize_form.finalize %}
+      Finalize annotations?
+    {% else %}
+      (Annotations already finalized)
+    {% endif %}
+  </label>
   <input type="submit" value="Save Changes"/>
 </form>
 {% endblock %}  <!-- content -->

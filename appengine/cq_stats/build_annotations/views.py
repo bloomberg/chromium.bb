@@ -16,6 +16,7 @@ from google.appengine.api import users
 from build_annotations import build_row_controller
 from build_annotations import models as ba_models
 from build_annotations import forms as ba_forms
+from chromite.lib import constants
 
 import urllib
 
@@ -145,7 +146,8 @@ class EditAnnotationsView(generic.base.View):
 
   def __init__(self, *args, **kwargs):
     self._username = _DEFAULT_USERNAME
-    self._formset = None
+    self._annotations_formset = None
+    self._finalize_form = None
     self._context = {}
     self._build_config = None
     self._build_id = None
@@ -167,8 +169,14 @@ class EditAnnotationsView(generic.base.View):
     self._build_config = build_config
     self._build_id = build_id
 
-    self._formset = ba_forms.AnnotationsFormSet(request.POST)
-    if self._formset.is_valid():
+    finalize_form = ba_forms.FinalizeForm(request.POST)
+    if finalize_form.is_valid():
+      self._MaybeSaveFinalizeMessage()
+
+
+
+    self._annotations_formset = ba_forms.AnnotationsFormSet(request.POST)
+    if self._annotations_formset.is_valid():
       self._SaveAnnotations()
       return http.HttpResponseRedirect(_BuildUrl(
           'build_annotations:edit_annotations',
@@ -189,6 +197,35 @@ class EditAnnotationsView(generic.base.View):
     self._context['build_config'] = self._build_config
     self._context['build_row'] = build_row
     self._context['annotations_formset'] = self._GetAnnotationsFormSet()
+    self._context['finalize_form'] = self._GetFinalizeForm()
+
+  def _MaybeSaveFinalizeMessage(self):
+    """Creates a finalize buildMessage for this build."""
+    has_finalize_message = self._GetFinalizeRow().exists()
+    if not has_finalize_message:
+      build = self._GetBuildRow()
+      ba_models.BuildMessageTable(
+          build_id=build,
+          message_type=
+              ba_models.BuildMessageTable.MESSAGE_TYPES.ANNOTATIONS_FINALIZED,
+      ).save()
+
+  def _GetFinalizeRow(self):
+    """Gets the existing finalize message for this build_id, if it exists.
+    """
+    return ba_models.BuildMessageTable.objects.filter(
+        build_id=self._build_id,
+        message_type=
+            ba_models.BuildMessageTable.MESSAGE_TYPES.ANNOTATIONS_FINALIZED,
+    )
+
+  def _GetFinalizeForm(self):
+    """Creates a finalize form for marking annotations as finalized.
+
+    'You FOOL! This isn't even my final form!' - Frieza
+    """
+    has_finalize_message = self._GetFinalizeRow().exists()
+    return ba_forms.FinalizeForm({'finalize': has_finalize_message})
 
   def _GetBuildRow(self):
     controller = build_row_controller.BuildRowController()
@@ -200,17 +237,17 @@ class EditAnnotationsView(generic.base.View):
     return build_row_list[0]
 
   def _GetAnnotationsFormSet(self):
-    if self._formset is None:
+    if self._annotations_formset is None:
       build_row = self._GetBuildRow()
       if build_row is not None:
         queryset = build_row.GetAnnotationsQS()
       else:
         queryset = ba_models.AnnotationsTable.objects.none()
-      self._formset = ba_forms.AnnotationsFormSet(queryset=queryset)
-    return self._formset
+      self._annotations_formset = ba_forms.AnnotationsFormSet(queryset=queryset)
+    return self._annotations_formset
 
   def _SaveAnnotations(self):
-    models_to_save = self._formset.save(commit=False)
+    models_to_save = self._annotations_formset.save(commit=False)
     build_row = self._GetBuildRow()
     for model in models_to_save:
       if not hasattr(model, 'build_id') or model.build_id is None:
