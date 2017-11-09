@@ -1695,8 +1695,6 @@ if (enable_java_templates) {
   #     linker does relocation unpacking, so we can enable it unconditionally.
   #   secondary_native_libs (deprecated): The path of native libraries for secondary
   #     app abi.
-  #   run_findbugs_override: Forces run_findbugs on or off. If undefined, the
-  #     default will use the build arg run_findbugs.
   #   proguard_jar_path: The path to proguard.jar you wish to use. If undefined,
   #     the proguard used will be the checked in one in //third_party/proguard.
   #   never_incremental: If true, |incremental_apk_by_default| will be ignored.
@@ -2211,7 +2209,6 @@ if (enable_java_templates) {
                              [
                                "chromium_code",
                                "java_files",
-                               "run_findbugs_override",
                                "no_build_hooks",
                                "javac_args",
                              ])
@@ -2875,11 +2872,6 @@ if (enable_java_templates) {
       }
 
       dist_ijar_path = _dist_ijar_path
-      if (defined(invoker.run_findbugs_override)) {
-        # Only allow findbugs when there are java files.
-        run_findbugs_override =
-            invoker.run_findbugs_override && defined(invoker.java_files)
-      }
       create_apk_script = false
     }
 
