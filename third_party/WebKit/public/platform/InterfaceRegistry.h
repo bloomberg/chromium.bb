@@ -44,24 +44,30 @@ class BLINK_PLATFORM_EXPORT InterfaceRegistry {
   }
 
   template <typename Interface>
-  void AddInterface(WTF::Function<void(mojo::InterfaceRequest<Interface>),
-                                  WTF::kCrossThreadAffinity> factory,
+  void AddInterface(WTF::CrossThreadRepeatingFunction<
+                        void(mojo::InterfaceRequest<Interface>)> factory,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-    AddInterface(Interface::Name_,
-                 ConvertToBaseCallback(blink::CrossThreadBind(
-                     &InterfaceRegistry::ForwardToInterfaceFactory<
-                         Interface, WTF::kCrossThreadAffinity>,
-                     std::move(factory))),
-                 std::move(task_runner));
+    AddInterface(
+        Interface::Name_,
+        ConvertToBaseCallback(blink::CrossThreadBind(
+            &InterfaceRegistry::ForwardToCrossThreadInterfaceFactory<Interface>,
+            std::move(factory))),
+        std::move(task_runner));
   }
 
  private:
-  template <
-      typename Interface,
-      WTF::FunctionThreadAffinity ThreadAffinity = WTF::kSameThreadAffinity>
+  template <typename Interface>
   static void ForwardToInterfaceFactory(
-      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>),
-                                   ThreadAffinity>& factory,
+      const WTF::RepeatingFunction<void(mojo::InterfaceRequest<Interface>)>&
+          factory,
+      mojo::ScopedMessagePipeHandle handle) {
+    factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
+  }
+
+  template <typename Interface>
+  static void ForwardToCrossThreadInterfaceFactory(
+      const WTF::CrossThreadRepeatingFunction<
+          void(mojo::InterfaceRequest<Interface>)>& factory,
       mojo::ScopedMessagePipeHandle handle) {
     factory.Run(mojo::InterfaceRequest<Interface>(std::move(handle)));
   }

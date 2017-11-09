@@ -185,9 +185,9 @@ struct CrossThreadCopier<CrossThreadWeakPersistent<T>>
 };
 
 template <typename T>
-struct CrossThreadCopier<WTF::UnretainedWrapper<T, WTF::kCrossThreadAffinity>>
+struct CrossThreadCopier<WTF::CrossThreadUnretainedWrapper<T>>
     : public CrossThreadCopierPassThrough<
-          WTF::UnretainedWrapper<T, WTF::kCrossThreadAffinity>> {
+          WTF::CrossThreadUnretainedWrapper<T>> {
   STATIC_ONLY(CrossThreadCopier);
 };
 
@@ -207,9 +207,9 @@ struct CrossThreadCopier<WTF::PassedWrapper<T>> {
 };
 
 template <typename Signature>
-struct CrossThreadCopier<WTF::Function<Signature, WTF::kCrossThreadAffinity>> {
+struct CrossThreadCopier<WTF::CrossThreadFunction<Signature>> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = WTF::Function<Signature, WTF::kCrossThreadAffinity>;
+  using Type = WTF::CrossThreadFunction<Signature>;
   static Type Copy(Type&& value) { return std::move(value); }
 };
 
