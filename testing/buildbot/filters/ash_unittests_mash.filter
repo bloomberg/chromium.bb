@@ -64,15 +64,6 @@
 -ImmersiveFullscreenControllerTest.RevealViaGestureChildConsumesEvents
 -ImmersiveFullscreenControllerTest.Transient
 
-# TODO: Call CreateKeyboard() in Shell::OnSessionStateChanged: crbug.com/646565
--LockActionHandlerLayoutManagerTest.KeyboardBounds
--LockLayoutManagerTest.AccessibilityPanel
--LockLayoutManagerTest.AccessibilityPanelWithMultipleMonitors
--LockLayoutManagerTest.KeyboardBounds
--LockLayoutManagerTest.MaximizedFullscreenWindowBoundsAreEqualToScreen
--LockLayoutManagerTest.MultipleMonitors
--LockLayoutManagerTest.NorwmalWindowBoundsArePreserved
-
 # TODO: Triage
 -LoginMetricsRecorderTest.UnlockAttempts
 -LoginPasswordViewTest.PasswordSubmitClearsPassword
@@ -182,9 +173,6 @@
 -UnifiedMouseWarpControllerTest.BoundaryAndWarpSimpleTest
 -UnifiedMouseWarpControllerTest.BoundaryTestGrid
 -UnifiedMouseWarpControllerTest.WarpMouse
-
-# TODO: Call CreateKeyboard() in Shell::OnSessionStateChanged: crbug.com/646565
--VirtualKeyboardAlwaysOnTopControllerTest.NotifyKeyboardBoundsChanged
 
 # TODO: Needs virtual keyboard. http://crbug.com/616909
 -VirtualKeyboardControllerAutoTest.DisabledIfInternalKeyboardPresent
