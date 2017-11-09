@@ -34,6 +34,7 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     attribs.global_texture_share_group = true;
 
     attribs.robust_resource_initialization = true;
+    attribs.robust_buffer_access = true;
 
     // Request a specific context version instead of always 3.0
     if (IsWebGL2OrES3ContextType(attribs_helper.context_type)) {
