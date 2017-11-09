@@ -16,89 +16,27 @@ cr.define('extensions', function() {
     constructor() {
       /** @private {boolean} */
       this.isDeleting_ = false;
-
-      /** @private {extensions.Manager} */
-      this.manager_;
-
-      /** @private {Array<chrome.developerPrivate.ExtensionInfo>} */
-      this.extensions_;
     }
 
-    /** @param {extensions.Manager} manager */
-    managerReady(manager) {
-      this.manager_ = manager;
-      this.manager_.set('delegate', this);
-
-      // Skip any setup or backend requests if we're in guest-mode.
-      // TODO(scottchen): there might be a better place to do this once manager
-      //     and service become less coupled.
-      if (loadTimeData.getBoolean('isGuest')) {
-        this.manager_.initPage();
-        return;
-      }
-
-      chrome.developerPrivate.onProfileStateChanged.addListener(
-          this.onProfileStateChanged_.bind(this));
-      chrome.developerPrivate.onItemStateChanged.addListener(
-          this.onItemStateChanged_.bind(this));
-      chrome.developerPrivate.getExtensionsInfo(
-          {includeDisabled: true, includeTerminated: true}, extensions => {
-            this.extensions_ = extensions;
-            this.manager_.initAppsAndExtensions(extensions);
-            this.manager_.initPage();
-          });
-      chrome.developerPrivate.getProfileConfiguration(
-          this.onProfileStateChanged_.bind(this));
-    }
-
-    /**
-     * @param {chrome.developerPrivate.ProfileInfo} profileInfo
-     * @private
-     */
-    onProfileStateChanged_(profileInfo) {
-      this.manager_.set('inDevMode', profileInfo.inDeveloperMode);
-    }
-
-    /**
-     * @param {chrome.developerPrivate.EventData} eventData
-     * @private
-     */
-    onItemStateChanged_(eventData) {
-      const currentIndex = this.extensions_.findIndex(function(extension) {
-        return extension.id == eventData.item_id;
+    getProfileConfiguration() {
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.getProfileConfiguration(resolve);
       });
+    }
 
-      const EventType = chrome.developerPrivate.EventType;
-      switch (eventData.event_type) {
-        case EventType.VIEW_REGISTERED:
-        case EventType.VIEW_UNREGISTERED:
-        case EventType.INSTALLED:
-        case EventType.LOADED:
-        case EventType.UNLOADED:
-        case EventType.ERROR_ADDED:
-        case EventType.ERRORS_REMOVED:
-        case EventType.PREFS_CHANGED:
-          // |extensionInfo| can be undefined in the case of an extension
-          // being unloaded right before uninstallation. There's nothing to do
-          // here.
-          if (!eventData.extensionInfo)
-            break;
+    getItemStateChangedTarget() {
+      return chrome.developerPrivate.onItemStateChanged;
+    }
 
-          if (currentIndex >= 0) {
-            this.extensions_[currentIndex] = eventData.extensionInfo;
-            this.manager_.updateItem(eventData.extensionInfo);
-          } else {
-            this.extensions_.push(eventData.extensionInfo);
-            this.manager_.addItem(eventData.extensionInfo);
-          }
-          break;
-        case EventType.UNINSTALLED:
-          this.manager_.removeItem(this.extensions_[currentIndex]);
-          this.extensions_.splice(currentIndex, 1);
-          break;
-        default:
-          assertNotReached();
-      }
+    getProfileStateChangedTarget() {
+      return chrome.developerPrivate.onProfileStateChanged;
+    }
+
+    getExtensionsInfo() {
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.getExtensionsInfo(
+            {includeDisabled: true, includeTerminated: true}, resolve);
+      });
     }
 
     /**
@@ -153,21 +91,26 @@ cr.define('extensions', function() {
      * Attempts to load an unpacked extension, optionally as another attempt at
      * a previously-specified load.
      * @param {string=} opt_retryGuid
+     * @return {!Promise} A signal that loading finished, rejected if any error
+     *     occured.
      * @private
      */
     loadUnpackedHelper_(opt_retryGuid) {
-      chrome.developerPrivate.loadUnpacked(
-          {failQuietly: true, populateError: true, retryGuid: opt_retryGuid},
-          (loadError) => {
-            if (chrome.runtime.lastError &&
-                chrome.runtime.lastError.message !=
-                    'File selection was canceled.') {
-              throw new Error(chrome.runtime.lastError.message);
-            }
-            if (loadError) {
-              this.manager_.showLoadError(loadError);
-            }
-          });
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.loadUnpacked(
+            {failQuietly: true, populateError: true, retryGuid: opt_retryGuid},
+            (loadError) => {
+              if (chrome.runtime.lastError &&
+                  chrome.runtime.lastError.message !=
+                      'File selection was canceled.') {
+                throw new Error(chrome.runtime.lastError.message);
+              }
+              if (loadError)
+                return reject(loadError);
+
+              resolve();
+            });
+      });
     }
 
     /** @override */
@@ -242,16 +185,16 @@ cr.define('extensions', function() {
     }
 
     /** @override */
-    showItemOptionsPage(id) {
-      const extension = this.extensions_.find(function(e) {
-        return e.id == id;
-      });
+    showItemOptionsPage(extension) {
       assert(extension && extension.optionsPage);
       if (extension.optionsPage.openInTab) {
-        chrome.developerPrivate.showOptions(id);
+        chrome.developerPrivate.showOptions(extension.id);
       } else {
-        extensions.navigation.navigateTo(
-            {page: Page.DETAILS, subpage: Dialog.OPTIONS, extensionId: id});
+        extensions.navigation.navigateTo({
+          page: Page.DETAILS,
+          subpage: Dialog.OPTIONS,
+          extensionId: extension.id,
+        });
       }
     }
 
@@ -263,12 +206,12 @@ cr.define('extensions', function() {
 
     /** @override */
     loadUnpacked() {
-      this.loadUnpackedHelper_();
+      return this.loadUnpackedHelper_();
     }
 
     /** @override */
     retryLoadUnpacked(retryGuid) {
-      this.loadUnpackedHelper_(retryGuid);
+      return this.loadUnpackedHelper_(retryGuid);
     }
 
     /** @override */

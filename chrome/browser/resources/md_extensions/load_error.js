@@ -10,6 +10,7 @@ cr.define('extensions', function() {
     /**
      * Attempts to load the previously-attempted unpacked extension.
      * @param {string} retryId
+     * @return {!Promise}
      */
     retryLoadUnpacked(retryId) {}
   }
@@ -38,8 +39,13 @@ cr.define('extensions', function() {
 
     /** @private */
     onRetryTap_: function() {
-      this.delegate.retryLoadUnpacked(this.loadError.retryGuid);
       this.close();
+      this.delegate.retryLoadUnpacked(this.loadError.retryGuid)
+          .catch(loadError => {
+            // TODO(dpapad): Consider handling this error directly in this
+            // existing dialog, instead of closing it and re-opening it.
+            this.fire('load-error', loadError);
+          });
     },
 
     /** @private */

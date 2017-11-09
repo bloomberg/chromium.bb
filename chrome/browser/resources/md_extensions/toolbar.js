@@ -13,7 +13,10 @@ cr.define('extensions', function() {
      */
     setProfileInDevMode(inDevMode) {}
 
-    /** Opens the dialog to load unpacked extensions. */
+    /**
+     * Opens the dialog to load unpacked extensions.
+     * @return {!Promise}
+     */
     loadUnpacked() {}
 
     /** Updates all extensions. */
@@ -52,7 +55,9 @@ cr.define('extensions', function() {
 
     /** @private */
     onLoadUnpackedTap_: function() {
-      this.delegate.loadUnpacked();
+      this.delegate.loadUnpacked().catch(loadError => {
+        this.fire('load-error', loadError);
+      });
     },
 
     /** @private */

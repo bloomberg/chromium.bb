@@ -60,15 +60,6 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'extensions',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        'manager',
-        'service',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
@@ -165,6 +156,7 @@
         'keyboard_shortcuts',
         'kiosk_browser_proxy',
         'navigation_helper',
+        'service',
         'sidebar',
         'toolbar',
         'view_manager',
@@ -210,7 +202,6 @@
         'error_page',
         'item',
         'load_error',
-        'manager',
         'navigation_helper',
         'pack_dialog',
         'toolbar',

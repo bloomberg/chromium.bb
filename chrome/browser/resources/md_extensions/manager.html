@@ -6,7 +6,6 @@
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/promise_resolver.html">
 <link rel="import" href="detail_view.html">
 <link rel="import" href="drop_overlay.html">
 <link rel="import" href="error_page.html">
@@ -59,6 +58,7 @@
         on-pack-tap="onPackTap_" delegate="[[delegate]]"
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
         on-search-changed="onFilterChanged_"
+        on-load-error="onLoadError_"
 <if expr="chromeos">
         on-kiosk-tap="onKioskTap_"
         kiosk-enabled="[[kioskEnabled_]]"
@@ -77,7 +77,7 @@
       <extensions-item-list id="items-list" is-guest="[[isGuest_]]"
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
           filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
-          apps="[[apps]]" extensions="[[extensions]]">
+          apps="[[apps_]]" extensions="[[extensions_]]">
       </extensions-item-list>
       <template id="details-view" is="cr-lazy-render">
         <extensions-detail-view delegate="[[delegate]]" slot="view"
@@ -86,7 +86,7 @@
       </template>
       <template id="keyboard-shortcuts" is="cr-lazy-render">
         <extensions-keyboard-shortcuts delegate="[[delegate]]" slot="view"
-            items="[[extensions]]">
+            items="[[extensions_]]">
         </extensions-keyboard-shortcuts>
       </template>
       <template id="error-page" is="cr-lazy-render">
@@ -113,7 +113,7 @@
 <if expr="chromeos">
     <template is="dom-if" if="[[showKioskDialog_]]" restamp>
       <extensions-kiosk-dialog id="kiosk-dialog"
-          on-close="onKioskDialogClose_">
+          on-load-error="onLoadError_" on-close="onKioskDialogClose_">
       </extensions-kiosk-dialog>
     </template>
 </if>
