@@ -9839,6 +9839,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Browser.CachedImagesCount" units="count">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    The maximum number of images that were cached in the browser over the
+    lifetime of the image decode cache. This is recorded at the image cache
+    destruction. It is further split up by Software and Gpu rasterization.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.Browser.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">
@@ -10161,6 +10170,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Time spent completing a compositor rasterization task, in microseconds.
     Recorded after the task finishes.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Renderer.CachedImagesCount" units="count">
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    The maximum number of images that were cached in the renderer over the
+    lifetime of the image decode cache. This is recorded at the image cache
+    destruction. It is further split up by Software and Gpu rasterization.
   </summary>
 </histogram>
 
@@ -105392,9 +105410,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="" label="This metric includes both gpu and software raster."/>
   <suffix name="Gpu" label="This metric is for only gpu raster."/>
   <suffix name="Software" label="This metric is for only software raster."/>
+  <affected-histogram name="Compositing.Browser.CachedImagesCount"/>
   <affected-histogram name="Compositing.Browser.RasterTask.RasterPixelsPerMs"/>
   <affected-histogram name="Compositing.Browser.RasterTask.RasterPixelsPerMs2"/>
   <affected-histogram name="Compositing.Browser.RasterTask.RasterUs"/>
+  <affected-histogram name="Compositing.Renderer.CachedImagesCount"/>
   <affected-histogram name="Compositing.Renderer.RasterTask.RasterPixelsPerMs"/>
   <affected-histogram
       name="Compositing.Renderer.RasterTask.RasterPixelsPerMs2"/>
