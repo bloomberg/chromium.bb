@@ -128,6 +128,11 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     return;
 
   if (profile_) {
+    DCHECK(model_);
+    // |search_controller_| will be destroyed on profile switch. Before that,
+    // delete |model_|'s search results to clear any dangling pointers.
+    model_->results()->DeleteAll();
+
     // Note: |search_resource_manager_| has a reference to |speech_ui_| so must
     // be destroyed first.
     search_resource_manager_.reset();
