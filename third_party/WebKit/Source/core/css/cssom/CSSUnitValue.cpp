@@ -38,8 +38,10 @@ CSSUnitValue* CSSUnitValue::FromCSSValue(
 void CSSUnitValue::setUnit(const String& unit_name,
                            ExceptionState& exception_state) {
   CSSPrimitiveValue::UnitType unit = UnitFromName(unit_name);
-  if (!IsValidUnit(unit))
+  if (!IsValidUnit(unit)) {
     exception_state.ThrowTypeError("Invalid unit: " + unit_name);
+    return;
+  }
 
   unit_ = unit;
 }

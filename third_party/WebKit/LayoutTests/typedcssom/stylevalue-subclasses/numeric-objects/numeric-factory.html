@@ -4,45 +4,9 @@
 <link rel="help" href="https://drafts.css-houdini.org/css-typed-om-1/#numeric-factory">
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="../../resources/testhelper.js"></script>
 <script>
 'use strict';
-
-const gValidUnits = [
-  'number',
-  'percent',
-  'em',
-  'ex',
-  'ch',
-  'ic',
-  'rem',
-  'lh',
-  'rlh',
-  'vw',
-  'vh',
-  'vi',
-  'vb',
-  'vmin',
-  'vmax',
-  'cm',
-  'mm',
-  'q',
-  'in',
-  'pt',
-  'pc',
-  'px',
-  'deg',
-  'grad',
-  'rad',
-  'turn',
-  's',
-  'ms',
-  'Hz',
-  'kHz',
-  'dpi',
-  'dpcm',
-  'dppx',
-  'fr',
-];
 
 for (const unit of gValidUnits) {
   test(() => {
