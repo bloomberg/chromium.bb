@@ -432,13 +432,10 @@ void FeatureInfo::InitializeFeatures() {
   // so the extension string is always exposed.
   AddExtensionString("GL_OES_vertex_array_object");
 
-// Texture storage image is only usable with native gpu memory buffer support,
-// and should be disabled if we aren't supposed to use GMBs as render targets.
+// Texture storage image is only usable with native gpu memory buffer support.
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(USE_OZONE))
-  if (!workarounds_.disable_gpu_memory_buffers_as_render_targets) {
-    feature_flags_.chromium_texture_storage_image = true;
-    AddExtensionString("GL_CHROMIUM_texture_storage_image");
-  }
+  feature_flags_.chromium_texture_storage_image = true;
+  AddExtensionString("GL_CHROMIUM_texture_storage_image");
 #endif
 
   if (!disallowed_features_.gpu_memory_manager)
