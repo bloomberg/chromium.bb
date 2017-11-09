@@ -30242,6 +30242,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="IOS.SharePageLatency" units="ms">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    The latency in milliseconds between the start of the Share Page operation
+    and when the UI is ready to be presented.
+  </summary>
+</histogram>
+
 <histogram name="IOS.Spotlight.Action" enum="IOSSpotlightAction">
   <owner>olivierrobin@chromium.org</owner>
   <summary>The Spotlight Action pressed by the user.</summary>

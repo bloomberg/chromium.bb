@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -25,7 +27,16 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// The histogram key to report the latency between the start of the Share Page
+// operation and when the UI is ready to be presented.
+const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
+}  // namespace
+
 @interface ActivityServiceLegacyCoordinator ()<ActivityServicePassword>
+
+// The time when the Share Page operation started.
+@property(nonatomic, assign) base::TimeTicks sharePageStartTime;
 
 // Shares the current page using the |canonicalURL|.
 - (void)sharePageWithCanonicalURL:(const GURL&)canonicalURL;
@@ -40,6 +51,8 @@
 
 @synthesize positionProvider = _positionProvider;
 @synthesize presentationProvider = _presentationProvider;
+
+@synthesize sharePageStartTime = _sharePageStartTime;
 
 #pragma mark - Public methods
 
@@ -71,6 +84,7 @@
 #pragma mark - Command handlers
 
 - (void)sharePage {
+  self.sharePageStartTime = base::TimeTicks::Now();
   if (!base::FeatureList::IsEnabled(activity_services::kShareCanonicalURL)) {
     [self sharePageWithCanonicalURL:GURL::EmptyGURL()];
   } else {
@@ -102,6 +116,12 @@
   id<ShareProtocol> controller = [ActivityServiceController sharedInstance];
   if ([controller isActive])
     return;
+
+  if (self.sharePageStartTime != base::TimeTicks()) {
+    UMA_HISTOGRAM_TIMES(kSharePageLatencyHistogram,
+                        base::TimeTicks::Now() - self.sharePageStartTime);
+    self.sharePageStartTime = base::TimeTicks();
+  }
 
   [controller shareWithData:data
                browserState:self.browserState
