@@ -26,16 +26,6 @@ id<GREYMatcher> TabletTabSwitcherCloseButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_LEAVE_TAB_SWITCHER);
 }
 
-id<GREYMatcher> TabletTabSwitcherIncognitoButton() {
-  return ButtonWithAccessibilityLabelId(
-      IDS_IOS_TAB_SWITCHER_HEADER_INCOGNITO_TABS);
-}
-
-id<GREYMatcher> TabletTabSwitcherOtherDevicesButton() {
-  return ButtonWithAccessibilityLabelId(
-      IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS);
-}
-
 id<GREYMatcher> TabletTabSwitcherNewTabButton() {
   return grey_allOf(
       ButtonWithAccessibilityLabelId(IDS_IOS_TAB_SWITCHER_CREATE_NEW_TAB),
@@ -61,6 +51,12 @@ id<GREYMatcher> TabletTabSwitcherOpenTabsPanelButton() {
 id<GREYMatcher> TabletTabSwitcherIncognitoTabsPanelButton() {
   NSString* accessibility_label = l10n_util::GetNSStringWithFixup(
       IDS_IOS_TAB_SWITCHER_HEADER_INCOGNITO_TABS);
+  return grey_accessibilityLabel(accessibility_label);
+}
+
+id<GREYMatcher> TabletTabSwitcherOtherDevicesPanelButton() {
+  NSString* accessibility_label = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_TAB_SWITCHER_HEADER_OTHER_DEVICES_TABS);
   return grey_accessibilityLabel(accessibility_label);
 }
 
