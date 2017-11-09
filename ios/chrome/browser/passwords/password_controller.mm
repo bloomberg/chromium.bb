@@ -663,6 +663,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
                                      field:(NSString*)fieldName
+                                 fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
                                   webState:(web::WebState*)webState
@@ -687,6 +688,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
                              field:(NSString*)fieldName
+                         fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
                           webState:(web::WebState*)webState

@@ -109,11 +109,7 @@ class TestWebState : public WebState {
   void OnNavigationStarted(NavigationContext* navigation_context);
   void OnNavigationFinished(NavigationContext* navigation_context);
   void OnRenderProcessGone();
-  void OnFormActivity(const std::string& form_name,
-                      const std::string& field_name,
-                      const std::string& type,
-                      const std::string& value,
-                      bool input_missing);
+  void OnFormActivity(const FormActivityParams& params);
 
  private:
   BrowserState* browser_state_;

@@ -8,6 +8,7 @@
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
@@ -204,7 +205,7 @@ TEST_F(WebStateObserverBridgeTest, DidSuppressDialog) {
   EXPECT_EQ(&test_web_state_, [observer_ didSuppressDialogInfo]->web_state);
 }
 
-// Tests |webState:didSubmitDocumentWithFormNamed:userInitiated:| forwarding.
+// Tests |webState:didRegisterFormActivityWithParams:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   ASSERT_FALSE([observer_ submitDocumentInfo]);
 
@@ -217,24 +218,29 @@ TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   EXPECT_EQ(user_initiated, [observer_ submitDocumentInfo]->user_initiated);
 }
 
-// Tests |webState:didRegisterFormActivityWithFormNamed:...| forwarding.
+// Tests |webState:didRegisterFormActivity:...| forwarding.
 TEST_F(WebStateObserverBridgeTest, FormActivityRegistered) {
   ASSERT_FALSE([observer_ formActivityInfo]);
 
-  std::string kTestFormName("form-name");
-  std::string kTestFieldName("field-name");
-  std::string kTestTypeType("type");
-  std::string kTestValue("value");
-  bridge_->FormActivityRegistered(&test_web_state_, kTestFormName,
-                                  kTestFieldName, kTestTypeType, kTestValue,
-                                  true);
+  FormActivityParams params;
+  params.form_name = "form-name";
+  params.field_name = "field-name";
+  params.field_type = "field-type";
+  params.type = "type";
+  params.value = "value";
+  params.input_missing = true;
+  bridge_->FormActivityRegistered(&test_web_state_, params);
   ASSERT_TRUE([observer_ formActivityInfo]);
   EXPECT_EQ(&test_web_state_, [observer_ formActivityInfo]->web_state);
-  EXPECT_EQ(kTestFormName, [observer_ formActivityInfo]->form_name);
-  EXPECT_EQ(kTestFieldName, [observer_ formActivityInfo]->field_name);
-  EXPECT_EQ(kTestTypeType, [observer_ formActivityInfo]->type);
-  EXPECT_EQ(kTestValue, [observer_ formActivityInfo]->value);
-  EXPECT_TRUE([observer_ formActivityInfo]->input_missing);
+  EXPECT_EQ(params.form_name,
+            [observer_ formActivityInfo]->form_activity.form_name);
+  EXPECT_EQ(params.field_name,
+            [observer_ formActivityInfo]->form_activity.field_name);
+  EXPECT_EQ(params.field_type,
+            [observer_ formActivityInfo]->form_activity.field_type);
+  EXPECT_EQ(params.type, [observer_ formActivityInfo]->form_activity.type);
+  EXPECT_EQ(params.value, [observer_ formActivityInfo]->form_activity.value);
+  EXPECT_TRUE([observer_ formActivityInfo]->form_activity.input_missing);
 }
 
 // Tests |webState:didUpdateFaviconURLCandidates:| forwarding.

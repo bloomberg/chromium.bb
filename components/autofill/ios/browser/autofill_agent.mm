@@ -36,6 +36,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web/public/url_scheme_util.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -521,6 +522,7 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
                                      field:(NSString*)fieldName
+                                 fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
                                   webState:(web::WebState*)webState
@@ -559,6 +561,7 @@ void GetFormAndField(autofill::FormData* form,
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
                              field:(NSString*)fieldName
+                         fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
                           webState:(web::WebState*)webState
@@ -702,11 +705,7 @@ void GetFormAndField(autofill::FormData* form,
 }
 
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivityWithFormNamed:(const std::string&)formName
-                               fieldName:(const std::string&)fieldName
-                                    type:(const std::string&)type
-                                   value:(const std::string&)value
-                            inputMissing:(BOOL)inputMissing {
+    didRegisterFormActivity:(const web::FormActivityParams&)params {
   if (!prefService_->GetBoolean(autofill::prefs::kAutofillEnabled))
     return;
   web::URLVerificationTrustLevel trustLevel;
@@ -721,7 +720,7 @@ void GetFormAndField(autofill::FormData* form,
     return;
 
   // Returns early and reset the suggestion state if an error occurs.
-  if (inputMissing)
+  if (params.input_missing)
     return;
 
   // Processing the page can be needed here if Autofill is enabled in settings
@@ -733,12 +732,12 @@ void GetFormAndField(autofill::FormData* form,
   // keyboard is about to be dismissed there's no point. If not it means the
   // next focus event will update the suggestion state within milliseconds, so
   // if we do it now a flicker will be seen.
-  if (type.compare("blur") == 0)
+  if (params.type.compare("blur") == 0)
     return;
 
   // Necessary so the strings can be used inside a block.
-  std::string fieldNameCopy = fieldName;
-  std::string typeCopy = type;
+  std::string fieldNameCopy = params.field_name;
+  std::string typeCopy = params.type;
 
   __weak AutofillAgent* weakSelf = self;
   id completionHandler = ^(BOOL success, const FormDataVector& forms) {
@@ -752,7 +751,7 @@ void GetFormAndField(autofill::FormData* form,
 
   // Re-extract the active form and field only. There is no minimum field
   // requirement because key/value suggestions are offered event on short forms.
-  [self fetchFormsWithName:base::UTF8ToUTF16(formName)
+  [self fetchFormsWithName:base::UTF8ToUTF16(params.form_name)
       minimumRequiredFieldsCount:1
                          pageURL:pageURL
                completionHandler:completionHandler];

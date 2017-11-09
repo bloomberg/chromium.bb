@@ -43,7 +43,7 @@
 // Arguments passed to |webState:didSubmitDocumentWithFormNamed:userInitiated:|.
 @property(nonatomic, readonly) web::TestSubmitDocumentInfo* submitDocumentInfo;
 // Arguments passed to
-// |webState:didRegisterFormActivityWithFormNamed:fieldName:type:value:|.
+// |webState:didRegisterFormActivity:|.
 @property(nonatomic, readonly) web::TestFormActivityInfo* formActivityInfo;
 // Arguments passed to |webState:didUpdateFaviconURLCandidates|.
 @property(nonatomic, readonly)

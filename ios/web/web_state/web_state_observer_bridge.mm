@@ -5,6 +5,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
 #include "base/logging.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -165,25 +166,11 @@ void WebStateObserverBridge::DocumentSubmitted(web::WebState* web_state,
 
 void WebStateObserverBridge::FormActivityRegistered(
     web::WebState* web_state,
-    const std::string& form_name,
-    const std::string& field_name,
-    const std::string& type,
-    const std::string& value,
-    bool input_missing) {
+    const FormActivityParams& params) {
   DCHECK(!web_state_ || web_state_ == web_state);
-  SEL selector = @selector(webState:
-      didRegisterFormActivityWithFormNamed:
-                                 fieldName:
-                                      type:
-                                     value:
-                              inputMissing:);
+  SEL selector = @selector(webState:didRegisterFormActivity:);
   if ([observer_ respondsToSelector:selector]) {
-    [observer_ webState:web_state
-        didRegisterFormActivityWithFormNamed:form_name
-                                   fieldName:field_name
-                                        type:type
-                                       value:value
-                                inputMissing:input_missing];
+    [observer_ webState:web_state didRegisterFormActivity:params];
   }
 }
 

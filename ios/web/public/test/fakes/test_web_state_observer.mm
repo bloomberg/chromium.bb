@@ -5,6 +5,7 @@
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/web_state/navigation_context_impl.h"
@@ -147,20 +148,13 @@ void TestWebStateObserver::DocumentSubmitted(WebState* web_state,
   submit_document_info_->user_initiated = user_initiated;
 }
 
-void TestWebStateObserver::FormActivityRegistered(WebState* web_state,
-                                                  const std::string& form_name,
-                                                  const std::string& field_name,
-                                                  const std::string& type,
-                                                  const std::string& value,
-                                                  bool input_missing) {
+void TestWebStateObserver::FormActivityRegistered(
+    WebState* web_state,
+    const FormActivityParams& params) {
   ASSERT_EQ(web_state_, web_state);
   form_activity_info_ = base::MakeUnique<web::TestFormActivityInfo>();
   form_activity_info_->web_state = web_state;
-  form_activity_info_->form_name = form_name;
-  form_activity_info_->field_name = field_name;
-  form_activity_info_->type = type;
-  form_activity_info_->value = value;
-  form_activity_info_->input_missing = input_missing;
+  form_activity_info_->form_activity = params;
 }
 
 void TestWebStateObserver::FaviconUrlUpdated(

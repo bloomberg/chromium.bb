@@ -256,14 +256,9 @@ void WebStateImpl::OnPageLoaded(const GURL& url, bool load_success) {
     observer.PageLoaded(this, load_completion_status);
 }
 
-void WebStateImpl::OnFormActivityRegistered(const std::string& form_name,
-                                            const std::string& field_name,
-                                            const std::string& type,
-                                            const std::string& value,
-                                            bool input_missing) {
+void WebStateImpl::OnFormActivityRegistered(const FormActivityParams& params) {
   for (auto& observer : observers_) {
-    observer.FormActivityRegistered(this, form_name, field_name, type, value,
-                                    input_missing);
+    observer.FormActivityRegistered(this, params);
   }
 }
 

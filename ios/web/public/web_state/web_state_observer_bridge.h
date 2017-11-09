@@ -62,13 +62,8 @@
                      userInitiated:(BOOL)userInitiated;
 
 // Invoked by WebStateObserverBridge::FormActivityRegistered.
-// TODO(ios): Method should take data transfer object rather than parameters.
 - (void)webState:(web::WebState*)webState
-    didRegisterFormActivityWithFormNamed:(const std::string&)formName
-                               fieldName:(const std::string&)fieldName
-                                    type:(const std::string&)type
-                                   value:(const std::string&)value
-                            inputMissing:(BOOL)inputMissing;
+    didRegisterFormActivity:(const web::FormActivityParams&)params;
 
 // Invoked by WebStateObserverBridge::FaviconUrlUpdated.
 - (void)webState:(web::WebState*)webState
@@ -138,11 +133,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
                          const std::string& form_name,
                          bool user_initiated) override;
   void FormActivityRegistered(web::WebState* web_state,
-                              const std::string& form_name,
-                              const std::string& field_name,
-                              const std::string& type,
-                              const std::string& value,
-                              bool input_missing) override;
+                              const FormActivityParams& params) override;
   void FaviconUrlUpdated(web::WebState* web_state,
                          const std::vector<FaviconURL>& candidates) override;
   void RenderProcessGone(web::WebState* web_state) override;

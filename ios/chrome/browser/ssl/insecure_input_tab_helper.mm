@@ -11,6 +11,7 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/origin_util.h"
+#include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
@@ -116,12 +117,8 @@ InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
 
 void InsecureInputTabHelper::FormActivityRegistered(
     web::WebState* web_state,
-    const std::string& form_name,
-    const std::string& field_name,
-    const std::string& type,
-    const std::string& value,
-    bool input_missing) {
-  if (type == "input" &&
+    const web::FormActivityParams& params) {
+  if (params.type == "input" &&
       !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
     DidEditFieldInInsecureContext();
   }

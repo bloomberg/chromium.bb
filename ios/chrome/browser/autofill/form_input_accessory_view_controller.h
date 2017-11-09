@@ -42,22 +42,17 @@ typedef void (^AccessoryViewReadyCompletion)(
 // Determines asynchronously if this provider has a view available for the
 // specified form/field and invokes |completionHandler| with the answer.
 - (void)
-    checkIfAccessoryViewIsAvailableForFormNamed:(const std::string&)formName
-                                      fieldName:(const std::string&)fieldName
-                                       webState:(web::WebState*)webState
-                              completionHandler:
-                                  (AccessoryViewAvailableCompletion)
-                                      completionHandler;
+checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
+                              webState:(web::WebState*)webState
+                     completionHandler:
+                         (AccessoryViewAvailableCompletion)completionHandler;
 
 // Asynchronously retrieves an accessory view from this provider for the
 // specified form/field and returns it via |accessoryViewUpdateBlock|.
-- (void)retrieveAccessoryViewForFormNamed:(const std::string&)formName
-                                fieldName:(const std::string&)fieldName
-                                    value:(const std::string&)value
-                                     type:(const std::string&)type
-                                 webState:(web::WebState*)webState
-                 accessoryViewUpdateBlock:
-                     (AccessoryViewReadyCompletion)accessoryViewUpdateBlock;
+- (void)retrieveAccessoryViewForForm:(const web::FormActivityParams&)params
+                            webState:(web::WebState*)webState
+            accessoryViewUpdateBlock:
+                (AccessoryViewReadyCompletion)accessoryViewUpdateBlock;
 
 // Notifies this provider that the accessory view is going away.
 - (void)inputAccessoryViewControllerDidReset:
