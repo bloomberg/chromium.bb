@@ -205,7 +205,7 @@ void ServiceWorkerScriptURLLoader::OnReceiveResponse(
 
 void ServiceWorkerScriptURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const ResourceResponseHead& respoinse_head) {
+    const ResourceResponseHead& response_head) {
   // Resource requests for service worker scripts should not follow redirects.
   //
   // Step 7.5: "Set request's redirect mode to "error"."
