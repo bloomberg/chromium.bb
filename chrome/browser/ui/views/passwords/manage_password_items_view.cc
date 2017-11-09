@@ -138,7 +138,7 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
       form.federation_origin.unique()
           ? form.password_value
           : l10n_util::GetStringFUTF16(
-                IDS_PASSWORDS_VIA_FEDERATION,
+                IDS_PASSWORD_MANAGER_SIGNIN_VIA_FEDERATION,
                 base::UTF8ToUTF16(form.federation_origin.host()));
   auto label = base::MakeUnique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE,
                                               STYLE_SECONDARY);
