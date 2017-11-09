@@ -227,8 +227,15 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   for (auto& pass : render_passes_in_draw_order) {
     auto& resource = render_pass_textures_[pass->id];
-    if (!resource)
+    if (!resource) {
       resource = std::make_unique<cc::ScopedResource>(resource_provider_);
+
+      // |has_damage_from_contributing_content| is used to determine if previous
+      // contents can be reused when caching render pass and as a result needs
+      // to be true when a new resource is created to ensure that it is updated
+      // and not assumed to already contain correct contents.
+      pass->has_damage_from_contributing_content = true;
+    }
   }
 }
 
@@ -370,6 +377,22 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   current_frame_valid_ = false;
 }
 
+gfx::Rect DirectRenderer::DrawingFrame::ComputeScissorRectForRenderPass()
+    const {
+  if (current_render_pass == root_render_pass)
+    return root_damage_rect;
+
+  // If the root damage rect has been expanded due to overlays, all the other
+  // damage rect calculations are incorrect.
+  if (!root_render_pass->damage_rect.Contains(root_damage_rect))
+    return current_render_pass->output_rect;
+
+  DCHECK(
+      current_render_pass->copy_requests.empty() ||
+      (current_render_pass->damage_rect == current_render_pass->output_rect));
+  return current_render_pass->damage_rect;
+}
+
 gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace() const {
   gfx::Rect device_viewport_rect(current_frame()->device_viewport_size);
   device_viewport_rect -= current_viewport_rect_.OffsetFromOrigin();
@@ -501,9 +524,8 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
 
 void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
-  if (CanSkipRenderPass(render_pass))
+  if (!UseRenderPass(render_pass))
     return;
-  UseRenderPass(render_pass);
 
   const gfx::Rect surface_rect_in_draw_space = OutputSurfaceRectInDrawSpace();
   gfx::Rect render_pass_scissor_in_draw_space = surface_rect_in_draw_space;
@@ -516,7 +538,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
   if (use_partial_swap_) {
     render_pass_scissor_in_draw_space.Intersect(
-        ComputeScissorRectForRenderPass(current_frame()->current_render_pass));
+        current_frame()->ComputeScissorRectForRenderPass());
   }
 
   bool is_root_render_pass =
@@ -602,32 +624,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     GenerateMipmap();
 }
 
-bool DirectRenderer::CanSkipRenderPass(const RenderPass* render_pass) const {
-  if (render_pass == current_frame()->root_render_pass)
-    return false;
-
-  if (ComputeScissorRectForRenderPass(render_pass).IsEmpty())
-    return true;
-
-  // If the RenderPass wants to be cached, then we only draw it if we need to.
-  // When damage is present, then we can't skip the RenderPass. Or if the
-  // texture does not exist (first frame, or was deleted) then we can't skip
-  // the RenderPass.
-  if (render_pass->cache_render_pass) {
-    if (render_pass->has_damage_from_contributing_content)
-      return false;
-    auto it = render_pass_textures_.find(render_pass->id);
-    DCHECK(it != render_pass_textures_.end());
-    cc::ScopedResource* texture = it->second.get();
-    DCHECK(texture);
-    return texture->id() != 0;
-  }
-
-  return false;
-}
-
-void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
+bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
+  current_frame()->current_texture = nullptr;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
 
@@ -638,7 +637,7 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);
-    return;
+    return true;
   }
 
   cc::ScopedResource* texture = render_pass_textures_[render_pass->id].get();
@@ -647,36 +646,26 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   gfx::Size size = RenderPassTextureSize(render_pass);
   size.Enlarge(enlarge_pass_texture_amount_.width(),
                enlarge_pass_texture_amount_.height());
-
   if (!texture->id()) {
     texture->Allocate(size, RenderPassTextureHint(render_pass),
                       BackbufferFormat(),
                       current_frame()->current_render_pass->color_space);
+  } else if (render_pass->cache_render_pass &&
+             !render_pass->has_damage_from_contributing_content) {
+    return false;
+  } else if (current_frame()->ComputeScissorRectForRenderPass().IsEmpty()) {
+    return false;
   }
   DCHECK(texture->id());
 
-  BindFramebufferToTexture(texture);
-  InitializeViewport(current_frame(), render_pass->output_rect,
-                     gfx::Rect(render_pass->output_rect.size()),
-                     texture->size());
-}
+  if (BindFramebufferToTexture(texture)) {
+    InitializeViewport(current_frame(), render_pass->output_rect,
+                       gfx::Rect(render_pass->output_rect.size()),
+                       texture->size());
+    return true;
+  }
 
-gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
-    const RenderPass* render_pass) const {
-  const RenderPass* root_render_pass = current_frame()->root_render_pass;
-  const gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
-
-  if (render_pass == root_render_pass)
-    return root_damage_rect;
-
-  // If the root damage rect has been expanded due to overlays, all the other
-  // damage rect calculations are incorrect.
-  if (!root_render_pass->damage_rect.Contains(root_damage_rect))
-    return render_pass->output_rect;
-
-  DCHECK(render_pass->copy_requests.empty() ||
-         (render_pass->damage_rect == render_pass->output_rect));
-  return render_pass->damage_rect;
+  return false;
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(
