@@ -171,6 +171,13 @@ Time Time::NowFromSystemTime() {
   return Now();
 }
 
+// Note: These implementations of Time::FromExploded() and Time::Explode() are
+// only used on iOS now. Since Mac is now always 64-bit, we can use the POSIX
+// versions of these functions as time_t is not capped at year 2038 on 64-bit
+// builds. The POSIX functions are preferred since they don't suffer from some
+// performance problems that are present in these implementations.
+// See crbug.com/781601 for more details.
+#if defined(OS_IOS)
 // static
 bool Time::FromExploded(bool is_local, const Exploded& exploded, Time* time) {
   base::ScopedCFTypeRef<CFTimeZoneRef> time_zone(
@@ -258,6 +265,7 @@ void Time::Explode(bool is_local, Exploded* exploded) const {
                            (microsecond - kMicrosecondsPerMillisecond + 1) /
                                kMicrosecondsPerMillisecond;
 }
+#endif  // OS_IOS
 
 // TimeTicks ------------------------------------------------------------------
 
