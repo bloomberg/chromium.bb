@@ -108,11 +108,6 @@
     "args": ["--stable-release-mode"]
   },
   {
-    "prefix": "stable",
-    "base": "svg/transforms/stable",
-    "args": ["--stable-release-mode"]
-  },
-  {
     "prefix": "feature-policy-permissions",
     "base": "external/wpt/mediacapture-streams",
     "args": ["--enable-features=UseFeaturePolicyForPermissions",
