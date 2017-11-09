@@ -236,13 +236,15 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
     const NGInlineItem& item,
     NGInlineItemResult* item_result) {
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
+  DCHECK(item.TextShapeResult());
   line_.should_create_line_box = true;
 
   LayoutUnit available_width = line_.AvailableWidth();
 
   // If the start offset is at the item boundary, try to add the entire item.
   if (offset_ == item.StartOffset()) {
-    item_result->inline_size = item.InlineSize().ClampNegativeToZero();
+    item_result->inline_size =
+        item.TextShapeResult()->SnappedWidth().ClampNegativeToZero();
     LayoutUnit next_position = line_.position + item_result->inline_size;
     if (!auto_wrap_ || next_position <= available_width) {
       item_result->shape_result = item.TextShapeResult();

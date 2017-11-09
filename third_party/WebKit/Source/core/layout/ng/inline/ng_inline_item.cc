@@ -138,33 +138,6 @@ void NGInlineItem::SetEndOffset(unsigned end_offset) {
   end_offset_ = end_offset;
 }
 
-LayoutUnit NGInlineItem::InlineSize() const {
-  if (Type() == NGInlineItem::kText)
-    return LayoutUnit(shape_result_->Width());
-
-  DCHECK_NE(Type(), NGInlineItem::kAtomicInline)
-      << "Use NGInlineLayoutAlgorithm::InlineSize";
-  // Bidi controls and out-of-flow objects do not have in-flow widths.
-  return LayoutUnit();
-}
-
-LayoutUnit NGInlineItem::InlineSize(unsigned start, unsigned end) const {
-  DCHECK_GE(start, StartOffset());
-  DCHECK_LE(start, end);
-  DCHECK_LE(end, EndOffset());
-
-  if (start == end)
-    return LayoutUnit();
-  if (start == start_offset_ && end == end_offset_)
-    return InlineSize();
-
-  DCHECK_EQ(Type(), NGInlineItem::kText);
-  return LayoutUnit(ShapeResultBuffer::GetCharacterRange(
-                        shape_result_, Direction(), shape_result_->Width(),
-                        start - StartOffset(), end - StartOffset())
-                        .Width());
-}
-
 bool NGInlineItem::HasStartEdge() const {
   DCHECK(Type() == kOpenTag || Type() == kCloseTag);
   // TODO(kojii): Should use break token when NG has its own tree building.
