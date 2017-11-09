@@ -198,7 +198,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   first_position.latitude = 12;
   first_position.longitude = 34;
   first_position.accuracy = 56;
-  first_position.timestamp = base::Time::Now().ToDoubleT();
+  first_position.timestamp = base::Time::Now();
 
   AsyncMockGeolocationObserver first_observer;
   GeolocationProviderImpl::LocationUpdateCallback first_callback =
@@ -216,7 +216,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   second_position.latitude = 13;
   second_position.longitude = 34;
   second_position.accuracy = 56;
-  second_position.timestamp = base::Time::Now().ToDoubleT();
+  second_position.timestamp = base::Time::Now();
 
   AsyncMockGeolocationObserver second_observer;
 

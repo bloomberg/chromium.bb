@@ -64,8 +64,8 @@ Geoposition* CreateGeoposition(
       position.altitude_accuracy >= 0., position.altitude_accuracy,
       position.heading >= 0. && position.heading <= 360., position.heading,
       position.speed >= 0., position.speed);
-  return Geoposition::Create(coordinates,
-                             ConvertSecondsToDOMTimeStamp(position.timestamp));
+  return Geoposition::Create(coordinates, ConvertSecondsToDOMTimeStamp(
+                                              position.timestamp.ToDoubleT()));
 }
 
 PositionError* CreatePositionError(

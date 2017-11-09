@@ -34,11 +34,10 @@ class LocationProvider;
 // moment.
 class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
  public:
-  // Number of milliseconds newer a location provider has to be that it's worth
+  // The TimeDelta newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher
   // (regardles of relative accuracy). Public for tests.
-  static const int64_t kFixStaleTimeoutMilliseconds;
-
+  static const base::TimeDelta kFixStaleTimeoutTimeDelta;
   LocationArbitrator(std::unique_ptr<GeolocationDelegate> delegate,
                      const GeolocationProvider::RequestContextProducer
                          request_context_producer,

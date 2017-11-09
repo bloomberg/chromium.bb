@@ -10,4 +10,7 @@ mojom("interfaces") {
     "geolocation_config.mojom",
     "geoposition.mojom",
   ]
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
 }

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "device/geolocation/location_provider_android.h"
 #include "jni/LocationProviderAdapter_jni.h"
 
@@ -93,7 +94,7 @@ void LocationApiAdapterAndroid::OnNewLocationAvailable(double latitude,
   mojom::Geoposition position;
   position.latitude = latitude;
   position.longitude = longitude;
-  position.timestamp = time_stamp;
+  position.timestamp = base::Time::FromDoubleT(time_stamp);
   if (has_altitude)
     position.altitude = altitude;
   if (has_accuracy)

@@ -9,7 +9,7 @@ namespace device {
 bool ValidateGeoposition(const mojom::Geoposition& position) {
   return position.latitude >= -90. && position.latitude <= 90. &&
          position.longitude >= -180. && position.longitude <= 180. &&
-         position.accuracy >= 0. && position.timestamp != 0.;
+         position.accuracy >= 0. && !position.timestamp.is_null();
 }
 
 }  // namespace device

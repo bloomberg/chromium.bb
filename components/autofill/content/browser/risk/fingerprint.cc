@@ -418,9 +418,8 @@ void FingerprintDataLoader::FillFingerprint() {
     location->set_latitude(geoposition_.latitude);
     location->set_longitude(geoposition_.longitude);
     location->set_accuracy(geoposition_.accuracy);
-    location->set_time_in_ms((base::Time::FromDoubleT(geoposition_.timestamp) -
-                              base::Time::UnixEpoch())
-                                 .InMilliseconds());
+    location->set_time_in_ms(
+        (geoposition_.timestamp - base::Time::UnixEpoch()).InMilliseconds());
   }
 
   Fingerprint::Metadata* metadata = fingerprint->mutable_metadata();

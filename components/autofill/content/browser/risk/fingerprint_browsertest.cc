@@ -193,9 +193,9 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   position.longitude = kLongitude;
   position.altitude = kAltitude;
   position.accuracy = kAccuracy;
-  position.timestamp = (base::Time::UnixEpoch() +
-                        base::TimeDelta::FromMilliseconds(kGeolocationTime))
-                           .ToDoubleT();
+  position.timestamp = base::Time::UnixEpoch() +
+                       base::TimeDelta::FromMilliseconds(kGeolocationTime);
+
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 

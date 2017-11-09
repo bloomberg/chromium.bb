@@ -51,7 +51,7 @@ void LayoutTestBrowserContext::Init() {
   position.longitude = 0;
   position.altitude = 0;
   position.accuracy = 0;
-  position.timestamp = base::Time::Now().ToDoubleT();
+  position.timestamp = base::Time::Now();
   device::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
       position);
 }
