@@ -322,7 +322,7 @@ public class TabModelMergingTest {
         MockTabPersistentStoreObserver mockObserver = new MockTabPersistentStoreObserver();
         TabModelSelectorImpl tabModelSelector =
                 (TabModelSelectorImpl) mActivity2.getTabModelSelector();
-        tabModelSelector.getTabPersistentStoreForTesting().setObserverForTesting(mockObserver);
+        tabModelSelector.getTabPersistentStoreForTesting().addObserver(mockObserver);
 
         // Merge tabs into ChromeTabbedActivity2. Wait for the merge to finish, ensuring the
         // tab metadata file for ChromeTabbedActivity gets deleted before attempting to merge
