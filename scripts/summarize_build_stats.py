@@ -587,6 +587,9 @@ ReportHTMLTemplate = """
   th, td {{padding: 5px}}
   td {{text-align: left}}
   replace {{background-color: red; font-style: bold}}
+  badcl {{background-color: darkgreen; color: white}}
+  bugtot {{background-color: darkslateblue; color:white}}
+  infra {{background-color: darkred; color:white}}
   #note {{background-color: green; font-style: italic}}
 </style>
 <title>Summary of CQ Performance for the past week</title>
@@ -672,11 +675,15 @@ def GenerateReport(file_out, summary):
   sorted_blame_counts = sorted([(v, k) for (k, v) in
                                 summary['patch_blame_counts'].iteritems()],
                                reverse=True)
+
+  category_pick = ('_<replace>Pick a category</replace>_ <badcl>Bad CL</badcl>'
+                   ' <bugtot>Product</bugtot> <infra>Infra</infra>')
+
   false_rejections = [{'id': blame, 'rejections': rejs}
                       for rejs, blame in sorted_blame_counts]
   flake_fmt = ('  <li><a href="http://{id}">{id}</a> (<b>{rejections} </b> '
-               'false rejections): _<replace>Brief explanation of bug. If '
-               'fixed, or describe workarounds</replace>_</li>')
+               'false rejections): %s _<replace>Brief explanation of bug. If '
+               'fixed, or describe workarounds</replace>_</li>' % category_pick)
   report['false_rejections_html'] = '\n'.join([flake_fmt.format(**x)
                                                for x in false_rejections])
 
@@ -686,8 +693,8 @@ def GenerateReport(file_out, summary):
   build_fails = [{'id': blame, 'fails': fails}
                  for fails, blame in sorted_fails]
   cl_flake_fmt = ('  <li><a href="http://{id}">{id}</a> '
-                  '(<b>{fails}</b> build failures): '
-                  '_<replace>explanation</replace>_</li>')
+                  '(<b>{fails}</b> build failures): %s '
+                  '_<replace>explanation</replace>_</li>' % category_pick)
   report['build_failures_html'] = '\n'.join([cl_flake_fmt.format(**x)
                                              for x in build_fails])
 
