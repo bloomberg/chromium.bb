@@ -447,6 +447,13 @@ class AutofillManager : public AutofillHandler,
       size_t current_index,
       const ServerFieldTypeSet& upload_types);
 
+  void FillFieldWithValue(AutofillField* autofill_field,
+                          const base::string16& value,
+                          const std::string& profile_language_code,
+                          const base::string16& profile_full_name,
+                          FormFieldData* field_data,
+                          bool should_notify);
+
   AutofillClient* const client_;
 
   // Handles Payments service requests.
