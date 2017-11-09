@@ -89,10 +89,10 @@ void OptimizationHintsComponentInstallerPolicy::ComponentReady(
   optimization_guide::OptimizationGuideService* optimization_guide_service =
       g_browser_process->optimization_guide_service();
   if (optimization_guide_service) {
-    optimization_guide::UnindexedHintsInfo unindexed_hints_info(
+    optimization_guide::ComponentInfo component_info(
         version,
         install_dir.Append(optimization_guide::kUnindexedHintsFileName));
-    optimization_guide_service->ReadAndIndexHints(unindexed_hints_info);
+    optimization_guide_service->ProcessHints(component_info);
   }
 }
 
@@ -138,11 +138,9 @@ void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
   if (!profile_prefs || !profile_prefs->GetBoolean(prefs::kDataSaverEnabled)) {
     return;
   }
-  std::unique_ptr<ComponentInstallerPolicy> policy(
-      new OptimizationHintsComponentInstallerPolicy());
-  // |cus| will take ownership of |installer| during installer->Register(cus).
-  ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, base::Closure());
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<OptimizationHintsComponentInstallerPolicy>());
+  installer->Register(cus, base::OnceClosure());
 }
 
 }  // namespace component_updater
