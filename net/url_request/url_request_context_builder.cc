@@ -205,8 +205,7 @@ URLRequestContextBuilder::URLRequestContextBuilder()
       pac_quick_check_enabled_(true),
       pac_sanitize_url_policy_(ProxyService::SanitizeUrlPolicy::SAFE),
       shared_proxy_delegate_(nullptr),
-      shared_http_auth_handler_factory_(nullptr),
-      shared_cert_verifier_(nullptr) {
+      shared_http_auth_handler_factory_(nullptr) {
 }
 
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
@@ -282,14 +281,7 @@ void URLRequestContextBuilder::set_ct_policy_enforcer(
 
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
-  DCHECK(!shared_cert_verifier_);
   cert_verifier_ = std::move(cert_verifier);
-}
-
-void URLRequestContextBuilder::set_shared_cert_verifier(
-    CertVerifier* shared_cert_verifier) {
-  DCHECK(!cert_verifier_);
-  shared_cert_verifier_ = shared_cert_verifier;
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -476,10 +468,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 
   if (cert_verifier_) {
-    DCHECK(!shared_cert_verifier_);
     storage->set_cert_verifier(std::move(cert_verifier_));
-  } else if (shared_cert_verifier_) {
-    context->set_cert_verifier(shared_cert_verifier_);
   } else {
     storage->set_cert_verifier(CertVerifier::CreateDefault());
   }

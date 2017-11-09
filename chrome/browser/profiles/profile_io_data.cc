@@ -181,6 +181,34 @@ namespace {
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
+// A CertVerifier that forwards all requests to |g_cert_verifier_for_testing|.
+// This is used to allow Profiles to have their own
+// std::unique_ptr<net::CertVerifier> while forwarding calls to the shared
+// verifier.
+class WrappedTestingCertVerifier : public net::CertVerifier {
+ public:
+  ~WrappedTestingCertVerifier() override = default;
+
+  // CertVerifier implementation
+  int Verify(const RequestParams& params,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             std::unique_ptr<Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    if (!g_cert_verifier_for_testing)
+      return net::ERR_FAILED;
+    return g_cert_verifier_for_testing->Verify(params, crl_set, verify_result,
+                                               callback, out_req, net_log);
+  }
+  bool SupportsOCSPStapling() override {
+    if (!g_cert_verifier_for_testing)
+      return false;
+    return g_cert_verifier_for_testing->SupportsOCSPStapling();
+  }
+};
+
 #if BUILDFLAG(DEBUG_DEVTOOLS)
 bool IsSupportedDevToolsURL(const GURL& url, base::FilePath* path) {
   std::string bundled_path_prefix(chrome::kChromeUIDevToolsBundledPath);
@@ -1100,7 +1128,7 @@ void ProfileIOData::Init(
 #endif
 
   if (g_cert_verifier_for_testing) {
-    builder->set_shared_cert_verifier(g_cert_verifier_for_testing);
+    builder->SetCertVerifier(std::make_unique<WrappedTestingCertVerifier>());
   } else {
     std::unique_ptr<net::CertVerifier> cert_verifier;
 #if defined(OS_CHROMEOS)

@@ -291,14 +291,6 @@ class NET_EXPORT URLRequestContextBuilder {
 
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
-  // Makes the created URLRequestContext use a shared CertVerifier object.
-  // Should not be used it SetCertVerifier() is used. The consumer must ensure
-  // the CertVerifier outlives the URLRequestContext returned by the builder.
-  //
-  // TODO(mmenke): Figure out if consumers can use SetCertVerifier instead. See:
-  // https://crbug.com/743251.
-  void set_shared_cert_verifier(CertVerifier* shared_cert_verifier);
-
 #if BUILDFLAG(ENABLE_REPORTING)
   void set_reporting_policy(
       std::unique_ptr<net::ReportingPolicy> reporting_policy);
@@ -399,7 +391,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpAuthHandlerFactory* shared_http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
-  CertVerifier* shared_cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
