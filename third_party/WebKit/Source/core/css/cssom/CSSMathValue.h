@@ -40,7 +40,7 @@ class CORE_EXPORT CSSMathValue : public CSSNumericValue {
   }
 
  protected:
-  CSSMathValue() : CSSNumericValue() {}
+  CSSMathValue(const CSSNumericValueType& type) : CSSNumericValue(type) {}
 };
 
 }  // namespace blink

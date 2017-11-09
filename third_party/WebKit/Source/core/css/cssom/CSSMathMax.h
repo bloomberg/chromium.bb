@@ -25,7 +25,9 @@ class CORE_EXPORT CSSMathMax : public CSSMathValue {
       return nullptr;
     }
 
-    return new CSSMathMax(args);
+    // TODO(crbug.com/776173): Implement add typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathMax(args, type);
   }
 
   String getOperator() const final { return "max"; }
@@ -34,7 +36,8 @@ class CORE_EXPORT CSSMathMax : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kMaxType; }
 
  private:
-  explicit CSSMathMax(const HeapVector<CSSNumberish>&) : CSSMathValue() {}
+  CSSMathMax(const HeapVector<CSSNumberish>&, const CSSNumericValueType& type)
+      : CSSMathValue(type) {}
 };
 
 }  // namespace blink

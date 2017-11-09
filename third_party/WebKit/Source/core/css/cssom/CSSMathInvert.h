@@ -18,7 +18,9 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
  public:
   // The constructor defined in the IDL.
   static CSSMathInvert* Create(const CSSNumberish& arg) {
-    return new CSSMathInvert(CSSNumericValue::FromNumberish(arg));
+    // TODO(crbug.com/776173): Implement negate typing.
+    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
+    return new CSSMathInvert(CSSNumericValue::FromNumberish(arg), type);
   }
 
   String getOperator() const final { return "invert"; }
@@ -37,8 +39,8 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   }
 
  private:
-  explicit CSSMathInvert(CSSNumericValue* value)
-      : CSSMathValue(), value_(value) {}
+  CSSMathInvert(CSSNumericValue* value, const CSSNumericValueType& type)
+      : CSSMathValue(type), value_(value) {}
 
   Member<CSSNumericValue> value_;
 };
