@@ -1020,6 +1020,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return;
   }
 
+  // If not between -applicationDidFinishLaunching: and
+  // -applicationWillTerminate:, ignore. This can happen when events are sitting
+  // in the event queue while the browser is shutting down.
+  if (!keep_alive_)
+    return;
+
   NSInteger tag = [sender tag];
 
   // If there are no browser windows, and we are trying to open a browser

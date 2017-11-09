@@ -24,10 +24,12 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -53,6 +55,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#import "ui/events/test/cocoa_test_event_utils.h"
 
 using base::SysUTF16ToNSString;
 
@@ -114,6 +117,44 @@ void RunClosureWhenProfileInitialized(const base::Closure& closure,
 @end
 
 namespace {
+
+using AppControllerBrowserTest = InProcessBrowserTest;
+
+size_t CountVisibleWindows() {
+  size_t count = 0;
+  for (NSWindow* w in [NSApp windows])
+    count = count + ([w isVisible] ? 1 : 0);
+  return count;
+}
+
+// Test browser shutdown with a command in the message queue.
+IN_PROC_BROWSER_TEST_F(AppControllerBrowserTest, CommandDuringShutdown) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(1u, CountVisibleWindows());
+
+  chrome::AttemptExit();  // Set chrome::IsTryingToQuit and close all windows.
+
+  // Opening a new window here is fine (unload handlers can also interrupt
+  // exit). But closing the window posts an autorelease on
+  // BrowserWindowController, which calls ~Browser() and, if that was the last
+  // Browser, it invokes applicationWillTerminate: (because IsTryingToQuit is
+  // set). So, verify assumptions then process that autorelease.
+
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(0u, CountVisibleWindows());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(0u, CountVisibleWindows());
+
+  NSEvent* cmd_n = cocoa_test_event_utils::KeyEventWithKeyCode(
+      'n', 'n', NSKeyDown, NSCommandKeyMask);
+  [[NSApp mainMenu] performSelector:@selector(performKeyEquivalent:)
+                         withObject:cmd_n
+                         afterDelay:0];
+  // Let the run loop get flushed, during process cleanup and try not to crash.
+}
 
 class AppControllerPlatformAppBrowserTest
     : public extensions::PlatformAppBrowserTest {
