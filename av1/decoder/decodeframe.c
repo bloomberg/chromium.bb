@@ -3271,7 +3271,12 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
 
 #if CONFIG_ADAPT_SCAN
-  cm->use_adapt_scan = aom_rb_read_bit(rb);
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile)
+    cm->use_adapt_scan = 0;
+  else
+#endif  // CONFIG_EXT_TILE
+    cm->use_adapt_scan = aom_rb_read_bit(rb);
   // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
   // switches from 1 to 0
   if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);

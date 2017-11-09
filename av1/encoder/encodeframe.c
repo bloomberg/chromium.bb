@@ -4268,7 +4268,12 @@ void av1_encode_frame(AV1_COMP *cpi) {
   // rather than the potential full set of 16 transforms
   cm->reduced_tx_set_used = 0;
 #if CONFIG_ADAPT_SCAN
-  cm->use_adapt_scan = 1;
+#if CONFIG_EXT_TILE
+  if (cm->large_scale_tile)
+    cm->use_adapt_scan = 0;
+  else
+#endif  // CONFIG_EXT_TILE
+    cm->use_adapt_scan = 1;
   // TODO(angiebird): call av1_init_scan_order only when use_adapt_scan
   // switches from 1 to 0
   if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);
