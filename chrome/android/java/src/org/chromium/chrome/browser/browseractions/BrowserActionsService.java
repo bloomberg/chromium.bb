@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -56,8 +57,8 @@ public class BrowserActionsService extends Service {
     public static final String PREF_HAS_BROWSER_ACTIONS_NOTIFICATION =
             "org.chromium.chrome.browser.browseractions.HAS_BROWSER_ACTIONS_NOTIFICATION";
 
-    public static final String PREF_IS_BROWSER_ACTIONS_SERVICE_ALIVE =
-            "org.chromium.chrome.browser.browseractions.PREF_IS_BROWSER_ACTIONS_SERVICE_ALIVE";
+    public static final String PREF_NUM_TAB_CREATED_IN_BACKGROUND =
+            "org.chromium.chrome.browser.browseractions.NUM_TAB_CREATED_IN_BACKGROUND";
 
     /**
      * Extra that indicates whether to show a Tab for single url or the tab switcher for
@@ -108,6 +109,7 @@ public class BrowserActionsService extends Service {
             Toast.makeText(context, R.string.browser_actions_open_in_background_toast_message,
                          Toast.LENGTH_SHORT)
                     .show();
+            updateNumTabCreatedInBackground();
             NotificationUmaTracker.getInstance().onNotificationShown(
                     NotificationUmaTracker.BROWSER_ACTIONS, ChannelDefinitions.CHANNEL_ID_BROWSER);
         } else if (TextUtils.equals(intent.getAction(), ACTION_TAB_CREATION_CHROME_DISPLAYED)) {
@@ -253,10 +255,20 @@ public class BrowserActionsService extends Service {
                 PREF_HAS_BROWSER_ACTIONS_NOTIFICATION, false);
     }
 
+    private static void updateNumTabCreatedInBackground() {
+        int tabNum =
+                ContextUtils.getAppSharedPreferences().getInt(PREF_NUM_TAB_CREATED_IN_BACKGROUND, 0)
+                + 1;
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putInt(PREF_NUM_TAB_CREATED_IN_BACKGROUND, tabNum)
+                .apply();
+    }
+
     /**
-     * Cancel Browser Actions notification.
+     * Called when Chrome tabbed mode come to the foreground.
      */
-    public static void cancelBrowserActionsNotification() {
+    public static void onTabbedModeForegrounded() {
         // If Chrome is shown, force the foreground service to be killed so notification bound to it
         // will be dismissed.
         if (sLoadingUrlNum != 0) {
@@ -270,10 +282,21 @@ public class BrowserActionsService extends Service {
                             Context.NOTIFICATION_SERVICE);
             notificationManager.cancel(NotificationConstants.NOTIFICATION_ID_BROWSER_ACTIONS);
         }
+
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(PREF_HAS_BROWSER_ACTIONS_NOTIFICATION, false)
                 .apply();
+        int tabNum = ContextUtils.getAppSharedPreferences().getInt(
+                PREF_NUM_TAB_CREATED_IN_BACKGROUND, 0);
+        if (tabNum != 0) {
+            RecordHistogram.recordCountHistogram(
+                    "BrowserActions.NumTabCreatedInBackground", tabNum);
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .remove(PREF_NUM_TAB_CREATED_IN_BACKGROUND)
+                    .apply();
+        }
     }
 
     /**
