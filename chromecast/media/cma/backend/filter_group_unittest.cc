@@ -33,6 +33,7 @@ static_assert(kTargetVolume != kInstantaneousVolume,
               "Test checks that the correct volume is used.");
 
 constexpr AudioContentType kDefaultContentType = AudioContentType::kMedia;
+constexpr int kDefaultPlayoutChannel = -1;
 
 class MockPostProcessingPipeline : public PostProcessingPipeline {
  public:
@@ -44,6 +45,7 @@ class MockPostProcessingPipeline : public PostProcessingPipeline {
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
   MOCK_METHOD1(SetContentType, void(AudioContentType));
+  MOCK_METHOD1(UpdatePlayoutChannel, void(int));
 
  private:
   bool SetSampleRate(int sample_rate) override { return true; }
@@ -199,12 +201,14 @@ class FilterGroupTest : public testing::Test {
   ~FilterGroupTest() override {}
 
   void MakeFilterGroup(
+      FilterGroup::GroupType type,
       bool mix_to_mono,
       std::unique_ptr<MockPostProcessingPipeline> post_processor) {
     post_processor_ = post_processor.get();
     EXPECT_CALL(*post_processor_, SetContentType(kDefaultContentType));
+    EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(kDefaultPlayoutChannel));
     filter_group_ = std::make_unique<FilterGroup>(
-        kNumInputChannels, mix_to_mono, "test_filter",
+        kNumInputChannels, type, mix_to_mono, "test_filter",
         std::move(post_processor),
         std::unordered_set<std::string>() /* device_ids */,
         std::vector<FilterGroup*>());
@@ -216,6 +220,16 @@ class FilterGroupTest : public testing::Test {
     DCHECK_LE(channel, input_->data()->channels());
     DCHECK_LE(frame, input_->data()->frames());
     return input_->data()->channel(channel)[frame];
+  }
+
+  void AssertPassthrough() {
+    // Verify if the fiter group output matches the source.
+    float* interleaved_data = filter_group_->interleaved();
+    for (int f = 0; f < kInputFrames; ++f) {
+      for (int ch = 0; ch < kNumInputChannels; ++ch) {
+        ASSERT_EQ(Input(ch, f), interleaved_data[f * kNumInputChannels + ch]);
+      }
+    }
   }
 
   float LeftInput(int frame) { return Input(0, frame); }
@@ -231,25 +245,40 @@ class FilterGroupTest : public testing::Test {
 };
 
 TEST_F(FilterGroupTest, Passthrough) {
-  MakeFilterGroup(false /* mix to mono */,
+  MakeFilterGroup(FilterGroup::GroupType::kFinalMix, false /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
   EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
   EXPECT_CALL(*post_processor_,
               ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
 
   filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+}
 
-  // Verify if the fiter group output matches the source.
-  float* interleaved_data = filter_group_->interleaved();
-  for (int f = 0; f < kInputFrames; ++f) {
-    for (int ch = 0; ch < kNumInputChannels; ++ch) {
-      ASSERT_EQ(Input(ch, f), interleaved_data[f * kNumInputChannels + ch]);
-    }
-  }
+TEST_F(FilterGroupTest, StreamGroupsDoNotMonoMix) {
+  MakeFilterGroup(FilterGroup::GroupType::kStream, true /* mix to mono */,
+                  std::make_unique<MockPostProcessingPipeline>());
+  EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
+  EXPECT_CALL(*post_processor_,
+              ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
+
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+}
+
+TEST_F(FilterGroupTest, LinearizeGroupsDoNotMonoMix) {
+  MakeFilterGroup(FilterGroup::GroupType::kLinearize, true /* mix to mono */,
+                  std::make_unique<MockPostProcessingPipeline>());
+  EXPECT_CALL(*input_.get(), TargetVolume()).Times(0);
+  EXPECT_CALL(*post_processor_,
+              ProcessFrames(_, kInputFrames, kInstantaneousVolume, false));
+
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
 }
 
 TEST_F(FilterGroupTest, MonoMixer) {
-  MakeFilterGroup(true /* mix to mono */,
+  MakeFilterGroup(FilterGroup::GroupType::kFinalMix, true /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
   filter_group_->MixAndFilter(kInputFrames);
 
@@ -263,7 +292,7 @@ TEST_F(FilterGroupTest, MonoMixer) {
 
 TEST_F(FilterGroupTest, MonoMixesAfterPostProcessors) {
   MakeFilterGroup(
-      true /* mix to mono */,
+      FilterGroup::GroupType::kFinalMix, true /* mix to mono */,
       std::make_unique<InvertChannelPostProcessor>(kNumInputChannels, 0));
   filter_group_->MixAndFilter(kInputFrames);
 
@@ -276,10 +305,41 @@ TEST_F(FilterGroupTest, MonoMixesAfterPostProcessors) {
   }
 }
 
-TEST_F(FilterGroupTest, SelectsOutputChannel) {
-  MakeFilterGroup(false /* mix to mono */,
+TEST_F(FilterGroupTest, StreamGroupDoesNotSelectChannels) {
+  MakeFilterGroup(FilterGroup::GroupType::kStream, false /* mix to mono */,
                   std::make_unique<MockPostProcessingPipeline>());
 
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(0));
+  filter_group_->UpdatePlayoutChannel(0);
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(1));
+  filter_group_->UpdatePlayoutChannel(1);
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+}
+
+TEST_F(FilterGroupTest, MixGroupDoesNotSelectChannels) {
+  MakeFilterGroup(FilterGroup::GroupType::kFinalMix, false /* mix to mono */,
+                  std::make_unique<MockPostProcessingPipeline>());
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(0));
+  filter_group_->UpdatePlayoutChannel(0);
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(1));
+  filter_group_->UpdatePlayoutChannel(1);
+  filter_group_->MixAndFilter(kInputFrames);
+  AssertPassthrough();
+}
+
+TEST_F(FilterGroupTest, SelectsOutputChannel) {
+  MakeFilterGroup(FilterGroup::GroupType::kLinearize, false /* mix to mono */,
+                  std::make_unique<MockPostProcessingPipeline>());
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(0));
   filter_group_->UpdatePlayoutChannel(0);
   filter_group_->MixAndFilter(kInputFrames);
 
@@ -291,6 +351,9 @@ TEST_F(FilterGroupTest, SelectsOutputChannel) {
     }
   }
 
+  testing::Mock::VerifyAndClearExpectations(post_processor_);
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(1));
   filter_group_->UpdatePlayoutChannel(1);
   filter_group_->MixAndFilter(kInputFrames);
   for (int f = 0; f < kInputFrames; ++f) {
@@ -300,6 +363,9 @@ TEST_F(FilterGroupTest, SelectsOutputChannel) {
     }
   }
 
+  testing::Mock::VerifyAndClearExpectations(post_processor_);
+
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(-1));
   filter_group_->UpdatePlayoutChannel(-1);
   filter_group_->MixAndFilter(kInputFrames);
   for (int f = 0; f < kInputFrames; ++f) {
@@ -312,8 +378,9 @@ TEST_F(FilterGroupTest, SelectsOutputChannel) {
 
 TEST_F(FilterGroupTest, SelectsOutputChannelBeforePostProcessors) {
   MakeFilterGroup(
-      false /* mix to mono */,
+      FilterGroup::GroupType::kLinearize, false /* mix to mono */,
       std::make_unique<InvertChannelPostProcessor>(kNumInputChannels, 0));
+  EXPECT_CALL(*post_processor_, UpdatePlayoutChannel(0));
   filter_group_->UpdatePlayoutChannel(0);
   filter_group_->MixAndFilter(kInputFrames);
 
@@ -328,7 +395,8 @@ TEST_F(FilterGroupTest, SelectsOutputChannelBeforePostProcessors) {
 }
 
 TEST_F(FilterGroupTest, ChecksLoudestContentType) {
-  MakeFilterGroup(false, std::make_unique<MockPostProcessingPipeline>());
+  MakeFilterGroup(FilterGroup::GroupType::kStream, false,
+                  std::make_unique<MockPostProcessingPipeline>());
   AudioContentType type = AudioContentType::kCommunication;
   MockInputQueue tts_loud_input(type, kInstantaneousVolume + .001);
   filter_group_->AddActiveInput(&tts_loud_input);

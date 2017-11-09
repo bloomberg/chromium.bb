@@ -21,10 +21,6 @@
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
 
-namespace base {
-class ListValue;
-}  // namespace base
-
 namespace media {
 class AudioBus;
 }  // namespace media
@@ -32,8 +28,8 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 
-class MixerOutputStream;
 class FilterGroup;
+class MixerOutputStream;
 class PostProcessingPipelineParser;
 class PostProcessingPipelineFactory;
 
@@ -243,12 +239,6 @@ class StreamMixer {
   void FinishFinalize();
 
   void CreatePostProcessors(PostProcessingPipelineParser* pipeline_parser);
-  std::unique_ptr<FilterGroup> CreateFilterGroup(
-      bool mix_to_mono,
-      const std::string& name,
-      const base::ListValue* filter_list,
-      const std::unordered_set<std::string>& device_ids,
-      const std::vector<FilterGroup*>& mixed_inputs);
 
   bool Start();
   void Stop();

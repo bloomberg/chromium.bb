@@ -44,6 +44,7 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   void SetPostProcessorConfig(const std::string& name,
                               const std::string& config) override;
   void SetContentType(AudioContentType content_type) override;
+  void UpdatePlayoutChannel(int channel) override;
 
  private:
   // Note: typedef is used to silence chromium-style mandatory constructor in

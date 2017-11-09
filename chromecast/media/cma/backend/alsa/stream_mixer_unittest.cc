@@ -309,7 +309,7 @@ class MockPostProcessor : public PostProcessingPipeline {
 
   MOCK_METHOD2(SetPostProcessorConfig,
                void(const std::string& name, const std::string& config));
-
+  MOCK_METHOD1(UpdatePlayoutChannel, void(int));
   static std::unordered_map<std::string, MockPostProcessor*>* instances() {
     return &instances_;
   }

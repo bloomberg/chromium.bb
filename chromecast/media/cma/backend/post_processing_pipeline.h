@@ -29,6 +29,7 @@ class PostProcessingPipeline {
   virtual void SetPostProcessorConfig(const std::string& name,
                                       const std::string& config) = 0;
   virtual void SetContentType(AudioContentType content_type) = 0;
+  virtual void UpdatePlayoutChannel(int channel) = 0;
 };
 
 class PostProcessingPipelineFactory {

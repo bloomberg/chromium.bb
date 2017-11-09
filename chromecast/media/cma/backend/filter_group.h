@@ -36,7 +36,12 @@ class PostProcessingPipeline;
 // MixAndFilter() is called (they must be added each time data is queried).
 class FilterGroup {
  public:
+  enum class GroupType { kStream, kFinalMix, kLinearize };
   // |num_channels| indicates number of input audio channels.
+  // |type| indicates where in the pipeline this FilterGroup sits.
+  //    some features are specific to certain locations:
+  //     - mono mixer takes place at the end of kFinalMix.
+  //     - channel selection occurs before post-processing in kLinearize.
   // |mix_to_mono| enables mono mixing in the pipeline. The number of audio
   //    output channels will be 1 if it is set to true, otherwise it remains
   //    same as |num_channels|.
@@ -49,7 +54,9 @@ class FilterGroup {
   //   ex: the final mix ("mix") FilterGroup mixes all other filter groups.
   // FilterGroups currently use either InputQueues OR FilterGroups as inputs,
   //   but there is no technical limitation preventing mixing input classes.
+
   FilterGroup(int num_channels,
+              GroupType type,
               bool mix_to_mono,
               const std::string& name,
               std::unique_ptr<PostProcessingPipeline> pipeline,
@@ -104,12 +111,15 @@ class FilterGroup {
   void UpdatePlayoutChannel(int playout_channel);
 
   // Get loudest content type
-  AudioContentType GetLoudestContentType() { return loudest_content_type_; }
+  AudioContentType loudest_content_type() const {
+    return loudest_content_type_;
+  }
 
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
 
   const int num_channels_;
+  const GroupType type_;
   bool mix_to_mono_;
   int playout_channel_;
   const std::string name_;
