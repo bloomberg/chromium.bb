@@ -78,13 +78,11 @@ NSTextField* MakeLabel(
 }  // namespace
 
 @interface MDDownloadItemMenuButton : MDHoverButton
-@property(nonatomic, assign) MDHoverButton* suppressButton;
 @end
 
 @implementation MDDownloadItemMenuButton {
   NSPopUpButtonCell* popUpCell_;
 }
-@synthesize suppressButton = suppressButton_;
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -92,11 +90,6 @@ NSTextField* MakeLabel(
     self.imagePosition = NSImageOnly;
   }
   return self;
-}
-
-- (void)setHoverState:(HoverState)hoverState {
-  suppressButton_.hoverSuppressed = hoverState != kHoverStateNone;
-  [super setHoverState:hoverState];
 }
 
 - (void)showMenuWithEvent:(NSEvent*)event {
@@ -285,7 +278,11 @@ NSTextField* MakeLabel(
     menuButton_.autoresizingMask = [NSView
         cr_localizedAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
                                      NSViewMaxYMargin];
-    menuButton_.suppressButton = button_;
+    [menuButton_ addObserver:self
+                  forKeyPath:@"hoverState"
+                     options:0
+                     context:nil];
+
     [menuButton_
         cr_setAccessibilityLabel:l10n_util::GetNSStringWithFixup(IDS_OPTIONS)];
     [self addSubview:menuButton_];
@@ -322,6 +319,19 @@ NSTextField* MakeLabel(
     [self addSubview:statusTextView_];
   }
   return self;
+}
+
+- (void)dealloc {
+  [menuButton_ removeObserver:self forKeyPath:@"hoverState"];
+  [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString*)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary<NSKeyValueChangeKey, id>*)change
+                       context:(void*)context {
+  if (object == menuButton_ && [keyPath isEqualToString:@"hoverState"])
+    button_.hoverSuppressed = menuButton_.hoverState != kHoverStateNone;
 }
 
 - (CGFloat)preferredWidth {
