@@ -272,7 +272,7 @@ int CollectedCookiesViews::GetDialogButtons() const {
 
 base::string16 CollectedCookiesViews::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_CLOSE);
+  return l10n_util::GetStringUTF16(IDS_DONE);
 }
 
 bool CollectedCookiesViews::Accept() {
