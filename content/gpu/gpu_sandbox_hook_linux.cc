@@ -283,54 +283,23 @@ bool LoadLibrariesForGpu(
   return true;
 }
 
-void UpdateProcessTypeToGpuBroker() {
-  base::CommandLine::StringVector exec =
-      base::CommandLine::ForCurrentProcess()->GetArgs();
-  base::CommandLine::Reset();
-  base::CommandLine::Init(0, nullptr);
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(exec);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kProcessType, "gpu-broker");
-
-  // Update the process title. The argv was already cached by the call to
-  // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass
-  // NULL here (we don't have the original argv at this point).
+bool BrokerProcessPreSandboxHook(
+    service_manager::BPFBasePolicy* policy,
+    service_manager::SandboxLinux::Options options) {
+  // Oddly enough, we call back into gpu to invoke this service manager
+  // method, since it is part of the embedder component, and the service
+  // mananger's sandbox component is a lower layer that can't depend on it.
   service_manager::SetProcessTitleFromCommandLine(nullptr);
-}
-
-bool UpdateProcessTypeAndEnableSandbox(
-    service_manager::BPFBasePolicy* client_sandbox_policy) {
-  UpdateProcessTypeToGpuBroker();
-  return service_manager::SandboxSeccompBPF::StartSandboxWithExternalPolicy(
-      client_sandbox_policy->GetBrokerSandboxPolicy(), base::ScopedFD());
-}
-
-// Start a broker process to handle open() inside the sandbox.
-// |client_sandbox_policy| is a the policy the untrusted client is
-// running, but which can allocate a suitable sandbox policy for
-// the broker process itself via its GetBrokerSandboxPolicy() method.
-// |permissions_extra| is a list of file permissions that should be
-// whitelisted by the broker process, in addition to the basic ones.
-std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
-    service_manager::BPFBasePolicy* client_sandbox_policy,
-    const std::vector<BrokerFilePermission>& permissions) {
-  auto result = std::make_unique<BrokerProcess>(
-      service_manager::BPFBasePolicy::GetFSDeniedErrno(), permissions);
-
-  // The initialization callback will perform generic initialization and then
-  // call broker_sandboxer_callback.
-  CHECK(result->Init(base::Bind(&UpdateProcessTypeAndEnableSandbox,
-                                base::Unretained(client_sandbox_policy))));
-  return result;
+  return true;
 }
 
 }  // namespace
 
-bool GpuProcessPreSandboxHook(
-    service_manager::BPFBasePolicy* policy,
-    service_manager::SandboxSeccompBPF::Options options) {
-  service_manager::SandboxLinux::GetInstance()->set_broker_process(
-      InitGpuBrokerProcess(policy, FilePermissionsForGpu(options)));
+bool GpuProcessPreSandboxHook(service_manager::BPFBasePolicy* policy,
+                              service_manager::SandboxLinux::Options options) {
+  service_manager::SandboxLinux::GetInstance()->StartBrokerProcess(
+      policy, FilePermissionsForGpu(options),
+      base::BindOnce(BrokerProcessPreSandboxHook), options);
 
   if (!LoadLibrariesForGpu(options))
     return false;

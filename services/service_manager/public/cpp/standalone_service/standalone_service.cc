@@ -57,7 +57,7 @@ void RunStandaloneService(const StandaloneServiceCallback& callback) {
     Sandbox::Initialize(
         UtilitySandboxTypeFromString(
             command_line.GetSwitchValueASCII(switches::kServiceSandboxType)),
-        SandboxSeccompBPF::PreSandboxHook(), sandbox_options);
+        SandboxLinux::PreSandboxHook(), sandbox_options);
   }
 #endif
 

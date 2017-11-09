@@ -23,7 +23,7 @@ namespace service_manager {
 
 #if defined(OS_LINUX)
 bool Sandbox::Initialize(SandboxType sandbox_type,
-                         SandboxSeccompBPF::PreSandboxHook hook,
+                         SandboxLinux::PreSandboxHook hook,
                          const SandboxLinux::Options& options) {
   return SandboxLinux::GetInstance()->InitializeSandbox(
       sandbox_type, std::move(hook), options);

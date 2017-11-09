@@ -40,7 +40,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   service_manager::Sandbox::Initialize(
       service_manager::SandboxTypeFromCommandLine(
           *base::CommandLine::ForCurrentProcess()),
-      service_manager::SandboxSeccompBPF::PreSandboxHook(), options);
+      service_manager::SandboxLinux::PreSandboxHook(), options);
 
   // about:sandbox uses a value returned from SandboxLinux::GetStatus() before
   // any renderer has been started.

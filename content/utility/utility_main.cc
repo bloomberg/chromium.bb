@@ -53,7 +53,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
     auto sandbox_type =
         service_manager::SandboxTypeFromCommandLine(parameters.command_line);
     service_manager::Sandbox::Initialize(
-        sandbox_type, service_manager::SandboxSeccompBPF::PreSandboxHook(),
+        sandbox_type, service_manager::SandboxLinux::PreSandboxHook(),
         service_manager::SandboxLinux::Options());
   }
 #elif defined(OS_WIN)
