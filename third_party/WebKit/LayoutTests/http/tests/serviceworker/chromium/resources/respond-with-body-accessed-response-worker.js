@@ -16,21 +16,19 @@ function getQueryParams(url) {
 }
 
 function createResponse(params) {
-  return new Promise(function(resolve, reject) {
-      if (params['type'] == 'basic') {
-        fetch('respond-with-body-accessed-response.jsonp')
-          .then(resolve);
-      } else if (params['type'] == 'opaque') {
-        fetch(get_host_info()['HTTP_REMOTE_ORIGIN'] + base_path() +
-              'respond-with-body-accessed-response.jsonp',
-              {mode: 'no-cors'})
-          .then(resolve);
-      } else if (params['type'] == 'default') {
-        resolve(new Response('callback(\'OK\');'));
-      } else {
-        reject(new Error('unexpected type :' + params['type']));
-      }
-    });
+  if (params['type'] == 'basic') {
+    return fetch('respond-with-body-accessed-response.jsonp');
+  }
+  if (params['type'] == 'opaque') {
+    return fetch(get_host_info()['HTTP_REMOTE_ORIGIN'] + base_path() +
+          'respond-with-body-accessed-response.jsonp',
+          {mode: 'no-cors'});
+  }
+  if (params['type'] == 'default') {
+    return Promise.resolve(new Response('callback(\'OK\');'));
+  }
+
+  return Promise.reject(new Error('unexpected type :' + params['type']));
 }
 
 function cloneResponseIfNeeded(params, response) {
