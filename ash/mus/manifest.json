@@ -26,12 +26,13 @@
           "ash::mojom::SystemTray",
           "ash::mojom::TabletModeController",
           "ash::mojom::TrayAction",
-	  "ash::mojom::VoiceInteractionController",
+          "ash::mojom::VoiceInteractionController",
           "ash::mojom::VpnList",
           "ash::mojom::WallpaperController"
         ],
         // Test-only interfaces.
         "test": [
+          "ash::mojom::ShelfTestApi",
           "ash::mojom::SystemTrayTestApi"
         ],
         // Only chrome is allowed to use this (required as dbus runs in Chrome).
