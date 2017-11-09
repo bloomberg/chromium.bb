@@ -18,9 +18,6 @@ class KeyStorageKWallet : public KeyStorageLinux {
                     std::string app_name);
   ~KeyStorageKWallet() override;
 
-  // KeyStorageLinux
-  std::string GetKey() override;
-
   // Initialize using an optional KWalletDBus mock.
   // A DBus session will not be created if a mock is provided.
   bool InitWithKWalletDBus(
@@ -29,6 +26,7 @@ class KeyStorageKWallet : public KeyStorageLinux {
  protected:
   // KeyStorageLinux
   bool Init() override;
+  std::string GetKeyImpl() override;
 
  private:
   enum class InitResult {

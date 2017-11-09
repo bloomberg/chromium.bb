@@ -23,12 +23,10 @@ class KeyStorageKeyring : public KeyStorageLinux {
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner);
   ~KeyStorageKeyring() override;
 
-  // KeyStorageLinux
-  std::string GetKey() override;
-
  protected:
   // KeyStorageLinux
   bool Init() override;
+  std::string GetKeyImpl() override;
 
  private:
   // Gnome keyring requires calls to originate from the main thread.

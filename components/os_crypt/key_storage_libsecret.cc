@@ -72,7 +72,7 @@ std::string KeyStorageLibsecret::AddRandomPasswordInLibsecret() {
   return password;
 }
 
-std::string KeyStorageLibsecret::GetKey() {
+std::string KeyStorageLibsecret::GetKeyImpl() {
   GError* error = nullptr;
   LibsecretAttributesBuilder attrs;
   attrs.Append("application", kApplicationName);
