@@ -3658,6 +3658,11 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
         wb, seq_params->frame_id_length - seq_params->delta_frame_id_length - 1,
         3);
   }
+
+#if CONFIG_MONO_VIDEO
+  seq_params->monochrome = cm->monochrome;
+  aom_wb_write_bit(wb, seq_params->monochrome);
+#endif  // CONFIG_MONO_VIDEO
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 

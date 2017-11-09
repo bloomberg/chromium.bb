@@ -319,6 +319,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MONO_VIDEO
+  RANGE_CHECK_HI(cfg, monochrome, 1);
+#endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_EXT_TILE
   if (cfg->large_scale_tile && extra_cfg->aq_mode)
@@ -643,6 +646,9 @@ static aom_codec_err_t set_encoder_config(
 #if CONFIG_EXT_TILE
   }
 #endif  // CONFIG_EXT_TILE
+#if CONFIG_MONO_VIDEO
+  oxcf->monochrome = cfg->monochrome;
+#endif  // CONFIG_MONO_VIDEO
 
 #if CONFIG_MAX_TILE
   oxcf->tile_width_count = AOMMIN(cfg->tile_width_count, MAX_TILE_COLS);
@@ -1711,6 +1717,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,            // kf_min_dist
         9999,         // kf_max_dist
         0,            // large_scale_tile
+        0,            // monochrome
         0,            // tile_width_count
         0,            // tile_height_count
         { 0 },        // tile_widths

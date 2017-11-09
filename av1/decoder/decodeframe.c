@@ -2573,6 +2573,10 @@ void read_sequence_header(SequenceHeader *seq_params,
     seq_params->frame_id_length =
         aom_rb_read_literal(rb, 3) + seq_params->delta_frame_id_length + 1;
   }
+
+#if CONFIG_MONO_VIDEO
+  seq_params->monochrome = aom_rb_read_bit(rb);
+#endif  // CONFIG_MONO_VIDEO
 }
 #endif  // CONFIG_REFERENCE_BUFFER || CONFIG_OBU
 

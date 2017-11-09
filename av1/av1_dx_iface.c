@@ -281,11 +281,8 @@ static aom_codec_err_t decoder_peek_si_internal(
     }
     error_resilient = aom_rb_read_bit(&rb);
 #if CONFIG_REFERENCE_BUFFER
-#if CONFIG_FRAME_SIZE
-    SequenceHeader seq_params = { 0, 0, 0, 0, 0, 0, 0 };
-#else
-    SequenceHeader seq_params = { 0, 0, 0 };
-#endif
+    SequenceHeader seq_params;
+    memset(&seq_params, 0, sizeof(seq_params));
     if (si->is_kf) {
       /* TODO: Move outside frame loop or inside key-frame branch */
       read_sequence_header(&seq_params, &rb);

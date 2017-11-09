@@ -5516,6 +5516,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_MONO_VIDEO
+  cm->monochrome = oxcf->monochrome;
+#endif  // CONFIG_MONO_VIDEO
+
 #if CONFIG_XIPHRC
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
