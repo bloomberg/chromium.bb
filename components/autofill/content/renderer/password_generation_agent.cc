@@ -347,18 +347,22 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
     if (!render_frame())
       return;
     password_element.SetAutofilled(true);
-    // Needed to notify password_autofill_agent that the content of the field
-    // has changed. Without this we will overwrite the generated
-    // password with an Autofilled password when saving.
-    // https://crbug.com/493455
-    password_agent_->UpdateStateForTextChange(password_element);
     // Advance focus to the next input field. We assume password fields in
     // an account creation form are always adjacent.
     render_frame()->GetRenderView()->GetWebView()->AdvanceFocus(false);
   }
   std::unique_ptr<PasswordForm> presaved_form(CreatePasswordFormToPresave());
-  if (presaved_form) {
+  if (presaved_form)
     GetPasswordManagerDriver()->PresaveGeneratedPassword(*presaved_form);
+
+  // Call UpdateStateForTextChange after the corresponding PasswordFormManager
+  // is notified that the password was generated.
+  for (auto& password_element : generation_form_data_->password_elements) {
+    // Needed to notify password_autofill_agent that the content of the field
+    // has changed. Without this we will overwrite the generated
+    // password with an Autofilled password when saving.
+    // https://crbug.com/493455
+    password_agent_->UpdateStateForTextChange(password_element);
   }
 }
 
