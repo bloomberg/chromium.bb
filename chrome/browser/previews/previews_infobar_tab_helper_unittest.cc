@@ -93,6 +93,17 @@ class PreviewsInfoBarTabHelperUnitTest
         ->SetNavigationData(test_handle_.get(), std::move(nav_data));
   }
 
+  void SimulateWillProcessResponseWithProxyHeader() {
+    std::string headers = base::StringPrintf(
+        "HTTP/1.1 200 OK\n%s: %s\n\n",
+        data_reduction_proxy::chrome_proxy_content_transform_header(),
+        data_reduction_proxy::lite_page_directive());
+    test_handle_->CallWillProcessResponseForTesting(
+        main_rfh(),
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    SimulateCommit();
+  }
+
   void SimulateWillProcessResponse() {
     std::string headers("HTTP/1.1 200 OK\n\n");
     test_handle_->CallWillProcessResponseForTesting(
@@ -119,7 +130,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateLitePageInfoBar) {
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 
   SetPreviewsState(content::SERVER_LITE_PAGE_ON);
-  SimulateWillProcessResponse();
+  SimulateWillProcessResponseWithProxyHeader();
   CallDidFinishNavigation();
 
   InfoBarService* infobar_service =
@@ -131,6 +142,21 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateLitePageInfoBar) {
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
 
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+}
+
+TEST_F(PreviewsInfoBarTabHelperUnitTest, NoLitePageInfoBarWithoutProxyHeader) {
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+
+  SetPreviewsState(content::SERVER_LITE_PAGE_ON);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  EXPECT_EQ(0U, infobar_service->infobar_count());
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
 }
 
