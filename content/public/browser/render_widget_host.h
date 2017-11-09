@@ -19,12 +19,15 @@
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
 class WebMouseEvent;
 class WebMouseWheelEvent;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace ui {
