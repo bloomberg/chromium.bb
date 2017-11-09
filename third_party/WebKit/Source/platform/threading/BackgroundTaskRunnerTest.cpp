@@ -24,7 +24,7 @@ void PingPongTask(WaitableEvent* done_event) {
 
 TEST(BackgroundTaskRunnerTest, RunOnBackgroundThread) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  std::unique_ptr<WaitableEvent> done_event = WTF::MakeUnique<WaitableEvent>();
+  std::unique_ptr<WaitableEvent> done_event = std::make_unique<WaitableEvent>();
   BackgroundTaskRunner::PostOnBackgroundThread(
       BLINK_FROM_HERE,
       CrossThreadBind(&PingPongTask, CrossThreadUnretained(done_event.get())));

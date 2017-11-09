@@ -347,7 +347,7 @@ bool GIFFrameContext::Decode(FastSharedBufferReader* reader,
     if (!IsDataSizeDefined() || !IsHeaderDefined())
       return true;
 
-    lzw_context_ = WTF::MakeUnique<GIFLZWContext>(client, this);
+    lzw_context_ = std::make_unique<GIFLZWContext>(client, this);
     if (!lzw_context_->PrepareToDecode()) {
       lzw_context_.reset();
       return false;

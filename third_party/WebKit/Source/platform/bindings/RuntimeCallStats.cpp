@@ -153,7 +153,7 @@ RuntimeCallCounter* RuntimeCallStats::GetCounter(const char* name) {
   CounterMap::iterator it = counter_map_.find(name);
   if (it != counter_map_.end())
     return it->value.get();
-  return counter_map_.insert(name, WTF::MakeUnique<RuntimeCallCounter>(name))
+  return counter_map_.insert(name, std::make_unique<RuntimeCallCounter>(name))
       .stored_value->value.get();
 }
 

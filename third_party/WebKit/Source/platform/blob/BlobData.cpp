@@ -343,7 +343,7 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
             last_bytes_provider->AppendData(item.data);
           } else {
             BytesProviderPtr bytes_provider;
-            auto provider = WTF::MakeUnique<BlobBytesProvider>(item.data);
+            auto provider = std::make_unique<BlobBytesProvider>(item.data);
             last_bytes_provider = provider.get();
             if (file_runner) {
               // TODO(mek): Considering binding BytesProvider on the IO thread

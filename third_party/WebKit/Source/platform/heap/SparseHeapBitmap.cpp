@@ -95,7 +95,7 @@ void SparseHeapBitmap::Add(Address address) {
 
 void SparseHeapBitmap::CreateBitmap() {
   DCHECK(!bitmap_ && size() == 1);
-  bitmap_ = WTF::MakeUnique<std::bitset<kBitmapChunkSize>>();
+  bitmap_ = std::make_unique<std::bitset<kBitmapChunkSize>>();
   size_ = kBitmapChunkRange;
   bitmap_->set(0);
 }

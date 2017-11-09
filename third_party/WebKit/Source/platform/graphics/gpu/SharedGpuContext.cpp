@@ -67,7 +67,7 @@ static void CreateContextProviderOnMainThread(
       Platform::Current()->CreateOffscreenGraphicsContext3DProvider(
           context_attributes, WebURL(), nullptr, &graphics_info);
   if (context_provider) {
-    *wrapper = WTF::MakeUnique<WebGraphicsContext3DProviderWrapper>(
+    *wrapper = std::make_unique<WebGraphicsContext3DProviderWrapper>(
         std::move(context_provider));
   }
   waitable_event->Signal();
@@ -100,7 +100,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
         context_provider_factory_.Run(&is_gpu_compositing_disabled_);
     if (context_provider) {
       context_provider_wrapper_ =
-          WTF::MakeUnique<WebGraphicsContext3DProviderWrapper>(
+          std::make_unique<WebGraphicsContext3DProviderWrapper>(
               std::move(context_provider));
     }
   } else if (IsMainThread()) {
@@ -112,7 +112,7 @@ void SharedGpuContext::CreateContextProviderIfNeeded(
         Platform::Current()->CreateSharedOffscreenGraphicsContext3DProvider();
     if (context_provider) {
       context_provider_wrapper_ =
-          WTF::MakeUnique<WebGraphicsContext3DProviderWrapper>(
+          std::make_unique<WebGraphicsContext3DProviderWrapper>(
               std::move(context_provider));
     }
   } else {

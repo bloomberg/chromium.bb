@@ -299,7 +299,7 @@ bool RawResource::MatchPreload(const FetchParameters& params,
 
   data_consumer_handle_ =
       Platform::Current()->CreateDataConsumerHandle(std::move(consumer));
-  data_pipe_writer_ = WTF::MakeUnique<BufferingDataPipeWriter>(
+  data_pipe_writer_ = std::make_unique<BufferingDataPipeWriter>(
       std::move(producer), task_runner);
 
   if (Data()) {

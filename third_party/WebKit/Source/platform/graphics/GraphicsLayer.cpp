@@ -489,7 +489,7 @@ WebLayer* GraphicsLayer::ContentsLayerIfRegistered() {
 
 CompositedLayerRasterInvalidator& GraphicsLayer::EnsureRasterInvalidator() {
   if (!raster_invalidator_) {
-    raster_invalidator_ = WTF::MakeUnique<CompositedLayerRasterInvalidator>(
+    raster_invalidator_ = std::make_unique<CompositedLayerRasterInvalidator>(
         [this](const IntRect& r) { SetNeedsDisplayInRectInternal(r); });
     raster_invalidator_->SetTracksRasterInvalidations(
         client_->IsTrackingRasterInvalidations());
