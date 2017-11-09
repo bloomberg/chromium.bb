@@ -4,6 +4,15 @@
 
 #include "chrome/browser/ui/passwords/password_manager_porter.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/files/file_util.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
@@ -23,8 +32,10 @@ namespace {
 class TestSelectFileDialog : public ui::SelectFileDialog {
  public:
   TestSelectFileDialog(Listener* listener,
-                       std::unique_ptr<ui::SelectFilePolicy> policy)
-      : ui::SelectFileDialog(listener, std::move(policy)) {}
+                       std::unique_ptr<ui::SelectFilePolicy> policy,
+                       const base::FilePath& forced_path)
+      : ui::SelectFileDialog(listener, std::move(policy)),
+        forced_path_(forced_path) {}
 
  protected:
   ~TestSelectFileDialog() override {}
@@ -37,7 +48,7 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
                       void* params) override {
-    listener_->FileSelected(default_path, file_type_index, params);
+    listener_->FileSelected(forced_path_, file_type_index, params);
   }
   bool IsRunning(gfx::NativeWindow owning_window) const override {
     return false;
@@ -46,16 +57,22 @@ class TestSelectFileDialog : public ui::SelectFileDialog {
   bool HasMultipleFileTypeChoicesImpl() override { return false; }
 
  private:
+  // The path that will be selected by this dialog.
+  base::FilePath forced_path_;
+
   DISALLOW_COPY_AND_ASSIGN(TestSelectFileDialog);
 };
 
 class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
  public:
+  explicit TestSelectFileDialogFactory(const base::FilePath& forced_path)
+      : forced_path_(forced_path) {}
+
   ui::SelectFileDialog* Create(
       ui::SelectFileDialog::Listener* listener,
       std::unique_ptr<ui::SelectFilePolicy> policy) override {
-    return new TestSelectFileDialog(listener,
-                                    std::make_unique<TestSelectFilePolicy>());
+    return new TestSelectFileDialog(
+        listener, std::make_unique<TestSelectFilePolicy>(), forced_path_);
   }
 
  private:
@@ -68,6 +85,9 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
     DISALLOW_ASSIGN(TestSelectFilePolicy);
   };
 
+  // The path that will be selected by created dialogs.
+  base::FilePath forced_path_;
+
   DISALLOW_ASSIGN(TestSelectFileDialogFactory);
 };
 
@@ -76,13 +96,28 @@ class TestCredentialProviderInterface
  public:
   TestCredentialProviderInterface() {}
 
+  void SetPasswordList(
+      const std::vector<std::unique_ptr<autofill::PasswordForm>>&
+          password_list) {
+    password_list_.clear();
+    for (const auto& form : password_list) {
+      password_list_.push_back(std::make_unique<autofill::PasswordForm>(*form));
+    }
+  }
+
   // password_manager::CredentialProviderInterface:
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
       override {
-    return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+    std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
+    for (const auto& form : password_list_) {
+      ret_val.push_back(std::make_unique<autofill::PasswordForm>(*form));
+    }
+    return ret_val;
   }
 
  private:
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TestCredentialProviderInterface);
 };
 
@@ -99,11 +134,13 @@ class TestPasswordManagerPorter : public PasswordManagerPorter {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestPasswordManagerPorter);
 };
-}  // namespace
 
 class PasswordManagerPorterTest : public testing::Test {
  protected:
-  PasswordManagerPorterTest() {}
+  PasswordManagerPorterTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  ~PasswordManagerPorterTest() override = default;
 
   void SetUp() override {
     credential_provider_interface_.reset(new TestCredentialProviderInterface());
@@ -114,8 +151,13 @@ class PasswordManagerPorterTest : public testing::Test {
         profile_.get(), nullptr));
     // SelectFileDialog::SetFactory is responsible for freeing the memory
     // associated with a new factory.
-    ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory());
+    ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_));
+    temp_file_ = temp_file_.ReplaceExtension(FILE_PATH_LITERAL("csv"));
+    ui::SelectFileDialog::SetFactory(
+        new TestSelectFileDialogFactory(temp_file_));
   }
+
+  void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_, false)); }
 
   TestPasswordManagerPorter* password_manager_porter() const {
     return password_manager_porter_.get();
@@ -123,10 +165,15 @@ class PasswordManagerPorterTest : public testing::Test {
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestCredentialProviderInterface>
       credential_provider_interface_;
+  // A file path that will be selected by any file selection dialog.
+  base::FilePath temp_file_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+ private:
+  // TODO(crbug.com/689520) This is needed for mojo not to crash on destruction.
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestPasswordManagerPorter> password_manager_porter_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<content::WebContents> web_contents_;
@@ -138,6 +185,19 @@ class PasswordManagerPorterTest : public testing::Test {
 // Password importing and exporting using a |SelectFileDialog| is not yet
 // supported on Android.
 #if !defined(OS_ANDROID)
+
+std::vector<std::unique_ptr<autofill::PasswordForm>>
+ConstructTestPasswordForms() {
+  auto password_form = std::make_unique<autofill::PasswordForm>();
+  password_form->origin = GURL("http://accounts.google.com/a/LoginAuth");
+  password_form->username_value = base::ASCIIToUTF16("test@gmail.com");
+  password_form->password_value = base::ASCIIToUTF16("test1");
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_forms;
+  password_forms.push_back(std::move(password_form));
+  return password_forms;
+}
+
 TEST_F(PasswordManagerPorterTest, PasswordImport) {
   EXPECT_CALL(*password_manager_porter(), ImportPasswordsFromPath(_));
 
@@ -146,9 +206,30 @@ TEST_F(PasswordManagerPorterTest, PasswordImport) {
 }
 
 TEST_F(PasswordManagerPorterTest, PasswordExport) {
-  EXPECT_CALL(*password_manager_porter(), ExportPasswordsToPath(_));
-
-  password_manager_porter()->set_web_contents(web_contents());
-  password_manager_porter()->Store();
-}
+#if defined(OS_WIN)
+  const char kLineEnding[] = "\r\n";
+#else
+  const char kLineEnding[] = "\n";
 #endif
+  const std::string kExpectedCSVOutput = base::StringPrintf(
+      "name,url,username,password%s"
+      "accounts.google.com,http://accounts.google.com/a/"
+      "LoginAuth,test@gmail.com,test1%s",
+      kLineEnding, kLineEnding);
+
+  credential_provider_interface_->SetPasswordList(ConstructTestPasswordForms());
+  PasswordManagerPorter porter(credential_provider_interface_.get());
+  porter.set_web_contents(web_contents());
+
+  porter.Store();
+
+  scoped_task_environment_.RunUntilIdle();
+
+  std::string output;
+  base::ReadFileToString(temp_file_, &output);
+  EXPECT_EQ(kExpectedCSVOutput, output);
+}
+
+#endif
+
+}  // namespace
