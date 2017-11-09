@@ -145,9 +145,12 @@ MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
   UpdateInternalDisplay(display_states);
   if (display_states.size() == 1)
     return MULTIPLE_DISPLAY_STATE_SINGLE;
-  if (display_states.size() > 2) {
-    // TODO(weidongg/607844) Remove this once multi-display mirroring is
-    // implemented.
+  if (!display_manager_->is_multi_mirroring_enabled() &&
+      display_states.size() > 2) {
+    // TODO(weidongg/774795): Remove this condition when multi-mirroring is
+    // enabled by default.
+    // When multi-mirroring is disabled, mirroring across 3+ displays are not
+    // supported, so default to EXTENDED.
     return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
   }
   DisplayIdList list =

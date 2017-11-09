@@ -193,22 +193,13 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
     return MULTIPLE_DISPLAY_STATE_SINGLE;
   }
 
-  if (num_displays == 2 || num_on_displays == 2) {
-    // Try to use the saved configuration; otherwise, default to extended.
-    DisplayConfigurator::StateController* state_controller =
-        layout_manager_->GetStateController();
+  // Try to use the saved configuration; otherwise, default to extended.
+  DisplayConfigurator::StateController* state_controller =
+      layout_manager_->GetStateController();
 
-    if (!state_controller)
-      return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
-    return state_controller->GetStateForDisplayIds(cached_displays_);
-  }
-
-  if (num_displays >= 3) {
-    // 3+ displays are always extended
+  if (!state_controller)
     return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
-  }
-
-  return MULTIPLE_DISPLAY_STATE_INVALID;
+  return state_controller->GetStateForDisplayIds(cached_displays_);
 }
 
 }  // namespace display
