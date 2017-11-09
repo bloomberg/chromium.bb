@@ -46,11 +46,16 @@ def PostUploadHook(cl, change, output_api):
   """git cl upload will call this hook after the issue is created/modified.
 
   This hook adds an extra try bot to the CL description in order to run Cronet
-  tests in addition to CQ try bots.
+  and EarlGrey tests in addition to CQ try bots.
   """
 
-  # TODO(crbug.com/712733): Remove this once Cronet bots are deployed on CQ.
-  try_bots = ['master.tryserver.chromium.mac:ios-simulator-cronet']
+  # TODO(crbug.com/712733): Remove ios-simulator-cronet once Cronet bots are
+  # deployed on CQ.
+  # TODO(crbug.com/782735): Remove ios-simulator-full-configs once EarlGrey
+  # bots are deployed on CQ.
+  try_bots = ['master.tryserver.chromium.mac:ios-simulator-cronet',
+              'master.tryserver.chromium.mac:ios-simulator-full-configs']
 
   return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl, try_bots, 'Automatically added Cronet trybots to run tests on CQ.')
+    cl, try_bots, 'Automatically added Cronet and EarlGrey trybots to'
+      'run tests on CQ.')
