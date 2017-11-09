@@ -593,19 +593,28 @@ willPositionSheet:(NSWindow*)sheet
   [tabStripController_ setVisualEffectsDisabledForFullscreen:YES];
 
   // In Yosemite, some combination of the titlebar and toolbar always show in
-  // full-screen mode. We do not want either to show. Search for the window that
-  // contains the views, and hide it. There is no need to ever unhide the view.
-  // http://crbug.com/380235
+  // full-screen mode. We do not want either to show. Search for the window
+  // that contains the views, and hide it if the window contains our custom
+  // toolbar. There is no need to ever unhide the view. http://crbug.com/380235
   if (base::mac::IsAtLeastOS10_10()) {
     for (NSWindow* window in [[NSApplication sharedApplication] windows]) {
-      if ([window
+      if (![window
               isKindOfClass:NSClassFromString(@"NSToolbarFullScreenWindow")]) {
-        // Hide the toolbar if it is for a FramedBrowserWindow.
-        if ([window respondsToSelector:@selector(_windowForToolbar)]) {
-          if ([[window _windowForToolbar]
-                  isKindOfClass:[FramedBrowserWindow class]])
-            [[window contentView] setHidden:YES];
-        }
+        continue;
+      }
+
+      // Hide the toolbar if it's for a FramedBrowserWindow and the
+      // FramedBrowserWindow doesn't contain our custom toolbar view.
+      if (![window respondsToSelector:@selector(_windowForToolbar)])
+        continue;
+
+      NSWindow* windowForToolbar = [window _windowForToolbar];
+      if ([windowForToolbar isKindOfClass:[FramedBrowserWindow class]]) {
+        BrowserWindowController* bwc =
+            base::mac::ObjCCastStrict<BrowserWindowController>(
+                [windowForToolbar windowController]);
+        if ([bwc hasToolbar])
+          [[window contentView] setHidden:YES];
       }
     }
   }
