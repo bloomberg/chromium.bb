@@ -130,6 +130,9 @@
 -DicePrepareMigrationBrowserTest.Signin
 -DicePrepareMigrationBrowserTest.Signout
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
+# The next two DnsProbeBrowserTests are flaky.
+-DnsProbeBrowserTest.CorrectionsLoadStopped
+-DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
 -DomainReliabilityBrowserTest.Upload
 -DoNotTrackTest.Redirect
 -DoNotTrackTest.Simple
