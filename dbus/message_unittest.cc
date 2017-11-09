@@ -229,7 +229,7 @@ TEST(MessageTest, ArrayOfBytes) {
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
   MessageReader reader(message.get());
-  const uint8_t* output_bytes = NULL;
+  const uint8_t* output_bytes = nullptr;
   size_t length = 0;
   ASSERT_EQ("ay", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
@@ -250,7 +250,7 @@ TEST(MessageTest, ArrayOfDoubles) {
   writer.AppendArrayOfDoubles(doubles.data(), doubles.size());
 
   MessageReader reader(message.get());
-  const double* output_doubles = NULL;
+  const double* output_doubles = nullptr;
   size_t length = 0;
   ASSERT_EQ("ad", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfDoubles(&output_doubles, &length));
@@ -268,13 +268,13 @@ TEST(MessageTest, ArrayOfBytes_Empty) {
   writer.AppendArrayOfBytes(bytes.data(), bytes.size());
 
   MessageReader reader(message.get());
-  const uint8_t* output_bytes = NULL;
+  const uint8_t* output_bytes = nullptr;
   size_t length = 0;
   ASSERT_EQ("ay", reader.GetDataSignature());
   ASSERT_TRUE(reader.PopArrayOfBytes(&output_bytes, &length));
   ASSERT_FALSE(reader.HasMoreData());
   ASSERT_EQ(0U, length);
-  EXPECT_EQ(NULL, output_bytes);
+  EXPECT_EQ(nullptr, output_bytes);
 }
 
 TEST(MessageTest, ArrayOfStrings) {
@@ -342,7 +342,7 @@ TEST(MessageTest, ProtoBuf) {
 TEST(MessageTest, OpenArrayAndPopArray) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
-  MessageWriter array_writer(NULL);
+  MessageWriter array_writer(nullptr);
   writer.OpenArray("s", &array_writer);  // Open an array of strings.
   array_writer.AppendString("foo");
   array_writer.AppendString("bar");
@@ -352,7 +352,7 @@ TEST(MessageTest, OpenArrayAndPopArray) {
   MessageReader reader(message.get());
   ASSERT_EQ(Message::ARRAY, reader.GetDataType());
   ASSERT_EQ("as", reader.GetDataSignature());
-  MessageReader array_reader(NULL);
+  MessageReader array_reader(nullptr);
   ASSERT_TRUE(reader.PopArray(&array_reader));
   ASSERT_FALSE(reader.HasMoreData());  // Should not have more data to read.
 
@@ -373,13 +373,13 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
   std::unique_ptr<Response> message(Response::CreateEmpty());
   MessageWriter writer(message.get());
   {
-    MessageWriter array_writer(NULL);
+    MessageWriter array_writer(nullptr);
     // Open an array of variants.
     writer.OpenArray("v", &array_writer);
     {
       // The first value in the array.
       {
-        MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(nullptr);
         // Open a variant of a boolean.
         array_writer.OpenVariant("b", &variant_writer);
         variant_writer.AppendBool(true);
@@ -388,11 +388,11 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The second value in the array.
       {
-        MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(nullptr);
         // Open a variant of a struct that contains a string and an int32_t.
         array_writer.OpenVariant("(si)", &variant_writer);
         {
-          MessageWriter struct_writer(NULL);
+          MessageWriter struct_writer(nullptr);
           variant_writer.OpenStruct(&struct_writer);
           struct_writer.AppendString("string");
           struct_writer.AppendInt32(123);
@@ -403,16 +403,16 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
       // The third value in the array.
       {
-        MessageWriter variant_writer(NULL);
+        MessageWriter variant_writer(nullptr);
         // Open a variant of an array of string-to-int64_t dict entries.
         array_writer.OpenVariant("a{sx}", &variant_writer);
         {
           // Opens an array of string-to-int64_t dict entries.
-          MessageWriter dict_array_writer(NULL);
+          MessageWriter dict_array_writer(nullptr);
           variant_writer.OpenArray("{sx}", &dict_array_writer);
           {
             // Opens a string-to-int64_t dict entries.
-            MessageWriter dict_entry_writer(NULL);
+            MessageWriter dict_entry_writer(nullptr);
             dict_array_writer.OpenDictEntry(&dict_entry_writer);
             dict_entry_writer.AppendString("foo");
             dict_entry_writer.AppendInt64(INT64_C(1234567890123456789));
@@ -447,7 +447,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   MessageReader reader(message.get());
   ASSERT_EQ("av", reader.GetDataSignature());
-  MessageReader array_reader(NULL);
+  MessageReader array_reader(nullptr);
   ASSERT_TRUE(reader.PopArray(&array_reader));
 
   // The first value in the array.
@@ -458,10 +458,10 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The second value in the array.
   {
-    MessageReader variant_reader(NULL);
+    MessageReader variant_reader(nullptr);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      MessageReader struct_reader(NULL);
+      MessageReader struct_reader(nullptr);
       ASSERT_EQ("(si)", variant_reader.GetDataSignature());
       ASSERT_TRUE(variant_reader.PopStruct(&struct_reader));
       std::string string_value;
@@ -477,14 +477,14 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
   // The third value in the array.
   {
-    MessageReader variant_reader(NULL);
+    MessageReader variant_reader(nullptr);
     ASSERT_TRUE(array_reader.PopVariant(&variant_reader));
     {
-      MessageReader dict_array_reader(NULL);
+      MessageReader dict_array_reader(nullptr);
       ASSERT_EQ("a{sx}", variant_reader.GetDataSignature());
       ASSERT_TRUE(variant_reader.PopArray(&dict_array_reader));
       {
-        MessageReader dict_entry_reader(NULL);
+        MessageReader dict_entry_reader(nullptr);
         ASSERT_TRUE(dict_array_reader.PopDictEntry(&dict_entry_reader));
         std::string string_value;
         ASSERT_TRUE(dict_entry_reader.PopString(&string_value));
@@ -503,7 +503,7 @@ TEST(MessageTest, CreateComplexMessageAndReadIt) {
 
 TEST(MessageTest, MethodCall) {
   MethodCall method_call("com.example.Interface", "SomeMethod");
-  EXPECT_TRUE(method_call.raw_message() != NULL);
+  EXPECT_NE(nullptr, method_call.raw_message());
   EXPECT_EQ(Message::MESSAGE_METHOD_CALL, method_call.GetMessageType());
   EXPECT_EQ("MESSAGE_METHOD_CALL", method_call.GetMessageTypeAsString());
   method_call.SetDestination("com.example.Service");
@@ -536,7 +536,7 @@ TEST(MessageTest, MethodCall_FromRawMessage) {
 
 TEST(MessageTest, Signal) {
   Signal signal("com.example.Interface", "SomeSignal");
-  EXPECT_TRUE(signal.raw_message() != NULL);
+  EXPECT_NE(nullptr, signal.raw_message());
   EXPECT_EQ(Message::MESSAGE_SIGNAL, signal.GetMessageType());
   EXPECT_EQ("MESSAGE_SIGNAL", signal.GetMessageTypeAsString());
   signal.SetPath(ObjectPath("/com/example/Object"));

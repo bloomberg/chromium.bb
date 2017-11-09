@@ -38,7 +38,7 @@ bool PopDictionaryEntries(MessageReader* reader,
                           base::DictionaryValue* dictionary_value) {
   while (reader->HasMoreData()) {
     DCHECK_EQ(Message::DICT_ENTRY, reader->GetDataType());
-    MessageReader entry_reader(NULL);
+    MessageReader entry_reader(nullptr);
     if (!reader->PopDictEntry(&entry_reader))
       return false;
     // Get key as a string.
@@ -174,7 +174,7 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
       break;
     }
     case Message::ARRAY: {
-      MessageReader sub_reader(NULL);
+      MessageReader sub_reader(nullptr);
       if (reader->PopArray(&sub_reader)) {
         // If the type of the array's element is DICT_ENTRY, create a
         // DictionaryValue, otherwise create a ListValue.
@@ -192,7 +192,7 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
       break;
     }
     case Message::STRUCT: {
-      MessageReader sub_reader(NULL);
+      MessageReader sub_reader(nullptr);
       if (reader->PopStruct(&sub_reader)) {
         std::unique_ptr<base::ListValue> list_value(new base::ListValue);
         if (PopListElements(&sub_reader, list_value.get()))
@@ -205,7 +205,7 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
       NOTREACHED();
       break;
     case Message::VARIANT: {
-      MessageReader sub_reader(NULL);
+      MessageReader sub_reader(nullptr);
       if (reader->PopVariant(&sub_reader))
         result = PopDataAsValue(&sub_reader);
       break;
@@ -252,7 +252,7 @@ void AppendBasicTypeValueData(MessageWriter* writer, const base::Value& value) {
 
 void AppendBasicTypeValueDataAsVariant(MessageWriter* writer,
                                        const base::Value& value) {
-  MessageWriter sub_writer(NULL);
+  MessageWriter sub_writer(nullptr);
   writer->OpenVariant(GetTypeSignature(value), &sub_writer);
   AppendBasicTypeValueData(&sub_writer, value);
   writer->CloseContainer(&sub_writer);
@@ -261,13 +261,13 @@ void AppendBasicTypeValueDataAsVariant(MessageWriter* writer,
 void AppendValueData(MessageWriter* writer, const base::Value& value) {
   switch (value.type()) {
     case base::Value::Type::DICTIONARY: {
-      const base::DictionaryValue* dictionary = NULL;
+      const base::DictionaryValue* dictionary = nullptr;
       value.GetAsDictionary(&dictionary);
-      dbus::MessageWriter array_writer(NULL);
+      dbus::MessageWriter array_writer(nullptr);
       writer->OpenArray("{sv}", &array_writer);
       for (base::DictionaryValue::Iterator iter(*dictionary);
            !iter.IsAtEnd(); iter.Advance()) {
-        dbus::MessageWriter dict_entry_writer(NULL);
+        dbus::MessageWriter dict_entry_writer(nullptr);
         array_writer.OpenDictEntry(&dict_entry_writer);
         dict_entry_writer.AppendString(iter.key());
         AppendValueDataAsVariant(&dict_entry_writer, iter.value());
@@ -277,9 +277,9 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
       break;
     }
     case base::Value::Type::LIST: {
-      const base::ListValue* list = NULL;
+      const base::ListValue* list = nullptr;
       value.GetAsList(&list);
-      dbus::MessageWriter array_writer(NULL);
+      dbus::MessageWriter array_writer(nullptr);
       writer->OpenArray("v", &array_writer);
       for (const auto& value : *list) {
         AppendValueDataAsVariant(&array_writer, value);
@@ -299,7 +299,7 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
 }
 
 void AppendValueDataAsVariant(MessageWriter* writer, const base::Value& value) {
-  MessageWriter variant_writer(NULL);
+  MessageWriter variant_writer(nullptr);
   writer->OpenVariant(GetTypeSignature(value), &variant_writer);
   AppendValueData(&variant_writer, value);
   writer->CloseContainer(&variant_writer);

@@ -128,7 +128,7 @@ class CHROME_DBUS_EXPORT ObjectProxy
   // EmptyResponseCallback() can be passed to the |callback| parameter.
   //
   // If the method call is successful, a pointer to Response object will
-  // be passed to the callback. If unsuccessful, NULL will be passed to
+  // be passed to the callback. If unsuccessful, nullptr will be passed to
   // the callback.
   //
   // Must be called in the origin thread.

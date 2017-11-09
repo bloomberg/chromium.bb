@@ -86,7 +86,7 @@ class ObjectProxy;
 //   dbus::MethodCall method_call(interface_name, method_name);
 //   std::unique_ptr<dbus::Response> response(
 //       object_proxy.CallMethodAndBlock(&method_call, timeout_ms));
-//   if (response.get() != NULL) {  // Success.
+//   if (response.get() != nullptr) {  // Success.
 //     ...
 //   }
 //
@@ -583,7 +583,7 @@ class CHROME_DBUS_EXPORT Bus : public base::RefCountedThreadSafe<Bus> {
   std::string GetConnectionName();
 
   // Returns true if the bus is connected to D-Bus.
-  bool is_connected() { return connection_ != NULL; }
+  bool is_connected() { return connection_ != nullptr; }
 
  protected:
   // This is protected, so we can define sub classes.

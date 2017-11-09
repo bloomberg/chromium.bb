@@ -290,12 +290,12 @@ void ExportedObject::OnMethodCompleted(std::unique_ptr<MethodCall> method_call,
     std::unique_ptr<ErrorResponse> error_response(ErrorResponse::FromMethodCall(
         method_call.get(), DBUS_ERROR_FAILED,
         "error occurred in " + method_call->GetMember()));
-    bus_->Send(error_response->raw_message(), NULL);
+    bus_->Send(error_response->raw_message(), nullptr);
     return;
   }
 
   // The method call was successful.
-  bus_->Send(response->raw_message(), NULL);
+  bus_->Send(response->raw_message(), nullptr);
 
   // Record time spent to handle the the method call. Don't include failures.
   UMA_HISTOGRAM_TIMES("DBus.ExportedMethodHandleTime",
