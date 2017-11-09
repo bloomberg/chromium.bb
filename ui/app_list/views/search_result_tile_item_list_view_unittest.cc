@@ -18,6 +18,7 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #include "ui/app_list/test/test_search_result.h"
+#include "ui/app_list/views/search_result_tile_item_view.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
@@ -172,6 +173,19 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
                                  i - kInstalledApps),
               node_data.GetStringAttribute(ui::AX_ATTR_NAME));
   }
+
+  if (features::IsAppListFocusEnabled()) {
+    ResetOpenResultCount();
+    for (int i = 0; i < results; ++i) {
+      ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+      for (int j = 0; j <= i; ++j)
+        view()->tile_views_for_test()[i]->OnKeyEvent(&event);
+      EXPECT_EQ(i + 1, GetOpenResultCount(i));
+    }
+    return;
+  }
+  // TODO(crbug.com/766807): Remove the selection test below once the new focus
+  // model is stable.
 
   // Tests item indexing by pressing TAB.
   for (int i = 1; i < results; ++i) {

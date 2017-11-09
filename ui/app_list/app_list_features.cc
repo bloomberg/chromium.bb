@@ -17,8 +17,7 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
 const base::Feature kEnablePlayStoreAppSearch{"EnablePlayStoreAppSearch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListFocus{"EnableAppListFocus",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.

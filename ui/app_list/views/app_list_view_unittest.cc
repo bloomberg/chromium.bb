@@ -33,6 +33,7 @@
 #include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/folder_header_view.h"
 #include "ui/app_list/views/search_box_view.h"
+#include "ui/app_list/views/search_result_answer_card_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
@@ -252,10 +253,14 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   }
 
   // Add search results for test on focus movement.
-  void SetUpSearchResults(int tile_results_num, int list_results_num) {
+  void SetUpSearchResults(int tile_results_num,
+                          int list_results_num,
+                          bool card_result) {
     std::vector<std::pair<SearchResult::DisplayType, int>> result_types;
     result_types.push_back(
         std::make_pair(SearchResult::DISPLAY_TILE, tile_results_num));
+    if (card_result)
+      result_types.push_back(std::make_pair(SearchResult::DISPLAY_CARD, 1));
     result_types.push_back(
         std::make_pair(SearchResult::DISPLAY_LIST, list_results_num));
 
@@ -540,7 +545,7 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, true);
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -551,6 +556,9 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInHalfState) {
           ->tile_views_for_test();
   for (int i = 0; i < kTileResults; ++i)
     forward_view_list.push_back(tile_views[i]);
+  forward_view_list.push_back(contents_view()
+                                  ->search_result_answer_card_view_for_test()
+                                  ->GetSearchAnswerContainerViewForTest());
   views::View* results_container = contents_view()
                                        ->search_result_list_view_for_test()
                                        ->results_container_for_test();
@@ -694,7 +702,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, true);
 
   std::vector<views::View*> forward_view_list;
   forward_view_list.push_back(search_box_view()->search_box());
@@ -703,6 +711,9 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
           ->search_result_tile_item_list_view_for_test()
           ->tile_views_for_test();
   forward_view_list.push_back(tile_views[0]);
+  forward_view_list.push_back(contents_view()
+                                  ->search_result_answer_card_view_for_test()
+                                  ->GetSearchAnswerContainerViewForTest());
   views::View* results_container = contents_view()
                                        ->search_result_list_view_for_test()
                                        ->results_container_for_test();
@@ -717,6 +728,9 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInHalfState) {
   backward_view_list.push_back(search_box_view()->search_box());
   for (int i = kListResults - 1; i >= 0; --i)
     backward_view_list.push_back(results_container->child_at(i));
+  backward_view_list.push_back(contents_view()
+                                   ->search_result_answer_card_view_for_test()
+                                   ->GetSearchAnswerContainerViewForTest());
   backward_view_list.push_back(tile_views[kTileResults - 1]);
   backward_view_list.push_back(search_box_view()->search_box());
 
@@ -770,7 +784,7 @@ TEST_F(AppListViewFocusTest, FocusResetAfterStateTransition) {
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
   const int kTileResults = 3;
   const int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, true);
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
 
@@ -876,7 +890,7 @@ TEST_F(AppListViewFocusTest, CtrlASelectsAllTextInSearchbox) {
   EXPECT_EQ(app_list_view()->app_list_state(), AppListView::HALF);
   constexpr int kTileResults = 3;
   constexpr int kListResults = 2;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, false);
 
   // Move focus to the first search result.
   SimulateKeyPress(ui::VKEY_TAB, false);
@@ -912,7 +926,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   // fake list results.
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
   const int kListResults = 2;
-  SetUpSearchResults(0, kListResults);
+  SetUpSearchResults(0, kListResults, false);
   const views::View* results_container =
       contents_view()
           ->search_result_list_view_for_test()
@@ -923,7 +937,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
 
   // Populate both fake list results and tile results.
   const int kTileResults = 3;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, false);
   const std::vector<SearchResultTileItemView*>& tile_views =
       contents_view()
           ->search_result_tile_item_list_view_for_test()
@@ -932,8 +946,16 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(tile_views[0],
             contents_view()->search_results_page_view()->first_result_view());
 
+  // Populate only answer card.
+  SetUpSearchResults(0, 0, true);
+  EXPECT_EQ(search_box_view()->search_box(), focused_view());
+  EXPECT_EQ(contents_view()
+                ->search_result_answer_card_view_for_test()
+                ->GetSearchAnswerContainerViewForTest(),
+            contents_view()->search_results_page_view()->first_result_view());
+
   // Clear up all search results.
-  SetUpSearchResults(0, 0);
+  SetUpSearchResults(0, 0, false);
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(nullptr,
             contents_view()->search_results_page_view()->first_result_view());
@@ -955,23 +977,29 @@ TEST_F(AppListViewFocusTest, HittingEnterWhenFocusOnSearchBox) {
   // fake list results. Then hit Enter key.
   search_box_view()->search_box()->InsertText(base::UTF8ToUTF16("test"));
   const int kListResults = 2;
-  SetUpSearchResults(0, kListResults);
+  SetUpSearchResults(0, kListResults, false);
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_EQ(1, GetOpenFirstSearchResultCount());
   EXPECT_EQ(1, GetTotalOpenSearchResultCount());
 
   // Populate both fake list results and tile results. Then hit Enter key.
   const int kTileResults = 3;
-  SetUpSearchResults(kTileResults, kListResults);
+  SetUpSearchResults(kTileResults, kListResults, false);
   SimulateKeyPress(ui::VKEY_RETURN, false);
   EXPECT_EQ(2, GetOpenFirstSearchResultCount());
   EXPECT_EQ(2, GetTotalOpenSearchResultCount());
 
-  // Clear up all search results. Then hit Enter key.
-  SetUpSearchResults(0, 0);
+  // Populate only answer card. Then hit Enter key.
+  SetUpSearchResults(0, 0, true);
   SimulateKeyPress(ui::VKEY_RETURN, false);
-  EXPECT_EQ(2, GetOpenFirstSearchResultCount());
-  EXPECT_EQ(2, GetTotalOpenSearchResultCount());
+  EXPECT_EQ(3, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(3, GetTotalOpenSearchResultCount());
+
+  // Clear up all search results. Then hit Enter key.
+  SetUpSearchResults(0, 0, false);
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  EXPECT_EQ(3, GetOpenFirstSearchResultCount());
+  EXPECT_EQ(3, GetTotalOpenSearchResultCount());
 }
 
 // Tests that search box becomes focused when it is activated.
