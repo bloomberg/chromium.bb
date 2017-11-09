@@ -299,7 +299,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that DidChangeVisibleSecurityState() is called.
   ASSERT_FALSE(observer->did_change_visible_security_state_info());
-  web_state_->OnVisibleSecurityStateChange();
+  web_state_->DidChangeVisibleSecurityState();
   ASSERT_TRUE(observer->did_change_visible_security_state_info());
   EXPECT_EQ(web_state_.get(),
             observer->did_change_visible_security_state_info()->web_state);

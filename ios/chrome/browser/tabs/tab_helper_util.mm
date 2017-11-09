@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
+#import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
@@ -118,6 +119,8 @@ void AttachTabHelpers(web::WebState* web_state) {
     FormSuggestionTabHelper::FromWebState(web_state)
         ->GetAccessoryViewProvider(),
   ]);
+
+  InsecureInputTabHelper::CreateForWebState(web_state);
 
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);

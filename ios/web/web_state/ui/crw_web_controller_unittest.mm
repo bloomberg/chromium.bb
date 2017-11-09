@@ -512,40 +512,6 @@ TEST_F(CRWWebControllerPageScrollStateTest, DISABLED_AtTop) {
 // Test fixture for testing visible security state.
 typedef WebTestWithWebState CRWWebStateSecurityStateTest;
 
-// Tests that OnPasswordInputShownOnHttp updates the SSLStatus to indicate that
-// a password field has been displayed on an HTTP page.
-TEST_F(CRWWebStateSecurityStateTest, HttpPassword) {
-  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
-  NavigationManager* nav_manager = web_state()->GetNavigationManager();
-  EXPECT_FALSE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
-               SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_change_visible_security_state_info());
-  web_state()->OnPasswordInputShownOnHttp();
-  EXPECT_TRUE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
-              SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  ASSERT_TRUE(observer.did_change_visible_security_state_info());
-  EXPECT_EQ(web_state(),
-            observer.did_change_visible_security_state_info()->web_state);
-}
-
-// Tests that OnCreditCardInputShownOnHttp updates the SSLStatus to indicate
-// that a credit card field has been displayed on an HTTP page.
-TEST_F(CRWWebStateSecurityStateTest, HttpCreditCard) {
-  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
-  NavigationManager* nav_manager = web_state()->GetNavigationManager();
-  EXPECT_FALSE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
-               SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
-  TestWebStateObserver observer(web_state());
-  ASSERT_FALSE(observer.did_change_visible_security_state_info());
-  web_state()->OnCreditCardInputShownOnHttp();
-  EXPECT_TRUE(nav_manager->GetLastCommittedItem()->GetSSL().content_status &
-              SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
-  ASSERT_TRUE(observer.did_change_visible_security_state_info());
-  EXPECT_EQ(web_state(),
-            observer.did_change_visible_security_state_info()->web_state);
-}
-
 // Tests that loading HTTP page updates the SSLStatus.
 TEST_F(CRWWebStateSecurityStateTest, LoadHttpPage) {
   TestWebStateObserver observer(web_state());

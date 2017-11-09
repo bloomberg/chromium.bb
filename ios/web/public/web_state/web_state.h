@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -234,16 +236,6 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
-  // Called when the WebState has displayed a password field on an HTTP page.
-  // This method modifies the appropriate NavigationEntry's SSLStatus to record
-  // the sensitive input field, so that embedders can adjust the UI if desired.
-  virtual void OnPasswordInputShownOnHttp() = 0;
-
-  // Called when the WebState has displayed a credit card field on an HTTP page.
-  // This method modifies the appropriate NavigationEntry's SSLStatus to record
-  // the sensitive input field, so that embedders can adjust the UI if desired.
-  virtual void OnCreditCardInputShownOnHttp() = 0;
-
   // Callback used to handle script commands.
   // The callback must return true if the command was handled, and false
   // otherwise.
@@ -269,6 +261,15 @@ class WebState : public base::SupportsUserData {
 
   // Returns Mojo interface registry for this WebState.
   virtual WebStateInterfaceProvider* GetWebStateInterfaceProvider() = 0;
+
+  // Typically an embedder will:
+  //    - Implement this method to receive notification of changes to the page's
+  //      |VisibleSecurityState|, updating security UI (e.g. a lock icon) to
+  //      reflect the current security state of the page.
+  // ...and optionally:
+  //    - Invoke this method upon detection of an event that will change
+  //      the security state (e.g. a non-secure form element is edited).
+  virtual void DidChangeVisibleSecurityState() = 0;
 
  protected:
   // Binds |interface_pipe| to an implementation of |interface_name| that is

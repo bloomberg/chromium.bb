@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/security_state/core/security_state.h"
+#include "components/security_state/ios/ssl_status_input_event_data.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -55,15 +56,13 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   state->displayed_mixed_content =
       (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
                                                                         : false;
-  state->insecure_input_events.password_field_shown =
-      (ssl.content_status & web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP)
-          ? true
-          : false;
-  state->insecure_input_events.credit_card_field_edited =
-      (ssl.content_status & web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP)
-          ? true
-          : false;
   state->is_incognito = web_state_->GetBrowserState()->IsOffTheRecord();
+
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl.user_data.get());
+  if (input_events)
+    state->insecure_input_events = *input_events->input_events();
 
   return state;
 }

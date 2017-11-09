@@ -182,11 +182,6 @@ void WebStateImpl::OnTitleChanged() {
     observer.TitleWasSet(this);
 }
 
-void WebStateImpl::OnVisibleSecurityStateChange() {
-  for (auto& observer : observers_)
-    observer.DidChangeVisibleSecurityState(this);
-}
-
 void WebStateImpl::OnDialogSuppressed() {
   DCHECK(ShouldSuppressDialogs());
   for (auto& observer : observers_)
@@ -350,14 +345,6 @@ bool WebStateImpl::IsShowingWebInterstitial() const {
 
 WebInterstitial* WebStateImpl::GetWebInterstitial() const {
   return interstitial_;
-}
-
-void WebStateImpl::OnPasswordInputShownOnHttp() {
-  [web_controller_ didShowPasswordInputOnHTTP];
-}
-
-void WebStateImpl::OnCreditCardInputShownOnHttp() {
-  [web_controller_ didShowCreditCardInputOnHTTP];
 }
 
 net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
@@ -538,6 +525,11 @@ WebStateInterfaceProvider* WebStateImpl::GetWebStateInterfaceProvider() {
         base::MakeUnique<WebStateInterfaceProvider>();
   }
   return web_state_interface_provider_.get();
+}
+
+void WebStateImpl::DidChangeVisibleSecurityState() {
+  for (auto& observer : observers_)
+    observer.DidChangeVisibleSecurityState(this);
 }
 
 void WebStateImpl::BindInterfaceRequestFromMainFrame(

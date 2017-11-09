@@ -91,6 +91,9 @@ class AutofillClientIOS : public AutofillClient {
   bool IsAutofillSupported() override;
   void ExecuteCommand(int id) override;
 
+ protected:
+  web::WebState* web_state() { return web_state_; }
+
  private:
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
