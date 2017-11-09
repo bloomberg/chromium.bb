@@ -1,7 +1,0 @@
-{
-"version": 3,
-"mappings": "AACA,GAAI,CACA,WAAW,CAAE,KAAK,CAClB,KAAK,CAHD,GAAG,CAMX,IAAK,CACD,OAAO,CAAE,CAAC",
-"sources": ["test-ssp-breaking-edits.scss"],
-"names": [],
-"file": "test-ssp-breaking-edits.css"
-}
