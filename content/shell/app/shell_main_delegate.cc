@@ -63,8 +63,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/os_crash_dumps.h"
-#include "components/crash/content/app/breakpad_mac.h"
+#include "components/crash/content/app/crashpad.h"  // nogncheck
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/app/shell_main_delegate_mac.h"
 #endif  // OS_MACOSX
@@ -283,9 +282,7 @@ void ShellMainDelegate::PreSandboxStartup() {
     SetErrorMode(existing_flags | new_flags);
     breakpad::InitCrashReporter(process_type);
 #elif defined(OS_MACOSX)
-    base::mac::DisableOSCrashDumps();
-    breakpad::InitCrashReporter(process_type);
-    breakpad::InitCrashProcessInfo(process_type);
+    crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 #elif defined(OS_LINUX)
     // Reporting for sub-processes will be initialized in ZygoteForked.
     if (process_type != switches::kZygoteProcess)

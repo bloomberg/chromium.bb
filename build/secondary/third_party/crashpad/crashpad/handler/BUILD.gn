@@ -83,11 +83,18 @@ executable("crashpad_handler") {
   ]
 
   if (is_mac && is_component_build) {
-    # The handler is in Chromium.app/Contents/Versions/X/Chromium
-    # Framework.framework/Versions/A/Helpers/ so set rpath up to the base.
     ldflags = [
+      # The handler is in
+      # Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
+      # so set rpath up to the base.
       "-rpath",
       "@loader_path/../../../../../../../..",
+
+      # The handler is also in
+      # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Helpers/
+      # so set the rpath for that too.
+      "-rpath",
+      "@loader_path/../../../../..",
     ]
   }
 

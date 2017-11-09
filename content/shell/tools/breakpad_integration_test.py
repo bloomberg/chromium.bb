@@ -44,13 +44,18 @@ def run_test(options, crash_dir, additional_arguments = []):
       subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
 
   print "# Retrieve crash dump."
-  dmp_files = glob.glob(os.path.join(crash_dir, '*.dmp'))
+  dmp_dir = crash_dir
+  if sys.platform == 'darwin':
+    # TODO(crbug.com/782923): This test should not reach directly into the
+    # Crashpad database, but instead should use crashpad_database_util.
+    dmp_dir = os.path.join(dmp_dir, 'completed')
+  dmp_files = glob.glob(os.path.join(dmp_dir, '*.dmp'))
   failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
   if len(dmp_files) != 1:
     raise Exception(failure)
   dmp_file = dmp_files[0]
 
-  if sys.platform != 'win32':
+  if sys.platform not in ('win32', 'darwin'):
     minidump = os.path.join(crash_dir, 'minidump')
     dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
     cmd = [dmp_to_minidump, dmp_file, minidump]
@@ -58,6 +63,8 @@ def run_test(options, crash_dir, additional_arguments = []):
       print ' '.join(cmd)
     failure = 'Failed to run dmp_to_minidump.'
     subprocess.check_call(cmd)
+  else:
+    minidump = dmp_file
 
   print "# Symbolize crash dump."
   if sys.platform == 'win32':
