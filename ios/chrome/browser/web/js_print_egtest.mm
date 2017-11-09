@@ -9,6 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 
@@ -33,7 +34,13 @@ id<GREYMatcher> PrintOptionsCancelButton() {
 
 // Tests that tapping a button with onclick='window.print' brings up the
 // print dialog.
+// TODO(crbug.com/782760): disabled as it calls UIView -frame on a non-UI
+// thread which is an error with iOS 11.0+.
 - (void)testWebPrintButton {
+  if (@available(iOS 11.0, *)) {
+    EARL_GREY_TEST_SKIPPED(@"UIView -frame called on non-UI thread");
+  }
+
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL testURL = web::test::HttpServer::MakeUrl("http://printpage");
