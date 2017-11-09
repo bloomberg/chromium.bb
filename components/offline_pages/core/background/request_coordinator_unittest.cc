@@ -215,7 +215,7 @@ class RequestCoordinatorTest : public testing::Test {
 
   void CallConnectionTypeObserver() {
     if (coordinator()->connection_notifier_) {
-      coordinator()->connection_notifier_->OnConnectionTypeChanged(
+      coordinator()->connection_notifier_->OnNetworkChanged(
           GetConnectionType());
     }
   }

@@ -11,7 +11,7 @@
 namespace offline_pages {
 
 class ConnectionNotifier
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver {
+    : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Callback to call when we become connected.
   typedef base::Callback<void()> ConnectedCallback;
@@ -19,8 +19,8 @@ class ConnectionNotifier
   ConnectionNotifier(const ConnectionNotifier::ConnectedCallback& callback);
   ~ConnectionNotifier() override;
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver implementation.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
  private:
