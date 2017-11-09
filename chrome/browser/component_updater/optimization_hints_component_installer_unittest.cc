@@ -32,23 +32,22 @@ class TestOptimizationGuideService
     : public optimization_guide::OptimizationGuideService {
  public:
   TestOptimizationGuideService(
-      const scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner)
       : optimization_guide::OptimizationGuideService(io_thread_task_runner) {}
   ~TestOptimizationGuideService() override {}
 
-  using UnindexedHintsInfo = optimization_guide::UnindexedHintsInfo;
-  void ReadAndIndexHints(
-      const UnindexedHintsInfo& unindexed_hints_info) override {
-    unindexed_hints_info_ =
-        base::MakeUnique<UnindexedHintsInfo>(unindexed_hints_info);
+  void ProcessHints(
+      const optimization_guide::ComponentInfo& component_info) override {
+    component_info_ =
+        std::make_unique<optimization_guide::ComponentInfo>(component_info);
   }
 
-  UnindexedHintsInfo* unindexed_hints_info() const {
-    return unindexed_hints_info_.get();
+  optimization_guide::ComponentInfo* component_info() const {
+    return component_info_.get();
   }
 
  private:
-  std::unique_ptr<UnindexedHintsInfo> unindexed_hints_info_;
+  std::unique_ptr<optimization_guide::ComponentInfo> component_info_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideService);
 };
@@ -204,7 +203,7 @@ TEST_F(OptimizationHintsComponentInstallerTest, NoRulesetFormatIgnored) {
   ASSERT_NO_FATAL_FAILURE(CreateTestOptimizationHints("some hints"));
 
   ASSERT_NO_FATAL_FAILURE(LoadOptimizationHints(base::Version("")));
-  EXPECT_EQ(nullptr, service()->unindexed_hints_info());
+  EXPECT_EQ(nullptr, service()->component_info());
 }
 
 TEST_F(OptimizationHintsComponentInstallerTest, FutureRulesetFormatIgnored) {
@@ -217,7 +216,7 @@ TEST_F(OptimizationHintsComponentInstallerTest, FutureRulesetFormatIgnored) {
 
   ASSERT_NO_FATAL_FAILURE(
       LoadOptimizationHints(base::Version(future_ruleset_components)));
-  EXPECT_EQ(nullptr, service()->unindexed_hints_info());
+  EXPECT_EQ(nullptr, service()->component_info());
 }
 
 TEST_F(OptimizationHintsComponentInstallerTest, LoadFileWithData) {
@@ -227,13 +226,12 @@ TEST_F(OptimizationHintsComponentInstallerTest, LoadFileWithData) {
   ASSERT_NO_FATAL_FAILURE(CreateTestOptimizationHints(expected_hints));
   ASSERT_NO_FATAL_FAILURE(LoadOptimizationHints(ruleset_format_version()));
 
-  auto* unindexed_hints_info = service()->unindexed_hints_info();
-  EXPECT_NE(nullptr, unindexed_hints_info);
-  EXPECT_EQ(base::Version(kTestHintsVersion),
-            unindexed_hints_info->hints_version);
+  auto* component_info = service()->component_info();
+  EXPECT_NE(nullptr, component_info);
+  EXPECT_EQ(base::Version(kTestHintsVersion), component_info->hints_version);
   std::string actual_hints;
   ASSERT_TRUE(
-      base::ReadFileToString(unindexed_hints_info->hints_path, &actual_hints));
+      base::ReadFileToString(component_info->hints_path, &actual_hints));
   EXPECT_EQ(expected_hints, actual_hints);
 }
 

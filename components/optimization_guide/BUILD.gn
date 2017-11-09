@@ -8,9 +8,26 @@ static_library("optimization_guide") {
     "optimization_guide_constants.h",
     "optimization_guide_service.cc",
     "optimization_guide_service.h",
+    "optimization_guide_service_observer.h",
   ]
 
   deps = [
     "//base",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "optimization_guide_service_unittest.cc",
+  ]
+
+  deps = [
+    ":optimization_guide",
+    "//base",
+    "//base/test:test_support",
+    "//components/optimization_guide/proto:optimization_guide_proto",
+    "//testing/gtest",
   ]
 }

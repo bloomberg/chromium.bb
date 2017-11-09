@@ -10,49 +10,64 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/version.h"
+#include "components/optimization_guide/optimization_guide_service_observer.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
 
 // Encapsulates information about a version of optimization hints data received
 // from the components server.
-struct UnindexedHintsInfo {
-  UnindexedHintsInfo(const base::Version& hints_version,
-                     const base::FilePath& hints_path);
-  ~UnindexedHintsInfo();
+struct ComponentInfo {
+  ComponentInfo(const base::Version& hints_version,
+                const base::FilePath& hints_path);
+  ~ComponentInfo();
 
   // The version of the hints content.
   const base::Version hints_version;
 
-  // The path to the file containing the unindexed hints.
+  // The path to the file containing the hints protobuf file.
   const base::FilePath hints_path;
 };
 
-// Reads and indexes the hints downloaded from the Component Updater as part of
-// the Optimization Hints component.
+// Processes the hints downloaded from the Component Updater as part of the
+// Optimization Hints component.
 class OptimizationGuideService {
  public:
-  OptimizationGuideService(
-      const scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+  explicit OptimizationGuideService(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_task_runner);
 
   virtual ~OptimizationGuideService();
 
-  // Reads and indexes hints from the given unindexed hints, unless its
-  // |hints_version| matches that of the most recently parsed version, in which
-  // case it does nothing.
+  void AddObserver(OptimizationGuideServiceObserver* observer);
+  void RemoveObserver(OptimizationGuideServiceObserver* observer);
+
+  // Processes hints from the given unindexed hints, unless its |hints_version|
+  // matches that of the most recently parsed version, in which case it does
+  // nothing.
   //
   // Virtual so it can be mocked out in tests.
-  virtual void ReadAndIndexHints(
-      const UnindexedHintsInfo& unindexed_hints_info);
+  virtual void ProcessHints(const ComponentInfo& component_info);
+
+  // Sets the latest processed version for testing.
+  void SetLatestProcessedVersionForTesting(const base::Version& version);
 
  private:
   // Always called as part of a background priority task.
-  void ReadAndIndexHintsInBackground(
-      const UnindexedHintsInfo& unindexed_hints_info);
+  void ProcessHintsInBackground(const ComponentInfo& component_info);
+
+  // Adds the observer on IO thread.
+  void AddObserverOnIOThread(OptimizationGuideServiceObserver* observer);
+
+  // Removes the observer on IO thread, if present.
+  void RemoveObserverOnIOThread(OptimizationGuideServiceObserver* observer);
+
+  // Dispatches hints to listeners on IO thread.
+  void DispatchHintsOnIOThread(const proto::Configuration& config);
 
   // Runner for indexing tasks.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
@@ -60,6 +75,11 @@ class OptimizationGuideService {
 
   // Runner for IO Thread tasks.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+
+  // Observers receiving notifications on hints being processed.
+  base::ObserverList<OptimizationGuideServiceObserver> observers_;
+
+  base::Version latest_processed_version_;
 
   DISALLOW_COPY_AND_ASSIGN(OptimizationGuideService);
 };
