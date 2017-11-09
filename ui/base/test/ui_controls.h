@@ -64,6 +64,9 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
 
 // Simulate a mouse move.
 bool SendMouseMove(long screen_x, long screen_y);
+
+// Returns false on Windows if the desired position is not over a window
+// belonging to the current process.
 bool SendMouseMoveNotifyWhenDone(long screen_x,
                                  long screen_y,
                                  const base::Closure& task);

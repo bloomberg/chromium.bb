@@ -11,6 +11,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
 class SendMouseMoveUITest : public InProcessBrowserTest {
@@ -28,7 +29,9 @@ class SendMouseMoveUITest : public InProcessBrowserTest {
 //       --gtest_filter=SendMouseMoveUITest.DISABLED_Fullscreen
 IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, DISABLED_Fullscreen) {
   // Make the browser fullscreen so that we can position the mouse anywhere on
-  // the display.
+  // the display, as ui_controls::SendMouseMoveNotifyWhenDone can only provide
+  // notifications when the mouse is moved over a window belonging to the
+  // current process.
   chrome::ToggleFullscreenMode(browser());
 
   display::Screen* const screen = display::Screen::GetScreen();
@@ -47,11 +50,41 @@ IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, DISABLED_Fullscreen) {
           scan_x, scan_y, run_loop.QuitClosure()));
       run_loop.Run();
 
-      // Check it two ways.
-      POINT cursor_pos = {};
-      ASSERT_NE(::GetCursorPos(&cursor_pos), FALSE);
-      EXPECT_EQ(gfx::Point(cursor_pos), gfx::Point(scan_x, scan_y));
+      // Check it.
       EXPECT_EQ(screen->GetCursorScreenPoint(), gfx::Point(scan_x, scan_y));
     }
+  }
+}
+
+// Test that the mouse can be positioned at a few locations on the screen.
+IN_PROC_BROWSER_TEST_F(SendMouseMoveUITest, Probe) {
+  // Make the browser fullscreen so that we can position the mouse anywhere on
+  // the display, as ui_controls::SendMouseMoveNotifyWhenDone can only provide
+  // notifications when the mouse is moved over a window belonging to the
+  // current process.
+  chrome::ToggleFullscreenMode(browser());
+
+  display::Screen* const screen = display::Screen::GetScreen();
+  const gfx::Rect screen_bounds = screen->GetPrimaryDisplay().bounds();
+
+  // Position the mouse at the corners and the center.
+  const gfx::Point kPoints[] = {
+      screen_bounds.origin(),
+      gfx::Point(screen_bounds.right() - 1, screen_bounds.y()),
+      gfx::Point(screen_bounds.x(), screen_bounds.bottom() - 1),
+      gfx::Point(screen_bounds.right() - 1, screen_bounds.bottom() - 1),
+      screen_bounds.CenterPoint()};
+
+  for (const auto& point : kPoints) {
+    SCOPED_TRACE(testing::Message()
+                 << "(" << point.x() << ", " << point.y() << ")");
+    // Move the pointer.
+    base::RunLoop run_loop;
+    EXPECT_TRUE(ui_controls::SendMouseMoveNotifyWhenDone(
+        point.x(), point.y(), run_loop.QuitClosure()));
+    run_loop.Run();
+
+    // Check it.
+    EXPECT_EQ(screen->GetCursorScreenPoint(), point);
   }
 }
