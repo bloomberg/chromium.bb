@@ -497,9 +497,6 @@
                   '|third_party/WebKit/Source/core/css/mediaControl' \
                   '|third_party/WebKit/LayoutTests/media/track/'
     },
-    'blink_url_api': {
-      'filepath': 'third_party/WebKit/Source/core/url/'
-    },
     'blink_vibration': {
       'filepath': 'third_party/WebKit/LayoutTests/vibration/' \
                   '|third_party/WebKit/Source/modules/vibration/'
@@ -1788,8 +1785,7 @@
                         'xiaochengh+watch@chromium.org'],
     'blink_loader': ['gavinp+loader@chromium.org',
                      'japhet@chromium.org',
-                     'loading-reviews@chromium.org',
-                     'tyoshino+watch@chromium.org'],
+                     'loading-reviews@chromium.org'],
     'blink_media': ['feature-media-reviews@chromium.org',
                     'eric.carlson@apple.com',
                     'mlamouri+watch-blink@chromium.org',
@@ -1857,7 +1853,6 @@
                     'fs@opera.com',
                     'glenn@chromium.org',
                     'silviapf@chromium.org'],
-    'blink_url_api': ['tyoshino+watch@chromium.org'],
     'blink_vibration': ['mlamouri+watch-blink@chromium.org'],
     'blink_viewport_interaction': ['kenneth.christiansen@gmail.com'],
     'blink_w3ctests': ['blink-reviews-w3ctests@chromium.org'],
@@ -2164,7 +2159,7 @@
     'omnibox': ['jdonnelly+watch@chromium.org'],
     'optimization_guide': ['dougarnett+watch-optguide@chromium.org',
                            'sophiechang+watch-optguide@chromium.org',
-			   'maniscalco+watch-optguide@chromium.org'],
+                           'maniscalco+watch-optguide@chromium.org'],
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com',
