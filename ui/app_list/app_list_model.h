@@ -148,9 +148,9 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // is false, removes any non-OEM folders.
   void SetFoldersEnabled(bool folders_enabled);
 
-  // Records the number of items stored in folders for UMA, not counting OEM
-  // folders.
-  void RecordItemsInFoldersForUMA();
+  // Records the number of folders, and the number of items in folders for UMA
+  // histograms.
+  void RecordFolderMetrics();
 
   // Sets whether or not the custom launcher page should be enabled.
   void SetCustomLauncherPageEnabled(bool enabled);

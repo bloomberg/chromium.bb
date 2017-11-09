@@ -312,9 +312,9 @@ void AppListView::Initialize(const InitParams& params) {
 
   delegate_->ViewInitialized();
 
-  UMA_HISTOGRAM_TIMES("Apps.AppListCreationTime",
+  UMA_HISTOGRAM_TIMES(kAppListCreationTimeHistogram,
                       base::Time::Now() - start_time);
-  app_list_main_view_->model()->RecordItemsInFoldersForUMA();
+  app_list_main_view_->model()->RecordFolderMetrics();
 }
 
 void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {

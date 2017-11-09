@@ -2071,8 +2071,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>newcomer@chromium.org</owner>
   <summary>
     The total number of apps in folders ignoring OEM folders. This is logged
-    each time the app list is initialized. The suffix denotes whether the
-    fullscreen app list feature has been enabled.
+    each time the app list is initialized. The
+    &quot;FullscreenAppListDisabled&quot; suffix has been deprecated.
   </summary>
 </histogram>
 
@@ -2284,6 +2284,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result of attempting to launch the user-specified preferred note-taking
     app, if any, on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Apps.NumberOfFolders" units="folder(s)">
+  <owner>newcomer@google.com</owner>
+  <summary>
+    The number of folders that users have in their Launcher. Includes the OEM
+    folder. This metric is recorded every time the launcher is shown.
   </summary>
 </histogram>
 
