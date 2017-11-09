@@ -1106,6 +1106,7 @@ bool GetPostData(const net::URLRequest* request, std::string* post_data) {
     return false;
 
   const auto* element_readers = stream->GetElementReaders();
+
   if (element_readers->empty())
     return false;
 
@@ -1113,6 +1114,11 @@ bool GetPostData(const net::URLRequest* request, std::string* post_data) {
   for (const auto& element_reader : *element_readers) {
     const net::UploadBytesElementReader* reader =
         element_reader->AsBytesReader();
+    // TODO(caseq): Also support blobs.
+    if (!reader) {
+      *post_data = "";
+      return false;
+    }
     // TODO(alexclarke): This should really be base64 encoded.
     *post_data += std::string(reader->bytes(), reader->length());
   }
