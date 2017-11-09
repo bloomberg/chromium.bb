@@ -1394,8 +1394,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
 
-  void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
-
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
