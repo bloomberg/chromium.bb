@@ -15,6 +15,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -46,7 +47,13 @@ const char kHTMLURL[] = "http://test";
 
 // Tests that the AirPrint menu successfully loads when a normal web page is
 // loaded.
+// TODO(crbug.com/782760): disabled as it calls UIView -frame on a non-UI
+// thread which is an error with iOS 11.0+.
 - (void)testPrintNormalPage {
+  if (@available(iOS 11.0, *)) {
+    EARL_GREY_TEST_SKIPPED(@"UIView -frame called on non-UI thread");
+  }
+
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
@@ -60,7 +67,13 @@ const char kHTMLURL[] = "http://test";
 }
 
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
+// TODO(crbug.com/782760): disabled as it calls UIView -frame on a non-UI
+// thread which is an error with iOS 11.0+.
 - (void)testPrintPDF {
+  if (@available(iOS 11.0, *)) {
+    EARL_GREY_TEST_SKIPPED(@"UIView -frame called on non-UI thread");
+  }
+
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
   chrome_test_util::LoadUrl(url);
