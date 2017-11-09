@@ -24,7 +24,6 @@ import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -43,7 +42,6 @@ import java.util.concurrent.TimeoutException;
  * very common use case.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@RetryOnFailure // crbug.com/615483
 public class AwContentsClientFullScreenTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
@@ -192,7 +190,6 @@ public class AwContentsClientFullScreenTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testExitFullscreenEndsIfAppInvokesCallbackFromOnHideCustomView() throws Throwable {
         mContentsClient.setOnHideCustomViewRunnable(
                 () -> mContentsClient.getExitCallback().onCustomViewHidden());
@@ -301,7 +298,6 @@ public class AwContentsClientFullScreenTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testPowerSaveBlockerIsTransferredToFullscreen() throws Throwable {
         Assert.assertFalse(DOMUtils.isFullscreen(getWebContentsOnUiThread()));
         loadTestPage(VIDEO_INSIDE_DIV_TEST_URL);
@@ -329,7 +325,6 @@ public class AwContentsClientFullScreenTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
-    @RetryOnFailure
     public void testPowerSaveBlockerIsTransferredToEmbedded() throws Throwable {
         // Enter fullscreen.
         doOnShowCustomViewTest(VIDEO_INSIDE_DIV_TEST_URL);
