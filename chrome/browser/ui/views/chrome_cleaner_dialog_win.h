@@ -52,6 +52,7 @@ class ChromeCleanerDialog
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
+  bool ShouldShowCloseButton() const override;
 
   // views::DialogDelegate overrides.
   views::View* CreateFootnoteView() override;
