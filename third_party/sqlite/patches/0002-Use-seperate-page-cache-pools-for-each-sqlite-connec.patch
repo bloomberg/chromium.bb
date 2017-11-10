@@ -1,7 +1,7 @@
-From 1a80653fbe21926055ef45396a547d3a3a0902db Mon Sep 17 00:00:00 2001
+From a5bfa4afd458372a73efed9b191a02c7b7c000c5 Mon Sep 17 00:00:00 2001
 From: rmcilroy <rmcilroy@chromium.org>
 Date: Thu, 20 Jun 2013 22:50:12 +0000
-Subject: [PATCH 02/11] Use seperate page-cache pools for each sqlite
+Subject: [PATCH 02/10] Use seperate page-cache pools for each sqlite
  connection.
 
 Due to multiple different subsystems using sqlite, the shared global page
@@ -16,7 +16,7 @@ Original review URL: https://chromiumcodereview.appspot.com/17413004
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/third_party/sqlite/src/src/pcache1.c b/third_party/sqlite/src/src/pcache1.c
-index 885b8b11fcf7..4b09e9805e82 100644
+index 2692bd6ac9d3..c93294a9df71 100644
 --- a/third_party/sqlite/src/src/pcache1.c
 +++ b/third_party/sqlite/src/src/pcache1.c
 @@ -689,6 +689,8 @@ static int pcache1Init(void *NotUsed){
@@ -39,6 +39,5 @@ index 885b8b11fcf7..4b09e9805e82 100644
    pcache1.separateCache = 0;
  #elif SQLITE_THREADSAFE
    pcache1.separateCache = sqlite3GlobalConfig.pPage==0
--- 
-2.13.5
-
+--
+2.14.0

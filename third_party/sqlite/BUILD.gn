@@ -204,7 +204,7 @@ if (!use_system_sqlite) {
       include_dirs = [ "amalgamation" ]
 
       sources = [
-        "src/src/shell.c",
+        "amalgamation/shell.c",
         "src/src/shell_icu_linux.c",
 
         # Include a dummy c++ file to force linking of libstdc++.

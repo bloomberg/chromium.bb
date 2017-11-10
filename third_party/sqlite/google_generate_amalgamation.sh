@@ -9,7 +9,7 @@ cd src
 mkdir bld
 cd bld
 ../configure
-FILES="sqlite3.h sqlite3.c"
+FILES="shell.c sqlite3.h sqlite3.c"
 OPTS=""
 make "OPTS=$OPTS" $FILES
 cp -f $FILES ../../amalgamation

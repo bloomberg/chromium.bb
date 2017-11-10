@@ -391,8 +391,14 @@ class SQL_EXPORT Connection {
   // handle under |attachment_point|.  |attachment_point| should only
   // contain characters from [a-zA-Z0-9_].
   //
-  // Note that calling attach or detach with an open transaction is an
-  // error.
+  // Attaching a database while a transaction is open will have
+  // platform-dependent results, as explained below.
+  //
+  // On the SQLite version shipped with Chrome (3.21+, Oct 2017), databases can
+  // be attached while a transaction is opened. However, these databases cannot
+  // be detached until the transaction is committed or aborted. On iOS, the
+  // built-in SQLite might not be older than 3.21. In that case, attaching a
+  // database while a transaction is open results in a error.
   bool AttachDatabase(const base::FilePath& other_db_path,
                       const char* attachment_point);
   bool DetachDatabase(const char* attachment_point);
