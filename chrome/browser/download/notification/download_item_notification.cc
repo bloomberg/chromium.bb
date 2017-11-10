@@ -183,8 +183,6 @@ DownloadItemNotification::DownloadItemNotification(
   // overridden by UpdateNotificationData() below.
   message_center::RichNotificationData rich_notification_data;
   rich_notification_data.should_make_spoken_feedback_for_popup_updates = false;
-  // Dangerous notifications don't have a click handler.
-  rich_notification_data.clickable = !item_->IsDangerous();
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_PROGRESS, GetNotificationId(),
       base::string16(),  // title
@@ -198,7 +196,8 @@ DownloadItemNotification::DownloadItemNotification(
       rich_notification_data, nullptr);
 
   notification_->set_progress(0);
-  notification_->set_never_timeout(false);
+  // Dangerous notifications don't have a click handler.
+  notification_->set_clickable(!item_->IsDangerous());
 
   Update();
 }
