@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("downloads") {
+source_set("download") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "download_manager_controller.h",
@@ -41,7 +41,7 @@ source_set("unit_tests") {
     "download_manager_controller_unittest.mm",
   ]
   deps = [
-    ":downloads",
+    ":download",
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/store_kit",
