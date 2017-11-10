@@ -50,10 +50,6 @@ WEBGL = Tag(
     'webgl', 'Story has sites with heavy uses of WebGL.')
 WEB_STORAGE = Tag(
     'web_storage', 'Story has sites with heavy uses of Web storage.')
-RTL = Tag(
-    'rtl',
-    'Story has sites with right-to-left languages (e.g: Arabic, Hebrew...)')
-
 
 
 def _ExtractAllTags():

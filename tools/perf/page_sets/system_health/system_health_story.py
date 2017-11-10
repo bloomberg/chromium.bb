@@ -56,7 +56,7 @@ class SystemHealthStory(page.Page):
 
   def __init__(self, story_set, take_memory_measurement,
       extra_browser_args=None):
-    case, group, _ = self.NAME.split(':', 2)
+    case, group, _ = self.NAME.split(':')
     tags = []
     if self.TAGS:
       for t in self.TAGS:

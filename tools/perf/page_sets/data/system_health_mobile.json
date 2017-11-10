@@ -147,9 +147,6 @@
         "load:news:irctc": {
             "DEFAULT": "system_health_mobile_058.wprgo"
         },
-        "load:news:kooora:2017": {
-            "DEFAULT": "system_health_mobile_064.wprgo"
-        },
         "load:news:nytimes": {
             "DEFAULT": "system_health_mobile_009.wprgo"
         },

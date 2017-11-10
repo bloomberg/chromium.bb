@@ -24,7 +24,7 @@ browse:media:flickr_infinite_scroll,mobile,Load https://www.flickr.com/explore t
 browse:media:imgur,desktop,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles., 
 browse:media:imgur,mobile,Load http://imgur.com/gallery/5UlBN and navigate to some items/articles., 
 browse:media:pinterest,desktop,Load https://pinterest.com and navigate to some items/articles., 
-browse:media:tumblr,desktop,Load https://tumblr.com/search/gifs and navigate to some items/articles.,"Mac 10.11, Win Platforms"
+browse:media:tumblr,desktop,Load https://tumblr.com/search/gifs and navigate to some items/articles.,Mac 10.11
 browse:media:youtube,desktop,"Load a typical YouTube video then navigate to a next few videos. Stop and
   watch each video for a few seconds.
   ", 
@@ -74,7 +74,7 @@ browse:social:facebook,mobile,Load https://www.facebook.com/rihanna and navigate
 browse:social:facebook_infinite_scroll,desktop,Load https://www.facebook.com/shakira then make a very long scroll., 
 browse:social:facebook_infinite_scroll,mobile,Load https://m.facebook.com/shakira then make a very long scroll., 
 browse:social:instagram,mobile,Load https://www.instagram.com/badgalriri/ and navigate to some items/articles., 
-browse:social:pinterest_infinite_scroll,mobile,Load https://www.pinterest.com/all then make a very long scroll., 
+browse:social:pinterest_infinite_scroll,mobile,Load https://www.pinterest.com/all then make a very long scroll.,Android Webview
 browse:social:tumblr_infinite_scroll,all,Load http://techcrunch.tumblr.com/ then make a very long scroll., 
 browse:social:twitter,desktop,Load https://www.twitter.com/nasa and navigate to some items/articles., 
 browse:social:twitter,mobile,Load https://www.twitter.com/nasa and navigate to some items/articles., 
@@ -87,7 +87,7 @@ browse:tools:earth,desktop,"
     _ Click on the Earth link
     _ Click ZoomIn three times, waiting for 3 sec in between.
 
-  ", 
+  ",All Platforms
 browse:tools:maps,desktop,"
   Google maps story:
     _ Start at https://www.maps.google.com/maps
@@ -95,14 +95,12 @@ browse:tools:maps,desktop,"
     _ Click ZoomIn two times, waiting for 3 sec in between.
     _ Scroll the map horizontally and vertically.
     _ Pick a restaurant and ask for directions.
-  ",Mac Platforms
+  ",All Platforms
 browse:tools:maps,mobile,"Story that browses google maps mobile page
 
   This story searches for nearby restaurants on google maps website and finds
   directions to a chosen restaurant from search results.
-  ",Mac Platforms
-browse_accessibility:tech:codesearch,desktop,Tests scrolling an element within a page., 
-browse_accessibility:tools:gmail_compose,desktop,Tests typing a lot of text into a Gmail compose window.,All Platforms
+  ",All Platforms
 load:chrome:blank,all,Story that loads the about:blank page., 
 load:games:alphabetty,desktop,Load https://king.com/play/alphabetty, 
 load:games:bubbles,all,"Load ""smarty bubbles"" game on famobi.com", 
@@ -121,8 +119,6 @@ load:news:cnn,all,Load http://edition.cnn.com,
 load:news:flipboard,desktop,Load https://flipboard.com/explore, 
 load:news:hackernews,desktop,Load https://news.ycombinator.com, 
 load:news:irctc,mobile,Load https://www.irctc.co.in, 
-load:news:kooora:2017,desktop,Load http://www.kooora.com/?n=632487, 
-load:news:kooora:2017,mobile,Load http://m.kooora.com/?n=632487, 
 load:news:nytimes,desktop,Load http://www.nytimes.com, 
 load:news:nytimes,mobile,Load http://mobile.nytimes.com, 
 load:news:qq,all,Load http://news.qq.com, 
@@ -149,8 +145,6 @@ load:tools:gmail,desktop,Load https://mail.google.com/mail/,Android Platforms
 load:tools:gmail,mobile,Load https://mail.google.com/mail/,Android Platforms
 load:tools:stackoverflow,all,Load a typical question & answer page of stackoverflow.com, 
 load:tools:weather,all,Load https://weather.com/en-GB/weather/today/l/USCA0286:1:US, 
-load_accessibility:media:wikipedia,desktop,"Wikipedia page on Accessibility. Long, but very simple, clean layout.", 
-load_accessibility:shopping:amazon,desktop,Amazon results page. Good example of a site with a data table., 
 long_running:tools:gmail-background,desktop,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,Android Webview
 long_running:tools:gmail-background,mobile,Load https://mail.google.com/mail/ then open a new blank tab and let the loaded page stay in background for 100 seconds.,Android Webview
 long_running:tools:gmail-foreground,desktop,Load https://mail.google.com/mail/ then let it stay in foreground for 100 seconds., 

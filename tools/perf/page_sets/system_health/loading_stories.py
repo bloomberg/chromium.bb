@@ -157,20 +157,6 @@ class LoadNytimesMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
-class LoadKoooraDesktopStory(_LoadingStory):
-  NAME = 'load:news:kooora:2017'
-  URL = 'http://www.kooora.com/?n=632487'
-  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.RTL]
-
-
-class LoadKoooraMobileStory(_LoadingStory):
-  NAME = 'load:news:kooora:2017'
-  URL = 'http://m.kooora.com/?n=632487'
-  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.RTL]
-
-
 class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'
   # Using "https://" hangs and shows "This site can't be reached".
