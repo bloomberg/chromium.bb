@@ -152,16 +152,17 @@ TEST_F('MediaRouterElementsBrowserTest',
   mocha.run();
 });
 
-// This test is flaky on Windows. See https://crbug.com/760288.
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_MediaRouterContainerSearch DISABLED_MediaRouterContainerSearch');
-GEN('#else');
-GEN('#define MAYBE_MediaRouterContainerSearch MediaRouterContainerSearch');
-GEN('#endif');
 TEST_F('MediaRouterElementsBrowserTest',
-    'MAYBE_MediaRouterContainerSearch',
+    'MediaRouterContainerSearchPart1',
     function() {
-  media_router_container_search.registerTests();
+  media_router_container_search.registerTestsPart1();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerSearchPart2',
+    function() {
+  media_router_container_search.registerTestsPart2();
   mocha.run();
 });
 
@@ -173,9 +174,16 @@ TEST_F('MediaRouterElementsBrowserTest',
 });
 
 TEST_F('MediaRouterElementsBrowserTest',
-    'DISABLED_MediaRouterContainerFilter',
+    'MediaRouterContainerFilterPart1',
     function() {
-  media_router_container_filter.registerTests();
+  media_router_container_filter.registerTestsPart1();
+  mocha.run();
+});
+
+TEST_F('MediaRouterElementsBrowserTest',
+    'MediaRouterContainerFilterPart2',
+    function() {
+  media_router_container_filter.registerTestsPart2();
   mocha.run();
 });
 
