@@ -87,7 +87,7 @@ Bug(none) http/tests/background_sync/chromium/stop-worker-no-crash.html [ Crash 
 Bug(none) http/tests/cookies/same-site/popup-cross-site-post.html [ Failure ]
 Bug(none) http/tests/cookies/same-site/popup-cross-site.html [ Failure ]
 Bug(none) http/tests/devtools/sources/compile-javascript.js [ Failure Timeout ]
-Bug(none) http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Failure ]
+Bug(none) http/tests/devtools/sources/debugger-ui/source-frame-count.js [ Failure ]
 Bug(none) http/tests/encoding/meta-switch-mid-parse-with-title.html [ Timeout ]
 Bug(none) http/tests/encoding/meta-switch-mid-parse.html [ Timeout ]
 crbug.com/778542 http/tests/devtools/tracing/timeline-js/timeline-script-id.html [ Failure ]
