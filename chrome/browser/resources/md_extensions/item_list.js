@@ -27,29 +27,31 @@ cr.define('extensions', function() {
 
       filter: String,
 
-      /** @private {!Array<!chrome.developerPrivate.ExtensionInfo>} */
-      shownApps_: {
-        type: Array,
-        computed: 'computeShownItems_(apps, apps.*, filter)',
+      /** @private */
+      shownExtensionsCount_: {
+        type: Number,
+        value: 0,
       },
 
-      /** @private {!Array<!chrome.developerPrivate.ExtensionInfo>} */
-      shownExtensions_: {
-        type: Array,
-        computed: 'computeShownItems_(extensions, extensions.*, filter)',
-      }
+      /** @private */
+      shownAppsCount_: {
+        type: Number,
+        value: 0,
+      },
     },
 
     /**
-     * Computes the list of items to be shown.
-     * @param {!Array<!chrome.developerPrivate.ExtensionInfo>} items
-     * @return {!Array<!chrome.developerPrivate.ExtensionInfo>}
+     * Computes the filter function to be used for determining which items
+     * should be shown. A |null| value indicates that everything should be
+     * shown.
+     * return {?Function}
      * @private
      */
-    computeShownItems_: function(items) {
+    computeFilter_: function() {
       const formattedFilter = this.filter.trim().toLowerCase();
-      return items.filter(
-          item => item.name.toLowerCase().includes(formattedFilter));
+      return formattedFilter ?
+          i => i.name.toLowerCase().includes(formattedFilter) :
+          null;
     },
 
     /** @private */
@@ -61,7 +63,7 @@ cr.define('extensions', function() {
     /** @private */
     shouldShowEmptySearchMessage_: function() {
       return !this.isGuest && !this.shouldShowEmptyItemsMessage_() &&
-          this.shownApps_.length === 0 && this.shownExtensions_.length === 0;
+          this.shownAppsCount_ === 0 && this.shownExtensionsCount_ === 0;
     },
   });
 

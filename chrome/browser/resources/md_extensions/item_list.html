@@ -61,30 +61,38 @@
       </div>
       <div id="no-search-results" class="empty-list-message"
           hidden$="[[!shouldShowEmptySearchMessage_(
-              shownApps_.length, shownExtensions_.length)]]">
+              shownAppsCount_, shownExtensionsCount_, apps, extensions)]]">
         <span>$i18n{noSearchResults}</span>
       </div>
-      <template is="dom-if" if="[[shownExtensions_.length]]">
-        <div class="items-container">
-          <template is="dom-repeat" items="[[shownExtensions_]]">
-            <extensions-item data="[[item]]" delegate="[[delegate]]"
-                in-dev-mode="[[inDevMode]]">
-            </extensions-item>
-          </template>
-        </div>
-      </template>
-      <template is="dom-if" if="[[shownApps_.length]]">
+      <div class="items-container" hidden="[[!shownExtensionsCount_]]">
+        <!-- Render only a few items first, to improve initial render time, then
+          render the remaining items on a different frame. Value of 3 was chosen
+          by experimentation, and it is a good tradeoff between initial render
+          time and total render time. -->
+        <template is="dom-repeat" items="[[extensions]]" initial-count="3"
+            filter="[[computeFilter_(filter)]]"
+            rendered-item-count="{{shownExtensionsCount_::dom-change}}"
+            notify-dom-change>
+          <extensions-item data="[[item]]" delegate="[[delegate]]"
+              in-dev-mode="[[inDevMode]]">
+          </extensions-item>
+        </template>
+      </div>
+      <div hidden="[[!shownAppsCount_]]">
         <!-- app-title needs to left-align with the grid content below, and
              the easiest way to achieve this is to make it a grid as well. -->
         <h1 id="app-title" class="items-container">$i18n{appsTitle}</h1>
         <div class="items-container">
-          <template is="dom-repeat" items="[[shownApps_]]">
+          <template is="dom-repeat" items="[[apps]]" initial-count="3"
+              filter="[[computeFilter_(filter)]]"
+              rendered-item-count="{{shownAppsCount_::dom-change}}"
+              notify-dom-change>
             <extensions-item data="[[item]]" delegate="[[delegate]]"
                 in-dev-mode="[[inDevMode]]">
             </extensions-item>
           </template>
         </div>
-      </template>
+      </div>
     </div>
   </template>
   <script src="item_list.js"></script>
