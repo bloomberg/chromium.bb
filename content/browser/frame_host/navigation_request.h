@@ -158,6 +158,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
     return navigation_handle_.get();
   }
 
+  int net_error() { return net_error_; }
+
   void SetWaitingForRendererResponse();
 
   // Creates a NavigationHandle. This should be called after any previous

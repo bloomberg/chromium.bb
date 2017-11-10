@@ -53,7 +53,7 @@
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled", "requestAppBanner",
                     "printToPDF", "bringToFront", "setDownloadBehavior"],
                 "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "screencastVisibilityChanged", "screencastFrame"],
-                "async": ["captureScreenshot", "printToPDF"]
+                "async": ["captureScreenshot", "printToPDF", "navigate"]
             },
             {
                 "domain": "Runtime",

@@ -21,6 +21,7 @@
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
@@ -1009,35 +1010,35 @@ void NetworkHandler::NavigationPreloadCompleted(
       completion_status.encoded_data_length);
 }
 
-void NetworkHandler::NavigationFailed(
-    const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
-    net::Error error_code) {
+void NetworkHandler::NavigationFailed(NavigationRequest* navigation_request) {
   if (!enabled_)
     return;
 
   static int next_id = 0;
   std::string request_id = base::IntToString(base::GetCurrentProcId()) + "." +
                            base::IntToString(++next_id);
-  std::string error_string = net::ErrorToString(error_code);
-  bool cancelled = error_code == net::Error::ERR_ABORTED;
+  std::string error_string =
+      net::ErrorToString(navigation_request->net_error());
+  bool cancelled = navigation_request->net_error() == net::Error::ERR_ABORTED;
 
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
   net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(begin_params.headers);
+  headers.AddHeadersFromString(navigation_request->begin_params().headers);
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext();)
     headers_dict->setString(it.name(), it.value());
   frontend_->RequestWillBeSent(
-      request_id, "" /* loader_id */, common_params.url.spec(),
+      request_id, "" /* loader_id */,
+      navigation_request->common_params().url.spec(),
       Network::Request::Create()
-          .SetUrl(common_params.url.spec())
-          .SetMethod(common_params.method)
+          .SetUrl(navigation_request->common_params().url.spec())
+          .SetMethod(navigation_request->common_params().method)
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           // Note: the priority value is copied from
           // ResourceDispatcherHostImpl::BeginNavigationRequest but there isn't
           // a good way of sharing this.
           .SetInitialPriority(resourcePriority(net::HIGHEST))
-          .SetReferrerPolicy(referrerPolicy(common_params.referrer.policy))
+          .SetReferrerPolicy(referrerPolicy(
+              navigation_request->common_params().referrer.policy))
           .Build(),
       base::TimeTicks::Now().ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),

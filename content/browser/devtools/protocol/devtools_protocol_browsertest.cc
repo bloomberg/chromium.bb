@@ -243,7 +243,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       return result_.get();
     }
     in_dispatch_ = false;
-    return nullptr;
+    return result_.get();
   }
 
   void WaitForResponse() {

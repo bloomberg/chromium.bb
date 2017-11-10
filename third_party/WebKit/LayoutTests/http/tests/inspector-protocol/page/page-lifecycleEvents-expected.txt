@@ -1,7 +1,7 @@
 Tests that Page.lifecycleEvent is issued for important events.
 [
     [0] : DOMContentLoaded
-    [1] : commit
+    [1] : init
     [2] : load
     [3] : networkAlmostIdle
     [4] : networkIdle
