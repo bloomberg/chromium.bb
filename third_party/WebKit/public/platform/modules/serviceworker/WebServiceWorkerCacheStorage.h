@@ -9,7 +9,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "public/platform/modules/cache_storage/cache_storage.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
 #include <memory>
