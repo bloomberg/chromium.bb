@@ -125,7 +125,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   NetErrorDetails net_error_details;
   request.Request(env->host_port_pair,
                   data_provider.PickValueInArray(kSupportedTransportVersions),
-                  PRIVACY_MODE_DISABLED, kCertVerifyFlags, GURL(kUrl), kMethod,
+                  PRIVACY_MODE_DISABLED, kCertVerifyFlags, GURL(kUrl),
                   env->net_log, &net_error_details, callback.callback());
 
   callback.WaitForResult();
