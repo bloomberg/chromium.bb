@@ -78,6 +78,11 @@ cr.define('extensions', function() {
       'onSelectedErrorChanged_(selectedEntry_)',
     ],
 
+    /** @override */
+    ready: function() {
+      cr.ui.FocusOutlineManager.forDocument(document);
+    },
+
     /** @return {!ManifestError|!RuntimeError} */
     getSelectedError: function() {
       return this.entries_[this.selectedEntry_];
