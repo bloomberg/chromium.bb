@@ -298,13 +298,17 @@ const base::FilePath::CharType kUnpackedFullscreenAppName[] =
 const char kTestWebRtcUdpPortRange[] = "10000-10100";
 #endif
 
+void GetTestDataDirectory(base::FilePath* test_data_directory) {
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, test_data_directory));
+}
+
 // Filters requests to the hosts in |urls| and redirects them to the test data
 // dir through URLRequestMockHTTPJobs.
 void RedirectHostsToTestData(const char* const urls[], size_t size) {
   // Map the given hosts to the test data dir.
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   base::FilePath base_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &base_path);
+  GetTestDataDirectory(&base_path);
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
@@ -422,12 +426,17 @@ void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
 // must be empty.
 void DownloadAndVerifyFile(
     Browser* browser, const base::FilePath& dir, const base::FilePath& file) {
+  net::EmbeddedTestServer embedded_test_server;
+  base::FilePath test_data_directory;
+  GetTestDataDirectory(&test_data_directory);
+  embedded_test_server.ServeFilesFromDirectory(test_data_directory);
+  ASSERT_TRUE(embedded_test_server.Start());
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser->profile());
   content::DownloadTestObserverTerminal observer(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
-  GURL url(URLRequestMockHTTPJob::GetMockUrl(file.MaybeAsASCII()));
+  GURL url(embedded_test_server.GetURL("/" + file.MaybeAsASCII()));
   base::FilePath downloaded = dir.Append(file);
   EXPECT_FALSE(base::PathExists(downloaded));
   ui_test_utils::NavigateToURL(browser, url);
@@ -1656,7 +1665,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
       service->GetExtensionById(kGoodCrxId, true)->version()->GetString();
 
   base::FilePath test_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+  GetTestDataDirectory(&test_path);
 
   TestRequestInterceptor interceptor(
       "update.extension",
@@ -1868,7 +1877,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
   // Setup interceptor for extension updates.
   base::FilePath test_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+  GetTestDataDirectory(&test_path);
   TestRequestInterceptor interceptor(
       "update.extension",
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
@@ -1938,7 +1947,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 
   // Setup interceptor for extension updates.
   base::FilePath test_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
+  GetTestDataDirectory(&test_path);
   TestRequestInterceptor interceptor(
       "update.extension",
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
@@ -2434,7 +2443,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_FileURLBlacklist) {
   // with URLblacklisting and URLwhitelisting.
 
   base::FilePath test_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_path);
+  GetTestDataDirectory(&test_path);
   const std::string base_path = "file://" + test_path.AsUTF8Unsafe() +"/";
   const std::string folder_path = base_path + "apptest/";
   const std::string file_path1 = base_path + "title1.html";
