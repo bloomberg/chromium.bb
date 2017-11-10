@@ -3,16 +3,41 @@
 // found in the LICENSE file.
 
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+
+#include "base/test/simple_test_tick_clock.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
+#include "services/resource_coordinator/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace resource_coordinator {
 
 namespace {
 
-class FrameCoordinationUnitImplTest : public CoordinationUnitTestHarness {};
+class FrameCoordinationUnitImplTest : public CoordinationUnitTestHarness {
+ public:
+  void SetUp() override {
+    ResourceCoordinatorClock::SetClockForTesting(
+        std::make_unique<base::SimpleTestTickClock>());
+    clock_ = static_cast<base::SimpleTestTickClock*>(
+        ResourceCoordinatorClock::GetClockForTesting());
+
+    // Sets a valid starting time.
+    clock_->SetNowTicks(base::TimeTicks::Now());
+  }
+
+  void TearDown() override {
+    clock_ = nullptr;
+    ResourceCoordinatorClock::ResetClockForTesting();
+  }
+
+ protected:
+  void AdvanceClock(base::TimeDelta delta) { clock_->Advance(delta); }
+
+ private:
+  base::SimpleTestTickClock* clock_ = nullptr;
+};
 
 using FrameCoordinationUnitImplDeathTest = FrameCoordinationUnitImplTest;
 
@@ -98,6 +123,16 @@ TEST_F(FrameCoordinationUnitImplTest, IsAlmostIdle) {
   cu_graph.process->SetMainThreadTaskLoadIsLow(true);
   cu_graph.frame->SetNetworkAlmostIdle(true);
   EXPECT_TRUE(cu_graph.frame->IsAlmostIdle());
+}
+
+TEST_F(FrameCoordinationUnitImplTest, LastAudibleTime) {
+  MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;
+  EXPECT_EQ(base::TimeTicks(), cu_graph.frame->last_audible_time());
+  cu_graph.frame->SetAudibility(true);
+  AdvanceClock(base::TimeDelta::FromSeconds(1));
+  cu_graph.frame->SetAudibility(false);
+  EXPECT_EQ(ResourceCoordinatorClock::NowTicks(),
+            cu_graph.frame->last_audible_time());
 }
 
 }  // namespace resource_coordinator

@@ -75,9 +75,7 @@ void MetricsCollector::OnCoordinationUnitCreated(
 
 void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
     const CoordinationUnitBase* coordination_unit) {
-  if (coordination_unit->id().type == CoordinationUnitType::kFrame) {
-    frame_data_map_.erase(coordination_unit->id());
-  } else if (coordination_unit->id().type == CoordinationUnitType::kPage) {
+  if (coordination_unit->id().type == CoordinationUnitType::kPage) {
     metrics_report_record_map_.erase(coordination_unit->id());
     ukm_cpu_usage_collection_state_map_.erase(coordination_unit->id());
   }
@@ -87,13 +85,10 @@ void MetricsCollector::OnFramePropertyChanged(
     const FrameCoordinationUnitImpl* frame_cu,
     const mojom::PropertyType property_type,
     int64_t value) {
-  FrameData& frame_data = frame_data_map_[frame_cu->id()];
   if (property_type == mojom::PropertyType::kAudible) {
     bool audible = static_cast<bool>(value);
-    if (!audible) {
-      frame_data.last_audible_time = ResourceCoordinatorClock::NowTicks();
+    if (!audible)
       return;
-    }
     auto* page_cu = frame_cu->GetPageCoordinationUnit();
     // Only record metrics while it is backgrounded.
     if (!page_cu || page_cu->IsVisible() || !ShouldReportMetrics(page_cu)) {
@@ -102,7 +97,7 @@ void MetricsCollector::OnFramePropertyChanged(
     // Audio is considered to have started playing if the page has never
     // previously played audio, or has been silent for at least one minute.
     auto now = ResourceCoordinatorClock::NowTicks();
-    if (frame_data.last_audible_time + kMaxAudioSlientTimeout < now) {
+    if (frame_cu->last_audible_time() + kMaxAudioSlientTimeout < now) {
       MetricsReportRecord& record =
           metrics_report_record_map_.find(page_cu->id())->second;
       record.first_audible.OnSignalReceived(

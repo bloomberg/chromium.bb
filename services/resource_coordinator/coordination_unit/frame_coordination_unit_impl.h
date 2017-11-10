@@ -42,6 +42,8 @@ class FrameCoordinationUnitImpl
   bool IsAlmostIdle() const;
   bool IsMainFrame() const;
 
+  base::TimeTicks last_audible_time() const { return last_audible_time_; }
+
   const std::set<FrameCoordinationUnitImpl*>&
   child_frame_coordination_units_for_testing() const {
     return child_frame_coordination_units_;
@@ -77,6 +79,8 @@ class FrameCoordinationUnitImpl
   PageCoordinationUnitImpl* page_coordination_unit_;
   ProcessCoordinationUnitImpl* process_coordination_unit_;
   std::set<FrameCoordinationUnitImpl*> child_frame_coordination_units_;
+
+  base::TimeTicks last_audible_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameCoordinationUnitImpl);
 };

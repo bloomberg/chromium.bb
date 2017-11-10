@@ -3,15 +3,13 @@
 // found in the LICENSE file.
 
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
-#include "base/run_loop.h"
+
 #include "base/test/simple_test_tick_clock.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_test_harness.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/mock_coordination_unit_graphs.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
-#include "services/resource_coordinator/public/cpp/coordination_unit_types.h"
-#include "services/resource_coordinator/public/interfaces/coordination_unit.mojom.h"
 #include "services/resource_coordinator/resource_coordinator_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
