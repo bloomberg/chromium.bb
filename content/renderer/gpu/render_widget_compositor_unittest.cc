@@ -132,10 +132,6 @@ class FakeRenderWidgetCompositorDelegate
     return num_failures_before_success_;
   }
 
-  void set_use_null_layer_tree_frame_sink(bool u) {
-    use_null_layer_tree_frame_sink_ = u;
-  }
-
  private:
   int num_requests_ = 0;
   int num_requests_before_success_ = 0;
@@ -144,7 +140,6 @@ class FakeRenderWidgetCompositorDelegate
   int num_failures_before_success_ = 0;
   int num_failures_since_last_success_ = 0;
   int num_successes_ = 0;
-  bool use_null_layer_tree_frame_sink_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetCompositorDelegate);
 };
@@ -253,8 +248,6 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
 
   void RunTest(int expected_successes, FailureMode failure_mode) {
     compositor_delegate_.Reset();
-    compositor_delegate_.set_use_null_layer_tree_frame_sink(
-        failure_mode == GPU_CHANNEL_FAILURE);
     // 6 is just an artibrary "large" number to show it keeps trying.
     const int kTries = 6;
     // If it should fail, then it will fail every attempt, otherwise it fails
@@ -328,6 +321,79 @@ TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailWithNullChannel) {
 
 TEST_F(RenderWidgetLayerTreeFrameSinkTest, FailWithLostContext) {
   RunTest(0, BIND_CONTEXT_FAILURE);
+}
+
+class VisibilityTestRenderWidgetCompositor : public RenderWidgetCompositor {
+ public:
+  VisibilityTestRenderWidgetCompositor(
+      StubRenderWidgetCompositorDelegate* delegate,
+      CompositorDependencies* compositor_deps)
+      : RenderWidgetCompositor(delegate, compositor_deps) {}
+
+  void RequestNewLayerTreeFrameSink() override {
+    RenderWidgetCompositor::RequestNewLayerTreeFrameSink();
+    num_requests_sent_++;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
+  int num_requests_sent() { return num_requests_sent_; }
+
+ private:
+  int num_requests_sent_ = 0;
+  base::RunLoop* run_loop_;
+};
+
+TEST(RenderWidgetCompositorTest, VisibilityTest) {
+  // Test that RenderWidgetCompositor does not retry FrameSink request while
+  // invisible.
+
+  base::MessageLoop message_loop;
+
+  FakeCompositorDependencies compositor_deps;
+  // Synchronously callback with null FrameSink.
+  StubRenderWidgetCompositorDelegate compositor_delegate;
+  VisibilityTestRenderWidgetCompositor render_widget_compositor(
+      &compositor_delegate, &compositor_deps);
+
+  auto animation_host = cc::AnimationHost::CreateMainInstance();
+  ScreenInfo dummy_screen_info;
+  const float initial_device_scale_factor = 1.f;
+  auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
+      &render_widget_compositor, &render_widget_compositor,
+      animation_host.get(), &compositor_deps, initial_device_scale_factor,
+      dummy_screen_info);
+  render_widget_compositor.Initialize(std::move(layer_tree_host),
+                                      std::move(animation_host));
+
+  {
+    // Make one request and stop immediately while invisible.
+    base::RunLoop run_loop;
+    render_widget_compositor.set_run_loop(&run_loop);
+    render_widget_compositor.SetVisible(false);
+    render_widget_compositor.RequestNewLayerTreeFrameSink();
+    run_loop.Run();
+    render_widget_compositor.set_run_loop(nullptr);
+    EXPECT_EQ(1, render_widget_compositor.num_requests_sent());
+  }
+
+  {
+    // Make sure there are no more requests.
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
+    EXPECT_EQ(1, render_widget_compositor.num_requests_sent());
+  }
+
+  {
+    // Becoming visible retries request.
+    base::RunLoop run_loop;
+    render_widget_compositor.set_run_loop(&run_loop);
+    render_widget_compositor.SetVisible(true);
+    run_loop.Run();
+    render_widget_compositor.set_run_loop(nullptr);
+    EXPECT_EQ(2, render_widget_compositor.num_requests_sent());
+  }
 }
 
 // Verify desktop memory limit calculations.

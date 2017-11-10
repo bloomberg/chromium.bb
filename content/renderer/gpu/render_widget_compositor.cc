@@ -809,6 +809,9 @@ void RenderWidgetCompositor::SetVisible(bool visible) {
     return;
 
   layer_tree_host_->SetVisible(visible);
+
+  if (visible && layer_tree_frame_sink_request_failed_while_invisible_)
+    DidFailToInitializeLayerTreeFrameSink();
 }
 
 void RenderWidgetCompositor::SetPageScaleFactorAndLimits(
@@ -1233,6 +1236,11 @@ void RenderWidgetCompositor::DidInitializeLayerTreeFrameSink() {
 }
 
 void RenderWidgetCompositor::DidFailToInitializeLayerTreeFrameSink() {
+  if (!layer_tree_host_->IsVisible()) {
+    layer_tree_frame_sink_request_failed_while_invisible_ = true;
+    return;
+  }
+  layer_tree_frame_sink_request_failed_while_invisible_ = false;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&RenderWidgetCompositor::RequestNewLayerTreeFrameSink,
