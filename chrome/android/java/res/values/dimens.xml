@@ -417,7 +417,6 @@
     <dimen name="psl_info_tooltip_margin">8dp</dimen>
 
     <!-- Clear browsing data preferences dimensions -->
-    <dimen name="clear_browsing_data_checkbox_height">56dp</dimen>
     <dimen name="clear_browsing_data_button_margin">8dp</dimen>
 
     <!-- Payments UI
