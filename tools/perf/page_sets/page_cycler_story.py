@@ -23,6 +23,7 @@ class PageCyclerStory(page.Page):
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
         cache_temperature=cache_temperature, name=name,
+        traffic_setting=traffic_setting,
         **kwargs)
     if cache_temperature != cache_temperature_module.ANY:
       self.grouping_keys['cache_temperature'] = cache_temperature
