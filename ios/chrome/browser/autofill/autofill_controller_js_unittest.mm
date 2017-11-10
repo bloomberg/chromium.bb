@@ -677,11 +677,13 @@ NSArray* GetTestFormSelectElementWithOptgroup() {
 // strings or undefined. Only attributes in |attributes_to_check| are checked.
 // A different expected value is chosen in |expected| for different
 // |extract_mask|.
-NSString* GenerateElementItemVerifyingJavaScripts(
-    NSString* results,
-    NSUInteger extract_mask,
-    NSDictionary* expected,
-    NSArray* attributes_to_check) {
+// |index| is the index of the control element in the form. If it is >0, it will
+// be used to generate a name for nameless elements.
+NSString* GenerateElementItemVerifyingJavaScripts(NSString* results,
+                                                  NSUInteger extract_mask,
+                                                  NSDictionary* expected,
+                                                  NSArray* attributes_to_check,
+                                                  int index) {
   NSMutableArray* verifying_javascripts = [NSMutableArray array];
 
   for (NSString* attribute in attributes_to_check) {
@@ -704,6 +706,11 @@ NSString* GenerateElementItemVerifyingJavaScripts(
       }
     } else {
       NSString* expected_value = [expected objectForKey:attribute];
+      if ([attribute isEqualToString:@"name"] &&
+          [expected_value isEqualToString:@"''"] && index >= 0) {
+        expected_value =
+            [NSString stringWithFormat:@"'gChrome~field~%d'", index];
+      }
       // Option text is used as value for extract_mask 1 << 1
       if ((extract_mask & 1 << 1) && [attribute isEqualToString:@"value"])
         expected_value = [expected objectForKey:@"value_option_text"];
@@ -737,7 +744,7 @@ NSString* GenerateTestItemVerifyingJavaScripts(NSString* results,
           GenerateElementItemVerifyingJavaScripts(
               [NSString stringWithFormat:@"%@['fields'][%" PRIuNS "]", results,
                                          controlCount],
-              extract_mask, expected, attributed_to_check);
+              extract_mask, expected, attributed_to_check, controlCount);
       [verifying_javascripts addObject:itemVerifyingJavaScripts];
     }
   }
@@ -1230,7 +1237,7 @@ void AutofillControllerJsTest::TestWebFormControlElementToFormField(
       // @"field" as in the evaluation JavaScripts the results are returned in
       // |field|.
       NSString* verifying_javascripts = GenerateElementItemVerifyingJavaScripts(
-          @"field", extract_mask, expected, attributes_to_check);
+          @"field", extract_mask, expected, attributes_to_check, -1);
       EXPECT_NSEQ(@YES,
                   ExecuteJavaScriptWithFormat(
                       @"%@; var field = {};"
@@ -1365,14 +1372,13 @@ TEST_F(AutofillControllerJsTest, WebFormElementToFormData) {
   TestWebFormElementToFormData(test_elements);
 }
 
-TEST_F(AutofillControllerJsTest,
-       DISABLED_WebFormElementToFormDataTooManyFields) {
+TEST_F(AutofillControllerJsTest, WebFormElementToFormDataTooManyFields) {
   NSString* html_fragment =
       @"<FORM name='Test' action='http://c.com' method='post'>";
-  // In autofill_controller.js, the maximum number of parsable element is 100
-  // (__gCrWeb.autofill.MAX_PARSEABE_FIELDS = 100). Here an HTML page with 101
+  // In autofill_controller.js, the maximum number of parsable element is 200
+  // (__gCrWeb.autofill.MAX_PARSEABLE_FIELDS = 200). Here an HTML page with 201
   // elements is generated for testing.
-  for (NSUInteger index = 0; index < 101; ++index) {
+  for (NSUInteger index = 0; index < 201; ++index) {
     html_fragment =
         [html_fragment stringByAppendingFormat:@"<INPUT type='text'/>"];
   }
