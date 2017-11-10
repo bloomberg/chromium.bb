@@ -244,6 +244,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool never_visible_;
   bool is_for_oopif_;
 
+  bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
+
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
 
   viz::FrameSinkId frame_sink_id_;
