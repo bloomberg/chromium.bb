@@ -491,7 +491,7 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
   }
 
   V8VoidCallbackFunctionModules* arg;
-  if (0 < info.Length() && info[0]->IsFunction()) {
+  if (info[0]->IsFunction()) {
     arg = V8VoidCallbackFunctionModules::Create(ScriptState::Current(info.GetIsolate()), info[0]);
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));

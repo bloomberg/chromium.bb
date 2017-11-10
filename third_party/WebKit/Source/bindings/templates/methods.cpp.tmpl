@@ -159,10 +159,13 @@ if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->I
 {% elif argument.idl_type == 'NodeFilter' %}
 {{argument.name}} = V8NodeFilterCondition::CreateOrNull(info[{{argument.index}}], ScriptState::Current(info.GetIsolate()));
 {% else %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
-if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsFunction()) {
+if (info[{{argument.index}}]->IsFunction()) {
   {{argument.name}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
-{% if argument.is_nullable or argument.is_optional %}
-} else if ({{argument.index}} >= info.Length() || info[{{argument.index}}]->IsNullOrUndefined()) {
+{% if argument.is_optional %}
+} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
+  {{argument.name}} = nullptr;
+{% elif argument.is_nullable %}
+} else if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {
@@ -171,10 +174,13 @@ if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsFunction()
 }
 {% endif %}{# argument.idl_type == 'EventListener'/'NodeFilter' #}
 {% elif argument.is_callback_function %}
-if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsFunction()) {
+if (info[{{argument.index}}]->IsFunction()) {
   {{v8_value_to_local_cpp_value(argument)}}
-{% if argument.is_nullable or argument.is_optional %}
-} else if ({{argument.index}} >= info.Length() || info[{{argument.index}}]->IsNullOrUndefined()) {
+{% if argument.is_optional %}
+} else if (info[{{argument.index}}]->IsNullOrUndefined()) {
+  {{argument.name}} = nullptr;
+{% elif argument.is_nullable %}
+} else if ({{argument.index}} < info.Length() && info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.name}} = nullptr;
 {% endif %}
 } else {
