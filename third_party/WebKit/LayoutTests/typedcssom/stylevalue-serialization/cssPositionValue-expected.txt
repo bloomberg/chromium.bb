@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS CSSPositionValue constructed from IDL serializes correctly
+FAIL CSSPositionValue from DOMString modified by "x" setter serializes correctly assert_equals: expected "-3.14% 1%" but got "1px 1px"
+FAIL CSSPositionValue from DOMString modified by "y" setter serializes correctly assert_equals: expected "1px -3.14%" but got "1px 1px"
+FAIL CSSPositionValue from CSSOM modified through "x" setters serializes correctly assert_equals: expected "-3.14% 1px" but got "1px 1px"
+FAIL CSSPositionValue from CSSOM modified through "y" setters serializes correctly assert_equals: expected "1px -3.14%" but got "1px 1px"
+Harness: the test ran to completion.
+
