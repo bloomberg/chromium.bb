@@ -218,6 +218,11 @@ static_library("libxml") {
     ":libxml_warnings",
   ]
 
+  if (is_win) {
+    # libxml2 already defines WIN32_LEAN_AND_MEAN.
+    configs -= [ "//build/config/win:lean_and_mean" ]
+  }
+
   public_configs = [ ":libxml_config" ]
   public_deps = [
     "//third_party/icu:icuuc",

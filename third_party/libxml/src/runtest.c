@@ -26,6 +26,7 @@
 #include <libxml/parserInternals.h>
 #include <libxml/tree.h>
 #include <libxml/uri.h>
+#include <libxml/encoding.h>
 
 #ifdef LIBXML_OUTPUT_ENABLED
 #ifdef LIBXML_READER_ENABLED
@@ -119,8 +120,8 @@ typedef struct
 } glob_t;
 
 #define GLOB_DOOFFS 0
-static int glob(const char *pattern, int flags,
-                int errfunc(const char *epath, int eerrno),
+static int glob(const char *pattern, ATTRIBUTE_UNUSED int flags,
+                ATTRIBUTE_UNUSED int errfunc(const char *epath, int eerrno),
                 glob_t *pglob) {
     glob_t *ret;
     WIN32_FIND_DATA FindFileData;
@@ -3951,19 +3952,23 @@ c14n11WithoutCommentTest(const char *filename,
  */
 #define	MAX_ARGC	20
 
-static const char *catalog = "test/threads/complex.xml";
-static const char *testfiles[] = {
-    "test/threads/abc.xml",
-    "test/threads/acb.xml",
-    "test/threads/bac.xml",
-    "test/threads/bca.xml",
-    "test/threads/cab.xml",
-    "test/threads/cba.xml",
-    "test/threads/invalid.xml",
-};
+typedef struct {
+    const char *filename;
+    int okay;
+} xmlThreadParams;
 
-static const char *Okay = "OK";
-static const char *Failed = "Failed";
+static const char *catalog = "test/threads/complex.xml";
+static xmlThreadParams threadParams[] = {
+    { "test/threads/abc.xml", 0 },
+    { "test/threads/acb.xml", 0 },
+    { "test/threads/bac.xml", 0 },
+    { "test/threads/bca.xml", 0 },
+    { "test/threads/cab.xml", 0 },
+    { "test/threads/cba.xml", 0 },
+    { "test/threads/invalid.xml", 0 }
+};
+static const unsigned int num_threads = sizeof(threadParams) /
+                                        sizeof(threadParams[0]);
 
 #ifndef xmlDoValidityCheckingDefaultValue
 #error xmlDoValidityCheckingDefaultValue is not a macro
@@ -3976,7 +3981,8 @@ static void *
 thread_specific_data(void *private_data)
 {
     xmlDocPtr myDoc;
-    const char *filename = (const char *) private_data;
+    xmlThreadParams *params = (xmlThreadParams *) private_data;
+    const char *filename = params->filename;
     int okay = 1;
 
     if (!strcmp(filename, "test/threads/invalid.xml")) {
@@ -4016,12 +4022,11 @@ thread_specific_data(void *private_data)
             okay = 0;
         }
     }
-    if (okay == 0)
-        return ((void *) Failed);
-    return ((void *) Okay);
+    params->okay = okay;
+    return(NULL);
 }
 
-#if defined WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
 #include <string.h>
 
@@ -4032,15 +4037,14 @@ static HANDLE tid[MAX_ARGC];
 static DWORD WINAPI
 win32_thread_specific_data(void *private_data)
 {
-    return((DWORD) thread_specific_data(private_data));
+    thread_specific_data(private_data);
+    return(0);
 }
 
 static int
 testThread(void)
 {
     unsigned int i, repeat;
-    unsigned int num_threads = sizeof(testfiles) / sizeof(testfiles[0]);
-    DWORD results[MAX_ARGC];
     BOOL ret;
     int res = 0;
 
@@ -4050,7 +4054,6 @@ testThread(void)
         nb_tests++;
 
         for (i = 0; i < num_threads; i++) {
-            results[i] = 0;
             tid[i] = (HANDLE) - 1;
         }
 
@@ -4059,7 +4062,7 @@ testThread(void)
 
             tid[i] = CreateThread(NULL, 0,
                                   win32_thread_specific_data,
-				  (void *) testfiles[i], 0,
+				  (void *) &threadParams[i], 0,
                                   &useless);
             if (tid[i] == NULL) {
                 fprintf(stderr, "CreateThread failed\n");
@@ -4074,7 +4077,8 @@ testThread(void)
 	}
 
         for (i = 0; i < num_threads; i++) {
-            ret = GetExitCodeThread(tid[i], &results[i]);
+            DWORD exitCode;
+            ret = GetExitCodeThread(tid[i], &exitCode);
             if (ret == 0) {
                 fprintf(stderr, "GetExitCodeThread failed\n");
                 return(1);
@@ -4084,9 +4088,9 @@ testThread(void)
 
         xmlCatalogCleanup();
         for (i = 0; i < num_threads; i++) {
-            if (results[i] != (DWORD) Okay) {
+            if (threadParams[i].okay == 0) {
                 fprintf(stderr, "Thread %d handling %s failed\n",
-		        i, testfiles[i]);
+		        i, threadParams[i].filename);
 	        res = 1;
 	    }
         }
@@ -4104,8 +4108,6 @@ static int
 testThread(void)
 {
     unsigned int i, repeat;
-    unsigned int num_threads = sizeof(testfiles) / sizeof(testfiles[0]);
-    void *results[MAX_ARGC];
     status_t ret;
     int res = 0;
 
@@ -4113,13 +4115,12 @@ testThread(void)
     for (repeat = 0; repeat < 500; repeat++) {
         xmlLoadCatalog(catalog);
         for (i = 0; i < num_threads; i++) {
-            results[i] = NULL;
             tid[i] = (thread_id) - 1;
         }
         for (i = 0; i < num_threads; i++) {
             tid[i] =
                 spawn_thread(thread_specific_data, "xmlTestThread",
-                             B_NORMAL_PRIORITY, (void *) testfiles[i]);
+                             B_NORMAL_PRIORITY, (void *) &threadParams[i]);
             if (tid[i] < B_OK) {
                 fprintf(stderr, "beos_thread_create failed\n");
                 return (1);
@@ -4127,7 +4128,8 @@ testThread(void)
             printf("beos_thread_create %d -> %d\n", i, tid[i]);
         }
         for (i = 0; i < num_threads; i++) {
-            ret = wait_for_thread(tid[i], &results[i]);
+            void *result;
+            ret = wait_for_thread(tid[i], &result);
             printf("beos_thread_wait %d -> %d\n", i, ret);
             if (ret != B_OK) {
                 fprintf(stderr, "beos_thread_wait failed\n");
@@ -4138,8 +4140,9 @@ testThread(void)
         xmlCatalogCleanup();
         ret = B_OK;
         for (i = 0; i < num_threads; i++)
-            if (results[i] != (void *) Okay) {
-                printf("Thread %d handling %s failed\n", i, testfiles[i]);
+            if (threadParams[i].okay == 0) {
+                printf("Thread %d handling %s failed\n", i,
+                       threadParams[i].filename);
                 ret = B_ERROR;
             }
     }
@@ -4157,8 +4160,6 @@ static int
 testThread(void)
 {
     unsigned int i, repeat;
-    unsigned int num_threads = sizeof(testfiles) / sizeof(testfiles[0]);
-    void *results[MAX_ARGC];
     int ret;
     int res = 0;
 
@@ -4169,20 +4170,20 @@ testThread(void)
         nb_tests++;
 
         for (i = 0; i < num_threads; i++) {
-            results[i] = NULL;
             tid[i] = (pthread_t) - 1;
         }
 
         for (i = 0; i < num_threads; i++) {
             ret = pthread_create(&tid[i], 0, thread_specific_data,
-                                 (void *) testfiles[i]);
+                                 (void *) &threadParams[i]);
             if (ret != 0) {
                 fprintf(stderr, "pthread_create failed\n");
                 return (1);
             }
         }
         for (i = 0; i < num_threads; i++) {
-            ret = pthread_join(tid[i], &results[i]);
+            void *result;
+            ret = pthread_join(tid[i], &result);
             if (ret != 0) {
                 fprintf(stderr, "pthread_join failed\n");
                 return (1);
@@ -4191,9 +4192,9 @@ testThread(void)
 
         xmlCatalogCleanup();
         for (i = 0; i < num_threads; i++)
-            if (results[i] != (void *) Okay) {
+            if (threadParams[i].okay == 0) {
                 fprintf(stderr, "Thread %d handling %s failed\n",
-                        i, testfiles[i]);
+                        i, threadParams[i].filename);
                 res = 1;
             }
     }
@@ -4412,6 +4413,9 @@ launchTests(testDescPtr tst) {
     char *result;
     char *error;
     int mem;
+    xmlCharEncodingHandlerPtr ebcdicHandler;
+
+    ebcdicHandler = xmlGetCharEncodingHandler(XML_CHAR_ENCODING_EBCDIC);
 
     if (tst == NULL) return(-1);
     if (tst->in != NULL) {
@@ -4422,6 +4426,9 @@ launchTests(testDescPtr tst) {
 	for (i = 0;i < globbuf.gl_pathc;i++) {
 	    if (!checkTestFile(globbuf.gl_pathv[i]))
 	        continue;
+            if ((ebcdicHandler == NULL) &&
+                (strstr(globbuf.gl_pathv[i], "ebcdic") != NULL))
+                continue;
 	    if (tst->suffix != NULL) {
 		result = resultFilename(globbuf.gl_pathv[i], tst->out,
 					tst->suffix);
@@ -4487,6 +4494,9 @@ launchTests(testDescPtr tst) {
 	    err++;
 	}
     }
+
+    xmlCharEncCloseFunc(ebcdicHandler);
+
     return(err);
 }
 
@@ -4522,6 +4532,11 @@ int
 main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     int i, a, ret = 0;
     int subset = 0;
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+#endif
 
     initializeLibxml2();
 

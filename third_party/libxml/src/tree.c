@@ -19,6 +19,7 @@
 #include "libxml.h"
 
 #include <string.h> /* for memset() only ! */
+#include <stddef.h>
 #include <limits.h>
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
@@ -4605,7 +4606,7 @@ xmlGetLineNoInternal(const xmlNode *node, int depth)
 	(node->type == XML_PI_NODE)) {
 	if (node->line == 65535) {
 	    if ((node->type == XML_TEXT_NODE) && (node->psvi != NULL))
-	        result = (long) node->psvi;
+	        result = (long) (ptrdiff_t) node->psvi;
 	    else if ((node->type == XML_ELEMENT_NODE) &&
 	             (node->children != NULL))
 	        result = xmlGetLineNoInternal(node->children, depth + 1);
@@ -8258,7 +8259,7 @@ xmlDOMWrapRemoveNode(xmlDOMWrapCtxtPtr ctxt, xmlDocPtr doc,
 			ns = ns->next;
 		    } while (ns != NULL);
 		}
-		/* No break on purpose. */
+                /* Falls through. */
 	    case XML_ATTRIBUTE_NODE:
 		if (node->ns != NULL) {
 		    /*
@@ -8849,7 +8850,7 @@ next_ns_decl:
 		}
 		if (! adoptns)
 		    goto ns_end;
-		/* No break on purpose. */
+                /* Falls through. */
 	    case XML_ATTRIBUTE_NODE:
 		/* No ns, no fun. */
 		if (cur->ns == NULL)
@@ -9130,7 +9131,7 @@ xmlDOMWrapAdoptBranch(xmlDOMWrapCtxtPtr ctxt,
 			    goto internal_error;
 		    }
 		}
-		/* No break on purpose. */
+                /* Falls through. */
 	    case XML_ATTRIBUTE_NODE:
 		/* No namespace, no fun. */
 		if (cur->ns == NULL)
