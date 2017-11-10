@@ -29,6 +29,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/shill_property_util.h"
+#include "chromeos/network/tether_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -77,15 +78,6 @@ static std::string PrettyJson(const base::DictionaryValue& value) {
   base::JSONWriter::WriteWithOptions(
       value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &pretty);
   return pretty;
-}
-
-void DictionaryValueCallback(const std::string& expected_id,
-                             const std::string& expected_json,
-                             const std::string& service_path,
-                             const base::DictionaryValue& dictionary) {
-  std::string dict_str = PrettyJson(dictionary);
-  EXPECT_EQ(expected_json, dict_str);
-  EXPECT_EQ(expected_id, service_path);
 }
 
 void ErrorCallback(const std::string& error_name,
@@ -515,40 +507,55 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   EXPECT_EQ(kNetworkName, ssid->GetString());
 }
 
-TEST_F(NetworkConfigurationHandlerMockTest, GetProperties_TetherNetwork) {
+TEST_F(NetworkConfigurationHandlerTest, GetProperties_TetherNetwork) {
+  constexpr char kTetherGuid[] = "TetherGuid";
+  constexpr char kTetherNetworkName[] = "TetherNetworkName";
+  constexpr char kTetherNetworkCarrier[] = "TetherNetworkCarrier";
+  constexpr int kBatteryPercentage = 100;
+  constexpr int kSignalStrength = 100;
+  constexpr bool kHasConnectedToHost = true;
+
   network_state_handler_->SetTetherTechnologyState(
       NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED);
-
-  std::string kTetherGuid = "TetherGuid";
-  // TODO(khorimoto): Pass a has_connected_to_host parameter to this function
-  // and verify that it is present in the JSON below. Currently, it is hard-
-  // coded to false.
   network_state_handler_->AddTetherNetworkState(
-      kTetherGuid, "TetherNetworkName", "TetherNetworkCarrier",
-      100 /* battery_percentage */, 100 /* signal_strength */,
-      true /* has_connected_to_host */);
+      kTetherGuid, kTetherNetworkName, kTetherNetworkCarrier,
+      kBatteryPercentage, kSignalStrength, kHasConnectedToHost);
 
-  std::string expected_json =
-      "{\n   "
-      "\"GUID\": \"TetherGuid\",\n   "
-      "\"Name\": \"TetherNetworkName\",\n   "
-      "\"Priority\": 0,\n   "
-      "\"Profile\": \"\",\n   "
-      "\"SecurityClass\": \"\",\n   "
-      "\"State\": \"\",\n   "
-      "\"Tether.BatteryPercentage\": 100,\n   "
-      "\"Tether.Carrier\": \"TetherNetworkCarrier\",\n   "
-      "\"Tether.HasConnectedToHost\": true,\n   "
-      "\"Tether.SignalStrength\": 100,\n   "
-      "\"Type\": \"wifi-tether\"\n"
-      "}\n";
-
-  // Tether networks use service path and GUID interchangeably.
-  std::string& tether_service_path = kTetherGuid;
+  bool success = false;
+  std::string service_path;
+  base::DictionaryValue result;
   network_configuration_handler_->GetShillProperties(
-      tether_service_path,
-      base::Bind(&DictionaryValueCallback, tether_service_path, expected_json),
+      // Tether networks use service path and GUID interchangeably.
+      kTetherGuid,
+      base::Bind(&CopyProperties, &success, &service_path, &result),
       base::Bind(&ErrorCallback));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(success);
+  const base::Value* guid =
+      result.FindKeyOfType(shill::kGuidProperty, base::Value::Type::STRING);
+  ASSERT_TRUE(guid);
+  EXPECT_EQ(kTetherGuid, guid->GetString());
+  const base::Value* name =
+      result.FindKeyOfType(shill::kNameProperty, base::Value::Type::STRING);
+  ASSERT_TRUE(name);
+  EXPECT_EQ(kTetherNetworkName, name->GetString());
+  const base::Value* battery_percentage = result.FindKeyOfType(
+      kTetherBatteryPercentage, base::Value::Type::INTEGER);
+  ASSERT_TRUE(battery_percentage);
+  EXPECT_EQ(kBatteryPercentage, battery_percentage->GetInt());
+  const base::Value* carrier =
+      result.FindKeyOfType(kTetherCarrier, base::Value::Type::STRING);
+  ASSERT_TRUE(carrier);
+  EXPECT_EQ(kTetherNetworkCarrier, carrier->GetString());
+  const base::Value* has_connected_to_host = result.FindKeyOfType(
+      kTetherHasConnectedToHost, base::Value::Type::BOOLEAN);
+  ASSERT_TRUE(has_connected_to_host);
+  EXPECT_TRUE(has_connected_to_host->GetBool());
+  const base::Value* signal_strength =
+      result.FindKeyOfType(kTetherSignalStrength, base::Value::Type::INTEGER);
+  ASSERT_TRUE(signal_strength);
+  EXPECT_EQ(kSignalStrength, signal_strength->GetInt());
 }
 
 TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
