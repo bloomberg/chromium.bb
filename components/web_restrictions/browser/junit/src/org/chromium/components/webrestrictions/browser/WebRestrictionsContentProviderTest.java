@@ -73,7 +73,7 @@ public class WebRestrictionsContentProviderTest {
             }
         });
         mContentProvider.onCreate();
-        ShadowContentResolver.registerProvider(AUTHORITY, mContentProvider);
+        ShadowContentResolver.registerProviderInternal(AUTHORITY, mContentProvider);
         ProviderInfo info = new ProviderInfo();
         info.authority = AUTHORITY;
         mContentProvider.attachInfo(null, info);

@@ -6,8 +6,7 @@ package org.chromium.chrome.browser.installedapp;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -19,8 +18,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.DefaultPackageManager;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -33,7 +33,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /** Ensure that the InstalledAppProvider returns the correct apps. */
@@ -66,7 +65,6 @@ public class InstalledAppProviderTest {
     private static final String ORIGIN_DIFFERENT_HOST = "https://example.org:8000";
     private static final String ORIGIN_DIFFERENT_PORT = "https://example.com:8001";
 
-    private FakePackageManager mPackageManager;
     private FakeFrameUrlDelegate mFrameUrlDelegate;
     private InstalledAppProviderTestImpl mInstalledAppProvider;
     private FakeInstantAppsHandler mFakeInstantAppsHandler;
@@ -124,54 +122,21 @@ public class InstalledAppProviderTest {
     }
 
     /**
-     * FakePackageManager allows for the "installation" of Android package names and setting up
+     * Helper function allows for the "installation" of Android package names and setting up
      * Resources for installed packages.
      */
-    private static class FakePackageManager extends DefaultPackageManager {
-        private final HashMap<String, Bundle> mMetaDataMap;
-        private final HashMap<String, Resources> mResourceMap;
+    private void setMetaDataAndResourcesForTest(
+            String packageName, Bundle metaData, Resources resources) {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = packageName;
+        packageInfo.applicationInfo = new ApplicationInfo();
+        packageInfo.applicationInfo.packageName = packageName;
+        packageInfo.applicationInfo.metaData = metaData;
 
-        public FakePackageManager() {
-            super();
-            mMetaDataMap = new HashMap<String, Bundle>();
-            mResourceMap = new HashMap<String, Resources>();
-        }
-
-        @Override
-        public ApplicationInfo getApplicationInfo(String packageName, int flags)
-                throws NameNotFoundException {
-            if (packageName == null) throw new NullPointerException();
-
-            Bundle metaData = mMetaDataMap.get(packageName);
-            if (metaData == null) throw new NameNotFoundException(packageName);
-
-            // Create an application with this metadata (but only if |flags| allows). Doing it this
-            // way (rather than simply storing the ApplicationInfo in a map) ensures that the
-            // |flags| is set correctly.
-            ApplicationInfo appInfo = new ApplicationInfo();
-            appInfo.packageName = packageName;
-            if ((flags & PackageManager.GET_META_DATA) != 0) {
-                appInfo.metaData = metaData;
-            }
-            return appInfo;
-        }
-
-        @Override
-        public Resources getResourcesForApplication(ApplicationInfo app)
-                throws NameNotFoundException {
-            if (app == null) throw new NullPointerException();
-
-            Resources result = mResourceMap.get(app.packageName);
-            if (result == null) throw new NameNotFoundException(app.packageName);
-
-            return result;
-        }
-
-        public void setMetaDataAndResourcesForTest(
-                String packageName, Bundle metaData, Resources resources) {
-            mMetaDataMap.put(packageName, metaData);
-            mResourceMap.put(packageName, resources);
-        }
+        ShadowPackageManager packageManager =
+                Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
+        packageManager.addPackage(packageInfo);
+        packageManager.resources.put(packageInfo.packageName, resources);
     }
 
     /**
@@ -270,7 +235,7 @@ public class InstalledAppProviderTest {
         int identifier = 0x1234;
         Bundle metaData = createMetaData(key, identifier);
         FakeResources resources = new FakeResources(identifier, value);
-        mPackageManager.setMetaDataAndResourcesForTest(packageName, metaData, resources);
+        setMetaDataAndResourcesForTest(packageName, metaData, resources);
     }
 
     /** Creates a valid Android asset statement string. */
@@ -329,8 +294,6 @@ public class InstalledAppProviderTest {
         // Avoid triggering asserts in InstalledAppProviderImpl that check they are being run off
         // the UI thread (since this is a single-threaded test).
         ThreadUtils.setThreadAssertsDisabledForTesting(true);
-        mPackageManager = new FakePackageManager();
-        RuntimeEnvironment.setRobolectricPackageManager(mPackageManager);
         mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
         mFakeInstantAppsHandler = new FakeInstantAppsHandler();
         mInstalledAppProvider = new InstalledAppProviderTestImpl(
@@ -457,7 +420,7 @@ public class InstalledAppProviderTest {
         String statements =
                 "[" + createAssetStatement(NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN) + "]";
         FakeResources resources = new FakeResources(0x4321, statements);
-        mPackageManager.setMetaDataAndResourcesForTest(PACKAGE_NAME_1, metaData, resources);
+        setMetaDataAndResourcesForTest(PACKAGE_NAME_1, metaData, resources);
         RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
         verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
     }

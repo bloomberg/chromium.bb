@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.os.Build;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,6 +46,9 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        // Remove this after updating to a version of Robolectric that supports
+        // notification channel creation. crbug.com/774315
+        sdk = Build.VERSION_CODES.N_MR1,
         shadows = {MediaNotificationTestShadowResources.class,
                 MediaNotificationTestShadowNotificationManager.class})
 public class MediaNotificationManagerServiceLifecycleTest extends MediaNotificationManagerTestBase {

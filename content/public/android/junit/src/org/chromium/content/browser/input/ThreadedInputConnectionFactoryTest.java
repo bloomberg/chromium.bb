@@ -30,7 +30,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ThreadUtils;
@@ -129,7 +129,7 @@ public class ThreadedInputConnectionFactoryTest {
         mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));
         mFactory.onWindowFocusChanged(true);
         mImeHandler = mFactory.getHandler();
-        mImeShadowLooper = (ShadowLooper) ShadowExtractor.extract(mImeHandler.getLooper());
+        mImeShadowLooper = (ShadowLooper) Shadow.extract(mImeHandler.getLooper());
 
         when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE))
                 .thenReturn(mInputMethodManager);

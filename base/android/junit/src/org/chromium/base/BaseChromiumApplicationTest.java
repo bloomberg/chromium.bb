@@ -10,20 +10,21 @@ import static org.mockito.Mockito.verify;
 import android.app.Activity;
 import android.view.KeyEvent;
 
-import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
-import org.robolectric.util.ActivityController;
+
+import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Unit tests for {@link BaseChromiumApplication}. */
 @RunWith(LocalRobolectricTestRunner.class)

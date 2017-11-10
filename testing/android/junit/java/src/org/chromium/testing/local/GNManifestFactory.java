@@ -12,6 +12,8 @@ import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,13 +48,19 @@ public class GNManifestFactory implements ManifestFactory {
         final List<FsFile> resourceDirsList = new ArrayList<FsFile>();
         if (resourceDirs != null) {
             for (String resourceDir : resourceDirs.split(":")) {
-                resourceDirsList.add(Fs.fileFromPath(resourceDir));
+                try {
+                    resourceDirsList.add(Fs.fromURL(new File(resourceDir).toURI().toURL()));
+                } catch (MalformedURLException e) {
+                }
             }
         }
 
         FsFile manifestFile = null;
         if (manifestPath != null) {
-            manifestFile = Fs.fileFromPath(manifestPath);
+            try {
+                manifestFile = Fs.fromURL(new File(manifestPath).toURI().toURL());
+            } catch (MalformedURLException e) {
+            }
         }
 
         return new AndroidManifest(manifestFile, null, null, manifestIdentifier.getPackageName()) {

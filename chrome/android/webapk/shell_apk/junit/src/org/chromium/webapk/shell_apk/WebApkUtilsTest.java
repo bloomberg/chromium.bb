@@ -4,16 +4,12 @@
 
 package org.chromium.webapk.shell_apk;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
@@ -21,10 +17,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -46,15 +42,13 @@ public class WebApkUtilsTest {
             BROWSER_INSTALLED_SUPPORTING_WEBAPKS, ANOTHER_BROWSER_INSTALLED_SUPPORTING_WEBAPKS};
 
     private Context mContext;
-    private RobolectricPackageManager mPackageManager;
+    private ShadowPackageManager mPackageManager;
 
     @Before
     public void setUp() {
         mContext = RuntimeEnvironment.application;
-        WebApkTestHelper.setUpPackageManager();
 
-        mPackageManager = Mockito.spy(RuntimeEnvironment.getRobolectricPackageManager());
-        RuntimeEnvironment.setRobolectricPackageManager(mPackageManager);
+        mPackageManager = Shadows.shadowOf(mContext.getPackageManager());
 
         WebApkUtils.resetCachedHostPackageForTesting();
     }
@@ -295,7 +289,7 @@ public class WebApkUtilsTest {
         info.applicationInfo.enabled = false;
         mPackageManager.addPackage(info);
 
-        Assert.assertFalse(WebApkUtils.isInstalled((PackageManager) mPackageManager, packageName));
+        Assert.assertFalse(WebApkUtils.isInstalled(mContext.getPackageManager(), packageName));
     }
 
     /**
@@ -332,18 +326,15 @@ public class WebApkUtilsTest {
             return;
         }
 
-        for (String name : browsersToInstall) {
-            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(name));
-        }
-
         ResolveInfo defaultBrowserInfo = null;
         if (defaultBrowser != null) {
             defaultBrowserInfo = newResolveInfo(defaultBrowser);
             mPackageManager.addResolveInfoForIntent(intent, defaultBrowserInfo);
         }
 
-        Mockito.when(mPackageManager.resolveActivity(any(Intent.class), anyInt()))
-                .thenReturn(defaultBrowserInfo);
+        for (String name : browsersToInstall) {
+            mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(name));
+        }
     }
 
     private void setHostBrowserInSharedPreferences(String hostBrowserPackage) {

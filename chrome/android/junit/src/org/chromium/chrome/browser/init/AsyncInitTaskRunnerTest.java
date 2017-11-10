@@ -17,8 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.concurrent.RoboExecutorService;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;
