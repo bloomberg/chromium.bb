@@ -247,7 +247,7 @@ const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
 
 // Enables "Share" submenu in File menu.
 const base::Feature kMacSystemShareMenu{"MacSystemShareMenu",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the Material Design version of chrome://bookmarks.
