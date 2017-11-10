@@ -803,9 +803,10 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
                  in_scope_url, LinkTarget::SELF, GetParam()));
 }
 
-// Tests that clicking links inside the app doesn't open new browser windows.
+// Tests that clicking links inside the app to in-scope URLs doesn't open new
+// browser windows.
 IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
-                       InAppNavigation) {
+                       InAppInScopeNavigation) {
   InstallTestBookmarkApp();
   Browser* app_browser = OpenTestBookmarkApp();
   content::WebContents* app_web_contents =
@@ -815,34 +816,49 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
   int num_tabs_app_browser = app_browser->tab_strip_model()->count();
   size_t num_browsers = chrome::GetBrowserCount(profile());
 
-  {
-    const GURL in_scope_url = embedded_test_server()->GetURL(kInScopeUrlPath);
-    ClickLinkAndWait(app_web_contents, in_scope_url, LinkTarget::SELF,
-                     GetParam());
+  const GURL in_scope_url = embedded_test_server()->GetURL(kInScopeUrlPath);
+  ClickLinkAndWait(app_web_contents, in_scope_url, LinkTarget::SELF,
+                   GetParam());
 
-    EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
-    EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
-    EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-    EXPECT_EQ(app_browser, chrome::FindLastActive());
+  EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
+  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+  EXPECT_EQ(app_browser, chrome::FindLastActive());
 
-    EXPECT_EQ(in_scope_url, app_web_contents->GetLastCommittedURL());
-  }
+  EXPECT_EQ(in_scope_url, app_web_contents->GetLastCommittedURL());
+}
 
-  {
-    const GURL out_of_scope_url =
-        embedded_test_server()->GetURL(kOutOfScopeUrlPath);
-    ClickLinkAndWait(app_web_contents, out_of_scope_url, LinkTarget::SELF,
-                     GetParam());
+// Tests that clicking links inside the app to out-of-scope URLs opens a new
+// tab in an existing browser window, instead of navigating the existing
+// app window.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleLinkBrowserTest,
+                       InAppOutOfScopeNavigation) {
+  InstallTestBookmarkApp();
+  Browser* app_browser = OpenTestBookmarkApp();
+  size_t num_browsers = chrome::GetBrowserCount(profile());
 
-    EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
-    EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
-    EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-    EXPECT_EQ(app_browser, chrome::FindLastActive());
+  int num_tabs_browser = browser()->tab_strip_model()->count();
+  int num_tabs_app_browser = app_browser->tab_strip_model()->count();
 
-    EXPECT_EQ(out_of_scope_url, app_browser->tab_strip_model()
-                                    ->GetActiveWebContents()
-                                    ->GetLastCommittedURL());
-  }
+  content::WebContents* app_web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  GURL initial_url = app_web_contents->GetLastCommittedURL();
+
+  const GURL out_of_scope_url =
+      embedded_test_server()->GetURL(kOutOfScopeUrlPath);
+  ClickLinkAndWait(app_web_contents, out_of_scope_url, LinkTarget::SELF,
+                   GetParam());
+
+  EXPECT_EQ(browser(), chrome::FindLastActive());
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+  EXPECT_EQ(++num_tabs_browser, browser()->tab_strip_model()->count());
+  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
+
+  EXPECT_EQ(initial_url, app_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(out_of_scope_url, browser()
+                                  ->tab_strip_model()
+                                  ->GetActiveWebContents()
+                                  ->GetLastCommittedURL());
 }
 
 INSTANTIATE_TEST_CASE_P(
