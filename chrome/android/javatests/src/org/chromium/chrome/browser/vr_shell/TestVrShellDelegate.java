@@ -49,6 +49,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
         return VrShellDelegate.getVrShell();
     }
 
+    @Override
     public void shutdownVr(boolean disableVrMode, boolean stayingInChrome) {
         super.shutdownVr(disableVrMode, stayingInChrome);
     }
@@ -65,14 +66,17 @@ public class TestVrShellDelegate extends VrShellDelegate {
         super.setFeedbackFrequency(frequency);
     }
 
+    @Override
     public boolean isListeningForWebVrActivate() {
         return super.isListeningForWebVrActivate();
     }
 
+    @Override
     public boolean isClearActivatePending() {
         return super.isClearActivatePending();
     }
 
+    @Override
     public boolean isVrEntryComplete() {
         return super.isVrEntryComplete();
     }
