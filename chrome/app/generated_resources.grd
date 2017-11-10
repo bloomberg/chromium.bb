@@ -10822,46 +10822,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <ph name="EVENT_NAME">$3<ex>Event Description</ex></ph>
       </message>
 
-      <!-- Printer detected notification -->
-      <if expr="chromeos">
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device.">
-          Printer from <ph name="VENDOR_NAME">$1<ex>Google</ex></ph> detected
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_TITLE_UNKNOWN_VENDOR" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device in the case the printer manufacturer name is unknown.">
-          Printer detected
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_NO_PRINT_APP_BODY" desc="Content for notification shown to the user when a printer gets plugged in to a Chrome OS device if the active user does not have an app that supports the printer installed.">
-          Click to find a print app to use this printer.
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_PRINT_APP_FOUND_BODY" desc="Content for notification shown to the user when a printer gets plugged in to a Chrome OS device if the active user already has a print app that supports the printer installed.">
-          Your printer is ready.
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_TITLE" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device and ready to be set up.">
-          Printer detected
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_IN_PROGRESS_TITLE" desc="Title for notification when the USB printer is in the setup process.">
-          Set up printer...
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_SUCCESS_TITLE" desc="Title for notification when the USB printer is setup successfully.">
-          Success!
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_FAILED_TITLE" desc="Title for the notification when the setup of the USB printer is failed.">
-          Failed to set up printer
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_BUTTON" desc="Content for the notification button to guide the user to go throught the printer setup process.">
-          Click to set up
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CANCEL_BUTTON" desc="Content for the notification button to cancel the USB printer setup process.">
-          Cancel printer setup
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CLOSE_BUTTON" desc="Content for the notification button to close the current notification.">
-          Close
-        </message>
-        <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_GET_HELP_BUTTON" desc="Content for the notification button to direct the user to the chrome://setting CUPS printers subpage if the setup process is failed.">
-          Get help
-        </message>
-      </if>
-
       <!-- External Navigation Strings -->
       <if expr="is_android or chromeos">
         <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning the user (who is currently in incognito mode) that the site they are currently using is going to share data with an external application." formatter_data="android_java">
