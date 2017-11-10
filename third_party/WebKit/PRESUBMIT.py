@@ -59,7 +59,7 @@ def _CheckStyle(input_api, output_api):
     # Files that follow Chromium's coding style do not include capital letters.
     re_chromium_style_file = re.compile(r'\b[a-z_]+\.(cc|h)$')
     style_checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
-        'Tools', 'Scripts', 'check-webkit-style')
+                                                'Tools', 'Scripts', 'check-webkit-style')
     args = [input_api.python_executable, style_checker_path, '--diff-files']
     files = [input_api.os_path.join('..', '..', f.LocalPath())
              for f in input_api.AffectedFiles()
@@ -88,7 +88,8 @@ def _CheckStyle(input_api, output_api):
 
 def _CheckForPrintfDebugging(input_api, output_api):
     """Generally speaking, we'd prefer not to land patches that printf
-    debug output."""
+    debug output.
+    """
     printf_re = input_api.re.compile(r'^\s*(printf\(|fprintf\(stderr,)')
     errors = input_api.canned_checks._FindNewViolationsOfRule(
         lambda _, x: not printf_re.search(x),
@@ -96,26 +97,26 @@ def _CheckForPrintfDebugging(input_api, output_api):
     errors = ['  * %s' % violation for violation in errors]
     if errors:
         return [output_api.PresubmitPromptOrNotify(
-                    'printf debugging is best debugging! That said, it might '
-                    'be a good idea to drop the following occurances from '
-                    'your patch before uploading:\n%s' % '\n'.join(errors))]
+            'printf debugging is best debugging! That said, it might '
+            'be a good idea to drop the following occurences from '
+            'your patch before uploading:\n%s' % '\n'.join(errors))]
     return []
 
 
 def _CheckForForbiddenChromiumCode(input_api, output_api):
     """Checks that Blink uses Chromium classes and namespaces only in permitted code."""
     # This list is not exhaustive, but covers likely ones.
-    chromium_namespaces = ["base", "cc", "content", "gfx", "net", "ui"]
-    chromium_forbidden_classes = ["GURL"]
+    chromium_namespaces = ['base', 'cc', 'content', 'gfx', 'net', 'ui']
+    chromium_forbidden_classes = ['GURL']
     chromium_allowed_classes = [
-        "base::AdoptRef",
-        "base::make_span",
-        "base::span",
-        "base::SingleThreadTaskRunner",
-        "gfx::ColorSpace",
-        "gfx::CubicBezier",
-        "gfx::ICCProfile",
-        "gfx::ScrollOffset",
+        'base::AdoptRef',
+        'base::make_span',
+        'base::span',
+        'base::SingleThreadTaskRunner',
+        'gfx::ColorSpace',
+        'gfx::CubicBezier',
+        'gfx::ICCProfile',
+        'gfx::ScrollOffset',
     ]
 
     def source_file_filter(path):
@@ -134,27 +135,40 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
             re_result = namespace_re.search(line)
             if not re_result:
                 return False
-            parsed_class_name = namespace + "::" + re_result.group(1)
+            parsed_class_name = namespace + '::' + re_result.group(1)
             return not (parsed_class_name in chromium_allowed_classes)
 
         errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_namespace_outside_comments(line),
                                                                   input_api, source_file_filter)
         if errors:
-            result += [output_api.PresubmitError('Do not use Chromium class from namespace {} inside Blink core:\n{}'.format(namespace, '\n'.join(errors)))]
+            result += [
+                output_api.PresubmitError(
+                    'Do not use Chromium class from namespace {} inside Blink core:\n{}'.format(
+                        namespace,
+                        '\n'.join(errors)))]
     for namespace in chromium_namespaces:
-        namespace_re = input_api.re.compile(r'^\s*using namespace {0};|^\s*namespace {0} \{{'.format(input_api.re.escape(namespace)))
+        namespace_re = input_api.re.compile(
+            r'^\s*using namespace {0};|^\s*namespace {0} \{{'.format(input_api.re.escape(namespace)))
         uses_namespace_outside_comments = lambda line: namespace_re.search(line) and not comment_re.search(line)
         errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_namespace_outside_comments(line),
                                                                   input_api, source_file_filter)
         if errors:
-            result += [output_api.PresubmitError('Do not use Chromium namespace {} inside Blink core:\n{}'.format(namespace, '\n'.join(errors)))]
+            result += [
+                output_api.PresubmitError(
+                    'Do not use Chromium namespace {} inside Blink core:\n{}'.format(
+                        namespace,
+                        '\n'.join(errors)))]
     for class_name in chromium_forbidden_classes:
         class_re = input_api.re.compile(r'\b{0}\b'.format(input_api.re.escape(class_name)))
         uses_class_outside_comments = lambda line: class_re.search(line) and not comment_re.search(line)
         errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_class_outside_comments(line),
                                                                   input_api, source_file_filter)
         if errors:
-            result += [output_api.PresubmitError('Do not use Chromium class {} inside Blink core:\n{}'.format(class_name, '\n'.join(errors)))]
+            result += [
+                output_api.PresubmitError(
+                    'Do not use Chromium class {} inside Blink core:\n{}'.format(
+                        class_name,
+                        '\n'.join(errors)))]
     return result
 
 
