@@ -1137,10 +1137,6 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Search Engine Settings -->
-      <message name="IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE"
-               desc="Title of the search engines window">
-        Search engines
-      </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN"
                desc="Title of the keyword column in the search engines editor">
         Keyword
@@ -1148,22 +1144,6 @@ are declared in build/common.gypi.
       <message name="IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN"
                desc="Title of the description column in the search engines editor">
         Name
-      </message>
-      <message name="IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON"
-               desc="Text of the button that makes the selected endint the default search engine">
-        Make default
-      </message>
-      <message name="IDS_SEARCH_ENGINES_INVALID_TITLE_TT"
-               desc="Text of tooltip shown in the keyword editor when the title is invalid">
-        Title must contain at least one character
-      </message>
-      <message name="IDS_SEARCH_ENGINES_INVALID_URL_TT"
-               desc="Text of tooltip shown in the keyword editor when the url is invalid">
-        Must be a valid URL
-      </message>
-      <message name="IDS_SEARCH_ENGINES_INVALID_KEYWORD_TT"
-               desc="Text of tooltip shown in the keyword editor when the keyword is invalid">
-        Keyword must be empty or unique
       </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR"
                desc="Title above the set of keywords the user has modified and or explicitly created">
