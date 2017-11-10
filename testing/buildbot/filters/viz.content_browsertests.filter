@@ -55,3 +55,6 @@
 -WakeLockTest.*
 -WheelScrollLatchingBrowserTest.*
 -WheelScrollLatchingDisabledBrowserTest.*
+
+# TODO: investigate flaky failure http://crbug.com/783434
+-GpuProcessHostBrowserTest.Shutdown
