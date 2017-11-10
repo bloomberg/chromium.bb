@@ -79,6 +79,8 @@ _cronet_sources = [
   "Cronet.mm",
   "cronet_environment.h",
   "cronet_environment.mm",
+  "cronet_metrics.h",
+  "cronet_metrics.mm",
 ]
 
 _cronet_public_headers = [ "Cronet.h" ]
