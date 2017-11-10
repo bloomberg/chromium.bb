@@ -296,4 +296,35 @@ amdgpu_get_bo_list(amdgpu_device_handle dev, amdgpu_bo_handle bo1,
 	return amdgpu_bo_list_create(dev, bo2 ? 2 : 1, resources, NULL, list);
 }
 
+
+static inline CU_ErrorCode amdgpu_set_suite_active(const char *suit_name,
+							  CU_BOOL active)
+{
+	CU_ErrorCode r = CU_set_suite_active(CU_get_suite(suit_name), active);
+
+	if (r != CUE_SUCCESS)
+		fprintf(stderr, "Failed to obtain suite %s\n", suit_name);
+
+	return r;
+}
+
+static inline CU_ErrorCode amdgpu_set_test_active(const char *suit_name,
+				  const char *test_name, CU_BOOL active)
+{
+	CU_ErrorCode r;
+	CU_pSuite pSuite = CU_get_suite(suit_name);
+
+	if (!pSuite) {
+		fprintf(stderr, "Failed to obtain suite %s\n",
+				suit_name);
+		return CUE_NOSUITE;
+	}
+
+	r = CU_set_test_active(CU_get_test(pSuite, test_name), active);
+	if (r != CUE_SUCCESS)
+		fprintf(stderr, "Failed to obtain test %s\n", test_name);
+
+	return r;
+}
+
 #endif  /* #ifdef _AMDGPU_TEST_H_ */

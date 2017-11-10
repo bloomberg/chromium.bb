@@ -50,6 +50,16 @@
 
 #include "amdgpu_test.h"
 
+/* Test suit names */
+#define BASIC_TESTS_STR "Basic Tests"
+#define BO_TESTS_STR "BO Tests"
+#define CS_TESTS_STR "CS Tests"
+#define VCE_TESTS_STR "VCE Tests"
+#define VCN_TESTS_STR "VCN Tests"
+#define UVD_ENC_TESTS_STR "UVD ENC Tests"
+#define DEADLOCK_TESTS_STR "Deadlock Tests"
+#define VM_TESTS_STR "VM Tests"
+
 /**
  *  Open handles for amdgpu devices
  *
@@ -62,49 +72,49 @@ int open_render_node = 0;	/* By default run most tests on primary node */
 /** The table of all known test suites to run */
 static CU_SuiteInfo suites[] = {
 	{
-		.pName = "Basic Tests",
+		.pName = BASIC_TESTS_STR,
 		.pInitFunc = suite_basic_tests_init,
 		.pCleanupFunc = suite_basic_tests_clean,
 		.pTests = basic_tests,
 	},
 	{
-		.pName = "BO Tests",
+		.pName = BO_TESTS_STR,
 		.pInitFunc = suite_bo_tests_init,
 		.pCleanupFunc = suite_bo_tests_clean,
 		.pTests = bo_tests,
 	},
 	{
-		.pName = "CS Tests",
+		.pName = CS_TESTS_STR,
 		.pInitFunc = suite_cs_tests_init,
 		.pCleanupFunc = suite_cs_tests_clean,
 		.pTests = cs_tests,
 	},
 	{
-		.pName = "VCE Tests",
+		.pName = VCE_TESTS_STR,
 		.pInitFunc = suite_vce_tests_init,
 		.pCleanupFunc = suite_vce_tests_clean,
 		.pTests = vce_tests,
 	},
 	{
-		.pName = "VCN Tests",
+		.pName = VCN_TESTS_STR,
 		.pInitFunc = suite_vcn_tests_init,
 		.pCleanupFunc = suite_vcn_tests_clean,
 		.pTests = vcn_tests,
 	},
 	{
-		.pName = "UVD ENC Tests",
+		.pName = UVD_ENC_TESTS_STR,
 		.pInitFunc = suite_uvd_enc_tests_init,
 		.pCleanupFunc = suite_uvd_enc_tests_clean,
 		.pTests = uvd_enc_tests,
 	},
 	{
-		.pName = "Deadlock Tests",
+		.pName = DEADLOCK_TESTS_STR,
 		.pInitFunc = suite_deadlock_tests_init,
 		.pCleanupFunc = suite_deadlock_tests_clean,
 		.pTests = deadlock_tests,
 	},
 	{
-		.pName = "VM Tests",
+		.pName = VM_TESTS_STR,
 		.pInitFunc = suite_vm_tests_init,
 		.pCleanupFunc = suite_vm_tests_clean,
 		.pTests = vm_tests,
@@ -113,23 +123,99 @@ static CU_SuiteInfo suites[] = {
 	CU_SUITE_INFO_NULL,
 };
 
+typedef CU_BOOL (*active__stat_func)(void);
 
-/** Display information about all  suites and their tests */
+typedef struct Suites_Active_Status {
+	char*             pName;
+	active__stat_func pActive;
+}Suites_Active_Status;
+
+static CU_BOOL always_active()
+{
+	return CU_TRUE;
+}
+
+static Suites_Active_Status suites_active_stat[] = {
+		{
+			.pName = BASIC_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = BO_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = CS_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = VCE_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = VCN_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = UVD_ENC_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = DEADLOCK_TESTS_STR,
+			.pActive = always_active,
+		},
+		{
+			.pName = VM_TESTS_STR,
+			.pActive = always_active,
+		},
+};
+
+
+/*
+ * Display information about all  suites and their tests
+ *
+ * NOTE: Must be run after registry is initialized and suites registered.
+ */
 static void display_test_suites(void)
 {
 	int iSuite;
 	int iTest;
+	CU_pSuite pSuite = NULL;
+	CU_pTest  pTest  = NULL;
 
 	printf("Suites\n");
 
 	for (iSuite = 0; suites[iSuite].pName != NULL; iSuite++) {
-		printf("Suite id = %d: Name '%s'\n",
-				iSuite + 1, suites[iSuite].pName);
+
+		pSuite = CU_get_suite_by_index((unsigned int) iSuite + 1,
+						      CU_get_registry());
+
+		if (!pSuite) {
+			fprintf(stderr, "Invalid suite id : %d\n", iSuite + 1);
+			continue;
+		}
+
+		printf("Suite id = %d: Name '%s status: %s'\n",
+				iSuite + 1, suites[iSuite].pName,
+				pSuite->fActive ? "ENABLED" : "DISABLED");
+
+
 
 		for (iTest = 0; suites[iSuite].pTests[iTest].pName != NULL;
 			iTest++) {
-			printf("	Test id %d: Name: '%s'\n", iTest + 1,
-					suites[iSuite].pTests[iTest].pName);
+
+			pTest = CU_get_test_by_index((unsigned int) iTest + 1,
+									pSuite);
+
+			if (!pTest) {
+				fprintf(stderr, "Invalid test id : %d\n", iTest + 1);
+				continue;
+			}
+
+			printf("Test id %d: Name: '%s status: %s'\n", iTest + 1,
+					suites[iSuite].pTests[iTest].pName,
+					pSuite->fActive && pTest->fActive ?
+						     "ENABLED" : "DISABLED");
 		}
 	}
 }
@@ -137,7 +223,7 @@ static void display_test_suites(void)
 
 /** Help string for command line parameters */
 static const char usage[] =
-	"Usage: %s [-hlpr] [<-s <suite id>> [-t <test id>]] "
+	"Usage: %s [-hlpr] [<-s <suite id>> [-t <test id>] [-f]] "
 	"[-b <pci_bus_id> [-d <pci_device_id>]]\n"
 	"where:\n"
 	"       l - Display all suites and their tests\n"
@@ -145,9 +231,10 @@ static const char usage[] =
 	"       b - Specify device's PCI bus id to run tests\n"
 	"       d - Specify device's PCI device id to run tests (optional)\n"
 	"       p - Display information of AMDGPU devices in system\n"
+	"       f - Force executing inactive suite or test\n"
 	"       h - Display this help\n";
 /** Specified options strings for getopt */
-static const char options[]   = "hlrps:t:b:d:";
+static const char options[]   = "hlrps:t:b:d:f";
 
 /* Open AMD devices.
  * Return the number of AMD device openned.
@@ -312,6 +399,18 @@ static int amdgpu_find_device(uint8_t bus, uint16_t dev)
 	return -1;
 }
 
+static void amdgpu_disable_suits()
+{
+	int i;
+	int size = sizeof(suites_active_stat) / sizeof(suites_active_stat[0]);
+
+	/* Set active status for suits based on their policies */
+	for (i = 0; i < size; ++i)
+		if (amdgpu_set_suite_active(suites_active_stat[i].pName,
+				suites_active_stat[i].pActive()))
+			fprintf(stderr, "suit deactivation failed - %s\n", CU_get_error_msg());
+}
+
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
@@ -328,6 +427,8 @@ int main(int argc, char **argv)
 	CU_pSuite pSuite = NULL;
 	CU_pTest  pTest  = NULL;
 	int test_device_index;
+	int display_list = 0;
+	int force_run = 0;
 
 	for (i = 0; i < MAX_CARDS_SUPPORTED; i++)
 		drm_amdgpu[i] = -1;
@@ -338,8 +439,8 @@ int main(int argc, char **argv)
 	while ((c = getopt(argc, argv, options)) != -1) {
 		switch (c) {
 		case 'l':
-			display_test_suites();
-			exit(EXIT_SUCCESS);
+			display_list = 1;
+			break;
 		case 's':
 			suite_id = atoi(optarg);
 			break;
@@ -357,6 +458,9 @@ int main(int argc, char **argv)
 			break;
 		case 'r':
 			open_render_node = 1;
+			break;
+		case 'f':
+			force_run = 1;
 			break;
 		case '?':
 		case 'h':
@@ -423,17 +527,33 @@ int main(int argc, char **argv)
 	/* Run tests using the CUnit Basic interface */
 	CU_basic_set_mode(CU_BRM_VERBOSE);
 
+	/* Disable suits and individual tests based on misc. conditions */
+	amdgpu_disable_suits();
+
+	if (display_list) {
+		display_test_suites();
+		goto end;
+	}
+
 	if (suite_id != -1) {	/* If user specify particular suite? */
 		pSuite = CU_get_suite_by_index((unsigned int) suite_id,
 						CU_get_registry());
 
 		if (pSuite) {
+
+			if (force_run)
+				CU_set_suite_active(pSuite, CU_TRUE);
+
 			if (test_id != -1) {   /* If user specify test id */
 				pTest = CU_get_test_by_index(
 						(unsigned int) test_id,
 						pSuite);
-				if (pTest)
+				if (pTest) {
+					if (force_run)
+						CU_set_test_active(pTest, CU_TRUE);
+
 					CU_basic_run_test(pSuite, pTest);
+				}
 				else {
 					fprintf(stderr, "Invalid test id: %d\n",
 								test_id);
@@ -453,6 +573,7 @@ int main(int argc, char **argv)
 	} else
 		CU_basic_run_tests();
 
+end:
 	CU_cleanup_registry();
 	amdgpu_close_devices();
 	return CU_get_error();
