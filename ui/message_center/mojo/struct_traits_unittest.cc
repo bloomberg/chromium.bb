@@ -28,7 +28,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   }
 
   void Compare(const Notification& input, const Notification& output) {
-    EXPECT_EQ(input.type(), output.type());
     EXPECT_EQ(input.id(), output.id());
     EXPECT_EQ(input.title(), output.title());
     EXPECT_EQ(input.message(), output.message());
@@ -36,16 +35,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     EXPECT_EQ(input.icon().Height(), output.icon().Height());
     EXPECT_EQ(input.display_source(), output.display_source());
     EXPECT_EQ(input.origin_url(), output.origin_url());
-    EXPECT_EQ(input.progress(), output.progress());
-    EXPECT_EQ(input.progress_status(), output.progress_status());
-    EXPECT_EQ(input.rich_notification_data()
-                  .should_make_spoken_feedback_for_popup_updates,
-              output.rich_notification_data()
-                  .should_make_spoken_feedback_for_popup_updates);
-    EXPECT_EQ(input.clickable(), output.clickable());
-    EXPECT_EQ(input.accessible_name(), output.accessible_name());
-    EXPECT_EQ(input.accent_color(), output.accent_color());
-    EXPECT_EQ(input.use_image_as_icon(), output.use_image_as_icon());
   }
 
  private:
@@ -74,19 +63,8 @@ TEST_F(StructTraitsTest, Notification) {
   NotifierId notifier_id(NotifierId::NotifierType::APPLICATION, id);
   Notification input(type, id, title, message, icon, display_source, origin_url,
                      notifier_id, RichNotificationData(), nullptr);
-
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   Notification output;
-  proxy->EchoNotification(input, &output);
-  Compare(input, output);
-
-  // Set some optional fields to non-default values and test again.
-  input.set_type(NotificationType::NOTIFICATION_TYPE_PROGRESS);
-  input.set_progress(50);
-  input.set_progress_status(base::ASCIIToUTF16("progress text"));
-  input.set_clickable(!input.clickable());
-  input.set_accent_color(SK_ColorMAGENTA);
-  input.set_use_image_as_icon(!input.use_image_as_icon());
   proxy->EchoNotification(input, &output);
   Compare(input, output);
 }

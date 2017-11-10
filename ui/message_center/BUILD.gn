@@ -212,6 +212,7 @@ if (enable_message_center) {
       "cocoa/popup_controller_unittest.mm",
       "message_center_impl_unittest.cc",
       "message_center_tray_unittest.cc",
+      "mojo/struct_traits_unittest.cc",
       "notification_delegate_unittest.cc",
       "notification_list_unittest.cc",
       "test/run_all_unittests.cc",
@@ -222,6 +223,7 @@ if (enable_message_center) {
       ":test_support",
       "//base",
       "//base/test:test_support",
+      "//mojo/edk/system",
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
@@ -234,6 +236,7 @@ if (enable_message_center) {
       "//ui/gfx/geometry",
       "//ui/gl",
       "//ui/gl:test_support",
+      "//ui/message_center/mojo:test_interfaces",
       "//ui/message_center/public/cpp",
       "//ui/resources",
       "//ui/resources:ui_test_pak",
@@ -244,14 +247,6 @@ if (enable_message_center) {
       "//third_party/mesa:osmesa",
       "//ui/resources:ui_test_pak_data",
     ]
-
-    if (is_chromeos) {
-      sources += [ "mojo/struct_traits_unittest.cc" ]
-      deps += [
-        "//mojo/edk/system",
-        "//ui/message_center/mojo:test_interfaces",
-      ]
-    }
 
     if (is_mac) {
       deps += [ "//ui/gfx:test_support" ]
