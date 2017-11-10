@@ -21,6 +21,12 @@ class GridLayoutUtils {
       const LayoutGrid&,
       const LayoutBox&,
       GridTrackSizingDirection);
+  static bool HasOverrideContainingBlockContentSizeForChild(
+      const LayoutBox&,
+      GridTrackSizingDirection);
+  static LayoutUnit OverrideContainingBlockContentSizeForChild(
+      const LayoutBox&,
+      GridTrackSizingDirection);
 };
 }  // namespace blink
 

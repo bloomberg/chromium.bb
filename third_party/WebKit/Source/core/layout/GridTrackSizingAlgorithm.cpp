@@ -136,25 +136,7 @@ void GridTrackSizingAlgorithmStrategy::SetNeedsLayoutForChild(
   }
 }
 
-bool GridTrackSizingAlgorithmStrategy::
-    HasOverrideContainingBlockContentSizeForChild(
-        const LayoutBox& child,
-        GridTrackSizingDirection direction) {
-  return direction == kForColumns
-             ? child.HasOverrideContainingBlockLogicalWidth()
-             : child.HasOverrideContainingBlockLogicalHeight();
-}
-
 GridTrackSizingAlgorithmStrategy::~GridTrackSizingAlgorithmStrategy() {}
-
-LayoutUnit
-GridTrackSizingAlgorithmStrategy::OverrideContainingBlockContentSizeForChild(
-    const LayoutBox& child,
-    GridTrackSizingDirection direction) {
-  return direction == kForColumns
-             ? child.OverrideContainingBlockContentLogicalWidth()
-             : child.OverrideContainingBlockContentLogicalHeight();
-}
 
 bool GridTrackSizingAlgorithmStrategy::
     ShouldClearOverrideContainingBlockContentSizeForChild(
@@ -237,9 +219,10 @@ bool GridTrackSizingAlgorithmStrategy::
         Optional<LayoutUnit> override_size) const {
   if (!override_size)
     override_size = algorithm_.GridAreaBreadthForChild(child, direction);
-  if (HasOverrideContainingBlockContentSizeForChild(child, direction) &&
-      OverrideContainingBlockContentSizeForChild(child, direction) ==
-          override_size.value())
+  if (GridLayoutUtils::HasOverrideContainingBlockContentSizeForChild(
+          child, direction) &&
+      GridLayoutUtils::OverrideContainingBlockContentSizeForChild(
+          child, direction) == override_size.value())
     return false;
 
   SetOverrideContainingBlockContentSizeForChild(child, direction,
