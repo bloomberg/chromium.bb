@@ -39,6 +39,7 @@ public class JniInterface {
      */
     public static void loadLibrary(Context context) {
         ContextUtils.initApplicationContext(context.getApplicationContext());
+        JniOAuthTokenGetter.setContext(context);
         sLoggerTokenConsumer = new OAuthTokenConsumer(context.getApplicationContext(), TOKEN_SCOPE);
         try {
             System.loadLibrary(LIBRARY_NAME);

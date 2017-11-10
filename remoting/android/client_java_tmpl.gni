@@ -71,6 +71,7 @@ template("remoting_android_client_java_tmpl") {
       "jni/ConnectionListener.java",
       "jni/GlDisplay.java",
       "jni/JniInterface.java",
+      "jni/JniOAuthTokenGetter.java",
       "jni/TouchEventData.java",
     ]
 
@@ -88,6 +89,8 @@ template("remoting_android_client_java_tmpl") {
       "//third_party/android_tools:android_support_v7_mediarouter_java",
       "//ui/android:ui_utils_java",
     ]
+
+    srcjar_deps = [ "//remoting/client/jni:jni_enums" ]
 
     if (defined(invoker.play_services_package)) {
       deps += [

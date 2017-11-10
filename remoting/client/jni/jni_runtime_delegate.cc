@@ -18,7 +18,9 @@
 #include "jni/JniInterface_jni.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
+#include "remoting/client/jni/jni_oauth_token_getter.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
+#include "remoting/client/oauth_token_getter_proxy.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -66,6 +68,8 @@ JniRuntimeDelegate* JniRuntimeDelegate::GetInstance() {
 
 JniRuntimeDelegate::JniRuntimeDelegate() {
   runtime_ = ChromotingClientRuntime::GetInstance();
+  token_getter_ = std::make_unique<OAuthTokenGetterProxy>(
+      std::make_unique<JniOAuthTokenGetter>(), runtime_->ui_task_runner());
 }
 
 JniRuntimeDelegate::~JniRuntimeDelegate() {
@@ -107,10 +111,7 @@ void JniRuntimeDelegate::RequestAuthTokenForLogger() {
 }
 
 OAuthTokenGetter* JniRuntimeDelegate::token_getter() {
-  // TODO(yuweih): Implement this. This is currently only used if the client
-  // uses WebRTC.
-  NOTIMPLEMENTED();
-  return nullptr;
+  return token_getter_.get();
 }
 
 void JniRuntimeDelegate::DetachFromVmAndSignal(base::WaitableEvent* waiter) {
