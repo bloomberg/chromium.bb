@@ -397,12 +397,6 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::EndPosition() const {
 }
 
 template <typename Strategy>
-bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::IsInTextSecurityMode()
-    const {
-  return IsTextSecurityNode(GetNode());
-}
-
-template <typename Strategy>
 UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::CharacterAt(
     unsigned index) const {
   if (index >= text_state_.length())

@@ -70,7 +70,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   bool AtEnd() const { return !text_state_.PositionNode() || should_stop_; }
   void Advance();
   bool IsInsideAtomicInlineElement() const;
-  bool IsInTextSecurityMode() const;
 
   EphemeralRangeTemplate<Strategy> Range() const;
   Node* GetNode() const;
