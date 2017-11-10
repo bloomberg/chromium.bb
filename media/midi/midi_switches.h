@@ -15,8 +15,6 @@ namespace midi {
 namespace features {
 
 #if defined(OS_ANDROID)
-MIDI_EXPORT extern const base::Feature kMidiManagerAndroid;
-
 MIDI_EXPORT extern const base::Feature kMidiManagerDynamicInstantiation;
 #endif
 

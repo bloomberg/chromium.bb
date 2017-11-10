@@ -2107,11 +2107,6 @@ const char kUpdateMenuItemDescription[] =
     R"*(When enabled, an "Update Chrome" item will be shown in the app )*"
     R"*(menu.)*";
 
-const char kUseAndroidMidiApiName[] = "Use Android Midi API";
-const char kUseAndroidMidiApiDescription[] =
-    "Use Android Midi API for WebMIDI (effective only with Android M+ "
-    "devices).";
-
 const char kThirdPartyDoodlesName[] =
     "Enable Doodles for third-party search engines";
 const char kThirdPartyDoodlesDescription[] =
