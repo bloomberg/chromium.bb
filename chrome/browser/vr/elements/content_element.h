@@ -12,8 +12,6 @@
 
 namespace vr {
 
-class UiElementRenderer;
-
 class ContentElement : public UiElement {
  public:
   explicit ContentElement(ContentInputDelegate* delegate);

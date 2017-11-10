@@ -130,7 +130,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // size of their children. This must be done in reverse order, such that
     // children are correctly sized when laid out by their parent.
     for (auto& element : base::Reversed(*root_element_)) {
-      element.LayOutChildren();
+      element.DoLayOutChildren();
       element.set_update_phase(UiElement::kUpdatedLayout);
     }
   }

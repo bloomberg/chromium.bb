@@ -89,8 +89,6 @@ static_library("vr_common") {
     "elements/ui_element_iterator.h",
     "elements/ui_element_name.cc",
     "elements/ui_element_name.h",
-    "elements/ui_element_transform_operations.cc",
-    "elements/ui_element_transform_operations.h",
     "elements/ui_texture.cc",
     "elements/ui_texture.h",
     "elements/url_bar.cc",

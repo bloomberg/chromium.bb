@@ -18,6 +18,53 @@
 
 namespace vr {
 
+TEST(UiElement, BoundsContainChildren) {
+  const float epsilon = 1e-3f;
+  auto parent = base::MakeUnique<UiElement>();
+  parent->set_bounds_contain_children(true);
+  parent->set_padding(0.1, 0.2);
+
+  auto c1 = base::MakeUnique<UiElement>();
+  c1->SetSize(3.0f, 3.0f);
+  c1->SetTranslate(2.5f, 2.5f, 0.0f);
+  auto* c1_ptr = c1.get();
+  parent->AddChild(std::move(c1));
+
+  parent->DoLayOutChildren();
+  EXPECT_RECT_NEAR(gfx::RectF(2.5f, 2.5f, 3.2f, 3.4f),
+                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+  EXPECT_EQ(parent->GetCenter().ToString(), c1_ptr->GetCenter().ToString());
+
+  auto c2 = base::MakeUnique<UiElement>();
+  c2->SetSize(4.0f, 4.0f);
+  c2->SetTranslate(-3.0f, 0.0f, 0.0f);
+  parent->AddChild(std::move(c2));
+
+  parent->DoLayOutChildren();
+  EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 1.0f, 9.2f, 6.4f),
+                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+
+  auto c3 = base::MakeUnique<UiElement>();
+  c3->SetSize(2.0f, 2.0f);
+  c3->SetTranslate(0.0f, -2.0f, 0.0f);
+  parent->AddChild(std::move(c3));
+
+  parent->DoLayOutChildren();
+  EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
+                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+
+  auto c4 = base::MakeUnique<UiElement>();
+  c4->SetSize(2.0f, 2.0f);
+  c4->SetTranslate(20.0f, 20.0f, 0.0f);
+  c4->SetVisible(false);
+  parent->AddChild(std::move(c4));
+
+  // We expect no change due to an invisible child.
+  parent->DoLayOutChildren();
+  EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
+                   gfx::RectF(parent->local_origin(), parent->size()), epsilon);
+}
+
 TEST(UiElements, AnimateSize) {
   UiScene scene;
   auto rect = base::MakeUnique<UiElement>();
