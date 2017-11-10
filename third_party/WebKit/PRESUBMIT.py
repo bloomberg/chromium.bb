@@ -8,9 +8,21 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+import imp
+import inspect
 import os
 import re
 import sys
+
+try:
+    # pylint: disable=C0103
+    audit_non_blink_usage = imp.load_source(
+        'audit_non_blink_usage',
+        os.path.join(os.path.dirname(inspect.stack()[0][1]), 'Tools/Scripts/audit-non-blink-usage'))
+except IOError:
+    # One of the presubmit upload tests tries to exec this script, which doesn't interact so well
+    # with the import hack... just ignore the exception here and hope for the best.
+    pass
 
 
 _EXCLUDED_PATHS = (
@@ -105,71 +117,21 @@ def _CheckForPrintfDebugging(input_api, output_api):
 
 def _CheckForForbiddenChromiumCode(input_api, output_api):
     """Checks that Blink uses Chromium classes and namespaces only in permitted code."""
-    # This list is not exhaustive, but covers likely ones.
-    chromium_namespaces = ['base', 'cc', 'content', 'gfx', 'net', 'ui']
-    chromium_forbidden_classes = ['GURL']
-    chromium_allowed_classes = [
-        'base::AdoptRef',
-        'base::make_span',
-        'base::span',
-        'base::SingleThreadTaskRunner',
-        'gfx::ColorSpace',
-        'gfx::CubicBezier',
-        'gfx::ICCProfile',
-        'gfx::ScrollOffset',
-    ]
-
-    def source_file_filter(path):
-        return input_api.FilterSourceFile(path,
-                                          white_list=[r'third_party/WebKit/Source/.*\.(h|cpp)$'],
-                                          black_list=[r'third_party/WebKit/Source/(platform|controller)/',
-                                                      r'.*Test\.(h|cpp)$'])
-    comment_re = input_api.re.compile(r'^\s*//')
-    result = []
-    for namespace in chromium_namespaces:
-        namespace_re = input_api.re.compile(r'\b{0}::([A-Za-z_][A-Za-z0-9_]*)'.format(input_api.re.escape(namespace)))
-
-        def uses_namespace_outside_comments(line):
-            if comment_re.search(line):
-                return False
-            re_result = namespace_re.search(line)
-            if not re_result:
-                return False
-            parsed_class_name = namespace + '::' + re_result.group(1)
-            return not (parsed_class_name in chromium_allowed_classes)
-
-        errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_namespace_outside_comments(line),
-                                                                  input_api, source_file_filter)
+    # TODO(dcheng): This is pretty similar to _FindNewViolationsOfRule. Unfortunately, that can;'t
+    # be used directly because it doesn't give the callable enough information (namely the path to
+    # the file), so we duplicate the logic here...
+    results = []
+    for f in input_api.AffectedFiles():
+        errors = audit_non_blink_usage.check(f.LocalPath(),
+                                             [(i + 1, l) for i, l in enumerate(f.NewContents())])
         if errors:
-            result += [
-                output_api.PresubmitError(
-                    'Do not use Chromium class from namespace {} inside Blink core:\n{}'.format(
-                        namespace,
-                        '\n'.join(errors)))]
-    for namespace in chromium_namespaces:
-        namespace_re = input_api.re.compile(
-            r'^\s*using namespace {0};|^\s*namespace {0} \{{'.format(input_api.re.escape(namespace)))
-        uses_namespace_outside_comments = lambda line: namespace_re.search(line) and not comment_re.search(line)
-        errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_namespace_outside_comments(line),
-                                                                  input_api, source_file_filter)
-        if errors:
-            result += [
-                output_api.PresubmitError(
-                    'Do not use Chromium namespace {} inside Blink core:\n{}'.format(
-                        namespace,
-                        '\n'.join(errors)))]
-    for class_name in chromium_forbidden_classes:
-        class_re = input_api.re.compile(r'\b{0}\b'.format(input_api.re.escape(class_name)))
-        uses_class_outside_comments = lambda line: class_re.search(line) and not comment_re.search(line)
-        errors = input_api.canned_checks._FindNewViolationsOfRule(lambda _, line: not uses_class_outside_comments(line),
-                                                                  input_api, source_file_filter)
-        if errors:
-            result += [
-                output_api.PresubmitError(
-                    'Do not use Chromium class {} inside Blink core:\n{}'.format(
-                        class_name,
-                        '\n'.join(errors)))]
-    return result
+            errors = audit_non_blink_usage.check(f.LocalPath(), f.ChangedContents())
+            if errors:
+                for line_number, disallowed_identifier in errors:
+                    results.append(output_api.PresubmitError(
+                        '%s:%d uses disallowed identifier %s' % (f.LocalPath(), line_number,
+                                                                 disallowed_identifier)))
+    return results
 
 
 def CheckChangeOnUpload(input_api, output_api):

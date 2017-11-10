@@ -30,9 +30,9 @@ _CONFIG = [
             'gfx::ScrollOffset',
 
             # //base constructs that are allowed everywhere
-            # TODO(dcheng): Check that the Oilpan plugin warns if storing GC
-            # types inside base::Optional.
+            'base::AdoptRef',
             'base::Optional',
+            'base::SingleThreadTaskRunner',
             'base::UnguessableToken',
             'base::make_optional',
             'base::make_span',
@@ -153,8 +153,11 @@ _COMPILED_CONFIG = _precompile_config()
 # letters, numbers, and underscores, matching the Google C++ style guide. This
 # is intended to minimize the number of matches where :: is used to qualify a
 # name with a class or enum name.
+#
+# As a bit of a minor hack, this regex also hardcodes a check for GURL, since
+# GURL isn't namespace qualified and wouldn't match otherwise.
 _IDENTIFIER_WITH_NAMESPACE_RE = re.compile(
-    r'\b(?:[a-z_][a-z0-9_]*::)+[A-Za-z_][A-Za-z0-9_]*\b')
+    r'\b(?:(?:[a-z_][a-z0-9_]*::)+[A-Za-z_][A-Za-z0-9_]*|GURL)\b')
 
 
 def _find_matching_entries(path):
@@ -168,9 +171,9 @@ def _find_matching_entries(path):
     """
     entries = []
     for entry in _COMPILED_CONFIG:
-        for path in entry['paths']:
-            if path.startswith(path):
-                entries.append({'sortkey': len(path), 'entry': entry})
+        for entry_path in entry['paths']:
+            if path.startswith(entry_path):
+                entries.append({'sortkey': len(entry_path), 'entry': entry})
     # The path length is used as the sort key: a longer path implies more
     # relevant, since that config is a more exact match.
     entries.sort(key=lambda x: x['sortkey'], reverse=True)
@@ -192,23 +195,23 @@ def check(path, contents):
 
     Args:
         path: The path of the file to check.
-        contents: The contents of the file to check.
+        contents: An array of line number, line tuples to check.
 
     Returns:
-        A list of disallowed identifiers.
+        A list of line number, disallowed identifier tuples.
     """
     results = []
     entries = _find_matching_entries(path)
     if not entries:
         return
-    for line in contents.splitlines():
+    for line_number, line in contents:
         idx = line.find('//')
         if idx >= 0:
             line = line[:idx]
         match = _IDENTIFIER_WITH_NAMESPACE_RE.search(line)
         if match:
             if not _check_entries_for_identifier(entries, match.group(0)):
-                results.append(match.group(0))
+                results.append((line_number, match.group(0)))
     return results
 
 
@@ -223,7 +226,9 @@ def main():
         try:
             with open(path, 'r') as f:
                 contents = f.read()
-                disallowed_identifiers = check(path, contents)
+                disallowed_identifiers = check(path, [
+                    (i + 1, l) for i, l in
+                    enumerate(contents.splitlines())])
                 if disallowed_identifiers:
                     print '%s uses disallowed identifiers:' % path
                     for i in disallowed_identifiers:
