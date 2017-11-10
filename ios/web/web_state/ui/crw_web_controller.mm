@@ -1037,19 +1037,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [result addEntriesFromDictionary:@{
     @"estimatedProgress" : @"webViewEstimatedProgressDidChange",
     @"hasOnlySecureContent" : @"webViewSecurityFeaturesDidChange",
-    @"title" : @"webViewTitleDidChange"
+    @"title" : @"webViewTitleDidChange",
+    @"loading" : @"webViewLoadingStateDidChange",
+    @"URL" : @"webViewURLDidChange",
   }];
-
-  // WKBasedNavigationManagerImpl does not need (and is incompatible with) the
-  // state maintenance carried out in URL and Loading state KVO handlers.
-  // TODO(crbug.com/738020): Refactor navigaton related KVO functionality into
-  // NavigationManager subclasses to avoid ad-hoc switches like this.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [result addEntriesFromDictionary:@{
-      @"loading" : @"webViewLoadingStateDidChange",
-      @"URL" : @"webViewURLDidChange",
-    }];
-  }
 
   return result;
 }
@@ -1286,9 +1277,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           _webStateImpl, pageURL, transition, true);
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationStarted(context.get());
-  [[self sessionController] pushNewItemWithURL:pageURL
-                                   stateObject:stateObject
-                                    transition:transition];
+  self.navigationManagerImpl->AddPushStateItemIfNecessary(pageURL, stateObject,
+                                                          transition);
   _webStateImpl->OnNavigationFinished(context.get());
   self.userInteractionRegistered = NO;
 }
@@ -1301,8 +1291,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT, true);
   context->SetIsSameDocument(true);
   _webStateImpl->OnNavigationStarted(context.get());
-  [[self sessionController] updateCurrentItemWithURL:pageURL
-                                         stateObject:stateObject];
+  self.navigationManagerImpl->UpdateCurrentItemForReplaceState(pageURL,
+                                                               stateObject);
   _webStateImpl->OnNavigationFinished(context.get());
 }
 
@@ -2567,8 +2557,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // previous page, ignore it and allow the previously registered navigation to
   // continue.  This can ocur if a pushState is issued from an anchor tag
   // onClick event, as the click would have already been registered.
-  if ([self sessionController].pendingItem)
+  if (self.navigationManagerImpl->GetPendingItem()) {
     return NO;
+  }
 
   std::string pageURL;
   std::string baseURL;

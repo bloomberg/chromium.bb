@@ -109,10 +109,6 @@ struct Referrer;
                stateObject:(NSString*)stateObject
                 transition:(ui::PageTransition)transition;
 
-// Updates the URL and state object for the current item.
-- (void)updateCurrentItemWithURL:(const GURL&)url
-                     stateObject:(NSString*)stateObject;
-
 // Removes the pending and transient NavigationItems.
 - (void)discardNonCommittedItems;
 

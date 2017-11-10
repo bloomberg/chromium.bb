@@ -2347,6 +2347,49 @@ TEST_P(NavigationManagerTest, GetCurrentItemImpl) {
   EXPECT_EQ(transient_item, navigation_manager()->GetCurrentItemImpl());
 }
 
+TEST_P(NavigationManagerTest, UpdateCurrentItemForReplaceState) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"),
+      Referrer(GURL("http://referrer.com"), ReferrerPolicyDefault),
+      ui::PAGE_TRANSITION_TYPED, web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+
+  // Tests that pending item can be replaced.
+  GURL replace_page_url("http://www.url.com/replace");
+  NSString* state_object = @"{'foo': 1}";
+
+  // Replace current item and check history size and fields of the modified
+  // item.
+  navigation_manager()->UpdateCurrentItemForReplaceState(replace_page_url,
+                                                         state_object);
+
+  EXPECT_EQ(0, navigation_manager()->GetItemCount());
+  auto* pending_item =
+      static_cast<NavigationItemImpl*>(navigation_manager()->GetPendingItem());
+  EXPECT_EQ(replace_page_url, pending_item->GetURL());
+  EXPECT_FALSE(pending_item->IsCreatedFromPushState());
+  EXPECT_NSEQ(state_object, pending_item->GetSerializedStateObject());
+  EXPECT_EQ(GURL("http://referrer.com"), pending_item->GetReferrer().url);
+
+  // Commit pending item and tests that replace updates the committed item.
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+
+  // Replace current item again and check history size and fields.
+  GURL replace_page_url2("http://www.url.com/replace2");
+  navigation_manager()->UpdateCurrentItemForReplaceState(replace_page_url2,
+                                                         nil);
+
+  EXPECT_EQ(1, navigation_manager()->GetItemCount());
+  auto* last_committed_item = static_cast<NavigationItemImpl*>(
+      navigation_manager()->GetLastCommittedItem());
+  EXPECT_EQ(replace_page_url2, last_committed_item->GetURL());
+  EXPECT_FALSE(last_committed_item->IsCreatedFromPushState());
+  EXPECT_NSEQ(nil, last_committed_item->GetSerializedStateObject());
+  EXPECT_EQ(GURL("http://referrer.com"),
+            last_committed_item->GetReferrer().url);
+}
+
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,

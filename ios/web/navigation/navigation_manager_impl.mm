@@ -160,6 +160,21 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
   return GetLastCommittedItemImpl();
 }
 
+void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
+    const GURL& url,
+    NSString* state_object) {
+  DCHECK(!GetTransientItem());
+  NavigationItemImpl* current_item = GetCurrentItemImpl();
+  current_item->SetURL(url);
+  current_item->SetSerializedStateObject(state_object);
+  current_item->SetHasStateBeenReplaced(true);
+  current_item->SetPostData(nil);
+  // If the change is to a committed item, notify interested parties.
+  if (current_item != GetPendingItem()) {
+    OnNavigationItemChanged();
+  }
+}
+
 void NavigationManagerImpl::GoToIndex(int index) {
   if (index < 0 || index >= GetItemCount()) {
     NOTREACHED();
