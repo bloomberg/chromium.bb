@@ -68,6 +68,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   const String& Url() const { return absolute_url_; }
+  const String& RelativeUrl() const { return relative_url_; }
 
   const Referrer& GetReferrer() const { return referrer_; }
 

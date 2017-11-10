@@ -5,7 +5,7 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../resources/testhelper.js"></script>
-<div id="testImage3"></div>
+<body>
 <script>
 'use strict';
 
@@ -21,15 +21,7 @@ function loadImageResource(imageValue) {
   return image;
 }
 
-// TODO(crbug.com/783031): Temporary helper function since CSSURLImageValue doesn't
-// support relative URLs yet. This can be removed once it does.
-function url() {
-  var c = document.location.href.split('/');
-  c[c.length - 1] = '../resources/1x1-green.png';
-  return c.join('/');
-}
-
-const gTestUrl = url();
+const gTestUrl = '../resources/1x1-green.png';
 const gBase64TestUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=';
 const gBadTestUrl = document.location.href;
 
