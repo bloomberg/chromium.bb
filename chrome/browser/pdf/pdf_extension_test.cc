@@ -121,7 +121,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     ExtensionApiTest::TearDownOnMainThread();
   }
 
-  bool PdfIsExpectedToFailLoad(const std::string& pdf_file) {
+  bool PdfIsExpectedToLoad(const std::string& pdf_file) {
     const char* const kFailingPdfs[] = {
         // TODO(thestig): Investigate why this file doesn't fail when served by
         // EmbeddedTestServer or another webserver.
@@ -130,11 +130,11 @@ class PDFExtensionTest : public ExtensionApiTest,
         "pdf_private/js.pdf",     "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
     };
-    for (size_t i = 0; i < arraysize(kFailingPdfs); ++i) {
-      if (kFailingPdfs[i] == pdf_file)
-        return true;
+    for (const char* failing_pdf : kFailingPdfs) {
+      if (failing_pdf == pdf_file)
+        return false;
     }
-    return false;
+    return true;
   }
 
   // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
@@ -148,7 +148,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     // It should be good enough to just navigate to the URL. But loading up the
     // BrowserPluginGuest seems to happen asynchronously as there was flakiness
     // being seen due to the BrowserPluginGuest not being available yet (see
-    // crbug.com/498077). So instead use |LoadPdf| which ensures that the PDF is
+    // crbug.com/498077). So instead use LoadPdf() which ensures that the PDF is
     // loaded before continuing.
     WebContents* guest_contents = LoadPdfGetGuestContents(url);
     ASSERT_TRUE(guest_contents);
@@ -196,7 +196,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     return pdf_extension_test_util::EnsurePDFHasLoaded(web_contents);
   }
 
-  // Same as |LoadPdf|, but also returns a pointer to the guest WebContents for
+  // Same as LoadPdf(), but also returns a pointer to the guest WebContents for
   // the loaded PDF. Returns nullptr if the load fails.
   WebContents* LoadPdfGetGuestContents(const GURL& url) {
     if (!LoadPdf(url))
@@ -230,7 +230,7 @@ class PDFExtensionTest : public ExtensionApiTest,
       if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
-        EXPECT_EQ(!PdfIsExpectedToFailLoad(pdf_file), success);
+        EXPECT_EQ(PdfIsExpectedToLoad(pdf_file), success) << pdf_file;
       }
       ++count;
     }
@@ -573,8 +573,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithEmbeddedPdf) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
-  using namespace zoom;
-
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
@@ -585,21 +583,20 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
   // above 0. Ideally we should look at the zoom levels from the PDF viewer
   // javascript, but we assume they'll always match the browser presets, which
   // are easier to access.
-  std::vector<double> preset_zoom_levels = PageZoom::PresetZoomLevels(0.0);
-  std::vector<double>::iterator it =
-      std::find(preset_zoom_levels.begin(), preset_zoom_levels.end(), 0.0);
+  std::vector<double> preset_zoom_levels = zoom::PageZoom::PresetZoomLevels(0);
+  auto it = std::find(preset_zoom_levels.begin(), preset_zoom_levels.end(), 0);
   ASSERT_TRUE(it != preset_zoom_levels.end());
   it++;
   ASSERT_TRUE(it != preset_zoom_levels.end());
   double new_zoom_level = *it;
 
-  auto* zoom_controller = ZoomController::FromWebContents(web_contents);
+  auto* zoom_controller = zoom::ZoomController::FromWebContents(web_contents);
   // We expect a ZoomChangedEvent with can_show_bubble == false if the PDF
   // extension behaviour is properly picked up. The test times out otherwise.
-  ZoomChangedWatcher watcher(zoom_controller,
-                             ZoomController::ZoomChangedEventData(
-                                 web_contents, 0.f, new_zoom_level,
-                                 ZoomController::ZOOM_MODE_MANUAL, false));
+  zoom::ZoomChangedWatcher watcher(
+      zoom_controller, zoom::ZoomController::ZoomChangedEventData(
+                           web_contents, 0, new_zoom_level,
+                           zoom::ZoomController::ZOOM_MODE_MANUAL, false));
 
   // Zoom PDF via script.
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
