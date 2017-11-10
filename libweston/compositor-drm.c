@@ -3699,6 +3699,25 @@ destroy_sprites(struct drm_backend *b)
 		drm_plane_destroy(plane);
 }
 
+static uint32_t
+drm_refresh_rate_mHz(const drmModeModeInfo *info)
+{
+	uint64_t refresh;
+
+	/* Calculate higher precision (mHz) refresh rate */
+	refresh = (info->clock * 1000000LL / info->htotal +
+		   info->vtotal / 2) / info->vtotal;
+
+	if (info->flags & DRM_MODE_FLAG_INTERLACE)
+		refresh *= 2;
+	if (info->flags & DRM_MODE_FLAG_DBLSCAN)
+		refresh /= 2;
+	if (info->vscan > 1)
+	    refresh /= info->vscan;
+
+	return refresh;
+}
+
 /**
  * Add a mode to output's mode list
  *
@@ -3713,7 +3732,6 @@ static struct drm_mode *
 drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 {
 	struct drm_mode *mode;
-	uint64_t refresh;
 
 	mode = malloc(sizeof *mode);
 	if (mode == NULL)
@@ -3723,18 +3741,7 @@ drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 	mode->base.width = info->hdisplay;
 	mode->base.height = info->vdisplay;
 
-	/* Calculate higher precision (mHz) refresh rate */
-	refresh = (info->clock * 1000000LL / info->htotal +
-		   info->vtotal / 2) / info->vtotal;
-
-	if (info->flags & DRM_MODE_FLAG_INTERLACE)
-		refresh *= 2;
-	if (info->flags & DRM_MODE_FLAG_DBLSCAN)
-		refresh /= 2;
-	if (info->vscan > 1)
-	    refresh /= info->vscan;
-
-	mode->base.refresh = refresh;
+	mode->base.refresh = drm_refresh_rate_mHz(info);
 	mode->mode_info = *info;
 	mode->blob_id = 0;
 
