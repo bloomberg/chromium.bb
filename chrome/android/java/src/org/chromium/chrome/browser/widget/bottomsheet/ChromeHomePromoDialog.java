@@ -9,9 +9,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
-import android.support.v7.widget.SwitchCompat;
 import android.view.View;
-import android.widget.CompoundButton;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.StrictModeContext;
@@ -71,11 +69,8 @@ public class ChromeHomePromoDialog extends PromoDialog {
     @ShowReason
     private final int mShowReason;
 
-    /** Whether or not the switch in the promo is enabled or disabled. */
-    private boolean mSwitchStateShouldEnable;
-
-    /** Whether or not the user made a selection by tapping the 'ok' button. */
-    private boolean mUserMadeSelection;
+    /** Whether Chrome Home should be enabled or disabled after the promo is dismissed. */
+    private boolean mChromeHomeShouldBeEnabled;
 
     /**
      * Default constructor.
@@ -86,6 +81,7 @@ public class ChromeHomePromoDialog extends PromoDialog {
         super(activity);
         setOnDismissListener(this);
         mShowReason = showReason;
+        mChromeHomeShouldBeEnabled = FeatureUtilities.isChromeHomeEnabled();
 
         RecordHistogram.recordEnumeratedHistogram("Android.ChromeHome.Promo.ShowReason", showReason,
                 ChromeHomePromoDialog.ShowReason.BOUNDARY);
@@ -106,7 +102,15 @@ public class ChromeHomePromoDialog extends PromoDialog {
         params.subheaderStringResource = AccessibilityUtil.isAccessibilityEnabled()
                 ? R.string.chrome_home_promo_dialog_message_accessibility
                 : R.string.chrome_home_promo_dialog_message;
-        params.primaryButtonStringResource = R.string.ok;
+
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            params.primaryButtonStringResource = R.string.ok;
+            params.secondaryButtonStringResource = R.string.chrome_home_promo_dialog_turn_off;
+        } else {
+            params.primaryButtonStringResource = R.string.chrome_home_promo_dialog_try_it;
+            params.secondaryButtonStringResource = R.string.chrome_home_promo_dialog_not_now;
+        }
+
         if (SysUtils.isLowEndDevice()) {
             params.drawableResource = R.drawable.chrome_home_promo_static;
         } else {
@@ -118,28 +122,18 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
     @Override
     public void onClick(View view) {
-        mUserMadeSelection = true;
+        if (view.getId() == R.id.button_primary) {
+            mChromeHomeShouldBeEnabled = true;
+        } else if (view.getId() == R.id.button_secondary) {
+            mChromeHomeShouldBeEnabled = false;
+        }
 
-        // There is only one button for this dialog, so dismiss on any click.
         dismiss();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        View toggleLayout = getLayoutInflater().inflate(R.layout.chrome_home_promo_toggle, null);
-
-        SwitchCompat toggle = (SwitchCompat) toggleLayout.findViewById(R.id.chrome_home_toggle);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean enabled) {
-                mSwitchStateShouldEnable = enabled;
-            }
-        });
-
-        toggle.setChecked(true);
-        addControl(toggleLayout);
 
         if (sTestObserver != null) sTestObserver.onDialogShown(this);
     }
@@ -167,7 +161,7 @@ public class ChromeHomePromoDialog extends PromoDialog {
         final Tab tab = activity.getActivityTab();
 
         boolean showOptOutSnackbar = false;
-        if (tab != null && !mSwitchStateShouldEnable
+        if (tab != null && !mChromeHomeShouldBeEnabled
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_OPT_OUT_SNACKBAR)) {
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                 showOptOutSnackbar =
@@ -193,10 +187,6 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
     @Override
     public void onDismiss(DialogInterface dialogInterface) {
-        // If the user did not hit 'ok', do not use the switch value to store the user setting.
-        boolean userSetting = mUserMadeSelection ? mSwitchStateShouldEnable
-                                                 : FeatureUtilities.isChromeHomeEnabled();
-
         String histogramName = null;
         switch (mShowReason) {
             case ShowReason.MENU:
@@ -215,14 +205,17 @@ public class ChromeHomePromoDialog extends PromoDialog {
         @PromoResult
         int state;
         if (FeatureUtilities.isChromeHomeEnabled()) {
-            state = userSetting ? PromoResult.REMAINED_ENABLED : PromoResult.DISABLED;
+            state = mChromeHomeShouldBeEnabled ? PromoResult.REMAINED_ENABLED
+                                               : PromoResult.DISABLED;
         } else {
-            state = userSetting ? PromoResult.ENABLED : PromoResult.REMAINED_DISABLED;
+            state = mChromeHomeShouldBeEnabled ? PromoResult.ENABLED
+                                               : PromoResult.REMAINED_DISABLED;
         }
         RecordHistogram.recordEnumeratedHistogram(histogramName, state, PromoResult.BOUNDARY);
 
-        boolean restartRequired = userSetting != FeatureUtilities.isChromeHomeEnabled();
-        FeatureUtilities.switchChromeHomeUserSetting(userSetting);
+        boolean restartRequired =
+                mChromeHomeShouldBeEnabled != FeatureUtilities.isChromeHomeEnabled();
+        FeatureUtilities.switchChromeHomeUserSetting(mChromeHomeShouldBeEnabled);
 
         if (restartRequired) restartChromeInstances();
     }
