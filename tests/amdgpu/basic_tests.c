@@ -44,7 +44,6 @@ static  uint32_t  minor_version;
 static  uint32_t  family_id;
 
 static void amdgpu_query_info_test(void);
-static void amdgpu_memory_alloc(void);
 static void amdgpu_command_submission_gfx(void);
 static void amdgpu_command_submission_compute(void);
 static void amdgpu_command_submission_multi_fence(void);
@@ -58,7 +57,6 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type);
 
 CU_TestInfo basic_tests[] = {
 	{ "Query Info Test",  amdgpu_query_info_test },
-	{ "Memory alloc Test",  amdgpu_memory_alloc },
 	{ "Userptr Test",  amdgpu_userptr_test },
 	{ "Command submission Test (GFX)",  amdgpu_command_submission_gfx },
 	{ "Command submission Test (Compute)", amdgpu_command_submission_compute },
@@ -274,53 +272,6 @@ static void amdgpu_query_info_test(void)
 
 	r = amdgpu_query_firmware_version(device_handle, AMDGPU_INFO_FW_VCE, 0,
 					  0, &version, &feature);
-	CU_ASSERT_EQUAL(r, 0);
-}
-
-static void amdgpu_memory_alloc(void)
-{
-	amdgpu_bo_handle bo;
-	amdgpu_va_handle va_handle;
-	uint64_t bo_mc;
-	int r;
-
-	/* Test visible VRAM */
-	bo = gpu_mem_alloc(device_handle,
-			4096, 4096,
-			AMDGPU_GEM_DOMAIN_VRAM,
-			AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED,
-			&bo_mc, &va_handle);
-
-	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
-	CU_ASSERT_EQUAL(r, 0);
-
-	/* Test invisible VRAM */
-	bo = gpu_mem_alloc(device_handle,
-			4096, 4096,
-			AMDGPU_GEM_DOMAIN_VRAM,
-			AMDGPU_GEM_CREATE_NO_CPU_ACCESS,
-			&bo_mc, &va_handle);
-
-	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
-	CU_ASSERT_EQUAL(r, 0);
-
-	/* Test GART Cacheable */
-	bo = gpu_mem_alloc(device_handle,
-			4096, 4096,
-			AMDGPU_GEM_DOMAIN_GTT,
-			0, &bo_mc, &va_handle);
-
-	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
-	CU_ASSERT_EQUAL(r, 0);
-
-	/* Test GART USWC */
-	bo = gpu_mem_alloc(device_handle,
-			4096, 4096,
-			AMDGPU_GEM_DOMAIN_GTT,
-			AMDGPU_GEM_CREATE_CPU_GTT_USWC,
-			&bo_mc, &va_handle);
-
-	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
 	CU_ASSERT_EQUAL(r, 0);
 }
 
