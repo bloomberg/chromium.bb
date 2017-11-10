@@ -136,7 +136,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
   }
 
   if (observer_)
-    observer_->OnWebLayerReplaced();
+    observer_->OnWebLayerUpdated();
   cc_layer_->SetBounds(surface_info.size_in_pixels());
 }
 
