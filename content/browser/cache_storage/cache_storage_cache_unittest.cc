@@ -532,7 +532,7 @@ class CacheStorageCacheTest : public testing::Test {
   bool MatchAll(
       const ServiceWorkerFetchRequest& request,
       const CacheStorageCacheQueryParams& match_params,
-      std::unique_ptr<CacheStorageCache::Responses>* responses,
+      std::vector<ServiceWorkerResponse>* responses,
       std::unique_ptr<CacheStorageCache::BlobDataHandles>* body_handles) {
     base::RunLoop loop;
     cache_->MatchAll(
@@ -545,7 +545,7 @@ class CacheStorageCacheTest : public testing::Test {
   }
 
   bool MatchAll(
-      std::unique_ptr<CacheStorageCache::Responses>* responses,
+      std::vector<ServiceWorkerResponse>* responses,
       std::unique_ptr<CacheStorageCache::BlobDataHandles>* body_handles) {
     return MatchAll(ServiceWorkerFetchRequest(), CacheStorageCacheQueryParams(),
                     responses, body_handles);
@@ -676,13 +676,13 @@ class CacheStorageCacheTest : public testing::Test {
 
   void ResponsesAndErrorCallback(
       base::OnceClosure quit_closure,
-      std::unique_ptr<CacheStorageCache::Responses>* responses_out,
+      std::vector<ServiceWorkerResponse>* responses_out,
       std::unique_ptr<CacheStorageCache::BlobDataHandles>* body_handles_out,
       CacheStorageError error,
-      std::unique_ptr<CacheStorageCache::Responses> responses,
+      std::vector<ServiceWorkerResponse> responses,
       std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles) {
     callback_error_ = error;
-    responses_out->swap(responses);
+    *responses_out = std::move(responses);
     body_handles_out->swap(body_handles);
     std::move(quit_closure).Run();
   }
@@ -824,24 +824,24 @@ TEST_P(CacheStorageCacheTestP, MatchAllLimit) {
   size_t query_request_size = body_request_with_query_.EstimatedStructSize() +
                               callback_response_->EstimatedStructSize();
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   CacheStorageCacheQueryParams match_params;
 
   // There is enough room for both requests and responses
   SetMaxQuerySizeBytes(body_request_size + query_request_size);
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(1u, responses->size());
+  EXPECT_EQ(1u, responses.size());
 
   match_params.ignore_search = true;
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(2u, responses->size());
+  EXPECT_EQ(2u, responses.size());
 
   // There is not enough room for both requests and responses
   SetMaxQuerySizeBytes(body_request_size);
   match_params.ignore_search = false;
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(1u, responses->size());
+  EXPECT_EQ(1u, responses.size());
 
   match_params.ignore_search = true;
   EXPECT_FALSE(
@@ -966,37 +966,37 @@ TEST_P(CacheStorageCacheTestP, MatchBodyHead) {
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_Empty) {
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
-  EXPECT_TRUE(responses->empty());
+  EXPECT_TRUE(responses.empty());
   EXPECT_TRUE(body_handles->empty());
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_NoBody) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
 
-  ASSERT_EQ(1u, responses->size());
+  ASSERT_EQ(1u, responses.size());
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
+      ResponseMetadataEqual(SetCacheName(no_body_response_), responses[0]));
   EXPECT_FALSE(body_handles->at(0));
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_Body) {
   EXPECT_TRUE(Put(body_request_, body_response_));
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
 
-  ASSERT_EQ(1u, responses->size());
+  ASSERT_EQ(1u, responses.size());
   ASSERT_EQ(1u, body_handles->size());
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(body_response_), responses->at(0)));
+      ResponseMetadataEqual(SetCacheName(body_response_), responses[0]));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(0)));
 }
 
@@ -1004,27 +1004,27 @@ TEST_P(CacheStorageCacheTestP, MatchAll_TwoResponsesThenOne) {
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_TRUE(Put(body_request_, body_response_));
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
   ASSERT_TRUE(body_handles->at(1));
 
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
+      ResponseMetadataEqual(SetCacheName(no_body_response_), responses[0]));
   EXPECT_FALSE(body_handles->at(0));
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(body_response_), responses->at(1)));
+      ResponseMetadataEqual(SetCacheName(body_response_), responses[1]));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(1)));
 
-  responses->clear();
+  responses.clear();
   body_handles->clear();
 
   EXPECT_TRUE(Delete(body_request_));
   EXPECT_TRUE(MatchAll(&responses, &body_handles));
 
-  ASSERT_EQ(1u, responses->size());
+  ASSERT_EQ(1u, responses.size());
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(no_body_response_), responses->at(0)));
+      ResponseMetadataEqual(SetCacheName(no_body_response_), responses[0]));
   ASSERT_EQ(1u, body_handles->size());
   EXPECT_FALSE(body_handles->at(0));
 }
@@ -1146,36 +1146,36 @@ TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreMethod) {
 
   ServiceWorkerFetchRequest post_request = body_request_;
   post_request.method = "POST";
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   CacheStorageCacheQueryParams match_params;
 
   EXPECT_TRUE(MatchAll(post_request, match_params, &responses, &body_handles));
-  EXPECT_EQ(0u, responses->size());
+  EXPECT_EQ(0u, responses.size());
 
   match_params.ignore_method = true;
   EXPECT_TRUE(MatchAll(post_request, match_params, &responses, &body_handles));
-  EXPECT_EQ(1u, responses->size());
+  EXPECT_EQ(1u, responses.size());
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreVary) {
   body_request_.headers["vary_foo"] = "foo";
   body_response_.headers["vary"] = "vary_foo";
   EXPECT_TRUE(Put(body_request_, body_response_));
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   CacheStorageCacheQueryParams match_params;
 
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(1u, responses->size());
+  EXPECT_EQ(1u, responses.size());
   body_request_.headers["vary_foo"] = "bar";
 
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(0u, responses->size());
+  EXPECT_EQ(0u, responses.size());
 
   match_params.ignore_vary = true;
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
-  EXPECT_EQ(1u, responses->size());
+  EXPECT_EQ(1u, responses.size());
 }
 
 TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreSearch) {
@@ -1183,18 +1183,18 @@ TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreSearch) {
   EXPECT_TRUE(Put(body_request_with_query_, body_response_with_query_));
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   CacheStorageCacheQueryParams match_params;
   match_params.ignore_search = true;
   EXPECT_TRUE(MatchAll(body_request_, match_params, &responses, &body_handles));
 
-  ASSERT_EQ(2u, responses->size());
+  ASSERT_EQ(2u, responses.size());
   ASSERT_EQ(2u, body_handles->size());
 
   // Order of returned responses is not guaranteed.
   std::set<std::string> matched_set;
-  for (const ServiceWorkerResponse& response : *responses) {
+  for (const ServiceWorkerResponse& response : responses) {
     ASSERT_EQ(1u, response.url_list.size());
     if (response.url_list[0].spec() ==
         "http://example.com/body.html?query=test") {
@@ -1213,22 +1213,22 @@ TEST_P(CacheStorageCacheTestP, MatchAll_IgnoreSearch) {
 TEST_P(CacheStorageCacheTestP, MatchAll_Head) {
   EXPECT_TRUE(Put(body_request_, body_response_));
 
-  std::unique_ptr<CacheStorageCache::Responses> responses;
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> body_handles;
   CacheStorageCacheQueryParams match_params;
   match_params.ignore_search = true;
   EXPECT_TRUE(
       MatchAll(body_head_request_, match_params, &responses, &body_handles));
-  EXPECT_TRUE(responses->empty());
+  EXPECT_TRUE(responses.empty());
   EXPECT_TRUE(body_handles->empty());
 
   match_params.ignore_method = true;
   EXPECT_TRUE(
       MatchAll(body_head_request_, match_params, &responses, &body_handles));
-  ASSERT_EQ(1u, responses->size());
+  ASSERT_EQ(1u, responses.size());
   ASSERT_EQ(1u, body_handles->size());
   EXPECT_TRUE(
-      ResponseMetadataEqual(SetCacheName(body_response_), responses->at(0)));
+      ResponseMetadataEqual(SetCacheName(body_response_), responses[0]));
   EXPECT_TRUE(ResponseBodiesEqual(expected_blob_data_, *body_handles->at(0)));
 }
 

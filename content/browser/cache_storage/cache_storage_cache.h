@@ -62,11 +62,10 @@ class CONTENT_EXPORT CacheStorageCache {
       base::OnceCallback<void(blink::mojom::CacheStorageError,
                               std::unique_ptr<ServiceWorkerResponse>,
                               std::unique_ptr<storage::BlobDataHandle>)>;
-  using Responses = std::vector<ServiceWorkerResponse>;
   using BlobDataHandles = std::vector<std::unique_ptr<storage::BlobDataHandle>>;
   using ResponsesCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
-                              std::unique_ptr<Responses>,
+                              std::vector<ServiceWorkerResponse>,
                               std::unique_ptr<BlobDataHandles>)>;
   using Requests = std::vector<ServiceWorkerFetchRequest>;
   using RequestsCallback =
@@ -279,7 +278,7 @@ class CONTENT_EXPORT CacheStorageCache {
                  ResponseCallback callback);
   void MatchDidMatchAll(ResponseCallback callback,
                         blink::mojom::CacheStorageError match_all_error,
-                        std::unique_ptr<Responses> match_all_responses,
+                        std::vector<ServiceWorkerResponse> match_all_responses,
                         std::unique_ptr<BlobDataHandles> match_all_handles);
 
   // MatchAll callbacks

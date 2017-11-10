@@ -138,7 +138,7 @@ class CONTENT_EXPORT CacheStorageDispatcherHost : public BrowserMessageFilter {
       int request_id,
       CacheStorageCacheHandle cache_handle,
       blink::mojom::CacheStorageError error,
-      std::unique_ptr<std::vector<ServiceWorkerResponse>> responses,
+      std::vector<ServiceWorkerResponse> responses,
       std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles);
   void OnCacheMatchAll(int thread_id,
                        int request_id,
