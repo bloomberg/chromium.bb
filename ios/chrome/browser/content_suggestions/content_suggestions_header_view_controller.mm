@@ -333,20 +333,20 @@ const CGFloat kHintLabelSidePadding = 12;
                                     self.logoIsShowing)];
   self.fakeOmniboxHeightConstraint = [fakeOmnibox.heightAnchor
       constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
-  self.fakeOmniboxTopMarginConstraint = [fakeOmnibox.topAnchor
-      constraintEqualToAnchor:logoView.bottomAnchor
-                     constant:content_suggestions::searchFieldTopMargin()];
-  [NSLayoutConstraint activateConstraints:@[
-    self.doodleTopMarginConstraint,
-    self.doodleHeightConstraint,
-    self.fakeOmniboxWidthConstraint,
-    self.fakeOmniboxHeightConstraint,
-    self.fakeOmniboxTopMarginConstraint,
-    [logoView.widthAnchor constraintEqualToAnchor:headerView.widthAnchor],
-    [logoView.leadingAnchor constraintEqualToAnchor:headerView.leadingAnchor],
-    [fakeOmnibox.centerXAnchor
-        constraintEqualToAnchor:headerView.centerXAnchor],
-  ]];
+  self.fakeOmniboxTopMarginConstraint = [logoView.bottomAnchor
+      constraintEqualToAnchor:fakeOmnibox.topAnchor
+                     constant:-content_suggestions::searchFieldTopMargin()];
+  self.doodleTopMarginConstraint.active = YES;
+  self.doodleHeightConstraint.active = YES;
+  self.fakeOmniboxWidthConstraint.active = YES;
+  self.fakeOmniboxHeightConstraint.active = YES;
+  self.fakeOmniboxTopMarginConstraint.active = YES;
+  [logoView.widthAnchor constraintEqualToAnchor:headerView.widthAnchor].active =
+      YES;
+  [logoView.leadingAnchor constraintEqualToAnchor:headerView.leadingAnchor]
+      .active = YES;
+  [fakeOmnibox.centerXAnchor constraintEqualToAnchor:headerView.centerXAnchor]
+      .active = YES;
 }
 
 - (void)shiftTilesDown {
