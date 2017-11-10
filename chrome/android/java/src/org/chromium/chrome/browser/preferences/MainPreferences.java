@@ -37,6 +37,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
+    public static final String PREF_LANGUAGES = "languages";
 
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
@@ -117,6 +118,12 @@ public class MainPreferences extends PreferenceFragment
             // user's device, not whether the user has Content Suggestions Notifications themselves
             // enabled (which is what the user can toggle on the Notifications Preferences page).
             getPreferenceScreen().removePreference(findPreference(PREF_NOTIFICATIONS));
+        }
+
+        // This checks whether the Languages Preference *feature* is enabled on the user's device.
+        // If not, remove the languages preference.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.LANGUAGES_PREFERENCE)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_LANGUAGES));
         }
 
         if (!TemplateUrlService.getInstance().isLoaded()) {
