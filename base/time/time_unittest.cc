@@ -631,6 +631,47 @@ TEST_F(TimeTest, FromLocalExplodedCrashOnAndroid) {
 }
 #endif  // OS_ANDROID
 
+TEST_F(TimeTest, FromExploded_MinMax) {
+  Time::Exploded exploded = {0};
+  exploded.month = 1;
+  exploded.day_of_month = 1;
+
+  Time parsed_time;
+
+  if (Time::kExplodedMinYear != std::numeric_limits<int>::min()) {
+    exploded.year = Time::kExplodedMinYear;
+    EXPECT_TRUE(Time::FromUTCExploded(exploded, &parsed_time));
+#if !defined(OS_WIN)
+    // On Windows, January 1, 1601 00:00:00 is actually the null time.
+    EXPECT_FALSE(parsed_time.is_null());
+#endif
+
+#if !defined(OS_ANDROID)
+    // The dates earlier than |kExplodedMinYear| that don't work are OS version
+    // dependent on Android.
+    exploded.year--;
+    EXPECT_FALSE(Time::FromUTCExploded(exploded, &parsed_time));
+    EXPECT_TRUE(parsed_time.is_null());
+#endif
+  }
+
+  if (Time::kExplodedMaxYear != std::numeric_limits<int>::max()) {
+    exploded.year = Time::kExplodedMaxYear;
+    exploded.month = 12;
+    exploded.day_of_month = 31;
+    exploded.hour = 23;
+    exploded.minute = 59;
+    exploded.second = 59;
+    exploded.millisecond = 999;
+    EXPECT_TRUE(Time::FromUTCExploded(exploded, &parsed_time));
+    EXPECT_FALSE(parsed_time.is_null());
+
+    exploded.year++;
+    EXPECT_FALSE(Time::FromUTCExploded(exploded, &parsed_time));
+    EXPECT_TRUE(parsed_time.is_null());
+  }
+}
+
 TEST(TimeTicks, Deltas) {
   for (int index = 0; index < 50; index++) {
     TimeTicks ticks_start = TimeTicks::Now();

@@ -54,35 +54,15 @@ bool SaturatedTimeFromUTCExploded(const base::Time::Exploded& exploded,
   // some invalid calendar dates in the out-of-range case.
   if (!exploded.HasValidValues())
     return false;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Allow dates prior to unix epoch (which fail on non-Mac/iOS POSIX).
-  if (exploded.year < 1970) {
-    *out = MinNonNullTime();
-    return true;
-  }
 
-  // On 32-bit non-Mac/iOS POSIX systems, the time_t value that FromExploded()
-  // returns overflows in the middle of year 2038. In that case, return
-  // Time::Max().
-  if (sizeof(time_t) == 4u && exploded.year >= 2038) {
+  if (exploded.year > base::Time::kExplodedMaxYear) {
     *out = base::Time::Max();
     return true;
   }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-#if defined(OS_WIN)
-  // Allow dates prior to Windows epoch.
-  if (exploded.year < 1601) {
+  if (exploded.year < base::Time::kExplodedMinYear) {
     *out = MinNonNullTime();
     return true;
   }
-
-  // Allow dates after the Windows epoch.
-  if (exploded.year >= 30827) {
-    *out = base::Time::Max();
-    return true;
-  }
-#endif  //  defined(OS_WIN)
 
   return false;
 }
