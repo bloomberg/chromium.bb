@@ -8,34 +8,8 @@ import "mojo/common/string16.mojom";
 import "ui/gfx/image/mojo/image.mojom";
 import "url/mojo/url.mojom";
 
-// Matches message_center::NotificationType.
-enum NotificationType {
-  SIMPLE = 0,
-  BASE_FORMAT = 1,
-  IMAGE = 2,
-  MULTIPLE = 3,
-  PROGRESS = 4,
-  CUSTOM = 5,
-};
-
-// These fields and their meanings are identical to those in
-// message_center::RichNotificationData.
-// TODO(estade): Add the rest of the fields for RichNotificationData.
-struct RichNotificationData {
-  int32 progress;
-  mojo.common.mojom.String16 progress_status;
-  bool should_make_spoken_feedback_for_popup_updates;
-  bool clickable;
-  bool pinned;
-  mojo.common.mojom.String16 accessible_name;
-  uint32 accent_color;
-  bool use_image_as_icon;
-};
-
 // TODO(mhashmi): Add the rest of the fields for a Notification
 struct Notification {
-  NotificationType type;
-
   // TODO(mhashmi): Server-side code (in Ash) needs to make sure this id won't
   // collide with ids from different clients
   string id;
@@ -45,6 +19,4 @@ struct Notification {
   gfx.mojom.ImageSkia? icon;
   mojo.common.mojom.String16 display_source;
   url.mojom.Url origin_url;
-
-  RichNotificationData optional_fields;
 };

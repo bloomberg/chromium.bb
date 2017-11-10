@@ -9,8 +9,5 @@ deps = [
   "//ui/gfx/image/mojo:struct_traits",
   "//ui/message_center/mojo:struct_traits",
 ]
-type_mappings = [
-  "message_center.mojom.RichNotificationData=message_center::RichNotificationData",
-  "message_center.mojom.NotificationType=message_center::NotificationType",
-  "message_center.mojom.Notification=message_center::Notification",
-]
+type_mappings =
+    [ "message_center.mojom.Notification=message_center::Notification" ]
