@@ -14,7 +14,6 @@ CSSNumericValueType::BaseType UnitTypeToBaseType(
   using BaseType = CSSNumericValueType::BaseType;
 
   DCHECK_NE(unit, UnitType::kNumber);
-  LOG(ERROR) << (int)unit;
   switch (unit) {
     case UnitType::kEms:
     case UnitType::kExs:
