@@ -169,10 +169,12 @@ source_set("unit_tests") {
   deps = [
     ":bookmarks",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/web/public/test",
     "//testing/gtest",

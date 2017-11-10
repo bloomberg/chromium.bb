@@ -107,6 +107,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/favicon",
@@ -452,6 +453,7 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "browser_view_controller_egtest.mm",
+    "keyboard_commands_egtest.mm",
   ]
   deps = [
     ":ui",

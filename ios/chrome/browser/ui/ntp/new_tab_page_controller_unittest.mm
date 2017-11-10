@@ -14,6 +14,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -151,6 +152,10 @@ TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
 }
 
 TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
+  // TODO(crbug.com/782551): Rewrite this unittest for the new bookmark.
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    return;
+  }
   // Expecting on start up that the bookmarkController does not exist.
   // Deliberately comparing pointers.
   EXPECT_NE([controller_ currentController],

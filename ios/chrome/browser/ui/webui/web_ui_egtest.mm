@@ -175,6 +175,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
     const char* host = kChromeHostURLs[i];
     // Exclude non-WebUI pages, as they do not go through a "loading" phase as
     // expected in LoadWebUIUrl.
+    // TODO(crbug.com/753599): Remove the checking of BookmarksHost when clean
+    // up.
     if (host == kChromeUIBookmarksHost || host == kChromeUINewTabHost) {
       continue;
     }

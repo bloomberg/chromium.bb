@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller_protected.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
@@ -18,6 +20,10 @@ using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;
 
 TEST_F(BookmarkHomeViewControllerTest, LoadBookmarks) {
   @autoreleasepool {
+    // TODO(crbug.com/782551): Write this unittest for the new bookmark.
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
+
     BookmarkHomeViewController* controller = [[BookmarkHomeViewController alloc]
         initWithLoader:nil
           browserState:chrome_browser_state_.get()
