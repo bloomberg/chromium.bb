@@ -179,6 +179,8 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
   RouteFunction(
       "requireAsync",
       base::Bind(&ModuleSystem::RequireAsync, base::Unretained(this)));
+  RouteFunction("loadScript",
+                base::Bind(&ModuleSystem::LoadScript, base::Unretained(this)));
   RouteFunction("privates",
                 base::Bind(&ModuleSystem::Private, base::Unretained(this)));
 
@@ -655,13 +657,34 @@ void ModuleSystem::RequireAsync(
     LoadModule(module_name);
 }
 
+void ModuleSystem::LoadScript(const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK_EQ(1, args.Length());
+  std::string module_name = *v8::String::Utf8Value(args[0]);
+
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Context> v8_context = context()->v8_context();
+  v8::Context::Scope context_scope(v8_context);
+
+  v8::Local<v8::String> source =
+      source_map_->GetSource(GetIsolate(), module_name);
+  if (source.IsEmpty())
+    Fatal(context_, "No source for loadScript(" + module_name + ")");
+
+  v8::Local<v8::String> v8_module_name;
+  if (!ToV8String(GetIsolate(), module_name.c_str(), &v8_module_name))
+    Warn(GetIsolate(), "module_name is too long");
+
+  RunString(source, v8_module_name);
+  args.GetReturnValue().Set(v8::Undefined(GetIsolate()));
+}
+
 v8::Local<v8::String> ModuleSystem::WrapSource(v8::Local<v8::String> source) {
   v8::EscapableHandleScope handle_scope(GetIsolate());
   // Keep in order with the arguments in RequireForJsInner.
   v8::Local<v8::String> left = ToV8StringUnsafe(
       GetIsolate(),
-      "(function(define, require, requireNative, requireAsync, exports, "
-      "console, privates, apiBridge, bindingUtil, getInternalApi,"
+      "(function(define, require, requireNative, requireAsync, loadScript, "
+      "exports, console, privates, apiBridge, bindingUtil, getInternalApi,"
       "$Array, $Function, $JSON, $Object, $RegExp, $String, $Error) {"
       "'use strict';");
   v8::Local<v8::String> right = ToV8StringUnsafe(GetIsolate(), "\n})");
@@ -791,6 +814,8 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
       GetPropertyUnsafe(v8_context, natives, "requireNative",
                         v8::NewStringType::kInternalized),
       GetPropertyUnsafe(v8_context, natives, "requireAsync",
+                        v8::NewStringType::kInternalized),
+      GetPropertyUnsafe(v8_context, natives, "loadScript",
                         v8::NewStringType::kInternalized),
       exports,
       // Libraries that we magically expose to every module.
