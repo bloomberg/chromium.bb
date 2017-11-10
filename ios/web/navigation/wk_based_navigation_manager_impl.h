@@ -76,6 +76,9 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   // Returns the previous navigation item in the main frame.
   int GetPreviousItemIndex() const override;
   void SetPreviousItemIndex(int previous_item_index) override;
+  void AddPushStateItemIfNecessary(const GURL& url,
+                                   NSString* state_object,
+                                   ui::PageTransition transition) override;
 
   // NavigationManager:
   BrowserState* GetBrowserState() const override;

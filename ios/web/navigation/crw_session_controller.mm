@@ -459,19 +459,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
     _navigationManager->OnNavigationItemCommitted();
 }
 
-- (void)updateCurrentItemWithURL:(const GURL&)url
-                     stateObject:(NSString*)stateObject {
-  DCHECK(!self.transientItem);
-  web::NavigationItemImpl* currentItem = self.currentItem;
-  currentItem->SetURL(url);
-  currentItem->SetSerializedStateObject(stateObject);
-  currentItem->SetHasStateBeenReplaced(true);
-  currentItem->SetPostData(nil);
-  // If the change is to a committed item, notify interested parties.
-  if (currentItem != self.pendingItem && _navigationManager)
-    _navigationManager->OnNavigationItemChanged();
-}
-
 - (void)discardNonCommittedItems {
   [self discardTransientItem];
   _pendingItem.reset();

@@ -202,6 +202,14 @@ void WKBasedNavigationManagerImpl::SetPreviousItemIndex(
   previous_item_index_ = previous_item_index;
 }
 
+void WKBasedNavigationManagerImpl::AddPushStateItemIfNecessary(
+    const GURL& url,
+    NSString* state_object,
+    ui::PageTransition transition) {
+  // WKBasedNavigationManager doesn't directly manage session history. Nothing
+  // to do here.
+}
+
 BrowserState* WKBasedNavigationManagerImpl::GetBrowserState() const {
   return browser_state_;
 }

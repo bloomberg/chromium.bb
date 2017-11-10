@@ -64,21 +64,13 @@ goog.provide('__crWeb.navigation');
   };
 
   /**
-   * Intercept window.history methods to call back/forward natively.
+   * Intercepts window.history methods so native code can differentiate between
+   * same-document navigation that are state navigations vs. hash navigations.
+   * This is needed for backward compatibility of DidStartLoading, which is
+   * triggered for fragment navigation but not state navigation.
+   * TODO(crbug.com/783382): Remove this once DidStartLoading is no longer
+   * called for same-document navigation.
    */
-  window.history.back = function() {
-    __gCrWeb.message.invokeOnHost({'command': 'window.history.back'});
-  };
-
-  window.history.forward = function() {
-    __gCrWeb.message.invokeOnHost({'command': 'window.history.forward'});
-  };
-
-  window.history.go = function(delta) {
-    __gCrWeb.message.invokeOnHost(
-        {'command': 'window.history.go', 'value': delta | 0});
-  };
-
   window.history.pushState = function(stateObject, pageTitle, pageUrl) {
     __gCrWeb.message.invokeOnHost(
         {'command': 'window.history.willChangeState'});

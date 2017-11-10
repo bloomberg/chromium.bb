@@ -337,4 +337,13 @@ void LegacyNavigationManagerImpl::SetPreviousItemIndex(
   [session_controller_ setPreviousItemIndex:previous_item_index];
 }
 
+void LegacyNavigationManagerImpl::AddPushStateItemIfNecessary(
+    const GURL& url,
+    NSString* state_object,
+    ui::PageTransition transition) {
+  [session_controller_ pushNewItemWithURL:url
+                              stateObject:state_object
+                               transition:transition];
+}
+
 }  // namespace web

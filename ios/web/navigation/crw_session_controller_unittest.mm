@@ -918,46 +918,6 @@ TEST_F(CRWSessionControllerTest, IsSameDocumentNavigation) {
       [controller isSameDocumentNavigationBetweenItem:item2 andItem:item4]);
 }
 
-TEST_F(CRWSessionControllerTest, UpdateCurrentItem) {
-  std::vector<std::unique_ptr<web::NavigationItem>> items;
-  items.push_back(CreateNavigationItem("http://www.firstpage.com",
-                                       "http://www.starturl.com", @"First"));
-  items.push_back(CreateNavigationItem("http://www.secondpage.com",
-                                       "http://www.firstpage.com", @"Second"));
-  items.push_back(CreateNavigationItem("http://www.thirdpage.com",
-                                       "http://www.secondpage.com", @"Third"));
-  CRWSessionController* controller =
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                         navigationItems:std::move(items)
-                                  lastCommittedItemIndex:0];
-  CreateNavigationManagerForSessionController(controller);
-
-  GURL replacePageGurl1("http://www.firstpage.com/#replace1");
-  NSString* stateObject1 = @"{'foo': 1}";
-
-  // Replace current item and check the size of history and fields of the
-  // modified item.
-  [controller updateCurrentItemWithURL:replacePageGurl1
-                           stateObject:stateObject1];
-  web::NavigationItemImpl* replacedItem = [controller currentItem];
-  NSUInteger expectedCount = 3;
-  EXPECT_EQ(expectedCount, controller.items.size());
-  EXPECT_EQ(replacePageGurl1, replacedItem->GetURL());
-  EXPECT_FALSE(replacedItem->IsCreatedFromPushState());
-  EXPECT_NSEQ(stateObject1, replacedItem->GetSerializedStateObject());
-  EXPECT_EQ(GURL("http://www.starturl.com/"), replacedItem->GetReferrer().url);
-
-  // Replace current item and check size and fields again.
-  GURL replacePageGurl2("http://www.firstpage.com/#replace2");
-  [controller updateCurrentItemWithURL:replacePageGurl2 stateObject:nil];
-  replacedItem = [controller currentItem];
-  EXPECT_EQ(expectedCount, controller.items.size());
-  EXPECT_EQ(replacePageGurl2, replacedItem->GetURL());
-  EXPECT_FALSE(replacedItem->IsCreatedFromPushState());
-  EXPECT_NSEQ(nil, replacedItem->GetSerializedStateObject());
-  EXPECT_EQ(GURL("http://www.starturl.com/"), replacedItem->GetReferrer().url);
-}
-
 TEST_F(CRWSessionControllerTest, TestBackwardForwardItems) {
   [session_controller_
                addPendingItem:GURL("http://www.example.com/0")
