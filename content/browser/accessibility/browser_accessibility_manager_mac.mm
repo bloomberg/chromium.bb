@@ -94,8 +94,6 @@ NSString* const NSAccessibilityTextSelectionGranularity =
     @"AXTextSelectionGranularity";
 NSString* const NSAccessibilityTextSelectionChangedFocus =
     @"AXTextSelectionChangedFocus";
-NSString* const NSAccessibilitySelectedTextMarkerRangeAttribute =
-    @"AXSelectedTextMarkerRange";
 NSString* const NSAccessibilityTextChangeElement = @"AXTextChangeElement";
 NSString* const NSAccessibilityTextEditType = @"AXTextEditType";
 NSString* const NSAccessibilityTextChangeValue = @"AXTextChangeValue";
@@ -443,6 +441,8 @@ NSDictionary* BrowserAccessibilityManagerMac::
 
       id selected_text = [native_focus_object selectedTextMarkerRange];
       if (selected_text) {
+        NSString* const NSAccessibilitySelectedTextMarkerRangeAttribute =
+            @"AXSelectedTextMarkerRange";
         [user_info setObject:selected_text
                       forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];
       }
