@@ -41,6 +41,7 @@ import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
 import org.chromium.chromoting.jni.JniInterface;
+import org.chromium.chromoting.jni.JniOAuthTokenGetter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -620,6 +621,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             mAccountSwitcher.getView().announceForAccessibility(logInAnnouncement);
         }
         mAccount = accountName;
+        JniOAuthTokenGetter.setAccount(accountName);
         JniInterface.setAccountForLogging(accountName);
 
         // The current host list is no longer valid for the new account, so clear the list.
