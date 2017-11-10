@@ -138,10 +138,12 @@ bool WebrtcFrameSchedulerSimple::OnFrameCaptured(
     }
   }
 
+  params_out->duration = (now - latest_frame_encode_start_time_);
+  params_out->fps = processing_time_estimator_.EstimatedFrameRate();
+
   latest_frame_encode_start_time_ = now;
 
   params_out->bitrate_kbps = pacing_bucket_.rate() * 8 / 1000;
-  params_out->duration = kTargetFrameInterval;
   params_out->key_frame = key_frame_request_;
   key_frame_request_ = false;
 

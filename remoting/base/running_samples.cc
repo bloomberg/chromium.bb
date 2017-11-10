@@ -26,7 +26,7 @@ void RunningSamples::Record(int64_t value) {
   sum_ += value;
 
   if (data_points_.size() > window_size_) {
-    sum_ -= data_points_[0];
+    sum_ -= data_points_.front();
     data_points_.pop_front();
   }
 }
