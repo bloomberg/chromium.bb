@@ -15,8 +15,8 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/test_helpers.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
-#include "media/gpu/android/fake_android_video_surface_chooser.h"
 #include "media/gpu/android/fake_codec_allocator.h"
+#include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
 #include "media/gpu/android/mock_surface_texture_gl_owner.h"
 #include "media/gpu/android/video_frame_factory.h"
@@ -126,7 +126,8 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   }
 
   void CreateMcvd() {
-    auto surface_chooser = base::MakeUnique<NiceMock<FakeSurfaceChooser>>();
+    auto surface_chooser =
+        base::MakeUnique<NiceMock<MockAndroidVideoSurfaceChooser>>();
     surface_chooser_ = surface_chooser.get();
 
     auto surface_texture =
@@ -220,7 +221,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
   std::unique_ptr<MockDeviceInfo> device_info_;
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;
-  FakeSurfaceChooser* surface_chooser_;
+  MockAndroidVideoSurfaceChooser* surface_chooser_;
   MockSurfaceTextureGLOwner* surface_texture_;
   MockVideoFrameFactory* video_frame_factory_;
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;

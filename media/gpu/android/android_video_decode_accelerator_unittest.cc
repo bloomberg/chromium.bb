@@ -26,8 +26,8 @@
 #include "media/gpu/android/android_video_decode_accelerator.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
-#include "media/gpu/android/fake_android_video_surface_chooser.h"
 #include "media/gpu/android/fake_codec_allocator.h"
+#include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
@@ -101,7 +101,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
 
     chooser_that_is_usually_null_ =
-        base::MakeUnique<NiceMock<FakeSurfaceChooser>>();
+        base::MakeUnique<NiceMock<MockAndroidVideoSurfaceChooser>>();
     chooser_ = chooser_that_is_usually_null_.get();
 
     // By default, allow deferred init.
@@ -206,8 +206,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;
 
   // Only set until InitializeAVDA() is called.
-  std::unique_ptr<FakeSurfaceChooser> chooser_that_is_usually_null_;
-  FakeSurfaceChooser* chooser_;
+  std::unique_ptr<MockAndroidVideoSurfaceChooser> chooser_that_is_usually_null_;
+  MockAndroidVideoSurfaceChooser* chooser_;
   VideoDecodeAccelerator::Config config_;
   std::unique_ptr<MockDeviceInfo> device_info_;
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/gpu/android/fake_android_video_surface_chooser.h"
+#include "media/gpu/android/mock_android_video_surface_chooser.h"
 
 namespace media {
 
-FakeSurfaceChooser::FakeSurfaceChooser() = default;
-FakeSurfaceChooser::~FakeSurfaceChooser() = default;
+MockAndroidVideoSurfaceChooser::MockAndroidVideoSurfaceChooser() = default;
+MockAndroidVideoSurfaceChooser::~MockAndroidVideoSurfaceChooser() = default;
 
-void FakeSurfaceChooser::SetClientCallbacks(
+void MockAndroidVideoSurfaceChooser::SetClientCallbacks(
     UseOverlayCB use_overlay_cb,
     UseSurfaceTextureCB use_surface_texture_cb) {
   MockSetClientCallbacks();
@@ -17,7 +17,7 @@ void FakeSurfaceChooser::SetClientCallbacks(
   use_surface_texture_cb_ = std::move(use_surface_texture_cb);
 }
 
-void FakeSurfaceChooser::UpdateState(
+void MockAndroidVideoSurfaceChooser::UpdateState(
     base::Optional<AndroidOverlayFactoryCB> factory,
     const State& new_state) {
   MockUpdateState();
@@ -28,11 +28,11 @@ void FakeSurfaceChooser::UpdateState(
   current_state_ = new_state;
 }
 
-void FakeSurfaceChooser::ProvideSurfaceTexture() {
+void MockAndroidVideoSurfaceChooser::ProvideSurfaceTexture() {
   use_surface_texture_cb_.Run();
 }
 
-void FakeSurfaceChooser::ProvideOverlay(
+void MockAndroidVideoSurfaceChooser::ProvideOverlay(
     std::unique_ptr<AndroidOverlay> overlay) {
   use_overlay_cb_.Run(std::move(overlay));
 }

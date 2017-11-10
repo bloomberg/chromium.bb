@@ -69,11 +69,6 @@ enum { kNumPictureBuffers = limits::kMaxVideoFrames + 1 };
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 
-// Number of frames to defer overlays for when entering fullscreen.  This lets
-// blink relayout settle down a bit.  If overlay positions were synchronous,
-// then we wouldn't need this.
-enum { kFrameDelayForFullscreenLayout = 15 };
-
 // MediaCodec is only guaranteed to support baseline, but some devices may
 // support others. Advertise support for all H264 profiles and let the
 // MediaCodec fail when decoding if it's not actually supported. It's assumed
@@ -117,13 +112,6 @@ constexpr base::TimeDelta DecodePollDelay =
 constexpr base::TimeDelta NoWaitTimeOut = base::TimeDelta::FromMicroseconds(0);
 
 constexpr base::TimeDelta IdleTimerTimeOut = base::TimeDelta::FromSeconds(1);
-
-// How often do we let the surface chooser try for an overlay?  While we'll
-// retry if some relevant state changes on our side (e.g., fullscreen state),
-// there's plenty of state that we don't know about (e.g., power efficiency,
-// memory pressure => cancelling an old overlay, etc.).  We just let the chooser
-// retry every once in a while for those things.
-constexpr base::TimeDelta RetryChooserTimeout = base::TimeDelta::FromSeconds(5);
 
 // On low end devices (< KitKat is always low-end due to buggy MediaCodec),
 // defer the surface creation until the codec is actually used if we know no
@@ -261,12 +249,10 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
-      surface_chooser_(std::move(surface_chooser)),
+      surface_chooser_helper_(std::move(surface_chooser)),
       device_info_(device_info),
       force_defer_surface_creation_for_testing_(false),
       overlay_factory_cb_(overlay_factory_cb),
-      promotion_hint_aggregator_(
-          base::MakeUnique<PromotionHintAggregatorImpl>()),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -372,12 +358,12 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // be marked as required.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceVideoOverlays)) {
-    surface_chooser_state_.is_required = is_overlay_required_ = true;
+    surface_chooser_helper_.SetIsOverlayRequired(true);
   }
 
   // If we're trying for fullscreen-div cases, then we should promote more.
-  surface_chooser_state_.promote_aggressively =
-      base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively);
+  surface_chooser_helper_.SetPromoteAggressively(
+      base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively));
 
   // For encrypted media, start by initializing the CDM.  Otherwise, start with
   // the surface.
@@ -407,9 +393,9 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
     return;
   }
 
-  surface_chooser_state_.is_fullscreen = config_.overlay_info.is_fullscreen;
+  surface_chooser_helper_.SetIsFullscreen(config_.overlay_info.is_fullscreen);
 
-  surface_chooser_->SetClientCallbacks(
+  surface_chooser_helper_.chooser()->SetClientCallbacks(
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
                  weak_this_factory_.GetWeakPtr()),
       base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
@@ -457,7 +443,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // the synchronous case.  It will be soon, though.  For pre-M, we rely on the
   // fact that |surface_chooser_| won't tell us to use a SurfaceTexture while
   // waiting for an overlay to become ready, for example.
-  surface_chooser_->UpdateState(std::move(factory), surface_chooser_state_);
+  surface_chooser_helper_.UpdateChooserState(std::move(factory));
 }
 
 void AndroidVideoDecodeAccelerator::OnSurfaceTransition(
@@ -931,7 +917,9 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   // Record the frame type that we're sending and some information about why.
   UMA_HISTOGRAM_ENUMERATION(
       "Media.AVDA.FrameInformation", cached_frame_information_,
-      static_cast<int>(FrameInformation::FRAME_INFORMATION_MAX) + 1);
+      static_cast<int>(
+          SurfaceChooserHelper::FrameInformation::FRAME_INFORMATION_MAX) +
+          1);  // PRESUBMIT_IGNORE_UMA_MAX
 
   // We unconditionally mark the picture as overlayable, even if
   // |!allow_overlay|, if we want to get hints.  It's required, else we won't
@@ -1310,20 +1298,8 @@ void AndroidVideoDecodeAccelerator::SetOverlayInfo(
   if (state_ == BEFORE_OVERLAY_INIT)
     return;
 
-  if (overlay_info.is_fullscreen && !surface_chooser_state_.is_fullscreen) {
-    // It would be nice if we could just delay until we get a hint from an
-    // overlay that's "in fullscreen" in the sense that the CompositorFrame it
-    // came from had some flag set to indicate that the renderer was in
-    // fullscreen mode when it was generated.  However, even that's hard, since
-    // there's no real connection between "renderer finds out about fullscreen"
-    // and "blink has completed layouts for it".  The latter is what we really
-    // want to know.
-    surface_chooser_state_.is_expecting_relayout = true;
-    hints_until_clear_relayout_flag_ = kFrameDelayForFullscreenLayout;
-  }
-
   // Notify the chooser about the fullscreen state.
-  surface_chooser_state_.is_fullscreen = overlay_info.is_fullscreen;
+  surface_chooser_helper_.SetIsFullscreen(overlay_info.is_fullscreen);
 
   // Note that these might be kNoSurfaceID / empty.  In that case, we will
   // revoke the factory.
@@ -1342,7 +1318,7 @@ void AndroidVideoDecodeAccelerator::SetOverlayInfo(
       new_factory = base::Bind(&ContentVideoViewOverlay::Create, surface_id);
   }
 
-  surface_chooser_->UpdateState(new_factory, surface_chooser_state_);
+  surface_chooser_helper_.UpdateChooserState(new_factory);
 }
 
 void AndroidVideoDecodeAccelerator::Destroy() {
@@ -1534,9 +1510,10 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
   // to SurfaceTexture rather than fail composition.  For L1, it's required.
   // It's also required if the command line says so.
-  surface_chooser_state_.is_secure = true;
-  surface_chooser_state_.is_required =
-      requires_secure_video_codec || is_overlay_required_;
+  surface_chooser_helper_.SetSecureSurfaceMode(
+      requires_secure_video_codec
+          ? SurfaceChooserHelper::SecureSurfaceMode::kRequired
+          : SurfaceChooserHelper::SecureSurfaceMode::kRequested);
 
   // After receiving |media_crypto_| we can start with surface creation.
   StartSurfaceChooser();
@@ -1611,47 +1588,10 @@ AndroidVideoDecodeAccelerator::GetPromotionHintCB() {
 
 void AndroidVideoDecodeAccelerator::NotifyPromotionHint(
     PromotionHintAggregator::Hint hint) {
-  bool update_state = false;
-
-  promotion_hint_aggregator_->NotifyPromotionHint(hint);
-
-  // If we're expecting a full screen relayout, then also use this hint as a
-  // notification that another frame has happened.
-  if (hints_until_clear_relayout_flag_ > 0) {
-    hints_until_clear_relayout_flag_--;
-    if (hints_until_clear_relayout_flag_ == 0) {
-      surface_chooser_state_.is_expecting_relayout = false;
-      update_state = true;
-    }
-  }
-
-  surface_chooser_state_.initial_position = hint.screen_rect;
-  bool promotable = promotion_hint_aggregator_->IsSafeToPromote();
-  if (promotable != surface_chooser_state_.is_compositor_promotable) {
-    surface_chooser_state_.is_compositor_promotable = promotable;
-    update_state = true;
-  }
-
-  // If we've been provided with enough new frames, then update the state even
-  // if it hasn't changed.  This lets |surface_chooser_| retry for an overlay.
-  // It's especially helpful for power-efficient overlays, since we don't know
-  // when an overlay becomes power efficient.  It also helps retry any failure
-  // that's not accompanied by a state change, such as if android destroys the
-  // overlay asynchronously for a transient reason.
-  //
-  // If we're already using an overlay, then there's no need to do this.
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (codec_config_->surface_bundle &&
-      !codec_config_->surface_bundle->overlay &&
-      now - most_recent_chooser_retry_ >= RetryChooserTimeout) {
-    update_state = true;
-  }
-
-  if (update_state) {
-    most_recent_chooser_retry_ = now;
-    surface_chooser_->UpdateState(base::Optional<AndroidOverlayFactoryCB>(),
-                                  surface_chooser_state_);
-  }
+  bool is_using_overlay =
+      codec_config_->surface_bundle && codec_config_->surface_bundle->overlay;
+  surface_chooser_helper_.NotifyPromotionHintAndUpdateChooser(hint,
+                                                              is_using_overlay);
 }
 
 void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
@@ -1826,27 +1766,11 @@ void AndroidVideoDecodeAccelerator::ReleaseCodecAndBundle() {
 }
 
 void AndroidVideoDecodeAccelerator::CacheFrameInformation() {
-  if (!codec_config_->surface_bundle ||
-      !codec_config_->surface_bundle->overlay) {
-    // Not an overlay.
-    cached_frame_information_ = surface_chooser_state_.is_secure
-                                    ? FrameInformation::SURFACETEXTURE_L3
-                                    : FrameInformation::SURFACETEXTURE_INSECURE;
-    return;
-  }
-
-  // Overlay.
-  if (surface_chooser_state_.is_secure) {
-    cached_frame_information_ = surface_chooser_state_.is_required
-                                    ? FrameInformation::OVERLAY_L1
-                                    : FrameInformation::OVERLAY_L3;
-    return;
-  }
+  bool is_using_overlay =
+      codec_config_->surface_bundle && codec_config_->surface_bundle->overlay;
 
   cached_frame_information_ =
-      surface_chooser_state_.is_fullscreen
-          ? FrameInformation::OVERLAY_INSECURE_PLAYER_ELEMENT_FULLSCREEN
-          : FrameInformation::OVERLAY_INSECURE_NON_PLAYER_ELEMENT_FULLSCREEN;
+      surface_chooser_helper_.ComputeFrameInformation(is_using_overlay);
 }
 
 }  // namespace media

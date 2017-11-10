@@ -53,6 +53,8 @@ void AndroidVideoSurfaceChooserImpl::UpdateState(
     if (!initial_state_received_) {
       initial_state_received_ = true;
       // Choose here so that Choose() doesn't have to handle non-dynamic.
+      // Note that we ignore |is_expecting_relayout| here, since it's transient.
+      // We don't want to pick SurfaceTexture permanently for that.
       if (overlay_factory_ &&
           (current_state_.is_fullscreen || current_state_.is_secure ||
            current_state_.is_required)) {
