@@ -36,6 +36,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -982,16 +983,19 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
   html_source->AddBoolean("networkSettingsConfig",
                           base::CommandLine::ForCurrentProcess()->HasSwitch(
                               chromeos::switches::kNetworkSettingsConfig));
-  html_source->AddString(
-      "internetNoNetworksMobileData",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_INTERNET_NO_NETWORKS_MOBILE_DATA,
-          base::ASCIIToUTF16(chrome::kInstantTetheringLearnMoreURL)));
   html_source->AddString("networkGoogleNameserversLearnMoreUrl",
                          chrome::kGoogleNameserversLearnMoreURL);
+
+  std::string tether_learn_more_url(chrome::kInstantTetheringLearnMoreURL);
+  tether_learn_more_url += "&b=" + base::SysInfo::GetLsbReleaseBoard();
+  html_source->AddString(
+      "internetNoNetworksMobileData",
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_INTERNET_NO_NETWORKS_MOBILE_DATA,
+                                 base::ASCIIToUTF16(tether_learn_more_url)));
 }
 #endif
 
