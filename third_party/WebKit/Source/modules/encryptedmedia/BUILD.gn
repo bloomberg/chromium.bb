@@ -28,8 +28,6 @@ blink_modules_sources("encryptedmedia") {
     "MediaKeysController.h",
     "MediaKeysGetStatusForPolicy.cpp",
     "MediaKeysGetStatusForPolicy.h",
-    "MediaKeysPolicy.cpp",
-    "MediaKeysPolicy.h",
     "NavigatorRequestMediaKeySystemAccess.cpp",
     "NavigatorRequestMediaKeySystemAccess.h",
   ]

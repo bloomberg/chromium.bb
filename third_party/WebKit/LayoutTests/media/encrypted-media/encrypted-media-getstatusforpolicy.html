@@ -10,51 +10,48 @@
         <script>
             promise_test(function(test)
             {
-                var hdcpVersionNone = "";
-                var hdcpVersion2_0 = "hdcp-2.0";
+                var hdcpVersionNone = '';
+                var hdcpVersion2_0 = 'hdcp-2.0';
                 var mediaKeys;
 
-                function checkMediaKeysPolicyConstruction() {
-                  var policy = new MediaKeysPolicy({minHdcpVersion: hdcpVersionNone});
-                  assert_equals(policy.minHdcpVersion, hdcpVersionNone);
-
-                  policy = new MediaKeysPolicy({minHdcpVersion: hdcpVersion2_0});
-                  assert_equals(policy.minHdcpVersion, hdcpVersion2_0);
-
-                  policy = new MediaKeysPolicy({minHdcpVersion: hdcpVersion2_0, foo: "bar"});
-                  assert_equals(policy.minHdcpVersion, hdcpVersion2_0);
-                  assert_false('foo' in policy);
-
-                  policy = new MediaKeysPolicy({foo: "bar"});
-                  assert_equals(policy.minHdcpVersion, hdcpVersionNone);
-                  assert_false('foo' in policy);
-
-                  return Promise.resolve();
-                }
-
-                function getStatusForHdcpPolicy(hdcpVersion)
+                // Calls getStatusForPolicy() with |hdcpVersion| and expects it
+                // to fail. If |expectedError| is specified, the resulting
+                // error must match. If |expectedError| not specified, the
+                // resulting error must be a NotSupportedError exception.
+                function getStatusForHdcpPolicy(hdcpVersion, expectedError)
                 {
-                    var policy = new MediaKeysPolicy({minHdcpVersion: hdcpVersion});
-                    mediaKeys.getStatusForPolicy(policy).then(function(MediaKeyStatus) {
-                      // getStatusForPolicy() is not supported by Clear Key key
-                      // system and the promise should always be rejected with
-                      // NotSupportedError.
-                      return Promise.reject("Promise resolved unexpectedly");
+                    return mediaKeys.getStatusForPolicy(hdcpVersion).then(function(MediaKeyStatus) {
+                        // getStatusForPolicy() is not supported by Clear Key
+                        // key system and the promise should always be rejected.
+                        return Promise.reject('Promise resolved unexpectedly');
                     }, function(error) {
-                      assert_equals(error.name, "NotSupportedError");
-                      return Promise.resolve();
+                        if (expectedError === undefined) {
+                            assert_equals(error.name, 'NotSupportedError');
+                        } else {
+                            assert_equals(error, expectedError);
+                        }
+                        return Promise.resolve();
                     });
-                }
+                };
 
                 return navigator.requestMediaKeySystemAccess('org.w3.clearkey', getSimpleConfiguration()).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;
-                    return checkMediaKeysPolicyConstruction();
+                    return getStatusForHdcpPolicy({});
                 }).then(function() {
-                    return getStatusForHdcpPolicy(hdcpVersionNone);
+                    return getStatusForHdcpPolicy({minHdcpVersion: hdcpVersionNone});
                 }).then(function() {
-                    return getStatusForHdcpPolicy(hdcpVersion2_0);
+                    return getStatusForHdcpPolicy({minHdcpVersion: hdcpVersion2_0});
+                }).then(function() {
+                    return getStatusForHdcpPolicy({foo: 'bar'});
+                }).then(function() {
+                    return getStatusForHdcpPolicy(
+                        { get minHdcpVersion() { return hdcpVersion2_0; } });
+                }).then(function() {
+                    return getStatusForHdcpPolicy(
+                        { get minHdcpVersion() { throw 'throwing getter'; } },
+                        'throwing getter');
                 });
             }, 'MediaKeys.getStatusForPolicy');
         </script>
