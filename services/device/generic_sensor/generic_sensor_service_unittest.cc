@@ -177,13 +177,6 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
 
   void SetUpOnIOThread() {
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
-    // Default
-    ON_CALL(*fake_platform_sensor_provider_, DoCreateSensorInternal(_, _, _))
-        .WillByDefault(Invoke(
-            [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
-               const PlatformSensorProvider::CreateSensorCallback& callback) {
-              callback.Run(std::move(sensor));
-            }));
     PlatformSensorProvider::SetProviderForTesting(
         fake_platform_sensor_provider_);
     io_loop_finished_event_.Signal();

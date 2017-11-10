@@ -20,6 +20,7 @@
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Return;
 
 namespace device {
 
@@ -32,31 +33,20 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
     PlatformSensorProvider::SetProviderForTesting(provider_.get());
   }
 
-  void SetUp() override {
-    DeviceServiceTestBase::SetUp();
-    // Default
-    ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-        .WillByDefault(Invoke(
-            [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
-               const PlatformSensorProvider::CreateSensorCallback& callback) {
-              callback.Run(std::move(sensor));
-            }));
-  }
-
  protected:
   void AccelerometerCallback(scoped_refptr<PlatformSensor> sensor) {
     accelerometer_callback_called_ = true;
-    accelerometer_ = std::move(sensor);
+    accelerometer_ = static_cast<FakePlatformSensor*>(sensor.get());
   }
 
   void MagnetometerCallback(scoped_refptr<PlatformSensor> sensor) {
     magnetometer_callback_called_ = true;
-    magnetometer_ = std::move(sensor);
+    magnetometer_ = static_cast<FakePlatformSensor*>(sensor.get());
   }
 
   void PlatformSensorFusionCallback(scoped_refptr<PlatformSensor> sensor) {
     platform_sensor_fusion_callback_called_ = true;
-    fusion_sensor_ = std::move(sensor);
+    fusion_sensor_ = static_cast<PlatformSensorFusion*>(sensor.get());
   }
 
   void CreateAccelerometer() {
@@ -78,36 +68,35 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
   }
 
   void CreateLinearAccelerationFusionSensor() {
-    auto callback =
-        base::Bind(&PlatformSensorFusionTest::PlatformSensorFusionCallback,
-                   base::Unretained(this));
     auto fusion_algorithm =
         base::MakeUnique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
-    PlatformSensorFusion::Create(
-        provider_->GetMapping(SensorType::LINEAR_ACCELERATION), provider_.get(),
-        std::move(fusion_algorithm), callback);
-    EXPECT_TRUE(platform_sensor_fusion_callback_called_);
+    CreateFusionSensor(std::move(fusion_algorithm));
   }
 
   void CreateAbsoluteOrientationEulerAnglesFusionSensor() {
+    auto fusion_algorithm = base::MakeUnique<
+        AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
+    CreateFusionSensor(std::move(fusion_algorithm));
+  }
+
+  void CreateFusionSensor(
+      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm) {
     auto callback =
         base::Bind(&PlatformSensorFusionTest::PlatformSensorFusionCallback,
                    base::Unretained(this));
-    auto fusion_algorithm = base::MakeUnique<
-        AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
-    PlatformSensorFusion::Create(
-        provider_->GetMapping(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES),
-        provider_.get(), std::move(fusion_algorithm), callback);
+    SensorType type = fusion_algorithm->fused_type();
+    PlatformSensorFusion::Create(provider_->GetMapping(type), provider_.get(),
+                                 std::move(fusion_algorithm), callback);
     EXPECT_TRUE(platform_sensor_fusion_callback_called_);
   }
 
   std::unique_ptr<FakePlatformSensorProvider> provider_;
   bool accelerometer_callback_called_ = false;
-  scoped_refptr<PlatformSensor> accelerometer_;
+  scoped_refptr<FakePlatformSensor> accelerometer_;
   bool magnetometer_callback_called_ = false;
-  scoped_refptr<PlatformSensor> magnetometer_;
+  scoped_refptr<FakePlatformSensor> magnetometer_;
   bool platform_sensor_fusion_callback_called_ = false;
-  scoped_refptr<PlatformSensor> fusion_sensor_;
+  scoped_refptr<PlatformSensorFusion> fusion_sensor_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorFusionTest);
@@ -129,15 +118,13 @@ TEST_F(PlatformSensorFusionTest, SourceSensorAlreadyExists) {
 
 TEST_F(PlatformSensorFusionTest, SourceSensorWorksSeparately) {
   CreateAccelerometer();
-  scoped_refptr<PlatformSensor> accel =
-      provider_->GetSensor(SensorType::ACCELEROMETER);
-  EXPECT_TRUE(accel);
-  EXPECT_FALSE(accel->IsActiveForTesting());
+  EXPECT_TRUE(accelerometer_);
+  EXPECT_FALSE(accelerometer_->IsActiveForTesting());
 
   auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>();
-  accel->AddClient(client.get());
-  accel->StartListening(client.get(), PlatformSensorConfiguration(10));
-  EXPECT_TRUE(accel->IsActiveForTesting());
+  accelerometer_->AddClient(client.get());
+  accelerometer_->StartListening(client.get(), PlatformSensorConfiguration(10));
+  EXPECT_TRUE(accelerometer_->IsActiveForTesting());
 
   CreateLinearAccelerationFusionSensor();
   EXPECT_TRUE(fusion_sensor_);
@@ -151,12 +138,85 @@ TEST_F(PlatformSensorFusionTest, SourceSensorWorksSeparately) {
   fusion_sensor_->StopListening(client.get(), PlatformSensorConfiguration(10));
   EXPECT_FALSE(fusion_sensor_->IsActiveForTesting());
 
-  EXPECT_TRUE(accel->IsActiveForTesting());
+  EXPECT_TRUE(accelerometer_->IsActiveForTesting());
 
-  accel->RemoveClient(client.get());
-  EXPECT_FALSE(accel->IsActiveForTesting());
+  accelerometer_->RemoveClient(client.get());
+  EXPECT_FALSE(accelerometer_->IsActiveForTesting());
 
   fusion_sensor_->RemoveClient(client.get());
+}
+
+namespace {
+
+void CheckConfigsCountForClient(const scoped_refptr<PlatformSensor>& sensor,
+                                PlatformSensor::Client* client,
+                                size_t expected_count) {
+  auto client_entry = sensor->GetConfigMapForTesting().find(client);
+  if (sensor->GetConfigMapForTesting().end() == client_entry) {
+    EXPECT_EQ(0u, expected_count);
+    return;
+  }
+  EXPECT_EQ(expected_count, client_entry->second.size());
+}
+
+}  // namespace
+
+TEST_F(PlatformSensorFusionTest, SourceSensorDoesNotKeepOutdatedConfigs) {
+  CreateAccelerometer();
+  EXPECT_TRUE(accelerometer_);
+
+  CreateLinearAccelerationFusionSensor();
+  EXPECT_TRUE(fusion_sensor_);
+  EXPECT_EQ(SensorType::LINEAR_ACCELERATION, fusion_sensor_->GetType());
+
+  auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>(
+      fusion_sensor_);
+  fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(10));
+  fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(20));
+  fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(30));
+
+  EXPECT_EQ(1u, fusion_sensor_->GetConfigMapForTesting().size());
+  EXPECT_EQ(1u, accelerometer_->GetConfigMapForTesting().size());
+
+  CheckConfigsCountForClient(fusion_sensor_, client.get(), 3u);
+  // Fusion sensor is a client for its sources, however it must keep only
+  // one active configuration for them at a time.
+  CheckConfigsCountForClient(accelerometer_, fusion_sensor_.get(), 1u);
+
+  fusion_sensor_->StopListening(client.get(), PlatformSensorConfiguration(30));
+  fusion_sensor_->StopListening(client.get(), PlatformSensorConfiguration(20));
+
+  CheckConfigsCountForClient(fusion_sensor_, client.get(), 1u);
+  CheckConfigsCountForClient(accelerometer_, fusion_sensor_.get(), 1u);
+
+  fusion_sensor_->StopListening(client.get(), PlatformSensorConfiguration(10));
+
+  CheckConfigsCountForClient(fusion_sensor_, client.get(), 0u);
+  CheckConfigsCountForClient(accelerometer_, fusion_sensor_.get(), 0u);
+}
+
+TEST_F(PlatformSensorFusionTest, AllSourceSensorsStoppedOnSingleSourceFailure) {
+  CreateAccelerometer();
+  EXPECT_TRUE(accelerometer_);
+
+  CreateMagnetometer();
+  EXPECT_TRUE(magnetometer_);
+  // Magnetometer will be started after Accelerometer for the given
+  // sensor fusion algorithm.
+  ON_CALL(*magnetometer_, StartSensor(_)).WillByDefault(Return(false));
+
+  CreateAbsoluteOrientationEulerAnglesFusionSensor();
+  EXPECT_TRUE(fusion_sensor_);
+  EXPECT_EQ(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
+            fusion_sensor_->GetType());
+
+  auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>(
+      fusion_sensor_);
+  fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(10));
+
+  EXPECT_FALSE(fusion_sensor_->IsActiveForTesting());
+  EXPECT_FALSE(accelerometer_->IsActiveForTesting());
+  EXPECT_FALSE(magnetometer_->IsActiveForTesting());
 }
 
 TEST_F(PlatformSensorFusionTest, SourceSensorNeedsToBeCreated) {
