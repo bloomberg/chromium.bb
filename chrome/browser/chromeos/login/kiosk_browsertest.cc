@@ -1654,7 +1654,9 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_LaunchOfflineEnabledAppNoUpdate) {
                        std::string(kTestOfflineEnabledKioskApp) + "_v1.crx");
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+// Test is flaky in debug builds: https://crbug.com/783903.
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       DISABLED_LaunchOfflineEnabledAppNoUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
   fake_cws()->SetNoUpdate(test_app_id());
 
