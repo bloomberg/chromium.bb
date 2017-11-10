@@ -464,6 +464,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     invalidator_id.SetValue(full_status.invalidator_client_id);
   if (service->signin())
     username.SetValue(service->signin()->GetAuthenticatedAccountInfo().email);
+  else
+    username.SetValue(std::string());
 
   const SyncService::SyncTokenStatus& token_status =
       service->GetSyncTokenStatus();
