@@ -281,4 +281,37 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
   EXPECT_TRUE(budget_expired_);
 }
 
+TEST_F(VirtualTimeControllerTest, MultipleTasks) {
+  MockTask task1;
+  MockTask task2;
+  controller_->ScheduleRepeatingTask(&task1, 1000);
+  controller_->ScheduleRepeatingTask(&task2, 1000);
+
+  EXPECT_CALL(task1,
+              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 2000, _))
+      .WillOnce(RunClosure<2>());
+  EXPECT_CALL(task2,
+              BudgetRequested(base::TimeDelta::FromMilliseconds(0), 2000, _))
+      .WillOnce(RunClosure<2>());
+  // We should only get one call to Emulation.setVirtualTimePolicy despite
+  // having two tasks.
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":1000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
+      .WillOnce(Return(true));
+
+  GrantVirtualTimeBudget(2000);
+  EXPECT_FALSE(set_up_complete_);
+  EXPECT_FALSE(budget_expired_);
+
+  client_.DispatchProtocolMessage(mock_host_.get(), "{\"id\":0,\"result\":{}}");
+
+  EXPECT_TRUE(set_up_complete_);
+  EXPECT_FALSE(budget_expired_);
+}
+
 }  // namespace headless
