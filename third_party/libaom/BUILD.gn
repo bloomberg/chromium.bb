@@ -13,9 +13,7 @@ import("//third_party/yasm/yasm_assemble.gni")
 buildflag_header("av1_features") {
   header = "av1_features.h"
 
-  flags = [
-    "ENABLE_AV1_DECODER=$enable_av1_decoder",
-  ]
+  flags = [ "ENABLE_AV1_DECODER=$enable_av1_decoder" ]
 }
 
 # Sets the architecture name for building libaom.

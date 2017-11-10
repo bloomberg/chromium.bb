@@ -322,8 +322,8 @@ gen_config_files linux/x64 "--target=x86_64-linux-gcc ${all_platforms} ${x86_pla
 #gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 #gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
 #gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
-#gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
-#gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
+gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
+gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
 #gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
 #gen_config_files mac/x64 "--target=x86_64-darwin9-gcc ${all_platforms} ${x86_platforms}"
 #gen_config_files ios/arm-neon "--target=armv7-linux-gcc ${all_platforms}"
@@ -344,8 +344,8 @@ lint_config linux/x64
 #lint_config linux/mipsel
 #lint_config linux/mips64el
 #lint_config linux/generic
-#lint_config win/ia32
-#lint_config win/x64
+lint_config win/ia32
+lint_config win/x64
 #lint_config mac/ia32
 #lint_config mac/x64
 #lint_config ios/arm-neon
@@ -367,8 +367,8 @@ gen_rtcd_header linux/x64 x86_64
 #gen_rtcd_header linux/mipsel mipsel
 #gen_rtcd_header linux/mips64el mips64el
 #gen_rtcd_header linux/generic generic
-#gen_rtcd_header win/ia32 x86
-#gen_rtcd_header win/x64 x86_64
+gen_rtcd_header win/ia32 x86
+gen_rtcd_header win/x64 x86_64
 #gen_rtcd_header mac/ia32 x86
 #gen_rtcd_header mac/x64 x86_64
 #gen_rtcd_header ios/arm-neon armv7
