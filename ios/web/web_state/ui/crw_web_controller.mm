@@ -2918,11 +2918,19 @@ registerLoadRequestForURL:(const GURL&)requestURL
        error.code == web::kWebKitErrorCannotShowUrl))
     return;
 
+  if (error.code == NSURLErrorCancelled) {
+    [self handleCancelledError:error];
+    // NSURLErrorCancelled errors that aren't handled by aborting the load will
+    // automatically be retried by the web view, so early return in this case.
+    return;
+  }
+
   // Reset SSL status to default, unless the load was cancelled (manually or by
   // back-forward navigation).
   web::NavigationManager* navManager = self.webState->GetNavigationManager();
-  if (navManager->GetLastCommittedItem() && [error code] != NSURLErrorCancelled)
-    navManager->GetLastCommittedItem()->GetSSL() = web::SSLStatus();
+  web::NavigationItem* lastCommittedItem = navManager->GetLastCommittedItem();
+  if (lastCommittedItem)
+    lastCommittedItem->GetSSL() = web::SSLStatus();
 
   NSURL* errorURL =
       [NSURL URLWithString:error.userInfo[NSURLErrorFailingURLStringErrorKey]];
@@ -2969,13 +2977,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self loadCompleteWithSuccess:NO forNavigation:navigation];
     [self loadErrorInNativeView:wrapperError
               navigationContext:navigationContext];
-    return;
-  }
-
-  if ([error code] == NSURLErrorCancelled) {
-    [self handleCancelledError:error];
-    // NSURLErrorCancelled errors that aren't handled by aborting the load will
-    // automatically be retried by the web view, so early return in this case.
     return;
   }
 
