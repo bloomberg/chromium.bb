@@ -30163,6 +30163,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Network channel used for invalidations.</summary>
 </histogram>
 
+<histogram name="IOS.CanonicalURLResult" enum="CanonicalURLResult">
+  <owner>gchatz@chromium.org</owner>
+  <summary>
+    The result of the operation to retrieve the page's canonical URL.
+  </summary>
+</histogram>
+
 <histogram name="IOS.ContentExtension.DisplayCount" units="count">
   <owner>olivierrobin@chromium.org</owner>
   <summary>
