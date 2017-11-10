@@ -893,7 +893,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/ChromePreferenceManager.java",
   "java/src/org/chromium/chrome/browser/preferences/ChromeSwitchPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ClearBrowsingDataCheckBoxPreference.java",
-  "java/src/org/chromium/chrome/browser/preferences/ClearBrowsingDataTabCheckBoxPreference.java",
   "java/src/org/chromium/chrome/browser/preferences/ExpandablePreferenceGroup.java",
   "java/src/org/chromium/chrome/browser/preferences/HomepageEditor.java",
   "java/src/org/chromium/chrome/browser/preferences/HomepagePreferences.java",

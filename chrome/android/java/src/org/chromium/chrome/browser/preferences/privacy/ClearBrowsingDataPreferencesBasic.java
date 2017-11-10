@@ -11,7 +11,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
-import org.chromium.chrome.browser.preferences.ClearBrowsingDataTabCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -28,10 +28,10 @@ public class ClearBrowsingDataPreferencesBasic extends ClearBrowsingDataPreferen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ClearBrowsingDataTabCheckBoxPreference historyCheckbox =
-                (ClearBrowsingDataTabCheckBoxPreference) findPreference(PREF_HISTORY);
-        ClearBrowsingDataTabCheckBoxPreference cookiesCheckbox =
-                (ClearBrowsingDataTabCheckBoxPreference) findPreference(PREF_COOKIES);
+        ClearBrowsingDataCheckBoxPreference historyCheckbox =
+                (ClearBrowsingDataCheckBoxPreference) findPreference(PREF_HISTORY);
+        ClearBrowsingDataCheckBoxPreference cookiesCheckbox =
+                (ClearBrowsingDataCheckBoxPreference) findPreference(PREF_COOKIES);
 
         historyCheckbox.setLinkClickDelegate(() -> {
             new TabDelegate(false /* incognito */)
