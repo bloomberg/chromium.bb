@@ -5,14 +5,14 @@ Running: testIterNotStarted
 iterNotStarted: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
 [[GeneratorFunction]] = function* gen()
-{
-    yield 1;
-    yield 2;
-    yield 3;
-}
+      {
+          yield 1;
+          yield 2;
+          yield 3;
+      }
 [[GeneratorReceiver]] = Window
-lineNumber = 13
-columnNumber = 13
+lineNumber = 16
+columnNumber = 19
 script is valid: yes
 [[Scopes]] = Scopes[2]
 
@@ -20,14 +20,14 @@ Running: testIterSuspended
 iterSuspended: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
 [[GeneratorFunction]] = function* gen()
-{
-    yield 1;
-    yield 2;
-    yield 3;
-}
+      {
+          yield 1;
+          yield 2;
+          yield 3;
+      }
 [[GeneratorReceiver]] = Window
-lineNumber = 15
-columnNumber = 4
+lineNumber = 18
+columnNumber = 10
 script is valid: yes
 [[Scopes]] = Scopes[2]
 
@@ -35,42 +35,42 @@ Running: testIterClosed
 iterClosed: type = object, subtype = generator
 [[GeneratorStatus]] = closed
 [[GeneratorFunction]] = function* gen()
-{
-    yield 1;
-    yield 2;
-    yield 3;
-}
+      {
+          yield 1;
+          yield 2;
+          yield 3;
+      }
 [[GeneratorReceiver]] = Window
-lineNumber = 13
-columnNumber = 13
+lineNumber = 16
+columnNumber = 19
 script is valid: yes
 
 Running: testIterObjGenerator
 iterObjGenerator: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function*()
-    {
-        yield 11;
-        yield 12;
-        yield 13;
-    }
+[[GeneratorFunction]] = function* ()
+          {
+              yield 11;
+              yield 12;
+              yield 13;
+          }
 [[GeneratorReceiver]] = Object
-lineNumber = 24
-columnNumber = 8
+lineNumber = 27
+columnNumber = 14
 script is valid: yes
 [[Scopes]] = Scopes[2]
 
 Running: testAnonymousGenIter
 anonymousGenIter: type = object, subtype = generator
 [[GeneratorStatus]] = suspended
-[[GeneratorFunction]] = function*() {
-    yield 21;
-    yield 22;
-    yield 23;
-}
+[[GeneratorFunction]] = function* () {
+          yield 21;
+          yield 22;
+          yield 23;
+      }
 [[GeneratorReceiver]] = Window
-lineNumber = 38
-columnNumber = 4
+lineNumber = 41
+columnNumber = 10
 script is valid: yes
 [[Scopes]] = Scopes[2]
 

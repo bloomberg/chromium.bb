@@ -1,5 +1,3 @@
-CONSOLE ERROR: line 11: Uncaught ReferenceError: unknown_var is not defined
-CONSOLE ERROR: line 11: Uncaught ReferenceError: unknown_var is not defined
 Tests that certain user actions in scripts panel reveal execution line.
 
 
