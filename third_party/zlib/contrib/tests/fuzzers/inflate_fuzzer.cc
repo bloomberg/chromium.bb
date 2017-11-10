@@ -34,10 +34,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     assert(false);
   }
 
-  auto inflate_result = inflate(&stream, Z_NO_FLUSH);
+  inflate(&stream, Z_NO_FLUSH);
   inflateEnd(&stream);
-  if (Z_OK != inflate_result)
-    assert(false);
 
   return 0;
 }
