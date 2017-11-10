@@ -394,6 +394,15 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    case IDC_MINIMIZE_WINDOW:
+      browser_->window()->Minimize();
+      break;
+    case IDC_MAXIMIZE_WINDOW:
+      browser_->window()->Maximize();
+      break;
+    case IDC_RESTORE_WINDOW:
+      browser_->window()->Restore();
+      break;
     case IDC_USE_SYSTEM_TITLE_BAR: {
       PrefService* prefs = profile()->GetPrefs();
       prefs->SetBoolean(prefs::kUseCustomChromeFrame,
@@ -773,6 +782,9 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_VISIT_DESKTOP_OF_LRU_USER_3, true);
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
+  command_updater_.UpdateCommandEnabled(IDC_MAXIMIZE_WINDOW, true);
+  command_updater_.UpdateCommandEnabled(IDC_RESTORE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR, true);
 #endif
 

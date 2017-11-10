@@ -69,6 +69,7 @@
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define IDC_USE_SYSTEM_TITLE_BAR        34051
+#define IDC_RESTORE_WINDOW              34052
 #endif
 
 // Hosted app commands

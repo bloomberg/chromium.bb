@@ -78,6 +78,12 @@ void SystemMenuModelBuilder::BuildMenu(ui::SimpleMenuModel* model) {
 
 void SystemMenuModelBuilder::BuildSystemMenuForBrowserWindow(
     ui::SimpleMenuModel* model) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  model->AddItemWithStringId(IDC_MINIMIZE_WINDOW, IDS_MINIMIZE_WINDOW_MENU);
+  model->AddItemWithStringId(IDC_MAXIMIZE_WINDOW, IDS_MAXIMIZE_WINDOW_MENU);
+  model->AddItemWithStringId(IDC_RESTORE_WINDOW, IDS_RESTORE_WINDOW_MENU);
+  model->AddSeparator(ui::NORMAL_SEPARATOR);
+#endif
   model->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   model->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   if (chrome::CanOpenTaskManager()) {
@@ -88,6 +94,8 @@ void SystemMenuModelBuilder::BuildSystemMenuForBrowserWindow(
   model->AddSeparator(ui::NORMAL_SEPARATOR);
   model->AddCheckItemWithStringId(IDC_USE_SYSTEM_TITLE_BAR,
                                   IDS_SHOW_WINDOW_DECORATIONS_MENU);
+  model->AddSeparator(ui::NORMAL_SEPARATOR);
+  model->AddItemWithStringId(IDC_CLOSE_WINDOW, IDS_CLOSE_WINDOW_MENU);
 #endif
   AppendTeleportMenu(model);
   // If it's a regular browser window with tabs, we don't add any more items,
