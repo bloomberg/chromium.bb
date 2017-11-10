@@ -68,7 +68,7 @@ public enum ChromeContextMenuItem implements ContextMenuItem {
 
     // Other
     OPEN_IN_CHROME(R.drawable.context_menu_new_tab, R.string.menu_open_in_chrome,
-            R.id.menu_id_open_in_chrome),
+            R.id.contextmenu_open_in_chrome),
 
     // Browser Action Items
     BROWSER_ACTIONS_OPEN_IN_BACKGROUND(R.drawable.context_menu_new_tab,
