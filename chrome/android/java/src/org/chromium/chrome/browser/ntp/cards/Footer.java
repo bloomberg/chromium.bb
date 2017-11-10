@@ -52,7 +52,6 @@ public class Footer extends OptionalLeaf {
             NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
                 @Override
                 public void onClick(View view) {
-                    // TODO(mvanouwerkerk): Ensure this can be activated when using TalkBack.
                     navigationDelegate.navigateToHelpPage();
                 }
             };
