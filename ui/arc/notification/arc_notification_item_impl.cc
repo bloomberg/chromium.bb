@@ -107,6 +107,10 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   expand_state_ = data->expand_state;
   shown_contents_ = data->shown_contents;
 
+  notification->set_never_timeout(
+      data->remote_input_state ==
+      mojom::ArcNotificationRemoteInputState::OPENED);
+
   if (!data->snapshot_image || data->snapshot_image->isNull()) {
     snapshot_ = gfx::ImageSkia();
   } else {

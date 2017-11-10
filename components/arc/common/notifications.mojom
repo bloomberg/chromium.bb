@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 11
+// Next MinVersion: 13
 
 module arc.mojom;
 
@@ -53,6 +53,12 @@ enum ArcNotificationExpandState {
   FIXED_SIZE = 0,
   COLLAPSED = 1,
   EXPANDED = 2,
+};
+
+[Extensible, MinVersion=12]
+enum ArcNotificationRemoteInputState {
+  CLOSED = 0,
+  OPENED = 1,
 };
 
 // These values represent what shows in an ARC custom notification.
@@ -120,6 +126,8 @@ struct ArcNotificationData {
   // Flag for what shows in a notification.
   [MinVersion=11]
   ArcNotificationShownContents shown_contents;
+  [MinVersion=12]
+  ArcNotificationRemoteInputState remote_input_state;
 };
 
 [MinVersion=2]
