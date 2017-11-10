@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/display/display.h"
+#include "ui/display/unified_desktop_utils.h"
 
 namespace display {
 class DisplayLayout;
@@ -46,9 +47,14 @@ class ASH_EXPORT DisplayConfigurationController
   ~DisplayConfigurationController() override;
 
   // Sets the layout for the current displays with a fade in/out
-  // animation. Currently |display_id| is assumed to be the secondary
-  // display.  TODO(oshima/stevenjb): Support 3+ displays.
+  // animation.
   void SetDisplayLayout(std::unique_ptr<display::DisplayLayout> layout);
+
+  // This should be called instead of SetDisplayLayout() to set the display
+  // layout in the case of Unified Desktop mode. A fade in/out animation is
+  // used as well.
+  void SetUnifiedDesktopLayoutMatrix(
+      const display::UnifiedDesktopLayoutMatrix& matrix);
 
   // Sets the mirror mode with a fade-in/fade-out animation. Affects all
   // displays.
@@ -90,6 +96,8 @@ class ASH_EXPORT DisplayConfigurationController
   void SetDisplayLayoutImpl(std::unique_ptr<display::DisplayLayout> layout);
   void SetMirrorModeImpl(bool mirror);
   void SetPrimaryDisplayIdImpl(int64_t display_id);
+  void SetUnifiedDesktopLayoutMatrixImpl(
+      const display::UnifiedDesktopLayoutMatrix& matrix);
 
   // Returns the ScreenRotationAnimator associated with the |display_id|'s
   // |root_window|. If there is no existing ScreenRotationAnimator for

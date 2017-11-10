@@ -34,7 +34,8 @@ class DisplayInfoProviderChromeOS : public DisplayInfoProvider {
   bool SetInfo(const std::string& display_id,
                const api::system_display::DisplayProperties& info,
                std::string* error) override;
-  bool SetDisplayLayout(const DisplayLayoutList& layouts) override;
+  bool SetDisplayLayout(const DisplayLayoutList& layouts,
+                        std::string* error) override;
   void UpdateDisplayUnitInfoForPlatform(
       const display::Display& display,
       api::system_display::DisplayUnitInfo* unit) override;

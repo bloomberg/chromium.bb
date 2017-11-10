@@ -136,6 +136,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     return is_multi_mirroring_enabled_;
   }
 
+  const UnifiedDesktopLayoutMatrix& current_unified_desktop_matrix() const {
+    return current_unified_desktop_matrix_;
+  }
+
   // Sets controller used to add/remove fake displays. If this is set then
   // AddRemoveDisplay() will delegate out to |dev_display_controller_| instead
   // of adding/removing a ManagedDisplayInfo.
@@ -512,7 +516,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   std::unique_ptr<DisplayLayout> current_resolved_layout_;
 
   // The matrix that's used to layout the displays in Unified Desktop mode.
-  UnifiedDesktopLayoutMatrix current_matrix_;
+  UnifiedDesktopLayoutMatrix current_unified_desktop_matrix_;
 
   std::map<int64_t, int> mirroring_display_id_to_unified_matrix_row_;
 
