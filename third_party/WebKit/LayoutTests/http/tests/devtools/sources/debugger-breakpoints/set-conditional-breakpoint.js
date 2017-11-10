@@ -1,36 +1,26 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function oneLineTestFunction() { return 0; }
-</script>
+(async function() {
+  TestRunner.addResult(`Tests setting breakpoints.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.navigatePromise('resources/set-breakpoint.html');
 
-<script>
-function oneLineTestFunction2() { return 0; }</script>
-
-<script>
-
-function testFunction()
-{
-    var x = Math.sqrt(10);
-    console.log("Done.");
-    return x;
-}
-
-var test = function() {
   var currentSourceFrame;
   SourcesTestRunner.setQuiet(true);
   SourcesTestRunner.runDebuggerTestSuite([
     function testSetConditionalBreakpointThatBreaks(next) {
-      SourcesTestRunner.showScriptSource('set-conditional-breakpoint.html', didShowScriptSource);
+      SourcesTestRunner.showScriptSource(
+          'set-breakpoint.html', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
         currentSourceFrame = sourceFrame;
         TestRunner.addResult('Script source was shown.');
         SourcesTestRunner.waitUntilPaused(didPause);
-        SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 16, 'true', true)
+        SourcesTestRunner
+            .createNewBreakpoint(currentSourceFrame, 13, 'true', true)
             .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
             .then(() => SourcesTestRunner.runTestFunction());
       }
@@ -40,7 +30,7 @@ var test = function() {
         SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.dumpBreakpointSidebarPane();
         SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
-        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 16);
+        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 13);
       }
 
       function breakpointRemoved() {
@@ -55,12 +45,14 @@ var test = function() {
     },
 
     function testSetConditionalBreakpointThatDoesNotBreak(next) {
-      SourcesTestRunner.showScriptSource('set-conditional-breakpoint.html', didShowScriptSource);
+      SourcesTestRunner.showScriptSource(
+          'set-breakpoint.html', didShowScriptSource);
 
       function didShowScriptSource(sourceFrame) {
         currentSourceFrame = sourceFrame;
         TestRunner.addResult('Script source was shown.');
-        SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 16, 'false', true)
+        SourcesTestRunner
+            .createNewBreakpoint(currentSourceFrame, 13, 'false', true)
             .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
             .then(() => SourcesTestRunner.runTestFunction())
             .then(testFunctionFinished);
@@ -70,7 +62,7 @@ var test = function() {
         TestRunner.addResult('Test function finished.');
         SourcesTestRunner.dumpBreakpointSidebarPane();
         SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
-        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 16);
+        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 13);
       }
 
       function breakpointRemoved() {
@@ -80,15 +72,4 @@ var test = function() {
       }
     },
   ]);
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests setting breakpoints.
-</p>
-
-</body>
-</html>
+})();

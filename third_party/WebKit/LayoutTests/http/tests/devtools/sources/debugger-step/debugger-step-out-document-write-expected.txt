@@ -2,28 +2,28 @@ Tests that debugger StepOut will skip inlined scripts created by document.write(
 
 Script source was shown.
 Call stack:
+    0)  (debugger-step-out-document-write.html:4)
+
+Executing StepOut...
+Call stack:
     0)  (debugger-step-out-document-write.html:7)
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:10)
+    0)  (debugger-step-out-document-write.html:14)
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:18)
+    0) global1 (debugger-step-out-document-write.html:12)
+    1)  (debugger-step-out-document-write.html:14)
 
 Executing StepOut...
 Call stack:
-    0) global1 (debugger-step-out-document-write.html:15)
-    1)  (debugger-step-out-document-write.html:18)
+    0)  (debugger-step-out-document-write.html:14)
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:18)
-
-Executing StepOut...
-Call stack:
-    0)  (debugger-step-out-document-write.html:21)
+    0)  (debugger-step-out-document-write.html:17)
 
 Executing Resume...
 Page reloaded.

@@ -1,11 +1,15 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/page-mock.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-async function test() {
+(async function() {
+  TestRunner.addResult(`Tests scripts panel file selectors.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('sdk_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addIframe(
+      'resources/post-message-listener.html', {name: 'childframe'});
+
   Bindings.NetworkProject.forTarget(TestRunner.mainTarget)._resetForTest();
   Bindings.resourceMapping._resetForTest(TestRunner.mainTarget);
 
@@ -23,7 +27,8 @@ async function test() {
   var uiSourceCodes = [];
   async function addUISourceCode(url, isContentScript, frame) {
     if (isContentScript) {
-      var uiSourceCode = await SourcesTestRunner.addScriptUISourceCode(url, '', true, 42);
+      var uiSourceCode =
+          await SourcesTestRunner.addScriptUISourceCode(url, '', true, 42);
       uiSourceCodes.push(uiSourceCode);
       return;
     }
@@ -41,13 +46,15 @@ async function test() {
   function waitForUISourceCodeAdded(url) {
     var fulfill;
     var promise = new Promise(x => fulfill = x);
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+    Workspace.workspace.addEventListener(
+        Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
     return promise;
 
     function uiSourceCodeAdded(event) {
       if (event.data.url() !== url)
         return;
-      Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+      Workspace.workspace.removeEventListener(
+          Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
       fulfill(event.data);
     }
   }
@@ -89,10 +96,13 @@ async function test() {
   await addUISourceCode(rootURL + 'foo/bar/contentScript.js?a=1', true);
   await addUISourceCode('http://example.com/', false);
   await addUISourceCode('http://example.com/?a=b', false);
-  await addUISourceCode('http://example.com/the%2fdir/foo?bar=100&baz=a%20%2fb', false);
+  await addUISourceCode(
+      'http://example.com/the%2fdir/foo?bar=100&baz=a%20%2fb', false);
   // Verify that adding invalid URL does not throw exception.
-  await addUISourceCode('http://example.com/the%2fdir/foo?bar=100%&baz=a%20%2fb', false);
-  await addUISourceCode('http://example.com/path%20with%20spaces/white%20space.html', false);
+  await addUISourceCode(
+      'http://example.com/the%2fdir/foo?bar=100%&baz=a%20%2fb', false);
+  await addUISourceCode(
+      'http://example.com/path%20with%20spaces/white%20space.html', false);
   await addUISourceCode('?a=b', false);
   await addUISourceCode(
       'very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_url',
@@ -105,9 +115,11 @@ async function test() {
   revealUISourceCode(uiSourceCodes[0]);
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
 
-  // Here we keep http://localhost:8080/LayoutTests/inspector/debugger2/ folder collapsed while adding resources into it.
+  // Here we keep http://localhost:8080/LayoutTests/inspector/debugger2/ folder
+  // collapsed while adding resources into it.
   TestRunner.addResult('\n\n================================================');
-  TestRunner.addResult('Adding some resources to change the way debugger folder looks like, first:');
+  TestRunner.addResult(
+      'Adding some resources to change the way debugger folder looks like, first:');
   var rootURL2 = 'http://localhost:8080/LayoutTests/inspector/debugger2/';
   await addUISourceCode(rootURL2 + 'foo/bar/script.js', false);
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
@@ -125,7 +137,8 @@ async function test() {
 
   TestRunner.addResult('\n\n================================================');
   var rootURL3 = 'http://localhost:8080/LayoutTests/inspector/debugger3/';
-  await addUISourceCode(rootURL3 + 'hasOwnProperty/__proto__/constructor/foo.js', false);
+  await addUISourceCode(
+      rootURL3 + 'hasOwnProperty/__proto__/constructor/foo.js', false);
   await addUISourceCode(rootURL3 + 'hasOwnProperty/__proto__/foo.js', false);
   await addUISourceCode(rootURL3 + 'hasOwnProperty/foo.js', false);
   SourcesTestRunner.dumpNavigatorViewInAllModes(sourcesNavigatorView);
@@ -144,15 +157,4 @@ async function test() {
   SourcesTestRunner.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
   TestRunner.completeTest();
-}
-</script>
-
-</head>
-<body>
-<p>
-Tests scripts panel file selectors.
-</p>
-<iframe src="resources/post-message-listener.html" name="childframe" onload="runTest()"></iframe>
-</body>
-
-</html>
+})();
