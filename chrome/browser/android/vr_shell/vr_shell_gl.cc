@@ -411,7 +411,7 @@ void VrShellGl::OnWebVRFrameAvailable() {
 
   ui_->OnWebVrFrameAvailable();
 
-  DrawFrame(frame_index);
+  DrawFrame(frame_index, base::TimeTicks::Now());
   if (web_vr_mode_)
     ++webvr_frames_received_;
   ScheduleOrCancelWebVrFrameTimeout();
@@ -536,7 +536,8 @@ void VrShellGl::InitializeRenderer() {
   browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
-void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
+void VrShellGl::UpdateController(const gfx::Transform& head_pose,
+                                 base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
   gvr::Mat4f gvr_head_pose;
   TransformToGvrMat(head_pose, &gvr_head_pose);
@@ -548,11 +549,13 @@ void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose));
+  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose),
+                        current_time);
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
-                                      const gfx::Vector3dF& head_direction) {
+                                      const gfx::Vector3dF& head_direction,
+                                      base::TimeTicks current_time) {
   if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
@@ -606,7 +609,7 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.laser_origin = laser_origin;
 
   vr::ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(base::TimeTicks::Now(), controller_model,
+  ui_->input_manager()->HandleInput(current_time, controller_model,
                                     &reticle_model, &gesture_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
@@ -753,15 +756,13 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
   }
 }
 
-void VrShellGl::DrawFrame(int16_t frame_index) {
+void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
   if (!webvr_delayed_frame_submit_.IsCancelled()) {
     webvr_delayed_frame_submit_.Cancel();
-    DrawIntoAcquiredFrame(frame_index);
+    DrawIntoAcquiredFrame(frame_index, current_time);
     return;
   }
-
-  base::TimeTicks current_time = base::TimeTicks::Now();
 
   CHECK(!acquired_frame_);
 
@@ -819,7 +820,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())
-    UpdateController(render_info_primary_.head_pose);
+    UpdateController(render_info_primary_.head_pose, current_time);
 
   bool textures_changed = ui_->scene()->UpdateTextures();
 
@@ -847,10 +848,11 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   if (!acquired_frame_)
     return;
 
-  DrawIntoAcquiredFrame(frame_index);
+  DrawIntoAcquiredFrame(frame_index, current_time);
 }
 
-void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
+void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
+                                      base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
 
   last_used_head_pose_ = render_info_primary_.head_pose;
@@ -1143,9 +1145,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // DrawFrame.
     gfx::Transform head_pose;
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
-    UpdateController(head_pose);
+    UpdateController(head_pose, frame_time);
   } else {
-    DrawFrame(-1);
+    DrawFrame(-1, frame_time);
   }
 }
 
