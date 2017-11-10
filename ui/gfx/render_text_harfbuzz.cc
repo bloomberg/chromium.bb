@@ -1673,6 +1673,7 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
   constexpr bool force_zero_offset = false;
 #endif
 
+  DCHECK(obscured() || glyph_spacing() == 0);
   for (size_t i = 0; i < run->glyph_count; ++i) {
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
     run->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
@@ -1683,9 +1684,10 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
     const SkScalar y_offset =
         HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
-    run->width += (glyph_width_for_test_ > 0)
-                      ? glyph_width_for_test_
-                      : HarfBuzzUnitsToFloat(hb_positions[i].x_advance);
+    run->width +=
+        (glyph_width_for_test_ > 0)
+            ? glyph_width_for_test_
+            : HarfBuzzUnitsToFloat(hb_positions[i].x_advance) + glyph_spacing();
     // Round run widths if subpixel positioning is off to match native behavior.
     if (!run->render_params.subpixel_positioning)
       run->width = std::round(run->width);

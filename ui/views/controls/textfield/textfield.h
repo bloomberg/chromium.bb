@@ -55,6 +55,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Returns the text cursor blink time in milliseconds, or 0 for no blinking.
   static size_t GetCaretBlinkMs();
 
+  // Returns the default FontList used by all textfields.
+  static const gfx::FontList& GetDefaultFontList();
+
   Textfield();
   ~Textfield() override;
 
@@ -159,6 +162,10 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_color_ = color;
   }
 
+  void set_placeholder_font_list(const gfx::FontList& font_list) {
+    placeholder_font_list_ = font_list;
+  }
+
   void set_placeholder_text_draw_flags(int flags) {
     placeholder_text_draw_flags_ = flags;
   }
@@ -209,6 +216,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Set the accessible name of the text field.
   void SetAccessibleName(const base::string16& name);
+
+  // Set extra spacing placed between glyphs; used for obscured text styling.
+  void SetGlyphSpacing(int spacing);
 
   // View overrides:
   int GetBaseline() const override;
@@ -478,6 +488,10 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The draw flags specified for |placeholder_text_|.
   int placeholder_text_draw_flags_;
+
+  // The font used for the placeholder text. If this value is null, the
+  // placeholder text uses the same font list as the underlying RenderText.
+  base::Optional<gfx::FontList> placeholder_font_list_;
 
   // True when the contents are deemed unacceptable and should be indicated as
   // such.

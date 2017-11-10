@@ -233,6 +233,9 @@ class GFX_EXPORT RenderText {
   bool clip_to_display_rect() const { return clip_to_display_rect_; }
   void set_clip_to_display_rect(bool clip) { clip_to_display_rect_ = clip; }
 
+  int glyph_spacing() const { return glyph_spacing_; }
+  void set_glyph_spacing(int spacing) { glyph_spacing_ = spacing; }
+
   // In an obscured (password) field, all text is drawn as bullets.
   bool obscured() const { return obscured_; }
   void SetObscured(bool obscured);
@@ -833,6 +836,9 @@ class GFX_EXPORT RenderText {
 
   // The ratio of strike-through line thickness to text height.
   SkScalar strike_thickness_factor_;
+
+  // Extra spacing placed between glyphs; used for obscured text styling.
+  int glyph_spacing_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

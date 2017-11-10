@@ -4934,6 +4934,29 @@ TEST_P(RenderTextHarfBuzzTest, MissingFlagEmoji) {
   EXPECT_EQ(whole_width, selection_bounds.width());
 }
 
+// Ensures that glyph spacing is correctly applied to obscured texts.
+TEST_P(RenderTextHarfBuzzTest, GlyphSpacing) {
+  const base::string16 seuss = UTF8ToUTF16("hop on pop");
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+  render_text->SetText(seuss);
+  render_text->SetObscured(true);
+  test_api()->EnsureLayout();
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  ASSERT_EQ(1U, run_list->size());
+  internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
+  // The default glyph spacing is zero.
+  EXPECT_EQ(0, render_text->glyph_spacing());
+  ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
+  const float width_without_glyph_spacing = run->width;
+
+  const float kGlyphSpacing = 5;
+  render_text->set_glyph_spacing(kGlyphSpacing);
+  ShapeRunWithFont(render_text->text(), Font(), FontRenderParams(), run);
+  // The new width is the sum of |width_without_glyph_spacing| and the spacing.
+  const float total_spacing = seuss.length() * kGlyphSpacing;
+  EXPECT_EQ(width_without_glyph_spacing + total_spacing, run->width);
+}
+
 // Prefix for test instantiations intentionally left blank since each test
 // fixture class has a single parameterization.
 #if defined(OS_MACOSX)
