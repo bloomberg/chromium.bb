@@ -767,6 +767,15 @@ bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
     state->key = remapped_key->result.key;
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
+    if (incoming.key_code == ui::VKEY_CAPITAL ||
+        incoming.key_code == ui::VKEY_F16) {
+      // Caps Lock is rewritten to another key event, remove EF_CAPS_LOCK_ON
+      // flag to prevent the keyboard's Caps Lock state being synced to the
+      // rewritten key event's flag in InputMethodChromeOS. (Caps Lock key on an
+      // external keyboard generates F16 which is treated as Caps Lock and then
+      // rewritten.)
+      incoming.flags &= ~ui::EF_CAPS_LOCK_ON;
+    }
     if (remapped_key->remap_to == ui::chromeos::ModifierKey::kCapsLockKey)
       characteristic_flag |= ui::EF_CAPS_LOCK_ON;
     state->code = RelocateModifier(
