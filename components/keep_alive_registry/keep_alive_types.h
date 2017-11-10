@@ -25,7 +25,7 @@ enum class KeepAliveOrigin {
   BACKGROUND_MODE_MANAGER_STARTUP,
 
   // c/b/chromeos
-  LOGIN_DISPLAY_HOST_IMPL,
+  LOGIN_DISPLAY_HOST_WEBUI,
 
   // c/b/notifications
   NOTIFICATION,

@@ -19,8 +19,8 @@ std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
       return out << "BACKGROUND_MODE_MANAGER";
     case KeepAliveOrigin::BACKGROUND_MODE_MANAGER_STARTUP:
       return out << "BACKGROUND_MODE_MANAGER_STARTUP";
-    case KeepAliveOrigin::LOGIN_DISPLAY_HOST_IMPL:
-      return out << "LOGIN_DISPLAY_HOST_IMPL";
+    case KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI:
+      return out << "LOGIN_DISPLAY_HOST_WEBUI";
     case KeepAliveOrigin::NOTIFICATION:
       return out << "NOTIFICATION";
     case KeepAliveOrigin::PENDING_NOTIFICATION_CLICK_EVENT:

@@ -233,10 +233,10 @@ void DeviceCloudPolicyStoreChromeOS::CheckDMToken() {
     LOG(ERROR) << "Device policy read on enrolled device yields "
                << "no DM token! Status: " << service_status << ".";
 
-    // At the time LoginDisplayHostImpl decides whether enrollment flow is to be
-    // started, policy hasn't been read yet.  To work around this, once the need
-    // for recovery is detected upon policy load, a flag is stored in prefs
-    // which is accessed by LoginDisplayHostImpl early during (next) boot.
+    // At the time LoginDisplayHostWebUI decides whether enrollment flow is to
+    // be started, policy hasn't been read yet.  To work around this, once the
+    // need for recovery is detected upon policy load, a flag is stored in prefs
+    // which is accessed by LoginDisplayHostWebUI early during (next) boot.
     chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
   }
 }

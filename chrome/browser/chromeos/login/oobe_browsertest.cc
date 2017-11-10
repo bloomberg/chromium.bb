@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -60,7 +60,7 @@ class OobeTest : public OobeBaseTest {
   }
 
   views::Widget* GetLoginWindowWidget() {
-    return static_cast<LoginDisplayHostImpl*>(LoginDisplayHost::default_host())
+    return static_cast<LoginDisplayHostWebUI*>(LoginDisplayHost::default_host())
         ->login_window_for_test();
   }
 

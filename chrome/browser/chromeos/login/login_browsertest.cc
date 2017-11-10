@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
@@ -97,7 +97,7 @@ class LoginSigninTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
+    LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
   }
 };
 
