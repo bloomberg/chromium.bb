@@ -109,7 +109,8 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // aura::WindowObserver overrides:
   void OnWindowBoundsChanged(aura::Window* root,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;

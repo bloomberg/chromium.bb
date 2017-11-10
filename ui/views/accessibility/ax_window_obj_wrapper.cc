@@ -112,9 +112,11 @@ void AXWindowObjWrapper::OnWindowHierarchyChanged(
     AXAuraObjCache::GetInstance()->Remove(params.target, params.old_parent);
 }
 
-void AXWindowObjWrapper::OnWindowBoundsChanged(aura::Window* window,
-                                               const gfx::Rect& old_bounds,
-                                               const gfx::Rect& new_bounds) {
+void AXWindowObjWrapper::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (window != window_)
     return;
 

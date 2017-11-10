@@ -104,7 +104,8 @@ void FirstAppRunToastManager::OnAppWindowActivated(
 void FirstAppRunToastManager::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (toast_widget_ && window == app_window_->GetNativeWindow())
     AdjustToastWidgetBounds();
 }

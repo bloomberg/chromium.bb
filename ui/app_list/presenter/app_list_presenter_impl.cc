@@ -277,9 +277,11 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterImpl,  aura::WindowObserver implementation:
-void AppListPresenterImpl::OnWindowBoundsChanged(aura::Window* root,
-                                                 const gfx::Rect& old_bounds,
-                                                 const gfx::Rect& new_bounds) {
+void AppListPresenterImpl::OnWindowBoundsChanged(
+    aura::Window* root,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (presenter_delegate_)
     presenter_delegate_->UpdateBounds();
 }

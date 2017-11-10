@@ -1070,12 +1070,12 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
   if (delegate_)
     delegate_->OnBoundsChanged(old_bounds, bounds_);
   for (auto& observer : observers_)
-    observer.OnWindowBoundsChanged(this, old_bounds, bounds_);
+    observer.OnWindowBoundsChanged(this, old_bounds, bounds_, reason);
 }
 
 void Window::OnLayerOpacityChanged(ui::PropertyChangeReason reason) {
   for (WindowObserver& observer : observers_)
-    observer.OnWindowOpacityChanged(this);
+    observer.OnWindowOpacityChanged(this, reason);
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {

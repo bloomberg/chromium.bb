@@ -59,7 +59,8 @@ void WindowDimmer::SetDimOpacity(float target_opacity) {
 
 void WindowDimmer::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
-                                         const gfx::Rect& new_bounds) {
+                                         const gfx::Rect& new_bounds,
+                                         ui::PropertyChangeReason reason) {
   if (window == parent_)
     window_->SetBounds(gfx::Rect(new_bounds.size()));
 }

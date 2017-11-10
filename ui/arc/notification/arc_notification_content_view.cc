@@ -679,7 +679,8 @@ void ArcNotificationContentView::GetAccessibleNodeData(
 void ArcNotificationContentView::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (in_layout_)
     return;
 

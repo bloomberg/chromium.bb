@@ -18,7 +18,8 @@ class WindowDeleter : public aura::WindowObserver {
   // aura::WindowObserver::
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override {
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
     delete target_;
   }
 

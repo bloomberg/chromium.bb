@@ -42,7 +42,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;

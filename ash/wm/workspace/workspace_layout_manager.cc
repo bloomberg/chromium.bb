@@ -238,7 +238,8 @@ void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
 void WorkspaceLayoutManager::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (root_window_ == window) {
     const wm::WMEvent wm_event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&wm_event);

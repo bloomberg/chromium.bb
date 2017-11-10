@@ -159,7 +159,8 @@ void TabletModeWindowManager::OnWindowPropertyChanged(aura::Window* window,
 void TabletModeWindowManager::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (!IsContainerWindow(window))
     return;
   // Reposition all non maximizeable windows.

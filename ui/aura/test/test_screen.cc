@@ -134,8 +134,10 @@ gfx::Transform TestScreen::GetUIScaleTransform() const {
   return ui_scale;
 }
 
-void TestScreen::OnWindowBoundsChanged(
-    Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
+void TestScreen::OnWindowBoundsChanged(Window* window,
+                                       const gfx::Rect& old_bounds,
+                                       const gfx::Rect& new_bounds,
+                                       ui::PropertyChangeReason reason) {
   DCHECK_EQ(host_->window(), window);
   display::Display display(GetPrimaryDisplay());
   display.SetSize(gfx::ScaleToFlooredSize(new_bounds.size(),

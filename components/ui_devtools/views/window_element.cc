@@ -58,7 +58,8 @@ void WindowElement::OnWindowStackingChanged(aura::Window* window) {
 
 void WindowElement::OnWindowBoundsChanged(aura::Window* window,
                                           const gfx::Rect& old_bounds,
-                                          const gfx::Rect& new_bounds) {
+                                          const gfx::Rect& new_bounds,
+                                          ui::PropertyChangeReason reason) {
   DCHECK_EQ(window_, window);
   delegate()->OnUIElementBoundsChanged(this);
 }

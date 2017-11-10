@@ -223,7 +223,8 @@ void MoveLoop::OnWindowHierarchyChanged(const HierarchyChangeParams& params) {
 
 void MoveLoop::OnWindowBoundsChanged(aura::Window* window,
                                      const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) {
+                                     const gfx::Rect& new_bounds,
+                                     ui::PropertyChangeReason reason) {
   DCHECK_EQ(window, target_);
   if (!changing_bounds_)
     Cancel();

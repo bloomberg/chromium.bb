@@ -698,9 +698,11 @@ void WindowEventDispatcher::OnWindowVisibilityChanged(Window* window,
     OnWindowHidden(window, WINDOW_HIDDEN);
 }
 
-void WindowEventDispatcher::OnWindowBoundsChanged(Window* window,
-                                                  const gfx::Rect& old_bounds,
-                                                  const gfx::Rect& new_bounds) {
+void WindowEventDispatcher::OnWindowBoundsChanged(
+    Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (!host_->window()->Contains(window))
     return;
 

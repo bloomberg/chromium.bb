@@ -70,7 +70,8 @@ class ASH_EXPORT TabletModeWindowManager
                                intptr_t old) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // display::DisplayObserver:
