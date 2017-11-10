@@ -376,4 +376,9 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
   EXPECT_EQ(0UL, last_deleted_page_infos().size());
 }
 
+// This test is disabled since it's lacking the ability of mocking store failure
+// in store_test_utils. https://crbug.com/781023
+// TODO(romax): reenable the test once the above issue is resolved.
+TEST_F(DeletePageTaskTest, DISABLED_DeletePageStoreFailureOnRemove) {}
+
 }  // namespace offline_pages
