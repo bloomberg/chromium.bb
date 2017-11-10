@@ -21,6 +21,7 @@ const string kNavigation_FrameSpec = "navigation:frame";
 // Implemented by the frame provider (e.g. renderer processes).
 interface Frame {
   GetInterfaceProvider(service_manager.mojom.InterfaceProvider& interfaces);
+  GetCanonicalUrlForSharing() => (url.mojom.Url? canonical_url);
 };
 
 // See src/content/common/navigation_params.h

@@ -43,7 +43,8 @@ class CORE_EXPORT LinkRelAttribute {
   DISALLOW_NEW();
 
  public:
-  explicit LinkRelAttribute(const String& = "");
+  LinkRelAttribute();
+  explicit LinkRelAttribute(const String&);
 
   bool IsStyleSheet() const { return is_style_sheet_; }
   IconType GetIconType() const { return icon_type_; }
@@ -57,6 +58,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool IsImport() const { return is_import_; }
   bool IsManifest() const { return is_manifest_; }
   bool IsServiceWorker() const { return is_service_worker_; }
+  bool IsCanonical() const { return is_canonical_; }
 
  private:
   IconType icon_type_;
@@ -71,6 +73,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool is_import_ : 1;
   bool is_manifest_ : 1;
   bool is_service_worker_ : 1;
+  bool is_canonical_ : 1;
 };
 
 }  // namespace blink

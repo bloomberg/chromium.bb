@@ -12065,4 +12065,50 @@ TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {
   EXPECT_TRUE(frame->GetFrame()->HasBeenActivated());
 }
 
+TEST_F(WebFrameTest, GetCanonicalUrlForSharingNone) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad("about:blank");
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  EXPECT_TRUE(frame->GetDocument().CanonicalUrlForSharing().IsNull());
+}
+
+TEST_F(WebFrameTest, GetCanonicalUrlForSharingNotInHead) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  FrameTestHelpers::LoadHTMLString(
+      frame, R"(
+    <body>
+      <link rel="canonical" href="https://example.com/canonical.html">
+    </body>)", ToKURL("https://example.com/test_page.html"));
+  EXPECT_TRUE(frame->GetDocument().CanonicalUrlForSharing().IsNull());
+}
+
+TEST_F(WebFrameTest, GetCanonicalUrlForSharing) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  FrameTestHelpers::LoadHTMLString(
+      frame, R"(
+    <head>
+      <link rel="canonical" href="https://example.com/canonical.html">
+    </head>)", ToKURL("https://example.com/test_page.html"));
+  EXPECT_EQ(WebURL(ToKURL("https://example.com/canonical.html")),
+            frame->GetDocument().CanonicalUrlForSharing());
+}
+
+TEST_F(WebFrameTest, GetCanonicalUrlForSharingMultiple) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  FrameTestHelpers::LoadHTMLString(
+      frame, R"(
+    <head>
+      <link rel="canonical" href="https://example.com/canonical1.html">
+      <link rel="canonical" href="https://example.com/canonical2.html">
+    </head>)", ToKURL("https://example.com/test_page.html"));
+  EXPECT_EQ(WebURL(ToKURL("https://example.com/canonical1.html")),
+            frame->GetDocument().CanonicalUrlForSharing());
+}
+
 }  // namespace blink
