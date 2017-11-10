@@ -33,37 +33,32 @@ int av1_get_tx_scale(const TX_SIZE tx_size) {
 // that input and output could be the same buffer.
 
 static void iidtx4_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 4; ++i) {
+  for (int i = 0; i < 4; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * Sqrt2);
   }
 }
 
 static void iidtx8_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 8; ++i) {
+  for (int i = 0; i < 8; ++i) {
     output[i] = input[i] * 2;
   }
 }
 
 static void iidtx16_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 16; ++i) {
+  for (int i = 0; i < 16; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 2 * Sqrt2);
   }
 }
 
 static void iidtx32_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; ++i) {
     output[i] = input[i] * 4;
   }
 }
 
 #if CONFIG_TX64X64
 static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
-  for (i = 0; i < 64; ++i) {
+  for (int i = 0; i < 64; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[i] * 4 * Sqrt2);
   }
 }
@@ -71,13 +66,12 @@ static void iidtx64_c(const tran_low_t *input, tran_low_t *output) {
 
 // For use in lieu of ADST
 static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
   tran_low_t inputhalf[16];
   // Multiply input by sqrt(2)
-  for (i = 0; i < 16; ++i) {
+  for (int i = 0; i < 16; ++i) {
     inputhalf[i] = (tran_low_t)dct_const_round_shift(input[i] * Sqrt2);
   }
-  for (i = 0; i < 16; ++i) {
+  for (int i = 0; i < 16; ++i) {
     output[i] = input[16 + i] * 4;
   }
   aom_idct16_c(inputhalf, output + 16);
@@ -87,29 +81,28 @@ static void ihalfright32_c(const tran_low_t *input, tran_low_t *output) {
 #if CONFIG_TX64X64
 static void idct64_col_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
-  int i;
-  for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
+
+  for (int i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
   av1_idct64_new(in, out, inv_cos_bit_col_dct_64, inv_stage_range_col_dct_64);
-  for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
+  for (int i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 
 static void idct64_row_c(const tran_low_t *input, tran_low_t *output) {
   int32_t in[64], out[64];
-  int i;
-  for (i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
+
+  for (int i = 0; i < 64; ++i) in[i] = (int32_t)input[i];
   av1_idct64_new(in, out, inv_cos_bit_row_dct_64, inv_stage_range_row_dct_64);
-  for (i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
+  for (int i = 0; i < 64; ++i) output[i] = (tran_low_t)out[i];
 }
 
 // For use in lieu of ADST
 static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
-  int i;
   tran_low_t inputhalf[32];
   // Multiply input by sqrt(2)
-  for (i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; ++i) {
     inputhalf[i] = (tran_low_t)dct_const_round_shift(input[i] * Sqrt2);
   }
-  for (i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; ++i) {
     output[i] = (tran_low_t)dct_const_round_shift(input[32 + i] * 4 * Sqrt2);
   }
   aom_idct32_c(inputhalf, output + 32);
@@ -120,12 +113,11 @@ static void ihalfright64_c(const tran_low_t *input, tran_low_t *output) {
 // Inverse identity transform and add.
 static void inv_idtx_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                            int bsx, int bsy, TX_TYPE tx_type) {
-  int r, c;
   const int pels = bsx * bsy;
   const int shift = 3 - ((pels > 256) + (pels > 1024));
   if (tx_type == IDTX) {
-    for (r = 0; r < bsy; ++r) {
-      for (c = 0; c < bsx; ++c)
+    for (int r = 0; r < bsy; ++r) {
+      for (int c = 0; c < bsx; ++c)
         dest[c] = clip_pixel_add(dest[c], input[c] >> shift);
       dest += stride;
       input += bsx;
@@ -182,14 +174,13 @@ static void maybe_flip_strides(uint8_t **dst, int *dstride, tran_low_t **src,
 static void highbd_inv_idtx_add_c(const tran_low_t *input, uint8_t *dest8,
                                   int stride, int bsx, int bsy, TX_TYPE tx_type,
                                   int bd) {
-  int r, c;
   const int pels = bsx * bsy;
   const int shift = 3 - ((pels > 256) + (pels > 1024));
   uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
 
   if (tx_type == IDTX) {
-    for (r = 0; r < bsy; ++r) {
-      for (c = 0; c < bsx; ++c)
+    for (int r = 0; r < bsy; ++r) {
+      for (int c = 0; c < bsx; ++c)
         dest[c] = highbd_clip_pixel_add(dest[c], input[c] >> shift, bd);
       dest += stride;
       input += bsx;
@@ -249,7 +240,6 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
-  int i, j;
   tran_low_t tmp[4][4];
   tran_low_t out[4][4];
   tran_low_t *outp = &out[0][0];
@@ -260,10 +250,10 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
 
   // inverse transform row vectors
-  for (i = 0; i < 4; ++i) {
+  for (int i = 0; i < 4; ++i) {
 #if CONFIG_DAALA_TX4
     tran_low_t temp_in[4];
-    for (j = 0; j < 4; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < 4; j++) temp_in[j] = input[j] * 2;
     IHT_4[tx_type].rows(temp_in, out[i]);
 #else
     IHT_4[tx_type].rows(input, out[i]);
@@ -272,22 +262,22 @@ void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 
   // transpose
-  for (i = 0; i < 4; i++) {
-    for (j = 0; j < 4; j++) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
       tmp[j][i] = out[i][j];
     }
   }
 
   // inverse transform column vectors
-  for (i = 0; i < 4; ++i) {
+  for (int i = 0; i < 4; ++i) {
     IHT_4[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 4, 4);
 
   // Sum with the destination
-  for (i = 0; i < 4; ++i) {
-    for (j = 0; j < 4; ++j) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX4
@@ -348,7 +338,7 @@ void av1_iht4x8_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 4;
   const int n2 = 8;
-  int i, j;
+
   tran_low_t out[4][8], tmp[4][8], outtmp[4];
   tran_low_t *outp = &out[0][0];
   int outstride = n2;
@@ -360,22 +350,22 @@ void av1_iht4x8_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   // Daala row,col       input+1, rowTX+0,  mid+0,  colTX+0, out-4 == -3
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
 #if CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8
     // Daala row transform; Scaling cases 3 and 4 above
     tran_low_t temp_in[4];
     // Input scaling up by 1 bit
-    for (j = 0; j < n; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n; j++) temp_in[j] = input[j] * 2;
     // Row transform; Daala does not scale
     IHT_4x8[tx_type].rows(temp_in, outtmp);
     // Transpose; no mid scaling
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
 #else
     // AV1 row transform; Scaling case 1 only
     // Row transform (AV1 scales up .5 bits)
     IHT_4x8[tx_type].rows(input, outtmp);
     // Transpose and mid scaling up by .5 bit
-    for (j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n;
@@ -383,15 +373,15 @@ void av1_iht4x8_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform column vectors
   // AV1/LGT column TX scales up by 1 bit, Daala does not scale
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_4x8[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n2, n);
 
   // Sum with the destination
-  for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n2; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8
@@ -455,7 +445,6 @@ void av1_iht8x4_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 4;
   const int n2 = 8;
 
-  int i, j;
   tran_low_t out[8][4], tmp[8][4], outtmp[8];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
@@ -467,22 +456,22 @@ void av1_iht8x4_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   // Daala row,col       input+1, rowTX+0, mid+0,  colTX+0,  out-4 == -3
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
 #if CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8
     // Daala row transform; Scaling cases 3 and 4 above
     tran_low_t temp_in[8];
     // Input scaling up by 1 bit
-    for (j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
     // Row transform; Daala does not scale
     IHT_8x4[tx_type].rows(temp_in, outtmp);
     // Transpose; no mid scaling
-    for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
 #else
     // AV1 row transform; Scaling case 1 only
     // Row transform (AV1 scales up 1 bit)
     IHT_8x4[tx_type].rows(input, outtmp);
     // Transpose and mid scaling up by .5 bit
-    for (j = 0; j < n2; ++j)
+    for (int j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n2;
@@ -490,15 +479,15 @@ void av1_iht8x4_32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform column vectors
   // AV1 and LGT scale up by .5 bits; Daala does not scale
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
     IHT_8x4[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n2);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n2; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n2; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX4 && CONFIG_DAALA_TX8
@@ -542,28 +531,28 @@ void av1_iht4x16_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 4;
   const int n4 = 16;
-  int i, j;
+
   tran_low_t out[4][16], tmp[4][16], outtmp[4];
   tran_low_t *outp = &out[0][0];
   int outstride = n4;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n4; ++i) {
+  for (int i = 0; i < n4; ++i) {
     IHT_4x16[tx_type].rows(input, outtmp);
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
     input += n;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_4x16[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n4, n);
 
   // Sum with the destination
-  for (i = 0; i < n4; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n4; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 5));
@@ -602,28 +591,27 @@ void av1_iht16x4_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 4;
   const int n4 = 16;
 
-  int i, j;
   tran_low_t out[16][4], tmp[16][4], outtmp[16];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_16x4[tx_type].rows(input, outtmp);
-    for (j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
     input += n4;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n4; ++i) {
+  for (int i = 0; i < n4; ++i) {
     IHT_16x4[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n4);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n4; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n4; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 5));
@@ -680,7 +668,7 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 8;
   const int n2 = 16;
-  int i, j;
+
   tran_low_t out[8][16], tmp[8][16], outtmp[8];
   tran_low_t *outp = &out[0][0];
   int outstride = n2;
@@ -692,21 +680,21 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   // Daala row,col         input+1, rowTX+0, mid+0,  colTX+0,   out-4 == -3
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
 #if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
     tran_low_t temp_in[8];
     // Input scaling case 4
-    for (j = 0; j < n; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n; j++) temp_in[j] = input[j] * 2;
     // Row transform (Daala does not scale)
     IHT_8x16[tx_type].rows(temp_in, outtmp);
     // Transpose (no mid scaling)
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
 #else
     // Case 1; no input scaling
     // Row transform (AV1 scales up 1 bit)
     IHT_8x16[tx_type].rows(input, outtmp);
     // Transpose and mid scaling up .5 bits
-    for (j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n;
@@ -714,15 +702,15 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform column vectors
   // AV1 column TX scales up by 1.5 bit, Daala does not scale
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_8x16[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n2, n);
 
   // Sum with the destination
-  for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n2; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
@@ -786,7 +774,6 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 8;
   const int n2 = 16;
 
-  int i, j;
   tran_low_t out[16][8], tmp[16][8], outtmp[16];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
@@ -798,23 +785,23 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   // Daala row, col        input+1, rowTX+0,   mid+0,  colTX+0, out-4 == -3
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
 #if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
     tran_low_t temp_in[16];
     // Input scaling cases 3 and 4
-    for (j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
     // Daala row TX, no scaling
     IHT_16x8[tx_type].rows(temp_in, outtmp);
     // Transpose and mid scaling
     // Case 4
-    for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
 #else
     // Case 1
     // No input scaling
     // Row transform, AV1 scales up by 1.5 bits
     IHT_16x8[tx_type].rows(input, outtmp);
     // Transpose and mid scaling up .5 bits
-    for (j = 0; j < n2; ++j)
+    for (int j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n2;
@@ -822,15 +809,15 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   // inverse transform column vectors
   // AV!/LGT scales up by 1 bit, Daala does not scale
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
     IHT_16x8[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n2);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n2; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n2; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 // Output scaling
@@ -875,28 +862,28 @@ void av1_iht8x32_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 8;
   const int n4 = 32;
-  int i, j;
+
   tran_low_t out[8][32], tmp[8][32], outtmp[8];
   tran_low_t *outp = &out[0][0];
   int outstride = n4;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n4; ++i) {
+  for (int i = 0; i < n4; ++i) {
     IHT_8x32[tx_type].rows(input, outtmp);
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
     input += n;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_8x32[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n4, n);
 
   // Sum with the destination
-  for (i = 0; i < n4; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n4; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
@@ -935,28 +922,27 @@ void av1_iht32x8_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 8;
   const int n4 = 32;
 
-  int i, j;
   tran_low_t out[32][8], tmp[32][8], outtmp[32];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
     IHT_32x8[tx_type].rows(input, outtmp);
-    for (j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n4; ++j) tmp[j][i] = outtmp[j];
     input += n4;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n4; ++i) {
+  for (int i = 0; i < n4; ++i) {
     IHT_32x8[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n4);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n4; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n4; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
@@ -1013,34 +999,34 @@ void av1_iht16x32_512_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 16;
   const int n2 = 32;
-  int i, j;
+
   tran_low_t out[16][32], tmp[16][32], outtmp[16];
   tran_low_t *outp = &out[0][0];
   int outstride = n2;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
     tran_low_t temp_in[16];
-    for (j = 0; j < n; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n; j++) temp_in[j] = input[j] * 2;
     IHT_16x32[tx_type].rows(temp_in, outtmp);
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j] * 4;
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j] * 4;
 #else
     IHT_16x32[tx_type].rows(input, outtmp);
-    for (j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n; ++i) IHT_16x32[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < n; ++i) IHT_16x32[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n2, n);
 
   // Sum with the destination
-  for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n2; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
@@ -1101,34 +1087,33 @@ void av1_iht32x16_512_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 16;
   const int n2 = 32;
 
-  int i, j;
   tran_low_t out[32][16], tmp[32][16], outtmp[32];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
     tran_low_t temp_in[32];
-    for (j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
     IHT_32x16[tx_type].rows(temp_in, outtmp);
-    for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j] * 4;
+    for (int j = 0; j < n2; ++j) tmp[j][i] = outtmp[j] * 4;
 #else
     IHT_32x16[tx_type].rows(input, outtmp);
-    for (j = 0; j < n2; ++j)
+    for (int j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
     input += n2;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n2; ++i) IHT_32x16[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < n2; ++i) IHT_32x16[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n2);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n2; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n2; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
@@ -1187,17 +1172,16 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
-  int i, j;
   tran_low_t tmp[8][8];
   tran_low_t out[8][8];
   tran_low_t *outp = &out[0][0];
   int outstride = 8;
 
   // inverse transform row vectors
-  for (i = 0; i < 8; ++i) {
+  for (int i = 0; i < 8; ++i) {
 #if CONFIG_DAALA_TX8
     tran_low_t temp_in[8];
-    for (j = 0; j < 8; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < 8; j++) temp_in[j] = input[j] * 2;
     IHT_8[tx_type].rows(temp_in, out[i]);
 #else
     IHT_8[tx_type].rows(input, out[i]);
@@ -1206,22 +1190,22 @@ void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 
   // transpose
-  for (i = 0; i < 8; i++) {
-    for (j = 0; j < 8; j++) {
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
       tmp[j][i] = out[i][j];
     }
   }
 
   // inverse transform column vectors
-  for (i = 0; i < 8; ++i) {
+  for (int i = 0; i < 8; ++i) {
     IHT_8[tx_type].cols(tmp[i], out[i]);
   }
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 8, 8);
 
   // Sum with the destination
-  for (i = 0; i < 8; ++i) {
-    for (j = 0; j < 8; ++j) {
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 8; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX8
@@ -1280,17 +1264,16 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
-  int i, j;
   tran_low_t tmp[16][16];
   tran_low_t out[16][16];
   tran_low_t *outp = &out[0][0];
   int outstride = 16;
 
   // inverse transform row vectors
-  for (i = 0; i < 16; ++i) {
+  for (int i = 0; i < 16; ++i) {
 #if CONFIG_DAALA_TX16
     tran_low_t temp_in[16];
-    for (j = 0; j < 16; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < 16; j++) temp_in[j] = input[j] * 2;
     IHT_16[tx_type].rows(temp_in, out[i]);
 #else
     IHT_16[tx_type].rows(input, out[i]);
@@ -1299,20 +1282,20 @@ void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 
   // transpose
-  for (i = 0; i < 16; i++) {
-    for (j = 0; j < 16; j++) {
+  for (int i = 0; i < 16; i++) {
+    for (int j = 0; j < 16; j++) {
       tmp[j][i] = out[i][j];
     }
   }
 
   // inverse transform column vectors
-  for (i = 0; i < 16; ++i) IHT_16[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < 16; ++i) IHT_16[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 16, 16);
 
   // Sum with the destination
-  for (i = 0; i < 16; ++i) {
-    for (j = 0; j < 16; ++j) {
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX16
@@ -1368,17 +1351,16 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
-  int i, j;
   tran_low_t tmp[32][32];
   tran_low_t out[32][32];
   tran_low_t *outp = &out[0][0];
   int outstride = 32;
 
   // inverse transform row vectors
-  for (i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; ++i) {
 #if CONFIG_DAALA_TX32
     tran_low_t temp_in[32];
-    for (j = 0; j < 32; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < 32; j++) temp_in[j] = input[j] * 2;
     IHT_32[tx_type].rows(temp_in, out[i]);
 #else
     IHT_32[tx_type].rows(input, out[i]);
@@ -1387,8 +1369,8 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 
   // transpose
-  for (i = 0; i < 32; i++) {
-    for (j = 0; j < 32; j++) {
+  for (int i = 0; i < 32; i++) {
+    for (int j = 0; j < 32; j++) {
 #if CONFIG_DAALA_TX32
       tmp[j][i] = out[i][j] * 4;
 #else
@@ -1398,13 +1380,13 @@ void av1_iht32x32_1024_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   }
 
   // inverse transform column vectors
-  for (i = 0; i < 32; ++i) IHT_32[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < 32; ++i) IHT_32[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 32, 32);
 
   // Sum with the destination
-  for (i = 0; i < 32; ++i) {
-    for (j = 0; j < 32; ++j) {
+  for (int i = 0; i < 32; ++i) {
+    for (int j = 0; j < 32; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX32
@@ -1464,41 +1446,40 @@ void av1_iht64x64_4096_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
   };
 
-  int i, j;
   tran_low_t tmp[64][64];
   tran_low_t out[64][64];
   tran_low_t *outp = &out[0][0];
   int outstride = 64;
 
   // inverse transform row vectors
-  for (i = 0; i < 64; ++i) {
+  for (int i = 0; i < 64; ++i) {
 #if CONFIG_DAALA_TX64
     tran_low_t temp_in[64];
-    for (j = 0; j < 64; j++) temp_in[j] = input[j] * 2;
+    for (int j = 0; j < 64; j++) temp_in[j] = input[j] * 2;
     IHT_64[tx_type].rows(temp_in, out[i]);
 // Do not rescale intermediate for Daala
 #else
     IHT_64[tx_type].rows(input, out[i]);
-    for (j = 0; j < 64; ++j) out[i][j] = ROUND_POWER_OF_TWO(out[i][j], 1);
+    for (int j = 0; j < 64; ++j) out[i][j] = ROUND_POWER_OF_TWO(out[i][j], 1);
 #endif
     input += 64;
   }
 
   // transpose
-  for (i = 0; i < 64; i++) {
-    for (j = 0; j < 64; j++) {
+  for (int i = 0; i < 64; i++) {
+    for (int j = 0; j < 64; j++) {
       tmp[j][i] = out[i][j];
     }
   }
 
   // inverse transform column vectors
-  for (i = 0; i < 64; ++i) IHT_64[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < 64; ++i) IHT_64[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, 64, 64);
 
   // Sum with the destination
-  for (i = 0; i < 64; ++i) {
-    for (j = 0; j < 64; ++j) {
+  for (int i = 0; i < 64; ++i) {
+    for (int j = 0; j < 64; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX64
@@ -1559,34 +1540,33 @@ void av1_iht64x32_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   const int n = 32;
   const int n2 = 64;
 
-  int i, j;
   tran_low_t out[64][32], tmp[64][32], outtmp[64];
   tran_low_t *outp = &out[0][0];
   int outstride = n;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n; ++i) {
+  for (int i = 0; i < n; ++i) {
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
     tran_low_t temp_in[64];
-    for (j = 0; j < n2; j++) temp_in[j] = input[j] * 8;
+    for (int j = 0; j < n2; j++) temp_in[j] = input[j] * 8;
     IHT_64x32[tx_type].rows(temp_in, outtmp);
-    for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
 #else
     IHT_64x32[tx_type].rows(input, outtmp);
-    for (j = 0; j < n2; ++j)
+    for (int j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
 #endif
     input += n2;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n2; ++i) IHT_64x32[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < n2; ++i) IHT_64x32[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n, n2);
 
   // Sum with the destination
-  for (i = 0; i < n; ++i) {
-    for (j = 0; j < n2; ++j) {
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n2; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
@@ -1647,34 +1627,34 @@ void av1_iht32x64_2048_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 
   const int n = 32;
   const int n2 = 64;
-  int i, j;
+
   tran_low_t out[32][64], tmp[32][64], outtmp[32];
   tran_low_t *outp = &out[0][0];
   int outstride = n2;
 
   // inverse transform row vectors and transpose
-  for (i = 0; i < n2; ++i) {
+  for (int i = 0; i < n2; ++i) {
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
     tran_low_t temp_in[32];
-    for (j = 0; j < n; j++) temp_in[j] = input[j] * 8;
+    for (int j = 0; j < n; j++) temp_in[j] = input[j] * 8;
     IHT_32x64[tx_type].rows(temp_in, outtmp);
-    for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+    for (int j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
 #else
     IHT_32x64[tx_type].rows(input, outtmp);
-    for (j = 0; j < n; ++j)
+    for (int j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * InvSqrt2);
 #endif
     input += n;
   }
 
   // inverse transform column vectors
-  for (i = 0; i < n; ++i) IHT_32x64[tx_type].cols(tmp[i], out[i]);
+  for (int i = 0; i < n; ++i) IHT_32x64[tx_type].cols(tmp[i], out[i]);
 
   maybe_flip_strides(&dest, &stride, &outp, &outstride, tx_type, n2, n);
 
   // Sum with the destination
-  for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j) {
+  for (int i = 0; i < n2; ++i) {
+    for (int j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
 #if CONFIG_DAALA_TX32 && CONFIG_DAALA_TX64
