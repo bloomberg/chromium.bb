@@ -48,7 +48,7 @@ extern "C" {
 #define AOM_FALLTHROUGH_INTENDED [[clang::fallthrough]]  // NOLINT
 #endif
 #elif defined(__GNUC__) && __GNUC__ >= 7
-#define AOM_FALLTHROUGH_INTENDED [[gnu::fallthrough]]  // NOLINT
+#define AOM_FALLTHROUGH_INTENDED __attribute__((fallthrough))  // NOLINT
 #endif
 
 #ifndef AOM_FALLTHROUGH_INTENDED
