@@ -210,7 +210,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,
                      int file_descriptor,
-                     const DBusMethodErrorCallback& error_callback) override {
+                     VoidDBusMethodCallback callback) override {
     DCHECK(file_descriptor);
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetPerfOutputFd);
@@ -219,11 +219,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendArrayOfStrings(perf_args);
     writer.AppendFileDescriptor(file_descriptor);
 
-    debugdaemon_proxy_->CallMethodWithErrorCallback(
+    debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        dbus::ObjectProxy::EmptyResponseCallback(),
-        base::BindOnce(&DebugDaemonClientImpl::OnDBusMethodError,
-                       weak_ptr_factory_.GetWeakPtr(), error_callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetScrubbedLogs(const GetLogsCallback& callback) override {
@@ -646,18 +645,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     }
   }
 
-  void OnDBusMethodError(DBusMethodErrorCallback error_callback,
-                         dbus::ErrorResponse* response) {
-    // Error response has optional error message argument.
-    std::string error_name = "<unknown>";
-    std::string error_message = "<empty>";
-    if (response) {
-      dbus::MessageReader reader(response);
-      error_name = response->GetErrorName();
-      reader.PopString(&error_message);
-    }
-    VLOG(1) << "DBus method error: " << error_name << ": " << error_message;
-    error_callback.Run(error_name, error_message);
+  // Called when D-Bus method call which does not return the result is
+  // completed or on its error.
+  void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
+    std::move(callback).Run(response);
   }
 
   void OnEnableDebuggingFeatures(
