@@ -42,7 +42,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   }
 
  protected:
-  void SendFakeScreenOrientation(unsigned angle, const std::string& strType) {
+  void SendFakeScreenOrientation(unsigned angle, const std::string& str_type) {
     RenderWidgetHost* main_frame_rwh =
         web_contents()->GetMainFrame()->GetRenderWidgetHost();
     ScreenInfo screen_info;
@@ -50,13 +50,13 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     screen_info.orientation_angle = angle;
 
     ScreenOrientationValues type = SCREEN_ORIENTATION_VALUES_DEFAULT;
-    if (strType == "portrait-primary") {
+    if (str_type == "portrait-primary") {
       type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
-    } else if (strType == "portrait-secondary") {
+    } else if (str_type == "portrait-secondary") {
       type = SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
-    } else if (strType == "landscape-primary") {
+    } else if (str_type == "landscape-primary") {
       type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
-    } else if (strType == "landscape-secondary") {
+    } else if (str_type == "landscape-secondary") {
       type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
     }
     ASSERT_NE(SCREEN_ORIENTATION_VALUES_DEFAULT, type);
@@ -64,8 +64,8 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
 
     ResizeParams params;
     params.screen_info = screen_info;
-    params.new_size = gfx::Size(0, 0);
-    params.physical_backing_size = gfx::Size(300, 300);
+    params.new_size = main_frame_rwh->GetView()->GetViewBounds().size();
+    params.physical_backing_size = params.new_size;
     params.top_controls_height = 0.f;
     params.browser_controls_shrink_blink_size = false;
     params.is_fullscreen_granted = false;
@@ -93,12 +93,6 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     // involved in the FrameTree.
     web_contents()->GetFrameTree()->root()->render_manager()->SendPageMessage(
         new PageMsg_UpdateScreenInfo(MSG_ROUTING_NONE, screen_info), nullptr);
-
-    // 3. When the top-level frame gets the ViewMsg_Resize, it'll dispatch a
-    // FrameHostMsg_FrameRectsChanged IPC that causes the remote subframes to
-    // receive the ViewMsg_Resize from the browser.
-    for (auto* rwh : rwhs)
-      rwh->Send(new ViewMsg_Resize(rwh->GetRoutingID(), params));
   }
 
   int GetOrientationAngle() {
