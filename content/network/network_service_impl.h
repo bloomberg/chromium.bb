@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/network/network_change_manager.h"
 #include "content/public/common/network_service.mojom.h"
@@ -24,9 +23,6 @@ class NetLog;
 class LoggingNetworkChangeObserver;
 class URLRequestContext;
 class URLRequestContextBuilder;
-#if defined(OS_ANDROID)
-class NetworkChangeNotifierFactoryAndroid;
-#endif
 }  // namespace net
 
 namespace content {
@@ -99,10 +95,6 @@ class CONTENT_EXPORT NetworkServiceImpl : public service_manager::Service,
   // destroyed before them.
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
 
-#if defined(OS_ANDROID)
-  std::unique_ptr<net::NetworkChangeNotifierFactoryAndroid>
-      network_change_notifier_factory_;
-#endif
   std::unique_ptr<NetworkChangeManager> network_change_manager_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
