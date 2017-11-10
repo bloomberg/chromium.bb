@@ -11,11 +11,10 @@ namespace device {
 
 FakePlatformSensorFusion::FakePlatformSensorFusion(
     std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm)
-    : PlatformSensorFusion(
-          nullptr,
-          nullptr,
-          base::Callback<void(scoped_refptr<device::PlatformSensor>)>(),
-          std::move(fusion_algorithm)) {}
+    : PlatformSensorFusion(nullptr,
+                           nullptr,
+                           std::move(fusion_algorithm),
+                           SourcesMap()) {}
 
 bool FakePlatformSensorFusion::GetSourceReading(mojom::SensorType type,
                                                 SensorReading* result) {
