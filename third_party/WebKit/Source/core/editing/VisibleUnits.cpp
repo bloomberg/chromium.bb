@@ -447,10 +447,13 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
           start.AnchorNode(), start.OffsetInContainerNode());
   const PositionTemplate<Strategy> search_end =
       PositionTemplate<Strategy>::LastPositionInNode(*boundary);
+  // Treat bullets used in the text security mode as regular characters when
+  // looking for boundaries
   TextIteratorAlgorithm<Strategy> it(
       search_start, search_end,
       TextIteratorBehavior::Builder()
           .SetEmitsCharactersBetweenAllVisiblePositions(true)
+          .SetEmitsSmallXForTextSecurity(true)
           .Build());
   const unsigned kInvalidOffset = static_cast<unsigned>(-1);
   unsigned next = kInvalidOffset;
@@ -460,8 +463,8 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
     // Keep asking the iterator for chunks until the search function
     // returns an end value not equal to the length of the string passed to
     // it.
-    bool in_text_security_mode = it.IsInTextSecurityMode();
-    if (!in_text_security_mode) {
+    // TDOO(editing-dev): We should get rid of redundant scope.
+    {
       int run_offset = 0;
       do {
         run_offset += it.CopyTextTo(&string, run_offset, string.Capacity());
@@ -476,11 +479,6 @@ static PositionTemplate<Strategy> NextBoundaryAlgorithm(
       } while (next == string.Size() && run_offset < it.length());
       if (next != string.Size())
         break;
-    } else {
-      // Treat bullets used in the text security mode as regular
-      // characters when looking for boundaries
-      string.PushCharacters('x', it.length());
-      next = string.Size();
     }
     it.Advance();
   }
