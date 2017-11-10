@@ -78,7 +78,7 @@ class HEADLESS_EXPORT VirtualTimeController
     RepeatingTask* task;
     base::TimeDelta interval;
     base::TimeDelta next_execution_time;
-    bool ready_to_advance = true;
+    bool ready_to_advance = false;
   };
 
   // emulation::Observer implementation:
