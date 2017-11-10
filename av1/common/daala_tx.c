@@ -4,6 +4,7 @@
 /* clang-format off */
 
 #define OD_RSHIFT1(_a) (((_a) + ((_a) < 0)) >> 1)
+#define OD_PAVG(_a, _b) (((_a) + (_b) + 1) >> 1)
 
 /* TODO: Daala DCT overflow checks need to be ported as a later test */
 # if defined(OD_DCT_CHECK_OVERFLOW)
@@ -4613,7 +4614,7 @@ void od_bin_idct4(od_coeff *x, int xstride, const od_coeff y[4]) {
 
 /* 4-point orthonormal Type-VII fDST. */
 void od_bin_fdst4(od_coeff y[4], const od_coeff *x, int xstride) {
-  /* 11 adds, 5 "muls".*/
+  /* 11 adds, 5 "muls", 2 shifts.*/
   int q0;
   int q1;
   int q2;
@@ -4622,30 +4623,36 @@ void od_bin_fdst4(od_coeff y[4], const od_coeff *x, int xstride) {
   int t1;
   int t2;
   int t3;
+  int t3h;
   int t4;
+  int u4;
   q0 = x[0*xstride];
   q1 = x[1*xstride];
   q2 = x[2*xstride];
   q3 = x[3*xstride];
   t0 = q1 + q3;
-  t1 = q0 + q1 - q3;
+  /*When used in a 4x16 transform, the following line could overflow 16 bits
+    in SIMD unless implemented using PAVGW or VRHSUB.S16.*/
+  t1 = q1 + OD_PAVG(q0, -t0);
   t2 = q0 - q1;
   t3 = q2;
   t4 = q0 + q3;
   /* 7021/16384 ~= 2*Sin[2*Pi/9]/3 ~= 0.428525073124360 */
   t0 = (t0*7021 + 8192) >> 14;
-  /* 18919/32768 ~= 2*Sin[3*Pi/9]/3 ~= 0.577350269189626 */
-  t1 = (t1*18919 + 16384) >> 15;
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t1 = (t1*37837 + 16384) >> 15;
   /* 21513/32768 ~= 2*Sin[4*Pi/9]/3 ~= 0.656538502008139 */
   t2 = (t2*21513 + 16384) >> 15;
-  /* 18919/32768 ~= 2*Sin[3*Pi/9]/3 ~= 0.577350269189626 */
-  t3 = (t3*18919 + 16384) >> 15;
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t3 = (t3*37837 + 16384) >> 15;
   /* 467/2048 ~= 2*Sin[1*Pi/9]/3 ~= 0.228013428883779 */
   t4 = (t4*467 + 1024) >> 11;
-  q0 = t0 + t3 + t4;
+  t3h = OD_RSHIFT1(t3);
+  u4 = t4 + t3h;
+  q0 = t0 + u4;
   q1 = t1;
-  q2 = t0 + t2 - t3;
-  q3 = t2 + t3 - t4;
+  q2 = t0 + t2 - t3h;
+  q3 = t2 + t3 - u4;
   y[0] = (od_coeff)q0;
   y[1] = (od_coeff)q1;
   y[2] = (od_coeff)q2;
@@ -4663,30 +4670,34 @@ void od_bin_idst4(od_coeff *x, int xstride, const od_coeff y[4]) {
   int t1;
   int t2;
   int t3;
+  int t3h;
   int t4;
+  int u4;
   q0 = y[0];
   q1 = y[1];
   q2 = y[2];
   q3 = y[3];
   t0 = q0 - q3;
   t1 = q0 + q2;
-  t2 = q0 - q2 + q3;
+  t2 = q3 + OD_PAVG(t0, -q2);
   t3 = q1;
   t4 = q2 + q3;
   /* 467/2048 ~= 2*Sin[1*Pi/9]/3 ~= 0.228013428883779 */
   t0 = (t0*467 + 1024) >> 11;
   /* 7021/16384 ~= 2*Sin[2*Pi/9]/3 ~= 0.428525073124360 */
   t1 = (t1*7021 + 8192) >> 14;
-  /* 18919/32768 ~= 2*Sin[3*Pi/9]/3 ~= 0.577350269189626 */
-  t2 = (t2*18919 + 16384) >> 15;
-  /* 18919/32768 ~= 2*Sin[3*Pi/9]/3 ~= 0.577350269189626 */
-  t3 = (t3*18919 + 16384) >> 15;
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t2 = (t2*37837 + 16384) >> 15;
+  /* 37837/32768 ~= 4*Sin[3*Pi/9]/3 ~= 1.154700538379252 */
+  t3 = (t3*37837 + 16384) >> 15;
   /* 21513/32768 ~= 2*Sin[4*Pi/9]/3 ~= 0.656538502008139 */
   t4 = (t4*21513 + 16384) >> 15;
-  q0 = t0 + t3 + t4;
-  q1 = t1 + t3 - t4;
+  t3h = OD_RSHIFT1(t3);
+  u4 = t4 + t3h;
+  q0 = t0 + u4;
+  q1 = t1 + t3 - u4;
   q2 = t2;
-  q3 = t0 + t1 - t3;
+  q3 = t0 + t1 - t3h;
   x[0*xstride] = q0;
   x[1*xstride] = q1;
   x[2*xstride] = q2;
