@@ -65,6 +65,12 @@ const char kGpuSandboxAllowSysVShm[] = "gpu-sandbox-allow-sysv-shm";
 // Makes GPU sandbox failures fatal.
 const char kGpuSandboxFailuresFatal[] = "gpu-sandbox-failures-fatal";
 
+#if defined(OS_WIN)
+// Allows third party modules to inject by disabling the BINARY_SIGNATURE
+// mitigation policy on Win10+. Also has other effects in ELF.
+const char kAllowThirdPartyModules[] = "allow-third-party-modules";
+#endif
+
 // Flags spied upon from other layers.
 const char kGpuProcess[] = "gpu-process";
 const char kPpapiBrokerProcess[] = "ppapi-broker";
