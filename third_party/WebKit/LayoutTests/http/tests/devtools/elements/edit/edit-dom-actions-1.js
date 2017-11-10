@@ -1,11 +1,33 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/edit-dom-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that user can mutate DOM by means of elements panel.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div>
+          <div id="testRemove">
+              <div id="node-to-remove"></div>
+          </div>
+
+          <div id="testSetNodeName">
+              <div id="node-to-set-name"></div>
+          </div>
+
+          <div id="testSetNodeNameInput">
+              <div id="node-to-set-name-input"></div>
+          </div>
+
+          <div id="testSetNodeValue">
+              <div id="node-to-set-value">
+                Text
+              </div>
+          </div>
+      </div>
+    `);
+
   // Save time on style updates.
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
@@ -49,34 +71,4 @@ function test() {
       }
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that user can mutate DOM by means of elements panel.
-</p>
-
-<div>
-    <div id="testRemove">
-        <div id="node-to-remove"></div>
-    </div>
-
-    <div id="testSetNodeName">
-        <div id="node-to-set-name"></div>
-    </div>
-
-    <div id="testSetNodeNameInput">
-        <div id="node-to-set-name-input"></div>
-    </div>
-
-    <div id="testSetNodeValue">
-        <div id="node-to-set-value">
-          Text
-        </div>
-    </div>
-</div>
-</body>
-</html>
+})();

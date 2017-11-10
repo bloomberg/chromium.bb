@@ -1,10 +1,31 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that DOM modifications done in the Elements panel are undoable.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div style="display:none">
+          <div id="testRemove">
+              <div id="node-to-remove"></div>
+          </div>
+
+          <div id="testSetNodeName">
+              <div id="node-to-set-name"></div>
+          </div>
+
+          <div id="testSetNodeValue">
+              <div id="node-to-set-value">Text</div>
+          </div>
+
+          <div id="testEditAsHTML">
+              <div id="node-to-edit-as-html"><span id="span">Text</span></div>
+          </div>
+      </div>
+    `);
+
   var testSuite = [];
 
   function testSetUp(next) {
@@ -46,33 +67,4 @@ function test() {
   testSuite.push(ElementsTestRunner.generateUndoTest(testEditAsHTML));
 
   TestRunner.runTestSuite(testSuite);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that DOM modifications done in the Elements panel are undoable.
-</p>
-
-<div style="display:none">
-    <div id="testRemove">
-        <div id="node-to-remove"></div>
-    </div>
-
-    <div id="testSetNodeName">
-        <div id="node-to-set-name"></div>
-    </div>
-
-    <div id="testSetNodeValue">
-        <div id="node-to-set-value">Text</div>
-    </div>
-
-    <div id="testEditAsHTML">
-        <div id="node-to-edit-as-html"><span id="span">Text</span></div>
-    </div>
-</div>
-
-</body>
-</html>
+})();

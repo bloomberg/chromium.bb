@@ -1,21 +1,27 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function removeNode(id)
-{
-    var child = document.getElementById(id);
-    child.parentNode.removeChild(child);
-}
+(async function() {
+  TestRunner.addResult(`Tests that elements panel updates dom tree structure upon node removal.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="container"><div id="child1">Text</div><div id="child2"></div><div id="child3"></div><div id="child4"></div></div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function removeNode(id)
+      {
+          var child = document.getElementById(id);
+          child.parentNode.removeChild(child);
+      }
 
-function removeTextNode(id)
-{
-    document.getElementById(id).textContent = "";
-}
+      function removeTextNode(id)
+      {
+          document.getElementById(id).textContent = "";
+      }
+  `);
 
-function test() {
   var containerNode;
 
   TestRunner.runTestSuite([
@@ -75,17 +81,4 @@ function test() {
       TestRunner.evaluateInPage('removeNode(\'child2\')', callback);
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that elements panel updates dom tree structure upon node removal.
-</p>
-
-<div id="container"><div id="child1">Text</div><div id="child2"></div><div id="child3"></div><div id="child4"></div></div>
-
-</body>
-</html>
+})();

@@ -1,7 +1,5 @@
 Tests that user can mutate DOM by means of elements panel.
 
-Element
-Span contents
 
 Running: testSetUp
 

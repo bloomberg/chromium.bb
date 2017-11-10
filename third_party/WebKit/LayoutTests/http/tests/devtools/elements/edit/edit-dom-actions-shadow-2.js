@@ -1,11 +1,28 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/edit-dom-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that user can mutate author shadow DOM by means of elements panel.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('text_editor');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div>
+          <div id="testEditAuthorShadowDOMAsHTML"></div>
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function createRootWithContents(id, html)
+      {
+          var container = document.getElementById(id);
+          var root = container.createShadowRoot();
+          root.innerHTML = html;
+      }
+
+      createRootWithContents("testEditAuthorShadowDOMAsHTML", "<div id='authorShadowDOMElement'></div>");
+    `);
+
   // Save time on style updates.
   UI.viewManager.showView('elements');
 
@@ -35,33 +52,9 @@ function test() {
           event.isMetaOrCtrlForTest = true;
           treeElement._editing.editor.widget().element.dispatchEvent(event);
           TestRunner.deprecatedRunAfterPendingDispatches(
-              ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
+              ElementsTestRunner.expandElementsTree.bind(ElementsTestRunner, done));
         }
       }
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that user can mutate author shadow DOM by means of elements panel.
-</p>
-
-<div>
-    <div id="testEditAuthorShadowDOMAsHTML"></div>
-</div>
-<script>
-function createRootWithContents(id, html)
-{
-    var container = document.getElementById(id);
-    var root = container.createShadowRoot();
-    root.innerHTML = html;
-}
-
-createRootWithContents("testEditAuthorShadowDOMAsHTML", "<div id='authorShadowDOMElement'></div>");
-</script>
-</body>
-</html>
+})();

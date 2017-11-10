@@ -1,18 +1,28 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/set-outer-html-test.js"></script>
-<script>
+(async function() {
+  TestRunner.addResult(`Tests undo for the DOMAgent.setOuterHTML protocol method (part 2).\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="container" style="display:none">
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      document.getElementById("identity").wrapperIdentity = "identity";
+  `);
 
-function onload()
-{
-    document.getElementById("identity").wrapperIdentity = "identity";
-    runTest();
-}
-
-function test() {
   TestRunner.runTestSuite([
     function testSetUp(next) {
       ElementsTestRunner.setUpTestSuite(next);
@@ -46,26 +56,4 @@ function test() {
           '<h2>Getting involved</h2>', '<h2>Getting involved</h2><h2>Getting involved</h2>', next);
     }
   ]);
-}
-</script>
-</head>
-
-<body onload="onload()">
-<p>
-Tests undo for the DOMAgent.setOuterHTML protocol method (part 2).
-</p>
-
-<div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
-
-</body>
-</html>
+})();

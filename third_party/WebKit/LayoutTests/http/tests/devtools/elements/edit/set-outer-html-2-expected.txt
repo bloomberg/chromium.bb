@@ -1,6 +1,5 @@
 Tests DOMAgent.setOuterHTML protocol method (part 2).
 
-Additional node
 
 Running: testSetUp
 
@@ -12,16 +11,16 @@ Event Symbol(NodeInserted): UL
 Event Symbol(NodeRemoved): UL
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2 foo="bar" bar="baz">Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2 foo="bar" bar="baz">Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 Bringing things back
@@ -33,16 +32,16 @@ Event Symbol(CharacterDataModified): #text
 Event Symbol(NodeInserted): LI
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 
@@ -55,16 +54,16 @@ Event Symbol(NodeInserted): DIV
 Event Symbol(NodeRemoved): UL
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<div><ul>
-   <li></li>
-</ul></div>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <div><ul>
+         <li></li>
+      </ul></div>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 Bringing things back
@@ -74,16 +73,16 @@ Event Symbol(NodeInserted): UL
 Event Symbol(NodeRemoved): DIV
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 
@@ -96,16 +95,16 @@ Event Symbol(NodeInserted): H2
 Event Symbol(NodeRemoved): H2
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-<h2>Getting involved</h2></div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      <h2>Getting involved</h2></div>
 ==========>8==========
 
 Bringing things back
@@ -121,16 +120,16 @@ Event Symbol(NodeRemoved): UL
 Event Symbol(NodeRemoved): UL
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 
@@ -142,16 +141,16 @@ Wrapper identity: identity
 Event Symbol(NodeInserted): DIV
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 Bringing things back
@@ -159,16 +158,16 @@ Bringing things back
 Wrapper identity: identity
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 
@@ -184,16 +183,16 @@ Event Symbol(NodeInserted): H2
 Event Symbol(NodeRemoved): H2
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2><h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2><h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 Bringing things back
@@ -202,16 +201,16 @@ Wrapper identity: identity
 Event Symbol(NodeRemoved): H2
 ==========8<==========
 <div id="container" style="display:none">
-<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
-<h2>Getting involved</h2>
-<p id="identity">There are many ways to get involved. You can:</p>
-<ul>
-   <li></li>
-</ul>
-<ul>
-   <li></li>
-</ul>
-</div>
+      <p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc..</p>
+      <h2>Getting involved</h2>
+      <p id="identity">There are many ways to get involved. You can:</p>
+      <ul>
+         <li></li>
+      </ul>
+      <ul>
+         <li></li>
+      </ul>
+      </div>
 ==========>8==========
 
 
