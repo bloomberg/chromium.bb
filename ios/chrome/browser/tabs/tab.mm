@@ -102,7 +102,6 @@
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
@@ -152,14 +151,11 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 }
 }  // namespace
 
-@interface Tab ()<CRWWebStateObserver,
-                  CRWWebControllerObserver,
-                  FindInPageControllerDelegate> {
+@interface Tab ()<CRWWebStateObserver, FindInPageControllerDelegate> {
   __weak TabModel* _parentTabModel;
   ios::ChromeBrowserState* _browserState;
 
   OpenInController* _openInController;
-
 
   // YES if this Tab is being prerendered.
   BOOL _isPrerenderTab;
@@ -291,7 +287,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
         ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
 
     [self updateLastVisitedTimestamp];
-    [[self webController] addObserver:self];
     [[self webController] setDelegate:self];
 
     _snapshotManager = [[SnapshotManager alloc] initWithWebState:webState];
@@ -852,14 +847,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   DCHECK(_secondFactorController);
   [_secondFactorController evaluateU2FResultFromU2FURL:URL
                                               webState:self.webState];
-}
-
-#pragma mark - CRWWebControllerObserver protocol methods.
-
-- (void)webControllerWillClose:(CRWWebController*)webController {
-  DCHECK_EQ(webController, [self webController]);
-  [[self webController] removeObserver:self];
-  [[self webController] setDelegate:nil];
 }
 
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods.

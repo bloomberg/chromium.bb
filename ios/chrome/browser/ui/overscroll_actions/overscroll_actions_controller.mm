@@ -171,7 +171,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // The proxy used to interact with the webview's scrollview.
   CRWWebViewScrollViewProxy* _webViewScrollViewProxy;
   // The scrollview driving the OverscrollActionsController when not using
-  // the scrollview from the CRWWebControllerObserver.
+  // the scrollview from the WebState.
   UIScrollView* _scrollview;
 }
 
