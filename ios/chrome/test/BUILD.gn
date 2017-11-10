@@ -182,7 +182,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/coordinators:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests",
     "//ios/chrome/browser/ui/dialogs:unit_tests_internal",
-    "//ios/chrome/browser/ui/downloads:unit_tests",
+    "//ios/chrome/browser/ui/download:unit_tests",
     "//ios/chrome/browser/ui/elements:unit_tests",
     "//ios/chrome/browser/ui/external_app:unit_tests",
     "//ios/chrome/browser/ui/external_search:unit_tests",
