@@ -6559,7 +6559,7 @@ crbug.com/591099 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-
 crbug.com/591099 http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/sources/debugger-ui/function-generator-details.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ Crash Failure Pass ]
-crbug.com/591099 http/tests/devtools/sources/debugger/properties-special.html [ Failure Pass ]
+crbug.com/591099 http/tests/devtools/sources/debugger/properties-special.js [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/startup/console/console-format-startup.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/devtools/text-autosizing-override.js [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Crash Failure Pass ]

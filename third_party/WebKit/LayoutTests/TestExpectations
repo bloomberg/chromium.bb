@@ -3150,7 +3150,7 @@ crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/runtime/runtime-getPr
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/persistence/automapping-sourcemap-nameclash.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 inspector-protocol/debugger/domdebugger-getEventListeners.js [ NeedsManualRebaseline ]
@@ -3164,7 +3164,7 @@ crbug.com/v8/4958 http/tests/devtools/runtime/runtime-getProperties.js [ NeedsMa
 crbug.com/v8/4958 http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
 
 crbug.com/v8/4958 http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ NeedsManualRebaseline Timeout ]

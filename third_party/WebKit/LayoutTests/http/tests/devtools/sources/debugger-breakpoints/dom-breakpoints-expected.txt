@@ -1,5 +1,4 @@
-Tests DOM breakpoints. Bug 42886
-
+Tests DOM breakpoints.
 
 Running: testInsertChild
 Test that 'Subtree Modified' breakpoint is hit when appending a child.
@@ -7,7 +6,7 @@ Set 'Subtree Modified' DOM breakpoint on rootElement.
 Append childElement to rootElement.
 Script execution paused.
 Call stack:
-    0) appendElement (dom-breakpoints.html:12)
+    0) appendElement (dom-breakpoints.html:5)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -23,7 +22,7 @@ Check DOM breakpoint.
 Test that DOM breakpoint is hit when re-enabled.
 Script execution paused.
 Call stack:
-    0) modifyAttribute (dom-breakpoints.html:18)
+    0) modifyAttribute (dom-breakpoints.html:10)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -35,7 +34,7 @@ Test that 'Subtree Modified' breakpoint is hit when appending a grandchild.
 Append grandchildElement to childElement.
 Script execution paused.
 Call stack:
-    0) appendElement (dom-breakpoints.html:12)
+    0) appendElement (dom-breakpoints.html:5)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -47,7 +46,7 @@ Test that 'Subtree Modified' breakpoint is hit when removing a child.
 Remove grandchildElement.
 Script execution paused.
 Call stack:
-    0) removeElement (dom-breakpoints.html:44)
+    0) removeElement (dom-breakpoints.html:32)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -59,7 +58,7 @@ Test that 'Subtree Modified' breakpoint is hit exactly once when setting innerHT
 Set childElement.innerHTML.
 Script execution paused.
 Call stack:
-    0) setInnerHTML (dom-breakpoints.html:50)
+    0) setInnerHTML (dom-breakpoints.html:37)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -68,7 +67,7 @@ Script execution resumed.
 Call breakDebugger, expect it to show up in next stack trace.
 Script execution paused.
 Call stack:
-    0) breakDebugger (dom-breakpoints.html:55)
+    0) breakDebugger (dom-breakpoints.html:41)
     1)  (:1)
 Script execution resumed.
 
@@ -78,7 +77,7 @@ Set 'Attribute Modified' DOM breakpoint on rootElement.
 Modify rootElement data-test attribute.
 Script execution paused.
 Call stack:
-    0) modifyAttribute (dom-breakpoints.html:18)
+    0) modifyAttribute (dom-breakpoints.html:10)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -91,7 +90,7 @@ Set 'Attribute Modified' DOM breakpoint on rootElement.
 Modify rootElement data-test attribute.
 Script execution paused.
 Call stack:
-    0) modifyAttrNode (dom-breakpoints.html:24)
+    0) modifyAttrNode (dom-breakpoints.html:15)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -104,7 +103,7 @@ Set 'Attribute Modified' DOM breakpoint on rootElement.
 Modify rootElement data-foo attribute.
 Script execution paused.
 Call stack:
-    0) setAttrNode (dom-breakpoints.html:32)
+    0) setAttrNode (dom-breakpoints.html:22)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -117,7 +116,7 @@ Set 'Attribute Modified' DOM breakpoint on rootElement.
 Modify rootElement style.color attribute.
 Script execution paused.
 Call stack:
-    0) modifyStyleAttribute (dom-breakpoints.html:38)
+    0) modifyStyleAttribute (dom-breakpoints.html:27)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -130,7 +129,7 @@ Set 'Node Removed' DOM breakpoint on elementToRemove.
 Remove elementToRemove.
 Script execution paused.
 Call stack:
-    0) removeElement (dom-breakpoints.html:44)
+    0) removeElement (dom-breakpoints.html:32)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -144,7 +143,7 @@ Page reloaded.
 Append childElement to rootElement.
 Script execution paused.
 Call stack:
-    0) appendElement (dom-breakpoints.html:12)
+    0) appendElement (dom-breakpoints.html:5)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -157,7 +156,7 @@ Set 'Subtree Modified' DOM breakpoint on author shadow root.
 Append childElement to author shadow root.
 Script execution paused.
 Call stack:
-    0) appendElementToOpenShadowRoot (dom-breakpoints.html:79)
+    0) appendElementToOpenShadowRoot (dom-breakpoints.html:61)
     1)  (:1)
     [setTimeout]
     0)  (:1)
@@ -171,7 +170,7 @@ Page reloaded.
 Append childElement to outerElement.
 Script execution paused.
 Call stack:
-    0) appendElementToAuthorShadowTree (dom-breakpoints.html:72)
+    0) appendElementToAuthorShadowTree (dom-breakpoints.html:55)
     1)  (:1)
     [setTimeout]
     0)  (:1)
