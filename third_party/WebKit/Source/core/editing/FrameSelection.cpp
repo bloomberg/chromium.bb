@@ -344,8 +344,7 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
                             SelectionModifyDirection direction,
                             TextGranularity granularity,
                             SetSelectionBy set_selection_by) {
-  SelectionModifier selection_modifier(*GetFrame(),
-                                       ComputeVisibleSelectionInDOMTree(),
+  SelectionModifier selection_modifier(*GetFrame(), GetSelectionInDOMTree(),
                                        x_pos_for_vertical_arrow_navigation_);
   const bool modified =
       selection_modifier.Modify(alter, direction, granularity);
