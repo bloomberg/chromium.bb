@@ -22,11 +22,11 @@
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/content_decryption_module.h"
-#include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
 #include "media/gpu/android/avda_picture_buffer_manager.h"
 #include "media/gpu/android/avda_state_provider.h"
 #include "media/gpu/android/device_info.h"
+#include "media/gpu/android/surface_chooser_helper.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
@@ -34,6 +34,7 @@
 #include "ui/gl/android/surface_texture.h"
 
 namespace media {
+class AndroidVideoSurfaceChooser;
 class SharedMemoryRegion;
 class PromotionHintAggregator;
 
@@ -387,53 +388,24 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // told to move to SurfaceTexture, then this will be value() == nullptr.
   base::Optional<std::unique_ptr<AndroidOverlay>> incoming_overlay_;
 
-  std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
+  SurfaceChooserHelper surface_chooser_helper_;
 
   DeviceInfo* device_info_;
 
   bool force_defer_surface_creation_for_testing_;
-
-  AndroidVideoSurfaceChooser::State surface_chooser_state_;
-
-  // Number of promotion hints that we need to receive before clearing the
-  // "delay overlay promotion" flag in |surface_chooser_state_|.  We do this so
-  // that the transition looks better, since it gives blink time to stabilize.
-  // Since overlay positioning isn't synchronous, it's good to make sure that
-  // blink isn't moving the quad around too.
-  int hints_until_clear_relayout_flag_ = 0;
 
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
   std::unique_ptr<PromotionHintAggregator> promotion_hint_aggregator_;
 
-  // Are overlays required by command-line options?
-  bool is_overlay_required_ = false;
-
-  // Must match AVDAFrameInformation UMA enum.  Please do not remove or re-order
-  // values, only append new ones.
-  enum class FrameInformation {
-    SURFACETEXTURE_INSECURE = 0,
-    SURFACETEXTURE_L3 = 1,
-    OVERLAY_L3 = 2,
-    OVERLAY_L1 = 3,
-    OVERLAY_INSECURE_PLAYER_ELEMENT_FULLSCREEN = 4,
-    OVERLAY_INSECURE_NON_PLAYER_ELEMENT_FULLSCREEN = 5,
-
-    // Max enum value.
-    FRAME_INFORMATION_MAX = OVERLAY_INSECURE_NON_PLAYER_ELEMENT_FULLSCREEN
-  };
-
   // Update |cached_frame_information_|.
   void CacheFrameInformation();
 
   // Most recently cached frame information, so that we can dispatch it without
   // recomputing it on every frame.  It changes very rarely.
-  FrameInformation cached_frame_information_ =
-      FrameInformation::SURFACETEXTURE_INSECURE;
-
-  // Time since we last updated the chooser state.
-  base::TimeTicks most_recent_chooser_retry_;
+  SurfaceChooserHelper::FrameInformation cached_frame_information_ =
+      SurfaceChooserHelper::FrameInformation::SURFACETEXTURE_INSECURE;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

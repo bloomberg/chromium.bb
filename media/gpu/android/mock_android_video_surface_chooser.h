@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_ANDROID_FAKE_ANDROID_VIDEO_SURFACE_CHOOSER_H_
-#define MEDIA_GPU_ANDROID_FAKE_ANDROID_VIDEO_SURFACE_CHOOSER_H_
+#ifndef MEDIA_GPU_ANDROID_MOCK_ANDROID_VIDEO_SURFACE_CHOOSER_H_
+#define MEDIA_GPU_ANDROID_MOCK_ANDROID_VIDEO_SURFACE_CHOOSER_H_
 
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -11,12 +11,12 @@
 
 namespace media {
 
-// A fake surface chooser that lets tests choose the surface with
+// A mock surface chooser that lets tests choose the surface with
 // ProvideOverlay() and ProvideSurfaceTexture().
-class FakeSurfaceChooser : public AndroidVideoSurfaceChooser {
+class MockAndroidVideoSurfaceChooser : public AndroidVideoSurfaceChooser {
  public:
-  FakeSurfaceChooser();
-  ~FakeSurfaceChooser() override;
+  MockAndroidVideoSurfaceChooser();
+  ~MockAndroidVideoSurfaceChooser() override;
 
   // Mocks that are called by the fakes below.
   MOCK_METHOD0(MockSetClientCallbacks, void());
@@ -41,9 +41,9 @@ class FakeSurfaceChooser : public AndroidVideoSurfaceChooser {
   State current_state_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSurfaceChooser);
+  DISALLOW_COPY_AND_ASSIGN(MockAndroidVideoSurfaceChooser);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_GPU_ANDROID_FAKE_ANDROID_VIDEO_SURFACE_CHOOSER_H_
+#endif  // MEDIA_GPU_ANDROID_MOCK_ANDROID_VIDEO_SURFACE_CHOOSER_H_
