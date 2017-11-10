@@ -40,6 +40,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pause_tabs_field_trial.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/browser_sync/browser_sync_switches.h"
@@ -1296,7 +1297,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription, kOsAll,
-     SINGLE_VALUE_TYPE(autofill::switches::kShowAutofillTypePredictions)},
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillShowTypePredictions)},
     {"smooth-scrolling", flag_descriptions::kSmoothScrollingName,
      flag_descriptions::kSmoothScrollingDescription,
      // Mac has a separate implementation with its own setting to disable.
