@@ -15,6 +15,8 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
 
  public:
   static CSSURLImageValue* Create(const AtomicString& url) {
+    // TODO(crbug.com/783031): This should probably obtain base url information
+    // (e.g. from execution context) to parse relative URLs correctly.
     return new CSSURLImageValue(CSSImageValue::Create(url));
   }
   static CSSURLImageValue* Create(const CSSImageValue* image_value) {

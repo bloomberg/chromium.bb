@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Constructing a CSSURLImageValue with an invalid URL throws a TypeError assert_throws: function "() => new CSSURLImageValue('not url')" did not throw
+PASS Constructing a CSSURLImageValue with a valid URL puts it in an unloaded state
+PASS CSSURLImageValue.url is readonly
+PASS Loading a CSSURLImageValue from a URL sets its state to loaded
+PASS Loading a CSSURLImageValue from a base64 URL sets its state to loaded
+FAIL Loading a CSSURLImageValue from a URL to an invalid image sets its state to error assert_equals: expected (object) null but got (number) 0
+Harness: the test ran to completion.
+
