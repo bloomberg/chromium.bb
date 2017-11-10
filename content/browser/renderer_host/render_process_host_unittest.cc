@@ -373,6 +373,19 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseError) {
   EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 }
 
+// Tests that RenderProcessHost will not consider reusing a process that is
+// marked as never suitable for reuse, according to MayReuseHost().
+TEST_F(RenderProcessHostUnitTest, DoNotReuseHostThatIsNeverSuitableForReuse) {
+  const GURL kUrl("http://foo.com");
+  NavigateAndCommit(kUrl);
+  main_test_rfh()->GetProcess()->SetIsNeverSuitableForReuse();
+  scoped_refptr<SiteInstanceImpl> site_instance =
+      SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
+  site_instance->set_process_reuse_policy(
+      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+}
+
 // Tests that RenderProcessHost reuse considers navigations correctly.
 TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
   // This is only applicable to PlzNavigate.

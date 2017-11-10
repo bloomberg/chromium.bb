@@ -836,7 +836,8 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
       // |site_url|, for example if it was reused by a navigation to a
       // different site, and |site_url| requires a dedicated process.  Do not
       // allow such hosts to be reused.  See https://crbug.com/780661.
-      if (!RenderProcessHostImpl::IsSuitableHost(
+      if (!host->MayReuseHost() ||
+          !RenderProcessHostImpl::IsSuitableHost(
               host, host->GetBrowserContext(), site_url))
         continue;
 
