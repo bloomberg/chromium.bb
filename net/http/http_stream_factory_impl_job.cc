@@ -991,8 +991,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   return InitSocketHandleForHttpRequest(
       GetSocketGroup(), destination_, request_info_.extra_headers,
       request_info_.load_flags, priority_, session_, proxy_info_, expect_spdy_,
-      server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
-      net_log_, connection_.get(), resolution_callback, io_callback_);
+      quic_version_, server_ssl_config_, proxy_ssl_config_,
+      request_info_.privacy_mode, net_log_, connection_.get(),
+      resolution_callback, io_callback_);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {

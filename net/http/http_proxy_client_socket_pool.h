@@ -32,6 +32,7 @@ class HttpProxyClientSocketWrapper;
 class NetLog;
 class NetworkQualityProvider;
 class ProxyDelegate;
+class QuicStreamFactory;
 class SSLClientSocketPool;
 class SSLSocketParams;
 class SpdySessionPool;
@@ -39,20 +40,23 @@ class TransportClientSocketPool;
 class TransportSocketParams;
 
 // HttpProxySocketParams only needs the socket params for one of the proxy
-// types.  The other param must be NULL.  When using an HTTP Proxy,
-// |transport_params| must be set.  When using an HTTPS Proxy, |ssl_params|
-// must be set.
+// types.  The other param must be NULL.  When using an HTTP proxy,
+// |transport_params| must be set.  When using an HTTPS proxy or QUIC proxy,
+// |ssl_params| must be set. Also, if using a QUIC proxy, |quic_version| must
+// not be QUIC_VERSION_UNSUPPORTED.
 class NET_EXPORT_PRIVATE HttpProxySocketParams
     : public base::RefCounted<HttpProxySocketParams> {
  public:
   HttpProxySocketParams(
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
+      QuicTransportVersion quic_version,
       const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
+      QuicStreamFactory* quic_stream_factory,
       bool tunnel,
       ProxyDelegate* proxy_delegate);
 
@@ -62,6 +66,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   const scoped_refptr<SSLSocketParams>& ssl_params() const {
     return ssl_params_;
   }
+  QuicTransportVersion quic_version() const { return quic_version_; }
   const std::string& user_agent() const { return user_agent_; }
   const HostPortPair& endpoint() const { return endpoint_; }
   HttpAuthCache* http_auth_cache() const { return http_auth_cache_; }
@@ -70,6 +75,9 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
   }
   SpdySessionPool* spdy_session_pool() {
     return spdy_session_pool_;
+  }
+  QuicStreamFactory* quic_stream_factory() const {
+    return quic_stream_factory_;
   }
   const HostResolver::RequestInfo& destination() const;
   bool tunnel() const { return tunnel_; }
@@ -84,7 +92,9 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
 
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
+  QuicTransportVersion quic_version_;
   SpdySessionPool* spdy_session_pool_;
+  QuicStreamFactory* quic_stream_factory_;
   const std::string user_agent_;
   const HostPortPair endpoint_;
   HttpAuthCache* const http_auth_cache_;
