@@ -7,13 +7,17 @@
 
 #include "third_party/WebKit/public/platform/dedicated_worker_factory.mojom.h"
 
+namespace url {
+class Origin;
+}
+
 namespace content {
-class RenderFrameHost;
+class RenderProcessHost;
 
 void CreateDedicatedWorkerHostFactory(
-    int process_id,
-    RenderFrameHost* frame,
-    blink::mojom::DedicatedWorkerFactoryRequest worker_factory);
+    blink::mojom::DedicatedWorkerFactoryRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin);
 
 }  // namespace content
 

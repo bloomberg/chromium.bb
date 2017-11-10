@@ -6,9 +6,9 @@
 #include <utility>
 
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
+
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/worker_interface_binders.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/browser/renderer_interface_binders.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -77,12 +77,12 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
 }  // namespace
 
 void CreateDedicatedWorkerHostFactory(
-    int process_id,
-    RenderFrameHost* frame,
-    blink::mojom::DedicatedWorkerFactoryRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerFactoryImpl>(
-                              process_id, frame->GetLastCommittedOrigin()),
-                          std::move(request));
+    blink::mojom::DedicatedWorkerFactoryRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  mojo::MakeStrongBinding(
+      std::make_unique<DedicatedWorkerFactoryImpl>(host->GetID(), origin),
+      std::move(request));
 }
 
 }  // namespace content
