@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -263,6 +264,9 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
       new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
                                 prefs::kDevicePolicyRefreshRate);
+
+  enrollment_policy_observer_.reset(
+      new chromeos::attestation::EnrollmentPolicyObserver(client()));
 
   // Don't start the AttestationPolicyObserver if machine cert requests
   // are disabled.
