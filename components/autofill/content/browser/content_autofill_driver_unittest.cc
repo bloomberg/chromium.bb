@@ -244,8 +244,7 @@ class MockAutofillManager : public AutofillManager {
 class MockAutofillClient : public TestAutofillClient {
  public:
   MOCK_METHOD0(OnFirstUserGestureObserved, void());
-  MOCK_METHOD1(DidInteractWithNonsecureCreditCardInput,
-               void(content::RenderFrameHost*));
+  MOCK_METHOD0(DidInteractWithNonsecureCreditCardInput, void());
 };
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
@@ -462,7 +461,7 @@ TEST_F(ContentAutofillDriverTest, CreditCardFormInteraction) {
   EXPECT_EQ(url, entry->GetURL());
 
   EXPECT_CALL(*test_autofill_client_,
-              DidInteractWithNonsecureCreditCardInput(main_rfh()));
+              DidInteractWithNonsecureCreditCardInput());
   driver_->DidInteractWithCreditCardForm();
 }
 
@@ -470,8 +469,7 @@ TEST_F(ContentAutofillDriverTest, CreditCardFormInteraction) {
 // client's |DidInteractWithNonsecureCreditCardInput| function if the page
 // is HTTPS.
 TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
-  EXPECT_CALL(*test_autofill_client_,
-              DidInteractWithNonsecureCreditCardInput(testing::_))
+  EXPECT_CALL(*test_autofill_client_, DidInteractWithNonsecureCreditCardInput())
       .Times(0);
 
   GURL url("https://example.test");

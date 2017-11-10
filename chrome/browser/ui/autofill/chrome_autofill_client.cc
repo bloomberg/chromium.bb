@@ -349,8 +349,7 @@ void ChromeAutofillClient::DidFillOrPreviewField(
 #endif  // defined(OS_ANDROID)
 }
 
-void ChromeAutofillClient::DidInteractWithNonsecureCreditCardInput(
-    content::RenderFrameHost* rfh) {
+void ChromeAutofillClient::DidInteractWithNonsecureCreditCardInput() {
   InsecureSensitiveInputDriverFactory* factory =
       InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
           web_contents());

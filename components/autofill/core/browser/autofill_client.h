@@ -182,8 +182,7 @@ class AutofillClient : public RiskDataLoader {
 
   // Inform the client that the user interacted with a non-secure credit card
   // field.
-  virtual void DidInteractWithNonsecureCreditCardInput(
-      content::RenderFrameHost* rfh) = 0;
+  virtual void DidInteractWithNonsecureCreditCardInput() = 0;
 
   // If the context is secure.
   virtual bool IsContextSecure() = 0;

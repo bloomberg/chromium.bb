@@ -67,8 +67,7 @@ class ChromeAutofillClientIOS : public AutofillClientIOS {
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;
-  void DidInteractWithNonsecureCreditCardInput(
-      content::RenderFrameHost* rfh) override;
+  void DidInteractWithNonsecureCreditCardInput() override;
 
  private:
   infobars::InfoBarManager* infobar_manager_;

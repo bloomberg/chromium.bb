@@ -186,8 +186,7 @@ void AwAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
     const base::string16& profile_full_name) {}
 
-void AwAutofillClient::DidInteractWithNonsecureCreditCardInput(
-    content::RenderFrameHost* rfh) {}
+void AwAutofillClient::DidInteractWithNonsecureCreditCardInput() {}
 
 bool AwAutofillClient::IsContextSecure() {
   content::SSLStatus ssl_status;

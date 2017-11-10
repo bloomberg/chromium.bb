@@ -182,8 +182,7 @@ void ContentAutofillDriver::DidInteractWithCreditCardForm() {
               ->GetVisibleURL())) {
     return;
   }
-  autofill_manager_->client()->DidInteractWithNonsecureCreditCardInput(
-      render_frame_host_);
+  autofill_manager_->client()->DidInteractWithNonsecureCreditCardInput();
 }
 
 void ContentAutofillDriver::FormsSeen(const std::vector<FormData>& forms,
