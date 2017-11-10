@@ -14,6 +14,10 @@ INCLUDE_CPP_FILES_ONLY = (
   r'.*\.(cc|h)$',
 )
 
+INCLUDE_SOURCE_FILES_ONLY = (
+  r'.*\.(c|cc|cpp|h|m|mm)$',
+)
+
 EXCLUDE = (
   # Objective C confuses everything.
   r'.*cocoa.*',
@@ -38,6 +42,7 @@ def _CheckChangeLintsClean(input_api, output_api):
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, sources)
 
+
 def _CheckNoContentUnitTestsInChrome(input_api, output_api):
   """Makes sure that no unit tests from content/ are included in unit_tests."""
   problems = []
@@ -57,17 +62,49 @@ def _CheckNoContentUnitTestsInChrome(input_api, output_api):
       'content_tests.gypi:content_unittests target.',
       items=problems)]
 
+
+def _CheckNoOSIOSMacrosInChromeFile(input_api, f):
+  """Check for OS_IOS in a given file in chrome/."""
+  preprocessor_statement = input_api.re.compile(r'^\s*#')
+  ios_macro = input_api.re.compile(r'defined\(OS_IOS\)')
+  results = []
+  for lnum, line in f.ChangedContents():
+    if preprocessor_statement.search(line) and ios_macro.search(line):
+      results.append('    %s:%d' % (f.LocalPath(), lnum))
+
+  return results
+
+
+def _CheckNoOSIOSMacrosInChrome(input_api, output_api):
+  """Check for OS_IOS which isn't used in chrome/."""
+  ios_macros = []
+  def SourceFilter(affected_file):
+    return input_api.FilterSourceFile(affected_file, INCLUDE_SOURCE_FILES_ONLY,
+                                      input_api.DEFAULT_BLACK_LIST)
+  for f in input_api.AffectedSourceFiles(SourceFilter):
+    ios_macros.extend(_CheckNoOSIOSMacrosInChromeFile(input_api, f))
+
+  if not ios_macros:
+    return []
+
+  return [output_api.PresubmitError(
+      'OS_IOS is not used in chrome/ but found in:\n', ios_macros)]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(_CheckNoContentUnitTestsInChrome(input_api, output_api))
+  results.extend(_CheckNoOSIOSMacrosInChrome(input_api, output_api))
   return results
+
 
 def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
   results.extend(_CheckChangeLintsClean(input_api, output_api))
   return results
+
 
 def CheckChangeOnCommit(input_api, output_api):
   results = []
