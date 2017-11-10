@@ -8,10 +8,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/AndroidKeyStore_jni.h"
 
 using base::android::AttachCurrentThread;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::HasException;
 using base::android::JavaByteArrayToByteVector;
 using base::android::JavaRef;
@@ -21,20 +23,25 @@ using base::android::ToJavaByteArray;
 namespace net {
 namespace android {
 
-bool RawSignDigestWithPrivateKey(const JavaRef<jobject>& private_key_ref,
-                                 base::span<const uint8_t> digest,
-                                 std::vector<uint8_t>* signature) {
+bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
+                        base::StringPiece algorithm,
+                        base::span<const uint8_t> input,
+                        std::vector<uint8_t>* signature) {
   JNIEnv* env = AttachCurrentThread();
 
+  ScopedJavaLocalRef<jstring> algorithm_ref =
+      ConvertUTF8ToJavaString(env, algorithm);
+  DCHECK(!algorithm_ref.is_null());
+
   // Convert message to byte[] array.
-  ScopedJavaLocalRef<jbyteArray> digest_ref =
-      ToJavaByteArray(env, digest.data(), digest.length());
-  DCHECK(!digest_ref.is_null());
+  ScopedJavaLocalRef<jbyteArray> input_ref =
+      ToJavaByteArray(env, input.data(), input.length());
+  DCHECK(!input_ref.is_null());
 
   // Invoke platform API
   ScopedJavaLocalRef<jbyteArray> signature_ref =
-      Java_AndroidKeyStore_rawSignDigestWithPrivateKey(env, private_key_ref,
-                                                       digest_ref);
+      Java_AndroidKeyStore_signWithPrivateKey(env, private_key_ref,
+                                              algorithm_ref, input_ref);
   if (HasException(env) || signature_ref.is_null())
     return false;
 

@@ -46,6 +46,7 @@ bool IsClientCertificateError(int error) {
     case ERR_SSL_CLIENT_AUTH_PRIVATE_KEY_ACCESS_DENIED:
     case ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY:
     case ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED:
+    case ERR_SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS:
       return true;
     default:
       return false;
