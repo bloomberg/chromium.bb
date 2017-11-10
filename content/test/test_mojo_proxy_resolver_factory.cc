@@ -6,27 +6,34 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-std::unique_ptr<base::ScopedClosureRunner>
-TestMojoProxyResolverFactory::CreateResolver(
-    const std::string& pac_script,
-    mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
-    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
-  resolver_created_ = true;
-  factory_->CreateResolver(pac_script, std::move(req), std::move(client));
-  return nullptr;
-}
-
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory()
-    : service_ref_factory_(base::Bind(&base::DoNothing)) {
+    : service_ref_factory_(base::Bind(&base::DoNothing)), binding_(this) {
   proxy_resolver_factory_impl_.BindRequest(mojo::MakeRequest(&factory_),
                                            &service_ref_factory_);
 }
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;
+
+void TestMojoProxyResolverFactory::CreateResolver(
+    const std::string& pac_script,
+    proxy_resolver::mojom::ProxyResolverRequest req,
+    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
+  resolver_created_ = true;
+  factory_->CreateResolver(pac_script, std::move(req), std::move(client));
+}
+
+proxy_resolver::mojom::ProxyResolverFactoryPtr
+TestMojoProxyResolverFactory::CreateFactoryInterface() {
+  DCHECK(!binding_.is_bound());
+  proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_factory;
+  binding_.Bind(mojo::MakeRequest(&mojo_factory));
+  return mojo_factory;
+}
 
 }  // namespace content

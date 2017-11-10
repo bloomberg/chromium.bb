@@ -33,5 +33,6 @@ target("source_set", "network_sources") {
     "//content:export",
     "//content/common:mojo_bindings",
     "//content/public/common:common_sources",
+    "//services/proxy_resolver/public/interfaces",
   ]
 }

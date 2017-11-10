@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/network/proxy_service_mojo.h"
-#include "content/public/network/mojo_proxy_resolver_factory.h"
 #include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
@@ -126,30 +125,19 @@ class LoggingMockHostResolver : public net::MockHostResolver {
 
 }  // namespace
 
-class ProxyServiceMojoTest : public testing::Test, MojoProxyResolverFactory {
+class ProxyServiceMojoTest : public testing::Test {
  protected:
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new net::MockProxyScriptFetcher;
     proxy_service_ = CreateProxyServiceUsingMojoFactory(
-        this,
+        test_mojo_proxy_resolver_factory_.CreateFactoryInterface(),
         std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
         base::WrapUnique(fetcher_),
         std::make_unique<net::DoNothingDhcpProxyScriptFetcher>(),
         &mock_host_resolver_, &net_log_, &network_delegate_);
-  }
-
-  std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
-      const std::string& pac_script,
-      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
-      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
-      override {
-    test_mojo_proxy_resolver_factory_.CreateResolver(pac_script, std::move(req),
-                                                     std::move(client));
-    return std::make_unique<base::ScopedClosureRunner>(
-        on_delete_closure_.closure());
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
@@ -158,7 +146,6 @@ class ProxyServiceMojoTest : public testing::Test, MojoProxyResolverFactory {
   LoggingMockHostResolver mock_host_resolver_;
   net::MockProxyScriptFetcher* fetcher_;  // Owned by |proxy_service_|.
   net::TestNetLog net_log_;
-  net::TestClosure on_delete_closure_;
   std::unique_ptr<net::ProxyService> proxy_service_;
 };
 
@@ -180,7 +167,6 @@ TEST_F(ProxyServiceMojoTest, Basic) {
   EXPECT_EQ("PROXY foo:1234", info.ToPacString());
   EXPECT_EQ(0u, mock_host_resolver_.num_resolve());
   proxy_service_.reset();
-  on_delete_closure_.WaitForResult();
 }
 
 TEST_F(ProxyServiceMojoTest, DnsResolution) {
@@ -203,7 +189,6 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   EXPECT_EQ("QUIC bar:4321", info.ToPacString());
   EXPECT_EQ(1u, mock_host_resolver_.num_resolve());
   proxy_service_.reset();
-  on_delete_closure_.WaitForResult();
 
   net::TestNetLogEntry::List entries;
   test_net_log.GetEntries(&entries);

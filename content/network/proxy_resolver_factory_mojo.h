@@ -9,10 +9,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_resolver_factory.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace net {
 class HostResolver;
@@ -23,15 +25,13 @@ class ProxyResolverScriptData;
 
 namespace content {
 
-class MojoProxyResolverFactory;
-
 // Implementation of ProxyResolverFactory that connects to a Mojo service to
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
 class CONTENT_EXPORT ProxyResolverFactoryMojo
     : public net::ProxyResolverFactory {
  public:
   ProxyResolverFactoryMojo(
-      MojoProxyResolverFactory* mojo_proxy_factory,
+      proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
       net::HostResolver* host_resolver,
       const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>&
           error_observer_factory,
@@ -48,11 +48,13 @@ class CONTENT_EXPORT ProxyResolverFactoryMojo
  private:
   class Job;
 
-  MojoProxyResolverFactory* const mojo_proxy_factory_;
+  proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory_;
   net::HostResolver* const host_resolver_;
   const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>
       error_observer_factory_;
   net::NetLog* const net_log_;
+
+  base::WeakPtrFactory<ProxyResolverFactoryMojo> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);
 };

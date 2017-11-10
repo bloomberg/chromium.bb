@@ -19,7 +19,7 @@
 namespace content {
 
 std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
-    MojoProxyResolverFactory* mojo_proxy_factory,
+    proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher,
     std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
@@ -34,7 +34,7 @@ std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
   std::unique_ptr<net::ProxyService> proxy_service(new net::ProxyService(
       std::move(proxy_config_service),
       std::make_unique<ProxyResolverFactoryMojo>(
-          mojo_proxy_factory, host_resolver,
+          std::move(mojo_proxy_factory), host_resolver,
           base::Bind(&net::NetworkDelegateErrorObserver::Create,
                      network_delegate, base::ThreadTaskRunnerHandle::Get()),
           net_log),

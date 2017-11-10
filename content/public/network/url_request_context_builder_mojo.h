@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace net {
 class HostResolver;
@@ -23,12 +24,10 @@ class URLRequestContext;
 
 namespace content {
 
-class MojoProxyResolverFactory;
-
 // Specialization of URLRequestContextBuilder that can create a ProxyService
 // that uses a Mojo ProxyResolver. The consumer is responsible for providing
-// the MojoProxyResolverFactory.  If a PoxyService is set directly via the
-// URLRequestContextBuilder API, it will be used instead.
+// the proxy_resolver::mojom::ProxyResolverFactory.  If a ProxyService is set
+// directly via the URLRequestContextBuilder API, it will be used instead.
 class CONTENT_EXPORT URLRequestContextBuilderMojo
     : public net::URLRequestContextBuilder {
  public:
@@ -36,20 +35,15 @@ class CONTENT_EXPORT URLRequestContextBuilderMojo
   ~URLRequestContextBuilderMojo() override;
 
   // Overrides default DhcpProxyScriptFetcherFactory. Ignored if no
-  // MojoProxyResolverFactory is provided.
-  void set_dhcp_fetcher_factory(
-      std::unique_ptr<net::DhcpProxyScriptFetcherFactory>
-          dhcp_fetcher_factory) {
-    dhcp_fetcher_factory_ = std::move(dhcp_fetcher_factory);
-  }
+  // proxy_resolver::mojom::ProxyResolverFactory is provided.
+  void SetDhcpFetcherFactory(
+      std::unique_ptr<net::DhcpProxyScriptFetcherFactory> dhcp_fetcher_factory);
 
   // Sets Mojo factory used to create ProxyResolvers. If not set, falls back to
-  // URLRequestContext's default behavior. The passed in factory must outlive
-  // the URLRequestContext the builder creates.
-  void set_mojo_proxy_resolver_factory(
-      MojoProxyResolverFactory* mojo_proxy_resolver_factory) {
-    mojo_proxy_resolver_factory_ = mojo_proxy_resolver_factory;
-  }
+  // URLRequestContext's default behavior.
+  void SetMojoProxyResolverFactory(
+      proxy_resolver::mojom::ProxyResolverFactoryPtr
+          mojo_proxy_resolver_factory);
 
  private:
   std::unique_ptr<net::ProxyService> CreateProxyService(
@@ -61,7 +55,7 @@ class CONTENT_EXPORT URLRequestContextBuilderMojo
 
   std::unique_ptr<net::DhcpProxyScriptFetcherFactory> dhcp_fetcher_factory_;
 
-  MojoProxyResolverFactory* mojo_proxy_resolver_factory_ = nullptr;
+  proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_resolver_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextBuilderMojo);
 };

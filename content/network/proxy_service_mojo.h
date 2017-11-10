@@ -9,6 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
 namespace net {
 class HostResolver;
@@ -20,8 +21,6 @@ class ProxyService;
 }  // namespace net
 
 namespace content {
-
-class MojoProxyResolverFactory;
 
 // Creates a proxy service that uses |mojo_proxy_factory| to create and connect
 // to a Mojo proxy resolver service. This proxy service polls
@@ -38,7 +37,7 @@ class MojoProxyResolverFactory;
 // lifetime of the ProxyService.
 std::unique_ptr<net::ProxyService> CONTENT_EXPORT
 CreateProxyServiceUsingMojoFactory(
-    MojoProxyResolverFactory* mojo_proxy_factory,
+    proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher,
     std::unique_ptr<net::DhcpProxyScriptFetcher> dhcp_proxy_script_fetcher,
