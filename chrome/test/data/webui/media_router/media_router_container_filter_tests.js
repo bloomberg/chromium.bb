@@ -6,140 +6,150 @@
  * to the filter view.
  */
 cr.define('media_router_container_filter', function() {
-  function registerTests() {
-    suite('MediaRouterContainerFilter', function() {
-      /**
-       * Wrapper that lets a function |f| run after the container animation
-       * promise completes but also lets any UI logic run before setting up the
-       * call. This is important because |container.animationPromise_| may not
-       * exist until the UI logic runs or it may be updated to a new Promise.
-       * This wrapper also carries assertion errors (and any other exceptions)
-       * outside of the promise back into the test since throwing in a then() or
-       * catch() doesn't stop the test.
-       *
-       * @param {function()} f
-       */
-      var chainOnAnimationPromise = function(f) {
-        setTimeout(function() {
-          container.animationPromise_.then(f).catch(function(err) {
-            setTimeout(function() { throw err; });
-          });
-        });
-      };
-
-      /**
-       * Checks whether |view| matches the current view of |container|.
-       *
-       * @param {!media_router.MediaRouterView} view Expected view type.
-       */
-      var checkCurrentView;
-
-      /**
-       * Checks whether the elements specified in |elementIdList| are visible.
-       * Checks whether all other elements are not visible. Throws an assertion
-       * error if this is not true.
-       *
-       * @param {!Array<!string>} elementIdList List of id's of elements that
-       *     should be visible.
-       */
-      var checkElementsVisibleWithId;
-
-      /**
-       * Checks whether |expected| and the text in the |element| are equal.
-       *
-       * @param {!string} expected Expected text.
-       * @param {!Element} element Element whose text will be checked.
-       */
-      var checkElementText;
-
-      /**
-       * Media Router Container created before each test.
-       * @type {?MediaRouterContainer}
-       */
-      var container;
-
-      /**
-       * The blocking issue to show.
-       * @type {?media_router.Issue}
-       */
-      var fakeNonBlockingIssue;
-
-      /**
-       * The list of current routes.
-       * @type {!Array<!media_router.Route>}
-       */
-      var fakeRouteList = [];
-
-      /**
-       * The list of available sinks.
-       * @type {!Array<!media_router.Sink>}
-       */
-      var fakeSinkList = [];
-
-      /**
-       * Simulates pressing the Escape key on |element|.
-       * @param {!HTMLElement} element
-       */
-      var pressEscapeOnElement = function(element) {
-        element.dispatchEvent(new KeyboardEvent('keydown', {
-          'key': 'Escape',
-          'code': 'Escape',
-          'bubbles': true,
-          'cancelable': true
-        }));
-      };
-
-      /**
-       * Search text that will match all sinks.
-       * @type {?string}
-       */
-      var searchTextAll;
-
-      /**
-       * Search text that won't match any sink in fakeSinkList.
-       * @type {?string}
-       */
-      var searchTextNone;
-
-      /**
-       * Search text that will match exactly one sink.
-       * @type {?string}
-       */
-      var searchTextOne;
-
-      // Import media_router_container.html before running suite.
-      suiteSetup(function() {
-        return PolymerTest.importHtml(
-            'chrome://media-router/elements/media_router_container/' +
-            'media_router_container.html');
+  /**
+   * Wrapper that lets a function |f| run after the container animation promise
+   * completes but also lets any UI logic run before setting up the call. This
+   * is important because |container.animationPromise_| may not exist until the
+   * UI logic runs or it may be updated to a new Promise.  This wrapper also
+   * carries assertion errors (and any other exceptions) outside of the promise
+   * back into the test since throwing in a then() or catch() doesn't stop the
+   * test.
+   *
+   * @param {function()} f
+   */
+  var chainOnAnimationPromise = function(f) {
+    setTimeout(function() {
+      container.animationPromise_.then(f).catch(function(err) {
+        setTimeout(function() { throw err; });
       });
+    });
+  };
 
-      setup(function(done) {
-        PolymerTest.clearBody();
-        // Initialize a media-router-container before each test.
-        container = document.createElement('media-router-container');
-        document.body.appendChild(container);
+  /**
+   * Checks whether |view| matches the current view of |container|.
+   *
+   * @param {!media_router.MediaRouterView} view Expected view type.
+   */
+  var checkCurrentView;
 
-        // Get common functions and variables.
-        var test_base = media_router_container_test_base.init(container);
+  /**
+   * Checks whether the elements specified in |elementIdList| are visible.
+   * Checks whether all other elements are not visible. Throws an assertion
+   * error if this is not true.
+   *
+   * @param {!Array<!string>} elementIdList List of id's of elements that
+   *     should be visible.
+   */
+  var checkElementsVisibleWithId;
 
-        checkCurrentView = test_base.checkCurrentView;
-        checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
-        checkElementText = test_base.checkElementText;
-        fakeNonBlockingIssue = test_base.fakeNonBlockingIssue;
-        fakeRouteList = test_base.fakeRouteList;
-        fakeSinkList = test_base.fakeSinkList;
-        searchTextAll = test_base.searchTextAll;
-        searchTextNone = test_base.searchTextNone;
-        searchTextOne = test_base.searchTextOne;
+  /**
+   * Checks whether |expected| and the text in the |element| are equal.
+   *
+   * @param {!string} expected Expected text.
+   * @param {!Element} element Element whose text will be checked.
+   */
+  var checkElementText;
 
-        container.castModeList = test_base.fakeCastModeList;
-        container.searchEnabled_ = true;
+  /**
+   * Media Router Container created before each test.
+   * @type {?MediaRouterContainer}
+   */
+  var container;
 
-        // Allow for the media router container to be created, attached, and
-        // listeners registered in an afterNextRender() call.
-        Polymer.RenderStatus.afterNextRender(this, done);
-      });
+  /**
+   * The blocking issue to show.
+   * @type {?media_router.Issue}
+   */
+  var fakeNonBlockingIssue;
+
+  /**
+   * The list of current routes.
+   * @type {!Array<!media_router.Route>}
+   */
+  var fakeRouteList = [];
+
+  /**
+   * The list of available sinks.
+   * @type {!Array<!media_router.Sink>}
+   */
+  var fakeSinkList = [];
+
+  /**
+   * Simulates pressing the Escape key on |element|.
+   * @param {!HTMLElement} element
+   */
+  var pressEscapeOnElement = function(element) {
+    element.dispatchEvent(new KeyboardEvent('keydown', {
+      'key': 'Escape',
+      'code': 'Escape',
+      'bubbles': true,
+      'cancelable': true
+    }));
+  };
+
+  /**
+   * Search text that will match all sinks.
+   * @type {?string}
+   */
+  var searchTextAll;
+
+  /**
+   * Search text that won't match any sink in fakeSinkList.
+   * @type {?string}
+   */
+  var searchTextNone;
+
+  /**
+   * Search text that will match exactly one sink.
+   * @type {?string}
+   */
+  var searchTextOne;
+
+  /**
+   * Import media_router_container.html before running suite.
+   */
+  var doSuiteSetup = function() {
+    return PolymerTest.importHtml(
+        'chrome://media-router/elements/media_router_container/' +
+        'media_router_container.html');
+  };
+
+  /**
+   * Performs test setup before each test.
+   *
+   * @param {function()} done Function for async test completion.
+   */
+  var doSetup = function(done) {
+    PolymerTest.clearBody();
+    // Initialize a media-router-container before each test.
+    container = document.createElement('media-router-container');
+    document.body.appendChild(container);
+
+    // Get common functions and variables.
+    var test_base = media_router_container_test_base.init(container);
+
+    checkCurrentView = test_base.checkCurrentView;
+    checkElementsVisibleWithId = test_base.checkElementsVisibleWithId;
+    checkElementText = test_base.checkElementText;
+    fakeNonBlockingIssue = test_base.fakeNonBlockingIssue;
+    fakeRouteList = test_base.fakeRouteList;
+    fakeSinkList = test_base.fakeSinkList;
+    searchTextAll = test_base.searchTextAll;
+    searchTextNone = test_base.searchTextNone;
+    searchTextOne = test_base.searchTextOne;
+
+    container.castModeList = test_base.fakeCastModeList;
+    container.searchEnabled_ = true;
+
+    // Allow for the media router container to be created, attached, and
+    // listeners registered in an afterNextRender() call.
+    Polymer.RenderStatus.afterNextRender(this, done);
+  };
+
+  function registerTestsPart1() {
+    suite('MediaRouterContainerFilterPart1', function() {
+      suiteSetup(doSuiteSetup);
+      setup(doSetup);
 
       // Tests that clicking the search icon will cause the container to enter
       // filter view.
@@ -430,6 +440,13 @@ cr.define('media_router_container_filter', function() {
           done();
         });
       });
+    });
+  }
+
+  function registerTestsPart2() {
+    suite('MediaRouterContainerFilterPart2', function() {
+      suiteSetup(doSuiteSetup);
+      setup(doSetup);
 
       // Tests that the correct number of results are returned in the search
       // results.
@@ -977,6 +994,7 @@ cr.define('media_router_container_filter', function() {
   }
 
   return {
-    registerTests: registerTests,
+    registerTestsPart1: registerTestsPart1,
+    registerTestsPart2: registerTestsPart2,
   };
 });
