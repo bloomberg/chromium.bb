@@ -18,6 +18,7 @@
 namespace blink {
 namespace scheduler {
 namespace internal {
+
 class WorkQueueSets;
 
 // This class keeps track of immediate and delayed tasks which are due to run
@@ -51,7 +52,7 @@ class PLATFORM_EXPORT WorkQueue {
 
   // If the |work_queue_| isn't empty and a fence hasn't been reached,
   // |enqueue_order| gets set to the enqueue order of the front task and the
-  // function returns true.  Otherwise the function returns false.
+  // function returns true. Otherwise the function returns false.
   bool GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const;
 
   // Returns the first task in this queue or null if the queue is empty. This
@@ -62,8 +63,8 @@ class PLATFORM_EXPORT WorkQueue {
   // method ignores any fences.
   const TaskQueueImpl::Task* GetBackTask() const;
 
-  // Pushes the task onto the |work_queue_| and a fence hasn't been reached it
-  // informs the WorkQueueSets if the head changed.
+  // Pushes the task onto the |work_queue_| and if a fence hasn't been reached
+  // it informs the WorkQueueSets if the head changed.
   void Push(TaskQueueImpl::Task task);
 
   // Reloads the empty |work_queue_| with
@@ -78,7 +79,7 @@ class PLATFORM_EXPORT WorkQueue {
   // pretends to be empty as far as the WorkQueueSets is concrned.
   TaskQueueImpl::Task TakeTaskFromWorkQueue();
 
-  const char* GetName() const { return name_; }
+  const char* name() const { return name_; }
 
   TaskQueueImpl* task_queue() const { return task_queue_; }
 
@@ -89,9 +90,6 @@ class PLATFORM_EXPORT WorkQueue {
   HeapHandle heap_handle() const { return heap_handle_; }
 
   void set_heap_handle(HeapHandle handle) { heap_handle_ = handle; }
-
-  // Test support function. This should not be used in production code.
-  void PopTaskForTest();
 
   // Returns true if the front task in this queue has an older enqueue order
   // than the front task of |other_queue|. Both queue are assumed to be
@@ -115,14 +113,17 @@ class PLATFORM_EXPORT WorkQueue {
   // Otherwise returns false.
   bool BlockedByFence() const;
 
+  // Test support function. This should not be used in production code.
+  void PopTaskForTesting();
+
  private:
   TaskQueueImpl::TaskDeque work_queue_;
-  WorkQueueSets* work_queue_sets_;   // NOT OWNED.
-  TaskQueueImpl* const task_queue_;  // NOT OWNED.
-  size_t work_queue_set_index_;
+  WorkQueueSets* work_queue_sets_ = nullptr;  // NOT OWNED.
+  TaskQueueImpl* const task_queue_;           // NOT OWNED.
+  size_t work_queue_set_index_ = 0;
   HeapHandle heap_handle_;
   const char* const name_;
-  EnqueueOrder fence_;
+  EnqueueOrder fence_ = 0;
   const QueueType queue_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueue);

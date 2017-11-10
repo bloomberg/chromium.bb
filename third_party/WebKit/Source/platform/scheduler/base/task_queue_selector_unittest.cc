@@ -92,7 +92,7 @@ class TaskQueueSelectorTest : public ::testing::Test {
       size_t chosen_queue_index =
           queue_to_index_map_.find(chosen_work_queue->task_queue())->second;
       order.push_back(chosen_queue_index);
-      chosen_work_queue->PopTaskForTest();
+      chosen_work_queue->PopTaskForTesting();
       immediate_work_queue_sets()->OnPopQueue(chosen_work_queue);
     }
     return order;
@@ -550,8 +550,7 @@ TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
       TaskQueue::NORMAL_PRIORITY, &chose_delayed_over_immediate,
       &chosen_work_queue));
   EXPECT_EQ(chosen_work_queue->task_queue(), task_queues_[0].get());
-  EXPECT_STREQ(chosen_work_queue->GetName(),
-               GetParam().expected_work_queue_name);
+  EXPECT_STREQ(chosen_work_queue->name(), GetParam().expected_work_queue_name);
   EXPECT_EQ(chose_delayed_over_immediate,
             GetParam().expected_did_starve_immediate_queue);
 }
