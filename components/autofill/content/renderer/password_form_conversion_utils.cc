@@ -317,8 +317,8 @@ bool FieldHasPropertiesMask(const FieldValueAndPropertiesMaskMap* field_map,
   return it != field_map->end() && (it->second.second & mask);
 }
 
-// Returns true iff |control_elements| contains any password field. Also sets
-// |found_password_with_user_input| to true iff any password field has user
+// Returns true iff |control_elements| contains any enabled password field. Also
+// sets |found_password_with_user_input| to true iff any password field has user
 // input (autofilled value doesn't count here).
 bool FormHasPasswordFields(
     const std::vector<blink::WebFormControlElement>& control_elements,
@@ -330,7 +330,8 @@ bool FormHasPasswordFields(
   bool found_password_field = false;
   for (const blink::WebFormControlElement& control_element : control_elements) {
     const WebInputElement* input_element = ToWebInputElement(&control_element);
-    if (!input_element || !input_element->IsPasswordField())
+    if (!input_element || !input_element->IsPasswordField() ||
+        !input_element->IsEnabled())
       continue;
     if (FieldHasPropertiesMask(field_value_and_properties_map, *input_element,
                                FieldPropertiesFlags::USER_TYPED)) {
@@ -610,7 +611,13 @@ bool GetPasswordForm(
     passwords = passwords_without_heuristics;
     last_text_input_before_password = last_text_input_without_heuristics;
   }
-  DCHECK(!passwords.empty());
+
+  // |passwords| must be non-empty. Just in case the heuristics above have a
+  // bug, return now.
+  if (passwords.empty()) {
+    NOTREACHED();
+    return false;
+  }
 
   // Call HTML based username detector, only if corresponding flag is enabled.
   if (base::FeatureList::IsEnabled(
