@@ -9,14 +9,16 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/network/mojo_proxy_resolver_factory.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/proxy_resolver/proxy_resolver_factory_impl.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace content {
 
 // MojoProxyResolverFactory that runs PAC scripts in-process, for tests.
-class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
+class TestMojoProxyResolverFactory
+    : public proxy_resolver::mojom::ProxyResolverFactory {
  public:
   TestMojoProxyResolverFactory();
   ~TestMojoProxyResolverFactory() override;
@@ -24,10 +26,12 @@ class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
   // Returns true if CreateResolver was called.
   bool resolver_created() const { return resolver_created_; }
 
-  // Overridden from MojoProxyResolverFactory:
-  std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
+  proxy_resolver::mojom::ProxyResolverFactoryPtr CreateFactoryInterface();
+
+  // Overridden from interfaces::ProxyResolverFactory:
+  void CreateResolver(
       const std::string& pac_script,
-      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
+      proxy_resolver::mojom::ProxyResolverRequest req,
       proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
       override;
 
@@ -36,6 +40,8 @@ class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
   proxy_resolver::ProxyResolverFactoryImpl proxy_resolver_factory_impl_;
 
   proxy_resolver::mojom::ProxyResolverFactoryPtr factory_;
+
+  mojo::Binding<ProxyResolverFactory> binding_;
 
   bool resolver_created_ = false;
 
