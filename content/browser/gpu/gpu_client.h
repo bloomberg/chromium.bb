@@ -7,7 +7,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "ipc/ipc_channel_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
@@ -23,7 +22,7 @@ class GpuClient : public ui::mojom::Gpu {
  private:
   void OnError();
   void OnEstablishGpuChannel(const EstablishGpuChannelCallback& callback,
-                             const IPC::ChannelHandle& channel,
+                             mojo::ScopedMessagePipeHandle channel_handle,
                              const gpu::GPUInfo& gpu_info,
                              const gpu::GpuFeatureInfo& gpu_feature_info,
                              GpuProcessHost::EstablishChannelStatus status);

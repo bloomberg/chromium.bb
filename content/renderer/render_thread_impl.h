@@ -46,6 +46,7 @@
 #include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/media/audio_ipc_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "ipc/ipc_sync_channel.h"
 #include "media/media_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
