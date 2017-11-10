@@ -580,8 +580,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
-{% macro install_conditionally_enabled_attributes_on_prototype(secure_context_test_result) %}
-{% for exposed_test, exposed_attribute_list in conditionally_enabled_attributes | selectattr('on_prototype') | groupby('exposed_test') %}
+{# This macro installs attributes on prototype object and interface object. #}
+{% macro install_conditionally_enabled_attributes_on_prototype_or_interface(secure_context_test_result) %}
+{% for exposed_test, exposed_attribute_list in conditionally_enabled_attributes.on_prototype_or_interface | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
 {% for secure_context_test, secure_context_attribute_list in exposed_attribute_list | groupby('secure_context_test') %}
 {% filter secure_context(secure_context_test, secure_context_test_result) %}
@@ -592,7 +593,10 @@ static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[]
     {{accessor_configuration(attribute) | indent(4)}},
     {% endfor %}
 };
-V8DOMConfiguration::InstallAccessors(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessor_configurations, WTF_ARRAY_LENGTH(accessor_configurations));
+V8DOMConfiguration::InstallAccessors(
+    isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject,
+    signature, accessor_configurations,
+    WTF_ARRAY_LENGTH(accessor_configurations));
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}
 {% endfilter %}{# secure_context #}
@@ -604,7 +608,7 @@ V8DOMConfiguration::InstallAccessors(isolate, world, v8::Local<v8::Object>(), pr
 
 {##############################################################################}
 {% macro install_conditionally_enabled_constructors(secure_context_test_result) %}
-{% for exposed_test, exposed_attribute_list in conditionally_enabled_attributes | selectattr('constructor_type') | groupby('exposed_test') %}
+{% for exposed_test, exposed_attribute_list in conditionally_enabled_attributes.constructor_type | groupby('exposed_test') %}
 {% filter exposed(exposed_test) %}
 {% for secure_context_test, secure_context_attribute_list in exposed_attribute_list | groupby('secure_context_test') %}
 {% filter secure_context(secure_context_test, secure_context_test_result) %}

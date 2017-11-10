@@ -410,19 +410,19 @@ def interface_context(interface, interfaces):
     })
 
     # Conditionally enabled attributes
-    conditional_enabled_attributes = v8_attributes.filter_conditionally_enabled(attributes)
-    has_conditional_attributes_on_prototype = any(  # pylint: disable=invalid-name
-        attribute['on_prototype'] for attribute in conditional_enabled_attributes)
-    has_conditionally_enabled_constructors = any(  # pylint: disable=invalid-name
-        attribute['constructor_type'] for attribute in conditional_enabled_attributes)
+    conditionally_enabled_attributes = v8_attributes.filter_conditionally_enabled(attributes)
+    conditionally_enabled_attributes_on_prototype_or_interface = (  # pylint: disable=invalid-name
+        [attr for attr in conditionally_enabled_attributes if attr['on_prototype'] or attr['on_interface']])
+    conditionally_enabled_constructors = (
+        [attr for attr in conditionally_enabled_attributes if attr['constructor_type']])
     has_conditionally_enabled_secure_attributes = any(  # pylint: disable=invalid-name
-        v8_attributes.is_secure_context(attribute) for attribute in conditional_enabled_attributes)
+        v8_attributes.is_secure_context(attribute) for attribute in conditionally_enabled_attributes)
     context.update({
-        'has_conditionally_enabled_constructors':
-            has_conditionally_enabled_constructors,
-        'has_conditionally_enabled_secure_attributes':
-            has_conditionally_enabled_secure_attributes,
-        'conditionally_enabled_attributes': conditional_enabled_attributes,
+        'conditionally_enabled_attributes': {
+            'on_prototype_or_interface': conditionally_enabled_attributes_on_prototype_or_interface,
+            'constructor_type': conditionally_enabled_constructors,
+        },
+        'has_conditionally_enabled_secure_attributes': has_conditionally_enabled_secure_attributes,
     })
 
     # Methods
@@ -457,10 +457,9 @@ def interface_context(interface, interfaces):
 
     # Conditionally enabled members
     prepare_prototype_and_interface_object_func = None  # pylint: disable=invalid-name
-    if (unscopables or has_conditional_attributes_on_prototype or
-            context['conditionally_enabled_methods']):
+    if unscopables or conditionally_enabled_attributes_on_prototype_or_interface or conditionally_enabled_methods:
         prepare_prototype_and_interface_object_func = '%s::preparePrototypeAndInterfaceObject' % v8_class_name_or_partial  # pylint: disable=invalid-name
-    has_install_conditional_features_on_global_func = has_conditionally_enabled_constructors  # pylint: disable=invalid-name
+    has_install_conditional_features_on_global_func = bool(conditionally_enabled_constructors)  # pylint: disable=invalid-name
 
     context.update({
         'prepare_prototype_and_interface_object_func': prepare_prototype_and_interface_object_func,
