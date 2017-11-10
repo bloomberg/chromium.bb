@@ -704,7 +704,9 @@ QuicStreamFactory::QuicStreamFactory(
       connect_using_default_network_(
           connect_using_default_network &&
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
-      migrate_sessions_on_network_change_(migrate_sessions_on_network_change),
+      migrate_sessions_on_network_change_(
+          migrate_sessions_on_network_change &&
+          NetworkChangeNotifier::AreNetworkHandlesSupported()),
       migrate_sessions_early_(migrate_sessions_early &&
                               migrate_sessions_on_network_change_),
       allow_server_migration_(allow_server_migration),
