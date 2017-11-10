@@ -48,6 +48,8 @@ public class ChromeApplication extends ContentApplication {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
+        // Command-line is needed by content providers, so initialize nice and early.
+        initCommandLine();
         BuildHooksAndroid.initCustomResources(this);
         Boolean isIsolatedProcess = PureJavaExceptionReporter.detectIsIsolatedProcess();
         if (isIsolatedProcess != null && !isIsolatedProcess.booleanValue()) {
@@ -67,7 +69,6 @@ public class ChromeApplication extends ContentApplication {
     @Override
     public void onCreate() {
         UmaUtils.recordMainEntryPointTime();
-        initCommandLine();
         TraceEvent.maybeEnableEarlyTracing();
         TraceEvent.begin("ChromeApplication.onCreate");
 
