@@ -1,7 +1,8 @@
 {
   "comments": [
     "Builder for 32-bit devices.",
-    "Build is performed with gn+ninja."
+    "Build is performed with gn+ninja.",
+    "If modified, please change chromium.fyi/GomaCanaryiOS.json too."
   ],
   "xcode version": "9.0",
   "gn_args": [

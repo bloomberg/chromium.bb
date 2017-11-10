@@ -1,9 +1,11 @@
 {
   "comments": [
-    "Goma canary builder for iOS."
+    "Goma canary builder for iOS.",
+    "It is chromium.mac/ios-device.json + use_goma_canary, clobber."
   ],
   "xcode version": "9.0",
   "gn_args": [
+    "additional_target_cpus=[ \"arm64\" ]",
     "goma_dir=\"$(goma_dir)\"",
     "ios_enable_code_signing=false",
     "is_component_build=false",
@@ -15,10 +17,11 @@
   "additional_compile_targets": [
     "all"
   ],
-  "clobber": true,
-  "use_goma_canary": true,
   "configuration": "Release",
+  "explain": true,
   "sdk": "iphoneos11.0",
   "tests": [
-  ]
+  ],
+  "clobber": true,
+  "use_goma_canary": true
 }
