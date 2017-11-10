@@ -6,8 +6,6 @@ import("//build/config/jumbo.gni")
 
 jumbo_source_set("scheduler") {
   sources = [
-    "base/cancelable_closure_holder.cc",
-    "base/cancelable_closure_holder.h",
     "base/enqueue_order.cc",
     "base/enqueue_order.h",
     "base/graceful_queue_shutdown_helper.cc",
@@ -37,6 +35,8 @@ jumbo_source_set("scheduler") {
     "base/work_queue.h",
     "base/work_queue_sets.cc",
     "base/work_queue_sets.h",
+    "child/cancelable_closure_holder.cc",
+    "child/cancelable_closure_holder.h",
     "child/compositor_worker_scheduler.cc",
     "child/compositor_worker_scheduler.h",
     "child/idle_canceled_delayed_task_sweeper.cc",

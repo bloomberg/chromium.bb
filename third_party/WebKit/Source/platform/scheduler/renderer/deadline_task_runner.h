@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
-#include "platform/scheduler/base/cancelable_closure_holder.h"
+#include "platform/scheduler/child/cancelable_closure_holder.h"
 
 namespace blink {
 namespace scheduler {
