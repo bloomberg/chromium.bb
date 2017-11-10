@@ -78,8 +78,6 @@ class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
   PositionTemplate<Strategy> StartPosition() const;
   PositionTemplate<Strategy> EndPosition() const;
 
-  bool IsInTextSecurityMode() const;
-
  private:
   void Init(Node* start_node, Node* end_node, int start_offset, int end_offset);
   void ExitNode();

@@ -925,11 +925,6 @@ int TextIteratorAlgorithm<Strategy>::RangeLength(
 }
 
 template <typename Strategy>
-bool TextIteratorAlgorithm<Strategy>::IsInTextSecurityMode() const {
-  return IsTextSecurityNode(GetNode());
-}
-
-template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::IsBetweenSurrogatePair(
     unsigned position) const {
   return position > 0 && position < static_cast<unsigned>(length()) &&

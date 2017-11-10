@@ -64,10 +64,6 @@ class CORE_EXPORT CharacterIteratorAlgorithm {
 
   int CharacterOffset() const { return offset_; }
 
-  bool IsInTextSecurityMode() const {
-    return text_iterator_.IsInTextSecurityMode();
-  }
-
   Document* OwnerDocument() const;
   Node* CurrentContainer() const;
   int StartOffset() const;
