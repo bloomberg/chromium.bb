@@ -181,7 +181,7 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_MEDIA_VIEW_AUDIO_ROOT_LABEL" desc="A label for the 'Audio' root of media views.">
     Audio
   </message>
-  <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root.">
+  <message name="IDS_FILE_BROWSER_RECENT_ROOT_LABEL" desc="A label for the 'Recent' root which shows files recently modified by the user.">
     Recent
   </message>
   <message name="IDS_FILE_BROWSER_DOWNLOADS_DIRECTORY_WARNING" desc="Warning displayed to user when viewing downloads folder.">
