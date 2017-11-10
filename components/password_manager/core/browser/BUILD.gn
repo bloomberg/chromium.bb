@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
@@ -396,4 +397,16 @@ source_set("unit_tests") {
     "//ui/base",
     "//url",
   ]
+}
+
+fuzzer_test("csv_reader_fuzzer") {
+  sources = [
+    "import/password_csv_reader_fuzzer.cc",
+  ]
+  deps = [
+    ":browser",
+    "//components/autofill/core/common:common",
+  ]
+  seed_corpus = "import/password_csv_reader_corpus"
+  dict = "import/password_csv_reader_fuzzer.dict"
 }
