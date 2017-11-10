@@ -252,9 +252,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidSetVisibleOnImplTree(this, visible);
   }
 
-  bool AnimateLayers(base::TimeTicks monotonic_time) override {
+  bool AnimateLayers(base::TimeTicks monotonic_time,
+                     bool is_active_tree) override {
     test_hooks_->WillAnimateLayers(this, monotonic_time);
-    bool result = LayerTreeHostImpl::AnimateLayers(monotonic_time);
+    bool result =
+        LayerTreeHostImpl::AnimateLayers(monotonic_time, is_active_tree);
     test_hooks_->AnimateLayers(this, monotonic_time);
     return result;
   }

@@ -690,6 +690,7 @@ cc_test("cc_unittests") {
     "animation/element_animations_unittest.cc",
     "animation/keyframed_animation_curve_unittest.cc",
     "animation/scroll_offset_animation_curve_unittest.cc",
+    "animation/scroll_timeline_unittest.cc",
     "animation/transform_operations_unittest.cc",
     "animation/worklet_animation_player_unittest.cc",
 

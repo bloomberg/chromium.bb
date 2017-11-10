@@ -47,7 +47,6 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   TraceWrapperV8Reference<v8::Object> instance_;
 
   bool did_animate_ = false;
-  WTF::TimeTicks current_time_;
   Member<EffectProxy> effect_;
 };
 

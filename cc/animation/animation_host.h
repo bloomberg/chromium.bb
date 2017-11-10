@@ -100,8 +100,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   bool NeedsTickAnimations() const override;
 
   bool ActivateAnimations() override;
-  bool TickAnimations(base::TimeTicks monotonic_time) override;
-  void TickScrollAnimations(base::TimeTicks monotonic_time) override;
+  bool TickAnimations(base::TimeTicks monotonic_time,
+                      const ScrollTree& scroll_tree) override;
+  void TickScrollAnimations(base::TimeTicks monotonic_time,
+                            const ScrollTree& scroll_tree) override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
 
@@ -198,7 +200,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   // Return the animator state representing all ticking worklet animations.
   std::unique_ptr<MutatorInputState> CollectAnimatorsState(
-      base::TimeTicks timeline_time);
+      base::TimeTicks timeline_time,
+      const ScrollTree& scroll_tree);
 
   ElementToAnimationsMap element_to_animations_map_;
   PlayersList ticking_players_;

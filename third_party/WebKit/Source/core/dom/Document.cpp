@@ -644,7 +644,7 @@ Document::Document(const DocumentInit& initializer,
           &Document::ElementDataCacheClearTimerFired),
       timeline_(DocumentTimeline::Create(this)),
       pending_animations_(new PendingAnimations(*this)),
-      worklet_animation_controller_(new WorkletAnimationController),
+      worklet_animation_controller_(new WorkletAnimationController(this)),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
           GetTaskRunner(TaskType::kUnspecedLoading),
