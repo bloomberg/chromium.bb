@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/nav_button_provider.h"
-#include "chrome/common/chrome_switches.h"
 #include "ui/views/controls/button/image_button.h"
 
 DesktopLinuxBrowserFrameView::DesktopLinuxBrowserFrameView(
@@ -17,10 +15,7 @@ DesktopLinuxBrowserFrameView::DesktopLinuxBrowserFrameView(
     std::unique_ptr<views::NavButtonProvider> nav_button_provider)
     : OpaqueBrowserFrameView(frame, browser_view, layout),
       nav_button_provider_(std::move(nav_button_provider)) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeAvatarButton)) {
-    profile_switcher_.set_nav_button_provider(nav_button_provider_.get());
-  }
+  profile_switcher_.set_nav_button_provider(nav_button_provider_.get());
 }
 
 DesktopLinuxBrowserFrameView::~DesktopLinuxBrowserFrameView() {}

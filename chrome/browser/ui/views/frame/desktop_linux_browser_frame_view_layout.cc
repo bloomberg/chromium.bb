@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/desktop_linux_browser_frame_view_layout.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/nav_button_provider.h"
-#include "chrome/common/chrome_switches.h"
 
 DesktopLinuxBrowserFrameViewLayout::DesktopLinuxBrowserFrameViewLayout(
     views::NavButtonProvider* nav_button_provider)
@@ -43,11 +41,6 @@ void DesktopLinuxBrowserFrameViewLayout::LayoutNewStyleAvatar(
   if (!new_avatar_button_)
     return;
 
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeAvatarButton)) {
-    OpaqueBrowserFrameViewLayout::LayoutNewStyleAvatar(host);
-    return;
-  }
   gfx::Size button_size;
   gfx::Insets button_spacing;
   nav_button_provider_->CalculateCaptionButtonLayout(
