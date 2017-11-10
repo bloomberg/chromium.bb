@@ -259,15 +259,21 @@ AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
                                          cm->superres_scale_denominator);
     av1_calculate_unscaled_superres_size(&r.right, &r.bottom,
                                          cm->superres_scale_denominator);
-
-    // Make sure we don't fall off the bottom-right of the frame.
-    const int plane_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
-    const int plane_height = (cm->superres_upscaled_height + ss_y) >> ss_y;
-    r.right = AOMMIN(r.right, plane_width);
-    r.bottom = AOMMIN(r.bottom, plane_height);
   }
+
+  const int frame_w = cm->superres_upscaled_width;
+  const int frame_h = cm->superres_upscaled_height;
+#else
+  const int frame_w = cm->width;
+  const int frame_h = cm->height;
 #endif  // CONFIG_FRAME_SUPERRES
 
+  const int plane_w = (frame_w + ss_x) >> ss_x;
+  const int plane_h = (frame_h + ss_y) >> ss_y;
+
+  // Make sure we don't fall off the bottom-right of the frame.
+  r.right = AOMMIN(r.right, plane_w);
+  r.bottom = AOMMIN(r.bottom, plane_h);
   return r;
 }
 
