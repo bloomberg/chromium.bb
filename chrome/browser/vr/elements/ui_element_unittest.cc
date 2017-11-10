@@ -61,22 +61,63 @@ TEST(UiElements, AnimationAffectsInheritableTransform) {
 }
 
 TEST(UiElements, HitTest) {
-  UiElement element;
-  element.SetSize(1.0, 1.0);
-  element.set_corner_radius(1.0 / 2);
+  UiElement rect;
+  rect.SetSize(1.0, 1.0);
+
+  UiElement circle;
+  circle.SetSize(1.0, 1.0);
+  circle.set_corner_radius(1.0 / 2);
+
+  UiElement rounded_rect;
+  rounded_rect.SetSize(1.0, 0.5);
+  rounded_rect.set_corner_radius(0.2);
 
   struct {
     gfx::PointF location;
-    bool expected;
+    bool expected_rect;
+    bool expected_circle;
+    bool expected_rounded_rect;
   } test_cases[] = {
-      {gfx::PointF(0.f, 0.f), false},   {gfx::PointF(0.f, 1.0f), false},
-      {gfx::PointF(1.0f, 1.0f), false}, {gfx::PointF(1.0f, 0.f), false},
-      {gfx::PointF(0.5f, 0.5f), true},
+      // Walk left edge
+      {gfx::PointF(0.f, 0.1f), true, false, false},
+      {gfx::PointF(0.f, 0.45f), true, false, true},
+      {gfx::PointF(0.f, 0.55f), true, false, true},
+      {gfx::PointF(0.f, 0.95f), true, false, false},
+      {gfx::PointF(0.f, 1.f), true, false, false},
+      // Walk bottom edge
+      {gfx::PointF(0.1f, 1.f), true, false, false},
+      {gfx::PointF(0.45f, 1.f), true, false, true},
+      {gfx::PointF(0.55f, 1.f), true, false, true},
+      {gfx::PointF(0.95f, 1.f), true, false, false},
+      {gfx::PointF(1.0f, 1.f), true, false, false},
+      // Walk right edge
+      {gfx::PointF(1.f, 0.95f), true, false, false},
+      {gfx::PointF(1.f, 0.55f), true, false, true},
+      {gfx::PointF(1.f, 0.45f), true, false, true},
+      {gfx::PointF(1.f, 0.1f), true, false, false},
+      {gfx::PointF(1.f, 0.f), true, false, false},
+      // Walk top edge
+      {gfx::PointF(0.95f, 0.f), true, false, false},
+      {gfx::PointF(0.55f, 0.f), true, false, true},
+      {gfx::PointF(0.45f, 0.f), true, false, true},
+      {gfx::PointF(0.1f, 0.f), true, false, false},
+      {gfx::PointF(0.f, 0.f), true, false, false},
+      // center
+      {gfx::PointF(0.5f, 0.5f), true, true, true},
+      // A point which is included in rounded rect but not in cicle.
+      {gfx::PointF(0.1f, 0.1f), true, false, true},
+      // An invalid point.
+      {gfx::PointF(-0.1f, -0.1f), false, false, false},
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(i);
-    EXPECT_EQ(test_cases[i].expected, element.HitTest(test_cases[i].location));
+    EXPECT_EQ(test_cases[i].expected_rect,
+              rect.HitTest(test_cases[i].location));
+    EXPECT_EQ(test_cases[i].expected_circle,
+              circle.HitTest(test_cases[i].location));
+    EXPECT_EQ(test_cases[i].expected_rounded_rect,
+              rounded_rect.HitTest(test_cases[i].location));
   }
 }
 
