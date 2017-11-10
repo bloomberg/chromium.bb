@@ -227,7 +227,7 @@ void LogMultiline(LoggingSeverity level,
   // TODO(grunell): This will not do the expected verbosity level checking. We
   // need a macro for the multiline logging.
   // https://code.google.com/p/webrtc/issues/detail?id=5011
-  if (!LOG_CHECK_LEVEL_V(level))
+  if (!RTC_LOG_CHECK_LEVEL_V(level))
     return;
 
   const char* direction = (input ? " << " : " >> ");
@@ -235,9 +235,9 @@ void LogMultiline(LoggingSeverity level,
   // NULL data means to flush our count of unprintable characters.
   if (!data) {
     if (state && state->unprintable_count_[input]) {
-      LOG_V(level) << label << direction << "## "
-                   << state->unprintable_count_[input]
-                   << " consecutive unprintable ##";
+      RTC_LOG_V(level) << label << direction << "## "
+                       << state->unprintable_count_[input]
+                       << " consecutive unprintable ##";
       state->unprintable_count_[input] = 0;
     }
     return;
@@ -261,7 +261,8 @@ void LogMultiline(LoggingSeverity level,
       }
       asc_line[sizeof(asc_line) - 1] = 0;
       hex_line[sizeof(hex_line) - 1] = 0;
-      LOG_V(level) << label << direction << asc_line << " " << hex_line << " ";
+      RTC_LOG_V(level) << label << direction << asc_line << " " << hex_line
+                       << " ";
       udata += line_len;
       len -= line_len;
     }
@@ -313,8 +314,8 @@ void LogMultiline(LoggingSeverity level,
     // Print out the current line, but prefix with a count of prior unprintable
     // characters.
     if (consecutive_unprintable) {
-      LOG_V(level) << label << direction << "## " << consecutive_unprintable
-                   << " consecutive unprintable ##";
+      RTC_LOG_V(level) << label << direction << "## " << consecutive_unprintable
+                       << " consecutive unprintable ##";
       consecutive_unprintable = 0;
     }
     // Strip off trailing whitespace.
@@ -328,9 +329,9 @@ void LogMultiline(LoggingSeverity level,
       pos_private = substr.find("Passwd");
     }
     if (pos_private == std::string::npos) {
-      LOG_V(level) << label << direction << substr;
+      RTC_LOG_V(level) << label << direction << substr;
     } else {
-      LOG_V(level) << label << direction << "## omitted for privacy ##";
+      RTC_LOG_V(level) << label << direction << "## omitted for privacy ##";
     }
   }
 
