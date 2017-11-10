@@ -4862,20 +4862,8 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
     // Base q-index may have changed, so we need to assign proper default coef
     // probs before every iteration.
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
-      int i;
       av1_default_coef_probs(cm);
-      if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
-          cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
-        for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-      } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-        if (cm->frame_refs[0].idx >= 0) {
-          cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
-        }
-#else
-        cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif
-      }
+      av1_setup_frame_contexts(cm);
     }
 #endif  // CONFIG_Q_ADAPT_PROBS
 

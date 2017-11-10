@@ -3472,12 +3472,37 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
   av1_copy(lf->last_mode_deltas, lf->mode_deltas);
 }
 
+void av1_setup_frame_contexts(AV1_COMMON *cm) {
+  int i;
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (cm->frame_type == KEY_FRAME) {
+    // Reset all frame contexts, as all reference frames will be lost.
+    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+  }
+#else
+  if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
+      cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
+    // Reset all frame contexts.
+    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
+  } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
+#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
+    // Reset the frame context of the first specified ref frame.
+    if (cm->frame_refs[0].idx >= 0) {
+      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
+    }
+#else
+    // Reset only the frame context specified in the frame header.
+    cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  }
+#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+}
+
 void av1_setup_past_independence(AV1_COMMON *cm) {
   // Reset the segment feature data to the default stats:
   // Features disabled, 0, with delta coding (Default state).
   struct loopfilter *const lf = &cm->lf;
 
-  int i;
   av1_clearall_segfeatures(&cm->seg);
 
   if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
@@ -3505,29 +3530,7 @@ void av1_setup_past_independence(AV1_COMMON *cm) {
 #endif
   av1_convolve_init(cm);
   cm->fc->initialized = 1;
-
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  if (cm->frame_type == KEY_FRAME) {
-    // Reset all frame contexts, as all reference frames will be lost.
-    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-  }
-#else
-  if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
-      cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
-    // Reset all frame contexts.
-    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-  } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    // Reset the frame context of the first specified ref frame.
-    if (cm->frame_refs[0].idx >= 0) {
-      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
-    }
-#else
-    // Reset only the frame context specified in the frame header.
-    cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
-  }
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  av1_setup_frame_contexts(cm);
 
   // prev_mip will only be allocated in encoder.
   if (frame_is_intra_only(cm) && cm->prev_mip && !cm->frame_parallel_decode)

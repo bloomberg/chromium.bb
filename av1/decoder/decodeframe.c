@@ -3207,18 +3207,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   xd->bd = (int)cm->bit_depth;
 
 #if CONFIG_Q_ADAPT_PROBS
-  av1_default_coef_probs(cm);
-  if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||
-      cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL) {
-    for (i = 0; i < FRAME_CONTEXTS; ++i) cm->frame_contexts[i] = *cm->fc;
-  } else if (cm->reset_frame_context == RESET_FRAME_CONTEXT_CURRENT) {
-#if CONFIG_NO_FRAME_CONTEXT_SIGNALING
-    if (cm->frame_refs[0].idx <= 0) {
-      cm->frame_contexts[cm->frame_refs[0].idx] = *cm->fc;
-    }
-#else
-    cm->frame_contexts[cm->frame_context_idx] = *cm->fc;
-#endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
+  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+    av1_default_coef_probs(cm);
+    av1_setup_frame_contexts(cm);
   }
 #endif  // CONFIG_Q_ADAPT_PROBS
 

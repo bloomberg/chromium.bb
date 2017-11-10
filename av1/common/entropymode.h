@@ -580,6 +580,7 @@ extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION
 
+void av1_setup_frame_contexts(struct AV1Common *cm);
 void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);
