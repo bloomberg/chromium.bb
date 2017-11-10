@@ -297,7 +297,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
   bg_flags.setAntiAlias(true);
   bg_flags.setStyle(cc::PaintFlags::kFill_Style);
 
-  if (is_tablet_mode || shelf_view_->is_tablet_mode_animation_running()) {
+  if (is_tablet_mode || shelf_->is_tablet_mode_animation_running()) {
     // Draw the tablet mode app list background. It will look something like
     // [1] when the shelf is horizontal and [2] when the shelf is vertical,
     // where 1. is the back button and 2. is the app launcher circle.
@@ -349,7 +349,7 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
 
     // Paint the back button in tablet mode and handle transition animations.
     int opacity = is_tablet_mode ? 255 : 0;
-    if (shelf_view_->is_tablet_mode_animation_running()) {
+    if (shelf_->is_tablet_mode_animation_running()) {
       if (current_animation_value <= 0.0) {
         // The mode flipped but the animation hasn't begun, paint the old state.
         opacity = is_tablet_mode ? 0 : 255;
@@ -424,7 +424,7 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
                               Shell::Get()
                                   ->tablet_mode_controller()
                                   ->IsTabletModeWindowManagerEnabled();
-  const bool is_animating = shelf_view_->is_tablet_mode_animation_running();
+  const bool is_animating = shelf_->is_tablet_mode_animation_running();
 
   const ShelfAlignment alignment = shelf_->alignment();
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
@@ -437,25 +437,14 @@ gfx::Point AppListButton::GetAppListButtonCenterPoint() const {
     }
     return gfx::Point(x_mid, x_mid);
   } else if (alignment == SHELF_ALIGNMENT_RIGHT) {
-    if (is_tablet_mode || is_animating) {
-      return gfx::Point(kShelfButtonSize / 2.f,
-                        height() - kShelfButtonSize / 2.f);
-    }
     return gfx::Point(y_mid, y_mid);
   } else {
     DCHECK_EQ(alignment, SHELF_ALIGNMENT_LEFT);
-    if (is_tablet_mode || is_animating) {
-      return gfx::Point(width() - kShelfButtonSize / 2.f,
-                        height() - kShelfButtonSize / 2.f);
-    }
     return gfx::Point(width() - y_mid, y_mid);
   }
 }
 
 gfx::Point AppListButton::GetBackButtonCenterPoint() const {
-  if (shelf_->alignment() == SHELF_ALIGNMENT_LEFT)
-    return gfx::Point(width() - kShelfButtonSize / 2.f, kShelfButtonSize / 2.f);
-
   // In RTL, the app list circle is shown to the right of the back button. If
   // the shelf orientation is not horizontal then the back button center x
   // coordinate will be the same in LTR or RTL.
