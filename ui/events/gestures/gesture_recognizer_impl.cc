@@ -29,7 +29,7 @@ void TransferConsumer(
     GestureConsumer* current_consumer,
     GestureConsumer* new_consumer,
     std::map<GestureConsumer*, std::unique_ptr<GestureProviderAura>>* map) {
-  if (map->count(current_consumer)) {
+  if (!map->empty() && base::ContainsKey(*map, current_consumer)) {
     (*map)[new_consumer] = std::move((*map)[current_consumer]);
     (*map)[new_consumer]->set_gesture_consumer(new_consumer);
     map->erase(current_consumer);
@@ -184,21 +184,26 @@ void GestureRecognizerImpl::TransferEventsTo(
 bool GestureRecognizerImpl::GetLastTouchPointForTarget(
     GestureConsumer* consumer,
     gfx::PointF* point) {
-    if (consumer_gesture_provider_.count(consumer) == 0)
-      return false;
-    const MotionEvent& pointer_state =
-        consumer_gesture_provider_[consumer]->pointer_state();
-    if (!pointer_state.GetPointerCount())
-      return false;
-    *point = gfx::PointF(pointer_state.GetX(), pointer_state.GetY());
-    return true;
+  if (consumer_gesture_provider_.empty())
+    return false;
+  if (!base::ContainsKey(consumer_gesture_provider_, consumer))
+    return false;
+  const MotionEvent& pointer_state =
+      consumer_gesture_provider_[consumer]->pointer_state();
+  if (!pointer_state.GetPointerCount())
+    return false;
+  *point = gfx::PointF(pointer_state.GetX(), pointer_state.GetY());
+  return true;
 }
 
 std::vector<std::unique_ptr<TouchEvent>>
 GestureRecognizerImpl::GetEventPerPointForConsumer(GestureConsumer* consumer,
                                                    EventType type) {
   std::vector<std::unique_ptr<TouchEvent>> cancelling_touches;
-  if (consumer_gesture_provider_.count(consumer) == 0)
+  if (consumer_gesture_provider_.empty())
+    return cancelling_touches;
+
+  if (!base::ContainsKey(consumer_gesture_provider_, consumer))
     return cancelling_touches;
   const MotionEventAura& pointer_state =
       consumer_gesture_provider_[consumer]->pointer_state();
@@ -237,8 +242,13 @@ bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
 
 GestureProviderAura* GestureRecognizerImpl::GetGestureProviderForConsumer(
     GestureConsumer* consumer) {
-  GestureProviderAura* gesture_provider =
-      consumer_gesture_provider_[consumer].get();
+  GestureProviderAura* gesture_provider = nullptr;
+
+  if (!consumer_gesture_provider_.empty() &&
+      base::ContainsKey(consumer_gesture_provider_, consumer)) {
+    gesture_provider = consumer_gesture_provider_.at(consumer).get();
+  }
+
   if (!gesture_provider) {
     gesture_provider = new GestureProviderAura(consumer, this);
     consumer_gesture_provider_[consumer] = base::WrapUnique(gesture_provider);
