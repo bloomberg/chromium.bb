@@ -168,11 +168,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
 
   // Functionality only available for testing purposes.
 
-  // Returns sync internals in a JSON-formatted Java string.
-  base::android::ScopedJavaLocalRef<jstring> GetAboutInfoForTest(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.
   jlong GetLastSyncedTimeForTest(

@@ -460,20 +460,6 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
 
 // Functionality only available for testing purposes.
 
-ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  std::unique_ptr<base::DictionaryValue> about_info =
-      syncer::sync_ui_util::ConstructAboutInformation(sync_service_,
-                                                      chrome::GetChannel());
-  std::string about_info_json;
-  base::JSONWriter::Write(*about_info, &about_info_json);
-
-  return ConvertUTF8ToJavaString(env, about_info_json);
-}
-
 jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
