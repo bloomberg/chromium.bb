@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "components/crx_file/id_util.h"
 #include "content/public/common/child_process_host.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -13,6 +14,7 @@
 #include "extensions/common/value_builder.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/message_target.h"
+#include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
 #include "extensions/renderer/native_extension_bindings_system_test_base.h"
 #include "extensions/renderer/script_context.h"
@@ -433,6 +435,85 @@ TEST_F(NativeRendererMessagingServiceTest, ReceiveOneTimeMessage) {
   ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
   EXPECT_FALSE(
       messaging_service()->HasPortForTesting(script_context(), port_id));
+}
+
+// Test sending a one-time message from an external source (e.g., a different
+// extension). This shouldn't conflict with messages sent from the same source.
+TEST_F(NativeRendererMessagingServiceTest, TestExternalOneTimeMessages) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  constexpr char kListeners[] =
+      R"((function() {
+           chrome.runtime.onMessage.addListener((message) => {
+             this.onMessageReceived = message;
+           });
+           chrome.runtime.onMessageExternal.addListener((message) => {
+             this.onMessageExternalReceived = message;
+           });
+         }))";
+
+  v8::Local<v8::Function> add_listener =
+      FunctionFromString(context, kListeners);
+  RunFunctionOnGlobal(add_listener, context, 0, nullptr);
+
+  base::UnguessableToken other_context_id = base::UnguessableToken::Create();
+  int next_port_id = 0;
+  const PortId on_message_port_id(other_context_id, ++next_port_id, false);
+  const PortId on_message_external_port_id(other_context_id, ++next_port_id,
+                                           false);
+
+  auto open_port = [this, &other_context_id](const PortId& port_id,
+                                             const ExtensionId& source_id) {
+    ExtensionMsg_TabConnectionInfo tab_connection_info;
+    tab_connection_info.frame_id = 0;
+    const int tab_id = 10;
+    GURL source_url("http://example.com");
+    tab_connection_info.tab.Swap(
+        DictionaryBuilder().Set("tabId", tab_id).Build().get());
+
+    ExtensionMsg_ExternalConnectionInfo external_connection_info;
+    external_connection_info.target_id = extension()->id();
+    external_connection_info.source_id = source_id;
+    external_connection_info.source_url = source_url;
+    external_connection_info.guest_process_id =
+        content::ChildProcessHost::kInvalidUniqueID;
+    external_connection_info.guest_render_frame_routing_id = 0;
+
+    // Open a receiver for the message.
+    EXPECT_CALL(*ipc_message_sender(),
+                SendOpenMessagePort(MSG_ROUTING_NONE, port_id));
+    messaging_service()->DispatchOnConnect(
+        *script_context_set(), port_id, messaging_util::kSendMessageChannel,
+        tab_connection_info, external_connection_info, std::string(), nullptr);
+    ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+    EXPECT_TRUE(
+        messaging_service()->HasPortForTesting(script_context(), port_id));
+  };
+
+  open_port(on_message_port_id, extension()->id());
+  const ExtensionId other_extension =
+      crx_file::id_util::GenerateId("different");
+  open_port(on_message_external_port_id, other_extension);
+
+  messaging_service()->DeliverMessage(*script_context_set(), on_message_port_id,
+                                      Message("\"onMessage\"", false), nullptr);
+  EXPECT_EQ("\"onMessage\"",
+            GetStringPropertyFromObject(context->Global(), context,
+                                        "onMessageReceived"));
+  EXPECT_EQ("undefined",
+            GetStringPropertyFromObject(context->Global(), context,
+                                        "onMessageExternalReceived"));
+
+  messaging_service()->DeliverMessage(
+      *script_context_set(), on_message_external_port_id,
+      Message("\"onMessageExternal\"", false), nullptr);
+  EXPECT_EQ("\"onMessage\"",
+            GetStringPropertyFromObject(context->Global(), context,
+                                        "onMessageReceived"));
+  EXPECT_EQ("\"onMessageExternal\"",
+            GetStringPropertyFromObject(context->Global(), context,
+                                        "onMessageExternalReceived"));
 }
 
 }  // namespace extensions

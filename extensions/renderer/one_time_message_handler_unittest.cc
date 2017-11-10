@@ -231,7 +231,7 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverWithNoReply) {
                                      .Set("key", std::string("sender"))
                                      .Build();
   message_handler()->AddReceiver(script_context(), port_id, sender,
-                                 OneTimeMessageHandler::Event::ON_MESSAGE);
+                                 messaging_util::kOnMessageEvent);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   EXPECT_EQ("undefined", GetGlobalProperty(context, "eventMessage"));
@@ -275,7 +275,7 @@ TEST_F(OneTimeMessageHandlerTest, DeliverMessageToReceiverAndReply) {
   EXPECT_FALSE(message_handler()->HasPort(script_context(), port_id));
   v8::Local<v8::Object> sender = v8::Object::New(isolate());
   message_handler()->AddReceiver(script_context(), port_id, sender,
-                                 OneTimeMessageHandler::Event::ON_MESSAGE);
+                                 messaging_util::kOnMessageEvent);
   EXPECT_TRUE(message_handler()->HasPort(script_context(), port_id));
 
   const Message message("\"Hi\"", false);
@@ -314,7 +314,7 @@ TEST_F(OneTimeMessageHandlerTest, TryReplyingMultipleTimes) {
 
   v8::Local<v8::Object> sender = v8::Object::New(isolate());
   message_handler()->AddReceiver(script_context(), port_id, sender,
-                                 OneTimeMessageHandler::Event::ON_MESSAGE);
+                                 messaging_util::kOnMessageEvent);
   const Message message("\"Hi\"", false);
 
   message_handler()->DeliverMessage(script_context(), message, port_id);

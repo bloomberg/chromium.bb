@@ -19,6 +19,14 @@ namespace messaging_util {
 extern const char kSendMessageChannel[];
 extern const char kSendRequestChannel[];
 
+// Messaging-related events.
+extern const char kOnMessageEvent[];
+extern const char kOnMessageExternalEvent[];
+extern const char kOnRequestEvent[];
+extern const char kOnRequestExternalEvent[];
+extern const char kOnConnectEvent[];
+extern const char kOnConnectExternalEvent[];
+
 extern const int kNoFrameId;
 
 // Parses the message from a v8 value, returning null on failure.
