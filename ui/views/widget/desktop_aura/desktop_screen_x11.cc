@@ -4,13 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
-
-// It clashes with out RootWindow.
-#undef RootWindow
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,6 +25,7 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -47,17 +41,18 @@ gfx::ICCProfile GetICCProfileFromBestMonitor() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kHeadless))
     return icc_profile;
   Atom property = gfx::GetAtom("_ICC_PROFILE");
-  if (property != None) {
-    Atom prop_type = None;
+  if (property != x11::None) {
+    Atom prop_type = x11::None;
     int prop_format = 0;
     unsigned long nitems = 0;
     unsigned long nbytes = 0;
     char* property_data = NULL;
     if (XGetWindowProperty(
             gfx::GetXDisplay(), DefaultRootWindow(gfx::GetXDisplay()), property,
-            0, 0x1FFFFFFF /* MAXINT32 / 4 */, False, AnyPropertyType,
+            0, 0x1FFFFFFF /* MAXINT32 / 4 */, x11::False, AnyPropertyType,
             &prop_type, &prop_format, &nitems, &nbytes,
-            reinterpret_cast<unsigned char**>(&property_data)) == Success) {
+            reinterpret_cast<unsigned char**>(&property_data)) ==
+        x11::Success) {
       icc_profile = gfx::ICCProfile::FromData(property_data, nitems);
       XFree(property_data);
     }

@@ -4,16 +4,10 @@
 
 #include "ui/base/ime/input_method_chromeos.h"
 
-#include <X11/Xlib.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <memory>
-#undef Bool
-#undef FocusIn
-#undef FocusOut
-#undef None
-
 #include <cstring>
 
 #include "base/i18n/char_iterator.h"
@@ -34,6 +28,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;

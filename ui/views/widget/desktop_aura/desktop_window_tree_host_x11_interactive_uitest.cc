@@ -4,13 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
-#include <X11/Xlib.h>
-
 #include <memory>
-
-// Get rid of X11 macros which conflict with gtest.
-#undef Bool
-#undef None
 
 #include "base/macros.h"
 #include "ui/aura/env.h"
@@ -21,6 +15,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
@@ -103,14 +98,14 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
   xev.xmotion.window = host->GetAcceleratedWidget();
   xev.xmotion.root = DefaultRootWindow(display);
   xev.xmotion.subwindow = 0;
-  xev.xmotion.time = CurrentTime;
+  xev.xmotion.time = x11::CurrentTime;
   xev.xmotion.x = point_in_screen.x() - bounds_in_screen.x();
   xev.xmotion.y = point_in_screen.y() - bounds_in_screen.y();
   xev.xmotion.x_root = point_in_screen.x();
   xev.xmotion.y_root = point_in_screen.y();
   xev.xmotion.state = 0;
   xev.xmotion.is_hint = NotifyNormal;
-  xev.xmotion.same_screen = True;
+  xev.xmotion.same_screen = x11::True;
 
   static_cast<ui::PlatformEventDispatcher*>(desktop_host)->DispatchEvent(&xev);
 }
@@ -129,11 +124,11 @@ class DesktopWindowTreeHostX11Test : public ViewsInteractiveUITestBase {
 
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
-    XSynchronize(gfx::GetXDisplay(), True);
+    XSynchronize(gfx::GetXDisplay(), x11::True);
   }
 
   void TearDown() override {
-    XSynchronize(gfx::GetXDisplay(), False);
+    XSynchronize(gfx::GetXDisplay(), x11::False);
     ViewsInteractiveUITestBase::TearDown();
   }
 

@@ -14,11 +14,9 @@
 #include "ui/base/test/ui_controls.h"
 
 #if defined(USE_X11)
-#include <X11/Xlib.h>
-#include <X11/extensions/XTest.h>
-#include <X11/keysym.h>
 #include "ui/aura/window.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
@@ -49,9 +47,9 @@ void SendNativeKeyEventToXDisplay(ui::KeyboardCode key,
   // Release modifiers first of all to make sure this function can work as
   // expected. For example, when |control| is false, but the status of Ctrl key
   // is down, we will generate a keyboard event with unwanted Ctrl key.
-  XTestFakeKeyEvent(display, ctrl_key_code, False, CurrentTime);
-  XTestFakeKeyEvent(display, shift_key_code, False, CurrentTime);
-  XTestFakeKeyEvent(display, alt_key_code, False, CurrentTime);
+  XTestFakeKeyEvent(display, ctrl_key_code, x11::False, x11::CurrentTime);
+  XTestFakeKeyEvent(display, shift_key_code, x11::False, x11::CurrentTime);
+  XTestFakeKeyEvent(display, alt_key_code, x11::False, x11::CurrentTime);
 
   typedef std::vector<KeyCode> KeyCodes;
   KeyCodes key_codes;
@@ -67,11 +65,11 @@ void SendNativeKeyEventToXDisplay(ui::KeyboardCode key,
 
   // Simulate the keys being pressed.
   for (KeyCodes::iterator it = key_codes.begin(); it != key_codes.end(); it++)
-    XTestFakeKeyEvent(display, *it, True, CurrentTime);
+    XTestFakeKeyEvent(display, *it, x11::True, x11::CurrentTime);
 
   // Simulate the keys being released.
   for (KeyCodes::iterator it = key_codes.begin(); it != key_codes.end(); it++)
-    XTestFakeKeyEvent(display, *it, False, CurrentTime);
+    XTestFakeKeyEvent(display, *it, x11::False, x11::CurrentTime);
 
   XFlush(display);
 }

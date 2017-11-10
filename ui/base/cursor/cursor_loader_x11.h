@@ -5,7 +5,6 @@
 #ifndef UI_BASE_CURSOR_CURSOR_LOADER_X11_H_
 #define UI_BASE_CURSOR_CURSOR_LOADER_X11_H_
 
-#include <X11/Xcursor/Xcursor.h>
 #include <map>
 
 #include "base/compiler_specific.h"
@@ -14,6 +13,7 @@
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 
