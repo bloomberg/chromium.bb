@@ -5,22 +5,15 @@ cr.define('extensions', function() {
   const Sidebar = Polymer({
     is: 'extensions-sidebar',
 
-    properties: {
-      /** @private {number} */
-      selected_: {
-        type: Number,
-        value: -1,
-      },
-    },
-
     hostAttributes: {
       role: 'navigation',
     },
 
     /** @override */
     attached: function() {
-      this.selected_ =
-          extensions.navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0;
+      this.$.sectionMenu.select(
+          extensions.navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 :
+                                                                          0);
     },
 
     /** @private */

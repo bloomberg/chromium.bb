@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="navigation_helper.html">
 
@@ -14,6 +14,10 @@
         flex-direction: column;
         height: 100%;
         white-space: nowrap;
+      }
+
+      iron-selector .iron-selected {
+        color: var(--google-blue-700);
       }
 
       #section-menu {
@@ -53,7 +57,7 @@
         width: 15px;
       }
     </style>
-    <paper-menu id="section-menu" selected="{{selected_}}">
+    <iron-selector id="sectionMenu">
       <div class="section-item" id="sections-extensions"
           on-tap="onExtensionsTap_">
         $i18n{sidebarExtensions}
@@ -62,7 +66,7 @@
           on-tap="onKeyboardShortcutsTap_">
         $i18n{keyboardShortcuts}
       </div>
-    </paper-menu>
+    </iron-selector>
     <a class="section-item" id="more-extensions" target="_blank"
         href="$i18n{getMoreExtensionsUrl}">
       <span>$i18n{getMoreExtensions}</span>
