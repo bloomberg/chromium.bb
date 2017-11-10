@@ -26,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -43,17 +44,17 @@ public class ExternalAuthUtilsTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        ContextUtils.initApplicationContextForTests(mContext);
     }
 
     @Test
     @Feature({"GooglePlayServices"})
     public void testCanUseGooglePlayServicesSuccess() {
-        when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
+        when(mExternalAuthUtils.canUseGooglePlayServices(any(UserRecoverableErrorHandler.class)))
+                .thenCallRealMethod();
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(
                 ConnectionResult.SUCCESS);
-        assertTrue(mExternalAuthUtils.canUseGooglePlayServices(
-                mContext, mUserRecoverableErrorHandler));
+        assertTrue(mExternalAuthUtils.canUseGooglePlayServices(mUserRecoverableErrorHandler));
         verifyZeroInteractions(mUserRecoverableErrorHandler);
 
         // Verifying stubs can be an anti-pattern but here it is important to
@@ -69,12 +70,11 @@ public class ExternalAuthUtilsTest {
     @Test
     @Feature({"GooglePlayServices"})
     public void testCanUseGooglePlayServicesNonUserRecoverableFailure() {
-        when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
+        when(mExternalAuthUtils.canUseGooglePlayServices(any(UserRecoverableErrorHandler.class)))
+                .thenCallRealMethod();
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
         when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(false);  // Non-recoverable
-        assertFalse(mExternalAuthUtils.canUseGooglePlayServices(
-                mContext, mUserRecoverableErrorHandler));
+        assertFalse(mExternalAuthUtils.canUseGooglePlayServices(mUserRecoverableErrorHandler));
         verifyZeroInteractions(mUserRecoverableErrorHandler);
 
         // Verifying stubs can be an anti-pattern but here it is important to
@@ -89,14 +89,13 @@ public class ExternalAuthUtilsTest {
     @Test
     @Feature({"GooglePlayServices"})
     public void testCanUseGooglePlayServicesUserRecoverableFailure() {
-        when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
+        when(mExternalAuthUtils.canUseGooglePlayServices(any(UserRecoverableErrorHandler.class)))
+                .thenCallRealMethod();
         doNothing().when(mUserRecoverableErrorHandler).handleError(mContext, ERR);
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
         when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(true);  // Recoverable
         when(mExternalAuthUtils.describeError(anyInt())).thenReturn("unused");  // For completeness
-        assertFalse(mExternalAuthUtils.canUseGooglePlayServices(
-                mContext, mUserRecoverableErrorHandler));
+        assertFalse(mExternalAuthUtils.canUseGooglePlayServices(mUserRecoverableErrorHandler));
 
         // Verifying stubs can be an anti-pattern but here it is important to
         // test that the real method canUseGooglePlayServices did invoke these
