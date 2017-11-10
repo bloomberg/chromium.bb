@@ -1,25 +1,22 @@
-<html>
-<head>
-<script>
-    document.writeln("<script>\nfunction f1() {\n  window.foo = true;\n}\nf1();\n <" + "/script>");
-</script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-    console.assert(window.foo, "FAIL");
-</script>
+(async function() {
+  TestRunner.addResult(
+      `Tests that debugger StepOver will skip inlined scripts created by document.write().\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.navigatePromise(
+      'resources/debugger-step-over-document-write.html');
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-
-<script>
-
-function test() {
   var numberOfStepOver = 3;
 
   SourcesTestRunner.startDebuggerTest(step1, true);
 
   function step1() {
-    SourcesTestRunner.showScriptSource('debugger-step-over-document-write.html', step2);
+    SourcesTestRunner.showScriptSource(
+        'debugger-step-over-document-write.html', step2);
   }
 
   function step2(sourceFrame) {
@@ -40,14 +37,4 @@ function test() {
   function completeTest() {
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that debugger StepOver will skip inlined scripts created by document.write().
-</p>
-</body>
-</html>
+})();
