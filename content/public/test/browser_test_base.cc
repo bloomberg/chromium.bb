@@ -242,6 +242,11 @@ void BrowserTestBase::SetUp() {
 
   SetUpInProcessBrowserTestFixture();
 
+  // Should not use CommandLine to modify features. Please use ScopedFeatureList
+  // instead.
+  DCHECK(!command_line->HasSwitch(switches::kEnableFeatures));
+  DCHECK(!command_line->HasSwitch(switches::kDisableFeatures));
+
   // At this point, copy features to the command line, since BrowserMain will
   // wipe out the current feature list.
   std::string enabled_features;

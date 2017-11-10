@@ -344,9 +344,31 @@ void TestSuite::Initialize() {
 #endif
   // Set up a FeatureList instance, so that code using that API will not hit a
   // an error that it's not set. It will be cleared automatically.
-  scoped_feature_list_.InitFromCommandLine(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  // TestFeatureForBrowserTest1 and TestFeatureForBrowserTest2 used in
+  // ContentBrowserTestScopedFeatureListTest to ensure ScopedFeatureList keeps
+  // features from command line.
+  std::string enabled =
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures);
+  std::string disabled =
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures);
+  enabled += ",TestFeatureForBrowserTest1";
+  disabled += ",TestFeatureForBrowserTest2";
+  scoped_feature_list_.InitFromCommandLine(enabled, disabled);
+
+  // The enable-features and disable-features flags were just slurped into a
+  // FeatureList, so remove them from the command line. Tests should enable and
+  // disable features via the ScopedFeatureList API rather than command-line
+  // flags.
+  CommandLine new_command_line(command_line->GetProgram());
+  CommandLine::SwitchMap switches = command_line->GetSwitches();
+
+  switches.erase(switches::kEnableFeatures);
+  switches.erase(switches::kDisableFeatures);
+
+  for (const auto& iter : switches)
+    new_command_line.AppendSwitchNative(iter.first, iter.second);
+
+  *CommandLine::ForCurrentProcess() = new_command_line;
 
 #if defined(OS_IOS)
   InitIOSTestMessageLoop();
