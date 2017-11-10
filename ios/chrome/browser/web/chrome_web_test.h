@@ -11,7 +11,8 @@
 
 class TestChromeBrowserState;
 
-// An abstract class of tests that need to create real web controllers.
+// Test fixture that exposes a TestChromeBrowserState to allow configuring
+// the BrowserState in tests.
 class ChromeWebTest : public web::WebTestWithWebState {
  public:
   ~ChromeWebTest() override;
@@ -21,8 +22,6 @@ class ChromeWebTest : public web::WebTestWithWebState {
   // WebTest implementation.
   void SetUp() override;
   void TearDown() override;
-
-  // WebTestWithWebController
   web::BrowserState* GetBrowserState() override;
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
