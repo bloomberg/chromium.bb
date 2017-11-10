@@ -5991,8 +5991,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
 // Tests that inserting a named subframe into the FrameTree clears any
 // previously existing FrameNavigationEntry objects for the same name.
 // See https://crbug.com/628677.
+// Crashes inconsistently on windows only: https://crbug.com/783806.
+#if defined(OS_WIN)
+#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
+  DISABLED_EnsureFrameNavigationEntriesClearedOnMismatch
+#else
+#define MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch \
+  EnsureFrameNavigationEntriesClearedOnMismatch
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
-                       EnsureFrameNavigationEntriesClearedOnMismatch) {
+                       MAYBE_EnsureFrameNavigationEntriesClearedOnMismatch) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
   NavigationControllerImpl& controller = web_contents->GetController();
