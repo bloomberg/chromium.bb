@@ -1,14 +1,10 @@
-CONSOLE WARNING: line 7: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE ERROR: line 16: Uncaught NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/devtools/sources/debugger/resources/resource/unreachable'.
-Parent Frame
-Tests "pause" functionality in detached frame.
-
+Tests pause functionality in detached frame.
 Set timer for test function.
 Script execution paused.
 Call stack:
-    0) window.removeIframe (pause-in-removed-frame.html:11)
-    1) onXhrLoad (resources/child.html:12)
-    2) sendRequest (resources/child.html:16)
-    3) testFunction (pause-in-removed-frame.html:17)
+    0) window.removeIframe (pause-in-removed-frame.js:16)
+    1) onXhrLoad (:8000/devtools/sources/debugger/resources/child.html:12)
+    2) sendRequest (:8000/devtools/sources/debugger/resources/child.html:16)
+    3) testFunction (pause-in-removed-frame.js:22)
 Script execution resumed.
 
