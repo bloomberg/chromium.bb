@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
 
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"

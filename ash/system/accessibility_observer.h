@@ -5,8 +5,8 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_OBSERVER_H_
 #define ASH_SYSTEM_ACCESSIBILITY_OBSERVER_H_
 
-#include "ash/accessibility_types.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/accessibility_types.h"
 
 namespace ash {
 

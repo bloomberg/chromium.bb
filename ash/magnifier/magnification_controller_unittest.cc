@@ -4,7 +4,6 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
-#include "ash/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
@@ -446,7 +445,7 @@ TEST_F(MagnificationControllerTest, PanWindowToRight) {
   GetMagnificationController()->SetEnabled(true);
   EXPECT_FLOAT_EQ(2.f, GetMagnificationController()->GetScale());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(2.3784142, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(400, 300));
@@ -455,21 +454,21 @@ TEST_F(MagnificationControllerTest, PanWindowToRight) {
   EXPECT_EQ("566,299", env->last_mouse_location().ToString());
   EXPECT_EQ("705,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(2.8284268, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(799, 300));
   EXPECT_EQ("599,299", env->last_mouse_location().ToString());
   EXPECT_EQ("702,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(3.3635852, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(799, 300));
   EXPECT_EQ("627,298", env->last_mouse_location().ToString());
   EXPECT_EQ("707,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(4.f, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(799, 300));
@@ -491,7 +490,7 @@ TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   GetMagnificationController()->SetEnabled(true);
   EXPECT_FLOAT_EQ(2.f, GetMagnificationController()->GetScale());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(2.3784142, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(400, 300));
@@ -500,21 +499,21 @@ TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   EXPECT_EQ("231,299", env->last_mouse_location().ToString());
   EXPECT_EQ("100,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(2.8284268, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(0, 300));
   EXPECT_EQ("194,299", env->last_mouse_location().ToString());
   EXPECT_EQ("99,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(3.3635852, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(0, 300));
   EXPECT_EQ("164,298", env->last_mouse_location().ToString());
   EXPECT_EQ("98,300", GetHostMouseLocation());
 
-  scale *= kMagnificationScaleFactor;
+  scale *= MagnificationController::kMagnificationScaleFactor;
   GetMagnificationController()->SetScale(scale, false);
   EXPECT_FLOAT_EQ(4.f, GetMagnificationController()->GetScale());
   GetEventGenerator().MoveMouseToInHost(gfx::Point(0, 300));

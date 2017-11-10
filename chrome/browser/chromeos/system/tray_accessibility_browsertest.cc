@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accessibility_types.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 
-#include "ash/accessibility_types.h"
 #include "ash/magnifier/magnification_controller.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/shell.h"
 #include "base/command_line.h"

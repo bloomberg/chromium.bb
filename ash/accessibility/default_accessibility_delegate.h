@@ -6,8 +6,8 @@
 #define ASH_ACCESSIBILITY_DEFAULT_ACCESSIBILITY_DELEGATE_H_
 
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "base/macros.h"
 
 namespace ash {

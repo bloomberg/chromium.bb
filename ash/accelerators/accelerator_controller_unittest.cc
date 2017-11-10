@@ -6,9 +6,9 @@
 
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
