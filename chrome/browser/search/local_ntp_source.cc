@@ -231,10 +231,25 @@ std::string ConvertLogoImageToBase64(const EncodedLogo& logo) {
                             logo.metadata.mime_type.c_str(), base64.c_str());
 }
 
+std::string LogoTypeToString(search_provider_logos::LogoType type) {
+  switch (type) {
+    case search_provider_logos::LogoType::SIMPLE:
+      return "SIMPLE";
+    case search_provider_logos::LogoType::ANIMATED:
+      return "ANIMATED";
+    case search_provider_logos::LogoType::INTERACTIVE:
+      return "INTERACTIVE";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
     const LogoMetadata& meta) {
   auto result = base::MakeUnique<base::DictionaryValue>();
+  result->SetString("type", LogoTypeToString(meta.type));
   result->SetString("onClickUrl", meta.on_click_url.spec());
+  result->SetString("fullPageUrl", meta.full_page_url.spec());
   result->SetString("altText", meta.alt_text);
   result->SetString("mimeType", meta.mime_type);
   result->SetString("animatedUrl", meta.animated_url.spec());
