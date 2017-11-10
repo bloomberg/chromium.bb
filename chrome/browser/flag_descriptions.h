@@ -1425,6 +1425,9 @@ extern const char kMacV2SandboxDescription[];
 extern const char kMacViewsNativeAppWindowsName[];
 extern const char kMacViewsNativeAppWindowsDescription[];
 
+extern const char kMacViewsProfileChooserName[];
+extern const char kMacViewsProfileChooserDescription[];
+
 extern const char kMacViewsTaskManagerName[];
 extern const char kMacViewsTaskManagerDescription[];
 

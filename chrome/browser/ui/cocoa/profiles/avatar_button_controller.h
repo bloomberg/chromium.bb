@@ -36,7 +36,6 @@ class Browser;
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType
                    fromAccessPoint:(signin_metrics::AccessPoint)accessPoint;
-- (void)bubbleWillClose:(NSNotification*)notif;
 
 @end
 

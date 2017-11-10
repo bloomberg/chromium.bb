@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -152,25 +151,6 @@ TEST_F(AvatarButtonControllerTest, ProfileButtonWithErrorShown) {
   // If the button has an authentication error, it should display an error
   // icon.
   EXPECT_EQ(16, [button() image].size.width);
-}
-
-TEST_F(AvatarButtonControllerTest, DoubleOpen) {
-  EXPECT_FALSE([controller() menuController]);
-
-  [button() performClick:button()];
-
-  BaseBubbleController* menu = [controller() menuController];
-  EXPECT_TRUE(menu);
-  EXPECT_TRUE([menu isKindOfClass:[ProfileChooserController class]]);
-
-  [button() performClick:button()];
-  EXPECT_EQ(menu, [controller() menuController]);
-
-  // Do not animate out because that is hard to test around.
-  static_cast<InfoBubbleWindow*>(menu.window).allowedAnimations =
-      info_bubble::kAnimateNone;
-  [menu close];
-  EXPECT_FALSE([controller() menuController]);
 }
 
 TEST_F(AvatarButtonControllerTest, TitleColor) {
