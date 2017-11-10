@@ -82,7 +82,8 @@ void MediaStreamVideoSource::AddTrack(
   }
 }
 
-void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
+void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track,
+                                         base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<MediaStreamVideoTrack*>::iterator it =
       std::find(tracks_.begin(), tracks_.end(), video_track);
@@ -101,8 +102,67 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
   // failed and |frame_adapter_->AddCallback| has not been called.
   track_adapter_->RemoveTrack(video_track);
 
-  if (tracks_.empty())
+  if (tracks_.empty()) {
+    if (callback) {
+      // Using StopForRestart() in order to get a notification of when the
+      // source is actually stopped (if supported). The source will not be
+      // restarted.
+      // The intent is to have the same effect as StopSource() (i.e., having
+      // the readyState updated and invoking the source's stop callback on this
+      // task), but getting a notification of when the source has actually
+      // stopped so that clients have a mechanism to serialize the creation and
+      // destruction of video sources. Without such serialization it is possible
+      // that concurrent creation and destruction of sources that share the same
+      // underlying implementation results in failed source creation since
+      // stopping a source with StopSource() can have side effects that affect
+      // sources created after that StopSource() call, but before the actual
+      // stop takes place. See http://crbug.com/778039.
+      StopForRestart(base::BindOnce(&MediaStreamVideoSource::DidRemoveLastTrack,
+                                    weak_factory_.GetWeakPtr(),
+                                    std::move(callback)));
+      if (state_ == STOPPING_FOR_RESTART || state_ == STOPPED_FOR_RESTART) {
+        // If the source supports restarting, it is necessary to call
+        // FinalizeStopSource() to ensure the same behavior as StopSource(),
+        // even if the underlying implementation takes longer to actually stop.
+        // In particular, Tab capture and capture from element require the
+        // source's stop callback to be invoked on this task in order to ensure
+        // correct behavior.
+        FinalizeStopSource();
+      } else {
+        // If the source does not support restarting, call StopSource()
+        // to ensure stop on this task. DidRemoveLastTrack() will be called on
+        // another task even if the source does not support restarting, as
+        // StopForRestart() always posts a task to run its callback.
+        StopSource();
+      }
+    } else {
+      StopSource();
+    }
+  } else if (callback) {
+    std::move(callback).Run();
+  }
+}
+
+void MediaStreamVideoSource::DidRemoveLastTrack(base::OnceClosure callback,
+                                                RestartResult result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(callback);
+  DCHECK(tracks_.empty());
+  DCHECK_EQ(Owner().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  if (result == RestartResult::IS_STOPPED) {
+    state_ = ENDED;
+  }
+
+  if (state_ != ENDED) {
+    // This can happen if a source that supports StopForRestart() fails to
+    // actually stop the source after trying to stop it. The contract for
+    // StopForRestart() allows this, but it should not happen in practice.
+    LOG(WARNING) << "Source unexpectedly failed to stop. Force stopping and "
+                    "sending notification anyway";
     StopSource();
+  }
+  std::move(callback).Run();
 }
 
 void MediaStreamVideoSource::ReconfigureTrack(
@@ -139,8 +199,9 @@ void MediaStreamVideoSource::StopSourceForRestartImpl() {
 
 void MediaStreamVideoSource::OnStopForRestartDone(bool did_stop_for_restart) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (state_ == ENDED)
+  if (state_ == ENDED) {
     return;
+  }
 
   DCHECK_EQ(state_, STOPPING_FOR_RESTART);
   if (did_stop_for_restart) {

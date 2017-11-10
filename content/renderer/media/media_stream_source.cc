@@ -22,6 +22,10 @@ MediaStreamSource::~MediaStreamSource() {
 void MediaStreamSource::StopSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DoStopSource();
+  FinalizeStopSource();
+}
+
+void MediaStreamSource::FinalizeStopSource() {
   if (!stop_callback_.is_null())
     base::ResetAndReturn(&stop_callback_).Run(Owner());
   Owner().SetReadyState(blink::WebMediaStreamSource::kReadyStateEnded);

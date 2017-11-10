@@ -812,4 +812,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("applyConstraintsNonDevice()");
 }
 
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       ConcurrentGetUserMediaStop) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  ExecuteJavascriptAndWaitForOk("concurrentGetUserMediaStop()");
+}
+
 }  // namespace content

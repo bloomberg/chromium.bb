@@ -46,9 +46,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
   void DidDisableMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 
-  bool DidStopMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track) override;
-
   blink::WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
       const blink::WebMediaStreamTrack& track) override;
 

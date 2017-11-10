@@ -36,9 +36,7 @@ class CONTENT_EXPORT MediaStreamSource
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
   const MediaStreamDevice& device() const { return device_; }
 
-  // Stops the source (by calling DoStopSource()). This runs the
-  // |stop_callback_| (if set), and then sets the
-  // WebMediaStreamSource::readyState to ended.
+  // Stops the source (by calling DoStopSource()) and runs FinalizeStopSource().
   void StopSource();
 
   // Sets the source's state to muted or to live.
@@ -59,6 +57,11 @@ class CONTENT_EXPORT MediaStreamSource
   // Called when StopSource is called. It allows derived classes to implement
   // its own Stop method.
   virtual void DoStopSource() = 0;
+
+  // Runs the stop callback (if set) and sets the
+  // WebMediaStreamSource::readyState to ended. This can be used by
+  // implementations to implement custom stop methods.
+  void FinalizeStopSource();
 
  private:
   MediaStreamDevice device_;
