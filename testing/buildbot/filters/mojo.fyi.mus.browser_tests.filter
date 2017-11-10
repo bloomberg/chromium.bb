@@ -1,14 +1,6 @@
 # TODO: Investigate failure, http://crbug.com/754864.
 -CastStreamingApiTestWithPixelOutput.EndToEnd
 
-# TODO: Fails because RenderWidget::DidReceiveCompositorFrameAck() is
-# not called as often as it was before. http://crbug.com/754846.
--ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog
-
-# TODO: reenable, fails because of http://crbug.com/753593.
--ForceMaximizeOnFirstRunTest.PRE_TwoRuns
--ForceMaximizeOnFirstRunTest.TwoRuns
-
 # TODO: fails because of screen capture. http://crbug.com/754899.
 -ChromeScreenshotGrabberBrowserTest.TakeScreenshot
 -LoginFeedbackTest.Basic
@@ -22,9 +14,6 @@
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
 -SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
 
-# TODO: fix, http://crbug.com/759156.
--PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
-
 # TODO: fix, see http://crbug.com/755303.
 -StartupMetricsTest.ReportsValues
 
@@ -35,28 +24,8 @@
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/3
 
 # TODO: fix, http://crbug.com/755328
--NaClExtensionTest.MainFrameIsRemote
--WebViewTests/WebViewDPITest.Shim_TestAutosizeBeforeNavigation/0
--WebViewTests/WebViewDPITest.Shim_TestAutosizeBeforeNavigation/1
--WebViewTests/WebViewDPITest.Shim_TestAutosizeHeight/0
--WebViewTests/WebViewDPITest.Shim_TestAutosizeHeight/1
--WebViewTests/WebViewDPITest.Shim_TestAutosizeRemoveAttributes/0
--WebViewTests/WebViewDPITest.Shim_TestAutosizeRemoveAttributes/1
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
--WebViewTests/WebViewSizeTest.AutoSize/0
--WebViewTests/WebViewSizeTest.AutoSize/1
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeBeforeNavigation/0
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeBeforeNavigation/1
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/0
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/1
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/0
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/1
--WebViewTests/WebViewSizeTest.Shim_TestResizeEvents/0
--WebViewTests/WebViewSizeTest.Shim_TestResizeEvents/1
--WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewResizesContent/0
--WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewResizesContent/1
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
--WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/1
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 
 # content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/774269.
