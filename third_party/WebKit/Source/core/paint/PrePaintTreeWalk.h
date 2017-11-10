@@ -30,16 +30,13 @@ class CORE_EXPORT PrePaintTreeWalk {
 
   // Invalidates paint-layer painting optimizations, such as subsequence caching
   // and empty paint phase optimizations if clips from the context have changed.
-  ALWAYS_INLINE void InvalidatePaintLayerOptimizationsIfNeeded(
-      const LayoutObject&,
-      PrePaintTreeWalkContext&);
+  void InvalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
+                                                 PrePaintTreeWalkContext&);
 
-  bool ALWAYS_INLINE
-  NeedsTreeBuilderContextUpdate(const LocalFrameView&,
-                                const PrePaintTreeWalkContext&);
-  bool ALWAYS_INLINE
-  NeedsTreeBuilderContextUpdate(const LayoutObject&,
-                                const PrePaintTreeWalkContext&);
+  bool NeedsTreeBuilderContextUpdate(const LocalFrameView&,
+                                     const PrePaintTreeWalkContext&);
+  bool NeedsTreeBuilderContextUpdate(const LayoutObject&,
+                                     const PrePaintTreeWalkContext&);
 
   PaintPropertyTreeBuilder property_tree_builder_;
   PaintInvalidator paint_invalidator_;
