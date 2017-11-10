@@ -332,6 +332,9 @@ const char kEnableZipArchiverPacker[] = "enable-zip-archiver-packer";
 // Enables zip archiver - unpacker.
 const char kEnableZipArchiverUnpacker[] = "enable-zip-archiver-unpacker";
 
+// Disables zip archiver - unpacker.
+const char kDisableZipArchiverUnpacker[] = "disable-zip-archiver-unpacker";
+
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 
@@ -618,6 +621,12 @@ bool IsVoiceInteractionFlagsEnabled() {
 bool IsVoiceInteractionEnabled() {
   return IsVoiceInteractionLocalesSupported() &&
          IsVoiceInteractionFlagsEnabled();
+}
+
+bool IsZipArchiverUnpackerEnabled() {
+  // Disabled by default.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kEnableZipArchiverUnpacker);
 }
 
 }  // namespace switches

@@ -1534,8 +1534,8 @@ extern const char kEnableTabletSplitViewDescription[];
 extern const char kEnableZipArchiverPackerName[];
 extern const char kEnableZipArchiverPackerDescription[];
 
-extern const char kEnableZipArchiverUnpackerName[];
-extern const char kEnableZipArchiverUnpackerDescription[];
+extern const char kZipArchiverUnpackerName[];
+extern const char kZipArchiverUnpackerDescription[];
 
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];
