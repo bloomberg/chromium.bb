@@ -43,8 +43,8 @@ static_assert(IsTriviallyMoveAssignable<DestructorClass>::value,
               "DestructorClass should be trivially move assignable");
 static_assert(IsTriviallyCopyAssignable<DestructorClass>::value,
               "DestructorClass should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<DestructorClass>::value,
-              "DestructorClass should have a trivial default constructor");
+static_assert(IsDefaultConstructible<DestructorClass>::value,
+              "DestructorClass should be default constructible");
 
 struct MixedPrivate {
   int M2() { return m2; }
