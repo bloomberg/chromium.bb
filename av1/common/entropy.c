@@ -1743,6 +1743,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #endif  // CONFIG_MRC_TX
   AVERAGE_TILE_CDFS(palette_y_mode_cdf)
   AVERAGE_TILE_CDFS(palette_uv_mode_cdf)
+#if CONFIG_EXT_INTRA_MOD
+  AVERAGE_TILE_CDFS(angle_delta_cdf)
+#endif  // CONFIG_EXT_INTRA_MOD
 #if CONFIG_LPF_SB
   AVERAGE_TILE_CDFS(lpf_reuse_cdf);
   AVERAGE_TILE_CDFS(lpf_delta_cdf);
