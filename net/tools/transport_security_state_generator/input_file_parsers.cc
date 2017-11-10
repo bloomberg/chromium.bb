@@ -165,7 +165,8 @@ enum class CertificateParserState {
   IN_PUBLIC_KEY
 };
 
-// Valid JSON keys.
+// Valid keys for entries in the input JSON. These fields will be included in
+// the output.
 static const char kNameJSONKey[] = "name";
 static const char kIncludeSubdomainsJSONKey[] = "include_subdomains";
 static const char kIncludeSubdomainsForPinningJSONKey[] =
@@ -178,6 +179,10 @@ static const char kExpectStapleJSONKey[] = "expect_staple";
 static const char kExpectStapleReportURIJSONKey[] = "expect_staple_report_uri";
 static const char kIncludeSubdomainsForExpectStapleJSONKey[] =
     "include_subdomains_for_expect_staple";
+
+// Additional valid keys for entries in the input JSON that will not be included
+// in the output and contain metadata (e.g., for list maintenance).
+static const char kPolicyJSONKey[] = "policy";
 
 }  // namespace
 
@@ -295,6 +300,7 @@ bool ParseJSON(base::StringPiece json,
                TransportSecurityStateEntries* entries,
                Pinsets* pinsets) {
   std::set<std::string> valid_keys = {kNameJSONKey,
+                                      kPolicyJSONKey,
                                       kIncludeSubdomainsJSONKey,
                                       kIncludeSubdomainsForPinningJSONKey,
                                       kModeJSONKey,
