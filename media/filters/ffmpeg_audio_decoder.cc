@@ -305,7 +305,6 @@ bool FFmpegAudioDecoder::ConfigureDecoder(const AudioDecoderConfig& config) {
 
   codec_context_->opaque = this;
   codec_context_->get_buffer2 = GetAudioBufferImpl;
-  codec_context_->refcounted_frames = 1;
 
   if (!config.should_discard_decoder_delay())
     codec_context_->flags2 |= AV_CODEC_FLAG2_SKIP_MANUAL;
@@ -353,7 +352,7 @@ void FFmpegAudioDecoder::ResetTimestampState(const AudioDecoderConfig& config) {
 int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
                                        AVFrame* frame,
                                        int flags) {
-  DCHECK(s->codec->capabilities & CODEC_CAP_DR1);
+  DCHECK(s->codec->capabilities & AV_CODEC_CAP_DR1);
   DCHECK_EQ(s->codec_type, AVMEDIA_TYPE_AUDIO);
 
   // Since this routine is called by FFmpeg when a buffer is required for

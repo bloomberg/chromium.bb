@@ -97,11 +97,11 @@ static void CdmVideoDecoderConfigToAVCodecContext(
   if (config.extra_data) {
     codec_context->extradata_size = config.extra_data_size;
     codec_context->extradata = reinterpret_cast<uint8_t*>(
-        av_malloc(config.extra_data_size + FF_INPUT_BUFFER_PADDING_SIZE));
+        av_malloc(config.extra_data_size + AV_INPUT_BUFFER_PADDING_SIZE));
     memcpy(codec_context->extradata, config.extra_data,
            config.extra_data_size);
     memset(codec_context->extradata + config.extra_data_size, 0,
-           FF_INPUT_BUFFER_PADDING_SIZE);
+           AV_INPUT_BUFFER_PADDING_SIZE);
   } else {
     codec_context->extradata = NULL;
     codec_context->extradata_size = 0;
@@ -160,7 +160,6 @@ bool FFmpegCdmVideoDecoder::Initialize(const cdm::VideoDecoderConfig& config) {
   codec_context_->err_recognition = AV_EF_CAREFUL;
   codec_context_->thread_count = kDecodeThreads;
   codec_context_->opaque = this;
-  codec_context_->flags |= CODEC_FLAG_EMU_EDGE;
 
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
   if (!codec) {
