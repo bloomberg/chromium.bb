@@ -6539,7 +6539,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   // FrameLoader::didReceiveData() wasn't getting called in this case, which
   // resulted in the SubstituteData document not getting displayed.
   std::string error_url = "http://0.0.0.0";
-  WebURLError error(WebURLError::Domain::kTest, 1337, ToKURL(error_url));
+  ResourceError error = ResourceError::Failure(ToKURL(error_url));
   WebURLResponse response;
   response.SetURL(URLTestHelpers::ToKURL(error_url));
   response.SetMIMEType("text/html");

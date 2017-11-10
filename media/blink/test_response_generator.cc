@@ -22,7 +22,7 @@ TestResponseGenerator::TestResponseGenerator(const GURL& gurl,
     : gurl_(gurl), content_length_(content_length) {}
 
 WebURLError TestResponseGenerator::GenerateError() {
-  return WebURLError(WebURLError::Domain::kNet, net::ERR_ABORTED, WebURL());
+  return WebURLError(net::ERR_ABORTED, WebURL());
 }
 
 WebURLResponse TestResponseGenerator::Generate200() {

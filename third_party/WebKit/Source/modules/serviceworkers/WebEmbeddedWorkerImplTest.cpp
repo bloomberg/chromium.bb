@@ -7,6 +7,7 @@
 #include <memory>
 #include "platform/WaitableEvent.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -254,7 +255,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   WebURLResponse response;
   response.SetMIMEType("text/javascript");
   response.SetHTTPStatusCode(404);
-  WebURLError error(WebURLError::Domain::kTest, 1010, script_url);
+  ResourceError error = ResourceError::Failure(script_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       script_url, response, error);
   start_data_.script_url = script_url;

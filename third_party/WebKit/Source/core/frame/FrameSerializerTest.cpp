@@ -38,6 +38,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/SerializedResource.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -92,8 +93,7 @@ class FrameSerializerTest : public ::testing::Test,
   }
 
   void RegisterErrorURL(const char* file, int status_code) {
-    WebURLError error(WebURLError::Domain::kTest, 0xdead + status_code,
-                      WebURL());
+    ResourceError error = ResourceError::Failure(NullURL());
 
     WebURLResponse response;
     response.SetMIMEType("text/html");

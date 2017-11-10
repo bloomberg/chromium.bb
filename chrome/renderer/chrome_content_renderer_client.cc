@@ -1183,7 +1183,6 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
     const blink::WebURLError& web_error,
     std::string* error_html,
     base::string16* error_description) {
-  DCHECK_EQ(WebURLError::Domain::kNet, web_error.domain());
   GetNavigationErrorStringsInternal(
       render_frame, failed_request,
       error_page::Error::NetError(web_error.url(), web_error.reason(),

@@ -641,7 +641,6 @@ jumbo_component("platform") {
     "exported/WebTextRun.cpp",
     "exported/WebThreadSafeData.cpp",
     "exported/WebURL.cpp",
-    "exported/WebURLError.cpp",
     "exported/WebURLLoadTiming.cpp",
     "exported/WebURLLoaderClient.cpp",
     "exported/WebURLLoaderTestDelegate.cpp",

@@ -47,7 +47,6 @@ class PLATFORM_EXPORT ResourceError final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  using Domain = WebURLError::Domain;
   enum Error {
     ACCESS_DENIED = net::ERR_ACCESS_DENIED,
     BLOCKED_BY_XSS_AUDITOR = net::ERR_BLOCKED_BY_XSS_AUDITOR
@@ -68,14 +67,13 @@ class PLATFORM_EXPORT ResourceError final {
 
   ResourceError() = delete;
   // |error_code| must not be 0.
-  ResourceError(Domain, int error_code, const KURL& failing_url);
+  ResourceError(int error_code, const KURL& failing_url);
   ResourceError(const WebURLError&);
 
   // Makes a deep copy. Useful for when you need to use a ResourceError on
   // another thread.
   ResourceError Copy() const;
 
-  Domain GetDomain() const { return domain_; }
   int ErrorCode() const { return error_code_; }
   const String& FailingURL() const { return failing_url_; }
   const String& LocalizedDescription() const { return localized_description_; }
@@ -110,7 +108,6 @@ class PLATFORM_EXPORT ResourceError final {
  private:
   void InitializeDescription();
 
-  Domain domain_;
   int error_code_;
   KURL failing_url_;
   String localized_description_;
