@@ -1,3 +1,8 @@
+# TODO: reevaluate these once --mus no longer implies Viz. All of these
+# failures appear to be code relying on in process access to parts of Viz.
+# This is covered by http://crbug.com/775030. There are also a couple that rely
+# on capture, which again should work fine once --mus no longer implies Viz.
+
 # TODO: reenable, these use
 # BrowserMainLoop::GetInstance()->gpu_channel_establish_factory().
 # http://crbug.com/775030.
@@ -27,6 +32,7 @@
 -NonBlockingEventBrowserTest.TouchStart
 -PointerLockBrowserTest.PointerLockEventRouting
 -PointerLockBrowserTest.PointerLockWheelEventRouting
+-ScreenOrientationOOPIFBrowserTest.ScreenOrientation
 
 # TODO: reenable, uses WaitForChildFrameSurfaceReady(), http://crbug.com/775030.
 -SitePerProcessBrowserTest.CancelWheelScrollBubblingOnWheelTargetDeletion
@@ -70,33 +76,40 @@
 
 # TODO: reenable, uses FrameWatcher, http://crbug.com/775030.
 -CompositedScrollingBrowserTest.Scroll3DTransformedScroller
+-RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
+-ScrollLatencyBrowserTest.SmoothWheelScroll
+-TouchActionBrowserTest.TouchActionNone
+-WheelScrollLatchingBrowserTest.WheelEventTarget
+-WheelScrollLatchingDisabledBrowserTest.WheelEventTarget
 
 # Stuck in DevToolsProtocolTest::WaitForResponse().
-# TODO(sky): understand this, and file appropriate bug.
 -CaptureScreenshotTest.CaptureScreenshot
 -CaptureScreenshotTest.CaptureScreenshotJpeg
 
 # These get stuck waiting for an event, InputMsgWatcher::WaitForAck().
-# TODO(sky): understand this, and file appropriate bug.
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
 -MouseLatencyBrowserTest.MouseDownAndUpRecordedWithoutSwap
 
 # These wait for mojom::kGpuServiceName to connect to browser, but that won't
 # happen with mus.
-# TODO(sky): understand this, and file appropriate bug.
 -PowerMonitorTest.TestGpuProcess
 
 # These all timeout, investigate why.
 -GLAndSoftwareCompositing*
 
-# TODO: finish classifying these.
--RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
--ScreenOrientationOOPIFBrowserTest.ScreenOrientation
--ScrollLatencyBrowserTest.SmoothWheelScroll
+# TODO: these hit a DCHECK on the waterfall. They hit DCHECK:
+# PaintLayerCompositor.cpp(94)] Check failed:
+# layout_view_.Layer()->IsAllowedToQueryCompositingState()
+-SitePerProcessBrowserTest.ScrollElementIntoView
+-FindRequestManagerTests/FindRequestManagerTest.NavigateFrame/1
+
+# TODO: these all need capture. http://crbug.com/754872
 -SnapshotBrowserTest.AsyncMultiWindowTest
 -SnapshotBrowserTest.SingleWindowTest
 -SnapshotBrowserTest.SyncMultiWindowTest
--TouchActionBrowserTest.TouchActionNone
+
+# TODO: these all rely on RenderWidgetHostImpl::SubmitCompositorFrame(), which
+# isn't hit for mus.
 -TouchSelectionControllerClientAuraScaleFactorTest.InsertionHandleCoordinates
 -TouchSelectionControllerClientAuraScaleFactorTest.SelectionHandleCoordinates
 -TouchSelectionControllerClientAuraTest.BasicInsertionFollowedByTapsOnHandle
@@ -106,9 +119,3 @@
 -TouchSelectionControllerClientAuraTest.QuickMenuHiddenOnTouch
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/0
 -TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/1
--WheelScrollLatchingBrowserTest.WheelEventTarget
--WheelScrollLatchingDisabledBrowserTest.WheelEventTarget
-
-# TODO(sky): these two fail on the bot, figure out why.
--SitePerProcessBrowserTest.ScrollElementIntoView
--FindRequestManagerTests/FindRequestManagerTest.NavigateFrame/1
