@@ -35,6 +35,9 @@ class NotificationDisplayService : public KeyedService {
   using DisplayedNotificationsCallback =
       base::Callback<void(std::unique_ptr<std::set<std::string>>,
                           bool /* supports_synchronization */)>;
+
+  static NotificationDisplayService* GetForProfile(Profile* profile);
+
   explicit NotificationDisplayService(Profile* profile);
   ~NotificationDisplayService() override;
 

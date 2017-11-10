@@ -53,7 +53,7 @@ class CupsPrintJobNotification {
   void UpdateNotificationButtons();
 
   // Returns the buttons according to the print job's current status.
-  std::unique_ptr<std::vector<ButtonCommand>> GetButtonCommands() const;
+  std::vector<ButtonCommand> GetButtonCommands() const;
   base::string16 GetButtonLabel(ButtonCommand button) const;
   gfx::Image GetButtonIcon(ButtonCommand button) const;
 
@@ -74,7 +74,7 @@ class CupsPrintJobNotification {
 
   // Maintains a list of button actions according to the print job's current
   // status.
-  std::unique_ptr<std::vector<ButtonCommand>> button_commands_;
+  std::vector<ButtonCommand> button_commands_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJobNotification);
 };
