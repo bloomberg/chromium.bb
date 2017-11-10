@@ -169,7 +169,7 @@ static SelectionInDOMTree PrepareToModifySelection(
 
 VisiblePosition SelectionModifier::PositionForPlatform(
     bool is_get_start) const {
-  Settings* settings = GetFrame() ? GetFrame()->GetSettings() : nullptr;
+  Settings* settings = GetFrame()->GetSettings();
   if (settings && settings->GetEditingBehaviorType() == kEditingMacBehavior)
     return is_get_start ? selection_.VisibleStart() : selection_.VisibleEnd();
   // Linux and Windows always extend selections from the extent endpoint.
@@ -194,8 +194,7 @@ VisiblePosition SelectionModifier::NextWordPositionForPlatform(
   VisiblePosition position_after_current_word =
       NextWordPosition(original_position);
 
-  if (!GetFrame() ||
-      !GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight())
+  if (!GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight())
     return position_after_current_word;
   return CreateVisiblePosition(
       SkipWhitespace(position_after_current_word.DeepEquivalent()));
@@ -323,7 +322,6 @@ VisiblePosition SelectionModifier::ModifyMovingRight(
       return CreateVisiblePosition(selection_.Start(), selection_.Affinity());
     case TextGranularity::kWord: {
       const bool skips_space_when_moving_right =
-          GetFrame() &&
           GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
       return RightWordPosition(ComputeVisibleExtent(selection_),
                                skips_space_when_moving_right);
@@ -494,7 +492,6 @@ VisiblePosition SelectionModifier::ModifyMovingLeft(
       return CreateVisiblePosition(selection_.End(), selection_.Affinity());
     case TextGranularity::kWord: {
       const bool skips_space_when_moving_right =
-          GetFrame() &&
           GetFrame()->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight();
       return LeftWordPosition(ComputeVisibleExtent(selection_),
                               skips_space_when_moving_right);
@@ -640,7 +637,6 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
           (granularity == TextGranularity::kWord ||
            granularity == TextGranularity::kParagraph ||
            granularity == TextGranularity::kLine) &&
-          GetFrame() &&
           !GetFrame()
                ->GetEditor()
                .Behavior()
@@ -661,8 +657,7 @@ bool SelectionModifier::Modify(SelectionModifyAlteration alter,
       // Standard Mac behavior when extending to a boundary is grow the
       // selection rather than leaving the base in place and moving the
       // extent. Matches NSTextView.
-      if (!GetFrame() ||
-          !GetFrame()
+      if (!GetFrame()
                ->GetEditor()
                .Behavior()
                .ShouldAlwaysGrowSelectionWhenExtendingToBoundary() ||
@@ -845,10 +840,6 @@ LayoutUnit SelectionModifier::LineDirectionPointForBlockDirectionNavigation(
   LayoutUnit x;
 
   if (selection_.IsNone())
-    return x;
-
-  LocalFrame* frame = pos.GetDocument()->GetFrame();
-  if (!frame)
     return x;
 
   if (x_pos_for_vertical_arrow_navigation_ ==
