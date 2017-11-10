@@ -235,12 +235,8 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
   if (channel_name == "chrome.extension.sendRequest" ||
       channel_name == "chrome.runtime.sendMessage") {
-    OneTimeMessageHandler::Event event =
-        channel_name == "chrome.extension.sendRequest"
-            ? OneTimeMessageHandler::Event::ON_REQUEST
-            : OneTimeMessageHandler::Event::ON_MESSAGE;
     one_time_message_handler_.AddReceiver(script_context, target_port_id,
-                                          sender, event);
+                                          sender, event_name);
     return;
   }
 

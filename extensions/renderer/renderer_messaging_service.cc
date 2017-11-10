@@ -21,6 +21,7 @@
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/extension_port.h"
 #include "extensions/renderer/ipc_message_sender.h"
+#include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -143,15 +144,15 @@ void RendererMessagingService::DispatchOnConnectToScriptContext(
   std::string target_extension_id = script_context->GetExtensionID();
   bool is_external = info.source_id != target_extension_id;
   std::string event_name;
-  if (channel_name == "chrome.extension.sendRequest") {
-    event_name =
-        is_external ? "extension.onRequestExternal" : "extension.onRequest";
-  } else if (channel_name == "chrome.runtime.sendMessage") {
-    event_name =
-        is_external ? "runtime.onMessageExternal" : "runtime.onMessage";
+  if (channel_name == messaging_util::kSendRequestChannel) {
+    event_name = is_external ? messaging_util::kOnRequestExternalEvent
+                             : messaging_util::kOnRequestEvent;
+  } else if (channel_name == messaging_util::kSendMessageChannel) {
+    event_name = is_external ? messaging_util::kOnMessageExternalEvent
+                             : messaging_util::kOnMessageEvent;
   } else {
-    event_name =
-        is_external ? "runtime.onConnectExternal" : "runtime.onConnect";
+    event_name = is_external ? messaging_util::kOnConnectExternalEvent
+                             : messaging_util::kOnConnectEvent;
   }
 
   // If there are no listeners for the given event, then we know the port won't

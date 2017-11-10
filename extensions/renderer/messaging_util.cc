@@ -18,6 +18,13 @@ namespace messaging_util {
 const char kSendMessageChannel[] = "chrome.runtime.sendMessage";
 const char kSendRequestChannel[] = "chrome.extension.sendRequest";
 
+const char kOnMessageEvent[] = "runtime.onMessage";
+const char kOnMessageExternalEvent[] = "runtime.onMessageExternal";
+const char kOnRequestEvent[] = "extension.onRequest";
+const char kOnRequestExternalEvent[] = "extension.onRequestExternal";
+const char kOnConnectEvent[] = "runtime.onConnect";
+const char kOnConnectExternalEvent[] = "runtime.onConnectExternal";
+
 const int kNoFrameId = -1;
 
 std::unique_ptr<Message> MessageFromV8(v8::Local<v8::Context> context,
