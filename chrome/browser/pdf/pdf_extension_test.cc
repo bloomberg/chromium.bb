@@ -123,11 +123,12 @@ class PDFExtensionTest : public ExtensionApiTest,
 
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
     const char* const kFailingPdfs[] = {
-        // TODO(thestig): Investigate why this file doesn't fail when served by
-        // EmbeddedTestServer or another webserver.
-        // "pdf_private/cfuzz5.pdf",
-        "pdf_private/cfuzz6.pdf", "pdf_private/crash-11-14-44.pdf",
-        "pdf_private/js.pdf",     "pdf_private/segv-ecx.pdf",
+        "pdf_private/accessibility_crash_1.pdf",
+        "pdf_private/cfuzz5.pdf",
+        "pdf_private/cfuzz6.pdf",
+        "pdf_private/crash-11-14-44.pdf",
+        "pdf_private/js.pdf",
+        "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
     };
     for (const char* failing_pdf : kFailingPdfs) {
@@ -687,21 +688,6 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
 
   ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
-
-#if defined(GOOGLE_CHROME_BUILD)
-// Test a particular PDF encountered in the wild that triggered a crash
-// when accessibility is enabled.  (http://crbug.com/648981)
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityCharCountCrash) {
-  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
-  GURL test_pdf_url(embedded_test_server()->GetURL(
-      "/pdf_private/accessibility_crash_1.pdf"));
-
-  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
-  ASSERT_TRUE(guest_contents);
-
-  WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
-}
-#endif
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
