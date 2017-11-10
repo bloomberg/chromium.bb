@@ -53,6 +53,27 @@
   DCHECK(self.currentBVC == bvc);
 }
 
+#pragma mark - UIViewController methods
+
+- (void)presentViewController:(UIViewController*)viewControllerToPresent
+                     animated:(BOOL)flag
+                   completion:(void (^)())completion {
+  // Force presentation to go through the current BVC, which does some
+  // associated bookkeeping.
+  DCHECK(self.currentBVC);
+  [self.currentBVC presentViewController:viewControllerToPresent
+                                animated:flag
+                              completion:completion];
+}
+
+- (void)dismissViewControllerAnimated:(BOOL)flag
+                           completion:(void (^)())completion {
+  // Force dismissal to go through the current BVC, which does some associated
+  // bookkeeping.
+  DCHECK(self.currentBVC);
+  [self.currentBVC dismissViewControllerAnimated:flag completion:completion];
+}
+
 - (UIViewController*)childViewControllerForStatusBarHidden {
   return self.currentBVC;
 }
