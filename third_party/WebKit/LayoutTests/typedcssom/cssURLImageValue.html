@@ -2,9 +2,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 
-<div id="testImage1"></div>
-<div id="testImage2"></div>
-<div id="testImage3"></div>
 <div id="testImage4"></div>
 
 <script>
@@ -16,14 +13,6 @@ var supportedCSSProperties = [
   "content",
   "shape-outside"
 ];
-
-// Temporary helper function since CSSURLImageValue doesn't support relative
-// URLs yet. This can be removed once it does.
-function url() {
-  var c = document.location.href.split('/');
-  c[c.length - 1] = 'resources/1x1-green.png';
-  return c.join('/');
-}
 
 function base64Url() {
   return "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
@@ -37,83 +26,6 @@ function assertLoadedDotImageValue(
   assert_equals(image.intrinsicWidth, expectedWidth);
   assert_equals(image.intrinsicHeight, expectedHeight);
   assert_equals(image.intrinsicRatio, expectedRatio);
-}
-
-test(function() {
-  var image = new CSSURLImageValue(url());
-  assert_equals(image.state, "unloaded");
-}, "State is unloaded after construction.");
-
-{
-  var test1 = async_test("URL image changes state when loaded");
-  var url1 = url();
-
-  var imageValue1 = new CSSURLImageValue(url1);
-
-  // Set it on an element so it can be loaded.
-  testImage1.styleMap.set(supportedCSSProperties[0], imageValue1);
-
-  // add an Image object to know if the image has been loaded
-  var image1 = new Image();
-  image1.src = url1;
-
-  assert_equals(imageValue1.state, "unloaded");
-
-  image1.addEventListener("load", function() {
-    assert_equals(imageValue1.url, url1);
-    assert_equals(imageValue1.state, "loaded");
-    assert_equals(imageValue1.intrinsicWidth, 1);
-    assert_equals(imageValue1.intrinsicHeight, 1);
-    assert_equals(imageValue1.intrinsicRatio, 1);
-    test1.done();
-  });
-}
-
-{
-  var test2 = async_test("Base-64 image changes state when loaded");
-  var url2 = base64Url();
-
-  var imageValue2 = new CSSURLImageValue(url2);
-  // Set it on an element so it can be loaded.
-  testImage2.styleMap.set(supportedCSSProperties[0], imageValue2);
-
-  // add an Image object to know if the image has been loaded
-  var image2 = new Image();
-  image2.src = url2;
-
-  assert_equals(imageValue2.state, "unloaded");
-
-  image2.addEventListener("load", function() {
-    assert_equals(imageValue2.url, url2);
-    assert_equals(imageValue2.state, "loaded");
-    assert_equals(imageValue2.intrinsicWidth, 1);
-    assert_equals(imageValue2.intrinsicHeight, 1);
-    assert_equals(imageValue2.intrinsicRatio, 1);
-    test2.done();
-  });
-}
-
-{
-  var test3 = async_test("Invalid Image will have error state after loading");
-  var url3 = document.location.href;
-  var imageValue3 = new CSSURLImageValue(url3);
-
-  testImage3.styleMap.set("background-image", imageValue3);
-
-  // add an Image object to know image's status
-  var image3 = new Image();
-  image3.src = url3;
-
-  assert_equals(imageValue3.state, "unloaded");
-
-  image3.onerror = function() {
-    assert_equals(imageValue3.url, url3);
-    assert_equals(imageValue3.state, "error");
-    assert_equals(imageValue3.intrinsicWidth, 0);
-    assert_equals(imageValue3.intrinsicHeight, 0);
-    assert_equals(imageValue3.intrinsicRatio, null);
-    test3.done();
-  };
 }
 
 for (let property of supportedCSSProperties) {
