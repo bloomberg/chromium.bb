@@ -11,14 +11,14 @@ CallbackInterfaceBase::CallbackInterfaceBase(
     SingleOperationOrNot single_op_or_not) {
   DCHECK(!callback_object.IsEmpty());
 
-  callback_relevant_context_ =
+  callback_relevant_script_state_ =
       ScriptState::From(callback_object->CreationContext());
-  v8::Isolate* isolate = callback_relevant_context_->GetIsolate();
+  v8::Isolate* isolate = callback_relevant_script_state_->GetIsolate();
 
   callback_object_.Set(isolate, callback_object);
   callback_object_is_callable_ =
       (single_op_or_not == kSingleOperation) && callback_object->IsCallable();
-  incumbent_context_ = ScriptState::From(isolate->GetIncumbentContext());
+  incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
 }  // namespace blink

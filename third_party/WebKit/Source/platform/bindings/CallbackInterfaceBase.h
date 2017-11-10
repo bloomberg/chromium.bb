@@ -13,7 +13,7 @@
 namespace blink {
 
 // CallbackInterfaceBase is the common base class of all the callback interface
-// classes. Most importantly this class provdes a way of type dispatching (e.g.
+// classes. Most importantly this class provides a way of type dispatching (e.g.
 // overload resolutions, SFINAE technique, etc.) so that it's possible to
 // distinguish callback interfaces from anything else. Also it provides a common
 // implementation of callback interfaces.
@@ -33,7 +33,9 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   virtual ~CallbackInterfaceBase() = default;
 
   // Accessors to non-members
-  v8::Isolate* GetIsolate() { return callback_relevant_context_->GetIsolate(); }
+  v8::Isolate* GetIsolate() {
+    return callback_relevant_script_state_->GetIsolate();
+  }
 
  protected:
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
@@ -45,9 +47,9 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   }
   bool IsCallbackObjectCallable() const { return callback_object_is_callable_; }
   ScriptState* CallbackRelevantScriptState() {
-    return callback_relevant_context_.get();
+    return callback_relevant_script_state_.get();
   }
-  ScriptState* IncumbentScriptState() { return incumbent_context_.get(); }
+  ScriptState* IncumbentScriptState() { return incumbent_script_state_.get(); }
 
  private:
   // The "callback interface type" value.
@@ -57,8 +59,8 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   // The associated Realm of the callback interface type value. Note that the
   // callback interface type value can be different from the function object
   // to be invoked.
-  scoped_refptr<ScriptState> callback_relevant_context_;
-  scoped_refptr<ScriptState> incumbent_context_;
+  scoped_refptr<ScriptState> callback_relevant_script_state_;
+  scoped_refptr<ScriptState> incumbent_script_state_;
 };
 
 }  // namespace blink
