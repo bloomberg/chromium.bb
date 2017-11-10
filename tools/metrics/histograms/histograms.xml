@@ -28274,6 +28274,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Import.IncludesPasswords.Firefox" enum="BooleanChecked">
+  <owner>vabr@chromium.org</owner>
+  <owner>hurims@gmail.com</owner>
+  <summary>
+    Whether or not the password checkbox is checked when importing a profile of
+    Firefox. Note that canceled imports could be counted also.
+  </summary>
+</histogram>
+
+<histogram name="Import.NumberOfImportedPasswords.Firefox">
+  <owner>vabr@chromium.org</owner>
+  <owner>hurims@gmail.com</owner>
+  <summary>
+    The number of passwords that are imported from Firefox. This is recorded
+    when importing a profile of Firefox with the password checkbox checked. Note
+    that the reported number of password could be slightly bigger than the
+    actual number of imported passwords because some incomplete or blacklisted
+    passwords that are dropped while importing might be included in the reported
+    value.
+  </summary>
+</histogram>
+
 <histogram name="Import.ShowDialog.FromBookmarkBarView" units="seconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

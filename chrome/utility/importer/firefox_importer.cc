@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -102,6 +103,9 @@ FirefoxImporter::~FirefoxImporter() {
 void FirefoxImporter::StartImport(const importer::SourceProfile& source_profile,
                                   uint16_t items,
                                   ImporterBridge* bridge) {
+  UMA_HISTOGRAM_BOOLEAN("Import.IncludesPasswords.Firefox",
+                        !!(items & importer::PASSWORDS));
+
   bridge_ = bridge;
   source_path_ = source_profile.source_path;
   app_path_ = source_profile.app_path;
@@ -374,6 +378,8 @@ void FirefoxImporter::ImportPasswords() {
   }
 
   if (!cancelled()) {
+    UMA_HISTOGRAM_COUNTS_10000("Import.NumberOfImportedPasswords.Firefox",
+                               forms.size());
     for (size_t i = 0; i < forms.size(); ++i) {
       if (!forms[i].username_value.empty() ||
           !forms[i].password_value.empty() ||
