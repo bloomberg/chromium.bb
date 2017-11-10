@@ -3896,3 +3896,6 @@ crbug.com/783229 external/wpt/async_cookies/one_simple_origin_cookie.tentative.h
 crbug.com/783229 external/wpt/async_cookies/one_simple_origin_cookie.tentative.https.html [ Skip ]
 crbug.com/783229 external/wpt/async_cookies/one_simple_origin_cookie_static.tentative.html [ Skip ]
 crbug.com/783229 external/wpt/async_cookies/one_simple_origin_cookie_static.tentative.https.html [ Skip ]
+
+# https://bugs.chromium.org/p/chromium/issues/detail?id=777526
+crbug.com/777777 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-remove-tracks.https.html [ Timeout ]
