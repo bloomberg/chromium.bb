@@ -289,6 +289,16 @@ static int amdgpu_init(struct driver *drv)
 	if (ret)
 		return ret;
 
+	/* YUV format for camera */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	/*
+	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
+	 * from camera.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+
 	drv_modify_combination(drv, DRM_FORMAT_NV21, &LINEAR_METADATA, BO_USE_SCANOUT);
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA, BO_USE_SCANOUT);
 
@@ -419,6 +429,12 @@ static void *amdgpu_bo_map(struct bo *bo, struct mapping *mapping, size_t plane,
 static uint32_t amdgpu_resolve_format(uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
+	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+		/* Camera subsystem requires NV12. */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
+		/*HACK: See b/28671744 */
+		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
 		return DRM_FORMAT_NV12;
 	default:
