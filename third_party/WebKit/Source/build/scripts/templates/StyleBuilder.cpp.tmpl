@@ -8,6 +8,7 @@
 #include "StyleBuilderFunctions.h"
 #include "core/css/CSSPropertyValue.h"
 #include "core/css/properties/CSSProperty.h"
+#include "core/css/properties/Longhand.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 
@@ -27,11 +28,11 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
     {% if property.use_property_class_in_stylebuilder %}
     case {{property.property_id}}:
       if (isInitial)
-        Get{{property_id}}().ApplyInitial(state);
+        ToLonghand(Get{{property_id}}()).ApplyInitial(state);
       else if (isInherit)
-        Get{{property_id}}().ApplyInherit(state);
+        ToLonghand(Get{{property_id}}()).ApplyInherit(state);
       else
-        Get{{property_id}}().ApplyValue(state, value);
+        ToLonghand(Get{{property_id}}()).ApplyValue(state, value);
       return;
       {% else %}
     case {{property.property_id}}:

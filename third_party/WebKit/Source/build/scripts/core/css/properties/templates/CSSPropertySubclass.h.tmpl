@@ -6,14 +6,14 @@
 {% from 'core/css/properties/templates/application_macros.tmpl' import set_value, convert_and_set_value %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#ifndef {{property.namespace}}_{{property_classname}}_h
-#define {{property.namespace}}_{{property_classname}}_h
+#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
+#define GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h
 
+#include "core/css/properties/{{property.superclass}}.h"
+{# conditional includes - only used in some property classes #}
 {% if property.direction_aware_options %}
 #include "core/StylePropertyShorthand.h"
 {% endif %}
-#include "core/css/properties/CSSProperty.h"
-{# conditional includes - only used in some property classes #}
 {% if property.should_declare_application_functions %}
 #include "core/css/resolver/StyleResolverState.h"
   {% if property.converter == "CSSPrimitiveValue" %}
@@ -40,18 +40,9 @@
 
 namespace blink {
 
-class CSSParserTokenRange;
-class CSSParserContext;
-class CSSParserLocalContext;
-class CSSPropertyValue;
 class CSSValue;
-class LayoutObject;
 
-{% if property.longhands %}
-namespace CSSShorthand {
-{% else %}
-namespace CSSLonghand {
-{% endif %}
+namespace CSS{{property.superclass}} {
 
 {% if property.is_property %}
   {% if property.unique %}
@@ -67,9 +58,9 @@ namespace CSSLonghand {
   {% endif %}
 {% endif %}
 // See src/third_party/WebKit/Source/core/css/properties/README.md
-class {{property_classname}} : public CSSProperty {
+class {{property_classname}} : public {{property.superclass}} {
  public:
-  constexpr {{property_classname}}(CSSPropertyID id) : CSSProperty(id) {}
+  constexpr {{property_classname}}(CSSPropertyID id) : {{property.superclass}}(id) {}
   {% for property_method in property.property_methods %}
   {{property_method.return_type}} {{property_method.name}}{{property_method.parameters}} const override;
   {% endfor %}
@@ -173,11 +164,7 @@ class {{property_classname}} : public CSSProperty {
   {% endif %}
 };
 
-{% if property.longhands %}
-} // namespace CSSShorthand
-{% else %}
-} // namespace CSSLonghand
-{% endif %}
+}  // namespace CSS{{property.superclass}}
 }  // namespace blink
 
-#endif  // {{property.namespace}}_{{property_classname}}_h
+#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_{{property.superclass.upper()}}_{{property_classname}}_h

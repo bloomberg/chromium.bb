@@ -15,7 +15,6 @@
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
-namespace CSSLonghand {
 
 class ApplyAtRule : public CSSProperty {
  public:
@@ -26,7 +25,6 @@ class ApplyAtRule : public CSSProperty {
   }
 };
 
-}  // namespace CSSLonghand
 }  // namespace blink
 
 #endif  // ApplyAtRule_h

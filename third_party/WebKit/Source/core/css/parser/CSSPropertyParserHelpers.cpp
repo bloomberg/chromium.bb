@@ -25,6 +25,7 @@
 #include "core/css/properties/CSSProperty.h"
 #include "core/css/properties/CSSPropertyBoxShadowUtils.h"
 #include "core/css/properties/CSSPropertyTransformUtils.h"
+#include "core/css/properties/Longhand.h"
 #include "core/frame/UseCounter.h"
 #include "platform/runtime_enabled_features.h"
 
@@ -1658,7 +1659,7 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
     return ConsumeIdent(range);
   }
 
-  const CSSProperty& property = CSSProperty::Get(property_id);
+  const Longhand& property = ToLonghand(CSSProperty::Get(property_id));
   const CSSValue* result = property.ParseSingleValue(
       range, context,
       CSSParserLocalContext(isPropertyAlias(unresolved_property),

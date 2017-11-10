@@ -14,7 +14,6 @@
 #include "core/css/properties/CSSProperty.h"
 
 namespace blink {
-namespace CSSLonghand {
 
 class Variable : public CSSProperty {
  public:
@@ -24,7 +23,6 @@ class Variable : public CSSProperty {
   bool IsAffectedByAll() const override { return false; }
 };
 
-}  // namespace CSSLonghand
 }  // namespace blink
 
 #endif  // Variable_h
