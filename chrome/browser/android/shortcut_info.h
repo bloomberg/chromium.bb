@@ -89,6 +89,7 @@ struct ShortcutInfo {
   GURL best_primary_icon_url;
   GURL best_badge_icon_url;
   std::vector<std::string> icon_urls;
+  base::string16 share_target_url_template;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

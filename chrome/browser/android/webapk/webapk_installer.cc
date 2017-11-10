@@ -180,6 +180,12 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   std::string* scope = web_app_manifest->add_scopes();
   scope->assign(GetScope(shortcut_info).spec());
 
+  if (!shortcut_info.share_target_url_template.empty()) {
+    webapk::ShareTarget* share_target = web_app_manifest->add_share_targets();
+    share_target->set_url_template(
+        base::UTF16ToUTF8(shortcut_info.share_target_url_template));
+  }
+
   if (shortcut_info.best_primary_icon_url.is_empty()) {
     // Update when web manifest is no longer available.
     webapk::Image* best_primary_icon_image = web_app_manifest->add_icons();

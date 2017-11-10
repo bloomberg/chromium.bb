@@ -77,6 +77,9 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   icon_urls.clear();
   for (const content::Manifest::Icon& icon : manifest.icons)
     icon_urls.push_back(icon.src.spec());
+
+  if (manifest.share_target)
+    share_target_url_template = manifest.share_target->url_template.string();
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {
