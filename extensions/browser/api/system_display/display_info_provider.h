@@ -56,7 +56,8 @@ class DisplayInfoProvider {
 
   // Implements SetDisplayLayout methods. See system_display.idl. Returns
   // false if the layout input is invalid.
-  virtual bool SetDisplayLayout(const DisplayLayoutList& layouts);
+  virtual bool SetDisplayLayout(const DisplayLayoutList& layouts,
+                                std::string* error);
 
   // Enables the unified desktop feature.
   virtual void EnableUnifiedDesktop(bool enable);

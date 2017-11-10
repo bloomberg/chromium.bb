@@ -610,7 +610,8 @@ TEST_F(DisplayInfoProviderChromeosTest, Layout) {
   layout[1].offset = -100;
 
   // Update with modified layout.
-  ASSERT_TRUE(DisplayInfoProvider::Get()->SetDisplayLayout(layout));
+  std::string error;
+  ASSERT_TRUE(DisplayInfoProvider::Get()->SetDisplayLayout(layout, &error));
 
   // Get updated layout.
   layout = DisplayInfoProvider::Get()->GetDisplayLayout();
@@ -631,7 +632,81 @@ TEST_F(DisplayInfoProviderChromeosTest, Layout) {
   // Test setting invalid layout fails.
   layout[0].parent_id = displays[2].id;
   layout[1].parent_id = displays[1].id;
-  EXPECT_FALSE(DisplayInfoProvider::Get()->SetDisplayLayout(layout));
+  EXPECT_FALSE(DisplayInfoProvider::Get()->SetDisplayLayout(layout, &error));
+}
+
+TEST_F(DisplayInfoProviderChromeosTest, UnifiedModeLayout) {
+  UpdateDisplay("500x300,400x500,300x600,200x300");
+  GetDisplayManager()->SetUnifiedDesktopEnabled(true);
+  EXPECT_TRUE(GetDisplayManager()->IsInUnifiedMode());
+
+  DisplayUnitInfoList displays = GetAllDisplaysInfo();
+  ASSERT_EQ(4u, displays.size());
+
+  // Get the default layout, which should be a horizontal layout.
+  DisplayLayoutList default_layout =
+      DisplayInfoProvider::Get()->GetDisplayLayout();
+
+  // There is no placement for the primary display.
+  ASSERT_EQ(3u, default_layout.size());
+
+  // Confirm the horizontal layout.
+  EXPECT_EQ(displays[1].id, default_layout[0].id);
+  EXPECT_EQ(displays[0].id, default_layout[0].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT,
+            default_layout[0].position);
+  EXPECT_EQ(0, default_layout[0].offset);
+  EXPECT_EQ(displays[2].id, default_layout[1].id);
+  EXPECT_EQ(displays[1].id, default_layout[1].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT,
+            default_layout[1].position);
+  EXPECT_EQ(0, default_layout[1].offset);
+  EXPECT_EQ(displays[3].id, default_layout[2].id);
+  EXPECT_EQ(displays[2].id, default_layout[2].parent_id);
+  EXPECT_EQ(api::system_display::LAYOUT_POSITION_RIGHT,
+            default_layout[2].position);
+  EXPECT_EQ(0, default_layout[2].offset);
+
+  // Create a 2x2 matrix layout.
+  // [3][200 x 300] [1][400 x 500]
+  // [2][300 x 600] [0][500 x 300]
+  DisplayLayoutList layout;
+  layout.resize(3u);
+  layout[0].id = displays[1].id;
+  layout[0].parent_id = displays[3].id;
+  layout[0].position = api::system_display::LAYOUT_POSITION_RIGHT;
+  layout[1].id = displays[2].id;
+  layout[1].parent_id = displays[3].id;
+  layout[1].position = api::system_display::LAYOUT_POSITION_BOTTOM;
+  layout[2].id = displays[0].id;
+  layout[2].parent_id = displays[2].id;
+  layout[2].position = api::system_display::LAYOUT_POSITION_RIGHT;
+
+  std::string error;
+  ASSERT_TRUE(DisplayInfoProvider::Get()->SetDisplayLayout(layout, &error));
+  EXPECT_EQ(gfx::Size(650, 743),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  EXPECT_EQ(displays[3].id,
+            std::to_string(GetDisplayManager()
+                               ->GetPrimaryMirroringDisplayForUnifiedDesktop()
+                               ->id()));
+
+  // Confirm the new layout.
+  DisplayLayoutList new_layout = DisplayInfoProvider::Get()->GetDisplayLayout();
+  ASSERT_EQ(3u, new_layout.size());
+
+  EXPECT_EQ(layout[0].id, new_layout[0].id);
+  EXPECT_EQ(layout[0].parent_id, new_layout[0].parent_id);
+  EXPECT_EQ(layout[0].position, new_layout[0].position);
+  EXPECT_EQ(0, new_layout[0].offset);
+  EXPECT_EQ(layout[1].id, new_layout[1].id);
+  EXPECT_EQ(layout[1].parent_id, new_layout[1].parent_id);
+  EXPECT_EQ(layout[1].position, new_layout[1].position);
+  EXPECT_EQ(0, new_layout[1].offset);
+  EXPECT_EQ(layout[2].id, new_layout[2].id);
+  EXPECT_EQ(layout[2].parent_id, new_layout[2].parent_id);
+  EXPECT_EQ(layout[2].position, new_layout[2].position);
+  EXPECT_EQ(0, new_layout[2].offset);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetBoundsOriginLeftExact) {

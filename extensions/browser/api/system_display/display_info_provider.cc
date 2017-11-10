@@ -79,7 +79,8 @@ api::system_display::DisplayUnitInfo DisplayInfoProvider::CreateDisplayUnitInfo(
   return unit;
 }
 
-bool DisplayInfoProvider::SetDisplayLayout(const DisplayLayoutList& layout) {
+bool DisplayInfoProvider::SetDisplayLayout(const DisplayLayoutList& layout,
+                                           std::string* error) {
   NOTREACHED();  // Implemented on Chrome OS only in override.
   return false;
 }
