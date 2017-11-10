@@ -515,4 +515,17 @@ TEST_F(ModuleSystemTest, TestPrivatesIsPrivate) {
   env()->module_system()->Require("test");
 }
 
+TEST_F(ModuleSystemTest, TestLoadScript) {
+  ModuleSystem::NativesEnabledScope natives_enabled_scope(
+      env()->module_system());
+  env()->RegisterModule("add",
+                        "var addFunction = function(x, y) { return x + y; };");
+  env()->RegisterModule(
+      "test",
+      "loadScript('add');"
+      "requireNative('assert').AssertTrue(addFunction(3, 5) == 8);");
+  env()->module_system()->Require("test");
+  RunResolvedPromises();
+}
+
 }  // namespace extensions
