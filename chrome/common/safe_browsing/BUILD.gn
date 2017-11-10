@@ -40,7 +40,6 @@ source_set("safe_browsing") {
       "protobuf_message_log_macros.h",
       "protobuf_message_read_macros.h",
       "protobuf_message_write_macros.h",
-      "safe_archive_analyzer_param_traits.h",
       "zip_analyzer.cc",
       "zip_analyzer.h",
     ]
@@ -57,8 +56,4 @@ source_set("safe_browsing") {
     "//third_party/zlib/google:zip",
     "//ui/base",
   ]
-
-  # safe_archive_analyzer.mojom has a [Native] trait that depends on
-  # the protobuf headers in the sources list above.
-  allow_circular_includes_from = [ "//chrome/common:mojo_bindings" ]
 }

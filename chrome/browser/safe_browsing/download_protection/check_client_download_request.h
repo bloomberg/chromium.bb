@@ -18,10 +18,10 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
-#include "chrome/browser/safe_browsing/download_protection/sandboxed_zip_analyzer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/download_item.h"
@@ -32,7 +32,7 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/safe_browsing/download_protection/disk_image_type_sniffer_mac.h"
-#include "chrome/browser/safe_browsing/download_protection/sandboxed_dmg_analyzer_mac.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
 
 using content::BrowserThread;
@@ -132,10 +132,10 @@ class CheckClientDownloadRequest
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   const bool pingback_enabled_;
   std::unique_ptr<net::URLFetcher> fetcher_;
-  scoped_refptr<SandboxedZipAnalyzer> analyzer_;
+  scoped_refptr<chrome::SandboxedZipAnalyzer> analyzer_;
   base::TimeTicks zip_analysis_start_time_;
 #if defined(OS_MACOSX)
-  scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
+  scoped_refptr<chrome::SandboxedDMGAnalyzer> dmg_analyzer_;
   base::TimeTicks dmg_analysis_start_time_;
 #endif
   bool finished_;

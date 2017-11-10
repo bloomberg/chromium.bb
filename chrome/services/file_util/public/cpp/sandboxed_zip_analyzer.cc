@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/sandboxed_zip_analyzer.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 
 #include <utility>
 
@@ -10,15 +10,18 @@
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
+#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 
-namespace safe_browsing {
+namespace chrome {
 
-SandboxedZipAnalyzer::SandboxedZipAnalyzer(const base::FilePath& zip_file,
-                                           const ResultCallback& callback)
-    : file_path_(zip_file), callback_(callback) {
+SandboxedZipAnalyzer::SandboxedZipAnalyzer(
+    const base::FilePath& zip_file,
+    const ResultCallback& callback,
+    service_manager::Connector* connector)
+    : file_path_(zip_file), callback_(callback), connector_(connector) {
   DCHECK(callback);
 }
 
@@ -65,37 +68,33 @@ void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
 }
 
 void SandboxedZipAnalyzer::ReportFileFailure() {
-  DCHECK(!utility_process_mojo_client_);
+  DCHECK(!analyzer_ptr_);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(callback_, ArchiveAnalyzerResults()));
+      base::BindOnce(callback_, safe_browsing::ArchiveAnalyzerResults()));
 }
 
 void SandboxedZipAnalyzer::AnalyzeFile(base::File file, base::File temp_file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!utility_process_mojo_client_);
+  DCHECK(!analyzer_ptr_);
 
-  utility_process_mojo_client_ = base::MakeUnique<
-      content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>(
-      l10n_util::GetStringUTF16(
-          IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));
-  utility_process_mojo_client_->set_error_callback(base::Bind(
-      &SandboxedZipAnalyzer::AnalyzeFileDone, this, ArchiveAnalyzerResults()));
-
-  utility_process_mojo_client_->Start();
-
-  utility_process_mojo_client_->service()->AnalyzeZipFile(
+  connector_->BindInterface(chrome::mojom::kFileUtilServiceName,
+                            mojo::MakeRequest(&analyzer_ptr_));
+  analyzer_ptr_.set_connection_error_handler(
+      base::Bind(&SandboxedZipAnalyzer::AnalyzeFileDone, base::Unretained(this),
+                 safe_browsing::ArchiveAnalyzerResults()));
+  analyzer_ptr_->AnalyzeZipFile(
       std::move(file), std::move(temp_file),
       base::Bind(&SandboxedZipAnalyzer::AnalyzeFileDone, this));
 }
 
 void SandboxedZipAnalyzer::AnalyzeFileDone(
-    const ArchiveAnalyzerResults& results) {
+    const safe_browsing::ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  utility_process_mojo_client_.reset();
+  analyzer_ptr_.reset();
   callback_.Run(results);
 }
 
-}  // namespace safe_browsing
+}  // namespace chrome

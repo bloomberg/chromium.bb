@@ -33,7 +33,7 @@
         "chrome": [ "input_device_controller" ],
         "content_browser": [ "profiling_client" ],
         "device": [ "device:fingerprint" ],
-        "file_util": [ "zip_file" ],
+        "file_util": [ "analyze_archive", "zip_file" ],
         "identity": [ "identity_manager" ],
         // Only used in classic ash case.
         "local_state": [ "pref_client" ],

@@ -158,10 +158,6 @@ static_library("safe_browsing") {
         "download_protection/path_sanitizer.h",
         "download_protection/ppapi_download_request.cc",
         "download_protection/ppapi_download_request.h",
-        "download_protection/sandboxed_dmg_analyzer_mac.cc",
-        "download_protection/sandboxed_dmg_analyzer_mac.h",
-        "download_protection/sandboxed_zip_analyzer.cc",
-        "download_protection/sandboxed_zip_analyzer.h",
         "download_protection/two_phase_uploader.cc",
         "download_protection/two_phase_uploader.h",
         "incident_reporting/binary_integrity_analyzer.cc",
@@ -233,6 +229,7 @@ static_library("safe_browsing") {
         "trigger_creator.h",
       ]
       deps += [
+        "//chrome/services/file_util/public/cpp",
         "//components/content_settings/core/browser:browser",
         "//components/prefs:prefs",
         "//components/safe_browsing/common:safe_browsing_prefs",

@@ -6,9 +6,11 @@
 #define CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_ANALYZER_H_
 
 #include "base/files/file.h"
-#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 
 namespace safe_browsing {
+
+struct ArchiveAnalyzerResults;
+
 namespace dmg {
 
 void AnalyzeDMGFile(base::File dmg_file, ArchiveAnalyzerResults* results);

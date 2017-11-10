@@ -2,30 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SANDBOXED_ZIP_ANALYZER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SANDBOXED_ZIP_ANALYZER_H_
+#ifndef CHROME_SERVICES_FILE_UTIL_PUBLIC_CPP_SANDBOXED_ZIP_ANALYZER_H_
+#define CHROME_SERVICES_FILE_UTIL_PUBLIC_CPP_SANDBOXED_ZIP_ANALYZER_H_
 
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/common/safe_browsing/safe_archive_analyzer.mojom.h"
-#include "content/public/browser/utility_process_mojo_client.h"
+#include "chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom.h"
 
 namespace safe_browsing {
+struct ArchiveAnalyzerResults;
+}
 
-// This class is used to analyze zip files in a sandboxed utility process
-// for file download protection. This class lives on the UI thread, which
-// is where the result callback will be invoked.
+namespace service_manager {
+class Connector;
+}
+
+namespace chrome {
+
+// This class is used to analyze zip files in a sandboxed utility process for
+// file download protection. This class lives on the UI thread, which is where
+// the result callback will be invoked.
 class SandboxedZipAnalyzer
     : public base::RefCountedThreadSafe<SandboxedZipAnalyzer> {
  public:
-  using ResultCallback = base::Callback<void(const ArchiveAnalyzerResults&)>;
+  using ResultCallback =
+      base::Callback<void(const safe_browsing::ArchiveAnalyzerResults&)>;
 
   SandboxedZipAnalyzer(const base::FilePath& zip_file,
-                       const ResultCallback& callback);
+                       const ResultCallback& callback,
+                       service_manager::Connector* connector);
 
   // Starts the analysis. Must be called on the UI thread.
   void Start();
@@ -45,22 +53,23 @@ class SandboxedZipAnalyzer
   void AnalyzeFile(base::File file, base::File temp);
 
   // The response containing the file analyze results.
-  void AnalyzeFileDone(const ArchiveAnalyzerResults& results);
+  void AnalyzeFileDone(const safe_browsing::ArchiveAnalyzerResults& results);
 
   // The file path of the file to analyze.
   const base::FilePath file_path_;
 
-  // Utility client used to send analyze tasks to the utility process.
-  std::unique_ptr<
-      content::UtilityProcessMojoClient<chrome::mojom::SafeArchiveAnalyzer>>
-      utility_process_mojo_client_;
-
   // Callback invoked on the UI thread with the file analyze results.
   const ResultCallback callback_;
+
+  // The connector to the service manager, only used on the UI thread.
+  service_manager::Connector* connector_;
+
+  // Pointer to the SafeArchiveAnalyzer interface. Only used from the UI thread.
+  mojom::SafeArchiveAnalyzerPtr analyzer_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SandboxedZipAnalyzer);
 };
 
-}  // namespace safe_browsing
+}  //  namespace chrome
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DOWNLOAD_PROTECTION_SANDBOXED_ZIP_ANALYZER_H_
+#endif  // CHROME_SERVICES_FILE_UTIL_PUBLIC_CPP_SANDBOXED_ZIP_ANALYZER_H_
