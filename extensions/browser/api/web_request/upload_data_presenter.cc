@@ -26,14 +26,12 @@ namespace {
 
 // Takes |dictionary| of <string, list of strings> pairs, and gets the list
 // for |key|, creating it if necessary.
-base::ListValue* GetOrCreateList(base::DictionaryValue* dictionary,
-                                 const std::string& key) {
-  base::ListValue* list = nullptr;
-  if (!dictionary->GetListWithoutPathExpansion(key, &list)) {
-    list = dictionary->SetListWithoutPathExpansion(
-        key, std::make_unique<base::ListValue>());
-  }
-  return list;
+base::Value* GetOrCreateList(base::DictionaryValue* dictionary,
+                             const std::string& key) {
+  base::Value* list = dictionary->FindKeyOfType(key, base::Value::Type::LIST);
+  if (list)
+    return list;
+  return dictionary->SetKey(key, base::Value(base::Value::Type::LIST));
 }
 
 }  // namespace
@@ -113,9 +111,9 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
     return;
 
   const net::UploadBytesElementReader* bytes_reader = reader.AsBytesReader();
-  if (!bytes_reader) {
+  if (!bytes_reader)
     return;
-  }
+
   if (!parser_->SetSource(base::StringPiece(bytes_reader->bytes(),
                                             bytes_reader->length()))) {
     Abort();
@@ -124,8 +122,8 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
 
   FormDataParser::Result result;
   while (parser_->GetNextNameValue(&result)) {
-    GetOrCreateList(dictionary_.get(), result.name())
-        ->AppendString(result.value());
+    base::Value* list = GetOrCreateList(dictionary_.get(), result.name());
+    list->GetList().emplace_back(result.value());
   }
 }
 
@@ -144,9 +142,8 @@ std::unique_ptr<base::Value> ParsedDataPresenter::Result() {
 
 // static
 std::unique_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
-  const std::string form_type("application/x-www-form-urlencoded");
-  return std::unique_ptr<ParsedDataPresenter>(
-      new ParsedDataPresenter(form_type));
+  static const std::string form_type("application/x-www-form-urlencoded");
+  return base::WrapUnique(new ParsedDataPresenter(form_type));
 }
 
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)

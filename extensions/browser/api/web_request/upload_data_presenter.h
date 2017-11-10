@@ -83,7 +83,7 @@ class RawDataPresenter : public UploadDataPresenter {
   void FeedNextFile(const std::string& filename);
   FRIEND_TEST_ALL_PREFIXES(WebRequestUploadDataPresenterTest, RawData);
 
-  bool success_;
+  const bool success_;
   std::unique_ptr<base::ListValue> list_;
 
   DISALLOW_COPY_AND_ASSIGN(RawDataPresenter);
@@ -119,6 +119,7 @@ class ParsedDataPresenter : public UploadDataPresenter {
 
   // Clears resources and the success flag.
   void Abort();
+
   std::unique_ptr<FormDataParser> parser_;
   bool success_;
   std::unique_ptr<base::DictionaryValue> dictionary_;

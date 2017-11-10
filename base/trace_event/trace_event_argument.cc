@@ -390,14 +390,13 @@ std::unique_ptr<base::Value> TracedValue::ToBaseValue() const {
       } break;
 
       case kTypeStartArray: {
-        auto new_list = std::make_unique<ListValue>();
         if (cur_dict) {
           stack.push_back(cur_dict);
-          cur_list = cur_dict->SetListWithoutPathExpansion(ReadKeyName(it),
-                                                           std::move(new_list));
+          cur_list = static_cast<ListValue*>(
+              cur_dict->SetKey(ReadKeyName(it), Value(Value::Type::LIST)));
           cur_dict = nullptr;
         } else {
-          cur_list->Append(std::move(new_list));
+          cur_list->GetList().emplace_back(Value::Type::LIST);
           stack.push_back(cur_list);
           // |cur_list| is invalidated at this point by the Append, so it needs
           // to be reset.
