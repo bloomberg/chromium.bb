@@ -332,7 +332,7 @@ bool NativeBackendLibsecret::AddUpdateLoginSearch(
     LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
     if (found)
-      g_list_free(found);
+      g_list_free_full(found, &g_object_unref);
     return false;
   }
 
@@ -446,7 +446,7 @@ bool NativeBackendLibsecret::GetLoginsList(
     LOG(ERROR) << "Unable to get logins " << error->message;
     g_error_free(error);
     if (found)
-      g_list_free(found);
+      g_list_free_full(found, &g_object_unref);
     return false;
   }
 
@@ -582,6 +582,6 @@ NativeBackendLibsecret::ConvertFormList(
                                   : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
                               password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
-  g_list_free(found);
+  g_list_free_full(found, &g_object_unref);
   return forms;
 }
