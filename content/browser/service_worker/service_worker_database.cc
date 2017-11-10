@@ -108,12 +108,12 @@ const char kRegUserDataKeyPrefix[] = "REG_USER_DATA:";
 const char kRegHasUserDataKeyPrefix[] = "REG_HAS_USER_DATA:";
 const char kRegIdToOriginKeyPrefix[] = "REGID_TO_ORIGIN:";
 const char kResKeyPrefix[] = "RES:";
-const char kKeySeparator = '\x00';
+const char kServiceWorkerKeySeparator = '\x00';
 
 const char kUncommittedResIdKeyPrefix[] = "URES:";
 const char kPurgeableResIdKeyPrefix[] = "PRES:";
 
-const int64_t kCurrentSchemaVersion = 2;
+const int64_t kCurrentServiceWorkerSchemaVersion = 2;
 
 class ServiceWorkerEnv : public leveldb_env::ChromiumEnv {
  public:
@@ -135,7 +135,8 @@ bool RemovePrefix(const std::string& str,
 
 std::string CreateRegistrationKeyPrefix(const GURL& origin) {
   return base::StringPrintf("%s%s%c", kRegKeyPrefix,
-                            origin.GetOrigin().spec().c_str(), kKeySeparator);
+                            origin.GetOrigin().spec().c_str(),
+                            kServiceWorkerKeySeparator);
 }
 
 std::string CreateRegistrationKey(int64_t registration_id, const GURL& origin) {
@@ -144,10 +145,9 @@ std::string CreateRegistrationKey(int64_t registration_id, const GURL& origin) {
 }
 
 std::string CreateResourceRecordKeyPrefix(int64_t version_id) {
-  return base::StringPrintf("%s%s%c",
-                            kResKeyPrefix,
+  return base::StringPrintf("%s%s%c", kResKeyPrefix,
                             base::Int64ToString(version_id).c_str(),
-                            kKeySeparator);
+                            kServiceWorkerKeySeparator);
 }
 
 std::string CreateResourceRecordKey(int64_t version_id, int64_t resource_id) {
@@ -171,10 +171,9 @@ std::string CreateResourceIdKey(const char* key_prefix, int64_t resource_id) {
 }
 
 std::string CreateUserDataKeyPrefix(int64_t registration_id) {
-  return base::StringPrintf("%s%s%c",
-                            kRegUserDataKeyPrefix,
+  return base::StringPrintf("%s%s%c", kRegUserDataKeyPrefix,
                             base::Int64ToString(registration_id).c_str(),
-                            kKeySeparator);
+                            kServiceWorkerKeySeparator);
 }
 
 std::string CreateUserDataKey(int64_t registration_id,
@@ -184,7 +183,7 @@ std::string CreateUserDataKey(int64_t registration_id,
 
 std::string CreateHasUserDataKeyPrefix(const std::string& user_data_name) {
   return base::StringPrintf("%s%s%c", kRegHasUserDataKeyPrefix,
-                            user_data_name.c_str(), kKeySeparator);
+                            user_data_name.c_str(), kServiceWorkerKeySeparator);
 }
 
 std::string CreateHasUserDataKey(int64_t registration_id,
@@ -1117,7 +1116,8 @@ ServiceWorkerDatabase::ReadUserDataForAllRegistrationsByKeyPrefix(
       }
 
       std::vector<std::string> parts = base::SplitString(
-          user_data_name_with_id, base::StringPrintf("%c", kKeySeparator),
+          user_data_name_with_id,
+          base::StringPrintf("%c", kServiceWorkerKeySeparator),
           base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       if (parts.size() != 2) {
         status = STATUS_ERROR_CORRUPTED;
@@ -1309,7 +1309,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::LazyOpen(
       Disable(FROM_HERE, status);
       return status;
     case 2:
-      DCHECK_EQ(db_version, kCurrentSchemaVersion);
+      DCHECK_EQ(db_version, kCurrentServiceWorkerSchemaVersion);
       state_ = INITIALIZED;
       return STATUS_OK;
     default:
@@ -1784,7 +1784,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadDatabaseVersion(
 
   const int kFirstValidVersion = 1;
   if (!base::StringToInt64(value, db_version) ||
-      *db_version < kFirstValidVersion || kCurrentSchemaVersion < *db_version) {
+      *db_version < kFirstValidVersion ||
+      kCurrentServiceWorkerSchemaVersion < *db_version) {
     status = STATUS_ERROR_CORRUPTED;
     HandleReadResult(FROM_HERE, status);
     return status;
@@ -1802,7 +1803,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteBatch(
 
   if (state_ == UNINITIALIZED) {
     // Write database default values.
-    batch->Put(kDatabaseVersionKey, base::Int64ToString(kCurrentSchemaVersion));
+    batch->Put(kDatabaseVersionKey,
+               base::Int64ToString(kCurrentServiceWorkerSchemaVersion));
     state_ = INITIALIZED;
   }
 

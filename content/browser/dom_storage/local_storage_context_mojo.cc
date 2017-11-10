@@ -53,7 +53,7 @@ const char kOriginSeparator = '\x00';
 const char kDataPrefix[] = "_";
 const uint8_t kMetaPrefix[] = {'M', 'E', 'T', 'A', ':'};
 const int64_t kMinSchemaVersion = 1;
-const int64_t kCurrentSchemaVersion = 1;
+const int64_t kCurrentLocalStorageSchemaVersion = 1;
 
 // After this many consecutive commit errors we'll throw away the entire
 // database.
@@ -220,7 +220,7 @@ class LocalStorageContextMojo::LevelDBWrapperHolder final
       item->type = leveldb::mojom::BatchOperationType::PUT_KEY;
       item->key = leveldb::StdStringToUint8Vector(kVersionKey);
       item->value = leveldb::StdStringToUint8Vector(
-          base::Int64ToString(kCurrentSchemaVersion));
+          base::Int64ToString(kCurrentLocalStorageSchemaVersion));
       operations.push_back(std::move(item));
       context_->database_initialized_ = true;
     }
@@ -748,7 +748,8 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
     int64_t db_version;
     if (!base::StringToInt64(leveldb::Uint8VectorToStdString(value),
                              &db_version) ||
-        db_version < kMinSchemaVersion || db_version > kCurrentSchemaVersion) {
+        db_version < kMinSchemaVersion ||
+        db_version > kCurrentLocalStorageSchemaVersion) {
       LogDatabaseOpenResult(OpenResult::INVALID_VERSION);
       DeleteAndRecreateDatabase(
           "LocalStorageContext.OpenResultAfterInvalidVersion");
