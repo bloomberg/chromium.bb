@@ -119,7 +119,7 @@ scoped_refptr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
       AllocationSize<LChar>(length), "WTF::StringImpl"));
 
   data = reinterpret_cast<LChar*>(string + 1);
-  return AdoptRef(new (string) StringImpl(length, kForce8BitConstructor));
+  return base::AdoptRef(new (string) StringImpl(length, kForce8BitConstructor));
 }
 
 scoped_refptr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
@@ -136,7 +136,7 @@ scoped_refptr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
       AllocationSize<UChar>(length), "WTF::StringImpl"));
 
   data = reinterpret_cast<UChar*>(string + 1);
-  return AdoptRef(new (string) StringImpl(length));
+  return base::AdoptRef(new (string) StringImpl(length));
 }
 
 static StaticStringsTable& StaticStrings() {

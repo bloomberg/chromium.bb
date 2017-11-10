@@ -36,7 +36,7 @@ scoped_refptr<StringImpl> AtomicStringTable::AddToStringTable(const T& value) {
 
   // If the string is newly-translated, then we need to adopt it.
   // The boolean in the pair tells us if that is so.
-  return add_result.is_new_entry ? AdoptRef(*add_result.stored_value)
+  return add_result.is_new_entry ? base::AdoptRef(*add_result.stored_value)
                                  : *add_result.stored_value;
 }
 

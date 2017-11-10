@@ -70,7 +70,7 @@ scoped_refptr<StringImpl> AddStaticASCIILiteral(
   unsigned length = charactersCount - 1;
   unsigned hash = StringHasher::ComputeHashAndMaskTop8Bits(
       reinterpret_cast<const LChar*>(characters), length);
-  return AdoptRef(StringImpl::CreateStatic(characters, length, hash));
+  return base::AdoptRef(StringImpl::CreateStatic(characters, length, hash));
 }
 
 void StringStatics::Init() {
