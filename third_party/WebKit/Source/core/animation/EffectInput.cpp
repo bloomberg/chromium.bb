@@ -87,7 +87,7 @@ void SetKeyframeValue(Element& element,
       AnimationInputHelpers::KeyframeAttributeToCSSProperty(
           property, element.GetDocument());
   if (css_property != CSSPropertyInvalid) {
-    MutableStylePropertySet::SetResult set_result =
+    MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyVariable
             ? keyframe.SetCSSPropertyValue(
                   AtomicString(property),

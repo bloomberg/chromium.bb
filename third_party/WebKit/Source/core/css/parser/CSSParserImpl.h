@@ -9,7 +9,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSPropertyValue.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -71,22 +71,24 @@ class CSSParserImpl {
     static RangeOffset Ignore() { return {0, 0}; }
   };
 
-  static MutableStylePropertySet::SetResult ParseValue(MutableStylePropertySet*,
-                                                       CSSPropertyID,
-                                                       const String&,
-                                                       bool important,
-                                                       const CSSParserContext*);
-  static MutableStylePropertySet::SetResult ParseVariableValue(
-      MutableStylePropertySet*,
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
+      CSSPropertyID,
+      const String&,
+      bool important,
+      const CSSParserContext*);
+  static MutableCSSPropertyValueSet::SetResult ParseVariableValue(
+      MutableCSSPropertyValueSet*,
       const AtomicString& property_name,
       const PropertyRegistry*,
       const String&,
       bool important,
       const CSSParserContext*,
       bool is_animation_tainted);
-  static ImmutableStylePropertySet* ParseInlineStyleDeclaration(const String&,
-                                                                Element*);
-  static bool ParseDeclarationList(MutableStylePropertySet*,
+  static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
+      const String&,
+      Element*);
+  static bool ParseDeclarationList(MutableCSSPropertyValueSet*,
                                    const String&,
                                    const CSSParserContext*);
   static StyleRuleBase* ParseRule(const String&,
@@ -100,7 +102,8 @@ class CSSParserImpl {
   static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
 
-  static ImmutableStylePropertySet* ParseCustomPropertySet(CSSParserTokenRange);
+  static ImmutableCSSPropertyValueSet* ParseCustomPropertySet(
+      CSSParserTokenRange);
   // TODO(shend): Remove this when crbug.com/661854 is fixed. We need to use a
   // stream for parsing @apply blocks so we can correctly store custom
   // property values.
@@ -118,7 +121,7 @@ class CSSParserImpl {
                                           StyleSheetContents*,
                                           CSSParserObserver&);
 
-  static StylePropertySet* ParseDeclarationListForLazyStyle(
+  static CSSPropertyValueSet* ParseDeclarationListForLazyStyle(
       const String&,
       size_t offset,
       const CSSParserContext*);
@@ -182,7 +185,7 @@ class CSSParserImpl {
   static std::unique_ptr<Vector<double>> ConsumeKeyframeKeyList(
       CSSParserTokenRange);
 
-  // FIXME: Can we build StylePropertySets directly?
+  // FIXME: Can we build CSSPropertyValueSets directly?
   // FIXME: Investigate using a smaller inline buffer
   HeapVector<CSSPropertyValue, 256> parsed_properties_;
 

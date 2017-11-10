@@ -60,7 +60,7 @@ class FocusOptions;
 class Image;
 class InputDeviceCapabilities;
 class Locale;
-class MutableStylePropertySet;
+class MutableCSSPropertyValueSet;
 class NamedNodeMap;
 class ElementIntersectionObserverData;
 class PseudoElement;
@@ -76,7 +76,7 @@ class ShadowRootInit;
 class SpaceSplitString;
 class StringOrTrustedHTML;
 class StringOrTrustedScriptURL;
-class StylePropertySet;
+class CSSPropertyValueSet;
 class StylePropertyMap;
 class V0CustomElementDefinition;
 
@@ -354,12 +354,12 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void SetBooleanAttribute(const QualifiedName&, bool);
 
-  virtual const StylePropertySet* AdditionalPresentationAttributeStyle() {
+  virtual const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() {
     return nullptr;
   }
   void InvalidateStyleAttribute();
 
-  const StylePropertySet* InlineStyle() const {
+  const CSSPropertyValueSet* InlineStyle() const {
     return GetElementData() ? GetElementData()->inline_style_.Get() : nullptr;
   }
 
@@ -383,13 +383,14 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void SynchronizeStyleAttributeInternal() const;
 
-  const StylePropertySet* PresentationAttributeStyle();
+  const CSSPropertyValueSet* PresentationAttributeStyle();
   virtual bool IsPresentationAttribute(const QualifiedName&) const {
     return false;
   }
-  virtual void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                                    const AtomicString&,
-                                                    MutableStylePropertySet*) {}
+  virtual void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) {}
 
   // For exposing to DOM only.
   NamedNodeMap* attributesForBindings() const;
@@ -789,7 +790,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void SynchronizeAttribute(const AtomicString& local_name) const;
 
-  MutableStylePropertySet& EnsureMutableInlineStyle();
+  MutableCSSPropertyValueSet& EnsureMutableInlineStyle();
   void ClearMutableInlineStyleIfEmpty();
 
   void setTabIndex(int);
@@ -831,18 +832,18 @@ class CORE_EXPORT Element : public ContainerNode {
   const ElementData* GetElementData() const { return element_data_.Get(); }
   UniqueElementData& EnsureUniqueElementData();
 
-  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                CSSValueID identifier);
-  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                double value,
                                                CSSPrimitiveValue::UnitType);
-  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                const String& value);
   // TODO(sashab): Make this take a const CSSValue&.
-  void AddPropertyToPresentationAttributeStyle(MutableStylePropertySet*,
+  void AddPropertyToPresentationAttributeStyle(MutableCSSPropertyValueSet*,
                                                CSSPropertyID,
                                                const CSSValue*);
 
@@ -1196,7 +1197,7 @@ inline void Element::InvalidateStyleAttribute() {
   GetElementData()->style_attribute_is_dirty_ = true;
 }
 
-inline const StylePropertySet* Element::PresentationAttributeStyle() {
+inline const CSSPropertyValueSet* Element::PresentationAttributeStyle() {
   if (!GetElementData())
     return nullptr;
   if (GetElementData()->presentation_attribute_style_is_dirty_)

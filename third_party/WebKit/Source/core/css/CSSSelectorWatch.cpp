@@ -30,8 +30,8 @@
 
 #include "core/css/CSSSelectorWatch.h"
 
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -147,8 +147,8 @@ static bool AllCompound(const CSSSelectorList& selector_list) {
 void CSSSelectorWatch::WatchCSSSelectors(const Vector<String>& selectors) {
   watched_callback_selectors_.clear();
 
-  StylePropertySet* callback_property_set =
-      ImmutableStylePropertySet::Create(nullptr, 0, kUASheetMode);
+  CSSPropertyValueSet* callback_property_set =
+      ImmutableCSSPropertyValueSet::Create(nullptr, 0, kUASheetMode);
 
   CSSParserContext* context = CSSParserContext::Create(kUASheetMode);
   for (const auto& selector : selectors) {

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class StylePropertySet;
+class CSSPropertyValueSet;
 
 struct CORE_EXPORT MatchedProperties {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -43,7 +43,7 @@ struct CORE_EXPORT MatchedProperties {
 
   void Trace(blink::Visitor*);
 
-  Member<StylePropertySet> properties;
+  Member<CSSPropertyValueSet> properties;
 
   union {
     struct {
@@ -93,7 +93,7 @@ class CORE_EXPORT MatchResult {
  public:
   MatchResult() {}
 
-  void AddMatchedProperties(const StylePropertySet* properties,
+  void AddMatchedProperties(const CSSPropertyValueSet* properties,
                             unsigned link_match_type = CSSSelector::kMatchAll,
                             PropertyWhitelistType = kPropertyWhitelistNone);
   bool HasMatchedProperties() const { return matched_properties_.size(); }

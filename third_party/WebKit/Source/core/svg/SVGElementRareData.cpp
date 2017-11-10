@@ -10,11 +10,12 @@
 
 namespace blink {
 
-MutableStylePropertySet*
+MutableCSSPropertyValueSet*
 SVGElementRareData::EnsureAnimatedSMILStyleProperties() {
-  if (!animated_smil_style_properties_)
+  if (!animated_smil_style_properties_) {
     animated_smil_style_properties_ =
-        MutableStylePropertySet::Create(kSVGAttributeMode);
+        MutableCSSPropertyValueSet::Create(kSVGAttributeMode);
+  }
   return animated_smil_style_properties_.Get();
 }
 

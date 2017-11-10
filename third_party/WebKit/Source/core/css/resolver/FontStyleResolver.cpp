@@ -13,7 +13,7 @@
 namespace blink {
 
 FontDescription FontStyleResolver::ComputeFont(
-    const StylePropertySet& property_set,
+    const CSSPropertyValueSet& property_set,
     FontSelector* font_selector) {
   FontBuilder builder(nullptr);
 

@@ -33,13 +33,13 @@
 
 namespace blink {
 
-// Must not grow beyond 3 bits, due to packing in StylePropertySet.
+// Must not grow beyond 3 bits, due to packing in CSSPropertyValueSet.
 enum CSSParserMode {
   kHTMLStandardMode,
   kHTMLQuirksMode,
   // SVG attributes are parsed in quirks mode but rules differ slightly.
   kSVGAttributeMode,
-  // @viewport/@font-face rules are specially tagged in StylePropertySet so
+  // @viewport/@font-face rules are specially tagged in CSSPropertyValueSet so
   // CSSOM modifications don't treat them as style rules.
   kCSSViewportRuleMode,
   kCSSFontFaceRuleMode,

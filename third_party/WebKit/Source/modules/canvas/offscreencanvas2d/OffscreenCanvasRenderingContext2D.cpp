@@ -291,8 +291,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   if (new_font == GetState().UnparsedFont() && GetState().HasRealizedFont())
     return;
 
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   if (!style)
     return;
 

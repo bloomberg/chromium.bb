@@ -338,7 +338,7 @@ class CORE_EXPORT HTMLInputElement
   bool IsPresentationAttribute(const QualifiedName&) const final;
   void CollectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
-                                            MutableStylePropertySet*) final;
+                                            MutableCSSPropertyValueSet*) final;
   void FinishParsingChildren() final;
   void ParserDidSetAttributes() final;
 

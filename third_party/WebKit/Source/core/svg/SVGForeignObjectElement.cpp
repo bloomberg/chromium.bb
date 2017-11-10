@@ -68,7 +68,7 @@ DEFINE_NODE_FACTORY(SVGForeignObjectElement)
 void SVGForeignObjectElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == width_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),

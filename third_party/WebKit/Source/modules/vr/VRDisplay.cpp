@@ -4,7 +4,7 @@
 
 #include "modules/vr/VRDisplay.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/ScriptedAnimationController.h"

@@ -10,8 +10,8 @@
 namespace blink {
 
 TEST(FontStyleResolverTest, Simple) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -22,8 +22,8 @@ TEST(FontStyleResolverTest, Simple) {
 }
 
 TEST(FontStyleResolverTest, InvalidSize) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "-1px Ahem", true);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -34,8 +34,8 @@ TEST(FontStyleResolverTest, InvalidSize) {
 }
 
 TEST(FontStyleResolverTest, InvalidWeight) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "wrong 1px Ahem", true);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
@@ -46,8 +46,8 @@ TEST(FontStyleResolverTest, InvalidWeight) {
 }
 
 TEST(FontStyleResolverTest, InvalidEverything) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "wrong wrong wrong 1px Ahem",
                         true);
 
@@ -59,8 +59,8 @@ TEST(FontStyleResolverTest, InvalidEverything) {
 }
 
 TEST(FontStyleResolverTest, RelativeSize) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "italic 2ex Ahem", true);
 
   FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);

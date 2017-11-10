@@ -93,7 +93,7 @@ ScriptPromise SVGImageElement::decode(ScriptState* script_state,
 void SVGImageElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == width_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),

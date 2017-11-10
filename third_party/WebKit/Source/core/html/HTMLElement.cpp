@@ -31,8 +31,8 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSMarkup.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
@@ -183,8 +183,9 @@ unsigned HTMLElement::ParseBorderWidthAttribute(
   return border_width;
 }
 
-void HTMLElement::ApplyBorderAttributeToStyle(const AtomicString& value,
-                                              MutableStylePropertySet* style) {
+void HTMLElement::ApplyBorderAttributeToStyle(
+    const AtomicString& value,
+    MutableCSSPropertyValueSet* style) {
   AddPropertyToPresentationAttributeStyle(style, CSSPropertyBorderWidth,
                                           ParseBorderWidthAttribute(value),
                                           CSSPrimitiveValue::UnitType::kPixels);
@@ -192,8 +193,9 @@ void HTMLElement::ApplyBorderAttributeToStyle(const AtomicString& value,
                                           CSSValueSolid);
 }
 
-void HTMLElement::MapLanguageAttributeToLocale(const AtomicString& value,
-                                               MutableStylePropertySet* style) {
+void HTMLElement::MapLanguageAttributeToLocale(
+    const AtomicString& value,
+    MutableCSSPropertyValueSet* style) {
   if (!value.IsEmpty()) {
     // Have to quote so the locale id is treated as a string instead of as a CSS
     // keyword.
@@ -246,7 +248,7 @@ static inline bool IsValidDirAttribute(const AtomicString& value) {
 void HTMLElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == alignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
@@ -719,7 +721,7 @@ void HTMLElement::setOuterText(const String& text,
 
 void HTMLElement::ApplyAlignmentAttributeToStyle(
     const AtomicString& alignment,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   // Vertical alignment with respect to the current baseline of the text
   // right or left means floating images.
   CSSValueID float_value = CSSValueInvalid;
@@ -1043,7 +1045,7 @@ Node::InsertionNotificationRequest HTMLElement::InsertedInto(
   return kInsertionDone;
 }
 
-void HTMLElement::AddHTMLLengthToStyle(MutableStylePropertySet* style,
+void HTMLElement::AddHTMLLengthToStyle(MutableCSSPropertyValueSet* style,
                                        CSSPropertyID property_id,
                                        const String& value,
                                        AllowPercentage allow_percentage) {
@@ -1165,7 +1167,7 @@ bool HTMLElement::ParseColorWithLegacyRules(const String& attribute_value,
   return success;
 }
 
-void HTMLElement::AddHTMLColorToStyle(MutableStylePropertySet* style,
+void HTMLElement::AddHTMLColorToStyle(MutableCSSPropertyValueSet* style,
                                       CSSPropertyID property_id,
                                       const String& attribute_value) {
   Color parsed_color;

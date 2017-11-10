@@ -10,7 +10,7 @@
 namespace blink {
 
 KeyframeStyleRuleCSSStyleDeclaration::KeyframeStyleRuleCSSStyleDeclaration(
-    MutableStylePropertySet& property_set_arg,
+    MutableCSSPropertyValueSet& property_set_arg,
     CSSKeyframeRule* parent_rule)
     : StyleRuleCSSStyleDeclaration(property_set_arg, parent_rule) {}
 

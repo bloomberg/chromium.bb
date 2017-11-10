@@ -63,7 +63,7 @@ bool HTMLFrameSetElement::IsPresentationAttribute(
 void HTMLFrameSetElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == bordercolorAttr)
     AddHTMLColorToStyle(style, CSSPropertyBorderColor, value);
   else

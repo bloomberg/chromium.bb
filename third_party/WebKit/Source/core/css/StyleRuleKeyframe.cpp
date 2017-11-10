@@ -5,14 +5,14 @@
 #include "core/css/StyleRuleKeyframe.h"
 
 #include <memory>
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
 #include "platform/wtf/text/StringBuilder.h"
 
 namespace blink {
 
 StyleRuleKeyframe::StyleRuleKeyframe(std::unique_ptr<Vector<double>> keys,
-                                     StylePropertySet* properties)
+                                     CSSPropertyValueSet* properties)
     : StyleRuleBase(kKeyframe), properties_(properties), keys_(*keys) {}
 
 String StyleRuleKeyframe::KeyText() const {
@@ -45,10 +45,10 @@ const Vector<double>& StyleRuleKeyframe::Keys() const {
   return keys_;
 }
 
-MutableStylePropertySet& StyleRuleKeyframe::MutableProperties() {
+MutableCSSPropertyValueSet& StyleRuleKeyframe::MutableProperties() {
   if (!properties_->IsMutable())
     properties_ = properties_->MutableCopy();
-  return *ToMutableStylePropertySet(properties_.Get());
+  return *ToMutableCSSPropertyValueSet(properties_.Get());
 }
 
 String StyleRuleKeyframe::CssText() const {

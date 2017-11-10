@@ -30,7 +30,7 @@
 
 #include "core/dom/ElementData.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/wtf/Vector.h"
 
@@ -161,8 +161,8 @@ UniqueElementData::UniqueElementData(const UniqueElementData& other)
 
 UniqueElementData::UniqueElementData(const ShareableElementData& other)
     : ElementData(other, true) {
-  // An ShareableElementData should never have a mutable inline StylePropertySet
-  // attached.
+  // An ShareableElementData should never have a mutable inline
+  // CSSPropertyValueSet attached.
   DCHECK(!other.inline_style_ || !other.inline_style_->IsMutable());
   inline_style_ = other.inline_style_;
 

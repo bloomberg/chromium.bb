@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/events/Event.h"
@@ -135,7 +135,7 @@ MediaControlDownloadButtonElement& GetDownloadButton(
 }
 
 bool IsElementVisible(Element& element) {
-  const StylePropertySet* inline_style = element.InlineStyle();
+  const CSSPropertyValueSet* inline_style = element.InlineStyle();
 
   if (!inline_style)
     return true;
@@ -971,7 +971,7 @@ class MediaControlsImplTestWithMockScheduler : public MediaControlsImplTest {
   }
 
   bool IsCursorHidden() {
-    const StylePropertySet* style = MediaControls().InlineStyle();
+    const CSSPropertyValueSet* style = MediaControls().InlineStyle();
     if (!style)
       return false;
     return style->GetPropertyValue(CSSPropertyCursor) == "none";

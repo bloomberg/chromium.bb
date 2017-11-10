@@ -46,7 +46,7 @@ class HTMLTableSectionElement final : public HTMLTablePartElement {
  private:
   HTMLTableSectionElement(const QualifiedName& tag_name, Document&);
 
-  const StylePropertySet* AdditionalPresentationAttributeStyle() override;
+  const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() override;
 };
 
 inline bool IsHTMLTableSectionElement(const HTMLElement& element) {

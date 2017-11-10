@@ -126,7 +126,7 @@ bool HTMLTextAreaElement::IsPresentationAttribute(
 void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == wrapAttr) {
     if (ShouldWrapText()) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,

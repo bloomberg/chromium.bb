@@ -102,7 +102,7 @@ SVGMatrixTearOff* SVGGraphicsElement::getScreenCTM() {
 void SVGGraphicsElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == SVGNames::transformAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform, transform_->CurrentValue()->CssValue());

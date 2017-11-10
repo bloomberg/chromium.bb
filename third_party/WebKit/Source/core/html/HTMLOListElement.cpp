@@ -54,7 +54,7 @@ bool HTMLOListElement::IsPresentationAttribute(
 void HTMLOListElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == typeAttr) {
     if (value == "a")
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,

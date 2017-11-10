@@ -33,13 +33,13 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
@@ -95,7 +95,7 @@ inline StaticCSSRuleList* ElementRuleCollector::EnsureRuleList() {
 }
 
 void ElementRuleCollector::AddElementStyleProperties(
-    const StylePropertySet* property_set,
+    const CSSPropertyValueSet* property_set,
     bool is_cacheable) {
   if (!property_set)
     return;

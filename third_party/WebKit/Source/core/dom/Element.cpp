@@ -37,6 +37,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelectorWatch.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValue.h"
@@ -44,7 +45,6 @@
 #include "core/css/SelectorQuery.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/SelectorFilterParentScope.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -1969,7 +1969,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
   }
 
   if (style->HasTransform()) {
-    if (const StylePropertySet* inline_style = InlineStyle()) {
+    if (const CSSPropertyValueSet* inline_style = InlineStyle()) {
       style->SetHasInlineTransform(
           inline_style->HasProperty(CSSPropertyTransform) ||
           inline_style->HasProperty(CSSPropertyTranslate) ||
@@ -4090,7 +4090,7 @@ static bool NeedsURLResolutionForInlineStyle(const Element& element,
     return false;
   if (old_document.BaseURL() == new_document.BaseURL())
     return false;
-  const StylePropertySet* style = element.InlineStyle();
+  const CSSPropertyValueSet* style = element.InlineStyle();
   if (!style)
     return false;
   for (unsigned i = 0; i < style->PropertyCount(); ++i) {
@@ -4101,7 +4101,7 @@ static bool NeedsURLResolutionForInlineStyle(const Element& element,
 }
 
 static void ReResolveURLsInInlineStyle(const Document& document,
-                                       MutableStylePropertySet& style) {
+                                       MutableCSSPropertyValueSet& style) {
   for (unsigned i = 0; i < style.PropertyCount(); ++i) {
     const CSSValue& value = style.PropertyAt(i).Value();
     if (value.MayContainUrl())
@@ -4352,7 +4352,7 @@ void Element::SynchronizeStyleAttributeInternal() const {
   DCHECK(GetElementData());
   DCHECK(GetElementData()->style_attribute_is_dirty_);
   GetElementData()->style_attribute_is_dirty_ = false;
-  const StylePropertySet* inline_style = InlineStyle();
+  const CSSPropertyValueSet* inline_style = InlineStyle();
   const_cast<Element*>(this)->SetSynchronizedLazyAttribute(
       styleAttr,
       inline_style ? AtomicString(inline_style->AsText()) : g_empty_atom);
@@ -4370,19 +4370,19 @@ StylePropertyMap* Element::styleMap() {
   return &EnsureElementRareData().EnsureInlineStylePropertyMap(this);
 }
 
-MutableStylePropertySet& Element::EnsureMutableInlineStyle() {
+MutableCSSPropertyValueSet& Element::EnsureMutableInlineStyle() {
   DCHECK(IsStyledElement());
-  Member<StylePropertySet>& inline_style =
+  Member<CSSPropertyValueSet>& inline_style =
       EnsureUniqueElementData().inline_style_;
   if (!inline_style) {
     CSSParserMode mode = (!IsHTMLElement() || GetDocument().InQuirksMode())
                              ? kHTMLQuirksMode
                              : kHTMLStandardMode;
-    inline_style = MutableStylePropertySet::Create(mode);
+    inline_style = MutableCSSPropertyValueSet::Create(mode);
   } else if (!inline_style->IsMutable()) {
     inline_style = inline_style->MutableCopy();
   }
-  return *ToMutableStylePropertySet(inline_style);
+  return *ToMutableCSSPropertyValueSet(inline_style);
 }
 
 void Element::ClearMutableInlineStyleIfEmpty() {
@@ -4394,7 +4394,7 @@ void Element::ClearMutableInlineStyleIfEmpty() {
 inline void Element::SetInlineStyleFromString(
     const AtomicString& new_style_string) {
   DCHECK(IsStyledElement());
-  Member<StylePropertySet>& inline_style = GetElementData()->inline_style_;
+  Member<CSSPropertyValueSet>& inline_style = GetElementData()->inline_style_;
 
   // Avoid redundant work if we're using shared attribute data with already
   // parsed inline style.
@@ -4411,7 +4411,7 @@ inline void Element::SetInlineStyleFromString(
         CSSParser::ParseInlineStyleDeclaration(new_style_string, this);
   } else {
     DCHECK(inline_style->IsMutable());
-    static_cast<MutableStylePropertySet*>(inline_style.Get())
+    static_cast<MutableCSSPropertyValueSet*>(inline_style.Get())
         ->ParseDeclarationList(new_style_string,
                                GetDocument().ElementSheet().Contents());
   }
@@ -4537,7 +4537,7 @@ void Element::UpdatePresentationAttributeStyle() {
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
-    MutableStylePropertySet* style,
+    MutableCSSPropertyValueSet* style,
     CSSPropertyID property_id,
     CSSValueID identifier) {
   DCHECK(IsStyledElement());
@@ -4545,7 +4545,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
-    MutableStylePropertySet* style,
+    MutableCSSPropertyValueSet* style,
     CSSPropertyID property_id,
     double value,
     CSSPrimitiveValue::UnitType unit) {
@@ -4554,7 +4554,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
-    MutableStylePropertySet* style,
+    MutableCSSPropertyValueSet* style,
     CSSPropertyID property_id,
     const String& value) {
   DCHECK(IsStyledElement());
@@ -4562,7 +4562,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(
-    MutableStylePropertySet* style,
+    MutableCSSPropertyValueSet* style,
     CSSPropertyID property_id,
     const CSSValue* value) {
   DCHECK(IsStyledElement());

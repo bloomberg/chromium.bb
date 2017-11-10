@@ -38,7 +38,7 @@
 namespace blink {
 
 class Document;
-class StylePropertySet;
+class CSSPropertyValueSet;
 class Text;
 
 class StyledMarkupAccumulator final {
@@ -59,7 +59,7 @@ class StyledMarkupAccumulator final {
   void AppendText(Text&);
   void AppendTextWithInlineStyle(Text&, EditingStyle*);
 
-  void WrapWithStyleNode(StylePropertySet*);
+  void WrapWithStyleNode(CSSPropertyValueSet*);
   String TakeResults();
 
   void PushMarkup(const String&);

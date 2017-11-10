@@ -25,7 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSColorValue.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/html/forms/HTMLOptGroupElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html_names.h"
@@ -50,7 +50,7 @@ bool HTMLHRElement::IsPresentationAttribute(const QualifiedName& name) const {
 void HTMLHRElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == alignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "left")) {
       AddPropertyToPresentationAttributeStyle(

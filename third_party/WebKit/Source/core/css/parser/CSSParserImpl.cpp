@@ -63,8 +63,8 @@ CSSParserImpl::CSSParserImpl(const CSSParserContext* context,
                              StyleSheetContents* style_sheet)
     : context_(context), style_sheet_(style_sheet), observer_(nullptr) {}
 
-MutableStylePropertySet::SetResult CSSParserImpl::ParseValue(
-    MutableStylePropertySet* declaration,
+MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
+    MutableCSSPropertyValueSet* declaration,
     CSSPropertyID unresolved_property,
     const String& string,
     bool important,
@@ -85,11 +85,11 @@ MutableStylePropertySet::SetResult CSSParserImpl::ParseValue(
     did_parse = true;
     did_change = declaration->AddParsedProperties(parser.parsed_properties_);
   }
-  return MutableStylePropertySet::SetResult{did_parse, did_change};
+  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
 }
 
-MutableStylePropertySet::SetResult CSSParserImpl::ParseVariableValue(
-    MutableStylePropertySet* declaration,
+MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
+    MutableCSSPropertyValueSet* declaration,
     const AtomicString& property_name,
     const PropertyRegistry* registry,
     const String& value,
@@ -115,13 +115,13 @@ MutableStylePropertySet::SetResult CSSParserImpl::ParseVariableValue(
       // to validate but throw away the result.
       if (registration &&
           !registration->Syntax().Parse(range, context, is_animation_tainted)) {
-        return MutableStylePropertySet::SetResult{did_parse, did_change};
+        return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
       }
     }
     did_parse = true;
     did_change = declaration->AddParsedProperties(parser.parsed_properties_);
   }
-  return MutableStylePropertySet::SetResult{did_parse, did_change};
+  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
 }
 
 static inline void FilterProperties(
@@ -156,7 +156,7 @@ static inline void FilterProperties(
   }
 }
 
-static ImmutableStylePropertySet* CreateStylePropertySet(
+static ImmutableCSSPropertyValueSet* CreateCSSPropertyValueSet(
     HeapVector<CSSPropertyValue, 256>& parsed_properties,
     CSSParserMode mode) {
   std::bitset<numCSSProperties> seen_properties;
@@ -169,13 +169,13 @@ static ImmutableStylePropertySet* CreateStylePropertySet(
   FilterProperties(false, parsed_properties, results, unused_entries,
                    seen_properties, seen_custom_properties);
 
-  ImmutableStylePropertySet* result = ImmutableStylePropertySet::Create(
+  ImmutableCSSPropertyValueSet* result = ImmutableCSSPropertyValueSet::Create(
       results.data() + unused_entries, results.size() - unused_entries, mode);
   parsed_properties.clear();
   return result;
 }
 
-ImmutableStylePropertySet* CSSParserImpl::ParseInlineStyleDeclaration(
+ImmutableCSSPropertyValueSet* CSSParserImpl::ParseInlineStyleDeclaration(
     const String& string,
     Element* element) {
   Document& document = element->GetDocument();
@@ -189,12 +189,13 @@ ImmutableStylePropertySet* CSSParserImpl::ParseInlineStyleDeclaration(
   CSSTokenizer tokenizer(string);
   CSSParserTokenStream stream(tokenizer);
   parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
-  return CreateStylePropertySet(parser.parsed_properties_, mode);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, mode);
 }
 
-bool CSSParserImpl::ParseDeclarationList(MutableStylePropertySet* declaration,
-                                         const String& string,
-                                         const CSSParserContext* context) {
+bool CSSParserImpl::ParseDeclarationList(
+    MutableCSSPropertyValueSet* declaration,
+    const String& string,
+    const CSSParserContext* context) {
   CSSParserImpl parser(context);
   StyleRule::RuleType rule_type = StyleRule::kStyle;
   if (declaration->CssParserMode() == kCSSViewportRuleMode)
@@ -321,7 +322,7 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
   return selector_list;
 }
 
-ImmutableStylePropertySet* CSSParserImpl::ParseCustomPropertySet(
+ImmutableCSSPropertyValueSet* CSSParserImpl::ParseCustomPropertySet(
     CSSParserTokenRange range) {
   range.ConsumeWhitespace();
   if (range.Peek().GetType() != kLeftBraceToken)
@@ -333,7 +334,8 @@ ImmutableStylePropertySet* CSSParserImpl::ParseCustomPropertySet(
   CSSParserImpl parser(StrictCSSParserContext());
   parser.ConsumeDeclarationListForAtApply(block);
 
-  return CreateStylePropertySet(parser.parsed_properties_, kHTMLStandardMode);
+  return CreateCSSPropertyValueSet(parser.parsed_properties_,
+                                   kHTMLStandardMode);
 }
 
 void CSSParserImpl::ConsumeDeclarationListForAtApply(
@@ -422,7 +424,7 @@ void CSSParserImpl::ParseStyleSheetForInspector(const String& string,
   style_sheet->SetHasSyntacticallyValidCSSHeader(first_rule_valid);
 }
 
-StylePropertySet* CSSParserImpl::ParseDeclarationListForLazyStyle(
+CSSPropertyValueSet* CSSParserImpl::ParseDeclarationListForLazyStyle(
     const String& string,
     size_t offset,
     const CSSParserContext* context) {
@@ -431,7 +433,7 @@ StylePropertySet* CSSParserImpl::ParseDeclarationListForLazyStyle(
   CSSParserTokenStream::BlockGuard guard(stream);
   CSSParserImpl parser(context);
   parser.ConsumeDeclarationList(stream, StyleRule::kStyle);
-  return CreateStylePropertySet(parser.parsed_properties_, context->Mode());
+  return CreateCSSPropertyValueSet(parser.parsed_properties_, context->Mode());
 }
 
 static CSSParserImpl::AllowedRulesType ComputeNewAllowedRules(
@@ -736,7 +738,7 @@ StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(
 
   ConsumeDeclarationList(block, StyleRule::kViewport);
   return StyleRuleViewport::Create(
-      CreateStylePropertySet(parsed_properties_, kCSSViewportRuleMode));
+      CreateCSSPropertyValueSet(parsed_properties_, kCSSViewportRuleMode));
 }
 
 StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
@@ -758,7 +760,7 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
 
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
   return StyleRuleFontFace::Create(
-      CreateStylePropertySet(parsed_properties_, kCSSFontFaceRuleMode));
+      CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(
@@ -817,7 +819,7 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
 
   return StyleRulePage::Create(
       std::move(selector_list),
-      CreateStylePropertySet(parsed_properties_, context_->Mode()));
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
 void CSSParserImpl::ConsumeApplyRule(CSSParserTokenRange prelude) {
@@ -848,7 +850,7 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
 
   return StyleRuleKeyframe::Create(
       std::move(key_list),
-      CreateStylePropertySet(parsed_properties_, context_->Mode()));
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
 StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
@@ -891,7 +893,7 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
 
   return StyleRule::Create(
       std::move(selector_list),
-      CreateStylePropertySet(parsed_properties_, context_->Mode()));
+      CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
 void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,

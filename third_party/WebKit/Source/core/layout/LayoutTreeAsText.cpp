@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutTreeAsText.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/PseudoElement.h"
 #include "core/editing/FrameSelection.h"

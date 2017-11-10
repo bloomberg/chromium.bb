@@ -27,11 +27,11 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceCache.h"
 #include "core/css/FontFaceSetLoadEvent.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -142,8 +142,8 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
 
   // Interpret fontString in the same way as the 'font' attribute of
   // CanvasRenderingContext2D.
-  MutableStylePropertySet* parsed_style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* parsed_style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(parsed_style, CSSPropertyFont, font_string, true);
   if (parsed_style->IsEmpty())
     return false;

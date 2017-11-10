@@ -30,7 +30,7 @@
 
 #include "core/css/resolver/MatchedPropertiesCache.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
 

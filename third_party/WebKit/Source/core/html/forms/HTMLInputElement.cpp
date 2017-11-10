@@ -689,7 +689,7 @@ bool HTMLInputElement::IsPresentationAttribute(
 void HTMLInputElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == vspaceAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
     AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);

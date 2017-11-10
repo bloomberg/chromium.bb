@@ -75,7 +75,7 @@ void SVGGradientElement::Trace(blink::Visitor* visitor) {
 void SVGGradientElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == SVGNames::gradientTransformAttr) {
     AddPropertyToPresentationAttributeStyle(
         style, CSSPropertyTransform,

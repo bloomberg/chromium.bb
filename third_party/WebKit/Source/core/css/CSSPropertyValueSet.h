@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef StylePropertySet_h
-#define StylePropertySet_h
+#ifndef CSSPropertyValueSet_h
+#define CSSPropertyValueSet_h
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
@@ -35,14 +35,14 @@
 namespace blink {
 
 class CSSStyleDeclaration;
-class ImmutableStylePropertySet;
-class MutableStylePropertySet;
+class ImmutableCSSPropertyValueSet;
+class MutableCSSPropertyValueSet;
 class PropertyRegistry;
 class StyleSheetContents;
 
-class CORE_EXPORT StylePropertySet
-    : public GarbageCollectedFinalized<StylePropertySet> {
-  WTF_MAKE_NONCOPYABLE(StylePropertySet);
+class CORE_EXPORT CSSPropertyValueSet
+    : public GarbageCollectedFinalized<CSSPropertyValueSet> {
+  WTF_MAKE_NONCOPYABLE(CSSPropertyValueSet);
   friend class PropertyReference;
 
  public:
@@ -52,7 +52,7 @@ class CORE_EXPORT StylePropertySet
     STACK_ALLOCATED();
 
    public:
-    PropertyReference(const StylePropertySet& property_set, unsigned index)
+    PropertyReference(const CSSPropertyValueSet& property_set, unsigned index)
         : property_set_(&property_set), index_(index) {}
 
     CSSPropertyID Id() const {
@@ -78,7 +78,7 @@ class CORE_EXPORT StylePropertySet
    private:
     const CSSValue& PropertyValue() const;
 
-    Member<const StylePropertySet> property_set_;
+    Member<const CSSPropertyValueSet> property_set_;
     unsigned index_;
   };
 
@@ -114,10 +114,10 @@ class CORE_EXPORT StylePropertySet
     return static_cast<CSSParserMode>(css_parser_mode_);
   }
 
-  MutableStylePropertySet* MutableCopy() const;
-  ImmutableStylePropertySet* ImmutableCopyIfNeeded() const;
+  MutableCSSPropertyValueSet* MutableCopy() const;
+  ImmutableCSSPropertyValueSet* ImmutableCopyIfNeeded() const;
 
-  MutableStylePropertySet* CopyPropertiesInSet(
+  MutableCSSPropertyValueSet* CopyPropertiesInSet(
       const Vector<CSSPropertyID>&) const;
 
   String AsText() const;
@@ -140,10 +140,11 @@ class CORE_EXPORT StylePropertySet
  protected:
   enum { kMaxArraySize = (1 << 28) - 1 };
 
-  StylePropertySet(CSSParserMode css_parser_mode)
+  CSSPropertyValueSet(CSSParserMode css_parser_mode)
       : css_parser_mode_(css_parser_mode), is_mutable_(true), array_size_(0) {}
 
-  StylePropertySet(CSSParserMode css_parser_mode, unsigned immutable_array_size)
+  CSSPropertyValueSet(CSSParserMode css_parser_mode,
+                      unsigned immutable_array_size)
       : css_parser_mode_(css_parser_mode), is_mutable_(false) {
     // Avoid min()/max() from std here in the header, because that would require
     // inclusion of <algorithm>, which is slow to compile.
@@ -168,16 +169,15 @@ class CSSLazyPropertyParser
  public:
   CSSLazyPropertyParser() {}
   virtual ~CSSLazyPropertyParser() {}
-  virtual StylePropertySet* ParseProperties() = 0;
+  virtual CSSPropertyValueSet* ParseProperties() = 0;
   virtual void Trace(blink::Visitor*);
 };
 
-class CORE_EXPORT ImmutableStylePropertySet : public StylePropertySet {
+class CORE_EXPORT ImmutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
-  ~ImmutableStylePropertySet();
-  static ImmutableStylePropertySet* Create(const CSSPropertyValue* properties,
-                                           unsigned count,
-                                           CSSParserMode);
+  ~ImmutableCSSPropertyValueSet();
+  static ImmutableCSSPropertyValueSet*
+  Create(const CSSPropertyValue* properties, unsigned count, CSSParserMode);
 
   unsigned PropertyCount() const { return array_size_; }
 
@@ -194,36 +194,36 @@ class CORE_EXPORT ImmutableStylePropertySet : public StylePropertySet {
   void* storage_;
 
  private:
-  ImmutableStylePropertySet(const CSSPropertyValue*,
-                            unsigned count,
-                            CSSParserMode);
+  ImmutableCSSPropertyValueSet(const CSSPropertyValue*,
+                               unsigned count,
+                               CSSParserMode);
 };
 
-inline const Member<const CSSValue>* ImmutableStylePropertySet::ValueArray()
+inline const Member<const CSSValue>* ImmutableCSSPropertyValueSet::ValueArray()
     const {
   return reinterpret_cast<const Member<const CSSValue>*>(
       const_cast<const void**>(&(this->storage_)));
 }
 
 inline const CSSPropertyValueMetadata*
-ImmutableStylePropertySet::MetadataArray() const {
+ImmutableCSSPropertyValueSet::MetadataArray() const {
   return reinterpret_cast<const CSSPropertyValueMetadata*>(
       &reinterpret_cast<const char*>(
           &(this->storage_))[array_size_ * sizeof(Member<CSSValue>)]);
 }
 
-DEFINE_TYPE_CASTS(ImmutableStylePropertySet,
-                  StylePropertySet,
+DEFINE_TYPE_CASTS(ImmutableCSSPropertyValueSet,
+                  CSSPropertyValueSet,
                   set,
                   !set->IsMutable(),
                   !set.IsMutable());
 
-class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
+class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
  public:
-  ~MutableStylePropertySet() {}
-  static MutableStylePropertySet* Create(CSSParserMode);
-  static MutableStylePropertySet* Create(const CSSPropertyValue* properties,
-                                         unsigned count);
+  ~MutableCSSPropertyValueSet() {}
+  static MutableCSSPropertyValueSet* Create(CSSParserMode);
+  static MutableCSSPropertyValueSet* Create(const CSSPropertyValue* properties,
+                                            unsigned count);
 
   unsigned PropertyCount() const { return property_vector_.size(); }
 
@@ -257,10 +257,10 @@ class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
   template <typename T>  // CSSPropertyID or AtomicString
   bool RemoveProperty(T property, String* return_text = 0);
   bool RemovePropertiesInSet(const CSSPropertyID* set, unsigned length);
-  void RemoveEquivalentProperties(const StylePropertySet*);
+  void RemoveEquivalentProperties(const CSSPropertyValueSet*);
   void RemoveEquivalentProperties(const CSSStyleDeclaration*);
 
-  void MergeAndOverrideOnConflict(const StylePropertySet*);
+  void MergeAndOverrideOnConflict(const CSSPropertyValueSet*);
 
   void Clear();
   void ParseDeclarationList(const String& style_declaration,
@@ -274,9 +274,10 @@ class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  explicit MutableStylePropertySet(CSSParserMode);
-  explicit MutableStylePropertySet(const StylePropertySet&);
-  MutableStylePropertySet(const CSSPropertyValue* properties, unsigned count);
+  explicit MutableCSSPropertyValueSet(CSSParserMode);
+  explicit MutableCSSPropertyValueSet(const CSSPropertyValueSet&);
+  MutableCSSPropertyValueSet(const CSSPropertyValue* properties,
+                             unsigned count);
 
   bool RemovePropertyAtIndex(int, String* return_text);
 
@@ -289,62 +290,64 @@ class CORE_EXPORT MutableStylePropertySet : public StylePropertySet {
       const AtomicString& custom_property_name = g_null_atom);
   Member<PropertySetCSSStyleDeclaration> cssom_wrapper_;
 
-  friend class StylePropertySet;
+  friend class CSSPropertyValueSet;
 
   HeapVector<CSSPropertyValue, 4> property_vector_;
 };
 
-DEFINE_TYPE_CASTS(MutableStylePropertySet,
-                  StylePropertySet,
+DEFINE_TYPE_CASTS(MutableCSSPropertyValueSet,
+                  CSSPropertyValueSet,
                   set,
                   set->IsMutable(),
                   set.IsMutable());
 
-inline MutableStylePropertySet* ToMutableStylePropertySet(
-    const Persistent<StylePropertySet>& set) {
-  return ToMutableStylePropertySet(set.Get());
+inline MutableCSSPropertyValueSet* ToMutableCSSPropertyValueSet(
+    const Persistent<CSSPropertyValueSet>& set) {
+  return ToMutableCSSPropertyValueSet(set.Get());
 }
 
-inline MutableStylePropertySet* ToMutableStylePropertySet(
-    const Member<StylePropertySet>& set) {
-  return ToMutableStylePropertySet(set.Get());
+inline MutableCSSPropertyValueSet* ToMutableCSSPropertyValueSet(
+    const Member<CSSPropertyValueSet>& set) {
+  return ToMutableCSSPropertyValueSet(set.Get());
 }
 
 inline const CSSPropertyValueMetadata&
-StylePropertySet::PropertyReference::PropertyMetadata() const {
-  if (property_set_->IsMutable())
-    return ToMutableStylePropertySet(*property_set_)
+CSSPropertyValueSet::PropertyReference::PropertyMetadata() const {
+  if (property_set_->IsMutable()) {
+    return ToMutableCSSPropertyValueSet(*property_set_)
         .property_vector_.at(index_)
         .Metadata();
-  return ToImmutableStylePropertySet(*property_set_).MetadataArray()[index_];
+  }
+  return ToImmutableCSSPropertyValueSet(*property_set_).MetadataArray()[index_];
 }
 
-inline const CSSValue& StylePropertySet::PropertyReference::PropertyValue()
+inline const CSSValue& CSSPropertyValueSet::PropertyReference::PropertyValue()
     const {
-  if (property_set_->IsMutable())
-    return *ToMutableStylePropertySet(*property_set_)
+  if (property_set_->IsMutable()) {
+    return *ToMutableCSSPropertyValueSet(*property_set_)
                 .property_vector_.at(index_)
                 .Value();
-  return *ToImmutableStylePropertySet(*property_set_).ValueArray()[index_];
+  }
+  return *ToImmutableCSSPropertyValueSet(*property_set_).ValueArray()[index_];
 }
 
-inline unsigned StylePropertySet::PropertyCount() const {
+inline unsigned CSSPropertyValueSet::PropertyCount() const {
   if (is_mutable_)
-    return ToMutableStylePropertySet(this)->property_vector_.size();
+    return ToMutableCSSPropertyValueSet(this)->property_vector_.size();
   return array_size_;
 }
 
-inline bool StylePropertySet::IsEmpty() const {
+inline bool CSSPropertyValueSet::IsEmpty() const {
   return !PropertyCount();
 }
 
 template <typename T>
-inline int StylePropertySet::FindPropertyIndex(T property) const {
+inline int CSSPropertyValueSet::FindPropertyIndex(T property) const {
   if (is_mutable_)
-    return ToMutableStylePropertySet(this)->FindPropertyIndex(property);
-  return ToImmutableStylePropertySet(this)->FindPropertyIndex(property);
+    return ToMutableCSSPropertyValueSet(this)->FindPropertyIndex(property);
+  return ToImmutableCSSPropertyValueSet(this)->FindPropertyIndex(property);
 }
 
 }  // namespace blink
 
-#endif  // StylePropertySet_h
+#endif  // CSSPropertyValueSet_h

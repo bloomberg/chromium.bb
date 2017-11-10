@@ -21,10 +21,10 @@
 
 #include "core/css/CSSStyleRule.h"
 
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParser.h"
 #include "platform/wtf/text/StringBuilder.h"

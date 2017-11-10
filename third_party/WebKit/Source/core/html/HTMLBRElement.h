@@ -41,9 +41,10 @@ class CORE_EXPORT HTMLBRElement final : public HTMLElement {
   explicit HTMLBRElement(Document&);
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };

@@ -32,11 +32,11 @@
 
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/RuleSet.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/dom/Element.h"
@@ -551,14 +551,14 @@ void RuleFeatureSet::UpdateInvalidationSetsForContentAttribute(
   // need to create invalidation sets for those attributes to have content
   // changes applied through style recalc.
 
-  const StylePropertySet& property_set = rule_data.Rule()->Properties();
+  const CSSPropertyValueSet& property_set = rule_data.Rule()->Properties();
 
   int property_index = property_set.FindPropertyIndex(CSSPropertyContent);
 
   if (property_index == -1)
     return;
 
-  StylePropertySet::PropertyReference content_property =
+  CSSPropertyValueSet::PropertyReference content_property =
       property_set.PropertyAt(property_index);
   const CSSValue& content_value = content_property.Value();
 

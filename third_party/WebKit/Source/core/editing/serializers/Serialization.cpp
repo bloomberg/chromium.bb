@@ -32,8 +32,8 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSValue.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/Comment.h"
@@ -155,7 +155,7 @@ AncestorToRetainStructureAndAppearanceWithNoLayoutObject(
   return AncestorToRetainStructureAndAppearanceForBlock(common_ancestor_block);
 }
 
-bool PropertyMissingOrEqualToNone(StylePropertySet* style,
+bool PropertyMissingOrEqualToNone(CSSPropertyValueSet* style,
                                   CSSPropertyID property_id) {
   if (!style)
     return false;

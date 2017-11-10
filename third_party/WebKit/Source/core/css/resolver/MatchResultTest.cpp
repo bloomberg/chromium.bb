@@ -4,7 +4,7 @@
 
 #include "core/css/resolver/MatchResult.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -13,29 +13,31 @@ class MatchResultTest : public ::testing::Test {
  protected:
   void SetUp() override;
 
-  const StylePropertySet* PropertySet(unsigned index) const {
+  const CSSPropertyValueSet* PropertySet(unsigned index) const {
     return property_sets[index].Get();
   }
 
  private:
-  PersistentHeapVector<Member<MutableStylePropertySet>, 8> property_sets;
+  PersistentHeapVector<Member<MutableCSSPropertyValueSet>, 8> property_sets;
 };
 
 void MatchResultTest::SetUp() {
-  for (unsigned i = 0; i < 8; i++)
-    property_sets.push_back(MutableStylePropertySet::Create(kHTMLQuirksMode));
+  for (unsigned i = 0; i < 8; i++) {
+    property_sets.push_back(
+        MutableCSSPropertyValueSet::Create(kHTMLQuirksMode));
+  }
 }
 
 void TestMatchedPropertiesRange(const MatchedPropertiesRange& range,
                                 int expected_length,
-                                const StylePropertySet** expected_sets) {
+                                const CSSPropertyValueSet** expected_sets) {
   EXPECT_EQ(expected_length, range.end() - range.begin());
   for (const auto& matched_properties : range)
     EXPECT_EQ(*expected_sets++, matched_properties.properties);
 }
 
 TEST_F(MatchResultTest, UARules) {
-  const StylePropertySet* ua_sets[] = {PropertySet(0), PropertySet(1)};
+  const CSSPropertyValueSet* ua_sets[] = {PropertySet(0), PropertySet(1)};
 
   MatchResult result;
   result.AddMatchedProperties(ua_sets[0]);
@@ -57,7 +59,7 @@ TEST_F(MatchResultTest, UARules) {
 }
 
 TEST_F(MatchResultTest, UserRules) {
-  const StylePropertySet* user_sets[] = {PropertySet(0), PropertySet(1)};
+  const CSSPropertyValueSet* user_sets[] = {PropertySet(0), PropertySet(1)};
 
   MatchResult result;
 
@@ -79,7 +81,7 @@ TEST_F(MatchResultTest, UserRules) {
 }
 
 TEST_F(MatchResultTest, AuthorRules) {
-  const StylePropertySet* author_sets[] = {PropertySet(0), PropertySet(1)};
+  const CSSPropertyValueSet* author_sets[] = {PropertySet(0), PropertySet(1)};
 
   MatchResult result;
 
@@ -101,12 +103,12 @@ TEST_F(MatchResultTest, AuthorRules) {
 }
 
 TEST_F(MatchResultTest, AllRules) {
-  const StylePropertySet* all_sets[] = {PropertySet(0), PropertySet(1),
-                                        PropertySet(2), PropertySet(3),
-                                        PropertySet(4), PropertySet(5)};
-  const StylePropertySet** ua_sets = &all_sets[0];
-  const StylePropertySet** user_sets = &all_sets[2];
-  const StylePropertySet** author_sets = &all_sets[4];
+  const CSSPropertyValueSet* all_sets[] = {PropertySet(0), PropertySet(1),
+                                           PropertySet(2), PropertySet(3),
+                                           PropertySet(4), PropertySet(5)};
+  const CSSPropertyValueSet** ua_sets = &all_sets[0];
+  const CSSPropertyValueSet** user_sets = &all_sets[2];
+  const CSSPropertyValueSet** author_sets = &all_sets[4];
 
   MatchResult result;
 
@@ -134,8 +136,8 @@ TEST_F(MatchResultTest, AllRules) {
 }
 
 TEST_F(MatchResultTest, AuthorRulesMultipleScopes) {
-  const StylePropertySet* author_sets[] = {PropertySet(0), PropertySet(1),
-                                           PropertySet(2), PropertySet(3)};
+  const CSSPropertyValueSet* author_sets[] = {PropertySet(0), PropertySet(1),
+                                              PropertySet(2), PropertySet(3)};
 
   MatchResult result;
 
@@ -173,13 +175,12 @@ TEST_F(MatchResultTest, AuthorRulesMultipleScopes) {
 }
 
 TEST_F(MatchResultTest, AllRulesMultipleScopes) {
-  const StylePropertySet* all_sets[] = {PropertySet(0), PropertySet(1),
-                                        PropertySet(2), PropertySet(3),
-                                        PropertySet(4), PropertySet(5),
-                                        PropertySet(6), PropertySet(7)};
-  const StylePropertySet** ua_sets = &all_sets[0];
-  const StylePropertySet** user_sets = &all_sets[2];
-  const StylePropertySet** author_sets = &all_sets[4];
+  const CSSPropertyValueSet* all_sets[] = {
+      PropertySet(0), PropertySet(1), PropertySet(2), PropertySet(3),
+      PropertySet(4), PropertySet(5), PropertySet(6), PropertySet(7)};
+  const CSSPropertyValueSet** ua_sets = &all_sets[0];
+  const CSSPropertyValueSet** user_sets = &all_sets[2];
+  const CSSPropertyValueSet** author_sets = &all_sets[4];
 
   MatchResult result;
 

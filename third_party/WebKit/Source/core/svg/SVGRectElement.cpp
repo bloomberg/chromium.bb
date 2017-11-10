@@ -119,7 +119,7 @@ Path SVGRectElement::AsPath() const {
 void SVGRectElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
   if (property == x_) {
     AddPropertyToPresentationAttributeStyle(style, property->CssPropertyId(),

@@ -4,7 +4,7 @@
 
 #include "core/editing/commands/ApplyStyleCommand.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"
@@ -40,8 +40,8 @@ TEST_F(ApplyStyleCommandTest, RemoveRedundantBlocksWithStarEditableStyle) {
           .Collapse(Position(li, PositionAnchorType::kBeforeAnchor))
           .Build());
 
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyTextAlign, "center");
   ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
                             InputEvent::InputType::kFormatJustifyCenter,
@@ -68,8 +68,8 @@ TEST_F(ApplyStyleCommandTest, JustifyRightDetachesDestination) {
   GetDocument().UpdateStyleAndLayout();
   Selection().SelectAll();
 
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyTextAlign, "right");
   ApplyStyleCommand::Create(GetDocument(), EditingStyle::Create(style),
                             InputEvent::InputType::kFormatJustifyCenter,

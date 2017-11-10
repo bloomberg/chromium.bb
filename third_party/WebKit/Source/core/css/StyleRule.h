@@ -23,9 +23,9 @@
 #define StyleRule_h
 
 #include "core/CoreExport.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
-#include "core/css/StylePropertySet.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -96,7 +96,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
  public:
   // Adopts the selector list
   static StyleRule* Create(CSSSelectorList selector_list,
-                           StylePropertySet* properties) {
+                           CSSPropertyValueSet* properties) {
     return new StyleRule(std::move(selector_list), properties);
   }
   static StyleRule* CreateLazy(CSSSelectorList selector_list,
@@ -107,8 +107,8 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   ~StyleRule();
 
   const CSSSelectorList& SelectorList() const { return selector_list_; }
-  const StylePropertySet& Properties() const;
-  MutableStylePropertySet& MutableProperties();
+  const CSSPropertyValueSet& Properties() const;
+  MutableCSSPropertyValueSet& MutableProperties();
 
   void WrapperAdoptSelectorList(CSSSelectorList selectors) {
     selector_list_ = std::move(selectors);
@@ -128,7 +128,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   friend class CSSLazyParsingTest;
   bool HasParsedProperties() const;
 
-  StyleRule(CSSSelectorList, StylePropertySet*);
+  StyleRule(CSSSelectorList, CSSPropertyValueSet*);
   StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
   StyleRule(const StyleRule&);
 
@@ -144,45 +144,45 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   mutable ConsiderForMatching should_consider_for_matching_rules_;
 
   CSSSelectorList selector_list_;
-  mutable Member<StylePropertySet> properties_;
+  mutable Member<CSSPropertyValueSet> properties_;
   mutable Member<CSSLazyPropertyParser> lazy_property_parser_;
 };
 
 class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
  public:
-  static StyleRuleFontFace* Create(StylePropertySet* properties) {
+  static StyleRuleFontFace* Create(CSSPropertyValueSet* properties) {
     return new StyleRuleFontFace(properties);
   }
 
   ~StyleRuleFontFace();
 
-  const StylePropertySet& Properties() const { return *properties_; }
-  MutableStylePropertySet& MutableProperties();
+  const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
 
   StyleRuleFontFace* Copy() const { return new StyleRuleFontFace(*this); }
 
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleFontFace(StylePropertySet*);
+  StyleRuleFontFace(CSSPropertyValueSet*);
   StyleRuleFontFace(const StyleRuleFontFace&);
 
-  Member<StylePropertySet> properties_;  // Cannot be null.
+  Member<CSSPropertyValueSet> properties_;  // Cannot be null.
 };
 
 class StyleRulePage : public StyleRuleBase {
  public:
   // Adopts the selector list
   static StyleRulePage* Create(CSSSelectorList selector_list,
-                               StylePropertySet* properties) {
+                               CSSPropertyValueSet* properties) {
     return new StyleRulePage(std::move(selector_list), properties);
   }
 
   ~StyleRulePage();
 
   const CSSSelector* Selector() const { return selector_list_.First(); }
-  const StylePropertySet& Properties() const { return *properties_; }
-  MutableStylePropertySet& MutableProperties();
+  const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
 
   void WrapperAdoptSelectorList(CSSSelectorList selectors) {
     selector_list_ = std::move(selectors);
@@ -193,10 +193,10 @@ class StyleRulePage : public StyleRuleBase {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRulePage(CSSSelectorList, StylePropertySet*);
+  StyleRulePage(CSSSelectorList, CSSPropertyValueSet*);
   StyleRulePage(const StyleRulePage&);
 
-  Member<StylePropertySet> properties_;  // Cannot be null.
+  Member<CSSPropertyValueSet> properties_;  // Cannot be null.
   CSSSelectorList selector_list_;
 };
 
@@ -287,24 +287,24 @@ class StyleRuleSupports : public StyleRuleCondition {
 
 class StyleRuleViewport : public StyleRuleBase {
  public:
-  static StyleRuleViewport* Create(StylePropertySet* properties) {
+  static StyleRuleViewport* Create(CSSPropertyValueSet* properties) {
     return new StyleRuleViewport(properties);
   }
 
   ~StyleRuleViewport();
 
-  const StylePropertySet& Properties() const { return *properties_; }
-  MutableStylePropertySet& MutableProperties();
+  const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
 
   StyleRuleViewport* Copy() const { return new StyleRuleViewport(*this); }
 
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleViewport(StylePropertySet*);
+  StyleRuleViewport(CSSPropertyValueSet*);
   StyleRuleViewport(const StyleRuleViewport&);
 
-  Member<StylePropertySet> properties_;  // Cannot be null
+  Member<CSSPropertyValueSet> properties_;  // Cannot be null
 };
 
 // This should only be used within the CSS Parser

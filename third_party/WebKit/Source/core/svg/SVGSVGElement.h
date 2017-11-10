@@ -123,9 +123,10 @@ class SVGSVGElement final : public SVGGraphicsElement,
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   bool IsPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;

@@ -24,9 +24,9 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
@@ -175,7 +175,7 @@ bool HTMLFontElement::IsPresentationAttribute(const QualifiedName& name) const {
 void HTMLFontElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == sizeAttr) {
     CSSValueID size = CSSValueInvalid;
     if (CssValueFromFontSizeNumber(value, size))

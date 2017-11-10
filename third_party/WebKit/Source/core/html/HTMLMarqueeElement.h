@@ -59,9 +59,10 @@ class HTMLMarqueeElement final : public HTMLElement {
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   class RequestAnimationFrameCallback;
   class AnimationFinished;

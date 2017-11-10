@@ -53,7 +53,7 @@ bool HTMLTableColElement::IsPresentationAttribute(
 void HTMLTableColElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == widthAttr)
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   else
@@ -87,7 +87,7 @@ void HTMLTableColElement::ParseAttribute(
   }
 }
 
-const StylePropertySet*
+const CSSPropertyValueSet*
 HTMLTableColElement::AdditionalPresentationAttributeStyle() {
   if (!HasTagName(colgroupTag))
     return nullptr;

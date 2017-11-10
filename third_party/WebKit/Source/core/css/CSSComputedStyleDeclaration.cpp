@@ -409,11 +409,12 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
   return DataEquivalent(value, property_value);
 }
 
-MutableStylePropertySet* CSSComputedStyleDeclaration::CopyProperties() const {
+MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyProperties()
+    const {
   return CopyPropertiesInSet(ComputableProperties());
 }
 
-MutableStylePropertySet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
+MutableCSSPropertyValueSet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
     const Vector<CSSPropertyID>& properties) const {
   HeapVector<CSSPropertyValue, 256> list;
   list.ReserveInitialCapacity(properties.size());
@@ -423,7 +424,7 @@ MutableStylePropertySet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
     if (value)
       list.push_back(CSSPropertyValue(properties[i], *value, false));
   }
-  return MutableStylePropertySet::Create(list.data(), list.size());
+  return MutableCSSPropertyValueSet::Create(list.data(), list.size());
 }
 
 CSSRule* CSSComputedStyleDeclaration::parentRule() const {

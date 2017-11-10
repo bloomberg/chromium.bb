@@ -5,7 +5,7 @@
 #ifndef CSSVariableData_h
 #define CSSVariableData_h
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/wtf/Forward.h"
@@ -50,7 +50,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&) const;
 
-  StylePropertySet* PropertySet();
+  CSSPropertyValueSet* PropertySet();
 
  private:
   CSSVariableData(const CSSParserTokenRange&,
@@ -78,7 +78,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   // Parsed representation for @apply
   bool cached_property_set_;
-  Persistent<StylePropertySet> property_set_;
+  Persistent<CSSPropertyValueSet> property_set_;
 };
 
 }  // namespace blink

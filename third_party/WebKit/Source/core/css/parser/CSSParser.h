@@ -8,7 +8,7 @@
 #include <memory>
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserContext.h"
 
 namespace blink {
@@ -18,7 +18,7 @@ class CSSParserObserver;
 class CSSParserTokenRange;
 class CSSSelectorList;
 class Element;
-class ImmutableStylePropertySet;
+class ImmutableCSSPropertyValueSet;
 class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;
@@ -44,30 +44,31 @@ class CORE_EXPORT CSSParser {
                                            StyleSheetContents*,
                                            const String&);
   static bool ParseDeclarationList(const CSSParserContext*,
-                                   MutableStylePropertySet*,
+                                   MutableCSSPropertyValueSet*,
                                    const String&);
 
-  static MutableStylePropertySet::SetResult ParseValue(
-      MutableStylePropertySet*,
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
       CSSPropertyID unresolved_property,
       const String&,
       bool important);
-  static MutableStylePropertySet::SetResult ParseValue(
-      MutableStylePropertySet*,
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
       CSSPropertyID unresolved_property,
       const String&,
       bool important,
       StyleSheetContents*);
 
-  static MutableStylePropertySet::SetResult ParseValueForCustomProperty(
-      MutableStylePropertySet*,
+  static MutableCSSPropertyValueSet::SetResult ParseValueForCustomProperty(
+      MutableCSSPropertyValueSet*,
       const AtomicString& property_name,
       const PropertyRegistry*,
       const String& value,
       bool important,
       StyleSheetContents*,
       bool is_animation_tainted);
-  static ImmutableStylePropertySet* ParseCustomPropertySet(CSSParserTokenRange);
+  static ImmutableCSSPropertyValueSet* ParseCustomPropertySet(
+      CSSParserTokenRange);
 
   // This is for non-shorthands only
   static const CSSValue* ParseSingleValue(
@@ -79,8 +80,9 @@ class CORE_EXPORT CSSParser {
                                                  const String&,
                                                  const CSSParserContext*);
 
-  static ImmutableStylePropertySet* ParseInlineStyleDeclaration(const String&,
-                                                                Element*);
+  static ImmutableCSSPropertyValueSet* ParseInlineStyleDeclaration(
+      const String&,
+      Element*);
 
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
   static StyleRuleKeyframe* ParseKeyframeRule(const CSSParserContext*,
@@ -102,8 +104,8 @@ class CORE_EXPORT CSSParser {
                                                CSSParserObserver&);
 
  private:
-  static MutableStylePropertySet::SetResult ParseValue(
-      MutableStylePropertySet*,
+  static MutableCSSPropertyValueSet::SetResult ParseValue(
+      MutableCSSPropertyValueSet*,
       CSSPropertyID unresolved_property,
       const String&,
       bool important,

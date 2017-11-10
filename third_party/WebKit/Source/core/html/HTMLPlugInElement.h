@@ -100,9 +100,10 @@ class CORE_EXPORT HTMLPlugInElement
 
   // Element functions:
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   virtual bool HasFallbackContent() const;
   virtual bool UseFallbackContent() const;

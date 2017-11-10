@@ -50,11 +50,11 @@ class ContainerNode;
 class Document;
 class Element;
 class HTMLElement;
-class MutableStylePropertySet;
+class MutableCSSPropertyValueSet;
 class Node;
 class QualifiedName;
 class ComputedStyle;
-class StylePropertySet;
+class CSSPropertyValueSet;
 enum class EditingTriState;
 
 class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
@@ -88,7 +88,7 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
     return new EditingStyle(position, properties_to_include);
   }
 
-  static EditingStyle* Create(const StylePropertySet* style) {
+  static EditingStyle* Create(const CSSPropertyValueSet* style) {
     return new EditingStyle(style);
   }
 
@@ -96,10 +96,10 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
     return new EditingStyle(property_id, value);
   }
 
-  MutableStylePropertySet* Style() { return mutable_style_.Get(); }
+  MutableCSSPropertyValueSet* Style() { return mutable_style_.Get(); }
   bool GetTextDirection(WritingDirection&) const;
   bool IsEmpty() const;
-  void OverrideWithStyle(const StylePropertySet*);
+  void OverrideWithStyle(const CSSPropertyValueSet*);
   void Clear();
   EditingStyle* Copy() const;
   EditingStyle* ExtractAndRemoveBlockProperties();
@@ -169,7 +169,7 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
   EditingStyle() = default;
   EditingStyle(ContainerNode*, PropertiesToInclude);
   EditingStyle(const Position&, PropertiesToInclude);
-  explicit EditingStyle(const StylePropertySet*);
+  explicit EditingStyle(const CSSPropertyValueSet*);
   EditingStyle(CSSPropertyID, const String& value);
   void Init(Node*, PropertiesToInclude);
   void RemoveInheritedColorsIfNeeded(const ComputedStyle*);
@@ -182,9 +182,9 @@ class CORE_EXPORT EditingStyle final : public GarbageCollected<EditingStyle> {
       HTMLElement*,
       EditingStyle* extracted_style,
       Vector<CSSPropertyID>* conflicting_properties) const;
-  void MergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
+  void MergeStyle(const CSSPropertyValueSet*, CSSPropertyOverrideMode);
 
-  Member<MutableStylePropertySet> mutable_style_;
+  Member<MutableCSSPropertyValueSet> mutable_style_;
   bool is_monospace_font_ = false;
   float font_size_delta_ = no_font_delta_;
   bool is_vertical_align_ = false;
@@ -237,7 +237,7 @@ class StyleChange {
 
  private:
   void ExtractTextStyles(Document*,
-                         MutableStylePropertySet*,
+                         MutableCSSPropertyValueSet*,
                          bool is_monospace_font);
 
   String css_style_;
@@ -255,7 +255,7 @@ class StyleChange {
 // FIXME: Remove these functions or make them non-global to discourage using
 // CSSStyleDeclaration directly.
 CSSValueID GetIdentifierValue(CSSStyleDeclaration*, CSSPropertyID);
-CSSValueID GetIdentifierValue(StylePropertySet*, CSSPropertyID);
+CSSValueID GetIdentifierValue(CSSPropertyValueSet*, CSSPropertyID);
 
 }  // namespace blink
 

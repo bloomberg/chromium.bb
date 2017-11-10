@@ -124,27 +124,28 @@ class CORE_EXPORT HTMLElement : public Element {
   HTMLElement(const QualifiedName& tag_name, Document&, ConstructionType);
 
   enum AllowPercentage { kDontAllowPercentageValues, kAllowPercentageValues };
-  void AddHTMLLengthToStyle(MutableStylePropertySet*,
+  void AddHTMLLengthToStyle(MutableCSSPropertyValueSet*,
                             CSSPropertyID,
                             const String& value,
                             AllowPercentage = kAllowPercentageValues);
-  void AddHTMLColorToStyle(MutableStylePropertySet*,
+  void AddHTMLColorToStyle(MutableCSSPropertyValueSet*,
                            CSSPropertyID,
                            const String& color);
 
   void ApplyAlignmentAttributeToStyle(const AtomicString&,
-                                      MutableStylePropertySet*);
+                                      MutableCSSPropertyValueSet*);
   void ApplyBorderAttributeToStyle(const AtomicString&,
-                                   MutableStylePropertySet*);
+                                   MutableCSSPropertyValueSet*);
 
   void AttributeChanged(const AttributeModificationParams&) override;
   void ParseAttribute(const AttributeModificationParams&) override;
   static bool ParseColorWithLegacyRules(const String& attribute_value,
                                         Color& parsed_color);
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
   unsigned ParseBorderWidthAttribute(const AtomicString&) const;
 
   void ChildrenChanged(const ChildrenChange&) override;
@@ -162,7 +163,7 @@ class CORE_EXPORT HTMLElement : public Element {
       delete;  // This will catch anyone doing an unnecessary check.
 
   void MapLanguageAttributeToLocale(const AtomicString&,
-                                    MutableStylePropertySet*);
+                                    MutableCSSPropertyValueSet*);
 
   DocumentFragment* TextToFragment(const String&, ExceptionState&);
 

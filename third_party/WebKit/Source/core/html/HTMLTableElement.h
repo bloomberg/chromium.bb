@@ -68,8 +68,8 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   const AtomicString& Rules() const;
   const AtomicString& Summary() const;
 
-  const StylePropertySet* AdditionalCellStyle();
-  const StylePropertySet* AdditionalGroupStyle(bool rows);
+  const CSSPropertyValueSet* AdditionalCellStyle();
+  const CSSPropertyValueSet* AdditionalGroupStyle(bool rows);
 
   virtual void Trace(blink::Visitor*);
 
@@ -79,16 +79,17 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
   bool IsURLAttribute(const Attribute&) const override;
   bool HasLegalLinkAttribute(const QualifiedName&) const override;
   const QualifiedName& SubResourceAttributeName() const override;
 
   // Used to obtain either a solid or outset border decl and to deal with the
   // frame and rules attributes.
-  const StylePropertySet* AdditionalPresentationAttributeStyle() override;
+  const CSSPropertyValueSet* AdditionalPresentationAttributeStyle() override;
 
   enum TableRules {
     kUnsetRules,
@@ -108,7 +109,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   CellBorders GetCellBorders() const;
 
-  StylePropertySet* CreateSharedCellStyle();
+  CSSPropertyValueSet* CreateSharedCellStyle();
 
   HTMLTableSectionElement* LastBody() const;
 
@@ -129,7 +130,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   TableRules rules_attr_;
 
   unsigned short padding_;
-  Member<StylePropertySet> shared_cell_style_;
+  Member<CSSPropertyValueSet> shared_cell_style_;
 };
 
 }  // namespace blink

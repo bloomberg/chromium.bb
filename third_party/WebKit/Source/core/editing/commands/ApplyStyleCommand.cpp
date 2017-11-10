@@ -29,7 +29,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeTraversal.h"
@@ -367,10 +367,10 @@ void ApplyStyleCommand::ApplyBlockStyle(EditingStyle* style,
                  end_ephemeral_range.StartPosition());
 }
 
-static MutableStylePropertySet* CopyStyleOrCreateEmpty(
-    const StylePropertySet* style) {
+static MutableCSSPropertyValueSet* CopyStyleOrCreateEmpty(
+    const CSSPropertyValueSet* style) {
   if (!style)
-    return MutableStylePropertySet::Create(kHTMLQuirksMode);
+    return MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   return style->MutableCopy();
 }
 
@@ -487,7 +487,7 @@ void ApplyStyleCommand::ApplyRelativeFontStyleChange(
     }
     last_styled_node = node;
 
-    MutableStylePropertySet* inline_style =
+    MutableCSSPropertyValueSet* inline_style =
         CopyStyleOrCreateEmpty(element->InlineStyle());
     float current_font_size = ComputedFontSize(node);
     float desired_font_size =
@@ -643,7 +643,7 @@ void ApplyStyleCommand::RemoveEmbeddingUpToEnclosingBlock(
       // it has no other attributes, like we (should) do with B and I elements.
       RemoveElementAttribute(element, dirAttr);
     } else {
-      MutableStylePropertySet* inline_style =
+      MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->SetProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
       inline_style->RemoveProperty(CSSPropertyDirection);
@@ -984,7 +984,7 @@ void ApplyStyleCommand::ApplyInlineStyleToNodeRange(
       next = NodeTraversal::NextSkippingChildren(*node);
       if (!style->Style())
         continue;
-      MutableStylePropertySet* inline_style =
+      MutableCSSPropertyValueSet* inline_style =
           CopyStyleOrCreateEmpty(element->InlineStyle());
       inline_style->MergeAndOverrideOnConflict(style->Style());
       SetNodeAttribute(element, styleAttr,
@@ -1807,7 +1807,7 @@ void ApplyStyleCommand::AddBlockStyle(const StyleChange& style_change,
   String css_style = style_change.CssStyle();
   StringBuilder css_text;
   css_text.Append(css_style);
-  if (const StylePropertySet* decl = block->InlineStyle()) {
+  if (const CSSPropertyValueSet* decl = block->InlineStyle()) {
     if (!css_style.IsEmpty())
       css_text.Append(' ');
     css_text.Append(decl->AsText());
@@ -1924,7 +1924,7 @@ void ApplyStyleCommand::ApplyInlineStyleChange(
 
   if (style_change.CssStyle().length()) {
     if (style_container) {
-      if (const StylePropertySet* existing_style =
+      if (const CSSPropertyValueSet* existing_style =
               style_container->InlineStyle()) {
         String existing_text = existing_style->AsText();
         StringBuilder css_text;

@@ -29,7 +29,7 @@
 
 #include "core/editing/serializers/StyledMarkupAccumulator.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/EphemeralRange.h"
@@ -169,7 +169,7 @@ void StyledMarkupAccumulator::AppendElement(StringBuilder& out,
   formatter_.AppendCloseTag(out, element);
 }
 
-void StyledMarkupAccumulator::WrapWithStyleNode(StylePropertySet* style) {
+void StyledMarkupAccumulator::WrapWithStyleNode(CSSPropertyValueSet* style) {
   // wrappingStyleForSerialization should have removed
   // -webkit-text-decorations-in-effect.
   DCHECK(PropertyMissingOrEqualToNone(

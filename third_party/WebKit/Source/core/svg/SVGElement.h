@@ -157,8 +157,8 @@ class CORE_EXPORT SVGElement : public Element {
   virtual bool IsAnimatableAttribute(const QualifiedName&) const;
 #endif
 
-  MutableStylePropertySet* AnimatedSMILStyleProperties() const;
-  MutableStylePropertySet* EnsureAnimatedSMILStyleProperties();
+  MutableCSSPropertyValueSet* AnimatedSMILStyleProperties() const;
+  MutableCSSPropertyValueSet* EnsureAnimatedSMILStyleProperties();
   void SetUseOverrideComputedStyle(bool);
 
   virtual bool HaveLoadedRequiredResources();
@@ -222,9 +222,10 @@ class CORE_EXPORT SVGElement : public Element {
   void ParseAttribute(const AttributeModificationParams&) override;
   void AttributeChanged(const AttributeModificationParams&) override;
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;

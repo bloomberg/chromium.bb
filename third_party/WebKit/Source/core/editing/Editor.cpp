@@ -32,7 +32,7 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/Pasteboard.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementTraversal.h"
@@ -818,7 +818,7 @@ Element* Editor::FindEventTargetFromSelection() const {
       GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated());
 }
 
-void Editor::ApplyStyle(StylePropertySet* style,
+void Editor::ApplyStyle(CSSPropertyValueSet* style,
                         InputEvent::InputType input_type) {
   const VisibleSelection& selection =
       GetFrameSelection().ComputeVisibleSelectionInDOMTreeDeprecated();
@@ -837,7 +837,7 @@ void Editor::ApplyStyle(StylePropertySet* style,
       ->Apply();
 }
 
-void Editor::ApplyParagraphStyle(StylePropertySet* style,
+void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
                                  InputEvent::InputType input_type) {
   if (GetFrame()
           .Selection()
@@ -852,7 +852,7 @@ void Editor::ApplyParagraphStyle(StylePropertySet* style,
       ->Apply();
 }
 
-void Editor::ApplyStyleToSelection(StylePropertySet* style,
+void Editor::ApplyStyleToSelection(CSSPropertyValueSet* style,
                                    InputEvent::InputType input_type) {
   if (!style || style->IsEmpty() || !CanEditRichly())
     return;
@@ -860,7 +860,7 @@ void Editor::ApplyStyleToSelection(StylePropertySet* style,
   ApplyStyle(style, input_type);
 }
 
-void Editor::ApplyParagraphStyleToSelection(StylePropertySet* style,
+void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
                                             InputEvent::InputType input_type) {
   if (!style || style->IsEmpty() || !CanEditRichly())
     return;
@@ -1380,8 +1380,8 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
     return;
   }
 
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(
       CSSPropertyDirection,
       direction == LeftToRightWritingDirection
@@ -1547,7 +1547,7 @@ IntRect Editor::FirstRectForRange(const EphemeralRange& range) const {
       start_caret_rect.Height());
 }
 
-void Editor::ComputeAndSetTypingStyle(StylePropertySet* style,
+void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
                                       InputEvent::InputType input_type) {
   if (!style || style->IsEmpty()) {
     ClearTypingStyle();

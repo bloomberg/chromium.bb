@@ -41,9 +41,10 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
 
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;
 

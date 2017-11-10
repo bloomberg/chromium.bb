@@ -40,9 +40,10 @@ class HTMLFontElement final : public HTMLElement {
   explicit HTMLFontElement(Document&);
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 };
 
 }  // namespace blink

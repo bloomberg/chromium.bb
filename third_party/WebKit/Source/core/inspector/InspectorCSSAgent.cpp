@@ -36,6 +36,7 @@
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSMediaRule.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
@@ -46,7 +47,6 @@
 #include "core/css/MediaValues.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheet.h"
 #include "core/css/StyleSheetContents.h"
@@ -2012,13 +2012,13 @@ InspectorCSSAgent::BuildObjectForAttributesStyle(Element* element) {
     return nullptr;
 
   // FIXME: Ugliness below.
-  StylePropertySet* attribute_style =
-      const_cast<StylePropertySet*>(element->PresentationAttributeStyle());
+  CSSPropertyValueSet* attribute_style =
+      const_cast<CSSPropertyValueSet*>(element->PresentationAttributeStyle());
   if (!attribute_style)
     return nullptr;
 
-  MutableStylePropertySet* mutable_attribute_style =
-      ToMutableStylePropertySet(attribute_style);
+  MutableCSSPropertyValueSet* mutable_attribute_style =
+      ToMutableCSSPropertyValueSet(attribute_style);
 
   InspectorStyle* inspector_style = InspectorStyle::Create(
       mutable_attribute_style->EnsureCSSStyleDeclaration(), nullptr, nullptr);

@@ -191,8 +191,8 @@ class CORE_EXPORT StyleResolverState {
   void SetHasDirAutoAttribute(bool value) { has_dir_auto_attribute_ = value; }
   bool HasDirAutoAttribute() const { return has_dir_auto_attribute_; }
 
-  void SetCustomPropertySetForApplyAtRule(const String&, StylePropertySet*);
-  StylePropertySet* CustomPropertySetForApplyAtRule(const String&);
+  void SetCustomPropertySetForApplyAtRule(const String&, CSSPropertyValueSet*);
+  CSSPropertyValueSet* CustomPropertySetForApplyAtRule(const String&);
 
   HeapHashMap<CSSPropertyID, Member<const CSSValue>>&
   ParsedPropertiesForPendingSubstitutionCache(
@@ -230,7 +230,7 @@ class CORE_EXPORT StyleResolverState {
 
   ElementStyleResources element_style_resources_;
 
-  HeapHashMap<String, Member<StylePropertySet>>
+  HeapHashMap<String, Member<CSSPropertyValueSet>>
       custom_property_sets_for_apply_at_rule_;
 
   mutable HeapHashMap<

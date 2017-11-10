@@ -44,7 +44,7 @@ bool HTMLUListElement::IsPresentationAttribute(
 void HTMLUListElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == typeAttr) {
     if (DeprecatedEqualIgnoringCase(value, "disc"))
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyListStyleType,

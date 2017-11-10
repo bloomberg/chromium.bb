@@ -30,7 +30,7 @@
 
 #include "core/css/resolver/MatchResult.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleRule.h"
 
 namespace blink {
@@ -44,12 +44,12 @@ void MatchedProperties::Trace(blink::Visitor* visitor) {
 }
 
 void MatchResult::AddMatchedProperties(
-    const StylePropertySet* properties,
+    const CSSPropertyValueSet* properties,
     unsigned link_match_type,
     PropertyWhitelistType property_whitelist_type) {
   matched_properties_.Grow(matched_properties_.size() + 1);
   MatchedProperties& new_properties = matched_properties_.back();
-  new_properties.properties = const_cast<StylePropertySet*>(properties);
+  new_properties.properties = const_cast<CSSPropertyValueSet*>(properties);
   new_properties.types_.link_match_type = link_match_type;
   new_properties.types_.whitelist_type = property_whitelist_type;
 }

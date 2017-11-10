@@ -52,7 +52,7 @@ class Document;
 class ExceptionState;
 class FontFaceDescriptors;
 class StringOrArrayBufferOrArrayBufferView;
-class StylePropertySet;
+class CSSPropertyValueSet;
 class StyleRuleFontFace;
 
 class CORE_EXPORT FontFace : public ScriptWrappable,
@@ -151,7 +151,7 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
                              const String&,
                              CSSPropertyID,
                              ExceptionState* = nullptr);
-  bool SetPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
+  bool SetPropertyFromStyle(const CSSPropertyValueSet&, CSSPropertyID);
   bool SetPropertyValue(const CSSValue*, CSSPropertyID);
   bool SetFamilyValue(const CSSValue&);
   ScriptPromise FontStatusPromise(ScriptState*);

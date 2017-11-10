@@ -251,7 +251,7 @@ bool SVGTextContentElement::IsPresentationAttribute(
 void SVGTextContentElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name.Matches(XMLNames::spaceAttr)) {
     DEFINE_STATIC_LOCAL(const AtomicString, preserve_string, ("preserve"));
 

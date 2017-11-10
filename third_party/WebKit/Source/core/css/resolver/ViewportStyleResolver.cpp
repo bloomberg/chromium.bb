@@ -32,11 +32,11 @@
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/DocumentStyleSheetCollection.h"
 #include "core/css/MediaValuesInitialViewport.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
@@ -159,7 +159,7 @@ void ViewportStyleResolver::CollectViewportRulesFromAuthorSheet(
 
 void ViewportStyleResolver::AddViewportRule(StyleRuleViewport& viewport_rule,
                                             Origin origin) {
-  StylePropertySet& property_set = viewport_rule.MutableProperties();
+  CSSPropertyValueSet& property_set = viewport_rule.MutableProperties();
 
   unsigned property_count = property_set.PropertyCount();
   if (!property_count)

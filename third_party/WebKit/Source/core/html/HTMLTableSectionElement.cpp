@@ -44,7 +44,7 @@ inline HTMLTableSectionElement::HTMLTableSectionElement(
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableSectionElement)
 
-const StylePropertySet*
+const CSSPropertyValueSet*
 HTMLTableSectionElement::AdditionalPresentationAttributeStyle() {
   if (HTMLTableElement* table = FindParentTable())
     return table->AdditionalGroupStyle(true);

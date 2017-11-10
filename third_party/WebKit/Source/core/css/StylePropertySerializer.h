@@ -24,20 +24,20 @@
 #ifndef StylePropertySerializer_h
 #define StylePropertySerializer_h
 
-#include "core/css/CSSValueList.h"
-#include "core/css/StylePropertySet.h"
 #include <bitset>
+#include "core/css/CSSPropertyValueSet.h"
+#include "core/css/CSSValueList.h"
 
 namespace blink {
 
-class StylePropertySet;
+class CSSPropertyValueSet;
 class StylePropertyShorthand;
 
 class StylePropertySerializer {
   STACK_ALLOCATED();
 
  public:
-  explicit StylePropertySerializer(const StylePropertySet&);
+  explicit StylePropertySerializer(const CSSPropertyValueSet&);
 
   String AsText() const;
   String GetPropertyValue(CSSPropertyID) const;
@@ -82,7 +82,7 @@ class StylePropertySerializer {
 
    public:
     explicit PropertyValueForSerializer(
-        StylePropertySet::PropertyReference property)
+        CSSPropertyValueSet::PropertyReference property)
         : value_(property.Value()),
           id_(property.Id()),
           is_important_(property.IsImportant()),
@@ -113,11 +113,11 @@ class StylePropertySerializer {
   String GetCustomPropertyText(const PropertyValueForSerializer&,
                                bool is_not_first_decl) const;
 
-  class StylePropertySetForSerializer final {
+  class CSSPropertyValueSetForSerializer final {
     DISALLOW_NEW();
 
    public:
-    explicit StylePropertySetForSerializer(const StylePropertySet&);
+    explicit CSSPropertyValueSetForSerializer(const CSSPropertyValueSet&);
 
     unsigned PropertyCount() const;
     PropertyValueForSerializer PropertyAt(unsigned index) const;
@@ -134,13 +134,13 @@ class StylePropertySerializer {
     }
     bool HasAllProperty() const { return all_index_ != -1; }
 
-    Member<const StylePropertySet> property_set_;
+    Member<const CSSPropertyValueSet> property_set_;
     int all_index_;
     std::bitset<numCSSProperties> longhand_property_used_;
     bool need_to_expand_all_;
   };
 
-  const StylePropertySetForSerializer property_set_;
+  const CSSPropertyValueSetForSerializer property_set_;
 };
 
 }  // namespace blink

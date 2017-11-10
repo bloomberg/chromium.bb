@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutTableCell.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html_names.h"

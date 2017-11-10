@@ -47,9 +47,10 @@ class SVGRectElement final : public SVGGeometryElement {
  private:
   explicit SVGRectElement(Document&);
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
   void SvgAttributeChanged(const QualifiedName&) override;
 
   bool SelfHasRelativeLengths() const override;

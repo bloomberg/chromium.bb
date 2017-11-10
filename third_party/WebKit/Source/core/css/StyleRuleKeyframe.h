@@ -10,13 +10,13 @@
 
 namespace blink {
 
-class MutableStylePropertySet;
-class StylePropertySet;
+class MutableCSSPropertyValueSet;
+class CSSPropertyValueSet;
 
 class StyleRuleKeyframe final : public StyleRuleBase {
  public:
   static StyleRuleKeyframe* Create(std::unique_ptr<Vector<double>> keys,
-                                   StylePropertySet* properties) {
+                                   CSSPropertyValueSet* properties) {
     return new StyleRuleKeyframe(std::move(keys), properties);
   }
 
@@ -27,17 +27,17 @@ class StyleRuleKeyframe final : public StyleRuleBase {
   // Used by StyleResolver.
   const Vector<double>& Keys() const;
 
-  const StylePropertySet& Properties() const { return *properties_; }
-  MutableStylePropertySet& MutableProperties();
+  const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
 
   String CssText() const;
 
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleKeyframe(std::unique_ptr<Vector<double>>, StylePropertySet*);
+  StyleRuleKeyframe(std::unique_ptr<Vector<double>>, CSSPropertyValueSet*);
 
-  Member<StylePropertySet> properties_;
+  Member<CSSPropertyValueSet> properties_;
   Vector<double> keys_;
 };
 
