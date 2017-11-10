@@ -32,6 +32,12 @@ IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
+// static
+BrowserStateKeyedServiceFactory::TestingFactoryFunction
+IOSChromeContentSuggestionsServiceFactory::GetDefaultFactory() {
+  return &ntp_snippets::CreateChromeContentSuggestionsServiceWithProviders;
+}
+
 IOSChromeContentSuggestionsServiceFactory::
     IOSChromeContentSuggestionsServiceFactory()
     : BrowserStateKeyedServiceFactory(
