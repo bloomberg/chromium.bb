@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
+#include "chrome/services/media_gallery_util/public/cpp/safe_media_metadata_parser.h"
 
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/services/media_gallery_util/public/interfaces/constants.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/blob_reader.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 
-namespace metadata {
+namespace chrome {
 
 class SafeMediaMetadataParser::MediaDataSourceImpl
-    : public extensions::mojom::MediaDataSource {
+    : public mojom::MediaDataSource {
  public:
   MediaDataSourceImpl(SafeMediaMetadataParser* owner,
-                      extensions::mojom::MediaDataSourcePtr* interface)
+                      mojom::MediaDataSourcePtr* interface)
       : binding_(this, mojo::MakeRequest(interface)),
         safe_media_metadata_parser_(owner) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -36,7 +36,7 @@ class SafeMediaMetadataParser::MediaDataSourceImpl
                                                   length);
   }
 
-  mojo::Binding<extensions::mojom::MediaDataSource> binding_;
+  mojo::Binding<mojom::MediaDataSource> binding_;
   // |safe_media_metadata_parser_| owns |this|.
   SafeMediaMetadataParser* const safe_media_metadata_parser_;
 
@@ -57,36 +57,37 @@ SafeMediaMetadataParser::SafeMediaMetadataParser(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-void SafeMediaMetadataParser::Start(const DoneCallback& callback) {
+void SafeMediaMetadataParser::Start(service_manager::Connector* connector,
+                                    const DoneCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  std::unique_ptr<service_manager::Connector> connector_ptr =
+      connector->Clone();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeMediaMetadataParser::StartOnIOThread, this,
-                     callback));
+                     base::Passed(&connector_ptr), callback));
 }
 
 SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
 
-void SafeMediaMetadataParser::StartOnIOThread(const DoneCallback& callback) {
+void SafeMediaMetadataParser::StartOnIOThread(
+    std::unique_ptr<service_manager::Connector> connector,
+    const DoneCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!utility_process_mojo_client_);
+  DCHECK(!media_parser_ptr_);
   DCHECK(callback);
 
   callback_ = callback;
 
-  utility_process_mojo_client_ = base::MakeUnique<
-      content::UtilityProcessMojoClient<extensions::mojom::MediaParser>>(
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
-  utility_process_mojo_client_->set_error_callback(
+  connector->BindInterface(chrome::mojom::kMediaGalleryUtilServiceName,
+                           mojo::MakeRequest(&media_parser_ptr_));
+  media_parser_ptr_.set_connection_error_handler(
       base::Bind(&SafeMediaMetadataParser::ParseMediaMetadataFailed, this));
 
-  utility_process_mojo_client_->Start();  // Start the utility process.
-
-  extensions::mojom::MediaDataSourcePtr source;
+  mojom::MediaDataSourcePtr source;
   media_data_source_ = base::MakeUnique<MediaDataSourceImpl>(this, &source);
-
-  utility_process_mojo_client_->service()->ParseMediaMetadata(
+  media_parser_ptr_->ParseMediaMetadata(
       mime_type_, blob_size_, get_attached_images_, std::move(source),
       base::Bind(&SafeMediaMetadataParser::ParseMediaMetadataDone, this));
 }
@@ -94,7 +95,7 @@ void SafeMediaMetadataParser::StartOnIOThread(const DoneCallback& callback) {
 void SafeMediaMetadataParser::ParseMediaMetadataFailed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  utility_process_mojo_client_.reset();  // Terminate the utility process.
+  media_parser_ptr_.reset();  // Terminate the utility process.
   media_data_source_.reset();
 
   std::unique_ptr<base::DictionaryValue> metadata_dictionary =
@@ -111,10 +112,10 @@ void SafeMediaMetadataParser::ParseMediaMetadataFailed() {
 void SafeMediaMetadataParser::ParseMediaMetadataDone(
     bool parse_success,
     std::unique_ptr<base::DictionaryValue> metadata_dictionary,
-    const std::vector<AttachedImage>& attached_images) {
+    const std::vector<metadata::AttachedImage>& attached_images) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  utility_process_mojo_client_.reset();  // Terminate the utility process.
+  media_parser_ptr_.reset();  // Terminate the utility process.
   media_data_source_.reset();
 
   // We need to make a scoped copy of this vector since it will be destroyed
@@ -130,7 +131,7 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
 }
 
 void SafeMediaMetadataParser::StartBlobRequest(
-    extensions::mojom::MediaDataSource::ReadBlobCallback callback,
+    mojom::MediaDataSource::ReadBlobCallback callback,
     int64_t position,
     int64_t length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -142,7 +143,7 @@ void SafeMediaMetadataParser::StartBlobRequest(
 }
 
 void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
-    extensions::mojom::MediaDataSource::ReadBlobCallback callback,
+    mojom::MediaDataSource::ReadBlobCallback callback,
     int64_t position,
     int64_t length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -156,7 +157,7 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
 }
 
 void SafeMediaMetadataParser::BlobReaderDoneOnUIThread(
-    extensions::mojom::MediaDataSource::ReadBlobCallback callback,
+    mojom::MediaDataSource::ReadBlobCallback callback,
     std::unique_ptr<std::string> data,
     int64_t /* blob_total_size */) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -168,12 +169,12 @@ void SafeMediaMetadataParser::BlobReaderDoneOnUIThread(
 }
 
 void SafeMediaMetadataParser::FinishBlobRequest(
-    extensions::mojom::MediaDataSource::ReadBlobCallback callback,
+    mojom::MediaDataSource::ReadBlobCallback callback,
     std::unique_ptr<std::string> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (utility_process_mojo_client_)
+  if (media_parser_ptr_)
     std::move(callback).Run(std::vector<uint8_t>(data->begin(), data->end()));
 }
 
-}  // namespace metadata
+}  // namespace chrome

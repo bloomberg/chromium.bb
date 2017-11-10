@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SUPPORTED_AUDIO_VIDEO_CHECKER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SUPPORTED_AUDIO_VIDEO_CHECKER_H_
 
+#include <memory>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -14,6 +16,10 @@
 
 class MediaFileValidatorFactory;
 class SafeAudioVideoChecker;
+
+namespace service_manager {
+class Connector;
+}
 
 // Uses SafeAudioVideoChecker to validate supported audio and video files in
 // the utility process and then uses AVScanningFileValidator to ask the OS to
@@ -32,7 +38,15 @@ class SupportedAudioVideoChecker : public AVScanningFileValidator {
 
   explicit SupportedAudioVideoChecker(const base::FilePath& file);
 
-  void OnFileOpen(base::File file);
+  static void RetrieveConnectorOnUIThread(
+      base::WeakPtr<SupportedAudioVideoChecker> this_ptr);
+
+  static void OnConnectorRetrieved(
+      base::WeakPtr<SupportedAudioVideoChecker> this_ptr,
+      std::unique_ptr<service_manager::Connector> connector);
+
+  void OnFileOpen(std::unique_ptr<service_manager::Connector> connector,
+                  base::File file);
 
   base::FilePath path_;
   storage::CopyOrMoveFileValidator::ResultCallback callback_;

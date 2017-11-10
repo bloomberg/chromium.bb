@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/media_parser_struct_traits.h"
+#include "chrome/services/media_gallery_util/public/interfaces/media_parser_struct_traits.h"
+
 #include "mojo/public/cpp/bindings/array_data_view.h"
 
 namespace {
 
-using TypeImageDataView = extensions::mojom::AttachedImageDataView;
+using TypeImageDataView = chrome::mojom::AttachedImageDataView;
 using TypeImage = ::metadata::AttachedImage;
 
 }  // namespace

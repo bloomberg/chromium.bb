@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_MEDIA_GALLERIES_MEDIA_METADATA_PARSER_H_
-#define CHROME_UTILITY_MEDIA_GALLERIES_MEDIA_METADATA_PARSER_H_
+#ifndef CHROME_SERVICES_MEDIA_GALLERY_UTIL_MEDIA_METADATA_PARSER_H_
+#define CHROME_SERVICES_MEDIA_GALLERY_UTIL_MEDIA_METADATA_PARSER_H_
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@ namespace media {
 class DataSource;
 }
 
-namespace metadata {
+namespace chrome {
 
 // This class takes a MIME type and data source and parses its metadata. It
 // handles audio, video, and images. It delegates its operations to FFMPEG.
@@ -31,10 +31,10 @@ namespace metadata {
 class MediaMetadataParser {
  public:
   typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;
-  typedef base::Callback<
-      void(const MediaMetadata& metadata,
-           const std::vector<AttachedImage>& attached_images)>
-  MetadataCallback;
+  typedef base::Callback<void(
+      const MediaMetadata& metadata,
+      const std::vector<metadata::AttachedImage>& attached_images)>
+      MetadataCallback;
 
   MediaMetadataParser(std::unique_ptr<media::DataSource> source,
                       const std::string& mime_type,
@@ -62,6 +62,6 @@ class MediaMetadataParser {
   DISALLOW_COPY_AND_ASSIGN(MediaMetadataParser);
 };
 
-}  // namespace metadata
+}  // namespace chrome
 
-#endif  // CHROME_UTILITY_MEDIA_GALLERIES_MEDIA_METADATA_PARSER_H_
+#endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_MEDIA_METADATA_PARSER_H_

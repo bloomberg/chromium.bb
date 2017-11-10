@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/media_galleries/ipc_data_source.h"
+#include "chrome/services/media_gallery_util/ipc_data_source.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/utility/utility_thread.h"
 
-namespace metadata {
+namespace chrome {
 
 IPCDataSource::IPCDataSource(
-    extensions::mojom::MediaDataSourcePtr media_data_source,
+    chrome::mojom::MediaDataSourcePtr media_data_source,
     int64_t total_size)
     : media_data_source_(std::move(media_data_source)),
       total_size_(total_size),
       utility_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  data_source_thread_checker_.DetachFromThread();
+  DETACH_FROM_THREAD(data_source_thread_checker_);
 }
 
 IPCDataSource::~IPCDataSource() {
-  DCHECK(utility_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
 }
 
 void IPCDataSource::Stop() {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
 }
 
 void IPCDataSource::Abort() {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
 }
 
 void IPCDataSource::Read(int64_t position,
                          int size,
                          uint8_t* destination,
                          const DataSource::ReadCB& callback) {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
 
   utility_task_runner_->PostTask(
       FROM_HERE,
@@ -43,25 +43,25 @@ void IPCDataSource::Read(int64_t position,
 }
 
 bool IPCDataSource::GetSize(int64_t* size_out) {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
   *size_out = total_size_;
   return true;
 }
 
 bool IPCDataSource::IsStreaming() {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
   return false;
 }
 
 void IPCDataSource::SetBitrate(int bitrate) {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(data_source_thread_checker_);
 }
 
 void IPCDataSource::ReadBlob(uint8_t* destination,
                              const DataSource::ReadCB& callback,
                              int64_t position,
                              int size) {
-  DCHECK(utility_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
   CHECK_GE(total_size_, 0);
   CHECK_GE(position, 0);
   CHECK_GE(size, 0);
@@ -80,10 +80,10 @@ void IPCDataSource::ReadBlob(uint8_t* destination,
 void IPCDataSource::ReadDone(uint8_t* destination,
                              const DataSource::ReadCB& callback,
                              const std::vector<uint8_t>& data) {
-  DCHECK(utility_thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(utility_thread_checker_);
 
   std::copy(data.begin(), data.end(), destination);
   callback.Run(data.size());
 }
 
-}  // namespace metadata
+}  // namespace chrome

@@ -115,13 +115,10 @@ static_library("utility") {
       "image_writer/image_writer_handler.h",
       "image_writer/image_writer_mac.cc",
       "image_writer/image_writer_win.cc",
-      "media_galleries/ipc_data_source.cc",
-      "media_galleries/ipc_data_source.h",
-      "media_galleries/media_metadata_parser.cc",
-      "media_galleries/media_metadata_parser.h",
     ]
     deps += [
       "//chrome/common/extensions/api",
+      "//chrome/services/media_gallery_util:lib",
       "//extensions/utility",
     ]
 
