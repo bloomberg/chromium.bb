@@ -28,6 +28,7 @@ class InstallAttributes;
 
 namespace attestation {
 class AttestationPolicyObserver;
+class EnrollmentPolicyObserver;
 }
 }
 
@@ -174,6 +175,8 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // PrefService instance to read the policy refresh rate from.
   PrefService* local_state_;
 
+  std::unique_ptr<chromeos::attestation::EnrollmentPolicyObserver>
+      enrollment_policy_observer_;
   std::unique_ptr<chromeos::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
 
