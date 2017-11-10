@@ -507,6 +507,7 @@ post_process_cmdline() {
       soft_enable new_multisymbol
 
       # Provisional adopted
+      soft_enable q_adapt_probs
       soft_enable reference_buffer
       soft_enable palette_throughput
       soft_enable tempmv_signaling
