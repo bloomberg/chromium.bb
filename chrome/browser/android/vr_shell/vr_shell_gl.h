@@ -139,7 +139,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
                              const gfx::Vector3dF& head_direction);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
-  void CreateUiSurface();
 
   void OnContentFrameAvailable();
   void OnWebVRFrameAvailable();
