@@ -40,6 +40,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -98,6 +99,31 @@ namespace {
 // page.  All events that occur during this period are grouped together and
 // sent to the page at once, which reduces context switching and CPU usage.
 const int kNetLogEventDelayMilliseconds = 100;
+
+// A Base-64 encoded DER certificate for use in test Expect-CT reports. The
+// contents of the certificate don't matter.
+const char kTestReportCert[] =
+    "MIIDvzCCAqegAwIBAgIBAzANBgkqhkiG9w0BAQsFADBjMQswCQYDVQQGEwJVUzET"
+    "MBEGA1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNTW91bnRhaW4gVmlldzEQMA4G"
+    "A1UECgwHVGVzdCBDQTEVMBMGA1UEAwwMVGVzdCBSb290IENBMB4XDTE3MDYwNTE3"
+    "MTA0NloXDTI3MDYwMzE3MTA0NlowYDELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNh"
+    "bGlmb3JuaWExFjAUBgNVBAcMDU1vdW50YWluIFZpZXcxEDAOBgNVBAoMB1Rlc3Qg"
+    "Q0ExEjAQBgNVBAMMCTEyNy4wLjAuMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC"
+    "AQoCggEBALS/0pcz5RNbd2W9cxp1KJtHWea3MOhGM21YW9ofCv/k5C3yHfiJ6GQu"
+    "9sPN16OO1/fN59gOEMPnVtL85ebTTuL/gk0YY4ewo97a7wo3e6y1t0PO8gc53xTp"
+    "w6RBPn5oRzSbe2HEGOYTzrO0puC6A+7k6+eq9G2+l1uqBpdQAdB4uNaSsOTiuUOI"
+    "ta4UZH1ScNQFHAkl1eJPyaiC20Exw75EbwvU/b/B7tlivzuPtQDI0d9dShOtceRL"
+    "X9HZckyD2JNAv2zNL2YOBNa5QygkySX9WXD+PfKpCk7Cm8TenldeXRYl5ni2REkp"
+    "nfa/dPuF1g3xZVjyK9aPEEnIAC2I4i0CAwEAAaOBgDB+MAwGA1UdEwEB/wQCMAAw"
+    "HQYDVR0OBBYEFODc4C8HiHQ6n9Mwo3GK+dal5aZTMB8GA1UdIwQYMBaAFJsmC4qY"
+    "qbsduR8c4xpAM+2OF4irMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAP"
+    "BgNVHREECDAGhwR/AAABMA0GCSqGSIb3DQEBCwUAA4IBAQB6FEQuUDRcC5jkX3aZ"
+    "uuTeZEqMVL7JXgvgFqzXsPb8zIdmxr/tEDfwXx2qDf2Dpxts7Fq4vqUwimK4qV3K"
+    "7heLnWV2+FBvV1eeSfZ7AQj+SURkdlyo42r41+t13QUf+Z0ftR9266LSWLKrukeI"
+    "Mxk73hOkm/u8enhTd00dy/FN9dOFBFHseVMspWNxIkdRILgOmiyfQNRgxNYdOf0e"
+    "EfELR8Hn6WjZ8wAbvO4p7RTrzu1c/RZ0M+NLkID56Brbl70GC2h5681LPwAOaZ7/"
+    "mWQ5kekSyJjmLfF12b+h9RVAt5MrXZgk2vNujssgGf4nbWh4KZyQ6qrs778ZdDLm"
+    "yfUn";
 
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
@@ -281,6 +307,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnHSTSAdd(const base::ListValue* list);
   void OnExpectCTQuery(const base::ListValue* list);
   void OnExpectCTAdd(const base::ListValue* list);
+  void OnExpectCTTestReport(const base::ListValue* list);
   void OnCloseIdleSockets(const base::ListValue* list);
   void OnFlushSocketPools(const base::ListValue* list);
 #if defined(OS_WIN)
@@ -357,6 +384,13 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Duplicates are allowed.
   ContextGetterList context_getters_;
 
+  // Used to send test Expect-CT reports. Lazily initialized when the first
+  // Expect-CT test report is sent. This is a member variable rather than a
+  // local variable so that it lives long enough to receive the result of
+  // sending a report, which is delivered to the JavaScript via a JavaScript
+  // command.
+  std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
+
   DISALLOW_COPY_AND_ASSIGN(IOThreadImpl);
 };
 
@@ -426,6 +460,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "expectCTAdd", base::Bind(&IOThreadImpl::CallbackHelper,
                                 &IOThreadImpl::OnExpectCTAdd, proxy_));
+  web_ui()->RegisterMessageCallback(
+      "expectCTTestReport",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnExpectCTTestReport, proxy_));
   web_ui()->RegisterMessageCallback(
       "closeIdleSockets",
       base::Bind(&IOThreadImpl::CallbackHelper,
@@ -876,6 +914,44 @@ void NetInternalsMessageHandler::IOThreadImpl::OnExpectCTAdd(
   base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
   transport_security_state->AddExpectCT(domain, expiry, enforce,
                                         GURL(report_uri_str));
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnExpectCTTestReport(
+    const base::ListValue* list) {
+  // |list| should be: [<report URI>].
+  std::string report_uri_str;
+  bool result = list->GetString(0, &report_uri_str);
+  DCHECK(result);
+  GURL report_uri(report_uri_str);
+  if (!report_uri.is_valid())
+    return;
+
+  std::string decoded_dummy_cert;
+  DCHECK(base::Base64Decode(kTestReportCert, &decoded_dummy_cert));
+  scoped_refptr<net::X509Certificate> dummy_cert =
+      net::X509Certificate::CreateFromBytes(decoded_dummy_cert.data(),
+                                            decoded_dummy_cert.size());
+  net::SignedCertificateTimestampAndStatusList dummy_sct_list;
+
+  if (!expect_ct_reporter_) {
+    std::unique_ptr<base::Value> success =
+        base::MakeUnique<base::Value>("success");
+    std::unique_ptr<base::Value> failure =
+        base::MakeUnique<base::Value>("failure");
+    expect_ct_reporter_ = base::MakeUnique<ChromeExpectCTReporter>(
+        GetMainContext(),
+        base::Bind(
+            &NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand,
+            this, "receivedExpectCTTestReportResult", base::Passed(&success)),
+        base::Bind(
+            &NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand,
+            this, "receivedExpectCTTestReportResult", base::Passed(&failure)));
+  }
+
+  // Send a test report with dummy data.
+  expect_ct_reporter_->OnExpectCTFailed(
+      net::HostPortPair("expect-ct-report.test", 443), report_uri,
+      base::Time::Now(), dummy_cert.get(), dummy_cert.get(), dummy_sct_list);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnFlushSocketPools(
