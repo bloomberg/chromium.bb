@@ -711,6 +711,7 @@
 
     'tryserver.chromium.win': {
       'win7_chromium_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
+      'win7_chromium_rel_loc_exp': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'win10_chromium_x64_rel_ng': 'release_trybot',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
