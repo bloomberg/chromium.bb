@@ -32,7 +32,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static BrowserGpuChannelHostFactory* instance() { return instance_; }
 
   // Overridden from gpu::GpuChannelHostFactory:
-  bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
@@ -68,7 +67,6 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
   const int gpu_client_id_;
   const uint64_t gpu_client_tracing_id_;
-  std::unique_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::unique_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   scoped_refptr<EstablishRequest> pending_request_;

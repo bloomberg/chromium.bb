@@ -35,9 +35,7 @@ Gpu::Gpu(GpuPtrFactory factory,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
-      factory_(std::move(factory)),
-      shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
+      factory_(std::move(factory)) {
   DCHECK(main_task_runner_);
   gpu_memory_buffer_manager_ =
       base::MakeUnique<ClientGpuMemoryBufferManager>(factory_.Run());
@@ -51,8 +49,7 @@ Gpu::Gpu(GpuPtrFactory factory,
 }
 
 Gpu::~Gpu() {
-  DCHECK(IsMainThread());
-  shutdown_event_.Signal();
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (gpu_channel_)
     gpu_channel_->DestroyChannel();
 }
@@ -93,7 +90,7 @@ scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(
 
 void Gpu::CreateJpegDecodeAccelerator(
     media::mojom::GpuJpegDecodeAcceleratorRequest jda_request) {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (!gpu_ || !gpu_.is_bound())
     gpu_ = factory_.Run();
   gpu_->CreateJpegDecodeAccelerator(std::move(jda_request));
@@ -101,7 +98,7 @@ void Gpu::CreateJpegDecodeAccelerator(
 
 void Gpu::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (!gpu_ || !gpu_.is_bound())
     gpu_ = factory_.Run();
   gpu_->CreateVideoEncodeAcceleratorProvider(std::move(vea_provider_request));
@@ -109,7 +106,7 @@ void Gpu::CreateVideoEncodeAcceleratorProvider(
 
 void Gpu::EstablishGpuChannel(
     const gpu::GpuChannelEstablishedCallback& callback) {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   scoped_refptr<gpu::GpuChannelHost> channel = GetGpuChannel();
   if (channel) {
     callback.Run(std::move(channel));
@@ -130,7 +127,7 @@ void Gpu::EstablishGpuChannel(
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::EstablishGpuChannelSync(
     bool* connection_error) {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (connection_error)
     *connection_error = false;
   if (GetGpuChannel())
@@ -161,7 +158,7 @@ gpu::GpuMemoryBufferManager* Gpu::GetGpuMemoryBufferManager() {
 }
 
 scoped_refptr<gpu::GpuChannelHost> Gpu::GetGpuChannel() {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (gpu_channel_ && gpu_channel_->IsLost()) {
     gpu_channel_->DestroyChannel();
     gpu_channel_ = nullptr;
@@ -173,14 +170,13 @@ void Gpu::OnEstablishedGpuChannel(int client_id,
                                   mojo::ScopedMessagePipeHandle channel_handle,
                                   const gpu::GPUInfo& gpu_info,
                                   const gpu::GpuFeatureInfo& gpu_feature_info) {
-  DCHECK(IsMainThread());
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(gpu_.get());
   DCHECK(!gpu_channel_);
 
   if (client_id && channel_handle.is_valid()) {
-    gpu_channel_ = gpu::GpuChannelHost::Create(
-        this, client_id, gpu_info, gpu_feature_info,
-        IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,
+    gpu_channel_ = base::MakeRefCounted<gpu::GpuChannelHost>(
+        this, client_id, gpu_info, gpu_feature_info, std::move(channel_handle),
         gpu_memory_buffer_manager_.get());
   }
 
@@ -188,10 +184,6 @@ void Gpu::OnEstablishedGpuChannel(int client_id,
   establish_callbacks_.clear();
   for (const auto& callback : callbacks)
     callback.Run(gpu_channel_);
-}
-
-bool Gpu::IsMainThread() {
-  return main_task_runner_->BelongsToCurrentThread();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> Gpu::GetIOThreadTaskRunner() {

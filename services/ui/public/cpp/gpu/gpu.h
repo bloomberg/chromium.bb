@@ -70,7 +70,6 @@ class Gpu : public gpu::GpuChannelHostFactory,
                                const gpu::GpuFeatureInfo& gpu_feature_info);
 
   // gpu::GpuChannelHostFactory overrides:
-  bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
@@ -78,7 +77,6 @@ class Gpu : public gpu::GpuChannelHostFactory,
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   GpuPtrFactory factory_;
-  base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
