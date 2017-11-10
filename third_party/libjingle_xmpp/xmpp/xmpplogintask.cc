@@ -84,7 +84,7 @@ XmppLoginTask::Advance() {
     const XmlElement * element = NULL;
 
 #if !defined(NDEBUG)
-    LOG(LS_VERBOSE) << "XmppLoginTask::Advance - "
+    RTC_LOG(LS_VERBOSE) << "XmppLoginTask::Advance - "
       << rtc::ErrorName(state_, LOGINTASK_STATES);
 #endif
 
