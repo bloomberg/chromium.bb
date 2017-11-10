@@ -5,7 +5,11 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 dictionary CookieStoreSetOptions {
-  // TODO(crbug.com/729800): Implement the other members in the specification.
-
+  USVString name;
+  USVString value;
   DOMTimeStamp? expires = null;
+  USVString domain;
+  USVString path = "/";
+  boolean? secure;
+  boolean httpOnly = false;
 };

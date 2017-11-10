@@ -89,15 +89,6 @@ class RestrictedCookieManagerTest : public testing::Test {
   }
   ~RestrictedCookieManagerTest() override {}
 
-  void SetUp() override {
-    CHECK(SetCanonicalCookie(
-        net::CanonicalCookie(
-            "answer", "42", "example.com", "/", base::Time(), base::Time(),
-            base::Time(), /* secure = */ false, /* httponly = */ false,
-            net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
-        true, true));
-  }
-
   // Set a canonical cookie directly into the store.
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           bool secure_source,
@@ -110,6 +101,23 @@ class RestrictedCookieManagerTest : public testing::Test {
                        base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result();
+  }
+
+  // Simplified helper for SetCanonicalCookie.
+  //
+  // Creates a CanonicalCookie that is not secure, not http-only,
+  // and not restricted to first parties. Crashes if the creation fails.
+  void SetSessionCookie(const char* name,
+                        const char* value,
+                        const char* domain,
+                        const char* path) {
+    CHECK(SetCanonicalCookie(
+        net::CanonicalCookie(name, value, domain, path, base::Time(),
+                             base::Time(), base::Time(), /* secure = */ false,
+                             /* httponly = */ false,
+                             net::CookieSameSite::NO_RESTRICTION,
+                             net::COOKIE_PRIORITY_DEFAULT),
+        /* secure_source = */ true, /* can_modify_httponly = */ true));
   }
 
  protected:
@@ -130,27 +138,11 @@ bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
 
 }  // anonymous namespace
 
-TEST_F(RestrictedCookieManagerTest, GetAllForUrl) {
-  auto options = network::mojom::CookieManagerGetOptions::New();
-  options->name = "";
-  options->match_type = network::mojom::CookieMatchType::STARTS_WITH;
-  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-      GURL("http://example.com/test/"), GURL("http://example.com"),
-      std::move(options));
-
-  ASSERT_EQ(1u, cookies.size());
-
-  EXPECT_EQ("answer", cookies[0].Name());
-  EXPECT_EQ("42", cookies[0].Value());
-}
-
-TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
-  EXPECT_TRUE(sync_service_->SetCanonicalCookie(
-      net::CanonicalCookie(
-          "foo", "bar", "example.com", "/", base::Time(), base::Time(),
-          base::Time(), /* secure = */ false, /* httponly = */ false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
-      GURL("http://example.com/test/"), GURL("http://example.com")));
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlBlankFilter) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/");
+  SetSessionCookie("other-cookie-name", "other-cookie-value", "not-example.com",
+                   "/");
 
   auto options = network::mojom::CookieManagerGetOptions::New();
   options->name = "";
@@ -162,11 +154,87 @@ TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
   ASSERT_EQ(2u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
 
-  EXPECT_EQ("answer", cookies[0].Name());
-  EXPECT_EQ("42", cookies[0].Value());
+  EXPECT_EQ("cookie-name", cookies[0].Name());
+  EXPECT_EQ("cookie-value", cookies[0].Value());
 
-  EXPECT_EQ("foo", cookies[1].Name());
-  EXPECT_EQ("bar", cookies[1].Value());
+  EXPECT_EQ("cookie-name-2", cookies[1].Name());
+  EXPECT_EQ("cookie-value-2", cookies[1].Value());
+}
+
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlEmptyFilter) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+
+  auto options = network::mojom::CookieManagerGetOptions::New();
+  options->name = "";
+  options->match_type = network::mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+
+  ASSERT_EQ(0u, cookies.size());
+  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
+}
+
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlEqualsMatch) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/");
+
+  auto options = network::mojom::CookieManagerGetOptions::New();
+  options->name = "cookie-name";
+  options->match_type = network::mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+
+  ASSERT_EQ(1u, cookies.size());
+
+  EXPECT_EQ("cookie-name", cookies[0].Name());
+  EXPECT_EQ("cookie-value", cookies[0].Value());
+}
+
+TEST_F(RestrictedCookieManagerTest, GetAllForUrlStartsWithMatch) {
+  SetSessionCookie("cookie-name", "cookie-value", "example.com", "/");
+  SetSessionCookie("cookie-name-2", "cookie-value-2", "example.com", "/");
+  SetSessionCookie("cookie-name-2b", "cookie-value-2b", "example.com", "/");
+  SetSessionCookie("cookie-name-3b", "cookie-value-3b", "example.com", "/");
+
+  auto options = network::mojom::CookieManagerGetOptions::New();
+  options->name = "cookie-name-2";
+  options->match_type = network::mojom::CookieMatchType::STARTS_WITH;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+
+  ASSERT_EQ(2u, cookies.size());
+  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
+
+  EXPECT_EQ("cookie-name-2", cookies[0].Name());
+  EXPECT_EQ("cookie-value-2", cookies[0].Value());
+
+  EXPECT_EQ("cookie-name-2b", cookies[1].Name());
+  EXPECT_EQ("cookie-value-2b", cookies[1].Value());
+}
+
+TEST_F(RestrictedCookieManagerTest, SetCanonicalCookie) {
+  EXPECT_TRUE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "new-name", "new-value", "example.com", "/", base::Time(),
+          base::Time(), base::Time(), /* secure = */ false,
+          /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_DEFAULT),
+      GURL("http://example.com/test/"), GURL("http://example.com")));
+
+  auto options = network::mojom::CookieManagerGetOptions::New();
+  options->name = "new-name";
+  options->match_type = network::mojom::CookieMatchType::EQUALS;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      GURL("http://example.com/test/"), GURL("http://example.com"),
+      std::move(options));
+
+  ASSERT_EQ(1u, cookies.size());
+
+  EXPECT_EQ("new-name", cookies[0].Name());
+  EXPECT_EQ("new-value", cookies[0].Value());
 }
 
 }  // namespace content
