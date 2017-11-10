@@ -116,11 +116,13 @@ class SSLClientSocketPoolTest : public testing::Test {
         http_proxy_socket_params_(
             new HttpProxySocketParams(proxy_transport_socket_params_,
                                       NULL,
+                                      QUIC_VERSION_UNSUPPORTED,
                                       std::string(),
                                       HostPortPair("host", 80),
                                       session_->http_auth_cache(),
                                       session_->http_auth_handler_factory(),
                                       session_->spdy_session_pool(),
+                                      session_->quic_stream_factory(),
                                       true,
                                       NULL)),
         http_proxy_socket_pool_(kMaxSockets,

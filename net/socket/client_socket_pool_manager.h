@@ -114,6 +114,7 @@ int InitSocketHandleForHttpRequest(
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
     bool expect_spdy,
+    QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,

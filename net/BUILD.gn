@@ -4805,6 +4805,7 @@ test("net_unittests") {
     "http/http_network_transaction_ssl_unittest.cc",
     "http/http_network_transaction_unittest.cc",
     "http/http_proxy_client_socket_pool_unittest.cc",
+    "http/http_proxy_client_socket_wrapper_unittest.cc",
     "http/http_request_headers_unittest.cc",
     "http/http_response_body_drainer_unittest.cc",
     "http/http_response_headers_unittest.cc",

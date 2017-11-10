@@ -173,14 +173,11 @@ class HttpProxyClientSocketPoolTest
       bool tunnel,
       ProxyDelegate* proxy_delegate) {
     return scoped_refptr<HttpProxySocketParams>(new HttpProxySocketParams(
-        CreateHttpProxyParams(),
-        CreateHttpsProxyParams(),
-        std::string(),
+        CreateHttpProxyParams(), CreateHttpsProxyParams(),
+        QUIC_VERSION_UNSUPPORTED, std::string(),
         HostPortPair("www.google.com", tunnel ? 443 : 80),
-        session_->http_auth_cache(),
-        session_->http_auth_handler_factory(),
-        session_->spdy_session_pool(),
-        tunnel,
+        session_->http_auth_cache(), session_->http_auth_handler_factory(),
+        session_->spdy_session_pool(), session_->quic_stream_factory(), tunnel,
         proxy_delegate));
   }
 

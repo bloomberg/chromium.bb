@@ -20,6 +20,7 @@
 #include "net/http/http_auth_controller.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/log/net_log_with_source.h"
+#include "net/quic/chromium/quic_stream_factory.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
@@ -40,8 +41,8 @@ class SSLClientSocketPool;
 class TransportClientSocketPool;
 
 // Class that establishes connections by calling into the lower layer socket
-// pools, creates a HttpProxyClientSocket / SpdyProxyClientSocket, and then
-// wraps the resulting socket.
+// pools, creates a HttpProxyClientSocket, SpdyProxyClientSocket, or
+// QuicProxyClientSocket, and then wraps the resulting socket.
 //
 // This class is needed to handle auth state across multiple connection.  On
 // auth challenge, this class retains auth state in its AuthController, and can
@@ -50,7 +51,8 @@ class TransportClientSocketPool;
 //
 // TODO(mmenke): Ideally, we'd have a central location store auth state across
 // multiple connections to the same server instead.
-class HttpProxyClientSocketWrapper : public ProxyClientSocket {
+class NET_EXPORT_PRIVATE HttpProxyClientSocketWrapper
+    : public ProxyClientSocket {
  public:
   HttpProxyClientSocketWrapper(
       const std::string& group_name,
@@ -62,11 +64,13 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
       SSLClientSocketPool* ssl_pool,
       const scoped_refptr<TransportSocketParams>& transport_params,
       const scoped_refptr<SSLSocketParams>& ssl_params,
+      QuicTransportVersion quic_version,
       const std::string& user_agent,
       const HostPortPair& endpoint,
       HttpAuthCache* http_auth_cache,
       HttpAuthHandlerFactory* http_auth_handler_factory,
       SpdySessionPool* spdy_session_pool,
+      QuicStreamFactory* quic_stream_factory,
       bool tunnel,
       ProxyDelegate* proxy_delegate,
       const NetLogWithSource& net_log);
@@ -117,6 +121,8 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
 
+  NetErrorDetails* quic_net_error_details() { return &quic_net_error_details_; }
+
  private:
   enum State {
     STATE_BEGIN_CONNECT,
@@ -128,7 +134,9 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
     STATE_HTTP_PROXY_CONNECT_COMPLETE,
     STATE_SPDY_PROXY_CREATE_STREAM,
     STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE,
-    STATE_SPDY_PROXY_CONNECT_COMPLETE,
+    STATE_QUIC_PROXY_CREATE_SESSION,
+    STATE_QUIC_PROXY_CREATE_STREAM,
+    STATE_QUIC_PROXY_CREATE_STREAM_COMPLETE,
     STATE_RESTART_WITH_AUTH,
     STATE_RESTART_WITH_AUTH_COMPLETE,
     STATE_NONE,
@@ -154,6 +162,10 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
   int DoSpdyProxyCreateStream();
   int DoSpdyProxyCreateStreamComplete(int result);
 
+  int DoQuicProxyCreateSession();
+  int DoQuicProxyCreateStream(int result);
+  int DoQuicProxyCreateStreamComplete(int result);
+
   int DoRestartWithAuth();
   int DoRestartWithAuthComplete(int result);
 
@@ -176,6 +188,8 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
   SSLClientSocketPool* const ssl_pool_;
   const scoped_refptr<TransportSocketParams> transport_params_;
   const scoped_refptr<SSLSocketParams> ssl_params_;
+
+  QuicTransportVersion quic_version_;
 
   const std::string user_agent_;
   const HostPortPair endpoint_;
@@ -200,9 +214,14 @@ class HttpProxyClientSocketWrapper : public ProxyClientSocket {
 
   SpdyStreamRequest spdy_stream_request_;
 
+  QuicStreamRequest quic_stream_request_;
+  std::unique_ptr<QuicChromiumClientSession::Handle> quic_session_;
+
   scoped_refptr<HttpAuthController> http_auth_controller_;
 
   NetLogWithSource net_log_;
+
+  NetErrorDetails quic_net_error_details_;
 
   base::OneShotTimer connect_timer_;
 

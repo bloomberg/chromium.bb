@@ -71,6 +71,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
                          HttpNetworkSession* session,
                          const ProxyInfo& proxy_info,
                          bool expect_spdy,
+                         QuicTransportVersion quic_version,
                          const SSLConfig& ssl_config_for_origin,
                          const SSLConfig& ssl_config_for_proxy,
                          bool force_tunnel,
@@ -162,16 +163,21 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
             ssl_combine_connect_and_write_policy);
         // Set ssl_params, and unset proxy_tcp_params
         ssl_params =
-            new SSLSocketParams(proxy_tcp_params, NULL, NULL,
-                                *proxy_host_port.get(), ssl_config_for_proxy,
-                                PRIVACY_MODE_DISABLED, load_flags, expect_spdy);
+            new SSLSocketParams(proxy_tcp_params, NULL, NULL, *proxy_host_port,
+                                ssl_config_for_proxy, PRIVACY_MODE_DISABLED,
+                                load_flags, expect_spdy);
         proxy_tcp_params = NULL;
       }
 
+      // TODO (wangyix): QUIC_VERSION_UNSUPPORTED will be passed in
+      // |http_proxy_params| for now to avoid creating a QUIC proxy, which is
+      // not ready yet. Eventually, |quic_version| should be passed in if doing
+      // a QUIC proxy.
       http_proxy_params = new HttpProxySocketParams(
-          proxy_tcp_params, ssl_params, user_agent, origin_host_port,
-          session->http_auth_cache(), session->http_auth_handler_factory(),
-          session->spdy_session_pool(), force_tunnel || using_ssl,
+          proxy_tcp_params, ssl_params, QUIC_VERSION_UNSUPPORTED, user_agent,
+          origin_host_port, session->http_auth_cache(),
+          session->http_auth_handler_factory(), session->spdy_session_pool(),
+          session->quic_stream_factory(), force_tunnel || using_ssl,
           session->context().proxy_delegate);
     } else {
       DCHECK(proxy_info.is_socks());
@@ -343,6 +349,7 @@ int InitSocketHandleForHttpRequest(
     HttpNetworkSession* session,
     const ProxyInfo& proxy_info,
     bool expect_spdy,
+    QuicTransportVersion quic_version,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
@@ -353,10 +360,11 @@ int InitSocketHandleForHttpRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, expect_spdy, ssl_config_for_origin,
-      ssl_config_for_proxy, /*force_tunnel=*/false, privacy_mode, net_log, 0,
-      socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      resolution_callback, callback, HttpRequestInfo::NORMAL_MOTIVATION);
+      request_priority, session, proxy_info, expect_spdy, quic_version,
+      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/false,
+      privacy_mode, net_log, 0, socket_handle,
+      HttpNetworkSession::NORMAL_SOCKET_POOL, resolution_callback, callback,
+      HttpRequestInfo::NORMAL_MOTIVATION);
 }
 
 int InitSocketHandleForWebSocketRequest(
@@ -378,10 +386,11 @@ int InitSocketHandleForWebSocketRequest(
   DCHECK(socket_handle);
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, expect_spdy, ssl_config_for_origin,
-      ssl_config_for_proxy, /*force_tunnel=*/true, privacy_mode, net_log, 0,
-      socket_handle, HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
-      resolution_callback, callback, HttpRequestInfo::NORMAL_MOTIVATION);
+      request_priority, session, proxy_info, expect_spdy,
+      QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin, ssl_config_for_proxy,
+      /*force_tunnel=*/true, privacy_mode, net_log, 0, socket_handle,
+      HttpNetworkSession::WEBSOCKET_SOCKET_POOL, resolution_callback, callback,
+      HttpRequestInfo::NORMAL_MOTIVATION);
 }
 
 int InitSocketHandleForRawConnect(const HostPortPair& host_port_pair,
@@ -400,8 +409,9 @@ int InitSocketHandleForRawConnect(const HostPortPair& host_port_pair,
   return InitSocketPoolHelper(
       ClientSocketPoolManager::NORMAL_GROUP, host_port_pair,
       request_extra_headers, request_load_flags, request_priority, session,
-      proxy_info, false, ssl_config_for_origin, ssl_config_for_proxy,
-      /*force_tunnel=*/true, privacy_mode, net_log, 0, socket_handle,
+      proxy_info, /*expect_spdy=*/false, QUIC_VERSION_UNSUPPORTED,
+      ssl_config_for_origin, ssl_config_for_proxy, /*force_tunnel=*/true,
+      privacy_mode, net_log, 0, socket_handle,
       HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
       callback, HttpRequestInfo::NORMAL_MOTIVATION);
 }
@@ -422,10 +432,10 @@ int InitSocketHandleForTlsConnect(const HostPortPair& endpoint,
   return InitSocketPoolHelper(
       ClientSocketPoolManager::SSL_GROUP, endpoint, request_extra_headers,
       request_load_flags, request_priority, session, proxy_info,
-      /*expect_spdy=*/false, ssl_config_for_origin, ssl_config_for_proxy,
-      /*force_tunnel=*/true, privacy_mode, net_log, 0, socket_handle,
-      HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
-      callback, HttpRequestInfo::NORMAL_MOTIVATION);
+      /*expect_spdy=*/false, QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin,
+      ssl_config_for_proxy, /*force_tunnel=*/true, privacy_mode, net_log, 0,
+      socket_handle, HttpNetworkSession::NORMAL_SOCKET_POOL,
+      OnHostResolutionCallback(), callback, HttpRequestInfo::NORMAL_MOTIVATION);
 }
 
 int PreconnectSocketsForHttpRequest(
@@ -445,10 +455,11 @@ int PreconnectSocketsForHttpRequest(
     HttpRequestInfo::RequestMotivation motivation) {
   return InitSocketPoolHelper(
       group_type, endpoint, request_extra_headers, request_load_flags,
-      request_priority, session, proxy_info, expect_spdy, ssl_config_for_origin,
-      ssl_config_for_proxy, /*force_tunnel=*/false, privacy_mode, net_log,
-      num_preconnect_streams, NULL, HttpNetworkSession::NORMAL_SOCKET_POOL,
-      OnHostResolutionCallback(), CompletionCallback(), motivation);
+      request_priority, session, proxy_info, expect_spdy,
+      QUIC_VERSION_UNSUPPORTED, ssl_config_for_origin, ssl_config_for_proxy,
+      /*force_tunnel=*/false, privacy_mode, net_log, num_preconnect_streams,
+      NULL, HttpNetworkSession::NORMAL_SOCKET_POOL, OnHostResolutionCallback(),
+      CompletionCallback(), motivation);
 }
 
 }  // namespace net
