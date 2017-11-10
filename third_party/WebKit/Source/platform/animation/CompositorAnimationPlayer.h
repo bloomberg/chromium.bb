@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_player.h"
+#include "cc/animation/scroll_timeline.h"
 #include "cc/animation/worklet_animation_player.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
@@ -21,6 +22,8 @@ class AnimationCurve;
 
 namespace blink {
 
+using CompositorScrollTimeline = cc::ScrollTimeline;
+
 class CompositorAnimation;
 class CompositorAnimationDelegate;
 
@@ -31,7 +34,8 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
  public:
   static std::unique_ptr<CompositorAnimationPlayer> Create();
   static std::unique_ptr<CompositorAnimationPlayer> CreateWorkletPlayer(
-      const String& name);
+      const String& name,
+      std::unique_ptr<CompositorScrollTimeline>);
 
   explicit CompositorAnimationPlayer(scoped_refptr<cc::AnimationPlayer>);
   ~CompositorAnimationPlayer();
