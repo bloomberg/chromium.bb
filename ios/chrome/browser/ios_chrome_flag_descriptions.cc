@@ -101,6 +101,15 @@ const char kSlimNavigationManagerDescription[] =
     "When enabled, uses the experimental slim navigation manager that provides "
     "better compatibility with HTML navigation spec.";
 
+const char kNewPassKitDownloadName[] = "Use PassKit with ios/web Download API";
+const char kNewPassKitDownloadDescription[] =
+    "When enabled, uses ios/web Download API as dowload backend for PassKit.";
+
+const char kNewFileDownloadName[] = "Use new Download Manager UI and backend";
+const char kNewFileDownloadDescription[] =
+    "When enabled, uses new Download Manager UI and ios/web Download API as "
+    "backend.";
+
 const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
 const char kTabSwitcherPresentsBVCDescription[] =
     "When enabled, the tab switcher will present the BVC, so that when the "
