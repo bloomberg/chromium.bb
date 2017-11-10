@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: this test tests LOG_V and LOG_E since all other logs are expressed
-// in forms of them. LOG is also tested for good measure.
+// Note: this test tests RTC_LOG_V and RTC_LOG_E since all other logs are
+// expressed in forms of them. RTC_LOG is also tested for good measure.
 // Also note that we are only allowed to call InitLogging() twice so the test
 // cases are more dense than normal.
 
@@ -78,11 +78,11 @@ TEST(LibjingleLogTest, DefaultConfiguration) {
   ASSERT_TRUE(Initialize(kDefaultVerbosity));
 
   // In the default configuration only warnings and errors should be logged.
-  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
-  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
-  LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
-  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
-  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
+  RTC_LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  RTC_LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  RTC_LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
+  RTC_LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  RTC_LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -104,11 +104,11 @@ TEST(LibjingleLogTest, InfoConfiguration) {
 
   // In this configuration everything lower or equal to LS_INFO should be
   // logged.
-  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
-  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
-  LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
-  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
-  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
+  RTC_LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  RTC_LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  RTC_LOG_V(rtc::LS_INFO) << AsString(rtc::LS_INFO);
+  RTC_LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  RTC_LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -135,14 +135,14 @@ TEST(LibjingleLogTest, LogEverythingConfiguration) {
   ASSERT_TRUE(Initialize(2));  // verbosity at level 2 allows LS_SENSITIVE.
 
   // In this configuration everything should be logged.
-  LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
-  LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
-  LOG(LS_INFO) << AsString(rtc::LS_INFO);
+  RTC_LOG_V(rtc::LS_ERROR) << AsString(rtc::LS_ERROR);
+  RTC_LOG_V(rtc::LS_WARNING) << AsString(rtc::LS_WARNING);
+  RTC_LOG(LS_INFO) << AsString(rtc::LS_INFO);
   static const int kFakeError = 1;
-  LOG_E(LS_INFO, EN, kFakeError) << "LOG_E(" << AsString(rtc::LS_INFO) <<
-      ")";
-  LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
-  LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
+  RTC_LOG_E(LS_INFO, EN, kFakeError) << "RTC_LOG_E(" << AsString(rtc::LS_INFO)
+                                     << ")";
+  RTC_LOG_V(rtc::LS_VERBOSE) << AsString(rtc::LS_VERBOSE);
+  RTC_LOG_V(rtc::LS_SENSITIVE) << AsString(rtc::LS_SENSITIVE);
 
   // Read file to string.
   base::FilePath file_path(log_file_name);
@@ -154,7 +154,7 @@ TEST(LibjingleLogTest, LogEverythingConfiguration) {
   EXPECT_TRUE(ContainsString(contents_of_file,
                              AsString(rtc::LS_WARNING)));
   EXPECT_TRUE(ContainsString(contents_of_file, AsString(rtc::LS_INFO)));
-  // LOG_E
+  // RTC_LOG_E
   EXPECT_TRUE(ContainsString(contents_of_file, strerror(kFakeError)));
   EXPECT_TRUE(ContainsString(contents_of_file,
                              AsString(rtc::LS_VERBOSE)));
