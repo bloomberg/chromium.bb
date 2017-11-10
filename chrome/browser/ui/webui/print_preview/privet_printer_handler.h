@@ -72,12 +72,9 @@ class PrivetPrinterHandler
           client);
   void StopLister();
   void CapabilitiesUpdateClient(
-      GetCapabilityCallback callback,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
-  void OnGotCapabilities(GetCapabilityCallback callback,
-                         const base::DictionaryValue* capabilities);
+  void OnGotCapabilities(const base::DictionaryValue* capabilities);
   void PrintUpdateClient(
-      PrintCallback callback,
       const base::string16& job_title,
       const scoped_refptr<base::RefCountedBytes>& print_data,
       const std::string& print_ticket,
@@ -110,6 +107,8 @@ class PrivetPrinterHandler
   AddedPrintersCallback added_printers_callback_;
   GetPrintersDoneCallback done_callback_;
   PrintCallback print_callback_;
+  GetCapabilityCallback capabilities_callback_;
+
   base::WeakPtrFactory<PrivetPrinterHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrivetPrinterHandler);

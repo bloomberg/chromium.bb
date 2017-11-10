@@ -72,10 +72,11 @@ void PrivetPrinterHandler::StartGetPrinters(
 
 void PrivetPrinterHandler::StartGetCapability(const std::string& destination_id,
                                               GetCapabilityCallback callback) {
-  CreateHTTP(
-      destination_id,
-      base::BindOnce(&PrivetPrinterHandler::CapabilitiesUpdateClient,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  DCHECK(!capabilities_callback_);
+  capabilities_callback_ = std::move(callback);
+  CreateHTTP(destination_id,
+             base::Bind(&PrivetPrinterHandler::CapabilitiesUpdateClient,
+                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrivetPrinterHandler::StartPrint(
@@ -86,11 +87,12 @@ void PrivetPrinterHandler::StartPrint(
     const gfx::Size& page_size,
     const scoped_refptr<base::RefCountedBytes>& print_data,
     PrintCallback callback) {
+  DCHECK(!print_callback_);
+  print_callback_ = std::move(callback);
   CreateHTTP(destination_id,
-             base::BindOnce(&PrivetPrinterHandler::PrintUpdateClient,
-                            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                            job_title, print_data, ticket_json, capability,
-                            page_size));
+             base::Bind(&PrivetPrinterHandler::PrintUpdateClient,
+                        weak_ptr_factory_.GetWeakPtr(), job_title, print_data,
+                        ticket_json, capability, page_size));
 }
 
 void PrivetPrinterHandler::LocalPrinterChanged(
@@ -150,26 +152,26 @@ void PrivetPrinterHandler::StopLister() {
 }
 
 void PrivetPrinterHandler::CapabilitiesUpdateClient(
-    GetCapabilityCallback callback,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
-    std::move(callback).Run(nullptr);
+    DCHECK(capabilities_callback_);
+    std::move(capabilities_callback_).Run(nullptr);
     return;
   }
 
   privet_capabilities_operation_ =
       privet_http_client_->CreateCapabilitiesOperation(
-          base::BindOnce(&PrivetPrinterHandler::OnGotCapabilities,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+          base::Bind(&PrivetPrinterHandler::OnGotCapabilities,
+                     weak_ptr_factory_.GetWeakPtr()));
   privet_capabilities_operation_->Start();
 }
 
 void PrivetPrinterHandler::OnGotCapabilities(
-    GetCapabilityCallback callback,
     const base::DictionaryValue* capabilities) {
+  DCHECK(capabilities_callback_);
   if (!capabilities || capabilities->HasKey(cloud_print::kPrivetKeyError) ||
       !printer_lister_) {
-    std::move(callback).Run(nullptr);
+    std::move(capabilities_callback_).Run(nullptr);
     return;
   }
 
@@ -178,7 +180,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
       printer_lister_->GetDeviceDescription(name);
 
   if (!description) {
-    std::move(callback).Run(nullptr);
+    std::move(capabilities_callback_).Run(nullptr);
     return;
   }
 
@@ -192,13 +194,12 @@ void PrivetPrinterHandler::OnGotCapabilities(
       capabilities->CreateDeepCopy();
   printer_info_and_caps.SetDictionary(printing::kSettingCapabilities,
                                       std::move(capabilities_copy));
-  std::move(callback).Run(
-      printing::ValidateCddForPrintPreview(printer_info_and_caps));
+  std::move(capabilities_callback_)
+      .Run(printing::ValidateCddForPrintPreview(printer_info_and_caps));
   privet_capabilities_operation_.reset();
 }
 
 void PrivetPrinterHandler::PrintUpdateClient(
-    PrintCallback callback,
     const base::string16& job_title,
     const scoped_refptr<base::RefCountedBytes>& print_data,
     const std::string& print_ticket,
@@ -206,10 +207,10 @@ void PrivetPrinterHandler::PrintUpdateClient(
     const gfx::Size& page_size,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
-    std::move(callback).Run(base::Value(-1));
+    DCHECK(print_callback_);
+    std::move(print_callback_).Run(base::Value(-1));
     return;
   }
-  print_callback_ = std::move(callback);
   StartPrint(job_title, print_data, print_ticket, capabilities, page_size);
 }
 
@@ -262,7 +263,7 @@ void PrivetPrinterHandler::CreateHTTP(
       printer_lister_ ? printer_lister_->GetDeviceDescription(name) : nullptr;
 
   if (!device_description) {
-    std::move(callback).Run(nullptr);
+    callback.Run(nullptr);
     return;
   }
 
@@ -270,6 +271,5 @@ void PrivetPrinterHandler::CreateHTTP(
       cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
           profile_->GetRequestContext());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
-  privet_http_resolution_->Start(device_description->address,
-                                 std::move(callback));
+  privet_http_resolution_->Start(device_description->address, callback);
 }

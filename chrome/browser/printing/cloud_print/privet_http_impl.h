@@ -27,7 +27,7 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
                                 public PrivetURLFetcher::Delegate {
  public:
   PrivetInfoOperationImpl(PrivetHTTPClient* privet_client,
-                          PrivetJSONOperation::ResultCallback callback);
+                          const PrivetJSONOperation::ResultCallback& callback);
   ~PrivetInfoOperationImpl() override;
 
   void Start() override;
@@ -125,7 +125,7 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   PrivetJSONOperationImpl(PrivetHTTPClient* privet_client,
                           const std::string& path,
                           const std::string& query_params,
-                          PrivetJSONOperation::ResultCallback callback);
+                          const PrivetJSONOperation::ResultCallback& callback);
   ~PrivetJSONOperationImpl() override;
   void Start() override;
 
@@ -250,7 +250,7 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   // PrivetHTTPClient implementation.
   const std::string& GetName() override;
   std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
-      PrivetJSONOperation::ResultCallback callback) override;
+      const PrivetJSONOperation::ResultCallback& callback) override;
   std::unique_ptr<PrivetURLFetcher> CreateURLFetcher(
       const GURL& url,
       net::URLFetcher::RequestType request_type,
@@ -281,12 +281,12 @@ class PrivetV1HTTPClientImpl : public PrivetV1HTTPClient {
 
   const std::string& GetName() override;
   std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
-      PrivetJSONOperation::ResultCallback callback) override;
+      const PrivetJSONOperation::ResultCallback& callback) override;
   std::unique_ptr<PrivetRegisterOperation> CreateRegisterOperation(
       const std::string& user,
       PrivetRegisterOperation::Delegate* delegate) override;
   std::unique_ptr<PrivetJSONOperation> CreateCapabilitiesOperation(
-      PrivetJSONOperation::ResultCallback callback) override;
+      const PrivetJSONOperation::ResultCallback& callback) override;
   std::unique_ptr<PrivetLocalPrintOperation> CreateLocalPrintOperation(
       PrivetLocalPrintOperation::Delegate* delegate) override;
 

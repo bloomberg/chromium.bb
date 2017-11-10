@@ -380,8 +380,8 @@ class MockJSONCallback{
 
   const base::DictionaryValue* value() { return value_.get(); }
   PrivetJSONOperation::ResultCallback callback() {
-    return base::BindOnce(&MockJSONCallback::OnPrivetJSONDone,
-                          base::Unretained(this));
+    return base::Bind(&MockJSONCallback::OnPrivetJSONDone,
+                      base::Unretained(this));
   }
  protected:
   std::unique_ptr<base::DictionaryValue> value_;
