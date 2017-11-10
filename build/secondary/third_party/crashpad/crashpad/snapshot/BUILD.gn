@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/compiler/compiler.gni")
 import("//testing/test.gni")
 
 static_library("snapshot") {
@@ -348,6 +349,11 @@ if (is_win) {
       "//third_party/crashpad/crashpad/compat",
       "//third_party/crashpad/crashpad/util",
     ]
+    if (symbol_level == 0) {
+      # The tests that use this executable rely on at least minimal debug info.
+      configs -= [ "//build/config/compiler:default_symbols" ]
+      configs += [ "//build/config/compiler:minimal_symbols" ]
+    }
   }
 
   loadable_module("crashpad_snapshot_test_image_reader_module") {
@@ -359,5 +365,10 @@ if (is_win) {
       "//base",
       "//third_party/crashpad/crashpad/client",
     ]
+    if (symbol_level == 0) {
+      # The tests that use this module rely on at least minimal debug info.
+      configs -= [ "//build/config/compiler:default_symbols" ]
+      configs += [ "//build/config/compiler:minimal_symbols" ]
+    }
   }
 }
