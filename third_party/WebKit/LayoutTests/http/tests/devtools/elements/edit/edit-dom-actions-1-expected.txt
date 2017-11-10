@@ -1,7 +1,5 @@
 Tests that user can mutate DOM by means of elements panel.
 
- 
-Edited Text
 
 Running: testSetUp
 
@@ -36,7 +34,7 @@ Running: testSetNodeNameInput
 Running: testSetNodeValue
 ==== before ====
 - <div id="testSetNodeValue">
-      <div id="node-to-set-value">\n          Text\n        </div>
+      <div id="node-to-set-value">\n                Text\n              </div>
   </div>
 ==== after ====
 - <div id="testSetNodeValue">

@@ -1,11 +1,16 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/accessibility-pane-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that autocompletions are computed correctly when editing the ARIA pane.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('accessibility_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <span id="inspected" aria-checked="true" role="checkbox"></span>
+    `);
+
   UI.viewManager.showView('accessibility.view')
       .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility('inspected'))
       .then(runTests);
@@ -65,14 +70,4 @@ function test() {
       callback();
     }
   }
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that autocompletions are computed correctly when editing the ARIA pane.
-</p>
-<span id="inspected" aria-checked="true" role="checkbox"></span>
-</body>
-</html>
+})();

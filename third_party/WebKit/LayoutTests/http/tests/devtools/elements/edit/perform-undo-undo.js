@@ -1,10 +1,16 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that client can call undo multiple times with non-empty history.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div style="display:none" id="container">
+      </div>
+    `);
+
   var containerNode;
   ElementsTestRunner.expandElementsTree(step1);
 
@@ -33,18 +39,4 @@ function test() {
     ElementsTestRunner.dumpElementsTree(containerNode);
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that client can call undo multiple times with non-empty history.
-</p>
-
-<div style="display:none" id="container">
-</div>
-
-</body>
-</html>
+})();

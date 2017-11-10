@@ -1,22 +1,28 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function setAttribute(name, value)
-{
-    var node = document.getElementById("node");
-    node.setAttribute(name, value);
-}
+(async function() {
+  TestRunner.addResult(`Tests that elements panel updates dom tree structure upon setting attribute.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="node"></div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function setAttribute(name, value)
+      {
+          var node = document.getElementById("node");
+          node.setAttribute(name, value);
+      }
 
-function removeAttribute(name)
-{
-    var node = document.getElementById("node");
-    node.removeAttribute(name);
-}
+      function removeAttribute(name)
+      {
+          var node = document.getElementById("node");
+          node.removeAttribute(name);
+      }
+  `);
 
-function test() {
   var targetNode;
 
   TestRunner.runTestSuite([
@@ -110,17 +116,4 @@ function test() {
       targetNode.setAttribute('foo2', 'foo2=\'missingquote', callback);
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that elements panel updates dom tree structure upon setting attribute.
-</p>
-
-<div id="node"></div>
-
-</body>
-</html>
+})();

@@ -1,6 +1,5 @@
 Tests that user can mutate DOM by means of elements panel.
 
-Anchor
 Original textContent
 <a href=​"data:​text/​plain;​,1234567890…23456789012345678901234567890" id=​"inspected">​Anchor​</a>​
 textContent when editing 'href'

@@ -1,11 +1,35 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../resources/edit-dom-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that user can mutate DOM by means of elements panel.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div>
+          <div id="testSetAttribute">
+              <div foo="attribute value" id="node-to-set-attribute"></div>
+          </div>
+
+          <div id="testSetScriptableAttribute">
+              <div onclick="alert(1)" id="node-to-set-scriptable-attribute"></div>
+          </div>
+
+          <div id="testRemoveAttribute">
+              <div foo="attribute value" id="node-to-remove-attribute"></div>
+          </div>
+
+          <div id="testAddAttribute">
+              <div id="node-to-add-attribute"></div>
+          </div>
+
+          <div id="testAddAttributeUnquotedValue">
+              <div id="node-to-add-attribute-unquoted-value"></div>
+          </div>
+      </div>
+    `);
+
   // Save time on style updates.
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
@@ -49,36 +73,4 @@ function test() {
           'testAddAttributeUnquotedValue', 'node-to-add-attribute-unquoted-value', 'newattr=unquotedValue', next);
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that user can mutate DOM by means of elements panel.
-</p>
-
-<div>
-    <div id="testSetAttribute">
-        <div foo="attribute value" id="node-to-set-attribute"></div>
-    </div>
-
-    <div id="testSetScriptableAttribute">
-        <div onclick="alert(1)" id="node-to-set-scriptable-attribute"></div>
-    </div>
-
-    <div id="testRemoveAttribute">
-        <div foo="attribute value" id="node-to-remove-attribute"></div>
-    </div>
-
-    <div id="testAddAttribute">
-        <div id="node-to-add-attribute"></div>
-    </div>
-
-    <div id="testAddAttributeUnquotedValue">
-        <div id="node-to-add-attribute-unquoted-value"></div>
-    </div>
-</div>
-</body>
-</html>
+})();

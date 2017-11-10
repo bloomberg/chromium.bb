@@ -1,6 +1,5 @@
 Tests that writing an ARIA attribute causes the accessibility node to be updated.
 
-ARIA checkbox
 === Before attribute modification ===
 checkbox "ARIA checkbox" invalid="false" checked="true"
 === After attribute modification ===

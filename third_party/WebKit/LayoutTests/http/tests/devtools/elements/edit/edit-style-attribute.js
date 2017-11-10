@@ -1,20 +1,30 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testSetNewValue()
-{
-    document.getElementById("node-set-new-value").style.setProperty("color", "blue");
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that style modification generates attribute updated event only when attribute is actually changed.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="container">
+          <div id="node-set-new-value" style="color:red"></div>
+          <div id="node-set-same-value" style="color:red"></div>
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function testSetNewValue()
+      {
+          document.getElementById("node-set-new-value").style.setProperty("color", "blue");
+      }
 
-function testSetSameValue()
-{
-    document.getElementById("node-set-same-value").style.setProperty("color", "red");
-}
+      function testSetSameValue()
+      {
+          document.getElementById("node-set-same-value").style.setProperty("color", "red");
+      }
+  `);
 
-function test() {
   // Save time on style updates.
   Elements.StylesSidebarPane.prototype.update = function() {};
   Elements.MetricsSidebarPane.prototype.update = function() {};
@@ -45,19 +55,4 @@ function test() {
       }
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that style modification generates attribute updated event only when attribute is actually changed.
-</p>
-
-<div id="container">
-    <div id="node-set-new-value" style="color:red"></div>
-    <div id="node-set-same-value" style="color:red"></div>
-</div>
-</body>
-</html>
+})();

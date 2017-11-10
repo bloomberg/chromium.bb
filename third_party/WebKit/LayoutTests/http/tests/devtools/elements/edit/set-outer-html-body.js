@@ -1,11 +1,19 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+(async function() {
+  TestRunner.addResult(
+      `Tests DOMAgent.setOuterHTML invoked on body tag. See https://bugs.webkit.org/show_bug.cgi?id=62272. \n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests DOMAgent.setOuterHTML invoked on body tag. See https://bugs.webkit.org/show_bug.cgi?id=62272.
+      <iframe src="../resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
+      </p>
+    `);
 
-function test() {
   var htmlNode;
   var bodyNode;
   var headNode;
@@ -52,14 +60,4 @@ function test() {
     }
     return dump;
   }
-}
-</script>
-</head>
-
-<body>
-<p>
-Tests DOMAgent.setOuterHTML invoked on body tag. See https://bugs.webkit.org/show_bug.cgi?id=62272.
-<iframe src="../resources/set-outer-html-body-iframe.html" onload="runTest()"></iframe>
-</p>
-</body>
-</html>
+})();

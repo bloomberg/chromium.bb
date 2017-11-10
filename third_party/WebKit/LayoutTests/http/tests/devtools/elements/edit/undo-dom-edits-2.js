@@ -1,10 +1,27 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that DOM modifications done in the Elements panel are undoable (Part 2).\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div style="display:none">
+          <div id="testSetAttribute">
+              <div foo="attribute value" id="node-to-set-attribute"></div>
+          </div>
+
+          <div id="testRemoveAttribute">
+              <div foo="attribute value" id="node-to-remove-attribute"></div>
+          </div>
+
+          <div id="testAddAttribute">
+              <div id="node-to-add-attribute"></div>
+          </div>
+      </div>
+    `);
+
   var testSuite = [];
 
   function testSetUp(next) {
@@ -39,29 +56,4 @@ function test() {
 
 
   TestRunner.runTestSuite(testSuite);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that DOM modifications done in the Elements panel are undoable (Part 2).
-</p>
-
-<div style="display:none">
-    <div id="testSetAttribute">
-        <div foo="attribute value" id="node-to-set-attribute"></div>
-    </div>
-
-    <div id="testRemoveAttribute">
-        <div foo="attribute value" id="node-to-remove-attribute"></div>
-    </div>
-
-    <div id="testAddAttribute">
-        <div id="node-to-add-attribute"></div>
-    </div>
-</div>
-
-</body>
-</html>
+})();
