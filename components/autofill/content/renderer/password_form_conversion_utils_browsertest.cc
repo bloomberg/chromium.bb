@@ -320,6 +320,18 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, DisabledFieldsAreIgnored) {
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, OnlyDisabledFields) {
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddDisabledUsernameField();
+  builder.AddDisabledPasswordField();
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+  ASSERT_FALSE(password_form);
+}
+
 TEST_F(MAYBE_PasswordFormConversionUtilsTest,
        IdentifyingUsernameFieldsFromDeveloperGroupWithHTMLDetector) {
   base::test::ScopedFeatureList feature_list;
