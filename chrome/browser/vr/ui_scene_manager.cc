@@ -200,8 +200,6 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots(Model* model) {
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
   element->set_hit_testable(false);
-  element->AddBinding(VR_BIND(bool, Model, model, recognizing_speech, UiElement,
-                              element.get(), SetVisible(!value)));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
@@ -573,7 +571,8 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   voice_search_button->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m) {
-            return !m->incognito && m->has_or_can_request_audio_permission &&
+            return !m->incognito &&
+                   m->speech.has_or_can_request_audio_permission &&
                    m->experimental_features_enabled;
           },
           base::Unretained(model)),
@@ -582,17 +581,79 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   BindColor(this, voice_search_button.get(), &ColorScheme::button_colors);
   scene_->AddUiElement(kUrlBar, std::move(voice_search_button));
 
-  auto speech_recognition_prompt = base::MakeUnique<UiElement>();
-  speech_recognition_prompt->set_name(kSpeechRecognitionPrompt);
-  speech_recognition_prompt->SetTranslate(0.f, 0.f, -kContentDistance);
-  speech_recognition_prompt->set_hit_testable(false);
-  speech_recognition_prompt->AddBinding(
-      VR_BIND_FUNC(bool, Model, model, recognizing_speech, UiElement,
-                   speech_recognition_prompt.get(), SetVisible));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(speech_recognition_prompt));
+  auto speech_recognition_root = base::MakeUnique<UiElement>();
+  speech_recognition_root->set_name(kSpeechRecognitionRoot);
+  speech_recognition_root->SetTranslate(0.f, 0.f, -kContentDistance);
+  speech_recognition_root->set_hit_testable(false);
+  scene_->AddUiElement(k2dBrowsingRoot, std::move(speech_recognition_root));
+
+  TransientElement* speech_result_parent =
+      AddTransientParent(kSpeechRecognitionResult, kSpeechRecognitionRoot,
+                         kSpeechRecognitionResultTimeoutSeconds, false);
+  // We need to explicitly set the initial visibility of
+  // kSpeechRecognitionResult as k2dBrowsingForeground's visibility depends on
+  // it in a binding. However, k2dBrowsingForeground's binding updated before
+  // kSpeechRecognitionResult. So the initial value needs to be correctly set
+  // instead of depend on binding to kick in.
+  speech_result_parent->SetVisible(false);
+  speech_result_parent->AddBinding(
+      VR_BIND(bool, Model, model, speech.recognition_result.empty(), UiElement,
+              speech_result_parent, SetVisible(!value)));
+
+  auto speech_result = base::MakeUnique<Text>(512, kSuggestionContentTextHeight,
+                                              kSuggestionTextFieldWidth);
+  speech_result->set_name(kSpeechRecognitionResultText);
+  speech_result->set_draw_phase(kPhaseForeground);
+  speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
+  speech_result->set_hit_testable(false);
+  speech_result->SetTextAlignment(UiTexture::kTextAlignmentCenter);
+  BindColor(this, speech_result.get(), &ColorScheme::prompt_foreground);
+  speech_result->AddBinding(VR_BIND_FUNC(base::string16, Model, model,
+                                         speech.recognition_result, Text,
+                                         speech_result.get(), SetText));
+  speech_result_parent->AddChild(std::move(speech_result));
+
+  auto circle = base::MakeUnique<Rect>();
+  circle->set_name(kSpeechRecognitionResultCircle);
+  circle->set_draw_phase(kPhaseForeground);
+  circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
+  circle->set_corner_radius(kCloseButtonWidth);
+  circle->SetTranslate(0.0, 0.0, -kTextureOffset);
+  circle->set_hit_testable(false);
+  BindColor(this, circle.get(),
+            &ColorScheme::speech_recognition_circle_background);
+  scene_->AddUiElement(kSpeechRecognitionResult, std::move(circle));
+
+  auto microphone = base::MakeUnique<VectorIcon>(512);
+  microphone->set_name(kSpeechRecognitionResultMicrophoneIcon);
+  microphone->SetIcon(vector_icons::kMicrophoneIcon);
+  microphone->set_draw_phase(kPhaseForeground);
+  microphone->set_hit_testable(false);
+  microphone->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  scene_->AddUiElement(kSpeechRecognitionResult, std::move(microphone));
+
+  auto hit_target = base::MakeUnique<InvisibleHitTarget>();
+  hit_target->set_name(kSpeechRecognitionResultBackplane);
+  hit_target->set_draw_phase(kPhaseForeground);
+  hit_target->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  hit_target->SetTranslate(0.0, 0.0, kTextureOffset);
+  scene_->AddUiElement(kSpeechRecognitionResult, std::move(hit_target));
+
+  auto speech_recognition_listening = base::MakeUnique<UiElement>();
+  UiElement* listening_ui_root = speech_recognition_listening.get();
+  speech_recognition_listening->set_name(kSpeechRecognitionListening);
+  speech_recognition_listening->set_hit_testable(false);
+  // We need to explicitly set the initial visibility of this element for the
+  // same reason as kSpeechRecognitionResult.
+  speech_recognition_listening->SetVisible(false);
+  speech_recognition_listening->AddBinding(
+      VR_BIND_FUNC(bool, Model, model, speech.recognizing_speech, UiElement,
+                   listening_ui_root, SetVisible));
+  scene_->AddUiElement(kSpeechRecognitionRoot,
+                       std::move(speech_recognition_listening));
 
   auto growing_circle = base::MakeUnique<Throbber>();
-  growing_circle->set_name(kSpeechRecognitionPromptGrowingCircle);
+  growing_circle->set_name(kSpeechRecognitionListeningGrowingCircle);
   growing_circle->set_draw_phase(kPhaseForeground);
   growing_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
   growing_circle->set_corner_radius(kCloseButtonWidth);
@@ -601,15 +662,15 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   BindColor(this, growing_circle.get(),
             &ColorScheme::speech_recognition_circle_background);
   growing_circle->AddBinding(VR_BIND(
-      int, Model, model, speech_recognition_state, Throbber,
+      int, Model, model, speech.speech_recognition_state, Throbber,
       growing_circle.get(),
       SetCircleGrowAnimationEnabled(value == SPEECH_RECOGNITION_IN_SPEECH ||
                                     value == SPEECH_RECOGNITION_RECOGNIZING ||
                                     value == SPEECH_RECOGNITION_READY)));
-  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(growing_circle));
+  scene_->AddUiElement(kSpeechRecognitionListening, std::move(growing_circle));
 
   auto inner_circle = base::MakeUnique<Rect>();
-  inner_circle->set_name(kSpeechRecognitionPromptInnerCircle);
+  inner_circle->set_name(kSpeechRecognitionListeningInnerCircle);
   inner_circle->set_draw_phase(kPhaseForeground);
   inner_circle->SetSize(kCloseButtonWidth * 2, kCloseButtonHeight * 2);
   inner_circle->set_corner_radius(kCloseButtonWidth);
@@ -617,23 +678,41 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   inner_circle->set_hit_testable(false);
   BindColor(this, inner_circle.get(),
             &ColorScheme::speech_recognition_circle_background);
-  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(inner_circle));
+  scene_->AddUiElement(kSpeechRecognitionListening, std::move(inner_circle));
 
   auto microphone_icon = base::MakeUnique<VectorIcon>(512);
   microphone_icon->SetIcon(vector_icons::kMicrophoneIcon);
-  microphone_icon->set_name(kSpeechRecognitionPromptMicrophoneIcon);
+  microphone_icon->set_name(kSpeechRecognitionListeningMicrophoneIcon);
   microphone_icon->set_draw_phase(kPhaseForeground);
+  microphone_icon->set_hit_testable(false);
   microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
-  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(microphone_icon));
+  scene_->AddUiElement(kSpeechRecognitionListening, std::move(microphone_icon));
 
   auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
       &UiSceneManager::OnExitRecognizingSpeechClicked, base::Unretained(this)));
   speech_recognition_prompt_backplane_ = backplane.get();
-  backplane->set_name(kSpeechRecognitionPromptBackplane);
+  backplane->set_name(kSpeechRecognitionListeningBackplane);
   backplane->set_draw_phase(kPhaseForeground);
   backplane->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
-  backplane->SetTranslate(0.0, 0.0, -kTextureOffset);
-  scene_->AddUiElement(kSpeechRecognitionPrompt, std::move(backplane));
+  backplane->SetTranslate(0.0, 0.0, kTextureOffset);
+  scene_->AddUiElement(kSpeechRecognitionListening, std::move(backplane));
+
+  UiElement* browser_foregroud =
+      scene_->GetUiElementByName(k2dBrowsingForeground);
+  // k2dBrowsingForeground's visibility binding use the visibility of two
+  // other elements which update their bindings after this one. So the
+  // visibility of k2dBrowsingForeground will be one frame behind correct value.
+  // This is not noticable in practice and simplify our logic a lot.
+  browser_foregroud->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind(
+          [](UiElement* listening, UiElement* result) {
+            return listening->GetTargetOpacity() == 0.f &&
+                   result->GetTargetOpacity() == 0.f;
+          },
+          base::Unretained(listening_ui_root),
+          base::Unretained(speech_result_parent)),
+      base::Bind([](UiElement* e, const bool& value) { e->SetVisible(value); },
+                 base::Unretained(browser_foregroud))));
 }
 
 void UiSceneManager::CreateController(Model* model) {

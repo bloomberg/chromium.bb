@@ -119,6 +119,7 @@ static_library("vr_common") {
     "model/omnibox_suggestions.cc",
     "model/omnibox_suggestions.h",
     "model/reticle_model.h",
+    "model/speech_recognition_model.h",
     "model/web_vr_timeout_state.h",
     "pose_util.cc",
     "pose_util.h",

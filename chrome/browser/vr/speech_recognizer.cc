@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
 #include "content/public/browser/speech_recognition_manager.h"
@@ -14,6 +15,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace vr {
 
@@ -220,8 +222,16 @@ void SpeechRecognizerOnIO::OnRecognitionResults(
 void SpeechRecognizerOnIO::OnRecognitionError(
     int session_id,
     const content::SpeechRecognitionError& error) {
-  if (error.code == content::SPEECH_RECOGNITION_ERROR_NETWORK) {
-    NotifyRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR);
+  switch (error.code) {
+    case content::SPEECH_RECOGNITION_ERROR_NETWORK:
+      NotifyRecognitionStateChanged(SPEECH_RECOGNITION_NETWORK_ERROR);
+      break;
+    case content::SPEECH_RECOGNITION_ERROR_NO_SPEECH:
+    case content::SPEECH_RECOGNITION_ERROR_NO_MATCH:
+      NotifyRecognitionStateChanged(SPEECH_RECOGNITION_TRY_AGAIN);
+      break;
+    default:
+      break;
   }
 }
 
@@ -323,7 +333,7 @@ void SpeechRecognizer::OnSpeechResult(const base::string16& query,
     return;
 
   if (ui_)
-    ui_->SetSpeechRecognitionEnabled(false);
+    ui_->SetRecognitionResult(query);
   if (delegate_)
     delegate_->OnVoiceResults(query);
 }
@@ -345,6 +355,12 @@ void SpeechRecognizer::OnSpeechRecognitionStateChanged(
     case SPEECH_RECOGNITION_READY:
     case SPEECH_RECOGNITION_RECOGNIZING:
     case SPEECH_RECOGNITION_NETWORK_ERROR:
+      break;
+    case SPEECH_RECOGNITION_TRY_AGAIN:
+      if (ui_) {
+        ui_->SetRecognitionResult(
+            l10n_util::GetStringUTF16(IDS_VR_NO_SPEECH_RECOGNITION_RESULT));
+      }
       break;
     case SPEECH_RECOGNITION_OFF:
     case SPEECH_RECOGNITION_END:

@@ -5,6 +5,7 @@
 #include "chrome/browser/vr/ui.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
@@ -40,7 +41,7 @@ Ui::Ui(UiBrowserInterface* browser,
       ui_initial_state.web_vr_autopresentation_expected;
   model_->experimental_features_enabled =
       base::FeatureList::IsEnabled(features::kExperimentalVRFeatures);
-  model_->has_or_can_request_audio_permission =
+  model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
 }
 
@@ -110,11 +111,17 @@ void Ui::SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) {
 }
 
 void Ui::SetSpeechRecognitionEnabled(bool enabled) {
-  model_->recognizing_speech = enabled;
+  model_->speech.recognizing_speech = enabled;
+  if (enabled)
+    model_->speech.recognition_result.clear();
+}
+
+void Ui::SetRecognitionResult(const base::string16& result) {
+  model_->speech.recognition_result = result;
 }
 
 void Ui::OnSpeechRecognitionStateChanged(int new_state) {
-  model_->speech_recognition_state = new_state;
+  model_->speech.speech_recognition_state = new_state;
 }
 
 void Ui::SetOmniboxSuggestions(

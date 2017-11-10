@@ -34,6 +34,7 @@ class BrowserUiInterface {
   virtual void SetExitVrPromptEnabled(bool enabled,
                                       UiUnsupportedMode reason) = 0;
   virtual void SetSpeechRecognitionEnabled(bool enabled) = 0;
+  virtual void SetRecognitionResult(const base::string16& result) = 0;
   virtual void OnSpeechRecognitionStateChanged(int new_state) = 0;
 
   // Tab handling.

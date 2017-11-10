@@ -70,6 +70,7 @@ class Ui : public BrowserUiInterface {
   void SetLocationAccessIndicator(bool enabled) override;
   void SetExitVrPromptEnabled(bool enabled, UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
+  void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
 
   bool ShouldRenderWebVr();
