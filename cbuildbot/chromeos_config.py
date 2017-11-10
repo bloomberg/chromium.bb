@@ -3870,12 +3870,15 @@ def TryjobMirrors(site_config):
   tryjob_configs = {}
 
   for build_name, config in site_config.iteritems():
+    # Don't mirror builds that are already tryjob safe.
+    if config.display_label in config_lib.TRYJOB_DISPLAY_LABEL:
+      config.apply(hw_tests_override=None, vm_tests_override=None)
+      continue
+
     tryjob_name = build_name + '-tryjob'
 
-    # Don't mirror builds that are already tryjob safe, and don't override
-    # mirrored versions that were explicitly created earlier.
-    if (config.display_label in config_lib.TRYJOB_DISPLAY_LABEL or
-        tryjob_name in site_config):
+    # Don't overwrite mirrored versions that were explicitly created earlier.
+    if tryjob_name in site_config:
       continue
 
     tryjob_config = copy.deepcopy(config)
@@ -3900,10 +3903,12 @@ def TryjobMirrors(site_config):
     # In trybots, we want to always run VM tests and all unit tests, so that
     # developers will get better testing for their changes.
     if tryjob_config.hw_tests_override is not None:
-      tryjob_config.apply(hw_tests=tryjob_config.hw_tests_override)
+      tryjob_config.apply(hw_tests=tryjob_config.hw_tests_override,
+                          hw_tests_override=None)
 
     if tryjob_config.vm_tests_override is not None:
-      tryjob_config.apply(vm_tests=tryjob_config.vm_tests_override)
+      tryjob_config.apply(vm_tests=tryjob_config.vm_tests_override,
+                          vm_tests_override=None)
 
     # Save off the new config so we can insert into site_config.
     tryjob_configs[tryjob_name] = tryjob_config

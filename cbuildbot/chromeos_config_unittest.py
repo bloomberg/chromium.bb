@@ -570,6 +570,22 @@ class CBuildBotTest(ChromeosConfigTestBase):
             "%s is trying to run hw tests without uploading payloads." %
             build_name)
 
+  def testTryjobConfigsDontDefineOverrides(self):
+    """Make sure that no tryjob safe configs define test overrides."""
+    for build_name, config in self.site_config.iteritems():
+      if config.display_label not in config_lib.TRYJOB_DISPLAY_LABEL:
+        continue
+
+      self.assertIsNone(
+          config.vm_tests_override,
+          'Config %s: is tryjob safe, but defines vm_tests_override.' % \
+          build_name)
+
+      self.assertIsNone(
+          config.hw_tests_override,
+          'Config %s: is tryjob safe, but defines hw_tests_override.' % \
+          build_name)
+
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
     for build_name, config in self.site_config.iteritems():
