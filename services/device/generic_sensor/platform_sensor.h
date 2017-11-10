@@ -72,6 +72,8 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
   bool GetLatestReading(SensorReading* result);
   // Returns 'true' if the sensor is started; returns 'false' otherwise.
   bool IsActiveForTesting() const;
+  using ConfigMap = std::map<Client*, std::list<PlatformSensorConfiguration>>;
+  const ConfigMap& GetConfigMapForTesting() const;
 
  protected:
   virtual ~PlatformSensor();
@@ -79,7 +81,6 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
                  mojo::ScopedSharedBufferMapping mapping,
                  PlatformSensorProvider* provider);
 
-  using ConfigMap = std::map<Client*, std::list<PlatformSensorConfiguration>>;
   using ReadingBuffer = SensorReadingSharedBuffer;
 
   virtual bool UpdateSensorInternal(const ConfigMap& configurations);
@@ -96,9 +97,6 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   void NotifySensorReadingChanged();
   void NotifySensorError();
-
-  // For testing purposes.
-  const ConfigMap& config_map() const { return config_map_; }
 
   // Task runner that is used by mojo objects for the IPC.
   // If platfrom sensor events are processed on a different

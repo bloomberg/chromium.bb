@@ -18,8 +18,11 @@ class FakePlatformSensor : public PlatformSensor {
                      mojo::ScopedSharedBufferMapping mapping,
                      PlatformSensorProvider* provider);
 
-  bool StartSensor(const PlatformSensorConfiguration& configuration) override;
+  // PlatformSensor:
+  MOCK_METHOD1(StartSensor,
+               bool(const PlatformSensorConfiguration& configuration));
 
+ protected:
   void StopSensor() override {}
 
   bool CheckSensorConfiguration(
@@ -32,8 +35,7 @@ class FakePlatformSensor : public PlatformSensor {
   double GetMaximumSupportedFrequency() override;
   double GetMinimumSupportedFrequency() override;
 
- protected:
-  ~FakePlatformSensor() override = default;
+  ~FakePlatformSensor() override;
 
   DISALLOW_COPY_AND_ASSIGN(FakePlatformSensor);
 };

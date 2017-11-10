@@ -23,18 +23,6 @@ class PlatformSensorProviderTest : public DeviceServiceTestBase {
     PlatformSensorProvider::SetProviderForTesting(provider_.get());
   }
 
-  void SetUp() override {
-    DeviceServiceTestBase::SetUp();
-    provider_.reset(new FakePlatformSensorProvider);
-    // Default
-    ON_CALL(*provider_, DoCreateSensorInternal(_, _, _))
-        .WillByDefault(Invoke(
-            [](mojom::SensorType, scoped_refptr<PlatformSensor> sensor,
-               const PlatformSensorProvider::CreateSensorCallback& callback) {
-              callback.Run(std::move(sensor));
-            }));
-  }
-
  protected:
   std::unique_ptr<FakePlatformSensorProvider> provider_;
 

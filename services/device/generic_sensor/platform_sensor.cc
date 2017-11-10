@@ -169,4 +169,8 @@ bool PlatformSensor::IsActiveForTesting() const {
   return is_active_;
 }
 
+auto PlatformSensor::GetConfigMapForTesting() const -> const ConfigMap& {
+  return config_map_;
+}
+
 }  // namespace device
