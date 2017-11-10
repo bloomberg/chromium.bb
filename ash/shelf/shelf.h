@@ -134,6 +134,13 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void NotifyShelfIconPositionsChanged();
   StatusAreaWidget* GetStatusAreaWidget() const;
 
+  void set_is_tablet_mode_animation_running(bool value) {
+    is_tablet_mode_animation_running_ = value;
+  }
+  bool is_tablet_mode_animation_running() const {
+    return is_tablet_mode_animation_running_;
+  }
+
   void SetVirtualKeyboardBoundsForTesting(const gfx::Rect& bounds);
   ShelfLockingManager* GetShelfLockingManagerForTesting();
   ShelfView* GetShelfViewForTesting();
@@ -173,6 +180,14 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Forwards touch gestures on a bezel sensor to the shelf.
   // TODO(mash): Facilitate simliar functionality in mash: crbug.com/636647
   std::unique_ptr<ShelfBezelEventHandler> bezel_event_handler_;
+
+  // True while the animation to enter or exit tablet mode is running. Sometimes
+  // this value is true when the shelf movements are not actually animating
+  // (animation value = 0.0). This is because this is set to true when we
+  // enter/exit tablet mode but the animation is not started until a shelf
+  // OnBoundsChanged is called because of tablet mode. Use this value to sync
+  // the animation for AppListButton.
+  bool is_tablet_mode_animation_running_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Shelf);
 };

@@ -12,9 +12,11 @@
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -1963,7 +1965,13 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(1, observer.icon_positions_animation_duration());
 
-  // The shelf items should animate if we are entering or exiting tablet mode.
+  // The shelf items should animate if we are entering or exiting tablet mode,
+  // and the shelf alignment is bottom aligned.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  const int64_t id = GetPrimaryDisplay().id();
+  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
+  SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_BOTTOM);
   observer.Reset();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   test_api_->RunMessageLoopUntilAnimationsDone();
@@ -1973,6 +1981,20 @@ TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   test_api_->RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(animation_duration, observer.icon_positions_animation_duration());
+
+  // The shelf items should not animate if we are entering or exiting tablet
+  // mode, and the shelf alignment is not bottom aligned.
+  shelf_view_->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignmentPref(prefs, id, SHELF_ALIGNMENT_LEFT);
+  observer.Reset();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(1, observer.icon_positions_animation_duration());
+
+  observer.Reset();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(1, observer.icon_positions_animation_duration());
 }
 
 // Tests that the blank shelf view area shows a context menu on right click.

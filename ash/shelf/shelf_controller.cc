@@ -321,6 +321,9 @@ void ShelfController::OnTabletModeStarted() {
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     Shelf* shelf = GetShelfForDisplay(display.id());
     if (shelf) {
+      // Only animate into tablet mode if the shelf alignment will not change.
+      if (shelf->IsHorizontalAlignment())
+        shelf->set_is_tablet_mode_animation_running(true);
       shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
       shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
     }
@@ -329,6 +332,12 @@ void ShelfController::OnTabletModeStarted() {
 
 void ShelfController::OnTabletModeEnded() {
   SetShelfBehaviorsFromPrefs();
+  // Only animate out of tablet mode if the shelf alignment will not change.
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    Shelf* shelf = GetShelfForDisplay(display.id());
+    if (shelf && shelf->IsHorizontalAlignment())
+      shelf->set_is_tablet_mode_animation_running(true);
+  }
 }
 
 void ShelfController::OnDisplayConfigurationChanged() {
