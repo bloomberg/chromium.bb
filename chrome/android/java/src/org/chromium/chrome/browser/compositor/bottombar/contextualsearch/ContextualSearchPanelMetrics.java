@@ -159,7 +159,8 @@ public class ContextualSearchPanelMetrics {
                     mRankerLogger.logOutcome(
                             ContextualSearchRankerLogger.Feature.OUTCOME_WAS_PANEL_OPENED,
                             mWasSearchContentViewSeen);
-                    // TODO(donnd): UMA-Log the Ranker inference signal once we're running a model.
+                    ContextualSearchUma.logRankerInference(mWasSearchContentViewSeen,
+                            mRankerLogger.getPredictionForTapSuppression());
                 }
                 ContextualSearchUma.logSelectionLengthResultsSeen(
                         mWasSearchContentViewSeen, mSelectionLength);

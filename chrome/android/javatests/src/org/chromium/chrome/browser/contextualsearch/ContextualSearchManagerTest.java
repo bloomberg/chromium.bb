@@ -114,6 +114,7 @@ import javax.annotation.Nullable;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
         ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED,
+        "disable-features=" + ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION,
         "disable-features=" + ChromeFeatureList.FULLSCREEN_ACTIVITY})
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @RetryOnFailure

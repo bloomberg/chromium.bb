@@ -877,8 +877,13 @@
                 {
                     "name": "Expected",
                     "params": {
+                        "contextual-search-ranker-model-url": "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/contextual_search/test_ranker_model_20171109_short_words.pb.bin",
                         "enable_ranker_integration": "true"
-                    }
+                    },
+                    "enable_features": [
+                        "ContextualSearchMlTapSuppression",
+                        "ContextualSearchRankerQuery"
+                    ]
                 }
             ]
         }
