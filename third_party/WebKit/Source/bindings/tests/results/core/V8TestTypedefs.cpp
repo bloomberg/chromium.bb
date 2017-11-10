@@ -218,7 +218,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallb
   }
 
   V8TestCallbackInterface* testCallbackInterfaceTypeArg;
-  if (0 < info.Length() && info[0]->IsFunction()) {
+  if (info[0]->IsFunction()) {
     testCallbackInterfaceTypeArg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."));
