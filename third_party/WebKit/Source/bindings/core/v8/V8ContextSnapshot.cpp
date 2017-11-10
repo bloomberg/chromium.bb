@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
+#include "platform/bindings/ConditionalFeatures.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -208,6 +209,7 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Window::install_runtime_enabled_features_function_(
         isolate, world, window_wrapper, prototype, interface);
+    InstallConditionalFeatures(type, script_state, prototype, interface);
   }
   {
     const WrapperTypeInfo* type = &V8EventTarget::wrapperTypeInfo;
@@ -217,6 +219,7 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8EventTarget::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    InstallConditionalFeatures(type, script_state, prototype, interface);
   }
 
   if (!world.IsMainWorld()) {
@@ -237,6 +240,7 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8HTMLDocument::InstallRuntimeEnabledFeatures(
         isolate, world, document_wrapper, prototype, interface);
+    InstallConditionalFeatures(type, script_state, prototype, interface);
   }
   {
     const WrapperTypeInfo* type = &V8Document::wrapperTypeInfo;
@@ -246,6 +250,7 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Document::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    InstallConditionalFeatures(type, script_state, prototype, interface);
   }
   {
     const WrapperTypeInfo* type = &V8Node::wrapperTypeInfo;
@@ -255,6 +260,7 @@ void V8ContextSnapshot::InstallRuntimeEnabledFeatures(
                                           .As<v8::Object>();
     V8Node::InstallRuntimeEnabledFeatures(
         isolate, world, v8::Local<v8::Object>(), prototype, interface);
+    InstallConditionalFeatures(type, script_state, prototype, interface);
   }
 }
 
