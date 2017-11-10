@@ -1672,11 +1672,16 @@ static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
 #endif  // CONFIG_JNT_COMP
 
 #if CONFIG_FILTER_INTRA
-static const aom_prob default_filter_intra_probs[2] = { 103, 231 };
-
 static const aom_cdf_prob default_filter_intra_mode_cdf[2][CDF_SIZE(
-    FILTER_INTRA_MODES)] = { { AOM_CDF6(24348, 27690, 30315, 30864, 31701) },
-                             { AOM_CDF6(31977, 32117, 32300, 32484, 32719) } };
+    FILTER_INTRA_MODES)] = { { AOM_CDF6(22207, 23158, 24144, 24278, 30434) },
+                             { AOM_CDF6(32768, 32768, 32768, 32768, 32768) } };
+
+static const aom_cdf_prob default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)] =
+    { { AOM_CDF2(10985) }, { AOM_CDF2(10985) }, { AOM_CDF2(16645) },
+      { AOM_CDF2(27378) }, { AOM_CDF2(10985) }, { AOM_CDF2(10985) },
+      { AOM_CDF2(15723) }, { AOM_CDF2(12373) }, { AOM_CDF2(27199) },
+      { AOM_CDF2(24217) }, { AOM_CDF2(32767) }, { AOM_CDF2(32767) },
+      { AOM_CDF2(32767) }, { AOM_CDF2(32767) } };
 #endif  // CONFIG_FILTER_INTRA
 
 // FIXME(someone) need real defaults here
@@ -2253,6 +2258,62 @@ static const aom_cdf_prob
 // It is possible to re-train this model and bring back the 0.14% loss in CIF
 // set key frame coding. This reduction in context model does not change the
 // key frame coding stats for mid and high resolution sets.
+#if CONFIG_FILTER_INTRA
+const aom_cdf_prob
+    default_kf_y_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][CDF_SIZE(
+        INTRA_MODES)] = {
+      { { AOM_CDF13(13234, 14775, 17115, 18040, 18783, 19420, 20510, 22129,
+                    23183, 28738, 30120, 32138) },
+        { AOM_CDF13(8983, 14623, 16290, 17124, 17864, 18817, 19593, 20876,
+                    22359, 27820, 29791, 31566) },
+        { AOM_CDF13(7091, 8084, 17897, 18490, 19057, 19428, 20811, 22624, 23265,
+                    28288, 29341, 31870) },
+        { AOM_CDF13(11191, 12808, 14120, 16182, 16785, 17440, 18159, 20280,
+                    22697, 28431, 30235, 32276) },
+        { AOM_CDF13(8208, 9510, 11986, 12851, 15212, 16786, 19400, 22224, 23146,
+                    28889, 30200, 32375) } },
+      { { AOM_CDF13(6308, 15986, 17454, 18110, 18739, 19867, 20479, 21575,
+                    22972, 28087, 30042, 31489) },
+        { AOM_CDF13(3549, 21993, 22593, 22968, 23262, 24052, 24280, 24856,
+                    26026, 29057, 30818, 31543) },
+        { AOM_CDF13(4371, 9956, 16063, 16680, 17207, 17870, 18692, 20142, 21261,
+                    26613, 28301, 30433) },
+        { AOM_CDF13(6445, 12764, 13699, 15338, 15922, 16891, 17304, 18868,
+                    22816, 28105, 30472, 31907) },
+        { AOM_CDF13(4300, 11014, 12466, 13258, 15028, 17584, 19170, 21448,
+                    22945, 28207, 30041, 31659) } },
+      { { AOM_CDF13(9111, 10159, 16955, 17625, 18268, 18703, 20078, 22004,
+                    22761, 28166, 29334, 31990) },
+        { AOM_CDF13(7107, 11104, 15591, 16340, 17066, 17802, 18721, 20303,
+                    21481, 26882, 28699, 30978) },
+        { AOM_CDF13(4546, 4935, 22442, 22717, 22960, 23087, 24171, 25671, 25939,
+                    29333, 29866, 32023) },
+        { AOM_CDF13(8332, 9555, 12646, 14689, 15340, 15873, 16872, 19939, 21942,
+                    27812, 29508, 31923) },
+        { AOM_CDF13(6413, 7233, 13108, 13895, 15332, 16187, 19121, 22694, 23365,
+                    28639, 29686, 32187) } },
+      { { AOM_CDF13(9584, 11586, 12990, 15322, 15927, 16732, 17406, 19225,
+                    22484, 28555, 30321, 32279) },
+        { AOM_CDF13(5907, 11662, 12625, 14955, 15491, 16403, 16865, 18074,
+                    23261, 28508, 30584, 32057) },
+        { AOM_CDF13(5759, 7323, 12581, 14779, 15363, 15946, 16851, 19330, 21902,
+                    27860, 29214, 31747) },
+        { AOM_CDF13(7166, 8714, 9430, 14479, 14672, 14953, 15184, 17239, 24798,
+                    29350, 31021, 32371) },
+        { AOM_CDF13(6318, 8140, 9595, 12354, 13754, 15324, 16681, 19701, 22723,
+                    28616, 30226, 32279) } },
+      { { AOM_CDF13(8669, 9875, 12300, 13093, 15518, 17458, 19843, 22083, 22927,
+                    28780, 30271, 32364) },
+        { AOM_CDF13(6600, 10422, 12153, 12937, 15218, 18211, 19914, 21744,
+                    22975, 28393, 30393, 31970) },
+        { AOM_CDF13(5512, 6207, 14265, 14897, 16246, 17175, 19865, 22553, 23178,
+                    28445, 29511, 31980) },
+        { AOM_CDF13(8195, 9407, 10830, 13261, 14443, 15761, 16922, 20311, 22151,
+                    28230, 30109, 32220) },
+        { AOM_CDF13(5612, 6462, 8166, 8737, 14316, 17802, 21788, 25554, 26080,
+                    30083, 30983, 32457) } }
+    };
+#else
 const aom_cdf_prob
     default_kf_y_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][CDF_SIZE(
         INTRA_MODES)] = {
@@ -2317,6 +2378,7 @@ const aom_cdf_prob
                       29653, 30954, 32215) },
       },
     };
+#endif
 #else
 const aom_cdf_prob
     default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)] = {
@@ -3182,7 +3244,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->seg.pred_cdf, default_segment_pred_cdf);
 #endif
 #if CONFIG_FILTER_INTRA
-  av1_copy(fc->filter_intra_probs, default_filter_intra_probs);
+  av1_copy(fc->filter_intra_cdfs, default_filter_intra_cdfs);
   av1_copy(fc->filter_intra_mode_cdf, default_filter_intra_mode_cdf);
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
@@ -3444,12 +3506,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
     fc->delta_lf_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_lf_prob[i], counts->delta_lf[i]);
 #endif  // CONFIG_EXT_DELTA_Q
-#if CONFIG_FILTER_INTRA
-  for (i = 0; i < PLANE_TYPES; ++i) {
-    fc->filter_intra_probs[i] = av1_mode_mv_merge_probs(
-        pre_fc->filter_intra_probs[i], counts->filter_intra[i]);
-  }
-#endif  // CONFIG_FILTER_INTRA
 }
 
 static void set_default_lf_deltas(struct loopfilter *lf) {

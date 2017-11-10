@@ -4498,7 +4498,13 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #if CONFIG_ENTROPY_STATS
     const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, 0);
     const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, 0);
+#if CONFIG_KF_CTX
+    int above_ctx = intra_mode_context[above];
+    int left_ctx = intra_mode_context[left];
+    ++counts->kf_y_mode[above_ctx][left_ctx][y_mode];
+#else
     ++counts->kf_y_mode[above][left][y_mode];
+#endif
 #endif  // CONFIG_ENTROPY_STATS
     if (allow_update_cdf)
       update_cdf(get_y_mode_cdf(fc, mi, above_mi, left_mi, 0), y_mode,
@@ -4516,15 +4522,18 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
-    ++counts->filter_intra[0][use_filter_intra_mode];
 #if CONFIG_ENTROPY_STATS
     ++counts->filter_intra_mode[0][mbmi->filter_intra_mode_info
                                        .filter_intra_mode[0]];
+    ++counts->filter_intra_tx[mbmi->tx_size][use_filter_intra_mode];
 #endif  // CONFIG_ENTROPY_STATS
-    if (allow_update_cdf)
+    if (allow_update_cdf) {
       update_cdf(fc->filter_intra_mode_cdf[0],
                  mbmi->filter_intra_mode_info.filter_intra_mode[0],
                  FILTER_INTRA_MODES);
+      update_cdf(fc->filter_intra_cdfs[mbmi->tx_size], use_filter_intra_mode,
+                 2);
+    }
   }
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA && CONFIG_EXT_INTRA_MOD

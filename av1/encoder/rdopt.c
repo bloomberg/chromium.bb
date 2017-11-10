@@ -2878,13 +2878,13 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-  if (mbmi->mode == DC_PRED) {
-    const aom_prob prob = cpi->common.fc->filter_intra_probs[0];
+  if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
       const int mode = mbmi->filter_intra_mode_info.filter_intra_mode[0];
-      mode_cost += av1_cost_bit(prob, 1) + x->filter_intra_mode_cost[0][mode];
+      mode_cost += x->filter_intra_cost[mbmi->tx_size][1] +
+                   x->filter_intra_mode_cost[0][mode];
     } else {
-      mode_cost += av1_cost_bit(prob, 0);
+      mode_cost += x->filter_intra_cost[mbmi->tx_size][0];
     }
   }
 #endif  // CONFIG_FILTER_INTRA
@@ -3153,7 +3153,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     this_rate = tokenonly_rd_stats.rate +
-                av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 1) +
+                x->filter_intra_cost[mbmi->tx_size][1] +
                 x->filter_intra_mode_cost[0][mode] + mode_cost;
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
@@ -3567,7 +3567,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
 #if CONFIG_FILTER_INTRA
     if (mbmi->mode == DC_PRED && av1_filter_intra_allowed_txsize(mbmi->tx_size))
-      this_rate += av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 0);
+      this_rate += x->filter_intra_cost[mbmi->tx_size][0];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_directional_mode) {
@@ -9760,11 +9760,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         int64_t best_rd_tmp = INT64_MAX;
         if (rate_y != INT_MAX &&
             av1_filter_intra_allowed_txsize(best_tx_size)) {
-          best_rd_tmp = RDCOST(
-              x->rdmult,
-              rate_y + av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 0) +
-                  intra_mode_cost[mbmi->mode],
-              distortion_y);
+          best_rd_tmp = RDCOST(x->rdmult,
+                               rate_y + x->filter_intra_cost[mbmi->tx_size][0] +
+                                   intra_mode_cost[mbmi->mode],
+                               distortion_y);
         }
 
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 1;
@@ -9777,11 +9776,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           super_block_yrd(cpi, x, &rd_stats_y_fi, bsize, best_rd);
           if (rd_stats_y_fi.rate == INT_MAX) continue;
 
-          this_rate_tmp =
-              rd_stats_y_fi.rate +
-              av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 1) +
-              x->filter_intra_mode_cost[0][fi_mode] +
-              intra_mode_cost[mbmi->mode];
+          this_rate_tmp = rd_stats_y_fi.rate +
+                          x->filter_intra_cost[mbmi->tx_size][1] +
+                          x->filter_intra_mode_cost[0][fi_mode] +
+                          intra_mode_cost[mbmi->mode];
           this_rd_tmp = RDCOST(x->rdmult, this_rate_tmp, rd_stats_y_fi.dist);
 
           if (this_rd_tmp < best_rd_tmp) {
@@ -9877,10 +9875,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
-      if (mbmi->mode == DC_PRED) {
+      if (mbmi->mode == DC_PRED &&
+          av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
         rate2 +=
-            av1_cost_bit(cm->fc->filter_intra_probs[0],
-                         mbmi->filter_intra_mode_info.use_filter_intra_mode[0]);
+            x->filter_intra_cost[mbmi->tx_size][mbmi->filter_intra_mode_info
+                                                    .use_filter_intra_mode[0]];
         if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
           rate2 += x->filter_intra_mode_cost[0][mbmi->filter_intra_mode_info
                                                     .filter_intra_mode[0]];

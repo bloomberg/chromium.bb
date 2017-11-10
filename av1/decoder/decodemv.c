@@ -912,26 +912,20 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 }
 
 #if CONFIG_FILTER_INTRA
-static void read_filter_intra_mode_info(AV1_COMMON *const cm,
-                                        MACROBLOCKD *const xd, aom_reader *r) {
+static void read_filter_intra_mode_info(MACROBLOCKD *const xd, aom_reader *r) {
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
-  FRAME_COUNTS *counts = xd->counts;
   FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
       &mbmi->filter_intra_mode_info;
 
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    filter_intra_mode_info->use_filter_intra_mode[0] =
-        aom_read(r, cm->fc->filter_intra_probs[0], ACCT_STR);
+    filter_intra_mode_info->use_filter_intra_mode[0] = aom_read_symbol(
+        r, xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2, ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[0]) {
       filter_intra_mode_info->filter_intra_mode[0] =
           aom_read_symbol(r, xd->tile_ctx->filter_intra_mode_cdf[0],
                           FILTER_INTRA_MODES, ACCT_STR);
-    }
-    if (counts) {
-      ++counts
-            ->filter_intra[0][filter_intra_mode_info->use_filter_intra_mode[0]];
     }
   }
 }
@@ -1272,7 +1266,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  read_filter_intra_mode_info(cm, xd, r);
+  read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
@@ -1750,7 +1744,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  read_filter_intra_mode_info(cm, xd, r);
+  read_filter_intra_mode_info(xd, r);
 #endif  // CONFIG_FILTER_INTRA
 }
 

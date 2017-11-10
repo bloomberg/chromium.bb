@@ -291,7 +291,7 @@ typedef struct frame_contexts {
   int initialized;
   struct segmentation_probs seg;
 #if CONFIG_FILTER_INTRA
-  aom_prob filter_intra_probs[PLANE_TYPES];
+  aom_cdf_prob filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)];
   aom_cdf_prob filter_intra_mode_cdf[PLANE_TYPES][CDF_SIZE(FILTER_INTRA_MODES)];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
@@ -361,7 +361,11 @@ typedef struct FRAME_COUNTS {
 // Note: This structure should only contain 'unsigned int' fields, or
 // aggregates built solely from 'unsigned int' fields/elements
 #if CONFIG_ENTROPY_STATS
+#if CONFIG_KF_CTX
+  unsigned int kf_y_mode[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS][INTRA_MODES];
+#else
   unsigned int kf_y_mode[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+#endif
   unsigned int angle_delta[DIRECTIONAL_MODES][2 * MAX_ANGLE_DELTA + 1];
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
   unsigned int uv_mode[INTRA_MODES][UV_INTRA_MODES];
@@ -472,8 +476,8 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_ENTROPY_STATS
   struct seg_counts seg;
 #if CONFIG_FILTER_INTRA
-  unsigned int filter_intra[PLANE_TYPES][2];
   unsigned int filter_intra_mode[PLANE_TYPES][FILTER_INTRA_MODES];
+  unsigned int filter_intra_tx[TX_SIZES_ALL][2];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LPF_SB
   unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];

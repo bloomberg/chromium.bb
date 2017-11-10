@@ -918,6 +918,7 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
 
 static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
+  (void)cm;
 #if CONFIG_DEPENDENT_HORZTILES
   int tile_row, tile_col, num_tiles_in_tg;
   int tg_row_start, tg_col_start;

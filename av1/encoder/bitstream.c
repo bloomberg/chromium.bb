@@ -959,14 +959,13 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 #if CONFIG_FILTER_INTRA
-static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
-                                         const MACROBLOCKD *xd,
+static void write_filter_intra_mode_info(const MACROBLOCKD *xd,
                                          const MB_MODE_INFO *const mbmi,
                                          aom_writer *w) {
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0 &&
       av1_filter_intra_allowed_txsize(mbmi->tx_size)) {
-    aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
-              cm->fc->filter_intra_probs[0]);
+    aom_write_symbol(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
+                     xd->tile_ctx->filter_intra_cdfs[mbmi->tx_size], 2);
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode[0];
@@ -1492,7 +1491,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-    write_filter_intra_mode_info(cm, xd, mbmi, w);
+    write_filter_intra_mode_info(xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
@@ -1809,7 +1808,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-  write_filter_intra_mode_info(cm, xd, mbmi, w);
+  write_filter_intra_mode_info(xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL

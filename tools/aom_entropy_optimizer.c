@@ -317,7 +317,16 @@ int main(int argc, const char **argv) {
 
   int cts_each_dim[10];
 
-  /* Intra mode (keyframe luma) */
+/* Intra mode (keyframe luma) */
+#if CONFIG_KF_CTX
+  cts_each_dim[0] = KF_MODE_CONTEXTS;
+  cts_each_dim[1] = KF_MODE_CONTEXTS;
+  cts_each_dim[2] = INTRA_MODES;
+  optimize_cdf_table(&fc.kf_y_mode[0][0][0], probsfile, 3, cts_each_dim,
+                     "const aom_cdf_prob\n"
+                     "default_kf_y_mode_cdf[KF_MODE_CONTEXTS][KF_MODE_CONTEXTS]"
+                     "[CDF_SIZE(INTRA_MODES)]");
+#else
   cts_each_dim[0] = INTRA_MODES;
   cts_each_dim[1] = INTRA_MODES;
   cts_each_dim[2] = INTRA_MODES;
@@ -325,6 +334,7 @@ int main(int argc, const char **argv) {
       &fc.kf_y_mode[0][0][0], probsfile, 3, cts_each_dim,
       "const aom_cdf_prob\n"
       "default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)]");
+#endif
 
   cts_each_dim[0] = DIRECTIONAL_MODES;
   cts_each_dim[1] = 2 * MAX_ANGLE_DELTA + 1;
@@ -676,19 +686,17 @@ int main(int argc, const char **argv) {
 /* filter_intra experiment */
 #if CONFIG_FILTER_INTRA
   cts_each_dim[0] = PLANE_TYPES;
-  cts_each_dim[1] = 2;
-  optimize_entropy_table(&fc.filter_intra[0][0], probsfile, 2, cts_each_dim,
-                         NULL, 1,
-                         "static const aom_prob default_filter_intra_probs[2]");
-  optimize_cdf_table(
-      &fc.filter_intra[0][0], probsfile, 2, cts_each_dim,
-      "static const aom_cdf_prob default_filter_intra_cdf[2][CDF_SIZE(2)]");
-  cts_each_dim[0] = PLANE_TYPES;
   cts_each_dim[1] = FILTER_INTRA_MODES;
   optimize_cdf_table(
       &fc.filter_intra_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob "
       "default_filter_intra_mode_cdf[2][CDF_SIZE(FILTER_INTRA_MODES)]");
+
+  cts_each_dim[0] = TX_SIZES_ALL;
+  cts_each_dim[1] = 2;
+  optimize_cdf_table(&fc.filter_intra_tx[0][0], probsfile, 2, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_filter_intra_cdfs[TX_SIZES_ALL][CDF_SIZE(2)]");
 #endif
 
 #if CONFIG_LV_MAP

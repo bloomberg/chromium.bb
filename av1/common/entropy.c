@@ -1736,6 +1736,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(palette_uv_size_cdf)
   AVERAGE_TILE_CDFS(palette_y_color_index_cdf)
   AVERAGE_TILE_CDFS(palette_uv_color_index_cdf)
+#if CONFIG_FILTER_INTRA
+  AVERAGE_TILE_CDFS(filter_intra_cdfs)
+  AVERAGE_TILE_CDFS(filter_intra_mode_cdf)
+#endif
 #if CONFIG_MRC_TX
   AVERAGE_TILE_CDFS(mrc_mask_intra_cdf)
 #endif  // CONFIG_MRC_TX
