@@ -96,8 +96,8 @@ void InitializeOverridesList(base::ListValue* list) {
 
 // Adds |override| to |list|, or, if there's already an entry for the override,
 // marks it as active.
-void AddOverridesToList(base::ListValue* list,
-                        const std::string& override) {
+void AddOverridesToList(base::ListValue* list, const GURL& override_url) {
+  const std::string& spec = override_url.spec();
   for (auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
@@ -105,14 +105,24 @@ void AddOverridesToList(base::ListValue* list,
       NOTREACHED();
       continue;
     }
-    if (entry == override) {
+    if (entry == spec) {
       dict->SetBoolean(kActive, true);
       return;  // All done!
+    }
+    GURL entry_url(entry);
+    if (!entry_url.is_valid()) {
+      NOTREACHED();
+      continue;
+    }
+    if (entry_url.host() == override_url.host()) {
+      dict->SetBoolean(kActive, true);
+      dict->SetString(kEntry, spec);
+      return;
     }
   }
 
   auto dict = base::MakeUnique<base::DictionaryValue>();
-  dict->SetString(kEntry, override);
+  dict->SetString(kEntry, spec);
   dict->SetBoolean(kActive, true);
   // Add the entry to the front of the list.
   list->Insert(0, std::move(dict));
@@ -123,6 +133,7 @@ void AddOverridesToList(base::ListValue* list,
 void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
                            base::ListValue* list) {
   base::ListValue migrated;
+  std::set<std::string> seen_hosts;
   for (auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
@@ -138,6 +149,11 @@ void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
       continue;
 
     if (!all_extensions->GetByID(override_url.host()))
+      continue;
+
+    // If we've already seen this extension, remove the entry. Only retain the
+    // most recent entry for each extension.
+    if (!seen_hosts.insert(override_url.host()).second)
       continue;
 
     migrated.Append(std::move(new_dict));
@@ -478,7 +494,7 @@ void ExtensionWebUI::RegisterOrActivateChromeURLOverrides(
       page_overrides_weak = page_overrides.get();
       all_overrides->Set(page_override_pair.first, std::move(page_overrides));
     }
-    AddOverridesToList(page_overrides_weak, page_override_pair.second.spec());
+    AddOverridesToList(page_overrides_weak, page_override_pair.second);
   }
 }
 

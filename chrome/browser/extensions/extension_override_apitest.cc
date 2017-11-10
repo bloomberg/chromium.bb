@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,11 +107,29 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewTab) {
 
 // Check having multiple extensions with the same override.
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewTabMultiple) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_path = temp_dir.GetPath();
+  base::FilePath extension1_path = temp_path.AppendASCII("extension1.crx");
+  base::FilePath extension1_pem_path = temp_path.AppendASCII("extension1.pem");
+  base::FilePath extension1_unpacked_path = data_dir().AppendASCII("newtab");
+  ASSERT_TRUE(ExtensionCreator().Run(extension1_unpacked_path, extension1_path,
+                                     base::FilePath(), extension1_pem_path, 0));
+
+  base::FilePath extension2_path = temp_path.AppendASCII("extension2.crx");
+  base::FilePath extension2_pem_path = temp_path.AppendASCII("extension2.pem");
+  base::FilePath extension2_unpacked_path = data_dir().AppendASCII("newtab2");
+  ASSERT_TRUE(ExtensionCreator().Run(extension2_unpacked_path, extension2_path,
+                                     base::FilePath(), extension2_pem_path, 0));
+
   // Prefer IDs because loading/unloading invalidates the extension ptrs.
   const std::string extension1_id =
-      LoadExtension(data_dir().AppendASCII("newtab"))->id();
+      InstallExtensionWithPermissionsGranted(extension1_path, 1)->id();
   const std::string extension2_id =
-      LoadExtension(data_dir().AppendASCII("newtab2"))->id();
+      InstallExtensionWithPermissionsGranted(extension2_path, 1)->id();
+
   {
     // Navigate to the new tab page. Last extension installed wins, so
     // the new tab page should be controlled by the second extension.
@@ -137,6 +157,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewTabMultiple) {
     EXPECT_EQ("controlled by second", listener.message());
   }
 
+  {
+    // Upgrade the first extension to a version that uses a different NTP url.
+    // This should *not* result in the first extension moving to the front of
+    // the line.
+    base::FilePath update_path = temp_path.AppendASCII("extension1_update.crx");
+    base::FilePath update_pem_path = extension1_pem_path;
+    base::FilePath update_unpacked_path =
+        data_dir().AppendASCII("newtab_upgrade");
+    ASSERT_TRUE(ExtensionCreator().Run(update_unpacked_path, update_path,
+                                       update_pem_path, base::FilePath(), 0));
+
+    const Extension* updated_extension =
+        UpdateExtension(extension1_id, update_path, 0);
+    ASSERT_TRUE(updated_extension);
+    EXPECT_EQ(extension1_id, updated_extension->id());
+  }
+
+  {
+    // The page should still be controlled by the second extension.
+    ExtensionTestMessageListener listener(false);
+    ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
+    EXPECT_TRUE(ExtensionControlsPage(
+        browser()->tab_strip_model()->GetActiveWebContents(), extension2_id));
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    EXPECT_EQ("controlled by second", listener.message());
+  }
+
   // Unload the (controlling) second extension. Now, and only now, should
   // extension1 take over.
   UnloadExtension(extension2_id);
@@ -148,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewTabMultiple) {
         browser()->tab_strip_model()->GetActiveWebContents(),
         extension1_id));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
-    EXPECT_EQ("controlled by first", listener.message());
+    EXPECT_EQ("controlled by first upgrade", listener.message());
   }
 }
 
