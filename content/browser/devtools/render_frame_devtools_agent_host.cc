@@ -33,6 +33,7 @@
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -87,8 +88,6 @@ FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node) {
   DCHECK(frame_tree_node);
   return frame_tree_node;
 }
-
-const char* kPageNavigateCommand = "Page.navigate";
 
 }  // namespace
 
@@ -352,17 +351,18 @@ void RenderFrameDevToolsAgentHost::OnBeforeNavigation(
 }
 
 // static
-void RenderFrameDevToolsAgentHost::OnFailedNavigation(
-    RenderFrameHost* host,
-    const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
-    net::Error error_code) {
+void RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
+    NavigationRequest* navigation_request) {
   RenderFrameDevToolsAgentHost* agent_host =
-      FindAgentHost(static_cast<RenderFrameHostImpl*>(host)->frame_tree_node());
+      FindAgentHost(navigation_request->frame_tree_node());
   if (!agent_host)
     return;
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
-    network->NavigationFailed(common_params, begin_params, error_code);
+  if (navigation_request->net_error() != net::OK) {
+    for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
+      network->NavigationFailed(navigation_request);
+  }
+  for (auto* page : protocol::PageHandler::ForAgentHost(agent_host))
+    page->NavigationReset(navigation_request);
 }
 
 // static
@@ -592,7 +592,7 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
   }
 
   if (IsBrowserSideNavigationEnabled()) {
-    if (!navigation_handles_.empty() || method == kPageNavigateCommand) {
+    if (!navigation_handles_.empty()) {
       suspended_messages_by_session_id_[session_id].push_back(
           {call_id, method, message});
       return true;

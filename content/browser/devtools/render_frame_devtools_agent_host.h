@@ -38,10 +38,9 @@ class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationHandleImpl;
+class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
-struct BeginNavigationParams;
-struct CommonNavigationParams;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -55,10 +54,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                                         RenderFrameHost* current);
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
-  static void OnFailedNavigation(RenderFrameHost* host,
-                                 const CommonNavigationParams& common_params,
-                                 const BeginNavigationParams& begin_params,
-                                 net::Error error_code);
+  static void OnResetNavigationRequest(NavigationRequest* navigation_request);
+
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);

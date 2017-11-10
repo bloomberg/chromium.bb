@@ -3540,9 +3540,6 @@ void RenderFrameHostImpl::FailedNavigation(
                                      has_stale_copy_in_cache, error_code,
                                      error_page_content));
 
-  RenderFrameDevToolsAgentHost::OnFailedNavigation(
-      this, common_params, begin_params, static_cast<net::Error>(error_code));
-
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
   if (navigation_handle_)

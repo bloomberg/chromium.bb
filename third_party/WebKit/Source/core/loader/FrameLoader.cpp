@@ -1792,6 +1792,8 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
   bool replace_current_item = load_type == kFrameLoadTypeReplaceCurrentItem &&
                               (!Opener() || !request.Url().IsEmpty());
   loader->SetReplacesCurrentHistoryItem(replace_current_item);
+
+  probe::lifecycleEvent(frame_, loader, "init", MonotonicallyIncreasingTime());
   return loader;
 }
 

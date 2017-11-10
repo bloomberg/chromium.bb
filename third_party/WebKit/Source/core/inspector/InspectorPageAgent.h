@@ -125,7 +125,7 @@ class CORE_EXPORT InspectorPageAgent final
                               Maybe<String> referrer,
                               Maybe<String> transitionType,
                               String* frame_id,
-                              String* loader_id) override;
+                              Maybe<String>* errorText) override;
   protocol::Response stopLoading() override;
   protocol::Response setAdBlockingEnabled(bool) override;
   protocol::Response getResourceTree(

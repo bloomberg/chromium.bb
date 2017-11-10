@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -477,6 +478,9 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state,
   CHECK(IsBrowserSideNavigationEnabled());
   if (!navigation_request_)
     return;
+
+  RenderFrameDevToolsAgentHost::OnResetNavigationRequest(
+      navigation_request_.get());
 
   // The renderer should be informed if the caller allows to do so and the
   // navigation came from a BeginNavigation IPC.

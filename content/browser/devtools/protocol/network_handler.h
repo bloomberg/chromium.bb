@@ -25,10 +25,9 @@ class URLRequest;
 namespace content {
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
-struct BeginNavigationParams;
-struct CommonNavigationParams;
 struct GlobalRequestID;
 class NavigationHandle;
+class NavigationRequest;
 class NavigationThrottle;
 struct InterceptedRequestInfo;
 struct ResourceRequest;
@@ -115,9 +114,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   void NavigationPreloadCompleted(
       const std::string& request_id,
       const ResourceRequestCompletionStatus& completion_status);
-  void NavigationFailed(const CommonNavigationParams& common_params,
-                        const BeginNavigationParams& begin_params,
-                        net::Error error_code);
+  void NavigationFailed(NavigationRequest* navigation_request);
 
   bool enabled() const { return enabled_; }
 
