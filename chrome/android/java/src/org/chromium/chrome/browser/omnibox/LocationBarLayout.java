@@ -1340,10 +1340,11 @@ public class LocationBarLayout extends FrameLayout
      * @param provider The {@link ToolbarDataProvider}.
      * @param resources The Resources for the Context.
      * @param isOmniboxOpaque Whether the omnibox is an opaque color.
+     * @param isChromeHomeEnabled Whether Chrome Home is enabled.
      * @return The {@link ColorStateList} to use to tint the security state icon.
      */
     public static ColorStateList getColorStateList(int securityLevel, ToolbarDataProvider provider,
-            Resources resources, boolean isOmniboxOpaque) {
+            Resources resources, boolean isOmniboxOpaque, boolean isChromeHomeEnabled) {
         ColorStateList list = null;
         int color = provider.getPrimaryColor();
         boolean needLightIcon = ColorUtils.shouldUseLightForegroundOnBackground(color);
@@ -1351,7 +1352,7 @@ public class LocationBarLayout extends FrameLayout
             // For a dark theme color, use light icons.
             list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
         } else if (!ColorUtils.isUsingDefaultToolbarColor(resources,
-                           FeatureUtilities.isChromeHomeEnabled(), provider.isIncognito(), color)
+                           isChromeHomeEnabled, provider.isIncognito(), color)
                 && !isOmniboxOpaque) {
             // For theme colors which are not dark and are also not
             // light enough to warrant an opaque URL bar, use dark
@@ -1389,7 +1390,8 @@ public class LocationBarLayout extends FrameLayout
             mSecurityButton.setTint(
                     getColorStateList(securityLevel, mToolbarDataProvider, getResources(),
                             ColorUtils.shouldUseOpaqueTextboxBackground(
-                                    mToolbarDataProvider.getPrimaryColor())));
+                                    mToolbarDataProvider.getPrimaryColor()),
+                            mBottomSheet != null));
         }
 
         updateVerboseStatusVisibility();
