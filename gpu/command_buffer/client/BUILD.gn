@@ -162,6 +162,7 @@ component("gles2_implementation") {
 
   if (!is_nacl) {
     deps += [
+      "//cc/paint",
       "//ui/gfx:color_space",
       "//ui/gfx/ipc/color",
     ]
@@ -190,6 +191,7 @@ component("gles2_implementation_no_check") {
 
   if (!is_nacl) {
     deps += [
+      "//cc/paint",
       "//ui/gfx:color_space",
       "//ui/gfx/ipc/color",
     ]

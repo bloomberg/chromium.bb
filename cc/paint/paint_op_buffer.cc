@@ -25,23 +25,6 @@ SkIRect RoundOutRect(const SkRect& rect) {
   return result;
 }
 
-bool QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
-  DCHECK(op->IsDrawOp());
-
-  SkRect rect;
-  if (!PaintOp::GetBounds(op, &rect))
-    return false;
-
-  if (op->IsPaintOpWithFlags()) {
-    SkPaint paint = static_cast<const PaintOpWithFlags*>(op)->flags.ToSkPaint();
-    if (!paint.canComputeFastBounds())
-      return false;
-    paint.computeFastBounds(rect, &rect);
-  }
-
-  return canvas->quickReject(rect);
-}
-
 void RasterWithAlpha(const PaintOpWithFlags* op,
                      SkCanvas* canvas,
                      const PlaybackParams& params,
@@ -58,7 +41,7 @@ void RasterWithAlpha(const PaintOpWithFlags* op,
   // performing an expensive decode that will never be rasterized.
   const bool skip_op = params.image_provider &&
                        PaintOp::OpHasDiscardableImages(op) &&
-                       QuickRejectDraw(op, canvas);
+                       PaintOp::QuickRejectDraw(op, canvas);
   if (skip_op)
     return;
 
@@ -126,6 +109,10 @@ static constexpr size_t kNumOpTypes =
 // Verify that every op is in the TYPES macro.
 #define M(T) +1
 static_assert(kNumOpTypes == TYPES(M), "Missing op in list");
+#undef M
+
+#define M(T) sizeof(T),
+static const size_t g_type_to_size[kNumOpTypes] = {TYPES(M)};
 #undef M
 
 template <typename T, bool HasFlags>
@@ -323,6 +310,15 @@ size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
 PlaybackParams::PlaybackParams(ImageProvider* image_provider,
                                const SkMatrix& original_ctm)
     : image_provider(image_provider), original_ctm(original_ctm) {}
+
+PaintOp::SerializeOptions::SerializeOptions() = default;
+
+PaintOp::SerializeOptions::SerializeOptions(ImageProvider* image_provider,
+                                            SkCanvas* canvas,
+                                            const SkMatrix& original_ctm)
+    : image_provider(image_provider),
+      canvas(canvas),
+      original_ctm(original_ctm) {}
 
 size_t AnnotateOp::Serialize(const PaintOp* base_op,
                              void* memory,
@@ -564,7 +560,12 @@ size_t SetMatrixOp::Serialize(const PaintOp* op,
                               void* memory,
                               size_t size,
                               const SerializeOptions& options) {
-  return SimpleSerialize<SetMatrixOp>(op, memory, size);
+  if (options.original_ctm.isIdentity())
+    return SimpleSerialize<SetMatrixOp>(op, memory, size);
+
+  SetMatrixOp transformed(*static_cast<const SetMatrixOp*>(op));
+  transformed.matrix.postConcat(options.original_ctm);
+  return SimpleSerialize<SetMatrixOp>(&transformed, memory, size);
 }
 
 size_t TranslateOp::Serialize(const PaintOp* op,
@@ -577,7 +578,7 @@ size_t TranslateOp::Serialize(const PaintOp* op,
 template <typename T>
 void UpdateTypeAndSkip(T* op) {
   op->type = static_cast<uint8_t>(T::kType);
-  op->skip = MathUtil::UncheckedRoundUp(sizeof(T), PaintOpBuffer::PaintOpAlign);
+  op->skip = PaintOpBuffer::ComputeOpSkip(sizeof(T));
 }
 
 template <typename T>
@@ -1300,16 +1301,11 @@ PaintOp* PaintOp::Deserialize(const volatile void* input,
                               const DeserializeOptions& options) {
   DCHECK_GE(output_size, sizeof(LargestPaintOp));
 
-  uint32_t first_word = reinterpret_cast<const volatile uint32_t*>(input)[0];
-  uint8_t type = static_cast<uint8_t>(first_word & 0xFF);
-  uint32_t skip = first_word >> 8;
+  uint8_t type;
+  uint32_t skip;
+  if (!PaintOpReader::ReadAndValidateOpHeader(input, input_size, &type, &skip))
+    return nullptr;
 
-  if (input_size < skip)
-    return nullptr;
-  if (skip % PaintOpBuffer::PaintOpAlign != 0)
-    return nullptr;
-  if (type > static_cast<uint8_t>(PaintOpType::LastPaintOpType))
-    return nullptr;
   *read_bytes = skip;
   return g_deserialize_functions[type](input, skip, output, output_size,
                                        options);
@@ -1391,6 +1387,24 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
       NOTREACHED();
   }
   return false;
+}
+
+// static
+bool PaintOp::QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas) {
+  DCHECK(op->IsDrawOp());
+
+  SkRect rect;
+  if (!PaintOp::GetBounds(op, &rect))
+    return false;
+
+  if (op->IsPaintOpWithFlags()) {
+    SkPaint paint = static_cast<const PaintOpWithFlags*>(op)->flags.ToSkPaint();
+    if (!paint.canComputeFastBounds())
+      return false;
+    paint.computeFastBounds(rect, &rect);
+  }
+
+  return canvas->quickReject(rect);
 }
 
 // static
@@ -1759,7 +1773,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
     }
 
     if (params.image_provider && PaintOp::OpHasDiscardableImages(op)) {
-      if (QuickRejectDraw(op, canvas))
+      if (PaintOp::QuickRejectDraw(op, canvas))
         continue;
 
       auto* flags_op = op->IsPaintOpWithFlags()
@@ -1786,6 +1800,46 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   }
 }
 
+sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
+    const volatile void* input,
+    size_t input_size,
+    const PaintOp::DeserializeOptions& options) {
+  if (input_size == 0)
+    return nullptr;
+
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  size_t total_bytes_read = 0u;
+  while (total_bytes_read < input_size) {
+    const volatile void* next_op =
+        static_cast<const volatile char*>(input) + total_bytes_read;
+
+    uint8_t type;
+    uint32_t skip;
+    if (!PaintOpReader::ReadAndValidateOpHeader(
+            next_op, input_size - total_bytes_read, &type, &skip)) {
+      return nullptr;
+    }
+
+    size_t op_skip = ComputeOpSkip(g_type_to_size[type]);
+    const auto* op = g_deserialize_functions[type](
+        next_op, skip, buffer->AllocatePaintOp(op_skip), op_skip, options);
+    if (!op) {
+      // The last allocated op has already been destroyed if it failed to
+      // deserialize. Update the buffer's op tracking to exclude it to avoid
+      // access during cleanup at destruction.
+      buffer->used_ -= op_skip;
+      buffer->op_count_--;
+      return nullptr;
+    }
+
+    buffer->AnalyzeAddedOp(op);
+    total_bytes_read += skip;
+  }
+
+  DCHECK_GT(buffer->size(), 0u);
+  return buffer;
+}
+
 void PaintOpBuffer::ReallocBuffer(size_t new_size) {
   DCHECK_GE(new_size, used_);
   std::unique_ptr<char, base::AlignedFreeDeleter> new_data(
@@ -1796,10 +1850,7 @@ void PaintOpBuffer::ReallocBuffer(size_t new_size) {
   reserved_ = new_size;
 }
 
-std::pair<void*, size_t> PaintOpBuffer::AllocatePaintOp(size_t sizeof_op) {
-  // Compute a skip such that all ops in the buffer are aligned to the
-  // maximum required alignment of all ops.
-  size_t skip = MathUtil::UncheckedRoundUp(sizeof_op, PaintOpAlign);
+void* PaintOpBuffer::AllocatePaintOp(size_t skip) {
   DCHECK_LT(skip, PaintOp::kMaxSkip);
   if (used_ + skip > reserved_) {
     // Start reserved_ at kInitialBufferSize and then double.
@@ -1814,7 +1865,7 @@ std::pair<void*, size_t> PaintOpBuffer::AllocatePaintOp(size_t sizeof_op) {
   void* op = data_.get() + used_;
   used_ += skip;
   op_count_++;
-  return std::make_pair(op, skip);
+  return op;
 }
 
 void PaintOpBuffer::ShrinkToFit() {

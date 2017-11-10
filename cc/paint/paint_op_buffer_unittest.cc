@@ -9,8 +9,10 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/paint_image_builder.h"
+#include "cc/paint/paint_op_buffer_serializer.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_skcanvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2173,7 +2175,8 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   SimpleSerializer serializer(output_.get(), output_size_);
   serializer.Serialize(buffer_);
 
-  char* current = static_cast<char*>(output_.get());
+  char* first = static_cast<char*>(output_.get());
+  char* current = first;
 
   static constexpr size_t kAlign = PaintOpBuffer::PaintOpAlign;
   static constexpr size_t kOutputOpSize = kBufferBytesPerOp;
@@ -2182,6 +2185,7 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
   PaintOp::DeserializeOptions deserialize_options;
 
   size_t op_idx = 0;
+  size_t total_read = 0;
   for (PaintOpBuffer::Iterator iter(&buffer_); iter; ++iter, ++op_idx) {
     PaintOp* serialized = reinterpret_cast<PaintOp*>(current);
     uint32_t skip = serialized->skip;
@@ -2204,21 +2208,294 @@ TEST_P(PaintOpSerializationTest, DeserializationFailures) {
           PaintOp::Deserialize(current, read_size, deserialize_buffer_.get(),
                                kOutputOpSize, &bytes_read, deserialize_options);
 
+      // Deserialize buffers with valid ops until the last op. This verifies
+      // that the complete buffer is invalidated on encountering the first
+      // corrupted op.
+      auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+          first, total_read + read_size, deserialize_options);
+
       // Skips are only valid if they are aligned.
       if (read_size >= skip && read_size % kAlign == 0) {
         ASSERT_NE(nullptr, written);
         ASSERT_LE(written->skip, kOutputOpSize);
         EXPECT_EQ(GetParamType(), written->GetType());
         EXPECT_EQ(serialized->skip, bytes_read);
+
+        ASSERT_NE(nullptr, deserialized_buffer);
+        EXPECT_EQ(deserialized_buffer->size(), op_idx + 1);
+      } else if (read_size == 0 && op_idx != 0) {
+        // If no data was read for a subsequent op while some ops were
+        // deserialized, we still have a valid buffer with the deserialized ops.
+        ASSERT_NE(nullptr, deserialized_buffer);
+        EXPECT_EQ(deserialized_buffer->size(), op_idx);
       } else {
+        // If a subsequent op was corrupted or no ops could be serialized, we
+        // have an invalid buffer.
         EXPECT_EQ(nullptr, written);
+        EXPECT_EQ(nullptr, deserialized_buffer);
       }
 
       if (written)
         written->DestroyThis();
     }
 
+    serialized->skip = skip;
     current += skip;
+    total_read += skip;
+  }
+}
+
+TEST(PaintOpSerializationTest, CompleteBufferSerialization) {
+  PaintOpBuffer buffer;
+  PushDrawIRectOps(&buffer);
+
+  PaintOpBufferSerializer::Preamble preamble;
+  preamble.playback_rect = gfx::Rect(1000.f, 1000.f);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+  serializer.Serialize(&buffer, nullptr, preamble);
+  ASSERT_NE(serializer.written(), 0u);
+
+  PaintOp::DeserializeOptions deserialized_options;
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialized_options);
+  ASSERT_TRUE(deserialized_buffer);
+
+  // The deserialized buffer has an extra pair of save/restores, for the
+  // preamble and root buffer.
+  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 3u);
+
+  size_t i = 0;
+  auto serialized_iter = PaintOpBuffer::Iterator(&buffer);
+  for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    SCOPED_TRACE(i);
+    i++;
+
+    if (i == 1) {
+      // Save.
+      ASSERT_EQ(op->GetType(), PaintOpType::Save)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+
+    if (i == 2) {
+      // Preamble.
+      ASSERT_EQ(op->GetType(), PaintOpType::ClipRect)
+          << PaintOpTypeToString(op->GetType());
+      EXPECT_EQ(
+          static_cast<const ClipRectOp*>(op)->rect,
+          SkRect::MakeFromIRect(gfx::RectToSkIRect(preamble.playback_rect)));
+      continue;
+    }
+
+    if (serialized_iter) {
+      // Root buffer.
+      ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
+          << PaintOpTypeToString(op->GetType());
+      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      ++serialized_iter;
+      continue;
+    }
+
+    // End restore.
+    ASSERT_EQ(op->GetType(), PaintOpType::Restore)
+        << PaintOpTypeToString(op->GetType());
+  }
+}
+
+TEST(PaintOpSerializationTest, Preamble) {
+  PaintOpBufferSerializer::Preamble preamble;
+  preamble.translation = gfx::Vector2dF(10.f, 20.f);
+  preamble.playback_rect = gfx::Rect(5, 5);
+  preamble.post_translation = gfx::Vector2dF(4.3f, 7.f);
+  preamble.post_scale = 0.5f;
+
+  PaintOpBuffer buffer;
+  buffer.push<DrawColorOp>(SK_ColorBLUE, SkBlendMode::kSrc);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+  serializer.Serialize(&buffer, nullptr, preamble);
+  ASSERT_NE(serializer.written(), 0u);
+
+  PaintOp::DeserializeOptions deserialized_options;
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialized_options);
+  ASSERT_TRUE(deserialized_buffer);
+  // 4 ops for the preamble and 2 for save/restore.
+  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 6u);
+
+  size_t i = 0;
+  for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    i++;
+
+    if (i == 1) {
+      // Save.
+      ASSERT_EQ(op->GetType(), PaintOpType::Save)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+
+    if (i == 2) {
+      // Translate.
+      ASSERT_EQ(op->GetType(), PaintOpType::Translate)
+          << PaintOpTypeToString(op->GetType());
+      const auto* translate_op = static_cast<const TranslateOp*>(op);
+      EXPECT_EQ(translate_op->dx, -preamble.translation.x());
+      EXPECT_EQ(translate_op->dy, -preamble.translation.y());
+      continue;
+    }
+
+    if (i == 3) {
+      // Clip.
+      ASSERT_EQ(op->GetType(), PaintOpType::ClipRect)
+          << PaintOpTypeToString(op->GetType());
+      const auto* clip_op = static_cast<const ClipRectOp*>(op);
+      EXPECT_RECT_EQ(gfx::SkRectToRectF(clip_op->rect), preamble.playback_rect);
+      continue;
+    }
+
+    if (i == 4) {
+      // Post translate.
+      ASSERT_EQ(op->GetType(), PaintOpType::Translate)
+          << PaintOpTypeToString(op->GetType());
+      const auto* translate_op = static_cast<const TranslateOp*>(op);
+      EXPECT_EQ(translate_op->dx, preamble.post_translation.x());
+      EXPECT_EQ(translate_op->dy, preamble.post_translation.y());
+      continue;
+    }
+
+    if (i == 5) {
+      // Scale.
+      ASSERT_EQ(op->GetType(), PaintOpType::Scale)
+          << PaintOpTypeToString(op->GetType());
+      const auto* scale_op = static_cast<const ScaleOp*>(op);
+      EXPECT_EQ(scale_op->sx, preamble.post_scale);
+      EXPECT_EQ(scale_op->sy, preamble.post_scale);
+      continue;
+    }
+
+    if (i == 6) {
+      // Buffer.
+      PaintOpSerializationTest::ExpectOpsEqual(op, buffer.GetFirstOp());
+      continue;
+    }
+
+    // End restore.
+    ASSERT_EQ(op->GetType(), PaintOpType::Restore)
+        << PaintOpTypeToString(op->GetType());
+  }
+}
+
+TEST(PaintOpSerializationTest, SerializesNestedRecords) {
+  auto record = sk_make_sp<PaintOpBuffer>();
+  record->push<ScaleOp>(0.5f, 0.75f);
+  record->push<DrawRectOp>(SkRect::MakeWH(10.f, 20.f), PaintFlags());
+  PaintOpBuffer buffer;
+  buffer.push<DrawRecordOp>(record);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+  PaintOpBufferSerializer::Preamble preamble;
+  serializer.Serialize(&buffer, nullptr, preamble);
+  ASSERT_NE(serializer.written(), 0u);
+
+  PaintOp::DeserializeOptions deserialized_options;
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialized_options);
+  ASSERT_TRUE(deserialized_buffer);
+  ASSERT_EQ(deserialized_buffer->size(), record->size() + 4u);
+
+  size_t i = 0;
+  auto serialized_iter = PaintOpBuffer::Iterator(record.get());
+  for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    i++;
+    if (i <= 2) {
+      // First 2 saves.
+      ASSERT_EQ(op->GetType(), PaintOpType::Save)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+
+    if (serialized_iter) {
+      // Nested buffer.
+      ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
+          << PaintOpTypeToString(op->GetType());
+      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      ++serialized_iter;
+      continue;
+    }
+
+    // End restores.
+    ASSERT_EQ(op->GetType(), PaintOpType::Restore)
+        << PaintOpTypeToString(op->GetType());
+  }
+}
+
+TEST(PaintOpBufferTest, ClipsImagesDuringSerialization) {
+  PaintOpBuffer buffer;
+  buffer.push<ClipRectOp>(SkRect::MakeWH(100.f, 100.f), SkClipOp::kIntersect,
+                          false);
+  buffer.push<DrawImageOp>(CreateDiscardablePaintImage(gfx::Size(10, 10)), 0.f,
+                           0.f, nullptr);
+  buffer.push<DrawImageOp>(CreateDiscardablePaintImage(gfx::Size(10, 10)),
+                           200.f, 200.f, nullptr);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  SimpleBufferSerializer serializer(memory.get(),
+                                    PaintOpBuffer::kInitialBufferSize, nullptr);
+  PaintOpBufferSerializer::Preamble preamble;
+  serializer.Serialize(&buffer, nullptr, preamble);
+  ASSERT_NE(serializer.written(), 0u);
+
+  PaintOp::DeserializeOptions deserialized_options;
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), deserialized_options);
+  ASSERT_TRUE(deserialized_buffer);
+  ASSERT_EQ(deserialized_buffer->size(), buffer.size() + 1);
+
+  int i = 0;
+  auto serialized_iter = PaintOpBuffer::Iterator(&buffer);
+  for (const auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    i++;
+    if (i == 1) {
+      // First save.
+      ASSERT_EQ(op->GetType(), PaintOpType::Save)
+          << PaintOpTypeToString(op->GetType());
+      continue;
+    }
+
+    if (i < 4) {
+      // Root buffer.
+      ASSERT_EQ(op->GetType(), (*serialized_iter)->GetType())
+          << PaintOpTypeToString(op->GetType());
+      PaintOpSerializationTest::ExpectOpsEqual(op, *serialized_iter);
+      ++serialized_iter;
+      continue;
+    }
+
+    if (i == 4) {
+      // The second image should be skipped.
+      ASSERT_TRUE(serialized_iter);
+      ASSERT_EQ((*serialized_iter)->GetType(), PaintOpType::DrawImage)
+          << PaintOpTypeToString(op->GetType());
+    }
+
+    // End restores.
+    ASSERT_EQ(op->GetType(), PaintOpType::Restore)
+        << PaintOpTypeToString(op->GetType());
   }
 }
 

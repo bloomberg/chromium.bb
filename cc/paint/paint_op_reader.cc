@@ -72,6 +72,24 @@ void PaintOpReader::FixupMatrixPostSerialization(SkMatrix* matrix) {
     matrix->dirtyMatrixTypeCache();
 }
 
+// static
+bool PaintOpReader::ReadAndValidateOpHeader(const volatile void* input,
+                                            size_t input_size,
+                                            uint8_t* type,
+                                            uint32_t* skip) {
+  uint32_t first_word = reinterpret_cast<const volatile uint32_t*>(input)[0];
+  *type = static_cast<uint8_t>(first_word & 0xFF);
+  *skip = first_word >> 8;
+
+  if (input_size < *skip)
+    return false;
+  if (*skip % PaintOpBuffer::PaintOpAlign != 0)
+    return false;
+  if (*type > static_cast<uint8_t>(PaintOpType::LastPaintOpType))
+    return false;
+  return true;
+}
+
 template <typename T>
 void PaintOpReader::ReadSimple(T* val) {
   static_assert(base::is_trivially_copyable<T>::value,
