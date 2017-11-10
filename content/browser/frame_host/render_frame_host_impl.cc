@@ -1471,7 +1471,7 @@ void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
                "error", params.error_code);
   // TODO(clamy): Kill the renderer with RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE and
   // return early if navigation_handle_ is null, once we prevent that case from
-  // happening in practice.
+  // happening in practice. See https://crbug.com/605289.
 
   // Update the error code in the NavigationHandle of the navigation.
   if (navigation_handle_) {
