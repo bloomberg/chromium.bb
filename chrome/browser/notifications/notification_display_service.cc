@@ -9,6 +9,7 @@
 #include "base/strings/nullable_string16.h"
 #include "chrome/browser/notifications/non_persistent_notification_handler.h"
 #include "chrome/browser/notifications/notification_common.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "extensions/features/features.h"
 #include "url/gurl.h"
@@ -16,6 +17,13 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
 #endif
+
+// static
+
+NotificationDisplayService* NotificationDisplayService::GetForProfile(
+    Profile* profile) {
+  return NotificationDisplayServiceFactory::GetForProfile(profile);
+}
 
 NotificationDisplayService::NotificationDisplayService(Profile* profile)
     : profile_(profile) {
