@@ -20,7 +20,7 @@ namespace blink {
 class GeometryMapperTest : public ::testing::Test,
                            public PaintTestConfigurations {
  public:
-  const FloatClipRect* GetClip(
+  const FloatClipRect* GetCachedClip(
       const ClipPaintPropertyNode* descendant_clip,
       const PropertyTreeState& ancestor_property_tree_state) {
     GeometryMapperClipCache::ClipAndTransform clip_and_transform(
@@ -32,334 +32,282 @@ class GeometryMapperTest : public ::testing::Test,
   void LocalToAncestorVisualRectInternal(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
-      FloatRect& mapping_rect,
+      FloatClipRect& mapping_rect,
       bool& success) {
-    FloatClipRect float_clip_rect(mapping_rect);
     GeometryMapper::LocalToAncestorVisualRectInternal(
-        local_state, ancestor_state, float_clip_rect, success);
-    mapping_rect = float_clip_rect.Rect();
+        local_state, ancestor_state, mapping_rect, success);
   }
+
+  // Variables required by CHECK_MAPPINGS(). The tests should set these
+  // variables with proper values before calling CHECK_MAPPINGS().
+  PropertyTreeState local_state = PropertyTreeState::Root();
+  PropertyTreeState ancestor_state = PropertyTreeState::Root();
+  FloatRect input_rect;
+  FloatClipRect expected_visual_rect;
+  TransformationMatrix expected_transform;
+  FloatClipRect expected_clip;
+  FloatRect expected_transformed_rect;
 };
 
 INSTANTIATE_TEST_CASE_P(All,
                         GeometryMapperTest,
                         ::testing::ValuesIn(kSlimmingPaintVersions));
 
-const static float kTestEpsilon = 1e-6;
-
 #define EXPECT_FLOAT_RECT_NEAR(expected, actual)                            \
   do {                                                                      \
-    const FloatRect& actual_rect = actual;                                  \
-    EXPECT_TRUE(GeometryTest::ApproximatelyEqual(                           \
-        expected.X(), actual_rect.X(), kTestEpsilon))                       \
-        << "actual: " << actual_rect.X() << ", expected: " << expected.X(); \
-    EXPECT_TRUE(GeometryTest::ApproximatelyEqual(                           \
-        expected.Y(), actual_rect.Y(), kTestEpsilon))                       \
-        << "actual: " << actual_rect.Y() << ", expected: " << expected.Y(); \
-    EXPECT_TRUE(GeometryTest::ApproximatelyEqual(                           \
-        expected.Width(), actual_rect.Width(), kTestEpsilon))               \
-        << "actual: " << actual_rect.Width()                                \
-        << ", expected: " << expected.Width();                              \
-    EXPECT_TRUE(GeometryTest::ApproximatelyEqual(                           \
-        expected.Height(), actual_rect.Height(), kTestEpsilon))             \
-        << "actual: " << actual_rect.Height()                               \
-        << ", expected: " << expected.Height();                             \
+    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).X(),      \
+                        (expected).X());                                    \
+    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Y(),      \
+                        (expected).Y());                                    \
+    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Width(),  \
+                        (expected).Width());                                \
+    EXPECT_PRED_FORMAT2(GeometryTest::AssertAlmostEqual, (actual).Height(), \
+                        (expected).Height());                               \
   } while (false)
 
-#define EXPECT_CLIP_RECT_EQ(expected, actual)                 \
-  do {                                                        \
-    EXPECT_EQ(expected.IsInfinite(), actual.IsInfinite());    \
-    if (!expected.IsInfinite())                               \
-      EXPECT_FLOAT_RECT_NEAR(expected.Rect(), actual.Rect()); \
+#define EXPECT_CLIP_RECT_EQ(expected, actual)                       \
+  do {                                                              \
+    SCOPED_TRACE("EXPECT_CLIP_RECT_EQ: " #expected " vs " #actual); \
+    EXPECT_EQ((expected).IsInfinite(), (actual).IsInfinite());      \
+    EXPECT_EQ((expected).HasRadius(), (actual).HasRadius());        \
+    if (!(expected).IsInfinite())                                   \
+      EXPECT_FLOAT_RECT_NEAR((expected).Rect(), (actual).Rect());   \
   } while (false)
 
-#define CHECK_MAPPINGS(inputRect, expectedVisualRect, expectedTransformedRect, \
-                       expectedTransformToAncestor,                            \
-                       expectedClipInAncestorSpace, localPropertyTreeState,    \
-                       ancestorPropertyTreeState)                              \
-  do {                                                                         \
-    FloatClipRect float_rect(inputRect);                                       \
-    GeometryMapper::LocalToAncestorVisualRect(                                 \
-        localPropertyTreeState, ancestorPropertyTreeState, float_rect);        \
-    EXPECT_FLOAT_RECT_NEAR(expectedVisualRect, float_rect.Rect());             \
-    EXPECT_EQ(has_radius, float_rect.HasRadius());                             \
-    FloatClipRect float_clip_rect;                                             \
-    float_clip_rect = GeometryMapper::LocalToAncestorClipRect(                 \
-        localPropertyTreeState, ancestorPropertyTreeState);                    \
-    EXPECT_EQ(has_radius, float_clip_rect.HasRadius());                        \
-    EXPECT_CLIP_RECT_EQ(expectedClipInAncestorSpace, float_clip_rect);         \
-    float_rect.SetRect(inputRect);                                             \
-    GeometryMapper::LocalToAncestorVisualRect(                                 \
-        localPropertyTreeState, ancestorPropertyTreeState, float_rect);        \
-    EXPECT_FLOAT_RECT_NEAR(expectedVisualRect, float_rect.Rect());             \
-    EXPECT_EQ(has_radius, float_rect.HasRadius());                             \
-    FloatRect test_mapped_rect = inputRect;                                    \
-    GeometryMapper::SourceToDestinationRect(                                   \
-        localPropertyTreeState.Transform(),                                    \
-        ancestorPropertyTreeState.Transform(), test_mapped_rect);              \
-    EXPECT_FLOAT_RECT_NEAR(expectedTransformedRect, test_mapped_rect);         \
-    test_mapped_rect = inputRect;                                              \
-    GeometryMapper::SourceToDestinationRect(                                   \
-        localPropertyTreeState.Transform(),                                    \
-        ancestorPropertyTreeState.Transform(), test_mapped_rect);              \
-    EXPECT_FLOAT_RECT_NEAR(expectedTransformedRect, test_mapped_rect);         \
-    if (ancestorPropertyTreeState.Transform() !=                               \
-        localPropertyTreeState.Transform()) {                                  \
-      const TransformationMatrix& transform_for_testing =                      \
-          GeometryMapper::SourceToDestinationProjection(                       \
-              localPropertyTreeState.Transform(),                              \
-              ancestorPropertyTreeState.Transform());                          \
-      EXPECT_EQ(expectedTransformToAncestor, transform_for_testing);           \
-    }                                                                          \
-    if (ancestorPropertyTreeState.Clip() != localPropertyTreeState.Clip()) {   \
-      const FloatClipRect* output_clip_for_testing =                           \
-          GetClip(localPropertyTreeState.Clip(), ancestorPropertyTreeState);   \
-      DCHECK(output_clip_for_testing);                                         \
-      EXPECT_EQ(expectedClipInAncestorSpace, *output_clip_for_testing)         \
-          << "expected: " << expectedClipInAncestorSpace.Rect().ToString()     \
-          << " (hasRadius: " << expectedClipInAncestorSpace.HasRadius()        \
-          << ") "                                                              \
-          << "actual: " << output_clip_for_testing->Rect().ToString()          \
-          << " (hasRadius: " << output_clip_for_testing->HasRadius() << ")";   \
-    }                                                                          \
+#define CHECK_LOCAL_TO_ANCESTOR_VISUAL_RECT()                              \
+  do {                                                                     \
+    SCOPED_TRACE("Check LocalToAncestorVisualRect");                       \
+    FloatClipRect actual_visual_rect(input_rect);                          \
+    GeometryMapper::LocalToAncestorVisualRect(local_state, ancestor_state, \
+                                              actual_visual_rect);         \
+    EXPECT_CLIP_RECT_EQ(expected_visual_rect, actual_visual_rect);         \
+  } while (false)
+
+#define CHECK_LOCAL_TO_ANCESTOR_CLIP_RECT()                                   \
+  do {                                                                        \
+    SCOPED_TRACE("Check LocalToAncestorClipRect");                            \
+    FloatClipRect actual_clip_rect;                                           \
+    actual_clip_rect =                                                        \
+        GeometryMapper::LocalToAncestorClipRect(local_state, ancestor_state); \
+    EXPECT_CLIP_RECT_EQ(expected_clip, actual_clip_rect);                     \
+  } while (false)
+
+#define CHECK_SOURCE_TO_DESTINATION_RECT()                              \
+  do {                                                                  \
+    SCOPED_TRACE("Check SourceToDestinationRect");                      \
+    auto actual_transformed_rect = input_rect;                          \
+    GeometryMapper::SourceToDestinationRect(local_state.Transform(),    \
+                                            ancestor_state.Transform(), \
+                                            actual_transformed_rect);   \
+    EXPECT_FLOAT_RECT_NEAR(expected_transformed_rect,                   \
+                           actual_transformed_rect);                    \
+  } while (false)
+
+#define CHECK_SOURCE_TO_DESTINATION_PROJECTION()                  \
+  do {                                                            \
+    if (ancestor_state.Transform() == local_state.Transform())    \
+      break;                                                      \
+    SCOPED_TRACE("Check SourceToDestinationProjection");          \
+    const auto& actual_transform_to_ancestor =                    \
+        GeometryMapper::SourceToDestinationProjection(            \
+            local_state.Transform(), ancestor_state.Transform()); \
+    EXPECT_EQ(expected_transform, actual_transform_to_ancestor);  \
+  } while (false)
+
+#define CHECK_CACHED_CLIP()                                \
+  do {                                                     \
+    if (ancestor_state.Clip() == local_state.Clip())       \
+      break;                                               \
+    SCOPED_TRACE("Check cached clip");                     \
+    const auto* cached_clip =                              \
+        GetCachedClip(local_state.Clip(), ancestor_state); \
+    DCHECK(cached_clip);                                   \
+    EXPECT_CLIP_RECT_EQ(expected_clip, *cached_clip);      \
+  } while (false)
+
+// See the data fields of GeometryMapperTest for variables that will be used in
+// this macro.
+#define CHECK_MAPPINGS()                              \
+  do {                                                \
+    CHECK_LOCAL_TO_ANCESTOR_VISUAL_RECT();            \
+    CHECK_LOCAL_TO_ANCESTOR_CLIP_RECT();              \
+    CHECK_SOURCE_TO_DESTINATION_RECT();               \
+    CHECK_SOURCE_TO_DESTINATION_PROJECTION();         \
+    {                                                 \
+      SCOPED_TRACE("Repeated check to test caching"); \
+      CHECK_LOCAL_TO_ANCESTOR_VISUAL_RECT();          \
+      CHECK_LOCAL_TO_ANCESTOR_CLIP_RECT();            \
+      CHECK_SOURCE_TO_DESTINATION_RECT();             \
+      CHECK_SOURCE_TO_DESTINATION_PROJECTION();       \
+    }                                                 \
+    CHECK_CACHED_CLIP();                              \
   } while (false)
 
 TEST_P(GeometryMapperTest, Root) {
-  FloatRect input(0, 0, 100, 100);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, input, input,
-                 TransformPaintPropertyNode::Root()->Matrix(), FloatClipRect(),
-                 PropertyTreeState::Root(), PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_visual_rect = FloatClipRect(input_rect);
+  expected_transformed_rect = input_rect;
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, IdentityTransform) {
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         TransformationMatrix(),
-                                         FloatPoint3D());
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), TransformationMatrix(),
+      FloatPoint3D());
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, input, input, transform->Matrix(), FloatClipRect(),
-                 local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;
+  expected_visual_rect = FloatClipRect(input_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, TranslationTransform) {
-  TransformationMatrix transform_matrix;
-  transform_matrix.Translate(20, 10);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         transform_matrix, FloatPoint3D());
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  expected_transform = TransformationMatrix().Translate(20, 10);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform, FloatPoint3D());
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output = transform_matrix.MapRect(input);
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, transform->Matrix(), FloatClipRect(),
-                 local_state, PropertyTreeState::Root());
-
+  FloatRect rect = expected_transformed_rect;
   GeometryMapper::SourceToDestinationRect(TransformPaintPropertyNode::Root(),
-                                          local_state.Transform(), output);
-  EXPECT_FLOAT_RECT_NEAR(input, output);
+                                          local_state.Transform(), rect);
+  EXPECT_FLOAT_RECT_NEAR(input_rect, rect);
 }
 
 TEST_P(GeometryMapperTest, RotationAndScaleTransform) {
-  TransformationMatrix transform_matrix;
-  transform_matrix.Rotate(45);
-  transform_matrix.Scale(2);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         transform_matrix,
-                                         FloatPoint3D(0, 0, 0));
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  expected_transform = TransformationMatrix().Rotate(45).Scale(2);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform,
+      FloatPoint3D(0, 0, 0));
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output = transform_matrix.MapRect(input);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, transform_matrix, FloatClipRect(),
-                 local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, RotationAndScaleTransformWithTransformOrigin) {
-  TransformationMatrix transform_matrix;
-  transform_matrix.Rotate(45);
-  transform_matrix.Scale(2);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         transform_matrix,
-                                         FloatPoint3D(50, 50, 0));
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  expected_transform = TransformationMatrix().Rotate(45).Scale(2);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform,
+      FloatPoint3D(50, 50, 0));
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-  transform_matrix.ApplyTransformOrigin(50, 50, 0);
-  FloatRect output = transform_matrix.MapRect(input);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, transform_matrix, FloatClipRect(),
-                 local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transform.ApplyTransformOrigin(50, 50, 0);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, NestedTransforms) {
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
+  auto rotate_transform = TransformationMatrix().Rotate(45);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform, FloatPoint3D());
 
-  TransformationMatrix scale_transform;
-  scale_transform.Scale(2);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(transform1, scale_transform,
-                                         FloatPoint3D());
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto scale_transform = TransformationMatrix().Scale(2);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, scale_transform, FloatPoint3D());
   local_state.SetTransform(transform2.get());
 
-  FloatRect input(0, 0, 100, 100);
-  TransformationMatrix final = rotate_transform * scale_transform;
-  FloatRect output = final.MapRect(input);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, final, FloatClipRect(), local_state,
-                 PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transform = rotate_transform * scale_transform;
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, NestedTransformsFlattening) {
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate3d(45, 0, 0);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
+  auto rotate_transform = TransformationMatrix().Rotate3d(45, 0, 0);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform, FloatPoint3D());
 
-  TransformationMatrix inverse_rotate_transform;
-  inverse_rotate_transform.Rotate3d(-45, 0, 0);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(transform1, inverse_rotate_transform,
-                                         FloatPoint3D(),
-                                         true);  // Flattens
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto inverse_rotate_transform = TransformationMatrix().Rotate3d(-45, 0, 0);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, inverse_rotate_transform, FloatPoint3D(),
+      true);  // Flattens
   local_state.SetTransform(transform2.get());
 
-  FloatRect input(0, 0, 100, 100);
+  input_rect = FloatRect(0, 0, 100, 100);
   rotate_transform.FlattenTo2d();
-  TransformationMatrix combined = rotate_transform * inverse_rotate_transform;
-  combined.FlattenTo2d();
-  FloatRect output = combined.MapRect(input);
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, combined, FloatClipRect(), local_state,
-                 PropertyTreeState::Root());
+  expected_transform = rotate_transform * inverse_rotate_transform;
+  expected_transform.FlattenTo2d();
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
-  TransformationMatrix scale_transform;
-  scale_transform.Scale(2);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         scale_transform, FloatPoint3D());
+  auto scale_transform = TransformationMatrix().Scale(2);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), scale_transform, FloatPoint3D());
 
-  TransformationMatrix translate_transform;
-  translate_transform.Translate(100, 0);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(transform1, translate_transform,
-                                         FloatPoint3D());
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto translate_transform = TransformationMatrix().Translate(100, 0);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, translate_transform, FloatPoint3D());
   local_state.SetTransform(transform2.get());
 
-  FloatRect input(0, 0, 100, 100);
+  input_rect = FloatRect(0, 0, 100, 100);
   // Note: unlike NestedTransforms, the order of these transforms matters. This
   // tests correct order of matrix multiplication.
-  TransformationMatrix final = scale_transform * translate_transform;
-  FloatRect output = final.MapRect(input);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, final, FloatClipRect(), local_state,
-                 PropertyTreeState::Root());
+  expected_transform = scale_transform * translate_transform;
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
+  auto rotate_transform = TransformationMatrix().Rotate(45);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform, FloatPoint3D());
 
-  TransformationMatrix scale_transform;
-  scale_transform.Scale(2);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(transform1, scale_transform,
-                                         FloatPoint3D());
+  auto scale_transform = TransformationMatrix().Scale(2);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      transform1, scale_transform, FloatPoint3D());
 
-  PropertyTreeState local_state = PropertyTreeState::Root();
   local_state.SetTransform(transform2.get());
+  ancestor_state.SetTransform(transform1.get());
 
-  PropertyTreeState intermediate_state = PropertyTreeState::Root();
-  intermediate_state.SetTransform(transform1.get());
-
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output = scale_transform.MapRect(input);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, output, scale_transform, FloatClipRect(),
-                 local_state, intermediate_state);
+  expected_transform = scale_transform;
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, SimpleClip) {
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(10, 10, 50, 50));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            TransformPaintPropertyNode::Root(),
+                                            FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(clip.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output(10, 10, 50, 50);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(input,   // Input
-                 output,  // Visual rect
-                 input,   // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 FloatClipRect(clip->ClipRect().Rect()),  // Clip rect in
-                                                          // ancestor space
-                 local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;  // not clipped.
+  expected_clip = FloatClipRect(clip->ClipRect().Rect());
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
                                                 FloatSize(), FloatSize()));
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
+  auto clip = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(), rect);
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
   local_state.SetClip(clip.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output(10, 10, 50, 50);
-
-  FloatClipRect expected_clip(clip->ClipRect().Rect());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;
+  expected_clip = FloatClipRect(clip->ClipRect().Rect());
   expected_clip.SetHasRadius();
-
-  bool has_radius = true;
-  CHECK_MAPPINGS(input,   // Input
-                 output,  // Visual rect
-                 input,   // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 expected_clip,   // Clip rect in ancestor space
-                 local_state, PropertyTreeState::Root());
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, TwoClips) {
@@ -368,257 +316,177 @@ TEST_P(GeometryMapperTest, TwoClips) {
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      clip_rect1);
+  auto clip1 = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                             TransformPaintPropertyNode::Root(),
+                                             clip_rect1);
 
-  scoped_refptr<ClipPaintPropertyNode> clip2 =
+  auto clip2 =
       ClipPaintPropertyNode::Create(clip1, TransformPaintPropertyNode::Root(),
                                     FloatRoundedRect(10, 10, 50, 50));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
-  PropertyTreeState ancestor_state = PropertyTreeState::Root();
   local_state.SetClip(clip2.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output1(10, 10, 30, 40);
-
-  FloatClipRect clip_rect(clip1->ClipRect().Rect());
-  clip_rect.SetHasRadius();
-
-  bool has_radius = true;
-  CHECK_MAPPINGS(input,    // Input
-                 output1,  // Visual rect
-                 input,    // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 clip_rect,       // Clip rect in ancestor space
-                 local_state, ancestor_state);
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;
+  expected_clip = FloatClipRect(clip1->ClipRect().Rect());
+  expected_clip.SetHasRadius();
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 
   ancestor_state.SetClip(clip1.get());
-  FloatRect output2(10, 10, 50, 50);
-
-  FloatClipRect clip_rect2;
-  clip_rect2.SetRect(clip2->ClipRect().Rect());
-
-  has_radius = false;
-  CHECK_MAPPINGS(input,    // Input
-                 output2,  // Visual rect
-                 input,    // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 clip_rect2,      // Clip rect in ancestor space
-                 local_state, ancestor_state);
+  expected_clip = FloatClipRect(clip2->ClipRect().Rect());
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         TransformationMatrix(),
-                                         FloatPoint3D());
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), TransformationMatrix(),
+      FloatPoint3D());
 
   FloatRoundedRect clip_rect1(
       FloatRect(10, 10, 50, 50),
       FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(), FloatSize(),
                               FloatSize()));
 
-  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform.get(), clip_rect1);
+  auto clip1 = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                             transform.get(), clip_rect1);
 
-  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
-      clip1, transform.get(), FloatRoundedRect(10, 10, 30, 40));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
-  PropertyTreeState ancestor_state = PropertyTreeState::Root();
+  auto clip2 = ClipPaintPropertyNode::Create(clip1, transform.get(),
+                                             FloatRoundedRect(10, 10, 30, 40));
   local_state.SetClip(clip2.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output1(10, 10, 30, 40);
-
-  FloatClipRect expected_clip(clip2->ClipRect().Rect());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = input_rect;
+  expected_clip = FloatClipRect(clip2->ClipRect().Rect());
   expected_clip.SetHasRadius();
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 
-  bool has_radius = true;
-  CHECK_MAPPINGS(input,    // Input
-                 output1,  // Visual rect
-                 input,    // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 expected_clip,   // Clip rect in ancestor space
-                 local_state, ancestor_state);
-
-  expected_clip.SetRect(clip1->ClipRect().Rect());
+  expected_clip = FloatClipRect(clip1->ClipRect().Rect());
+  expected_clip.SetHasRadius();
   local_state.SetClip(clip1.get());
-  FloatRect output2(10, 10, 50, 50);
-  CHECK_MAPPINGS(input,    // Input
-                 output2,  // Visual rect
-                 input,    // Transformed rect (not clipped).
-                 TransformPaintPropertyNode::Root()
-                     ->Matrix(),  // Transform matrix to ancestor space
-                 expected_clip,   // Clip rect in ancestor space
-                 local_state, ancestor_state);
+  expected_visual_rect = expected_clip;
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, ClipBeforeTransform) {
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
-
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform.get(),
-      FloatRoundedRect(10, 10, 50, 50));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  expected_transform = TransformationMatrix().Rotate(45);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform, FloatPoint3D());
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            transform.get(),
+                                            FloatRoundedRect(10, 10, 50, 50));
   local_state.SetClip(clip.get());
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output(input);
-  output.Intersect(clip->ClipRect().Rect());
-  output = rotate_transform.MapRect(output);
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(
-      input,                            // Input
-      output,                           // Visual rect
-      rotate_transform.MapRect(input),  // Transformed rect (not clipped).
-      rotate_transform,                 // Transform matrix to ancestor space
-      FloatClipRect(rotate_transform.MapRect(
-          clip->ClipRect().Rect())),  // Clip rect in ancestor space
-      local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_visual_rect = FloatClipRect(input_rect);
+  expected_visual_rect.Intersect(clip->ClipRect().Rect());
+  expected_visual_rect.SetRect(
+      expected_transform.MapRect(expected_visual_rect.Rect()));
+  expected_clip =
+      FloatClipRect(expected_transform.MapRect(clip->ClipRect().Rect()));
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, ClipAfterTransform) {
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
-
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(10, 10, 200, 200));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  expected_transform = TransformationMatrix().Rotate(45);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform, FloatPoint3D());
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            TransformPaintPropertyNode::Root(),
+                                            FloatRoundedRect(10, 10, 200, 200));
   local_state.SetClip(clip.get());
   local_state.SetTransform(transform.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatRect output(input);
-  output = rotate_transform.MapRect(output);
-  output.Intersect(clip->ClipRect().Rect());
-
-  bool has_radius = false;
-  CHECK_MAPPINGS(
-      input,                            // Input
-      output,                           // Visual rect
-      rotate_transform.MapRect(input),  // Transformed rect (not clipped)
-      rotate_transform,                 // Transform matrix to ancestor space
-      FloatClipRect(clip->ClipRect().Rect()),  // Clip rect in ancestor space
-      local_state, PropertyTreeState::Root());
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
+  expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  expected_visual_rect.Intersect(clip->ClipRect().Rect());
+  expected_clip = FloatClipRect(clip->ClipRect().Rect());
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, TwoClipsWithTransformBetween) {
-  scoped_refptr<ClipPaintPropertyNode> clip1 = ClipPaintPropertyNode::Create(
+  auto clip1 = ClipPaintPropertyNode::Create(
       ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
       FloatRoundedRect(10, 10, 200, 200));
 
-  TransformationMatrix rotate_transform;
-  rotate_transform.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform, FloatPoint3D());
+  expected_transform = TransformationMatrix().Rotate(45);
+  auto transform = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), expected_transform, FloatPoint3D());
 
-  scoped_refptr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
+  auto clip2 = ClipPaintPropertyNode::Create(
       clip1, transform.get(), FloatRoundedRect(10, 10, 200, 200));
 
-  FloatRect input(0, 0, 100, 100);
+  input_rect = FloatRect(0, 0, 100, 100);
+  expected_transformed_rect = expected_transform.MapRect(input_rect);
 
-  bool has_radius = false;
   {
-    PropertyTreeState local_state = PropertyTreeState::Root();
     local_state.SetClip(clip1.get());
     local_state.SetTransform(transform.get());
 
-    FloatRect output(input);
-    output = rotate_transform.MapRect(output);
-    output.Intersect(clip1->ClipRect().Rect());
-
-    CHECK_MAPPINGS(
-        input,                            // Input
-        output,                           // Visual rect
-        rotate_transform.MapRect(input),  // Transformed rect (not clipped)
-        rotate_transform,                 // Transform matrix to ancestor space
-        FloatClipRect(clip1->ClipRect().Rect()),  // Clip rect in ancestor space
-        local_state, PropertyTreeState::Root());
+    expected_visual_rect = FloatClipRect(expected_transformed_rect);
+    expected_visual_rect.Intersect(clip1->ClipRect().Rect());
+    expected_clip = FloatClipRect(clip1->ClipRect().Rect());
+    CHECK_MAPPINGS();
   }
 
   {
-    PropertyTreeState local_state = PropertyTreeState::Root();
     local_state.SetClip(clip2.get());
     local_state.SetTransform(transform.get());
 
-    FloatRect mapped_clip = rotate_transform.MapRect(clip2->ClipRect().Rect());
-    mapped_clip.Intersect(clip1->ClipRect().Rect());
+    expected_clip =
+        FloatClipRect(expected_transform.MapRect(clip2->ClipRect().Rect()));
+    expected_clip.Intersect(clip1->ClipRect().Rect());
 
     // All clips are performed in the space of the ancestor. In cases such as
-    // this, this means the clip is a bit lossy.
-    FloatRect output(input);
-    // Map to transformed rect in ancestor space.
-    output = rotate_transform.MapRect(output);
+    // this, this means the clip is not tight.
+    expected_visual_rect = FloatClipRect(expected_transformed_rect);
     // Intersect with all clips between local and ancestor, independently mapped
     // to ancestor space.
-    output.Intersect(mapped_clip);
+    expected_visual_rect.Intersect(expected_clip.Rect());
 
-    CHECK_MAPPINGS(
-        input,                            // Input
-        output,                           // Visual rect
-        rotate_transform.MapRect(input),  // Transformed rect (not clipped)
-        rotate_transform,                 // Transform matrix to ancestor space
-        FloatClipRect(mapped_clip),       // Clip rect in ancestor space
-        local_state, PropertyTreeState::Root());
+    CHECK_MAPPINGS();
   }
 }
 
 TEST_P(GeometryMapperTest, SiblingTransforms) {
   // These transforms are siblings. Thus mapping from one to the other requires
   // going through the root.
-  TransformationMatrix rotate_transform1;
-  rotate_transform1.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform1, FloatPoint3D());
+  auto rotate_transform1 = TransformationMatrix().Rotate(45);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform1, FloatPoint3D());
 
-  TransformationMatrix rotate_transform2;
-  rotate_transform2.Rotate(-45);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform2, FloatPoint3D());
+  auto rotate_transform2 = TransformationMatrix().Rotate(-45);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform2, FloatPoint3D());
 
-  PropertyTreeState transform1_state = PropertyTreeState::Root();
+  auto transform1_state = PropertyTreeState::Root();
   transform1_state.SetTransform(transform1.get());
-  PropertyTreeState transform2_state = PropertyTreeState::Root();
+  auto transform2_state = PropertyTreeState::Root();
   transform2_state.SetTransform(transform2.get());
 
-  FloatRect input(0, 0, 100, 100);
-  FloatClipRect result_clip(input);
+  input_rect = FloatRect(0, 0, 100, 100);
+  FloatClipRect result_clip(input_rect);
   GeometryMapper::LocalToAncestorVisualRect(transform1_state, transform2_state,
                                             result_clip);
-  EXPECT_FLOAT_RECT_NEAR(FloatRect(-100, 0, 100, 100), result_clip.Rect());
+  FloatClipRect expected_clip(FloatRect(-100, 0, 100, 100));
+  EXPECT_CLIP_RECT_EQ(expected_clip, result_clip);
 
-  FloatRect result = input;
+  FloatRect result = input_rect;
   GeometryMapper::SourceToDestinationRect(transform1.get(), transform2.get(),
                                           result);
   EXPECT_FLOAT_RECT_NEAR(FloatRect(-100, 0, 100, 100), result);
 
-  result_clip = FloatClipRect(input);
+  result_clip = FloatClipRect(input_rect);
   GeometryMapper::LocalToAncestorVisualRect(transform2_state, transform1_state,
                                             result_clip);
-  EXPECT_FLOAT_RECT_NEAR(FloatRect(0, -100, 100, 100), result_clip.Rect());
+  expected_clip = FloatClipRect(FloatRect(0, -100, 100, 100));
+  EXPECT_CLIP_RECT_EQ(expected_clip, result_clip);
 
-  result = input;
+  result = input_rect;
   GeometryMapper::SourceToDestinationRect(transform2.get(), transform1.get(),
                                           result);
   EXPECT_FLOAT_RECT_NEAR(FloatRect(0, -100, 100, 100), result);
@@ -627,31 +495,27 @@ TEST_P(GeometryMapperTest, SiblingTransforms) {
 TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   // These transforms are siblings. Thus mapping from one to the other requires
   // going through the root.
-  TransformationMatrix rotate_transform1;
-  rotate_transform1.Rotate(45);
-  scoped_refptr<TransformPaintPropertyNode> transform1 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform1, FloatPoint3D());
+  auto rotate_transform1 = TransformationMatrix().Rotate(45);
+  auto transform1 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform1, FloatPoint3D());
 
-  TransformationMatrix rotate_transform2;
-  rotate_transform2.Rotate(-45);
-  scoped_refptr<TransformPaintPropertyNode> transform2 =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         rotate_transform2, FloatPoint3D());
+  auto rotate_transform2 = TransformationMatrix().Rotate(-45);
+  auto transform2 = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), rotate_transform2, FloatPoint3D());
 
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), transform2.get(),
-      FloatRoundedRect(10, 20, 30, 40));
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            transform2.get(),
+                                            FloatRoundedRect(10, 20, 30, 40));
 
-  PropertyTreeState transform1_state = PropertyTreeState::Root();
+  auto transform1_state = PropertyTreeState::Root();
   transform1_state.SetTransform(transform1.get());
-  PropertyTreeState transform2_and_clip_state = PropertyTreeState::Root();
+  auto transform2_and_clip_state = PropertyTreeState::Root();
   transform2_and_clip_state.SetTransform(transform2.get());
   transform2_and_clip_state.SetClip(clip.get());
 
   bool success;
-  FloatRect input(0, 0, 100, 100);
-  FloatRect result = input;
+  input_rect = FloatRect(0, 0, 100, 100);
+  FloatClipRect result(input_rect);
   LocalToAncestorVisualRectInternal(transform1_state, transform2_and_clip_state,
                                     result, success);
   // Fails, because the clip of the destination state is not an ancestor of the
@@ -661,49 +525,45 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
     EXPECT_FALSE(success);
   } else {
     EXPECT_TRUE(success);
-    EXPECT_EQ(FloatRect(-100, 0, 100, 100), result);
+    FloatClipRect expected(FloatRect(-100, 0, 100, 100));
+    EXPECT_CLIP_RECT_EQ(expected, result);
   }
 
-  FloatClipRect float_clip_rect(input);
+  result = FloatClipRect(input_rect);
   GeometryMapper::LocalToAncestorVisualRect(transform2_and_clip_state,
-                                            transform1_state, float_clip_rect);
-  EXPECT_FLOAT_RECT_NEAR(FloatRect(20, -40, 40, 30), float_clip_rect.Rect());
+                                            transform1_state, result);
+  FloatClipRect expected(FloatRect(20, -40, 40, 30));
+  EXPECT_CLIP_RECT_EQ(expected, result);
 }
 
 TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
-  scoped_refptr<TransformPaintPropertyNode> transform_above_effect =
-      TransformPaintPropertyNode::Create(TransformPaintPropertyNode::Root(),
-                                         TransformationMatrix().Scale(3),
-                                         FloatPoint3D());
-  scoped_refptr<TransformPaintPropertyNode> transform_below_effect =
-      TransformPaintPropertyNode::Create(transform_above_effect,
-                                         TransformationMatrix().Scale(2),
-                                         FloatPoint3D());
+  auto transform_above_effect = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), TransformationMatrix().Scale(3),
+      FloatPoint3D());
+  auto transform_below_effect = TransformPaintPropertyNode::Create(
+      transform_above_effect, TransformationMatrix().Scale(2), FloatPoint3D());
 
   // This clip is between transformAboveEffect and the effect.
-  scoped_refptr<ClipPaintPropertyNode> clip_above_effect =
-      ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
-                                    transform_above_effect,
-                                    FloatRoundedRect(-100, -100, 200, 200));
+  auto clip_above_effect = ClipPaintPropertyNode::Create(
+      ClipPaintPropertyNode::Root(), transform_above_effect,
+      FloatRoundedRect(-100, -100, 200, 200));
   // This clip is between the effect and transformBelowEffect.
-  scoped_refptr<ClipPaintPropertyNode> clip_below_effect =
+  auto clip_below_effect =
       ClipPaintPropertyNode::Create(clip_above_effect, transform_above_effect,
                                     FloatRoundedRect(10, 10, 200, 200));
 
   CompositorFilterOperations filters;
   filters.AppendBlurFilter(20);
-  scoped_refptr<EffectPaintPropertyNode> effect =
-      EffectPaintPropertyNode::Create(EffectPaintPropertyNode::Root(),
-                                      transform_above_effect, clip_above_effect,
-                                      kColorFilterNone, filters, 1.0,
-                                      SkBlendMode::kSrcOver);
+  auto effect = EffectPaintPropertyNode::Create(
+      EffectPaintPropertyNode::Root(), transform_above_effect,
+      clip_above_effect, kColorFilterNone, filters, 1.0, SkBlendMode::kSrcOver);
 
-  PropertyTreeState local_state(transform_below_effect.get(),
-                                clip_below_effect.get(), effect.get());
+  local_state = PropertyTreeState(transform_below_effect.get(),
+                                  clip_below_effect.get(), effect.get());
 
-  FloatRect input(0, 0, 50, 50);
+  input_rect = FloatRect(0, 0, 50, 50);
   // 1. transformBelowEffect
-  FloatRect output = transform_below_effect->Matrix().MapRect(input);
+  auto output = transform_below_effect->Matrix().MapRect(input_rect);
   // 2. clipBelowEffect
   output.Intersect(clip_below_effect->ClipRect().Rect());
   EXPECT_EQ(FloatRect(10, 10, 90, 90), output);
@@ -717,56 +577,52 @@ TEST_P(GeometryMapperTest, FilterWithClipsAndTransforms) {
   output = transform_above_effect->Matrix().MapRect(output);
   EXPECT_EQ(FloatRect(-150, -150, 450, 450), output);
 
-  bool has_radius = false;
-  TransformationMatrix combined_transform =
+  expected_transformed_rect = FloatRect(0, 0, 300, 300);
+  expected_visual_rect = FloatClipRect(output);
+  expected_clip = FloatClipRect(FloatRect(30, 30, 270, 270));
+  expected_transform =
       transform_above_effect->Matrix() * transform_below_effect->Matrix();
-  CHECK_MAPPINGS(input, output, FloatRect(0, 0, 300, 300), combined_transform,
-                 FloatClipRect(FloatRect(30, 30, 270, 270)), local_state,
-                 PropertyTreeState::Root());
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
   CompositorFilterOperations filters;
   filters.AppendReferenceFilter(SkiaImageFilterBuilder::BuildBoxReflectFilter(
       BoxReflection(BoxReflection::kHorizontalReflection, 0), nullptr));
-  scoped_refptr<EffectPaintPropertyNode> effect =
-      EffectPaintPropertyNode::Create(
-          EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-          ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
-          SkBlendMode::kSrcOver, kCompositingReasonNone, CompositorElementId(),
-          FloatPoint(100, 100));
-
-  PropertyTreeState local_state = PropertyTreeState::Root();
+  auto effect = EffectPaintPropertyNode::Create(
+      EffectPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
+      ClipPaintPropertyNode::Root(), kColorFilterNone, filters, 1.0,
+      SkBlendMode::kSrcOver, kCompositingReasonNone, CompositorElementId(),
+      FloatPoint(100, 100));
   local_state.SetEffect(effect);
 
-  FloatRect input(100, 100, 50, 50);
+  input_rect = FloatRect(100, 100, 50, 50);
+  expected_transformed_rect = input_rect;
   // Reflection is at (50, 100, 50, 50).
-  FloatRect output(50, 100, 100, 50);
+  expected_visual_rect = FloatClipRect(FloatRect(50, 100, 100, 50));
 
-  bool has_radius = false;
-  CHECK_MAPPINGS(input, output, input, TransformationMatrix(), FloatClipRect(),
-                 local_state, PropertyTreeState::Root());
+  CHECK_MAPPINGS();
 }
 
 TEST_P(GeometryMapperTest, InvertedClip) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
-  scoped_refptr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(
-      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root(),
-      FloatRoundedRect(10, 10, 50, 50));
+  auto clip = ClipPaintPropertyNode::Create(ClipPaintPropertyNode::Root(),
+                                            TransformPaintPropertyNode::Root(),
+                                            FloatRoundedRect(10, 10, 50, 50));
 
   PropertyTreeState dest(TransformPaintPropertyNode::Root(), clip.get(),
                          EffectPaintPropertyNode::Root());
 
-  FloatClipRect floatClipRect(FloatRect(0, 0, 10, 200));
+  FloatClipRect visual_rect(FloatRect(0, 0, 10, 200));
   GeometryMapper::LocalToAncestorVisualRect(PropertyTreeState::Root(), dest,
-                                            floatClipRect);
+                                            visual_rect);
 
   // The "ancestor" clip is below the source clip in this case, so
   // LocalToAncestorVisualRect must fall back to the original rect, mapped
   // into the root space.
-  EXPECT_EQ(FloatRect(0, 0, 10, 200), floatClipRect.Rect());
+  EXPECT_EQ(FloatRect(0, 0, 10, 200), visual_rect.Rect());
 }
 
 }  // namespace blink
