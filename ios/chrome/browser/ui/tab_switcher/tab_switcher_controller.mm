@@ -76,6 +76,11 @@ const CGFloat kTransitionAnimationDuration = 0.25;
 // The height of the browser view controller header.
 const CGFloat kHeaderHeight = 39;
 
+enum class TabModelType {
+  MODEL_MAIN,
+  MODEL_OTR,
+};
+
 enum class TransitionType {
   TRANSITION_PRESENT,
   TRANSITION_DISMISS,
@@ -100,9 +105,10 @@ enum class SnapshotViewOption {
   ios::ChromeBrowserState* _browserState;
   // weak.
   __weak id<TabSwitcherDelegate> _delegate;
-  // The model selected when the tab switcher was toggled.
-  // weak.
-  __weak TabModel* _onLoadActiveModel;
+  // The type of the model that was selected when the tab switcher was toggled.
+  // Callers can retrieve the associated TabModel with |[self
+  // onLoadActiveModel]|.
+  TabModelType _onLoadActiveModelType;
   // The view this controller manages.
   TabSwitcherView* _tabSwitcherView;
   // The list of panels controllers for distant sessions.
@@ -158,6 +164,9 @@ enum class SnapshotViewOption {
 
 // Returns the tab model of the currently selected tab.
 - (TabModel*)currentSelectedModel;
+
+// Returns the tab model that was active when the tab switcher was toggled.
+- (TabModel*)onLoadActiveModel;
 
 // Dismisses the tab switcher using the currently selected tab's tab model.
 - (void)tabSwitcherDismissWithCurrentSelectedModel;
@@ -218,7 +227,9 @@ enum class SnapshotViewOption {
     id<ApplicationCommands, BrowserCommands> passableDispatcher =
         static_cast<id<ApplicationCommands, BrowserCommands>>(_dispatcher);
 
-    _onLoadActiveModel = activeTabModel;
+    _onLoadActiveModelType = (activeTabModel == mainTabModel)
+                                 ? TabModelType::MODEL_MAIN
+                                 : TabModelType::MODEL_OTR;
     _cache = [[TabSwitcherCache alloc] init];
     [_cache setMainTabModel:mainTabModel otrTabModel:otrTabModel];
     _tabSwitcherModel =
@@ -252,7 +263,7 @@ enum class SnapshotViewOption {
     [self addPromoPanelForSignInPanelType:[_tabSwitcherModel signInPanelType]];
     [[_tabSwitcherView headerView] reloadData];
     [_tabSwitcherModel syncedSessionsChanged];
-    [self selectPanelForTabModel:_onLoadActiveModel];
+    [self selectPanelForTabModel:[self onLoadActiveModel]];
   }
   return self;
 }
@@ -355,7 +366,11 @@ enum class SnapshotViewOption {
 - (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
                                  otrTabModel:(TabModel*)otrModel
                               activeTabModel:(TabModel*)activeModel {
-  _onLoadActiveModel = activeModel;
+  DCHECK(mainModel);
+  DCHECK(otrModel);
+  DCHECK(activeModel == mainModel || activeModel == otrModel);
+  _onLoadActiveModelType = (activeModel == mainModel) ? TabModelType::MODEL_MAIN
+                                                      : TabModelType::MODEL_OTR;
   [_cache setMainTabModel:mainModel otrTabModel:otrModel];
   [_tabSwitcherModel setMainTabModel:mainModel otrTabModel:otrModel];
   [self selectPanelForTabModel:activeModel];
@@ -370,7 +385,7 @@ enum class SnapshotViewOption {
 - (void)showWithSelectedTabAnimation {
   [self updateWindowBackgroundColor];
   [self performTabSwitcherTransition:TransitionType::TRANSITION_PRESENT
-                           withModel:_onLoadActiveModel
+                           withModel:[self onLoadActiveModel]
                             animated:YES
                       withCompletion:^{
                         [self.animationDelegate
@@ -515,6 +530,7 @@ enum class SnapshotViewOption {
       base::RecordAction(base::UserMetricsAction("MobileTabSwitcherDismissed"));
       break;
   }
+  DCHECK(tabModel);
   DCHECK(completion);
   DCHECK([self transitionContext]);
   [[self view] setUserInteractionEnabled:NO];
@@ -793,8 +809,17 @@ enum class SnapshotViewOption {
       [self sessionTypeForPanelIndex:currentPanelIndex];
   TabModel* model = [self tabModelForSessionType:sessionType];
   if (!model)
-    model = _onLoadActiveModel;
+    model = [self onLoadActiveModel];
   return model;
+}
+
+- (TabModel*)onLoadActiveModel {
+  switch (_onLoadActiveModelType) {
+    case TabModelType::MODEL_MAIN:
+      return [_tabSwitcherModel mainTabModel];
+    case TabModelType::MODEL_OTR:
+      return [_tabSwitcherModel otrTabModel];
+  }
 }
 
 - (void)selectPanelForTabModel:(TabModel*)selectedTabModel {
@@ -1182,8 +1207,6 @@ enum class SnapshotViewOption {
       tabSwitcherPanelController.sessionType;
   TabModel* tabModel = [self tabModelForSessionType:panelSessionType];
   [tabModel setCurrentTab:tab];
-  [self.delegate tabSwitcher:self
-      dismissTransitionWillStartWithActiveModel:tabModel];
   [self tabSwitcherDismissWithModel:tabModel animated:YES];
   if (panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     base::RecordAction(
