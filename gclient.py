@@ -92,7 +92,6 @@ import pprint
 import re
 import sys
 import time
-import urllib
 import urlparse
 
 import fix_encoding
@@ -208,6 +207,8 @@ class Hook(object):
       # Python script.  Run it by starting a new copy of the same
       # interpreter.
       cmd[0] = sys.executable
+    elif cmd[0] == 'vpython' and _detect_host_os() == 'win':
+      cmd[0] += '.bat'
 
     cwd = root
     if self._cwd:
