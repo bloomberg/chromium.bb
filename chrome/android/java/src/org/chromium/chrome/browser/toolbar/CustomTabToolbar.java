@@ -498,7 +498,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mSecurityButton.setImageResource(id);
             mSecurityButton.setTint(
                     LocationBarLayout.getColorStateList(securityLevel, getToolbarDataProvider(),
-                            getResources(), false /* omnibox is not opaque */));
+                            getResources(), false /* omnibox is not opaque */, false));
         }
 
         mShowsOfflinePage = isOfflinePage;
