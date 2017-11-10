@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
@@ -23,12 +24,6 @@
 namespace autofill {
 struct PasswordForm;
 }
-
-// Multimap from sort key to password forms.
-using DuplicatesMap =
-    std::multimap<std::string, std::unique_ptr<autofill::PasswordForm>>;
-
-enum class PasswordEntryType { SAVED, BLACKLISTED };
 
 class PasswordUIView;
 
@@ -92,17 +87,6 @@ class PasswordManagerPresenter
   void SetPasswordList();
   void SetPasswordExceptionList();
 
-  // Sort entries of |list| based on sort key. The key is the concatenation of
-  // origin, entry type (non-Android credential, Android w/ affiliated web realm
-  // or Android w/o affiliated web realm). If |entry_type == SAVED|,
-  // username, password and federation are also included in sort key. If there
-  // are several forms with the same key, all such forms but the first one are
-  // stored in |duplicates| instead of |list|.
-  void SortEntriesAndHideDuplicates(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
-      DuplicatesMap* duplicates,
-      PasswordEntryType entry_type);
-
   // Returns the password store associated with the currently active profile.
   password_manager::PasswordStore* GetPasswordStore();
 
@@ -151,8 +135,8 @@ class PasswordManagerPresenter
 
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_list_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> password_exception_list_;
-  DuplicatesMap password_duplicates_;
-  DuplicatesMap password_exception_duplicates_;
+  password_manager::DuplicatesMap password_duplicates_;
+  password_manager::DuplicatesMap password_exception_duplicates_;
 
   UndoManager undo_manager_;
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 
 #include <algorithm>
-#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,7 +17,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -32,7 +30,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -41,8 +38,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/undo/undo_operation.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
@@ -53,79 +48,18 @@ using password_manager::PasswordStore;
 
 namespace {
 
-const char kSortKeyPartsSeparator = ' ';
-
-// The character that is added to a sort key if there is no federation.
-// Note: to separate the entries w/ federation and the entries w/o federation,
-// this character should be alphabetically smaller than real federations.
-const char kSortKeyNoFederationSymbol = '-';
-
-// Creates key for sorting password or password exception entries. The key is
-// eTLD+1 followed by the reversed list of domains (e.g.
-// secure.accounts.example.com => example.com.com.example.accounts.secure) and
-// the scheme. If |entry_type == SAVED|, username, password and federation are
-// appended to the key. For Android credentials the canocial spec is included.
-std::string CreateSortKey(const autofill::PasswordForm& form,
-                          PasswordEntryType entry_type) {
-  std::string shown_origin;
-  GURL link_url;
-  std::tie(shown_origin, link_url) =
-      password_manager::GetShownOriginAndLinkUrl(form);
-
-  const auto facet_uri =
-      password_manager::FacetURI::FromPotentiallyInvalidSpec(form.signon_realm);
-  const bool is_android_uri = facet_uri.IsValidAndroidFacetURI();
-
-  if (is_android_uri) {
-    // In case of Android credentials |GetShownOriginAndLinkURl| might return
-    // the app display name, e.g. the Play Store name of the given application.
-    // This might or might not correspond to the eTLD+1, which is why
-    // |shown_origin| is set to the reversed android package name in this case,
-    // e.g. com.example.android => android.example.com.
-    shown_origin = password_manager::SplitByDotAndReverse(
-        facet_uri.android_package_name());
-  }
-
-  std::string site_name =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          shown_origin,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  if (site_name.empty())  // e.g. localhost.
-    site_name = shown_origin;
-
-  std::string key = site_name + kSortKeyPartsSeparator;
-
-  // Since multiple distinct credentials might have the same site name, more
-  // information is added. For Android credentials this includes the full
-  // canonical spec which is guaranteed to be unique for a given App.
-  key += is_android_uri ? facet_uri.canonical_spec()
-                        : password_manager::SplitByDotAndReverse(shown_origin);
-
-  if (entry_type == PasswordEntryType::SAVED) {
-    key += kSortKeyPartsSeparator + base::UTF16ToUTF8(form.username_value) +
-           kSortKeyPartsSeparator + base::UTF16ToUTF8(form.password_value);
-
-    key += kSortKeyPartsSeparator;
-    if (!form.federation_origin.unique())
-      key += form.federation_origin.host();
-    else
-      key += kSortKeyNoFederationSymbol;
-  }
-
-  // To separate HTTP/HTTPS credentials, add the scheme to the key.
-  return key += kSortKeyPartsSeparator + link_url.scheme();
-}
-
 // Finds duplicates of |form| in |duplicates|, removes them from |store| and
 // from |duplicates|.
 void RemoveDuplicates(const autofill::PasswordForm& form,
-                      DuplicatesMap* duplicates,
+                      password_manager::DuplicatesMap* duplicates,
                       PasswordStore* store,
-                      PasswordEntryType entry_type) {
-  std::string key = CreateSortKey(form, entry_type);
-  std::pair<DuplicatesMap::iterator, DuplicatesMap::iterator> dups =
-      duplicates->equal_range(key);
-  for (DuplicatesMap::iterator it = dups.first; it != dups.second; ++it)
+                      password_manager::PasswordEntryType entry_type) {
+  std::string key = password_manager::CreateSortKey(form, entry_type);
+  std::pair<password_manager::DuplicatesMap::iterator,
+            password_manager::DuplicatesMap::iterator>
+      dups = duplicates->equal_range(key);
+  for (password_manager::DuplicatesMap::iterator it = dups.first;
+       it != dups.second; ++it)
     store->RemoveLogin(*it->second);
   duplicates->erase(key);
 }
@@ -262,7 +196,7 @@ void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
 
   const autofill::PasswordForm& password_entry = *password_list_[index];
   RemoveDuplicates(password_entry, &password_duplicates_, store,
-                   PasswordEntryType::SAVED);
+                   password_manager::PasswordEntryType::SAVED);
   RemoveLogin(password_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
@@ -283,7 +217,7 @@ void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   const autofill::PasswordForm& password_exception_entry =
       *password_exception_list_[index];
   RemoveDuplicates(password_exception_entry, &password_exception_duplicates_,
-                   store, PasswordEntryType::BLACKLISTED);
+                   store, password_manager::PasswordEntryType::BLACKLISTED);
   RemoveLogin(password_exception_entry);
   base::RecordAction(
       base::UserMetricsAction("PasswordManager_RemovePasswordException"));
@@ -370,38 +304,6 @@ void PasswordManagerPresenter::SetPasswordExceptionList() {
   password_view_->SetPasswordExceptionList(password_exception_list_);
 }
 
-void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* list,
-    DuplicatesMap* duplicates,
-    PasswordEntryType entry_type) {
-  std::vector<std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>>
-      pairs;
-  pairs.reserve(list->size());
-  for (auto& form : *list) {
-    pairs.push_back(
-        std::make_pair(CreateSortKey(*form, entry_type), std::move(form)));
-  }
-
-  std::sort(
-      pairs.begin(), pairs.end(),
-      [](const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
-             left,
-         const std::pair<std::string, std::unique_ptr<autofill::PasswordForm>>&
-             right) { return left.first < right.first; });
-
-  list->clear();
-  duplicates->clear();
-  std::string previous_key;
-  for (auto& pair : pairs) {
-    if (pair.first != previous_key) {
-      list->push_back(std::move(pair.second));
-      previous_key = pair.first;
-    } else {
-      duplicates->insert(std::make_pair(previous_key, std::move(pair.second)));
-    }
-  }
-}
-
 void PasswordManagerPresenter::AddLogin(const autofill::PasswordForm& form) {
   PasswordStore* store = GetPasswordStore();
   if (!store)
@@ -446,9 +348,9 @@ void PasswordManagerPresenter::PasswordListPopulater::Populate() {
 void PasswordManagerPresenter::PasswordListPopulater::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   page_->password_list_ = std::move(results);
-  page_->SortEntriesAndHideDuplicates(&page_->password_list_,
-                                      &page_->password_duplicates_,
-                                      PasswordEntryType::SAVED);
+  password_manager::SortEntriesAndHideDuplicates(
+      &page_->password_list_, &page_->password_duplicates_,
+      password_manager::PasswordEntryType::SAVED);
   page_->SetPasswordList();
 }
 
@@ -471,8 +373,8 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
     OnGetPasswordStoreResults(
         std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   page_->password_exception_list_ = std::move(results);
-  page_->SortEntriesAndHideDuplicates(&page_->password_exception_list_,
-                                      &page_->password_exception_duplicates_,
-                                      PasswordEntryType::BLACKLISTED);
+  password_manager::SortEntriesAndHideDuplicates(
+      &page_->password_exception_list_, &page_->password_exception_duplicates_,
+      password_manager::PasswordEntryType::BLACKLISTED);
   page_->SetPasswordExceptionList();
 }
