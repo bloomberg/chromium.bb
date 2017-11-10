@@ -1082,19 +1082,17 @@ void NativeViewGLSurfaceEGL::UpdateSwapEvents(EGLuint64KHR newFrameId,
 }
 
 void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
-  // Protect against unexpected stack overflow.
+  // We shouldn't be calling eglGetFrameTimestampsANDROID with more timestamps
+  // than it supports.
   DCHECK_LE(supported_egl_timestamps_.size(), kMaxTimestampsSupportable);
-  size_t supported_count =
-      std::min(supported_egl_timestamps_.size(), kMaxTimestampsSupportable);
 
   // Get the timestamps.
-  EGLnsecsANDROID egl_timestamps[kMaxTimestampsSupportable];
-  std::fill(egl_timestamps, egl_timestamps + supported_count,
-            EGL_TIMESTAMP_INVALID_ANDROID);
-  if (!eglGetFrameTimestampsANDROID(GetDisplay(), surface_, oldFrameId,
-                                    static_cast<EGLint>(supported_count),
-                                    supported_egl_timestamps_.data(),
-                                    egl_timestamps)) {
+  std::vector<EGLnsecsANDROID> egl_timestamps(supported_egl_timestamps_.size(),
+                                              EGL_TIMESTAMP_INVALID_ANDROID);
+  if (!eglGetFrameTimestampsANDROID(
+          GetDisplay(), surface_, oldFrameId,
+          static_cast<EGLint>(supported_egl_timestamps_.size()),
+          supported_egl_timestamps_.data(), egl_timestamps.data())) {
     TRACE_EVENT_INSTANT0("gpu", "eglGetFrameTimestamps:Failed",
                          TRACE_EVENT_SCOPE_THREAD);
     return;
@@ -1106,9 +1104,9 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
     const char* name;
   };
 
-  TimeNamePair tracePairs[kMaxTimestampsSupportable];
-  size_t valid_pairs = 0;
-  for (size_t i = 0; i < supported_count; i++) {
+  std::vector<TimeNamePair> tracePairs;
+  tracePairs.reserve(supported_egl_timestamps_.size());
+  for (size_t i = 0; i < egl_timestamps.size(); i++) {
     // Although a timestamp of 0 is technically valid, we shouldn't expect to
     // see it in practice. 0's are more likely due to a known linux kernel bug
     // that inadvertently discards timestamp information when merging two
@@ -1119,20 +1117,19 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
       continue;
     }
     // TODO(brianderson): Replace FromInternalValue usage.
-    tracePairs[valid_pairs] = TimeNamePair(
+    tracePairs.push_back(
         {base::TimeTicks::FromInternalValue(
              egl_timestamps[i] / base::TimeTicks::kNanosecondsPerMicrosecond),
          supported_event_names_[i]});
-    valid_pairs++;
   }
-  if (valid_pairs == 0) {
+  if (tracePairs.empty()) {
     TRACE_EVENT_INSTANT0("gpu", "TraceSwapEvents:NoValidTimestamps",
                          TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
   // Sort the pairs so we can trace them in order.
-  std::sort(tracePairs, tracePairs + valid_pairs,
+  std::sort(tracePairs.begin(), tracePairs.end(),
             [](auto& a, auto& b) { return a.time < b.time; });
 
   // Trace the overall range under which the sub events will be nested.
@@ -1143,15 +1140,15 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
   static const char* SwapEvents = "SwapEvents";
   const int64_t trace_id = oldFrameId;
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      kSwapEventTraceCategories, SwapEvents, trace_id, tracePairs[0].time);
+      kSwapEventTraceCategories, SwapEvents, trace_id, tracePairs.front().time);
   TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP1(
       kSwapEventTraceCategories, SwapEvents, trace_id,
-      tracePairs[valid_pairs - 1].time + epsilon, "id", trace_id);
+      tracePairs.back().time + epsilon, "id", trace_id);
 
   // Trace the first event, which does not have a range before it.
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT_WITH_TIMESTAMP0(
-      kSwapEventTraceCategories, tracePairs[0].name, trace_id,
-      tracePairs[0].time);
+      kSwapEventTraceCategories, tracePairs.front().name, trace_id,
+      tracePairs.front().time);
 
   // Trace remaining events and their ranges.
   // Use the first characters to represent events still pending.
@@ -1159,13 +1156,12 @@ void NativeViewGLSurfaceEGL::TraceSwapEvents(EGLuint64KHR oldFrameId) {
   // it obvious:
   //   1) when the order of events are different between frames and
   //   2) if multiple events occurred very close together.
-  char valid_symbols[kMaxTimestampsSupportable + 1];
-  for (size_t i = 0; i < valid_pairs; i++)
+  std::string valid_symbols(tracePairs.size(), '\0');
+  for (size_t i = 0; i < valid_symbols.size(); i++)
     valid_symbols[i] = tracePairs[i].name[0];
-  valid_symbols[valid_pairs] = '\0';
 
-  const char* pending_symbols = valid_symbols;
-  for (size_t i = 1; i < valid_pairs; i++) {
+  const char* pending_symbols = valid_symbols.c_str();
+  for (size_t i = 1; i < tracePairs.size(); i++) {
     pending_symbols++;
     TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
         kSwapEventTraceCategories, pending_symbols, trace_id,
