@@ -137,7 +137,7 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // Step 5. "... referrer is referrer, ..." [spec text]
   if (!module_request.GetReferrer().IsNull()) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
-        modulator_->GetReferrerPolicy(), module_request.Url(),
+        module_request.GetReferrerPolicy(), module_request.Url(),
         module_request.GetReferrer()));
   }
   // Step 5. "... and client is fetch client settings object." [spec text]

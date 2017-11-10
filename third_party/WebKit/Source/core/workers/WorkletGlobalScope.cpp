@@ -110,7 +110,8 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // [FMWST] Step 3. "Perform the internal module script graph fetching
   // procedure ..."
-  ModuleScriptFetchRequest module_request(module_url_record, options);
+  ModuleScriptFetchRequest module_request(
+      module_url_record, modulator->GetReferrerPolicy(), options);
 
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.

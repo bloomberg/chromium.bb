@@ -8,6 +8,7 @@
 #include "core/dom/Element.h"
 #include "core/html_names.h"
 #include "core/origin_trials/origin_trials.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/HashMap.h"
 
 namespace blink {
@@ -31,9 +32,14 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
                                  ExceptionState&) const {
   if (SupportedTokens().Contains(token_value))
     return true;
-  return OriginTrials::linkServiceWorkerEnabled(
-             GetElement().GetExecutionContext()) &&
-         token_value == "serviceworker";
+  if (OriginTrials::linkServiceWorkerEnabled(
+          GetElement().GetExecutionContext()) &&
+      token_value == "serviceworker")
+    return true;
+  if (RuntimeEnabledFeatures::ModulePreloadEnabled() &&
+      token_value == "modulepreload")
+    return true;
+  return false;
 }
 
 }  // namespace blink

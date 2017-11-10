@@ -18,16 +18,20 @@ class ModuleScriptFetchRequest final {
   STACK_ALLOCATED();
 
  public:
-  ModuleScriptFetchRequest(const KURL& url, const ScriptFetchOptions& options)
+  ModuleScriptFetchRequest(const KURL& url,
+                           ReferrerPolicy referrer_policy,
+                           const ScriptFetchOptions& options)
       : ModuleScriptFetchRequest(url,
                                  options,
                                  Referrer::NoReferrer(),
+                                 referrer_policy,
                                  TextPosition::MinimumPosition()) {}
   ~ModuleScriptFetchRequest() = default;
 
   const KURL& Url() const { return url_; }
   const ScriptFetchOptions& Options() const { return options_; }
   const AtomicString& GetReferrer() const { return referrer_; }
+  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
   const TextPosition& GetReferrerPosition() const { return referrer_position_; }
 
  private:
@@ -37,15 +41,18 @@ class ModuleScriptFetchRequest final {
   ModuleScriptFetchRequest(const KURL& url,
                            const ScriptFetchOptions& options,
                            const String& referrer,
+                           ReferrerPolicy referrer_policy,
                            const TextPosition& referrer_position)
       : url_(url),
         options_(options),
         referrer_(referrer),
+        referrer_policy_(referrer_policy),
         referrer_position_(referrer_position) {}
 
   const KURL url_;
   const ScriptFetchOptions options_;
   const AtomicString referrer_;
+  const ReferrerPolicy referrer_policy_;
   const TextPosition referrer_position_;
 };
 
