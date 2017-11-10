@@ -198,7 +198,7 @@ public class WebappNavigationTest {
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 null /* activity to check for focus after click */,
                 mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
-                R.id.menu_id_open_in_chrome);
+                R.id.contextmenu_open_in_chrome);
 
         ChromeTabbedActivity tabbedChrome = waitFor(ChromeTabbedActivity.class);
 
