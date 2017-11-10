@@ -31,6 +31,10 @@ class IOSChromeContentSuggestionsServiceFactory
   static IOSChromeContentSuggestionsServiceFactory* GetInstance();
   static ntp_snippets::ContentSuggestionsService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
+  // Returns the default factory used to build ContentSuggestionsService. Can be
+  // registered with SetTestingFactory to use the ContentSuggestionsService
+  // instance during testing.
+  static TestingFactoryFunction GetDefaultFactory();
 
  private:
   friend struct base::DefaultSingletonTraits<

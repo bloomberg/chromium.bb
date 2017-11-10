@@ -46,6 +46,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/device_sharing",
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/u2f",
     "//ios/chrome/browser/ui:ui_internal",
