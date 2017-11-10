@@ -7,9 +7,10 @@ public_headers = [ "//media/video/video_encode_accelerator.h" ]
 public_deps = [
   "//media",
 ]
-traits_headers = [ "//components/arc/video_accelerator/video_encode_accelerator_struct_traits.h" ]
+traits_headers =
+    [ "//components/arc/common/video_encode_accelerator_struct_traits.h" ]
 sources = [
-  "//components/arc/video_accelerator/video_encode_accelerator_struct_traits.cc",
+  "//components/arc/common/video_encode_accelerator_struct_traits.cc",
 ]
 type_mappings = [
   "arc.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",

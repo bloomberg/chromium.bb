@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_
-#define COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_ARC_COMMON_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_COMMON_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_
 
 #include "components/arc/common/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
@@ -65,4 +65,4 @@ struct StructTraits<arc::mojom::VideoEncodeProfileDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_ARC_COMMON_VIDEO_ENCODE_ACCELERATOR_STRUCT_TRAITS_H_

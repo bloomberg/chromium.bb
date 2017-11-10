@@ -7,9 +7,6 @@ static_library("gpu") {
     "//components/metrics:child_call_stacks",
     "//content/public/common",
     "//content/public/gpu",
-    "//gpu/command_buffer/service",
-    "//media",
-    "//media/gpu",
   ]
 
   sources = [
@@ -18,19 +15,12 @@ static_library("gpu") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//components/arc:arc_bindings" ]
-    sources += [
-      "arc_video_decode_accelerator.h",
-      "chrome_arc_video_decode_accelerator.cc",
-      "chrome_arc_video_decode_accelerator.h",
-      "gpu_arc_video_decode_accelerator.cc",
-      "gpu_arc_video_decode_accelerator.h",
-      "gpu_arc_video_encode_accelerator.cc",
-      "gpu_arc_video_encode_accelerator.h",
-      "protected_buffer_manager.cc",
-      "protected_buffer_manager.h",
-      "protected_buffer_manager_proxy.cc",
-      "protected_buffer_manager_proxy.h",
+    deps += [
+      "//components/arc:arc_bindings",
+      "//components/arc/video_accelerator",
+      "//gpu/command_buffer/service",
+      "//services/service_manager/public/cpp",
+      "//ui/ozone",
     ]
   }
 }

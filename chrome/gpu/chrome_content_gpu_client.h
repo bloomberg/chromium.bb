@@ -17,11 +17,9 @@
 #include "components/arc/common/video_encode_accelerator.mojom.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
-namespace chromeos {
 namespace arc {
 class ProtectedBufferManager;
 }  // namespace arc
-}  // namespace chromeos
 #endif
 
 class ChromeContentGpuClient : public content::ContentGpuClient {
@@ -51,8 +49,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
 
 #if defined(OS_CHROMEOS)
   gpu::GpuPreferences gpu_preferences_;
-  std::unique_ptr<chromeos::arc::ProtectedBufferManager>
-      protected_buffer_manager_;
+  std::unique_ptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentGpuClient);

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/protected_buffer_manager.h"
+#include "components/arc/video_accelerator/protected_buffer_manager.h"
 
 #include "base/bits.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -17,7 +16,6 @@
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
-namespace chromeos {
 namespace arc {
 
 namespace {
@@ -253,7 +251,7 @@ ProtectedBufferManager::AllocateProtectedSharedMemory(base::ScopedFD dummy_fd,
   // client. The buffer will be permanently removed from the map when the
   // handle is destroyed.
   VLOGF(2) << "New protected shared memory buffer, handle id: " << id;
-  auto protected_buffer_handle = base::MakeUnique<ProtectedBufferHandle>(
+  auto protected_buffer_handle = std::make_unique<ProtectedBufferHandle>(
       base::BindOnce(&ProtectedBufferManager::RemoveEntry, weak_this_, id),
       shm_handle);
 
@@ -302,7 +300,7 @@ ProtectedBufferManager::AllocateProtectedNativePixmap(base::ScopedFD dummy_fd,
   // client. The buffer will be permanently removed from the map when the
   // handle is destroyed.
   VLOGF(2) << "New protected native pixmap, handle id: " << id;
-  auto protected_buffer_handle = base::MakeUnique<ProtectedBufferHandle>(
+  auto protected_buffer_handle = std::make_unique<ProtectedBufferHandle>(
       base::BindOnce(&ProtectedBufferManager::RemoveEntry, weak_this_, id),
       native_pixmap_handle);
 
@@ -408,4 +406,3 @@ void ProtectedBufferManager::RemoveEntry(uint32_t id) {
 }
 
 }  // namespace arc
-}  // namespace chromeos

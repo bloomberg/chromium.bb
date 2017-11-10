@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
-#define CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "components/arc/video_accelerator/video_accelerator.h"
+#include "components/arc/video_accelerator/video_frame_plane.h"
 
-namespace chromeos {
 namespace arc {
 
 enum HalPixelFormatExtension {
@@ -179,6 +178,5 @@ class ArcVideoDecodeAccelerator {
 };
 
 }  // namespace arc
-}  // namespace chromeos
 
-#endif  // CHROME_GPU_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_ARC_VIDEO_DECODE_ACCELERATOR_H_

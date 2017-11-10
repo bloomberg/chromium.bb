@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_PROTECTED_BUFFER_MANAGER_H_
-#define CHROME_GPU_PROTECTED_BUFFER_MANAGER_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_PROTECTED_BUFFER_MANAGER_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_PROTECTED_BUFFER_MANAGER_H_
 
 #include <map>
 
@@ -14,7 +14,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 
-namespace chromeos {
 namespace arc {
 
 // A ProtectedBufferHandle is returned to the owning client that requested
@@ -140,6 +139,5 @@ class ProtectedBufferManager {
 };
 
 }  // namespace arc
-}  // namespace chromeos
 
-#endif  // CHROME_GPU_PROTECTED_BUFFER_MANAGER_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_PROTECTED_BUFFER_MANAGER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
-#define CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
 
 #include <list>
 #include <memory>
@@ -12,11 +12,10 @@
 
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/gpu/arc_video_decode_accelerator.h"
+#include "components/arc/video_accelerator/arc_video_decode_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/video/video_decode_accelerator.h"
 
-namespace chromeos {
 namespace arc {
 
 class ProtectedBufferManager;
@@ -191,6 +190,5 @@ class ChromeArcVideoDecodeAccelerator
 };
 
 }  // namespace arc
-}  // namespace chromeos
 
-#endif  // CHROME_GPU_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_CHROME_ARC_VIDEO_DECODE_ACCELERATOR_H_
