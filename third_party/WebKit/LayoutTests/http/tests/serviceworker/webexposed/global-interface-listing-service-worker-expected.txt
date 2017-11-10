@@ -1181,6 +1181,10 @@ interface TextEncoder
     getter encoding
     method constructor
     method encode
+interface TransformStream
+    getter readable
+    getter writable
+    method constructor
 interface TrustedHTML
     static method escape
     static method unsafelyCreate

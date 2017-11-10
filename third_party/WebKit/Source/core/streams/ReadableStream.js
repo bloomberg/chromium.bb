@@ -507,18 +507,9 @@
         throw new TypeError(streamErrors.illegalInvocation);
       }
 
-      const stream = this[_controlledReadableStream];
-
-      if (this[_readableStreamDefaultControllerBits] & CLOSE_REQUESTED) {
-        throw new TypeError(errEnqueueCloseRequestedStream);
-      }
-
-      const state = ReadableStreamGetState(stream);
-      if (state === STATE_ERRORED) {
-        throw new TypeError(errEnqueueErroredStream);
-      }
-      if (state === STATE_CLOSED) {
-        throw new TypeError(errEnqueueClosedStream);
+      if (!ReadableStreamDefaultControllerCanCloseOrEnqueue(this)) {
+        const stream = this[_controlledReadableStream];
+        throw getReadableStreamEnqueueError(stream, this);
       }
 
       return ReadableStreamDefaultControllerEnqueue(this, chunk);
@@ -778,6 +769,18 @@
     return controller[_strategyHWM] - controller[_queueTotalSize];
   }
 
+  function ReadableStreamDefaultControllerHasBackpressure(controller) {
+    return !ReadableStreamDefaultControllerShouldCallPull(controller);
+  }
+
+  function ReadableStreamDefaultControllerCanCloseOrEnqueue(controller) {
+    if (controller[_readableStreamDefaultControllerBits] & CLOSE_REQUESTED) {
+      return false;
+    }
+    const state = ReadableStreamGetState(controller[_controlledReadableStream]);
+    return state === STATE_READABLE;
+  }
+
   function IsReadableStream(x) {
     return hasOwnPropertyNoThrow(x, _controller);
   }
@@ -808,6 +811,20 @@
 
   function IsReadableStreamErrored(stream) {
     return ReadableStreamGetState(stream) === STATE_ERRORED;
+  }
+
+  // Used internally by enqueue() and also by TransformStream.
+  function getReadableStreamEnqueueError(stream, controller) {
+    if (controller[_readableStreamDefaultControllerBits] & CLOSE_REQUESTED) {
+      return new TypeError(errEnqueueCloseRequestedStream);
+    }
+
+    const state = ReadableStreamGetState(stream);
+    if (state === STATE_ERRORED) {
+      return new TypeError(errEnqueueErroredStream);
+    }
+    // assert(state === STATE_CLOSED, 'state is "closed"');
+    return new TypeError(errEnqueueClosedStream);
   }
 
   function ReadableStreamReaderGenericInitialize(reader, stream) {
@@ -1090,6 +1107,21 @@
     return {value, done};
   }
 
+  //
+  // Accessors used by TransformStream
+  //
+
+  function getReadableStreamController(stream) {
+    // assert(
+    //     IsReadableStream(stream), '! IsReadableStream(stream) is true.');
+    return stream[_controller];
+  }
+
+  function getReadableStreamStoredError(stream) {
+    // assert(
+    //     IsReadableStream(stream), '! IsReadableStream(stream) is true.');
+    return stream[_storedError];
+  }
 
   //
   // Additions to the global
@@ -1132,4 +1164,17 @@
         return new ReadableStream(
             underlyingSource, strategy, createWithExternalControllerSentinel);
       };
+
+  //
+  // Exports to TransformStream
+  //
+  binding.ReadableStream = ReadableStream;
+  binding.ReadableStreamDefaultControllerCanCloseOrEnqueue =
+      ReadableStreamDefaultControllerCanCloseOrEnqueue;
+  binding.ReadableStreamDefaultControllerHasBackpressure =
+      ReadableStreamDefaultControllerHasBackpressure;
+
+  binding.getReadableStreamEnqueueError = getReadableStreamEnqueueError;
+  binding.getReadableStreamController = getReadableStreamController;
+  binding.getReadableStreamStoredError = getReadableStreamStoredError;
 });
