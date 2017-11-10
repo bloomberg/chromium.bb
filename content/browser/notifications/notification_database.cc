@@ -41,7 +41,7 @@ const char kNextNotificationIdKey[] = "NEXT_NOTIFICATION_ID";
 const char kDataKeyPrefix[] = "DATA:";
 
 // Separates the components of compound keys.
-const char kKeySeparator = '\x00';
+const char kNotificationKeySeparator = '\x00';
 
 // The first notification id which to be handed out by the database.
 const int64_t kFirstPersistentNotificationId = 1;
@@ -72,7 +72,7 @@ std::string CreateDataPrefix(const GURL& origin) {
 
   return base::StringPrintf("%s%s%c", kDataKeyPrefix,
                             storage::GetIdentifierFromOrigin(origin).c_str(),
-                            kKeySeparator);
+                            kNotificationKeySeparator);
 }
 
 // Creates the compound data key in which notification data is stored.
