@@ -184,7 +184,8 @@ void MessageBoxView::Init(const InitParams& params) {
     std::vector<base::string16> texts;
     SplitStringIntoParagraphs(params.message, &texts);
     for (size_t i = 0; i < texts.size(); ++i) {
-      Label* message_label = new Label(texts[i]);
+      Label* message_label =
+          new Label(texts[i], style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
       // Avoid empty multi-line labels, which have a height of 0.
       message_label->SetMultiLine(!texts[i].empty());
       message_label->SetAllowCharacterBreak(true);
@@ -192,7 +193,8 @@ void MessageBoxView::Init(const InitParams& params) {
       message_labels_.push_back(message_label);
     }
   } else {
-    Label* message_label = new Label(params.message);
+    Label* message_label =
+        new Label(params.message, style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
     message_label->SetMultiLine(true);
     message_label->SetAllowCharacterBreak(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
