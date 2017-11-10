@@ -683,6 +683,12 @@ bool EventTarget::FireEventListeners(Event* event,
       } else if (CheckTypeThenUseCount(event, EventTypeNames::unload,
                                        WebFeature::kDocumentUnloadFired,
                                        document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pagehide,
+                                       WebFeature::kDocumentPageHideFired,
+                                       document)) {
+      } else if (CheckTypeThenUseCount(event, EventTypeNames::pageshow,
+                                       WebFeature::kDocumentPageShowFired,
+                                       document)) {
       } else if (CheckTypeThenUseCount(event, EventTypeNames::DOMFocusIn,
                                        WebFeature::kDOMFocusInOutEvent,
                                        document)) {

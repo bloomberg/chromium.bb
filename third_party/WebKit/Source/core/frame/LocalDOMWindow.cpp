@@ -1401,6 +1401,10 @@ void LocalDOMWindow::AddedEventListener(
       UseCounter::Count(document(),
                         WebFeature::kSubFrameBeforeUnloadRegistered);
     }
+  } else if (event_type == EventTypeNames::pagehide) {
+    UseCounter::Count(document(), WebFeature::kDocumentPageHideRegistered);
+  } else if (event_type == EventTypeNames::pageshow) {
+    UseCounter::Count(document(), WebFeature::kDocumentPageShowRegistered);
   }
 }
 
