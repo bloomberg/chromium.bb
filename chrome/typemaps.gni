@@ -4,6 +4,6 @@
 
 typemaps = [
   "//chrome/common/search.typemap",
-  "//chrome/common/safe_browsing/safe_archive_analyzer.typemap",
+  "//chrome/services/file_util/public/interfaces/safe_archive_analyzer.typemap",
   "//chrome/services/util_win/public/interfaces/shell_util_win.typemap",
 ]

@@ -5,6 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "analyze_archive": [ "chrome::mojom::SafeArchiveAnalyzer" ],
         "zip_file": [ "chrome::mojom::ZipFileCreator" ]
        },
        "requires": {

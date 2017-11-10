@@ -7,7 +7,6 @@
           "chrome::mojom::DialDeviceDescriptionParser",
           "chrome::mojom::ProfileImport",
           "chrome::mojom::ResourceUsageReporter",
-          "chrome::mojom::SafeArchiveAnalyzer",
           "chrome::mojom::ShellHandler",
           "extensions::mojom::ExtensionUnpacker",
           "extensions::mojom::ManifestParser",

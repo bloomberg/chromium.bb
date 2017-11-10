@@ -388,6 +388,7 @@ chrome_packaged_services = [
   ":chrome_manifest",
   "//chrome/profiling:manifest",
   "//components/patch_service:manifest",
+  "//chrome/services/file_util:manifest",
   "//services/metrics:manifest",
   "//services/proxy_resolver:proxy_resolver_manifest",
   "//services/preferences:local_state_manifest",
@@ -404,10 +405,8 @@ if (enable_basic_printing || enable_print_preview) {
 }
 
 if (is_chromeos) {
-  chrome_packaged_services += [
-    "//chrome/browser/chromeos:ash_pref_connector_manifest",
-    "//chrome/services/file_util:manifest",
-  ]
+  chrome_packaged_services +=
+      [ "//chrome/browser/chromeos:ash_pref_connector_manifest" ]
 }
 
 if (is_win) {

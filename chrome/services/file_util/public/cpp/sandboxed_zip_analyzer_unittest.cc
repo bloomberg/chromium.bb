@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/sandboxed_zip_analyzer.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
 
 #include <stdint.h>
 
@@ -16,9 +16,11 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/services/file_util/file_util_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,14 +32,14 @@ const char kAppInZipHistogramName[] =
 }
 #endif  // OS_MACOSX
 
-namespace safe_browsing {
+namespace chrome {
 
 class SandboxedZipAnalyzerTest : public ::testing::Test {
  protected:
   // Constants for validating the data reported by the analyzer.
   struct BinaryData {
     const char* file_basename;
-    ClientDownloadRequest_DownloadType download_type;
+    safe_browsing::ClientDownloadRequest_DownloadType download_type;
     const uint8_t* sha256_digest;
     int64_t length;
     bool is_signed;
@@ -48,7 +50,7 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   class ResultsGetter {
    public:
     ResultsGetter(const base::Closure& quit_closure,
-                  ArchiveAnalyzerResults* results)
+                  safe_browsing::ArchiveAnalyzerResults* results)
         : quit_closure_(quit_closure), results_(results) {
       DCHECK(results);
       results->success = false;
@@ -60,18 +62,22 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
     }
 
    private:
-    void OnZipAnalyzerResults(const ArchiveAnalyzerResults& results) {
+    void OnZipAnalyzerResults(
+        const safe_browsing::ArchiveAnalyzerResults& results) {
       *results_ = results;
       quit_closure_.Run();
     }
 
     base::Closure quit_closure_;
-    ArchiveAnalyzerResults* results_;
+    safe_browsing::ArchiveAnalyzerResults* results_;
+
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);
   };
 
   SandboxedZipAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        test_connector_factory_(std::make_unique<chrome::FileUtilService>()),
+        connector_(test_connector_factory_.CreateConnector()) {}
 
   void SetUp() override {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data_));
@@ -81,19 +87,21 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   // Runs a sandboxed zip analyzer on |file_path|, writing its results into
   // |results|.
   void RunAnalyzer(const base::FilePath& file_path,
-                   ArchiveAnalyzerResults* results) {
+                   safe_browsing::ArchiveAnalyzerResults* results) {
     DCHECK(results);
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
     scoped_refptr<SandboxedZipAnalyzer> analyzer(
-        new SandboxedZipAnalyzer(file_path, results_getter.GetCallback()));
+        new chrome::SandboxedZipAnalyzer(
+            file_path, results_getter.GetCallback(), connector_.get()));
     analyzer->Start();
     run_loop.Run();
   }
 
 #if defined(OS_WIN)
-  void ExpectPEHeaders(const BinaryData& data,
-                       const ClientDownloadRequest_ArchivedBinary& binary) {
+  void ExpectPEHeaders(
+      const BinaryData& data,
+      const safe_browsing::ClientDownloadRequest_ArchivedBinary& binary) {
     ASSERT_EQ(data.is_signed, binary.has_signature());
     if (data.is_signed) {
       ASSERT_LT(0, binary.signature().signed_data_size());
@@ -109,8 +117,9 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 #endif
 
 #if defined(OS_MACOSX)
-  void ExpectMachOHeaders(const BinaryData& data,
-                          const ClientDownloadRequest_ArchivedBinary& binary) {
+  void ExpectMachOHeaders(
+      const BinaryData& data,
+      const safe_browsing::ClientDownloadRequest_ArchivedBinary& binary) {
     EXPECT_EQ(data.is_signed, binary.has_signature());
     if (data.is_signed) {
       ASSERT_LT(0, binary.signature().signed_data_size());
@@ -123,8 +132,9 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
 #endif
 
   // Verifies expectations about a binary found by the analyzer.
-  void ExpectBinary(const BinaryData& data,
-                    const ClientDownloadRequest_ArchivedBinary& binary) {
+  void ExpectBinary(
+      const BinaryData& data,
+      const safe_browsing::ClientDownloadRequest_ArchivedBinary& binary) {
     ASSERT_TRUE(binary.has_file_basename());
     EXPECT_EQ(data.file_basename, binary.file_basename());
     ASSERT_TRUE(binary.has_download_type());
@@ -177,6 +187,8 @@ class SandboxedZipAnalyzerTest : public ::testing::Test {
   base::FilePath dir_test_data_;
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 // static
@@ -195,7 +207,7 @@ const uint8_t SandboxedZipAnalyzerTest::kJSEFileDigest[] = {
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kUnsignedExe = {
         "unsigned.exe",
-        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        safe_browsing::ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
         &kUnsignedDigest[0],
         36864,
         false,  // !is_signed
@@ -203,7 +215,7 @@ const SandboxedZipAnalyzerTest::BinaryData
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kSignedExe = {
         "signed.exe",
-        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        safe_browsing::ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
         &kSignedDigest[0],
         37768,
         true,  // is_signed
@@ -211,7 +223,7 @@ const SandboxedZipAnalyzerTest::BinaryData
 const SandboxedZipAnalyzerTest::BinaryData SandboxedZipAnalyzerTest::kJSEFile =
     {
         "hello.jse",
-        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        safe_browsing::ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
         &kJSEFileDigest[0],
         6,
         false,  // is_signed
@@ -225,7 +237,7 @@ const uint8_t SandboxedZipAnalyzerTest::kUnsignedMachODigest[] = {
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kUnsignedMachO = {
         "executablefat",
-        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        safe_browsing::ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
         &kUnsignedMachODigest[0],
         16640,
         false,  // !is_signed
@@ -237,7 +249,7 @@ const uint8_t SandboxedZipAnalyzerTest::kSignedMachODigest[] = {
 const SandboxedZipAnalyzerTest::BinaryData
     SandboxedZipAnalyzerTest::kSignedMachO = {
         "signedexecutablefat",
-        ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
+        safe_browsing::ClientDownloadRequest_DownloadType_WIN_EXECUTABLE,
         &kSignedMachODigest[0],
         34176,
         true,  // !is_signed
@@ -245,7 +257,7 @@ const SandboxedZipAnalyzerTest::BinaryData
 #endif  // OS_MACOSX
 
 TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(
       dir_test_data_.AppendASCII("download_protection/zipfile_no_binaries.zip"),
       &results);
@@ -256,7 +268,7 @@ TEST_F(SandboxedZipAnalyzerTest, NoBinaries) {
 }
 
 TEST_F(SandboxedZipAnalyzerTest, OneUnsignedBinary) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_one_unsigned_binary.zip"),
               &results);
@@ -268,7 +280,7 @@ TEST_F(SandboxedZipAnalyzerTest, OneUnsignedBinary) {
 }
 
 TEST_F(SandboxedZipAnalyzerTest, TwoBinariesOneSigned) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_two_binaries_one_signed.zip"),
               &results);
@@ -281,7 +293,7 @@ TEST_F(SandboxedZipAnalyzerTest, TwoBinariesOneSigned) {
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_archive_no_binaries.zip"),
               &results);
@@ -295,7 +307,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_rar_archive_no_binaries.zip"),
               &results);
@@ -309,7 +321,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_archive_and_binaries.zip"),
               &results);
@@ -325,7 +337,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveAndBinaries) {
 
 TEST_F(SandboxedZipAnalyzerTest,
        ZippedArchiveAndBinariesWithTrailingSpaceAndPeriodChars) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_two_binaries_one_archive_"
                   "trailing_space_and_period_chars.zip"),
@@ -347,7 +359,7 @@ TEST_F(SandboxedZipAnalyzerTest,
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedJSEFile) {
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "download_protection/zipfile_one_jse_file.zip"),
               &results);
@@ -364,7 +376,7 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kAppInZipHistogramName, 0);
 
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   RunAnalyzer(dir_test_data_.AppendASCII(
                   "mach_o/zipped-app-two-executables-one-signed.zip"),
               &results);
@@ -381,4 +393,4 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedAppWithUnsignedAndSignedExecutable) {
 }
 #endif  // OS_MACOSX
 
-}  // namespace safe_browsing
+}  // namespace chrome

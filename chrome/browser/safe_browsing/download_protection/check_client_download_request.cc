@@ -14,11 +14,13 @@
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/ppapi_download_request.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing/common/utils.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_status_code.h"
 
@@ -475,10 +477,11 @@ void CheckClientDownloadRequest::StartExtractZipFeatures() {
   zip_analysis_start_time_ = base::TimeTicks::Now();
   // We give the zip analyzer a weak pointer to this object.  Since the
   // analyzer is refcounted, it might outlive the request.
-  analyzer_ = new SandboxedZipAnalyzer(
+  analyzer_ = new chrome::SandboxedZipAnalyzer(
       item_->GetFullPath(),
       base::Bind(&CheckClientDownloadRequest::OnZipAnalysisFinished,
-                 weakptr_factory_.GetWeakPtr()));
+                 weakptr_factory_.GetWeakPtr()),
+      content::ServiceManagerConnection::GetForProcess()->GetConnector());
   analyzer_->Start();
 }
 
@@ -550,10 +553,11 @@ void CheckClientDownloadRequest::StartExtractDmgFeatures() {
   if (too_big_to_unpack) {
     OnFileFeatureExtractionDone();
   } else {
-    dmg_analyzer_ = new SandboxedDMGAnalyzer(
+    dmg_analyzer_ = new chrome::SandboxedDMGAnalyzer(
         item_->GetFullPath(),
         base::Bind(&CheckClientDownloadRequest::OnDmgAnalysisFinished,
-                   weakptr_factory_.GetWeakPtr()));
+                   weakptr_factory_.GetWeakPtr()),
+        content::ServiceManagerConnection::GetForProcess()->GetConnector());
     dmg_analyzer_->Start();
     dmg_analysis_start_time_ = base::TimeTicks::Now();
   }
@@ -578,7 +582,7 @@ void CheckClientDownloadRequest::ExtractFileOrDmgFeatures(
 }
 
 void CheckClientDownloadRequest::OnDmgAnalysisFinished(
-    const ArchiveAnalyzerResults& results) {
+    const safe_browsing::ArchiveAnalyzerResults& results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(ClientDownloadRequest::MAC_EXECUTABLE, type_);
   if (item_ == nullptr) {

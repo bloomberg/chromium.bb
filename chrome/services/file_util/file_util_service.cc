@@ -7,13 +7,31 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "chrome/services/file_util/zip_file_creator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+#if defined(FULL_SAFE_BROWSING)
+#include "chrome/services/file_util/safe_archive_analyzer.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/services/file_util/zip_file_creator.h"
+#endif
 
 namespace chrome {
 
 namespace {
 
+#if defined(FULL_SAFE_BROWSING)
+void OnSafeArchiveAnalyzerRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    chrome::mojom::SafeArchiveAnalyzerRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<SafeArchiveAnalyzer>(ref_factory->CreateRef()),
+      std::move(request));
+}
+#endif
+
+#if defined(OS_CHROMEOS)
 void OnZipFileCreatorRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
     chrome::mojom::ZipFileCreatorRequest request) {
@@ -21,6 +39,7 @@ void OnZipFileCreatorRequest(
       std::make_unique<ZipFileCreator>(ref_factory->CreateRef()),
       std::move(request));
 }
+#endif
 
 }  // namespace
 
@@ -36,8 +55,14 @@ void FileUtilService::OnStart() {
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context())));
+#if defined(OS_CHROMEOS)
   registry_.AddInterface(
       base::Bind(&OnZipFileCreatorRequest, ref_factory_.get()));
+#endif
+#if defined(FULL_SAFE_BROWSING)
+  registry_.AddInterface(
+      base::Bind(&OnSafeArchiveAnalyzerRequest, ref_factory_.get()));
+#endif
 }
 
 void FileUtilService::OnBindInterface(

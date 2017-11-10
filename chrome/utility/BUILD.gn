@@ -209,8 +209,11 @@ static_library("utility") {
     ]
   }
 
-  if (is_mac && safe_browsing_mode == 1) {
-    deps += [ "//chrome/utility/safe_browsing/mac" ]
+  if (safe_browsing_mode == 1) {
+    deps += [ "//chrome/services/file_util:lib" ]
+    if (is_mac) {
+      deps += [ "//chrome/utility/safe_browsing/mac" ]
+    }
   }
 
   if (!is_android) {

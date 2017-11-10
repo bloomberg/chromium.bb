@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//chrome/common/safe_browsing/safe_archive_analyzer.mojom"
+mojom =
+    "//chrome/services/file_util/public/interfaces/safe_archive_analyzer.mojom"
 
 public_headers = [ "//chrome/common/safe_browsing/zip_analyzer.h" ]
 
-traits_headers =
-    [ "//chrome/common/safe_browsing/safe_archive_analyzer_param_traits.h" ]
+traits_headers = [ "//chrome/services/file_util/public/interfaces/safe_archive_analyzer_param_traits.h" ]
 
 deps = [
   "//chrome/common/safe_browsing:proto",

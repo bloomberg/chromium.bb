@@ -3,20 +3,22 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//build/config/features.gni")
 
 mojom("interfaces") {
   sources = [
-    "zip_file_creator.mojom",
+    "constants.mojom",
   ]
+
+  if (is_chromeos) {
+    sources += [ "zip_file_creator.mojom" ]
+  }
+
+  if (safe_browsing_mode == 1) {
+    sources += [ "safe_archive_analyzer.mojom" ]
+  }
 
   public_deps = [
-    ":constants",
     "//mojo/common:common_custom_types",
-  ]
-}
-
-mojom("constants") {
-  sources = [
-    "constants.mojom",
   ]
 }

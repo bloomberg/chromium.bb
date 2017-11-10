@@ -2,15 +2,47 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
-  sources = [
-    "zip_file_creator.cc",
-    "zip_file_creator.h",
-  ]
+import("//build/config/features.gni")
 
+source_set("cpp") {
   public_deps = [
     "//chrome/services/file_util/public/interfaces",
     "//services/service_manager/public/cpp",
+  ]
+
+  if (safe_browsing_mode == 1) {
+    sources = [
+      "sandboxed_dmg_analyzer_mac.cc",
+      "sandboxed_dmg_analyzer_mac.h",
+      "sandboxed_zip_analyzer.cc",
+      "sandboxed_zip_analyzer.h",
+    ]
+    if (is_chromeos) {
+      sources += [
+        "zip_file_creator.cc",
+        "zip_file_creator.h",
+      ]
+    }
+    public_deps += [ "//chrome/common/safe_browsing" ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "sandboxed_dmg_analyzer_mac_unittest.cc",
+    "sandboxed_zip_analyzer_unittest.cc",
+  ]
+
+  deps = [
+    ":cpp",
+    "//chrome/services/file_util:lib",
+    "//crypto:platform",
+    "//services/service_manager/public/cpp/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 

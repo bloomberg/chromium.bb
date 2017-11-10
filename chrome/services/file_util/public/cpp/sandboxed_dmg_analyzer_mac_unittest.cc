@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/download_protection/sandboxed_dmg_analyzer_mac.h"
+#include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 
 #include <mach-o/loader.h>
 #include <stdint.h>
@@ -16,24 +16,28 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "chrome/services/file_util/file_util_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace safe_browsing {
+namespace chrome {
 namespace {
 
 class SandboxedDMGAnalyzerTest : public testing::Test {
  public:
   SandboxedDMGAnalyzerTest()
-      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        test_connector_factory_(std::make_unique<chrome::FileUtilService>()),
+        connector_(test_connector_factory_.CreateConnector()) {}
 
   void AnalyzeFile(const base::FilePath& path,
-                   ArchiveAnalyzerResults* results) {
+                   safe_browsing::ArchiveAnalyzerResults* results) {
     base::RunLoop run_loop;
     ResultsGetter results_getter(run_loop.QuitClosure(), results);
-    scoped_refptr<SandboxedDMGAnalyzer> analyzer(
-        new SandboxedDMGAnalyzer(path, results_getter.GetCallback()));
+    scoped_refptr<SandboxedDMGAnalyzer> analyzer(new SandboxedDMGAnalyzer(
+        path, results_getter.GetCallback(), connector_.get()));
     analyzer->Start();
     run_loop.Run();
   }
@@ -52,7 +56,7 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
   class ResultsGetter {
    public:
     ResultsGetter(const base::Closure& next_closure,
-                  ArchiveAnalyzerResults* results)
+                  safe_browsing::ArchiveAnalyzerResults* results)
         : next_closure_(next_closure), results_(results) {}
 
     SandboxedDMGAnalyzer::ResultCallback GetCallback() {
@@ -61,26 +65,28 @@ class SandboxedDMGAnalyzerTest : public testing::Test {
     }
 
    private:
-    void ResultsCallback(const ArchiveAnalyzerResults& results) {
+    void ResultsCallback(const safe_browsing::ArchiveAnalyzerResults& results) {
       *results_ = results;
       next_closure_.Run();
     }
 
     base::Closure next_closure_;
-    ArchiveAnalyzerResults* results_;
+    safe_browsing::ArchiveAnalyzerResults* results_;
 
     DISALLOW_COPY_AND_ASSIGN(ResultsGetter);
   };
 
   content::TestBrowserThreadBundle browser_thread_bundle_;
   content::InProcessUtilityThreadHelper utility_thread_helper_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
 };
 
 TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
   base::FilePath path;
   ASSERT_NO_FATAL_FAILURE(path = GetFilePath("mach_o_in_dmg.dmg"));
 
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   AnalyzeFile(path, &results);
 
   EXPECT_TRUE(results.success);
@@ -91,22 +97,24 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
   for (const auto& binary : results.archived_binary) {
     const std::string& file_name = binary.file_basename();
     const google::protobuf::RepeatedPtrField<
-        ClientDownloadRequest_MachOHeaders>& headers =
+        safe_browsing::ClientDownloadRequest_MachOHeaders>& headers =
         binary.image_headers().mach_o_headers();
 
-    EXPECT_EQ(ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
+    EXPECT_EQ(safe_browsing::ClientDownloadRequest_DownloadType_MAC_EXECUTABLE,
               binary.download_type());
 
     if (file_name.find("executablefat") != std::string::npos) {
       got_executable = true;
       ASSERT_EQ(2, headers.size());
 
-      const ClientDownloadRequest_MachOHeaders& arch32 = headers.Get(0);
+      const safe_browsing::ClientDownloadRequest_MachOHeaders& arch32 =
+          headers.Get(0);
       EXPECT_EQ(15, arch32.load_commands().size());
       EXPECT_EQ(MH_MAGIC, *reinterpret_cast<const uint32_t*>(
                               arch32.mach_header().c_str()));
 
-      const ClientDownloadRequest_MachOHeaders& arch64 = headers.Get(1);
+      const safe_browsing::ClientDownloadRequest_MachOHeaders& arch64 =
+          headers.Get(1);
       EXPECT_EQ(15, arch64.load_commands().size());
       EXPECT_EQ(MH_MAGIC_64, *reinterpret_cast<const uint32_t*>(
                                  arch64.mach_header().c_str()));
@@ -121,7 +129,8 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDMG) {
       got_dylib = true;
       ASSERT_EQ(1, headers.size());
 
-      const ClientDownloadRequest_MachOHeaders& arch = headers.Get(0);
+      const safe_browsing::ClientDownloadRequest_MachOHeaders& arch =
+          headers.Get(0);
       EXPECT_EQ(13, arch.load_commands().size());
       EXPECT_EQ(MH_MAGIC_64,
                 *reinterpret_cast<const uint32_t*>(arch.mach_header().c_str()));
@@ -145,7 +154,7 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgNoSignature) {
   base::FilePath unsigned_dmg;
   ASSERT_NO_FATAL_FAILURE(unsigned_dmg = GetFilePath("mach_o_in_dmg.dmg"));
 
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   AnalyzeFile(unsigned_dmg, &results);
 
   EXPECT_TRUE(results.success);
@@ -160,7 +169,7 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgWithSignature) {
                    .AppendASCII("mach_o")
                    .AppendASCII("signed-archive.dmg");
 
-  ArchiveAnalyzerResults results;
+  safe_browsing::ArchiveAnalyzerResults results;
   AnalyzeFile(signed_dmg, &results);
 
   EXPECT_TRUE(results.success);
@@ -181,4 +190,4 @@ TEST_F(SandboxedDMGAnalyzerTest, AnalyzeDmgWithSignature) {
 }
 
 }  // namespace
-}  // namespace safe_browsing
+}  // namespace chrome

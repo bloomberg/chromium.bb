@@ -682,10 +682,6 @@ mojom("mojo_bindings") {
     sources += [ "conflicts/module_event_sink_win.mojom" ]
   }
 
-  if (safe_browsing_mode == 1) {
-    sources += [ "safe_browsing/safe_archive_analyzer.mojom" ]
-  }
-
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//content/public/common:interfaces",
@@ -696,10 +692,15 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_origin",
   ]
 
+  if (safe_browsing_mode == 1) {
+    public_deps += [ "//chrome/services/file_util/public/interfaces" ]
+  }
+
   overridden_deps = [
     "//third_party/WebKit/public:mojo_bindings",
     "//content/public/common:interfaces",
   ]
+
   component_deps = [ "//content/public/common" ]
 
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.

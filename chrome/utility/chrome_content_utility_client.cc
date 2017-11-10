@@ -45,11 +45,6 @@
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"  // nogncheck
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
-#include "chrome/services/file_util/file_util_service.h"
-#include "chrome/services/file_util/public/interfaces/constants.mojom.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/services/util_win/public/interfaces/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
@@ -73,63 +68,18 @@
 #include "chrome/utility/printing_handler.h"
 #endif
 
+#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#include "chrome/services/file_util/file_util_service.h"  // nogncheck
+#include "chrome/services/file_util/public/interfaces/constants.mojom.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"  // nogncheck
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
-#include "chrome/common/safe_browsing/archive_analyzer_results.h"
-#include "chrome/common/safe_browsing/safe_archive_analyzer.mojom.h"
-#include "chrome/common/safe_browsing/zip_analyzer.h"
-#if defined(OS_MACOSX)
-#include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
-#endif
-#endif
-
 namespace {
-
-#if defined(FULL_SAFE_BROWSING)
-class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
- public:
-  SafeArchiveAnalyzerImpl() = default;
-  ~SafeArchiveAnalyzerImpl() override = default;
-
-  static void Create(chrome::mojom::SafeArchiveAnalyzerRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<SafeArchiveAnalyzerImpl>(),
-                            std::move(request));
-  }
-
- private:
-  // chrome::mojom::SafeArchiveAnalyzer:
-  void AnalyzeZipFile(base::File zip_file,
-                      base::File temporary_file,
-                      const AnalyzeZipFileCallback& callback) override {
-    DCHECK(temporary_file.IsValid());
-    DCHECK(zip_file.IsValid());
-
-    safe_browsing::ArchiveAnalyzerResults results;
-    safe_browsing::zip_analyzer::AnalyzeZipFile(
-        std::move(zip_file), std::move(temporary_file), &results);
-    callback.Run(results);
-  }
-
-  void AnalyzeDmgFile(base::File dmg_file,
-                      const AnalyzeDmgFileCallback& callback) override {
-#if defined(OS_MACOSX)
-    DCHECK(dmg_file.IsValid());
-    safe_browsing::ArchiveAnalyzerResults results;
-    safe_browsing::dmg::AnalyzeDMGFile(std::move(dmg_file), &results);
-    callback.Run(results);
-#else
-    NOTREACHED();
-#endif
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(SafeArchiveAnalyzerImpl);
-};
-#endif  // defined(FULL_SAFE_BROWSING)
 
 #if !defined(OS_ANDROID)
 class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
@@ -215,11 +165,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
         base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create),
         base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID)
-
-#if defined(FULL_SAFE_BROWSING)
-    registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create),
-                           base::ThreadTaskRunnerHandle::Get());
-#endif
   }
 
   connection->AddConnectionFilter(
@@ -286,7 +231,7 @@ void ChromeContentUtilityClient::RegisterServices(
   }
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
   {
     service_manager::EmbeddedServiceInfo service_info;
     service_info.factory = base::Bind(&chrome::FileUtilService::CreateService);
