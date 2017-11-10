@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
@@ -88,83 +87,33 @@ void RecordExitCodes(const base::string16& registry_path) {
   size_t num = regkey.GetValueCount();
   if (num == 0)
     return;
-
-  // See http://crbug.com/779674.
-  if (num > std::numeric_limits<base::HistogramBase::Count>::max()) {
-    base::debug::Alias(&num);
-    LOG(FATAL) << "Value count might cause histogram count overflow.";
-  }
-
   std::vector<base::string16> to_delete;
 
   // Record the exit codes in a sparse stability histogram, as the range of
-  // values used to report failures is large. Defer looking up the histogram
-  // until a live one is discovered, as there will always be at least one
-  // entry for the current process.
-  base::HistogramBase* exit_code_histogram = base::SparseHistogram::FactoryGet(
-      WatcherMetricsProviderWin::kBrowserExitCodeHistogramName,
-      base::HistogramBase::kUmaStabilityHistogramFlag);
-
-  // See http://crbug.com/779674. Since nothing else should be using this
-  // histogram, it should always be consistent.
-  std::unique_ptr<base::HistogramSamples> samples_before =
-      exit_code_histogram->SnapshotSamples();
-  auto corruption = exit_code_histogram->FindCorruption(*samples_before);
-  if (corruption != base::HistogramBase::NO_INCONSISTENCIES) {
-    base::debug::Alias(&corruption);
-    LOG(FATAL) << "Corrupt histogram " << corruption;
-  }
+  // values used to report failures is large.
+  base::HistogramBase* exit_code_histogram =
+      base::SparseHistogram::FactoryGet(
+          WatcherMetricsProviderWin::kBrowserExitCodeHistogramName,
+          base::HistogramBase::kUmaStabilityHistogramFlag);
 
   for (size_t i = 0; i < num; ++i) {
     base::string16 name;
-    LONG error = regkey.GetValueNameAt(static_cast<int>(i), &name);
-    if (error != ERROR_SUCCESS) {
-      // See http://crbug.com/779674.
-      base::debug::Alias(&error);
-      LOG(FATAL) << "GetValueNameAt failed with error " << error;
-    } else {
+    if (regkey.GetValueNameAt(static_cast<int>(i), &name) == ERROR_SUCCESS) {
       DWORD exit_code = 0;
       if (regkey.ReadValueDW(name.c_str(), &exit_code) == ERROR_SUCCESS) {
         // Do not report exit codes for processes that are still live,
         // notably for our own process.
         if (exit_code != STILL_ACTIVE || IsDeadProcess(name)) {
-          auto count = samples_before->GetCount(exit_code);
-          if (count == std::numeric_limits<base::HistogramBase::Count>::max()) {
-            base::debug::Alias(&exit_code);
-            base::debug::Alias(&count);
-            base::debug::Alias(&samples_before);
-            LOG(FATAL) << "Imminent overflow for exit " << exit_code;
-          }
-
           to_delete.push_back(name);
           exit_code_histogram->Add(exit_code);
-          samples_before->Accumulate(exit_code, 1);
         }
       }
     }
   }
 
-  // See http://crbug.com/779674. Since nothing else should be using this
-  // histogram, it should always be consistent.
-  std::unique_ptr<base::HistogramSamples> samples_after =
-      exit_code_histogram->SnapshotSamples();
-
-  corruption = exit_code_histogram->FindCorruption(*samples_after);
-  if (corruption != base::HistogramBase::NO_INCONSISTENCIES) {
-    base::debug::Alias(&corruption);
-    LOG(FATAL) << "Corrupt histogram " << corruption;
-  }
-
   // Delete the values reported above.
-  for (size_t i = 0; i < to_delete.size(); ++i) {
-    LONG error = regkey.DeleteValue(to_delete[i].c_str());
-
-    if (error != ERROR_SUCCESS) {
-      // See http://crbug.com/779674.
-      base::debug::Alias(&error);
-      LOG(FATAL) << "DeleteValue failed with " << error;
-    }
-  }
+  for (size_t i = 0; i < to_delete.size(); ++i)
+    regkey.DeleteValue(to_delete[i].c_str());
 }
 
 void DeleteAllValues(base::win::RegKey* key) {
