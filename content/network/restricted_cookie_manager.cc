@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -74,10 +75,23 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
 
   std::vector<net::CanonicalCookie> result;
   result.reserve(cookie_list.size());
+  network::mojom::CookieMatchType match_type = options->match_type;
+  const std::string& match_name = options->name;
   for (size_t i = 0; i < cookie_list.size(); ++i) {
-    // TODO(pwnall): Parsing and canonicalization for net::CanonicalCookie.
     const net::CanonicalCookie& cookie = cookie_list[i];
-    // TODO(pwnall): Check cookie against options.
+    const std::string& cookie_name = cookie.Name();
+
+    if (match_type == network::mojom::CookieMatchType::EQUALS) {
+      if (cookie_name != match_name)
+        continue;
+    } else if (match_type == network::mojom::CookieMatchType::STARTS_WITH) {
+      if (!base::StartsWith(cookie_name, match_name,
+                            base::CompareCase::SENSITIVE)) {
+        continue;
+      }
+    } else {
+      NOTREACHED();
+    }
     result.emplace_back(cookie);
   }
   std::move(callback).Run(std::move(result));

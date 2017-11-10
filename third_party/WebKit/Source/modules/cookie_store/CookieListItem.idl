@@ -5,8 +5,8 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 dictionary CookieListItem {
-  DOMString name;
-  DOMString value;
+  USVString name;
+  USVString value;
 };
 
 typedef sequence<CookieListItem> CookieList;
