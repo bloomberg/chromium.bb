@@ -11,44 +11,13 @@ import android.os.Bundle;
 
 import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.res.builder.DefaultPackageManager;
-import org.robolectric.res.builder.RobolectricPackageManager;
-
-import java.util.HashMap;
+import org.robolectric.Shadows;
+import org.robolectric.shadows.ShadowPackageManager;
 
 /**
  * Helper class for WebAPK JUnit tests.
  */
 public class WebApkTestHelper {
-    /** FakePackageManager allows setting up Resources for installed packages. */
-    private static class FakePackageManager extends DefaultPackageManager {
-        private final HashMap<String, Resources> mResourceMap;
-
-        public FakePackageManager() {
-            mResourceMap = new HashMap<>();
-        }
-
-        @Override
-        public Resources getResourcesForApplication(String appPackageName)
-                throws NameNotFoundException {
-            Resources result = mResourceMap.get(appPackageName);
-            if (result == null) throw new NameNotFoundException(appPackageName);
-
-            return result;
-        }
-
-        public void setResourcesForTest(String packageName, Resources resources) {
-            mResourceMap.put(packageName, resources);
-        }
-    }
-
-    /**
-     * Setups a new {@FakePackageManager}.
-     */
-    public static void setUpPackageManager() {
-        FakePackageManager packageManager = new FakePackageManager();
-        RuntimeEnvironment.setRobolectricPackageManager(packageManager);
-    }
 
     /**
      * Registers WebAPK. This function also creates an empty resource for the WebAPK.
@@ -56,24 +25,18 @@ public class WebApkTestHelper {
      * @param metaData Bundle with meta data from WebAPK's Android Manifest.
      */
     public static void registerWebApkWithMetaData(String packageName, Bundle metaData) {
-        RobolectricPackageManager packageManager =
-                RuntimeEnvironment.getRobolectricPackageManager();
-        if (!(packageManager instanceof FakePackageManager)) {
-            setUpPackageManager();
-        }
-        packageManager = RuntimeEnvironment.getRobolectricPackageManager();
+        ShadowPackageManager packageManager =
+                Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
         Resources res = Mockito.mock(Resources.class);
-        ((FakePackageManager) packageManager).setResourcesForTest(packageName, res);
+        packageManager.resources.put(packageName, res);
         packageManager.addPackage(newPackageInfo(packageName, metaData));
     }
 
     /** Sets the resource for the given package name. */
     public static void setResource(String packageName, Resources res) {
-        RobolectricPackageManager packageManager =
-                RuntimeEnvironment.getRobolectricPackageManager();
-        if (packageManager instanceof FakePackageManager) {
-            ((FakePackageManager) packageManager).setResourcesForTest(packageName, res);
-        }
+        ShadowPackageManager packageManager =
+                Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
+        packageManager.resources.put(packageName, res);
     }
 
     private static PackageInfo newPackageInfo(String packageName, Bundle metaData) {

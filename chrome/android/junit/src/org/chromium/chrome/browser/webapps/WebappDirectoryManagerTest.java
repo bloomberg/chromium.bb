@@ -91,6 +91,7 @@ public class WebappDirectoryManagerTest {
         FileUtils.recursivelyDeleteFile(mContext.getDataDir());
         FileUtils.recursivelyDeleteFile(mContext.getCodeCacheDir());
         FileUtils.recursivelyDeleteFile(mWebappDirectoryManager.getBaseWebappDirectory(mContext));
+        FileUtils.recursivelyDeleteFile(WebappDirectoryManager.getWebApkUpdateDirectory());
         ThreadUtils.setThreadAssertsDisabledForTesting(false);
     }
 

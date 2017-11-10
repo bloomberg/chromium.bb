@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -382,7 +383,8 @@ public class WebappRegistryTest {
         assertTrue(actual.contains(webappId));
         assertTrue(actual.contains(uninstalledWebappId));
 
-        RuntimeEnvironment.getRobolectricPackageManager().addPackage(webApkPackage);
+        Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())
+                .addPackage(webApkPackage);
 
         // Set the current time such that the task runs.
         long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;
@@ -423,7 +425,8 @@ public class WebappRegistryTest {
         assertTrue(actual.contains(deprecatedWebappId));
         assertTrue(actual.contains(installedWebappId));
 
-        RuntimeEnvironment.getRobolectricPackageManager().addPackage(webApkPackage);
+        Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager())
+                .addPackage(webApkPackage);
 
         // Set the current time such that the task runs.
         long currentTime = System.currentTimeMillis() + WebappRegistry.FULL_CLEANUP_DURATION;

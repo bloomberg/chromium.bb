@@ -119,7 +119,7 @@ chromium/third_party/ow2_asm version:5.0.1-cr0
 # endless merge conflicts
 
 @Subdir third_party/robolectric
-chromium/third_party/robolectric version:3.2-cr0
+chromium/third_party/robolectric version:3.4.2
 
 # Three unchanging lines
 # avoid the horror that is

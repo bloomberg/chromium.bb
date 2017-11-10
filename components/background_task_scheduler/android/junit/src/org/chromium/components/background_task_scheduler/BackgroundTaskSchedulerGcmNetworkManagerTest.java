@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.gms.Shadows;
 import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
@@ -52,7 +52,7 @@ public class BackgroundTaskSchedulerGcmNetworkManagerTest {
 
         Shadows.shadowOf(GoogleApiAvailability.getInstance())
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
-        mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
+        mGcmNetworkManager = (ShadowGcmNetworkManager) Shadow.extract(
                 GcmNetworkManager.getInstance(ContextUtils.getApplicationContext()));
     }
 

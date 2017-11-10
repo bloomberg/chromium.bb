@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.gms.Shadows;
 import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 import org.robolectric.util.ReflectionHelpers;
@@ -65,7 +65,7 @@ public class BackgroundTaskSchedulerImplTest {
         // Initialize Google Play Services and GCM Network Manager for upgrade testing.
         Shadows.shadowOf(GoogleApiAvailability.getInstance())
                 .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
-        mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
+        mGcmNetworkManager = (ShadowGcmNetworkManager) Shadow.extract(
                 GcmNetworkManager.getInstance(ContextUtils.getApplicationContext()));
     }
 

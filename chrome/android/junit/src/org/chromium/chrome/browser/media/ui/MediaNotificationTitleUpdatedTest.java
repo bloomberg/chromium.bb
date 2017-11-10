@@ -11,6 +11,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,9 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  */
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+        // Remove this after updating to a version of Robolectric that supports
+        // notification channel creation. crbug.com/774315
+        sdk = Build.VERSION_CODES.N_MR1,
         shadows = {MediaNotificationTestShadowResources.class,
                 MediaNotificationTestShadowNotificationManager.class})
 public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerTestBase {

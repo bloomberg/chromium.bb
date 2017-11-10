@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.os.Build;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
@@ -31,7 +32,10 @@ import java.util.ArrayList;
  * Unit tests for the {@link CompositorAnimator} class.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE,
+        // AnimatorSet seems to not work in Robolectric 3.4.2. Remove this SDK
+        // specification once we upgrade to a version in which it works. crbug.com/774357
+        sdk = Build.VERSION_CODES.N_MR1)
 public final class CompositorAnimatorTest {
     /** A mock implementation of {@link LayoutUpdateHost} that tracks update requests. */
     private static class MockLayoutUpdateHost implements LayoutUpdateHost {

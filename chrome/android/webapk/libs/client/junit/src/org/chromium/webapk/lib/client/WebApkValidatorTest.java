@@ -26,8 +26,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowPackageManager;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.testing.local.TestDir;
@@ -70,12 +71,11 @@ public class WebApkValidatorTest {
             -65, 114, -103, 120, -88, -112, -102, -61, 72, -16, 74, 53, 50, 49, -56, -48, -90, 5,
             -116, 78};
 
-    private RobolectricPackageManager mPackageManager;
+    private ShadowPackageManager mPackageManager;
 
     @Before
     public void setUp() {
-        mPackageManager =
-                (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
+        mPackageManager = Shadows.shadowOf(RuntimeEnvironment.application.getPackageManager());
         WebApkValidator.init(EXPECTED_SIGNATURE, PUBLIC_KEY);
     }
 
