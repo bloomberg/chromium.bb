@@ -760,7 +760,8 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (base::FeatureList::IsEnabled(
-          service_manager::features::kWinSboxForceMsSigned)) {
+          service_manager::features::kWinSboxForceMsSigned) &&
+      !cmd_line->HasSwitch(switches::kAllowThirdPartyModules)) {
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
   }
   result = policy->SetDelayedProcessMitigations(mitigations);

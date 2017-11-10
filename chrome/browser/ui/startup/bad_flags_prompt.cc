@@ -91,6 +91,9 @@ void ShowBadFlagsPrompt(Browser* browser) {
     service_manager::switches::kDisableGpuSandbox,
     service_manager::switches::kDisableSeccompFilterSandbox,
     service_manager::switches::kDisableSetuidSandbox,
+#if defined(OS_WIN)
+    service_manager::switches::kAllowThirdPartyModules,
+#endif
     switches::kDisableWebSecurity,
 #if BUILDFLAG(ENABLE_NACL)
     switches::kNaClDangerousNoSandboxNonSfi,
