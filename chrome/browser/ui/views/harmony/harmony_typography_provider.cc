@@ -95,6 +95,7 @@ int HarmonyTypographyProvider::GetPlatformFontHeight(int font_context) {
     case views::style::CONTEXT_DIALOG_TITLE:
       return windows_10 || !direct_write_enabled ? 20 : 21;
     case CONTEXT_BODY_TEXT_LARGE:
+    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
       return direct_write_enabled ? 18 : 17;
     case CONTEXT_BODY_TEXT_SMALL:
       return windows_10 && direct_write_enabled ? 16 : 15;
@@ -129,6 +130,7 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
       size_delta = kTitleSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     case CONTEXT_BODY_TEXT_LARGE:
+    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
       size_delta = kBodyTextLargeSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     case CONTEXT_HEADLINE:
@@ -162,6 +164,12 @@ SkColor HarmonyTypographyProvider::GetColor(
     }
   }
 
+  // Use the secondary style instead of primary for message box body text.
+  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
+      style == views::style::STYLE_PRIMARY) {
+    style = STYLE_SECONDARY;
+  }
+
   switch (style) {
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
@@ -177,6 +185,7 @@ SkColor HarmonyTypographyProvider::GetColor(
     case STYLE_GREEN:
       return gfx::kGoogleGreen700;
   }
+
   return SkColorSetRGB(0x21, 0x21, 0x21);  // Primary for everything else.
 }
 
@@ -243,6 +252,7 @@ int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
     case views::style::CONTEXT_DIALOG_TITLE:
       return title_height;
     case CONTEXT_BODY_TEXT_LARGE:
+    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
     case views::style::CONTEXT_TABLE_ROW:
       return body_large_height;
     case CONTEXT_HEADLINE:
