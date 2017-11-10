@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_VIEW_TYPE_H_
 #define EXTENSIONS_COMMON_VIEW_TYPE_H_
 
+#include <string>
+
 namespace extensions {
 
 // Icky RTTI used by a few systems to distinguish the host type of a given
@@ -27,16 +29,10 @@ enum ViewType {
   VIEW_TYPE_LAST = VIEW_TYPE_TAB_CONTENTS
 };
 
-// Constant strings corresponding to the Type enumeration values.  Used
-// when converting JS arguments.
-extern const char kViewTypeAll[];
-extern const char kViewTypeAppWindow[];
-extern const char kViewTypeBackgroundPage[];
-extern const char kViewTypeExtensionDialog[];
-extern const char kViewTypeLauncherPage[];
-extern const char kViewTypePanel[];
-extern const char kViewTypePopup[];
-extern const char kViewTypeTabContents[];
+// Matches the |view_type| to the corresponding ViewType, and populates
+// |view_type_out|. Returns true if a match is found.
+bool GetViewTypeFromString(const std::string& view_type,
+                           ViewType* view_type_out);
 
 }  // namespace extensions
 
