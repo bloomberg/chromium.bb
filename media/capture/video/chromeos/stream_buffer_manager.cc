@@ -40,7 +40,9 @@ StreamBufferManager::~StreamBufferManager() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (stream_context_) {
     for (const auto& buf : stream_context_->buffers) {
-      buf->Unmap();
+      if (buf) {
+        buf->Unmap();
+      }
     }
   }
 }
