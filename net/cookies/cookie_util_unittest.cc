@@ -171,21 +171,21 @@ TEST(CookieUtilTest, ParseCookieExpirationTimeBeyond2038) {
 // succeed anyway (and return a minimal base::Time).
 TEST(CookieUtilTest, ParseCookieExpirationTimeBefore1970) {
   const char* kTests[] = {
-      // The unix epoch.
-      "1970 Jan 1 00:00:00",
-      // The windows epoch.
-      "1601 Jan 1 00:00:00",
-      // Other dates.
-      "1969 March 3 21:01:22", "1600 April 15 21:01:22",
+      // Times around the Unix epoch.
+      "1970 Jan 1 00:00:00", "1969 March 3 21:01:22",
+      // Times around the Windows epoch.
+      "1601 Jan 1 00:00:00", "1600 April 15 21:01:22",
+      // Times around kExplodedMinYear on Mac.
+      "1902 Jan 1 00:00:00", "1901 Jan 1 00:00:00",
   };
 
   for (auto* test : kTests) {
     base::Time parsed_time = cookie_util::ParseCookieExpirationTime(test);
-    EXPECT_FALSE(parsed_time.is_null());
+    EXPECT_FALSE(parsed_time.is_null()) << test;
 
     // It should either have an exact value, or should be base::Time(1)
     // For simplicity just check that it is less than the unix epoch.
-    EXPECT_LE(parsed_time, base::Time::UnixEpoch());
+    EXPECT_LE(parsed_time, base::Time::UnixEpoch()) << test;
   }
 }
 
