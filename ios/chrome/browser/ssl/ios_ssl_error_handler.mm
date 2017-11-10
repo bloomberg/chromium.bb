@@ -24,6 +24,8 @@
 #error "This file requires ARC support."
 #endif
 
+DEFINE_WEB_STATE_USER_DATA_KEY(IOSSSLErrorHandler);
+
 // Enum used to record the captive portal detection result.
 enum class CaptivePortalStatus {
   UNKNOWN = 0,
@@ -37,6 +39,12 @@ enum class CaptivePortalStatus {
 const char kSessionDetectionResultHistogram[] =
     "CaptivePortal.Session.DetectionResult";
 
+// Default delay in milliseconds before displaying the SSL interstitial.
+// - If a "captive portal detected" result arrives during this time,
+//   a captive portal interstitial is displayed.
+// - Otherwise, an SSL interstitial is displayed.
+const int64_t kInterstitialDelayInMilliseconds = 3000;
+
 using captive_portal::CaptivePortalDetector;
 
 // static
@@ -48,79 +56,120 @@ void IOSSSLErrorHandler::HandleSSLError(
     bool overridable,
     const base::Callback<void(bool)>& callback) {
   DCHECK(!web_state->IsShowingWebInterstitial());
-
-  if (!base::FeatureList::IsEnabled(kCaptivePortalFeature)) {
-    IOSSSLErrorHandler::RecordCaptivePortalState(web_state);
-    IOSSSLErrorHandler::ShowSSLInterstitial(web_state, cert_error, info,
-                                            request_url, overridable, callback);
-    return;
-  }
-
+  DCHECK(web_state);
+  DCHECK(!FromWebState(web_state));
   // TODO(crbug.com/747405): If certificate error is only a name mismatch,
   // check if the cert is from a known captive portal.
 
-  net::SSLInfo ssl_info(info);
-  GURL url(request_url);
-
-  CaptivePortalDetectorTabHelper* tab_helper =
-      CaptivePortalDetectorTabHelper::FromWebState(web_state);
-
-  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
-  // called on WebStates attached to tabs.
-  if (tab_helper) {
-    // TODO(crbug.com/754378): The captive portal detection may take a very long
-    // time. It should timeout and default to displaying the SSL error page.
-    tab_helper->detector()->DetectCaptivePortal(
-        GURL(CaptivePortalDetector::kDefaultURL),
-        base::BindBlockArc(^(const CaptivePortalDetector::Results& results) {
-
-          IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
-          if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
-            IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
-                web_state, url, results.landing_url, callback);
-          } else {
-            IOSSSLErrorHandler::ShowSSLInterstitial(
-                web_state, cert_error, ssl_info, url, overridable, callback);
-          }
-        }),
-        NO_TRAFFIC_ANNOTATION_YET);
-  }
+  web_state->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new IOSSSLErrorHandler(
+          web_state, cert_error, info, request_url, overridable, callback)));
+  FromWebState(web_state)->StartHandlingError();
 }
 
-// static
-void IOSSSLErrorHandler::ShowSSLInterstitial(
+IOSSSLErrorHandler::~IOSSSLErrorHandler() = default;
+
+IOSSSLErrorHandler::IOSSSLErrorHandler(
     web::WebState* web_state,
     int cert_error,
     const net::SSLInfo& info,
     const GURL& request_url,
     bool overridable,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool)>& callback)
+    : web_state_(web_state),
+      cert_error_(cert_error),
+      ssl_info_(info),
+      request_url_(request_url),
+      overridable_(overridable),
+      callback_(callback),
+      weak_factory_(this) {}
+
+void IOSSSLErrorHandler::StartHandlingError() {
+  if (!base::FeatureList::IsEnabled(kCaptivePortalFeature)) {
+    IOSSSLErrorHandler::RecordCaptivePortalState(web_state_);
+
+    // Display an SSL interstitial.
+    ShowSSLInterstitial();
+    return;
+  }
+
+  CaptivePortalDetectorTabHelper* tab_helper =
+      CaptivePortalDetectorTabHelper::FromWebState(web_state_);
+  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
+  // called on WebStates attached to tabs.
+  if (tab_helper) {
+    base::WeakPtr<IOSSSLErrorHandler> weak_error_handler =
+        weak_factory_.GetWeakPtr();
+
+    tab_helper->detector()->DetectCaptivePortal(
+        GURL(CaptivePortalDetector::kDefaultURL),
+        base::Bind(&IOSSSLErrorHandler::HandleCaptivePortalDetectionResult,
+                   weak_error_handler),
+        NO_TRAFFIC_ANNOTATION_YET);
+  }
+
+  // Default to presenting the SSL interstitial if Captive Portal detection
+  // takes too long.
+  timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds), this,
+      &IOSSSLErrorHandler::ShowSSLInterstitial);
+}
+
+void IOSSSLErrorHandler::HandleCaptivePortalDetectionResult(
+    const CaptivePortalDetector::Results& results) {
+  timer_.Stop();
+
+  IOSSSLErrorHandler::LogCaptivePortalResult(results.result);
+  if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL) {
+    ShowCaptivePortalInterstitial(results.landing_url);
+  } else {
+    ShowSSLInterstitial();
+  }
+}
+
+void IOSSSLErrorHandler::ShowSSLInterstitial() {
+  timer_.Stop();
+
+  // Cancel the captive portal detection if it is still ongoing. This will be
+  // the case if |timer_| triggered the call of this method.
+  CaptivePortalDetectorTabHelper* tab_helper =
+      CaptivePortalDetectorTabHelper::FromWebState(web_state_);
+  // TODO(crbug.com/760873): replace test with DCHECK when this method is only
+  // called on WebStates attached to tabs.
+  if (tab_helper) {
+    tab_helper->detector()->Cancel();
+  }
+
   int options_mask =
-      overridable ? security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED
-                  : security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
+      overridable_ ? security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED
+                   : security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
   // SSLBlockingPage deletes itself when it's dismissed.
   auto dismissal_callback(
       base::Bind(&IOSSSLErrorHandler::InterstitialWasDismissed,
-                 base::Unretained(web_state), callback));
+                 base::Unretained(web_state_), callback_));
   IOSSSLBlockingPage* page = new IOSSSLBlockingPage(
-      web_state, cert_error, info, request_url, options_mask,
+      web_state_, cert_error_, ssl_info_, request_url_, options_mask,
       base::Time::NowFromSystemTime(), dismissal_callback);
   page->Show();
+  // Once an interstitial is displayed, no need to keep the handler around.
+  // This is the equivalent of "delete this".
+  RemoveFromWebState(web_state_);
 }
 
-// static
 void IOSSSLErrorHandler::ShowCaptivePortalInterstitial(
-    web::WebState* web_state,
-    const GURL& request_url,
-    const GURL& landing_url,
-    const base::Callback<void(bool)>& callback) {
+    const GURL& landing_url) {
   // IOSCaptivePortalBlockingPage deletes itself when it's dismissed.
   auto dismissal_callback(
       base::Bind(&IOSSSLErrorHandler::InterstitialWasDismissed,
-                 base::Unretained(web_state), callback));
+                 base::Unretained(web_state_), callback_));
   IOSCaptivePortalBlockingPage* page = new IOSCaptivePortalBlockingPage(
-      web_state, request_url, landing_url, dismissal_callback);
+      web_state_, request_url_, landing_url, dismissal_callback);
   page->Show();
+  // Once an interstitial is displayed, no need to keep the handler around.
+  // This is the equivalent of "delete this".
+  RemoveFromWebState(web_state_);
 }
 
 // static
