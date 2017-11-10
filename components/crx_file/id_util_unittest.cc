@@ -33,6 +33,9 @@ TEST(IDUtilTest, GenerateID) {
                              arraysize(public_key_info)));
   EXPECT_EQ("melddjfinppjdikinhbgehiennejpfhp", extension_id);
 
+  EXPECT_EQ("daibjpdaanagajckigeiigphanababab",
+            GenerateIdFromHash(public_key_info, sizeof(public_key_info)));
+
   EXPECT_EQ("jpignaibiiemhngfjkcpokkamffknabf", GenerateId("test"));
 
   EXPECT_EQ("ncocknphbhhlhkikpnnlmbcnbgdempcd", GenerateId("_"));

@@ -37,6 +37,7 @@ buildflag_header("features") {
     "ENABLE_BACKGROUND=$enable_background",
     "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
     "ENABLE_CAPTIVE_PORTAL_DETECTION=$enable_captive_portal_detection",
+    "ENABLE_DOWNLOADABLE_STRINGS=$enable_downloadable_strings",
     "ENABLE_GOOGLE_NOW=$enable_google_now",
     "ENABLE_HANGOUT_SERVICES_EXTENSION=$enable_hangout_services_extension",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",

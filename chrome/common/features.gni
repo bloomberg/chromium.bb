@@ -67,6 +67,10 @@ declare_args() {
   # for runtime performance purposes. This does more work at compile time for
   # speed benefits at runtime (so we skip in debug builds).
   optimize_webui = !is_debug
+
+  # Enable donwloadable language PAK files to reduce the size of the main
+  # Chrome APK. TODO(digit): Restrict this to official builds.
+  enable_downloadable_strings = is_android
 }
 
 # Use brlapi from brltty for braille display support.

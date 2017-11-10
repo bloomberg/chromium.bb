@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_CRX_FILE_ID_UTIL_H_
 #define COMPONENTS_CRX_FILE_ID_UTIL_H_
 
+#include "base/strings/string_piece.h"
+
 #include <stddef.h>
+#include <stdint.h>
 
 #include <string>
 
@@ -21,11 +24,15 @@ extern const size_t kIdSize;
 
 // Generates an extension ID from arbitrary input. The same input string will
 // always generate the same output ID.
-std::string GenerateId(const std::string& input);
+std::string GenerateId(base::StringPiece input);
 
 // Generates an ID from a HEX string. The same input string will always generate
 // the same output ID.
 std::string GenerateIdFromHex(const std::string& input);
+
+// Generates an ID from the first |kIdSize| bytes of a SHA256 hash.
+// |hash_size| must be at least |kIdSize|.
+std::string GenerateIdFromHash(const uint8_t* hash, size_t hash_size);
 
 // Generates an ID for an extension in the given path.
 // Used while developing extensions, before they have a key.

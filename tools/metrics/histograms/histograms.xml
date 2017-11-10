@@ -17580,6 +17580,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The write size for calls to BaseFile::AppendDataTofile().</summary>
 </histogram>
 
+<histogram name="DownloadableStrings.InstallTime" units="ms">
+  <owner>digit@chromium.org</owner>
+  <summary>
+    The time to succesfully download and install the DownloadableStrings
+    component on Android.
+  </summary>
+</histogram>
+
+<histogram name="DownloadableStrings.SimCountryCode"
+    enum="DownloadableStrings.MobileCountryCode">
+  <owner>digit@chromium.org</owner>
+  <summary>
+    The mobile country code (MCC) of the device's SIM card, if available (in the
+    [200..999] range), or 0 for &quot;undetermined&quot;. This is collected on
+    Chrome startup. For devices with several SIM cards, this only reports the
+    code of the SIM card in use during startup.
+  </summary>
+</histogram>
+
+<histogram name="DownloadableStrings.Status"
+    enum="DownloadableStrings.InstallStatus">
+  <owner>digit@chromium.org</owner>
+  <summary>
+    The status code returned after trying to install and update the
+    DownloadableStrings component.
+  </summary>
+</histogram>
+
+<histogram name="DownloadableStrings.Timeout" units="ms">
+  <owner>digit@chromium.org</owner>
+  <summary>
+    The timeout reported by the component updater when trying to install the
+    DownloadableStrings component fails with a specific error.
+  </summary>
+</histogram>
+
 <histogram name="Drive.BatchUploadResponseCode" enum="HttpResponseCode">
   <owner>hirono@chromium.org</owner>
   <summary>Respose code of batch upload request.</summary>
@@ -99600,6 +99636,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="DownloadTask" label="Download task."/>
   <suffix name="CleanUpTask" label="Clean up task."/>
   <affected-histogram name="Download.Service.TaskScheduler.Status"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DownloadableStringsTimeouts" separator=".">
+  <suffix name="RetryLater" label="Failed with RETRY_LATER error."/>
+  <suffix name="ServiceError" label="Failed with SERVICE_ERROR error."/>
+  <suffix name="UpdateCheckError"
+      label="Failed with UPDATE_CHECK_ERROR error."/>
+  <affected-histogram name="DownloadableStrings.Timeout"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DownloadDangerPromptResponse" separator=".">

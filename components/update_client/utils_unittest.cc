@@ -67,6 +67,18 @@ TEST(UpdateClientUtils, IsValidBrand) {
   EXPECT_FALSE(IsValidBrand(std::string("\xaa")));   // Has non-ASCII char.
 }
 
+TEST(UpdateClientUtils, GetCrxComponentId) {
+  static const uint8_t kHash[16] = {
+      0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+      0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+  };
+  CrxComponent component;
+  component.pk_hash.assign(kHash, kHash + sizeof(kHash));
+
+  EXPECT_EQ(std::string("abcdefghijklmnopabcdefghijklmnop"),
+            GetCrxComponentID(component));
+}
+
 // Tests that the name of an InstallerAttribute matches ^[-_=a-zA-Z0-9]{1,256}$
 TEST(UpdateClientUtils, IsValidInstallerAttributeName) {
   // Test the length boundaries.

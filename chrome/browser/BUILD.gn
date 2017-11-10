@@ -1510,6 +1510,13 @@ split_static_library("browser") {
     "win/titlebar_config.h",
   ]
 
+  if (enable_downloadable_strings) {
+    sources += [
+      "component_updater/downloadable_strings_component_installer.cc",
+      "component_updater/downloadable_strings_component_installer.h",
+    ]
+  }
+
   configs += [
     "//build/config/compiler:wexit_time_destructors",
     "//build/config:precompiled_headers",
