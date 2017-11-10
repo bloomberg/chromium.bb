@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/content/renderer/renderer_save_password_progress_logger.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
@@ -484,8 +486,7 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
 void AutofillAgent::FieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
   bool attach_predictions_to_dom =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAutofillTypePredictions);
+      base::FeatureList::IsEnabled(features::kAutofillShowTypePredictions);
   for (const auto& form : forms) {
     form_cache_.ShowPredictions(form, attach_predictions_to_dom);
   }
