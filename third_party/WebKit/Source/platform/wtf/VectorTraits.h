@@ -33,20 +33,22 @@ template <typename T>
 struct VectorTraitsBase {
   static const bool kNeedsDestruction = !IsTriviallyDestructible<T>::value;
 
-  static const bool kCanInitializeWithMemset =
-      IsTriviallyDefaultConstructible<T>::value;
+  static constexpr bool kCanInitializeWithMemset =
+      std::is_trivially_default_constructible<T>::value;
   // true iff memset(slot, 0, size) constructs an unused slot value that is
   // valid for Oilpan to trace and if the value needs destruction, its
   // destructor can be invoked over. The zero'ed value representing an unused
   // slot in the vector's backing storage; it does not have to be equal to
   // what its constructor(s) would create, only be valid for those two uses.
-  static const bool kCanClearUnusedSlotsWithMemset =
-      IsTriviallyDefaultConstructible<T>::value;
+  static constexpr bool kCanClearUnusedSlotsWithMemset =
+      std::is_trivially_constructible<T>::value &&
+      std::is_trivially_destructible<T>::value &&
+      std::is_trivially_copyable<T>::value;
 
   static const bool kCanMoveWithMemcpy = IsTriviallyMoveAssignable<T>::value;
   static const bool kCanCopyWithMemcpy = IsTriviallyCopyAssignable<T>::value;
   static const bool kCanFillWithMemset =
-      IsTriviallyDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
+      IsDefaultConstructible<T>::value && (sizeof(T) == sizeof(char));
   static const bool kCanCompareWithMemcmp =
       std::is_scalar<T>::value;  // Types without padding.
 
