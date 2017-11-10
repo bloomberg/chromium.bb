@@ -24,7 +24,7 @@
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encoder.h"
 #if CONFIG_LV_MAP
-#include "av1/encoder/encodetxb.c"
+#include "av1/encoder/encodetxb.h"
 #endif
 #include "av1/encoder/rdopt.h"
 #include "av1/encoder/tokenize.h"
