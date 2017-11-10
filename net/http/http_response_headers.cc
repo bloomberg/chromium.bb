@@ -954,9 +954,7 @@ HttpResponseHeaders::GetFreshnessLifetimes(const Time& response_time) const {
   // no-cache" even though RFC 2616 does not specify it.
   if (HasHeaderValue("cache-control", "no-cache") ||
       HasHeaderValue("cache-control", "no-store") ||
-      HasHeaderValue("pragma", "no-cache") ||
-      // Vary: * is never usable: see RFC 2616 section 13.6.
-      HasHeaderValue("vary", "*")) {
+      HasHeaderValue("pragma", "no-cache")) {
     return lifetimes;
   }
 

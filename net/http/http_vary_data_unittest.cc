@@ -33,7 +33,7 @@ struct TestTransaction {
 }  // namespace
 
 TEST(HttpVaryDataTest, IsInvalid) {
-  // All of these responses should result in an invalid vary data object.
+  // Only first of these result in an invalid vary data object.
   const char* const kTestResponses[] = {
     "HTTP/1.1 200 OK\n\n",
     "HTTP/1.1 200 OK\nVary: *\n\n",
@@ -41,14 +41,16 @@ TEST(HttpVaryDataTest, IsInvalid) {
     "HTTP/1.1 200 OK\nVary: cookie\nFoo: 1\nVary: *\n\n",
   };
 
+  const bool kExpectedValid[] = {false, true, true, true};
+
   for (size_t i = 0; i < arraysize(kTestResponses); ++i) {
     TestTransaction t;
     t.Init(std::string(), kTestResponses[i]);
 
     HttpVaryData v;
     EXPECT_FALSE(v.is_valid());
-    EXPECT_FALSE(v.Init(t.request, *t.response.get()));
-    EXPECT_FALSE(v.is_valid());
+    EXPECT_EQ(kExpectedValid[i], v.Init(t.request, *t.response.get()));
+    EXPECT_EQ(kExpectedValid[i], v.is_valid());
   }
 }
 
@@ -63,7 +65,7 @@ TEST(HttpVaryDataTest, MultipleInit) {
 
   // Now overwrite by initializing to something invalid.
   TestTransaction t2;
-  t2.Init("Foo: 1\r\nbar: 23", "HTTP/1.1 200 OK\nVary: *\n\n");
+  t2.Init("Foo: 1\r\nbar: 23", "HTTP/1.1 200 OK\n\n");
   EXPECT_FALSE(v.Init(t2.request, *t2.response.get()));
   EXPECT_FALSE(v.is_valid());
 }
@@ -87,6 +89,23 @@ TEST(HttpVaryDataTest, DoesVary2) {
 
   TestTransaction b;
   b.Init("Foo: 12\r\nbar: 3", "HTTP/1.1 200 OK\nVary: foo, bar\n\n");
+
+  HttpVaryData v;
+  EXPECT_TRUE(v.Init(a.request, *a.response.get()));
+
+  EXPECT_FALSE(v.MatchesRequest(b.request, *b.response.get()));
+}
+
+TEST(HttpVaryDataTest, DoesVaryStar) {
+  // Vary: * varies even when headers are identical
+  const char kRequestHeaders[] = "Foo:1";
+  const char kResponse[] = "HTTP/1.1 200 OK\nVary: *\n\n";
+
+  TestTransaction a;
+  a.Init(kRequestHeaders, kResponse);
+
+  TestTransaction b;
+  b.Init(kRequestHeaders, kResponse);
 
   HttpVaryData v;
   EXPECT_TRUE(v.Init(a.request, *a.response.get()));

@@ -39,10 +39,9 @@ class NET_EXPORT_PRIVATE HttpVaryData {
   // Initialize from a request and its corresponding response headers.
   //
   // Returns true if a Vary header was found in the response headers and that
-  // Vary header was not empty and did not contain the '*' value.  Upon
-  // success, the object is also marked as valid such that is_valid() will
-  // return true.  Otherwise, false is returned to indicate that this object
-  // is marked as invalid.
+  // Vary header was not empty. Upon success, the object is also marked as valid
+  // such that is_valid() will return true.  Otherwise, false is returned to
+  // indicate that this object is marked as invalid.
   //
   bool Init(const HttpRequestInfo& request_info,
             const HttpResponseHeaders& response_headers);

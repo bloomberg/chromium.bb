@@ -3168,11 +3168,17 @@ TEST_F(SpdyNetworkTransactionTest, ResponseHeadersVary) {
         {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary",
          "friend", "vary", "enemy", nullptr}}},
       {// Test a '*' vary field.
-       false,
+       true,
        {1, 3},
        {{"cookie", "val1,val2", nullptr},
         {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", "vary", "*",
          nullptr}}},
+      {// Test w/o a vary field.
+       false,
+       {1, 2},
+       {{"cookie", "val1,val2", nullptr},
+        {kHttp2StatusHeader, "200", kHttp2PathHeader, "/index.php", nullptr}}},
+
       {// Multiple comma-separated vary fields.
        true,
        {2, 3},
