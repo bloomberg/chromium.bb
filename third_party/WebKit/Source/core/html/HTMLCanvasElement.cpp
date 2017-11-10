@@ -1522,7 +1522,7 @@ void HTMLCanvasElement::CreateLayer() {
   }
 }
 
-void HTMLCanvasElement::OnWebLayerReplaced() {
+void HTMLCanvasElement::OnWebLayerUpdated() {
   SetNeedsCompositingUpdate();
 }
 
