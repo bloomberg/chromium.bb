@@ -233,7 +233,7 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
     throttles->push_back(std::move(filtering_throttle));
   }
 
-  CHECK(!base::ContainsKey(ongoing_activation_throttles_, navigation_handle));
+  DCHECK(!base::ContainsKey(ongoing_activation_throttles_, navigation_handle));
   if (auto activation_throttle =
           MaybeCreateActivationStateComputingThrottle(navigation_handle)) {
     ongoing_activation_throttles_[navigation_handle] =
