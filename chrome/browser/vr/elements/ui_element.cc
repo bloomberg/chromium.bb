@@ -12,11 +12,15 @@
 #include "base/time/time.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 
 namespace vr {
 
 namespace {
+
+static constexpr float kHitTestResolutionInMeter = 0.000001f;
 
 int AllocateId() {
   static int g_next_id = 1;
@@ -246,14 +250,28 @@ float UiElement::computed_opacity() const {
 }
 
 bool UiElement::HitTest(const gfx::PointF& point) const {
-  if (size().width() == size().height() &&
-      corner_radius() == size().width() / 2) {
-    return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
-  } else {
-    // TODO(bshe): handle rounded rect case.
+  if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
+      point.y() > 1.0f) {
+    return false;
+  } else if (corner_radius() == 0.f) {
     return point.x() >= 0.0f && point.x() <= 1.0f && point.y() >= 0.0f &&
            point.y() <= 1.0f;
+  } else if (size().width() == size().height() &&
+             corner_radius() == size().width() / 2) {
+    return (point - gfx::PointF(0.5, 0.5)).LengthSquared() < 0.25;
   }
+
+  float width = size().width();
+  float height = size().height();
+  SkRRect rrect = SkRRect::MakeRectXY(SkRect::MakeWH(width, height),
+                                      corner_radius(), corner_radius());
+
+  float left = std::min(point.x() * width, width - kHitTestResolutionInMeter);
+  float top = std::min(point.y() * height, height - kHitTestResolutionInMeter);
+  SkRect point_rect =
+      SkRect::MakeLTRB(left, top, left + kHitTestResolutionInMeter,
+                       top + kHitTestResolutionInMeter);
+  return rrect.contains(point_rect);
 }
 
 void UiElement::SetMode(ColorScheme::Mode mode) {
