@@ -41,6 +41,18 @@ presubmit_canned_checks = presubmit.presubmit_canned_checks
 # pylint: disable=protected-access
 
 
+class MockTemporaryFile(object):
+  """Simple mock for files returned by tempfile.NamedTemporaryFile()."""
+  def __init__(self, name):
+    self.name = name
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, *args):
+    pass
+
+
 class PresubmitTestsBase(SuperMoxTestBase):
   """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
@@ -551,6 +563,40 @@ class PresubmitUnittest(PresubmitTestsBase):
       '  return ["foo"]',
       fake_presubmit)
 
+  def testExecPresubmitScriptTemporaryFilesRemoval(self):
+    self.mox.StubOutWithMock(presubmit.tempfile, 'NamedTemporaryFile')
+    presubmit.tempfile.NamedTemporaryFile(delete=False).AndReturn(
+        MockTemporaryFile('baz'))
+    presubmit.tempfile.NamedTemporaryFile(delete=False).AndReturn(
+        MockTemporaryFile('quux'))
+    presubmit.os.remove('baz')
+    presubmit.os.remove('quux')
+    self.mox.ReplayAll()
+
+    fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    executer = presubmit.PresubmitExecuter(
+        self.fake_change, False, None, False)
+
+    self.assertEqual((), executer.ExecPresubmitScript(
+      ('def CheckChangeOnUpload(input_api, output_api):\n'
+       '  if len(input_api._named_temporary_files):\n'
+       '    return (output_api.PresubmitError("!!"),)\n'
+       '  return ()\n'),
+      fake_presubmit
+    ))
+
+    result = executer.ExecPresubmitScript(
+      ('def CheckChangeOnUpload(input_api, output_api):\n'
+       '  with input_api.CreateTemporaryFile():\n'
+       '    pass\n'
+       '  with input_api.CreateTemporaryFile():\n'
+       '    pass\n'
+       '  return [output_api.PresubmitResult(None, f)\n'
+       '          for f in input_api._named_temporary_files]\n'),
+      fake_presubmit
+    )
+    self.assertEqual(['baz', 'quux'], [r._items for r in result])
+
   def testDoPresubmitChecksNoWarningsOrErrors(self):
     haspresubmit_path = presubmit.os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
@@ -957,6 +1003,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'AffectedTextFiles',
         'DEFAULT_BLACK_LIST',
         'DEFAULT_WHITE_LIST',
+        'CreateTemporaryFile',
         'FilterSourceFile',
         'LocalPaths',
         'Command',
@@ -1322,6 +1369,32 @@ class InputApiUnittest(PresubmitTestsBase):
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False,
         None, False)
     input_api.ReadFile(fileobj, 'x')
+
+  def testCreateTemporaryFile(self):
+    input_api = presubmit.InputApi(
+        self.fake_change,
+        presubmit_path='foo/path/PRESUBMIT.py',
+        is_committing=False, rietveld_obj=None, verbose=False)
+    input_api.tempfile.NamedTemporaryFile = self.mox.CreateMock(
+        input_api.tempfile.NamedTemporaryFile)
+    input_api.tempfile.NamedTemporaryFile(
+        delete=False).AndReturn(MockTemporaryFile('foo'))
+    input_api.tempfile.NamedTemporaryFile(
+        delete=False).AndReturn(MockTemporaryFile('bar'))
+    self.mox.ReplayAll()
+
+    self.assertEqual(0, len(input_api._named_temporary_files))
+    with input_api.CreateTemporaryFile():
+      self.assertEqual(1, len(input_api._named_temporary_files))
+    self.assertEqual(['foo'], input_api._named_temporary_files)
+    with input_api.CreateTemporaryFile():
+      self.assertEqual(2, len(input_api._named_temporary_files))
+    self.assertEqual(2, len(input_api._named_temporary_files))
+    self.assertEqual(['foo', 'bar'], input_api._named_temporary_files)
+
+    self.assertRaises(TypeError, input_api.CreateTemporaryFile, delete=True)
+    self.assertRaises(TypeError, input_api.CreateTemporaryFile, delete=False)
+    self.assertEqual(['foo', 'bar'], input_api._named_temporary_files)
 
 
 class OutputApiUnittest(PresubmitTestsBase):

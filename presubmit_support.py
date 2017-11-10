@@ -447,6 +447,8 @@ class InputApi(object):
     # We carry the canned checks so presubmit scripts can easily use them.
     self.canned_checks = presubmit_canned_checks
 
+    # Temporary files we must manually remove at the end of a run.
+    self._named_temporary_files = []
 
     # TODO(dpranke): figure out a list of all approved owners for a repo
     # in order to be able to handle wildcard OWNERS files?
@@ -576,6 +578,40 @@ class InputApi(object):
     if not file_item.startswith(self.change.RepositoryRoot()):
       raise IOError('Access outside the repository root is denied.')
     return gclient_utils.FileRead(file_item, mode)
+
+  def CreateTemporaryFile(self, **kwargs):
+    """Returns a named temporary file that must be removed with a call to
+    RemoveTemporaryFiles().
+
+    All keyword arguments are forwarded to tempfile.NamedTemporaryFile(),
+    except for |delete|, which is always set to False.
+
+    Presubmit checks that need to create a temporary file and pass it for
+    reading should use this function instead of NamedTemporaryFile(), as
+    Windows fails to open a file that is already open for writing.
+
+      with input_api.CreateTemporaryFile() as f:
+        f.write('xyz')
+        f.close()
+        input_api.subprocess.check_output(['script-that', '--reads-from',
+                                           f.name])
+
+
+    Note that callers of CreateTemporaryFile() should not worry about removing
+    any temporary file; this is done transparently by the presubmit handling
+    code.
+    """
+    if 'delete' in kwargs:
+      # Prevent users from passing |delete|; we take care of file deletion
+      # ourselves and this prevents unintuitive error messages when we pass
+      # delete=False and 'delete' is also in kwargs.
+      raise TypeError('CreateTemporaryFile() does not take a "delete" '
+                      'argument, file deletion is handled automatically by '
+                      'the same presubmit_support code that creates InputApi '
+                      'objects.')
+    temp_file = self.tempfile.NamedTemporaryFile(delete=False, **kwargs)
+    self._named_temporary_files.append(temp_file.name)
+    return temp_file
 
   @property
   def tbr(self):
@@ -1269,10 +1305,13 @@ class PresubmitExecuter(object):
     else:
       function_name = 'CheckChangeOnUpload'
     if function_name in context:
-      context['__args'] = (input_api, OutputApi(self.committing))
-      logging.debug('Running %s in %s', function_name, presubmit_path)
-      result = eval(function_name + '(*__args)', context)
-      logging.debug('Running %s done.', function_name)
+      try:
+        context['__args'] = (input_api, OutputApi(self.committing))
+        logging.debug('Running %s in %s', function_name, presubmit_path)
+        result = eval(function_name + '(*__args)', context)
+        logging.debug('Running %s done.', function_name)
+      finally:
+        map(os.remove, input_api._named_temporary_files)
       if not (isinstance(result, types.TupleType) or
               isinstance(result, types.ListType)):
         raise PresubmitFailure(
