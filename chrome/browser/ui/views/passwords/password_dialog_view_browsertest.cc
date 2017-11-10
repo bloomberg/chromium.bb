@@ -459,8 +459,9 @@ void PasswordDialogViewTest::ShowDialog(const std::string& name) {
     form.federation_origin =
         url::Origin::Create(GURL("https://google.com/federation"));
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
-    SetupChooseCredentials(std::move(local_credentials), origin);
-    ASSERT_TRUE(controller()->current_account_chooser());
+    controller()->OnAutoSignin(std::move(local_credentials), origin);
+    EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE,
+              controller()->GetState());
   } else if (base::StartsWith(name, "PopupAccountChooserWith",
                               base::CompareCase::SENSITIVE)) {
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));

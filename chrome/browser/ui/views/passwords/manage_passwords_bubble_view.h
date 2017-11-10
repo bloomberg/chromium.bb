@@ -74,6 +74,9 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView,
 
   ~ManagePasswordsBubbleView() override;
 
+  // DialogDelegate:
+  bool ShouldSnapFrameWidth() const override;
+
   // LocationBarBubbleDelegateView:
   int GetDialogButtons() const override;
   views::View* GetInitiallyFocusedView() override;

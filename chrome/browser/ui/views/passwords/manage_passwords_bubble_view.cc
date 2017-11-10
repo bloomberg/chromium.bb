@@ -1040,6 +1040,10 @@ ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {
     manage_passwords_bubble_ = nullptr;
 }
 
+bool ManagePasswordsBubbleView::ShouldSnapFrameWidth() const {
+  return ChromeLayoutProvider::Get()->IsHarmonyMode();
+}
+
 int ManagePasswordsBubbleView::GetDialogButtons() const {
   // TODO(tapted): DialogClientView should manage buttons.
   return ui::DIALOG_BUTTON_NONE;
