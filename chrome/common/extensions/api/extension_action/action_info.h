@@ -33,6 +33,11 @@ struct ActionInfo {
     TYPE_SYSTEM_INDICATOR,
   };
 
+  enum DefaultState {
+    STATE_ENABLED,
+    STATE_DISABLED,
+  };
+
   // Loads an ActionInfo from the given DictionaryValue.
   static std::unique_ptr<ActionInfo> Load(const Extension* extension,
                                           const base::DictionaryValue* dict,
@@ -46,6 +51,9 @@ struct ActionInfo {
 
   // Returns the extension's system indicator, if any.
   static const ActionInfo* GetSystemIndicatorInfo(const Extension* extension);
+
+  // Sets the extension's action. |extension| takes ownership of |info|.
+  static void SetExtensionActionInfo(Extension* extension, ActionInfo* info);
 
   // Sets the extension's browser action. |extension| takes ownership of |info|.
   static void SetBrowserActionInfo(Extension* extension, ActionInfo* info);
@@ -65,6 +73,9 @@ struct ActionInfo {
   ExtensionIconSet default_icon;
   std::string default_title;
   GURL default_popup_url;
+  // Specifies if the action applies to all web pages ("enabled") or
+  // only specific pages ("disabled"). Only applies to the "action" key.
+  DefaultState default_state;
   // action id -- only used with legacy page actions API.
   std::string id;
   // Whether or not this action was synthesized to force visibility.

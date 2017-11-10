@@ -11,6 +11,10 @@
     "channel": "stable",
     "extension_types": ["shared_module"]
   },
+  "action": {
+    "channel": "trunk",
+    "extension_types": ["extension"]
+  },
   "app.icon_color": {
     "channel": "stable",
     "extension_types": ["hosted_app"]
