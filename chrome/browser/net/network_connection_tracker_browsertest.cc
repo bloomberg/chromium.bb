@@ -31,7 +31,6 @@ class TestNetworkConnectionObserver
   explicit TestNetworkConnectionObserver(NetworkConnectionTracker* tracker)
       : num_notifications_(0),
         tracker_(tracker),
-        run_loop_(std::make_unique<base::RunLoop>()),
         connection_type_(mojom::ConnectionType::CONNECTION_UNKNOWN) {
     tracker_->AddNetworkConnectionObserver(this);
   }
@@ -50,13 +49,10 @@ class TestNetworkConnectionObserver
 
     num_notifications_++;
     connection_type_ = type;
-    run_loop_->Quit();
+    run_loop_.Quit();
   }
 
-  void WaitForNotification() {
-    run_loop_->Run();
-    run_loop_.reset(new base::RunLoop());
-  }
+  void WaitForNotification() { run_loop_.Run(); }
 
   size_t num_notifications() const { return num_notifications_; }
   mojom::ConnectionType connection_type() const { return connection_type_; }
@@ -64,7 +60,7 @@ class TestNetworkConnectionObserver
  private:
   size_t num_notifications_;
   NetworkConnectionTracker* tracker_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::RunLoop run_loop_;
   mojom::ConnectionType connection_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConnectionObserver);
@@ -100,7 +96,6 @@ class NetworkConnectionTrackerBrowserTest
     }
     net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         net::NetworkChangeNotifier::ConnectionType(type));
-    base::RunLoop().RunUntilIdle();
   }
 
   bool network_service_enabled() const { return network_service_enabled_; }
@@ -111,9 +106,8 @@ class NetworkConnectionTrackerBrowserTest
 };
 
 // Basic test to make sure NetworkConnectionTracker is set up.
-// TODO: reenable, this test is flaky. http://crbug.com/782491.
 IN_PROC_BROWSER_TEST_P(NetworkConnectionTrackerBrowserTest,
-                       DISABLED_NetworkConnectionTracker) {
+                       NetworkConnectionTracker) {
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
@@ -124,6 +118,18 @@ IN_PROC_BROWSER_TEST_P(NetworkConnectionTrackerBrowserTest,
   NetworkConnectionTracker* tracker =
       g_browser_process->network_connection_tracker();
   EXPECT_NE(nullptr, tracker);
+  // Issue a GetConnectionType() request to make sure NetworkService has been
+  // started up. This way, NetworkService will receive the broadcast when
+  // SimulateNetworkChange() is called.
+  base::RunLoop run_loop;
+  mojom::ConnectionType ignored_type;
+  bool sync = tracker->GetConnectionType(
+      &ignored_type,
+      base::BindOnce([](base::RunLoop* run_loop,
+                        mojom::ConnectionType type) { run_loop->Quit(); },
+                     base::Unretained(&run_loop)));
+  if (!sync)
+    run_loop.Run();
   TestNetworkConnectionObserver network_connection_observer(tracker);
   SimulateNetworkChange(mojom::ConnectionType::CONNECTION_3G);
   network_connection_observer.WaitForNotification();
