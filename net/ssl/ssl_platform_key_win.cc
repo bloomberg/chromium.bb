@@ -47,11 +47,19 @@ class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
     };
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
+
     ALG_ID hash_alg;
-    switch (EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm))) {
+    switch (EVP_MD_type(md)) {
       case NID_md5_sha1:
         hash_alg = CALG_SSL3_SHAMD5;
         break;
@@ -84,12 +92,10 @@ class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
       PLOG(ERROR) << "CryptGetHashParam HP_HASHSIZE failed";
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
-    if (hash_len != input.size())
+    if (hash_len != digest_len)
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
-    if (!CryptSetHashParam(
-            hash_handle.get(), HP_HASHVAL,
-            const_cast<BYTE*>(reinterpret_cast<const BYTE*>(input.data())),
-            0)) {
+    if (!CryptSetHashParam(hash_handle.get(), HP_HASHVAL,
+                           const_cast<BYTE*>(digest), 0)) {
       PLOG(ERROR) << "CryptSetHashParam HP_HASHVAL failed";
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
@@ -144,10 +150,18 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
                                                       true /* supports PSS */);
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
     crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
+
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
 
     BCRYPT_PKCS1_PADDING_INFO pkcs1_padding_info = {0};
     BCRYPT_PSS_PADDING_INFO pss_padding_info = {0};
@@ -155,7 +169,6 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
     DWORD flags = 0;
     if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_RSA) {
       const WCHAR* hash_alg;
-      const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
       switch (EVP_MD_type(md)) {
         case NID_md5_sha1:
           hash_alg = nullptr;
@@ -189,19 +202,17 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
     }
 
     DWORD signature_len;
-    SECURITY_STATUS status = NCryptSignHash(
-        key_, padding_info,
-        const_cast<BYTE*>(reinterpret_cast<const BYTE*>(input.data())),
-        input.size(), nullptr, 0, &signature_len, flags);
+    SECURITY_STATUS status =
+        NCryptSignHash(key_, padding_info, const_cast<BYTE*>(digest),
+                       digest_len, nullptr, 0, &signature_len, flags);
     if (FAILED(status)) {
       LOG(ERROR) << "NCryptSignHash failed: " << status;
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
     signature->resize(signature_len);
-    status = NCryptSignHash(
-        key_, padding_info,
-        const_cast<BYTE*>(reinterpret_cast<const BYTE*>(input.data())),
-        input.size(), signature->data(), signature_len, &signature_len, flags);
+    status = NCryptSignHash(key_, padding_info, const_cast<BYTE*>(digest),
+                            digest_len, signature->data(), signature_len,
+                            &signature_len, flags);
     if (FAILED(status)) {
       LOG(ERROR) << "NCryptSignHash failed: " << status;
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;

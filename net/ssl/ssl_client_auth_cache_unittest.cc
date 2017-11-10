@@ -23,9 +23,9 @@ class MockSSLPrivateKey : public SSLPrivateKey {
     return {};
   }
 
-  void SignDigest(uint16_t algorithm,
-                  const base::StringPiece& input,
-                  const SignCallback& callback) override {
+  void Sign(uint16_t algorithm,
+            base::span<const uint8_t> input,
+            const SignCallback& callback) override {
     NOTIMPLEMENTED();
   }
 

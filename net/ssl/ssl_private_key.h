@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 
@@ -39,18 +39,12 @@ class NET_EXPORT SSLPrivateKey
   // is only used by TLS 1.1 and earlier and should not be in this list.
   virtual std::vector<uint16_t> GetAlgorithmPreferences() = 0;
 
-  // Asynchronously signs an |input| with the specified TLS signing
-  // algorithm. |input| must already have been hashed by the corresponding hash
-  // function (see |SSL_get_signature_algorithm_digest|). On completion, it
-  // calls |callback| with the signature or an error code if the operation
-  // failed.
-  //
-  // TODO(davidben): This API does not support algorithms without a
-  // prehash, notably Ed25519. Replace this with a function that takes the
-  // unhashed input.
-  virtual void SignDigest(uint16_t algorithm,
-                          const base::StringPiece& input,
-                          const SignCallback& callback) = 0;
+  // Asynchronously signs an |input| with the specified TLS signing algorithm.
+  // |input| is an unhashed message to be signed. On completion, it calls
+  // |callback| with the signature or an error code if the operation failed.
+  virtual void Sign(uint16_t algorithm,
+                    base::span<const uint8_t> input,
+                    const SignCallback& callback) = 0;
 
   // Returns the default signature algorithm preferences for the specified key
   // type, which should be a BoringSSL |EVP_PKEY_*| constant. RSA keys which use

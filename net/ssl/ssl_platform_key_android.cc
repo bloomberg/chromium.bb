@@ -88,36 +88,42 @@ class SSLPlatformKeyAndroid : public ThreadedSSLPrivateKey::Delegate {
                                                       false /* no PSS */);
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input_in,
-                   std::vector<uint8_t>* signature) override {
-    base::StringPiece input = input_in;
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
+    // Hash the input.
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
+    input = base::make_span(digest, digest_len);
 
     // Prepend the DigestInfo for RSA.
     bssl::UniquePtr<uint8_t> digest_info_storage;
     if (SSL_get_signature_algorithm_key_type(algorithm) == EVP_PKEY_RSA) {
-      int hash_nid = EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm));
+      int hash_nid = EVP_MD_type(md);
       uint8_t* digest_info;
       size_t digest_info_len;
       int is_alloced;
-      if (!RSA_add_pkcs1_prefix(
-              &digest_info, &digest_info_len, &is_alloced, hash_nid,
-              reinterpret_cast<const uint8_t*>(input.data()), input.size())) {
+      if (!RSA_add_pkcs1_prefix(&digest_info, &digest_info_len, &is_alloced,
+                                hash_nid, input.data(), input.size())) {
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
       }
 
       if (is_alloced)
         digest_info_storage.reset(digest_info);
-      input = base::StringPiece(reinterpret_cast<const char*>(digest_info),
-                                digest_info_len);
+      input = base::make_span(digest_info, digest_info_len);
     }
 
     // Pre-4.2 legacy codepath.
     if (legacy_rsa_) {
       signature->resize(max_length_);
       int ret = legacy_rsa_->meth->rsa_priv_enc(
-          input.size(), reinterpret_cast<const uint8_t*>(input.data()),
-          signature->data(), legacy_rsa_, android::ANDROID_RSA_PKCS1_PADDING);
+          input.size(), input.data(), signature->data(), legacy_rsa_,
+          android::ANDROID_RSA_PKCS1_PADDING);
       if (ret < 0) {
         LOG(WARNING) << "Could not sign message with legacy RSA key!";
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;

@@ -22,13 +22,13 @@ namespace net {
 namespace android {
 
 bool RawSignDigestWithPrivateKey(const JavaRef<jobject>& private_key_ref,
-                                 const base::StringPiece& digest,
+                                 base::span<const uint8_t> digest,
                                  std::vector<uint8_t>* signature) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert message to byte[] array.
-  ScopedJavaLocalRef<jbyteArray> digest_ref = ToJavaByteArray(
-      env, reinterpret_cast<const uint8_t*>(digest.data()), digest.length());
+  ScopedJavaLocalRef<jbyteArray> digest_ref =
+      ToJavaByteArray(env, digest.data(), digest.length());
   DCHECK(!digest_ref.is_null());
 
   // Invoke platform API

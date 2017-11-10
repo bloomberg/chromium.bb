@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -88,7 +89,7 @@ class CertificateProviderService : public KeyedService {
         int sign_request_id,
         uint16_t algorithm,
         const scoped_refptr<net::X509Certificate>& certificate,
-        const std::string& digest) = 0;
+        base::span<const uint8_t> digest) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -189,7 +190,7 @@ class CertificateProviderService : public KeyedService {
       const std::string& extension_id,
       const scoped_refptr<net::X509Certificate>& certificate,
       uint16_t algorithm,
-      const std::string& digest,
+      base::span<const uint8_t> digest,
       const net::SSLPrivateKey::SignCallback& callback);
 
   std::unique_ptr<Delegate> delegate_;
