@@ -197,7 +197,6 @@
       },
       'Chromium Windows Analyze': 'windows_analyze',
       'CrWin7Goma': 'release_bot_x86_minimal_symbols',
-      'CrWin7Goma(clbr)': 'shared_release_bot_x86',
       'CrWin7Goma(dbg)': 'debug_bot_x86_minimal_symbols',
       'CrWin7Goma(dll)': 'shared_release_bot_x86',
       'CrWinGoma': 'release_bot_x86_minimal_symbols',
@@ -261,7 +260,6 @@
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
       'Chromium Linux Goma GCE Staging': 'release_bot',
       'Chromium Mac Goma GCE Staging': 'release_bot',
-      'CrWinGomaGCEStaging': 'release_bot_x86_minimal_symbols_disable_nacl',
       'CrWinClexeGomaGCEStaging': 'release_bot_x86_minimal_symbols_disable_nacl_no_clang',
       'CrWinClangGomaGCEStaging': 'win_clang_release_bot_disable_nacl',
     },
@@ -1574,10 +1572,7 @@
     'release_bot_minimal_symbols': [ 'release_bot', 'minimal_symbols' ],
     'release_bot_x86_minimal_symbols': [ 'release_bot', 'x86', 'minimal_symbols' ],
 
-    # TODO(tikuta): Remove these once gcp goma backend supports all windows nacl compilers.
-    'release_bot_x86_minimal_symbols_disable_nacl': [
-      'release_bot_x86_minimal_symbols_disable_nacl'
-    ],
+    # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
     'release_bot_x86_minimal_symbols_disable_nacl_no_clang': [
       'release_bot_x86_minimal_symbols_disable_nacl', 'no_clang'
     ],
