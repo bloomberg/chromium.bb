@@ -24,7 +24,7 @@
   "share_template": [{
 	  "index": "0",
 	  "title": "Share All",
-	  "url_template": "https://pwa.rocks/share_public?title={title}%26text={text}%26url={url}"
+	  "url_template": "https://pwa.rocks/share_public?title={title}&amp;text={text}&amp;url={url}"
   },
   {
 	  "index": "1",
