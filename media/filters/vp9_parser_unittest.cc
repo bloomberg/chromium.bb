@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// For each sample vp9 test video, $filename, there is a file of golden value
+// For some sample vp9 test videos, $filename, there is a file of golden value
 // of frame entropy, named $filename.context. These values are dumped from
 // libvpx.
 //
@@ -23,10 +23,38 @@
 #include "media/filters/vp9_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::TestWithParam;
+
 namespace media {
 
-class Vp9ParserTest : public ::testing::Test {
+namespace {
+
+struct TestParams {
+  const char* file_name;
+  int profile;
+  int bit_depth;
+  size_t width;
+  size_t height;
+  bool frame_parallel_decoding_mode;
+  int loop_filter_level;
+  int quantization_base_index;
+  size_t first_frame_header_size_bytes;
+  enum Vp9InterpolationFilter filter;
+  size_t second_frame_header_size_bytes;
+  size_t second_frame_uncompressed_header_size_bytes;
+};
+
+const struct TestParams kTestParams[] = {
+    {"test-25fps.vp9", 0, 8, 320, 240, true, 9, 65, 120,
+     Vp9InterpolationFilter::EIGHTTAP, 48, 11},
+    {"crowd-vp9.2.ivf", 2, 10, 256, 144, false, 10, 120, 38,
+     Vp9InterpolationFilter::SWITCHABLE, 45, 10}};
+
+}  // anonymous namespace
+
+class Vp9ParserTest : public TestWithParam<TestParams> {
  protected:
+  Vp9ParserTest() = default;
   void TearDown() override {
     stream_.reset();
     vp9_parser_.reset();
@@ -236,35 +264,36 @@ TEST_F(Vp9ParserTest, AwaitingContextUpdate) {
   EXPECT_EQ(9u, fhdr.header_size_in_bytes);
 }
 
-TEST_F(Vp9ParserTest, VerifyFirstFrame) {
-  Initialize("test-25fps.vp9", false);
+TEST_P(Vp9ParserTest, VerifyFirstFrame) {
+  Initialize(GetParam().file_name, false);
   Vp9FrameHeader fhdr;
 
   ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
-  EXPECT_EQ(0, fhdr.profile);
+  EXPECT_EQ(GetParam().profile, fhdr.profile);
   EXPECT_FALSE(fhdr.show_existing_frame);
   EXPECT_EQ(Vp9FrameHeader::KEYFRAME, fhdr.frame_type);
   EXPECT_TRUE(fhdr.show_frame);
   EXPECT_FALSE(fhdr.error_resilient_mode);
 
-  EXPECT_EQ(8, fhdr.bit_depth);
+  EXPECT_EQ(GetParam().bit_depth, fhdr.bit_depth);
   EXPECT_EQ(Vp9ColorSpace::UNKNOWN, fhdr.color_space);
   EXPECT_FALSE(fhdr.color_range);
   EXPECT_EQ(1, fhdr.subsampling_x);
   EXPECT_EQ(1, fhdr.subsampling_y);
 
-  EXPECT_EQ(320u, fhdr.frame_width);
-  EXPECT_EQ(240u, fhdr.frame_height);
-  EXPECT_EQ(320u, fhdr.render_width);
-  EXPECT_EQ(240u, fhdr.render_height);
+  EXPECT_EQ(GetParam().width, fhdr.frame_width);
+  EXPECT_EQ(GetParam().height, fhdr.frame_height);
+  EXPECT_EQ(GetParam().width, fhdr.render_width);
+  EXPECT_EQ(GetParam().height, fhdr.render_height);
 
   EXPECT_TRUE(fhdr.refresh_frame_context);
-  EXPECT_TRUE(fhdr.frame_parallel_decoding_mode);
+  EXPECT_EQ(GetParam().frame_parallel_decoding_mode,
+            fhdr.frame_parallel_decoding_mode);
   EXPECT_EQ(0, fhdr.frame_context_idx_to_save_probs);
 
   const Vp9LoopFilterParams& lf = GetLoopFilter();
-  EXPECT_EQ(9, lf.level);
+  EXPECT_EQ(GetParam().loop_filter_level, lf.level);
   EXPECT_EQ(0, lf.sharpness);
   EXPECT_TRUE(lf.delta_enabled);
   EXPECT_TRUE(lf.delta_update);
@@ -274,7 +303,7 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
   EXPECT_EQ(-1, lf.ref_deltas[3]);
 
   const Vp9QuantizationParams& qp = fhdr.quant_params;
-  EXPECT_EQ(65, qp.base_q_idx);
+  EXPECT_EQ(GetParam().quantization_base_index, qp.base_q_idx);
   EXPECT_FALSE(qp.delta_q_y_dc);
   EXPECT_FALSE(qp.delta_q_uv_dc);
   EXPECT_FALSE(qp.delta_q_uv_ac);
@@ -286,18 +315,15 @@ TEST_F(Vp9ParserTest, VerifyFirstFrame) {
   EXPECT_EQ(0, fhdr.tile_cols_log2);
   EXPECT_EQ(0, fhdr.tile_rows_log2);
 
-  EXPECT_EQ(120u, fhdr.header_size_in_bytes);
+  EXPECT_EQ(GetParam().first_frame_header_size_bytes,
+            fhdr.header_size_in_bytes);
   EXPECT_EQ(18u, fhdr.uncompressed_header_size);
-}
 
-TEST_F(Vp9ParserTest, VerifyInterFrame) {
-  Initialize("test-25fps.vp9", false);
-  Vp9FrameHeader fhdr;
+  // Now verify the second frame in the file which should be INTERFRAME.
+  ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
 
-  // To verify the second frame.
-  for (int i = 0; i < 2; i++)
-    ASSERT_EQ(Vp9Parser::kOk, ParseNextFrame(&fhdr));
-
+  EXPECT_EQ(GetParam().bit_depth, fhdr.bit_depth);
+  EXPECT_EQ(Vp9ColorSpace::UNKNOWN, fhdr.color_space);
   EXPECT_EQ(Vp9FrameHeader::INTERFRAME, fhdr.frame_type);
   EXPECT_FALSE(fhdr.show_frame);
   EXPECT_FALSE(fhdr.intra_only);
@@ -307,10 +333,14 @@ TEST_F(Vp9ParserTest, VerifyInterFrame) {
   EXPECT_EQ(1, fhdr.ref_frame_idx[1]);
   EXPECT_EQ(2, fhdr.ref_frame_idx[2]);
   EXPECT_TRUE(fhdr.allow_high_precision_mv);
-  EXPECT_EQ(Vp9InterpolationFilter::EIGHTTAP, fhdr.interpolation_filter);
+  EXPECT_EQ(GetParam().filter, fhdr.interpolation_filter);
 
-  EXPECT_EQ(48u, fhdr.header_size_in_bytes);
-  EXPECT_EQ(11u, fhdr.uncompressed_header_size);
+  EXPECT_EQ(GetParam().second_frame_header_size_bytes,
+            fhdr.header_size_in_bytes);
+  EXPECT_EQ(GetParam().second_frame_uncompressed_header_size_bytes,
+            fhdr.uncompressed_header_size);
 }
+
+INSTANTIATE_TEST_CASE_P(, Vp9ParserTest, ::testing::ValuesIn(kTestParams));
 
 }  // namespace media
