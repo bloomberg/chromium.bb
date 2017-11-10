@@ -131,8 +131,8 @@ class PreviewsLoggerTest : public testing::Test {
     EXPECT_EQ(expected_size, actual.size());
 
     std::vector<std::string> description_parts = base::SplitStringUsingSubstr(
-        actual[0].event_description, "preview decision made - ",
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+        actual[0].event_description, "preview - ", base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
     return description_parts[1];
   }
 
@@ -163,14 +163,13 @@ TEST_F(PreviewsLoggerTest, LogPreviewDecisionMadeLogMessage) {
   EXPECT_EQ(expected_size, actual.size());
 
   std::string expected_description_a =
-      "Offline preview decision made - Blacklist failed to be created";
+      "Offline preview - Blacklist failed to be created";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[0].event_type);
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
 
-  std::string expected_description_b =
-      "LoFi preview decision made - Network not slow";
+  std::string expected_description_b = "LoFi preview - Network not slow";
   EXPECT_EQ(kPreviewsDecisionMadeEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);
@@ -196,15 +195,13 @@ TEST_F(PreviewsLoggerTest, LogPreviewNavigationLogMessage) {
   const size_t expected_size = 2;
   EXPECT_EQ(expected_size, actual.size());
 
-  std::string expected_description_a =
-      "Offline preview navigation - user opt_out: True";
+  std::string expected_description_a = "Offline preview - user opt-out: True";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[0].event_type);
   EXPECT_EQ(expected_description_a, actual[0].event_description);
   EXPECT_EQ(url_a, actual[0].url);
   EXPECT_EQ(time, actual[0].time);
 
-  std::string expected_description_b =
-      "LoFi preview navigation - user opt_out: False";
+  std::string expected_description_b = "LoFi preview - user opt-out: False";
   EXPECT_EQ(kPreviewsNavigationEventType, actual[1].event_type);
   EXPECT_EQ(expected_description_b, actual[1].event_description);
   EXPECT_EQ(url_b, actual[1].url);

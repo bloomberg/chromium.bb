@@ -24,7 +24,7 @@ const size_t kMaximumDecisionLogs = 25;
 
 std::string GetDescriptionForPreviewsNavigation(PreviewsType type,
                                                 bool opt_out) {
-  return base::StringPrintf("%s preview navigation - user opt_out: %s",
+  return base::StringPrintf("%s preview - user opt-out: %s",
                             GetStringNameForType(type).c_str(),
                             opt_out ? "True" : "False");
 }
@@ -58,7 +58,7 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason) {
 
 std::string GetDescriptionForPreviewsDecision(PreviewsEligibilityReason reason,
                                               PreviewsType type) {
-  return base::StringPrintf("%s preview decision made - %s",
+  return base::StringPrintf("%s preview - %s",
                             GetStringNameForType(type).c_str(),
                             GetReasonDescription(reason).c_str());
 }
