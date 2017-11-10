@@ -3744,8 +3744,6 @@ crbug.com/773810 external/wpt/css/css-transforms/transform3d-perspective-008.htm
 crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.js [ Pass Crash ]
 crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
 crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash ]
-crbug.com/762486 http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]
-crbug.com/762486 virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-alias.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-08
 crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
