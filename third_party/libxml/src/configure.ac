@@ -9,7 +9,7 @@ AC_CANONICAL_HOST
 
 LIBXML_MAJOR_VERSION=2
 LIBXML_MINOR_VERSION=9
-LIBXML_MICRO_VERSION=5
+LIBXML_MICRO_VERSION=7
 LIBXML_MICRO_VERSION_SUFFIX=
 LIBXML_VERSION=$LIBXML_MAJOR_VERSION.$LIBXML_MINOR_VERSION.$LIBXML_MICRO_VERSION$LIBXML_MICRO_VERSION_SUFFIX
 LIBXML_VERSION_INFO=`expr $LIBXML_MAJOR_VERSION + $LIBXML_MINOR_VERSION`:$LIBXML_MICRO_VERSION:$LIBXML_MINOR_VERSION
@@ -1053,9 +1053,9 @@ if test "$with_threads" = "no" ; then
 else
     echo Enabling multithreaded support
 
-    dnl Default to native threads on Win32
+    dnl Default to native threads on Windows
     case $host_os in
-       *mingw32*) if test "$with_threads" != "pthread" && test "$with_threads" != "no"; then
+       *mingw*) if test "$with_threads" != "pthread" && test "$with_threads" != "no"; then
                WITH_THREADS="1"
                THREADS_W32="1"
                THREAD_CFLAGS="$THREAD_CFLAGS -DHAVE_WIN32_THREADS"
@@ -1640,7 +1640,6 @@ case "$host" in
  CPPFLAGS="$CPPFLAGS -DWIN32"
  WIN32_EXTRA_LIBADD="-lws2_32"
  WIN32_EXTRA_LDFLAGS="-no-undefined"
- AC_DEFINE([_WINSOCKAPI_],1,[Using the Win32 Socket implementation])
  if test "${PYTHON}" != ""
  then
    WIN32_EXTRA_PYTHON_LIBADD="-L${pythondir}/../../libs -lpython$(echo ${PYTHON_VERSION} | tr -d .)"

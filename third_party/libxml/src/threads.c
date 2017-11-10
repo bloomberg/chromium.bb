@@ -27,6 +27,7 @@
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
 #elif defined HAVE_WIN32_THREADS
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #ifndef HAVE_COMPILER_TLS
 #include <process.h>
@@ -138,7 +139,7 @@ static DWORD globalkey = TLS_OUT_OF_INDEXES;
 static DWORD mainthread;
 static struct {
     DWORD done;
-    DWORD control;
+    LONG control;
 } run_once = { 0, 0};
 static volatile LPCRITICAL_SECTION global_init_lock = NULL;
 
@@ -438,7 +439,8 @@ __xmlGlobalInitMutexLock(void)
 
         /* Swap it into the global_init_lock */
 #ifdef InterlockedCompareExchangePointer
-        InterlockedCompareExchangePointer(&global_init_lock, cs, NULL);
+        InterlockedCompareExchangePointer((void **) &global_init_lock,
+                                          cs, NULL);
 #else /* Use older void* version */
         InterlockedCompareExchange((void **) &global_init_lock,
                                    (void *) cs, NULL);
@@ -979,11 +981,23 @@ xmlOnceInit(void)
 #ifdef HAVE_PTHREAD_H
 #elif defined(HAVE_WIN32_THREADS) && !defined(HAVE_COMPILER_TLS) && (!defined(LIBXML_STATIC) || defined(LIBXML_STATIC_FOR_DLL))
 #if defined(LIBXML_STATIC_FOR_DLL)
-BOOL XMLCALL
-xmlDllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+int XMLCALL
+xmlDllMain(ATTRIBUTE_UNUSED void *hinstDLL, unsigned long fdwReason,
+           ATTRIBUTE_UNUSED void *lpvReserved)
 #else
+/* declare to avoid "no previous prototype for 'DllMain'" warning */
+/* Note that we do NOT want to include this function declaration in
+   a public header because it's meant to be called by Windows itself,
+   not a program that uses this library.  This also has to be exported. */
+
+XMLPUBFUN BOOL WINAPI
+DllMain (HINSTANCE hinstDLL,
+         DWORD     fdwReason,
+         LPVOID    lpvReserved);
+
 BOOL WINAPI
-DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+DllMain(ATTRIBUTE_UNUSED HINSTANCE hinstDLL, DWORD fdwReason,
+        ATTRIBUTE_UNUSED LPVOID lpvReserved)
 #endif
 {
     switch (fdwReason) {

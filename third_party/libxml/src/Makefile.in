@@ -271,11 +271,11 @@ testXPath_OBJECTS = $(am_testXPath_OBJECTS)
 testXPath_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(testXPath_LDFLAGS) $(LDFLAGS) -o $@
-am_testapi_OBJECTS = testapi.$(OBJEXT)
+am_testapi_OBJECTS = testapi-testapi.$(OBJEXT)
 testapi_OBJECTS = $(am_testapi_OBJECTS)
 testapi_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(testapi_LDFLAGS) $(LDFLAGS) -o $@
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(testapi_CFLAGS) \
+	$(CFLAGS) $(testapi_LDFLAGS) $(LDFLAGS) -o $@
 am_testchar_OBJECTS = testchar.$(OBJEXT)
 testchar_OBJECTS = $(am_testchar_OBJECTS)
 testchar_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -814,6 +814,7 @@ testapi_SOURCES = testapi.c
 testapi_LDFLAGS = 
 testapi_DEPENDENCIES = $(DEPS)
 testapi_LDADD = $(LDADDS)
+testapi_CFLAGS = -Wno-unused-function
 runxmlconf_SOURCES = runxmlconf.c
 runxmlconf_LDFLAGS = 
 runxmlconf_DEPENDENCIES = $(DEPS)
@@ -1200,7 +1201,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testThreadsWin32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testURI.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testXPath.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testapi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testapi-testapi.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testchar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdict.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testdso.Plo@am__quote@
@@ -1251,6 +1252,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+testapi-testapi.o: testapi.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(testapi_CFLAGS) $(CFLAGS) -MT testapi-testapi.o -MD -MP -MF $(DEPDIR)/testapi-testapi.Tpo -c -o testapi-testapi.o `test -f 'testapi.c' || echo '$(srcdir)/'`testapi.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testapi-testapi.Tpo $(DEPDIR)/testapi-testapi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='testapi.c' object='testapi-testapi.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(testapi_CFLAGS) $(CFLAGS) -c -o testapi-testapi.o `test -f 'testapi.c' || echo '$(srcdir)/'`testapi.c
+
+testapi-testapi.obj: testapi.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(testapi_CFLAGS) $(CFLAGS) -MT testapi-testapi.obj -MD -MP -MF $(DEPDIR)/testapi-testapi.Tpo -c -o testapi-testapi.obj `if test -f 'testapi.c'; then $(CYGPATH_W) 'testapi.c'; else $(CYGPATH_W) '$(srcdir)/testapi.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/testapi-testapi.Tpo $(DEPDIR)/testapi-testapi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='testapi.c' object='testapi-testapi.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(testapi_CFLAGS) $(CFLAGS) -c -o testapi-testapi.obj `if test -f 'testapi.c'; then $(CYGPATH_W) 'testapi.c'; else $(CYGPATH_W) '$(srcdir)/testapi.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
