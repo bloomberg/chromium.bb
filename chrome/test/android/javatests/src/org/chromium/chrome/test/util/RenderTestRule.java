@@ -224,14 +224,17 @@ public class RenderTestRule extends TestWatcher {
         if (!mGoldenMissingIds.isEmpty()) {
             sb.append("RenderTest Goldens missing for: ");
             sb.append(TextUtils.join(", ", mGoldenMissingIds));
+            sb.append(".");
         }
 
         if (!mMismatchIds.isEmpty()) {
             if (sb.length() != 0) sb.append(" ");
             sb.append("RenderTest Mismatches for: ");
             sb.append(TextUtils.join(", ", mMismatchIds));
+            sb.append(".");
         }
 
+        sb.append(" See RENDER_TESTS.md for how to fix this failure.");
         throw new RenderTestException(sb.toString());
     }
 
