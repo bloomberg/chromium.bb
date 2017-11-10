@@ -38,30 +38,6 @@
 
 namespace update_client {
 
-namespace {
-
-// Produces an extension-like friendly id.
-std::string HexStringToID(const std::string& hexstr) {
-  std::string id;
-  for (size_t i = 0; i < hexstr.size(); ++i) {
-    int val = 0;
-    if (base::HexStringToInt(
-            base::StringPiece(hexstr.begin() + i, hexstr.begin() + i + 1),
-            &val)) {
-      id.append(1, val + 'a');
-    } else {
-      id.append(1, 'a');
-    }
-  }
-
-  DCHECK(crx_file::id_util::IdIsValid(id));
-
-  return id;
-}
-
-}  // namespace
-
-
 std::unique_ptr<net::URLFetcher> SendProtocolRequest(
     const GURL& url,
     const std::string& protocol_request,
@@ -165,10 +141,10 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
 }
 
 std::string GetCrxComponentID(const CrxComponent& component) {
-  const size_t kCrxIdSize = 16;
-  CHECK_GE(component.pk_hash.size(), kCrxIdSize);
-  return HexStringToID(base::ToLowerASCII(
-      base::HexEncode(&component.pk_hash[0], kCrxIdSize)));
+  const std::string result = crx_file::id_util::GenerateIdFromHash(
+      &component.pk_hash[0], component.pk_hash.size());
+  DCHECK(crx_file::id_util::IdIsValid(result));
+  return result;
 }
 
 bool VerifyFileHash256(const base::FilePath& filepath,
