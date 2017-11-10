@@ -10,7 +10,6 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"  // nogncheck
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -19,6 +18,10 @@
 #include "base/test/mock_chrome_application_mac.h"
 #else
 #include "ui/gl/test/gl_surface_test_support.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "mojo/edk/embedder/embedder.h"  // nogncheck
 #endif
 
 namespace {
@@ -61,7 +64,9 @@ class MessageCenterTestSuite : public base::TestSuite {
 int main(int argc, char** argv) {
   MessageCenterTestSuite test_suite(argc, argv);
 
+#if defined(OS_CHROMEOS)
   mojo::edk::Init();
+#endif
 
   return base::LaunchUnitTests(
       argc,
