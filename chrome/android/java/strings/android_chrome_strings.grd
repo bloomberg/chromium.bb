@@ -482,6 +482,11 @@ CHAR-LIMIT guidelines:
         Unlock to continue setting up your phone
       </message>
 
+      <!-- Languages preferences -->
+      <message name="IDS_PREFS_LANGUAGES" desc="Menu item for Languages, which allows users to manage their languages preferences. [CHAR-LIMIT=32]">
+        Languages
+      </message>
+
       <!-- Homepage preferences -->
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
         Edit home page

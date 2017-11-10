@@ -194,6 +194,7 @@ public abstract class ChromeFeatureList {
     public static final String FULLSCREEN_ACTIVITY = "FullscreenActivity";
     // Whether we show an important sites dialog in the "Clear Browsing Data" flow.
     public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
+    public static final String LANGUAGES_PREFERENCE = "LanguagesPreference";
     public static final String SEARCH_ENGINE_PROMO_EXISTING_DEVICE =
             "SearchEnginePromo.ExistingDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
