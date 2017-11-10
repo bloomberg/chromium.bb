@@ -665,9 +665,9 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                                     [self viewWidth])];
   _searchFieldHeightConstraint = [searchField.heightAnchor
       constraintEqualToConstant:content_suggestions::kSearchFieldHeight];
-  _searchFieldTopMarginConstraint = [searchField.topAnchor
-      constraintEqualToAnchor:logoView.bottomAnchor
-                     constant:content_suggestions::searchFieldTopMargin()];
+  _searchFieldTopMarginConstraint = [logoView.bottomAnchor
+      constraintEqualToAnchor:searchField.topAnchor
+                     constant:-content_suggestions::searchFieldTopMargin()];
   [NSLayoutConstraint activateConstraints:@[
     _doodleTopMarginConstraint,
     _doodleHeightConstraint,

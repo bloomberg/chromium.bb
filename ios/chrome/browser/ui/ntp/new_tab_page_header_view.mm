@@ -147,7 +147,7 @@
       ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight;
 
   widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
-  topMarginConstraint.constant = content_suggestions::searchFieldTopMargin() +
+  topMarginConstraint.constant = -content_suggestions::searchFieldTopMargin() +
                                  ntp_header::kMaxTopMarginDiff * percent;
   heightConstraint.constant =
       content_suggestions::kSearchFieldHeight + maxHeightDiff * percent;
