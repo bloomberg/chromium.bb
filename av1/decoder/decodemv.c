@@ -2155,7 +2155,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   is_compound = has_second_ref(mbmi);
 
 #if CONFIG_JNT_COMP
-  if (has_two_sided_comp_refs(cm, mbmi)) {
+  if (is_compound) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
 #if CONFIG_NEW_MULTISYMBOL
     mbmi->compound_idx = aom_read_symbol(
@@ -2166,8 +2166,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_NEW_MULTISYMBOL
     if (xd->counts)
       ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-  } else {
-    mbmi->compound_idx = 1;
   }
 #endif  // CONFIG_JNT_COMP
 

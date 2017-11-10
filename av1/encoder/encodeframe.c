@@ -660,7 +660,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
 #if CONFIG_JNT_COMP
 #if !CONFIG_NEW_MULTISYMBOL
-  if (has_two_sided_comp_refs(cm, mbmi)) {
+  if (has_second_ref(mbmi)) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
     ++td->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   }

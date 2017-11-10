@@ -1499,13 +1499,13 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
 #if CONFIG_JNT_COMP
 #if CONFIG_NEW_MULTISYMBOL
-    if (has_two_sided_comp_refs(cm, mbmi)) {
+    if (has_second_ref(mbmi)) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);
       aom_write_symbol(w, mbmi->compound_idx,
                        ec_ctx->compound_index_cdf[comp_index_ctx], 2);
     }
 #else
-    if (has_two_sided_comp_refs(cm, mbmi)) {
+    if (has_second_ref(mbmi)) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);
       aom_write(w, mbmi->compound_idx,
                 ec_ctx->compound_index_probs[comp_index_ctx]);

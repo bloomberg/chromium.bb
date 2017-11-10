@@ -5990,7 +5990,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_JNT_COMP
     const int order_idx = id != 0;
     av1_jnt_comp_weight_assign(cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
-                               &xd->jcp_param.bck_offset);
+                               &xd->jcp_param.bck_offset, 1);
 #endif  // CONFIG_JNT_COMP
 
     // Do compound motion search on the current reference frame.
@@ -6706,7 +6706,7 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
 
 #if CONFIG_JNT_COMP
   av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
-                             &xd->jcp_param.bck_offset);
+                             &xd->jcp_param.bck_offset, 1);
 #endif  // CONFIG_JNT_COMP
 
   if (scaled_ref_frame) {
@@ -8245,7 +8245,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
 #if CONFIG_JNT_COMP
-  if (has_two_sided_comp_refs(cm, mbmi)) {
+  if (is_comp_pred) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
     rd_stats->rate += x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
   }
@@ -9975,7 +9975,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_JNT_COMP
       {
         int cum_rate = rate2;
-        mbmi->compound_idx = 1;
         MB_MODE_INFO backup_mbmi = *mbmi;
 
         int_mv backup_frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
@@ -9993,7 +9992,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
         for (int comp_idx = 0; comp_idx < 1 + has_second_ref(mbmi);
              ++comp_idx) {
-          if (comp_idx == 0 && !has_two_sided_comp_refs(cm, mbmi)) continue;
           RD_STATS rd_stats, rd_stats_y, rd_stats_uv;
           av1_init_rd_stats(&rd_stats);
           av1_init_rd_stats(&rd_stats_y);
@@ -10146,8 +10144,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           ref_idx = sidx;
           if (has_second_ref(mbmi)) ref_idx /= 2;
           mbmi->compound_idx = sidx % 2;
-          if (mbmi->compound_idx == 0 && !has_two_sided_comp_refs(cm, mbmi))
-            continue;
 #endif  // CONFIG_JNT_COMP
 
           av1_invalid_rd_stats(&tmp_rd_stats);

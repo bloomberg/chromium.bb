@@ -115,7 +115,7 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 
   if (above_mi) {
     const MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
-    if (has_two_sided_comp_refs(cm, above_mbmi))
+    if (has_second_ref(above_mbmi))
       above_ctx = above_mbmi->compound_idx;
     else if (above_mbmi->ref_frame[0] == ALTREF_FRAME)
       above_ctx = 1;
@@ -123,7 +123,7 @@ static INLINE int get_comp_index_context(const AV1_COMMON *cm,
 
   if (left_mi) {
     const MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
-    if (has_two_sided_comp_refs(cm, left_mbmi))
+    if (has_second_ref(left_mbmi))
       left_ctx = left_mbmi->compound_idx;
     else if (left_mbmi->ref_frame[0] == ALTREF_FRAME)
       left_ctx = 1;

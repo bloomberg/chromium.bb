@@ -1385,28 +1385,6 @@ static INLINE int use_compressed_header(const AV1_COMMON *cm) {
 #endif  // CONFIG_NEW_MULTISYMBOL
 }
 
-#if CONFIG_JNT_COMP
-static INLINE int has_two_sided_comp_refs(const AV1_COMMON *cm,
-                                          const MB_MODE_INFO *mbmi) {
-  if (!has_second_ref(mbmi)) return 0;
-
-  const int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
-  const int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
-  if (bck_idx < 0 || fwd_idx < 0) return 0;
-
-  const int cur_frame_index = cm->cur_frame->cur_frame_offset;
-  const int bck_frame_index =
-      cm->buffer_pool->frame_bufs[bck_idx].cur_frame_offset;
-  const int fwd_frame_index =
-      cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
-
-  return ((bck_frame_index > cur_frame_index) &&
-          (fwd_frame_index < cur_frame_index)) ||
-         ((bck_frame_index < cur_frame_index) &&
-          (fwd_frame_index > cur_frame_index));
-}
-#endif  // CONFIG_JNT_COMP
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif
