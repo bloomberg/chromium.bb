@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -15,6 +16,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "media/base/media_log.h"
 #include "media/base/media_observer.h"
+#include "media/base/media_switches.h"
 #include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
@@ -50,6 +52,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   typedef base::Callback<mojom::VideoDecodeStatsRecorderPtr()>
       CreateCapabilitiesRecorderCB;
 
+  // Callback to obtain the media ContextProvider.
+  // Requires being called on the media thread.
+  // The argument callback is also called on the media thread as a reply.
+  using ContextProviderCB =
+      base::Callback<void(base::Callback<void(viz::ContextProvider*)>)>;
+
   // Callback to tell V8 about the amount of memory used by the WebMediaPlayer
   // instance.  The input parameter is the delta in bytes since the last call to
   // AdjustAllocatedMemoryCB and the return value is the total number of bytes
@@ -66,6 +74,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
       const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          video_frame_compositor_task_runner,
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
       SurfaceManager* surface_manager,
@@ -79,7 +89,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       CreateCapabilitiesRecorderCB create_capabilities_recorder_cb,
       base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
           blink::WebSurfaceLayerBridgeObserver*)> bridge_callback,
-      blink::WebContextProviderCallback context_provider_callback,
       scoped_refptr<viz::ContextProvider> context_provider);
 
   ~WebMediaPlayerParams();
@@ -104,6 +113,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner()
       const {
     return compositor_task_runner_;
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner>&
+  video_frame_compositor_task_runner() const {
+    return video_frame_compositor_task_runner_;
   }
 
   blink::WebContentDecryptionModule* initial_cdm() const {
@@ -150,10 +164,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return create_bridge_callback_;
   }
 
-  blink::WebContextProviderCallback context_provider_callback() const {
-    return context_provider_callback_;
-  }
-
   CreateCapabilitiesRecorderCB create_capabilities_recorder_cb() const {
     return create_capabilities_recorder_cb_;
   }
@@ -169,6 +179,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner>
+      video_frame_compositor_task_runner_;
   AdjustAllocatedMemoryCB adjust_allocated_memory_cb_;
 
   blink::WebContentDecryptionModule* initial_cdm_;
@@ -184,7 +196,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   base::Callback<std::unique_ptr<blink::WebSurfaceLayerBridge>(
       blink::WebSurfaceLayerBridgeObserver*)>
       create_bridge_callback_;
-  blink::WebContextProviderCallback context_provider_callback_;
   scoped_refptr<viz::ContextProvider> context_provider_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
