@@ -108,7 +108,7 @@ bool Jid::IsValid() const {
 
 bool Jid::IsBare() const {
   if (IsEmpty()) {
-    LOG(LS_VERBOSE) << "Warning: Calling IsBare() on the empty jid.";
+    RTC_LOG(LS_VERBOSE) << "Warning: Calling IsBare() on the empty jid.";
     return true;
   }
   return IsValid() && resource_name_.empty();
