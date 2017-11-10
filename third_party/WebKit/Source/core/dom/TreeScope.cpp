@@ -209,23 +209,19 @@ static bool PointInFrameContentIfVisible(Document& document,
   // The VisibleContentRect check below requires that scrollbars are up-to-date.
   document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  DoublePoint point_in_content(point_in_frame);
-  point_in_content.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
   auto* scrollable_area = frame_view->LayoutViewportScrollableArea();
-  point_in_content.Move(scrollable_area->GetScrollOffset());
-  if (!scrollable_area->VisibleContentRect().Contains(
-          RoundedIntPoint(point_in_content))) {
+  IntRect visible_frame_rect(IntPoint(),
+                             scrollable_area->VisibleContentRect().Size());
+  visible_frame_rect.Scale(1 / frame->PageZoomFactor());
+  if (!visible_frame_rect.Contains(RoundedIntPoint(point_in_frame)))
     return false;
-  }
 
-  // If the root layer handles scrolling, the point only needs to be adjusted by
-  // the frame's scale.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
-    return true;
-  }
+  point_in_frame.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
+  // For non RLS case, the point needs to be adjusted by the frame's scroll
+  // offset.
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    point_in_frame.Move(scrollable_area->GetScrollOffset());
 
-  point_in_frame = point_in_content;
   return true;
 }
 
