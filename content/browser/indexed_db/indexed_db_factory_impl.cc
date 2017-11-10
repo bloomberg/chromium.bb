@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -539,8 +540,11 @@ void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
   //       so our corruption info file will remain.
   leveldb::Status s =
       IndexedDBBackingStore::DestroyBackingStore(path_base, saved_origin);
-  if (!s.ok())
-    DLOG(ERROR) << "Unable to delete backing store: " << s.ToString();
+  DLOG_IF(ERROR, !s.ok()) << "Unable to delete backing store: " << s.ToString();
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebCore.IndexedDB.DestroyCorruptBackingStoreStatus",
+      leveldb_env::GetLevelDBStatusUMAValue(s),
+      leveldb_env::LEVELDB_STATUS_MAX);
 }
 
 bool IndexedDBFactoryImpl::IsDatabaseOpen(const Origin& origin,

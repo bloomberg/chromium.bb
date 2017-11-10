@@ -92837,6 +92837,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.DestroyCorruptBackingStoreStatus"
+    enum="LevelDBStatus">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    Count of the results when attempting to destroy a corrupt Indexed DB backing
+    store.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.FrontEndAPICalls"
     enum="IndexedDatabaseMethods">
   <owner>dgrogan@chromium.org</owner>
