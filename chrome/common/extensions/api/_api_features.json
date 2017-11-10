@@ -55,6 +55,10 @@
        "81986D4F846CEDDDB962643FA501D1780DD441BB"   // http://crbug.com/717501
     ]
   },
+  "action": {
+    "dependencies": ["manifest:action"],
+    "contexts": ["blessed_extension"]
+  },
   "activityLogPrivate": {
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]

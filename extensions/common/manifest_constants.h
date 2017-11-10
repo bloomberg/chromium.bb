@@ -13,6 +13,8 @@ namespace extensions {
 namespace manifest_keys {
 
 extern const char kAboutPage[];
+extern const char kAction[];
+extern const char kActionDefaultState[];
 extern const char kAllFrames[];
 extern const char kAltKey[];
 extern const char kApp[];
@@ -274,11 +276,14 @@ extern const char kCannotUninstallManagedExtension[];
 extern const char kChromeVersionTooLow[];
 extern const char kDeclarativeNetRequestPermissionNeeded[];
 extern const char kDeclarativeNetRequestListNotPassed[];
+extern const char kDefaultStateShouldNotBeSet[];
 extern const char kDevToolsExperimental[];
 extern const char kExpectString[];
 extern const char kFileNotFound[];
 extern const char kInvalidAboutPage[];
 extern const char kInvalidAboutPageExpectRelativePath[];
+extern const char kInvalidAction[];
+extern const char kInvalidActionDefaultState[];
 extern const char kInvalidAllFrames[];
 extern const char kInvalidAppIconColor[];
 extern const char kInvalidAppThemeColor[];

@@ -22,6 +22,9 @@ namespace keys = manifest_keys;
 
 namespace {
 
+constexpr char kEnabled[] = "enabled";
+constexpr char kDisabled[] = "disabled";
+
 // The manifest data container for the ActionInfos for BrowserActions,
 // PageActions and SystemIndicators.
 struct ActionInfoData : public Extension::ManifestData {
@@ -71,7 +74,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (iter == icons->end() || !iter->GetAsString(&path) ||
           !manifest_handler_helpers::NormalizeAndValidatePath(&path)) {
         *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-        return std::unique_ptr<ActionInfo>();
+        return nullptr;
       }
       // Extension icons were 19 DIP when kPageActionIcons was supported.
       result->default_icon.Add(19, path);
@@ -81,7 +84,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     if (dict->HasKey(keys::kPageActionId)) {
       if (!dict->GetString(keys::kPageActionId, &id)) {
         *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
-        return std::unique_ptr<ActionInfo>();
+        return nullptr;
       }
       result->id = id;
     }
@@ -96,7 +99,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
               icons_value, &result->default_icon, error)) {
-        return std::unique_ptr<ActionInfo>();
+        return nullptr;
       }
     } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
@@ -108,7 +111,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
                                default_icon);
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return std::unique_ptr<ActionInfo>();
+      return nullptr;
     }
   }
 
@@ -118,12 +121,12 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     if (!dict->GetString(keys::kPageActionDefaultTitle,
                          &result->default_title)) {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-      return std::unique_ptr<ActionInfo>();
+      return nullptr;
     }
   } else if (extension->manifest_version() == 1 && dict->HasKey(keys::kName)) {
     if (!dict->GetString(keys::kName, &result->default_title)) {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionName);
-      return std::unique_ptr<ActionInfo>();
+      return nullptr;
     }
   }
 
@@ -139,7 +142,7 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
           errors::kInvalidPageActionOldAndNewKeys,
           keys::kPageActionDefaultPopup,
           keys::kPageActionPopup);
-      return std::unique_ptr<ActionInfo>();
+      return nullptr;
     }
     popup_key = keys::kPageActionPopup;
   }
@@ -155,11 +158,11 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, "<missing>");
-        return std::unique_ptr<ActionInfo>();
+        return nullptr;
       }
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionPopup);
-      return std::unique_ptr<ActionInfo>();
+      return nullptr;
     }
 
     if (!url_str.empty()) {
@@ -169,13 +172,26 @@ std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (!result->default_popup_url.is_valid()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, url_str);
-        return std::unique_ptr<ActionInfo>();
+        return nullptr;
       }
     } else {
       DCHECK(result->default_popup_url.is_empty())
           << "Shouldn't be possible for the popup to be set.";
     }
   }
+
+  std::string default_state;
+  if (dict->HasKey(keys::kActionDefaultState)) {
+    if (!dict->GetString(keys::kActionDefaultState, &default_state) ||
+        !(default_state == kEnabled || default_state == kDisabled)) {
+      *error = base::ASCIIToUTF16(errors::kInvalidActionDefaultState);
+      return nullptr;
+    }
+  }
+
+  result->default_state = default_state == kEnabled
+                              ? ActionInfo::STATE_ENABLED
+                              : ActionInfo::STATE_DISABLED;
 
   return result;
 }
@@ -193,6 +209,13 @@ const ActionInfo* ActionInfo::GetPageActionInfo(const Extension* extension) {
 const ActionInfo* ActionInfo::GetSystemIndicatorInfo(
     const Extension* extension) {
   return GetActionInfo(extension, keys::kSystemIndicator);
+}
+
+// static
+void ActionInfo::SetExtensionActionInfo(Extension* extension,
+                                        ActionInfo* info) {
+  extension->SetManifestData(keys::kAction,
+                             base::MakeUnique<ActionInfoData>(info));
 }
 
 // static
