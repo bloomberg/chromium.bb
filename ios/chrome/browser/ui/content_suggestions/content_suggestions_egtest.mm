@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_command_line.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -558,6 +559,11 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Check a new page in normal model is opened.
   [ChromeEarlGrey waitForMainTabCount:2];
   [ChromeEarlGrey waitForIncognitoTabCount:0];
+
+  // Wait for the end of the new tab opening in background. This is needed as
+  // the iOS 11 devices cannot complete this animations while checking if the
+  // collection is present.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(1));
 
   // Check that the tab has been opened in background.
   ConditionBlock condition = ^{
