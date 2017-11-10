@@ -72,7 +72,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // thread.
   VideoFrameCompositor(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      blink::WebContextProviderCallback media_context_provider_callback);
+      std::unique_ptr<blink::WebVideoFrameSubmitter> submitter);
 
   // Destruction must happen on the compositor thread; Stop() must have been
   // called before destruction starts.
@@ -80,7 +80,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Signals the VideoFrameSubmitter to prepare to receive BeginFrames and
   // submit video frames given by VideoFrameCompositor.
-  void EnableSubmission(const viz::FrameSinkId& id);
+  virtual void EnableSubmission(const viz::FrameSinkId& id);
 
   // cc::VideoFrameProvider implementation. These methods must be called on the
   // |task_runner_|.
@@ -121,7 +121,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   // Sets the callback to be run when the new frame has been processed. The
   // callback is only run once and then reset.
   // Must be called on the compositor thread.
-  void SetOnNewProcessedFrameCallback(const OnNewProcessedFrameCB& cb);
+  virtual void SetOnNewProcessedFrameCallback(const OnNewProcessedFrameCB& cb);
 
   void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
@@ -143,6 +143,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
   }
 
  private:
+  // Ran on the |task_runner_| to initalize |submitter_|;
+  void InitializeSubmitter();
+
   // Indicates whether the endpoint for the VideoFrame exists.
   // TODO(lethalantidote): Update this function to read creation/destruction
   // signals of the SurfaceLayerImpl.
@@ -209,6 +212,8 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor : public VideoRendererSink,
 
   // Whether the use of a surface layer instead of a video layer is enabled.
   bool surface_layer_for_video_enabled_ = false;
+
+  base::WeakPtrFactory<VideoFrameCompositor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositor);
 };

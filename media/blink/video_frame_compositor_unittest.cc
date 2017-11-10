@@ -30,6 +30,7 @@ class MockWebVideoFrameSubmitter : public blink::WebVideoFrameSubmitter {
   MOCK_METHOD1(StartSubmitting, void(const viz::FrameSinkId&));
   MOCK_METHOD0(StartRendering, void());
   MOCK_METHOD0(StopRendering, void());
+  MOCK_METHOD1(Initialize, void(cc::VideoFrameProvider*));
   void DidReceiveFrame() override { ++did_receive_frame_count_; }
 
   int did_receive_frame_count() { return did_receive_frame_count_; }
@@ -55,16 +56,17 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
       // holding only a bare pointer.
     }
     submitter_ = client_.get();
-    compositor_ = base::MakeUnique<VideoFrameCompositor>(
-        message_loop.task_runner(),
-        base::BindRepeating(
-            [](base::OnceCallback<void(viz::ContextProvider*)> callback) {}));
 
     if (!IsSurfaceLayerForVideoEnabled()) {
+      compositor_ = base::MakeUnique<VideoFrameCompositor>(
+          message_loop.task_runner(), nullptr);
       compositor_->SetVideoFrameProviderClient(client_.get());
     } else {
+      EXPECT_CALL(*submitter_, Initialize(_));
+      compositor_ = base::MakeUnique<VideoFrameCompositor>(
+          message_loop.task_runner(), std::move(client_));
+      base::RunLoop().RunUntilIdle();
       EXPECT_CALL(*submitter_, StartSubmitting(_));
-      compositor_->set_submitter_for_test(std::move(client_));
       compositor_->EnableSubmission(viz::FrameSinkId(1, 1));
     }
 
