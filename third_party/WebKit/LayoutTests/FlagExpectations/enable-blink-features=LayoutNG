@@ -15,6 +15,17 @@ crbug.com/714962 editing/text-iterator/findString-restarts-at-last-position.html
 crbug.com/707656 editing/deleting/in-visibly-empty-root.html [ Failure Pass ]
 crbug.com/707656 editing/inserting/insert_br.html [ Failure Pass ]
 
+## Reverse hosting of editable block
+crbug.com/707656 editing/execCommand/format-block-crash.html [ Crash ]
+crbug.com/707656 editing/input/scroll-viewport-page-up-down.html [ Failure ]
+crbug.com/707656 editing/undo/undo-indent.html [ Crash ]
+crbug.com/707656 external/wpt/html/editing/editing-0/spelling-and-grammar-checking/spelling-markers-001.html [ Crash ]
+crbug.com/707656 external/wpt/html/editing/focus/processing-model/focus-fixup-rule-one-no-dialogs.html [ Crash ]
+crbug.com/707656 fast/css/readwrite-contenteditable-recalc.html [ Crash ]
+crbug.com/707656 fast/inline-block/14498-positionForCoordinates.html [ Failure ]
+crbug.com/707656 fast/table/table-overflow-crash.html [ Crash ]
+crbug.com/707656 paint/invalidation/remove-anonymous-block-crash.html [ Crash ]
+
 # TextIterator differ in trailing spaces.
 crbug.com/591099 fast/text/bidi-isolate-nextlinebreak-failure.html [ Failure Pass ]
 
@@ -6580,7 +6591,7 @@ crbug.com/591099 http/tests/filesystem/input-display.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/images/drag-image-to-desktop.html [ Pass Timeout ]
 crbug.com/591099 http/tests/images/png-partial-load-as-document.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/images/restyle-decode-error.html [ Failure Pass ]
-crbug.com/591099 http/tests/incremental/frame-focus-before-load.html [ Pass Timeout ]
+crbug.com/783102 http/tests/incremental/frame-focus-before-load.html [ Pass Timeout ]
 crbug.com/591099 http/tests/loading/preload-picture-invalid.html [ Crash Failure Pass ]
 crbug.com/591099 http/tests/loading/simple-subframe.html [ Failure Pass ]
 crbug.com/591099 http/tests/local/drag-over-remote-content.html [ Failure Pass ]
