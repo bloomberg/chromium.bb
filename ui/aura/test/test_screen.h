@@ -48,7 +48,8 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   // WindowObserver overrides:
   void OnWindowBoundsChanged(Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(Window* window) override;
 
   // display::Screen overrides:

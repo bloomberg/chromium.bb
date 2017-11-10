@@ -362,7 +362,8 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override {
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
     DCHECK(ancestors_.find(window) != ancestors_.end());
     if (new_bounds.origin() != old_bounds.origin())
       view_->HandleParentBoundsChanged();

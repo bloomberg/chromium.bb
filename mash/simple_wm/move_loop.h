@@ -90,7 +90,8 @@ class MoveLoop : public aura::WindowObserver {
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // The window this MoveLoop is acting on. |target_| is set to null if the

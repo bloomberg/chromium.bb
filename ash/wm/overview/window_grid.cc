@@ -597,7 +597,8 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
 
 void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
-                                       const gfx::Rect& new_bounds) {
+                                       const gfx::Rect& new_bounds,
+                                       ui::PropertyChangeReason reason) {
   // During preparation, window bounds can change. Ignore bounds
   // change notifications in this case; we'll reposition soon.
   if (!prepared_for_overview_)

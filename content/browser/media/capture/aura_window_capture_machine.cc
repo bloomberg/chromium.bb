@@ -407,7 +407,8 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
 void AuraWindowCaptureMachine::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(desktop_window_ && window == desktop_window_);
 

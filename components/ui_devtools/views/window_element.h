@@ -29,7 +29,8 @@ class WindowElement : public aura::WindowObserver, public UIElement {
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // UIElement:
   std::vector<std::pair<std::string, std::string>> GetCustomAttributes()

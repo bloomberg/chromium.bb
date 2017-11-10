@@ -435,9 +435,11 @@ void KeyboardController::OnWindowRemovingFromRootWindow(aura::Window* window,
     window->GetRootWindow()->RemoveObserver(this);
 }
 
-void KeyboardController::OnWindowBoundsChanged(aura::Window* window,
-                                               const gfx::Rect& old_bounds,
-                                               const gfx::Rect& new_bounds) {
+void KeyboardController::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (!window->IsRootWindow())
     return;
   // Keep the same height when window resizes. It gets called when the screen

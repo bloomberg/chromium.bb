@@ -224,9 +224,11 @@ gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
   return gfx::kNullCursor;
 }
 
-void NativeViewHostAura::OnWindowBoundsChanged(aura::Window* window,
-                                               const gfx::Rect& old_bounds,
-                                               const gfx::Rect& new_bounds) {
+void NativeViewHostAura::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   if (mask_)
     mask_->layer()->SetBounds(gfx::Rect(host_->native_view()->bounds().size()));
 }

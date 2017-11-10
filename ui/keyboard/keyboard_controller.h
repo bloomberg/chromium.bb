@@ -180,7 +180,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
                                       aura::Window* new_root) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // InputMethodObserver overrides
   void OnBlur() override {}

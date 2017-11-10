@@ -33,7 +33,8 @@ void SystemWallpaperController::SetColor(SkColor color) {
 void SystemWallpaperController::OnWindowBoundsChanged(
     aura::Window* root,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   DCHECK_EQ(root_window_, root);
   layer_->SetBounds(gfx::Rect(root_window_->layer()->bounds().size()));
 }

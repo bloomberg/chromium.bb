@@ -273,7 +273,8 @@ class ShellSurface : public SurfaceTreeHost,
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // Overridden from wm::ActivationChangeObserver:

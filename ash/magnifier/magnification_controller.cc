@@ -140,7 +140,8 @@ class MagnificationControllerImpl : public MagnificationController,
   void OnWindowDestroying(aura::Window* root_window) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.
@@ -566,7 +567,8 @@ void MagnificationControllerImpl::OnWindowDestroying(
 void MagnificationControllerImpl::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds) {
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
   // TODO(yoshiki): implement here. crbug.com/230979
 }
 

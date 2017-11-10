@@ -140,7 +140,8 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // TODO(flackr): Handle window bounds changed in WindowSelectorItem.
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override;
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // wm::WindowStateObserver:
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
