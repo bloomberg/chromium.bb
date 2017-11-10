@@ -82,11 +82,11 @@ ReadingListDownloadService::ReadingListDownloadService(
                  base::Unretained(this)),
       base::Bind(&ReadingListDownloadService::OnDeleteEnd,
                  base::Unretained(this)));
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 ReadingListDownloadService::~ReadingListDownloadService() {
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void ReadingListDownloadService::Initialize() {
@@ -295,7 +295,7 @@ void ReadingListDownloadService::OnDeleteEnd(const GURL& url, bool success) {
   // Nothing to update as this is only called when deleting reading list entries
 }
 
-void ReadingListDownloadService::OnConnectionTypeChanged(
+void ReadingListDownloadService::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE) {
     had_connection_ = false;
