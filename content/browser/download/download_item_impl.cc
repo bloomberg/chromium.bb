@@ -1506,6 +1506,9 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     const base::FilePath& intermediate_path,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (state_ == CANCELLED_INTERNAL)
+    return;
+
   DCHECK(state_ == TARGET_PENDING_INTERNAL ||
          state_ == INTERRUPTED_TARGET_PENDING_INTERNAL);
   DVLOG(20) << __func__ << "() target_path:" << target_path.value()
