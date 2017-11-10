@@ -121,6 +121,10 @@ views::View* ChromeCleanerDialog::GetInitiallyFocusedView() {
   return details_button_;
 }
 
+bool ChromeCleanerDialog::ShouldShowCloseButton() const {
+  return false;
+}
+
 // DialogDelegate overrides.
 
 views::View* ChromeCleanerDialog::CreateFootnoteView() {
