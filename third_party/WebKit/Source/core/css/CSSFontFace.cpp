@@ -61,8 +61,7 @@ bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
   if (LoadStatus() == FontFace::kLoading) {
     if (source->IsValid()) {
       SetLoadStatus(FontFace::kLoaded);
-    } else if (source->GetDisplayPeriod() ==
-               RemoteFontFaceSource::kFailurePeriod) {
+    } else if (source->IsInFailurePeriod()) {
       sources_.clear();
       SetLoadStatus(FontFace::kError);
     } else {
@@ -77,7 +76,7 @@ bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source) {
 }
 
 size_t CSSFontFace::ApproximateBlankCharacterCount() const {
-  if (!sources_.IsEmpty() && sources_.front()->IsBlank() &&
+  if (!sources_.IsEmpty() && sources_.front()->IsInBlockPeriod() &&
       segmented_font_face_)
     return segmented_font_face_->ApproximateCharacterCount();
   return 0;
@@ -96,11 +95,22 @@ scoped_refptr<SimpleFontData> CSSFontFace::GetFontData(
   if (!IsValid())
     return nullptr;
 
+  // https://www.w3.org/TR/css-fonts-4/#src-desc
+  // "When a font is needed the user agent iterates over the set of references
+  // listed, using the first one it can successfully activate."
   while (!sources_.IsEmpty()) {
     Member<CSSFontFaceSource>& source = sources_.front();
+
+    // Bail out if the first source is in the Failure period, causing fallback
+    // to next font-family.
+    if (source->IsInFailurePeriod())
+      return nullptr;
+
     if (scoped_refptr<SimpleFontData> result = source->GetFontData(
             font_description,
             segmented_font_face_->GetFontSelectionCapabilities())) {
+      // The active source may already be loading or loaded. Adjust our
+      // FontFace status accordingly.
       if (LoadStatus() == FontFace::kUnloaded &&
           (source->IsLoading() || source->IsLoaded()))
         SetLoadStatus(FontFace::kLoading);
@@ -111,6 +121,7 @@ scoped_refptr<SimpleFontData> CSSFontFace::GetFontData(
     sources_.pop_front();
   }
 
+  // We ran out of source. Set the FontFace status to "error" and return.
   if (LoadStatus() == FontFace::kUnloaded)
     SetLoadStatus(FontFace::kLoading);
   if (LoadStatus() == FontFace::kLoading)

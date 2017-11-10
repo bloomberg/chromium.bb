@@ -56,7 +56,8 @@ class CORE_EXPORT CSSFontFaceSource
   virtual bool IsLocalFontAvailable(const FontDescription&) { return false; }
   virtual void BeginLoadIfNeeded() {}
 
-  virtual bool IsBlank() { return false; }
+  virtual bool IsInBlockPeriod() const { return false; }
+  virtual bool IsInFailurePeriod() const { return false; }
 
   // For UMA reporting
   virtual bool HadBlankText() { return false; }
