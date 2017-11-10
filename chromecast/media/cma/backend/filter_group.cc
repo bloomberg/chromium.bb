@@ -52,7 +52,6 @@ void FilterGroup::Initialize(int output_samples_per_second) {
   output_samples_per_second_ = output_samples_per_second;
   CHECK(post_processing_pipeline_->SetSampleRate(output_samples_per_second));
   post_processing_pipeline_->SetContentType(loudest_content_type_);
-  post_processing_pipeline_->UpdatePlayoutChannel(playout_channel_);
 }
 
 bool FilterGroup::CanProcessInput(StreamMixer::InputQueue* input) {

@@ -214,6 +214,7 @@ class FilterGroupTest : public testing::Test {
         std::vector<FilterGroup*>());
     filter_group_->Initialize(kInputSampleRate);
     filter_group_->AddActiveInput(input_.get());
+    filter_group_->UpdatePlayoutChannel(kChannelAll);
   }
 
   float Input(int channel, int frame) {

@@ -78,6 +78,7 @@ class StreamMixerInput {
   void SetVolumeMultiplier(float multiplier);
 
  private:
+  int playout_channel_;
   StreamMixerInputImpl* impl_;
 
   THREAD_CHECKER(thread_checker_);

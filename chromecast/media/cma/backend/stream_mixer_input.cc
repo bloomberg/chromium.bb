@@ -17,18 +17,20 @@ StreamMixerInput::StreamMixerInput(Delegate* delegate,
                                    int playout_channel,
                                    bool primary,
                                    const std::string& device_id,
-                                   AudioContentType content_type) {
-  std::unique_ptr<StreamMixerInputImpl> impl(
-      new StreamMixerInputImpl(delegate, samples_per_second, primary, device_id,
-                               content_type, StreamMixer::Get()));
+                                   AudioContentType content_type)
+    : playout_channel_(playout_channel) {
+  auto impl = std::make_unique<StreamMixerInputImpl>(
+      delegate, samples_per_second, primary, device_id, content_type,
+      StreamMixer::Get());
   impl_ = impl.get();  // Store a pointer to the impl, but the mixer owns it.
   StreamMixer::Get()->AddInput(std::move(impl));
-  StreamMixer::Get()->UpdatePlayoutChannel(playout_channel);
+  StreamMixer::Get()->AddPlayoutChannelRequest(playout_channel_);
 }
 
 StreamMixerInput::~StreamMixerInput() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   impl_->PreventDelegateCalls();
+  StreamMixer::Get()->RemovePlayoutChannelRequest(playout_channel_);
   StreamMixer::Get()->RemoveInput(impl_);
 }
 

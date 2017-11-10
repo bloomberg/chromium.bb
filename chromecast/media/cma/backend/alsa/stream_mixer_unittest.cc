@@ -333,6 +333,19 @@ class MockPostProcessor : public PostProcessingPipeline {
 std::unordered_map<std::string, MockPostProcessor*>
     MockPostProcessor::instances_;
 
+#define EXPECT_CALL_ALL_POSTPROCESSORS(call_sig)        \
+  do {                                                  \
+    for (auto& itr : *MockPostProcessor::instances()) { \
+      EXPECT_CALL(*itr.second, call_sig);               \
+    }                                                   \
+  } while (0);
+
+void VerifyAndClearPostProcessors() {
+  for (auto& itr : *MockPostProcessor::instances()) {
+    testing::Mock::VerifyAndClearExpectations(itr.second);
+  }
+}
+
 class MockPostProcessorFactory : public PostProcessingPipelineFactory {
  public:
   MockPostProcessorFactory() = default;
@@ -1257,6 +1270,62 @@ TEST_F(StreamMixerTest, MultiplePostProcessorsInOneStream) {
   CHECK_EQ(post_processors->find("mix")->second->delay(), 11000);
   CHECK_EQ(post_processors->find("linearize")->second->delay(), 0);
   mixer->WriteFramesForTest();
+}
+
+TEST_F(StreamMixerTest, PicksPlayoutChannel) {
+  StreamMixer* mixer = StreamMixer::Get();
+  mixer->ResetPostProcessorsForTest(
+      std::make_unique<MockPostProcessorFactory>(), "{}");
+
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
+
+  // Add an input to initialize the post processors.
+  // Not necessary, but realistic.
+  testing::NiceMock<MockInputQueue>* input =
+      new testing::NiceMock<MockInputQueue>(kTestSamplesPerSecond);
+  mixer->AddInput(base::WrapUnique(input));
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 0 ch0 = 0 ch1 = 1.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
+  mixer->AddPlayoutChannelRequest(1);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 0 ch0 = 0 ch1 = 2.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
+  mixer->AddPlayoutChannelRequest(1);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 1 ch0 = 0 ch1 = 2.
+  // Prioritizes all.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
+  mixer->AddPlayoutChannelRequest(kChannelAll);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 1 ch0 = 0 ch1 = 1.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
+  mixer->RemovePlayoutChannelRequest(1);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 0 ch0 = 0 ch1 = 1.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(1));
+  mixer->RemovePlayoutChannelRequest(kChannelAll);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 0 ch0 = 0 ch1 = 0.
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
+  mixer->RemovePlayoutChannelRequest(1);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 0 ch0 = 1 ch1 = 0
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(0));
+  mixer->AddPlayoutChannelRequest(0);
+  VerifyAndClearPostProcessors();
+
+  // Requests: all = 1 ch0 = 1 ch1 = 0
+  EXPECT_CALL_ALL_POSTPROCESSORS(UpdatePlayoutChannel(kChannelAll));
+  mixer->AddPlayoutChannelRequest(kChannelAll);
+  VerifyAndClearPostProcessors();
 }
 
 TEST_F(StreamMixerTest, SetPostProcessorConfig) {
