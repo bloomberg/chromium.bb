@@ -35,6 +35,8 @@ cc_component("paint") {
     "paint_image_generator.h",
     "paint_op_buffer.cc",
     "paint_op_buffer.h",
+    "paint_op_buffer_serializer.cc",
+    "paint_op_buffer_serializer.h",
     "paint_op_reader.cc",
     "paint_op_reader.h",
     "paint_op_writer.cc",

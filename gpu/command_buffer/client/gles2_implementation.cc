@@ -51,7 +51,7 @@
 
 #if !defined(OS_NACL)
 #include "cc/paint/display_item_list.h"  // nogncheck
-#include "third_party/skia/include/utils/SkNoDrawCanvas.h"
+#include "cc/paint/paint_op_buffer_serializer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 #endif
@@ -7138,64 +7138,39 @@ void GLES2Implementation::Viewport(GLint x,
 }
 
 #if !defined(OS_NACL)
-struct SerializeHelper {
+struct PaintOpSerializer {
  public:
-  SerializeHelper(cc::PaintOp::SerializeOptions& options,
-                  size_t initial_size,
-                  TransferBufferInterface* transfer_buffer,
-                  GLES2CmdHelper* helper)
-      : options_(options),
-        transfer_buffer_(initial_size, helper, transfer_buffer),
+  PaintOpSerializer(size_t initial_size,
+                    TransferBufferInterface* transfer_buffer,
+                    GLES2CmdHelper* helper)
+      : transfer_buffer_(initial_size, helper, transfer_buffer),
         helper_(helper),
-        // Arbitrary canvas size.
-        canvas_(100, 100),
         free_bytes_(initial_size) {
     DCHECK(transfer_buffer_.valid());
   }
 
-  ~SerializeHelper() {
+  ~PaintOpSerializer() {
     // Need to call SendSerializedData;
     DCHECK(!written_bytes_);
   }
 
-  void Serialize(const cc::PaintOp* op,
-                 const cc::PlaybackParams& playback_params) {
+  size_t Serialize(const cc::PaintOp* op,
+                   const cc::PaintOp::SerializeOptions& options) {
     char* memory = static_cast<char*>(transfer_buffer_.address());
-    size_t size = op->Serialize(memory + written_bytes_, free_bytes_, options_);
+    size_t size = op->Serialize(memory + written_bytes_, free_bytes_, options);
     if (!size) {
       SendSerializedData();
       transfer_buffer_.Reset(kBlockAlloc);
       memory = static_cast<char*>(transfer_buffer_.address());
       free_bytes_ = transfer_buffer_.size();
-      size = op->Serialize(memory + written_bytes_, free_bytes_, options_);
+      size = op->Serialize(memory + written_bytes_, free_bytes_, options);
     }
-    DCHECK_GE(size, 4u);
-    DCHECK_EQ(size % cc::PaintOpBuffer::PaintOpAlign, 0u);
     DCHECK_LE(size, free_bytes_);
     DCHECK_EQ(free_bytes_ + written_bytes_, transfer_buffer_.size());
 
-    // Only pass state-changing operations to the canvas.
-    if (!op->IsDrawOp())
-      op->Raster(&canvas_, playback_params);
-
     written_bytes_ += size;
     free_bytes_ -= size;
-  }
-
-  int Save(const cc::PlaybackParams& playback_params) {
-    int save_count = canvas_.getSaveCount();
-    cc::SaveOp save_op;
-    save_op.type = static_cast<uint8_t>(cc::PaintOpType::Save);
-    Serialize(&save_op, playback_params);
-    return save_count;
-  }
-
-  void RestoreTo(int count, const cc::PlaybackParams& playback_params) {
-    cc::RestoreOp restore_op;
-    restore_op.type = static_cast<uint8_t>(cc::PaintOpType::Restore);
-
-    while (canvas_.getSaveCount() > count)
-      Serialize(&restore_op, playback_params);
+    return size;
   }
 
   void SendSerializedData() {
@@ -7207,39 +7182,15 @@ struct SerializeHelper {
     written_bytes_ = 0;
   }
 
-  SkNoDrawCanvas* canvas() { return &canvas_; }
-
  private:
   static constexpr unsigned int kBlockAlloc = 512 * 1024;
 
-  cc::PaintOp::SerializeOptions& options_;
   ScopedTransferBufferPtr transfer_buffer_;
   GLES2CmdHelper* helper_;
-  SkNoDrawCanvas canvas_;
 
   size_t written_bytes_ = 0;
   size_t free_bytes_ = 0;
 };
-
-void SerializeRecursive(const cc::PaintOpBuffer* buffer,
-                        const std::vector<size_t>* indices,
-                        SerializeHelper* serializer) {
-  cc::PlaybackParams params(nullptr, serializer->canvas()->getTotalMatrix());
-
-  for (cc::PaintOpBuffer::CompositeIterator iter(buffer, indices); iter;
-       ++iter) {
-    const cc::PaintOp* op = *iter;
-    if (op->GetType() == cc::PaintOpType::DrawRecord) {
-      // TODO(enne): Add some flag here to save ctm, or adjust setmatrix ops.
-      int save_count = serializer->Save(params);
-      SerializeRecursive(static_cast<const cc::DrawRecordOp*>(op)->record.get(),
-                         nullptr, serializer);
-      serializer->RestoreTo(save_count, params);
-    } else {
-      serializer->Serialize(op, params);
-    }
-  }
-}
 #endif
 
 void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
@@ -7271,39 +7222,25 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   // TODO(enne): convert these types here and in transfer buffer to be size_t.
   static constexpr unsigned int kMinAlloc = 16 * 1024;
   unsigned int free_size = std::max(transfer_buffer_->GetFreeSize(), kMinAlloc);
-  cc::PaintOp::SerializeOptions options;
-  SerializeHelper serializer(options, free_size, transfer_buffer_, helper_);
 
   // This section duplicates RasterSource::PlaybackToCanvas setup preamble.
-  cc::PlaybackParams params(nullptr, serializer.canvas()->getTotalMatrix());
-  // Bookend with save/restore so each RasterCHROMIUM command is independent.
-  int save_count = serializer.Save(params);
-
-  cc::TranslateOp translate(-translate_x, -translate_y);
-  translate.type = static_cast<uint8_t>(cc::PaintOpType::Translate);
-  serializer.Serialize(&translate, params);
-
-  cc::ClipRectOp clip(SkRect::MakeFromIRect(gfx::RectToSkIRect(playback_rect)),
-                      SkClipOp::kIntersect, false);
-  clip.type = static_cast<uint8_t>(cc::PaintOpType::ClipRect);
-  serializer.Serialize(&clip, params);
-
-  if (post_translate_x != 0.f || post_translate_y != 0.f) {
-    cc::TranslateOp post_translate(post_translate_x, post_translate_y);
-    post_translate.type = static_cast<uint8_t>(cc::PaintOpType::Translate);
-    serializer.Serialize(&post_translate, params);
-  }
-  if (post_scale != 1.f) {
-    cc::ScaleOp scale(post_scale, post_scale);
-    scale.type = static_cast<uint8_t>(cc::PaintOpType::Scale);
-    serializer.Serialize(&scale, params);
-  }
+  cc::PaintOpBufferSerializer::Preamble preamble;
+  preamble.translation =
+      gfx::Vector2dF(SkIntToScalar(translate_x), SkIntToScalar(translate_y));
+  preamble.playback_rect = playback_rect;
+  preamble.post_translation =
+      gfx::Vector2dF(post_translate_x, post_translate_y);
+  preamble.post_scale = post_scale;
 
   // TODO(enne): need to implement alpha folding optimization from POB.
   // TODO(enne): don't access private members of DisplayItemList.
-  SerializeRecursive(&list->paint_op_buffer_, &indices, &serializer);
-  serializer.RestoreTo(save_count, params);
-  serializer.SendSerializedData();
+  PaintOpSerializer op_serializer(free_size, transfer_buffer_, helper_);
+  cc::PaintOpBufferSerializer::SerializeCallback serialize_cb = base::Bind(
+      &PaintOpSerializer::Serialize, base::Unretained(&op_serializer));
+  cc::PaintOpBufferSerializer serializer(serialize_cb, nullptr);
+  serializer.Serialize(&list->paint_op_buffer_, &indices, preamble);
+  DCHECK(serializer.valid());
+  op_serializer.SendSerializedData();
 
   CheckGLError();
 #endif

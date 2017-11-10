@@ -110,8 +110,15 @@ class CC_PAINT_EXPORT PaintOp {
   bool IsPaintOpWithFlags() const;
   bool IsValid() const;
 
-  struct SerializeOptions {
+  struct CC_PAINT_EXPORT SerializeOptions {
+    SerializeOptions();
+    SerializeOptions(ImageProvider* image_provider,
+                     SkCanvas* canvas,
+                     const SkMatrix& original_ctm);
+
     ImageProvider* image_provider = nullptr;
+    SkCanvas* canvas = nullptr;
+    SkMatrix original_ctm = SkMatrix::I();
   };
 
   struct DeserializeOptions {};
@@ -140,6 +147,10 @@ class CC_PAINT_EXPORT PaintOp {
   // For draw ops, returns true if a conservative bounding rect can be provided
   // for the op.
   static bool GetBounds(const PaintOp* op, SkRect* rect);
+
+  // Returns true if the op lies outside the current clip and should be skipped.
+  // Should only be used with draw ops.
+  static bool QuickRejectDraw(const PaintOp* op, const SkCanvas* canvas);
 
   // Returns true if executing this op will require decoding of any lazy
   // generated images.
@@ -751,6 +762,9 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // It's not necessarily the case that the op with the maximum alignment
   // requirements is also the biggest op, but for now that's true.
   static constexpr size_t PaintOpAlign = alignof(DrawDRRectOp);
+  static inline size_t ComputeOpSkip(size_t sizeof_op) {
+    return MathUtil::UncheckedRoundUp(sizeof_op, PaintOpBuffer::PaintOpAlign);
+  }
 
   PaintOpBuffer();
   PaintOpBuffer(PaintOpBuffer&& other);
@@ -764,6 +778,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void Playback(SkCanvas* canvas,
                 ImageProvider* image_provider = nullptr,
                 SkPicture::AbortCallback* callback = nullptr) const;
+
+  static sk_sp<PaintOpBuffer> MakeFromMemory(
+      const volatile void* input,
+      size_t input_size,
+      const PaintOp::DeserializeOptions& options);
 
   // Returns the size of the paint op buffer. That is, the number of ops
   // contained in it.
@@ -789,9 +808,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     static_assert(std::is_convertible<T, PaintOp>::value, "T not a PaintOp.");
     static_assert(alignof(T) <= PaintOpAlign, "");
 
-    auto pair = AllocatePaintOp(sizeof(T));
-    T* op = reinterpret_cast<T*>(pair.first);
-    size_t skip = pair.second;
+    size_t skip = ComputeOpSkip(sizeof(T));
+    T* op = reinterpret_cast<T*>(AllocatePaintOp(skip));
 
     new (op) T{std::forward<Args>(args)...};
     op->type = static_cast<uint32_t>(T::kType);
@@ -992,9 +1010,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
                 const std::vector<size_t>* indices) const;
 
   void ReallocBuffer(size_t new_size);
-  // Returns the allocated op and the number of bytes to skip in |data_| to get
-  // to the next op.
-  std::pair<void*, size_t> AllocatePaintOp(size_t sizeof_op);
+  // Returns the allocated op.
+  void* AllocatePaintOp(size_t skip);
 
   template <typename T>
   void AnalyzeAddedOp(const T* op) {

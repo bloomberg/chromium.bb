@@ -27,6 +27,10 @@ class CC_PAINT_EXPORT PaintOpReader {
   }
 
   static void FixupMatrixPostSerialization(SkMatrix* matrix);
+  static bool ReadAndValidateOpHeader(const volatile void* input,
+                                      size_t input_size,
+                                      uint8_t* type,
+                                      uint32_t* skip);
 
   bool valid() const { return valid_; }
 
