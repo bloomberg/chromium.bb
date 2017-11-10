@@ -372,18 +372,15 @@ static PositionTemplate<Strategy> PreviousBoundaryAlgorithm(
   while (!it.AtEnd()) {
     // iterate to get chunks until the searchFunction returns a non-zero
     // value.
-    // TODO(editing-dev): We should get rid of redundant scope.
-    {
-      int run_offset = 0;
-      do {
-        run_offset += it.CopyTextTo(&string, run_offset, string.Capacity());
-        next = search_function(string.Data(), string.Size(),
-                               string.Size() - suffix_length,
-                               kMayHaveMoreContext, need_more_context);
-      } while (!next && run_offset < it.length());
-      if (next)
-        break;
-    }
+    int run_offset = 0;
+    do {
+      run_offset += it.CopyTextTo(&string, run_offset, string.Capacity());
+      next = search_function(string.Data(), string.Size(),
+                             string.Size() - suffix_length, kMayHaveMoreContext,
+                             need_more_context);
+    } while (!next && run_offset < it.length());
+    if (next)
+      break;
     it.Advance();
   }
   if (need_more_context) {
