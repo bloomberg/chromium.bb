@@ -7,6 +7,6 @@
 namespace activity_services {
 
 const base::Feature kShareCanonicalURL{"ShareCanonicalURLIOS",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace activity_services
