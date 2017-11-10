@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
 import android.support.test.filters.LargeTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -133,7 +135,7 @@ public class ShareIntentTest {
         ShareHelper.setLastShareComponentName(
                 new ComponentName("test.package", "test.activity"), null);
         // Skips the capture of screenshot and notifies with an empty file.
-        mockActivity.setScreenshotCaptureSkippedForTesting(true);
+        ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(true);
 
         ThreadUtils.runOnUiThreadBlocking(() -> mockActivity.onShareMenuItemSelected(
                     true /* shareDirectly */, false /* isIncognito */));
@@ -150,5 +152,10 @@ public class ShareIntentTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+    }
+
+    @After
+    public void tearDown() {
+        ShareMenuActionHandler.setScreenshotCaptureSkippedForTesting(false);
     }
 }
