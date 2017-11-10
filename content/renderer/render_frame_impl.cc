@@ -29,6 +29,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -3059,6 +3060,13 @@ void RenderFrameImpl::GetInterfaceProvider(
   connector->FilterInterfaces(mojom::kNavigation_FrameSpec,
                               browser_info_.identity, std::move(request),
                               std::move(provider));
+}
+void RenderFrameImpl::GetCanonicalUrlForSharing(
+    GetCanonicalUrlForSharingCallback callback) {
+  WebURL canonical_url = GetWebFrame()->GetDocument().CanonicalUrlForSharing();
+  std::move(callback).Run(canonical_url.IsNull()
+                              ? base::nullopt
+                              : base::make_optional(GURL(canonical_url)));
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {

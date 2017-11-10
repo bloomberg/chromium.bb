@@ -1023,6 +1023,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Returns null if there is no such element.
   HTMLLinkElement* LinkManifest() const;
 
+  // Returns the HTMLLinkElement holding the canonical URL. Returns null if
+  // there is no such element.
+  HTMLLinkElement* LinkCanonical() const;
+
   void UpdateFocusAppearanceLater();
   void CancelFocusAppearanceUpdate();
 

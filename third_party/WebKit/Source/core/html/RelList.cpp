@@ -16,25 +16,13 @@ RelList::RelList(Element* element)
     : DOMTokenList(*element, HTMLNames::relAttr) {}
 
 static HashSet<AtomicString>& SupportedTokens() {
-  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, tokens, ());
-
-  if (tokens.IsEmpty()) {
-    tokens = {
-        "preload",
-        "preconnect",
-        "dns-prefetch",
-        "stylesheet",
-        "import",
-        "icon",
-        "alternate",
-        "prefetch",
-        "prerender",
-        "next",
-        "manifest",
-        "apple-touch-icon",
-        "apple-touch-icon-precomposed",
-    };
-  }
+  DEFINE_STATIC_LOCAL(
+      HashSet<AtomicString>, tokens,
+      ({
+          "preload", "preconnect", "dns-prefetch", "stylesheet", "import",
+          "icon", "alternate", "prefetch", "prerender", "next", "manifest",
+          "apple-touch-icon", "apple-touch-icon-precomposed", "canonical",
+      }));
 
   return tokens;
 }

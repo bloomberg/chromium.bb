@@ -33,7 +33,7 @@
 
 namespace blink {
 
-LinkRelAttribute::LinkRelAttribute(const String& rel)
+LinkRelAttribute::LinkRelAttribute()
     : icon_type_(kInvalidIcon),
       is_style_sheet_(false),
       is_alternate_(false),
@@ -45,7 +45,10 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
       is_link_next_(false),
       is_import_(false),
       is_manifest_(false),
-      is_service_worker_(false) {
+      is_service_worker_(false),
+      is_canonical_(false) {}
+
+LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
   if (rel.IsEmpty())
     return;
   String rel_copy = rel;
@@ -89,6 +92,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
       is_manifest_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "serviceworker")) {
       is_service_worker_ = true;
+    } else if (DeprecatedEqualIgnoringCase(link_type, "canonical")) {
+      is_canonical_ = true;
     }
     // Adding or removing a value here requires you to update
     // RelList::supportedTokens()

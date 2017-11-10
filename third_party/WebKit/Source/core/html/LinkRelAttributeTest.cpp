@@ -35,27 +35,26 @@
 
 namespace blink {
 
-static inline void TestLinkRelAttribute(String value,
+// TODO(dcheng): This is a bit gross. Refactor this to not take so many bools...
+static inline void TestLinkRelAttribute(const String& value,
                                         bool is_style_sheet,
                                         IconType icon_type,
                                         bool is_alternate,
                                         bool is_dns_prefetch,
                                         bool is_link_prerender,
                                         bool is_import = false,
-                                        bool is_preconnect = false) {
+                                        bool is_preconnect = false,
+                                        bool is_canonical = false) {
+  SCOPED_TRACE(value.Utf8().data());
   LinkRelAttribute link_rel_attribute(value);
-  ASSERT_EQ(is_style_sheet, link_rel_attribute.IsStyleSheet())
-      << value.Utf8().data();
-  ASSERT_EQ(icon_type, link_rel_attribute.GetIconType()) << value.Utf8().data();
-  ASSERT_EQ(is_alternate, link_rel_attribute.IsAlternate())
-      << value.Utf8().data();
-  ASSERT_EQ(is_dns_prefetch, link_rel_attribute.IsDNSPrefetch())
-      << value.Utf8().data();
-  ASSERT_EQ(is_link_prerender, link_rel_attribute.IsLinkPrerender())
-      << value.Utf8().data();
-  ASSERT_EQ(is_import, link_rel_attribute.IsImport()) << value.Utf8().data();
-  ASSERT_EQ(is_preconnect, link_rel_attribute.IsPreconnect())
-      << value.Utf8().data();
+  ASSERT_EQ(is_style_sheet, link_rel_attribute.IsStyleSheet());
+  ASSERT_EQ(icon_type, link_rel_attribute.GetIconType());
+  ASSERT_EQ(is_alternate, link_rel_attribute.IsAlternate());
+  ASSERT_EQ(is_dns_prefetch, link_rel_attribute.IsDNSPrefetch());
+  ASSERT_EQ(is_link_prerender, link_rel_attribute.IsLinkPrerender());
+  ASSERT_EQ(is_import, link_rel_attribute.IsImport());
+  ASSERT_EQ(is_preconnect, link_rel_attribute.IsPreconnect());
+  ASSERT_EQ(is_canonical, link_rel_attribute.IsCanonical());
 }
 
 TEST(LinkRelAttributeTest, Constructor) {
@@ -106,6 +105,11 @@ TEST(LinkRelAttributeTest, Constructor) {
                        false, true);
   TestLinkRelAttribute("pReCoNnEcT", false, kInvalidIcon, false, false, false,
                        false, true);
+
+  TestLinkRelAttribute("canonical", false, kInvalidIcon, false, false, false,
+                       false, false, true);
+  TestLinkRelAttribute("caNONiCAL", false, kInvalidIcon, false, false, false,
+                       false, false, true);
 }
 
 }  // namespace blink

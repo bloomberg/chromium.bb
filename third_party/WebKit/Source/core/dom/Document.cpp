@@ -5920,23 +5920,33 @@ Color Document::ThemeColor() const {
   return Color();
 }
 
-HTMLLinkElement* Document::LinkManifest() const {
-  HTMLHeadElement* head = this->head();
+template <typename MatchFn>
+static HTMLLinkElement* GetLinkElement(const Document* doc, MatchFn match_fn) {
+  HTMLHeadElement* head = doc->head();
   if (!head)
     return nullptr;
 
-  // The first link element with a manifest rel must be used. Others are
-  // ignored.
+  // The first matching link element is used. Others are ignored.
   for (HTMLLinkElement* link_element =
            Traversal<HTMLLinkElement>::FirstChild(*head);
        link_element;
        link_element = Traversal<HTMLLinkElement>::NextSibling(*link_element)) {
-    if (!link_element->RelAttribute().IsManifest())
-      continue;
-    return link_element;
+    if (match_fn(link_element))
+      return link_element;
   }
-
   return nullptr;
+}
+
+HTMLLinkElement* Document::LinkManifest() const {
+  return GetLinkElement(this, [](HTMLLinkElement* link_element) {
+    return link_element->RelAttribute().IsManifest();
+  });
+}
+
+HTMLLinkElement* Document::LinkCanonical() const {
+  return GetLinkElement(this, [](HTMLLinkElement* link_element) {
+    return link_element->RelAttribute().IsCanonical();
+  });
 }
 
 void Document::SetFeaturePolicy(const String& feature_policy_header) {
