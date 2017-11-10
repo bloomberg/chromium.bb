@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow DIV id='target' class='item'",
           "rect": [18, 18, 764, 20],
-          "reason": "subtree"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='target' class='item'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [18, 18, 764, 20],
-          "reason": "subtree"
+          "reason": "appeared"
         }
       ]
     }
@@ -22,11 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='target' class='item'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='target' class='item'",
-      "reason": "subtree"
+      "reason": "style change"
     }
   ]
 }
