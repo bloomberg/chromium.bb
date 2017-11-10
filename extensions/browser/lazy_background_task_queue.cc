@@ -5,6 +5,7 @@
 #include "extensions/browser/lazy_background_task_queue.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
@@ -135,6 +136,8 @@ void LazyBackgroundTaskQueue::ProcessPendingTasks(
     ExtensionHost* host,
     content::BrowserContext* browser_context,
     const Extension* extension) {
+  DCHECK(extension);
+
   if (!ExtensionsBrowserClient::Get()->IsSameContext(browser_context,
                                                      browser_context_))
     return;
@@ -189,7 +192,8 @@ void LazyBackgroundTaskQueue::Observe(
           content::Source<content::BrowserContext>(source).ptr();
       ExtensionHost* host =
            content::Details<ExtensionHost>(details).ptr();
-      if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      if (host->extension() &&
+          host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         ProcessPendingTasks(NULL, browser_context, host->extension());
       }
       break;
