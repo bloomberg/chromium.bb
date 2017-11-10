@@ -420,12 +420,6 @@ public class ProfileSyncService {
         }
     }
 
-    @VisibleForTesting
-    public String getSyncInternalsInfoForTest() {
-        ThreadUtils.assertOnUiThread();
-        return nativeGetAboutInfoForTest(mNativeProfileSyncServiceAndroid);
-    }
-
     /**
      * Starts the sync engine.
      */
@@ -585,7 +579,6 @@ public class ProfileSyncService {
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPassphrasePrompted(long nativeProfileSyncServiceAndroid,
                                                     boolean prompted);
-    private native String nativeGetAboutInfoForTest(long nativeProfileSyncServiceAndroid);
     private native long nativeGetLastSyncedTimeForTest(long nativeProfileSyncServiceAndroid);
     private native void nativeOverrideNetworkResourcesForTest(
             long nativeProfileSyncServiceAndroid, long networkResources);
