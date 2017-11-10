@@ -1750,8 +1750,6 @@ class WindowObserverTest : public WindowTest,
   struct WindowOpacityInfo {
     int changed_count = 0;
     Window* window = nullptr;
-    float old_opacity = 0.0f;
-    float new_opacity = 0.0f;
   };
 
   WindowObserverTest()
@@ -1825,13 +1823,9 @@ class WindowObserverTest : public WindowTest,
     old_property_value_ = old;
   }
 
-  void OnWindowOpacityChanged(Window* window,
-                              float old_opacity,
-                              float new_opacity) override {
+  void OnWindowOpacityChanged(Window* window) override {
     ++window_opacity_info_.changed_count;
     window_opacity_info_.window = window;
-    window_opacity_info_.old_opacity = old_opacity;
-    window_opacity_info_.new_opacity = new_opacity;
   }
 
   int added_count_;
@@ -1977,8 +1971,6 @@ TEST_P(WindowObserverTest, WindowOpacityChanged) {
   window->layer()->SetOpacity(0.5f);
   ASSERT_EQ(1, window_opacity_info().changed_count);
   EXPECT_EQ(window.get(), window_opacity_info().window);
-  EXPECT_EQ(1.0f, window_opacity_info().old_opacity);
-  EXPECT_EQ(0.5f, window_opacity_info().new_opacity);
 }
 
 TEST_P(WindowTest, AcquireLayer) {

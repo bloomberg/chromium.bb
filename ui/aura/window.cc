@@ -713,8 +713,10 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   // If we are currently not the layer's delegate, we will not get bounds
   // changed notification from the layer (this typically happens after animating
   // hidden). We must notify ourselves.
-  if (layer()->delegate() != this)
-    OnLayerBoundsChanged(old_bounds);
+  if (layer()->delegate() != this) {
+    OnLayerBoundsChanged(old_bounds,
+                         ui::PropertyChangeReason::NOT_FROM_ANIMATION);
+  }
 }
 
 void Window::SetVisible(bool visible) {
@@ -1055,7 +1057,8 @@ void Window::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
     observer.OnDelegatedFrameDamage(this, damage_rect_in_dip);
 }
 
-void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
+void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
+                                  ui::PropertyChangeReason reason) {
   bounds_ = layer()->bounds();
 
   // Use |bounds_| as that is the bounds before any animations, which is what
@@ -1070,9 +1073,9 @@ void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds) {
     observer.OnWindowBoundsChanged(this, old_bounds, bounds_);
 }
 
-void Window::OnLayerOpacityChanged(float old_opacity, float new_opacity) {
+void Window::OnLayerOpacityChanged(ui::PropertyChangeReason reason) {
   for (WindowObserver& observer : observers_)
-    observer.OnWindowOpacityChanged(this, old_opacity, new_opacity);
+    observer.OnWindowOpacityChanged(this);
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {
