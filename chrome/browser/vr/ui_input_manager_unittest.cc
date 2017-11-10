@@ -265,42 +265,6 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
                               &gesture_list);
 }
 
-TEST_F(UiInputManagerContentTest, TreeVsZOrder) {
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
-  // It would be nice if the controller weren't platform specific and we could
-  // mock out the underlying sensor data. For now, we will hallucinate
-  // parameters to HandleInput.
-  UiElement* content_quad =
-      scene_->GetUiElementByName(UiElementName::kContentQuad);
-  gfx::Point3F content_quad_center;
-  content_quad->world_space_transform().TransformPoint(&content_quad_center);
-  gfx::Point3F origin;
-
-  ControllerModel controller_model;
-  controller_model.laser_direction = content_quad_center - origin;
-  controller_model.laser_origin = origin;
-  controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
-  ReticleModel reticle_model;
-  GestureList gesture_list;
-  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
-                              &gesture_list);
-
-  // We should have hit the content quad if our math was correct.
-  ASSERT_NE(0, reticle_model.target_element_id);
-  EXPECT_EQ(content_quad->id(), reticle_model.target_element_id);
-
-  // We will now move the content quad behind the backplane.
-  content_quad->SetTranslate(0, 0, -2.0 * kTextureOffset);
-  scene_->root_element().UpdateWorldSpaceTransformRecursive();
-  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
-                              &gesture_list);
-
-  // We should have hit the content quad even though, geometrically, it stacks
-  // behind the backplane.
-  ASSERT_NE(0, reticle_model.target_element_id);
-  EXPECT_EQ(content_quad->id(), reticle_model.target_element_id);
-}
-
 TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
   manager_->SetExitVrPromptEnabled(true, UiUnsupportedMode::kUnhandledPageInfo);
   EXPECT_TRUE(AnimateBy(MsToDelta(500)));
