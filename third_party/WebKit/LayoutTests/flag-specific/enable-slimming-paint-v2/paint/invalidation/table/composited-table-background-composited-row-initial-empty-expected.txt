@@ -10,19 +10,7 @@
       "name": "LayoutTableRow TR id='target'",
       "position": [8, 96],
       "bounds": [186, 64],
-      "backgroundColor": "#ADD8E6",
-      "paintInvalidations": [
-        {
-          "object": "LayoutTableRow TR id='target'",
-          "rect": [0, 0, 186, 64],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutTableRow TR id='target'",
-          "rect": [0, 0, 132, 19],
-          "reason": "paint property change"
-        }
-      ]
+      "backgroundColor": "#ADD8E6"
     },
     {
       "name": "LayoutTableCell TD",
