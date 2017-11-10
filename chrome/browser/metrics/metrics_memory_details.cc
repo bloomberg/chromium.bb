@@ -82,7 +82,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
 
   const ProcessData& browser = *ChromeBrowser();
-  size_t aggregate_memory = 0;
   int chrome_count = 0;
   int extension_count = 0;
   int pepper_plugin_count = 0;
@@ -92,16 +91,13 @@ void MetricsMemoryDetails::UpdateHistograms() {
   int worker_count = 0;
   int process_limit = content::RenderProcessHost::GetMaxRendererProcessCount();
   for (size_t index = 0; index < browser.processes.size(); index++) {
-    int sample = static_cast<int>(browser.processes[index].working_set.priv);
     size_t committed = browser.processes[index].committed.priv +
                        browser.processes[index].committed.mapped +
                        browser.processes[index].committed.image;
     int num_open_fds = browser.processes[index].num_open_fds;
     int open_fds_soft_limit = browser.processes[index].open_fds_soft_limit;
-    aggregate_memory += sample;
     switch (browser.processes[index].process_type) {
       case content::PROCESS_TYPE_BROWSER:
-        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.Large2", sample / 1024);
         UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.Committed",
                                       committed / 1024);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
@@ -116,7 +112,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
 #endif
         continue;
       case content::PROCESS_TYPE_RENDERER: {
-        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll", sample / 1024);
         UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll.Committed",
                                       committed / 1024);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
@@ -129,7 +124,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
             browser.processes[index].renderer_type;
         switch (renderer_type) {
           case ProcessMemoryInformation::RENDERER_EXTENSION:
-            UMA_HISTOGRAM_MEMORY_KB("Memory.Extension", sample);
             if (num_open_fds != -1) {
               UMA_HISTOGRAM_COUNTS_10000("Memory.Extension.OpenFDs",
                                          num_open_fds);
@@ -143,7 +137,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
 #endif
             continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
-            UMA_HISTOGRAM_MEMORY_KB("Memory.Chrome", sample);
             if (num_open_fds != -1)
               UMA_HISTOGRAM_COUNTS_10000("Memory.Chrome.OpenFDs", num_open_fds);
             chrome_count++;
@@ -160,8 +153,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
                     1024);
 #endif
             // TODO(erikkay): Should we bother splitting out the other subtypes?
-            UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Large2",
-                                          sample / 1024);
             UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Renderer.Committed",
                                           committed / 1024);
             if (num_open_fds != -1) {
@@ -173,19 +164,16 @@ void MetricsMemoryDetails::UpdateHistograms() {
         }
       }
       case content::PROCESS_TYPE_UTILITY:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Utility", sample);
         if (num_open_fds != -1)
           UMA_HISTOGRAM_COUNTS_10000("Memory.Utility.OpenFDs", num_open_fds);
         other_count++;
         continue;
       case content::PROCESS_TYPE_ZYGOTE:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Zygote", sample);
         if (num_open_fds != -1)
           UMA_HISTOGRAM_COUNTS_10000("Memory.Zygote.OpenFDs", num_open_fds);
         other_count++;
         continue;
       case content::PROCESS_TYPE_SANDBOX_HELPER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
         if (num_open_fds != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.SandboxHelper.OpenFDs",
                                      num_open_fds);
@@ -204,7 +192,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
             "Memory.Experimental.Gpu.PrivateMemoryFootprint.MacOS",
             browser.processes[index].private_memory_footprint / 1024 / 1024);
 #endif
-        UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         if (num_open_fds != -1 && open_fds_soft_limit != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.Gpu.OpenFDs", num_open_fds);
           UMA_HISTOGRAM_COUNTS_10000("Memory.Gpu.OpenFDsSoftLimit",
@@ -214,13 +201,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         continue;
 #if BUILDFLAG(ENABLE_PLUGINS)
       case content::PROCESS_TYPE_PPAPI_PLUGIN: {
-        const std::vector<base::string16>& titles =
-            browser.processes[index].titles;
-        if (titles.size() == 1 &&
-            titles[0] == base::ASCIIToUTF16(content::kFlashPluginName)) {
-          UMA_HISTOGRAM_MEMORY_KB("Memory.PepperFlashPlugin", sample);
-        }
-        UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
         if (num_open_fds != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.PepperPlugin.OpenFDs",
                                      num_open_fds);
@@ -229,7 +209,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         continue;
       }
       case content::PROCESS_TYPE_PPAPI_BROKER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPluginBroker", sample);
         if (num_open_fds != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.PepperPluginBroker.OpenFDs",
                                      num_open_fds);
@@ -238,7 +217,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         continue;
 #endif
       case PROCESS_TYPE_NACL_LOADER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
         if (num_open_fds != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.NativeClient.OpenFDs",
                                      num_open_fds);
@@ -246,7 +224,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
         other_count++;
         continue;
       case PROCESS_TYPE_NACL_BROKER:
-        UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClientBroker", sample);
         if (num_open_fds != -1) {
           UMA_HISTOGRAM_COUNTS_10000("Memory.NativeClientBroker.OpenFDs",
                                      num_open_fds);
@@ -280,9 +257,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   UMA_HISTOGRAM_COUNTS_100("Memory.WorkerProcessCount", worker_count);
   // TODO(viettrungluu): Do we want separate counts for the other
   // (platform-specific) process types?
-
-  int total_sample = static_cast<int>(aggregate_memory / 1024);
-  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total2", total_sample);
 
   // Predict the number of processes needed when isolating all sites and when
   // isolating only HTTPS sites.
