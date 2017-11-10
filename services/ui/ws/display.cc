@@ -187,8 +187,6 @@ void Display::RemoveWindowManagerDisplayRoot(
        it != window_manager_display_root_map_.end(); ++it) {
     if (it->second == display_root) {
       window_manager_display_root_map_.erase(it);
-      if (window_manager_display_root_map_.empty())
-        display_manager()->DestroyDisplay(this);
       return;
     }
   }
