@@ -1393,8 +1393,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
 // Crashy, http://crbug.com/53247.
 TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
-                    GURL("http://foo"));
+  WebURLError error(net::ERR_FILE_NOT_FOUND, GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
@@ -1414,8 +1413,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
 
 TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   GetMainFrame()->EnableViewSourceMode(true);
-  WebURLError error(WebURLError::Domain::kNet, net::ERR_ABORTED,
-                    GURL("http://foo"));
+  WebURLError error(net::ERR_ABORTED, GURL("http://foo"));
   WebLocalFrame* web_frame = GetMainFrame();
 
   // Start a load that will reach provisional state synchronously,
@@ -1895,7 +1893,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
-  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
+  WebURLError error(net::ERR_FILE_NOT_FOUND,
                     GURL("http://example.com/suppress"));
 
   // Start a load that will reach provisional state synchronously,
@@ -1923,7 +1921,7 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
-  WebURLError error(WebURLError::Domain::kNet, net::ERR_FILE_NOT_FOUND,
+  WebURLError error(net::ERR_FILE_NOT_FOUND,
                     GURL("http://example.com/dont-suppress"));
 
   // Start a load that will reach provisional state synchronously,

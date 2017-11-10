@@ -33,6 +33,7 @@
 #include <string>
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/network/http_names.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/FilePathConversion.h"
@@ -86,7 +87,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
   response.SetHTTPStatusCode(404);
   response.SetLoadTiming(timing);
 
-  WebURLError error(WebURLError::Domain::kTest, 404, full_url);
+  ResourceError error = ResourceError::Failure(full_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       full_url, response, error);
 }

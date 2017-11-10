@@ -420,8 +420,8 @@ TEST_F(SubresourceFilterAgentTest,
   state.measure_performance = true;
   EXPECT_TRUE(agent_as_rfo()->OnMessageReceived(
       SubresourceFilterMsg_ActivateForNextCommittedLoad(0, state)));
-  agent_as_rfo()->DidFailProvisionalLoad(blink::WebURLError(
-      blink::WebURLError::Domain::kNet, net::ERR_FAILED, blink::WebURL()));
+  agent_as_rfo()->DidFailProvisionalLoad(
+      blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
   agent_as_rfo()->DidStartProvisionalLoad(nullptr);
   agent_as_rfo()->DidCommitProvisionalLoad(
       true /* is_new_navigation */, false /* is_same_document_navigation */);

@@ -371,7 +371,6 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_FALSE(client()->did_finish());
     ASSERT_TRUE(client()->error());
     EXPECT_EQ(net::ERR_FAILED, client()->error()->reason());
-    EXPECT_EQ(blink::WebURLError::Domain::kNet, client()->error()->domain());
   }
 
   void DoReceiveResponseFtp() {

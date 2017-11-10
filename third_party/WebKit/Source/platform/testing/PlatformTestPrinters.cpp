@@ -13,8 +13,7 @@
 namespace blink {
 
 std::ostream& operator<<(std::ostream& os, const ResourceError& error) {
-  return os << "domain = " << error.GetDomain()
-            << ", errorCode = " << error.ErrorCode()
+  return os << ", errorCode = " << error.ErrorCode()
             << ", failingURL = " << error.FailingURL()
             << ", localizedDescription = " << error.LocalizedDescription()
             << ", isCancellation = " << error.IsCancellation()

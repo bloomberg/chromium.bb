@@ -911,7 +911,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (completion_status.error_code != net::OK) {
-      WebURLError error(WebURLError::Domain::kNet, completion_status.error_code,
+      WebURLError error(completion_status.error_code,
                         completion_status.exists_in_cache
                             ? WebURLError::HasCopyInCache::kTrue
                             : WebURLError::HasCopyInCache::kFalse,
@@ -953,9 +953,8 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
-    client_->DidFail(
-        WebURLError(WebURLError::Domain::kNet, net::ERR_ABORTED, url_),
-        WebURLLoaderClient::kUnknownEncodedDataLength, 0, 0);
+    client_->DidFail(WebURLError(net::ERR_ABORTED, url_),
+                     WebURLLoaderClient::kUnknownEncodedDataLength, 0, 0);
   }
 
   // Notify the browser process that the request is canceled.
@@ -1258,8 +1257,7 @@ void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
     // SyncResourceHandler returns ERR_ABORTED for CORS redirect errors,
     // so we treat the error as a web security violation.
     const bool is_web_security_violation = error_code == net::ERR_ABORTED;
-    error = WebURLError(WebURLError::Domain::kNet, error_code,
-                        WebURLError::HasCopyInCache::kFalse,
+    error = WebURLError(error_code, WebURLError::HasCopyInCache::kFalse,
                         is_web_security_violation
                             ? WebURLError::IsWebSecurityViolation::kTrue
                             : WebURLError::IsWebSecurityViolation::kFalse,
