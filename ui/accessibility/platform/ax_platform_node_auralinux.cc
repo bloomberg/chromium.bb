@@ -427,6 +427,16 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_REDUNDANT_OBJECT;
     case ui::AX_ROLE_IMAGE:
       return ATK_ROLE_IMAGE;
+    case ui::AX_ROLE_MATH:
+#if defined(ATK_CHECK_VERSION)
+#if ATK_CHECK_VERSION(2, 12, 0)
+      return ATK_ROLE_MATH;
+#else
+      return ATK_ROLE_TEXT;
+#endif
+#else
+      return ATK_ROLE_TEXT;
+#endif
     case ui::AX_ROLE_MENU_ITEM:
       return ATK_ROLE_MENU_ITEM;
     case ui::AX_ROLE_SCROLL_BAR:
