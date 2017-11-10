@@ -120,7 +120,7 @@
       }
     ]
   },
-  "Linux ChromeOS Perf (mus/viz)": {
+  "Linux ChromeOS Perf (mus-viz)": {
     "isolated_scripts": [
       {
         "args": [
