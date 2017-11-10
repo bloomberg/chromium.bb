@@ -100,6 +100,11 @@ int suite_vce_tests_init();
 int suite_vce_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_vce_tests_enable(void);
+
+/**
  * Tests in vce test suite
  */
 extern CU_TestInfo vce_tests[];
@@ -115,6 +120,11 @@ int suite_vcn_tests_init();
 int suite_vcn_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_vcn_tests_enable(void);
+
+/**
 + * Tests in vcn test suite
 + */
 extern CU_TestInfo vcn_tests[];
@@ -128,6 +138,11 @@ int suite_uvd_enc_tests_init();
  * Deinitialize uvd enc test suite
  */
 int suite_uvd_enc_tests_clean();
+
+/**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_uvd_enc_tests_enable(void);
 
 /**
  * Tests in uvd enc test suite

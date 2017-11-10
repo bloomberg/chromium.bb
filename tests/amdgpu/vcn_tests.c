@@ -82,6 +82,27 @@ CU_TestInfo vcn_tests[] = {
 	CU_TEST_INFO_NULL,
 };
 
+CU_BOOL suite_vcn_tests_enable(void)
+{
+
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+				   &minor_version, &device_handle))
+		return CU_FALSE;
+
+	family_id = device_handle->info.family_id;
+
+	if (amdgpu_device_deinitialize(device_handle))
+			return CU_FALSE;
+
+
+	if (family_id < AMDGPU_FAMILY_RV) {
+		printf("\n\nThe ASIC NOT support VCN, suite disabled\n");
+		return CU_FALSE;
+	}
+
+	return CU_TRUE;
+}
+
 int suite_vcn_tests_init(void)
 {
 	int r;
@@ -92,11 +113,6 @@ int suite_vcn_tests_init(void)
 		return CUE_SINIT_FAILED;
 
 	family_id = device_handle->info.family_id;
-
-	if (family_id < AMDGPU_FAMILY_RV) {
-		printf("\n\nThe ASIC NOT support VCN, all sub-tests will pass\n");
-		return CUE_SUCCESS;
-	}
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -116,26 +132,18 @@ int suite_vcn_tests_clean(void)
 {
 	int r;
 
-	if (family_id < AMDGPU_FAMILY_RV) {
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	} else {
-		r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
-				     ib_mc_address, IB_SIZE);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+			     ib_mc_address, IB_SIZE);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_cs_ctx_free(context_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_cs_ctx_free(context_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	}
-
-	return CUE_SUCCESS;
+	r = amdgpu_device_deinitialize(device_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 }
 
 static int submit(unsigned ndw, unsigned ip)
@@ -244,9 +252,6 @@ static void amdgpu_cs_vcn_dec_create(void)
 	struct amdgpu_vcn_bo msg_buf;
 	int len, r;
 
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
-
 	num_resources  = 0;
 	alloc_resource(&msg_buf, 4096, AMDGPU_GEM_DOMAIN_GTT);
 	resources[num_resources++] = msg_buf.handle;
@@ -281,9 +286,6 @@ static void amdgpu_cs_vcn_dec_decode(void)
 	struct amdgpu_vcn_bo dec_buf;
 	int size, len, i, r;
 	uint8_t *dec;
-
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
 
 	size = 4*1024; /* msg */
 	size += 4*1024; /* fb */
@@ -355,9 +357,6 @@ static void amdgpu_cs_vcn_dec_destroy(void)
 	struct amdgpu_vcn_bo msg_buf;
 	int len, r;
 
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
-
 	num_resources  = 0;
 	alloc_resource(&msg_buf, 1024, AMDGPU_GEM_DOMAIN_GTT);
 	resources[num_resources++] = msg_buf.handle;
@@ -387,24 +386,15 @@ static void amdgpu_cs_vcn_dec_destroy(void)
 
 static void amdgpu_cs_vcn_enc_create(void)
 {
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
-
 	/* TODO */
 }
 
 static void amdgpu_cs_vcn_enc_encode(void)
 {
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
-
 	/* TODO */
 }
 
 static void amdgpu_cs_vcn_enc_destroy(void)
 {
-	if (family_id < AMDGPU_FAMILY_RV)
-		return;
-
 	/* TODO */
 }

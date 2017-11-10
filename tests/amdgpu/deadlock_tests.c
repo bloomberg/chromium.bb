@@ -119,13 +119,7 @@ int suite_deadlock_tests_clean(void)
 
 CU_TestInfo deadlock_tests[] = {
 	{ "gfx ring block test",  amdgpu_deadlock_gfx },
-
-	/*
-	* BUG: Compute ring stalls and never recovers when the address is
-	* written after the command already submitted
-	*/
-	/* { "compute ring block test",  amdgpu_deadlock_compute }, */
-
+	{ "compute ring block test",  amdgpu_deadlock_compute },
 	CU_TEST_INFO_NULL,
 };
 

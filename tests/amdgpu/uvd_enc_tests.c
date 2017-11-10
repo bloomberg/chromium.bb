@@ -79,7 +79,6 @@ static void amdgpu_cs_uvd_enc_session_init(void);
 static void amdgpu_cs_uvd_enc_encode(void);
 static void amdgpu_cs_uvd_enc_destroy(void);
 
-static bool uvd_enc_support(void);
 
 CU_TestInfo uvd_enc_tests[] = {
 	{ "UVD ENC create",  amdgpu_cs_uvd_enc_create },
@@ -88,6 +87,27 @@ CU_TestInfo uvd_enc_tests[] = {
 	{ "UVD ENC destroy",  amdgpu_cs_uvd_enc_destroy },
 	CU_TEST_INFO_NULL,
 };
+
+CU_BOOL suite_uvd_enc_tests_enable(void)
+{
+	int r;
+	struct drm_amdgpu_info_hw_ip info;
+
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+					     &minor_version, &device_handle))
+		return CU_FALSE;
+
+	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_UVD_ENC, 0, &info);
+
+	if (amdgpu_device_deinitialize(device_handle))
+		return CU_FALSE;
+
+	if (!info.available_rings)
+		printf("\n\nThe ASIC NOT support UVD ENC, suite disabled.\n");
+
+	return (r == 0 && (info.available_rings ? CU_TRUE : CU_FALSE));
+}
+
 
 int suite_uvd_enc_tests_init(void)
 {
@@ -99,11 +119,6 @@ int suite_uvd_enc_tests_init(void)
 		return CUE_SINIT_FAILED;
 
 	family_id = device_handle->info.family_id;
-
-	if (!uvd_enc_support()) {
-		printf("\n\nThe ASIC NOT support UVD ENC, all sub-tests will pass\n");
-		return CUE_SUCCESS;
-	}
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -123,28 +138,18 @@ int suite_uvd_enc_tests_clean(void)
 {
 	int r;
 
-	if (!uvd_enc_support()) {
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+				     ib_mc_address, IB_SIZE);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_cs_ctx_free(context_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		return CUE_SUCCESS;
-	} else {
-
-		r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
-					     ib_mc_address, IB_SIZE);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-
-		r = amdgpu_cs_ctx_free(context_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	}
+	r = amdgpu_device_deinitialize(device_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
 	return CUE_SUCCESS;
 }
@@ -240,25 +245,9 @@ static void free_resource(struct amdgpu_uvd_enc_bo *uvd_enc_bo)
 	memset(uvd_enc_bo, 0, sizeof(*uvd_enc_bo));
 }
 
-static bool uvd_enc_support(void)
-{
-	int r;
-	struct drm_amdgpu_info_hw_ip info;
-
-	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_UVD_ENC, 0, &info);
-
-	if (r)
-		return false;
-	else
-		return (info.available_rings?true:false);
-}
-
 static void amdgpu_cs_uvd_enc_create(void)
 {
 	int len, r;
-
-	if (!uvd_enc_support())
-		return;
 
 	enc.width = 160;
 	enc.height = 128;
@@ -295,9 +284,6 @@ static void check_result(struct amdgpu_uvd_enc *enc)
 static void amdgpu_cs_uvd_enc_session_init(void)
 {
 	int len, r;
-
-	if (!uvd_enc_support())
-		return;
 
 	len = 0;
 	memcpy((ib_cpu + len), uve_session_info, sizeof(uve_session_info));
@@ -354,8 +340,6 @@ static void amdgpu_cs_uvd_enc_encode(void)
 	vbuf_size = ALIGN(enc.width, align) * ALIGN(enc.height, 16) * 1.5;
 	cpb_size = vbuf_size * 10;
 
-	if (!uvd_enc_support())
-		return;
 
 	num_resources  = 0;
 	alloc_resource(&enc.fb, 4096, AMDGPU_GEM_DOMAIN_VRAM);
@@ -488,9 +472,6 @@ static void amdgpu_cs_uvd_enc_destroy(void)
 {
 	struct amdgpu_uvd_enc_bo sw_ctx;
 	int len, r;
-
-	if (!uvd_enc_support())
-		return;
 
 	num_resources  = 0;
 	resources[num_resources++] = ib_handle;

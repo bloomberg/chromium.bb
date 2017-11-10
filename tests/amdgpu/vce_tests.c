@@ -88,6 +88,27 @@ CU_TestInfo vce_tests[] = {
 	CU_TEST_INFO_NULL,
 };
 
+
+CU_BOOL suite_vce_tests_enable(void)
+{
+	if (amdgpu_device_initialize(drm_amdgpu[0], &major_version,
+					     &minor_version, &device_handle))
+		return CU_FALSE;
+
+	family_id = device_handle->info.family_id;
+
+	if (amdgpu_device_deinitialize(device_handle))
+		return CU_FALSE;
+
+
+	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
+		printf("\n\nThe ASIC NOT support VCE, suite disabled\n");
+		return CU_FALSE;
+	}
+
+	return CU_TRUE;
+}
+
 int suite_vce_tests_init(void)
 {
 	int r;
@@ -105,11 +126,6 @@ int suite_vce_tests_init(void)
 
 	family_id = device_handle->info.family_id;
 	vce_harvest_config = device_handle->info.vce_harvest_config;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
-		printf("\n\nThe ASIC NOT support VCE, all sub-tests will pass\n");
-		return CUE_SUCCESS;
-	}
 
 	r = amdgpu_cs_ctx_create(device_handle, &context_handle);
 	if (r)
@@ -131,24 +147,18 @@ int suite_vce_tests_clean(void)
 {
 	int r;
 
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI) {
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	} else {
-		r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
-					     ib_mc_address, IB_SIZE);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_bo_unmap_and_free(ib_handle, ib_va_handle,
+				     ib_mc_address, IB_SIZE);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_cs_ctx_free(context_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
+	r = amdgpu_cs_ctx_free(context_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
-		r = amdgpu_device_deinitialize(device_handle);
-		if (r)
-			return CUE_SCLEAN_FAILED;
-	}
+	r = amdgpu_device_deinitialize(device_handle);
+	if (r)
+		return CUE_SCLEAN_FAILED;
 
 	return CUE_SUCCESS;
 }
@@ -247,9 +257,6 @@ static void amdgpu_cs_vce_create(void)
 {
 	unsigned align = (family_id >= AMDGPU_FAMILY_AI) ? 256 : 16;
 	int len, r;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-		return;
 
 	enc.width = vce_create[6];
 	enc.height = vce_create[7];
@@ -444,9 +451,6 @@ static void amdgpu_cs_vce_encode(void)
 	unsigned align = (family_id >= AMDGPU_FAMILY_AI) ? 256 : 16;
 	int i, r;
 
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-		return;
-
 	vbuf_size = ALIGN(enc.width, align) * ALIGN(enc.height, 16) * 1.5;
 	cpb_size = vbuf_size * 10;
 	num_resources = 0;
@@ -524,9 +528,6 @@ static void amdgpu_cs_vce_encode(void)
 static void amdgpu_cs_vce_destroy(void)
 {
 	int len, r;
-
-	if (family_id >= AMDGPU_FAMILY_RV || family_id == AMDGPU_FAMILY_SI)
-		return;
 
 	num_resources  = 0;
 	alloc_resource(&enc.fb[0], 4096, AMDGPU_GEM_DOMAIN_GTT);

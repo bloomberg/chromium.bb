@@ -150,15 +150,15 @@ static Suites_Active_Status suites_active_stat[] = {
 		},
 		{
 			.pName = VCE_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_vce_tests_enable,
 		},
 		{
 			.pName = VCN_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_vcn_tests_enable,
 		},
 		{
 			.pName = UVD_ENC_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_uvd_enc_tests_enable,
 		},
 		{
 			.pName = DEADLOCK_TESTS_STR,
@@ -409,6 +409,14 @@ static void amdgpu_disable_suits()
 		if (amdgpu_set_suite_active(suites_active_stat[i].pName,
 				suites_active_stat[i].pActive()))
 			fprintf(stderr, "suit deactivation failed - %s\n", CU_get_error_msg());
+
+	/* Explicitly disable specific tests due to known bugs or preferences */
+	/*
+	* BUG: Compute ring stalls and never recovers when the address is
+	* written after the command already submitted
+	*/
+	if (amdgpu_set_test_active(DEADLOCK_TESTS_STR, "compute ring block test", CU_FALSE))
+		fprintf(stderr, "test deactivation failed - %s\n", CU_get_error_msg());
 }
 
 /* The main() function for setting up and running the tests.
