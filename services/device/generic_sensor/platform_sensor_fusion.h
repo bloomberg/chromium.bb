@@ -43,12 +43,6 @@ class PlatformSensorFusion : public PlatformSensor,
       std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
       const PlatformSensorProviderBase::CreateSensorCallback& callback);
 
-  PlatformSensorFusion(
-      mojo::ScopedSharedBufferMapping mapping,
-      PlatformSensorProvider* provider,
-      const PlatformSensorProviderBase::CreateSensorCallback& callback,
-      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm);
-
   // PlatformSensor:
   mojom::ReportingMode GetReportingMode() override;
   PlatformSensorConfiguration GetDefaultConfiguration() override;
@@ -63,22 +57,25 @@ class PlatformSensorFusion : public PlatformSensor,
   virtual bool GetSourceReading(mojom::SensorType type, SensorReading* result);
 
  protected:
+  class Factory;
+  friend class Factory;
+  using SourcesMap =
+      base::flat_map<mojom::SensorType, scoped_refptr<PlatformSensor>>;
+  using SourcesMapEntry =
+      std::pair<mojom::SensorType, scoped_refptr<PlatformSensor>>;
+  PlatformSensorFusion(
+      mojo::ScopedSharedBufferMapping mapping,
+      PlatformSensorProvider* provider,
+      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
+      SourcesMap sources);
   ~PlatformSensorFusion() override;
-  // Can only be called once, the first time or after a StopSensor call.
   bool StartSensor(const PlatformSensorConfiguration& configuration) override;
   void StopSensor() override;
 
  private:
-  void FetchSourceSensors(PlatformSensorProvider* provider);
-  void CreateSensorCallback(scoped_refptr<PlatformSensor> sensor);
-  void AddSourceSensor(scoped_refptr<PlatformSensor> sensor);
-  bool SourcesNotReady() const;
-
-  PlatformSensorProviderBase::CreateSensorCallback callback_;
   SensorReading reading_;
-  base::flat_map<mojom::SensorType, scoped_refptr<PlatformSensor>>
-      source_sensors_;
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm_;
+  SourcesMap source_sensors_;
   mojom::ReportingMode reporting_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorFusion);
