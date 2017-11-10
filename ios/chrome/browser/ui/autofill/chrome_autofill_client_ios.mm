@@ -130,8 +130,7 @@ void ChromeAutofillClientIOS::PropagateAutofillPredictions(
   }
 }
 
-void ChromeAutofillClientIOS::DidInteractWithNonsecureCreditCardInput(
-    content::RenderFrameHost* rfh) {
+void ChromeAutofillClientIOS::DidInteractWithNonsecureCreditCardInput() {
   InsecureInputTabHelper::GetOrCreateForWebState(web_state())
       ->DidInteractWithNonsecureCreditCardInput();
 }

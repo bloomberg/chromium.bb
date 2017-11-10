@@ -85,8 +85,7 @@ void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
 
 void AutofillDriverIOS::DidInteractWithCreditCardForm() {
   if (!web::IsOriginSecure(web_state_->GetLastCommittedURL())) {
-    autofill_manager_.client()->DidInteractWithNonsecureCreditCardInput(
-        nullptr);
+    autofill_manager_.client()->DidInteractWithNonsecureCreditCardInput();
   }
 }
 
