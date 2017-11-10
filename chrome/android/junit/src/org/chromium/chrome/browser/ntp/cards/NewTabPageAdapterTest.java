@@ -282,7 +282,7 @@ public class NewTabPageAdapterTest {
         FeatureUtilities.resetChromeHomeEnabledForTests();
 
         // Set empty variation params for the test.
-        CardsVariationParameters.setTestVariationParams(new HashMap<>());
+        CardsVariationParameters.setTestVariationParams(new HashMap<String, String>());
 
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(
@@ -1259,7 +1259,7 @@ public class NewTabPageAdapterTest {
      */
     private SectionDescriptor sectionWithStatusCard() {
         assertFalse(FeatureUtilities.isChromeHomeEnabled());
-        return new SectionDescriptor(Collections.emptyList()).withStatusCard();
+        return new SectionDescriptor(Collections.<SnippetArticle>emptyList()).withStatusCard();
     }
 
     /**
@@ -1270,7 +1270,7 @@ public class NewTabPageAdapterTest {
      */
     private SectionDescriptor emptySection() {
         assertTrue(FeatureUtilities.isChromeHomeEnabled());
-        return new SectionDescriptor(Collections.emptyList());
+        return new SectionDescriptor(Collections.<SnippetArticle>emptyList());
     }
 
     private void resetUiDelegate() {
@@ -1282,8 +1282,8 @@ public class NewTabPageAdapterTest {
 
     private void reloadNtp() {
         mSource.removeObservers();
-        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), makeUiConfig(),
-                mOfflinePageBridge, mock(ContextMenuManager.class),
+        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */ null,
+                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
                 /* tileGroupDelegate = */ null, /* suggestionsCarousel = */ null);
         mAdapter.refreshSuggestions();
     }
