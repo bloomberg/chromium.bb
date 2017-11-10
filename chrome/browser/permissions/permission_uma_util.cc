@@ -529,11 +529,6 @@ void PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
           "Permissions.Prompt.Accepted.Persisted.ProtectedMedia",
           toggle_enabled);
       break;
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      UMA_HISTOGRAM_BOOLEAN(
-          "Permissions.Prompt.Accepted.Persisted.DurableStorage",
-          toggle_enabled);
-      break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       UMA_HISTOGRAM_BOOLEAN(
           "Permissions.Prompt.Accepted.Persisted.AudioCapture", toggle_enabled);
@@ -578,10 +573,6 @@ void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       UMA_HISTOGRAM_BOOLEAN(
           "Permissions.Prompt.Denied.Persisted.ProtectedMedia", toggle_enabled);
-      break;
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      UMA_HISTOGRAM_BOOLEAN(
-          "Permissions.Prompt.Denied.Persisted.DurableStorage", toggle_enabled);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.AudioCapture",
@@ -686,9 +677,9 @@ void PermissionUmaUtil::RecordPermissionAction(
   bool secure_origin = content::IsOriginSecure(requesting_origin);
 
   switch (permission) {
-    // Geolocation, MidiSysEx, Push, Durable Storage, and Media permissions are
-    // disabled on insecure origins, so there's no need to record metrics for
-    // secure/insecue.
+    // Geolocation, MidiSysEx, Push, and Media permissions are disabled on
+    // insecure origins, so there's no need to record separate metrics for
+    // secure/insecure.
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Geolocation", action,
                                 PermissionAction::NUM);
@@ -712,10 +703,6 @@ void PermissionUmaUtil::RecordPermissionAction(
                             "Permissions.Action.SecureOrigin.ProtectedMedia",
                             "Permissions.Action.InsecureOrigin.ProtectedMedia",
                             action);
-      break;
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.DurableStorage", action,
-                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture", action,
