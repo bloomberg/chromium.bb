@@ -54,6 +54,7 @@ const std::set<UiElementName> kHitTestableElements = {
     kLocationAccessIndicator,
     kExitPrompt,
     kExitPromptBackplane,
+    kAudioPermissionPrompt,
     kUrlBar,
     kLoadingIndicator,
     kWebVrTimeoutSpinner,

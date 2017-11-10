@@ -28,6 +28,7 @@ class UiElement;
 class UiScene;
 class UrlBar;
 class ExitPrompt;
+class AudioPermissionPrompt;
 struct Model;
 struct UiInitialState;
 
@@ -158,6 +159,9 @@ class UiSceneManager {
     return !web_vr_mode_ && !showing_web_vr_splash_screen_;
   }
   bool prompting_to_exit() const { return prompting_to_exit_; }
+  bool prompting_to_audio_permission() const {
+    return prompting_to_audio_permission_;
+  }
   bool fullscreen() const { return fullscreen_; }
 
  private:
@@ -176,6 +180,7 @@ class UiSceneManager {
   void CreateWebVrUrlToast();
   void CreateCloseButton();
   void CreateExitPrompt();
+  void CreateAudioPermissionPrompt();
   void CreateToasts(Model* model);
   void CreateVoiceSearchUiGroup(Model* model);
   void CreateController(Model* model);
@@ -207,6 +212,7 @@ class UiSceneManager {
       nullptr;
   ShowUntilSignalTransientElement* splash_screen_transient_parent_ = nullptr;
   ExitPrompt* exit_prompt_ = nullptr;
+  AudioPermissionPrompt* audio_permission_prompt_ = nullptr;
   UiElement* exit_prompt_backplane_ = nullptr;
   UiElement* speech_recognition_prompt_backplane_ = nullptr;
   UiElement* exit_warning_ = nullptr;
@@ -235,6 +241,7 @@ class UiSceneManager {
   // auto-presentation.
   bool showing_web_vr_splash_screen_ = false;
   bool prompting_to_exit_ = false;
+  bool prompting_to_audio_permission_ = false;
   bool exiting_ = false;
   bool browsing_disabled_ = false;
   bool configuring_scene_ = false;

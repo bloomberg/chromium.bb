@@ -990,6 +990,10 @@ public class VrShellDelegate
         return false;
     }
 
+    public boolean hasAudioPermission() {
+        return mActivity.getWindowAndroid().hasPermission(android.Manifest.permission.RECORD_AUDIO);
+    }
+
     private boolean isWindowModeCorrectForVr() {
         int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
         int orientation = mActivity.getResources().getConfiguration().orientation;

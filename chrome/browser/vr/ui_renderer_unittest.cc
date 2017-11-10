@@ -105,6 +105,7 @@ TestParams params[] = {
          kLocationAccessIndicator,
          kExitPromptBackplane,
          kExitPrompt,
+         kAudioPermissionPrompt,
          kUrlBar,
          kLoadingIndicator,
          kLoadingIndicatorForeground,
