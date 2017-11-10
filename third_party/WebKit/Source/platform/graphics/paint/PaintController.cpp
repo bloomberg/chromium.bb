@@ -332,17 +332,6 @@ DisplayItem& PaintController::MoveItemFromCurrentListToNewList(size_t index) {
       current_paint_artifact_.GetDisplayItemList()[index]);
 }
 
-void PaintController::UpdateCurrentPaintChunkProperties(
-    const PaintChunk::Id* id,
-    const PaintChunkProperties& new_properties) {
-  new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, new_properties);
-}
-
-const PaintChunkProperties& PaintController::CurrentPaintChunkProperties()
-    const {
-  return new_paint_chunks_.CurrentPaintChunkProperties();
-}
-
 void PaintController::InvalidateAll() {
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   InvalidateAllInternal();

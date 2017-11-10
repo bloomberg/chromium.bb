@@ -69,15 +69,19 @@ class PLATFORM_EXPORT PaintController {
   void InvalidateAll();
   bool CacheIsAllInvalid() const;
 
-  // These methods are called during painting.u
+  // These methods are called during painting.
 
   // Provide a new set of paint chunk properties to apply to recorded display
-  // items, for Slimming Paint v2.
-  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
-                                         const PaintChunkProperties&);
+  // items, for Slimming Paint v175+.
+  void UpdateCurrentPaintChunkProperties(
+      const PaintChunk::Id* id,
+      const PaintChunkProperties& properties) {
+    new_paint_chunks_.UpdateCurrentPaintChunkProperties(id, properties);
+  }
 
-  // Retrieve the current paint properties.
-  const PaintChunkProperties& CurrentPaintChunkProperties() const;
+  const PaintChunkProperties& CurrentPaintChunkProperties() const {
+    return new_paint_chunks_.CurrentPaintChunkProperties();
+  }
 
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {

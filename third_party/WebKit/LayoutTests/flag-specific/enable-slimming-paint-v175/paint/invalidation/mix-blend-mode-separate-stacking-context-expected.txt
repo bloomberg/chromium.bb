@@ -22,14 +22,14 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV id='fourth'",
-          "rect": [328, 28, 60, 60],
-          "reason": "disappeared"
-        },
-        {
           "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
           "rect": [328, 28, 60, 60],
           "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [328, 28, 60, 60],
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow (floating) DIV id='third'",

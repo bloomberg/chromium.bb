@@ -289,24 +289,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return result;
 
-  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-      paint_layer_.GetLayoutObject().IsLayoutView()) {
-    const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
-                                                  .FirstFragment()
-                                                  .GetRarePaintData()
-                                                  ->LocalBorderBoxProperties();
-    DCHECK(local_border_box_properties);
-    PaintChunkProperties properties(
-        context.GetPaintController().CurrentPaintChunkProperties());
-    properties.property_tree_state = *local_border_box_properties;
-    properties.backface_hidden =
-        paint_layer_.GetLayoutObject().HasHiddenBackface();
-    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                          paint_layer_, properties);
-  }
-
   DCHECK(paint_layer_.IsSelfPaintingLayer() ||
          paint_layer_.HasSelfPaintingLayerDescendant());
   DCHECK(!(paint_flags & kPaintLayerAppliedTransform));
@@ -550,26 +532,18 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
   }
 
-  Optional<ScopedPaintChunkProperties> content_scoped_paint_chunk_properties;
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      !scoped_paint_chunk_properties.has_value()) {
-    // If layoutObject() is a LayoutView and root layer scrolling is enabled,
-    // the LayoutView's paint properties will already have been applied at
-    // the top of this method, in scopedPaintChunkProperties.
-    DCHECK(!(RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-             paint_layer_.GetLayoutObject().IsLayoutView()));
+  Optional<ScopedPaintChunkProperties> scoped_paint_chunk_properties;
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     const auto* local_border_box_properties = paint_layer_.GetLayoutObject()
                                                   .FirstFragment()
                                                   .GetRarePaintData()
                                                   ->LocalBorderBoxProperties();
     DCHECK(local_border_box_properties);
-    PaintChunkProperties properties(
-        context.GetPaintController().CurrentPaintChunkProperties());
-    properties.property_tree_state = *local_border_box_properties;
+    PaintChunkProperties properties(*local_border_box_properties);
     properties.backface_hidden =
         paint_layer_.GetLayoutObject().HasHiddenBackface();
-    content_scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                                  paint_layer_, properties);
+    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
+                                          paint_layer_, properties);
   }
 
   bool selection_only =
@@ -609,6 +583,13 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
 
     if (should_paint_background) {
+      Optional<ScopedPaintChunkProperties> background_chunk_properties;
+      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        background_chunk_properties.emplace(
+            context.GetPaintController(), paint_layer_,
+            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kBlockBackground),
+            context.GetPaintController().CurrentPaintChunkProperties());
+      }
       PaintBackgroundForFragments(layer_fragments, context,
                                   local_painting_info, paint_flags);
     }
@@ -619,14 +600,26 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         result = kMayBeClippedByPaintDirtyRect;
     }
 
-    if (should_paint_own_contents) {
-      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
-                                  selection_only, paint_flags);
-    }
+    if (should_paint_own_contents || should_paint_self_outline) {
+      Optional<ScopedPaintChunkProperties> foreground_chunk_properties;
+      if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+        foreground_chunk_properties.emplace(
+            context.GetPaintController(), paint_layer_,
+            DisplayItem::PaintPhaseToDrawingType(PaintPhase::kForeground),
+            context.GetPaintController().CurrentPaintChunkProperties());
+      }
 
-    if (should_paint_self_outline)
-      PaintSelfOutlineForFragments(layer_fragments, context,
-                                   local_painting_info, paint_flags);
+      if (should_paint_own_contents) {
+        PaintForegroundForFragments(layer_fragments, context,
+                                    local_painting_info, selection_only,
+                                    paint_flags);
+      }
+
+      if (should_paint_self_outline) {
+        PaintSelfOutlineForFragments(layer_fragments, context,
+                                     local_painting_info, paint_flags);
+      }
+    }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
       if (PaintChildren(kNormalFlowChildren | kPositiveZOrderChildren, context,
@@ -635,9 +628,10 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         result = kMayBeClippedByPaintDirtyRect;
     }
 
-    if (should_paint_overlay_scrollbars)
+    if (should_paint_overlay_scrollbars) {
       PaintOverflowControlsForFragments(layer_fragments, context,
                                         local_painting_info, paint_flags);
+    }
   }  // FilterPainter block
 
   bool should_paint_mask =
@@ -1225,14 +1219,16 @@ void PaintLayerPainter::PaintMaskForFragments(
     PaintChunkProperties properties(
         context.GetPaintController().CurrentPaintChunkProperties());
     properties.property_tree_state.SetEffect(object_paint_properties->Mask());
-    scoped_paint_chunk_properties.emplace(context.GetPaintController(),
-                                          paint_layer_, properties);
+    scoped_paint_chunk_properties.emplace(
+        context.GetPaintController(), paint_layer_,
+        DisplayItem::PaintPhaseToDrawingType(PaintPhase::kMask), properties);
   }
 
-  for (auto& fragment : layer_fragments)
+  for (auto& fragment : layer_fragments) {
     PaintFragmentWithPhase(PaintPhase::kMask, fragment, context,
                            fragment.background_rect, local_painting_info,
                            paint_flags, kHasNotClipped);
+  }
 }
 
 void PaintLayerPainter::PaintChildClippingMaskForFragments(
@@ -1244,10 +1240,11 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
   if (layer_fragments.size() > 1)
     cache_skipper.emplace(context);
 
-  for (auto& fragment : layer_fragments)
+  for (auto& fragment : layer_fragments) {
     PaintFragmentWithPhase(PaintPhase::kClippingMask, fragment, context,
                            fragment.foreground_rect, local_painting_info,
                            paint_flags, kHasNotClipped);
+  }
 }
 
 void PaintLayerPainter::PaintOverlayScrollbars(
