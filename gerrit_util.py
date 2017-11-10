@@ -665,6 +665,7 @@ def AddReviewers(host, change, reviewers=None, ccs=None, notify=True,
   path = 'changes/%s/revisions/current/review' % change
 
   body = {
+    'drafts': 'KEEP',
     'reviewers': [],
     'notify': 'ALL' if notify else 'NONE',
   }
@@ -718,7 +719,7 @@ def SetReview(host, change, msg=None, labels=None, notify=None, ready=None):
   if not msg and not labels:
     return
   path = 'changes/%s/revisions/current/review' % change
-  body = {}
+  body = {'drafts': 'KEEP'}
   if msg:
     body['message'] = msg
   if labels:
@@ -760,6 +761,7 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
   for review in jmsg.get('labels', {}).get(label, {}).get('all', []):
     if str(review.get('value', value)) != value:
       body = {
+          'drafts': 'KEEP',
           'message': message,
           'labels': {label: value},
           'on_behalf_of': review['_account_id'],
