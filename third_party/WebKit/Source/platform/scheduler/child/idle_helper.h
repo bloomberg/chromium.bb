@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "platform/PlatformExport.h"
-#include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/task_queue_selector.h"
+#include "platform/scheduler/child/cancelable_closure_holder.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 
