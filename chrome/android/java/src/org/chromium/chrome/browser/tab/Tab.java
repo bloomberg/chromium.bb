@@ -90,6 +90,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
@@ -2294,7 +2295,8 @@ public class Tab
      * {@link #onInteractableStateChanged(boolean)} method.
      */
     private void updateInteractableState() {
-        boolean currentState = !mIsHidden && !isFrozen() && mIsViewAttachedToWindow;
+        boolean currentState =
+                !mIsHidden && !isFrozen() && (mIsViewAttachedToWindow || VrShellDelegate.isInVr());
 
         if (currentState == mInteractableState) return;
 
