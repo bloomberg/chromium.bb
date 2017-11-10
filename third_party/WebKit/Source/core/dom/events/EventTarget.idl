@@ -22,6 +22,8 @@
 
 [
     CheckSecurity=Receiver,
+    Constructor(),
+    ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
     ImmutablePrototype
 ] interface EventTarget {
