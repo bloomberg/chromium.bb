@@ -7,7 +7,7 @@
 
 #include <functional>
 #include <map>
-#include <set>
+#include <unordered_set>
 
 #include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/profiling/address.h"
@@ -16,6 +16,11 @@
 namespace profiling {
 
 // This class is copyable and assignable.
+//
+// AllocationEvents can be uniquely identified by their address. Caveat: This is
+// true at any given point in time, since each address can only be used in a
+// single allocation. However, it's possible that comparing different points in
+// time, there are different AllocationEvents with the same address.
 class AllocationEvent {
  public:
   // There must be a reference to this kept in the BacktraceStorage object on
@@ -42,12 +47,17 @@ class AllocationEvent {
   // ID into context map, 0 means no context.
   int context_id() const { return context_id_; }
 
-  // Implements < for AllocationEvents using address only. This is not a raw
-  // operator because it only implements a comparison on the one field.
-  struct AddressPartialLess {
+  struct HashByAddress {
+    size_t operator()(const AllocationEvent& event) const {
+      std::hash<profiling::Address> hasher;
+      return hasher(event.address());
+    }
+  };
+
+  struct EqualityByAddress {
     bool operator()(const AllocationEvent& lhs,
                     const AllocationEvent& rhs) const {
-      return lhs.address() < rhs.address();
+      return lhs.address().value == rhs.address().value;
     }
   };
 
@@ -64,28 +74,6 @@ class AllocationEvent {
     }
   };
 
-  // Implements == for AllocationEvents using address only. This is not a raw
-  // operator because it only implements a comparison on the one field.
-  struct AddressPartialEqual {
-    bool operator()(const AllocationEvent& lhs,
-                    const AllocationEvent& rhs) const {
-      return lhs.address() == rhs.address();
-    }
-  };
-
-  // Implements < for AllocationEvent using everything but the address.
-  struct MetadataPartialEqual {
-    bool operator()(const AllocationEvent& lhs,
-                    const AllocationEvent& rhs) const {
-      // Note that we're using pointer compiarisons on the backtrace objects
-      // since they're atoms.
-      return std::tie(lhs.size_, lhs.backtrace_, lhs.context_id_,
-                      lhs.allocator_) == std::tie(rhs.size_, rhs.backtrace_,
-                                                  rhs.context_id_,
-                                                  rhs.allocator_);
-    }
-  };
-
  private:
   AllocatorType allocator_ = AllocatorType::kMalloc;
   Address address_;
@@ -96,7 +84,9 @@ class AllocationEvent {
 
 // Unique set based on addresses of allocations.
 using AllocationEventSet =
-    std::set<AllocationEvent, AllocationEvent::AddressPartialLess>;
+    std::unordered_set<AllocationEvent,
+                       AllocationEvent::HashByAddress,
+                       AllocationEvent::EqualityByAddress>;
 
 // Maps allocation metadata to allocation counts of that type. In this case,
 // the address of the AllocationEvent is unused.
