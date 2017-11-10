@@ -88,16 +88,24 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
       src: local(monospace);
       font-weight: bold;
      }
+     :root {
+      --stop-color: black !important;
+      --go-color: white;
+     }
      #t1 { color: red !important }
      #t2 { color: black }
      #t4 { font-family: 'Cool Font'; font-weight: bold; font-style: italic }
      #t5 { animation-name: dummy-animation }
+     #t6 { color: var(--stop-color); }
+     #t7 { color: var(--go-color); }
     </style>
     <div id='t1'>Green</div>
     <div id='t2'>White</div>
     <div id='t3' style='color: black !important'>White</div>
     <div id='t4'>I look cool.</div>
     <div id='t5'>I animate!</div>
+    <div id='t6'>Stop!</div>
+    <div id='t7'>Go</div>
     <div></div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -344,6 +352,45 @@ TEST_F(StyleEngineTest, AnalyzedInject) {
   // Injected @keyframes rules are no longer available once removed.
   ASSERT_FALSE(GetStyleEngine().Resolver()->FindKeyframesRule(
       t5, AtomicString("dummy-animation")));
+
+  // Custom properties
+
+  Element* t6 = GetDocument().getElementById("t6");
+  Element* t7 = GetDocument().getElementById("t7");
+  ASSERT_TRUE(t6);
+  ASSERT_TRUE(t7);
+  ASSERT_TRUE(t6->GetComputedStyle());
+  ASSERT_TRUE(t7->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  StyleSheetContents* custom_properties_parsed_sheet =
+      StyleSheetContents::Create(CSSParserContext::Create(GetDocument()));
+  custom_properties_parsed_sheet->ParseString(
+      ":root {"
+      " --stop-color: red !important;"
+      " --go-color: green;"
+      "}");
+  WebStyleSheetId custom_properties_id =
+      GetStyleEngine().AddUserSheet(custom_properties_parsed_sheet);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t6->GetComputedStyle());
+  ASSERT_TRUE(t7->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+
+  GetStyleEngine().RemoveUserSheet(custom_properties_id);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  ASSERT_TRUE(t6->GetComputedStyle());
+  ASSERT_TRUE(t7->GetComputedStyle());
+  EXPECT_EQ(MakeRGB(0, 0, 0),
+            t6->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
+  EXPECT_EQ(MakeRGB(255, 255, 255),
+            t7->GetComputedStyle()->VisitedDependentColor(CSSPropertyColor));
 }
 
 TEST_F(StyleEngineTest, TextToSheetCache) {
