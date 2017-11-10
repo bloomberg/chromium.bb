@@ -6,6 +6,7 @@
 // Spec: https://drafts.css-houdini.org/css-typed-om/#cssurlimagevalue
 [
     Constructor(USVString url),
+    ConstructorCallWith=ScriptState,
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSURLImageValue : CSSImageValue {
