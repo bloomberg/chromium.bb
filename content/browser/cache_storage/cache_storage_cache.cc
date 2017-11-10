@@ -478,7 +478,7 @@ void CacheStorageCache::MatchAll(
     ResponsesCallback callback) {
   if (backend_state_ == BACKEND_CLOSED) {
     std::move(callback).Run(CacheStorageError::kErrorStorage,
-                            std::unique_ptr<Responses>(),
+                            std::vector<ServiceWorkerResponse>(),
                             std::unique_ptr<BlobDataHandles>());
     return;
   }
@@ -970,7 +970,7 @@ void CacheStorageCache::MatchImpl(
 void CacheStorageCache::MatchDidMatchAll(
     ResponseCallback callback,
     CacheStorageError match_all_error,
-    std::unique_ptr<Responses> match_all_responses,
+    std::vector<ServiceWorkerResponse> match_all_responses,
     std::unique_ptr<BlobDataHandles> match_all_handles) {
   if (match_all_error != CacheStorageError::kSuccess) {
     std::move(callback).Run(match_all_error,
@@ -979,7 +979,7 @@ void CacheStorageCache::MatchDidMatchAll(
     return;
   }
 
-  if (match_all_responses->empty()) {
+  if (match_all_responses.empty()) {
     std::move(callback).Run(CacheStorageError::kErrorNotFound,
                             std::unique_ptr<ServiceWorkerResponse>(),
                             std::unique_ptr<storage::BlobDataHandle>());
@@ -987,7 +987,7 @@ void CacheStorageCache::MatchDidMatchAll(
   }
 
   std::unique_ptr<ServiceWorkerResponse> response =
-      std::make_unique<ServiceWorkerResponse>(match_all_responses->at(0));
+      std::make_unique<ServiceWorkerResponse>(match_all_responses[0]);
 
   std::move(callback).Run(CacheStorageError::kSuccess, std::move(response),
                           std::move(match_all_handles->at(0)));
@@ -1000,7 +1000,7 @@ void CacheStorageCache::MatchAllImpl(
   DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
   if (backend_state_ != BACKEND_OPEN) {
     std::move(callback).Run(CacheStorageError::kErrorStorage,
-                            std::unique_ptr<Responses>(),
+                            std::vector<ServiceWorkerResponse>(),
                             std::unique_ptr<BlobDataHandles>());
     return;
   }
@@ -1017,19 +1017,19 @@ void CacheStorageCache::MatchAllDidQueryCache(
     CacheStorageError error,
     std::unique_ptr<QueryCacheResults> query_cache_results) {
   if (error != CacheStorageError::kSuccess) {
-    std::move(callback).Run(error, std::unique_ptr<Responses>(),
+    std::move(callback).Run(error, std::vector<ServiceWorkerResponse>(),
                             std::unique_ptr<BlobDataHandles>());
     return;
   }
 
-  std::unique_ptr<Responses> out_responses = std::make_unique<Responses>();
+  std::vector<ServiceWorkerResponse> out_responses;
   std::unique_ptr<BlobDataHandles> out_handles =
       std::make_unique<BlobDataHandles>();
-  out_responses->reserve(query_cache_results->size());
+  out_responses.reserve(query_cache_results->size());
   out_handles->reserve(query_cache_results->size());
 
   for (auto& result : *query_cache_results) {
-    out_responses->push_back(*result.response);
+    out_responses.push_back(*result.response);
     out_handles->push_back(std::move(result.blob_handle));
   }
 

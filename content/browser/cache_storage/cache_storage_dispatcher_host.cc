@@ -419,13 +419,12 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallbackAdapter(
     CacheStorageError error,
     std::unique_ptr<ServiceWorkerResponse> response,
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle) {
-  std::unique_ptr<CacheStorageCache::Responses> responses(
-      new CacheStorageCache::Responses);
+  std::vector<ServiceWorkerResponse> responses;
   std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles(
       new CacheStorageCache::BlobDataHandles);
   if (error == CacheStorageError::kSuccess) {
     DCHECK(response);
-    responses->push_back(*response);
+    responses.push_back(*response);
     if (blob_data_handle)
       blob_data_handles->push_back(std::move(blob_data_handle));
   }
@@ -438,7 +437,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
     int request_id,
     CacheStorageCacheHandle cache_handle,
     CacheStorageError error,
-    std::unique_ptr<CacheStorageCache::Responses> responses,
+    std::vector<ServiceWorkerResponse> responses,
     std::unique_ptr<CacheStorageCache::BlobDataHandles> blob_data_handles) {
   if (error != CacheStorageError::kSuccess &&
       error != CacheStorageError::kErrorNotFound) {
@@ -452,7 +451,7 @@ void CacheStorageDispatcherHost::OnCacheMatchAllCallback(
   }
 
   Send(new CacheStorageMsg_CacheMatchAllSuccess(thread_id, request_id,
-                                                *responses));
+                                                responses));
 }
 
 void CacheStorageDispatcherHost::OnCacheKeysCallback(
