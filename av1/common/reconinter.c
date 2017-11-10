@@ -33,8 +33,11 @@
 static INLINE int allow_warp(const MODE_INFO *const mi,
                              const WarpTypesAllowed *const warp_types,
                              const WarpedMotionParams *const gm_params,
-                             int build_for_obmc,
+                             int build_for_obmc, int x_scale, int y_scale,
                              WarpedMotionParams *final_warp_params) {
+  if (x_scale != SCALE_SUBPEL_SHIFTS || y_scale != SCALE_SUBPEL_SHIFTS)
+    return 0;
+
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   *final_warp_params = default_warp_params;
 
@@ -86,7 +89,7 @@ static INLINE void av1_make_inter_predictor(
 #else   // !(CONFIG_COMPOUND_SINGLEREF)
                   &xd->global_motion[mi->mbmi.ref_frame[ref]],
 #endif  // CONFIG_COMPOUND_SINGLEREF
-                  build_for_obmc, &final_warp_params));
+                  build_for_obmc, xs, ys, &final_warp_params));
   if (do_warp
 #if CONFIG_AMVR
       && xd->cur_frame_force_integer_mv == 0
