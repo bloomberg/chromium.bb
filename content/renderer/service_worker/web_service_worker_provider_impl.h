@@ -24,6 +24,7 @@ class WebServiceWorkerProviderClient;
 namespace content {
 
 class ServiceWorkerDispatcher;
+class ServiceWorkerHandleReference;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 
@@ -56,7 +57,7 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
                                  blink::WebString* error_message) override;
   // Sets the ServiceWorkerContainer#controller for this provider. It's not
   // used when this WebServiceWorkerProvider is for a service worker context.
-  void SetController(blink::mojom::ServiceWorkerObjectInfoPtr info,
+  void SetController(std::unique_ptr<ServiceWorkerHandleReference> controller,
                      const std::set<uint32_t>& features,
                      bool should_notify_controller_change);
   // Posts a message to the ServiceWorkerContainer for this provider.

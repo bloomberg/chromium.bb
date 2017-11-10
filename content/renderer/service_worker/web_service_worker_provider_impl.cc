@@ -75,9 +75,11 @@ void WebServiceWorkerProviderImpl::SetClient(
   // for more context)
   GetDispatcher()->AddProviderClient(context_->provider_id(), client);
 
-  if (!context_->controller())
+  std::unique_ptr<ServiceWorkerHandleReference> controller =
+      context_->TakeController();
+  if (!controller)
     return;
-  SetController(context_->controller()->GetInfo(), context_->used_features(),
+  SetController(std::move(controller), context_->used_features(),
                 false /* notify_controllerchange */);
 }
 
@@ -197,23 +199,23 @@ bool WebServiceWorkerProviderImpl::ValidateScopeAndScriptURL(
 }
 
 void WebServiceWorkerProviderImpl::SetController(
-    blink::mojom::ServiceWorkerObjectInfoPtr info,
+    std::unique_ptr<ServiceWorkerHandleReference> controller,
     const std::set<uint32_t>& features,
     bool should_notify_controller_change) {
   blink::WebServiceWorkerProviderClient* provider_client =
       GetDispatcher()->GetProviderClient(context_->provider_id());
-  // The document may have been destroyed so that |provider_client| is null.
+  // The document may have been destroyed so that |provider_client| is null. In
+  // such case we just drop |controller| silently as we're just waiting to be
+  // destructed soon.
   if (!provider_client)
     return;
 
-  scoped_refptr<WebServiceWorkerImpl> controller =
-      GetDispatcher()->GetOrCreateServiceWorker(
-          ServiceWorkerHandleReference::Create(std::move(info),
-                                               thread_safe_sender_.get()));
   for (uint32_t feature : features)
     provider_client->CountFeature(feature);
-  provider_client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
-                                 should_notify_controller_change);
+  provider_client->SetController(
+      WebServiceWorkerImpl::CreateHandle(
+          GetDispatcher()->GetOrCreateServiceWorker(std::move(controller))),
+      should_notify_controller_change);
 }
 
 int WebServiceWorkerProviderImpl::provider_id() const {
