@@ -1,11 +1,5 @@
 {% from 'templates/fields/field.tmpl' import encode, decode, const_ref, nonconst_ref, getter_expression, setter_expression, set_if_changed %}
 
-{% macro decl_initial_method(field) -%}
-inline static {{field.type_name}} {{field.initial_method_name}}() {
-  return {{field.default_value}};
-}
-{%- endmacro %}
-
 {% macro decl_getter_method(field) -%}
 {% if 'getter' not in field.computed_style_custom_functions %}
 {{const_ref(field)}} {{field.getter_method_name}}() const {

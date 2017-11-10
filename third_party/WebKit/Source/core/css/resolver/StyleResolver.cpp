@@ -1886,7 +1886,7 @@ void StyleResolver::ApplyMatchedStandardProperties(
     // FontBuilder to recompute the font used as inheritable font for
     // foreignObject content. If we want to support zoom on foreignObject we'll
     // need to find another way of handling the SVG zoom model.
-    state.SetEffectiveZoom(ComputedStyle::InitialZoom());
+    state.SetEffectiveZoom(ComputedStyleInitialValues::InitialZoom());
   }
 
   if (cache_success.cached_matched_properties &&

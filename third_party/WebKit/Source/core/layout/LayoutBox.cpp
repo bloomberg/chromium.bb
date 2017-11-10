@@ -391,16 +391,17 @@ void LayoutBox::UpdateShapeOutsideInfoAfterStyleChange(
   const ShapeValue* shape_outside = style.ShapeOutside();
   const ShapeValue* old_shape_outside =
       old_style ? old_style->ShapeOutside()
-                : ComputedStyle::InitialShapeOutside();
+                : ComputedStyleInitialValues::InitialShapeOutside();
 
   Length shape_margin = style.ShapeMargin();
-  Length old_shape_margin = old_style ? old_style->ShapeMargin()
-                                      : ComputedStyle::InitialShapeMargin();
+  Length old_shape_margin =
+      old_style ? old_style->ShapeMargin()
+                : ComputedStyleInitialValues::InitialShapeMargin();
 
   float shape_image_threshold = style.ShapeImageThreshold();
   float old_shape_image_threshold =
       old_style ? old_style->ShapeImageThreshold()
-                : ComputedStyle::InitialShapeImageThreshold();
+                : ComputedStyleInitialValues::InitialShapeImageThreshold();
 
   // FIXME: A future optimization would do a deep comparison for equality. (bug
   // 100811)
@@ -3596,9 +3597,9 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   DCHECK(size_type == kMinSize || size_type == kMaxSize);
   Length logical_height = size_type == kMinSize ? Style()->LogicalMinHeight()
                                                 : Style()->LogicalMaxHeight();
-  Length initial_logical_height = size_type == kMinSize
-                                      ? ComputedStyle::InitialMinHeight()
-                                      : ComputedStyle::InitialMaxHeight();
+  Length initial_logical_height =
+      size_type == kMinSize ? ComputedStyleInitialValues::InitialMinHeight()
+                            : ComputedStyleInitialValues::InitialMaxHeight();
 
   if (logical_height == initial_logical_height)
     return true;

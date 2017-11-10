@@ -576,7 +576,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // position.
     if (!(IsSVGSVGElement(*element) && element->parentNode() &&
           !element->parentNode()->IsSVGElement()))
-      style.SetPosition(ComputedStyle::InitialPosition());
+      style.SetPosition(ComputedStyleInitialValues::InitialPosition());
 
     // SVG text layout code expects us to be a block-level style element.
     if ((IsSVGForeignObjectElement(*element) || IsSVGTextElement(*element)) &&

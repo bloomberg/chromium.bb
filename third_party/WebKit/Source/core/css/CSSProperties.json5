@@ -291,7 +291,7 @@
     computed_style_custom_functions: {
       default: [],
       valid_type: "list",
-      valid_values: ["getter", "setter", "reset", "mutable"],
+      valid_values: ["initial", "getter", "setter", "reset", "mutable"],
     },
 
     // - converter: "ConvertRadius"
@@ -731,7 +731,7 @@
       wrapper_pointer_name: "Persistent",
       default_value: "StyleFilterData::Create()",
       type_name: "StyleFilterData",
-      computed_style_custom_functions: ["getter","setter"],
+      computed_style_custom_functions: ["initial", "getter","setter"],
       converter: "ConvertFilterOperations",
     },
     {
@@ -1381,7 +1381,7 @@
       wrapper_pointer_name: "Persistent",
       default_value: "StyleFilterData::Create()",
       type_name: "StyleFilterData",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertFilterOperations",
     },
     {
@@ -2069,7 +2069,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       default_value: "LayoutUnit(3)",
       type_name: "LayoutUnit",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertLineWidth<unsigned short>",
     },
     {
@@ -3201,7 +3201,7 @@
       include_paths: ["platform/LayoutUnit.h"],
       default_value: "LayoutUnit(3)",
       type_name: "LayoutUnit",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertLineWidth<unsigned short>",
     },
     {

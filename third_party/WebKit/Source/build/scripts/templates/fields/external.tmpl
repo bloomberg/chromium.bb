@@ -2,7 +2,6 @@
 {% from 'templates/fields/field.tmpl' import getter_expression, setter_expression %}
 
 {% macro decl_public_methods(field) %}
-{{base.decl_initial_method(field)}}
 {{base.decl_getter_method(field)}}
 {{base.decl_setter_method(field)}}
 {% if 'setter' not in field.computed_style_custom_functions %}

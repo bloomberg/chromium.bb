@@ -34,27 +34,15 @@
 #include "core/css/StyleColor.h"
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "core/style/CounterDirectives.h"
+#include "core/style/ComputedStyleInitialValues.h"
 #include "core/style/CursorList.h"
 #include "core/style/DataRef.h"
-#include "core/style/LineClampValue.h"
-#include "core/style/NinePieceImage.h"
-#include "core/style/QuotesData.h"
 #include "core/style/SVGComputedStyle.h"
-#include "core/style/StyleContentAlignmentData.h"
-#include "core/style/StyleInheritedVariables.h"
-#include "core/style/StyleReflection.h"
-#include "core/style/StyleSelfAlignmentData.h"
 #include "core/style/TransformOrigin.h"
 #include "platform/Length.h"
 #include "platform/LengthBox.h"
 #include "platform/LengthPoint.h"
 #include "platform/LengthSize.h"
-#include "platform/ThemeTypes.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/geometry/FloatRoundedRect.h"
-#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/TouchAction.h"
 #include "platform/runtime_enabled_features.h"
@@ -72,21 +60,26 @@ namespace blink {
 
 using std::max;
 
-class FilterOperations;
-
 class AppliedTextDecoration;
 struct BorderEdge;
+class ContentData;
+class CounterDirectives;
 class CSSAnimationData;
 class CSSTransitionData;
 class CSSVariableData;
+class FilterOperations;
 class Font;
 class Hyphenation;
+class NinePieceImage;
 class ShadowList;
 class ShapeValue;
+class StyleContentAlignmentData;
 class StyleDifference;
 class StyleImage;
+class StyleInheritedVariables;
 class StylePath;
 class StyleResolver;
+class StyleSelfAlignmentData;
 class TransformationMatrix;
 
 class ContentData;
@@ -127,8 +120,7 @@ typedef Vector<scoped_refptr<ComputedStyle>, 4> PseudoStyleCache;
 // INTERFACE:
 //
 // For most CSS properties, ComputedStyle provides a consistent interface which
-// includes a getter, setter, initial method (the computed value when the
-// property is to 'initial'), and resetter (that resets the computed value to
+// includes a getter, setter, and resetter (that resets the computed value to
 // its initial value). Exceptions include vertical-align, which has a separate
 // set of accessors for its length and its keyword components. Apart from
 // accessors, ComputedStyle also has a wealth of helper functions.
@@ -257,54 +249,32 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   /**
-     * ComputedStyle properties
-     *
-     * Each property stored in ComputedStyle is made up of fields. Fields have
-     * initial value functions, getters and setters. A field is preferably a
-     * basic data type or enum, but can be any type. A set of fields should be
-     * preceded by the property the field is stored for.
-     *
-     * Field method naming should be done like so:
-     *   // name-of-property
-     *   static int initialNameOfProperty();
-     *   int nameOfProperty() const;
-     *   void setNameOfProperty(int);
-     * If the property has multiple fields, add the field name to the end of the
-     * method name.
-     *
-     * Avoid nested types by splitting up fields where possible, e.g.:
-     *  int getBorderTopWidth();
-     *  int getBorderBottomWidth();
-     *  int getBorderLeftWidth();
-     *  int getBorderRightWidth();
-     * is preferable to:
-     *  BorderWidths getBorderWidths();
-     *
-     * Utility functions should go in a separate section at the end of the
-     * class, and be kept to a minimum.
-     */
+   * ComputedStyle properties
+   *
+   * Each property stored in ComputedStyle is made up of fields. Fields have
+   * getters and setters. A field is preferably a basic data type or enum,
+   * but can be any type. A set of fields should be preceded by the property
+   * the field is stored for.
+   *
+   * Field method naming should be done like so:
+   *   // name-of-property
+   *   int nameOfProperty() const;
+   *   void SetNameOfProperty(int);
+   * If the property has multiple fields, add the field name to the end of the
+   * method name.
+   *
+   * Avoid nested types by splitting up fields where possible, e.g.:
+   *  int getBorderTopWidth();
+   *  int getBorderBottomWidth();
+   *  int getBorderLeftWidth();
+   *  int getBorderRightWidth();
+   * is preferable to:
+   *  BorderWidths getBorderWidths();
+   *
+   * Utility functions should go in a separate section at the end of the
+   * class, and be kept to a minimum.
+   */
 
-  // Non-Inherited properties.
-
-  static StyleSelfAlignmentData InitialSelfAlignment() {
-    return StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault);
-  }
-
-  static StyleContentAlignmentData InitialContentAlignment() {
-    return StyleContentAlignmentData(kContentPositionNormal,
-                                     kContentDistributionDefault,
-                                     kOverflowAlignmentDefault);
-  }
-
-  static StyleSelfAlignmentData InitialDefaultAlignment() {
-    return StyleSelfAlignmentData(kItemPositionNormal,
-                                  kOverflowAlignmentDefault);
-  }
-
-  // Filter properties.
-
-  // backdrop-filter
-  static const FilterOperations& InitialBackdropFilter();
   const FilterOperations& BackdropFilter() const {
     DCHECK(BackdropFilterInternal().Get());
     return BackdropFilterInternal()->operations_;
@@ -327,7 +297,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // filter (aka -webkit-filter)
-  static const FilterOperations& InitialFilter();
   FilterOperations& MutableFilter() {
     DCHECK(FilterInternal().Get());
     return MutableFilterInternal()->operations_;
@@ -348,10 +317,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool FilterDataEquivalent(const ComputedStyle& o) const {
     return DataEquivalent(FilterInternal(), o.FilterInternal());
   }
-
-  // Background properties.
-  // background-color
-  static Color InitialBackgroundColor() { return Color::kTransparent; }
 
 
   // background-image
@@ -374,7 +339,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetBorderImageSlices(const LengthBox&);
 
   // border-image-source
-  static StyleImage* InitialBorderImageSource() { return 0; }
   StyleImage* BorderImageSource() const { return BorderImage().GetImage(); }
   void SetBorderImageSource(StyleImage*);
 
@@ -391,8 +355,6 @@ class ComputedStyle : public ComputedStyleBase,
   void SetBorderImageOutset(const BorderImageLengthBox&);
 
   // Border width properties.
-  static float InitialBorderWidth() { return 3; }
-
   // TODO(nainar): Move all fixed point logic to a separate class.
   // border-top-width
   float BorderTopWidth() const {
@@ -487,26 +449,24 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // clip
-  static LengthBox InitialClip() { return LengthBox(); }
   void SetClip(const LengthBox& box) {
     SetHasAutoClipInternal(false);
     SetClipInternal(box);
   }
   void SetHasAutoClip() {
     SetHasAutoClipInternal(true);
-    SetClipInternal(ComputedStyle::InitialClip());
+    SetClipInternal(ComputedStyleInitialValues::InitialClip());
   }
 
   // Column properties.
   // column-count (aka -webkit-column-count)
-  static unsigned short InitialColumnCount() { return 1; }
   void SetColumnCount(unsigned short c) {
     SetHasAutoColumnCountInternal(false);
     SetColumnCountInternal(c);
   }
   void SetHasAutoColumnCount() {
     SetHasAutoColumnCountInternal(true);
-    SetColumnCountInternal(InitialColumnCount());
+    SetColumnCountInternal(ComputedStyleInitialValues::InitialColumnCount());
   }
 
   // column-gap (aka -webkit-column-gap)
@@ -528,7 +488,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
-  static unsigned short InitialColumnRuleWidth() { return 3; }
   unsigned short ColumnRuleWidth() const {
     if (ColumnRuleStyle() == EBorderStyle::kNone ||
         ColumnRuleStyle() == EBorderStyle::kHidden)
@@ -549,31 +508,17 @@ class ComputedStyle : public ComputedStyleBase,
     SetColumnWidthInternal(0);
   }
 
-  // contain
-  static Containment InitialContain() { return kContainsNone; }
-
   // content
   ContentData* GetContentData() const { return ContentInternal().Get(); }
   void SetContent(ContentData*);
 
   // -webkit-box-ordinal-group
-  static unsigned InitialBoxOrdinalGroup() { return 1; }
   void SetBoxOrdinalGroup(unsigned og) {
     SetBoxOrdinalGroupInternal(
         std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
 
-  // Grid properties.
-  static size_t InitialGridAutoRepeatInsertionPoint() { return 0; }
-  static AutoRepeatType InitialGridAutoRepeatType() {
-    return AutoRepeatType::kNoAutoRepeat;
-  }
-
-  // grid-auto-flow
-  static GridAutoFlow InitialGridAutoFlow() { return kAutoFlowRow; }
-
   // opacity (aka -webkit-opacity)
-  static float InitialOpacity() { return 1.0f; }
   void SetOpacity(float f) {
     float v = clampTo<float>(f, 0, 1);
     SetOpacityInternal(v);
@@ -598,7 +543,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // order (aka -webkit-order)
-  static int InitialOrder() { return 0; }
   // We restrict the smallest value to int min + 2 because we use int min and
   // int min + 1 as special values in a hash set.
   void SetOrder(int o) {
@@ -628,7 +572,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // outline-width
-  static unsigned short InitialOutlineWidth() { return 3; }
   unsigned short OutlineWidth() const {
     if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
@@ -640,7 +583,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // outline-offset
-  static int InitialOutlineOffset() { return 0; }
   int OutlineOffset() const {
     if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
@@ -648,27 +590,19 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-perspective-origin-x
-  static Length InitialPerspectiveOriginX() { return Length(50.0, kPercent); }
   const Length& PerspectiveOriginX() const { return PerspectiveOrigin().X(); }
   void SetPerspectiveOriginX(const Length& v) {
     SetPerspectiveOrigin(LengthPoint(v, PerspectiveOriginY()));
   }
 
   // -webkit-perspective-origin-y
-  static Length InitialPerspectiveOriginY() { return Length(50.0, kPercent); }
   const Length& PerspectiveOriginY() const { return PerspectiveOrigin().Y(); }
   void SetPerspectiveOriginY(const Length& v) {
     SetPerspectiveOrigin(LengthPoint(PerspectiveOriginX(), v));
   }
 
   // Transform properties.
-  // transform (aka -webkit-transform)
-  static EmptyTransformOperations InitialTransform() {
-    return EmptyTransformOperations();
-  }
-
   // -webkit-transform-origin-x
-  static Length InitialTransformOriginX() { return Length(50.0, kPercent); }
   const Length& TransformOriginX() const { return GetTransformOrigin().X(); }
   void SetTransformOriginX(const Length& v) {
     SetTransformOrigin(
@@ -676,7 +610,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-transform-origin-y
-  static Length InitialTransformOriginY() { return Length(50.0, kPercent); }
   const Length& TransformOriginY() const { return GetTransformOrigin().Y(); }
   void SetTransformOriginY(const Length& v) {
     SetTransformOrigin(
@@ -684,7 +617,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-transform-origin-z
-  static float InitialTransformOriginZ() { return 0; }
   float TransformOriginZ() const { return GetTransformOrigin().Z(); }
   void SetTransformOriginZ(float f) {
     SetTransformOrigin(
@@ -692,9 +624,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Scroll properties.
-  // scroll-behavior
-  static ScrollBehavior InitialScrollBehavior() { return kScrollBehaviorAuto; }
-
   // scroll-padding-block-start
   const Length& ScrollPaddingBlockStart() const {
     return IsHorizontalWritingMode() ? ScrollPaddingTop() : ScrollPaddingLeft();
@@ -790,7 +719,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // shape-image-threshold (aka -webkit-shape-image-threshold)
-  static float InitialShapeImageThreshold() { return 0; }
   void SetShapeImageThreshold(float shape_image_threshold) {
     float clamped_shape_image_threshold =
         clampTo<float>(shape_image_threshold, 0, 1);
@@ -798,20 +726,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // shape-outside (aka -webkit-shape-outside)
-  static ShapeValue* InitialShapeOutside() { return 0; }
   ShapeValue* ShapeOutside() const { return ShapeOutsideInternal().Get(); }
   bool ShapeOutsideDataEquivalent(const ComputedStyle& other) const {
     return DataEquivalent(ShapeOutside(), other.ShapeOutside());
   }
 
-  static ETextDecorationSkipInk InitialTextDecorationSkipInk() {
-    return ETextDecorationSkipInk::kAuto;
-  }
-
   // touch-action
-  static TouchAction InitialTouchAction() {
-    return TouchAction::kTouchActionAuto;
-  }
   TouchAction GetEffectiveTouchAction() const {
     return EffectiveTouchActionInternal();
   }
@@ -820,9 +740,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // vertical-align
-  static EVerticalAlign InitialVerticalAlign() {
-    return EVerticalAlign::kBaseline;
-  }
   EVerticalAlign VerticalAlign() const { return static_cast<EVerticalAlign>(VerticalAlignInternal()); }
   void SetVerticalAlign(EVerticalAlign v) { SetVerticalAlignInternal(static_cast<unsigned>(v)); }
   void SetVerticalAlignLength(const Length& length) {
@@ -843,10 +760,6 @@ class ComputedStyle : public ComputedStyleBase,
   // zoom
   bool SetZoom(float);
   bool SetEffectiveZoom(float);
-
-  // -webkit-appearance
-  static ControlPart InitialAppearance() { return kNoControlPart; }
-
 
   // -webkit-clip-path
   bool ClipPathDataEquivalent(const ComputedStyle& other) const {
@@ -877,7 +790,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-mask-box-image-source
-  static StyleImage* InitialMaskBoxImageSource() { return 0; }
   StyleImage* MaskBoxImageSource() const {
     return MaskBoxImageInternal().GetImage();
   }
@@ -896,7 +808,6 @@ class ComputedStyle : public ComputedStyleBase,
   // Inherited properties.
 
   // color
-  static Color InitialColor() { return Color::kBlack; }
   void SetColor(const Color&);
 
   // line-height
@@ -904,7 +815,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // List style properties.
   // list-style-image
-  static StyleImage* InitialListStyleImage() { return 0; }
   StyleImage* ListStyleImage() const;
   void SetListStyleImage(StyleImage*);
 
@@ -915,9 +825,6 @@ class ComputedStyle : public ComputedStyleBase,
   bool TextShadowDataEquivalent(const ComputedStyle&) const;
 
   // Text emphasis properties.
-  static TextEmphasisMark InitialTextEmphasisMark() {
-    return TextEmphasisMark::kNone;
-  }
   TextEmphasisMark GetTextEmphasisMark() const;
   void SetTextEmphasisMark(TextEmphasisMark mark) {
     SetTextEmphasisMarkInternal(mark);
@@ -980,8 +887,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // FIXME: Remove letter-spacing/word-spacing and replace them with respective
   // FontBuilder calls.  letter-spacing
-  static float InitialWordSpacing() { return 0.0f; }
-  static float InitialLetterSpacing() { return 0.0f; }
   float LetterSpacing() const;
   void SetLetterSpacing(float);
 
@@ -1126,13 +1031,6 @@ class ComputedStyle : public ComputedStyleBase,
   void ClearResetDirectives();
 
   // Variables.
-  static StyleInheritedVariables* InitialInheritedVariables() {
-    return nullptr;
-  }
-  static StyleNonInheritedVariables* InitialNonInheritedVariables() {
-    return nullptr;
-  }
-
   StyleInheritedVariables* InheritedVariables() const;
   StyleNonInheritedVariables* NonInheritedVariables() const;
 

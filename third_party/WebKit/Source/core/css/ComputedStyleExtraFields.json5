@@ -199,7 +199,7 @@
       field_size: 4,
       type_name: "unsigned",
       default_value: "static_cast<unsigned>(EVerticalAlign::kBaseline)",
-      computed_style_custom_functions: ["getter", "setter"],
+      computed_style_custom_functions: ["initial", "getter", "setter"],
     },
     {
       name: "VerticalAlignLength",

@@ -51,7 +51,7 @@ namespace blink {
   {% elif property.font %}
   {{set_value(property)}}(FontBuilder::{{property.initial}}());
   {% else %}
-  {{set_value(property)}}(ComputedStyle::{{property.initial}}());
+  {{set_value(property)}}(ComputedStyleInitialValues::{{property.initial}}());
   {% endif %}
   {% if property.independent %}
   {{set_is_inherited(property)}}(false);
@@ -298,7 +298,7 @@ static bool borderImageLengthMatchesAllSides(
   }
 }
 {% endmacro %}
-{{apply_color('CSSPropertyBackgroundColor', initial_color='ComputedStyle::InitialBackgroundColor') }}
+{{apply_color('CSSPropertyBackgroundColor', initial_color='ComputedStyleInitialValues::InitialBackgroundColor') }}
 {{apply_color('CSSPropertyBorderBottomColor')}}
 {{apply_color('CSSPropertyBorderLeftColor')}}
 {{apply_color('CSSPropertyBorderRightColor')}}
@@ -443,14 +443,14 @@ while (currParent && currParent->Is{{fill_type}}Set()) {
 
 {% macro apply_grid_template(property_id, type) %}
 {{declare_initial_function(property_id)}} {
-  state.Style()->SetGridTemplate{{type}}s(ComputedStyle::InitialGridTemplate{{type}}s());
-  state.Style()->SetNamedGrid{{type}}Lines(ComputedStyle::InitialNamedGrid{{type}}Lines());
-  state.Style()->SetOrderedNamedGrid{{type}}Lines(ComputedStyle::InitialOrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}s(ComputedStyle::InitialGridAutoRepeat{{type}}s());
-  state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(ComputedStyle::InitialGridAutoRepeat{{type}}sInsertionPoint());
-  state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(ComputedStyle::InitialNamedGrid{{type}}Lines());
-  state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(ComputedStyle::InitialOrderedNamedGrid{{type}}Lines());
-  state.Style()->SetGridAutoRepeat{{type}}sType(ComputedStyle::InitialGridAutoRepeat{{type}}sType());
+  state.Style()->SetGridTemplate{{type}}s(ComputedStyleInitialValues::InitialGridTemplate{{type}}s());
+  state.Style()->SetNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
+  state.Style()->SetOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
+  state.Style()->SetGridAutoRepeat{{type}}s(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}s());
+  state.Style()->SetGridAutoRepeat{{type}}sInsertionPoint(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sInsertionPoint());
+  state.Style()->SetAutoRepeatNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialNamedGrid{{type}}Lines());
+  state.Style()->SetAutoRepeatOrderedNamedGrid{{type}}Lines(ComputedStyleInitialValues::InitialOrderedNamedGrid{{type}}Lines());
+  state.Style()->SetGridAutoRepeat{{type}}sType(ComputedStyleInitialValues::InitialGridAutoRepeat{{type}}sType());
 
 }
 
@@ -472,9 +472,9 @@ while (currParent && currParent->Is{{fill_type}}Set()) {
   OrderedNamedGridLines orderedNamedGridLines;
   NamedGridLinesMap autoRepeatNamedGridLines;
   OrderedNamedGridLines autoRepeatOrderedNamedGridLines;
-  AutoRepeatType autoRepeatType = ComputedStyle::InitialGridAutoRepeatType();
+  AutoRepeatType autoRepeatType = ComputedStyleInitialValues::InitialGridAutoRepeatType();
   size_t autoRepeatInsertionPoint =
-      ComputedStyle::InitialGridAutoRepeatInsertionPoint();
+      ComputedStyleInitialValues::InitialGridAutoRepeatInsertionPoint();
   StyleBuilderConverter::ConvertGridTrackList(
       value, trackSizes, namedGridLines, orderedNamedGridLines,
       autoRepeatTrackSizes, autoRepeatNamedGridLines,

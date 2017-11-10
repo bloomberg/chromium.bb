@@ -462,6 +462,15 @@ action("generated_testing_idls_internal_runtime_flags") {
   }
 }
 
+css_properties("make_core_generated_computed_style_initial_values") {
+  script = "../build/scripts/core/style/make_computed_style_initial_values.py"
+  in_files = [ "css/ComputedStyleExtraFields.json5" ]
+  other_inputs = [ "../build/scripts/core/style/templates/ComputedStyleInitialValues.h.tmpl" ]
+  outputs = [
+    "$blink_core_output_dir/style/ComputedStyleInitialValues.h",
+  ]
+}
+
 css_properties("make_core_generated_computed_style_base") {
   script = "../build/scripts/make_computed_style_base.py"
   in_files = [
@@ -1215,6 +1224,7 @@ action_foreach("make_core_generated_bison") {
 targets_generating_sources = [
   ":make_core_generated_bison",
   ":make_core_generated_css_primitive_value_unit_trie",
+  ":make_core_generated_computed_style_initial_values",
   ":make_core_generated_computed_style_base",
   ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_css_property_baseclass",

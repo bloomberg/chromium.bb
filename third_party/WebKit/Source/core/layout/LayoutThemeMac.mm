@@ -665,7 +665,7 @@ void LayoutThemeMac::SetFontFromControlSize(ComputedStyle& style,
   font_description.SetSpecifiedSize([font pointSize] * style.EffectiveZoom());
 
   // Reset line height.
-  style.SetLineHeight(ComputedStyle::InitialLineHeight());
+  style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 
   // TODO(esprehn): The fontSelector manual management is buggy and error prone.
   FontSelector* font_selector = style.GetFont().GetFontSelector();
@@ -817,7 +817,7 @@ void LayoutThemeMac::AdjustMenuListButtonStyle(ComputedStyle& style,
   const int kMinHeight = 15;
   style.SetMinHeight(Length(kMinHeight, kFixed));
 
-  style.SetLineHeight(ComputedStyle::InitialLineHeight());
+  style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 }
 
 void LayoutThemeMac::SetPopupButtonCellState(const Node* node,

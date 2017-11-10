@@ -88,10 +88,6 @@ bool LengthPropertyFunctions::GetPixelsForKeyword(CSSPropertyID property,
   }
 }
 
-static Length LengthFromUnsigned(unsigned short value) {
-  return Length(static_cast<float>(value), kFixed);
-}
-
 bool LengthPropertyFunctions::GetInitialLength(CSSPropertyID property,
                                                Length& result) {
   switch (property) {
@@ -109,13 +105,15 @@ bool LengthPropertyFunctions::GetInitialLength(CSSPropertyID property,
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
     case CSSPropertyBorderTopWidth:
-      result = LengthFromUnsigned(ComputedStyle::InitialBorderWidth());
+      result = Length(ComputedStyleInitialValues::InitialBorderWidth(), kFixed);
       return true;
     case CSSPropertyOutlineWidth:
-      result = LengthFromUnsigned(ComputedStyle::InitialOutlineWidth());
+      result =
+          Length(ComputedStyleInitialValues::InitialOutlineWidth(), kFixed);
       return true;
     case CSSPropertyColumnRuleWidth:
-      result = LengthFromUnsigned(ComputedStyle::InitialColumnRuleWidth());
+      result =
+          Length(ComputedStyleInitialValues::InitialColumnRuleWidth(), kFixed);
       return true;
 
     default:
