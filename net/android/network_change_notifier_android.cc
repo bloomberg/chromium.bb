@@ -182,7 +182,8 @@ bool NetworkChangeNotifierAndroid::AreNetworkHandlesCurrentlySupported() const {
   // NetworkHandles only implemented for Android versions >= L.
   return force_network_handles_supported_for_testing_ ||
          (base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_LOLLIPOP);
+              base::android::SDK_VERSION_LOLLIPOP &&
+          !delegate_->IsProcessBoundToNetwork());
 }
 
 void NetworkChangeNotifierAndroid::GetCurrentConnectedNetworks(
