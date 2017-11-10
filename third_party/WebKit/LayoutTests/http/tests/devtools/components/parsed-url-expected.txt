@@ -193,4 +193,64 @@ Splitting url: http://www.chromium.org/foo.js:10:20
   URL: http://www.chromium.org/foo.js
   Line: 9
   Column: 19
+URL: http://example.com/foo.html
+Extension: html
+
+URL: http://example.com/foo.html?hello
+Extension: html
+
+URL: http://example.com/foo.html?#hello
+Extension: html
+
+URL: http://example.com/foo.ht#ml?hello
+Extension: ht
+
+URL: http://example.com/foo.ht?ml#hello
+Extension: ht
+
+URL: http://example.com/fooht?ml#hello
+Extension: 
+
+URL: /some/folder/
+Extension: 
+
+URL: /some/folder/file.js
+Extension: js
+
+URL: /some/folder/file
+Extension: 
+
+URL: /some/folder/folder.js/file
+Extension: 
+
+URL: /some/folder/folder.js/file.png
+Extension: png
+
+URL: /some/folder/folder.js/
+Extension: 
+
+URL: /some/folder/
+Extension: 
+
+URL: http://example.com/foo.html%20hello
+Extension: html
+
+URL: http://example.com/foo.html%20?#hello
+Extension: html
+
+URL: http://example.com/foo.html?%20#hello
+Extension: html
+
+URL: http://example.com/foo.html?#%20hello
+Extension: html
+
+URL: http://example.com/foo.ht%20
+Extension: ht
+
+URL: http://example.com/foo.ht?ml#hello%20
+Extension: ht
+
+URL: /some/folder/folder.js%20/
+Extension: 
+
 
