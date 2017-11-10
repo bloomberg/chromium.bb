@@ -780,13 +780,6 @@ DictionaryValue* DictionaryValue::SetDictionaryWithoutPathExpansion(
       SetWithoutPathExpansion(path, std::move(in_value)));
 }
 
-ListValue* DictionaryValue::SetListWithoutPathExpansion(
-    StringPiece path,
-    std::unique_ptr<ListValue> in_value) {
-  return static_cast<ListValue*>(
-      SetWithoutPathExpansion(path, std::move(in_value)));
-}
-
 bool DictionaryValue::Get(StringPiece path,
                           const Value** out_value) const {
   DCHECK(IsStringUTF8(path));
