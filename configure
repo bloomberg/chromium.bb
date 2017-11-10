@@ -272,7 +272,6 @@ EXPERIMENT_LIST="
     q_adapt_probs
     inter_stats_only
     palette_delta_encoding
-    rawbits
     kf_ctx
     cfl
     xiphrc
@@ -554,10 +553,6 @@ post_process_cmdline() {
     enabled loopfilter_level && enable_feature ext_delta_q
     enabled striped_loop_restoration && enable_feature loop_restoration
 
-    if enabled rawbits && enabled ans; then
-      log_echo "rawbits requires not ans, so disabling rawbits"
-      disable_feature rawbits
-    fi
     if enabled daala_tx; then
       enable_feature highbitdepth
       enable_feature daala_tx4

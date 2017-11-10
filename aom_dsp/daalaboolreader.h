@@ -97,12 +97,6 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
   return bit;
 }
 
-#if CONFIG_RAWBITS
-static INLINE int aom_daala_read_bit(daala_reader *r) {
-  return od_ec_dec_bits(&r->ec, 1, "aom_bits");
-}
-#endif
-
 static INLINE int aom_daala_reader_has_error(daala_reader *r) {
   return r->ec.error;
 }

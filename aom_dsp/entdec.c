@@ -204,45 +204,6 @@ int od_ec_decode_cdf_q15(od_ec_dec *dec, const uint16_t *icdf, int nsyms) {
   return od_ec_dec_normalize(dec, dif, r, ret);
 }
 
-#if CONFIG_RAWBITS
-/*Extracts a sequence of raw bits from the stream.
-  The bits must have been encoded with od_ec_enc_bits().
-  ftb: The number of bits to extract.
-       This must be between 0 and 25, inclusive.
-  Return: The decoded bits.*/
-uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb) {
-  od_ec_window window;
-  int available;
-  uint32_t ret;
-  OD_ASSERT(ftb <= 25);
-  window = dec->end_window;
-  available = dec->nend_bits;
-  if ((unsigned)available < ftb) {
-    const unsigned char *buf;
-    const unsigned char *eptr;
-    buf = dec->buf;
-    eptr = dec->eptr;
-    OD_ASSERT(available <= OD_EC_WINDOW_SIZE - 8);
-    do {
-      if (eptr <= buf) {
-        dec->tell_offs += OD_EC_LOTS_OF_BITS - available;
-        available = OD_EC_LOTS_OF_BITS;
-        break;
-      }
-      window |= (od_ec_window) * --eptr << available;
-      available += 8;
-    } while (available <= OD_EC_WINDOW_SIZE - 8);
-    dec->eptr = eptr;
-  }
-  ret = (uint32_t)window & (((uint32_t)1 << ftb) - 1);
-  window >>= ftb;
-  available -= ftb;
-  dec->end_window = window;
-  dec->nend_bits = available;
-  return ret;
-}
-#endif
-
 /*Returns the number of bits "used" by the decoded symbols so far.
   This same number can be computed in either the encoder or the decoder, and is
    suitable for making coding decisions.

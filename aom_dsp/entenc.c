@@ -212,61 +212,6 @@ void od_ec_encode_cdf_q15(od_ec_enc *enc, int s, const uint16_t *icdf,
   od_ec_encode_q15(enc, s > 0 ? icdf[s - 1] : OD_ICDF(0), icdf[s]);
 }
 
-#if CONFIG_RAWBITS
-/*Encodes a sequence of raw bits in the stream.
-  fl: The bits to encode.
-  ftb: The number of bits to encode.
-       This must be between 0 and 25, inclusive.*/
-void od_ec_enc_bits(od_ec_enc *enc, uint32_t fl, unsigned ftb) {
-  od_ec_window end_window;
-  int nend_bits;
-  OD_ASSERT(ftb <= 25);
-  OD_ASSERT(fl < (uint32_t)1 << ftb);
-#if OD_MEASURE_EC_OVERHEAD
-  enc->entropy += ftb;
-#endif
-  end_window = enc->end_window;
-  nend_bits = enc->nend_bits;
-  if (nend_bits + ftb > OD_EC_WINDOW_SIZE) {
-    unsigned char *buf;
-    uint32_t storage;
-    uint32_t end_offs;
-    buf = enc->buf;
-    storage = enc->storage;
-    end_offs = enc->end_offs;
-    if (end_offs + (OD_EC_WINDOW_SIZE >> 3) >= storage) {
-      unsigned char *new_buf;
-      uint32_t new_storage;
-      new_storage = 2 * storage + (OD_EC_WINDOW_SIZE >> 3);
-      new_buf = (unsigned char *)malloc(sizeof(*new_buf) * new_storage);
-      if (new_buf == NULL) {
-        enc->error = -1;
-        enc->end_offs = 0;
-        return;
-      }
-      OD_COPY(new_buf + new_storage - end_offs, buf + storage - end_offs,
-              end_offs);
-      storage = new_storage;
-      free(buf);
-      enc->buf = buf = new_buf;
-      enc->storage = storage;
-    }
-    do {
-      OD_ASSERT(end_offs < storage);
-      buf[storage - ++end_offs] = (unsigned char)end_window;
-      end_window >>= 8;
-      nend_bits -= 8;
-    } while (nend_bits >= 8);
-    enc->end_offs = end_offs;
-  }
-  OD_ASSERT(nend_bits + ftb <= OD_EC_WINDOW_SIZE);
-  end_window |= (od_ec_window)fl << nend_bits;
-  nend_bits += ftb;
-  enc->end_window = end_window;
-  enc->nend_bits = nend_bits;
-}
-#endif
-
 /*Overwrites a few bits at the very start of an existing stream, after they
    have already been encoded.
   This makes it possible to have a few flags up front, where it is easy for
