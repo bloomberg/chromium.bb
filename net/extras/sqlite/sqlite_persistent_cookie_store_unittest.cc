@@ -345,8 +345,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
 
 // Test that priority load of cookies for a specfic domain key could be
 // completed before the entire store is loaded
-// TODO(http://crbug.com/727566): Disabled due to Android bot failures.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_TestLoadCookiesForKey) {
+TEST_F(SQLitePersistentCookieStoreTest, TestLoadCookiesForKey) {
   InitializeStore(false, false);
   base::Time t = base::Time::Now();
   AddCookie("A", "B", "foo.bar", "/", t);
@@ -745,8 +744,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   cookies.clear();
 }
 
-// TODO(http://crbug.com/727566): Disabled due to Android bot failures.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateToEncryption) {
+TEST_F(SQLitePersistentCookieStoreTest, UpdateToEncryption) {
   CanonicalCookieVector cookies;
 
   // Create unencrypted cookie store and write something to it.
@@ -816,8 +814,7 @@ TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateToEncryption) {
   EXPECT_EQ(contents.find("something456ABC"), std::string::npos);
 }
 
-// TODO(http://crbug.com/727566): Disabled due to Android bot failures.
-TEST_F(SQLitePersistentCookieStoreTest, DISABLED_UpdateFromEncryption) {
+TEST_F(SQLitePersistentCookieStoreTest, UpdateFromEncryption) {
   CanonicalCookieVector cookies;
 
   // Create unencrypted cookie store and write something to it.
