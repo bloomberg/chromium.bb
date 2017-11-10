@@ -56,10 +56,12 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   bool ShouldClipOverflow() const { return false; }
   bool HasSelfPaintingLayer() const { return false; }
   LayoutRect VisualRect() const override { return visual_rect_; }
-  LayoutRect VisualOverflowRect() const { return VisualRect(); }
-  LayoutRect OverflowClipRect(const LayoutPoint&,
+  LayoutRect VisualOverflowRect() const {
+    return {LayoutPoint(), VisualRect().Size()};
+  }
+  LayoutRect OverflowClipRect(const LayoutPoint& location,
                               OverlayScrollbarClipBehavior) const {
-    return VisualRect();
+    return {location, VisualRect().Size()};
   }
 
   // DisplayItemClient methods.
