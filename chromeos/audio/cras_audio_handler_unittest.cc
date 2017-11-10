@@ -3547,24 +3547,28 @@ TEST_P(CrasAudioHandlerTest, NoMoreAudioInputDevices) {
   EXPECT_EQ(1, test_observer_->active_input_node_changed_count());
 }
 
-// Test the case hot plugging 35mm headphone. It should always be selected as
-// active output device.
-TEST_P(CrasAudioHandlerTest, HotPlug35mmHeadphone) {
+// Test the case hot plugging 35mm headphone and mic. Both 35mm headphone and
+// and mic should always be selected as active output and input devices.
+TEST_P(CrasAudioHandlerTest, HotPlug35mmHeadphoneAndMic) {
   AudioNodeList audio_nodes;
   AudioNode internal_speaker = GenerateAudioNode(kInternalSpeaker);
   audio_nodes.push_back(internal_speaker);
+  AudioNode internal_mic = GenerateAudioNode(kInternalMic);
+  audio_nodes.push_back(internal_mic);
   SetUpCrasAudioHandler(audio_nodes);
 
   // Verify the audio devices size.
   AudioDeviceList audio_devices;
   cras_audio_handler_->GetAudioDevices(&audio_devices);
-  EXPECT_EQ(1u, audio_devices.size());
+  EXPECT_EQ(2u, audio_devices.size());
 
   // Verify internal speaker is selected as active output by default.
   EXPECT_EQ(internal_speaker.id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
+  // Verify internal mic is selected as active input by default.
+  EXPECT_EQ(internal_mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
 
-  // Hotplug the 35mm headphone.
+  // Hotplug the 35mm headset with both headphone and mic.
   audio_nodes.clear();
   internal_speaker.active = true;
   audio_nodes.push_back(internal_speaker);
@@ -3572,46 +3576,71 @@ TEST_P(CrasAudioHandlerTest, HotPlug35mmHeadphone) {
   headphone.active = false;
   headphone.plugged_time = 50000000;
   audio_nodes.push_back(headphone);
+  internal_mic.active = true;
+  audio_nodes.push_back(internal_mic);
+  AudioNode mic = GenerateAudioNode(kMicJack);
+  mic.active = false;
+  mic.plugged_time = 50000000;
+  audio_nodes.push_back(mic);
   ChangeAudioNodes(audio_nodes);
 
   // Verify 35mm headphone is selected as active output.
   cras_audio_handler_->GetAudioDevices(&audio_devices);
-  EXPECT_EQ(2u, audio_devices.size());
+  EXPECT_EQ(4u, audio_devices.size());
   EXPECT_EQ(headphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+  // Verify 35mm mic is selected as active input.
+  EXPECT_EQ(mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
 
   // Manually select internal speaker as active output.
   AudioDevice internal_output(internal_speaker);
   cras_audio_handler_->SwitchToDevice(internal_output, true,
+                                      CrasAudioHandler::ACTIVATE_BY_USER);
+  // Manually select internal mic as active input.
+  AudioDevice internal_input(internal_mic);
+  cras_audio_handler_->SwitchToDevice(internal_input, true,
                                       CrasAudioHandler::ACTIVATE_BY_USER);
 
   // Verify the active output is switched to internal speaker.
   EXPECT_EQ(internal_speaker.id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_LT(internal_speaker.plugged_time, headphone.plugged_time);
+  // Verify the active input is switched to internal mic.
+  EXPECT_EQ(internal_mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_LT(internal_mic.plugged_time, mic.plugged_time);
 
-  // Unplug 35mm headphone.
+  // Unplug 35mm headphone and mic.
   audio_nodes.clear();
   internal_speaker.active = true;
   audio_nodes.push_back(internal_speaker);
+  internal_mic.active = true;
+  audio_nodes.push_back(internal_mic);
   ChangeAudioNodes(audio_nodes);
 
   // Verify internal speaker remains as active output.
   cras_audio_handler_->GetAudioDevices(&audio_devices);
-  EXPECT_EQ(1u, audio_devices.size());
+  EXPECT_EQ(2u, audio_devices.size());
   EXPECT_EQ(internal_speaker.id,
             cras_audio_handler_->GetPrimaryActiveOutputNode());
+  // Verify internal mic remains as active input.
+  EXPECT_EQ(internal_mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
 
-  // Hotplug 35mm headphone again.
+  // Hotplug 35mm headset again.
   headphone.active = false;
   headphone.plugged_time = 90000000;
   audio_nodes.push_back(headphone);
+  mic.active = false;
+  mic.plugged_time = 90000000;
+  audio_nodes.push_back(mic);
   ChangeAudioNodes(audio_nodes);
 
   // Verify 35mm headphone is active again.
   cras_audio_handler_->GetAudioDevices(&audio_devices);
-  EXPECT_EQ(2u, audio_devices.size());
+  EXPECT_EQ(4u, audio_devices.size());
   EXPECT_EQ(headphone.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
   EXPECT_LT(internal_speaker.plugged_time, headphone.plugged_time);
+  // Verify 35mm mic is active again.
+  EXPECT_EQ(mic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
+  EXPECT_LT(internal_mic.plugged_time, mic.plugged_time);
 }
 
 // Test the case in which an HDMI output is plugged in with other higher
