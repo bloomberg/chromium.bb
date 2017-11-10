@@ -12,6 +12,7 @@
 
 namespace offline_pages {
 class PrefetchDispatcher;
+class PrefetchImporter;
 class PrefetchStore;
 
 // Task that responses to the completed import.
@@ -19,6 +20,7 @@ class ImportCompletedTask : public Task {
  public:
   ImportCompletedTask(PrefetchDispatcher* prefetch_dispatcher,
                       PrefetchStore* prefetch_store,
+                      PrefetchImporter* prefetch_importer,
                       int64_t offline_id,
                       bool success);
   ~ImportCompletedTask() override;
@@ -30,6 +32,7 @@ class ImportCompletedTask : public Task {
 
   PrefetchDispatcher* prefetch_dispatcher_;  // Outlives this class.
   PrefetchStore* prefetch_store_;  // Outlives this class.
+  PrefetchImporter* prefetch_importer_;  // Outlives this class.
   int64_t offline_id_;
   bool success_;
 

@@ -11,8 +11,8 @@ namespace offline_pages {
 PrefetchImporter::PrefetchImporter(PrefetchDispatcher* dispatcher)
     : dispatcher_(dispatcher) {}
 
-void PrefetchImporter::NotifyImportCompleted(int64_t offline_id, bool success) {
-  dispatcher_->ImportCompleted(offline_id, success);
+void PrefetchImporter::NotifyArchiveImported(int64_t offline_id, bool success) {
+  dispatcher_->ArchiveImported(offline_id, success);
 }
 
 }  // namespace offline_pages

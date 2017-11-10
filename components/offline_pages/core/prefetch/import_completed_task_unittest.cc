@@ -4,142 +4,130 @@
 
 #include "components/offline_pages/core/prefetch/import_completed_task.h"
 
-#include <string>
-#include <vector>
-
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
-#include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
+#include "components/offline_pages/core/prefetch/task_test_base.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
-#include "sql/connection.h"
-#include "sql/statement.h"
+#include "components/offline_pages/core/prefetch/test_prefetch_importer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
-namespace {
-const int64_t kTestOfflineID = 1111;
-const int64_t kTestOfflineID2 = 223344;
-}  // namespace
-
-class ImportCompletedTaskTest : public testing::Test {
+class ImportCompletedTaskTest : public TaskTestBase {
  public:
-  ImportCompletedTaskTest();
+  ImportCompletedTaskTest() = default;
   ~ImportCompletedTaskTest() override = default;
 
-  void SetUp() override;
-  void TearDown() override;
-
-  void PumpLoop();
-
-  PrefetchStore* store() { return store_test_util_.store(); }
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
-  PrefetchStoreTestUtil* store_util() { return &store_test_util_; }
+  TestPrefetchImporter* importer() { return &test_importer_; }
 
  private:
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
   TestPrefetchDispatcher dispatcher_;
-  PrefetchStoreTestUtil store_test_util_;
+  TestPrefetchImporter test_importer_;
 };
-
-ImportCompletedTaskTest::ImportCompletedTaskTest()
-    : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
-
-void ImportCompletedTaskTest::SetUp() {
-  store_test_util_.BuildStoreInMemory();
-
-  PrefetchItem item;
-  item.offline_id = kTestOfflineID;
-  item.state = PrefetchItemState::IMPORTING;
-  item.creation_time = base::Time::Now();
-  item.freshness_time = item.creation_time;
-  EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item));
-
-  PrefetchItem item2;
-  item2.offline_id = kTestOfflineID2;
-  item2.state = PrefetchItemState::NEW_REQUEST;
-  item2.creation_time = base::Time::Now();
-  item2.freshness_time = item.creation_time;
-  EXPECT_TRUE(store_test_util_.InsertPrefetchItem(item2));
-}
-
-void ImportCompletedTaskTest::TearDown() {
-  store_test_util_.DeleteStore();
-  PumpLoop();
-}
-
-void ImportCompletedTaskTest::PumpLoop() {
-  task_runner_->RunUntilIdle();
-}
 
 TEST_F(ImportCompletedTaskTest, StoreFailure) {
   store_util()->SimulateInitializationError();
 
-  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID, true);
+  ImportCompletedTask task(dispatcher(), store(), importer(), 1, true);
+  ExpectTaskCompletes(&task);
   task.Run();
-  PumpLoop();
+  RunUntilIdle();
 }
 
 TEST_F(ImportCompletedTaskTest, ImportSuccess) {
-  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID, true);
-  task.Run();
-  PumpLoop();
+  PrefetchItem item =
+      item_generator()->CreateItem(PrefetchItemState::IMPORTING);
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
 
-  std::unique_ptr<PrefetchItem> item =
-      store_util()->GetPrefetchItem(kTestOfflineID);
-  EXPECT_EQ(PrefetchItemState::FINISHED, item->state);
-  EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, item->error_code);
+  ImportCompletedTask task(dispatcher(), store(), importer(), item.offline_id,
+                           /*success*/ true);
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+
+  std::unique_ptr<PrefetchItem> store_item =
+      store_util()->GetPrefetchItem(item.offline_id);
+  ASSERT_TRUE(store_item);
+  EXPECT_EQ(PrefetchItemState::FINISHED, store_item->state);
+  EXPECT_EQ(PrefetchItemErrorCode::SUCCESS, store_item->error_code);
+
+  EXPECT_EQ(1, dispatcher()->processing_schedule_count);
+  ASSERT_EQ(1u, importer()->latest_completed_offline_id.size());
+  EXPECT_EQ(item.offline_id, importer()->latest_completed_offline_id.back());
 }
 
 TEST_F(ImportCompletedTaskTest, ImportError) {
-  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID, false);
-  task.Run();
-  PumpLoop();
+  PrefetchItem item =
+      item_generator()->CreateItem(PrefetchItemState::IMPORTING);
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
 
-  std::unique_ptr<PrefetchItem> item =
-      store_util()->GetPrefetchItem(kTestOfflineID);
-  EXPECT_EQ(PrefetchItemState::FINISHED, item->state);
-  EXPECT_EQ(PrefetchItemErrorCode::IMPORT_ERROR, item->error_code);
+  ImportCompletedTask task(dispatcher(), store(), importer(), item.offline_id,
+                           /*success*/ false);
+  ExpectTaskCompletes(&task);
+  task.Run();
+  RunUntilIdle();
+
+  std::unique_ptr<PrefetchItem> store_item =
+      store_util()->GetPrefetchItem(item.offline_id);
+  ASSERT_TRUE(store_item);
+  EXPECT_EQ(PrefetchItemState::FINISHED, store_item->state);
+  EXPECT_EQ(PrefetchItemErrorCode::IMPORT_ERROR, store_item->error_code);
+
+  EXPECT_EQ(1, dispatcher()->processing_schedule_count);
+  ASSERT_EQ(1u, importer()->latest_completed_offline_id.size());
+  EXPECT_EQ(item.offline_id, importer()->latest_completed_offline_id.back());
 }
 
-TEST_F(ImportCompletedTaskTest, NoUpdateOnMismatchedImportSuccess) {
-  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID2, true);
+TEST_F(ImportCompletedTaskTest, NoUpdateOnMismatchedImport) {
+  PrefetchItem item =
+      item_generator()->CreateItem(PrefetchItemState::IMPORTING);
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item));
+  PrefetchItem item2 =
+      item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
+  EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
+
+  // Trigger an import sucecss task.
+  ImportCompletedTask task(dispatcher(), store(), importer(), item2.offline_id,
+                           /*success*/ true);
+  ExpectTaskCompletes(&task);
   task.Run();
-  PumpLoop();
+  RunUntilIdle();
 
   // Item will only be updated when both guid and state match.
-  std::unique_ptr<PrefetchItem> item =
-      store_util()->GetPrefetchItem(kTestOfflineID);
-  EXPECT_EQ(PrefetchItemState::IMPORTING, item->state);
+  std::unique_ptr<PrefetchItem> store_item =
+      store_util()->GetPrefetchItem(item.offline_id);
+  ASSERT_TRUE(store_item);
+  EXPECT_EQ(item, *store_item);
 
-  std::unique_ptr<PrefetchItem> item2 =
-      store_util()->GetPrefetchItem(kTestOfflineID2);
-  EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
-}
+  std::unique_ptr<PrefetchItem> store_item2 =
+      store_util()->GetPrefetchItem(item2.offline_id);
+  ASSERT_TRUE(store_item2);
+  EXPECT_EQ(item2, *store_item2);
 
-TEST_F(ImportCompletedTaskTest, NoUpdateOnMismatchedImportError) {
-  ImportCompletedTask task(dispatcher(), store(), kTestOfflineID2, false);
-  task.Run();
-  PumpLoop();
+  EXPECT_EQ(0, dispatcher()->processing_schedule_count);
+  ASSERT_EQ(1u, importer()->latest_completed_offline_id.size());
+  EXPECT_EQ(item2.offline_id, importer()->latest_completed_offline_id.back());
+
+  // Trigger an import error task.
+  ImportCompletedTask task2(dispatcher(), store(), importer(), item2.offline_id,
+                            /*success*/ false);
+  ExpectTaskCompletes(&task2);
+  task2.Run();
+  RunUntilIdle();
 
   // Item will only be updated when both guid and state match.
-  std::unique_ptr<PrefetchItem> item =
-      store_util()->GetPrefetchItem(kTestOfflineID);
-  EXPECT_EQ(PrefetchItemState::IMPORTING, item->state);
+  store_item = store_util()->GetPrefetchItem(item.offline_id);
+  ASSERT_TRUE(store_item);
+  EXPECT_EQ(item, *store_item);
 
-  std::unique_ptr<PrefetchItem> item2 =
-      store_util()->GetPrefetchItem(kTestOfflineID2);
-  EXPECT_EQ(PrefetchItemState::NEW_REQUEST, item2->state);
+  store_item2 = store_util()->GetPrefetchItem(item2.offline_id);
+  ASSERT_TRUE(store_item2);
+  EXPECT_EQ(item2, *store_item2);
+
+  EXPECT_EQ(0, dispatcher()->processing_schedule_count);
+  ASSERT_EQ(2u, importer()->latest_completed_offline_id.size());
+  EXPECT_EQ(item2.offline_id, importer()->latest_completed_offline_id.back());
 }
 
 }  // namespace offline_pages
