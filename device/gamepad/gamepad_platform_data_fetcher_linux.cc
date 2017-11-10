@@ -202,6 +202,8 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
 }
 
 void GamepadPlatformDataFetcherLinux::EnumerateDevices() {
+  if (!udev_->udev_handle())
+    return;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_->udev_handle()));
   if (!enumerate)
     return;

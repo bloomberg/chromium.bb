@@ -13,11 +13,16 @@ namespace device {
 UdevLinux::UdevLinux(const std::vector<UdevMonitorFilter>& filters,
                      const UdevNotificationCallback& callback)
     : udev_(udev_new()),
-      monitor_(udev_monitor_new_from_netlink(udev_.get(), "udev")),
+      monitor_(udev_ ? udev_monitor_new_from_netlink(udev_.get(), "udev")
+                     : nullptr),
       monitor_fd_(-1),
       callback_(callback) {
-  CHECK(udev_);
-  CHECK(monitor_);
+  if (!monitor_) {
+    LOG(ERROR) << "Failed to initialize udev, possibly due to an invalid "
+               << "system configuration. Various device-related browser "
+               << "features may be broken.";
+    return;
+  }
 
   for (const UdevMonitorFilter& filter : filters) {
     const int ret = udev_monitor_filter_add_match_subsystem_devtype(
