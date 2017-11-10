@@ -113,6 +113,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
 
   // Add common strings.
   source->AddLocalizedString("add", IDS_ADD);
+  source->AddLocalizedString("back", IDS_ACCNAME_BACK);
   source->AddLocalizedString("cancel", IDS_CANCEL);
   source->AddLocalizedString("close", IDS_CLOSE);
   source->AddLocalizedString("confirm", IDS_CONFIRM);

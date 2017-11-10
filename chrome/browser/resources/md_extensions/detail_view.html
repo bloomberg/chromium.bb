@@ -175,7 +175,7 @@
       <div id="main">
         <div id="top-bar">
           <button id="close-button" is="paper-icon-button-light"
-              class="icon-arrow-back no-overlap"
+              aria-label="$i18n{back}" class="icon-arrow-back no-overlap"
               on-tap="onCloseButtonTap_"></button>
           <img id="icon" src="[[data.iconUrl]]"
               alt$="[[appOrExtension(
@@ -351,9 +351,9 @@
         <div class="section control-line actionable" id="extensions-options"
             on-tap="onOptionsTap_"
             hidden$="[[!shouldShowOptionsLink_(data.*)]]">
-          <span>$i18n{itemOptions}</span>
+          <span id="optionLabel">$i18n{itemOptions}</span>
           <button class="icon-external" is="paper-icon-button-light"
-              actionable></button>
+              aria-labelledby="optionLabel" actionable></button>
         </div>
         <button class="hr" is="cr-link-row"
             hidden="[[isControlled_(data.controlledInfo)]]"
