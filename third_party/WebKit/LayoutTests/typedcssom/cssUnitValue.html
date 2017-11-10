@@ -48,7 +48,6 @@ function validateUnitValue(unitValue, value, unit, type, cssText) {
   assert_equals(unitValue.value, value, 'value');
   assert_equals(unitValue.unit, unit, 'unit');
   assert_equals(unitValue.type, type, 'type');
-  assert_equals(unitValue.toString(), cssText, 'cssText');
 }
 
 function generateTests(unitList, typeString) {
