@@ -1229,8 +1229,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
   EncodedLogo cached_logo;
   cached_logo.encoded_image = MakeRefPtr(kCachedB64);
   cached_logo.metadata.mime_type = "image/png";
-  cached_logo.metadata.animated_url =
-      GURL("https://www.chromium.org/animated.gif");
+  cached_logo.metadata.animated_url = GURL("data:image/png;base64,cached++");
   cached_logo.metadata.on_click_url = GURL("https://www.chromium.org/");
   cached_logo.metadata.alt_text = "alt text";
 
