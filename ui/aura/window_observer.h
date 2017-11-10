@@ -86,9 +86,7 @@ class AURA_EXPORT WindowObserver {
 
   // Invoked when the opacity of the |window|'s layer changes. Can be invoked
   // multiple times during animation.
-  virtual void OnWindowOpacityChanged(Window* window,
-                                      float old_opacity,
-                                      float new_opacity) {}
+  virtual void OnWindowOpacityChanged(Window* window) {}
 
   // Invoked when SetTransform() is invoked on |window|.
   virtual void OnWindowTransforming(Window* window) {}

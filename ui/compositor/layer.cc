@@ -1136,7 +1136,7 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
   RecomputePosition();
 
   if (delegate_)
-    delegate_->OnLayerBoundsChanged(old_bounds);
+    delegate_->OnLayerBoundsChanged(old_bounds, reason);
 
   if (bounds.size() == old_bounds.size()) {
     // Don't schedule a draw if we're invisible. We'll schedule one
@@ -1156,19 +1156,16 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds,
 
 void Layer::SetTransformFromAnimation(const gfx::Transform& transform,
                                       PropertyChangeReason reason) {
-  if (transform == cc_layer_->transform())
-    return;
   cc_layer_->SetTransform(transform);
   if (delegate_)
-    delegate_->OnLayerTransformed();
+    delegate_->OnLayerTransformed(reason);
 }
 
 void Layer::SetOpacityFromAnimation(float opacity,
                                     PropertyChangeReason reason) {
-  float old_opacity = cc_layer_->opacity();
   cc_layer_->SetOpacity(opacity);
-  if (delegate_ && old_opacity != opacity)
-    delegate_->OnLayerOpacityChanged(old_opacity, opacity);
+  if (delegate_)
+    delegate_->OnLayerOpacityChanged(reason);
   ScheduleDraw();
 }
 
