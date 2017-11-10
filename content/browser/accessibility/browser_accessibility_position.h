@@ -43,7 +43,7 @@ class BrowserAccessibilityPosition
                                       int32_t node_id) const override;
   int MaxTextOffset() const override;
   int MaxTextOffsetInParent() const override;
-  bool IsInLineBreak() const override;
+  bool IsInWhiteSpace() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;
   int32_t GetNextOnLineID(int32_t node_id) const override;

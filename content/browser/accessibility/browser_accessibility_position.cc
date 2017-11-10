@@ -4,6 +4,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_position.h"
 
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_flags.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -122,12 +123,13 @@ int BrowserAccessibilityPosition::MaxTextOffsetInParent() const {
 #endif
 }
 
-bool BrowserAccessibilityPosition::IsInLineBreak() const {
+bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
   if (IsNullPosition())
     return false;
 
   DCHECK(GetAnchor());
-  return GetAnchor()->IsLineBreakObject();
+  return GetAnchor()->IsLineBreakObject() ||
+         base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
 }
 
 std::vector<int32_t> BrowserAccessibilityPosition::GetWordStartOffsets() const {
