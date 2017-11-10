@@ -39,7 +39,6 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   bool IsLoading() const override;
   bool IsLoaded() const override;
   bool IsValid() const override;
-  DisplayPeriod GetDisplayPeriod() const { return period_; }
 
   void BeginLoadIfNeeded() override;
 
@@ -48,7 +47,8 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   void FontLoadLongLimitExceeded(FontResource*) override;
   String DebugName() const override { return "RemoteFontFaceSource"; }
 
-  bool IsBlank() override { return period_ == kBlockPeriod; }
+  bool IsInBlockPeriod() const override { return period_ == kBlockPeriod; }
+  bool IsInFailurePeriod() const override { return period_ == kFailurePeriod; }
 
   // For UMA reporting
   bool HadBlankText() override { return histograms_.HadBlankText(); }
