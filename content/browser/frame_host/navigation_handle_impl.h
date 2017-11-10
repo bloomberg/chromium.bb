@@ -324,6 +324,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       RenderFrameHostImpl* render_frame_host,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       net::HttpResponseInfo::ConnectionInfo connection_info,
+      const net::HostPortPair& socket_address,
       const SSLStatus& ssl_status,
       const GlobalRequestID& request_id,
       bool should_replace_current_entry,

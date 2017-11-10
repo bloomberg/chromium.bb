@@ -171,8 +171,8 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // in both cases.
     test_handle_->WillProcessResponse(
         main_test_rfh(), scoped_refptr<net::HttpResponseHeaders>(),
-        net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, SSLStatus(),
-        GlobalRequestID(), false, false, false, base::Closure(),
+        net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, net::HostPortPair(),
+        SSLStatus(), GlobalRequestID(), false, false, false, base::Closure(),
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }

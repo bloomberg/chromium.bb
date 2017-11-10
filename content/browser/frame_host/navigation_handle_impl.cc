@@ -373,7 +373,7 @@ const GURL& NavigationHandleImpl::GetPreviousURL() {
 }
 
 net::HostPortPair NavigationHandleImpl::GetSocketAddress() {
-  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
+  DCHECK(state_ >= WILL_PROCESS_RESPONSE);
   return socket_address_;
 }
 
@@ -453,8 +453,8 @@ NavigationHandleImpl::CallWillProcessResponseForTesting(
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   WillProcessResponse(static_cast<RenderFrameHostImpl*>(render_frame_host),
                       headers, net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
-                      SSLStatus(), GlobalRequestID(), false, false, false,
-                      base::Closure(),
+                      net::HostPortPair(), SSLStatus(), GlobalRequestID(),
+                      false, false, false, base::Closure(),
                       base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
@@ -714,6 +714,7 @@ void NavigationHandleImpl::WillProcessResponse(
     RenderFrameHostImpl* render_frame_host,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     net::HttpResponseInfo::ConnectionInfo connection_info,
+    const net::HostPortPair& socket_address,
     const SSLStatus& ssl_status,
     const GlobalRequestID& request_id,
     bool should_replace_current_entry,
@@ -734,6 +735,7 @@ void NavigationHandleImpl::WillProcessResponse(
   is_stream_ = is_stream;
   state_ = WILL_PROCESS_RESPONSE;
   ssl_status_ = ssl_status;
+  socket_address_ = socket_address;
   complete_callback_ = callback;
   transfer_callback_ = transfer_callback;
 
@@ -809,7 +811,6 @@ void NavigationHandleImpl::DidCommitNavigation(
   render_frame_host_ = render_frame_host;
   previous_url_ = previous_url;
   base_url_ = params.base_url;
-  socket_address_ = params.socket_address;
   navigation_type_ = navigation_type;
 
   // For back-forward navigations, record metrics.

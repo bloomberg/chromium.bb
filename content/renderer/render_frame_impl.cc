@@ -5207,8 +5207,6 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // are unwound or moved to RenderFrameHost (crbug.com/304341) we can move the
   // client to be based on the routing_id of the RenderFrameHost.
   params->render_view_routing_id = render_view_->routing_id();
-  params->socket_address.set_host(response.RemoteIPAddress().Utf8());
-  params->socket_address.set_port(response.RemotePort());
   params->was_within_same_document = navigation_state->WasWithinSameDocument();
 
   // "Standard" commits from Blink create new NavigationEntries. We also treat
