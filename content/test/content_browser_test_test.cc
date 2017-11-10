@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_launcher.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -165,6 +166,42 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTestSanityTest, SingleProcess) {
   Test();
+}
+
+namespace {
+
+const base::Feature kTestFeatureForBrowserTest1{
+    "TestFeatureForBrowserTest1", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeatureForBrowserTest2{
+    "TestFeatureForBrowserTest2", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kTestFeatureForBrowserTest3{
+    "TestFeatureForBrowserTest3", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kTestFeatureForBrowserTest4{
+    "TestFeatureForBrowserTest4", base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace
+
+class ContentBrowserTestScopedFeatureListTest : public ContentBrowserTest {
+ public:
+  ContentBrowserTestScopedFeatureListTest() {
+    scoped_feature_list_.InitWithFeatures({kTestFeatureForBrowserTest3},
+                                          {kTestFeatureForBrowserTest4});
+  }
+
+  ~ContentBrowserTestScopedFeatureListTest() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestScopedFeatureListTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTestScopedFeatureListTest,
+                       FeatureListTest) {
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kTestFeatureForBrowserTest1));
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kTestFeatureForBrowserTest2));
+  EXPECT_TRUE(base::FeatureList::IsEnabled(kTestFeatureForBrowserTest3));
+  EXPECT_FALSE(base::FeatureList::IsEnabled(kTestFeatureForBrowserTest4));
 }
 
 namespace {
