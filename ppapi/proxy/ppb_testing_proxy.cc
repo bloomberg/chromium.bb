@@ -259,4 +259,3 @@ void PPB_Testing_Proxy::OnMsgSetMinimumArrayBufferSizeForShmem(
 
 }  // namespace proxy
 }  // namespace ppapi
-

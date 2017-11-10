@@ -111,4 +111,3 @@ void PPB_Flash_MessageLoop_Impl::InternalQuit(int32_t result) {
 }
 
 }  // namespace content
-
