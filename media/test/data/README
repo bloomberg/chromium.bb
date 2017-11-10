@@ -239,6 +239,10 @@ red-green.h264.md5:
   not specified to the last bit and GLES shader/texture filtering
   precision varies.
 
+// VDA test files: crowd-vp9.2
+  VP9 Profile 2 (10 bits per component) version of the "crowd" WebM project test
+  video (https://www.webmproject.org/vp9/levels/#test-bitstreams) in IVF format.
+
 // VEA test files:
 bear_320x192_40frames.yuv
   First 40 raw i420 frames of bear-1280x720.mp4 scaled down to 320x192 for
@@ -247,7 +251,7 @@ bear_320x192_40frames.yuv
 // VP9 parser test files:
 bear-vp9.ivf
   - Created using "avconv -i bear-vp9.webm -vcodec copy -an -f ivf bear-vp9.ivf".
-bear-vp9.ivf.context 
+bear-vp9.ivf.context
 test-25fps.vp9.context
   - Manually dumped from libvpx with bear-vp9.ivf and test-25fps.vp9. See
     vp9_parser_unittest.cc for description of their format.
