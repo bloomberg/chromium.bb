@@ -104,9 +104,13 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
   TakeRegistrationForServiceWorkerGlobalScope();
 
-  // For service worker clients. The controller for
-  // ServiceWorkerContainer#controller.
-  ServiceWorkerHandleReference* controller();
+  // For service worker clients. Returns version id of the controller service
+  // worker object (ServiceWorkerContainer#controller).
+  int64_t GetControllerVersionId();
+
+  // For service worker clients. Takes the controller service worker object set
+  // by SetController() if any, otherwise returns nullptr.
+  std::unique_ptr<ServiceWorkerHandleReference> TakeController();
 
   // S13nServiceWorker:
   // For service worker clients. Returns URLLoaderFactory for loading

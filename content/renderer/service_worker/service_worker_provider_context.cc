@@ -41,7 +41,10 @@ struct ServiceWorkerProviderContext::ControlleeState {
             std::move(default_loader_factory_getter)) {}
   ~ControlleeState() = default;
 
+  // |controller| will be set by SetController() and taken by TakeController().
   std::unique_ptr<ServiceWorkerHandleReference> controller;
+  // Keeps version id of the current controller service worker object.
+  int64_t controller_version_id = blink::mojom::kInvalidServiceWorkerVersionId;
 
   // S13nServiceWorker:
   // Used to intercept requests from the controllee and dispatch them
@@ -172,10 +175,17 @@ ServiceWorkerProviderContext::TakeRegistrationForServiceWorkerGlobalScope() {
   return info;
 }
 
-ServiceWorkerHandleReference* ServiceWorkerProviderContext::controller() {
+std::unique_ptr<ServiceWorkerHandleReference>
+ServiceWorkerProviderContext::TakeController() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(controllee_state_);
-  return controllee_state_->controller.get();
+  return std::move(controllee_state_->controller);
+}
+
+int64_t ServiceWorkerProviderContext::GetControllerVersionId() {
+  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(controllee_state_);
+  return controllee_state_->controller_version_id;
 }
 
 mojom::URLLoaderFactory*
@@ -255,7 +265,8 @@ void ServiceWorkerProviderContext::SetController(
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
 
-  state->controller = dispatcher->Adopt(controller->Clone());
+  state->controller_version_id = controller->version_id;
+  state->controller = dispatcher->Adopt(std::move(controller));
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
@@ -296,7 +307,7 @@ void ServiceWorkerProviderContext::SetController(
   // the controller from |this| via WebServiceWorkerProviderImpl::SetClient().
   if (state->web_service_worker_provider) {
     state->web_service_worker_provider->SetController(
-        std::move(controller), state->used_features,
+        std::move(state->controller), state->used_features,
         should_notify_controllerchange);
   }
 }

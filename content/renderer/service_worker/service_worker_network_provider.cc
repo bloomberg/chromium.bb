@@ -88,8 +88,8 @@ class WebServiceWorkerNetworkProviderForFrame
   }
 
   int64_t ControllerServiceWorkerID() override {
-    if (provider_->context() && provider_->context()->controller())
-      return provider_->context()->controller()->version_id();
+    if (provider_->context())
+      return provider_->context()->GetControllerVersionId();
     return blink::mojom::kInvalidServiceWorkerVersionId;
   }
 
@@ -247,7 +247,8 @@ int ServiceWorkerNetworkProvider::provider_id() const {
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
-  return context() && context()->controller();
+  return context() && context()->GetControllerVersionId() !=
+                          blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
 // Creates an invalid instance (provider_id() returns

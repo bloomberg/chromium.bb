@@ -250,10 +250,10 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
         CreateServiceWorkerRegistrationObjectInfo();
 
     // (2) In the case there are both SWProviderContext and SWProviderClient for
-    // the provider, the passed reference should be adopted and owned by the
-    // provider context. In addition, the new reference should be created for
-    // the provider client and immediately released due to limitation of the
-    // mock implementation.
+    // the provider, the passed reference should be adopted by the provider
+    // context and then be transfered ownership to the provider client, after
+    // that due to limitation of the mock implementation, the reference
+    // immediately gets released.
     mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
     mojom::ServiceWorkerContainerHostAssociatedRequest host_request =
         mojo::MakeRequest(&host_ptr_info);
@@ -277,11 +277,9 @@ TEST_F(ServiceWorkerProviderContextTest, SetController) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_TRUE(client->was_set_controller_called());
-    ASSERT_EQ(2UL, ipc_sink()->message_count());
-    EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
-              ipc_sink()->GetMessageAt(0)->type());
+    ASSERT_EQ(1UL, ipc_sink()->message_count());
     EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
-              ipc_sink()->GetMessageAt(1)->type());
+              ipc_sink()->GetMessageAt(0)->type());
   }
 }
 
@@ -310,7 +308,7 @@ TEST_F(ServiceWorkerProviderContextTest, SetController_Null) {
                                std::vector<blink::mojom::WebFeature>(), true);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(nullptr, provider_context->controller());
+  EXPECT_EQ(nullptr, provider_context->TakeController());
   EXPECT_TRUE(client->was_set_controller_called());
 }
 
