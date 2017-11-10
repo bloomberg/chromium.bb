@@ -74,4 +74,20 @@ GridTrackSizingDirection GridLayoutUtils::FlowAwareDirectionForChild(
              : (direction == kForColumns ? kForRows : kForColumns);
 }
 
+bool GridLayoutUtils::HasOverrideContainingBlockContentSizeForChild(
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) {
+  return direction == kForColumns
+             ? child.HasOverrideContainingBlockLogicalWidth()
+             : child.HasOverrideContainingBlockLogicalHeight();
+}
+
+LayoutUnit GridLayoutUtils::OverrideContainingBlockContentSizeForChild(
+    const LayoutBox& child,
+    GridTrackSizingDirection direction) {
+  return direction == kForColumns
+             ? child.OverrideContainingBlockContentLogicalWidth()
+             : child.OverrideContainingBlockContentLogicalHeight();
+}
+
 }  // namespace blink
