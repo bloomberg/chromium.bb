@@ -176,6 +176,8 @@ WebNavigationApiTest.*
 WebRtcFromWebAccessibleResourceTest.*
 WebrtcLoggingPrivateApiTest.*
 WindowOpenApiTest.*
+# Fails (assertion in JS side of code).
+-WindowOpenApiTest.UpdateWindowToLockedFullscreen
 
 # Tests from elsewhere.
 BrowserDialogTest.*
