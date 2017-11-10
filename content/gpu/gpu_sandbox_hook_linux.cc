@@ -197,16 +197,18 @@ std::vector<BrokerFilePermission> FilePermissionsForGpu(
   permissions.push_back(BrokerFilePermission::ReadOnly(kDriRcPath));
 
   if (IsChromeOS()) {
-    if (IsArchitectureArm())
-      AddArmGpuWhitelist(&permissions);
-    if (options.use_amd_specific_policies)
-      AddAmdGpuWhitelist(&permissions);
     if (UseV4L2Codec())
       AddV4L2GpuWhitelist(&permissions, options);
-  } else {
-    AddStandardGpuWhiteList(&permissions);
+    if (IsArchitectureArm()) {
+      AddArmGpuWhitelist(&permissions);
+      return permissions;
+    }
+    if (options.use_amd_specific_policies) {
+      AddAmdGpuWhitelist(&permissions);
+      return permissions;
+    }
   }
-
+  AddStandardGpuWhiteList(&permissions);
   return permissions;
 }
 
@@ -271,15 +273,16 @@ void LoadStandardLibraries(
 bool LoadLibrariesForGpu(
     const service_manager::SandboxSeccompBPF::Options& options) {
   if (IsChromeOS()) {
-    if (IsArchitectureArm())
-      LoadArmGpuLibraries();
-    if (options.use_amd_specific_policies && !LoadAmdGpuLibraries())
-      return false;
     if (UseV4L2Codec())
       LoadV4L2Libraries();
-  } else {
-    LoadStandardLibraries(options);
+    if (IsArchitectureArm()) {
+      LoadArmGpuLibraries();
+      return true;
+    }
+    if (options.use_amd_specific_policies)
+      return LoadAmdGpuLibraries();
   }
+  LoadStandardLibraries(options);
   return true;
 }
 
