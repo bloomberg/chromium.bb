@@ -1067,6 +1067,32 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMismatch) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that we honor Vary: * with LOAD_SKIP_CACHE_VALIDATION (crbug/778681)
+TEST(HttpCache, SimpleGET_LoadSkipCacheValidation_VaryStar) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  transaction.response_headers =
+      "Cache-Control: max-age=10000\n"
+      "Vary: *\n";
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Attempt to read from the cache... we will still load it from network,
+  // since Vary: * doesn't match.
+  transaction.load_flags |= LOAD_SKIP_CACHE_VALIDATION;
+  BoundTestNetLog log;
+  LoadTimingInfo load_timing_info;
+  RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
+                                 &load_timing_info);
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  RemoveMockTransaction(&transaction);
+}
+
 // Tests that was_cached was set properly on a failure, even if the cached
 // response wasn't returned.
 TEST(HttpCache, SimpleGET_CacheSignal_Failure) {
@@ -3926,6 +3952,38 @@ TEST(HttpCache, GET_ValidateCache_VaryMismatch) {
   RevalidationServer server;
   transaction.handler = server.Handler;
   transaction.request_headers = "Foo: none\r\n";
+  BoundTestNetLog log;
+  LoadTimingInfo load_timing_info;
+  RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
+                                 &load_timing_info);
+
+  EXPECT_TRUE(server.EtagUsed());
+  EXPECT_FALSE(server.LastModifiedUsed());
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  TestLoadTimingNetworkRequest(load_timing_info);
+  RemoveMockTransaction(&transaction);
+}
+
+// Tests revalidation after a vary mismatch due to vary: * if etag is present.
+TEST(HttpCache, GET_ValidateCache_VaryMismatchStar) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kTypicalGET_Transaction);
+  transaction.response_headers =
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: *\n";
+  AddMockTransaction(&transaction);
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Read from the cache and revalidate the entry.
+  RevalidationServer server;
+  transaction.handler = server.Handler;
   BoundTestNetLog log;
   LoadTimingInfo load_timing_info;
   RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
@@ -8687,6 +8745,30 @@ TEST(HttpCache, SkipVaryCheck) {
   // The request should fail.
   transaction.load_flags = LOAD_ONLY_FROM_CACHE;
   transaction.request_headers = "accept-encoding: foo\r\n";
+  transaction.start_return_code = ERR_CACHE_MISS;
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // Change the load flags to ignore vary checks, the request should now hit.
+  transaction.load_flags = LOAD_ONLY_FROM_CACHE | LOAD_SKIP_VARY_CHECK;
+  transaction.start_return_code = OK;
+  RunTransactionTest(cache.http_cache(), transaction);
+}
+
+TEST(HttpCache, SkipVaryCheckStar) {
+  MockHttpCache cache;
+
+  // Write a simple vary:* transaction to the cache.
+  HttpResponseInfo response;
+  ScopedMockTransaction transaction(kSimpleGET_Transaction);
+  transaction.request_headers = "accept-encoding: gzip\r\n";
+  transaction.response_headers =
+      "Vary: *\n"
+      "Cache-Control: max-age=10000\n";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  // The request shouldn't match even with the same request headers due to the
+  // Vary: *. The request should fail.
+  transaction.load_flags = LOAD_ONLY_FROM_CACHE;
   transaction.start_return_code = ERR_CACHE_MISS;
   RunTransactionTest(cache.http_cache(), transaction);
 

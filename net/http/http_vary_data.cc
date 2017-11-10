@@ -29,14 +29,20 @@ bool HttpVaryData::Init(const HttpRequestInfo& request_info,
   // Feed the MD5 context in the order of the Vary header enumeration.  If the
   // Vary header repeats a header name, then that's OK.
   //
-  // If the Vary header contains '*' then we should not construct any vary data
-  // since it is all usurped by a '*'.  See section 13.6 of RFC 2616.
+  // If the Vary header contains '*' then we can just notice it based on
+  // |cached_response_headers| in MatchesRequest(), and don't have to worry
+  // about the specific headers.  We still want an HttpVaryData around, to let
+  // us handle this case. See section 4.1 of RFC 7234.
   //
   size_t iter = 0;
   std::string name = "vary", request_header;
   while (response_headers.EnumerateHeader(&iter, name, &request_header)) {
-    if (request_header == "*")
-      return false;
+    if (request_header == "*") {
+      // What's in request_digest_ will never be looked at, but make it
+      // deterministic so we don't serialize out uninitialized memory content.
+      memset(&request_digest_, 0, sizeof(request_digest_));
+      return is_valid_ = true;
+    }
     AddField(request_info, request_header, &ctx);
     processed_header = true;
   }
@@ -66,6 +72,10 @@ void HttpVaryData::Persist(base::Pickle* pickle) const {
 bool HttpVaryData::MatchesRequest(
     const HttpRequestInfo& request_info,
     const HttpResponseHeaders& cached_response_headers) const {
+  // Vary: * never matches.
+  if (cached_response_headers.HasHeaderValue("vary", "*"))
+    return false;
+
   HttpVaryData new_vary_data;
   if (!new_vary_data.Init(request_info, cached_response_headers)) {
     // This case can happen if |this| was loaded from a cache that was populated
