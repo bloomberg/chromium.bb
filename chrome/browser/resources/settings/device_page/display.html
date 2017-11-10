@@ -28,6 +28,11 @@
         padding: 0;
       }
 
+      #nightLightTemperatureDiv[disabled] {
+        opacity: 0.38;
+        pointer-events: none;
+      }
+
       .display-tabs {
         width: 100%;
       }
@@ -208,7 +213,9 @@
       <div id="nightLightSettingsDiv"
           class="settings-box continuation start layout vertical">
         <!-- Color temperature slider -->
-        <div class="settings-box indented continuation">
+        <div id="nightLightTemperatureDiv"
+            class="settings-box indented continuation"
+            disabled$="[[!prefs.ash.night_light.enabled.value]]">
           <div class="start text-area" id="colorTemperatureLabel">
             $i18n{displayNightLightTemperatureLabel}
           </div>
@@ -216,7 +223,8 @@
               aria-labelledby="colorTemperatureLabel" min="0" max="100"
               scale="100" label-min="$i18n{displayNightLightTempSliderMinLabel}"
               label-max="$i18n{displayNightLightTempSliderMaxLabel}"
-              pref="{{prefs.ash.night_light.color_temperature}}">
+              pref="{{prefs.ash.night_light.color_temperature}}"
+              disabled$="[[!prefs.ash.night_light.enabled.value]]">
           </settings-slider>
         </div>
         <!-- Schedule settings -->
