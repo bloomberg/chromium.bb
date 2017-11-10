@@ -1,18 +1,12 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import unittest
-
 from telemetry import decorators
-from telemetry.page import page
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
 from telemetry.util import wpr_modes
-from telemetry.value import scalar
 
 from measurements import smoothness
-
-import mock
 
 
 class FakeTracingController(object):
@@ -49,23 +43,6 @@ class FakeTab(object):
 
   def ExecuteJavaScript(self, js):
     pass
-
-
-class CustomResultsWrapperUnitTest(unittest.TestCase):
-
-  def testOnlyOneInteractionRecordPerPage(self):
-    test_page = page.Page('http://dummy', None, name='http://dummy')
-
-    # pylint: disable=protected-access
-    results_wrapper = smoothness._CustomResultsWrapper()
-    results_wrapper.SetResults(mock.Mock())
-
-    results_wrapper.SetTirLabel('foo')
-    results_wrapper.AddValue(scalar.ScalarValue(test_page, 'num', 'ms', 44))
-
-    results_wrapper.SetTirLabel('bar')
-    with self.assertRaises(AssertionError):
-      results_wrapper.AddValue(scalar.ScalarValue(test_page, 'num', 'ms', 42))
 
 
 class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
