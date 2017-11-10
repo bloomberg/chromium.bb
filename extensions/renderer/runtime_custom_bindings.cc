@@ -59,23 +59,9 @@ void RuntimeCustomBindings::GetExtensionViews(
   // |view_type| == VIEW_TYPE_INVALID means getting any type of
   // views.
   ViewType view_type = VIEW_TYPE_INVALID;
-  if (view_type_string == kViewTypeBackgroundPage) {
-    view_type = VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
-  } else if (view_type_string == kViewTypeTabContents) {
-    view_type = VIEW_TYPE_TAB_CONTENTS;
-  } else if (view_type_string == kViewTypePopup) {
-    view_type = VIEW_TYPE_EXTENSION_POPUP;
-  } else if (view_type_string == kViewTypeExtensionDialog) {
-    view_type = VIEW_TYPE_EXTENSION_DIALOG;
-  } else if (view_type_string == kViewTypeAppWindow) {
-    view_type = VIEW_TYPE_APP_WINDOW;
-  } else if (view_type_string == kViewTypeLauncherPage) {
-    view_type = VIEW_TYPE_LAUNCHER_PAGE;
-  } else if (view_type_string == kViewTypePanel) {
-    view_type = VIEW_TYPE_PANEL;
-  } else {
-    CHECK_EQ(view_type_string, kViewTypeAll);
-  }
+  bool parsed_view_type = GetViewTypeFromString(view_type_string, &view_type);
+  if (!parsed_view_type)
+    CHECK_EQ("ALL", view_type_string);
 
   const std::string& extension_id = context()->GetExtensionID();
   if (extension_id.empty())
