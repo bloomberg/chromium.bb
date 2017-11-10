@@ -2969,9 +2969,9 @@
                 {
                     "name": "NewCleaner_Launch",
                     "params": {
-                        "download_group": "canary/eset",
+                        "download_group": "stable/eset",
                         "experiment_group_for_reporting": "Experiment2",
-                        "tag": "canary_eset"
+                        "tag": "stable_eset"
                     },
                     "enable_features": [
                         "DownloadCleanupToolByBitness",
