@@ -122,8 +122,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
                       int viewport_offset,
                       const gfx::Size& render_size,
                       vr::RenderInfo* out_render_info);
-  void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
-  void DrawIntoAcquiredFrame(int16_t frame_index, base::TimeTicks current_time);
+  void DrawFrame(int16_t frame_index);
+  void DrawIntoAcquiredFrame(int16_t frame_index);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFenceEGL> fence);
@@ -132,13 +132,11 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController(const gfx::Transform& head_pose,
-                        base::TimeTicks current_time);
+  void UpdateController(const gfx::Transform& head_pose);
 
   void SendImmediateExitRequestIfNecessary();
   void HandleControllerInput(const gfx::Point3F& laser_origin,
-                             const gfx::Vector3dF& head_direction,
-                             base::TimeTicks current_time);
+                             const gfx::Vector3dF& head_direction);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
   void CreateUiSurface();
