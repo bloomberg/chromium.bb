@@ -76,15 +76,6 @@ cr.define('ntp', function() {
    */
   function onLoad() {
     sectionsToWaitFor = 1;
-    if (loadTimeData.getBoolean('showAppLauncherPromo')) {
-      $('app-launcher-promo-close-button')
-          .addEventListener('click', function() {
-            chrome.send('stopShowingAppLauncherPromo');
-          });
-      $('apps-promo-learn-more').addEventListener('click', function() {
-        chrome.send('onLearnMore');
-      });
-    }
     measureNavDots();
 
     newTabView = new NewTabView();

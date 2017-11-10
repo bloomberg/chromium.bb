@@ -7383,10 +7383,6 @@ I don't think this site should be blocked!
          desc="Title for accessibility of the 'page-switcher-start' or 'page-switcher-end' button when switching between pages which have the same title">
         More <ph name="PAGE_TITLE">$1<ex>Apps</ex></ph>
       </message>
-      <message name="IDS_NEW_TAB_PAGE_APPS_PROMO_TITLE"
-         desc="Title for the app launcher promo box shown on apps pages.">
-        Discover the Chrome App Launcher
-      </message>
       <message name="IDS_NEW_TAB_VOICE_AUDIO_ERROR"
         desc="Used to indicate that there was an error starting the microphone to record speech input.">
         Please check your microphone.

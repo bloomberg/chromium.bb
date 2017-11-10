@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "apps/metrics_names.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -97,13 +95,6 @@ enum {
   APPS_PAGE_ID = 2 << kPageIdOffset,
 };
 
-void RecordAppLauncherPromoHistogram(
-      apps::AppLauncherPromoHistogramValues value) {
-  DCHECK_LT(value, apps::APP_LAUNCHER_PROMO_MAX);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Apps.AppLauncherPromo", value, apps::APP_LAUNCHER_PROMO_MAX);
-}
-
 }  // namespace
 
 AppLauncherHandler::AppInstallInfo::AppInstallInfo() {}
@@ -114,12 +105,7 @@ AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extension_service_(extension_service),
       ignore_changes_(false),
       attempted_bookmark_app_install_(false),
-      has_loaded_apps_(false) {
-  if (IsAppLauncherEnabled())
-    RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_ALREADY_INSTALLED);
-  else if (ShouldShowAppLauncherPromo())
-    RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_SHOWN);
-}
+      has_loaded_apps_(false) {}
 
 AppLauncherHandler::~AppLauncherHandler() {
   ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))->RemoveObserver(this);
@@ -237,16 +223,6 @@ void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
       content::Source<WebContents>(web_ui()->GetWebContents()));
 
-  // Some tests don't have a local state.
-#if BUILDFLAG(ENABLE_APP_LIST)
-  if (g_browser_process->local_state()) {
-    local_state_pref_change_registrar_.Init(g_browser_process->local_state());
-    local_state_pref_change_registrar_.Add(
-        prefs::kShowAppLauncherPromo,
-        base::Bind(&AppLauncherHandler::OnLocalStatePreferenceChanged,
-                   base::Unretained(this)));
-  }
-#endif
   web_ui()->RegisterMessageCallback("getApps",
       base::Bind(&AppLauncherHandler::HandleGetApps,
                  base::Unretained(this)));
@@ -276,12 +252,6 @@ void AppLauncherHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("generateAppForLink",
       base::Bind(&AppLauncherHandler::HandleGenerateAppForLink,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("stopShowingAppLauncherPromo",
-      base::Bind(&AppLauncherHandler::HandleStopShowingAppLauncherPromo,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onLearnMore",
-      base::Bind(&AppLauncherHandler::HandleOnLearnMore,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("pageSelected",
       base::Bind(&AppLauncherHandler::HandlePageSelected,
@@ -748,19 +718,6 @@ void AppLauncherHandler::HandleGenerateAppForLink(const base::ListValue* args) {
       &cancelable_task_tracker_);
 }
 
-void AppLauncherHandler::HandleStopShowingAppLauncherPromo(
-    const base::ListValue* args) {
-#if BUILDFLAG(ENABLE_APP_LIST)
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kShowAppLauncherPromo, false);
-  RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_DISMISSED);
-#endif
-}
-
-void AppLauncherHandler::HandleOnLearnMore(const base::ListValue* args) {
-  RecordAppLauncherPromoHistogram(apps::APP_LAUNCHER_PROMO_LEARN_MORE);
-}
-
 void AppLauncherHandler::HandlePageSelected(const base::ListValue* args) {
   double index_double;
   CHECK(args->GetDouble(0, &index_double));
@@ -807,15 +764,6 @@ void AppLauncherHandler::OnExtensionPreferenceChanged() {
   FillAppDictionary(&dictionary);
   web_ui()->CallJavascriptFunctionUnsafe("ntp.appsPrefChangeCallback",
                                          dictionary);
-}
-
-void AppLauncherHandler::OnLocalStatePreferenceChanged() {
-#if BUILDFLAG(ENABLE_APP_LIST)
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "ntp.appLauncherPromoPrefChangeCallback",
-      base::Value(g_browser_process->local_state()->GetBoolean(
-          prefs::kShowAppLauncherPromo)));
-#endif
 }
 
 void AppLauncherHandler::CleanupAfterUninstall() {

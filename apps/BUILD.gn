@@ -26,7 +26,6 @@ static_library("apps") {
     "browser_context_keyed_service_factories.h",
     "launcher.cc",
     "launcher.h",
-    "metrics_names.h",
     "saved_files_service.cc",
     "saved_files_service.h",
     "saved_files_service_factory.cc",

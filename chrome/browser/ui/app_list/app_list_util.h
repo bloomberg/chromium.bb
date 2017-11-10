@@ -8,7 +8,4 @@
 // Returns whether the app launcher has been enabled.
 bool IsAppLauncherEnabled();
 
-// Returns whether the app launcher promo should be shown.
-bool ShouldShowAppLauncherPromo();
-
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_UTIL_H_

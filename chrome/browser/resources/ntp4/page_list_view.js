@@ -402,7 +402,6 @@ cr.define('ntp', function() {
         this.appsLoaded_ = true;
         cr.dispatchSimpleEvent(document, 'sectionready', true, true);
       }
-      this.updateAppLauncherPromoHiddenState_();
     },
 
     /**
@@ -457,25 +456,6 @@ cr.define('ntp', function() {
       for (var i = 0; i < dots.length; ++i) {
         dots[i].displayTitle = data.appPageNames[i] || '';
       }
-    },
-
-    /**
-     * Callback invoked by chrome whenever the app launcher promo pref changes.
-     * @param {boolean} show Identifies if we should show or hide the promo.
-     */
-    appLauncherPromoPrefChangeCallback: function(show) {
-      loadTimeData.overrideValues({showAppLauncherPromo: show});
-      this.updateAppLauncherPromoHiddenState_();
-    },
-
-    /**
-     * Updates the hidden state of the app launcher promo based on the page
-     * shown and load data content.
-     * @private
-     */
-    updateAppLauncherPromoHiddenState_: function() {
-      $('app-launcher-promo').hidden =
-          !loadTimeData.getBoolean('showAppLauncherPromo');
     },
 
     /**
@@ -632,7 +612,6 @@ cr.define('ntp', function() {
       assert(shownPageIndex >= 0);
       this.shownPageIndex = shownPageIndex;
       chrome.send('pageSelected', [this.shownPageIndex]);
-      this.updateAppLauncherPromoHiddenState_();
     },
 
     /**

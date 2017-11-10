@@ -142,10 +142,6 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAppListEnableMethod,
                                 ENABLE_NOT_RECORDED);
   registry->RegisterInt64Pref(prefs::kAppListEnableTime, 0);
-
-  // Identifies whether we should show the app launcher promo or not. This
-  // becomes false when the user dismisses the promo.
-  registry->RegisterBooleanPref(prefs::kShowAppLauncherPromo, true);
 }
 
 // static
