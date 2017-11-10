@@ -13,6 +13,7 @@ source_set("activity_services") {
     "appex_constants.mm",
     "canonical_url_retriever.h",
     "canonical_url_retriever.mm",
+    "canonical_url_retriever_private.h",
     "chrome_activity_item_source.h",
     "chrome_activity_item_source.mm",
     "chrome_activity_item_thumbnail_generator.h",
