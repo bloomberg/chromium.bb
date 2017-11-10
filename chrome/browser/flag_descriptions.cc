@@ -2487,9 +2487,9 @@ const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
     "Enable the ability to archive files on Drive in the Files app";
 
-const char kEnableZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
-const char kEnableZipArchiverUnpackerDescription[] =
-    "Enable the ability to unpack archives in incognito mode";
+const char kZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
+const char kZipArchiverUnpackerDescription[] =
+    "Enable or disable the ability to unpack archives in incognito mode";
 
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =

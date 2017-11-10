@@ -3075,9 +3075,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableZipArchiverPackerDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverPacker)},
     {"enable-zip-archiver-unpacker",
-     flag_descriptions::kEnableZipArchiverUnpackerName,
-     flag_descriptions::kEnableZipArchiverUnpackerDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverUnpacker)},
+     flag_descriptions::kZipArchiverUnpackerName,
+     flag_descriptions::kZipArchiverUnpackerDescription, kOsCrOS,
+     ENABLE_DISABLE_VALUE_TYPE(
+         chromeos::switches::kEnableZipArchiverUnpacker,
+         chromeos::switches::kDisableZipArchiverUnpacker)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)

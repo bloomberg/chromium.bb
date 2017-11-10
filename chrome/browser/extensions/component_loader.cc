@@ -328,8 +328,7 @@ void ComponentLoader::AddZipArchiverExtension() {
   base::FilePath resources_path;
   if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
            chromeos::switches::kEnableZipArchiverPacker) ||
-       base::CommandLine::ForCurrentProcess()->HasSwitch(
-           chromeos::switches::kEnableZipArchiverUnpacker)) &&
+       chromeos::switches::IsZipArchiverUnpackerEnabled()) &&
       PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
     AddWithNameAndDescriptionFromDir(
         resources_path.Append(extension_misc::kZipArchiverExtensionPath),

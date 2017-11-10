@@ -25572,6 +25572,7 @@ from previous Chrome versions.
   <int value="1942911276" label="enable-grouped-history"/>
   <int value="1944156526" label="sync-url"/>
   <int value="1947350992" label="drop-sync-credential:disabled"/>
+  <int value="1949908940" label="disable-zip-archiver-unpacker"/>
   <int value="1951466218" label="enable-data-reduction-proxy-lite-page"/>
   <int value="1955677113" label="trace-export-events-to-etw"/>
   <int value="1958387645" label="ScanCardsInWebPayments:enabled"/>
