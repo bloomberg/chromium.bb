@@ -1405,7 +1405,7 @@
                     "name": "SofterWarning",
                     "params": {
                         "softer_warning": "true",
-                        "warn_on_low_reputation": "true"
+                        "warn_on_low_reputation": "false"
                     },
                     "enable_features": [
                         "PasswordProtectionGoogleBrandedPhishingWarning"
