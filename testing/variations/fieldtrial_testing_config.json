@@ -1793,21 +1793,6 @@
             ]
         }
     ],
-    "MidiManagerAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledOnM+",
-                    "enable_features": [
-                        "MidiManagerAndroid"
-                    ]
-                }
-            ]
-        }
-    ],
     "MidiManagerDynamicInstantiation": [
         {
             "platforms": [

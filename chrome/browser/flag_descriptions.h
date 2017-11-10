@@ -1284,9 +1284,6 @@ extern const char kUpdateMenuItemCustomSummaryName[];
 extern const char kUpdateMenuItemName[];
 extern const char kUpdateMenuItemDescription[];
 
-extern const char kUseAndroidMidiApiName[];
-extern const char kUseAndroidMidiApiDescription[];
-
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
 
