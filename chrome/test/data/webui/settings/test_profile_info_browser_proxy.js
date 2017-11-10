@@ -13,7 +13,8 @@ class TestProfileInfoBrowserProxy extends TestBrowserProxy {
 
     this.fakeProfileInfo = {
       name: 'fakeName',
-      iconUrl: 'http://fake-icon-url.com/',
+      iconUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAE' +
+          'AAAICTAEAOw==',
     };
   }
 
