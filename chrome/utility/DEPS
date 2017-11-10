@@ -4,6 +4,8 @@ include_rules = [
   "+chrome/profiling",
   "+chrome/services/file_util/file_util_service.h",
   "+chrome/services/file_util/public/interfaces",
+  "+chrome/services/media_gallery_util/media_gallery_util_service.h",
+  "+chrome/services/media_gallery_util/public/interfaces",
   "+chrome/services/util_win/util_win_service.h",
   "+chrome/services/util_win/public/interfaces",
   "+components/font_service/font_service_app.h",

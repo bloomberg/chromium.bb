@@ -404,6 +404,11 @@ if (enable_basic_printing || enable_print_preview) {
       [ "//components/printing/service:pdf_compositor_manifest" ]
 }
 
+if (enable_extensions) {
+  chrome_packaged_services +=
+      [ "//chrome/services/media_gallery_util:manifest" ]
+}
+
 if (is_chromeos) {
   chrome_packaged_services +=
       [ "//chrome/browser/chromeos:ash_pref_connector_manifest" ]

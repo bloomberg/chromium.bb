@@ -25,7 +25,6 @@ group("test_features") {
 
 mojom("mojo_bindings") {
   sources = [
-    "media_parser.mojom",
     "mojom/inline_install.mojom",
     "removable_storage_writer.mojom",
   ]

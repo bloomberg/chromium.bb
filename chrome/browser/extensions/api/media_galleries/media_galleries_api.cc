@@ -26,7 +26,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/media_galleries/fileapi/safe_media_metadata_parser.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/services/media_gallery_util/public/cpp/safe_media_metadata_parser.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/blob_handle.h"
@@ -48,6 +48,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -673,12 +674,14 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
       metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
 
-  scoped_refptr<metadata::SafeMediaMetadataParser> parser(
-      new metadata::SafeMediaMetadataParser(GetProfile(), blob_uuid,
-                                            total_blob_length, mime_type,
-                                            get_attached_images));
-  parser->Start(base::Bind(
-      &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone, this));
+  auto parser = base::MakeRefCounted<chrome::SafeMediaMetadataParser>(
+      GetProfile(), blob_uuid, total_blob_length, mime_type,
+      get_attached_images);
+  parser->Start(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      base::Bind(
+          &MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone,
+          this));
 }
 
 void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(

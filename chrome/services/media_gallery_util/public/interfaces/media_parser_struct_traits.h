@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MEDIA_PARSER_STRUCT_TRAITS_H_
-#define CHROME_COMMON_EXTENSIONS_MEDIA_PARSER_STRUCT_TRAITS_H_
+#ifndef CHROME_SERVICES_MEDIA_GALLERY_UTIL_PUBLIC_INTERFACES_MEDIA_PARSER_STRUCT_TRAITS_H_
+#define CHROME_SERVICES_MEDIA_GALLERY_UTIL_PUBLIC_INTERFACES_MEDIA_PARSER_STRUCT_TRAITS_H_
 
 #include <string>
 
 #include "base/containers/span.h"
-#include "chrome/common/extensions/media_parser.mojom.h"
 #include "chrome/common/media_galleries/metadata_types.h"
+#include "chrome/services/media_gallery_util/public/interfaces/media_parser.mojom.h"
 #include "mojo/public/cpp/bindings/array_traits_span.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<extensions::mojom::AttachedImageDataView,
+struct StructTraits<chrome::mojom::AttachedImageDataView,
                     ::metadata::AttachedImage> {
   static const std::string& type(const ::metadata::AttachedImage& image) {
     return image.type;
@@ -29,10 +29,10 @@ struct StructTraits<extensions::mojom::AttachedImageDataView,
                            image.data.size());
   }
 
-  static bool Read(extensions::mojom::AttachedImageDataView view,
+  static bool Read(chrome::mojom::AttachedImageDataView view,
                    ::metadata::AttachedImage* out);
 };
 
 }  // namespace mojo
 
-#endif  // CHROME_COMMON_EXTENSIONS_MEDIA_PARSER_STRUCT_TRAITS_H_
+#endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_PUBLIC_INTERFACES_MEDIA_PARSER_STRUCT_TRAITS_H_

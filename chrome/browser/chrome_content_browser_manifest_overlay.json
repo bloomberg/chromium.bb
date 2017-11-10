@@ -37,6 +37,7 @@
         "identity": [ "identity_manager" ],
         // Only used in classic ash case.
         "local_state": [ "pref_client" ],
+        "media_gallery_util": [ "parse_media" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "patch": [ "patch_file" ],

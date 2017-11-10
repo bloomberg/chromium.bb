@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/media_galleries/media_metadata_parser.h"
+#include "chrome/services/media_gallery_util/media_metadata_parser.h"
 
 #include <string>
 
@@ -17,7 +17,7 @@
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
-namespace metadata {
+namespace chrome {
 
 namespace {
 
@@ -40,9 +40,10 @@ void SetIntScopedPtr(int value, std::unique_ptr<int>* destination) {
 // blocking, and the utility thread must not be blocked, so the media file
 // bytes can be sent from the browser process to the utility process.
 void ParseAudioVideoMetadata(
-    media::DataSource* source, bool get_attached_images,
+    media::DataSource* source,
+    bool get_attached_images,
     MediaMetadataParser::MediaMetadata* metadata,
-    std::vector<AttachedImage>* attached_images) {
+    std::vector<metadata::AttachedImage>* attached_images) {
   DCHECK(source);
   DCHECK(metadata);
 
@@ -92,7 +93,7 @@ void ParseAudioVideoMetadata(
     for (std::vector<std::string>::const_iterator it =
              extractor.attached_images_bytes().begin();
          it != extractor.attached_images_bytes().end(); ++it) {
-      attached_images->push_back(AttachedImage());
+      attached_images->push_back(metadata::AttachedImage());
       attached_images->back().data = *it;
       net::SniffMimeTypeFromLocalData(it->c_str(), it->length(),
                                       &attached_images->back().type);
@@ -104,7 +105,7 @@ void ParseAudioVideoMetadata(
 void FinishParseAudioVideoMetadata(
     MediaMetadataParser::MetadataCallback callback,
     MediaMetadataParser::MediaMetadata* metadata,
-    std::vector<AttachedImage>* attached_images) {
+    std::vector<metadata::AttachedImage>* attached_images) {
   DCHECK(!callback.is_null());
   DCHECK(metadata);
   DCHECK(attached_images);
@@ -134,13 +135,13 @@ MediaMetadataParser::~MediaMetadataParser() = default;
 
 void MediaMetadataParser::Start(const MetadataCallback& callback) {
   if (!IsSupportedMetadataMimetype(mime_type_)) {
-    callback.Run(MediaMetadata(), std::vector<AttachedImage>());
+    callback.Run(MediaMetadata(), std::vector<metadata::AttachedImage>());
     return;
   }
 
   MediaMetadata* metadata = new MediaMetadata();
   metadata->mime_type = mime_type_;
-  std::vector<AttachedImage>* images = new std::vector<AttachedImage>();
+  auto* images = new std::vector<metadata::AttachedImage>();
 
   media_thread_.reset(new base::Thread("media_thread"));
   CHECK(media_thread_->Start());
@@ -153,4 +154,4 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
                      base::Owned(metadata), base::Owned(images)));
 }
 
-}  // namespace metadata
+}  // namespace chrome

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_MEDIA_GALLERIES_IPC_DATA_SOURCE_H_
-#define CHROME_UTILITY_MEDIA_GALLERIES_IPC_DATA_SOURCE_H_
+#ifndef CHROME_SERVICES_MEDIA_GALLERY_UTIL_IPC_DATA_SOURCE_H_
+#define CHROME_SERVICES_MEDIA_GALLERY_UTIL_IPC_DATA_SOURCE_H_
 
 #include <stdint.h>
 
@@ -11,14 +11,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/common/extensions/media_parser.mojom.h"
+#include "chrome/services/media_gallery_util/public/interfaces/media_parser.mojom.h"
 #include "media/base/data_source.h"
 
 namespace base {
 class TaskRunner;
 }
 
-namespace metadata {
+namespace chrome {
 
 // Provides the metadata parser with blob data from the browser process. Class
 // must be created and destroyed on the utility thread. Class may be used as a
@@ -27,7 +27,7 @@ namespace metadata {
 class IPCDataSource : public media::DataSource {
  public:
   // May only be called on the utility thread.
-  IPCDataSource(extensions::mojom::MediaDataSourcePtr media_data_source,
+  IPCDataSource(mojom::MediaDataSourcePtr media_data_source,
                 int64_t total_size);
   ~IPCDataSource() override;
 
@@ -53,17 +53,17 @@ class IPCDataSource : public media::DataSource {
                 const ReadCB& callback,
                 const std::vector<uint8_t>& data);
 
-  extensions::mojom::MediaDataSourcePtr media_data_source_;
+  mojom::MediaDataSourcePtr media_data_source_;
   const int64_t total_size_;
 
   scoped_refptr<base::TaskRunner> utility_task_runner_;
 
-  base::ThreadChecker utility_thread_checker_;
+  THREAD_CHECKER(utility_thread_checker_);
 
   // Enforces that the DataSource methods are called on one other thread only.
-  base::ThreadChecker data_source_thread_checker_;
+  THREAD_CHECKER(data_source_thread_checker_);
 };
 
-}  // namespace metadata
+}  // namespace chrome
 
-#endif  // CHROME_UTILITY_MEDIA_GALLERIES_IPC_DATA_SOURCE_H_
+#endif  // CHROME_SERVICES_MEDIA_GALLERY_UTIL_IPC_DATA_SOURCE_H_
