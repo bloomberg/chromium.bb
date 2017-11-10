@@ -13,11 +13,13 @@ namespace {
 // Key for status mapping.
 const char kAmpRedirectionPreviews[] = "ampPreviews";
 const char kClientLoFiPreviews[] = "clientLoFiPreviews";
+const char kNoScriptPreviews[] = "noScriptPreviews";
 const char kOfflinePreviews[] = "offlinePreviews";
 
 // Description for statuses.
 const char kAmpRedirectionDescription[] = "AMP Previews";
 const char kClientLoFiDescription[] = "Client LoFi Previews";
+const char kNoScriptDescription[] = "NoScript Previews";
 const char kOfflineDesciption[] = "Offline Previews";
 
 }  // namespace
@@ -111,6 +113,11 @@ void InterventionsInternalsPageHandler::GetPreviewsEnabled(
   client_lofi_status->description = kClientLoFiDescription;
   client_lofi_status->enabled = previews::params::IsClientLoFiEnabled();
   statuses[kClientLoFiPreviews] = std::move(client_lofi_status);
+
+  auto noscript_status = mojom::PreviewsStatus::New();
+  noscript_status->description = kNoScriptDescription;
+  noscript_status->enabled = previews::params::IsNoScriptPreviewsEnabled();
+  statuses[kNoScriptPreviews] = std::move(noscript_status);
 
   auto offline_status = mojom::PreviewsStatus::New();
   offline_status->description = kOfflineDesciption;
