@@ -382,8 +382,11 @@ LoginPasswordView::LoginPasswordView() : ime_keyboard_observer_(this) {
   textfield_->set_controller(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
   textfield_->SetTextColor(kTextColor);
+  textfield_->SetFontList(views::Textfield::GetDefaultFontList().Derive(
+      5, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
+  textfield_->set_placeholder_font_list(views::Textfield::GetDefaultFontList());
   textfield_->set_placeholder_text_color(kTextColor);
-
+  textfield_->SetGlyphSpacing(6);
   textfield_->SetBorder(nullptr);
   textfield_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
