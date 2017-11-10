@@ -24,11 +24,4 @@
 
 #include "base/memory/scoped_refptr.h"
 
-namespace WTF {
-
-using base::AdoptRef;
-using base::WrapRefCounted;
-
-}  // namespace WTF
-
 #endif  // WTF_RefPtr_h
