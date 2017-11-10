@@ -527,6 +527,7 @@ post_process_cmdline() {
       soft_enable striped_loop_restoration
       soft_enable ext_intra_mod
       soft_enable palette_delta_encoding
+      soft_enable frame_size
     fi
 
     # Enable low-bitdepth pixel pipeline by default

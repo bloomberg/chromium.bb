@@ -3510,6 +3510,7 @@ static void write_frame_size(const AV1_COMMON *cm,
                              struct aom_write_bit_buffer *wb) {
 #endif
 #if CONFIG_FRAME_SUPERRES
+  (void)frame_size_override;
   aom_wb_write_literal(wb, cm->superres_upscaled_width - 1, 16);
   aom_wb_write_literal(wb, cm->superres_upscaled_height - 1, 16);
   write_superres_scale(cm, wb);
