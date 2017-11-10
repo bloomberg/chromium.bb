@@ -79,7 +79,7 @@ class PdfPrinterHandler : public PrinterHandler,
                           bool prompt_user);
 
   // The print preview web contents. Protected so unit tests can access it.
-  content::WebContents* preview_web_contents_;
+  content::WebContents* const preview_web_contents_;
 
   // The underlying dialog object. Protected so unit tests can access it.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
@@ -89,8 +89,8 @@ class PdfPrinterHandler : public PrinterHandler,
   void OnGotUniqueFileName(const base::FilePath& path);
   void OnDirectoryCreated(const base::FilePath& path);
 
-  Profile* profile_;
-  printing::StickySettings* sticky_settings_;
+  Profile* const profile_;
+  printing::StickySettings* const sticky_settings_;
 
   // Holds the path to the print to pdf request. It is empty if no such request
   // exists.

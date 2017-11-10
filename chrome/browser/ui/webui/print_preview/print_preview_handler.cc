@@ -23,7 +23,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -62,9 +61,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -84,7 +80,6 @@
 #include "chromeos/printing/printer_configuration.h"
 #endif
 
-using content::BrowserThread;
 using content::RenderFrameHost;
 using content::WebContents;
 using printing::PrintViewManager;
@@ -578,7 +573,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   ++regenerate_preview_request_count_;
 
   WebContents* initiator = GetInitiator();
-  content::RenderFrameHost* rfh =
+  RenderFrameHost* rfh =
       initiator
           ? PrintViewManager::FromWebContents(initiator)->print_preview_rfh()
           : nullptr;
@@ -597,17 +592,13 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   if (display_header_footer) {
     settings->SetString(printing::kSettingHeaderFooterTitle,
                         initiator->GetTitle());
-    std::string url;
-    content::NavigationEntry* entry =
-        initiator->GetController().GetLastCommittedEntry();
-    if (entry) {
-      url::Replacements<char> url_sanitizer;
-      url_sanitizer.ClearUsername();
-      url_sanitizer.ClearPassword();
 
-      url = entry->GetVirtualURL().ReplaceComponents(url_sanitizer).spec();
-    }
-    settings->SetString(printing::kSettingHeaderFooterURL, url);
+    url::Replacements<char> url_sanitizer;
+    url_sanitizer.ClearUsername();
+    url_sanitizer.ClearPassword();
+    const GURL& initiator_url = initiator->GetLastCommittedURL();
+    settings->SetString(printing::kSettingHeaderFooterURL,
+                        initiator_url.ReplaceComponents(url_sanitizer).spec());
   }
 
   bool generate_draft_data = false;

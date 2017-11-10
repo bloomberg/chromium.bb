@@ -98,8 +98,8 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
     default_media = Media(locale == "en-US" ? NA_LETTER : ISO_A4);
   }
   MediaCapability media;
-  for (size_t i = 0; i < arraysize(kPdfMedia); ++i) {
-    Media media_option(kPdfMedia[i]);
+  for (const auto& pdf_media : kPdfMedia) {
+    Media media_option(pdf_media);
     media.AddDefaultOption(media_option,
                            default_media.type == media_option.type);
   }
@@ -145,7 +145,6 @@ PdfPrinterHandler::PdfPrinterHandler(Profile* profile,
     : preview_web_contents_(preview_web_contents),
       profile_(profile),
       sticky_settings_(sticky_settings),
-      print_data_(nullptr),
       weak_ptr_factory_(this) {}
 
 PdfPrinterHandler::~PdfPrinterHandler() {
