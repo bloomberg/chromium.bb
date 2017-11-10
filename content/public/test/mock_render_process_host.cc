@@ -51,6 +51,7 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       fast_shutdown_started_(false),
       deletion_callback_called_(false),
       is_for_guests_only_(false),
+      is_never_suitable_for_reuse_(false),
       is_process_backgrounded_(false),
       is_unused_(true),
       keep_alive_ref_count_(0),
@@ -374,11 +375,11 @@ MockRenderProcessHost::GetProcessResourceCoordinator() {
 }
 
 void MockRenderProcessHost::SetIsNeverSuitableForReuse() {
-  NOTREACHED();
+  is_never_suitable_for_reuse_ = true;
 }
 
 bool MockRenderProcessHost::MayReuseHost() {
-  return true;
+  return !is_never_suitable_for_reuse_;
 }
 
 bool MockRenderProcessHost::IsUnused() {
