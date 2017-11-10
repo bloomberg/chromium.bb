@@ -68,6 +68,8 @@ class SelectionModifier {
                                  SelectionModifyVerticalDirection);
 
  private:
+  // TODO(editing-dev): We should make |GetFrame()| to return |LocalFrame&|
+  // since it can not be |nullptr|.
   LocalFrame* GetFrame() const { return frame_; }
 
   static bool ShouldAlwaysUseDirectionalSelection(LocalFrame*);
