@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 

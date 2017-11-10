@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_switches.h"
@@ -117,7 +117,7 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void LoginManagerTest::SetUpOnMainThread() {
-  LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
+  LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
   // Start the accept thread as the sandbox host process has already been
   // spawned.

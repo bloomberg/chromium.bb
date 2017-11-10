@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen_input_methods_controller.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "components/session_manager/core/session_manager.h"
@@ -50,7 +50,7 @@ class UserAddingScreenImpl : public UserAddingScreen {
 void UserAddingScreenImpl::Start() {
   CHECK(!IsRunning());
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-  display_host_ = new chromeos::LoginDisplayHostImpl(screen_bounds);
+  display_host_ = new chromeos::LoginDisplayHostWebUI(screen_bounds);
   display_host_->StartUserAdding(base::BindOnce(
       &UserAddingScreenImpl::OnDisplayHostCompletion, base::Unretained(this)));
 
