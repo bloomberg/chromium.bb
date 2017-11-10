@@ -11,9 +11,7 @@
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/inspection.h"
 #include "av1/common/enums.h"
-#if CONFIG_CDEF
 #include "av1/common/cdef.h"
-#endif
 #if CONFIG_CFL
 #include "av1/common/cfl.h"
 #endif
@@ -55,9 +53,7 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
 #if CONFIG_ACCOUNTING
   fd->accounting = &pbi->accounting;
 #endif
-#if CONFIG_CDEF
-// TODO(negge): copy per frame CDEF data
-#endif
+  // TODO(negge): copy per frame CDEF data
   int i, j;
   for (i = 0; i < MAX_SEGMENTS; i++) {
     for (j = 0; j < 2; j++) {
@@ -104,13 +100,11 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       mi->tx_type = mbmi->tx_type;
       mi->tx_size = mbmi->tx_size;
 
-#if CONFIG_CDEF
       mi->cdef_level =
           cm->cdef_strengths[mbmi->cdef_strength] / CDEF_SEC_STRENGTHS;
       mi->cdef_strength =
           cm->cdef_strengths[mbmi->cdef_strength] % CDEF_SEC_STRENGTHS;
       mi->cdef_strength += mi->cdef_strength == 3;
-#endif
 #if CONFIG_CFL
       if (mbmi->uv_mode == UV_CFL_PRED) {
         mi->cfl_alpha_idx = mbmi->cfl_alpha_idx;

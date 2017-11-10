@@ -247,7 +247,6 @@ HAVE_LIST="
 "
 EXPERIMENT_LIST="
     fp_mb_stats
-    cdef
     cdef_singlepass
     rect_tx_ext
     tpl_mv
@@ -495,7 +494,6 @@ post_process_cmdline() {
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
-      soft_enable cdef
       soft_enable cdef_singlepass
       soft_enable ext_intra
       soft_enable intra_edge
@@ -546,7 +544,6 @@ post_process_cmdline() {
     enabled compound_round && soft_enable convolve_round
     enabled ext_intra_mod && enable_feature intra_edge
     enabled intra_edge && enable_feature ext_intra
-    enabled cdef_singlepass && enable_feature cdef
     enabled mfmv && enable_feature frame_marker
     enabled jnt_comp && enable_feature frame_marker
     enabled frame_refs && enable_feature frame_marker

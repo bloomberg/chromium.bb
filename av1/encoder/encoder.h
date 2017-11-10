@@ -196,9 +196,7 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_EXT_DELTA_Q
   DELTAQ_MODE deltaq_mode;
 #endif
-#if CONFIG_CDEF
   int using_cdef;
-#endif
 #if CONFIG_AOM_QM
   int using_qm;
   int qm_minlevel;

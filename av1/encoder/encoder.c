@@ -16,9 +16,7 @@
 #include "./aom_config.h"
 
 #include "av1/common/alloccommon.h"
-#if CONFIG_CDEF
 #include "av1/common/cdef.h"
-#endif  // CONFIG_CDEF
 #include "av1/common/filter.h"
 #include "av1/common/idct.h"
 #include "av1/common/reconinter.h"
@@ -4610,9 +4608,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
   struct loopfilter *lf = &cm->lf;
   int no_loopfilter = 0;
-#if CONFIG_CDEF
   int no_cdef = 0;
-#endif
 #if CONFIG_LOOP_RESTORATION
   int no_restoration = 0;
   if (is_lossless_requested(&cpi->oxcf)
@@ -4628,7 +4624,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #endif
 
-#if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf) || !cpi->oxcf.using_cdef
 #if CONFIG_EXT_TILE
       || cm->single_tile_decoding
@@ -4636,7 +4631,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       ) {
     no_cdef = 1;
   }
-#endif
 
   if (no_loopfilter) {
 #if CONFIG_LOOPFILTER_LEVEL
@@ -4692,7 +4686,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
 #endif
 
-#if CONFIG_CDEF
   if (no_cdef) {
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
@@ -4705,7 +4698,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     // Apply the filter
     av1_cdef_frame(cm->frame_to_show, cm, xd);
   }
-#endif
 
 #if CONFIG_FRAME_SUPERRES
   superres_post_encode(cpi);

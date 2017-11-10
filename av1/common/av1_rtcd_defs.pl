@@ -452,52 +452,50 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
 # Deringing Functions
 
-if (aom_config("CONFIG_CDEF") eq "yes") {
-  add_proto qw/int cdef_find_dir/, "const uint16_t *img, int stride, int32_t *var, int coeff_shift";
-  if (aom_config("CONFIG_CDEF_SINGLEPASS") ne "yes") {
-    add_proto qw/void aom_clpf_block_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-    add_proto qw/void aom_clpf_hblock_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-    add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-    add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
-    add_proto qw/void cdef_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
-    add_proto qw/void cdef_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
-    add_proto qw/void copy_8x8_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
-    add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
-    add_proto qw/void copy_8x8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
-    add_proto qw/void copy_4x4_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
+add_proto qw/int cdef_find_dir/, "const uint16_t *img, int stride, int32_t *var, int coeff_shift";
+if (aom_config("CONFIG_CDEF_SINGLEPASS") ne "yes") {
+  add_proto qw/void aom_clpf_block_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_hblock_hbd/, "uint16_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void cdef_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
+  add_proto qw/void cdef_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir, int damping";
+  add_proto qw/void copy_8x8_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_8x8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_4x4_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
+} else {
+  add_proto qw/void cdef_filter_block/, "uint8_t *dst8, uint16_t *dst16, int dstride, const uint16_t *in, int pri_strength, int sec_strength, int dir, int pri_damping, int sec_damping, int bsize, int max, int coeff_shift";
+}
+
+add_proto qw/void copy_rect8_8bit_to_16bit/, "uint16_t *dst, int dstride, const uint8_t *src, int sstride, int v, int h";
+add_proto qw/void copy_rect8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride, int v, int h";
+
+# VS compiling for 32 bit targets does not support vector types in
+# structs as arguments, which makes the v256 type of the intrinsics
+# hard to support, so optimizations for this target are disabled.
+if ($opts{config} !~ /libs-x86-win32-vs.*/) {
+  if (aom_config("CONFIG_CDEF_SINGLEPASS") eq "yes") {
+    specialize qw/cdef_find_dir sse2 ssse3 sse4_1 avx2 neon/;
+    specialize qw/cdef_filter_block sse2 ssse3 sse4_1 avx2 neon/;
+    specialize qw/copy_rect8_8bit_to_16bit sse2 ssse3 sse4_1 avx2 neon/;
+    specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 avx2 neon/;
   } else {
-    add_proto qw/void cdef_filter_block/, "uint8_t *dst8, uint16_t *dst16, int dstride, const uint16_t *in, int pri_strength, int sec_strength, int dir, int pri_damping, int sec_damping, int bsize, int max, int coeff_shift";
-  }
+    specialize qw/cdef_find_dir sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_hblock sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_find_dir sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_direction_4x4 sse2 ssse3 sse4_1 neon/;
+    specialize qw/cdef_direction_8x8 sse2 ssse3 sse4_1 neon/;
 
-  add_proto qw/void copy_rect8_8bit_to_16bit/, "uint16_t *dst, int dstride, const uint8_t *src, int sstride, int v, int h";
-  add_proto qw/void copy_rect8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride, int v, int h";
-
-  # VS compiling for 32 bit targets does not support vector types in
-  # structs as arguments, which makes the v256 type of the intrinsics
-  # hard to support, so optimizations for this target are disabled.
-  if ($opts{config} !~ /libs-x86-win32-vs.*/) {
-    if (aom_config("CONFIG_CDEF_SINGLEPASS") eq "yes") {
-      specialize qw/cdef_find_dir sse2 ssse3 sse4_1 avx2 neon/;
-      specialize qw/cdef_filter_block sse2 ssse3 sse4_1 avx2 neon/;
-      specialize qw/copy_rect8_8bit_to_16bit sse2 ssse3 sse4_1 avx2 neon/;
-      specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 avx2 neon/;
-    } else {
-      specialize qw/cdef_find_dir sse2 ssse3 sse4_1 neon/;
-      specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
-      specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
-      specialize qw/aom_clpf_block sse2 ssse3 sse4_1 neon/;
-      specialize qw/aom_clpf_hblock sse2 ssse3 sse4_1 neon/;
-      specialize qw/cdef_find_dir sse2 ssse3 sse4_1 neon/;
-      specialize qw/cdef_direction_4x4 sse2 ssse3 sse4_1 neon/;
-      specialize qw/cdef_direction_8x8 sse2 ssse3 sse4_1 neon/;
-
-      specialize qw/copy_8x8_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
-      specialize qw/copy_4x4_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
-      specialize qw/copy_8x8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
-      specialize qw/copy_4x4_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
-      specialize qw/copy_rect8_8bit_to_16bit sse2 ssse3 sse4_1 neon/;
-      specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
-    }
+    specialize qw/copy_8x8_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_4x4_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_8x8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_4x4_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_rect8_8bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
   }
 }
 

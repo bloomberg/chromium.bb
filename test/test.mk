@@ -136,10 +136,10 @@ LIBAOM_TEST_SRCS-$(CONFIG_ADAPT_SCAN)  += scan_test.cc
 LIBAOM_TEST_SRCS-yes                   += convolve_test.cc
 LIBAOM_TEST_SRCS-yes                   += lpf_8_test.cc
 ifeq ($(CONFIG_CDEF_SINGLEPASS),yes)
-LIBAOM_TEST_SRCS-$(CONFIG_CDEF)        += cdef_test.cc
+LIBAOM_TEST_SRCS-yes                   += cdef_test.cc
 else
-LIBAOM_TEST_SRCS-$(CONFIG_CDEF)        += dering_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_CDEF)        += clpf_test.cc
+LIBAOM_TEST_SRCS-yes                   += dering_test.cc
+LIBAOM_TEST_SRCS-yes                   += clpf_test.cc
 endif
 LIBAOM_TEST_SRCS-yes                   += simd_cmp_impl.h
 LIBAOM_TEST_SRCS-$(HAVE_SSE2)          += simd_cmp_sse2.cc

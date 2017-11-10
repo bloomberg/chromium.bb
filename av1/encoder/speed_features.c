@@ -156,9 +156,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     } else {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
-#if CONFIG_CDEF
     sf->fast_cdef_search = 1;
-#endif  // CONFIG_CDEF
 
     sf->less_rectangular_check = 1;
 
@@ -450,9 +448,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
 #if CONFIG_EXT_PARTITION_TYPES
   sf->prune_ext_partition_types_search = 0;
 #endif  // CONFIG_EXT_PARTITION_TYPES
-#if CONFIG_CDEF
   sf->fast_cdef_search = 0;
-#endif  // CONFIG_CDEF
 
   // Set this at the appropriate speed levels
   sf->use_transform_domain_distortion = 0;

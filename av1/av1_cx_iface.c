@@ -54,9 +54,7 @@ struct av1_extracfg {
   unsigned int rc_max_inter_bitrate_pct;
   unsigned int gf_cbr_boost_pct;
   unsigned int lossless;
-#if CONFIG_CDEF
   unsigned int enable_cdef;
-#endif
 #if CONFIG_AOM_QM
   unsigned int enable_qm;
   unsigned int qm_min;
@@ -120,9 +118,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,              // rc_max_inter_bitrate_pct
   0,              // gf_cbr_boost_pct
   0,              // lossless
-#if CONFIG_CDEF
-  1,  // enable_cdef
-#endif
+  1,              // enable_cdef
 #if CONFIG_AOM_QM
   0,                 // enable_qm
   DEFAULT_QM_FIRST,  // qm_min
@@ -504,9 +500,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->cq_level = av1_quantizer_to_qindex(extra_cfg->cq_level);
   oxcf->fixed_q = -1;
 
-#if CONFIG_CDEF
   oxcf->using_cdef = extra_cfg->enable_cdef;
-#endif
 #if CONFIG_AOM_QM
   oxcf->using_qm = extra_cfg->enable_qm;
   oxcf->qm_minlevel = extra_cfg->qm_min;
@@ -879,14 +873,12 @@ static aom_codec_err_t ctrl_set_lossless(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_CDEF
 static aom_codec_err_t ctrl_set_enable_cdef(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_cdef = CAST(AV1E_SET_ENABLE_CDEF, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif
 
 #if CONFIG_AOM_QM
 static aom_codec_err_t ctrl_set_enable_qm(aom_codec_alg_priv_t *ctx,
@@ -1613,9 +1605,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_MAX_INTER_BITRATE_PCT, ctrl_set_rc_max_inter_bitrate_pct },
   { AV1E_SET_GF_CBR_BOOST_PCT, ctrl_set_rc_gf_cbr_boost_pct },
   { AV1E_SET_LOSSLESS, ctrl_set_lossless },
-#if CONFIG_CDEF
   { AV1E_SET_ENABLE_CDEF, ctrl_set_enable_cdef },
-#endif
 #if CONFIG_AOM_QM
   { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
   { AV1E_SET_QM_MIN, ctrl_set_qm_min },

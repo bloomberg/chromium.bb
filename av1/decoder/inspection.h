@@ -49,10 +49,8 @@ struct insp_mi_data {
 #endif
   int16_t tx_type;
   int16_t tx_size;
-#if CONFIG_CDEF
   int16_t cdef_level;
   int16_t cdef_strength;
-#endif
 #if CONFIG_CFL
   int16_t cfl_alpha_idx;
   int16_t cfl_alpha_sign;
@@ -77,9 +75,7 @@ struct insp_frame_data {
   int16_t y_dequant[MAX_SEGMENTS][2];
   int16_t u_dequant[MAX_SEGMENTS][2];
   int16_t v_dequant[MAX_SEGMENTS][2];
-#if CONFIG_CDEF
-// TODO(negge): add per frame CDEF data
-#endif
+  // TODO(negge): add per frame CDEF data
   int delta_q_present_flag;
   int delta_q_res;
 };

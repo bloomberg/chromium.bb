@@ -93,7 +93,6 @@ AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/intra_edge_sse4.c
 endif
 AV1_COMMON_SRCS-yes += common/warped_motion.h
 AV1_COMMON_SRCS-yes += common/warped_motion.c
-ifeq ($(CONFIG_CDEF),yes)
 ifeq ($(CONFIG_CDEF_SINGLEPASS),yes)
 AV1_COMMON_SRCS-$(HAVE_AVX2) += common/cdef_block_avx2.c
 else
@@ -113,7 +112,6 @@ AV1_COMMON_SRCS-yes += common/cdef_block.h
 AV1_COMMON_SRCS-yes += common/cdef_block_simd.h
 AV1_COMMON_SRCS-yes += common/cdef.c
 AV1_COMMON_SRCS-yes += common/cdef.h
-endif
 AV1_COMMON_SRCS-yes += common/odintrin.c
 AV1_COMMON_SRCS-yes += common/odintrin.h
 

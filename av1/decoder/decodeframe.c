@@ -33,9 +33,7 @@
 #endif  // CONFIG_BITSTREAM_DEBUG
 
 #include "av1/common/alloccommon.h"
-#if CONFIG_CDEF
 #include "av1/common/cdef.h"
-#endif
 #if CONFIG_INSPECTION
 #include "av1/decoder/inspection.h"
 #endif
@@ -1004,7 +1002,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 #endif
 
-#if CONFIG_CDEF
   if (bsize == cm->sb_size) {
     int width_step = mi_size_wide[BLOCK_64X64];
     int height_step = mi_size_wide[BLOCK_64X64];
@@ -1023,7 +1020,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     }
   }
-#endif  // CONFIG_CDEF
 #if CONFIG_LOOP_RESTORATION
   for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
     int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
@@ -1351,7 +1347,6 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   }
 }
 
-#if CONFIG_CDEF
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_INTRABC
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
@@ -1372,7 +1367,6 @@ static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
                                    : 0;
   }
 }
-#endif  // CONFIG_CDEF
 
 static INLINE int read_delta_q(struct aom_read_bit_buffer *rb) {
   return aom_rb_read_bit(rb) ? aom_rb_read_inv_signed_literal(rb, 6) : 0;
@@ -1801,20 +1795,15 @@ static void read_tile_info(AV1Decoder *const pbi,
 #else
     const int no_loopfilter = !lf->filter_level;
 #endif
-#if CONFIG_CDEF
     const int no_cdef = cm->cdef_bits == 0 && cm->cdef_strengths[0] == 0 &&
                         cm->nb_cdef_strengths == 1;
-#endif
 #if CONFIG_LOOP_RESTORATION
     const int no_restoration =
         cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
 #endif
-    cm->single_tile_decoding = no_loopfilter
-#if CONFIG_CDEF
-                               && no_cdef
-#endif
+    cm->single_tile_decoding = no_loopfilter && no_cdef
 #if CONFIG_LOOP_RESTORATION
                                && no_restoration
 #endif
@@ -3202,11 +3191,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #else
     lf->filter_level = 0;
 #endif
-#if CONFIG_CDEF
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->nb_cdef_strengths = 1;
-#endif  // CONFIG_CDEF
 #if CONFIG_LOOP_RESTORATION
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
@@ -3305,11 +3292,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
   cm->all_lossless = all_lossless(cm, xd);
   setup_segmentation_dequant(cm);
-#if CONFIG_CDEF
   if (!cm->all_lossless) {
     setup_cdef(cm, rb);
   }
-#endif
 #if CONFIG_LOOP_RESTORATION
   decode_restoration_mode(cm, rb);
 #endif  // CONFIG_LOOP_RESTORATION
@@ -3842,7 +3827,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 #endif
 
-#if CONFIG_CDEF
   if (!cm->skip_loop_filter &&
 #if CONFIG_INTRABC
       !(cm->allow_intrabc && NO_FILTER_FOR_IBC) &&
@@ -3850,7 +3834,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       !cm->all_lossless) {
     av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
   }
-#endif  // CONFIG_CDEF
 
 #if CONFIG_FRAME_SUPERRES
   superres_post_decode(pbi);

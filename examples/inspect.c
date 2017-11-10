@@ -119,9 +119,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_uv_mode_arg,
                                         &dump_skip_arg,
                                         &dump_filter_arg,
-#if CONFIG_CDEF
                                         &dump_cdef_arg,
-#endif
 #if CONFIG_DUAL_FILTER
                                         &dump_dual_filter_type_arg,
 #endif
@@ -570,14 +568,12 @@ void inspect(void *pbi, void *data) {
         put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter), 0);
 #endif
   }
-#if CONFIG_CDEF
   if (layers & CDEF_LAYER) {
     buf += put_block_info(buf, NULL, "cdef_level",
                           offsetof(insp_mi_data, cdef_level), 0);
     buf += put_block_info(buf, NULL, "cdef_strength",
                           offsetof(insp_mi_data, cdef_strength), 0);
   }
-#endif
 #if CONFIG_CFL
   if (layers & CFL_LAYER) {
     buf += put_block_info(buf, NULL, "cfl_alpha_idx",
@@ -734,10 +730,8 @@ static void parse_args(char **argv) {
       layers |= SKIP_LAYER;
     else if (arg_match(&arg, &dump_filter_arg, argi))
       layers |= FILTER_LAYER;
-#if CONFIG_CDEF
     else if (arg_match(&arg, &dump_cdef_arg, argi))
       layers |= CDEF_LAYER;
-#endif
 #if CONFIG_CFL
     else if (arg_match(&arg, &dump_cfl_arg, argi))
       layers |= CFL_LAYER;

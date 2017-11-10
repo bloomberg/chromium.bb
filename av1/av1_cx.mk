@@ -115,9 +115,7 @@ AV1_CX_SRCS-yes += ../third_party/vector/vector.c
 AV1_CX_SRCS-yes += encoder/hash_motion.c
 AV1_CX_SRCS-yes += encoder/hash_motion.h
 endif
-ifeq ($(CONFIG_CDEF),yes)
 AV1_CX_SRCS-yes += encoder/pickcdef.c
-endif
 
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/av1_quantize_sse2.c
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/av1_quantize_avx2.c
