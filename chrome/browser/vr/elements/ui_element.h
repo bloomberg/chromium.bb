@@ -23,6 +23,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
@@ -40,7 +41,6 @@ namespace vr {
 class Animation;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
-class UiElementTransformOperations;
 
 enum LayoutAlignment {
   NONE = 0,
@@ -154,10 +154,7 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF size() const;
   void SetSize(float width, float hight);
 
-  // It is assumed that operations is of size 4 with a component for layout
-  // translation, translation, rotation and scale, in that order (see
-  // constructor and the DCHECKs in the implementation of this function).
-  void SetTransformOperations(const UiElementTransformOperations& operations);
+  gfx::PointF local_origin() const { return local_origin_; }
 
   // These are convenience functions for setting the transform operations. They
   // will animate if you've set a transition. If you need to animate more than
@@ -204,6 +201,18 @@ class UiElement : public cc::AnimationTarget {
   LayoutAlignment y_centering() const { return y_centering_; }
   void set_y_centering(LayoutAlignment y_centering) {
     y_centering_ = y_centering;
+  }
+
+  bool bounds_contain_children() const { return bounds_contain_children_; }
+  void set_bounds_contain_children(bool bounds_contain_children) {
+    bounds_contain_children_ = bounds_contain_children;
+  }
+
+  float x_padding() const { return x_padding_; }
+  float y_padding() const { return y_padding_; }
+  void set_padding(float x_padding, float y_padding) {
+    x_padding_ = x_padding;
+    y_padding_ = y_padding;
   }
 
   int draw_phase() const { return draw_phase_; }
@@ -277,6 +286,8 @@ class UiElement : public cc::AnimationTarget {
   void AddAnimation(std::unique_ptr<cc::Animation> animation);
   void RemoveAnimation(int animation_id);
   bool IsAnimatingProperty(TargetProperty property) const;
+
+  void DoLayOutChildren();
 
   // Handles positioning adjustments for children. This will be overridden by
   // UiElements providing custom layout modes. See the documentation of the
@@ -357,6 +368,11 @@ class UiElement : public cc::AnimationTarget {
   // The size of the object.  This does not affect children.
   gfx::SizeF size_ = {1.0f, 1.0f};
 
+  // The local orgin of the element. This can be updated, say, so that an
+  // element can contain its children, even if they are not centered about its
+  // true origin.
+  gfx::PointF local_origin_ = {0.0f, 0.0f};
+
   // The opacity of the object (between 0.0 and 1.0).
   float opacity_ = 1.0f;
 
@@ -390,6 +406,13 @@ class UiElement : public cc::AnimationTarget {
   // it is positioned relative to its own edge or corner, rather than center.
   LayoutAlignment x_centering_ = LayoutAlignment::NONE;
   LayoutAlignment y_centering_ = LayoutAlignment::NONE;
+
+  // If this is true, after laying out descendants, this element updates its
+  // size to accommodate all descendants, adding in the padding below along the
+  // x and y axes.
+  bool bounds_contain_children_ = false;
+  float x_padding_ = 0.0f;
+  float y_padding_ = 0.0f;
 
   AnimationPlayer animation_player_;
 

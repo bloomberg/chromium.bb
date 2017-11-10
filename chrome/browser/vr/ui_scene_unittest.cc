@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/math_constants.h"
 #include "base/test/gtest_util.h"
 #include "base/values.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/transient_element.h"
 #include "chrome/browser/vr/elements/ui_element.h"
-#include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -106,21 +106,17 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   UiElement* parent = element.get();
   element->SetSize(1000, 1000);
 
-  UiElementTransformOperations operations;
-  operations.SetTranslate(6, 1, 0);
-  operations.SetRotate(0, 0, 1, 90);
-  operations.SetScale(3, 3, 1);
-  element->SetTransformOperations(operations);
+  element->SetTranslate(6, 1, 0);
+  element->SetRotate(0, 0, 1, 0.5f * base::kPiFloat);
+  element->SetScale(3, 3, 1);
   element->set_draw_phase(0);
   scene.AddUiElement(kRoot, std::move(element));
 
   // Add a child to the parent, with different transformations.
   element = base::MakeUnique<UiElement>();
-  UiElementTransformOperations child_operations;
-  child_operations.SetTranslate(3, 0, 0);
-  child_operations.SetRotate(0, 0, 1, 90);
-  child_operations.SetScale(2, 2, 1);
-  element->SetTransformOperations(child_operations);
+  element->SetTranslate(3, 0, 0);
+  element->SetRotate(0, 0, 1, 0.5f * base::kPiFloat);
+  element->SetScale(2, 2, 1);
   element->set_draw_phase(0);
   UiElement* child = element.get();
   parent->AddChild(std::move(element));
