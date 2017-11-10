@@ -174,4 +174,3 @@ TEST_F(BrowserAssociatedInterfaceTest, Basic) {
 }
 
 }  // namespace content
-

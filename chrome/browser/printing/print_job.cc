@@ -480,4 +480,3 @@ PrintedDocument* JobEventDetails::document() const { return document_.get(); }
 PrintedPage* JobEventDetails::page() const { return page_.get(); }
 
 }  // namespace printing
-
