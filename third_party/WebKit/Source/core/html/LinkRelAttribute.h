@@ -57,6 +57,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool IsLinkNext() const { return is_link_next_; }
   bool IsImport() const { return is_import_; }
   bool IsManifest() const { return is_manifest_; }
+  bool IsModulePreload() const { return is_module_preload_; }
   bool IsServiceWorker() const { return is_service_worker_; }
   bool IsCanonical() const { return is_canonical_; }
 
@@ -72,6 +73,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool is_link_next_ : 1;
   bool is_import_ : 1;
   bool is_manifest_ : 1;
+  bool is_module_preload_ : 1;
   bool is_service_worker_ : 1;
   bool is_canonical_ : 1;
 };

@@ -75,6 +75,9 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   static bool BlockForNoModule(ScriptType, bool nomodule);
 
+  static network::mojom::FetchCredentialsMode ModuleScriptCredentialsMode(
+      CrossOriginAttributeValue);
+
   // https://html.spec.whatwg.org/#prepare-a-script
   bool PrepareScript(const TextPosition& script_start_position =
                          TextPosition::MinimumPosition(),

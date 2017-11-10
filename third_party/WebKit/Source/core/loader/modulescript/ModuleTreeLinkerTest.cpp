@@ -123,6 +123,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
  private:
   // Implements Modulator:
 
+  ReferrerPolicy GetReferrerPolicy() override { return kReferrerPolicyDefault; }
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchSingle(const ModuleScriptFetchRequest& request,
@@ -218,7 +219,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeNoDeps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -239,7 +241,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeInstantiationFailure) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -264,7 +267,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreePreviousInstantiationFailure) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -285,7 +289,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWithSingleDependency) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -311,7 +316,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -350,7 +356,8 @@ TEST_F(ModuleTreeLinkerTest, FetchTreeWith3Deps1Fail) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/root.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -406,7 +413,8 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyTree) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/depth1.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 
@@ -431,7 +439,8 @@ TEST_F(ModuleTreeLinkerTest, FetchDependencyOfCyclicGraph) {
   ModuleTreeLinkerRegistry* registry = ModuleTreeLinkerRegistry::Create();
 
   KURL url("http://example.com/a.js");
-  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
+  ModuleScriptFetchRequest module_request(url, kReferrerPolicyDefault,
+                                          ScriptFetchOptions());
   TestModuleTreeClient* client = new TestModuleTreeClient;
   registry->Fetch(module_request, GetModulator(), client);
 

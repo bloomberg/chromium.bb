@@ -33,6 +33,7 @@
 #define LinkLoader_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Modulator.h"
 #include "core/loader/LinkLoaderClient.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
@@ -50,9 +51,8 @@ struct ViewportDescriptionWrapper;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, prefetch, and
 // prerender.
-class CORE_EXPORT LinkLoader final
-    : public GarbageCollectedFinalized<LinkLoader>,
-      public PrerenderClient {
+class CORE_EXPORT LinkLoader final : public SingleModuleClient,
+                                     public PrerenderClient {
   USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 
  public:
@@ -106,6 +106,8 @@ class CORE_EXPORT LinkLoader final
   LinkLoader(LinkLoaderClient*, scoped_refptr<WebTaskRunner>);
 
   void NotifyFinished();
+  // SingleModuleClient implementation
+  void NotifyModuleLoadFinished(ModuleScript*) override;
 
   Member<FinishObserver> finish_observer_;
   Member<LinkLoaderClient> client_;

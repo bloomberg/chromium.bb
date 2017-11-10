@@ -121,6 +121,7 @@ class TokenPreloadScanner::StartTagScanner {
         link_is_style_sheet_(false),
         link_is_preconnect_(false),
         link_is_preload_(false),
+        link_is_modulepreload_(false),
         link_is_import_(false),
         matched_(true),
         input_is_image_(false),
@@ -199,6 +200,9 @@ class TokenPreloadScanner::StartTagScanner {
         type = ResourceTypeForLinkPreload();
         if (type == WTF::nullopt)
           return nullptr;
+      } else if (IsLinkRelModulePreload()) {
+        request_type = PreloadRequest::kRequestTypeLinkRelPreload;
+        type = Resource::kScript;
       }
       if (!ShouldPreload(type)) {
         return nullptr;
@@ -239,10 +243,9 @@ class TokenPreloadScanner::StartTagScanner {
     if (!request)
       return nullptr;
 
-    if (Match(tag_impl_, scriptTag)) {
-      request->SetScriptType(type_attribute_value_ == "module"
-                                 ? ScriptType::kModule
-                                 : ScriptType::kClassic);
+    if ((Match(tag_impl_, scriptTag) && type_attribute_value_ == "module") ||
+        IsLinkRelModulePreload()) {
+      request->SetScriptType(ScriptType::kModule);
     }
 
     request->SetCrossOrigin(cross_origin_);
@@ -343,6 +346,7 @@ class TokenPreloadScanner::StartTagScanner {
                              !rel.IsDNSPrefetch();
       link_is_preconnect_ = rel.IsPreconnect();
       link_is_preload_ = rel.IsLinkPreload();
+      link_is_modulepreload_ = rel.IsModulePreload();
       link_is_import_ = rel.IsImport();
     } else if (Match(attribute_name, mediaAttr)) {
       matched_ &= MediaAttributeMatches(*media_values_, attribute_value);
@@ -485,6 +489,11 @@ class TokenPreloadScanner::StartTagScanner {
            !url_to_load_.IsEmpty();
   }
 
+  bool IsLinkRelModulePreload() const {
+    return Match(tag_impl_, linkTag) && link_is_modulepreload_ &&
+           !url_to_load_.IsEmpty();
+  }
+
   bool ShouldPreloadLink(WTF::Optional<Resource::Type>& type) const {
     if (link_is_style_sheet_) {
       return type_attribute_value_.IsEmpty() ||
@@ -504,6 +513,8 @@ class TokenPreloadScanner::StartTagScanner {
                type_from_attribute))) {
         return false;
       }
+    } else if (link_is_modulepreload_) {
+      return true;
     } else if (!link_is_import_) {
       return false;
     }
@@ -552,6 +563,7 @@ class TokenPreloadScanner::StartTagScanner {
   bool link_is_style_sheet_;
   bool link_is_preconnect_;
   bool link_is_preload_;
+  bool link_is_modulepreload_;
   bool link_is_import_;
   bool matched_;
   bool input_is_image_;

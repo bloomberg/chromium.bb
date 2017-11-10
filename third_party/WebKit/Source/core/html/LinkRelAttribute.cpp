@@ -31,6 +31,8 @@
 
 #include "core/html/LinkRelAttribute.h"
 
+#include "platform/runtime_enabled_features.h"
+
 namespace blink {
 
 LinkRelAttribute::LinkRelAttribute()
@@ -45,6 +47,7 @@ LinkRelAttribute::LinkRelAttribute()
       is_link_next_(false),
       is_import_(false),
       is_manifest_(false),
+      is_module_preload_(false),
       is_service_worker_(false),
       is_canonical_(false) {}
 
@@ -90,6 +93,9 @@ LinkRelAttribute::LinkRelAttribute(const String& rel) : LinkRelAttribute() {
       icon_type_ = kTouchPrecomposedIcon;
     } else if (DeprecatedEqualIgnoringCase(link_type, "manifest")) {
       is_manifest_ = true;
+    } else if (DeprecatedEqualIgnoringCase(link_type, "modulepreload")) {
+      if (RuntimeEnabledFeatures::ModulePreloadEnabled())
+        is_module_preload_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "serviceworker")) {
       is_service_worker_ = true;
     } else if (DeprecatedEqualIgnoringCase(link_type, "canonical")) {
