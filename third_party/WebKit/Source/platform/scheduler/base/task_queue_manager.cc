@@ -653,7 +653,7 @@ TaskQueueManager::AsValueWithSelectorResult(
   if (should_run) {
     state->SetString("selected_queue",
                      selected_work_queue->task_queue()->GetName());
-    state->SetString("work_queue_name", selected_work_queue->GetName());
+    state->SetString("work_queue_name", selected_work_queue->name());
   }
 
   state->BeginArray("time_domains");

@@ -5,7 +5,6 @@
 #include "platform/scheduler/base/work_queue.h"
 
 #include "platform/scheduler/base/work_queue_sets.h"
-#include "platform/wtf/debug/CrashLogging.h"
 
 namespace blink {
 namespace scheduler {
@@ -14,12 +13,7 @@ namespace internal {
 WorkQueue::WorkQueue(TaskQueueImpl* task_queue,
                      const char* name,
                      QueueType queue_type)
-    : work_queue_sets_(nullptr),
-      task_queue_(task_queue),
-      work_queue_set_index_(0),
-      name_(name),
-      fence_(0),
-      queue_type_(queue_type) {}
+    : task_queue_(task_queue), name_(name), queue_type_(queue_type) {}
 
 void WorkQueue::AsValueInto(base::TimeTicks now,
                             base::trace_event::TracedValue* state) const {
@@ -82,12 +76,6 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   // If we hit the fence, pretend to WorkQueueSets that we're empty.
   if (work_queue_sets_ && !BlockedByFence())
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
-}
-
-void WorkQueue::PopTaskForTest() {
-  if (work_queue_.empty())
-    return;
-  work_queue_.pop_front();
 }
 
 void WorkQueue::ReloadEmptyImmediateQueue() {
@@ -175,6 +163,12 @@ bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
   DCHECK(have_task);
   DCHECK(have_other_task);
   return enqueue_order < other_enqueue_order;
+}
+
+void WorkQueue::PopTaskForTesting() {
+  if (work_queue_.empty())
+    return;
+  work_queue_.pop_front();
 }
 
 }  // namespace internal

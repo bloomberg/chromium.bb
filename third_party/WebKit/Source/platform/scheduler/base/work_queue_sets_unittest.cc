@@ -147,7 +147,7 @@ TEST_F(WorkQueueSetsTest, OnPopQueue) {
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(queue2, selected_work_queue);
 
-  queue2->PopTaskForTest();
+  queue2->PopTaskForTesting();
   work_queue_sets_->OnPopQueue(queue2);
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
@@ -170,7 +170,7 @@ TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(queue3, selected_work_queue);
 
-  queue3->PopTaskForTest();
+  queue3->PopTaskForTesting();
   work_queue_sets_->OnPopQueue(queue3);
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
@@ -267,7 +267,7 @@ TEST_F(WorkQueueSetsTest, IsSetEmpty_Work) {
   work_queue_sets_->ChangeSetIndex(work_queue, set);
   EXPECT_FALSE(work_queue_sets_->IsSetEmpty(set));
 
-  work_queue->PopTaskForTest();
+  work_queue->PopTaskForTesting();
   work_queue_sets_->OnPopQueue(work_queue);
   EXPECT_TRUE(work_queue_sets_->IsSetEmpty(set));
 }
