@@ -262,6 +262,7 @@
         </div>
         <template is="dom-if" if="[[!computeDevReloadButtonHidden_(data.*)]]">
           <button id="dev-reload-button" is="paper-icon-button-light"
+              aria-label="$i18n{itemReload}"
               class="icon-refresh no-overlap" on-tap="onReloadTap_">
           </button>
         </template>
