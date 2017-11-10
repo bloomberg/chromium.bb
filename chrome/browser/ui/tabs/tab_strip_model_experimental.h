@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_H_
 #define CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_EXPERIMENTAL_H_
 
+#include <memory>
+
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -14,12 +16,16 @@
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/page_transition_types.h"
 
+class TabDataExperimental;
+class TabStripModelExperimentalObserver;
+
 class TabStripModelExperimental : public TabStripModel {
  public:
   TabStripModelExperimental(TabStripModelDelegate* delegate, Profile* profile);
   ~TabStripModelExperimental() override;
 
   // TabStripModel implementation.
+  TabStripModelExperimental* AsTabStripModelExperimental() override;
   TabStripModelDelegate* delegate() const override;
   void AddObserver(TabStripModelObserver* observer) override;
   void RemoveObserver(TabStripModelObserver* observer) override;
@@ -94,6 +100,11 @@ class TabStripModelExperimental : public TabStripModel {
   bool WillContextMenuMuteSites(int index) override;
   bool WillContextMenuPin(int index) override;
 
+  const TabDataExperimental& GetDataAt(int index) const;
+
+  void AddExperimentalObserver(TabStripModelExperimentalObserver* observer);
+  void RemoveExperimentalObserver(TabStripModelExperimentalObserver* observer);
+
  private:
   // Used when making selection notifications.
   enum class Notify {
@@ -130,6 +141,7 @@ class TabStripModelExperimental : public TabStripModel {
   Profile* profile_;
 
   base::ObserverList<TabStripModelObserver> observers_;
+  base::ObserverList<TabStripModelExperimentalObserver> exp_observers_;
 
   ui::ListSelectionModel selection_model_;
   bool closing_all_ = false;
@@ -137,7 +149,7 @@ class TabStripModelExperimental : public TabStripModel {
   // Flag to check for reentrant notifications.
   bool in_notify_ = false;
 
-  std::vector<content::WebContents*> tabs_;
+  std::vector<TabDataExperimental> tabs_;
 
   base::WeakPtrFactory<TabStripModelExperimental> weak_factory_;
 

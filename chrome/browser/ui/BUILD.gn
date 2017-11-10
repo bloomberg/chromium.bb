@@ -2419,6 +2419,8 @@ split_static_library("ui") {
       "network_profile_bubble.cc",
       "network_profile_bubble.h",
       "startup/default_browser_prompt_win.cc",
+      "tabs/tab_data_experimental.cc",
+      "tabs/tab_data_experimental.h",
       "tabs/tab_strip_model_experimental.cc",
       "tabs/tab_strip_model_experimental.h",
       "views/certificate_viewer_win.cc",
@@ -3113,7 +3115,13 @@ split_static_library("ui") {
     }
 
     if (is_win) {
-      sources += [ "views/chrome_views_delegate_win.cc" ]
+      sources += [
+        "views/chrome_views_delegate_win.cc",
+        "views/tabs/tab_experimental.cc",
+        "views/tabs/tab_experimental.h",
+        "views/tabs/tab_strip_experimental.cc",
+        "views/tabs/tab_strip_experimental.h",
+      ]
     }
 
     if (is_win || is_desktop_linux) {

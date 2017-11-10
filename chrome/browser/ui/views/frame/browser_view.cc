@@ -55,6 +55,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
+#include "chrome/browser/ui/tabs/tab_features.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -88,6 +89,7 @@
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_experimental.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -2113,14 +2115,22 @@ void BrowserView::InitViews() {
   top_container_ = new TopContainerView(this);
   AddChildView(top_container_);
 
-  // TabStrip takes ownership of the controller.
-  BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(browser_->tab_strip_model(), this);
-  TabStripImpl* tab_strip_impl = new TabStripImpl(
-      std::unique_ptr<TabStripController>(tabstrip_controller));
-  tabstrip_ = tab_strip_impl;
-  top_container_->AddChildView(tabstrip_);  // Takes ownership.
-  tabstrip_controller->InitFromModel(tab_strip_impl);
+#if defined(OS_WIN)
+  if (IsExperimentalTabStripEnabled()) {
+    tabstrip_ = new TabStripExperimental(browser_->tab_strip_model());
+    top_container_->AddChildView(tabstrip_);  // Takes ownership.
+  } else
+#endif
+  {
+    // TabStrip takes ownership of the controller.
+    BrowserTabStripController* tabstrip_controller =
+        new BrowserTabStripController(browser_->tab_strip_model(), this);
+    TabStripImpl* tab_strip_impl = new TabStripImpl(
+        std::unique_ptr<TabStripController>(tabstrip_controller));
+    tabstrip_ = tab_strip_impl;
+    top_container_->AddChildView(tabstrip_);  // Takes ownership.
+    tabstrip_controller->InitFromModel(tab_strip_impl);
+  }
 
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
