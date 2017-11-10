@@ -89,11 +89,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
         first_title_updated;
   };
 
-  // TODO(lpy): Move the FrameData to the FrameCoordinationUnitImpl
-  struct FrameData {
-    base::TimeTicks last_audible_time;
-  };
-
   struct UkmCPUUsageCollectionState {
     size_t num_cpu_usage_measurements = 0u;
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
@@ -109,7 +104,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(CoordinationUnitID cu_id);
 
-  std::map<CoordinationUnitID, FrameData> frame_data_map_;
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
   std::map<CoordinationUnitID, MetricsReportRecord> metrics_report_record_map_;

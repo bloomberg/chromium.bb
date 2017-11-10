@@ -7,6 +7,7 @@
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/process_coordination_unit_impl.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
+#include "services/resource_coordinator/resource_coordinator_clock.h"
 
 namespace resource_coordinator {
 
@@ -58,6 +59,8 @@ void FrameCoordinationUnitImpl::RemoveChildFrame(
 }
 
 void FrameCoordinationUnitImpl::SetAudibility(bool audible) {
+  if (!audible)
+    last_audible_time_ = ResourceCoordinatorClock::NowTicks();
   SetProperty(mojom::PropertyType::kAudible, audible);
 }
 
