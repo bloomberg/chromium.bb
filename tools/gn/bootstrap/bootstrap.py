@@ -188,6 +188,7 @@ def build_gn_with_ninja_manually(tempdir, options):
   write_buildflag_header_manually(root_gen_dir, 'base/cfi_flags.h',
       {
           'CFI_CAST_CHECK': 'false',
+          'CFI_ICALL_CHECK': 'false',
           'CFI_ENFORCEMENT_TRAP': 'false',
           'CFI_ENFORCEMENT_DIAGNOSTIC': 'false'
       })
