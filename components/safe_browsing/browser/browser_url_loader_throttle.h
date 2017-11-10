@@ -84,6 +84,12 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   base::TimeTicks defer_start_time_;
   bool deferred_ = false;
 
+  // The total delay caused by SafeBrowsing deferring the resource load.
+  base::TimeDelta total_delay_;
+  // Whether the interstitial page has been shown and therefore user action has
+  // been involved.
+  bool user_action_involved_ = false;
+
   GURL original_url_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserURLLoaderThrottle);

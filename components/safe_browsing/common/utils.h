@@ -23,6 +23,13 @@ std::string ShortURLForReporting(const GURL& url);
 // page is 'safe'.
 void LogDelay(base::TimeDelta time);
 
+// UMA histogram helper for logging "SB2.NoUserActionResourceLoadingDelay".
+// Logs the total delay caused by SafeBrowsing for a resource load, if the
+// SafeBrowsing interstitial page is not showed. At most one value is reported
+// for each resource load. If SafeBrowsing causes delays at different stages of
+// a load, the sum of all the delays will be reported.
+void LogNoUserActionResourceLoadingDelay(base::TimeDelta time);
+
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_COMMON_UTILS_H_

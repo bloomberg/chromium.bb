@@ -23,6 +23,9 @@ RendererURLLoaderThrottle::RendererURLLoaderThrottle(
 RendererURLLoaderThrottle::~RendererURLLoaderThrottle() {
   if (deferred_)
     TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
+
+  if (!user_action_involved_)
+    LogNoUserActionResourceLoadingDelay(total_delay_);
 }
 
 void RendererURLLoaderThrottle::DetachFromCurrentSequence() {
@@ -91,10 +94,8 @@ void RendererURLLoaderThrottle::WillProcessResponse(
   // shouldn't be such a notification.
   DCHECK(!blocked_);
 
-  if (pending_checks_ == 0) {
-    LogDelay(base::TimeDelta());
+  if (pending_checks_ == 0)
     return;
-  }
 
   DCHECK(!deferred_);
   deferred_ = true;
@@ -156,13 +157,18 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
     pending_slow_checks_--;
   }
 
+  user_action_involved_ = user_action_involved_ || showed_interstitial;
+  // If the resource load is currently deferred and is going to exit that state
+  // (either being cancelled or resumed), record the total delay.
+  if (deferred_ && (!proceed || pending_checks_ == 0))
+    total_delay_ = base::TimeTicks::Now() - defer_start_time_;
+
   if (proceed) {
     if (pending_slow_checks_ == 0 && slow_check)
       delegate_->ResumeReadingBodyFromNet();
 
     if (pending_checks_ == 0 && deferred_) {
       deferred_ = false;
-      LogDelay(base::TimeTicks::Now() - defer_start_time_);
       TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
       delegate_->Resume();
     }
@@ -192,8 +198,9 @@ void RendererURLLoaderThrottle::OnConnectionError() {
   }
 
   if (deferred_) {
+    total_delay_ = base::TimeTicks::Now() - defer_start_time_;
+
     deferred_ = false;
-    LogDelay(base::TimeTicks::Now() - defer_start_time_);
     TRACE_EVENT_ASYNC_END0("safe_browsing", "Deferred", this);
     delegate_->Resume();
   }
