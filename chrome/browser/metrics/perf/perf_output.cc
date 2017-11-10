@@ -28,8 +28,8 @@ PerfOutputCall::PerfOutputCall(base::TimeDelta duration,
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   client->GetPerfOutput(duration_, perf_args_, pipe_write_end.get(),
-                        base::Bind(&PerfOutputCall::OnGetPerfOutputError,
-                                   weak_factory_.GetWeakPtr()));
+                        base::BindOnce(&PerfOutputCall::OnGetPerfOutput,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 PerfOutputCall::~PerfOutputCall() {}
@@ -41,12 +41,11 @@ void PerfOutputCall::OnIOComplete(base::Optional<std::string> result) {
   // The callback may delete us, so it's hammertime: Can't touch |this|.
 }
 
-void PerfOutputCall::OnGetPerfOutputError(const std::string& error_name,
-                                          const std::string& error_message) {
+void PerfOutputCall::OnGetPerfOutput(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Signal pipe reader to shut down.
-  if (perf_data_pipe_reader_.get()) {
+  if (!success && perf_data_pipe_reader_.get()) {
     perf_data_pipe_reader_.reset();
     done_callback_.Run(std::string());
   }

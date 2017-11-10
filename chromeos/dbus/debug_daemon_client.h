@@ -94,14 +94,10 @@ class CHROMEOS_EXPORT DebugDaemonClient
   virtual void GetNetworkInterfaces(
       const GetNetworkInterfacesCallback& callback) = 0;
 
-  using DBusMethodErrorCallback =
-      base::Callback<void(const std::string& error_name,
-                          const std::string& error_message)>;
-
   // Runs perf (via quipper) with arguments for |duration| (converted to
   // seconds) and returns data collected over the passed |file_descriptor|.
-  // |error_callback| is called if there is an error with the DBus call.
-  // Note that quipper failures may occur after successfully running the DBus
+  // |callback| is called on the completion of the D-Bus call.
+  // Note that quipper failures may occur after successfully running the D-Bus
   // method. Such errors can be detected by |file_descriptor| and all its
   // duplicates being closed with no data written.
   // This method duplicates |file_descriptor| so it's OK to close the FD without
@@ -109,7 +105,7 @@ class CHROMEOS_EXPORT DebugDaemonClient
   virtual void GetPerfOutput(base::TimeDelta duration,
                              const std::vector<std::string>& perf_args,
                              int file_descriptor,
-                             const DBusMethodErrorCallback& error_callback) = 0;
+                             VoidDBusMethodCallback callback) = 0;
 
   // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   using GetLogsCallback =
