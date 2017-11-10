@@ -6,8 +6,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
 #include "chrome/browser/subresource_filter/subresource_filter_test_harness.h"
+#include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
+#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
@@ -65,14 +68,17 @@ class SubresourceFilterAbusiveTest
   // SubresourceFilterTestHarness:
   void SetUp() override {
     SubresourceFilterTestHarness::SetUp();
+    scoped_features_.InitAndEnableFeature(kAbusiveExperienceEnforce);
     std::vector<subresource_filter::Configuration> configs{
         subresource_filter::Configuration::
             MakePresetForLiveRunOnPhishingSites(),
-        subresource_filter::Configuration::MakePresetForLiveRunForAllAds(),
-        subresource_filter::Configuration::MakePresetForLiveRunForBetterAds(),
-        subresource_filter::Configuration::MakePresetForLiveRunForAbusiveAds()};
+        subresource_filter::Configuration::MakePresetForLiveRunForBetterAds()};
     scoped_configuration().ResetConfiguration(
         base::MakeRefCounted<subresource_filter::ConfigurationList>(configs));
+    EXPECT_TRUE(base::FeatureList::IsEnabled(kAbusiveExperienceEnforce));
+
+    popup_blocker_ =
+        SafeBrowsingTriggeredPopupBlocker::MaybeCreate(web_contents());
   }
 
   void ConfigureUrl(const GURL& url) {
@@ -94,7 +100,10 @@ class SubresourceFilterAbusiveTest
   MetadataLevel abusive_level_ = METADATA_NONE;
   MetadataLevel bas_level_ = METADATA_NONE;
 
+  std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
+
  private:
+  base::test::ScopedFeatureList scoped_features_;
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAbusiveTest);
 };
 
@@ -105,45 +114,28 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
   ConfigureUrl(url);
   SimulateNavigateAndCommit(url, main_rfh());
 
-  bool allow_requests = !!CreateAndNavigateDisallowedSubframe(main_rfh());
-  bool allow_popups =
-      !subresource_filter::ContentSubresourceFilterDriverFactory::
-           FromWebContents(web_contents())
-               ->ShouldDisallowNewWindow(nullptr);
-
-  // Enforce -> warn if other is warn, else enforce. WARN and NONE should never
-  // change. This strange behavior should change soon (e.g. the global-ness of
-  // warn).
-  MetadataLevel effective_abusive_level =
-      abusive_level_ == METADATA_ENFORCE && bas_level_ == METADATA_WARN
-          ? METADATA_WARN
-          : abusive_level_;
-  MetadataLevel effective_bas_level =
-      bas_level_ == METADATA_ENFORCE && abusive_level_ == METADATA_WARN
-          ? METADATA_WARN
-          : bas_level_;
+  bool disallow_requests = !CreateAndNavigateDisallowedSubframe(main_rfh());
+  bool disallow_popups = popup_blocker_->ShouldApplyStrongPopupBlocker(nullptr);
 
   // Enforcement.
-  EXPECT_EQ(effective_bas_level == METADATA_ENFORCE, !allow_requests);
-  EXPECT_EQ(effective_bas_level == METADATA_ENFORCE,
+  EXPECT_EQ(bas_level_ == METADATA_ENFORCE, disallow_requests);
+  EXPECT_EQ(bas_level_ == METADATA_ENFORCE,
             !!GetSettingsManager()->GetSiteMetadata(url));
-  EXPECT_EQ(effective_abusive_level == METADATA_ENFORCE, !allow_popups);
+  EXPECT_EQ(abusive_level_ == METADATA_ENFORCE, disallow_popups);
 
   // Activation / enforce messages.
   EXPECT_EQ(
-      effective_bas_level == METADATA_ENFORCE,
+      bas_level_ == METADATA_ENFORCE,
       DidSendConsoleMessage(subresource_filter::kActivationConsoleMessage));
-  EXPECT_EQ(
-      effective_abusive_level == METADATA_ENFORCE,
-      DidSendConsoleMessage(subresource_filter::kDisallowNewWindowMessage));
+  EXPECT_EQ(abusive_level_ == METADATA_ENFORCE,
+            DidSendConsoleMessage(kAbusiveEnforceMessage));
 
   // Warn messages.
-  EXPECT_EQ(effective_bas_level == METADATA_WARN,
+  EXPECT_EQ(bas_level_ == METADATA_WARN,
             DidSendConsoleMessage(
                 subresource_filter::kActivationWarningConsoleMessage));
-  EXPECT_EQ(effective_abusive_level == METADATA_WARN,
-            DidSendConsoleMessage(
-                subresource_filter::kDisallowNewWindowWarningMessage));
+  EXPECT_EQ(abusive_level_ == METADATA_WARN,
+            DidSendConsoleMessage(kAbusiveWarnMessage));
 }
 
 INSTANTIATE_TEST_CASE_P(

@@ -18,6 +18,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
+#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -38,8 +39,7 @@ namespace subresource_filter {
 SubresourceFilterBrowserTest::SubresourceFilterBrowserTest() {
   scoped_feature_list_.InitWithFeatures(
       {kSafeBrowsingSubresourceFilter,
-       kSafeBrowsingSubresourceFilterExperimentalUI,
-       safe_browsing::kV4OnlyEnabled},
+       kSafeBrowsingSubresourceFilterExperimentalUI, kAbusiveExperienceEnforce},
       {});
 }
 
