@@ -7,5 +7,6 @@ FAIL ontrack fires before setRemoteDescription resolves. assert_equals: expected
 PASS ontrack's receiver matches getReceivers().
 FAIL removeTrack() does not remove the receiver. assert_array_equals: Expected the set of receivers to remain the same. lengths differ, expected 1 got 0
 PASS removeTrack() causes onremovetrack and the track to be removed from the stream.
+PASS removeTrack() causes onmute and the track to be muted.
 Harness: the test ran to completion.
 

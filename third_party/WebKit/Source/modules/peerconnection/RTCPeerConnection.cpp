@@ -56,6 +56,7 @@
 #include "core/html/VoidCallback.h"
 #include "modules/crypto/CryptoResultImpl.h"
 #include "modules/mediastream/MediaConstraintsImpl.h"
+#include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamEvent.h"
 #include "modules/peerconnection/RTCAnswerOptions.h"
 #include "modules/peerconnection/RTCConfiguration.h"
@@ -1549,17 +1550,18 @@ void RTCPeerConnection::DidRemoveRemoteTrack(
   MediaStreamTrack* track = rtp_receiver->track();
   rtp_receivers_.erase(it);
 
+  // End streams no longer in use and fire "removestream" events. This behavior
+  // is no longer in the spec.
   for (const WebMediaStream& web_stream : web_streams) {
     MediaStreamDescriptor* stream_descriptor = web_stream;
     DCHECK(stream_descriptor->Client());
     MediaStream* stream =
         static_cast<MediaStream*>(stream_descriptor->Client());
 
-    // Remove track.
-    if (stream->getTracks().Contains(track)) {
-      NonThrowableExceptionState exception;
-      stream->removeTrack(track, exception);
-    }
+    // The track should already have been removed from the stream thanks to
+    // wiring listening to the webrtc layer stream. This should make sure the
+    // "removetrack" event fires.
+    DCHECK(!stream->getTracks().Contains(track));
 
     // Was this the last usage of the stream? Remove from remote streams.
     if (!getRemoteStreamUsageCount(web_stream)) {
@@ -1571,6 +1573,10 @@ void RTCPeerConnection::DidRemoveRemoteTrack(
           MediaStreamEvent::Create(EventTypeNames::removestream, stream));
     }
   }
+
+  // Mute track and fire "onmute" if not already muted.
+  track->Component()->Source()->SetReadyState(
+      MediaStreamSource::kReadyStateMuted);
 }
 
 void RTCPeerConnection::DidAddRemoteDataChannel(
