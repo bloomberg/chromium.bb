@@ -54,6 +54,7 @@ FFmpegDecodingLoop::DecodeStatus FFmpegDecodingLoop::DecodePacket(
       if (!continue_on_decoding_errors_)
         return DecodeStatus::kDecodeFrameFailed;
       decoder_error = true;
+      continue;
     }
 
     const bool frame_processing_success = frame_ready_cb.Run(frame_.get());
