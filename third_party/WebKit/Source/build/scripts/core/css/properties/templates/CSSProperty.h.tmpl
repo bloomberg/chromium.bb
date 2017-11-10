@@ -41,7 +41,7 @@ class CSSProperty {
 
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
-  virtual const CSSValue* ParseSingleValue(blink::CSSParserTokenRange&,
+  virtual const CSSValue* ParseSingleValue(CSSParserTokenRange&,
                                            const CSSParserContext&,
                                            const CSSParserLocalContext&) const {
     return nullptr;
@@ -50,7 +50,7 @@ class CSSProperty {
   // all constituent parsed longhand properties to the 'properties' set.
   // Returns false if the input is invalid.
   virtual bool ParseShorthand(bool important,
-                              blink::CSSParserTokenRange&,
+                              CSSParserTokenRange&,
                               const CSSParserContext&,
                               const CSSParserLocalContext&,
                               HeapVector<CSSPropertyValue, 256>& properties) const {
