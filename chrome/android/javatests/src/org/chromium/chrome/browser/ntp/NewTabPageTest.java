@@ -163,6 +163,7 @@ public class NewTabPageTest {
     @Feature({"NewTabPage", "RenderTest"})
     public void testRender() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mTileGridLayout, "most_visited");
         mRenderTestRule.render(mFakebox, "fakebox");
         mRenderTestRule.render(mNtp.getView().getRootView(), "new_tab_page");
