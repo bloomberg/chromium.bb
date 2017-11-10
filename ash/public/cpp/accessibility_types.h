@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ACCESSIBILITY_TYPES_H_
-#define ASH_ACCESSIBILITY_TYPES_H_
+#ifndef ASH_PUBLIC_CPP_ACCESSIBILITY_TYPES_H_
+#define ASH_PUBLIC_CPP_ACCESSIBILITY_TYPES_H_
 
 namespace ash {
 
@@ -30,11 +30,6 @@ enum MagnifierType {
   // MAGNIFIER_PARTIAL = 2,
 };
 
-// Factor of magnification scale. For example, when this value is 1.189, scale
-// value will be changed x1.000, x1.189, x1.414, x1.681, x2.000, ...
-// Note: this value is 2.0 ^ (1 / 4).
-const float kMagnificationScaleFactor = 1.18920712f;
-
 }  // namespace ash
 
-#endif  // ASH_ACCESSIBILITY_TYPES_H_
+#endif  // ASH_PUBLIC_CPP_ACCESSIBILITY_TYPES_H_

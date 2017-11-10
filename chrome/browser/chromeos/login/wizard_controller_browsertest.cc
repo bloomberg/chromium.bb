@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

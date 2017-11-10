@@ -12,7 +12,6 @@
 
 #include "ash/accelerators/accelerator_commands_classic.h"
 #include "ash/accelerators/debug_commands.h"
-#include "ash/accessibility_types.h"
 #include "ash/debug.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -45,13 +44,16 @@ void HandleMagnifyScreen(int delta_index) {
     // TODO(yoshiki): Move the following logic to MagnificationController.
     float scale = Shell::Get()->magnification_controller()->GetScale();
     // Calculate rounded logarithm (base kMagnificationScaleFactor) of scale.
-    int scale_index =
-        std::round(std::log(scale) / std::log(kMagnificationScaleFactor));
+    int scale_index = std::round(
+        std::log(scale) /
+        std::log(MagnificationController::kMagnificationScaleFactor));
 
     int new_scale_index = std::max(0, std::min(8, scale_index + delta_index));
 
     Shell::Get()->magnification_controller()->SetScale(
-        std::pow(kMagnificationScaleFactor, new_scale_index), true);
+        std::pow(MagnificationController::kMagnificationScaleFactor,
+                 new_scale_index),
+        true);
   }
 }
 

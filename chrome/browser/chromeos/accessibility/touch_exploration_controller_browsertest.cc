@@ -5,7 +5,7 @@
 #include "ui/chromeos/touch_exploration_controller.h"
 
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"

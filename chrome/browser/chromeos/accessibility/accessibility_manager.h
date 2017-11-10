@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/shell_observer.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"

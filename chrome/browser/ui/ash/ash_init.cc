@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/ash_init.h"
 
-#include "ash/accessibility_types.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/mus/window_manager.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"

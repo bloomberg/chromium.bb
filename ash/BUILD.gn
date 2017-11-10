@@ -61,9 +61,6 @@ component("ash") {
     "accessibility/focus_ring_controller.h",
     "accessibility/focus_ring_layer.cc",
     "accessibility/focus_ring_layer.h",
-
-    # TODO(jamescook): Move parts of this into //ash/public/cpp
-    "accessibility_types.h",
     "animation/animation_change_type.h",
     "app_list/app_list_delegate_impl.cc",
     "app_list/app_list_delegate_impl.h",

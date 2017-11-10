@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"

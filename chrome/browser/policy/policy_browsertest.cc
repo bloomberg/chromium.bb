@@ -203,7 +203,7 @@
 #include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accessibility_types.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"

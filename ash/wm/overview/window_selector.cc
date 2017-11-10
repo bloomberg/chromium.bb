@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/accessibility_types.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
