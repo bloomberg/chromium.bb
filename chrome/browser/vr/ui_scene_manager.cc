@@ -11,6 +11,7 @@
 #include "base/numerics/math_constants.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
+#include "chrome/browser/vr/elements/audio_permission_prompt.h"
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/controller.h"
@@ -166,6 +167,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateViewportAwareRoot();
   CreateContentQuad(content_input_delegate);
   CreateExitPrompt();
+  CreateAudioPermissionPrompt();
   CreateWebVRExitWarning();
   CreateSystemIndicators();
   CreateUrlBar(model);
@@ -941,6 +943,30 @@ void UiSceneManager::CreateExitPrompt() {
   scene_->AddUiElement(kExitPromptBackplane, std::move(element));
 }
 
+void UiSceneManager::CreateAudioPermissionPrompt() {
+  std::unique_ptr<UiElement> element;
+
+  std::unique_ptr<AudioPermissionPrompt> audio_permission_prompt =
+      base::MakeUnique<AudioPermissionPrompt>(
+          512,
+          base::Bind(&UiSceneManager::OnExitPromptChoice,
+                     base::Unretained(this), true),
+          base::Bind(&UiSceneManager::OnExitPromptChoice,
+                     base::Unretained(this), false));
+  audio_permission_prompt_ = audio_permission_prompt.get();
+  element = std::move(audio_permission_prompt);
+  element->set_name(kAudioPermissionPrompt);
+  element->set_draw_phase(kPhaseForeground);
+  element->SetSize(kAudioPermissionPromptWidth, kAudioPermissionPromptHeight);
+  element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
+                        kTextureOffset - kContentDistance);
+  element->AddBinding(
+      VR_BIND(bool, UiSceneManager, this,
+              browsing_mode() && model->prompting_to_audio_permission(),
+              UiElement, element.get(), SetVisible(value)));
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
+}
+
 void UiSceneManager::CreateToasts(Model* model) {
   // Create fullscreen toast.
   exclusive_screen_toast_transient_parent_ =
@@ -1266,16 +1292,28 @@ void UiSceneManager::SetFullscreen(bool fullscreen) {
 void UiSceneManager::SetExitVrPromptEnabled(bool enabled,
                                             UiUnsupportedMode reason) {
   DCHECK(enabled || reason == UiUnsupportedMode::kCount);
-  if (prompting_to_exit_ && enabled) {
+  if (!enabled) {
+    prompting_to_exit_ = enabled;
+    prompting_to_audio_permission_ = enabled;
+    ConfigureScene();
+    return;
+  }
+
+  if ((prompting_to_exit_ || prompting_to_audio_permission_) && enabled) {
     browser_->OnExitVrPromptResult(exit_vr_prompt_reason_,
                                    ExitVrPromptChoice::CHOICE_NONE);
   }
-  exit_prompt_->SetContentMessageId(
-      (reason == UiUnsupportedMode::kUnhandledPageInfo)
-          ? IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO
-          : IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
+  if (reason == UiUnsupportedMode::kUnhandledPageInfo) {
+    exit_prompt_->SetContentMessageId(
+        IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO);
+    prompting_to_exit_ = enabled;
+  } else if (reason == UiUnsupportedMode::kAndroidPermissionNeeded) {
+    prompting_to_audio_permission_ = enabled;
+  } else {
+    exit_prompt_->SetContentMessageId(IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION);
+    prompting_to_exit_ = enabled;
+  }
   exit_vr_prompt_reason_ = reason;
-  prompting_to_exit_ = enabled;
   ConfigureScene();
 }
 

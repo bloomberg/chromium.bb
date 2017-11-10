@@ -43,6 +43,7 @@ static const char* g_ui_element_name_strings[] = {
     "kScreenDimmer",
     "kExitWarning",
     "kExitPrompt",
+    "kAudioPermissionPrompt",
     "kExitPromptBackplane",
     "kWebVrUrlToastTransientParent",
     "kWebVrUrlToast",

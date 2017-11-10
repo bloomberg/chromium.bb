@@ -16,6 +16,7 @@ enum class UiUnsupportedMode : int {
   kCouldNotElideURL,
   kUnhandledPageInfo,
   kURLWithStrongRTLChars,
+  kAndroidPermissionNeeded,
 
   // This must be last.
   kCount,

@@ -54,6 +54,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.VirtualDisplayAndroid;
 
@@ -426,6 +427,12 @@ public class VrShellImpl
         }
     }
 
+    // Returns true if Chrome has permission to use audio input.
+    @CalledByNative
+    public boolean hasAudioPermission() {
+        return mDelegate.hasAudioPermission();
+    }
+
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
     @CalledByNative
     public void forceExitVr() {
@@ -446,6 +453,35 @@ public class VrShellImpl
             @Override
             public void onDenied() {}
         }, UiUnsupportedMode.UNHANDLED_PAGE_INFO);
+    }
+
+    // Called because showing audio permission dialog isn't supported in VR. This happens when
+    // the user wants to do a voice search.
+    @CalledByNative
+    public void onUnhandledPermissionPrompt() {
+        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+            @Override
+            public void onSucceeded() {
+                PermissionCallback callback = new PermissionCallback() {
+                    @Override
+                    public void onRequestPermissionsResult(
+                            String[] permissions, int[] grantResults) {
+                        ThreadUtils.postOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                VrShellDelegate.enterVrIfNecessary();
+                            }
+                        });
+                    }
+                };
+                String[] permissionArray = new String[1];
+                permissionArray[0] = android.Manifest.permission.RECORD_AUDIO;
+                mActivity.getWindowAndroid().requestPermissions(permissionArray, callback);
+            }
+
+            @Override
+            public void onDenied() {}
+        }, UiUnsupportedMode.ANDROID_PERMISSION_NEEDED);
     }
 
     // Exits CCT, returning to the app that opened it.

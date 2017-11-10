@@ -41732,6 +41732,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="1" label="Could not elide URL"/>
   <int value="2" label="Unhandled PageInfo"/>
   <int value="3" label="URL contained strong RTL chars"/>
+  <int value="4" label="Chrome needs audio permission for voice input"/>
 </enum>
 
 <enum name="VRViewerType">

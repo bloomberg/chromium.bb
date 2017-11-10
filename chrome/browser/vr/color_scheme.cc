@@ -44,6 +44,14 @@ void InitializeColorSchemes() {
 
   normal_scheme.system_indicator_foreground = 0xFF444444;
   normal_scheme.system_indicator_background = SK_ColorWHITE;
+  normal_scheme.audio_permission_prompt_icon_foreground = 0xFF6666FF;
+  normal_scheme.audio_permission_prompt_secondary_button_forground = 0xFF6666FF;
+  normal_scheme.audio_permission_prompt_secondary_button_hover = 0xFFF5F5F5;
+  normal_scheme.audio_permission_prompt_secondary_button_down = 0xFFBBBBBB;
+  normal_scheme.audio_permission_prompt_primary_button_background = 0xFF6666FF;
+  normal_scheme.audio_permission_prompt_primary_button_hover = 0xFF8888FF;
+  normal_scheme.audio_permission_prompt_primary_button_down = 0xFF2222AA;
+  normal_scheme.audio_permission_prompt_background = 0xFFEEEEEE;
   normal_scheme.separator = 0xFF9E9E9E;
   normal_scheme.prompt_foreground = 0xCC000000;
   normal_scheme.prompt_primary_button_forground = 0xA6000000;

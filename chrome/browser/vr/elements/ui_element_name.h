@@ -43,6 +43,7 @@ enum UiElementName {
   kScreenDimmer,
   kExitWarning,
   kExitPrompt,
+  kAudioPermissionPrompt,
   kExitPromptBackplane,
   kWebVrUrlToastTransientParent,
   kWebVrUrlToast,
