@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "url/gurl.h"
 
 namespace content {
 class NavigationHandle;
@@ -37,9 +38,30 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
-  content::NavigationThrottle::ThrottleCheckResult CheckNavigation();
+  // Decides if the navigation should be opened in a new tab, in a new App
+  // Window, or if the navigation should continue normally.
+  content::NavigationThrottle::ThrottleCheckResult ProcessNavigation();
+
+  // Returns true if |target_url|'s origin is the same as the last committed
+  // origin in the current tab.
+  bool HasSameOriginAsCurrentSite(const GURL& target_url);
+
+  // Opens the current target url in an App window. May post a task to do so if
+  // opening the app synchronously could result in the app opening in the
+  // background. Also closes the current tab if this is the first navigation.
+  content::NavigationThrottle::ThrottleCheckResult
+  OpenInAppWindowAndCloseTabIfNecessary(
+      scoped_refptr<const Extension> target_app);
+
   void OpenBookmarkApp(scoped_refptr<const Extension> bookmark_app);
   void CloseWebContents();
+  void OpenInNewTab();
+
+  // Retrieves the Bookmark App corresponding to the current window only
+  // if the app is for an installable website.
+  scoped_refptr<const Extension> GetAppForWindow();
+  // Retrieves the target Bookmark App for the current target URL.
+  scoped_refptr<const Extension> GetTargetApp();
 
   base::WeakPtrFactory<BookmarkAppNavigationThrottle> weak_ptr_factory_;
 
