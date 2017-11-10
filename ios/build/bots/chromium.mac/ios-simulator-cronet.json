@@ -10,6 +10,7 @@
     "disable_ftp_support=true",
     "enable_websockets=false",
     "goma_dir=\"$(goma_dir)\"",
+    "ios_deployment_target=\"9.0\"",
     "is_component_build=false",
     "is_cronet_build=true",
     "is_debug=true",
