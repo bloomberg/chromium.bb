@@ -26,11 +26,13 @@ namespace {
 // The key for the mapping for the enabled/disabled status map.
 constexpr char kAMPRedirectionPreviews[] = "ampPreviews";
 constexpr char kClientLoFiPreviews[] = "clientLoFiPreviews";
+constexpr char kNoScriptPreviews[] = "noScriptPreviews";
 constexpr char kOfflinePreviews[] = "offlinePreviews";
 
 // Description for statuses.
 constexpr char kAmpRedirectionDescription[] = "AMP Previews";
 constexpr char kClientLoFiDescription[] = "Client LoFi Previews";
+constexpr char kNoScriptDescription[] = "NoScript Previews";
 constexpr char kOfflineDesciption[] = "Offline Previews";
 
 // The map that would be passed to the callback in GetPreviewsEnabledCallback.
@@ -219,7 +221,7 @@ TEST_F(InterventionsInternalsPageHandlerTest, CorrectSizeOfPassingParameters) {
   page_handler_->GetPreviewsEnabled(
       base::BindOnce(&MockGetPreviewsEnabledCallback));
 
-  constexpr size_t expected = 3;
+  constexpr size_t expected = 4;
   EXPECT_EQ(expected, passed_in_map.size());
 }
 
@@ -271,6 +273,32 @@ TEST_F(InterventionsInternalsPageHandlerTest, ClientLoFiEnabled) {
   ASSERT_NE(passed_in_map.end(), client_lofi);
   EXPECT_EQ(kClientLoFiDescription, client_lofi->second->description);
   EXPECT_TRUE(client_lofi->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, NoScriptDisabled) {
+  // Init with kNoScript disabled.
+  scoped_feature_list_->InitWithFeatures(
+      {}, {previews::features::kNoScriptPreviews});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto noscript = passed_in_map.find(kNoScriptPreviews);
+  ASSERT_NE(passed_in_map.end(), noscript);
+  EXPECT_EQ(kNoScriptDescription, noscript->second->description);
+  EXPECT_FALSE(noscript->second->enabled);
+}
+
+TEST_F(InterventionsInternalsPageHandlerTest, NoScriptEnabled) {
+  // Init with kNoScript enabled.
+  scoped_feature_list_->InitWithFeatures(
+      {previews::features::kNoScriptPreviews}, {});
+
+  page_handler_->GetPreviewsEnabled(
+      base::BindOnce(&MockGetPreviewsEnabledCallback));
+  auto noscript = passed_in_map.find(kNoScriptPreviews);
+  ASSERT_NE(passed_in_map.end(), noscript);
+  EXPECT_EQ(kNoScriptDescription, noscript->second->description);
+  EXPECT_TRUE(noscript->second->enabled);
 }
 
 TEST_F(InterventionsInternalsPageHandlerTest, OfflinePreviewsDisabled) {
