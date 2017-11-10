@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/oom_intervention/near_oom_monitor.h"
+#include "chrome/browser/metrics/oom/out_of_memory_reporter.h"
 #include "chrome/browser/ui/android/infobars/near_oom_infobar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -18,10 +19,13 @@ namespace content {
 class WebContents;
 }
 
-// A tab helper for near-OOM intervention.
+// A tab helper for near-OOM intervention. This class depends on
+// OutOfMemoryReporter. OutOfMemoryReporter must be created on TabHelpers
+// before creating OomInterventionTabHelper.
 class OomInterventionTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<OomInterventionTabHelper>,
+      public OutOfMemoryReporter::Observer,
       public NearOomMessageDelegate {
  public:
   static bool IsEnabled();
@@ -45,6 +49,10 @@ class OomInterventionTabHelper
   void DocumentAvailableInMainFrame() override;
   void WasShown() override;
   void WasHidden() override;
+
+  // OutOfMemoryReporter::Observer:
+  void OnForegroundOOMDetected(const GURL& url,
+                               ukm::SourceId source_id) override;
 
   // Starts observing near-OOM situation if it's not started.
   void StartMonitoringIfNeeded();
