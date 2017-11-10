@@ -30,8 +30,8 @@
 
 #include "core/css/CSSViewportRule.h"
 
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "platform/wtf/text/StringBuilder.h"
 

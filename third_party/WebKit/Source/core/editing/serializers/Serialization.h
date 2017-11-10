@@ -42,7 +42,7 @@ class DocumentFragment;
 class Element;
 class ExceptionState;
 class Node;
-class StylePropertySet;
+class CSSPropertyValueSet;
 
 enum EChildrenOnly { kIncludeNode, kChildrenOnly };
 enum EAbsoluteURLs { kDoNotResolveURLs, kResolveAllURLs, kResolveNonLocalURLs };
@@ -105,7 +105,7 @@ CreateMarkup(const PositionInFlatTree& start,
 
 void MergeWithNextTextNode(Text*, ExceptionState&);
 
-bool PropertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
+bool PropertyMissingOrEqualToNone(CSSPropertyValueSet*, CSSPropertyID);
 
 }  // namespace blink
 

@@ -103,7 +103,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     DCHECK(!offsets.IsEmpty());
     keyframe->SetOffset(offsets[0]);
     keyframe->SetEasing(default_timing_function);
-    const StylePropertySet& properties = style_keyframe->Properties();
+    const CSSPropertyValueSet& properties = style_keyframe->Properties();
     for (unsigned j = 0; j < properties.PropertyCount(); j++) {
       CSSPropertyID property = properties.PropertyAt(j).Id();
       specified_properties_for_use_counter.insert(property);

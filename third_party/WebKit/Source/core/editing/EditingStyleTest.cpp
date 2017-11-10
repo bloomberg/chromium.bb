@@ -4,7 +4,7 @@
 
 #include "core/editing/EditingStyle.h"
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLBodyElement.h"

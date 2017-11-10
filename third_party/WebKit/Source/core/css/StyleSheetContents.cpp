@@ -20,10 +20,10 @@
 
 #include "core/css/StyleSheetContents.h"
 
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSTiming.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleRuleNamespace.h"

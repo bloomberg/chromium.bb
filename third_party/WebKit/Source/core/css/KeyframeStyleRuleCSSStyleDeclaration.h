@@ -15,13 +15,13 @@ class KeyframeStyleRuleCSSStyleDeclaration final
     : public StyleRuleCSSStyleDeclaration {
  public:
   static KeyframeStyleRuleCSSStyleDeclaration* Create(
-      MutableStylePropertySet& property_set,
+      MutableCSSPropertyValueSet& property_set,
       CSSKeyframeRule* parent_rule) {
     return new KeyframeStyleRuleCSSStyleDeclaration(property_set, parent_rule);
   }
 
  private:
-  KeyframeStyleRuleCSSStyleDeclaration(MutableStylePropertySet&,
+  KeyframeStyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&,
                                        CSSKeyframeRule*);
 
   void DidMutate(MutationType) override;

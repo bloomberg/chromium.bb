@@ -36,9 +36,9 @@
 namespace blink {
 
 class Element;
-class StylePropertySet;
+class CSSPropertyValueSet;
 
-StylePropertySet* ComputePresentationAttributeStyle(Element&);
+CSSPropertyValueSet* ComputePresentationAttributeStyle(Element&);
 
 }  // namespace blink
 

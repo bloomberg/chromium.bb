@@ -674,8 +674,8 @@ TEST_F(StyleEngineTest, StyleMediaAttributeNoStyleChange) {
 TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   // Test that the MatchedPropertiesCache is cleared when a StyleRule is
   // modified. The MatchedPropertiesCache caches results based on
-  // StylePropertySet pointers. When a mutable StylePropertySet is modified,
-  // the pointer doesn't change, yet the declarations do.
+  // CSSPropertyValueSet pointers. When a mutable CSSPropertyValueSet is
+  // modified, the pointer doesn't change, yet the declarations do.
 
   GetDocument().body()->SetInnerHTMLFromString(
       "<style id='s1'>#t1 { color: blue }</style>"
@@ -695,9 +695,9 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
   ASSERT_TRUE(style_rule);
   ASSERT_TRUE(style_rule->style());
 
-  // Modify the StylePropertySet once to make it a mutable set. Subsequent
-  // modifications will not change the StylePropertySet pointer and cache hash
-  // value will be the same.
+  // Modify the CSSPropertyValueSet once to make it a mutable set. Subsequent
+  // modifications will not change the CSSPropertyValueSet pointer and cache
+  // hash value will be the same.
   style_rule->style()->setProperty("color", "red", "", ASSERT_NO_EXCEPTION);
   GetDocument().View()->UpdateAllLifecyclePhases();
 

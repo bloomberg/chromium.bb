@@ -130,7 +130,7 @@ class ElementRuleCollector {
                                       CascadeOrder = kIgnoreCascadeOrder);
   void SortAndTransferMatchedRules();
   void ClearMatchedRules();
-  void AddElementStyleProperties(const StylePropertySet*,
+  void AddElementStyleProperties(const CSSPropertyValueSet*,
                                  bool is_cacheable = true);
   void FinishAddingUARules() { result_.FinishAddingUARules(); }
   void FinishAddingUserRules() {

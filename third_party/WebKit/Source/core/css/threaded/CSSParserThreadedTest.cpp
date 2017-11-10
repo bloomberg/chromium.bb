@@ -6,7 +6,7 @@
 #include "core/css/parser/CSSParserContext.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/threaded/MultiThreadedTestUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,10 +20,10 @@ class CSSParserThreadedTest : public MultiThreadedTest {
     EXPECT_EQ(text, value->CssText());
   }
 
-  static MutableStylePropertySet* TestValue(CSSPropertyID prop,
-                                            const String& text) {
-    MutableStylePropertySet* style =
-        MutableStylePropertySet::Create(kHTMLStandardMode);
+  static MutableCSSPropertyValueSet* TestValue(CSSPropertyID prop,
+                                               const String& text) {
+    MutableCSSPropertyValueSet* style =
+        MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
     CSSParser::ParseValue(style, prop, text, true);
     return style;
   }
@@ -54,7 +54,7 @@ TSAN_TEST_F(CSSParserThreadedTest, SinglePropertyFont) {
 
 TSAN_TEST_F(CSSParserThreadedTest, ValuePropertyFont) {
   RunOnThreads([]() {
-    MutableStylePropertySet* v = TestValue(CSSPropertyFont, "15px arial");
+    MutableCSSPropertyValueSet* v = TestValue(CSSPropertyFont, "15px arial");
     EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontFamily), "arial");
     EXPECT_EQ(v->GetPropertyValue(CSSPropertyFontSize), "15px");
   });

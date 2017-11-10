@@ -6,13 +6,8 @@
 {% from 'core/css/properties/templates/application_macros.tmpl' import set_value, convert_and_set_value %}
 {{source_files_for_generated_file(template_file, input_files)}}
 
-{% if property.namespace == 'CSSLonghand' %}
-#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_LONGHANDS_{{property_classname}}_h
-#define GEN_BLINK_CORE_CSS_PROPERTIES_LONGHANDS_{{property_classname}}_h
-{% else %}
-#ifndef GEN_BLINK_CORE_CSS_PROPERTIES_SHORTHANDS_{{property_classname}}_h
-#define GEN_BLINK_CORE_CSS_PROPERTIES_SHORTHANDS_{{property_classname}}_h
-{% endif %}
+#ifndef {{property.namespace}}_{{property_classname}}_h
+#define {{property.namespace}}_{{property_classname}}_h
 
 {% if property.direction_aware_options %}
 #include "core/StylePropertyShorthand.h"
@@ -53,7 +48,11 @@ class CSSValue;
 class LayoutObject;
 class ComputedStyle;
 
-namespace {{property.namespace}} {
+{% if property.longhands %}
+namespace CSSShorthand {
+{% else %}
+namespace CSSLonghand {
+{% endif %}
 
 {% if property.is_property %}
   {% if property.unique %}
@@ -175,11 +174,11 @@ class {{property_classname}} : public CSSProperty {
   {% endif %}
 };
 
-}  // namespace {{property.namespace}}
+{% if property.longhands %}
+} // namespace CSSShorthand
+{% else %}
+} // namespace CSSLonghand
+{% endif %}
 }  // namespace blink
 
-{% if property.namespace == 'CSSLonghand' %}
-#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_LONGHANDS_{{property_classname}}_h
-{% else %}
-#endif  // GEN_BLINK_CORE_CSS_PROPERTIES_SHORTHANDS_{{property_classname}}_h
-{% endif %}
+#endif  // {{property.namespace}}_{{property_classname}}_h

@@ -38,8 +38,8 @@
 #include "bindings/modules/v8/rendering_context.h"
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/events/Event.h"
@@ -487,7 +487,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       font_lru_list_.insert(new_font);
       ModifiableState().SetFont(i->value, Host()->GetFontSelector());
     } else {
-      MutableStylePropertySet* parsed_style =
+      MutableCSSPropertyValueSet* parsed_style =
           canvas_font_cache->ParseFont(new_font);
       if (!parsed_style)
         return;

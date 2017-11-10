@@ -24,7 +24,7 @@
 #ifndef MatchedPropertiesCache_h
 #define MatchedPropertiesCache_h
 
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/resolver/MatchResult.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"

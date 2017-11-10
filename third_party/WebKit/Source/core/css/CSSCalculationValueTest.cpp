@@ -31,8 +31,8 @@
 #include "core/css/CSSCalculationValue.h"
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/StylePropertySet.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,8 +60,8 @@ void TestAccumulatePixelsAndPercent(
 CSSLengthArray& SetLengthArray(CSSLengthArray& length_array, String text) {
   for (double& x : length_array.values)
     x = 0;
-  MutableStylePropertySet* property_set =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+  MutableCSSPropertyValueSet* property_set =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   property_set->SetProperty(CSSPropertyLeft, text);
   ToCSSPrimitiveValue(property_set->GetPropertyCSSValue(CSSPropertyLeft))
       ->AccumulateLengthArray(length_array);

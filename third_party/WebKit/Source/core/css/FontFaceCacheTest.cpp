@@ -6,11 +6,11 @@
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFace.h"
 #include "core/css/FontFaceCache.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,8 +67,8 @@ void FontFaceCacheTest::AppendTestFaceForCapabilities(const CSSValue& stretch,
   CSSPropertyValue properties[] = {
       CSSPropertyValue(CSSPropertyFontFamily, *family_name),
       CSSPropertyValue(CSSPropertySrc, *src_value_list)};
-  MutableStylePropertySet* font_face_descriptor =
-      MutableStylePropertySet::Create(properties, arraysize(properties));
+  MutableCSSPropertyValueSet* font_face_descriptor =
+      MutableCSSPropertyValueSet::Create(properties, arraysize(properties));
 
   font_face_descriptor->SetProperty(CSSPropertyFontStretch, stretch);
   font_face_descriptor->SetProperty(CSSPropertyFontStyle, style);

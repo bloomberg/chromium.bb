@@ -21,7 +21,7 @@
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGFilterElement.h"
@@ -145,7 +145,7 @@ static EColorInterpolation ColorInterpolationForElement(
 
   // No layout has been performed, try to determine the property value
   // "manually" (used by external SVG files.)
-  if (const StylePropertySet* property_set =
+  if (const CSSPropertyValueSet* property_set =
           element.PresentationAttributeStyle()) {
     const CSSValue* css_value =
         property_set->GetPropertyCSSValue(CSSPropertyColorInterpolationFilters);

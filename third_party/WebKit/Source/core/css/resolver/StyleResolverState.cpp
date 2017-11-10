@@ -23,7 +23,7 @@
 #include "core/css/resolver/StyleResolverState.h"
 
 #include "core/animation/css/CSSAnimations.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -156,11 +156,11 @@ void StyleResolverState::SetTextOrientation(ETextOrientation text_orientation) {
 
 void StyleResolverState::SetCustomPropertySetForApplyAtRule(
     const String& string,
-    StylePropertySet* custom_property_set) {
+    CSSPropertyValueSet* custom_property_set) {
   custom_property_sets_for_apply_at_rule_.Set(string, custom_property_set);
 }
 
-StylePropertySet* StyleResolverState::CustomPropertySetForApplyAtRule(
+CSSPropertyValueSet* StyleResolverState::CustomPropertySetForApplyAtRule(
     const String& string) {
   return custom_property_sets_for_apply_at_rule_.at(string);
 }

@@ -28,8 +28,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Element.h"
@@ -555,7 +555,7 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
 
     Element* element = ToElement(node);
 
-    const StylePropertySet* inline_style = element->InlineStyle();
+    const CSSPropertyValueSet* inline_style = element->InlineStyle();
     EditingStyle* new_inline_style = EditingStyle::Create(inline_style);
     if (inline_style) {
       if (element->IsHTMLElement()) {

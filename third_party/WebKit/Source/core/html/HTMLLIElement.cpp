@@ -70,7 +70,7 @@ CSSValueID ListTypeToCSSValueID(const AtomicString& value) {
 void HTMLLIElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == typeAttr) {
     CSSValueID type_value = ListTypeToCSSValueID(value);
     if (type_value != CSSValueInvalid)

@@ -9,8 +9,8 @@
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSUnsupportedStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
@@ -100,12 +100,12 @@ Vector<String> InlineStylePropertyMap::getProperties() {
   DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   Vector<String> result;
   bool contains_at_apply = false;
-  StylePropertySet& inline_style_set =
+  CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
   for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
     CSSPropertyID property_id = inline_style_set.PropertyAt(i).Id();
     if (property_id == CSSPropertyVariable) {
-      StylePropertySet::PropertyReference property_reference =
+      CSSPropertyValueSet::PropertyReference property_reference =
           inline_style_set.PropertyAt(i);
       const CSSCustomPropertyDeclaration& custom_declaration =
           ToCSSCustomPropertyDeclaration(property_reference.Value());
@@ -213,10 +213,10 @@ InlineStylePropertyMap::GetIterationEntries() {
   // TODO(779841): Needs to be sorted.
   DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
-  StylePropertySet& inline_style_set =
+  CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
   for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
-    StylePropertySet::PropertyReference property_reference =
+    CSSPropertyValueSet::PropertyReference property_reference =
         inline_style_set.PropertyAt(i);
     CSSPropertyID property_id = property_reference.Id();
     String name;

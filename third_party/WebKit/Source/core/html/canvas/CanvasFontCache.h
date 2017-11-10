@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "platform/fonts/Font.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
@@ -29,7 +29,7 @@ class CORE_EXPORT CanvasFontCache final
     return new CanvasFontCache(document);
   }
 
-  MutableStylePropertySet* ParseFont(const String&);
+  MutableCSSPropertyValueSet* ParseFont(const String&);
   void PruneAll();
   unsigned size();
 
@@ -53,7 +53,7 @@ class CORE_EXPORT CanvasFontCache final
  private:
   explicit CanvasFontCache(Document&);
   void SchedulePruningIfNeeded();
-  typedef HeapHashMap<String, Member<MutableStylePropertySet>>
+  typedef HeapHashMap<String, Member<MutableCSSPropertyValueSet>>
       MutableStylePropertyMap;
 
   HashMap<String, Font> fonts_resolved_using_default_style_;

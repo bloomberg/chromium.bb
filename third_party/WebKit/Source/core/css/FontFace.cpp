@@ -40,6 +40,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSFontStyleRangeValue.h"
 #include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFaceDescriptors.h"
@@ -47,7 +48,6 @@
 #include "core/css/OffscreenFontSelector.h"
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/css/StyleEngine.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/DOMException.h"
@@ -134,7 +134,7 @@ FontFace* FontFace::Create(ExecutionContext* context,
 
 FontFace* FontFace::Create(Document* document,
                            const StyleRuleFontFace* font_face_rule) {
-  const StylePropertySet& properties = font_face_rule->Properties();
+  const CSSPropertyValueSet& properties = font_face_rule->Properties();
 
   // Obtain the font-family property and the src property. Both must be defined.
   const CSSValue* family =
@@ -270,7 +270,7 @@ void FontFace::SetPropertyFromString(const ExecutionContext* context,
     SetError(DOMException::Create(kSyntaxError, message));
 }
 
-bool FontFace::SetPropertyFromStyle(const StylePropertySet& properties,
+bool FontFace::SetPropertyFromStyle(const CSSPropertyValueSet& properties,
                                     CSSPropertyID property_id) {
   return SetPropertyValue(properties.GetPropertyCSSValue(property_id),
                           property_id);

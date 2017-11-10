@@ -36,9 +36,10 @@ class CORE_EXPORT HTMLParagraphElement final : public HTMLElement {
  private:
   explicit HTMLParagraphElement(Document&);
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 };
 
 }  // namespace blink

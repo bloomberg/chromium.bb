@@ -30,7 +30,7 @@
 #include "core/css/DOMWindowCSS.h"
 
 #include "core/css/CSSMarkup.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/properties/CSSProperty.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -43,8 +43,8 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
   if (unresolved_property == CSSPropertyInvalid)
     return false;
   if (unresolved_property == CSSPropertyVariable) {
-    MutableStylePropertySet* dummy_style =
-        MutableStylePropertySet::Create(kHTMLStandardMode);
+    MutableCSSPropertyValueSet* dummy_style =
+        MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
     bool is_animation_tainted = false;
     return CSSParser::ParseValueForCustomProperty(dummy_style, "--valid",
                                                   nullptr, value, false,
@@ -58,8 +58,8 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
 #endif
 
   // This will return false when !important is present
-  MutableStylePropertySet* dummy_style =
-      MutableStylePropertySet::Create(kHTMLStandardMode);
+  MutableCSSPropertyValueSet* dummy_style =
+      MutableCSSPropertyValueSet::Create(kHTMLStandardMode);
   return CSSParser::ParseValue(dummy_style, unresolved_property, value, false)
       .did_parse;
 }

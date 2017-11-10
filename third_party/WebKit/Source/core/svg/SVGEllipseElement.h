@@ -45,9 +45,10 @@ class SVGEllipseElement final : public SVGGeometryElement {
  private:
   explicit SVGEllipseElement(Document&);
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
 

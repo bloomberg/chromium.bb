@@ -27,7 +27,7 @@
 #include "core/editing/commands/RemoveFormatCommand.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/EditingStyle.h"

@@ -31,8 +31,8 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInheritedValue.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
@@ -64,7 +64,7 @@ inline HTMLTableElement::HTMLTableElement(Document& document)
 // if an implicit destructor is used or an empty destructor is defined in
 // HTMLTableElement.h, when including HTMLTableElement, msvc tries to expand
 // the destructor and causes a compile error because of lack of
-// StylePropertySet definition.
+// CSSPropertyValueSet definition.
 HTMLTableElement::~HTMLTableElement() {}
 
 DEFINE_NODE_FACTORY(HTMLTableElement)
@@ -309,7 +309,7 @@ static bool GetBordersFromFrameAttributeValue(const AtomicString& value,
 void HTMLTableElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == widthAttr) {
     AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
   } else if (name == heightAttr) {
@@ -448,9 +448,9 @@ void HTMLTableElement::ParseAttribute(
   }
 }
 
-static StylePropertySet* CreateBorderStyle(CSSValueID value) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+static CSSPropertyValueSet* CreateBorderStyle(CSSValueID value) {
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(CSSPropertyBorderTopStyle, value);
   style->SetProperty(CSSPropertyBorderBottomStyle, value);
   style->SetProperty(CSSPropertyBorderLeftStyle, value);
@@ -458,7 +458,7 @@ static StylePropertySet* CreateBorderStyle(CSSValueID value) {
   return style;
 }
 
-const StylePropertySet*
+const CSSPropertyValueSet*
 HTMLTableElement::AdditionalPresentationAttributeStyle() {
   if (frame_attr_)
     return nullptr;
@@ -467,7 +467,7 @@ HTMLTableElement::AdditionalPresentationAttributeStyle() {
     // Setting the border to 'hidden' allows it to win over any border
     // set on the table's cells during border-conflict resolution.
     if (rules_attr_ != kUnsetRules) {
-      DEFINE_STATIC_LOCAL(StylePropertySet, solid_border_style,
+      DEFINE_STATIC_LOCAL(CSSPropertyValueSet, solid_border_style,
                           (CreateBorderStyle(CSSValueHidden)));
       return &solid_border_style;
     }
@@ -475,11 +475,11 @@ HTMLTableElement::AdditionalPresentationAttributeStyle() {
   }
 
   if (border_color_attr_) {
-    DEFINE_STATIC_LOCAL(StylePropertySet, solid_border_style,
+    DEFINE_STATIC_LOCAL(CSSPropertyValueSet, solid_border_style,
                         (CreateBorderStyle(CSSValueSolid)));
     return &solid_border_style;
   }
-  DEFINE_STATIC_LOCAL(StylePropertySet, outset_border_style,
+  DEFINE_STATIC_LOCAL(CSSPropertyValueSet, outset_border_style,
                       (CreateBorderStyle(CSSValueOutset)));
   return &outset_border_style;
 }
@@ -506,9 +506,9 @@ HTMLTableElement::CellBorders HTMLTableElement::GetCellBorders() const {
   return kNoBorders;
 }
 
-StylePropertySet* HTMLTableElement::CreateSharedCellStyle() {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+CSSPropertyValueSet* HTMLTableElement::CreateSharedCellStyle() {
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
 
   switch (GetCellBorders()) {
     case kSolidBordersColsOnly:
@@ -555,15 +555,15 @@ StylePropertySet* HTMLTableElement::CreateSharedCellStyle() {
   return style;
 }
 
-const StylePropertySet* HTMLTableElement::AdditionalCellStyle() {
+const CSSPropertyValueSet* HTMLTableElement::AdditionalCellStyle() {
   if (!shared_cell_style_)
     shared_cell_style_ = CreateSharedCellStyle();
   return shared_cell_style_.Get();
 }
 
-static StylePropertySet* CreateGroupBorderStyle(int rows) {
-  MutableStylePropertySet* style =
-      MutableStylePropertySet::Create(kHTMLQuirksMode);
+static CSSPropertyValueSet* CreateGroupBorderStyle(int rows) {
+  MutableCSSPropertyValueSet* style =
+      MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   if (rows) {
     style->SetProperty(CSSPropertyBorderTopWidth, CSSValueThin);
     style->SetProperty(CSSPropertyBorderBottomWidth, CSSValueThin);
@@ -578,16 +578,16 @@ static StylePropertySet* CreateGroupBorderStyle(int rows) {
   return style;
 }
 
-const StylePropertySet* HTMLTableElement::AdditionalGroupStyle(bool rows) {
+const CSSPropertyValueSet* HTMLTableElement::AdditionalGroupStyle(bool rows) {
   if (rules_attr_ != kGroupsRules)
     return nullptr;
 
   if (rows) {
-    DEFINE_STATIC_LOCAL(StylePropertySet, row_border_style,
+    DEFINE_STATIC_LOCAL(CSSPropertyValueSet, row_border_style,
                         (CreateGroupBorderStyle(true)));
     return &row_border_style;
   }
-  DEFINE_STATIC_LOCAL(StylePropertySet, column_border_style,
+  DEFINE_STATIC_LOCAL(CSSPropertyValueSet, column_border_style,
                       (CreateGroupBorderStyle(false)));
   return &column_border_style;
 }

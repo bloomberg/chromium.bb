@@ -39,7 +39,7 @@ DEFINE_NODE_FACTORY(HTMLTableCaptionElement)
 void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == alignAttr) {
     if (!value.IsEmpty())
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,

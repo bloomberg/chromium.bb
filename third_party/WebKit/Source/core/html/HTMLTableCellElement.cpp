@@ -96,7 +96,7 @@ bool HTMLTableCellElement::IsPresentationAttribute(
 void HTMLTableCellElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == nowrapAttr) {
     AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
                                             CSSValueWebkitNowrap);
@@ -129,7 +129,7 @@ void HTMLTableCellElement::ParseAttribute(
   }
 }
 
-const StylePropertySet*
+const CSSPropertyValueSet*
 HTMLTableCellElement::AdditionalPresentationAttributeStyle() {
   if (HTMLTableElement* table = FindParentTable())
     return table->AdditionalCellStyle();

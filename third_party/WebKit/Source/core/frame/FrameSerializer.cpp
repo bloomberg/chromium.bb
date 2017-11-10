@@ -34,11 +34,11 @@
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSImportRule.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
@@ -572,7 +572,7 @@ void FrameSerializer::AddFontToResources(FontResource* font) {
 }
 
 void FrameSerializer::RetrieveResourcesForProperties(
-    const StylePropertySet* style_declaration,
+    const CSSPropertyValueSet* style_declaration,
     Document& document) {
   if (!style_declaration)
     return;

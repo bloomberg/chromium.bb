@@ -82,9 +82,10 @@ class SVGPatternElement final : public SVGElement,
   bool IsValid() const override { return SVGTests::IsValid(); }
   bool NeedsPendingResourceHandling() const override { return false; }
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;

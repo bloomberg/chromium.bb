@@ -39,9 +39,10 @@ class CORE_EXPORT HTMLTablePartElement : public HTMLElement {
       : HTMLElement(tag_name, document) {}
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   HTMLTableElement* FindParentTable() const;
 };

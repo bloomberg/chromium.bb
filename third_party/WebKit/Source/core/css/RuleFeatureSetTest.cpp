@@ -4,9 +4,9 @@
 
 #include "core/css/RuleFeatureSet.h"
 
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/RuleSet.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/css/parser/CSSParser.h"
@@ -37,9 +37,9 @@ class RuleFeatureSetTest : public ::testing::Test {
     CSSSelectorList selector_list = CSSParser::ParseSelector(
         StrictCSSParserContext(), nullptr, selector_text);
 
-    StyleRule* style_rule =
-        StyleRule::Create(std::move(selector_list),
-                          MutableStylePropertySet::Create(kHTMLStandardMode));
+    StyleRule* style_rule = StyleRule::Create(
+        std::move(selector_list),
+        MutableCSSPropertyValueSet::Create(kHTMLStandardMode));
     RuleData rule_data(style_rule, 0, 0, kRuleHasNoSpecialState);
     return rule_feature_set_.CollectFeaturesFromRuleData(rule_data);
   }

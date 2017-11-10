@@ -24,7 +24,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/html_names.h"
 
 namespace blink {
@@ -46,7 +46,7 @@ bool HTMLPreElement::IsPresentationAttribute(const QualifiedName& name) const {
 void HTMLPreElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == wrapAttr)
     style->SetProperty(CSSPropertyWhiteSpace, CSSValuePreWrap);
   else

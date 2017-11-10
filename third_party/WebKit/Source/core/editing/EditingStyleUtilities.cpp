@@ -30,7 +30,7 @@
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSIdentifierValue.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
@@ -100,7 +100,7 @@ EditingStyle* EditingStyleUtilities::CreateWrappingStyleForSerialization(
 EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     const VisibleSelection& selection,
     bool should_use_background_color_in_effect,
-    MutableStylePropertySet* style_to_check) {
+    MutableCSSPropertyValueSet* style_to_check) {
   if (selection.IsNone())
     return nullptr;
 
@@ -187,7 +187,7 @@ bool EditingStyleUtilities::HasTransparentBackgroundColor(
 }
 
 bool EditingStyleUtilities::HasTransparentBackgroundColor(
-    StylePropertySet* style) {
+    CSSPropertyValueSet* style) {
   const CSSValue* css_value =
       style->GetPropertyCSSValue(CSSPropertyBackgroundColor);
   return IsTransparentColorValue(css_value);

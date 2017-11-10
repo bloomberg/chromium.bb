@@ -74,9 +74,10 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
     return Element::SupportsFocus() || HasFocusEventListeners();
   }
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
   void SvgAttributeChanged(const QualifiedName&) override;
 
   Member<SVGAnimatedTransformList> transform_;

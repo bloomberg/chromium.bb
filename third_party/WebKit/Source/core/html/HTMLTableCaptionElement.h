@@ -39,9 +39,10 @@ class HTMLTableCaptionElement final : public HTMLElement {
  private:
   HTMLTableCaptionElement(Document&);
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 };
 
 }  // namespace blink

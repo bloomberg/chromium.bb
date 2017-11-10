@@ -37,18 +37,19 @@
 
 namespace blink {
 
-StylePropertySerializer::StylePropertySetForSerializer::
-    StylePropertySetForSerializer(const StylePropertySet& properties)
+StylePropertySerializer::CSSPropertyValueSetForSerializer::
+    CSSPropertyValueSetForSerializer(const CSSPropertyValueSet& properties)
     : property_set_(&properties),
       all_index_(property_set_->FindPropertyIndex(CSSPropertyAll)),
       need_to_expand_all_(false) {
   if (!HasAllProperty())
     return;
 
-  StylePropertySet::PropertyReference all_property =
+  CSSPropertyValueSet::PropertyReference all_property =
       property_set_->PropertyAt(all_index_);
   for (unsigned i = 0; i < property_set_->PropertyCount(); ++i) {
-    StylePropertySet::PropertyReference property = property_set_->PropertyAt(i);
+    CSSPropertyValueSet::PropertyReference property =
+        property_set_->PropertyAt(i);
     if (CSSProperty::Get(resolveCSSPropertyID(property.Id()))
             .IsAffectedByAll()) {
       if (all_property.IsImportant() && !property.IsImportant())
@@ -66,12 +67,13 @@ StylePropertySerializer::StylePropertySetForSerializer::
   }
 }
 
-void StylePropertySerializer::StylePropertySetForSerializer::Trace(
+void StylePropertySerializer::CSSPropertyValueSetForSerializer::Trace(
     blink::Visitor* visitor) {
   visitor->Trace(property_set_);
 }
 
-unsigned StylePropertySerializer::StylePropertySetForSerializer::PropertyCount()
+unsigned
+StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyCount()
     const {
   if (!HasExpandedAllProperty())
     return property_set_->PropertyCount();
@@ -79,7 +81,7 @@ unsigned StylePropertySerializer::StylePropertySetForSerializer::PropertyCount()
 }
 
 StylePropertySerializer::PropertyValueForSerializer
-StylePropertySerializer::StylePropertySetForSerializer::PropertyAt(
+StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
     unsigned index) const {
   if (!HasExpandedAllProperty())
     return StylePropertySerializer::PropertyValueForSerializer(
@@ -95,22 +97,22 @@ StylePropertySerializer::StylePropertySetForSerializer::PropertyAt(
         property_set_->PropertyAt(index));
   }
 
-  StylePropertySet::PropertyReference property =
+  CSSPropertyValueSet::PropertyReference property =
       property_set_->PropertyAt(all_index_);
   return StylePropertySerializer::PropertyValueForSerializer(
       property_id, &property.Value(), property.IsImportant());
 }
 
-bool StylePropertySerializer::StylePropertySetForSerializer::
+bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
     ShouldProcessPropertyAt(unsigned index) const {
-  // StylePropertySet has all valid longhands. We should process.
+  // CSSPropertyValueSet has all valid longhands. We should process.
   if (!HasAllProperty())
     return true;
 
   // If all is not expanded, we need to process "all" and properties which
   // are not overwritten by "all".
   if (!need_to_expand_all_) {
-    StylePropertySet::PropertyReference property =
+    CSSPropertyValueSet::PropertyReference property =
         property_set_->PropertyAt(index);
     if (property.Id() == CSSPropertyAll ||
         !CSSProperty::Get(resolveCSSPropertyID(property.Id()))
@@ -140,15 +142,15 @@ bool StylePropertySerializer::StylePropertySetForSerializer::
   return true;
 }
 
-int StylePropertySerializer::StylePropertySetForSerializer::FindPropertyIndex(
-    CSSPropertyID property_id) const {
+int StylePropertySerializer::CSSPropertyValueSetForSerializer::
+    FindPropertyIndex(CSSPropertyID property_id) const {
   if (!HasExpandedAllProperty())
     return property_set_->FindPropertyIndex(property_id);
   return property_id - firstCSSProperty;
 }
 
 const CSSValue*
-StylePropertySerializer::StylePropertySetForSerializer::GetPropertyCSSValue(
+StylePropertySerializer::CSSPropertyValueSetForSerializer::GetPropertyCSSValue(
     CSSPropertyID property_id) const {
   int index = FindPropertyIndex(property_id);
   if (index == -1)
@@ -157,14 +159,14 @@ StylePropertySerializer::StylePropertySetForSerializer::GetPropertyCSSValue(
   return value.Value();
 }
 
-bool StylePropertySerializer::StylePropertySetForSerializer::
+bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
     IsDescriptorContext() const {
   return property_set_->CssParserMode() == kCSSViewportRuleMode ||
          property_set_->CssParserMode() == kCSSFontFaceRuleMode;
 }
 
 StylePropertySerializer::StylePropertySerializer(
-    const StylePropertySet& properties)
+    const CSSPropertyValueSet& properties)
     : property_set_(properties) {}
 
 String StylePropertySerializer::GetCustomPropertyText(

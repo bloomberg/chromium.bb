@@ -23,8 +23,8 @@
 #include "core/svg/SVGAnimateElement.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleChangeReason.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/svg/SVGAnimatedColor.h"
@@ -461,7 +461,7 @@ void SVGAnimateElement::ClearAnimatedType() {
   if (IsAnimatingCSSProperty()) {
     // CSS properties animation code-path.
     if (should_apply) {
-      MutableStylePropertySet* property_set =
+      MutableCSSPropertyValueSet* property_set =
           target_element->EnsureAnimatedSMILStyleProperties();
       if (property_set->RemoveProperty(css_property_id_)) {
         target_element->SetNeedsStyleRecalc(
@@ -498,7 +498,7 @@ void SVGAnimateElement::ApplyResultsToTarget() {
     // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
     // property on the target.
-    MutableStylePropertySet* property_set =
+    MutableCSSPropertyValueSet* property_set =
         targetElement()->EnsureAnimatedSMILStyleProperties();
     if (property_set
             ->SetProperty(css_property_id_, animated_value_->ValueAsString(),

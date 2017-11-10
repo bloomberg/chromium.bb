@@ -27,7 +27,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/dom/Document.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/frame/UseCounter.h"
@@ -51,7 +51,7 @@ bool HTMLTablePartElement::IsPresentationAttribute(
 void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == bgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (name == backgroundAttr) {

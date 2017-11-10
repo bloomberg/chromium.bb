@@ -31,7 +31,7 @@
 #include "core/css/PageRuleCollector.h"
 
 #include <algorithm>
-#include "core/css/StylePropertySet.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/StyleRule.h"
 #include "core/style/ComputedStyle.h"
 
@@ -123,7 +123,7 @@ void PageRuleCollector::MatchPageRulesForList(
       continue;
 
     // If the rule has no properties to apply, then ignore it.
-    const StylePropertySet& properties = rule->Properties();
+    const CSSPropertyValueSet& properties = rule->Properties();
     if (properties.IsEmpty())
       continue;
 

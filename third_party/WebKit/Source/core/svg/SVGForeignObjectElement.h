@@ -42,9 +42,10 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
  private:
   explicit SVGForeignObjectElement(Document&);
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
   void SvgAttributeChanged(const QualifiedName&) override;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) override;

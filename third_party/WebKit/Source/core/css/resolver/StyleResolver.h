@@ -50,7 +50,7 @@ class Element;
 class Interpolation;
 class MatchResult;
 class RuleSet;
-class StylePropertySet;
+class CSSPropertyValueSet;
 class StyleRuleUsageTracker;
 class CSSVariableResolver;
 
@@ -120,7 +120,7 @@ class CORE_EXPORT StyleResolver final
       unsigned rules_to_include = kAllButEmptyCSSRules);
   StyleRuleList* StyleRulesForElement(Element*, unsigned rules_to_include);
 
-  void ComputeFont(ComputedStyle*, const StylePropertySet&);
+  void ComputeFont(ComputedStyle*, const CSSPropertyValueSet&);
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
   void InvalidateMatchedPropertiesCache();
@@ -259,7 +259,7 @@ class CORE_EXPORT StyleResolver final
                               NeedsApplyPass&);
   template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
   void ApplyProperties(StyleResolverState&,
-                       const StylePropertySet* properties,
+                       const CSSPropertyValueSet* properties,
                        bool is_important,
                        bool inherited_only,
                        NeedsApplyPass&,

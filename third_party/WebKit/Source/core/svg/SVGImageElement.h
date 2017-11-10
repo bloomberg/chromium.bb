@@ -72,9 +72,10 @@ class CORE_EXPORT SVGImageElement final
     return !HrefString().IsNull();
   }
 
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableStylePropertySet*) override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
   void SvgAttributeChanged(const QualifiedName&) override;
   void ParseAttribute(const AttributeModificationParams&) override;

@@ -80,7 +80,7 @@ bool HTMLEmbedElement::IsPresentationAttribute(
 void HTMLEmbedElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (name == hiddenAttr) {
     if (DeprecatedEqualIgnoringCase(value, "yes") ||
         DeprecatedEqualIgnoringCase(value, "true")) {

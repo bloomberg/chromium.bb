@@ -39,7 +39,7 @@ namespace blink {
 
 class Document;
 class DocumentStyleSheetCollection;
-class MutableStylePropertySet;
+class MutableCSSPropertyValueSet;
 class StyleRuleViewport;
 
 class CORE_EXPORT ViewportStyleResolver
@@ -78,7 +78,7 @@ class CORE_EXPORT ViewportStyleResolver
   Length ViewportLengthValue(CSSPropertyID);
 
   Member<Document> document_;
-  Member<MutableStylePropertySet> property_set_;
+  Member<MutableCSSPropertyValueSet> property_set_;
   Member<MediaQueryEvaluator> initial_viewport_medium_;
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;

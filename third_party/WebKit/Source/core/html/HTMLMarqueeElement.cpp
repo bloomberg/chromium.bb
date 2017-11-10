@@ -32,8 +32,8 @@
 #include "core/animation/KeyframeEffectOptions.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/animation/TimingInput.h"
+#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSStyleDeclaration.h"
-#include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/FrameRequestCallbackCollection.h"
 #include "core/dom/ShadowRoot.h"
@@ -224,7 +224,7 @@ bool HTMLMarqueeElement::IsPresentationAttribute(
 void HTMLMarqueeElement::CollectStyleForPresentationAttribute(
     const QualifiedName& attr,
     const AtomicString& value,
-    MutableStylePropertySet* style) {
+    MutableCSSPropertyValueSet* style) {
   if (attr == HTMLNames::bgcolorAttr) {
     AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (attr == HTMLNames::heightAttr) {
@@ -246,7 +246,7 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
     const AnimationParameters& parameters) {
   StyleSheetContents* style_sheet_contents =
       mover_->GetDocument().ElementSheet().Contents();
-  MutableStylePropertySet::SetResult set_result;
+  MutableCSSPropertyValueSet::SetResult set_result;
 
   scoped_refptr<StringKeyframe> keyframe1 = StringKeyframe::Create();
   set_result = keyframe1->SetCSSPropertyValue(

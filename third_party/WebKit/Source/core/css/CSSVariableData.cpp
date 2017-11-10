@@ -12,7 +12,7 @@
 
 namespace blink {
 
-StylePropertySet* CSSVariableData::PropertySet() {
+CSSPropertyValueSet* CSSVariableData::PropertySet() {
   DCHECK(!needs_variable_resolution_);
   if (!cached_property_set_) {
     property_set_ = CSSParser::ParseCustomPropertySet(tokens_);
