@@ -119,7 +119,7 @@ def main():
   src_dirs = []
   grd_files = []
   for arg in sys.argv[1:]:
-    if arg.lower().endswith('.grd'):
+    if arg.lower().endswith('.grd') or arg.lower().endswith('.grdp'):
       grd_files.append(arg)
     else:
       src_dirs.append(arg)
