@@ -142,7 +142,7 @@ std::vector< ::Atom> SelectionFormatMap::GetTypes() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-SelectionData::SelectionData() : type_(None) {}
+SelectionData::SelectionData() : type_(x11::None) {}
 
 SelectionData::SelectionData(
     ::Atom type,
@@ -163,7 +163,7 @@ SelectionData& SelectionData::operator=(const SelectionData& rhs) {
 }
 
 bool SelectionData::IsValid() const {
-  return type_ != None;
+  return type_ != x11::None;
 }
 
 ::Atom SelectionData::GetType() const {

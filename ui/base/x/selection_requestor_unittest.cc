@@ -15,16 +15,16 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
-
-#include <X11/Xlib.h>
 
 namespace ui {
 
 class SelectionRequestorTest : public testing::Test {
  public:
-  SelectionRequestorTest() : x_display_(gfx::GetXDisplay()), x_window_(None) {}
+  SelectionRequestorTest()
+      : x_display_(gfx::GetXDisplay()), x_window_(x11::None) {}
 
   ~SelectionRequestorTest() override {}
 
@@ -46,7 +46,7 @@ class SelectionRequestorTest : public testing::Test {
     xev.xselection.selection = selection;
     xev.xselection.target = target;
     xev.xselection.property = requestor_->x_property_;
-    xev.xselection.time = CurrentTime;
+    xev.xselection.time = x11::CurrentTime;
     xev.xselection.type = SelectionNotify;
     requestor_->OnSelectionNotify(xev);
   }
@@ -54,7 +54,7 @@ class SelectionRequestorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Make X11 synchronous for our display connection.
-    XSynchronize(x_display_, True);
+    XSynchronize(x_display_, x11::True);
 
     // Create a window for the selection requestor to use.
     x_window_ = XCreateWindow(x_display_,
@@ -76,7 +76,7 @@ class SelectionRequestorTest : public testing::Test {
     requestor_.reset();
     event_source_.reset();
     XDestroyWindow(x_display_, x_window_);
-    XSynchronize(x_display_, False);
+    XSynchronize(x_display_, x11::False);
   }
 
   Display* x_display_;
@@ -102,7 +102,7 @@ void PerformBlockingConvertSelection(SelectionRequestor* requestor,
                                      const std::string& expected_data) {
   scoped_refptr<base::RefCountedMemory> out_data;
   size_t out_data_items = 0u;
-  XAtom out_type = None;
+  XAtom out_type = x11::None;
   EXPECT_TRUE(requestor->PerformBlockingConvertSelection(
       selection, target, &out_data, &out_data_items, &out_type));
   EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(out_data));

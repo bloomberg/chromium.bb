@@ -5,11 +5,10 @@
 #include "ui/base/x/x11_window_event_manager.h"
 
 #include <stddef.h>
-#include <X11/Xlib.h>
-#include <X11/Xlib-xcb.h>
 #include <xcb/xcb.h>
 
 #include "base/memory/singleton.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 

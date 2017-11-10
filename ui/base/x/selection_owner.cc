@@ -5,14 +5,13 @@
 #include "ui/base/x/selection_owner.h"
 
 #include <algorithm>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
@@ -52,28 +51,22 @@ size_t GetMaxRequestSize(XDisplay* display) {
 bool GetAtomPairArrayProperty(XID window,
                               XAtom property,
                               std::vector<std::pair<XAtom,XAtom> >* value) {
-  XAtom type = None;
+  XAtom type = x11::None;
   int format = 0;  // size in bits of each item in 'property'
   unsigned long num_items = 0;
   unsigned char* properties = NULL;
   unsigned long remaining_bytes = 0;
 
-  int result = XGetWindowProperty(gfx::GetXDisplay(),
-                                  window,
-                                  property,
-                                  0,          // offset into property data to
-                                              // read
-                                  (~0L),      // entire array
-                                  False,      // deleted
-                                  AnyPropertyType,
-                                  &type,
-                                  &format,
-                                  &num_items,
-                                  &remaining_bytes,
-                                  &properties);
+  int result = XGetWindowProperty(gfx::GetXDisplay(), window, property,
+                                  0,           // offset into property data to
+                                               // read
+                                  (~0L),       // entire array
+                                  x11::False,  // deleted
+                                  AnyPropertyType, &type, &format, &num_items,
+                                  &remaining_bytes, &properties);
   gfx::XScopedPtr<unsigned char> scoped_properties(properties);
 
-  if (result != Success)
+  if (result != x11::Success)
     return false;
 
   // GTK does not require |type| to be kAtomPair.
@@ -102,7 +95,8 @@ SelectionOwner::~SelectionOwner() {
   // don't receive further events. However, we don't call ClearSelectionOwner()
   // because we don't want to do this indiscriminately.
   if (XGetSelectionOwner(x_display_, selection_name_) == x_window_)
-    XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
+    XSetSelectionOwner(x_display_, selection_name_, x11::None,
+                       x11::CurrentTime);
 }
 
 void SelectionOwner::RetrieveTargets(std::vector<XAtom>* targets) {
@@ -125,7 +119,7 @@ void SelectionOwner::TakeOwnershipOfSelection(
 }
 
 void SelectionOwner::ClearSelectionOwner() {
-  XSetSelectionOwner(x_display_, selection_name_, None, CurrentTime);
+  XSetSelectionOwner(x_display_, selection_name_, x11::None, x11::CurrentTime);
   format_map_ = SelectionFormatMap();
 }
 
@@ -141,7 +135,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   reply.xselection.requestor = requestor;
   reply.xselection.selection = event.xselectionrequest.selection;
   reply.xselection.target = requested_target;
-  reply.xselection.property = None;  // Indicates failure
+  reply.xselection.property = x11::None;  // Indicates failure
   reply.xselection.time = event.xselectionrequest.time;
 
   if (requested_target == gfx::GetAtom(kMultiple)) {
@@ -158,7 +152,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
                                                    conversions[i].second);
         conversion_results.push_back(conversions[i].first);
         conversion_results.push_back(
-            conversion_successful ? conversions[i].second : None);
+            conversion_successful ? conversions[i].second : x11::None);
       }
 
       // Set the property to indicate which conversions succeeded. This matches
@@ -177,7 +171,7 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   }
 
   // Send off the reply.
-  XSendEvent(x_display_, requestor, False, 0, &reply);
+  XSendEvent(x_display_, requestor, x11::False, 0, &reply);
 }
 
 void SelectionOwner::OnSelectionClear(const XEvent& event) {

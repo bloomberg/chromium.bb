@@ -6,16 +6,12 @@
 #define UI_BASE_X_SELECTION_UTILS_H_
 
 #include <stddef.h>
-#include <X11/Xlib.h>
-
-// Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
-#undef RootWindow
-
 #include <map>
 
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/gfx/x/x11.h"
 
 namespace ui {
 class SelectionData;

@@ -4,8 +4,7 @@
 
 #include "ui/base/idle/idle_query_x11.h"
 
-#include <X11/extensions/scrnsaver.h>
-
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -36,7 +35,7 @@ int IdleQueryX11::IdleTime() {
     return 0;
 
   if (XScreenSaverQueryInfo(gfx::GetXDisplay(),
-                            RootWindow(gfx::GetXDisplay(), 0),
+                            XRootWindow(gfx::GetXDisplay(), 0),
                             idle_data_->mit_info.get())) {
     return (idle_data_->mit_info->idle) / 1000;
   } else {
