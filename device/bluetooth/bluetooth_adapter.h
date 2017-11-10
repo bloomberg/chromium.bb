@@ -135,6 +135,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceRemoved(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
 
+    // Deprecated GATT Added/Removed Events NOTE:
+    //
+    // The series of Observer methods for Service, Characteristic, & Descriptor
+    // Added/Removed events should be removed.  They are rarely used and add
+    // API & implementation complexity.  They are not reliable for cross
+    // platform use, and devices that modify their attribute table have not been
+    // tested or supported.
+    //
+    // New code should use Observer::GattServicesDiscovered and then call
+    //   GetGattService(s)
+    //   GetCharacteristic(s)
+    //   GetDescriptor(s)
+    //
+    // TODO(710352): Remove Service, Characteristic, & Descriptor Added/Removed.
+
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when a new GATT service |service| is added to the device |device|,
     // as the service is received from the device. Don't cache |service|. Store
     // its identifier instead (i.e. BluetoothRemoteGattService::GetIdentifier).
@@ -142,6 +159,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                   BluetoothDevice* device,
                                   BluetoothRemoteGattService* service) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when the GATT service |service| is removed from the device
     // |device|. This can happen if the attribute database of the remote device
     // changes or when |device| gets removed.
@@ -149,11 +168,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                     BluetoothDevice* device,
                                     BluetoothRemoteGattService* service) {}
 
-    // Called when all the GATT Services in |device| have been discovered
-    // and GattServiceAdded has been called for each service.
+    // Called when the GATT discovery process has completed for all services,
+    // characteristics, and descriptors in |device|.
     virtual void GattServicesDiscovered(BluetoothAdapter* adapter,
                                         BluetoothDevice* device) {}
 
+    // TODO(782494): Deprecated & not functional on all platforms. Use
+    // GattServicesDiscovered.
+    //
     // Called when all characteristic and descriptor discovery procedures are
     // known to be completed for the GATT service |service|. This method will be
     // called after the initial discovery of a GATT service and will usually be
@@ -170,6 +192,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void GattServiceChanged(BluetoothAdapter* adapter,
                                     BluetoothRemoteGattService* service) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when the remote GATT characteristic |characteristic| has been
     // discovered. Use this to issue any initial read/write requests to the
     // characteristic but don't cache the pointer as it may become invalid.
@@ -184,12 +208,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
         BluetoothAdapter* adapter,
         BluetoothRemoteGattCharacteristic* characteristic) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when a GATT characteristic |characteristic| has been removed from
     // the system.
     virtual void GattCharacteristicRemoved(
         BluetoothAdapter* adapter,
         BluetoothRemoteGattCharacteristic* characteristic) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when the remote GATT characteristic descriptor |descriptor| has
     // been discovered. Don't cache the arguments as the pointers may become
     // invalid. Instead, use the specially assigned identifier to obtain a
@@ -198,6 +226,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
         BluetoothAdapter* adapter,
         BluetoothRemoteGattDescriptor* descriptor) {}
 
+    // See "Deprecated GATT Added/Removed Events NOTE" above.
+    //
     // Called when a GATT characteristic descriptor |descriptor| has been
     // removed from the system.
     virtual void GattDescriptorRemoved(
