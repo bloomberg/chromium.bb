@@ -144,15 +144,36 @@ void OfflinePageModelTaskified::MarkPageAccessed(int64_t offline_id) {
 
 void OfflinePageModelTaskified::DeletePagesByOfflineId(
     const std::vector<int64_t>& offline_ids,
-    const DeletePageCallback& callback) {}
+    const DeletePageCallback& callback) {
+  auto task = DeletePageTask::CreateTaskMatchingOfflineIds(
+      store_.get(),
+      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      offline_ids);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
-    const DeletePageCallback& callback) {}
+    const DeletePageCallback& callback) {
+  auto task = DeletePageTask::CreateTaskMatchingClientIds(
+      store_.get(),
+      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      client_ids);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
-    const DeletePageCallback& callback) {}
+    const DeletePageCallback& callback) {
+  auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
+      store_.get(),
+      base::BindOnce(&OfflinePageModelTaskified::OnDeleteDone,
+                     weak_ptr_factory_.GetWeakPtr(), callback),
+      policy_controller_.get(), predicate);
+  task_queue_.AddTask(std::move(task));
+}
 
 void OfflinePageModelTaskified::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {

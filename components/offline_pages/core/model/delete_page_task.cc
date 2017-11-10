@@ -121,8 +121,6 @@ DeletePageTaskResult DeletePagesByOfflineIdsSync(
     sql::Connection* db) {
   if (!db)
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-  // TODO(romax): Make sure there's not regression to treat deleting empty list
-  // of offline ids as successful (if it's not what we currently do).
   if (offline_ids.empty())
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
 
@@ -179,8 +177,6 @@ DeletePageTaskResult DeletePagesByClientIdsSync(
 
   if (!db)
     return DeletePageTaskResult(DeletePageResult::STORE_FAILURE, {});
-  // TODO(romax): Make sure there's not regression to treat deleting empty list
-  // of offline ids as successful (if it's not what we currently do).
   if (client_ids.empty())
     return DeletePageTaskResult(DeletePageResult::SUCCESS, {});
 

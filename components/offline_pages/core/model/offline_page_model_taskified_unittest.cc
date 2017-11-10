@@ -47,7 +47,7 @@ const GURL kTestUrl("http://example.com");
 const GURL kTestUrl2("http://other.page.com");
 const GURL kTestUrlWithFragment("http://example.com#frag");
 const GURL kTestUrl2WithFragment("http://other.page.com#frag");
-const GURL kRandomUrl("http://foo");
+const GURL kOtherUrl("http://foo");
 const GURL kFileUrl("file:///foo");
 const ClientId kTestClientId1(kDefaultNamespace, "1234");
 const ClientId kTestClientId2(kDefaultNamespace, "5678");
@@ -140,6 +140,9 @@ class OfflinePageModelTaskifiedTest
   bool observer_add_page_called() { return observer_add_page_called_; }
   const OfflinePageItem& last_added_page() { return last_added_page_; }
   bool observer_delete_page_called() { return observer_delete_page_called_; }
+  const OfflinePageModel::DeletedPageInfo& last_deleted_page_info() {
+    return last_deleted_page_info_;
+  }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -175,6 +178,7 @@ void OfflinePageModelTaskifiedTest::SetUp() {
       store_test_util()->ReleaseStore(), std::move(archive_manager),
       base::ThreadTaskRunnerHandle::Get());
   model_->AddObserver(this);
+  page_generator()->SetArchiveDirectory(temporary_dir_path());
   ResetResults();
   PumpLoop();
   CheckTaskQueueIdle();
@@ -457,7 +461,6 @@ TEST_F(OfflinePageModelTaskifiedTest, SavePageOfflineArchiverTwoPages) {
 
 TEST_F(OfflinePageModelTaskifiedTest, AddPage) {
   // Creates a fresh page.
-  page_generator()->SetArchiveDirectory(temporary_dir_path());
   OfflinePageItem page = page_generator()->CreateItemWithTempFile();
 
   base::MockCallback<AddPageCallback> callback;
@@ -494,6 +497,86 @@ TEST_F(OfflinePageModelTaskifiedTest, GetAllPagesWhenStoreEmpty) {
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
+}
+
+// TODO(romax): remove these 'indicators for newly added tests' when migration
+// is done.
+// This test case is covered by DeletePageTaskTest::DeletePagesBy*.
+TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeletePageSuccessful) {}
+
+// This test case is covered by DeletePageTaskTest::DeletePagesByUrlPredicate.
+TEST_F(OfflinePageModelTaskifiedTest,
+       DISABLED_DeleteCachedPageByPredicateUserRequested) {}
+
+// This test case is renamed to DeletePagesByUrlPredicate.
+TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeleteCachedPageByPredicate) {}
+
+// This test case is covered by DeletePageTaskTest::DeletePagesBy*NotFound.
+TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeletePageNotFound) {}
+
+// This test case is covered by
+// DeletePageTaskTest::DeletePagesStoreFailureOnRemove.
+TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeletePageStoreFailureOnRemove) {
+}
+
+// This test case is covered by DeletePageTaskTest::DeletePagesBy*.
+TEST_F(OfflinePageModelTaskifiedTest, DISABLED_DeleteMultiplePages) {}
+
+// These newly added tests are testing the API instead of results, which
+// should be covered in DeletePagesTaskTest.
+
+TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByOfflineId) {
+  OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
+  OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
+  InsertPageIntoStore(page1);
+  InsertPageIntoStore(page2);
+  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
+
+  base::MockCallback<DeletePageCallback> callback;
+  EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
+  CheckTaskQueueIdle();
+
+  model()->DeletePagesByOfflineId({page1.offline_id}, callback.Get());
+  EXPECT_TRUE(task_queue()->HasRunningTask());
+
+  PumpLoop();
+  EXPECT_TRUE(observer_delete_page_called());
+  EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
+  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  CheckTaskQueueIdle();
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByUrlPredicate) {
+  page_generator()->SetNamespace(kDefaultNamespace);
+  page_generator()->SetUrl(kTestUrl);
+  OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
+  page_generator()->SetUrl(kTestUrl2);
+  OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
+  InsertPageIntoStore(page1);
+  InsertPageIntoStore(page2);
+  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
+
+  base::MockCallback<DeletePageCallback> callback;
+  EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
+  CheckTaskQueueIdle();
+
+  UrlPredicate predicate =
+      base::Bind([](const GURL& expected_url,
+                    const GURL& url) -> bool { return url == expected_url; },
+                 kTestUrl);
+
+  model()->DeleteCachedPagesByURLPredicate(predicate, callback.Get());
+  EXPECT_TRUE(task_queue()->HasRunningTask());
+
+  PumpLoop();
+  EXPECT_TRUE(observer_delete_page_called());
+  EXPECT_EQ(last_deleted_page_info().offline_id, page1.offline_id);
+  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  CheckTaskQueueIdle();
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, GetPageByOfflineId) {
@@ -535,7 +618,7 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByUrl_FinalUrl) {
 
   // Search by random url, which should return no pages.
   EXPECT_CALL(callback, Run(IsEmpty()));
-  model()->GetPagesByURL(kRandomUrl, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
+  model()->GetPagesByURL(kOtherUrl, URLSearchMode::SEARCH_BY_FINAL_URL_ONLY,
                          callback.Get());
   EXPECT_TRUE(task_queue()->HasRunningTask());
   PumpLoop();
@@ -645,6 +728,32 @@ TEST_F(OfflinePageModelTaskifiedTest, GetPagesByRequestOrigin) {
   EXPECT_TRUE(task_queue()->HasRunningTask());
 
   PumpLoop();
+}
+
+TEST_F(OfflinePageModelTaskifiedTest, DeletePagesByClientIds) {
+  page_generator()->SetNamespace(kTestClientId1.name_space);
+  page_generator()->SetId(kTestClientId1.id);
+  OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
+  page_generator()->SetId(kTestClientId2.id);
+  OfflinePageItem page2 = page_generator()->CreateItemWithTempFile();
+  InsertPageIntoStore(page1);
+  InsertPageIntoStore(page2);
+  EXPECT_EQ(2LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(2LL, store_test_util()->GetPageCount());
+
+  base::MockCallback<DeletePageCallback> callback;
+  EXPECT_CALL(callback, Run(testing::A<DeletePageResult>()));
+  CheckTaskQueueIdle();
+
+  model()->DeletePagesByClientIds({page1.client_id}, callback.Get());
+  EXPECT_TRUE(task_queue()->HasRunningTask());
+
+  PumpLoop();
+  EXPECT_TRUE(observer_delete_page_called());
+  EXPECT_EQ(last_deleted_page_info().client_id, page1.client_id);
+  EXPECT_EQ(1LL, GetFileCountInDir(temporary_dir_path()));
+  EXPECT_EQ(1LL, store_test_util()->GetPageCount());
+  CheckTaskQueueIdle();
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, GetPagesByNamespace) {
@@ -781,7 +890,6 @@ TEST_F(OfflinePageModelTaskifiedTest, ExtraActionTriggeredWhenSaveSuccess) {
   // Add pages that have the same namespace and url directly into store, in
   // order to avoid triggering the removal.
   // The 'default' namespace has a limit of 1 per url.
-  page_generator()->SetArchiveDirectory(temporary_dir_path());
   page_generator()->SetNamespace(kDefaultNamespace);
   page_generator()->SetUrl(kTestUrl);
   OfflinePageItem page1 = page_generator()->CreateItemWithTempFile();
