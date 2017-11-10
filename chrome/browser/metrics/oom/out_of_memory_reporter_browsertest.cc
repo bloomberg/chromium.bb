@@ -51,8 +51,9 @@ class OutOfMemoryReporterBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(OutOfMemoryReporterBrowserTest);
 };
 
-// No current reliable way to determine OOM on Linux/Mac.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+// No current reliable way to determine OOM on Linux/Mac. Sanitizers also
+// interfere with the exit code on OOM, making this detection unreliable.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(ADDRESS_SANITIZER)
 #define MAYBE_MemoryExhaust DISABLED_MemoryExhaust
 #else
 #define MAYBE_MemoryExhaust MemoryExhaust
