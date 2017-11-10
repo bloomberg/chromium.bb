@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_bar_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -60,6 +61,11 @@ TEST_F(NewTabPageBarTest, SetItems) {
 }
 
 TEST_F(NewTabPageBarTest, SetSelectedIndex_iPadOnly) {
+  // TODO(crbug.com/753599): Remove this unittest when clean up the old
+  // bookmark.
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    return;
+  }
   // Selected index isn't meaningful on iPhone.
   if (!IsIPadIdiom()) {
     return;

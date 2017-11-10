@@ -112,7 +112,7 @@ id<GREYMatcher> NavigationBarDoneButton() {
       displayedCount + 1,
       prefs->GetInteger(prefs::kIosSettingsSigninPromoDisplayedCount),
       @"Should have incremented the display count");
-  // Close the bookmark view and open it again.
+  // Close the settings menu and open it again.
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   [ChromeEarlGreyUI openSettingsMenu];
