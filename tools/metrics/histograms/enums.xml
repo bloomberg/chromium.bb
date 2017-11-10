@@ -2619,40 +2619,40 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="RFH_SANDBOX_FLAGS"/>
   <int value="4" label="RFH_NO_PROXY_TO_PARENT"/>
   <int value="5" label="RPH_DESERIALIZATION_FAILED"/>
-  <int value="6" label="RVH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
+  <int value="6" label="OBSOLETE_RVH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
   <int value="7" label="RFH_FILE_CHOOSER_PATH"/>
-  <int value="8" label="RWH_SYNTHETIC_GESTURE"/>
-  <int value="9" label="RWH_FOCUS"/>
-  <int value="10" label="RWH_BLUR"/>
+  <int value="8" label="OBSOLETE_RWH_SYNTHETIC_GESTURE"/>
+  <int value="9" label="OBSOLETE_RWH_FOCUS"/>
+  <int value="10" label="OBSOLETE_RWH_BLUR"/>
   <int value="11" label="RWH_SHARED_BITMAP"/>
   <int value="12" label="RWH_BAD_ACK_MESSAGE"/>
-  <int value="13" label="RWHVA_SHARED_MEMORY"/>
+  <int value="13" label="OBSOLETE_RWHVA_SHARED_MEMORY"/>
   <int value="14" label="SERVICE_WORKER_BAD_URL"/>
-  <int value="15" label="WC_INVALID_FRAME_SOURCE"/>
-  <int value="16" label="RWHVM_UNEXPECTED_FRAME_TYPE"/>
+  <int value="15" label="OBSOLETE_WC_INVALID_FRAME_SOURCE"/>
+  <int value="16" label="OBSOLETE_RWHVM_UNEXPECTED_FRAME_TYPE"/>
   <int value="17" label="RFPH_DETACH"/>
   <int value="18" label="DFH_BAD_EMBEDDER_MESSAGE"/>
   <int value="19" label="NC_AUTO_SUBFRAME"/>
   <int value="20" label="CSDH_NOT_RECOGNIZED"/>
-  <int value="21" label="DSMF_OPEN_STORAGE"/>
+  <int value="21" label="OBSOLETE_DSMF_OPEN_STORAGE"/>
   <int value="22" label="DSMF_LOAD_STORAGE"/>
-  <int value="23" label="DBMF_INVALID_ORIGIN_ON_OPEN"/>
-  <int value="24" label="DBMF_DB_NOT_OPEN_ON_MODIFY"/>
-  <int value="25" label="DBMF_DB_NOT_OPEN_ON_CLOSE"/>
-  <int value="26" label="DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR"/>
+  <int value="23" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_OPEN"/>
+  <int value="24" label="OBSOLETE_DBMF_DB_NOT_OPEN_ON_MODIFY"/>
+  <int value="25" label="OBSOLETE_DBMF_DB_NOT_OPEN_ON_CLOSE"/>
+  <int value="26" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_SQLITE_ERROR"/>
   <int value="27" label="RDH_INVALID_PRIORITY"/>
   <int value="28" label="RDH_REQUEST_NOT_TRANSFERRING"/>
   <int value="29" label="RDH_BAD_DOWNLOAD"/>
-  <int value="30" label="NMF_NO_PERMISSION_SHOW"/>
-  <int value="31" label="NMF_NO_PERMISSION_CLOSE"/>
-  <int value="32" label="NMF_NO_PERMISSION_VERIFY"/>
+  <int value="30" label="OBSOLETE_NMF_NO_PERMISSION_SHOW"/>
+  <int value="31" label="OBSOLETE_NMF_NO_PERMISSION_CLOSE"/>
+  <int value="32" label="OBSOLETE_NMF_NO_PERMISSION_VERIFY"/>
   <int value="33" label="MH_INVALID_MIDI_PORT"/>
   <int value="34" label="MH_SYS_EX_PERMISSION"/>
   <int value="35" label="ACDH_REGISTER"/>
   <int value="36" label="ACDH_UNREGISTER"/>
   <int value="37" label="ACDH_SET_SPAWNING"/>
   <int value="38" label="ACDH_SELECT_CACHE"/>
-  <int value="39" label="ACDH_SELECT_CACHE_FOR_WORKER"/>
+  <int value="39" label="OBSOLETE_ACDH_SELECT_CACHE_FOR_WORKER"/>
   <int value="40" label="ACDH_SELECT_CACHE_FOR_SHARED_WORKER"/>
   <int value="41" label="ACDH_MARK_AS_FOREIGN_ENTRY"/>
   <int value="42" label="ACDH_PENDING_REPLY_IN_GET_STATUS"/>
@@ -2662,59 +2662,61 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="46" label="ACDH_PENDING_REPLY_IN_SWAP_CACHE"/>
   <int value="47" label="ACDH_SWAP_CACHE"/>
   <int value="48" label="SWDH_NOT_HANDLED"/>
-  <int value="49" label="SWDH_REGISTER_BAD_URL"/>
-  <int value="50" label="SWDH_REGISTER_NO_HOST"/>
-  <int value="51" label="SWDH_REGISTER_CANNOT"/>
-  <int value="52" label="SWDH_UNREGISTER_BAD_URL"/>
-  <int value="53" label="SWDH_UNREGISTER_NO_HOST"/>
-  <int value="54" label="SWDH_UNREGISTER_CANNOT"/>
-  <int value="55" label="SWDH_GET_REGISTRATION_BAD_URL"/>
-  <int value="56" label="SWDH_GET_REGISTRATION_NO_HOST"/>
-  <int value="57" label="SWDH_GET_REGISTRATION_CANNOT"/>
-  <int value="58" label="SWDH_GET_REGISTRATION_FOR_READY_NO_HOST"/>
-  <int value="59" label="SWDH_GET_REGISTRATION_FOR_READY_ALREADY_IN_PROGRESS"/>
+  <int value="49" label="OBSOLETE_SWDH_REGISTER_BAD_URL"/>
+  <int value="50" label="OBSOLETE_SWDH_REGISTER_NO_HOST"/>
+  <int value="51" label="OBSOLETE_SWDH_REGISTER_CANNOT"/>
+  <int value="52" label="OBSOLETE_SWDH_UNREGISTER_BAD_URL"/>
+  <int value="53" label="OBSOLETE_SWDH_UNREGISTER_NO_HOST"/>
+  <int value="54" label="OBSOLETE_SWDH_UNREGISTER_CANNOT"/>
+  <int value="55" label="OBSOLETE_SWDH_GET_REGISTRATION_BAD_URL"/>
+  <int value="56" label="OBSOLETE_SWDH_GET_REGISTRATION_NO_HOST"/>
+  <int value="57" label="OBSOLETE_SWDH_GET_REGISTRATION_CANNOT"/>
+  <int value="58" label="OBSOLETE_SWDH_GET_REGISTRATION_FOR_READY_NO_HOST"/>
+  <int value="59"
+      label="OBSOLETE_SWDH_GET_REGISTRATION_FOR_READY_ALREADY_IN_PROGRESS"/>
   <int value="60" label="SWDH_POST_MESSAGE"/>
-  <int value="61" label="SWDH_PROVIDER_CREATED_NO_HOST"/>
-  <int value="62" label="SWDH_PROVIDER_DESTROYED_NO_HOST"/>
-  <int value="63" label="SWDH_SET_HOSTED_VERSION_NO_HOST"/>
+  <int value="61" label="OBSOLETE_SWDH_PROVIDER_CREATED_NO_HOST"/>
+  <int value="62" label="OBSOLETE_SWDH_PROVIDER_DESTROYED_NO_HOST"/>
+  <int value="63" label="OBSOLETE_SWDH_SET_HOSTED_VERSION_NO_HOST"/>
   <int value="64" label="OBSOLETE_SWDH_SET_HOSTED_VERSION"/>
-  <int value="65" label="SWDH_WORKER_SCRIPT_LOAD_NO_HOST"/>
+  <int value="65" label="OBSOLETE_SWDH_WORKER_SCRIPT_LOAD_NO_HOST"/>
   <int value="66" label="SWDH_INCREMENT_WORKER_BAD_HANDLE"/>
   <int value="67" label="SWDH_DECREMENT_WORKER_BAD_HANDLE"/>
-  <int value="68" label="SWDH_INCREMENT_REGISTRATION_BAD_HANDLE"/>
-  <int value="69" label="SWDH_DECREMENT_REGISTRATION_BAD_HANDLE"/>
+  <int value="68" label="OBSOLETE_SWDH_INCREMENT_REGISTRATION_BAD_HANDLE"/>
+  <int value="69" label="OBSOLETE_SWDH_DECREMENT_REGISTRATION_BAD_HANDLE"/>
   <int value="70" label="SWDH_TERMINATE_BAD_HANDLE"/>
-  <int value="71" label="FAMF_APPEND_ITEM_TO_BLOB"/>
-  <int value="72" label="FAMF_APPEND_SHARED_MEMORY_TO_BLOB"/>
-  <int value="73" label="FAMF_MALFORMED_STREAM_URL"/>
-  <int value="74" label="FAMF_APPEND_ITEM_TO_STREAM"/>
-  <int value="75" label="FAMF_APPEND_SHARED_MEMORY_TO_STREAM"/>
-  <int value="76" label="IDBDH_CAN_READ_FILE"/>
-  <int value="77" label="IDBDH_GET_OR_TERMINATE"/>
+  <int value="71" label="OBSOLETE_FAMF_APPEND_ITEM_TO_BLOB"/>
+  <int value="72" label="OBSOLETE_FAMF_APPEND_SHARED_MEMORY_TO_BLOB"/>
+  <int value="73" label="OBSOLETE_FAMF_MALFORMED_STREAM_URL"/>
+  <int value="74" label="OBSOLETE_FAMF_APPEND_ITEM_TO_STREAM"/>
+  <int value="75" label="OBSOLETE_FAMF_APPEND_SHARED_MEMORY_TO_STREAM"/>
+  <int value="76" label="OBSOLETE_IDBDH_CAN_READ_FILE"/>
+  <int value="77" label="OBSOLETE_IDBDH_GET_OR_TERMINATE"/>
   <int value="78" label="RFMF_SET_COOKIE_BAD_ORIGIN"/>
   <int value="79" label="RFMF_GET_COOKIES_BAD_ORIGIN"/>
-  <int value="80" label="SWDH_GET_REGISTRATIONS_NO_HOST"/>
-  <int value="81" label="SWDH_GET_REGISTRATIONS_INVALID_ORIGIN"/>
-  <int value="82" label="AOAH_UNAUTHORIZED_URL"/>
+  <int value="80" label="OBSOLETE_SWDH_GET_REGISTRATIONS_NO_HOST"/>
+  <int value="81" label="OBSOLETE_SWDH_GET_REGISTRATIONS_INVALID_ORIGIN"/>
+  <int value="82" label="OBSOLETE_AOAH_UNAUTHORIZED_URL"/>
   <int value="83" label="BDH_INVALID_SERVICE_ID"/>
-  <int value="84" label="RFH_COMMIT_DESERIALIZATION_FAILED"/>
+  <int value="84" label="OBSOLETE_RFH_COMMIT_DESERIALIZATION_FAILED"/>
   <int value="85" label="BDH_INVALID_CHARACTERISTIC_ID"/>
-  <int value="86" label="SWDH_UPDATE_NO_HOST"/>
-  <int value="87" label="SWDH_UPDATE_BAD_REGISTRATION_ID"/>
-  <int value="88" label="SWDH_UPDATE_CANNOT"/>
-  <int value="89" label="SWDH_UNREGISTER_BAD_REGISTRATION_ID"/>
+  <int value="86" label="OBSOLETE_SWDH_UPDATE_NO_HOST"/>
+  <int value="87" label="OBSOLETE_SWDH_UPDATE_BAD_REGISTRATION_ID"/>
+  <int value="88" label="OBSOLETE_SWDH_UPDATE_CANNOT"/>
+  <int value="89" label="OBSOLETE_SWDH_UNREGISTER_BAD_REGISTRATION_ID"/>
   <int value="90" label="BDH_INVALID_WRITE_VALUE_LENGTH"/>
-  <int value="91" label="WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO"/>
-  <int value="92" label="WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
+  <int value="91" label="OBSOLETE_WC_MEMORY_CACHE_RESOURCE_BAD_SECURITY_INFO"/>
+  <int value="92" label="OBSOLETE_WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
   <int value="93" label="OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
   <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
-  <int value="96" label="RDH_UNAUTHORIZED_HEADER_REQUEST"/>
+  <int value="96" label="OBSOLETE_RDH_UNAUTHORIZED_HEADER_REQUEST"/>
   <int value="97" label="RDH_INVALID_URL"/>
-  <int value="98" label="BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
+  <int value="98" label="OBSOLETE_BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
   <int value="99" label="RFH_OWNER_PROPERTY"/>
-  <int value="100" label="BDH_EMPTY_OR_INVALID_FILTERS"/>
-  <int value="101" label="WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO"/>
+  <int value="100" label="OBSOLETE_BDH_EMPTY_OR_INVALID_FILTERS"/>
+  <int value="101"
+      label="OBSOLETE_WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO"/>
   <int value="102" label="RFMF_RENDERER_FAKED_ITS_OWN_DEATH"/>
   <int value="103" label="DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE"/>
   <int value="104" label="DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE"/>
@@ -2732,18 +2734,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="116" label="BDH_CONSTRUCTION_FAILED"/>
   <int value="117" label="BDH_INVALID_REFCOUNT_OPERATION"/>
   <int value="118" label="BDH_INVALID_URL_OPERATION"/>
-  <int value="119" label="IDBDH_INVALID_ORIGIN"/>
+  <int value="119" label="OBSOLETE_IDBDH_INVALID_ORIGIN"/>
   <int value="120" label="RFH_FAIL_PROVISIONAL_LOAD_NO_HANDLE"/>
-  <int value="121" label="RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
+  <int value="121" label="OBSOLETE_RFH_FAIL_PROVISIONAL_LOAD_NO_ERROR"/>
   <int value="122" label="NI_IN_PAGE_NAVIGATION"/>
   <int value="123" label="RPH_MOJO_PROCESS_ERROR"/>
-  <int value="124" label="DBMF_INVALID_ORIGIN_ON_GET_SPACE"/>
-  <int value="125" label="DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
-  <int value="126" label="DBMF_INVALID_ORIGIN_ON_CLOSED"/>
+  <int value="124" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_GET_SPACE"/>
+  <int value="125" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_MODIFIED"/>
+  <int value="126" label="OBSOLETE_DBMF_INVALID_ORIGIN_ON_CLOSED"/>
   <int value="127" label="WSI_INVALID_HEADER_VALUE"/>
-  <int value="128" label="SWDH_SET_HOSTED_VERSION_INVALID_HOST"/>
-  <int value="129" label="SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH"/>
-  <int value="130" label="MSDH_INVALID_FRAME_ID"/>
+  <int value="128" label="OBSOLETE_SWDH_SET_HOSTED_VERSION_INVALID_HOST"/>
+  <int value="129" label="OBSOLETE_SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH"/>
+  <int value="130" label="OBSOLETE_MSDH_INVALID_FRAME_ID"/>
   <int value="131" label="SDH_INVALID_PORT_RANGE"/>
   <int value="132" label="SCO_INVALID_ARGUMENT"/>
   <int value="133" label="RFH_INCONSISTENT_DEVTOOLS_MESSAGE"/>
@@ -2755,30 +2757,36 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="139" label="BDH_DISALLOWED_ORIGIN"/>
   <int value="140" label="ARH_CREATED_STREAM_WITHOUT_AUTHORIZATION"/>
   <int value="141" label="MDDH_INVALID_DEVICE_TYPE_REQUEST"/>
-  <int value="142" label="MDDH_UNAUTHORIZED_ORIGIN"/>
-  <int value="143" label="SWDH_ENABLE_NAVIGATION_PRELOAD_NO_HOST"/>
-  <int value="144" label="SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN"/>
-  <int value="145" label="SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID"/>
+  <int value="142" label="OBSOLETE_MDDH_UNAUTHORIZED_ORIGIN"/>
+  <int value="143" label="OBSOLETE_SWDH_ENABLE_NAVIGATION_PRELOAD_NO_HOST"/>
+  <int value="144"
+      label="OBSOLETE_SWDH_ENABLE_NAVIGATION_PRELOAD_INVALID_ORIGIN"/>
+  <int value="145"
+      label="OBSOLETE_SWDH_ENABLE_NAVIGATION_PRELOAD_BAD_REGISTRATION_ID"/>
   <int value="146" label="RDH_TRANSFERRING_REQUEST_NOT_FOUND"/>
   <int value="147" label="RDH_TRANSFERRING_NONNAVIGATIONAL_REQUEST"/>
-  <int value="148" label="SWDH_GET_NAVIGATION_PRELOAD_STATE_NO_HOST"/>
-  <int value="149" label="SWDH_GET_NAVIGATION_PRELOAD_STATE_INVALID_ORIGIN"/>
+  <int value="148" label="OBSOLETE_SWDH_GET_NAVIGATION_PRELOAD_STATE_NO_HOST"/>
+  <int value="149"
+      label="OBSOLETE_SWDH_GET_NAVIGATION_PRELOAD_STATE_INVALID_ORIGIN"/>
   <int value="150"
-      label="SWDH_GET_NAVIGATION_PRELOAD_STATE_BAD_REGISTRATION_ID"/>
-  <int value="151" label="SWDH_SET_NAVIGATION_PRELOAD_HEADER_NO_HOST"/>
-  <int value="152" label="SWDH_SET_NAVIGATION_PRELOAD_HEADER_INVALID_ORIGIN"/>
+      label="OBSOLETE_SWDH_GET_NAVIGATION_PRELOAD_STATE_BAD_REGISTRATION_ID"/>
+  <int value="151" label="OBSOLETE_SWDH_SET_NAVIGATION_PRELOAD_HEADER_NO_HOST"/>
+  <int value="152"
+      label="OBSOLETE_SWDH_SET_NAVIGATION_PRELOAD_HEADER_INVALID_ORIGIN"/>
   <int value="153"
-      label="SWDH_SET_NAVIGATION_PRELOAD_HEADER_BAD_REGISTRATION_ID"/>
-  <int value="154" label="SWDH_SET_NAVIGATION_PRELOAD_HEADER_BAD_VALUE"/>
+      label="OBSOLETE_SWDH_SET_NAVIGATION_PRELOAD_HEADER_BAD_REGISTRATION_ID"/>
+  <int value="154"
+      label="OBSOLETE_SWDH_SET_NAVIGATION_PRELOAD_HEADER_BAD_VALUE"/>
   <int value="155" label="MDDH_INVALID_SUBSCRIPTION_REQUEST"/>
-  <int value="156" label="MDDH_INVALID_UNSUBSCRIPTION_REQUEST"/>
-  <int value="157" label="AOAH_NONSENSE_DEVICE_ID"/>
+  <int value="156" label="OBSOLETE_MDDH_INVALID_UNSUBSCRIPTION_REQUEST"/>
+  <int value="157" label="OBSOLETE_AOAH_NONSENSE_DEVICE_ID"/>
   <int value="158" label="BDH_INVALID_OPTIONS"/>
   <int value="159" label="RFH_DID_ADD_CONSOLE_MESSAGE_BAD_SEVERITY"/>
   <int value="160" label="AIRH_VOLUME_OUT_OF_RANGE"/>
   <int value="161" label="BDH_INVALID_DESCRIPTOR_ID"/>
-  <int value="162" label="RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP"/>
-  <int value="163" label="RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME"/>
+  <int value="162" label="OBSOLETE_RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP"/>
+  <int value="163"
+      label="OBSOLETE_RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME"/>
   <int value="164" label="BFSI_INVALID_DEVELOPER_ID"/>
   <int value="165" label="BFSI_INVALID_REQUESTS"/>
   <int value="166" label="BFSI_INVALID_TITLE"/>
@@ -2788,7 +2796,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="170" label="RFH_ILLEGAL_UPLOAD_PARAMS"/>
   <int value="171" label="RFH_BASE_URL_FOR_DATA_URL_SPECIFIED"/>
   <int value="172" label="RFPH_ILLEGAL_UPLOAD_PARAMS"/>
-  <int value="173" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE"/>
+  <int value="173" label="OBSOLETE_SWDH_PROVIDER_CREATED_ILLEGAL_TYPE"/>
   <int value="174" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW"/>
   <int value="175" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER"/>
   <int value="176" label="SWDH_PROVIDER_CREATED_DUPLICATE_ID"/>
