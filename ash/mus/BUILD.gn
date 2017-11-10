@@ -238,5 +238,6 @@ source_set("unittests") {
   data_deps = [
     ":mus",
     "//mash/quick_launch",
+    "//services/ui/ime/test_ime_driver",
   ]
 }

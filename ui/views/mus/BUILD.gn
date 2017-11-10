@@ -143,6 +143,7 @@ static_library("test_support") {
 
   data_deps = [
     ":views_mus_tests_catalog",
+    "//services/ui/ime/test_ime_driver",
     "//ui/resources:ui_test_pak_data",
   ]
 }

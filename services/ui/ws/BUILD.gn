@@ -235,6 +235,10 @@ static_library("test_support") {
     "//ui/gl",
     "//ui/wm",
   ]
+
+  data_deps = [
+    "//services/ui/ime/test_ime_driver",
+  ]
 }
 
 source_set("tests") {
