@@ -472,7 +472,13 @@ static void FormatEscapedEntityCallback(const void* context,
     UnencodableReplacementArray entity;
     int entity_len =
         TextCodec::GetUnencodableReplacement(code_point, handling, entity);
-    ucnv_cbFromUWriteBytes(from_u_args, entity, entity_len, 0, err);
+    String entity_u(entity, entity_len);
+    entity_u.Ensure16Bit();
+    const UChar* entity_u_pointers[2] = {
+        entity_u.Characters16(), entity_u.Characters16() + entity_u.length(),
+    };
+    ucnv_cbFromUWriteUChars(from_u_args, entity_u_pointers,
+                            entity_u_pointers[1], 0, err);
   } else {
     UCNV_FROM_U_CALLBACK_ESCAPE(context, from_u_args, code_units, length,
                                 code_point, reason, err);
