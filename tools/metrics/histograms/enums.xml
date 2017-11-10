@@ -40914,8 +40914,9 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="0" label="kProduceCodeCache">
     The compilation produced a code cache
   </int>
-  <int value="1" label="kHitIsolateCache">
-    The compilation hit V8's isolate's compilation cache
+  <int value="1" label="kHitIsolateCacheWhenNoCache">
+    The compilation hit V8's isolate's compilation cache when Blink did not
+    request a code cache
   </int>
   <int value="2" label="kConsumeCodeCache">
     The compilation consumed a code cache
@@ -40954,6 +40955,14 @@ Called by update_traffic_annotation_histograms.py.-->
   </int>
   <int value="13" label="kNoCacheBecauseExtension">
     Blink did not request a code cache because it is compiling an extension
+  </int>
+  <int value="14" label="kHitIsolateCacheWhenProduceCodeCache">
+    The compilation hit V8's isolate's compilation cache and produced a code
+    cache
+  </int>
+  <int value="15" label="kHitIsolateCacheWhenConsumeCodeCache">
+    The compilation hit V8's isolate's compilation cache instead of consuming a
+    code cache
   </int>
 </enum>
 
