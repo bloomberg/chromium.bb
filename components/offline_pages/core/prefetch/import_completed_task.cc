@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_importer.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -36,7 +37,7 @@ bool UpdateToFinishedStateSync(int64_t offline_id,
   statement.BindInt64(2, offline_id);
   statement.BindInt(3, static_cast<int>(PrefetchItemState::IMPORTING));
 
-  return statement.Run();
+  return statement.Run() && db->GetLastChangeCount() > 0;
 }
 
 }  // namespace
@@ -44,10 +45,12 @@ bool UpdateToFinishedStateSync(int64_t offline_id,
 ImportCompletedTask::ImportCompletedTask(
     PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store,
+    PrefetchImporter* prefetch_importer,
     int64_t offline_id,
     bool success)
     : prefetch_dispatcher_(prefetch_dispatcher),
       prefetch_store_(prefetch_store),
+      prefetch_importer_(prefetch_importer),
       offline_id_(offline_id),
       success_(success),
       weak_ptr_factory_(this) {}
@@ -61,11 +64,13 @@ void ImportCompletedTask::Run() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ImportCompletedTask::OnStateUpdatedToFinished(bool success) {
+void ImportCompletedTask::OnStateUpdatedToFinished(bool row_was_updated) {
   // No further action can be done if the database fails to be updated. The
   // cleanup task should eventually kick in to clean this up.
-  if (success)
+  if (row_was_updated)
     prefetch_dispatcher_->SchedulePipelineProcessing();
+
+  prefetch_importer_->MarkImportCompleted(offline_id_);
 
   TaskComplete();
 }

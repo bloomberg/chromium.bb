@@ -108,8 +108,8 @@ class PrefetchDispatcher {
   virtual void DownloadCompleted(
       const PrefetchDownloadResult& download_result) = 0;
 
-  // Called when an archive import is completed successfully or fails.
-  virtual void ImportCompleted(int64_t offline_id, bool success) = 0;
+  // Called when an archive is imported successfully or fails.
+  virtual void ArchiveImported(int64_t offline_id, bool success) = 0;
 };
 
 }  // namespace offline_pages

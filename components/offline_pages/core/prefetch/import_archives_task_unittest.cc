@@ -51,6 +51,10 @@ class TestPrefetchImporter : public PrefetchImporter {
   void ImportArchive(const PrefetchArchiveInfo& archive) override {
     archives_.push_back(archive);
   }
+  void MarkImportCompleted(int64_t offline_id) override {}
+  std::set<int64_t> GetOutstandingImports() const override {
+    return std::set<int64_t>();
+  }
 
   const std::vector<PrefetchArchiveInfo>& archives() const { return archives_; }
 

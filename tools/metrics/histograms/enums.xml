@@ -29720,6 +29720,10 @@ Called by update_net_error_codes.py.-->
   <int value="1500" label="MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED">
     The clock was set backwards too far in time.
   </int>
+  <int value="1600" label="IMPORT_LOST">
+    The importing was not completed probably due to that Chrome was killed
+    before it was done.
+  </int>
 </enum>
 
 <enum name="OfflinePrefetchItemState">

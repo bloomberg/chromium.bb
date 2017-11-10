@@ -65,7 +65,8 @@ void TestPrefetchDispatcher::DownloadCompleted(
   download_results.push_back(download_result);
 }
 
-void TestPrefetchDispatcher::ImportCompleted(int64_t offline_id, bool success) {
+void TestPrefetchDispatcher::ArchiveImported(int64_t offline_id, bool success) {
+  import_results.push_back(std::make_pair(offline_id, success));
 }
 
 }  // namespace offline_pages

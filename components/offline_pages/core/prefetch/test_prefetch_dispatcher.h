@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -40,13 +41,14 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
           success_downloads) override;
   void DownloadCompleted(
       const PrefetchDownloadResult& download_result) override;
-  void ImportCompleted(int64_t offline_id, bool success) override;
+  void ArchiveImported(int64_t offline_id, bool success) override;
 
   std::string latest_name_space;
   std::vector<PrefetchURL> latest_prefetch_urls;
   std::unique_ptr<ClientId> last_removed_client_id;
   std::vector<std::string> operation_list;
   std::vector<PrefetchDownloadResult> download_results;
+  std::vector<std::pair<int64_t, bool>> import_results;
 
   int cleanup_downloads_count = 0;
   int new_suggestions_count = 0;
