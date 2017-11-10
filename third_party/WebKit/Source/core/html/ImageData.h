@@ -106,7 +106,7 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
                                   DOMArrayBufferView*,
                                   const ImageDataColorSettings* = nullptr);
 
-  ImageData* CropRect(const IntRect&, bool = false);
+  ImageData* CropRect(const IntRect&, bool flip_y = false);
 
   ImageDataStorageFormat GetImageDataStorageFormat();
   static CanvasColorSpace GetCanvasColorSpace(const String&);

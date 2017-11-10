@@ -427,7 +427,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   virtual void SimplifiedNormalFlowLayout();
 
  public:
-  virtual void ComputeOverflow(LayoutUnit old_client_after_edge, bool = false);
+  virtual void ComputeOverflow(LayoutUnit old_client_after_edge,
+                               bool recompute_floats = false);
 
  protected:
   virtual void AddOverflowFromChildren();

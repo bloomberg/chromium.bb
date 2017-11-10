@@ -75,8 +75,8 @@ class FontDataCache {
   FontDataCache() {}
 
   scoped_refptr<SimpleFontData> Get(const FontPlatformData*,
-                             ShouldRetain = kRetain,
-                             bool = false);
+                                    ShouldRetain = kRetain,
+                                    bool subpixel_ascent_descent = false);
   bool Contains(const FontPlatformData*) const;
   void Release(const SimpleFontData*);
 
