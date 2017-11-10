@@ -469,6 +469,7 @@ libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c",
 ]
+libvpx_srcs_x86_avx512 = []
 libvpx_srcs_x86_64 = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.h",
@@ -940,6 +941,7 @@ libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/variance_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c",
 ]
+libvpx_srcs_x86_64_avx512 = []
 libvpx_srcs_arm = [
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.c",
   "//third_party/libvpx/source/libvpx/vp8/common/alloccommon.h",
