@@ -257,20 +257,8 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
 TEST_F(UiSceneManagerTest, VoiceSearchHiddenInIncognito) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  model_->experimental_features_enabled = true;
   EXPECT_TRUE(OnBeginFrame());
   EXPECT_TRUE(IsVisible(kVoiceSearchButton));
-
-  SetIncognito(true);
-  EXPECT_TRUE(OnBeginFrame());
-  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
-
-  // If experimental VR features are disabled, then we should never show the
-  // button, regardless of whether or not we're in incognito mode.
-  model_->experimental_features_enabled = false;
-  SetIncognito(false);
-  EXPECT_TRUE(OnBeginFrame());
-  EXPECT_FALSE(IsVisible(kVoiceSearchButton));
 
   SetIncognito(true);
   EXPECT_TRUE(OnBeginFrame());
@@ -279,7 +267,6 @@ TEST_F(UiSceneManagerTest, VoiceSearchHiddenInIncognito) {
 
 TEST_F(UiSceneManagerTest, VoiceSearchHiddenWhenCantAskForPermission) {
   MakeManager(kNotInCct, kNotInWebVr);
-  model_->experimental_features_enabled = true;
 
   model_->speech.has_or_can_request_audio_permission = true;
   EXPECT_TRUE(OnBeginFrame());
