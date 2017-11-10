@@ -923,12 +923,12 @@ void HttpCache::DoneWithEntry(ActiveEntry* entry,
 
 void HttpCache::WritersDoomEntryRestartTransactions(ActiveEntry* entry) {
   DCHECK(!entry->writers->IsEmpty());
-  DCHECK(!entry->writers->ShouldKeepEntry());
   ProcessEntryFailure(entry);
 }
 
 void HttpCache::WritersDoneWritingToEntry(ActiveEntry* entry,
                                           bool success,
+                                          bool should_keep_entry,
                                           TransactionSet make_readers) {
   // Impacts the queued transactions in one of the following ways:
   // - restart them but do not doom the entry since entry can be saved in
@@ -941,7 +941,7 @@ void HttpCache::WritersDoneWritingToEntry(ActiveEntry* entry,
   DCHECK(entry->writers->IsEmpty());
   DCHECK(success || make_readers.empty());
 
-  if (!success && entry->writers->ShouldKeepEntry()) {
+  if (!success && should_keep_entry) {
     // Restart already validated transactions so that they are able to read
     // the truncated status of the entry.
     RestartHeadersPhaseTransactions(entry);

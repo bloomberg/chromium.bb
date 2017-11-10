@@ -137,11 +137,6 @@ class NET_EXPORT_PRIVATE HttpCache::Writers {
   // Returns if response is only being read from the network.
   bool network_read_only() const { return network_read_only_; }
 
-  // Returns true if entry is worth keeping in its current state. It may be
-  // truncated or complete. Returns false if entry is incomplete and cannot be
-  // resumed, it will not be marked as truncated and will not be preserved.
-  bool ShouldKeepEntry() const { return should_keep_entry_; }
-
   int GetTransactionsCount() const { return all_writers_.size(); }
 
  private:

@@ -169,7 +169,8 @@ void HttpCache::Writers::RemoveTransaction(Transaction* transaction,
     }
   }
 
-  cache_->WritersDoneWritingToEntry(entry_, success, TransactionSet());
+  cache_->WritersDoneWritingToEntry(entry_, success, should_keep_entry_,
+                                    TransactionSet());
 }
 
 void HttpCache::Writers::EraseTransaction(Transaction* transaction,
@@ -628,9 +629,9 @@ void HttpCache::Writers::SetIdleWritersFailState(int result) {
 void HttpCache::Writers::SetCacheCallback(bool success,
                                           const TransactionSet& make_readers) {
   DCHECK(!cache_callback_);
-  cache_callback_ =
-      base::BindOnce(&HttpCache::WritersDoneWritingToEntry,
-                     cache_->GetWeakPtr(), entry_, success, make_readers);
+  cache_callback_ = base::BindOnce(&HttpCache::WritersDoneWritingToEntry,
+                                   cache_->GetWeakPtr(), entry_, success,
+                                   should_keep_entry_, make_readers);
 }
 
 void HttpCache::Writers::OnIOComplete(int result) {
