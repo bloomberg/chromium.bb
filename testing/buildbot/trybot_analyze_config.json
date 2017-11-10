@@ -23,6 +23,7 @@
       "infra/scripts/.*",
       "DEPS",
       "testing/buildbot/.*json",
+      "testing/buildbot/.*pyl",
       "testing/scripts/.*",
       "testing/test_env.py",
       "third_party/android_platform/development/scripts/.*",
