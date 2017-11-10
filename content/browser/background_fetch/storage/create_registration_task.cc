@@ -70,8 +70,22 @@ void CreateRegistrationTask::DidGetUniqueId(
 }
 
 void CreateRegistrationTask::StoreRegistration() {
+  DCHECK(!registration_);
+  DCHECK(!registration_id_.origin().unique());
+
   int64_t registration_creation_microseconds_since_unix_epoch =
       (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+
+  registration_ = std::make_unique<BackgroundFetchRegistration>();
+  registration_->developer_id = registration_id_.developer_id();
+  registration_->unique_id = registration_id_.unique_id();
+  registration_->icons = options_.icons;
+  registration_->title = options_.title;
+  // TODO(crbug.com/774054): Uploads are not yet supported.
+  registration_->upload_total = 0;
+  registration_->uploaded = 0;
+  registration_->download_total = options_.download_total;
+  registration_->downloaded = 0;
 
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
@@ -79,10 +93,12 @@ void CreateRegistrationTask::StoreRegistration() {
   // First serialize per-registration (as opposed to per-request) data.
   // TODO(crbug.com/757760): Serialize BackgroundFetchOptions as part of this.
   proto::BackgroundFetchRegistration registration_proto;
-  registration_proto.set_unique_id(registration_id_.unique_id());
-  registration_proto.set_developer_id(registration_id_.developer_id());
+  registration_proto.set_unique_id(registration_->unique_id);
+  registration_proto.set_developer_id(registration_->developer_id);
+  registration_proto.set_origin(registration_id_.origin().Serialize());
   registration_proto.set_creation_microseconds_since_unix_epoch(
       registration_creation_microseconds_since_unix_epoch);
+  // TODO(delphick): Write options to the proto.
   std::string serialized_registration_proto;
   if (!registration_proto.SerializeToString(&serialized_registration_proto)) {
     // TODO(crbug.com/780025): Log failures to UMA.
@@ -117,6 +133,8 @@ void CreateRegistrationTask::StoreRegistration() {
 
 void CreateRegistrationTask::DidStoreRegistration(
     ServiceWorkerStatusCode status) {
+  DCHECK(registration_);
+
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -129,19 +147,8 @@ void CreateRegistrationTask::DidStoreRegistration(
       return;
   }
 
-  auto registration = std::make_unique<BackgroundFetchRegistration>();
-  registration->developer_id = registration_id_.developer_id();
-  registration->unique_id = registration_id_.unique_id();
-  registration->icons = options_.icons;
-  registration->title = options_.title;
-  // TODO(crbug.com/774054): Uploads are not yet supported.
-  registration->upload_total = 0;
-  registration->uploaded = 0;
-  registration->download_total = options_.download_total;
-  registration->downloaded = 0;
-
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
-                           std::move(registration));
+                           std::move(registration_));
   Finished();  // Destroys |this|.
 }
 }  // namespace background_fetch

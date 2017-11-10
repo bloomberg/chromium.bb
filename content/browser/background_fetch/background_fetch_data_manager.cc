@@ -17,6 +17,7 @@
 #include "content/browser/background_fetch/storage/create_registration_task.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
+#include "content/browser/background_fetch/storage/get_registration_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -244,6 +245,14 @@ void BackgroundFetchDataManager::GetRegistration(
     const std::string& developer_id,
     GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<background_fetch::GetRegistrationTask>(
+        this, service_worker_registration_id, origin, developer_id,
+        std::move(callback)));
+    return;
+  }
 
   auto developer_id_tuple =
       std::make_tuple(service_worker_registration_id, origin, developer_id);

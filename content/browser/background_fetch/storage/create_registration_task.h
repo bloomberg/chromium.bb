@@ -48,6 +48,8 @@ class CreateRegistrationTask : public DatabaseTask {
   BackgroundFetchOptions options_;
   CreateRegistrationCallback callback_;
 
+  std::unique_ptr<BackgroundFetchRegistration> registration_;
+
   base::WeakPtrFactory<CreateRegistrationTask> weak_factory_;  // Keep as last.
 
   DISALLOW_COPY_AND_ASSIGN(CreateRegistrationTask);
