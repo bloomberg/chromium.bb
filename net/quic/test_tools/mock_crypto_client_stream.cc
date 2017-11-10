@@ -40,7 +40,9 @@ MockCryptoClientStream::MockCryptoClientStream(
       use_mock_crypter_(use_mock_crypter),
       server_id_(server_id),
       proof_verify_details_(proof_verify_details),
-      config_(config) {}
+      config_(config) {
+  crypto_framer_.set_visitor(this);
+}
 
 MockCryptoClientStream::~MockCryptoClientStream() {}
 
