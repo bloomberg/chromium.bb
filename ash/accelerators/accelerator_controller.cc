@@ -262,13 +262,17 @@ void HandleMoveWindowBetweenDisplays(const ui::Accelerator& accelerator) {
   ui::KeyboardCode key_code = accelerator.key_code();
   DisplayMoveWindowDirection direction;
   if (key_code == ui::VKEY_LEFT) {
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Left_Display"));
     direction = DisplayMoveWindowDirection::kLeft;
   } else if (key_code == ui::VKEY_UP) {
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Above_Display"));
     direction = DisplayMoveWindowDirection::kAbove;
   } else if (key_code == ui::VKEY_RIGHT) {
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Right_Display"));
     direction = DisplayMoveWindowDirection::kRight;
   } else {
     DCHECK(key_code == ui::VKEY_DOWN);
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Below_Display"));
     direction = DisplayMoveWindowDirection::kBelow;
   }
   HandleMoveWindowToDisplay(direction);
