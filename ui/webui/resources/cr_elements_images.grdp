@@ -56,6 +56,9 @@
     <include name="IDR_CR_ELEMENTS_VIDEOCAM_SHUTTER_ICON_SVG"
              file="cr_elements/chromeos/cr_picture/videocam_shutter_icon.svg"
              type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_CELLULAR_0_WITH_X_SVG"
+             file="cr_elements/chromeos/network/cellular_0_with_x.svg"
+             type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
              file="cr_elements/chromeos/network/cellular_0.svg"
              type="BINDATA" />
@@ -78,6 +81,9 @@
              file="cr_elements/chromeos/network/ethernet.svg" type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_VPN_SVG"
              file="cr_elements/chromeos/network/vpn.svg" type="BINDATA" />
+    <include name="IDR_CR_ELEMENTS_WIFI_0_WITH_X_SVG"
+             file="cr_elements/chromeos/network/wifi_0_with_x.svg"
+             type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_WIFI_0_SVG"
              file="cr_elements/chromeos/network/wifi_0.svg" type="BINDATA" />
     <include name="IDR_CR_ELEMENTS_WIFI_1_SVG"
