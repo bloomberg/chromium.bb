@@ -32,7 +32,6 @@ service("ui") {
     ":resources_100",
     ":resources_200",
     ":resources_strings",
-    "//services/ui/ime/test_ime_driver",
     "//services/viz",
   ]
 }
