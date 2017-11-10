@@ -2,7 +2,6 @@ Tests scripts panel file selectors.
 
 
 
-
 ================================================
 Adding first resource:
 Sources:

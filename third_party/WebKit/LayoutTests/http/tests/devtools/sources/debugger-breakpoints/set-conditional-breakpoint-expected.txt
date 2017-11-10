@@ -1,5 +1,3 @@
-CONSOLE MESSAGE: line 18: Done.
-CONSOLE MESSAGE: line 18: Done.
 Tests setting breakpoints.
 
 
@@ -8,9 +6,9 @@ Script source was shown.
 Set timer for test function.
 Script execution paused.
 Call stack:
-    0) testFunction (set-conditional-breakpoint.html:17)
+    0) testFunction (set-breakpoint.html:14)
 Breakpoint sidebar pane 
-set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
+set-breakpoint.html:14  var x = Math.sqrt(10);
 Breakpoint sidebar pane 
 No breakpoints
 Script execution resumed.
@@ -20,7 +18,7 @@ Script source was shown.
 Set timer for test function.
 Test function finished.
 Breakpoint sidebar pane 
-set-conditional-breakpoint.html:17    var x = Math.sqrt(10);
+set-breakpoint.html:14  var x = Math.sqrt(10);
 Breakpoints removed.
 Breakpoint sidebar pane 
 No breakpoints

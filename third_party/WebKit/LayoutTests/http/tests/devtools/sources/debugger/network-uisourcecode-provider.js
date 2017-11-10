@@ -1,39 +1,20 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
-function addIframe()
-{
-    var iframe = document.createElement("iframe");
-    iframe.setAttribute("src", "resources/syntax-error.html");
-    document.body.appendChild(iframe);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function addScript()
-{
-    var script = document.createElement("script");
-    script.setAttribute("src", "resources/script1.js");
-    document.head.appendChild(script);
-}
+(async function() {
+  TestRunner.addResult(`Tests NetworkUISourceCodeProvider class.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function removeStyleSheet()
+      {
+          let css = document.querySelector('link');
+          css.parentNode.removeChild(css);
+          window.getComputedStyle(document.body).color;
+      }
+  `);
 
-function addStyleSheet()
-{
-    var style = document.createElement("link");
-    style.setAttribute("rel", "stylesheet");
-    style.setAttribute("type", "text/css");
-    style.setAttribute("href", "resources/style1.css");
-    document.head.appendChild(style);
-    window._style = style;
-}
-
-function removeStyleSheet()
-{
-    window._style.parentNode.removeChild(window._style);
-    window._style = null;
-}
-
-function test() {
   var target = TestRunner.mainTarget;
 
   function uiSourceCodeURL(uiSourceCode) {
@@ -46,7 +27,8 @@ function test() {
         uiSourceCode.contentType() === Common.resourceTypes.Document)
       TestRunner.addResult(
           'UISourceCode is content script: ' +
-          (uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts));
+          (uiSourceCode.project().type() ===
+           Workspace.projectTypes.ContentScripts));
     uiSourceCode.requestContent().then(didRequestContent);
 
     function didRequestContent(content, contentEncoded) {
@@ -59,8 +41,9 @@ function test() {
   TestRunner.runTestSuite([
     function testDocumentResource(next) {
       TestRunner.addResult('Creating resource.');
-      TestRunner.waitForUISourceCode('resources/syntax-error.html').then(uiSourceCodeAdded);
-      TestRunner.evaluateInPage('addIframe()');
+      TestRunner.waitForUISourceCode('resources/syntax-error.html')
+          .then(uiSourceCodeAdded);
+      TestRunner.addIframe('resources/syntax-error.html');
 
       function uiSourceCodeAdded(uiSourceCode) {
         dumpUISourceCode(uiSourceCode, next);
@@ -69,7 +52,8 @@ function test() {
 
     function testVMScript(next) {
       TestRunner.addResult('Creating script.');
-      TestRunner.evaluateInPage('var foo=1;\n//# sourceURL=foo.js\n');
+      TestRunner.evaluateInPageAnonymously(
+          'var foo=1;\n//# sourceURL=foo.js\n');
       TestRunner.waitForUISourceCode('foo.js').then(uiSourceCodeAdded);
 
       function uiSourceCodeAdded(uiSourceCode) {
@@ -79,8 +63,8 @@ function test() {
 
     function testScriptResource(next) {
       TestRunner.addResult('Creating script resource.');
-      TestRunner.evaluateInPage('addScript()');
       TestRunner.waitForUISourceCode('script1.js').then(uiSourceCodeAdded);
+      TestRunner.addScriptTag('resources/script1.js');
 
       function uiSourceCodeAdded(uiSourceCode) {
         dumpUISourceCode(uiSourceCode, next);
@@ -90,24 +74,20 @@ function test() {
     function testRemoveStyleSheetFromModel(next) {
       TestRunner.waitForUISourceCode('style1.css').then(uiSourceCodeAdded);
       TestRunner.addResult('Creating stylesheet resource.');
-      TestRunner.evaluateInPage(`addStyleSheet()`);
+      TestRunner.addStylesheetTag('resources/style1.css');
 
       function uiSourceCodeAdded(uiSourceCode) {
-        TestRunner.addResult('Added uiSourceCode: ' + uiSourceCodeURL(uiSourceCode));
+        TestRunner.addResult(
+            'Added uiSourceCode: ' + uiSourceCodeURL(uiSourceCode));
         TestRunner.waitForUISourceCodeRemoved(uiSourceCodeRemoved);
         TestRunner.evaluateInPage('removeStyleSheet()');
       }
 
       function uiSourceCodeRemoved(uiSourceCode) {
-        TestRunner.addResult('Removed uiSourceCode: ' + uiSourceCodeURL(uiSourceCode));
+        TestRunner.addResult(
+            'Removed uiSourceCode: ' + uiSourceCodeURL(uiSourceCode));
         next();
       }
     }
   ]);
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests NetworkUISourceCodeProvider class.</p>
-</body>
-</html>
+})();

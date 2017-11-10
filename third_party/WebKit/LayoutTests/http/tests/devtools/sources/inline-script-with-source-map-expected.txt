@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 8: 42
 Tests inline source with source map.
 Set breakpoint at console.log line
 Call function and dump stack trace
