@@ -77,7 +77,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   void SetEnabled(bool enabled) override;
   void SetContentHint(
       blink::WebMediaStreamTrack::ContentHintType content_hint) override;
-  void StopAndNotify(base::OnceClosure callback) override;
+  void Stop() override;
   void GetSettings(blink::WebMediaStreamTrack::Settings& settings) override;
 
   void OnReadyStateChanged(blink::WebMediaStreamSource::ReadyState state);
