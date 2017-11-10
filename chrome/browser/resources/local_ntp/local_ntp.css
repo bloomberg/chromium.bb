@@ -108,6 +108,16 @@ body.hide-fakebox-logo #fakebox {
   visibility: visible;
 }
 
+#logo-doodle-button,
+#logo-doodle-iframe {
+  display: none;
+}
+
+#logo-doodle-button.show-logo,
+#logo-doodle-iframe.show-logo {
+  display: block;
+}
+
 #logo-default.fade,
 #logo-doodle.fade {
   transition: opacity 130ms, visibility 130ms;
@@ -156,8 +166,15 @@ body.alternate-logo #logo-non-white {
   margin: 0 auto;
 }
 
-.non-white-bg #logo-doodle-button {
+.non-white-bg #logo-doodle-button,
+.non-white-bg #logo-doodle-iframe {
   display: none;
+}
+
+#logo-doodle-iframe {
+  border: 0;
+  height: 228px;
+  width: 100%;
 }
 
 #logo-doodle-notifier {

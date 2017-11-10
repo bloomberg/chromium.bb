@@ -19,13 +19,14 @@
         <div id="logo">
           <!-- The logo that is displayed in the absence of a doodle. -->
           <div id="logo-default" title="Google"></div>
-          <!-- Logo displayed on light themes. Doesn't fade. -->
-          <div id="logo-dark" title="Google"></div>
+          <!-- Logo displayed when theme prevents doodles. Doesn't fade. -->
+          <div id="logo-non-white" title="Google"></div>
           <!-- A doodle, if any: its link and image. -->
           <div id="logo-doodle">
             <button id="logo-doodle-button">
               <img id="logo-doodle-image"></img>
             </button>
+            <iframe id="logo-doodle-iframe"></iframe>
             <!-- A spinner, visible on dark-themed NTPs, prompting the doodle -->
             <button id="logo-doodle-notifier">
               <div class="outer ball0"><div class="inner"></div></div>

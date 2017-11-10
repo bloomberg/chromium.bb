@@ -90,6 +90,7 @@ var IDS = {
   LOGO_DEFAULT: 'logo-default',
   LOGO_DOODLE: 'logo-doodle',
   LOGO_DOODLE_IMAGE: 'logo-doodle-image',
+  LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   NOTIFICATION: 'mv-notice',
@@ -100,6 +101,18 @@ var IDS = {
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
   UNDO_LINK: 'mv-undo'
+};
+
+
+/**
+ * Counterpart of search_provider_logos::LogoType.
+ * @enum {string}
+ * @const
+ */
+var LOGO_TYPE = {
+  SIMPLE: 'SIMPLE',
+  ANIMATED: 'ANIMATED',
+  INTERACTIVE: 'INTERACTIVE',
 };
 
 
@@ -657,6 +670,9 @@ function init() {
       // Got a (possibly empty) ddl object. Show logo or doodle.
       showLogoOrDoodle(
           ddl.image || null, ddl.metadata || null, /*fromCache=*/true);
+      // Never hide an interactive doodle if it was already shown.
+      if (ddl.metadata && (ddl.metadata.type === LOGO_TYPE.INTERACTIVE))
+        return;
       // If we got a valid ddl object (from cache), load a fresh one.
       if (ddl.v !== null) {
         loadDoodle(ddl.v, function(ddl) {
@@ -706,6 +722,7 @@ function init() {
   // Create the most visited iframe.
   var iframe = document.createElement('iframe');
   iframe.id = IDS.TILES_IFRAME;
+  iframe.name = IDS.TILES_IFRAME;
   iframe.src = 'chrome-search://most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);
 
@@ -803,25 +820,40 @@ var isDoodleCurrentlyVisible = function(image, metadata) {
     return haveDoodle === wantDoodle;
 
   // Have a visible doodle and a query doodle. Test that they match.
-  var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-  return (logoDoodleImage.src === image) ||
-      (logoDoodleImage.src === metadata.animatedUrl);
+  if (metadata.type === LOGO_TYPE.INTERACTIVE) {
+    var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
+    return logoDoodleIframe.classList.contains(CLASSES.SHOW_LOGO) &&
+        (logoDoodleIframe.src === metadata.fullPageUrl);
+  } else {
+    var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+    var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
+    return logoDoodleButton.classList.contains(CLASSES.SHOW_LOGO) &&
+        ((logoDoodleImage.src === image) ||
+         (logoDoodleImage.src === metadata.animatedUrl));
+  }
 };
 
 
 var showLogoOrDoodle = function(image, metadata, fromCache) {
   if (metadata !== null) {
     applyDoodleMetadata(metadata);
-    $(IDS.LOGO_DOODLE_IMAGE).src = image;
-    $(IDS.LOGO_DOODLE).classList.add(CLASSES.SHOW_LOGO);
+    if (metadata.type === LOGO_TYPE.INTERACTIVE) {
+      $(IDS.LOGO_DOODLE_BUTTON).classList.remove(CLASSES.SHOW_LOGO);
+      $(IDS.LOGO_DOODLE_IFRAME).classList.add(CLASSES.SHOW_LOGO);
+    } else {
+      $(IDS.LOGO_DOODLE_IMAGE).src = image;
+      $(IDS.LOGO_DOODLE_BUTTON).classList.add(CLASSES.SHOW_LOGO);
+      $(IDS.LOGO_DOODLE_IFRAME).classList.remove(CLASSES.SHOW_LOGO);
 
-    var isCta = !!metadata.animatedUrl;
-    var eventType = isCta ?
-        (fromCache ? LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
-                     LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
-        (fromCache ? LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
-                     LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FRESH);
-    ntpApiHandle.logEvent(eventType);
+      var isCta = !!metadata.animatedUrl;
+      var eventType = isCta ?
+          (fromCache ? LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
+                       LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :
+          (fromCache ? LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FROM_CACHE :
+                       LOG_TYPE.NTP_STATIC_LOGO_SHOWN_FRESH);
+      ntpApiHandle.logEvent(eventType);
+    }
+    $(IDS.LOGO_DOODLE).classList.add(CLASSES.SHOW_LOGO);
   } else {
     $(IDS.LOGO_DEFAULT).classList.add(CLASSES.SHOW_LOGO);
   }
@@ -904,24 +936,34 @@ var onDoodleFadeOutComplete = function(e) {
 var applyDoodleMetadata = function(metadata) {
   var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
   var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+  var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
 
-  logoDoodleImage.title = metadata.altText;
-
-  if (metadata.animatedUrl) {
-    logoDoodleButton.onclick = function(e) {
-      ntpApiHandle.logEvent(LOG_TYPE.NTP_CTA_LOGO_CLICKED);
-      e.preventDefault();
-      logoDoodleImage.src = metadata.animatedUrl;
+  switch (metadata.type) {
+    case LOGO_TYPE.SIMPLE:
+      logoDoodleImage.title = metadata.altText;
       logoDoodleButton.onclick = function() {
-        ntpApiHandle.logEvent(LOG_TYPE.NTP_ANIMATED_LOGO_CLICKED);
+        ntpApiHandle.logEvent(LOG_TYPE.NTP_STATIC_LOGO_CLICKED);
         window.location = metadata.onClickUrl;
       };
-    };
-  } else {
-    logoDoodleButton.onclick = function() {
-      ntpApiHandle.logEvent(LOG_TYPE.NTP_STATIC_LOGO_CLICKED);
-      window.location = metadata.onClickUrl;
-    };
+      break;
+
+    case LOGO_TYPE.ANIMATED:
+      logoDoodleImage.title = metadata.altText;
+      logoDoodleButton.onclick = function(e) {
+        ntpApiHandle.logEvent(LOG_TYPE.NTP_CTA_LOGO_CLICKED);
+        e.preventDefault();
+        logoDoodleImage.src = metadata.animatedUrl;
+        logoDoodleButton.onclick = function() {
+          ntpApiHandle.logEvent(LOG_TYPE.NTP_ANIMATED_LOGO_CLICKED);
+          window.location = metadata.onClickUrl;
+        };
+      };
+      break;
+
+    case LOGO_TYPE.INTERACTIVE:
+      logoDoodleIframe.title = metadata.altText;
+      logoDoodleIframe.src = metadata.fullPageUrl;
+      break;
   }
 };
 
