@@ -459,28 +459,6 @@
 -SafeBrowsingServiceTest.Prefetch
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_AllowCreatingNewWindows
 -SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
--SBNavigationObserverBrowserTest.CompleteReferrerChain
--SBNavigationObserverBrowserTest.DirectDownload
--SBNavigationObserverBrowserTest.DirectDownloadNoReferrer
--SBNavigationObserverBrowserTest.DirectDownloadNoReferrerTargetBlank
--SBNavigationObserverBrowserTest.IPListDedup
--SBNavigationObserverBrowserTest.MixRedirects
--SBNavigationObserverBrowserTest.MultiMetaRefreshRedirects
--SBNavigationObserverBrowserTest.NewTabDownload
--SBNavigationObserverBrowserTest.NewTabDownloadWithDataURL
--SBNavigationObserverBrowserTest.PPAPIDownloadWithoutUserGestureOnHostingFrame
--SBNavigationObserverBrowserTest.PPAPIDownloadWithUserGestureOnHostingFrame
--SBNavigationObserverBrowserTest.ReferrerAttributionWithinTwoUserGestures
--SBNavigationObserverBrowserTest.RetargetingAndServerRedirect
--SBNavigationObserverBrowserTest.ServerRedirect
--SBNavigationObserverBrowserTest.SingleMetaRefreshRedirect
--SBNavigationObserverBrowserTest.SingleMetaRefreshRedirectTargetBlank
--SBNavigationObserverBrowserTest.SubFrameDirectDownload
--SBNavigationObserverBrowserTest.SubFrameNewTabDownload
--SBNavigationObserverBrowserTest.TwoServerRedirects
--SBNavigationObserverBrowserTest.TypeInURLDownload
--SBNavigationObserverBrowserTest.VerifySanitizeReferrerChain
--SBNavigationObserverBrowserTest.WindowLocationRedirect
 -SecurityStateTabHelperTest.BrokenHTTPS
 -SecurityStateTabHelperTest.MixedContentWithSHA1Cert
 -SecurityStateTabHelperTest.PasswordSecurityLevelDowngradedOnFilesystemUrl
@@ -977,16 +955,6 @@
 
 # crbug.com/779160 BrowserView::GetBrowserViewForBrowser(browser())->tabstrip()->new_tab_button()->new_tab_promo() is nullptr.
 -NewTabTrackerBrowserTest.TestShowPromo
-
-# crbug.com/779181 The |ip_map->at(test_server_host)| is empty.
--SBNavigationObserverBrowserTest.AddIPMapping
-
-# crbug.com/779197 The |state_| is actualy CANCELLED_INTERNAL.
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
-
-# URL with fragments is not correctly handled.
--SBNavigationObserverBrowserTest.DownloadAttributionWithURLFragment
 
 # crbug.com/779210 NOTREACHED() reached at SaveFileManager::OnSaveURL().
 -SavePageBrowserTest.SavePageBrowserTest_NonMHTML
