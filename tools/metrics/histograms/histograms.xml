@@ -1865,6 +1865,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Apps.AppLauncherPromo" enum="AppLauncherPromo">
+  <obsolete>
+    Deprecated 11/2017 in issue 600915 with the removal of app list on platforms
+    other than Chrome OS.
+  </obsolete>
   <owner>mad@chromium.org</owner>
   <summary>Interactions with the App Launcher promo dialog.</summary>
 </histogram>

@@ -9,7 +9,6 @@
 #include <set>
 #include <string>
 
-#include "apps/metrics_names.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -130,12 +129,6 @@ class AppLauncherHandler
   // page_index].
   void HandleGenerateAppForLink(const base::ListValue* args);
 
-  // Handles "stopShowingAppLauncherPromo" message with unused |args|.
-  void HandleStopShowingAppLauncherPromo(const base::ListValue* args);
-
-  // Handles "learnMore" message with unused |args|.
-  void HandleOnLearnMore(const base::ListValue* args);
-
   // Handles "pageSelected" message with |args| containing [page_index].
   void HandlePageSelected(const base::ListValue* args);
 
@@ -175,8 +168,6 @@ class AppLauncherHandler
   void SetAppToBeHighlighted();
 
   void OnExtensionPreferenceChanged();
-
-  void OnLocalStatePreferenceChanged();
 
   // Called when an app is removed (unloaded or uninstalled). Updates the UI.
   void AppRemoved(const extensions::Extension* extension, bool is_uninstall);

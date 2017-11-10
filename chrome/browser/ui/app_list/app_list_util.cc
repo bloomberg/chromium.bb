@@ -20,8 +20,3 @@ bool IsAppLauncherEnabled() {
   return prefs && prefs->GetBoolean(prefs::kAppLauncherHasBeenEnabled);
 #endif
 }
-
-bool ShouldShowAppLauncherPromo() {
-  // Never promote. TODO(tapted): Delete this function and supporting code.
-  return false;
-}

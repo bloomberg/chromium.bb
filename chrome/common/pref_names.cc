@@ -2107,9 +2107,6 @@ const char kAppListEnableTime[] = "app_list.when_enabled";
 // Keeps local state of app list while sync service is not available.
 const char kAppListLocalState[] = "app_list.local_state";
 
-// A boolean identifying if we should show the app launcher promo or not.
-const char kShowAppLauncherPromo[] = "app_launcher.show_promo";
-
 // A dictionary that tracks the Drive app to Chrome app mapping. The key is
 // a Drive app id and the value is the corresponding Chrome app id. The pref
 // is unsynable and used to track local mappings only.
