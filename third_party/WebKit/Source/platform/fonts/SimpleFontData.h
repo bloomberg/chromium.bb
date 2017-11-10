@@ -59,13 +59,6 @@ struct GlyphData {
 
 class FontDescription;
 
-enum FontDataVariant {
-  kAutoVariant,
-  kNormalVariant,
-  kSmallCapsVariant,
-  kEmphasisMarkVariant
-};
-
 class PLATFORM_EXPORT SimpleFontData : public FontData {
  public:
   // Used to create platform fonts.
@@ -86,26 +79,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
   scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
-
-  scoped_refptr<SimpleFontData> VariantFontData(const FontDescription& description,
-                                         FontDataVariant variant) const {
-    switch (variant) {
-      case kSmallCapsVariant:
-        return SmallCapsFontData(description);
-      case kEmphasisMarkVariant:
-        return EmphasisMarkFontData(description);
-      case kAutoVariant:
-      case kNormalVariant:
-        break;
-    }
-    NOTREACHED();
-    return const_cast<SimpleFontData*>(this);
-  }
-
   scoped_refptr<SimpleFontData> VerticalRightOrientationFontData() const;
-  scoped_refptr<SimpleFontData> UprightOrientationFontData() const;
 
-  bool HasVerticalGlyphs() const { return has_vertical_glyphs_; }
   bool IsTextOrientationFallback() const {
     return is_text_orientation_fallback_;
   }
@@ -165,11 +140,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     return custom_font_data_ && custom_font_data_->ShouldSkipDrawing();
   }
 
-  const GlyphData& MissingGlyphData() const { return missing_glyph_data_; }
-  void SetMissingGlyphData(const GlyphData& glyph_data) {
-    missing_glyph_data_ = glyph_data;
-  }
-
   CustomFontData* GetCustomFontData() const { return custom_font_data_.get(); }
 
   unsigned VisualOverflowInflationForAscent() const {
@@ -211,8 +181,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   float space_width_;
   Glyph zero_glyph_;
 
-  GlyphData missing_glyph_data_;
-
   struct DerivedFontData {
     USING_FAST_MALLOC(DerivedFontData);
     WTF_MAKE_NONCOPYABLE(DerivedFontData);
@@ -223,7 +191,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     scoped_refptr<SimpleFontData> small_caps;
     scoped_refptr<SimpleFontData> emphasis_mark;
     scoped_refptr<SimpleFontData> vertical_right_orientation;
-    scoped_refptr<SimpleFontData> upright_orientation;
 
    private:
     DerivedFontData() {}
@@ -234,7 +201,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   scoped_refptr<CustomFontData> custom_font_data_;
 
   unsigned is_text_orientation_fallback_ : 1;
-  unsigned has_vertical_glyphs_ : 1;
 
   // These are set to non-zero when ascent or descent is rounded or shifted
   // to be smaller than the actual ascent or descent. When calculating visual

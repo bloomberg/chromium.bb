@@ -70,15 +70,12 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
       vertical_data_(nullptr),
       custom_font_data_(std::move(custom_data)),
       is_text_orientation_fallback_(is_text_orientation_fallback),
-      has_vertical_glyphs_(false),
       visual_overflow_inflation_for_ascent_(0),
       visual_overflow_inflation_for_descent_(0) {
   PlatformInit(subpixel_ascent_descent);
   PlatformGlyphInit();
   if (platform_data.IsVerticalAnyUpright() && !is_text_orientation_fallback) {
     vertical_data_ = platform_data.VerticalData();
-    has_vertical_glyphs_ =
-        vertical_data_.get() && vertical_data_->HasVerticalMetrics();
   }
 }
 
@@ -87,7 +84,6 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
     : platform_data_(platform_data),
       vertical_data_(std::move(vertical_data)),
       is_text_orientation_fallback_(false),
-      has_vertical_glyphs_(false),
       visual_overflow_inflation_for_ascent_(0),
       visual_overflow_inflation_for_descent_(0) {}
 
@@ -224,15 +220,6 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   font_metrics_.SetLineSpacing(lroundf(ascent) + lroundf(descent) +
                                lroundf(line_gap));
 
-  if (PlatformData().IsVerticalAnyUpright() && !IsTextOrientationFallback()) {
-    static const uint32_t kVheaTag = SkSetFourByteTag('v', 'h', 'e', 'a');
-    static const uint32_t kVorgTag = SkSetFourByteTag('V', 'O', 'R', 'G');
-    size_t vhea_size = face->getTableSize(kVheaTag);
-    size_t vorg_size = face->getTableSize(kVorgTag);
-    if ((vhea_size > 0) || (vorg_size > 0))
-      has_vertical_glyphs_ = true;
-  }
-
 // In WebKit/WebCore/platform/graphics/SimpleFontData.cpp, m_spaceWidth is
 // calculated for us, but we need to calculate m_maxCharWidth and
 // m_avgCharWidth in order for text entry widgets to be sized correctly.
@@ -281,8 +268,6 @@ void SimpleFontData::PlatformGlyphInit() {
     space_glyph_ = 0;
     space_width_ = 0;
     zero_glyph_ = 0;
-    missing_glyph_data_.font_data = this;
-    missing_glyph_data_.glyph = 0;
     return;
   }
 
@@ -294,9 +279,6 @@ void SimpleFontData::PlatformGlyphInit() {
   space_width_ = width;
   zero_glyph_ = GlyphForCharacter('0');
   font_metrics_.SetZeroWidth(WidthForGlyph(zero_glyph_));
-
-  missing_glyph_data_.font_data = this;
-  missing_glyph_data_.glyph = 0;
 }
 
 const SimpleFontData* SimpleFontData::FontDataForCharacter(UChar32) const {
@@ -329,16 +311,6 @@ scoped_refptr<SimpleFontData> SimpleFontData::VerticalRightOrientationFontData()
   return derived_font_data_->vertical_right_orientation;
 }
 
-scoped_refptr<SimpleFontData> SimpleFontData::UprightOrientationFontData() const {
-  if (!derived_font_data_)
-    derived_font_data_ = DerivedFontData::Create();
-  if (!derived_font_data_->upright_orientation)
-    derived_font_data_->upright_orientation =
-        Create(platform_data_,
-               IsCustomFont() ? CustomFontData::Create() : nullptr, true);
-  return derived_font_data_->upright_orientation;
-}
-
 scoped_refptr<SimpleFontData> SimpleFontData::SmallCapsFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
@@ -365,8 +337,7 @@ bool SimpleFontData::IsTextOrientationFallbackOf(
     const SimpleFontData* font_data) const {
   if (!IsTextOrientationFallback() || !font_data->derived_font_data_)
     return false;
-  return font_data->derived_font_data_->upright_orientation == this ||
-         font_data->derived_font_data_->vertical_right_orientation == this;
+  return font_data->derived_font_data_->vertical_right_orientation == this;
 }
 
 std::unique_ptr<SimpleFontData::DerivedFontData>
