@@ -32849,6 +32849,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.CdmFileIO.ReadTime" units="ms">
+  <owner>media-dev@chromium.org</owner>
+  <summary>The actual time spent by the CDM reading a file.</summary>
+</histogram>
+
+<histogram name="Media.EME.CdmFileIO.WriteTime" units="ms">
+  <owner>media-dev@chromium.org</owner>
+  <summary>The actual time spent by the CDM writing a file.</summary>
+</histogram>
+
 <histogram name="Media.EME.CdmHostVerificationStatus"
     enum="CdmHostVerificationStatus">
   <owner>media-dev@chromium.org</owner>
