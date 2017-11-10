@@ -907,10 +907,10 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       destination = destination_;
       ssl_config = &server_ssl_config_;
     }
-    int rv = quic_request_.Request(
-        destination, quic_version_, request_info_.privacy_mode,
-        ssl_config->GetCertVerifyFlags(), url, request_info_.method, net_log_,
-        &net_error_details_, io_callback_);
+    int rv = quic_request_.Request(destination, quic_version_,
+                                   request_info_.privacy_mode,
+                                   ssl_config->GetCertVerifyFlags(), url,
+                                   net_log_, &net_error_details_, io_callback_);
     if (rv == OK) {
       using_existing_quic_session_ = true;
     } else {

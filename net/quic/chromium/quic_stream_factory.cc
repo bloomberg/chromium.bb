@@ -591,7 +591,6 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
                                PrivacyMode privacy_mode,
                                int cert_verify_flags,
                                const GURL& url,
-                               QuicStringPiece method,
                                const NetLogWithSource& net_log,
                                NetErrorDetails* net_error_details,
                                const CompletionCallback& callback) {
@@ -604,7 +603,7 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
   server_id_ = QuicServerId(HostPortPair::FromURL(url), privacy_mode);
 
   int rv = factory_->Create(server_id_, destination, quic_version,
-                            cert_verify_flags, url, method, net_log, this);
+                            cert_verify_flags, url, net_log, this);
   if (rv == ERR_IO_PENDING) {
     net_log_ = net_log;
     callback_ = callback;
@@ -851,7 +850,6 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
                               QuicTransportVersion quic_version,
                               int cert_verify_flags,
                               const GURL& url,
-                              QuicStringPiece method,
                               const NetLogWithSource& net_log,
                               QuicStreamRequest* request) {
   if (clock_skew_detector_.ClockSkewDetected(base::TimeTicks::Now(),
