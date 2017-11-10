@@ -30,7 +30,12 @@ class ChromeExpectCTReporter
     : public net::TransportSecurityState::ExpectCTReporter,
       net::URLRequest::Delegate {
  public:
-  explicit ChromeExpectCTReporter(net::URLRequestContext* request_context);
+  // Constructs a ChromeExpectCTReporter that sends reports with the given
+  // |request_context|. |success_callback| is called whenever a report sends
+  // successfully, and |failure_callback| whenever a report fails to send.
+  ChromeExpectCTReporter(net::URLRequestContext* request_context,
+                         const base::Closure& success_callback,
+                         const base::Closure& failure_callback);
   ~ChromeExpectCTReporter() override;
 
   // net::ExpectCTReporter:
@@ -82,9 +87,18 @@ class ChromeExpectCTReporter
   void SendPreflight(const GURL& report_uri,
                      const std::string& serialized_report);
 
+  // When a report fails to send, this method records an UMA histogram and calls
+  // |failure_callback_|.
+  void OnReportFailure(const GURL& report_uri,
+                       int net_error,
+                       int http_response_code);
+
   std::unique_ptr<net::ReportSender> report_sender_;
 
   net::URLRequestContext* request_context_;
+
+  base::Closure success_callback_;
+  base::Closure failure_callback_;
 
   // The CORS preflight requests, with corresponding report information, that
   // are currently in-flight. Entries in this map are deleted when the

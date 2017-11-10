@@ -422,6 +422,79 @@ QueryExpectCTTask.prototype = {
 };
 
 /**
+ * A Task to retrieve a test report-uri.
+ * @extends {NetInternalsTest.Task}
+ */
+function GetTestReportURITask() {
+  NetInternalsTest.Task.call(this);
+}
+
+GetTestReportURITask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  /**
+   * Sets |NetInternals.callback|, and sends the request to the browser process.
+   */
+  start: function() {
+    NetInternalsTest.setCallback(this.onReportURIReceived_.bind(this));
+    chrome.send('setUpTestReportURI');
+  },
+
+  /**
+   * Saves the received report-uri and completes the task.
+   * @param {string} reportURI Report URI received from the browser process.
+   */
+  onReportURIReceived_: function (reportURI) {
+    this.reportURI_ = reportURI;
+    this.onTaskDone();
+  },
+
+  /**
+   * Returns the saved report-uri received from the browser process.
+   */
+  reportURI: function () {
+    return this.reportURI_;
+  }
+};
+
+/**
+ * A Task to send a test Expect-CT report and wait for the result.
+ * @param {getTestReportURITask} GetTestReportURITask The task that retrieved a
+                                 test report-uri.
+ * @extends {NetInternalsTest.Task}
+ */
+function SendTestReportTask(getTestReportURITask) {
+  this.reportURITask_ = getTestReportURITask;
+  NetInternalsTest.Task.call(this);
+}
+
+SendTestReportTask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  /**
+   * Sends the test report and starts watching for the result.
+   */
+  start: function() {
+    g_browser.addExpectCTObserver(this);
+    $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_INPUT_ID).value =
+        this.reportURITask_.reportURI();
+    $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_SUBMIT_ID).click();
+  },
+
+  /**
+   * Callback from the BrowserBridge.  Checks that |result| indicates success
+   * and completes the task.
+   * @param {object} result Results from the query.
+   */
+  onExpectCTTestReportResult: function(result) {
+    expectEquals('success', result);
+    // Start the next task asynchronously, so it can add another observer
+    // without getting the current result.
+    window.setTimeout(this.onTaskDone.bind(this), 1);
+  },
+};
+
+/**
  * Checks that querying a domain that was never added fails.
  */
 TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryNotFound', function() {
@@ -684,6 +757,21 @@ TEST_F(
       taskQueue.addTask(
           new DeleteTask('somewhereelse.com', QueryResultType.NOT_FOUND));
       taskQueue.run(true);
+    });
+
+
+/**
+ * Checks that sending an Expect-CT test report succeeds.
+ */
+TEST_F(
+    'NetInternalsTest',
+    'netInternalsDomainSecurityPolicyViewExpectCTTestReport', function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var getReportURITask = new GetTestReportURITask();
+      taskQueue.addTask(getReportURITask);
+      taskQueue.addTask(new SendTestReportTask(getReportURITask));
+      taskQueue.run();
     });
 
 })();  // Anonymous namespace

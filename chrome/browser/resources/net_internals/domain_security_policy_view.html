@@ -79,6 +79,19 @@
     id=expect-ct-view-query-output>
   </div>
 
+  <h4>Send test Expect-CT report</h4>
+
+  <p>Trigger a test report to the given report URI. The report will contain a
+    hostname of "expect-ct-report.test" and dummy data in other fields.</p>
+  <form id=expect-ct-view-test-report-form>
+    <label>Report URI: <input type=text id=expect-ct-view-test-report-uri
+                              type="url"></label>
+    <input type=submit value="Send" id=expect-ct-view-test-report-submit>
+  </form>
+  <div style="margin-top: 1em; margin-left: 2em;"
+    id=expect-ct-view-test-report-output>
+  </div>
+
   <h3>Delete domain security policies</h3>
 
   <p>

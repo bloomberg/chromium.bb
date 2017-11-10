@@ -184,6 +184,10 @@ var BrowserBridge = (function() {
       this.send('expectCTAdd', [domain, report_uri, enforce]);
     },
 
+    sendExpectCTTestReport: function(report_uri) {
+      this.send('expectCTTestReport', [report_uri]);
+    },
+
     sendGetSessionNetworkStats: function() {
       this.send('getSessionNetworkStats');
     },
@@ -329,6 +333,11 @@ var BrowserBridge = (function() {
     receivedExpectCTResult: function(info) {
       for (var i = 0; i < this.expectCTObservers_.length; i++)
         this.expectCTObservers_[i].onExpectCTQueryResult(info);
+    },
+
+    receivedExpectCTTestReportResult: function(result) {
+      for (var i = 0; i < this.expectCTObservers_.length; i++)
+        this.expectCTObservers_[i].onExpectCTTestReportResult(result);
     },
 
     receivedONCFileParse: function(error) {

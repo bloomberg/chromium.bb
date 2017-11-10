@@ -48,6 +48,10 @@ var DomainSecurityPolicyView = (function() {
         $(DomainSecurityPolicyView.QUERY_EXPECT_CT_INPUT_ID);
     this.queryExpectCTOutputDiv_ =
         $(DomainSecurityPolicyView.QUERY_EXPECT_CT_OUTPUT_DIV_ID);
+    this.testExpectCTReportInput_ =
+        $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_INPUT_ID);
+    this.testExpectCTOutputDiv_ =
+        $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_OUTPUT_DIV_ID);
 
     var form = $(DomainSecurityPolicyView.DELETE_FORM_ID);
     form.addEventListener('submit', this.onSubmitDelete_.bind(this), false);
@@ -59,13 +63,17 @@ var DomainSecurityPolicyView = (function() {
     form.addEventListener(
         'submit', this.onSubmitHSTSPKPQuery_.bind(this), false);
 
-    var form = $(DomainSecurityPolicyView.ADD_EXPECT_CT_FORM_ID);
+    form = $(DomainSecurityPolicyView.ADD_EXPECT_CT_FORM_ID);
     form.addEventListener(
         'submit', this.onSubmitExpectCTAdd_.bind(this), false);
 
     form = $(DomainSecurityPolicyView.QUERY_EXPECT_CT_FORM_ID);
     form.addEventListener(
         'submit', this.onSubmitExpectCTQuery_.bind(this), false);
+
+    form = $(DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_FORM_ID);
+    form.addEventListener(
+        'submit', this.onSubmitExpectCTTestReport_.bind(this), false);
 
     g_browser.addHSTSObserver(this);
     g_browser.addExpectCTObserver(this);
@@ -116,6 +124,14 @@ var DomainSecurityPolicyView = (function() {
       'expect-ct-view-query-submit';
   DomainSecurityPolicyView.QUERY_EXPECT_CT_OUTPUT_DIV_ID =
       'expect-ct-view-query-output';
+  DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_INPUT_ID =
+      'expect-ct-view-test-report-uri';
+  DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_FORM_ID =
+      'expect-ct-view-test-report-form';
+  DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_SUBMIT_ID =
+      'expect-ct-view-test-report-submit';
+  DomainSecurityPolicyView.TEST_REPORT_EXPECT_CT_OUTPUT_DIV_ID =
+      'expect-ct-view-test-report-output';
 
   cr.addSingletonGetter(DomainSecurityPolicyView);
 
@@ -285,7 +301,21 @@ var DomainSecurityPolicyView = (function() {
       }
 
       yellowFade(this.queryExpectCTOutputDiv_);
-    }
+    },
+
+    onSubmitExpectCTTestReport_: function(event) {
+      g_browser.sendExpectCTTestReport(this.testExpectCTReportInput_.value);
+      event.preventDefault();
+    },
+
+    onExpectCTTestReportResult: function(result) {
+      if (result == 'success') {
+        addTextNode(this.testExpectCTOutputDiv_, 'Test report succeeded');
+      } else {
+        addTextNode(this.testExpectCTOutputDiv_, 'Test report failed');
+      }
+      yellowFade(this.testExpectCTOutputDiv_);
+    },
 
   };
 

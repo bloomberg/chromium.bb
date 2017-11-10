@@ -260,7 +260,7 @@ void CheckExpectCTReport(const std::string& serialized_report,
 class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   TestExpectCTNetworkDelegate()
-      : url_request_destroyed_callback_(base::Bind(&base::DoNothing)) {}
+      : url_request_destroyed_callback_(base::Closure()) {}
 
   void set_url_request_destroyed_callback(const base::Closure& callback) {
     url_request_destroyed_callback_ = callback;
@@ -432,7 +432,7 @@ TEST_F(ChromeExpectCTReporterTest, FeatureDisabled) {
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -482,7 +482,7 @@ TEST_F(ChromeExpectCTReporterTest, EmptyReportURI) {
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -502,7 +502,7 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
-  ChromeExpectCTReporter reporter(context());
+  ChromeExpectCTReporter reporter(context(), base::Closure(), base::Closure());
 
   net::SSLInfo ssl_info;
   ssl_info.cert =
@@ -523,6 +523,28 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
   histograms.ExpectBucketCount(kSendHistogramName, true, 1);
 }
 
+// Test that if a report fails to send, the failure callback is called.
+TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailureCallback) {
+  base::RunLoop run_loop;
+  ChromeExpectCTReporter reporter(context(), base::Closure(),
+                                  run_loop.QuitClosure());
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  net::HostPortPair host_port("example.test", 443);
+  GURL report_uri(
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
+
+  SendReport(&reporter, host_port, report_uri, base::Time(), ssl_info);
+
+  // Wait to make sure the failure callback is called.
+  run_loop.Run();
+}
+
 // Test that a sent report has the right format.
 TEST_F(ChromeExpectCTReporterTest, SendReport) {
   base::HistogramTester histograms;
@@ -531,7 +553,7 @@ TEST_F(ChromeExpectCTReporterTest, SendReport) {
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -622,13 +644,55 @@ TEST_F(ChromeExpectCTReporterTest, SendReport) {
   histograms.ExpectBucketCount(kSendHistogramName, true, 1);
 }
 
+// Test that the success callback is called when a report is successfully sent.
+TEST_F(ChromeExpectCTReporterTest, SendReportSuccessCallback) {
+  base::RunLoop run_loop;
+
+  net::TestURLRequestContext context;
+  ChromeExpectCTReporter reporter(&context, run_loop.QuitClosure(),
+                                  base::Closure());
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  ssl_info.unverified_cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "localhost_cert.pem");
+
+  // The particular value of the log ID doesn't matter; it just has to be the
+  // correct length.
+  const unsigned char kTestLogId[] = {
+      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
+  const std::string log_id(reinterpret_cast<const char*>(kTestLogId),
+                           sizeof(kTestLogId));
+  MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                       log_id, "extensions1", "signature1", base::Time::Now(),
+                       net::ct::SCT_STATUS_LOG_UNKNOWN,
+                       &ssl_info.signed_certificate_timestamps);
+
+  base::Time expiration;
+  ASSERT_TRUE(
+      base::Time::FromUTCExploded({2017, 1, 0, 1, 0, 0, 0, 0}, &expiration));
+
+  const GURL report_uri = test_server().GetURL("/report");
+
+  reporter.OnExpectCTFailed(net::HostPortPair::FromURL(report_uri), report_uri,
+                            expiration, ssl_info.cert.get(),
+                            ssl_info.unverified_cert.get(),
+                            ssl_info.signed_certificate_timestamps);
+
+  // Wait to check that the success callback is run.
+  run_loop.Run();
+}
+
 // Test that report preflight responses can contain whitespace.
 TEST_F(ChromeExpectCTReporterTest, PreflightContainsWhitespace) {
   SetCORSHeaderWithWhitespace();
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -658,7 +722,7 @@ TEST_F(ChromeExpectCTReporterTest, PreflightContainsWhitespace) {
 TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -682,7 +746,7 @@ TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
 TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseMethods) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -706,7 +770,7 @@ TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseMethods) {
 TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseHeaders) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context);
+  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());

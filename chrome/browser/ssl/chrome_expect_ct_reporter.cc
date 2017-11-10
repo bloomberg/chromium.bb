@@ -116,14 +116,6 @@ void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
   list->Append(std::move(list_item));
 }
 
-// Records an UMA histogram of the net errors when Expect CT reports
-// fail to send.
-void RecordUMAOnFailure(const GURL& report_uri,
-                        int net_error,
-                        int http_response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure2", -net_error);
-}
-
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("chrome_expect_ct_reporter", R"(
         semantics {
@@ -152,10 +144,14 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 }  // namespace
 
 ChromeExpectCTReporter::ChromeExpectCTReporter(
-    net::URLRequestContext* request_context)
+    net::URLRequestContext* request_context,
+    const base::Closure& success_callback,
+    const base::Closure& failure_callback)
     : report_sender_(
           new net::ReportSender(request_context, kTrafficAnnotation)),
-      request_context_(request_context) {}
+      request_context_(request_context),
+      success_callback_(success_callback),
+      failure_callback_(failure_callback) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 
@@ -218,8 +214,8 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
   // - Access-Control-Allow-Headers: Content-Type
 
   if (response_code == -1 || response_code < 200 || response_code > 299) {
-    RecordUMAOnFailure(preflight->report_uri, request->status().error(),
-                       response_code);
+    OnReportFailure(preflight->report_uri, request->status().error(),
+                    response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.
     return;
@@ -229,8 +225,8 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
       !HasHeaderValues(request, "Access-Control-Allow-Methods", {"post"}) ||
       !HasHeaderValues(request, "Access-Control-Allow-Headers",
                        {"content-type"})) {
-    RecordUMAOnFailure(preflight->report_uri, request->status().error(),
-                       response_code);
+    OnReportFailure(preflight->report_uri, request->status().error(),
+                    response_code);
     inflight_preflights_.erase(request);
     // Do not use |preflight| after this point, since it has been erased above.
     return;
@@ -238,8 +234,12 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
 
   report_sender_->Send(preflight->report_uri,
                        "application/expect-ct-report+json; charset=utf-8",
-                       preflight->serialized_report, base::Callback<void()>(),
-                       base::Bind(RecordUMAOnFailure));
+                       preflight->serialized_report, success_callback_,
+                       // Since |this| owns the |report_sender_|, it's safe to
+                       // use base::Unretained here: |report_sender_| will be
+                       // destroyed before |this|.
+                       base::Bind(&ChromeExpectCTReporter::OnReportFailure,
+                                  base::Unretained(this)));
   inflight_preflights_.erase(request);
 }
 
@@ -280,4 +280,12 @@ void ChromeExpectCTReporter::SendPreflight(
   inflight_preflights_[raw_request] = base::MakeUnique<PreflightInProgress>(
       std::move(url_request), serialized_report, report_uri);
   raw_request->Start();
+}
+
+void ChromeExpectCTReporter::OnReportFailure(const GURL& report_uri,
+                                             int net_error,
+                                             int http_response_code) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.ExpectCTReportFailure2", -net_error);
+  if (!failure_callback_.is_null())
+    failure_callback_.Run();
 }
