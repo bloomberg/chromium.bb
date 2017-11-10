@@ -85,6 +85,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedProfiles();
 
  private:
+  friend class VaapiVideoDecodeAcceleratorTest;
   class VaapiH264Accelerator;
   class VaapiVP8Accelerator;
   class VaapiVP9Accelerator;
