@@ -65,6 +65,7 @@ source_set("unit_tests") {
     ":ssl",
     "//components/security_state/core",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ssl:features",
     "//ios/chrome/browser/web:test_support",
     "//ios/testing:ios_test_support",
     "//ios/web",
