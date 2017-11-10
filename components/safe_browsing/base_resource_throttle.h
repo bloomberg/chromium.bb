@@ -169,6 +169,12 @@ class BaseResourceThrottle
   const content::ResourceType resource_type_;
   NetEventLogger net_event_logger_;
 
+  // The total delay caused by SafeBrowsing deferring the resource load.
+  base::TimeDelta total_delay_;
+  // Whether the interstitial page has been shown and therefore user action has
+  // been involved.
+  bool user_action_involved_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(BaseResourceThrottle);
 };
 

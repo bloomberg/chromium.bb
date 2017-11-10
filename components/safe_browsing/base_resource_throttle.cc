@@ -65,6 +65,9 @@ BaseResourceThrottle::~BaseResourceThrottle() {
         NetLogEventType::SAFE_BROWSING_CHECKING_URL, "result",
         "request_canceled");
   }
+
+  if (!user_action_involved_)
+    LogNoUserActionResourceLoadingDelay(total_delay_);
 }
 
 void BaseResourceThrottle::WillStartRequest(bool* defer) {
@@ -177,6 +180,7 @@ void BaseResourceThrottle::OnCheckBrowseUrlResult(
   state_ = STATE_NONE;
 
   if (defer_state_ != DEFERRED_NONE) {
+    total_delay_ += base::TimeTicks::Now() - defer_start_time_;
     net_event_logger_.EndNetLogEvent(NetLogEventType::SAFE_BROWSING_DEFERRED,
                                      nullptr, nullptr);
   }
@@ -212,6 +216,8 @@ void BaseResourceThrottle::OnCheckBrowseUrlResult(
 
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Unsafe", resource_type_,
                             content::RESOURCE_TYPE_LAST_TYPE);
+
+  user_action_involved_ = true;
 
   security_interstitials::UnsafeResource resource;
   resource.url = url;
@@ -341,6 +347,7 @@ void BaseResourceThrottle::ResumeRequest() {
     if (!CheckUrl(unchecked_redirect_url_)) {
       // We're now waiting for the unchecked_redirect_url_.
       defer_state_ = DEFERRED_REDIRECT;
+      defer_start_time_ = base::TimeTicks::Now();
       resume = false;
       net_event_logger_.BeginNetLogEvent(
           NetLogEventType::SAFE_BROWSING_DEFERRED, unchecked_redirect_url_,

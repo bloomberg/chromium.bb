@@ -71603,6 +71603,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SB2.NoUserActionResourceLoadingDelay" units="ms">
+  <owner>yzshen@chromium.org</owner>
+  <summary>
+    The total delay, in milliseconds, caused by SafeBrowsing for a resource
+    load, if the SafeBrowsing interstitial page is not shown and therefore no
+    user action is involved. At most one value is reported for each resource
+    load. If SafeBrowsing causes delays at different stages of a load, the sum
+    of all the delays will be reported.
+  </summary>
+</histogram>
+
 <histogram name="SB2.OldDatabaseKilobytes" units="KB">
   <obsolete>
     Deprecated 7/2014. No longer generated.
