@@ -6704,94 +6704,9 @@ I don't think this site should be blocked!
             Relaunch and Powerwash
           </message>
         </if>
-        <if expr="chromeos">
-          <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing Chrome OS">
-            The faster, simpler, and more secure computer
-          </message>
-        </if>
-        <if expr="not chromeos">
-          <message name="IDS_ABOUT_PRODUCT_DESCRIPTION" desc="The text label describing the Chrome browser">
-            A web browser built for speed, simplicity, and security
-          </message>
-        </if>
-        <message name="IDS_ABOUT_PRODUCT_VERSION" desc="The text label describing the version of the browser">
-          Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph>
-        </message>
       </if> <!-- not is_android -->
 
       <if expr="chromeos">
-        <message name="IDS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS bios firmware version.">
-          Firmware
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
-          Channel
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_STABLE" desc="The stable option in the channel select.">
-          Stable
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_BETA" desc="The beta option in the channel select.">
-          Beta
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
-          Developer - unstable
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT_DISCLAIMER" desc="The disclaimer shown to warn the user when the development channel is used.">
-          This channel is not suitable for use on your primary device and certain features and apps might break.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGED" desc="The message to confirm that channel has changed.">
-          You have switched to the <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE" desc="The stable label in the message about current channel.">
-          stable
-        </message>
-        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_BETA" desc="The beta label in the message about current channel.">
-          beta
-        </message>
-        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL_DEV" desc="The dev label in the message about current channel.">
-          dev
-        </message>
-        <message name="IDS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
-          Currently on <ph name="CHANNEL_NAME">$1<ex>Stable</ex></ph> channel.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_BUTTON" desc="The label for the button for channel change.">
-          Change channel...
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_TITLE" desc="The title of the window for channel change.">
-          Change channel
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_DISALLOWED_MESSAGE" desc="The error message that is displayed when non-owner tries to switch channel.">
-          This setting is enforced by your administrator.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_TITLE" desc="The title for the message that warns user about powerwash.">
-          Powerwash required on next reboot
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_MESSAGE" desc="Message that warns user about powerwash.">
-          This will remove all local users, files, data, and other settings after your next restart. All users will need to sign in again.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_TITLE" desc="The title for the message that notifies user that channel change will be applied later.">
-          Channel change will be applied later.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_DELAYED_CHANGE_MESSAGE" desc="Message that notifies user that channel change will be applied later.">
-          You are changing to a channel with an older version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>. The channel change will be applied when the channel version matches the version currently installed on your device.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_TITLE" desc="The title for the message that warns user about switching to developer (unstable) channel.">
-          Warning: you are switching to developer channel
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_UNSTABLE_MESSAGE" desc="Message that warns user about switching to developer (unstable) channel.">
-          You are updating to an unstable version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> which contains features that are in progress. Crashes and unexpected bugs will occur. Please proceed with caution.
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_POWERWASH_BUTTON" desc="The label for the button for channel switch and powerwash.">
-          Change channel and Powerwash
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CHANGE_BUTTON" desc="The label for the button for channel switch.">
-          Change channel
-        </message>
-        <message name="IDS_ABOUT_PAGE_CHANNEL_CHANGE_PAGE_CANCEL_BUTTON" desc="The label for the button for cancelling channel change.">
-          Cancel
-        </message>
-        <message name="IDS_ARC_VERSION_LABEL" desc="Label for ARC version">
-          ARC Version
-        </message>
         <message name="IDS_ARC_LABEL" desc="Label for ARC">
           ARC
         </message>
@@ -9871,20 +9786,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         </message>
       </if>
 
-      <!-- Panel windows -->
-      <message name="IDS_PANEL_CLOSE_TOOLTIP"
-               desc="Text for the tooltip on panel window close button.">
-        Close
-      </message>
-      <message name="IDS_PANEL_MINIMIZE_TOOLTIP"
-               desc="Text for the tooltip on panel window minimize button.">
-        Collapse
-      </message>
-      <message name="IDS_PANEL_RESTORE_TOOLTIP"
-             desc="Text for the tooltip on panel window restore button.">
-        Expand
-      </message>
-
       <!-- High-contrast mode. -->
       <message name="IDS_HIGH_CONTRAST_NOTIFICATION"
                desc="Text that explains that the user is using Windows High-Contrast mode, so they may be interested in a high-contrast extension or a dark theme. Note to translators: this is the name of a feature in Windows, so please try to find the correct name of that feature in your region.">
@@ -10004,18 +9905,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         </message>
         <message name="IDS_SEARCH_BOX_HINT_FULLSCREEN" desc="Hint text for the search box in fullscreen app list window.">
           Search your device, apps, web...
-        </message>
-        <message name="IDS_APP_LIST_STATE_PEEKING" desc="Accessibility announcement for the app list when only suggested apps are shown.">
-        Launcher, suggested apps
-        </message>
-        <message name="IDS_APP_LIST_STATE_HALF" desc="Accessibility announcement for the app list when search results are shown.">
-        Launcher, search results
-        </message>
-        <message name="IDS_APP_LIST_STATE_FULLSCREEN_ALL_APPS" desc="Accessibility announcement for the app list when all apps are shown in fullscreen.">
-        Launcher, all apps
-        </message>
-        <message name="IDS_APP_LIST_STATE_FULLSCREEN_SEARCH" desc="Accessibility announcement for the app list when search results are shown in fullscreen.">
-        Launcher, fullscreen search results
         </message>
         <message name="IDS_SEARCH_BOX_HOTWORD_HINT" desc="Hint text for the search box in app list window when the hotword is enabled.">
           Search, or say "Ok Google"
