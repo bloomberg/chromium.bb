@@ -322,14 +322,16 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
                     fromAccessPoint:accessPoint];
 
   AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
-  [button setIsActive:[[menuController_ window] isVisible]];
+  // When the user clicks a second time on the button, the menu closes.
+  [button setIsActive:[self isMenuOpened]];
 }
 
-- (void)bubbleWillClose:(NSNotification*)notif {
+// AvatarBaseController overrides:
+- (void)bubbleWillClose {
   AvatarButton* button = base::mac::ObjCCastStrict<AvatarButton>(button_);
   [button setIsActive:NO];
   [self updateAvatarButtonAndLayoutParent:NO];
-  [super bubbleWillClose:notif];
+  [super bubbleWillClose];
 }
 
 @end

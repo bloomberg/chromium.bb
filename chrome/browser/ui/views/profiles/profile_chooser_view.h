@@ -48,11 +48,16 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // call this function when the button is clicked and if the bubble isn't
   // showing it will appear while if it is showing, nothing will happen here and
   // the existing bubble will auto-close due to focus loss.
+  // There are 2 ways to position the Bubble, if |anchor_view| is set, then
+  // |parent_window| and |anchor_rect| are ignored. Otherwise, |parent_window|
+  // and |anchor_rect| have to be set.
   static void ShowBubble(
       profiles::BubbleViewMode view_mode,
       const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::View* anchor_view,
+      gfx::NativeView parent_window,
+      const gfx::Rect& anchor_rect,
       Browser* browser,
       bool is_source_keyboard);
   static bool IsShowing();

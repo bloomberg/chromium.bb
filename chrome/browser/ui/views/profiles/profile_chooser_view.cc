@@ -375,6 +375,8 @@ void ProfileChooserView::ShowBubble(
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point,
     views::View* anchor_view,
+    gfx::NativeView parent_window,
+    const gfx::Rect& anchor_rect,
     Browser* browser,
     bool is_source_keyboard) {
   if (IsShowing())
@@ -383,6 +385,11 @@ void ProfileChooserView::ShowBubble(
   profile_bubble_ =
       new ProfileChooserView(anchor_view, browser, view_mode,
                              manage_accounts_params.service_type, access_point);
+  if (!anchor_view) {
+    DCHECK(parent_window);
+    profile_bubble_->SetAnchorRect(anchor_rect);
+    profile_bubble_->set_parent_window(parent_window);
+  }
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(profile_bubble_);
   profile_bubble_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
