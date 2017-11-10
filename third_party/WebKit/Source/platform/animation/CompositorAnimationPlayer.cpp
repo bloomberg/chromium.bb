@@ -18,14 +18,11 @@ std::unique_ptr<CompositorAnimationPlayer> CompositorAnimationPlayer::Create() {
 }
 
 std::unique_ptr<CompositorAnimationPlayer>
-CompositorAnimationPlayer::CreateWorkletPlayer(
-    const String& name,
-    std::unique_ptr<CompositorScrollTimeline> scroll_timeline) {
+CompositorAnimationPlayer::CreateWorkletPlayer(const String& name) {
   return std::make_unique<CompositorAnimationPlayer>(
       cc::WorkletAnimationPlayer::Create(
           cc::AnimationIdProvider::NextPlayerId(),
-          std::string(name.Ascii().data(), name.length()),
-          std::move(scroll_timeline)));
+          std::string(name.Ascii().data(), name.length())));
 }
 
 CompositorAnimationPlayer::CompositorAnimationPlayer(
