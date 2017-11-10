@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -21,16 +22,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
-
-namespace {
-
-WebContents* GetWebContents(int render_process_id, int render_frame_id) {
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return WebContents::FromRenderFrameHost(rfh);
-}
-
-}  // anonymous namespace
 
 ServiceWorkerRegistrationHandle::ServiceWorkerRegistrationHandle(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -359,7 +350,8 @@ bool ServiceWorkerRegistrationHandle::CanServeRegistrationObjectHostMethods(
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration_->pattern(), provider_host_->topmost_frame_url(),
           dispatcher_host_->resource_context(),
-          base::Bind(&GetWebContents, provider_host_->process_id(),
+          base::Bind(&WebContentsImpl::FromRenderFrameHostID,
+                     provider_host_->process_id(),
                      provider_host_->frame_id()))) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,

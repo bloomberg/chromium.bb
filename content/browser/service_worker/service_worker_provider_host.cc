@@ -26,6 +26,7 @@
 #include "content/browser/service_worker/service_worker_script_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -119,12 +120,6 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
     return;
   }
   context->RemoveProviderHost(process_id, provider_id);
-}
-
-WebContents* GetWebContents(int render_process_id, int render_frame_id) {
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return WebContents::FromRenderFrameHost(rfh);
 }
 
 void GetInterfaceImpl(const std::string& interface_name,
@@ -1240,7 +1235,8 @@ bool ServiceWorkerProviderHost::CanServeContainerHostMethods(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           scope, topmost_frame_url(), dispatcher_host_->resource_context(),
-          base::Bind(&GetWebContents, render_process_id_, frame_id()))) {
+          base::Bind(&WebContentsImpl::FromRenderFrameHostID,
+                     render_process_id_, frame_id()))) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
         std::string(error_prefix) +
