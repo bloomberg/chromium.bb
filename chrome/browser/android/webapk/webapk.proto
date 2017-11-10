@@ -89,8 +89,9 @@ message WebAppManifest {
   optional string display_mode = 10;
   optional string theme_color = 11;
   optional string background_color = 12;
+  repeated ShareTarget share_targets = 17;
 
-  reserved 3, 7, 8, 13, 14;
+  reserved 3, 7, 8, 13 to 16;
 }
 
 message Image {
@@ -115,4 +116,10 @@ message Image {
   repeated Usage usages = 8;
 
   reserved 2, 3, 4, 7;
+}
+
+message ShareTarget {
+  // The URL template that contains placeholders to be replaced with shared
+  // data.
+  optional string url_template = 1;
 }
