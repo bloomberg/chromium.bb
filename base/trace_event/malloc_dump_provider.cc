@@ -197,6 +197,12 @@ MallocDumpProvider::~MallocDumpProvider() {}
 // the current process.
 bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
                                       ProcessMemoryDump* pmd) {
+  {
+    base::AutoLock auto_lock(emit_metrics_on_memory_dump_lock_);
+    if (!emit_metrics_on_memory_dump_)
+      return true;
+  }
+
   size_t total_virtual_size = 0;
   size_t resident_size = 0;
   size_t allocated_objects_size = 0;
@@ -365,6 +371,16 @@ void MallocDumpProvider::RemoveAllocation(void* address) {
   if (!allocation_register_.is_enabled())
     return;
   allocation_register_.Remove(address);
+}
+
+void MallocDumpProvider::EnableMetrics() {
+  base::AutoLock auto_lock(emit_metrics_on_memory_dump_lock_);
+  emit_metrics_on_memory_dump_ = true;
+}
+
+void MallocDumpProvider::DisableMetrics() {
+  base::AutoLock auto_lock(emit_metrics_on_memory_dump_lock_);
+  emit_metrics_on_memory_dump_ = false;
 }
 
 }  // namespace trace_event
