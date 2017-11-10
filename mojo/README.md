@@ -79,9 +79,9 @@ C API.
 
 ## High-Level Bindings APIs
 Typically developers do not use raw message pipe I/O directly, but instead
-define some set of interfaces which are used to generate code that message pipe
-usage feel like a more idiomatic method-calling interface in the target
-language of choice. This is the bindings layer.
+define some set of interfaces which are used to generate code that resembles
+an idiomatic method-calling interface in the target language of choice. This is
+the bindings layer.
 
 ### Mojom IDL and Bindings Generator
 Interfaces are defined using the [**Mojom IDL**](/mojo/public/tools/bindings),
