@@ -385,11 +385,6 @@ source_set("util_test") {
     "win/session_end_watcher_test.cc",
   ]
 
-  if (is_win && is_asan && is_component_build) {
-    # TODO(crbug.com/782454): Re-enable these once Windows ASan is fixed.
-    sources -= [ "stdlib/string_number_conversion_test.cc" ]
-  }
-
   if (is_mac) {
     # mach/ are not globally filtered.
     sources += [
