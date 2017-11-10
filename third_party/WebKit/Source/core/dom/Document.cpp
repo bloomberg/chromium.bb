@@ -5920,32 +5920,30 @@ Color Document::ThemeColor() const {
   return Color();
 }
 
-template <typename MatchFn>
-static HTMLLinkElement* GetLinkElement(const Document* doc, MatchFn match_fn) {
+static HTMLLinkElement* GetLinkElement(const Document* doc,
+                                       bool (*match_fn)(HTMLLinkElement&)) {
   HTMLHeadElement* head = doc->head();
   if (!head)
     return nullptr;
 
   // The first matching link element is used. Others are ignored.
-  for (HTMLLinkElement* link_element =
-           Traversal<HTMLLinkElement>::FirstChild(*head);
-       link_element;
-       link_element = Traversal<HTMLLinkElement>::NextSibling(*link_element)) {
+  for (HTMLLinkElement& link_element :
+       Traversal<HTMLLinkElement>::ChildrenOf(*head)) {
     if (match_fn(link_element))
-      return link_element;
+      return &link_element;
   }
   return nullptr;
 }
 
 HTMLLinkElement* Document::LinkManifest() const {
-  return GetLinkElement(this, [](HTMLLinkElement* link_element) {
-    return link_element->RelAttribute().IsManifest();
+  return GetLinkElement(this, [](HTMLLinkElement& link_element) {
+    return link_element.RelAttribute().IsManifest();
   });
 }
 
 HTMLLinkElement* Document::LinkCanonical() const {
-  return GetLinkElement(this, [](HTMLLinkElement* link_element) {
-    return link_element->RelAttribute().IsCanonical();
+  return GetLinkElement(this, [](HTMLLinkElement& link_element) {
+    return link_element.RelAttribute().IsCanonical();
   });
 }
 
