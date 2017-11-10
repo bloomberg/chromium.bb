@@ -36,6 +36,7 @@ class TabStripModelImpl : public TabStripModel {
   ~TabStripModelImpl() override;
 
   // TabStripModel implementation.
+  TabStripModelExperimental* AsTabStripModelExperimental() override;
   TabStripModelDelegate* delegate() const override;
   void AddObserver(TabStripModelObserver* observer) override;
   void RemoveObserver(TabStripModelObserver* observer) override;

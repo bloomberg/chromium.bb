@@ -560,7 +560,7 @@ class TabStripImpl : public TabStrip,
   std::unique_ptr<TabStripController> controller_;
 
   // The "New Tab" button.
-  NewTabButton* new_tab_button_;
+  NewTabButton* new_tab_button_ = nullptr;
 
   // Ideal bounds of the new tab button.
   gfx::Rect new_tab_button_bounds_;
@@ -577,11 +577,11 @@ class TabStripImpl : public TabStrip,
   // the last tab before closing, so that if we are closing the last tab and
   // need to resize immediately, we'll resize only back to this width, thus
   // once again placing the last tab under the mouse cursor.
-  int available_width_for_tabs_;
+  int available_width_for_tabs_ = -1;
 
   // True if PrepareForCloseAt has been invoked. When true remove animations
   // preserve current tab bounds.
-  bool in_tab_close_;
+  bool in_tab_close_ = false;
 
   // Valid for the lifetime of a drag over us.
   std::unique_ptr<DropInfo> drop_info_;
@@ -606,17 +606,17 @@ class TabStripImpl : public TabStrip,
   gfx::Size last_layout_size_;
 
   // See description above stacked_layout().
-  bool stacked_layout_;
+  bool stacked_layout_ = false;
 
   // Should the layout dynamically adjust?
-  bool adjust_layout_;
+  bool adjust_layout_ = false;
 
   // Only used while in touch mode.
   std::unique_ptr<StackedTabStripLayout> touch_layout_;
 
   // If true the |stacked_layout_| is set to false when the mouse exits the
   // tabstrip (as determined using MouseWatcher).
-  bool reset_to_shrink_on_exit_;
+  bool reset_to_shrink_on_exit_ = false;
 
   // Location of the mouse at the time of the last move.
   gfx::Point last_mouse_move_location_;
@@ -625,7 +625,7 @@ class TabStripImpl : public TabStrip,
   base::TimeTicks last_mouse_move_time_;
 
   // Number of mouse moves.
-  int mouse_move_count_;
+  int mouse_move_count_ = 0;
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.

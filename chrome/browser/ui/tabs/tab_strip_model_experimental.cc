@@ -11,7 +11,9 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_data_experimental.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_experimental_observer.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -99,12 +101,19 @@ void CloseTracker::OnWebContentsDestroyed(DeletionObserver* observer) {
 
 }  // namespace
 
+// TabStripModelExperimental ---------------------------------------------------
+
 TabStripModelExperimental::TabStripModelExperimental(
     TabStripModelDelegate* delegate,
     Profile* profile)
     : delegate_(delegate), profile_(profile), weak_factory_(this) {}
 
 TabStripModelExperimental::~TabStripModelExperimental() {}
+
+TabStripModelExperimental*
+TabStripModelExperimental::AsTabStripModelExperimental() {
+  return this;
+}
 
 TabStripModelDelegate* TabStripModelExperimental::delegate() const {
   return delegate_;
@@ -154,13 +163,18 @@ void TabStripModelExperimental::InsertWebContentsAt(
     int index,
     content::WebContents* contents,
     int add_types) {
-  bool active = (add_types & ADD_ACTIVE) != 0;
-  if (!ContainsIndex(index))
-    index = count();
+  delegate_->WillAddWebContents(contents);
 
-  tabs_.insert(tabs_.begin() + index, contents);
+  bool active = (add_types & ADD_ACTIVE) != 0;
+
+  // Always insert tabs at the end for now.
+  index = count();
+
+  tabs_.emplace(tabs_.begin() + index, contents, this);
   selection_model_.IncrementFrom(index);
 
+  for (auto& observer : exp_observers_)
+    observer.TabInsertedAt(index);
   for (auto& observer : observers_)
     observer.TabInsertedAt(this, contents, index, active);
 
@@ -173,7 +187,8 @@ void TabStripModelExperimental::InsertWebContentsAt(
 
 bool TabStripModelExperimental::CloseWebContentsAt(int index,
                                                    uint32_t close_types) {
-  content::WebContents* closing = tabs_[index];
+  DCHECK(tabs_[index].type() == TabDataExperimental::Type::kSingle);
+  content::WebContents* closing = tabs_[index].contents_;
   InternalCloseTabs(base::span<content::WebContents*>(&closing, 1));
   return true;
 }
@@ -181,14 +196,82 @@ bool TabStripModelExperimental::CloseWebContentsAt(int index,
 content::WebContents* TabStripModelExperimental::ReplaceWebContentsAt(
     int index,
     content::WebContents* new_contents) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  delegate_->WillAddWebContents(new_contents);
+
+  DCHECK(ContainsIndex(index));
+  content::WebContents* old_contents = tabs_[index].contents_;
+
+  tabs_[index].ReplaceContents(new_contents);
+
+  for (auto& observer : observers_)
+    observer.TabReplacedAt(this, old_contents, new_contents, index);
+
+  // When the active WebContents is replaced send out a selection notification
+  // too. We do this as nearly all observers need to treat a replacement of the
+  // selected contents as the selection changing.
+  if (active_index() == index) {
+    for (auto& observer : observers_)
+      observer.ActiveTabChanged(old_contents, new_contents, active_index(),
+                                TabStripModelObserver::CHANGE_REASON_REPLACED);
+  }
+  return old_contents;
 }
 
 content::WebContents* TabStripModelExperimental::DetachWebContentsAt(
     int index) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  CHECK(!in_notify_);
+  DCHECK(ContainsIndex(index));
+
+  content::WebContents* removed_contents = tabs_[index].contents_;
+  bool was_selected = IsTabSelected(index);
+  int next_selected_index = index;
+
+  tabs_.erase(tabs_.begin() + index);
+  if (next_selected_index >= static_cast<int>(tabs_.size()))
+    next_selected_index = static_cast<int>(tabs_.size()) - 1;
+
+  if (empty())
+    closing_all_ = true;
+
+  for (auto& observer : observers_)
+    observer.TabDetachedAt(removed_contents, index);
+
+  if (empty()) {
+    selection_model_.Clear();
+    // TabDetachedAt() might unregister observers, so send |TabStripEmpty()| in
+    // a second pass.
+    for (auto& observer : observers_)
+      observer.TabStripEmpty();
+  } else {
+    int old_active = active_index();
+    selection_model_.DecrementFrom(index);
+    ui::ListSelectionModel old_model;
+    old_model = selection_model_;
+    if (index == old_active) {
+      NotifyIfTabDeactivated(removed_contents);
+      if (!selection_model_.empty()) {
+        // The active tab was removed, but there is still something selected.
+        // Move the active and anchor to the first selected index.
+        selection_model_.set_active(selection_model_.selected_indices()[0]);
+        selection_model_.set_anchor(selection_model_.active());
+      } else {
+        // The active tab was removed and nothing is selected. Reset the
+        // selection and send out notification.
+        selection_model_.SetSelectedIndex(next_selected_index);
+      }
+      NotifyIfActiveTabChanged(removed_contents, Notify::kDefault);
+    }
+
+    // Sending notification in case the detached tab was selected. Using
+    // NotifyIfActiveOrSelectionChanged() here would not guarantee that a
+    // notification is sent even though the tab selection has changed because
+    // |old_model| is stored after calling DecrementFrom().
+    if (was_selected) {
+      for (auto& observer : observers_)
+        observer.TabSelectionChanged(this, old_model);
+    }
+  }
+  return removed_contents;
 }
 
 void TabStripModelExperimental::ActivateTabAt(int index, bool user_gesture) {
@@ -220,14 +303,14 @@ content::WebContents* TabStripModelExperimental::GetActiveWebContents() const {
 content::WebContents* TabStripModelExperimental::GetWebContentsAt(
     int index) const {
   if (ContainsIndex(index))
-    return tabs_[index];
+    return tabs_[index].contents_;
   return nullptr;
 }
 
 int TabStripModelExperimental::GetIndexOfWebContents(
     const content::WebContents* contents) const {
   for (size_t i = 0; i < tabs_.size(); i++) {
-    if (tabs_[i] == contents)
+    if (tabs_[i].contents_ == contents)
       return i;
   }
   return kNoTab;
@@ -236,7 +319,10 @@ int TabStripModelExperimental::GetIndexOfWebContents(
 void TabStripModelExperimental::UpdateWebContentsStateAt(
     int index,
     TabStripModelObserver::TabChangeType change_type) {
-  NOTIMPLEMENTED();
+  const TabDataExperimental& data = tabs_[index];
+
+  for (auto& observer : exp_observers_)
+    observer.TabChangedAt(index, data, change_type);
 }
 
 void TabStripModelExperimental::SetTabNeedsAttentionAt(int index,
@@ -245,8 +331,16 @@ void TabStripModelExperimental::SetTabNeedsAttentionAt(int index,
 }
 
 void TabStripModelExperimental::CloseAllTabs() {
+  if (tabs_.empty())
+    return;  // Don't issue closing callbacks if there are no tabs.
+
   closing_all_ = true;
-  std::vector<content::WebContents*> closing(tabs_);
+
+  std::vector<content::WebContents*> closing;
+  closing.reserve(tabs_.size());
+  for (const auto& tab : tabs_)
+    closing.push_back(tab.contents_);
+
   InternalCloseTabs(closing);
   NOTIMPLEMENTED();
 }
@@ -395,6 +489,21 @@ bool TabStripModelExperimental::WillContextMenuPin(int index) {
   return false;
 }
 
+const TabDataExperimental& TabStripModelExperimental::GetDataAt(
+    int index) const {
+  return tabs_[index];
+}
+
+void TabStripModelExperimental::AddExperimentalObserver(
+    TabStripModelExperimentalObserver* observer) {
+  exp_observers_.AddObserver(observer);
+}
+
+void TabStripModelExperimental::RemoveExperimentalObserver(
+    TabStripModelExperimentalObserver* observer) {
+  exp_observers_.RemoveObserver(observer);
+}
+
 void TabStripModelExperimental::SetSelection(ui::ListSelectionModel new_model,
                                              Notify notify_types) {
   content::WebContents* old_contents = GetActiveWebContents();
@@ -417,7 +526,7 @@ void TabStripModelExperimental::NotifyIfTabDeactivated(
 void TabStripModelExperimental::NotifyIfActiveTabChanged(
     content::WebContents* old_contents,
     Notify notify_types) {
-  content::WebContents* new_contents = tabs_[active_index()];
+  content::WebContents* new_contents = tabs_[active_index()].contents_;
   if (old_contents == new_contents)
     return;
 

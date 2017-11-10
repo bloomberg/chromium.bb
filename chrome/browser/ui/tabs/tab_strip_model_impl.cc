@@ -247,6 +247,10 @@ TabStripModelImpl::~TabStripModelImpl() {
   order_controller_.reset();
 }
 
+TabStripModelExperimental* TabStripModelImpl::AsTabStripModelExperimental() {
+  return nullptr;
+}
+
 TabStripModelDelegate* TabStripModelImpl::delegate() const {
   return delegate_;
 }

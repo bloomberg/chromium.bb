@@ -450,6 +450,8 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 
   set_id(VIEW_ID_TAB);
 
+  // This will cause calls to GetContentsBounds to return only the rectangle
+  // inside the tab shape, rather than to its extents.
   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TAB)));
 
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);

@@ -19,6 +19,7 @@
 
 class Profile;
 class TabStripModelDelegate;
+class TabStripModelExperimental;
 
 namespace content {
 class WebContents;
@@ -117,6 +118,9 @@ class TabStripModel {
 
   TabStripModel() {}
   virtual ~TabStripModel() {}
+
+  // Returns the experimental implementation if there is one, nullptr otherwise.
+  virtual TabStripModelExperimental* AsTabStripModelExperimental() = 0;
 
   // Retrieves the TabStripModelDelegate associated with this TabStripModel.
   virtual TabStripModelDelegate* delegate() const = 0;
