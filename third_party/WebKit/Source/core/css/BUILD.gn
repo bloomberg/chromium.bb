@@ -460,6 +460,8 @@ blink_core_sources("css") {
     "properties/CSSPropertyTransitionPropertyUtils.h",
     "properties/CSSPropertyWebkitBorderWidthUtils.cpp",
     "properties/CSSPropertyWebkitBorderWidthUtils.h",
+    "properties/Longhand.h",
+    "properties/Shorthand.h",
     "properties/longhands/AlignItems.cpp",
     "properties/longhands/AlignOrJustifyContent.cpp",
     "properties/longhands/AlignSelf.cpp",

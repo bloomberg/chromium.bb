@@ -10,6 +10,7 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyOffsetRotateUtils.h"
+#include "core/css/properties/Longhand.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -26,8 +27,8 @@ bool Offset::ParseShorthand(
   // CSSPropertys, and the base CSSProperty::ParseSingleValue contains
   // no functionality.
   const CSSValue* offset_position =
-      GetCSSPropertyOffsetPosition().ParseSingleValue(range, context,
-                                                      CSSParserLocalContext());
+      ToLonghand(GetCSSPropertyOffsetPosition())
+          .ParseSingleValue(range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, context);
   const CSSValue* offset_distance = nullptr;
@@ -44,8 +45,9 @@ bool Offset::ParseShorthand(
   }
   const CSSValue* offset_anchor = nullptr;
   if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-    offset_anchor = GetCSSPropertyOffsetAnchor().ParseSingleValue(
-        range, context, CSSParserLocalContext());
+    offset_anchor =
+        ToLonghand(GetCSSPropertyOffsetAnchor())
+            .ParseSingleValue(range, context, CSSParserLocalContext());
     if (!offset_anchor)
       return false;
   }

@@ -16,15 +16,14 @@
 
 namespace blink {
 
+class ComputedStyle;
 class CSSParserContext;
 class CSSParserLocalContext;
-class CSSPropertyValue;
-class CSSValue;
-class StyleResolverState;
-class StylePropertyShorthand;
 class CSSParserTokenRange;
 class LayoutObject;
-class ComputedStyle;
+class Longhand;
+class Shorthand;
+class StylePropertyShorthand;
 
 enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
@@ -39,24 +38,6 @@ class CSSProperty {
   // property classes yet.
   CSSPropertyID PropertyID() const { return id_; }
 
-  // Parses and consumes a longhand property value from the token range.
-  // Returns nullptr if the input is invalid.
-  virtual const CSSValue* ParseSingleValue(blink::CSSParserTokenRange&,
-                                           const CSSParserContext&,
-                                           const CSSParserLocalContext&) const {
-    return nullptr;
-  }
-  // Parses and consumes entire shorthand value from the token range and adds
-  // all constituent parsed longhand properties to the 'properties' set.
-  // Returns false if the input is invalid.
-  virtual bool ParseShorthand(bool important,
-                              blink::CSSParserTokenRange&,
-                              const CSSParserContext&,
-                              const CSSParserLocalContext&,
-                              HeapVector<CSSPropertyValue, 256>& properties) const {
-    return false;
-  }
-
   virtual bool IsInterpolable() const { return false; }
   virtual bool IsInherited() const { return false; }
   virtual bool IsRepeated() const { return false; }
@@ -68,11 +49,6 @@ class CSSProperty {
   virtual bool SupportsPercentage() const { return false; }
   virtual bool IsProperty() const { return true; }
   virtual bool IsEnabled() const { return true; }
-  virtual void ApplyInitial(StyleResolverState&) const { NOTREACHED(); }
-  virtual void ApplyInherit(StyleResolverState&) const { NOTREACHED(); }
-  virtual void ApplyValue(StyleResolverState&, const CSSValue&) const {
-    NOTREACHED();
-  }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
   virtual CSSPropertyID ResolveDirectionAwareProperty(
@@ -80,6 +56,8 @@ class CSSProperty {
       WritingMode) const {
     return PropertyID();
   }
+  virtual bool IsShorthand() const { return false; }
+  virtual bool IsLonghand() const { return false; }
   static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
                                                    size_t length,
                                                    Vector<CSSPropertyID>&);
@@ -107,6 +85,8 @@ class CSSProperty {
   const CSSPropertyID id_;
 };
 
+const CSSProperty& GetCSSPropertyApplyAtRule();
+const CSSProperty& GetCSSPropertyVariable();
 {% for property_class_data in property_classes_by_property_id %}
 const CSSProperty& Get{{property_class_data.property_id}}();
 {% endfor %}

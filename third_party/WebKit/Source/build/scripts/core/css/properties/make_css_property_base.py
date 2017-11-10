@@ -15,7 +15,7 @@ from core.css import css_properties
 
 
 class PropertyClassData(
-        namedtuple('PropertyClassData', 'enum_value,property_id,classname,namespace')):
+        namedtuple('PropertyClassData', 'enum_value,property_id,classname,superclass')):
     pass
 
 
@@ -44,22 +44,6 @@ class CSSPropertyWriter(json5_generator.Writer):
             self._property_classes_by_id.append(property_class)
             self._shorthand_property_classes.add(property_class.classname)
 
-        # Manually add CSSPropertyVariable and CSSPropertyAtApply.
-        self._property_classes_by_id.append(
-            PropertyClassData(
-                enum_value=1,
-                property_id="CSSPropertyApplyAtRule",
-                classname="ApplyAtRule",
-                namespace="CSSLonghand"))
-        self._longhand_property_classes.add("ApplyAtRule")
-        self._property_classes_by_id.append(
-            PropertyClassData(
-                enum_value=2,
-                property_id="CSSPropertyVariable",
-                classname="Variable",
-                namespace="CSSLonghand"))
-        self._longhand_property_classes.add("Variable")
-
         # Sort by enum value.
         self._property_classes_by_id.sort(key=lambda t: t.enum_value)
 
@@ -68,7 +52,7 @@ class CSSPropertyWriter(json5_generator.Writer):
 
         If the property has property_class set to True, returns an automatically
         generated class name. If it is set to a string, returns that. If it is
-        set to None, returns the CSSProperty base class.
+        set to None, returns the Longhand base class.
 
         Args:
             property_: A single property from CSSProperties.properties()
@@ -81,17 +65,17 @@ class CSSPropertyWriter(json5_generator.Writer):
             "property_class value for {} should be None, True or a string".format(
                 property_['name'])
         classname = property_['property_class']
-        namespace = 'CSSShorthand' if property_['longhands'] else 'CSSLonghand'
+        superclass = 'Shorthand' if property_['longhands'] else 'Longhand'
         if property_['property_class'] is None:
-            classname = 'CSSProperty'
-            namespace = None
+            classname = 'Longhand'
+            superclass = None
         if property_['property_class'] is True:
             classname = property_['upper_camel_name']
         return PropertyClassData(
             enum_value=property_['enum_value'],
             property_id=property_['property_id'],
             classname=classname,
-            namespace=namespace)
+            superclass=superclass)
 
     @property
     def css_properties(self):

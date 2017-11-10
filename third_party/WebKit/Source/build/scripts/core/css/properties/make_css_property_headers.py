@@ -41,10 +41,10 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
         self._outputs = {}
         output_dir = sys.argv[sys.argv.index('--output_dir') + 1]
         properties = self.css_properties.longhands
-        namespace = 'CSSLonghand'
+        superclass = 'Longhand'
         if 'shorthands' in output_dir:
             properties = self.css_properties.shorthands
-            namespace = 'CSSShorthand'
+            superclass = 'Shorthand'
         for property_ in properties:
             if property_['property_class'] is None:
                 continue
@@ -54,7 +54,7 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                 self._property_methods[method_name]
                 for method_name in property_['property_methods']
             ]
-            property_['namespace'] = namespace
+            property_['superclass'] = superclass
             class_data = self.get_class(property_)
             # Functions should only be declared on the property classes if they are
             # implemented and not shared (denoted by property_class = true. Shared
