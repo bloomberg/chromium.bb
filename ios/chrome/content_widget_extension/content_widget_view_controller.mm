@@ -198,6 +198,8 @@ const CGFloat widgetCompactHeightIOS9 = 110;
       app_group::kChromeAppGroupCommandCommandPreference);
   NSString* URLPrefKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandURLPreference);
+  NSString* indexKey =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandIndexPreference);
 
   NSDictionary* commandDict = @{
     timePrefKey : [NSDate date],
@@ -205,6 +207,7 @@ const CGFloat widgetCompactHeightIOS9 = 110;
     commandPrefKey :
         base::SysUTF8ToNSString(app_group::kChromeAppGroupOpenURLCommand),
     URLPrefKey : URL.absoluteString,
+    indexKey : [NSNumber numberWithInt:[self.sites objectForKey:URL].position]
   };
 
   [sharedDefaults setObject:commandDict forKey:defaultsKey];
