@@ -46,7 +46,6 @@ class CSSParserLocalContext;
 class CSSPropertyValue;
 class CSSValue;
 class LayoutObject;
-class ComputedStyle;
 
 {% if property.longhands %}
 namespace CSSShorthand {
@@ -95,7 +94,7 @@ class {{property_classname}} : public CSSProperty {
       {% elif property.font %}
     {{set_value(property)}}(FontBuilder::{{property.initial}}());
       {% else %}
-    {{set_value(property)}}(ComputedStyle::{{property.initial}}());
+    {{set_value(property)}}(ComputedStyleInitialValues::{{property.initial}}());
       {% endif %}
       {% if property.independent %}
     state.Style()->{{property.is_inherited_setter}}(false);

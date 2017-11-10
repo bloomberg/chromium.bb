@@ -2,9 +2,6 @@
 {% from 'templates/fields/field.tmpl' import getter_expression, setter_expression, decode %}
 
 {% macro decl_public_methods(field) %}
-static {{field.type_name}}* {{field.initial_method_name}}() {
-  return {{field.default_value}};
-}
 {{field.type_name}}* {{field.getter_method_name}}() const {
   return {{decode(field, getter_expression(field))}}.get();
 }

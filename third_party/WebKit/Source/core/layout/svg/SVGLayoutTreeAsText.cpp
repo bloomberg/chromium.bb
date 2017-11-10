@@ -276,11 +276,11 @@ static void WriteStyle(TextStream& ts, const LayoutObject& object) {
 
   if (!object.LocalSVGTransform().IsIdentity())
     WriteNameValuePair(ts, "transform", object.LocalSVGTransform());
-  WriteIfNotDefault(ts, "image rendering",
-                    static_cast<int>(style.ImageRendering()),
-                    static_cast<int>(ComputedStyle::InitialImageRendering()));
+  WriteIfNotDefault(
+      ts, "image rendering", static_cast<int>(style.ImageRendering()),
+      static_cast<int>(ComputedStyleInitialValues::InitialImageRendering()));
   WriteIfNotDefault(ts, "opacity", style.Opacity(),
-                    ComputedStyle::InitialOpacity());
+                    ComputedStyleInitialValues::InitialOpacity());
   if (object.IsSVGShape()) {
     const LayoutSVGShape& shape = static_cast<const LayoutSVGShape&>(object);
     DCHECK(shape.GetElement());

@@ -204,7 +204,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
             part, style.GetFont().GetFontDescription(), style.EffectiveZoom());
         if (control_font != style.GetFont().GetFontDescription()) {
           // Reset our line-height
-          style.SetLineHeight(ComputedStyle::InitialLineHeight());
+          style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
 
           // Now update our font.
           if (style.SetFontDescription(control_font))

@@ -46,7 +46,7 @@ ETextAlign LayoutRubyText::TextAlignmentForLine(
     bool ends_with_soft_break) const {
   ETextAlign text_align = Style()->GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
-  if (text_align != ComputedStyle::InitialTextAlign())
+  if (text_align != ComputedStyleInitialValues::InitialTextAlign())
     return LayoutBlockFlow::TextAlignmentForLine(ends_with_soft_break);
 
   // The default behavior is to allow ruby text to expand if it is shorter than
@@ -60,7 +60,7 @@ void LayoutRubyText::AdjustInlineDirectionLineBounds(
     LayoutUnit& logical_width) const {
   ETextAlign text_align = Style()->GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
-  if (text_align != ComputedStyle::InitialTextAlign())
+  if (text_align != ComputedStyleInitialValues::InitialTextAlign())
     return LayoutBlockFlow::AdjustInlineDirectionLineBounds(
         expansion_opportunity_count, logical_left, logical_width);
 

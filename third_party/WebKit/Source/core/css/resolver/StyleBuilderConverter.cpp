@@ -82,7 +82,7 @@ scoped_refptr<StyleReflection> StyleBuilderConverter::ConvertBoxReflect(
     const CSSValue& value) {
   if (value.IsIdentifierValue()) {
     DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNone);
-    return ComputedStyle::InitialBoxReflect();
+    return ComputedStyleInitialValues::InitialBoxReflect();
   }
 
   const CSSReflectValue& reflect_value = ToCSSReflectValue(value);
@@ -679,7 +679,8 @@ FontVariantEastAsian StyleBuilderConverter::ConvertFontVariantEastAsian(
 StyleSelfAlignmentData StyleBuilderConverter::ConvertSelfOrDefaultAlignmentData(
     StyleResolverState&,
     const CSSValue& value) {
-  StyleSelfAlignmentData alignment_data = ComputedStyle::InitialSelfAlignment();
+  StyleSelfAlignmentData alignment_data =
+      ComputedStyleInitialValues::InitialAlignSelf();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     if (ToCSSIdentifierValue(pair.First()).GetValueID() == CSSValueLegacy) {
@@ -709,7 +710,7 @@ StyleContentAlignmentData StyleBuilderConverter::ConvertContentAlignmentData(
     StyleResolverState&,
     const CSSValue& value) {
   StyleContentAlignmentData alignment_data =
-      ComputedStyle::InitialContentAlignment();
+      ComputedStyleInitialValues::InitialContentAlignment();
   const CSSContentDistributionValue& content_value =
       ToCSSContentDistributionValue(value);
   if (content_value.Distribution()->GetValueID() != CSSValueInvalid)
@@ -749,7 +750,7 @@ GridAutoFlow StyleBuilderConverter::ConvertGridAutoFlow(StyleResolverState&,
       return kAutoFlowRowDense;
     default:
       NOTREACHED();
-      return ComputedStyle::InitialGridAutoFlow();
+      return ComputedStyleInitialValues::InitialGridAutoFlow();
   }
 }
 
@@ -1094,7 +1095,7 @@ Length StyleBuilderConverter::ConvertLineHeight(StyleResolverState& state,
   }
 
   DCHECK_EQ(ToCSSIdentifierValue(value).GetValueID(), CSSValueNormal);
-  return ComputedStyle::InitialLineHeight();
+  return ComputedStyleInitialValues::InitialLineHeight();
 }
 
 float StyleBuilderConverter::ConvertNumberOrPercentage(
@@ -1166,7 +1167,7 @@ float StyleBuilderConverter::ConvertPerspective(StyleResolverState& state,
                                                 const CSSValue& value) {
   if (value.IsIdentifierValue() &&
       ToCSSIdentifierValue(value).GetValueID() == CSSValueNone)
-    return ComputedStyle::InitialPerspective();
+    return ComputedStyleInitialValues::InitialPerspective();
   return ConvertPerspectiveLength(state, ToCSSPrimitiveValue(value));
 }
 
@@ -1442,7 +1443,7 @@ TransformOrigin StyleBuilderConverter::ConvertTransformOrigin(
 
 ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
                                                       const CSSValue& value) {
-  ScrollSnapType snapType = ComputedStyle::InitialScrollSnapType();
+  ScrollSnapType snapType = ComputedStyleInitialValues::InitialScrollSnapType();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     snapType.is_none = false;
@@ -1464,7 +1465,8 @@ ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
 
 ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
                                                         const CSSValue& value) {
-  ScrollSnapAlign snapAlign = ComputedStyle::InitialScrollSnapAlign();
+  ScrollSnapAlign snapAlign =
+      ComputedStyleInitialValues::InitialScrollSnapAlign();
   if (value.IsValuePair()) {
     const CSSValuePair& pair = ToCSSValuePair(value);
     snapAlign.alignmentX =

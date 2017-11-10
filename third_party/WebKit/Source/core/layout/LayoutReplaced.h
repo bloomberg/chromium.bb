@@ -72,7 +72,8 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   LayoutRect LocalSelectionRect() const final;
 
   bool HasObjectFit() const {
-    return Style()->GetObjectFit() != ComputedStyle::InitialObjectFit();
+    return Style()->GetObjectFit() !=
+           ComputedStyleInitialValues::InitialObjectFit();
   }
 
   void Paint(const PaintInfo&, const LayoutPoint&) const override;

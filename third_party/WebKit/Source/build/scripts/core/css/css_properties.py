@@ -59,8 +59,16 @@ def check_property_parameters(property_to_check):
 
 class CSSProperties(object):
     def __init__(self, file_paths):
-        # CSSPropertyValueMetadata assumes that there are at most 1024 properties
-        # + aliases.
+        assert len(file_paths) >= 2, \
+            "CSSProperties at least needs both CSSProperties.json5 and \
+            ComputedStyleFieldAliases.json5 to function"
+
+        # ComputedStyleFieldAliases.json5. Used to expand out parameters used
+        # in the various generators for ComputedStyle.
+        self._field_alias_expander = FieldAliasExpander(file_paths[1])
+
+        # CSSPropertyValueMetadata assumes that there are at most 1024
+        # properties + aliases.
         self._alias_offset = 512
         # 0: CSSPropertyInvalid
         # 1: CSSPropertyApplyAtRule
@@ -74,15 +82,10 @@ class CSSProperties(object):
         self._shorthands = []
         self._properties_including_aliases = []
 
-        # ComputedStyleFieldAliases.json5. Used to expand out parameters used
-        # in the various generators for ComputedStyle.
-        self._field_alias_expander = FieldAliasExpander(file_paths[1])
-
         # Add default data in CSSProperties.json5. This must be consistent
         # across instantiations of this class.
         css_properties_file = json5_generator.Json5File.load_from_files(
             [file_paths[0]])
-
         self._default_parameters = css_properties_file.parameters
         self.add_properties(css_properties_file.name_dictionaries)
 
@@ -232,6 +235,7 @@ class CSSProperties(object):
                 default_value = 'false'
             property_['default_value'] = default_value
 
+            property_['unwrapped_type_name'] = property_['type_name']
             if property_['wrapper_pointer_name']:
                 assert property_['field_template'] in ['pointer', 'external']
                 if property_['field_template'] == 'external':
