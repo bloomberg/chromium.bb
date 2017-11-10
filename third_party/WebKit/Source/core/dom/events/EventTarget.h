@@ -55,6 +55,7 @@ class ExceptionState;
 class LocalDOMWindow;
 class MessagePort;
 class Node;
+class ScriptState;
 class ServiceWorker;
 
 struct FiringEventIterator {
@@ -129,6 +130,8 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   virtual LocalDOMWindow* ToLocalDOMWindow();
   virtual MessagePort* ToMessagePort();
   virtual ServiceWorker* ToServiceWorker();
+
+  static EventTarget* Create(ScriptState*);
 
   bool addEventListener(const AtomicString& event_type,
                         EventListener*,

@@ -13,6 +13,7 @@
     "core/dom/BroadcastChannel",
     "core/dom/MessagePort",
     "core/dom/Node",
+    "core/dom/events/EventTargetImpl",
     "core/fileapi/FileReader",
     "core/html/ime/InputMethodContext",
     "core/html/track/AudioTrackList",
