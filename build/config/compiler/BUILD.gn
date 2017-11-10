@@ -1298,10 +1298,11 @@ config("default_warnings") {
         "-Wno-null-pointer-arithmetic",
 
         # TODO(hans): https://crbug.com/767059
-        "-Wno-tautological-unsigned-enum-zero-compare",
-
-        # TODO(hans): https://crbug.com/767059
+        # Disable -Wtautological-constant-compare (and implicitly also
+        # -Wtautological-unsigned-enum-zero-compare), but re-enable
+        # useful sub-diagnostics in that group.
         "-Wno-tautological-constant-compare",
+        "-Wtautological-constant-out-of-range-compare",
       ]
     } else if (use_xcode_clang && xcode_version_int >= 830) {
       # This is necessary to allow a progressive transition from using xcode 8.0
