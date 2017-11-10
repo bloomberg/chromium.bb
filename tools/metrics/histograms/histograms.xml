@@ -74462,6 +74462,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearch.Ranker.NotSuppressed.ResultsSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records whether the user opened the panel when a tap was not suppressed by
+    Ranker. Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.Suppressed" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records Ranker's prediction about whether a tap should be suppressed or not.
+    Recorded when the UX is hidden. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.WasAbleToPredict"
+    enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records whether Ranker was able to make a prediction about tap suppression.
+    Recorded when the UX is triggered by tap. Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearch.Ranker.WouldSuppress.ResultsSeen"
+    enum="ContextualSearchResultsSeen">
+  <owner>donnd@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Records whether the user opened the panel when a tap would be suppressed by
+    Ranker if suppression was enforced. Recorded when the UX is hidden.
+    Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchAllCapsResultsSeen"
     enum="ContextualSearchResultsSeen">
   <obsolete>

@@ -70,7 +70,7 @@ public class ContextualSearchFieldTrial {
     static final String ONLINE_DETECTION_DISABLED = "disable_online_detection";
     private static final String DISABLE_AMP_AS_SEPARATE_TAB = "disable_amp_as_separate_tab";
     // Disable logging for Machine Learning
-    private static final String DISABLE_RANKER_LOGGING = "disable_ranker_logging";
+    private static final String DISABLE_UKM_RANKER_LOGGING = "disable_ukm_ranker_logging";
     private static final String DISABLE_SMART_SELECTION = "disable_smart_selection";
     private static final String DISABLE_SUPPRESS_FOR_SMART_SELECTION =
             "disable_suppress_for_smart_selection";
@@ -109,7 +109,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsRankerIntegrationEnabled;
     private static Boolean sIsSendHomeCountryDisabled;
     private static Boolean sIsPageContentNotificationDisabled;
-    private static Boolean sIsRankerLoggingDisabled;
+    private static Boolean sIsUkmRankerLoggingDisabled;
     private static Boolean sIsSmartSelectionDisabled;
     private static Boolean sIsSuppressForSmartSelectionDisabled;
     private static Integer sWaitAfterTapDelayMs;
@@ -339,13 +339,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether or not logging to Ranker is disabled.
+     * @return Whether or not logging to Ranker via UKM is disabled.
      */
-    static boolean isRankerLoggingDisabled() {
-        if (sIsRankerLoggingDisabled == null) {
-            sIsRankerLoggingDisabled = getBooleanParam(DISABLE_RANKER_LOGGING);
+    static boolean isUkmRankerLoggingDisabled() {
+        if (sIsUkmRankerLoggingDisabled == null) {
+            sIsUkmRankerLoggingDisabled = getBooleanParam(DISABLE_UKM_RANKER_LOGGING);
         }
-        return sIsRankerLoggingDisabled;
+        return sIsUkmRankerLoggingDisabled;
     }
 
     /**
@@ -380,8 +380,8 @@ public class ContextualSearchFieldTrial {
      * Whether Ranker integration is enabled or not, to apply machine intelligence for Tap gestures.
      * This controls whether we call the Ranker logic to produce an inference or not, and may have
      * no user-visible effect.  There's a similar user-visible flag for whether Tap suppression is
-     * enabled or not, so call {@link #isRankerIntegrationOrTapSuppressionEnabled} in order to check
-     * if either is enabled.
+     * enabled or not, so call {@link #isRankerIntegrationOrMlTapSuppressionEnabled} in order to
+     * check if either is enabled.
      * @return Whether Ranker will be used or not in this session, even for internal ranking.
      */
     private static boolean isRankerIntegrationEnabled() {

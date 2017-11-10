@@ -1499,6 +1499,10 @@ public class ContextualSearchManager
                 // Called when the IDLE state has been entered.
                 if (mContext != null) mContext.destroy();
                 mContext = null;
+                // Make sure we write to ranker and reset at the end of every search, even if it
+                // was a suppressed tap or longpress.
+                // TODO(donnd): Find a better place to just make a single call to this (now two).
+                mTapSuppressionRankerLogger.writeLogAndReset();
                 if (mSearchPanel == null) return;
 
                 if (isSearchPanelShowing()) {
@@ -1557,7 +1561,7 @@ public class ContextualSearchManager
                 // Ranker will handle the suppression, but our legacy implementation uses
                 // TapSuppressionHeuristics (run from the ContextualSearchSelectionController).
                 // Usage includes tap-far-from-previous suppression.
-                mTapSuppressionRankerLogger.setupLoggingForPage(getBasePageUrl());
+                mTapSuppressionRankerLogger.setupLoggingForPage(getBaseWebContents());
 
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
                 mSelectionController.handleShouldSuppressTap(mContext, mTapSuppressionRankerLogger);
