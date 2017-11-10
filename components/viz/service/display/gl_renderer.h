@@ -94,7 +94,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool CanPartialSwap() override;
   ResourceFormat BackbufferFormat() const override;
   void BindFramebufferToOutputSurface() override;
-  bool BindFramebufferToTexture(const cc::ScopedResource* resource) override;
+  void BindFramebufferToTexture(const cc::ScopedResource* resource) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
@@ -146,7 +146,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool UpdateRPDQWithSkiaFilters(DrawRenderPassDrawQuadParams* params);
   void UpdateRPDQTexturesForSampling(DrawRenderPassDrawQuadParams* params);
   void UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params);
-  void ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params);
+  void ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
+                         const gfx::ColorSpace& target_color_space);
   void UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params);
   void DrawRPDQ(const DrawRenderPassDrawQuadParams& params);
 
@@ -230,13 +231,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // YUV to RGB conversion) is performed. This explicit argument is available
   // so that video color conversion can be enabled separately from general color
   // conversion.
-  // TODO(ccameron): Remove the version with an explicit |dst_color_space|,
-  // since that will always be the device color space.
   void SetUseProgram(const ProgramKey& program_key,
                      const gfx::ColorSpace& src_color_space,
                      const gfx::ColorSpace& dst_color_space);
-  void SetUseProgram(const ProgramKey& program_key,
-                     const gfx::ColorSpace& src_color_space);
 
   bool MakeContextCurrent();
 

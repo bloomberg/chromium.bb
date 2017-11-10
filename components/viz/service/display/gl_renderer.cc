@@ -631,7 +631,8 @@ void GLRenderer::DoDrawQuad(const DrawQuad* quad,
 void GLRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
+                current_frame()->current_render_pass->color_space);
 
   // Use the full quad_rect for debug quads to not move the edges based on
   // partial swaps.
@@ -1125,14 +1126,23 @@ void GLRenderer::DrawRenderPassQuadInternal(
       params->quad->shared_quad_state->quad_to_target_transform;
   if (!InitializeRPDQParameters(params))
     return;
+
   UpdateRPDQShadersForBlending(params);
-  if (!UpdateRPDQWithSkiaFilters(params))
-    return;
+  bool can_draw = UpdateRPDQWithSkiaFilters(params);
+  // The above calls use ScopedUseGrContext which can change the bound
+  // framebuffer, so we need to restore it for the current RenderPass.
   UseRenderPass(current_frame()->current_render_pass);
+  // As part of restoring the framebuffer, we call SetViewport directly, rather
+  // than through PrepareSurfaceForPass. PrepareSurfaceForPass also clears the
+  // surface, which is not desired when restoring.
   SetViewport();
+
+  if (!can_draw)
+    return;
+
   UpdateRPDQTexturesForSampling(params);
   UpdateRPDQBlendMode(params);
-  ChooseRPDQProgram(params);
+  ChooseRPDQProgram(params, current_frame()->current_render_pass->color_space);
   UpdateRPDQUniforms(params);
   DrawRPDQ(*params);
 }
@@ -1378,7 +1388,8 @@ void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
   }
 }
 
-void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
+void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
+                                   const gfx::ColorSpace& target_color_space) {
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, settings_->highp_threshold_min,
       params->quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
@@ -1400,7 +1411,7 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
                     tex_coord_precision, sampler_type, shader_blend_mode,
                     params->use_aa ? USE_AA : NO_AA, mask_mode,
                     mask_for_background, params->use_color_matrix),
-                params->contents_color_space);
+                params->contents_color_space, target_color_space);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
@@ -1846,11 +1857,10 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
   SetupQuadForClippingAndAntialiasing(device_transform, quad, aa_quad,
                                       clip_region, &local_quad, edge);
 
-  // TODO(ccameron): Solid color draw quads need to specify their implied
-  // color space. Assume SRGB (which is wrong) for now.
   gfx::ColorSpace quad_color_space = gfx::ColorSpace::CreateSRGB();
   SetUseProgram(ProgramKey::SolidColor(use_aa ? USE_AA : NO_AA),
-                quad_color_space);
+                quad_color_space,
+                current_frame()->current_render_pass->color_space);
   SetShaderColor(color, opacity);
 
   if (use_aa) {
@@ -2019,7 +2029,8 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
   SetUseProgram(
       ProgramKey::Tile(tex_coord_precision, sampler, USE_AA,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE, false),
-      quad_resource_lock.color_space());
+      quad_resource_lock.color_space(),
+      current_frame()->current_render_pass->color_space);
 
   gl_->Uniform3fv(current_program_->edge_location(), 8, edge);
 
@@ -2096,7 +2107,8 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
       ProgramKey::Tile(tex_coord_precision, sampler, NO_AA,
                        quad->swizzle_contents ? DO_SWIZZLE : NO_SWIZZLE,
                        !quad->ShouldDrawWithBlending()),
-      quad_resource_lock.color_space());
+      quad_resource_lock.color_space(),
+      current_frame()->current_render_pass->color_space);
 
   gl_->Uniform4f(current_program_->vertex_tex_transform_location(),
                  vertex_tex_translate_x, vertex_tex_translate_y,
@@ -2314,7 +2326,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                                      quad->resource_id());
 
   SetUseProgram(ProgramKey::VideoStream(tex_coord_precision),
-                lock.color_space());
+                lock.color_space(),
+                current_frame()->current_render_pass->color_space);
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
@@ -2352,7 +2365,8 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 
 void GLRenderer::DrawOverlayCandidateQuadBorder(float* gl_matrix) {
   SetBlendEnabled(false);
-  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
+                current_frame()->current_render_pass->color_space);
 
   gl_->UniformMatrix4fv(current_program_->matrix_location(), 1, false,
                         gl_matrix);
@@ -2385,7 +2399,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
 
   // Bind the program to the GL state.
-  SetUseProgram(draw_cache_.program_key, locked_quad.color_space());
+  SetUseProgram(draw_cache_.program_key, locked_quad.color_space(),
+                current_frame()->current_render_pass->color_space);
 
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(locked_quad.target(), locked_quad.texture_id());
@@ -2862,7 +2877,7 @@ void GLRenderer::BindFramebufferToOutputSurface() {
   }
 }
 
-bool GLRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
+void GLRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
   DCHECK(texture->id());
 
   // Explicitly release lock, otherwise we can crash when try to lock
@@ -2904,7 +2919,6 @@ bool GLRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {
   } else {
     SetStencilEnabled(false);
   }
-  return true;
 }
 
 void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
@@ -2955,21 +2969,6 @@ void GLRenderer::PrepareGeometry(BoundGeometry binding) {
       break;
   }
   bound_geometry_ = binding;
-}
-
-void GLRenderer::SetUseProgram(const ProgramKey& program_key,
-                               const gfx::ColorSpace& src_color_space) {
-  // The source color space for non-YUV draw quads should always be full-range
-  // RGB.
-  if (!disable_color_checks_for_testing_)
-    DCHECK_EQ(src_color_space, src_color_space.GetAsFullRangeRGB());
-
-  // Ensure that we do not apply any color conversion unless the color correct
-  // rendering flag has been specified. This is because media mailboxes will
-  // provide YUV color spaces despite YUV to RGB conversion already having been
-  // performed.
-  SetUseProgram(program_key, src_color_space,
-                current_frame()->current_render_pass->color_space);
 }
 
 void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
@@ -3319,7 +3318,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   *resource = overlay_resource_pool_->AcquireResource(
       gfx::Size(iosurface_width, iosurface_height), ResourceFormat::RGBA_8888,
-      current_frame()->current_render_pass->color_space);
+      current_frame()->root_render_pass->color_space);
   *new_bounds =
       gfx::RectF(updated_dst_rect.x(), updated_dst_rect.y(),
                  (*resource)->size().width(), (*resource)->size().height());
@@ -3379,7 +3378,7 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   UpdateRPDQTexturesForSampling(&params);
   UpdateRPDQBlendMode(&params);
-  ChooseRPDQProgram(&params);
+  ChooseRPDQProgram(&params, destination.color_space_for_raster());
   UpdateRPDQUniforms(&params);
 
   // Prior to drawing, set up the destination framebuffer and viewport.
@@ -3467,7 +3466,8 @@ void GLRenderer::FlushOverdrawFeedback(const gfx::Rect& output_rect) {
 
   PrepareGeometry(SHARED_BINDING);
 
-  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB());
+  SetUseProgram(ProgramKey::DebugBorder(), gfx::ColorSpace::CreateSRGB(),
+                current_frame()->root_render_pass->color_space);
 
   gfx::Transform render_matrix;
   render_matrix.Translate(0.5 * output_rect.width() + output_rect.x(),

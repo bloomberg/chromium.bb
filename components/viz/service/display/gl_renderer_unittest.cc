@@ -51,7 +51,9 @@ using testing::AtLeast;
 using testing::ElementsAre;
 using testing::Expectation;
 using testing::InSequence;
+using testing::Invoke;
 using testing::Mock;
+using testing::Pointee;
 using testing::Return;
 using testing::StrictMock;
 
@@ -1891,8 +1893,9 @@ class TestOverlayProcessor : public OverlayProcessor {
  public:
   class Strategy : public OverlayProcessor::Strategy {
    public:
-    Strategy() {}
-    ~Strategy() override {}
+    Strategy() = default;
+    ~Strategy() override = default;
+
     MOCK_METHOD4(Attempt,
                  bool(cc::DisplayResourceProvider* resource_provider,
                       RenderPass* render_pass,
@@ -1919,13 +1922,13 @@ class TestOverlayProcessor : public OverlayProcessor {
 
   explicit TestOverlayProcessor(OutputSurface* surface)
       : OverlayProcessor(surface) {}
-  ~TestOverlayProcessor() override {}
+  ~TestOverlayProcessor() override = default;
+
   void Initialize() override {
-    strategy_ = new Strategy();
-    strategies_.push_back(base::WrapUnique(strategy_));
+    strategies_.push_back(std::make_unique<Strategy>());
   }
 
-  Strategy* strategy_;
+  Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
 };
 
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
@@ -2020,11 +2023,11 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
+  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _)).Times(0);
   EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
   EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
   DrawFrame(&renderer, viewport_size);
-  Mock::VerifyAndClearExpectations(processor->strategy_);
+  Mock::VerifyAndClearExpectations(&processor->strategy());
   Mock::VerifyAndClearExpectations(validator.get());
 
   // Without a copy request Attempt() should be called once.
@@ -2045,7 +2048,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   EXPECT_CALL(*validator, AllowDCLayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(1);
+  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _)).Times(1);
   DrawFrame(&renderer, viewport_size);
 
   // If the CALayerOverlay path is taken, then the ordinary overlay path should
@@ -2064,7 +2067,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
-  EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
+  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _)).Times(0);
   DrawFrame(&renderer, viewport_size);
 
   // Transfer resources back from the parent to the child. Set no resources as
@@ -2545,7 +2548,8 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
    public:
     explicit Strategy(const std::vector<gfx::Rect>& content_bounds)
         : content_bounds_(content_bounds) {}
-    ~Strategy() override {}
+    ~Strategy() override = default;
+
     bool Attempt(cc::DisplayResourceProvider* resource_provider,
                  RenderPass* render_pass,
                  cc::OverlayCandidateList* candidates,
@@ -2555,6 +2559,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
       return true;
     }
 
+   private:
     const std::vector<gfx::Rect> content_bounds_;
   };
 
@@ -2563,12 +2568,14 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
       : OverlayProcessor(surface), content_bounds_(content_bounds) {}
 
   void Initialize() override {
-    strategy_ = new Strategy(content_bounds_);
-    strategies_.push_back(base::WrapUnique(strategy_));
+    strategies_.push_back(
+        std::make_unique<Strategy>(std::move(content_bounds_)));
   }
 
-  Strategy* strategy_;
-  const std::vector<gfx::Rect> content_bounds_;
+  Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
+
+ private:
+  std::vector<gfx::Rect> content_bounds_;
 };
 
 class GLRendererSwapWithBoundsTest : public GLRendererTest {
@@ -2630,6 +2637,243 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
   content_bounds.push_back(gfx::Rect(0, 0, 10, 10));
   content_bounds.push_back(gfx::Rect(20, 20, 30, 30));
   RunTest(content_bounds);
+}
+
+class CALayerValidator : public OverlayCandidateValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+  bool AllowCALayerOverlays() override { return true; }
+  bool AllowDCLayerOverlays() override { return false; }
+  void CheckOverlaySupport(cc::OverlayCandidateList* surfaces) override {}
+};
+
+class MockCALayerGLES2Interface : public cc::TestGLES2Interface {
+ public:
+  MOCK_METHOD5(ScheduleCALayerSharedStateCHROMIUM,
+               void(GLfloat opacity,
+                    GLboolean is_clipped,
+                    const GLfloat* clip_rect,
+                    GLint sorting_context_id,
+                    const GLfloat* transform));
+  MOCK_METHOD6(ScheduleCALayerCHROMIUM,
+               void(GLuint contents_texture_id,
+                    const GLfloat* contents_rect,
+                    GLuint background_color,
+                    GLuint edge_aa_mask,
+                    const GLfloat* bounds_rect,
+                    GLuint filter));
+};
+
+TEST_F(GLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
+  gfx::Size viewport_size(10, 10);
+
+  // A mock GLES2Interface that can watch CALayer stuff happen.
+  auto gles2_interface = std::make_unique<MockCALayerGLES2Interface>();
+  auto* gl = gles2_interface.get();
+
+  // The context capabilities include |commit_overlay_planes| which will
+  // allow the renderer to make an empty SwapBuffers - skipping even the
+  // root RenderPass.
+  auto provider = cc::TestContextProvider::Create(std::move(gles2_interface));
+  provider->UnboundTestContext3d()->set_have_commit_overlay_planes(true);
+  provider->BindToCurrentThread();
+
+  cc::FakeOutputSurfaceClient output_surface_client;
+  auto output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
+  output_surface->BindToClient(&output_surface_client);
+
+  auto parent_resource_provider =
+      cc::FakeResourceProvider::CreateDisplayResourceProvider(
+          output_surface->context_provider(), nullptr);
+
+  RendererSettings settings;
+  FakeRendererGL renderer(&settings, output_surface.get(),
+                          parent_resource_provider.get());
+  renderer.Initialize();
+  renderer.SetVisible(true);
+
+  TestOverlayProcessor* processor =
+      new TestOverlayProcessor(output_surface.get());
+  processor->Initialize();
+  renderer.SetOverlayProcessor(processor);
+
+  // This validator allows the renderer to make CALayer overlays. If all
+  // quads can be turned into CALayer overlays, then all damage is removed and
+  // we can skip the root RenderPass, swapping empty.
+  auto validator = std::make_unique<CALayerValidator>();
+  output_surface->SetOverlayCandidateValidator(validator.get());
+
+  // This frame has a root pass with a RenderPassDrawQuad pointing to a child
+  // pass that is at 1,2 to make it identifiable.
+  RenderPassId child_pass_id = 2;
+  RenderPassId root_pass_id = 1;
+  {
+    RenderPass* child_pass =
+        cc::AddRenderPass(&render_passes_in_draw_order_, child_pass_id,
+                          gfx::Rect(viewport_size) + gfx::Vector2d(1, 2),
+                          gfx::Transform(), cc::FilterOperations());
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
+                          SkBlendMode::kSrcOver);
+  }
+
+  renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+
+  // The child pass is drawn, promoted to an overlay, and scheduled as a
+  // CALayer.
+  {
+    InSequence sequence;
+    EXPECT_CALL(*gl, ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(*gl, ScheduleCALayerCHROMIUM(_, _, _, _, _, _))
+        .WillOnce(
+            Invoke([](GLuint contents_texture_id, const GLfloat* contents_rect,
+                      GLuint background_color, GLuint edge_aa_mask,
+                      const GLfloat* bounds_rect, GLuint filter) {
+              // This is the child RenderPassDrawQuad.
+              EXPECT_EQ(1, bounds_rect[0]);
+              EXPECT_EQ(2, bounds_rect[1]);
+            }));
+  }
+  DrawFrame(&renderer, viewport_size);
+  Mock::VerifyAndClearExpectations(gl);
+
+  renderer.SwapBuffers(std::vector<ui::LatencyInfo>());
+
+  // The damage was eliminated when everything was promoted to CALayers.
+  ASSERT_TRUE(output_surface->last_sent_frame()->sub_buffer_rect);
+  EXPECT_TRUE(output_surface->last_sent_frame()->sub_buffer_rect->IsEmpty());
+
+  // Frame number 2. Same inputs, except...
+  {
+    RenderPass* child_pass =
+        cc::AddRenderPass(&render_passes_in_draw_order_, child_pass_id,
+                          gfx::Rect(viewport_size) + gfx::Vector2d(1, 2),
+                          gfx::Transform(), cc::FilterOperations());
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
+                          SkBlendMode::kSrcOver);
+
+    // Use a cached RenderPass for the child.
+    child_pass->cache_render_pass = true;
+  }
+
+  renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+
+  // The child RenderPassDrawQuad gets promoted again, but importantly it
+  // did not itself have to be drawn this time as it can use the cached texture.
+  // Because we can skip the child pass, and the root pass (all quads were
+  // promoted), this exposes edge cases in GLRenderer if it assumes we draw
+  // at least one RenderPass. This still works, doesn't crash, etc, and the
+  // RenderPassDrawQuad is emitted.
+  {
+    InSequence sequence;
+    EXPECT_CALL(*gl, ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _));
+    EXPECT_CALL(*gl, ScheduleCALayerCHROMIUM(_, _, _, _, _, _));
+  }
+  DrawFrame(&renderer, viewport_size);
+  Mock::VerifyAndClearExpectations(gl);
+
+  renderer.SwapBuffers(std::vector<ui::LatencyInfo>());
+}
+
+class FramebufferWatchingGLRenderer : public FakeRendererGL {
+ public:
+  FramebufferWatchingGLRenderer(RendererSettings* settings,
+                                OutputSurface* output_surface,
+                                cc::DisplayResourceProvider* resource_provider)
+      : FakeRendererGL(settings, output_surface, resource_provider) {}
+
+  void BindFramebufferToOutputSurface() override {
+    ++bind_root_framebuffer_calls_;
+    FakeRendererGL::BindFramebufferToOutputSurface();
+  }
+
+  void BindFramebufferToTexture(const cc::ScopedResource* resource) override {
+    ++bind_child_framebuffer_calls_;
+    FakeRendererGL::BindFramebufferToTexture(resource);
+  }
+
+  int bind_root_framebuffer_calls() const {
+    return bind_root_framebuffer_calls_;
+  }
+  int bind_child_framebuffer_calls() const {
+    return bind_child_framebuffer_calls_;
+  }
+
+ private:
+  int bind_root_framebuffer_calls_ = 0;
+  int bind_child_framebuffer_calls_ = 0;
+};
+
+TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
+  auto provider = cc::TestContextProvider::Create();
+  provider->UnboundTestContext3d()->set_have_post_sub_buffer(true);
+  provider->BindToCurrentThread();
+
+  cc::FakeOutputSurfaceClient output_surface_client;
+  auto output_surface = cc::FakeOutputSurface::Create3d(std::move(provider));
+  output_surface->BindToClient(&output_surface_client);
+
+  std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
+      cc::FakeResourceProvider::CreateDisplayResourceProvider(
+          output_surface->context_provider(), nullptr);
+
+  for (int i = 0; i < 2; ++i) {
+    bool use_partial_swap = i == 0;
+    SCOPED_TRACE(use_partial_swap);
+
+    RendererSettings settings;
+    settings.partial_swap_enabled = use_partial_swap;
+    FramebufferWatchingGLRenderer renderer(&settings, output_surface.get(),
+                                           resource_provider.get());
+    renderer.Initialize();
+    EXPECT_EQ(use_partial_swap, renderer.use_partial_swap());
+    renderer.SetVisible(true);
+
+    gfx::Size viewport_size(100, 100);
+    gfx::Rect child_rect(10, 10);
+
+    // Child RenderPass has no damage in it.
+    RenderPass* child_pass =
+        cc::AddRenderPass(&render_passes_in_draw_order_, 2, child_rect,
+                          gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(child_pass, child_rect, SK_ColorGREEN);
+    child_pass->damage_rect = gfx::Rect();
+
+    // Root RenderPass has some damage that doesn't intersect the child.
+    RenderPass* root_pass = cc::AddRenderPass(
+        &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
+        gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
+    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
+                          SkBlendMode::kSrcOver);
+    root_pass->damage_rect = gfx::Rect(child_rect.right(), 0, 10, 10);
+
+    EXPECT_EQ(0, renderer.bind_root_framebuffer_calls());
+    EXPECT_EQ(0, renderer.bind_child_framebuffer_calls());
+
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+
+    if (use_partial_swap) {
+      // Without damage overlapping the child, it didn't need to be drawn (it
+      // may choose to anyway but that'd be a waste). So we don't check for
+      // |bind_child_framebuffer_calls|. But the root should have been drawn.
+      EXPECT_EQ(renderer.bind_root_framebuffer_calls(), 1);
+    } else {
+      // Without partial swap, we have to draw the child still, this means
+      // the child is bound as the framebuffer.
+      EXPECT_EQ(1, renderer.bind_child_framebuffer_calls());
+      // When the RenderPassDrawQuad in the root is drawn, as it must be since
+      // we must draw the entire output, we may re-bind the root framebuffer. So
+      // it can be bound more than once.
+      EXPECT_GE(renderer.bind_root_framebuffer_calls(), 1);
+    }
+  }
 }
 
 }  // namespace

@@ -227,15 +227,8 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
 
   for (auto& pass : render_passes_in_draw_order) {
     auto& resource = render_pass_textures_[pass->id];
-    if (!resource) {
+    if (!resource)
       resource = std::make_unique<cc::ScopedResource>(resource_provider_);
-
-      // |has_damage_from_contributing_content| is used to determine if previous
-      // contents can be reused when caching render pass and as a result needs
-      // to be true when a new resource is created to ensure that it is updated
-      // and not assumed to already contain correct contents.
-      pass->has_damage_from_contributing_content = true;
-    }
   }
 }
 
@@ -377,22 +370,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   current_frame_valid_ = false;
 }
 
-gfx::Rect DirectRenderer::DrawingFrame::ComputeScissorRectForRenderPass()
-    const {
-  if (current_render_pass == root_render_pass)
-    return root_damage_rect;
-
-  // If the root damage rect has been expanded due to overlays, all the other
-  // damage rect calculations are incorrect.
-  if (!root_render_pass->damage_rect.Contains(root_damage_rect))
-    return current_render_pass->output_rect;
-
-  DCHECK(
-      current_render_pass->copy_requests.empty() ||
-      (current_render_pass->damage_rect == current_render_pass->output_rect));
-  return current_render_pass->damage_rect;
-}
-
 gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace() const {
   gfx::Rect device_viewport_rect(current_frame()->device_viewport_size);
   device_viewport_rect -= current_viewport_rect_.OffsetFromOrigin();
@@ -524,8 +501,9 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
 
 void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawRenderPass");
-  if (!UseRenderPass(render_pass))
+  if (CanSkipRenderPass(render_pass))
     return;
+  UseRenderPass(render_pass);
 
   const gfx::Rect surface_rect_in_draw_space = OutputSurfaceRectInDrawSpace();
   gfx::Rect render_pass_scissor_in_draw_space = surface_rect_in_draw_space;
@@ -538,7 +516,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
   if (use_partial_swap_) {
     render_pass_scissor_in_draw_space.Intersect(
-        current_frame()->ComputeScissorRectForRenderPass());
+        ComputeScissorRectForRenderPass(current_frame()->current_render_pass));
   }
 
   bool is_root_render_pass =
@@ -624,9 +602,42 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     GenerateMipmap();
 }
 
-bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
+bool DirectRenderer::CanSkipRenderPass(const RenderPass* render_pass) const {
+  if (render_pass == current_frame()->root_render_pass)
+    return false;
+
+  // If the RenderPass wants to be cached, then we only draw it if we need to.
+  // When damage is present, then we can't skip the RenderPass. Or if the
+  // texture does not exist (first frame, or was deleted) then we can't skip
+  // the RenderPass, but that is checked above already.
+  if (render_pass->cache_render_pass) {
+    if (render_pass->has_damage_from_contributing_content)
+      return false;
+    auto it = render_pass_textures_.find(render_pass->id);
+    DCHECK(it != render_pass_textures_.end());
+    DCHECK(it->second);
+    if (it->second->id() == 0)
+      return false;
+    // Normally the scissor rect shouldn't affect caching, as that is global
+    // damage and not local to the RenderPass. It can be part of the scissor
+    // without the contents of the RenderPass being dirty - which is why there
+    // is a check for |has_damage_from_contributing_content| above. However the
+    // damage in the RenderPass can be modified by SurfaceAggregator, so we
+    // check to verify if that's the case.
+    // TODO(danakj) This check was done to be sure to have the needed content
+    // available when partial swapping. But for a cached RenderPass we have all
+    // the content already, so this is redundant and prevents cacheing from
+    // working correctly. Just remove this?
+    if (!ComputeScissorRectForRenderPass(render_pass).IsEmpty())
+      return false;
+    return true;
+  }
+
+  return false;
+}
+
+void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
-  current_frame()->current_texture = nullptr;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
 
@@ -637,7 +648,7 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);
-    return true;
+    return;
   }
 
   cc::ScopedResource* texture = render_pass_textures_[render_pass->id].get();
@@ -646,26 +657,36 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   gfx::Size size = RenderPassTextureSize(render_pass);
   size.Enlarge(enlarge_pass_texture_amount_.width(),
                enlarge_pass_texture_amount_.height());
+
   if (!texture->id()) {
     texture->Allocate(size, RenderPassTextureHint(render_pass),
                       BackbufferFormat(),
                       current_frame()->current_render_pass->color_space);
-  } else if (render_pass->cache_render_pass &&
-             !render_pass->has_damage_from_contributing_content) {
-    return false;
-  } else if (current_frame()->ComputeScissorRectForRenderPass().IsEmpty()) {
-    return false;
   }
   DCHECK(texture->id());
 
-  if (BindFramebufferToTexture(texture)) {
-    InitializeViewport(current_frame(), render_pass->output_rect,
-                       gfx::Rect(render_pass->output_rect.size()),
-                       texture->size());
-    return true;
-  }
+  BindFramebufferToTexture(texture);
+  InitializeViewport(current_frame(), render_pass->output_rect,
+                     gfx::Rect(render_pass->output_rect.size()),
+                     texture->size());
+}
 
-  return false;
+gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
+    const RenderPass* render_pass) const {
+  const RenderPass* root_render_pass = current_frame()->root_render_pass;
+  const gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
+
+  if (render_pass == root_render_pass)
+    return root_damage_rect;
+
+  // If the root damage rect has been expanded due to overlays, all the other
+  // damage rect calculations are incorrect.
+  if (!root_render_pass->damage_rect.Contains(root_damage_rect))
+    return render_pass->output_rect;
+
+  DCHECK(render_pass->copy_requests.empty() ||
+         (render_pass->damage_rect == render_pass->output_rect));
+  return render_pass->damage_rect;
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(
