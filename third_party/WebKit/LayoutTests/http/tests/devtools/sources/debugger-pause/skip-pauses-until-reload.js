@@ -1,66 +1,33 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testFunction()
-{
-    console.log("Begin");
-    debugger; // Reload follows, nothing below should break.
-    console.log("Middle: Breakpoint 1"); // Breakpoint
-    console.log("Middle: Breakpoint 2"); // Breakpoint
-    console.assert(false, "Assertion failed!");
-    console.error("Some console.error message");
-    debugger; // Should skip this also.
-    var element = document.getElementById("element");
-    var parent = element.parentElement;
-    var child = document.createElement("span");
-    element.setAttribute("foo", "bar"); // DOM breakpoint: AttributeModified
-    element.appendChild(child);         // DOM breakpoint: SubtreeModified
-    parent.removeChild(element);        // DOM breakpoint: NodeRemoved
-    parent.appendChild(element);
-    element.click(); // Event breakpoint
-    console.log("End");
-    // Should be last.
-    eval("throwException()");
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload.`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('sources');
 
-function throwException()
-{
-    function inner()
-    {
-        try {
-            if (window.foo === 1)
-                throw new Error("error message");
-        } finally {
-            ++window.foo;
-        }
-    }
-    try {
-        window.foo = 1;
-        inner();
-    } finally {
-        ++window.foo;
-    }
-}
+  await TestRunner.navigatePromise('resources/skip-pauses-until-reload.html')
 
-function test() {
   SourcesTestRunner.startDebuggerTest(step1);
 
   function step1() {
-    SourcesTestRunner.showScriptSource('skip-pauses-until-reload.html', didShowScriptSource);
+    SourcesTestRunner.showScriptSource(
+        'skip-pauses-until-reload.html', didShowScriptSource);
   }
 
   function didShowScriptSource(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
     TestRunner.addResult('Set up breakpoints.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 12, '', true);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
     TestRunner.addResult('Set up to pause on all exceptions.');
     // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
-    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    TestRunner.DebuggerAgent.setPauseOnExceptions(
+        SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
     ElementsTestRunner.nodeWithId('element', didResolveNode);
     testRunner.logToStderr('didShowScriptSource');
   }
@@ -68,9 +35,12 @@ function test() {
   function didResolveNode(node) {
     testRunner.logToStderr('didResolveNode');
     TestRunner.addResult('Set up DOM breakpoints.');
-    TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
-    TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
-    TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+    TestRunner.domDebuggerModel.setDOMBreakpoint(
+        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+    TestRunner.domDebuggerModel.setDOMBreakpoint(
+        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+    TestRunner.domDebuggerModel.setDOMBreakpoint(
+        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
     setUpEventBreakpoints();
   }
 
@@ -125,16 +95,4 @@ function test() {
     SourcesTestRunner.setEventListenerBreakpoint('listener:click', false);
     SourcesTestRunner.completeDebuggerTest();
   }
-}; 
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload.
-</p>
-
-<div id="element" onclick="return 0;"></div>
-</body>
-</html>
+})();

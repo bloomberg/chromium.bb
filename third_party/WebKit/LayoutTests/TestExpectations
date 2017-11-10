@@ -3147,7 +3147,7 @@ crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listen
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar-jquery2.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/elements/event-listener-sidebar.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/runtime/runtime-getProperties.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 virtual/mojo-loading/http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
@@ -3161,7 +3161,7 @@ crbug.com/v8/4958 http/tests/devtools/elements/event-listener-sidebar-jquery1.js
 crbug.com/v8/4958 http/tests/devtools/elements/event-listener-sidebar-jquery2.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/elements/event-listener-sidebar.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/runtime/runtime-getProperties.js [ NeedsManualRebaseline ]
-crbug.com/v8/4958 http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
+crbug.com/v8/4958 http/tests/devtools/sources/debugger-pause/debugger-pause-in-internal.js [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/function-generator-details.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
 crbug.com/v8/4958 http/tests/devtools/sources/debugger/properties-special.js [ NeedsManualRebaseline ]
@@ -3675,8 +3675,8 @@ crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.ht
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Skip ]
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
-crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
-crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
+crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_jis/sjis-encode-form-errors-han.html [ Pass Timeout ]
 crbug.com/778271 [ Win Debug ] http/tests/devtools/tracing/frame-model-instrumentation.html [ Pass Failure ]
