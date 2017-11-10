@@ -293,6 +293,9 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   line_break.AddState(ui::AX_STATE_EDITABLE);
   line_break.SetName("\n");
 
+  inline_box1.AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID, line_break.id);
+  line_break.AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID, inline_box1.id);
+
   ui::AXNodeData static_text2;
   static_text2.id = 6;
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;

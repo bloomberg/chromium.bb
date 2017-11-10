@@ -4,7 +4,7 @@
 
 #include "ui/accessibility/ax_node_position.h"
 
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_util.h"
 #include "ui/accessibility/ax_enums.h"
 
 namespace ui {
@@ -84,14 +84,13 @@ int AXNodePosition::MaxTextOffset() const {
   return static_cast<int>(GetInnerText().length());
 }
 
-// TODO(nektar): There might be other newline characters than '\n'.
-bool AXNodePosition::IsInLineBreak() const {
+bool AXNodePosition::IsInWhiteSpace() const {
   switch (kind()) {
     case AXPositionKind::NULL_POSITION:
       return false;
     case AXPositionKind::TREE_POSITION:
     case AXPositionKind::TEXT_POSITION:
-      return GetInnerText() == base::UTF8ToUTF16("\n");
+      return base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
   }
   NOTREACHED();
   return false;

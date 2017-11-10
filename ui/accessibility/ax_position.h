@@ -281,14 +281,6 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION:
-        // Special case, when the caret is right after a line break and the next
-        // position is not another line break. We should return |true| because
-        // visually the caret is at the beginning of a new line.
-        if (text_position->IsInLineBreak()) {
-          return text_position->AtEndOfAnchor() &&
-                 !text_position->CreateNextTextAnchorPosition()
-                      ->IsInLineBreak();
-        }
         return GetPreviousOnLineID(text_position->anchor_id_) ==
                    INVALID_ANCHOR_ID &&
                text_position->AtStartOfAnchor();
@@ -305,17 +297,22 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION:
-        // Special case, when the caret is right before a line break and the
-        // previous position is not another line break. We should return |true|
-        // because visually the caret is at the end of the current line.
-        if (text_position->IsInLineBreak()) {
-          return text_position->AtStartOfAnchor() &&
-                 !text_position->CreatePreviousTextAnchorPosition()
-                      ->IsInLineBreak();
+        // If affinity has been used to specify whether the caret is at the end
+        // of a line or at the start of the next one, this should have been
+        // reflected in the text position we got. In other cases, we assume that
+        // white space is being used to separate lines.
+        if (GetNextOnLineID(text_position->anchor_id_) == INVALID_ANCHOR_ID) {
+          if (text_position->IsInWhiteSpace()) {
+            return !text_position->AtStartOfLine() &&
+                   text_position->AtStartOfAnchor();
+          } else {
+            return text_position->AtEndOfAnchor();
+          }
         }
-        return GetNextOnLineID(text_position->anchor_id_) ==
-                   INVALID_ANCHOR_ID &&
-               text_position->AtEndOfAnchor();
+
+        // The current anchor might be followed by a soft line break.
+        if (text_position->AtEndOfAnchor())
+          return text_position->CreateNextTextAnchorPosition()->AtEndOfLine();
     }
     return false;
   }
@@ -378,7 +375,9 @@ class AXPosition {
       DCHECK(child);
       int child_length = child->MaxTextOffsetInParent();
       if (copy->text_offset_ >= current_offset &&
-          copy->text_offset_ < (current_offset + child_length)) {
+          (copy->text_offset_ < (current_offset + child_length) ||
+           (copy->affinity_ == AX_TEXT_AFFINITY_UPSTREAM &&
+            copy->text_offset_ == (current_offset + child_length)))) {
         copy->child_index_ = i;
         break;
       }
@@ -458,9 +457,6 @@ class AXPosition {
 
     child_position = child_position->AsTextPosition();
     child_position->text_offset_ = adjusted_offset;
-    // Affinity needs to be maintained, because we are not moving the position
-    // but simply changing the anchor to the deepest leaf.
-    child_position->affinity_ = affinity_;
     return child_position->AsLeafTextPosition();
   }
 
@@ -913,17 +909,10 @@ class AXPosition {
       return clone;
     }
 
-    // Find the next line break.
-    int32_t next_on_line_id = text_position->anchor_id_;
-    while (GetNextOnLineID(next_on_line_id) != INVALID_ANCHOR_ID)
-      next_on_line_id = GetNextOnLineID(next_on_line_id);
-    text_position =
-        CreateTextPosition(tree_id_, next_on_line_id, 0 /* text_offset */,
-                           AX_TEXT_AFFINITY_DOWNSTREAM);
-    text_position =
-        text_position->AsLeafTextPosition()->CreateNextTextAnchorPosition();
-    while (text_position->IsInLineBreak())
+    do {
       text_position = text_position->CreateNextTextAnchorPosition();
+    } while (!text_position->AtStartOfLine() &&
+             !text_position->IsNullPosition());
     if (text_position->IsNullPosition()) {
       if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
         return CreatePositionAtEndOfAnchor();
@@ -958,21 +947,16 @@ class AXPosition {
       return clone;
     }
 
-    if (text_position->IsInLineBreak() || text_position->AtStartOfAnchor())
+    if (text_position->AtStartOfAnchor()) {
       text_position = text_position->CreatePreviousTextAnchorPosition();
-    if (text_position->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-        return CreatePositionAtStartOfAnchor();
-      return text_position;
+    } else {
+      text_position = text_position->CreatePositionAtStartOfAnchor();
     }
 
-    int32_t previous_on_line_id = text_position->anchor_id_;
-    while (GetPreviousOnLineID(previous_on_line_id) != INVALID_ANCHOR_ID)
-      previous_on_line_id = GetPreviousOnLineID(previous_on_line_id);
-    text_position =
-        CreateTextPosition(tree_id_, previous_on_line_id, 0 /* text_offset */,
-                           AX_TEXT_AFFINITY_DOWNSTREAM);
-    text_position = text_position->AsLeafTextPosition();
+    while (!text_position->AtStartOfLine() &&
+           !text_position->IsNullPosition()) {
+      text_position = text_position->CreatePreviousTextAnchorPosition();
+    }
     if (text_position->IsNullPosition()) {
       if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
         return CreatePositionAtStartOfAnchor();
@@ -997,7 +981,7 @@ class AXPosition {
   }
 
   // Line end positions are one past the last character of the line, excluding
-  // any newline characters.
+  // any white space or newline characters that separate the lines.
   AXPositionInstance CreateNextLineEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
     bool was_tree_position = IsTreePosition();
@@ -1009,32 +993,24 @@ class AXPosition {
       return clone;
     }
 
-    // Skip forward to the next line if we are at the end of one.
-    // Note that not all lines end with a hard line break.
-    while (text_position->IsInLineBreak() || text_position->AtEndOfAnchor())
-      text_position = text_position->CreateNextTextAnchorPosition();
-    if (text_position->IsNullPosition()) {
-      if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
-        return CreatePositionAtEndOfAnchor();
-      return text_position;
+    if (text_position->AtEndOfAnchor()) {
+      text_position = text_position->CreateNextTextAnchorPosition()
+                          ->CreatePositionAtEndOfAnchor();
+    } else {
+      text_position = text_position->CreatePositionAtEndOfAnchor();
     }
 
-    // Find the next line break.
-    int32_t next_on_line_id = text_position->anchor_id_;
-    while (GetNextOnLineID(next_on_line_id) != INVALID_ANCHOR_ID)
-      next_on_line_id = GetNextOnLineID(next_on_line_id);
-    text_position =
-        CreateTextPosition(tree_id_, next_on_line_id, 0 /* text_offset */,
-                           AX_TEXT_AFFINITY_DOWNSTREAM);
-    text_position = text_position->AsLeafTextPosition();
-    while (text_position->IsInLineBreak())
-      text_position = text_position->CreatePreviousTextAnchorPosition();
+    while (!text_position->AtEndOfLine() && !text_position->IsNullPosition()) {
+      text_position = text_position->CreateNextTextAnchorPosition();
+      if (text_position->AtEndOfLine())
+        break;
+      text_position = text_position->CreatePositionAtEndOfAnchor();
+    }
     if (text_position->IsNullPosition()) {
       if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
         return CreatePositionAtEndOfAnchor();
       return text_position;
     }
-    text_position = text_position->CreatePositionAtEndOfAnchor();
 
     // If the line boundary is in the same subtree, return a position rooted at
     // the current position.
@@ -1054,7 +1030,7 @@ class AXPosition {
   }
 
   // Line end positions are one past the last character of the line, excluding
-  // any newline characters.
+  // any white space or newline characters separating the lines.
   AXPositionInstance CreatePreviousLineEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
     bool was_tree_position = IsTreePosition();
@@ -1068,22 +1044,18 @@ class AXPosition {
       return clone;
     }
 
-    int32_t previous_on_line_id = text_position->anchor_id_;
-    while (GetPreviousOnLineID(previous_on_line_id) != INVALID_ANCHOR_ID)
-      previous_on_line_id = GetPreviousOnLineID(previous_on_line_id);
-    text_position =
-        CreateTextPosition(tree_id_, previous_on_line_id, 0 /* text_offset */,
-                           AX_TEXT_AFFINITY_DOWNSTREAM);
-    text_position =
-        text_position->AsLeafTextPosition()->CreatePreviousTextAnchorPosition();
-    while (text_position->IsInLineBreak())
-      text_position = text_position->CreatePreviousTextAnchorPosition();
+    do {
+      text_position = text_position->CreatePreviousTextAnchorPosition()
+                          ->CreatePositionAtEndOfAnchor();
+      if (text_position->AtEndOfLine())
+        break;
+      text_position = text_position->CreatePositionAtStartOfAnchor();
+    } while (!text_position->AtEndOfLine() && !text_position->IsNullPosition());
     if (text_position->IsNullPosition()) {
       if (boundary_behavior == AXBoundaryBehavior::StopAtAnchorBoundary)
         return CreatePositionAtStartOfAnchor();
       return text_position;
     }
-    text_position = text_position->CreatePositionAtEndOfAnchor();
 
     // If the line boundary is in the same subtree, return a position rooted at
     // the current position.
@@ -1243,7 +1215,7 @@ class AXPosition {
   // On some platforms, embedded objects are represented in their parent with a
   // single embedded object character.
   virtual int MaxTextOffsetInParent() const { return MaxTextOffset(); }
-  virtual bool IsInLineBreak() const = 0;
+  virtual bool IsInWhiteSpace() const = 0;
   virtual std::vector<int32_t> GetWordStartOffsets() const = 0;
   virtual std::vector<int32_t> GetWordEndOffsets() const = 0;
   virtual int32_t GetNextOnLineID(int32_t node_id) const = 0;
