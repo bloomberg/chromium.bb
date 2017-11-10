@@ -3,37 +3,32 @@
 # found in the LICENSE file.
 
 from telemetry.page import legacy_page_test
-from telemetry.timeline import chrome_trace_category_filter
-from telemetry.web_perf import timeline_based_measurement
+from telemetry.timeline import model as model_module
+from telemetry.value import trace
 from telemetry.web_perf.metrics import smoothness
+from telemetry.web_perf import smooth_gesture_util
+from telemetry.web_perf import timeline_interaction_record as tir_module
+from telemetry.timeline import tracing_config
 
 
-class _CustomResultsWrapper(timeline_based_measurement.ResultsWrapperInterface):
-
-  def __init__(self):
-    super(_CustomResultsWrapper, self).__init__()
-    self._pages_to_tir_labels = {}
-
-  def _AssertNewValueHasSameInteractionLabel(self, new_value):
-    tir_label = self._pages_to_tir_labels.get(new_value.page)
-    if tir_label:
-      assert tir_label == self._tir_label, (
-          'Smoothness measurement do not support multiple interaction record '
-          'labels per page yet. See crbug.com/453109 for more information.')
-    else:
-      self._pages_to_tir_labels[new_value.page] = self._tir_label
-
-  def AddValue(self, value):
-    self._AssertNewValueHasSameInteractionLabel(value)
-    self._results.AddValue(value)
+def _CollectRecordsFromRendererThreads(model, renderer_thread):
+  records = []
+  for event in renderer_thread.async_slices:
+    if tir_module.IsTimelineInteractionRecord(event.name):
+      interaction = tir_module.TimelineInteractionRecord.FromAsyncEvent(event)
+      # Adjust the interaction record to match the synthetic gesture
+      # controller if needed.
+      interaction = (
+          smooth_gesture_util.GetAdjustedInteractionIfContainGesture(
+              model, interaction))
+      records.append(interaction)
+  return records
 
 
 class Smoothness(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(Smoothness, self).__init__()
-    self._results_wrapper = _CustomResultsWrapper()
-    self._tbm = None
     self._results = None
 
   @classmethod
@@ -44,24 +39,65 @@ class Smoothness(legacy_page_test.LegacyPageTest):
   def WillNavigateToPage(self, page, tab):
     # FIXME: Remove webkit.console when blink.console lands in chromium and
     # the ref builds are updated. crbug.com/386847
+    config = tracing_config.TracingConfig()
+    config.enable_chrome_trace = True
+    config.enable_platform_display_trace = True
+
+    # Basic categories for smoothness.
     custom_categories = [
         'webkit.console', 'blink.console', 'benchmark', 'trace_event_overhead']
-    category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        ','.join(custom_categories))
-    if self.options and self.options.extra_chrome_categories:
-      category_filter.AddFilterString(self.options.extra_chrome_categories)
+    for cat in custom_categories:
+      config.chrome_trace_config.category_filter.AddFilterString(cat)
 
-    options = timeline_based_measurement.Options(category_filter)
-    options.config.enable_platform_display_trace = True
-    options.SetLegacyTimelineBasedMetrics([smoothness.SmoothnessMetric()])
-    self._tbm = timeline_based_measurement.TimelineBasedMeasurement(
-        options, self._results_wrapper)
-    self._tbm.WillRunStory(tab.browser.platform)
+    # Extra categories from commandline flag.
+    if self.options and self.options.extra_chrome_categories:
+      config.chrome_trace_config.category_filter.AddFilterString(
+          self.options.extra_chrome_categories)
+
+    tab.browser.platform.tracing_controller.StartTracing(config)
 
   def ValidateAndMeasurePage(self, _, tab, results):
     self._results = results
-    self._tbm.Measure(tab.browser.platform, results)
+    trace_result = tab.browser.platform.tracing_controller.StopTracing()
+
+    # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
+    # where we're changing the return type of StopTracing from a TraceValue to a
+    # (TraceValue, nonfatal_exception_list) tuple. Once the tuple return value
+    # lands in Chromium, the non-tuple logic should be deleted.
+    if isinstance(trace_result, tuple):
+      trace_result = trace_result[0]
+
+    trace_value = trace.TraceValue(
+        results.current_page, trace_result,
+        file_path=results.telemetry_info.trace_local_path,
+        remote_path=results.telemetry_info.trace_remote_path,
+        upload_bucket=results.telemetry_info.upload_bucket,
+        cloud_url=results.telemetry_info.trace_remote_url)
+    results.AddValue(trace_value)
+
+    model = model_module.TimelineModel(trace_result)
+    renderer_thread = model.GetRendererThreadFromTabId(tab.id)
+    records = _CollectRecordsFromRendererThreads(model, renderer_thread)
+    metric = smoothness.SmoothnessMetric()
+    metric.AddResults(model, renderer_thread, records, results)
 
   def DidRunPage(self, platform):
-    if self._tbm:
-      self._tbm.DidRunStory(platform, self._results)
+    if platform.tracing_controller.is_tracing_running:
+      trace_result = platform.tracing_controller.StopTracing()
+      if self._results:
+
+        # TODO(charliea): This is part of a three-sided Chromium/Telemetry patch
+        # where we're changing the return type of StopTracing from a TraceValue
+        # to a (TraceValue, nonfatal_exception_list) tuple. Once the tuple
+        # return value lands in Chromium, the non-tuple logic should be deleted.
+        if isinstance(trace_result, tuple):
+          trace_result = trace_result[0]
+
+        trace_value = trace.TraceValue(
+            self._results.current_page, trace_result,
+            file_path=self._results.telemetry_info.trace_local_path,
+            remote_path=self._results.telemetry_info.trace_remote_path,
+            upload_bucket=self._results.telemetry_info.upload_bucket,
+            cloud_url=self._results.telemetry_info.trace_remote_url)
+
+        self._results.AddValue(trace_value)
