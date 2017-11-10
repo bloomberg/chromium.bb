@@ -20,7 +20,6 @@
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/scroll_offset_animations_impl.h"
-#include "cc/animation/scroll_timeline.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/worklet_animation_player.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -293,8 +292,7 @@ bool AnimationHost::ActivateAnimations() {
   return true;
 }
 
-bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
-                                   const ScrollTree& scroll_tree) {
+bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time) {
   TRACE_EVENT0("cc", "AnimationHost::TickAnimations");
   bool did_animate = false;
 
@@ -310,15 +308,14 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
     // trees similar to other animations. However our final goal is to only call
     // it once, ideally after activation, and only when the input
     // to an active timeline has changed. http://crbug.com/767210
-    mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
+    mutator_->Mutate(CollectAnimatorsState(monotonic_time));
     did_animate = true;
   }
 
   return did_animate;
 }
 
-void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
-                                         const ScrollTree& scroll_tree) {
+void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time) {
   // TODO(majidvp) For now the logic simply assumes all AnimationWorklet
   // animations depend on scroll offset but this is inefficient. We need a more
   // fine-grained approach based on invalidating individual ScrollTimelines and
@@ -328,12 +325,11 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
   if (mutator_)
-    mutator_->Mutate(CollectAnimatorsState(monotonic_time, scroll_tree));
+    mutator_->Mutate(CollectAnimatorsState(monotonic_time));
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
-    base::TimeTicks monotonic_time,
-    const ScrollTree& scroll_tree) {
+    base::TimeTicks timeline_time) {
   TRACE_EVENT0("cc", "AnimationHost::CollectAnimatorsState");
   std::unique_ptr<MutatorInputState> result =
       base::MakeUnique<MutatorInputState>();
@@ -344,9 +340,10 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(
 
     WorkletAnimationPlayer* worklet_player =
         static_cast<WorkletAnimationPlayer*>(player.get());
+    // TODO(majidvp): Do not assume timeline time to be the worklet player's
+    // current time but instead ask the player to provide it.
     MutatorInputState::AnimationState state{
-        worklet_player->id(), worklet_player->name(),
-        worklet_player->CurrentTime(monotonic_time, scroll_tree)};
+        worklet_player->id(), worklet_player->name(), timeline_time};
 
     result->animations.push_back(std::move(state));
   }

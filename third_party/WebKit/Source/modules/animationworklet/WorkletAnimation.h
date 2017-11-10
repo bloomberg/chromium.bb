@@ -49,7 +49,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void cancel();
 
   // WorkletAnimationBase implementation.
-  bool StartOnCompositor(String* failure_message) override;
+  bool StartOnCompositor() override;
 
   // CompositorAnimationPlayerClient implementation.
   CompositorAnimationPlayer* CompositorPlayer() const override {

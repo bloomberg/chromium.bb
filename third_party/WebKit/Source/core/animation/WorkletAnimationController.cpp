@@ -7,13 +7,10 @@
 #include "core/animation/WorkletAnimationBase.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-WorkletAnimationController::WorkletAnimationController(Document* document)
-    : document_(document) {}
+WorkletAnimationController::WorkletAnimationController() = default;
 
 WorkletAnimationController::~WorkletAnimationController() = default;
 
@@ -46,20 +43,16 @@ void WorkletAnimationController::Update() {
   HeapHashSet<Member<WorkletAnimationBase>> animations;
   animations.swap(pending_animations_);
   for (const auto& animation : animations) {
-    String failure_message;
-    if (animation->StartOnCompositor(&failure_message)) {
+    if (animation->StartOnCompositor()) {
       compositor_animations_.insert(animation);
-    } else {
-      document_->AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kWarningMessageLevel, failure_message));
     }
+    // TODO(smcgruer): On failure, warn user. Perhaps fire cancel event?
   }
 }
 
 void WorkletAnimationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_animations_);
   visitor->Trace(compositor_animations_);
-  visitor->Trace(document_);
 }
 
 }  // namespace blink
