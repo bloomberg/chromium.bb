@@ -187,12 +187,11 @@ public class ExternalAuthUtils {
      * helper methods {@link #checkGooglePlayServicesAvailable(Context)},
      * {@link #describeError(int)}, and {@link #isUserRecoverableError(int)} instead, which are
      * called in that order (as necessary) by this method.
-     * @param context The current context.
      * @param errorHandler How to handle user-recoverable errors; must be non-null.
      * @return true if and only if Google Play Services can be used
      */
-    public boolean canUseGooglePlayServices(
-            final Context context, final UserRecoverableErrorHandler errorHandler) {
+    public boolean canUseGooglePlayServices(final UserRecoverableErrorHandler errorHandler) {
+        Context context = ContextUtils.getApplicationContext();
         final int resultCode = checkGooglePlayServicesAvailable(context);
         recordConnectionResult(resultCode);
         if (resultCode == ConnectionResult.SUCCESS) {
@@ -212,8 +211,23 @@ public class ExternalAuthUtils {
         return false;
     }
 
+    // Temporary placeholder to be removed after downstream fix.
+    public boolean canUseGooglePlayServices(
+            final Context context, final UserRecoverableErrorHandler errorHandler) {
+        return canUseGooglePlayServices(errorHandler);
+    }
+
     /**
-     * Same as {@link #canUseGooglePlayServices(Context, UserRecoverableErrorHandler)}
+     * Shortcut of {@link #canUseGooglePlayServices(UserRecoverableErrorHandler)}.
+     *
+     * @return true if and only if Google Play Services can be used
+     */
+    public static boolean canUseGooglePlayServices() {
+        return getInstance().canUseGooglePlayServices(new UserRecoverableErrorHandler.Silent());
+    }
+
+    /**
+     * Same as {@link #canUseGooglePlayServices(UserRecoverableErrorHandler)}
      * but also with the constraint that first-party APIs must be available. This check is
      * implemented by verifying that the package is Google-signed; if not, first-party APIs will
      * be unavailable at runtime.
@@ -224,33 +238,46 @@ public class ExternalAuthUtils {
      * Play Services provides "canned" ways to deal with failures; there is no special handling of
      * the case where the Google Play Services check succeeds and the Google-signed package check
      * fails (the method will simply return false).
-     * @param context The current context.
      * @param userRecoverableErrorHandler How to handle user-recoverable errors from Google
      * Play Services; must be non-null.
      * @return true if and only if first-party Google Play Services can be used
      */
     @WorkerThread
     public boolean canUseFirstPartyGooglePlayServices(
-            Context context, UserRecoverableErrorHandler userRecoverableErrorHandler) {
-        return canUseGooglePlayServices(context, userRecoverableErrorHandler)
-                && isChromeGoogleSigned();
+            UserRecoverableErrorHandler userRecoverableErrorHandler) {
+        return canUseGooglePlayServices(userRecoverableErrorHandler) && isChromeGoogleSigned();
+    }
+
+    // Temporary placeholder to be removed after downstream fix.
+    public boolean canUseFirstPartyGooglePlayServices(
+            final Context context, final UserRecoverableErrorHandler errorHandler) {
+        return canUseFirstPartyGooglePlayServices(errorHandler);
     }
 
     /**
-     * Same as {@link #canUseFirstPartyGooglePlayServices(Context, UserRecoverableErrorHandler)},
+     * Shortcut of {@link #canUseFirstPartyGooglePlayServices(UserRecoverableErrorHandler)}.
+     *
+     * @return true if and only if first-party Google Play Services can be used
+     */
+    public static boolean canUseFirstPartyGooglePlayServices() {
+        return getInstance().canUseFirstPartyGooglePlayServices(
+                new UserRecoverableErrorHandler.Silent());
+    }
+
+    /**
+     * Same as {@link #canUseFirstPartyGooglePlayServices(UserRecoverableErrorHandler)},
      * but completes the task in the background to avoid any potentially slow calls blocking the
      * UI thread.
-     * @param context The current context.
      * @param userRecoverableErrorHandler How to handle user-recoverable errors from Google
      * Play Services; must be non-null.
      * @param callback Callback to receive whether or not first party Play Services are available.
      */
-    public void canUseFirstPartyGooglePlayServices(Context context,
+    public void canUseFirstPartyGooglePlayServices(
             UserRecoverableErrorHandler userRecoverableErrorHandler, Callback<Boolean> callback) {
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... voids) {
-                return canUseGooglePlayServices(context, userRecoverableErrorHandler)
+                return canUseGooglePlayServices(userRecoverableErrorHandler)
                         && isChromeGoogleSigned();
             }
 

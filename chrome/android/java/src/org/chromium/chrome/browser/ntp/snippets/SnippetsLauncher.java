@@ -18,7 +18,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 
 /**
  * The {@link SnippetsLauncher} singleton is created and owned by the C++ browser.
@@ -84,14 +83,9 @@ public class SnippetsLauncher {
         mScheduler = GcmNetworkManager.getInstance(ContextUtils.getApplicationContext());
     }
 
-    private boolean canUseGooglePlayServices() {
-        return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                ContextUtils.getApplicationContext(), new UserRecoverableErrorHandler.Silent());
-    }
-
     private void checkGCM() {
         // Check to see if Play Services is up to date, and disable GCM if not.
-        if (!canUseGooglePlayServices()) {
+        if (!ExternalAuthUtils.canUseGooglePlayServices()) {
             mGCMEnabled = false;
             Log.i(TAG, "Disabling SnippetsLauncher because Play Services is not up to date.");
         }

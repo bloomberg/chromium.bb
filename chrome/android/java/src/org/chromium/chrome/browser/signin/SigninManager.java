@@ -379,7 +379,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             UserRecoverableErrorHandler errorHandler = activity != null
                     ? new UserRecoverableErrorHandler.ModalDialog(activity, !isForceSigninEnabled())
                     : new UserRecoverableErrorHandler.SystemNotification();
-            ExternalAuthUtils.getInstance().canUseGooglePlayServices(mContext, errorHandler);
+            ExternalAuthUtils.getInstance().canUseGooglePlayServices(errorHandler);
             Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
             abortSignIn();
         }

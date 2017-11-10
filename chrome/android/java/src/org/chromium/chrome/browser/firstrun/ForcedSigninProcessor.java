@@ -113,7 +113,7 @@ public final class ForcedSigninProcessor {
     public static void checkCanSignIn(final ChromeActivity activity) {
         final Context appContext = activity.getApplicationContext();
         if (SigninManager.get(appContext).isForceSigninEnabled()) {
-            ExternalAuthUtils.getInstance().canUseGooglePlayServices(appContext,
+            ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     new UserRecoverableErrorHandler.ModalDialog(activity, false));
         }
     }
