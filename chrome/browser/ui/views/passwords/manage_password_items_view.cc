@@ -145,7 +145,6 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (form.federation_origin.unique() && !is_password_visible)
     label->SetObscured(true);
-  label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   return label;
 }
 
