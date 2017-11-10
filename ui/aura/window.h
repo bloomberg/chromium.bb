@@ -454,6 +454,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnLayerBoundsChanged(const gfx::Rect& old_bounds,
                             ui::PropertyChangeReason reason) override;
+  void OnLayerTransformed(ui::PropertyChangeReason reason) override;
   void OnLayerOpacityChanged(ui::PropertyChangeReason reason) override;
 
   // Overridden from ui::EventTarget:

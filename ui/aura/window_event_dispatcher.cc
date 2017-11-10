@@ -732,18 +732,26 @@ void WindowEventDispatcher::OnWindowBoundsChanged(
   }
 }
 
-void WindowEventDispatcher::OnWindowTransforming(Window* window) {
-  if (!host_->window()->Contains(window))
-    return;
-
-  SynthesizeMouseMoveAfterChangeToWindow(window);
+void WindowEventDispatcher::OnWindowTargetTransformChanging(
+    Window* window,
+    const gfx::Transform& new_transform) {
+  window_transforming_ = true;
+  if (!synthesize_mouse_move_ && host_->window()->Contains(window))
+    SynthesizeMouseMoveAfterChangeToWindow(window);
 }
 
-void WindowEventDispatcher::OnWindowTransformed(Window* window) {
-  if (!host_->window()->Contains(window))
-    return;
-
-  SynthesizeMouseMoveAfterChangeToWindow(window);
+void WindowEventDispatcher::OnWindowTransformed(
+    Window* window,
+    ui::PropertyChangeReason reason) {
+  // Call SynthesizeMouseMoveAfterChangeToWindow() only if it's the first time
+  // that OnWindowTransformed() is called after
+  // OnWindowTargetTransformChanging() (to avoid generating multiple mouse
+  // events during animation).
+  if (window_transforming_ && !synthesize_mouse_move_ &&
+      host_->window()->Contains(window)) {
+    SynthesizeMouseMoveAfterChangeToWindow(window);
+  }
+  window_transforming_ = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

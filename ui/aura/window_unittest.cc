@@ -39,6 +39,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/compositor/test/test_layers.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -1763,6 +1764,19 @@ class WindowObserverTest : public WindowTest,
         ui::PropertyChangeReason::NOT_FROM_ANIMATION;
   };
 
+  struct WindowTargetTransformChangingInfo {
+    int changed_count = 0;
+    Window* window = nullptr;
+    gfx::Transform new_transform;
+  };
+
+  struct WindowTransformedInfo {
+    int changed_count = 0;
+    Window* window = nullptr;
+    ui::PropertyChangeReason reason =
+        ui::PropertyChangeReason::NOT_FROM_ANIMATION;
+  };
+
   WindowObserverTest()
       : added_count_(0),
         removed_count_(0),
@@ -1782,6 +1796,15 @@ class WindowObserverTest : public WindowTest,
 
   const WindowOpacityInfo& window_opacity_info() const {
     return window_opacity_info_;
+  }
+
+  const WindowTargetTransformChangingInfo&
+  window_target_transform_changing_info() const {
+    return window_target_transform_changing_info_;
+  }
+
+  const WindowTransformedInfo& window_transformed_info() const {
+    return window_transformed_info_;
   }
 
   void ResetVisibilityInfo() {
@@ -1856,6 +1879,21 @@ class WindowObserverTest : public WindowTest,
     window_opacity_info_.reason = reason;
   }
 
+  void OnWindowTargetTransformChanging(
+      Window* window,
+      const gfx::Transform& new_transform) override {
+    ++window_target_transform_changing_info_.changed_count;
+    window_target_transform_changing_info_.window = window;
+    window_target_transform_changing_info_.new_transform = new_transform;
+  }
+
+  void OnWindowTransformed(Window* window,
+                           ui::PropertyChangeReason reason) override {
+    ++window_transformed_info_.changed_count;
+    window_transformed_info_.window = window;
+    window_transformed_info_.reason = reason;
+  }
+
   int added_count_;
   int removed_count_;
   int destroyed_count_;
@@ -1865,6 +1903,8 @@ class WindowObserverTest : public WindowTest,
   std::vector<std::pair<int, int> > transform_notifications_;
   WindowBoundsInfo window_bounds_info_;
   WindowOpacityInfo window_opacity_info_;
+  WindowTargetTransformChangingInfo window_target_transform_changing_info_;
+  WindowTransformedInfo window_transformed_info_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowObserverTest);
 };
@@ -2077,6 +2117,62 @@ TEST_P(WindowObserverTest, WindowOpacityChangedAnimation) {
   EXPECT_EQ(window.get(), window_opacity_info().window);
   EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
             window_opacity_info().reason);
+}
+
+// Verify that WindowObserver::OnWindow(TargetTransformChanging|Transformed)()
+// are notified when SetTransform() is called and there is no animation.
+TEST_P(WindowObserverTest, SetTransform) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+  window->AddObserver(this);
+  gfx::Transform target_transform;
+  target_transform.Skew(10.0, 5.0);
+  window->SetTransform(target_transform);
+
+  ASSERT_EQ(1, window_target_transform_changing_info().changed_count);
+  EXPECT_EQ(window.get(), window_target_transform_changing_info().window);
+  EXPECT_EQ(target_transform,
+            window_target_transform_changing_info().new_transform);
+
+  ASSERT_EQ(1, window_transformed_info().changed_count);
+  EXPECT_EQ(window.get(), window_transformed_info().window);
+  EXPECT_EQ(ui::PropertyChangeReason::NOT_FROM_ANIMATION,
+            window_transformed_info().reason);
+}
+
+// Verify that WindowObserver::OnWindowTransformed)() is notified at the
+// beginning and at the end of a threaded transform animation. Verify that
+// WindowObserver::OnWindowTargetTransformChanging() is notified when the
+// threaded animation is started by SetTransform().
+TEST_P(WindowObserverTest, SetTransformAnimation) {
+  std::unique_ptr<Window> window(CreateTestWindowWithId(1, root_window()));
+  window->AddObserver(this);
+
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  gfx::Transform target_transform;
+  target_transform.Skew(10.0, 5.0);
+  window->SetTransform(target_transform);
+
+  ASSERT_EQ(1, window_target_transform_changing_info().changed_count);
+  EXPECT_EQ(window.get(), window_target_transform_changing_info().window);
+  EXPECT_EQ(target_transform,
+            window_target_transform_changing_info().new_transform);
+
+  ASSERT_EQ(1, window_transformed_info().changed_count);
+  EXPECT_EQ(window.get(), window_transformed_info().window);
+  EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
+            window_transformed_info().reason);
+
+  window->layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::TRANSFORM);
+
+  EXPECT_EQ(1, window_target_transform_changing_info().changed_count);
+
+  ASSERT_EQ(2, window_transformed_info().changed_count);
+  EXPECT_EQ(window.get(), window_transformed_info().window);
+  EXPECT_EQ(ui::PropertyChangeReason::FROM_ANIMATION,
+            window_transformed_info().reason);
 }
 
 TEST_P(WindowTest, AcquireLayer) {
