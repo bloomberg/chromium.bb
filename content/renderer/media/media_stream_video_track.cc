@@ -348,10 +348,10 @@ void MediaStreamVideoTrack::SetContentHint(
     sink->OnContentHintChanged(content_hint);
 }
 
-void MediaStreamVideoTrack::StopAndNotify(base::OnceClosure callback) {
+void MediaStreamVideoTrack::Stop() {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (source_) {
-    source_->RemoveTrack(this, std::move(callback));
+    source_->RemoveTrack(this);
     source_ = nullptr;
   }
   OnReadyStateChanged(blink::WebMediaStreamSource::kReadyStateEnded);
