@@ -490,7 +490,6 @@ bool BlinkTestController::ResetAfterLayoutTest() {
   prefs_ = WebPreferences();
   should_override_prefs_ = false;
   LayoutTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
-  devtools_bindings_.reset();
 
 #if defined(OS_ANDROID)
   // Re-using the shell's main window on Android causes issues with networking
@@ -776,6 +775,7 @@ void BlinkTestController::OnTestFinished() {
   if (!printer_->output_finished())
     printer_->PrintImageFooter();
   main_window_->web_contents()->ExitFullscreen(/*will_cause_resize=*/false);
+  devtools_bindings_.reset();
   devtools_protocol_test_bindings_.reset();
 
   ShellBrowserContext* browser_context =
