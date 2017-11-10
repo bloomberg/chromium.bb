@@ -316,6 +316,10 @@
     "label": "//chrome/android:chrome_sync_shell_test_apk",
     "type": "console_test_launcher",
   },
+  "chromedriver": {
+    "label": "//chrome/test/chromedriver:chromedriver",
+    "type": "additional_compile_target",
+  },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
