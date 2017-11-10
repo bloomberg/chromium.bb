@@ -11,6 +11,8 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
 
 import org.junit.Assert;
 import org.junit.rules.TestWatcher;
@@ -185,6 +187,25 @@ public class RenderTestRule extends TestWatcher {
                 saveBitmap(result.second, createOutputPath(DIFF_FOLDER_RELATIVE, filename));
                 break;
         }
+    }
+
+    /**
+     * Searches the View hierarchy and modifies the Views to provide better stability in tests. For
+     * example it will disable the blinking cursor in EditTexts.
+     */
+    public static void sanitize(View view) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Add more sanitizations as we discover more flaky attributes.
+            if (view instanceof ViewGroup) {
+                ViewGroup viewGroup = (ViewGroup) view;
+                for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                    sanitize(viewGroup.getChildAt(i));
+                }
+            } else if (view instanceof EditText) {
+                EditText editText = (EditText) view;
+                editText.setCursorVisible(false);
+            }
+        });
     }
 
     @Override
