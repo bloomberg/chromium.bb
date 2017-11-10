@@ -141,12 +141,14 @@ bool IsCurrentPageOffline(web::WebState* webState) {
 @end
 
 LocationBarControllerImpl::LocationBarControllerImpl(
-    OmniboxTextFieldIOS* field,
+    LocationBarView* location_bar_view,
     ios::ChromeBrowserState* browser_state,
     id<LocationBarDelegate> delegate,
     id<BrowserCommands> dispatcher)
-    : edit_view_(base::MakeUnique<OmniboxViewIOS>(field, this, browser_state)),
-      field_(field),
+    : edit_view_(base::MakeUnique<OmniboxViewIOS>(location_bar_view.textField,
+                                                  this,
+                                                  browser_state)),
+      location_bar_view_(location_bar_view),
       delegate_(delegate),
       dispatcher_(dispatcher) {
   DCHECK([delegate_ toolbarModel]);
@@ -207,7 +209,7 @@ void LocationBarControllerImpl::OnAutocompleteAccept(
 void LocationBarControllerImpl::OnChanged() {
   const bool page_is_offline = IsCurrentPageOffline(GetWebState());
   const int resource_id = edit_view_->GetIcon(page_is_offline);
-  [field_ setPlaceholderImage:resource_id];
+  [location_bar_view_.textField setPlaceholderImage:resource_id];
 
   // TODO(rohitrao): Can we get focus information from somewhere other than the
   // model?
@@ -220,10 +222,10 @@ void LocationBarControllerImpl::OnChanged() {
           experimental_flags::IsPageIconForDowngradedHTTPSEnabled() &&
           DoesCurrentPageHaveCertInfo(GetWebState());
       if (show_icon_for_state || page_has_downgraded_HTTPS || page_is_offline) {
-        [field_ showPlaceholderImage];
+        [location_bar_view_.textField showPlaceholderImage];
         is_showing_placeholder_while_collapsed_ = true;
       } else {
-        [field_ hidePlaceholderImage];
+        [location_bar_view_.textField hidePlaceholderImage];
         is_showing_placeholder_while_collapsed_ = false;
       }
     }
@@ -232,7 +234,7 @@ void LocationBarControllerImpl::OnChanged() {
 
   NSString* placeholderText =
       show_hint_text_ ? l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT) : nil;
-  [field_ setPlaceholder:placeholderText];
+  [location_bar_view_.textField setPlaceholder:placeholderText];
 }
 
 bool LocationBarControllerImpl::IsShowingPlaceholderWhileCollapsed() {
@@ -250,19 +252,19 @@ void LocationBarControllerImpl::OnKillFocus() {
   // Hide the location icon on phone.  A subsequent call to OnChanged() will
   // bring the icon back if needed.
   if (!IsIPadIdiom()) {
-    [field_ hidePlaceholderImage];
+    [location_bar_view_.textField hidePlaceholderImage];
     is_showing_placeholder_while_collapsed_ = false;
   }
 
   // Update the placeholder icon.
   const int resource_id =
       edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
-  [field_ setPlaceholderImage:resource_id];
+  [location_bar_view_.textField setPlaceholderImage:resource_id];
 
   // Show the placeholder text on iPad.
   if (IsIPadIdiom()) {
     NSString* placeholderText = l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
-    [field_ setPlaceholder:placeholderText];
+    [location_bar_view_.textField setPlaceholder:placeholderText];
   }
 
   UpdateRightDecorations();
@@ -272,16 +274,16 @@ void LocationBarControllerImpl::OnKillFocus() {
 void LocationBarControllerImpl::OnSetFocus() {
   // Show the location icon on phone.
   if (!IsIPadIdiom())
-    [field_ showPlaceholderImage];
+    [location_bar_view_.textField showPlaceholderImage];
 
   // Update the placeholder icon.
   const int resource_id =
       edit_view_->GetIcon(IsCurrentPageOffline(GetWebState()));
-  [field_ setPlaceholderImage:resource_id];
+  [location_bar_view_.textField setPlaceholderImage:resource_id];
 
   // Hide the placeholder text on iPad.
   if (IsIPadIdiom()) {
-    [field_ setPlaceholder:nil];
+    [location_bar_view_.textField setPlaceholder:nil];
   }
   UpdateRightDecorations();
   [delegate_ locationBarHasBecomeFirstResponder];
@@ -319,14 +321,14 @@ void LocationBarControllerImpl::InstallLocationIcon() {
   [button setTitleColor:[UIColor colorWithWhite:0.631 alpha:1]
                forState:UIControlStateNormal];
   [button titleLabel].font = [[MDCTypography fontLoader] regularFontOfSize:12];
-  [field_ setLeftView:button];
+  [location_bar_view_.textField setLeftView:button];
 
   // The placeholder image is only shown when in edit mode on iPhone, and always
   // shown on iPad.
   if (IsIPadIdiom())
-    [field_ setLeftViewMode:UITextFieldViewModeAlways];
+    [location_bar_view_.textField setLeftViewMode:UITextFieldViewModeAlways];
   else
-    [field_ setLeftViewMode:UITextFieldViewModeNever];
+    [location_bar_view_.textField setLeftViewMode:UITextFieldViewModeNever];
 }
 
 void LocationBarControllerImpl::CreateClearTextIcon(bool is_incognito) {
@@ -361,11 +363,11 @@ void LocationBarControllerImpl::UpdateRightDecorations() {
     // Do nothing for iPhone. The right view will be set to nil after the
     // omnibox animation is completed.
     if (IsIPadIdiom())
-      [field_ setRightView:nil];
-  } else if ([field_ displayedText].empty()) {
-    [field_ setRightView:nil];
+      [location_bar_view_.textField setRightView:nil];
+  } else if ([location_bar_view_.textField displayedText].empty()) {
+    [location_bar_view_.textField setRightView:nil];
   } else {
-    [field_ setRightView:clear_text_button_];
+    [location_bar_view_.textField setRightView:clear_text_button_];
     [clear_text_button_ setAlpha:1];
   }
 }
