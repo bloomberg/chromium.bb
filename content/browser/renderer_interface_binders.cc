@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/worker_interface_binders.h"
+#include "content/browser/renderer_interface_binders.h"
 
 #include <utility>
 
 #include "base/bind.h"
+#include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/dedicated_worker/dedicated_worker_host.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -15,7 +17,10 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
@@ -29,9 +34,9 @@ namespace {
 
 // A holder for a parameterized BinderRegistry for content-layer interfaces
 // exposed to web workers.
-class WorkerInterfaceBinders {
+class RendererInterfaceBinders {
  public:
-  WorkerInterfaceBinders() { InitializeParameterizedBinderRegistry(); }
+  RendererInterfaceBinders() { InitializeParameterizedBinderRegistry(); }
 
   // Bind an interface request |interface_pipe| for |interface_name| received
   // from a web worker with origin |origin| hosted in the renderer |host|.
@@ -46,6 +51,16 @@ class WorkerInterfaceBinders {
 
     GetContentClient()->browser()->BindInterfaceRequestFromWorker(
         host, origin, interface_name, std::move(interface_pipe));
+  }
+
+  // Try binding an interface request |interface_pipe| for |interface_name|
+  // received from |frame|.
+  bool TryBindInterface(const std::string& interface_name,
+                        mojo::ScopedMessagePipeHandle* interface_pipe,
+                        RenderFrameHost* frame) {
+    return parameterized_binder_registry_.TryBindInterface(
+        interface_name, interface_pipe, frame->GetProcess(),
+        frame->GetLastCommittedOrigin());
   }
 
  private:
@@ -67,7 +82,13 @@ void ForwardRequest(const char* service_name,
   connector->BindInterface(service_name, std::move(request));
 }
 
-void WorkerInterfaceBinders::InitializeParameterizedBinderRegistry() {
+// Register renderer-exposed interfaces. Each registered interface binder is
+// exposed to all renderer-hosted execution context types (document/frame,
+// dedicated worker, shared worker and service worker) where the appropriate
+// capability spec in the content_browser manifest includes the interface. For
+// interface requests from frames, binders registered on the frame itself
+// override binders registered here.
+void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardRequest<shape_detection::mojom::BarcodeDetection>,
                  shape_detection::mojom::kServiceName));
@@ -77,6 +98,9 @@ void WorkerInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardRequest<shape_detection::mojom::TextDetection>,
                  shape_detection::mojom::kServiceName));
+  parameterized_binder_registry_.AddInterface(
+      base::Bind(&ForwardRequest<device::mojom::VibrationManager>,
+                 device::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::WebSocketRequest request,
                     RenderProcessHost* host, const url::Origin& origin) {
@@ -97,6 +121,13 @@ void WorkerInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->permission_service_context()
             .CreateService(std::move(request));
       }));
+  parameterized_binder_registry_.AddInterface(
+      base::Bind(&CreateDedicatedWorkerHostFactory));
+}
+
+RendererInterfaceBinders& GetRendererInterfaceBinders() {
+  CR_DEFINE_STATIC_LOCAL(RendererInterfaceBinders, binders, ());
+  return binders;
 }
 
 }  // namespace
@@ -107,9 +138,17 @@ void BindWorkerInterface(const std::string& interface_name,
                          const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  CR_DEFINE_STATIC_LOCAL(WorkerInterfaceBinders, binders, ());
-  binders.BindInterface(interface_name, std::move(interface_pipe), host,
-                        origin);
+  GetRendererInterfaceBinders().BindInterface(
+      interface_name, std::move(interface_pipe), host, origin);
+}
+
+bool TryBindFrameInterface(const std::string& interface_name,
+                           mojo::ScopedMessagePipeHandle* interface_pipe,
+                           RenderFrameHost* frame) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  return GetRendererInterfaceBinders().TryBindInterface(interface_name,
+                                                        interface_pipe, frame);
 }
 
 }  // namespace content

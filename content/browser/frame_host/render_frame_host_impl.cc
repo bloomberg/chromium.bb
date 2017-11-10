@@ -27,7 +27,6 @@
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/dedicated_worker/dedicated_worker_host.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -72,6 +71,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_interface_binders.h"
 #include "content/browser/shared_worker/shared_worker_connector_impl.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -136,19 +136,13 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/device/public/cpp/device_features.h"
-#include "services/device/public/interfaces/constants.mojom.h"
 #include "services/device/public/interfaces/sensor_provider.mojom.h"
-#include "services/device/public/interfaces/vibration_manager.mojom.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 #include "services/device/public/interfaces/wake_lock_context.mojom.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
-#include "services/shape_detection/public/interfaces/constants.mojom.h"
-#include "services/shape_detection/public/interfaces/facedetection_provider.mojom.h"
-#include "services/shape_detection/public/interfaces/textdetection.mojom.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 #include "third_party/WebKit/common/frame_policy.h"
 #include "ui/accessibility/ax_tree.h"
@@ -353,25 +347,6 @@ void LookupRenderFrameHostOrProxy(int process_id,
   *rfh = RenderFrameHostImpl::FromID(process_id, routing_id);
   if (*rfh == nullptr)
     *rfph = RenderFrameProxyHost::FromID(process_id, routing_id);
-}
-
-// Forwards service requests to Service Manager.
-template <typename Interface>
-void ForwardRequest(const char* service_name,
-                    mojo::InterfaceRequest<Interface> request) {
-  // TODO(beng): This should really be using the per-profile connector.
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->BindInterface(service_name, std::move(request));
-}
-
-void CreatePaymentManager(RenderFrameHostImpl* rfh,
-                          payments::mojom::PaymentManagerRequest request) {
-  StoragePartitionImpl* storage_partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          rfh->GetSiteInstance()->GetBrowserContext(), rfh->GetSiteInstance()));
-  storage_partition->GetPaymentAppContext()->CreatePaymentManager(
-      std::move(request));
 }
 
 void NotifyResourceSchedulerOfNavigation(
@@ -3064,10 +3039,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
                                      process_->GetID(), routing_id_));
 
-  registry_->AddInterface(base::Bind(&CreateDedicatedWorkerHostFactory,
-                                     GetProcess()->GetID(),
-                                     base::Unretained(this)));
-
   registry_->AddInterface<device::mojom::VRService>(base::Bind(
       &WebvrServiceProvider::BindWebvrService, base::Unretained(this)));
 
@@ -3109,19 +3080,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
-  registry_->AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::BarcodeDetection>,
-                 shape_detection::mojom::kServiceName));
-  registry_->AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::FaceDetectionProvider>,
-                 shape_detection::mojom::kServiceName));
-  registry_->AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::TextDetection>,
-                 shape_detection::mojom::kServiceName));
-
-  registry_->AddInterface(
-      base::Bind(&CreatePaymentManager, base::Unretained(this)));
-
   if (base::FeatureList::IsEnabled(features::kWebAuth)) {
     registry_->AddInterface(
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
@@ -3134,10 +3092,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&SensorProviderProxyImpl::Bind,
                    base::Unretained(sensor_provider_proxy_.get())));
   }
-
-  registry_->AddInterface(
-      base::Bind(&ForwardRequest<device::mojom::VibrationManager>,
-                 device::mojom::kServiceName));
 
   registry_->AddInterface(
       base::Bind(&media::WatchTimeRecorder::CreateWatchTimeRecorderProvider));
@@ -4276,7 +4230,8 @@ void RenderFrameHostImpl::GetInterface(
   if (!registry_ ||
       !registry_->TryBindInterface(interface_name, &interface_pipe)) {
     delegate_->OnInterfaceRequest(this, interface_name, &interface_pipe);
-    if (interface_pipe->is_valid()) {
+    if (interface_pipe->is_valid() &&
+        !TryBindFrameInterface(interface_name, &interface_pipe, this)) {
       GetContentClient()->browser()->BindInterfaceRequestFromFrame(
           this, interface_name, std::move(interface_pipe));
     }
