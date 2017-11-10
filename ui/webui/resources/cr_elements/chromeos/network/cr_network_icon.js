@@ -20,6 +20,12 @@ Polymer({
     networkState: Object,
 
     /**
+     * If set, the device state for the network type.
+     * @type {!CrOnc.DeviceStateProperties|undefined}
+     */
+    deviceState: Object,
+
+    /**
      * If true, the icon is part of a list of networks and may be displayed
      * differently, e.g. the disconnected image will never be shown for
      * list items.
@@ -46,17 +52,26 @@ Polymer({
     var prefix = (type == CrOnc.Type.CELLULAR || type == CrOnc.Type.TETHER) ?
         'cellular-' :
         'wifi-';
+    if (!this.isListItem && !this.networkState.GUID) {
+      var deviceState = this.deviceState;
+      if (!deviceState || deviceState.State == 'Enabled' ||
+          deviceState.State == 'Enabling') {
+        return prefix + 'no-network';
+      }
+      return prefix + 'off';
+    }
+
     var connectionState = this.networkState.ConnectionState;
     if (connectionState == CrOnc.ConnectionState.CONNECTING)
       return prefix + 'connecting';
-    var strength;
+
     if (!this.isListItem &&
         (!connectionState ||
          connectionState == CrOnc.ConnectionState.NOT_CONNECTED)) {
-      return prefix + 'off';
-    } else {
-      strength = CrOnc.getSignalStrength(this.networkState);
+      return prefix + 'not-connected';
     }
+
+    var strength = CrOnc.getSignalStrength(this.networkState);
     return prefix + this.strengthToIndex_(strength).toString(10);
   },
 

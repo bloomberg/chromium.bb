@@ -36,7 +36,8 @@
     </style>
     <div actionable class="settings-box two-line" on-tap="onShowDetailsTap_">
       <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
-        <cr-network-icon network-state="[[activeNetworkState]]">
+        <cr-network-icon network-state="[[activeNetworkState]]"
+            device-state="[[deviceState]]">
         </cr-network-icon>
         <div class="flex">
           <div id="networkName">[[getNetworkName_(activeNetworkState)]]</div>
