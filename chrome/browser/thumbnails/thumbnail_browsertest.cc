@@ -157,8 +157,9 @@ class ThumbnailTest : public InProcessBrowserTest {
       will_create_browser_context_services_subscription_;
 };
 
+// Flaky on all bots, see crbug.com/778248.
 IN_PROC_BROWSER_TEST_F(ThumbnailTest,
-                       ShouldCaptureOnNavigatingAwayExplicitWait) {
+                       DISABLED_ShouldCaptureOnNavigatingAwayExplicitWait) {
   content::ControllableHttpResponse response_red(embedded_test_server(),
                                                  "/red.html");
   content::ControllableHttpResponse response_yellow(embedded_test_server(),
