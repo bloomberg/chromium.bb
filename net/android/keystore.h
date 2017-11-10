@@ -13,7 +13,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/span.h"
-#include "net/base/net_export.h"
+#include "base/strings/string_piece.h"
 #include "net/ssl/ssl_client_cert_type.h"
 
 // Misc functions to access the Android platform KeyStore.
@@ -36,19 +36,19 @@ enum PrivateKeyType {
   PRIVATE_KEY_TYPE_INVALID = 255,
 };
 
-// Compute the signature of a given message, which is actually a hash,
-// using a private key. For more details, please read the comments for the
-// rawSignDigestWithPrivateKey method in AndroidKeyStore.java.
+// Compute the signature of a given input using a private key. For more
+// details, please read the comments for the signWithPrivateKey method in
+// AndroidKeyStore.java.
 //
 // |private_key| is a JNI reference for the private key.
-// |digest| is the input digest.
+// |algorithm| is the name of the algorithm to sign.
+// |input| is the input to sign.
 // |signature| will receive the signature on success.
 // Returns true on success, false on failure.
-//
-NET_EXPORT bool RawSignDigestWithPrivateKey(
-    const base::android::JavaRef<jobject>& private_key,
-    base::span<const uint8_t> digest,
-    std::vector<uint8_t>* signature);
+bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key,
+                        base::StringPiece algorithm,
+                        base::span<const uint8_t> input,
+                        std::vector<uint8_t>* signature);
 
 // Returns a handle to the system AndroidEVP_PKEY object used to back a given
 // private_key object. This must *only* be used for RSA private keys on Android

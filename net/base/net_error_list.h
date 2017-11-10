@@ -407,6 +407,10 @@ NET_ERROR(SSL_VERSION_INTERFERENCE, -175)
 // No socket buffer space is available.
 NET_ERROR(NO_BUFFER_SPACE, -176)
 
+// There were no common signature algorithms between our client certificate
+// private key and the server's preferences.
+NET_ERROR(SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS, -1478)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

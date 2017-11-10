@@ -1927,6 +1927,12 @@ int SSLClientSocketImpl::MapLastOpenSSLError(
         !certificate_requested_) {
       net_error = ERR_SSL_PROTOCOL_ERROR;
     }
+
+    // This error is specific to the client, so map it here.
+    if (ERR_GET_REASON(info->error_code) ==
+        SSL_R_NO_COMMON_SIGNATURE_ALGORITHMS) {
+      net_error = ERR_SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS;
+    }
   }
 
   return net_error;
