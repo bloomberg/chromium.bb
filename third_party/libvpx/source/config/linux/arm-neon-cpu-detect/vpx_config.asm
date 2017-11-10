@@ -20,6 +20,7 @@
 .equ HAVE_SSE4_1 ,  0
 .equ HAVE_AVX ,  0
 .equ HAVE_AVX2 ,  0
+.equ HAVE_AVX512 ,  0
 .equ HAVE_VSX ,  0
 .equ HAVE_MMI ,  0
 .equ HAVE_VPX_PORTS ,  1

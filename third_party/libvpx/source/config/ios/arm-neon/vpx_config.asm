@@ -23,6 +23,7 @@
 .set HAVE_SSE4_1 ,  0
 .set HAVE_AVX ,  0
 .set HAVE_AVX2 ,  0
+.set HAVE_AVX512 ,  0
 .set HAVE_VSX ,  0
 .set HAVE_MMI ,  0
 .set HAVE_VPX_PORTS ,  1

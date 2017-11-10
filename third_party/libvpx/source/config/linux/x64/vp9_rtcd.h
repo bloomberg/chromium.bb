@@ -53,7 +53,12 @@ int64_t vp9_block_error_fp_c(const tran_low_t* coeff,
 int64_t vp9_block_error_fp_sse2(const tran_low_t* coeff,
                                 const tran_low_t* dqcoeff,
                                 int block_size);
-#define vp9_block_error_fp vp9_block_error_fp_sse2
+int64_t vp9_block_error_fp_avx2(const tran_low_t* coeff,
+                                const tran_low_t* dqcoeff,
+                                int block_size);
+RTCD_EXTERN int64_t (*vp9_block_error_fp)(const tran_low_t* coeff,
+                                          const tran_low_t* dqcoeff,
+                                          int block_size);
 
 int vp9_denoiser_filter_c(const uint8_t* sig,
                           int sig_stride,
@@ -452,6 +457,9 @@ static void setup_rtcd_internal(void) {
   vp9_block_error = vp9_block_error_sse2;
   if (flags & HAS_AVX2)
     vp9_block_error = vp9_block_error_avx2;
+  vp9_block_error_fp = vp9_block_error_fp_sse2;
+  if (flags & HAS_AVX2)
+    vp9_block_error_fp = vp9_block_error_fp_avx2;
   vp9_diamond_search_sad = vp9_diamond_search_sad_c;
   if (flags & HAS_AVX)
     vp9_diamond_search_sad = vp9_diamond_search_sad_avx;

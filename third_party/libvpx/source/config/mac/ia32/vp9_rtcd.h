@@ -53,6 +53,9 @@ int64_t vp9_block_error_fp_c(const tran_low_t* coeff,
 int64_t vp9_block_error_fp_sse2(const tran_low_t* coeff,
                                 const tran_low_t* dqcoeff,
                                 int block_size);
+int64_t vp9_block_error_fp_avx2(const tran_low_t* coeff,
+                                const tran_low_t* dqcoeff,
+                                int block_size);
 RTCD_EXTERN int64_t (*vp9_block_error_fp)(const tran_low_t* coeff,
                                           const tran_low_t* dqcoeff,
                                           int block_size);
@@ -467,6 +470,8 @@ static void setup_rtcd_internal(void) {
   vp9_block_error_fp = vp9_block_error_fp_c;
   if (flags & HAS_SSE2)
     vp9_block_error_fp = vp9_block_error_fp_sse2;
+  if (flags & HAS_AVX2)
+    vp9_block_error_fp = vp9_block_error_fp_avx2;
   vp9_denoiser_filter = vp9_denoiser_filter_c;
   if (flags & HAS_SSE2)
     vp9_denoiser_filter = vp9_denoiser_filter_sse2;
