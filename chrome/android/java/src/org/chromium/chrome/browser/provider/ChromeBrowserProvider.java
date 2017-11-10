@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.ArrayList;
@@ -249,8 +248,6 @@ public class ChromeBrowserProvider extends ContentProvider {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ContentApplication.initCommandLine(getContext());
-
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .addStartupCompletedObserver(
                                 new BrowserStartupController.StartupCallback() {
