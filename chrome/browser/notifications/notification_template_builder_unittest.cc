@@ -10,8 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/grit/chromium_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/notification.h"
 
 using message_center::Notification;
@@ -24,6 +27,7 @@ const char kNotificationId[] = "notification_id";
 const char kNotificationTitle[] = "My Title";
 const char kNotificationMessage[] = "My Message";
 const char kNotificationOrigin[] = "https://example.com";
+const char kContextMenuLabel[] = "settings";
 
 bool FixedTime(base::Time* time) {
   base::Time::Exploded exploded = {0};
@@ -42,6 +46,15 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
  public:
   NotificationTemplateBuilderTest() = default;
   ~NotificationTemplateBuilderTest() override = default;
+
+  void SetUp() override {
+    NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(
+        kContextMenuLabel);
+  }
+
+  void TearDown() override {
+    NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(nullptr);
+  }
 
  protected:
   // Builds a notification object and initializes it to default values.
@@ -91,6 +104,9 @@ TEST_F(NotificationTemplateBuilderTest, SimpleToast) {
    <text placement="attribution">example.com</text>
   </binding>
  </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
 </toast>
 )";
 
@@ -118,6 +134,7 @@ TEST_F(NotificationTemplateBuilderTest, Buttons) {
  <actions>
   <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
   <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
 )";
@@ -150,6 +167,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineReplies) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
   <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
 )";
@@ -185,6 +203,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesDoubleInput) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
   <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
 )";
@@ -217,6 +236,7 @@ TEST_F(NotificationTemplateBuilderTest, InlineRepliesTextTypeNotFirst) {
   <input id="userResponse" type="text" placeHolderContent="Reply here"/>
   <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
   <action activationType="foreground" content="Button2" arguments="buttonIndex=1"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
 )";
@@ -238,6 +258,9 @@ TEST_F(NotificationTemplateBuilderTest, Silent) {
    <text placement="attribution">example.com</text>
   </binding>
  </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
  <audio silent="true"/>
 </toast>
 )";
@@ -265,6 +288,7 @@ TEST_F(NotificationTemplateBuilderTest, RequireInteraction) {
  </visual>
  <actions>
   <action activationType="foreground" content="Button1" arguments="buttonIndex=0"/>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
  </actions>
 </toast>
 )";
@@ -287,8 +311,40 @@ TEST_F(NotificationTemplateBuilderTest, NullTimestamp) {
    <text placement="attribution">example.com</text>
   </binding>
  </visual>
+ <actions>
+  <action content="settings" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
 </toast>
 )";
 
   ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, kExpectedXml));
+}
+
+TEST_F(NotificationTemplateBuilderTest, LocalizedContextMenu) {
+  std::unique_ptr<message_center::Notification> notification =
+      InitializeBasicNotification();
+  // Disable overriding context menu label.
+  NotificationTemplateBuilder::OverrideContextMenuLabelForTesting(nullptr);
+
+  const wchar_t kExpectedXmlTemplate[] =
+      LR"(<toast launch="notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
+ <actions>
+  <action content="%ls" placement="contextMenu" activationType="foreground" arguments="notificationSettings"/>
+ </actions>
+</toast>
+)";
+
+  base::string16 settings_msg = l10n_util::GetStringUTF16(
+      IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME);
+  base::string16 expected_xml =
+      base::StringPrintf(kExpectedXmlTemplate, settings_msg.c_str());
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(*notification, expected_xml));
 }
