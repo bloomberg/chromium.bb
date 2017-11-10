@@ -28,7 +28,7 @@
 
 #if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 #include "base/ios/ios_util.h"
-#endif
+#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 
 namespace sql {
 namespace test {
@@ -229,7 +229,7 @@ class ScopedUmaskSetter {
   mode_t old_umask_;
   DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedUmaskSetter);
 };
-#endif
+#endif  // defined(OS_POSIX)
 
 // SQLite function to adjust mock time by |argv[0]| milliseconds.
 void sqlite_adjust_millis(sql::test::ScopedMockTimeSource* time_mock,
@@ -845,7 +845,7 @@ TEST_F(SQLConnectionTest, RazeAndCloseDiagnostics) {
         db().IsSQLValid(kSimpleSql);
       }, "Illegal use of connection without a db");
   }
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 }
 
 // TODO(shess): Spin up a background thread to hold other_db, to more
@@ -899,7 +899,7 @@ TEST_F(SQLConnectionTest, SetTempDirForSQL) {
   // database file'.
   ASSERT_TRUE(meta_table.Init(&db(), 4, 4));
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 TEST_F(SQLConnectionTest, Delete) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
@@ -1032,8 +1032,7 @@ TEST_F(SQLConnectionTest, Poison) {
   EXPECT_FALSE(db().CommitTransaction());
 }
 
-// Test attaching and detaching databases from the connection.
-TEST_F(SQLConnectionTest, Attach) {
+TEST_F(SQLConnectionTest, AttachDatabase) {
   EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
   // Create a database to attach to.
@@ -1050,21 +1049,10 @@ TEST_F(SQLConnectionTest, Attach) {
   // Cannot see the attached database, yet.
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
-  // Attach fails in a transaction.
-  EXPECT_TRUE(db().BeginTransaction());
-  {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_ERROR);
-    EXPECT_FALSE(db().AttachDatabase(attach_path, kAttachmentPoint));
-    ASSERT_TRUE(expecter.SawExpectedErrors());
-  }
-
-  // Attach succeeds when the transaction is closed.
-  db().RollbackTransaction();
   EXPECT_TRUE(db().AttachDatabase(attach_path, kAttachmentPoint));
   EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
 
-  // Queries can touch both databases.
+  // Queries can touch both databases after the ATTACH.
   EXPECT_TRUE(db().Execute("INSERT INTO foo SELECT a, b FROM other.bar"));
   {
     sql::Statement s(db().GetUniqueStatement("SELECT COUNT(*) FROM foo"));
@@ -1072,8 +1060,66 @@ TEST_F(SQLConnectionTest, Attach) {
     EXPECT_EQ(1, s.ColumnInt(0));
   }
 
-  // Detach also fails in a transaction.
+  EXPECT_TRUE(db().DetachDatabase(kAttachmentPoint));
+  EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
+}
+
+TEST_F(SQLConnectionTest, AttachDatabaseWithOpenTransaction) {
+  EXPECT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
+
+  // Create a database to attach to.
+  base::FilePath attach_path =
+      db_path().DirName().AppendASCII("SQLConnectionAttach.db");
+  const char kAttachmentPoint[] = "other";
+  {
+    sql::Connection other_db;
+    ASSERT_TRUE(other_db.Open(attach_path));
+    EXPECT_TRUE(other_db.Execute("CREATE TABLE bar (a, b)"));
+    EXPECT_TRUE(other_db.Execute("INSERT INTO bar VALUES ('hello', 'world')"));
+  }
+
+  // Cannot see the attached database, yet.
+  EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
+
+#if defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  // SQLite before 3.21 does not support ATTACH and DETACH in transactions.
+
+  // Attach fails in a transaction.
   EXPECT_TRUE(db().BeginTransaction());
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_ERROR);
+    EXPECT_FALSE(db().AttachDatabase(attach_path, kAttachmentPoint));
+    EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
+
+  // Detach also fails in a transaction.
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_ERROR);
+    EXPECT_FALSE(db().DetachDatabase(kAttachmentPoint));
+    ASSERT_TRUE(expecter.SawExpectedErrors());
+  }
+
+  db().RollbackTransaction();
+#else   // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
+  // Chrome's SQLite (3.21+) supports ATTACH and DETACH in transactions.
+
+  // Attach succeeds in a transaction.
+  EXPECT_TRUE(db().BeginTransaction());
+  EXPECT_TRUE(db().AttachDatabase(attach_path, kAttachmentPoint));
+  EXPECT_TRUE(db().IsSQLValid("SELECT count(*) from other.bar"));
+
+  // Queries can touch both databases after the ATTACH.
+  EXPECT_TRUE(db().Execute("INSERT INTO foo SELECT a, b FROM other.bar"));
+  {
+    sql::Statement s(db().GetUniqueStatement("SELECT COUNT(*) FROM foo"));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(1, s.ColumnInt(0));
+  }
+
+  // Detaching the same database fails, database is locked in the transaction.
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_ERROR);
@@ -1082,11 +1128,11 @@ TEST_F(SQLConnectionTest, Attach) {
     ASSERT_TRUE(expecter.SawExpectedErrors());
   }
 
-  // Detach succeeds outside of a transaction.
+  // Detach succeeds when the transaction is closed.
   db().RollbackTransaction();
   EXPECT_TRUE(db().DetachDatabase(kAttachmentPoint));
-
   EXPECT_FALSE(db().IsSQLValid("SELECT count(*) from other.bar"));
+#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 }
 
 TEST_F(SQLConnectionTest, Basic_QuickIntegrityCheck) {
@@ -1555,7 +1601,7 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
     ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
     return;
   }
-#endif
+#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 
   const size_t kMmapAlot = 25 * 1024 * 1024;
   int64_t mmap_status = MetaTable::kMmapFailure;
@@ -1607,7 +1653,7 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
     ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
     return;
   }
-#endif
+#endif  // defined(OS_IOS) && defined(USE_SYSTEM_SQLITE)
 
   const size_t kMmapAlot = 25 * 1024 * 1024;
 
@@ -1656,7 +1702,7 @@ TEST_F(SQLConnectionTest, CompileError) {
         db().GetUniqueStatement("SELECT x");
       }, "SQL compile error no such column: x");
   }
-#endif
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
 }
 
 }  // namespace sql

@@ -2853,7 +2853,7 @@ static int rtreeDeleteRowid(Rtree *pRtree, sqlite3_int64 iDelete){
   int rc;                         /* Return code */
   RtreeNode *pLeaf = 0;           /* Leaf node containing record iDelete */
   int iCell;                      /* Index of iDelete cell in pLeaf */
-  RtreeNode *pRoot;               /* Root node of rtree structure */
+  RtreeNode *pRoot = 0;           /* Root node of rtree structure */
 
 
   /* Obtain a reference to the root node to initialize Rtree.iDepth */
@@ -3414,7 +3414,7 @@ static int getNodeSize(
     if( rc!=SQLITE_OK ){
       *pzErr = sqlite3_mprintf("%s", sqlite3_errmsg(db));
     }else if( pRtree->iNodeSize<(512-64) ){
-      rc = SQLITE_CORRUPT;
+      rc = SQLITE_CORRUPT_VTAB;
       *pzErr = sqlite3_mprintf("undersize RTree blobs in \"%q_node\"",
                                pRtree->zName);
     }

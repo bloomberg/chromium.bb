@@ -1,7 +1,7 @@
-From 667cfb37ddc1174b7e703a2e5b407280cd97ccba Mon Sep 17 00:00:00 2001
+From 11549819a8c9f9ebc7cea2501c6939e497014524 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Tue, 16 Dec 2014 13:02:27 -0800
-Subject: [PATCH 06/11] [fts3] Disable fts3_tokenizer and fts4.
+Subject: [PATCH 06/10] [fts3] Disable fts3_tokenizer and fts4.
 
 fts3_tokenizer allows a SQLite user to specify a pointer to call as a
 function, which has obvious sercurity implications.  Disable fts4 until
@@ -22,7 +22,7 @@ index cf73455a9dd3..215278a823bb 100644
  ** older data.
  */
 +#define CHROMIUM_FTS3_CHANGES 1
- 
+
  #include "fts3Int.h"
  #if !defined(SQLITE_CORE) || defined(SQLITE_ENABLE_FTS3)
 @@ -3972,7 +3973,11 @@ int sqlite3Fts3Init(sqlite3 *db){
@@ -54,7 +54,6 @@ index cf73455a9dd3..215278a823bb 100644
 +#endif
      return rc;
    }
- 
--- 
-2.13.5
 
+--
+2.14.0
