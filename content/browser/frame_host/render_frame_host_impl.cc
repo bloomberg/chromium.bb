@@ -671,6 +671,12 @@ const url::Origin& RenderFrameHostImpl::GetLastCommittedOrigin() {
   return last_committed_origin_;
 }
 
+void RenderFrameHostImpl::GetCanonicalUrlForSharing(
+    mojom::Frame::GetCanonicalUrlForSharingCallback callback) {
+  DCHECK(frame_);
+  frame_->GetCanonicalUrlForSharing(std::move(callback));
+}
+
 gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (!view)

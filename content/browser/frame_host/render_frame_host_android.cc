@@ -4,8 +4,10 @@
 
 #include "content/browser/frame_host/render_frame_host_android.h"
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -20,6 +22,20 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace content {
+
+namespace {
+void OnGetCanonicalUrlForSharing(
+    const base::android::JavaRef<jobject>& jcallback,
+    const base::Optional<GURL>& url) {
+  if (!url) {
+    base::android::RunCallbackAndroid(jcallback, ScopedJavaLocalRef<jstring>());
+    return;
+  }
+
+  base::android::RunCallbackAndroid(
+      jcallback, ConvertUTF8ToJavaString(AttachCurrentThread(), url->spec()));
+}
+}  // namespace
 
 RenderFrameHostAndroid::RenderFrameHostAndroid(
     RenderFrameHostImpl* render_frame_host,
@@ -58,6 +74,15 @@ ScopedJavaLocalRef<jstring> RenderFrameHostAndroid::GetLastCommittedURL(
     const JavaParamRef<jobject>& obj) const {
   return ConvertUTF8ToJavaString(
       env, render_frame_host_->GetLastCommittedURL().spec());
+}
+
+void RenderFrameHostAndroid::GetCanonicalUrlForSharing(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&,
+    const base::android::JavaParamRef<jobject>& jcallback) const {
+  render_frame_host_->GetCanonicalUrlForSharing(base::BindOnce(
+      &OnGetCanonicalUrlForSharing,
+      base::android::ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 ScopedJavaLocalRef<jobject>

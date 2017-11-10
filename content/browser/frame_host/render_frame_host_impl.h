@@ -309,6 +309,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() { return last_successful_url_; }
 
+  // Fetch the link-rel canonical URL to be used for sharing to external
+  // applications.
+  void GetCanonicalUrlForSharing(
+      mojom::Frame::GetCanonicalUrlForSharingCallback callback);
+
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
 

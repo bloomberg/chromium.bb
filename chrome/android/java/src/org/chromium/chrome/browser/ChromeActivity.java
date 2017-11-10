@@ -98,22 +98,16 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.nfc.BeamController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.page_info.PageInfoPopup;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.physicalweb.PhysicalWebShareActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.share.OptionalShareTargetsManager;
-import org.chromium.chrome.browser.share.ShareActivity;
-import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareParams;
+import org.chromium.chrome.browser.share.ShareMenuActionHandler;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
@@ -134,7 +128,6 @@ import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
-import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
@@ -151,10 +144,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.readback_types.ReadbackResponse;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
@@ -168,9 +159,7 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -1278,75 +1267,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     @VisibleForTesting
     public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
-        final Tab currentTab = getActivityTab();
-        if (currentTab == null) return;
-
-        List<Class<? extends ShareActivity>> classesToEnable = new ArrayList<>(2);
-
-        if (PrintShareActivity.featureIsAvailable(currentTab)) {
-            classesToEnable.add(PrintShareActivity.class);
-        }
-        if (PhysicalWebShareActivity.featureIsAvailable()) {
-            classesToEnable.add(PhysicalWebShareActivity.class);
-        }
-
-        if (!classesToEnable.isEmpty()) {
-            OptionalShareTargetsManager.enableOptionalShareActivities(
-                    this, classesToEnable,
-                    () -> triggerShare(currentTab, shareDirectly, isIncognito));
-            return;
-        }
-
-        triggerShare(currentTab, shareDirectly, isIncognito);
-    }
-
-    private void triggerShare(
-            final Tab currentTab, final boolean shareDirectly, boolean isIncognito) {
-        RecordHistogram.recordBooleanHistogram(
-                "OfflinePages.SharedPageWasOffline", OfflinePageUtils.isOfflinePage(currentTab));
-
-        boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
-        if (canShareOfflinePage && OfflinePageUtils.isOfflinePage(currentTab)) {
-            ShareParams params = OfflinePageUtils.buildShareParams(this, currentTab);
-            if (params == null) return;
-            ShareHelper.share(params);
-            return;
-        }
-
-        final Activity mainActivity = this;
-        WebContents webContents = currentTab.getWebContents();
-
-        // Share an empty blockingUri in place of screenshot file. The file ready notification is
-        // sent by onScreenshotReady call below when the file is written.
-        final Uri blockingUri = (isIncognito || webContents == null)
-                ? null
-                : ChromeFileProvider.generateUriAndBlockAccess(mainActivity);
-        ShareParams.Builder builder =
-                new ShareParams.Builder(mainActivity, currentTab.getTitle(), currentTab.getUrl())
-                        .setShareDirectly(shareDirectly)
-                        .setSaveLastUsed(!shareDirectly)
-                        .setScreenshotUri(blockingUri);
-        ShareHelper.share(builder.build());
-        if (shareDirectly) {
-            RecordUserAction.record("MobileMenuDirectShare");
-        } else {
-            RecordUserAction.record("MobileMenuShare");
-        }
-
-        if (blockingUri == null) return;
-
-        // Start screenshot capture and notify the provider when it is ready.
-        ContentBitmapCallback callback = (bitmap, response) -> ShareHelper.saveScreenshotToDisk(
-                bitmap, mainActivity,
-                result -> {
-                    // Unblock the file once it is saved to disk.
-                    ChromeFileProvider.notifyFileReady(blockingUri, result);
-                });
-        if (mScreenshotCaptureSkippedForTesting) {
-            callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
-        } else {
-            webContents.getContentBitmapAsync(0, 0, callback);
-        }
+        ShareMenuActionHandler.onShareMenuItemSelected(
+                this, getActivityTab(), shareDirectly, isIncognito);
     }
 
     /**

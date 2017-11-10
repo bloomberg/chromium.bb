@@ -39,6 +39,11 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&) const;
 
+  void GetCanonicalUrlForSharing(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>&,
+      const base::android::JavaParamRef<jobject>& jcallback) const;
+
   // Returns UnguessableToken.
   base::android::ScopedJavaLocalRef<jobject> GetAndroidOverlayRoutingToken(
       JNIEnv* env,
