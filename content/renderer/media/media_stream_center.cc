@@ -154,14 +154,6 @@ void MediaStreamCenter::DidDisableMediaStreamTrack(
     native_track->SetEnabled(false);
 }
 
-bool MediaStreamCenter::DidStopMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track) {
-  DVLOG(1) << "MediaStreamCenter::didStopMediaStreamTrack";
-  MediaStreamTrack* native_track = MediaStreamTrack::GetTrack(track);
-  native_track->Stop();
-  return true;
-}
-
 blink::WebAudioSourceProvider*
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
