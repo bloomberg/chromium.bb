@@ -856,8 +856,7 @@ TEST_F(AccountReconcilorTest, DiceMigrationAfterNoop) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration will happen on next startup.
-  EXPECT_TRUE(
-      reconcilor->ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
+  EXPECT_TRUE(reconcilor->IsReadyForDiceMigration(false /* is_new_profile */));
   EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
   EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
@@ -889,8 +888,7 @@ TEST_F(AccountReconcilorTest, DiceNoMigrationAfterReconcile) {
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
 
   // Migration did not happen.
-  EXPECT_FALSE(
-      reconcilor->ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
+  EXPECT_FALSE(reconcilor->IsReadyForDiceMigration(false /* is_new_profile */));
   EXPECT_FALSE(signin::IsDiceEnabledForProfile(profile()->GetPrefs()));
   EXPECT_FALSE(reconcilor->IsAccountConsistencyEnforced());
 }
@@ -1597,7 +1595,7 @@ TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
     AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
                                  false /* is_new_profile */);
     EXPECT_FALSE(
-        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
+        reconcilor.IsReadyForDiceMigration(false /* is_new_profile */));
     EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
   }
 
@@ -1608,8 +1606,7 @@ TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
     signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_errors;
     AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
                                  false /* is_new_profile */);
-    EXPECT_FALSE(
-        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
+    EXPECT_TRUE(reconcilor.IsReadyForDiceMigration(false /* is_new_profile */));
     EXPECT_FALSE(signin::IsDiceEnabledForProfile(&pref_service));
   }
 
@@ -1618,8 +1615,7 @@ TEST(AccountReconcilorMigrationTest, MigrateAtCreation) {
     signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
     AccountReconcilor reconcilor(nullptr, nullptr, &signin_client, nullptr,
                                  false /* is_new_profile */);
-    EXPECT_TRUE(
-        reconcilor.ShouldMigrateToDiceOnStartup(false /* is_new_profile */));
+    EXPECT_TRUE(reconcilor.IsReadyForDiceMigration(false /* is_new_profile */));
     EXPECT_TRUE(signin::IsDiceEnabledForProfile(&pref_service));
   }
 }

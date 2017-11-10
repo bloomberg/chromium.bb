@@ -160,7 +160,6 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, NoLoopWithBadPrimary);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, WontMergeAccountsWithError);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMigrationTest, MigrateAtCreation);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMigrationTest, NewProfile);
 
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
@@ -243,8 +242,8 @@ class AccountReconcilor : public KeyedService,
   bool IsReconcileBlocked() const;
 
   // Dice migration methods:
-  // Returns true if migration should happen on the next startup.
-  bool ShouldMigrateToDiceOnStartup(bool is_new_profile);
+  // Returns true if migration can happen on the next startup.
+  bool IsReadyForDiceMigration(bool is_new_profile);
   // Schedules migration to happen at next startup.
   static void SetDiceMigrationOnStartup(PrefService* prefs, bool migrate);
 
