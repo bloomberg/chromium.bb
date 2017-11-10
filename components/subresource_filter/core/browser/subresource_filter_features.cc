@@ -93,11 +93,6 @@ ActivationList ParseActivationList(std::string activation_lists_string) {
   } else if (activation_lists.CaseInsensitiveContains(
                  kActivationListBetterAds)) {
     return ActivationList::BETTER_ADS;
-  } else if (activation_lists.CaseInsensitiveContains(
-                 kActivationListAbusiveAds)) {
-    return ActivationList::ABUSIVE_ADS;
-  } else if (activation_lists.CaseInsensitiveContains(kActivationListAllAds)) {
-    return ActivationList::ALL_ADS;
   }
   return ActivationList::NONE;
 }
@@ -130,12 +125,8 @@ std::vector<Configuration> FillEnabledPresetConfigurations(
        &Configuration::MakePresetForLiveRunOnPhishingSites},
       {kPresetPerformanceTestingDryRunOnAllSites, false,
        &Configuration::MakePresetForPerformanceTestingDryRunOnAllSites},
-      {kPresetLiveRunForAbusiveAds, false,
-       &Configuration::MakePresetForLiveRunForAbusiveAds},
       {kPresetLiveRunForBetterAds, false,
-       &Configuration::MakePresetForLiveRunForBetterAds},
-      {kPresetLiveRunForAllAds, false,
-       &Configuration::MakePresetForLiveRunForAllAds}};
+       &Configuration::MakePresetForLiveRunForBetterAds}};
 
   CommaSeparatedStrings enabled_presets(
       TakeVariationParamOrReturnEmpty(params, kEnablePresetsParameterName));
@@ -273,8 +264,6 @@ const char kActivationListSocialEngineeringAdsInterstitial[] =
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
 const char kActivationListSubresourceFilter[] = "subresource_filter";
 const char kActivationListBetterAds[] = "better_ads";
-const char kActivationListAbusiveAds[] = "abusive_ads";
-const char kActivationListAllAds[] = "all_ads";
 
 const char kActivationPriorityParameterName[] = "activation_priority";
 
@@ -292,11 +281,8 @@ const char kDisablePresetsParameterName[] = "disable_presets";
 const char kPresetLiveRunOnPhishingSites[] = "liverun_on_phishing_sites";
 const char kPresetPerformanceTestingDryRunOnAllSites[] =
     "performance_testing_dryrun_on_all_sites";
-const char kPresetLiveRunForAbusiveAds[] =
-    "liverun_on_abusive_ad_violating_sites";
 const char kPresetLiveRunForBetterAds[] =
     "liverun_on_better_ads_violating_sites";
-const char kPresetLiveRunForAllAds[] = "liverun_on_all_ads_violating_sites";
 
 // Configuration --------------------------------------------------------------
 
@@ -328,33 +314,11 @@ Configuration Configuration::MakeForForcedActivation() {
 }
 
 // static
-Configuration Configuration::MakePresetForLiveRunForAbusiveAds() {
-  Configuration config(ActivationLevel::ENABLED,
-                       ActivationScope::ACTIVATION_LIST,
-                       ActivationList::ABUSIVE_ADS);
-  config.activation_options.should_disable_ruleset_rules = true;
-  config.activation_options.should_suppress_notifications = true;
-  config.activation_options.should_strengthen_popup_blocker = true;
-  config.activation_conditions.priority = 750;
-  return config;
-}
-
-// static
 Configuration Configuration::MakePresetForLiveRunForBetterAds() {
   Configuration config(ActivationLevel::ENABLED,
                        ActivationScope::ACTIVATION_LIST,
                        ActivationList::BETTER_ADS);
   config.activation_conditions.priority = 800;
-  return config;
-}
-
-// static
-Configuration Configuration::MakePresetForLiveRunForAllAds() {
-  Configuration config(ActivationLevel::ENABLED,
-                       ActivationScope::ACTIVATION_LIST,
-                       ActivationList::ALL_ADS);
-  config.activation_options.should_strengthen_popup_blocker = true;
-  config.activation_conditions.priority = 850;
   return config;
 }
 

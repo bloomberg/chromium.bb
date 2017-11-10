@@ -11,6 +11,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_database_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,6 +31,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using safe_browsing::SubresourceFilterType;
+using safe_browsing::SubresourceFilterLevel;
 
 namespace subresource_filter {
 
@@ -85,19 +89,51 @@ class ScopedLoggingObserver {
 
 const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
 
-// Tests for the subresource_filter popup blocker.
+// Tests that subresource_filter interacts well with the abusive enforcement in
+// chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.
 class SubresourceFilterPopupBrowserTest
     : public SubresourceFilterListInsertingBrowserTest {
+ public:
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
-    Configuration config(
-        subresource_filter::ActivationLevel::ENABLED,
-        subresource_filter::ActivationScope::ACTIVATION_LIST,
-        subresource_filter::ActivationList::SUBRESOURCE_FILTER);
-    config.activation_options.should_strengthen_popup_blocker = true;
+    Configuration config(subresource_filter::ActivationLevel::ENABLED,
+                         subresource_filter::ActivationScope::ACTIVATION_LIST,
+                         subresource_filter::ActivationList::BETTER_ADS);
     ResetConfiguration(std::move(config));
-    // Only necessary so we have a valid ruleset.
-    ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+    ASSERT_NO_FATAL_FAILURE(
+        SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  }
+  void ConfigureAsAbusiveAndBetterAds(const GURL& url,
+                                      SubresourceFilterLevel abusive_level,
+                                      SubresourceFilterLevel bas_level) {
+    safe_browsing::ThreatMetadata metadata;
+    metadata.subresource_filter_match[SubresourceFilterType::ABUSIVE] =
+        abusive_level;
+    metadata.subresource_filter_match[SubresourceFilterType::BETTER_ADS] =
+        bas_level;
+
+    database_helper()->AddFullHashToDbAndFullHashCache(
+        url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
+  }
+
+  bool AreDisallowedRequestsBlocked() {
+    std::string script = base::StringPrintf(
+        R"(
+      var script = document.createElement('script');
+      script.src = '%s';
+      script.type = 'text/javascript';
+      script.onload = () => { window.domAutomationController.send(true); }
+      script.onerror = () => { window.domAutomationController.send(false); }
+      document.head.appendChild(script);
+    )",
+        embedded_test_server()
+            ->GetURL("/subresource_filter/included_script.js")
+            .spec()
+            .c_str());
+    bool loaded;
+    EXPECT_TRUE(
+        content::ExecuteScriptAndExtractBool(web_contents(), script, &loaded));
+    return !loaded;
   }
 };
 
@@ -108,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   // Only configure |a_url| as a phishing URL.
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  ConfigureAsPhishingURL(a_url);
 
   // Navigate to a_url, should not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -137,8 +173,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
-  // Only configure |a_url| as a phishing URL.
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  // Configure as abusive and BAS warn.
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::ENFORCE /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
 
   // Navigate to a_url, should trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -161,6 +199,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                                                    &opened_window));
   EXPECT_FALSE(opened_window);
 
+  // We are in warning mode for BAS, so no blocking.
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
+
   // Navigate to |b_url|, which should successfully open the popup.
   ui_test_utils::NavigateToURL(browser(), b_url);
   opened_window = false;
@@ -179,7 +220,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   web_contents()->SetDelegate(&console_observer);
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::ENFORCE /* abusive_level */,
+      SubresourceFilterLevel::ENFORCE /* bas_level */);
 
   // Navigate to a_url, should trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -189,21 +232,18 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_FALSE(opened_window);
   console_observer.Wait();
   EXPECT_EQ(kDisallowNewWindowMessage, console_observer.message());
+
+  EXPECT_TRUE(AreDisallowedRequestsBlocked());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        WarningDoNotBlockCreatingNewWindows_LogsToConsole) {
-  Configuration config(ActivationLevel::ENABLED,
-                       ActivationScope::ACTIVATION_LIST,
-                       ActivationList::ABUSIVE_ADS);
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
-
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
 
-  ConfigureURLWithWarning(a_url,
-                          {safe_browsing::SubresourceFilterType::ABUSIVE});
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::WARN /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
 
   // Navigate to a_url, should log a warning and not trigger the popup blocker.
   ScopedLoggingObserver log_observer;
@@ -220,48 +260,16 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));
   EXPECT_TRUE(opened_window);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterPopupBrowserTest,
-    WarningDoNotBlockCreatingNewWindowsDisableRules_LogsToConsole) {
-  Configuration config = Configuration::MakePresetForLiveRunForAbusiveAds();
-  ResetConfiguration(std::move(config));
-
-  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
-  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
-  ConfigureURLWithWarning(a_url,
-                          {safe_browsing::SubresourceFilterType::ABUSIVE});
-
-  // Navigate to a_url, should log a warning and not trigger the popup blocker.
-  ScopedLoggingObserver log_observer;
-
-  ui_test_utils::NavigateToURL(browser(), a_url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  log_observer.RoundTripAndVerifyLogMessages(
-      web_contents, {kDisallowNewWindowWarningMessage},
-      {kActivationWarningConsoleMessage, kDisallowNewWindowMessage});
-
-  bool opened_window = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
-                                                   &opened_window));
-  EXPECT_TRUE(opened_window);
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
-                       WarningAllowCreatingNewWindows_LogsToConsole) {
-  Configuration config(ActivationLevel::ENABLED,
-                       ActivationScope::ACTIVATION_LIST,
-                       ActivationList::ABUSIVE_ADS);
-  config.activation_options.should_strengthen_popup_blocker = true;
-  ResetConfiguration(std::move(config));
-
+                       WarnAbusiveAndBetterAds_LogsToConsole) {
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
-  ConfigureURLWithWarning(a_url,
-                          {safe_browsing::SubresourceFilterType::ABUSIVE});
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::WARN /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
 
   // Allow popups on |a_url|.
   HostContentSettingsMap* settings_map =
@@ -278,6 +286,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(), "openWindow()", &opened_window));
   EXPECT_TRUE(opened_window);
+
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 
   log_observer.RoundTripAndVerifyLogMessages(
       web_contents(),
@@ -289,7 +299,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        AllowCreatingNewWindows_NoLogToConsole) {
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  // Enforce BAS, warn abusive.
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::WARN /* abusive_level */,
+      SubresourceFilterLevel::ENFORCE /* bas_level */);
 
   // Allow popups on |a_url|.
   HostContentSettingsMap* settings_map =
@@ -301,10 +314,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   // Navigate to a_url, should not trigger the popup blocker.
   ScopedLoggingObserver log_observer;
   ui_test_utils::NavigateToURL(browser(), a_url);
+  EXPECT_TRUE(AreDisallowedRequestsBlocked());
+
   bool opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(), "openWindow()", &opened_window));
   EXPECT_TRUE(opened_window);
+
+  // On the new window, requests should be allowed.
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 
   log_observer.RoundTripAndVerifyLogMessages(
       web_contents(), {kActivationConsoleMessage}, {kDisallowNewWindowMessage});
@@ -316,8 +334,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
       "/subresource_filter/window_open_spoof_click.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
-  // Only configure |a_url| as a phishing URL.
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::ENFORCE /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
 
   // Navigate to a_url, should trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -332,6 +351,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 
   // Navigate to |b_url|, which should successfully open the popup.
 
@@ -345,14 +365,16 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
   // Popup UI should not be shown.
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        BlockOpenURLFromTabInIframe) {
   const char popup_path[] = "/subresource_filter/iframe_spoof_click_popup.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", popup_path));
-  // Only configure |a_url| as a phishing URL.
-  ConfigureAsSubresourceFilterOnlyURL(a_url);
+  ConfigureAsAbusiveAndBetterAds(
+      a_url, SubresourceFilterLevel::ENFORCE /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
 
   // Navigate to a_url, should not trigger the popup blocker.
   ui_test_utils::NavigateToURL(browser(), a_url);
@@ -364,12 +386,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(sent_open);
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                        TraditionalWindowOpen_NotBlocked) {
   GURL url(GetTestUrl("/title2.html"));
-  ConfigureAsSubresourceFilterOnlyURL(url);
+  ConfigureAsAbusiveAndBetterAds(
+      url, SubresourceFilterLevel::ENFORCE /* abusive_level */,
+      SubresourceFilterLevel::WARN /* bas_level */);
   ui_test_utils::NavigateToURL(browser(), GetTestUrl("/title1.html"));
 
   // Should not trigger the popup blocker because internally opens the tab with
@@ -382,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  EXPECT_FALSE(AreDisallowedRequestsBlocked());
 }
 
 }  // namespace subresource_filter

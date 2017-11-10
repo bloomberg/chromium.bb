@@ -56,9 +56,10 @@ SubresourceFilterSafeBrowsingActivationThrottle::
   // The last check could be ongoing when the navigation is cancelled.
   if (check_results_.empty() || !check_results_.back().finished)
     return;
+  bool warning = false;
   ActivationList matched_list = GetListForThreatTypeAndMetadata(
-      check_results_.back().threat_type, check_results_.back().threat_metadata);
-
+      check_results_.back().threat_type, check_results_.back().threat_metadata,
+      &warning);
   // TODO(csharrison): Log more metrics based on check_results_.
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationList",
                             matched_list,
@@ -88,18 +89,6 @@ SubresourceFilterSafeBrowsingActivationThrottle::
       UMA_HISTOGRAM_COUNTS(
           "SubresourceFilter.PageLoad.RedirectChainLength."
           "BetterAds",
-          chain_size);
-      break;
-    case ActivationList::ABUSIVE_ADS:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "AbusiveAds",
-          chain_size);
-      break;
-    case ActivationList::ALL_ADS:
-      UMA_HISTOGRAM_COUNTS(
-          "SubresourceFilter.PageLoad.RedirectChainLength."
-          "AllAds",
           chain_size);
       break;
     default:
@@ -195,14 +184,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
     const auto& check_result = check_results_.back();
     DCHECK(check_result.finished);
     matched_list = GetListForThreatTypeAndMetadata(
-        check_result.threat_type, check_result.threat_metadata);
-    // TODO(shivanisha): For now warning is true if at least one matching list
-    // has warning mode set. This needs to change to be able to handle per-list
-    // enforcement level.
-    for (const auto& match :
-         check_result.threat_metadata.subresource_filter_match) {
-      warning |= (match.second == safe_browsing::SubresourceFilterLevel::WARN);
-    }
+        check_result.threat_type, check_result.threat_metadata, &warning);
     SubresourceFilterObserverManager::FromWebContents(
         navigation_handle()->GetWebContents())
         ->NotifySafeBrowsingCheckComplete(navigation_handle(),

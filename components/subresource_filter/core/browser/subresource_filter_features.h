@@ -134,11 +134,7 @@ struct Configuration {
   //  4.) Update unittests to cover the new preset.
   static Configuration MakePresetForLiveRunOnPhishingSites();
   static Configuration MakePresetForPerformanceTestingDryRunOnAllSites();
-  static Configuration MakePresetForLiveRunForAbusiveAds();
   static Configuration MakePresetForLiveRunForBetterAds();
-
-  // Site violates abusive and better ads standards.
-  static Configuration MakePresetForLiveRunForAllAds();
 
   // Not really a preset, but used as the configuration for forcing activation
   // (e.g. via devtools).
@@ -221,8 +217,6 @@ extern const char kActivationListSocialEngineeringAdsInterstitial[];
 extern const char kActivationListPhishingInterstitial[];
 extern const char kActivationListSubresourceFilter[];
 extern const char kActivationListBetterAds[];
-extern const char kActivationListAbusiveAds[];
-extern const char kActivationListAllAds[];
 
 extern const char kActivationPriorityParameterName[];
 
@@ -242,9 +236,7 @@ extern const char kEnablePresetsParameterName[];
 extern const char kDisablePresetsParameterName[];
 extern const char kPresetLiveRunOnPhishingSites[];
 extern const char kPresetPerformanceTestingDryRunOnAllSites[];
-extern const char kPresetLiveRunForAbusiveAds[];
 extern const char kPresetLiveRunForBetterAds[];
-extern const char kPresetLiveRunForAllAds[];
 
 }  // namespace subresource_filter
 

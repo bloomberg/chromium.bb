@@ -300,15 +300,25 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
   const struct {
     safe_browsing::SubresourceFilterMatch match;
     subresource_filter::ActivationList expected_activation;
+    bool expected_warning;
   } kTestCases[]{
-      {{}, subresource_filter::ActivationList::SUBRESOURCE_FILTER},
+      {{}, subresource_filter::ActivationList::SUBRESOURCE_FILTER, false},
       {{{{Type::ABUSIVE, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
-       subresource_filter::ActivationList::ABUSIVE_ADS},
+       subresource_filter::ActivationList::NONE,
+       false},
+      {{{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::NONE,
+       false},
       {{{{Type::BETTER_ADS, Level::ENFORCE}}, base::KEEP_FIRST_OF_DUPES},
-       subresource_filter::ActivationList::BETTER_ADS},
+       subresource_filter::ActivationList::BETTER_ADS,
+       false},
+      {{{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES},
+       subresource_filter::ActivationList::BETTER_ADS,
+       true},
       {{{{Type::BETTER_ADS, Level::ENFORCE}, {Type::ABUSIVE, Level::ENFORCE}},
         base::KEEP_FIRST_OF_DUPES},
-       subresource_filter::ActivationList::ALL_ADS}};
+       subresource_filter::ActivationList::BETTER_ADS,
+       false}};
 
   const GURL url("https://example.test");
   for (const auto& test_case : kTestCases) {
@@ -320,9 +330,10 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
     fake_safe_browsing_database()->AddBlacklistedUrl(url, threat_type,
                                                      metadata);
     SimulateNavigateAndCommit(url, main_rfh());
+    bool warning = false;
     EXPECT_EQ(test_case.expected_activation,
-              subresource_filter::GetListForThreatTypeAndMetadata(threat_type,
-                                                                  metadata));
+              subresource_filter::GetListForThreatTypeAndMetadata(
+                  threat_type, metadata, &warning));
   }
 }
 

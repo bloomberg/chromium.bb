@@ -12,7 +12,8 @@ namespace subresource_filter {
 
 ActivationList GetListForThreatTypeAndMetadata(
     safe_browsing::SBThreatType threat_type,
-    const safe_browsing::ThreatMetadata& threat_type_metadata);
+    const safe_browsing::ThreatMetadata& threat_type_metadata,
+    bool* warning);
 
 }  // namespace subresource_filter
 

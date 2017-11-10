@@ -107242,8 +107242,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PhishingInterstitial" label="phishing blacklist pattern"/>
   <suffix name="SubresourceFilterOnly" label="subresource filter only pattern"/>
   <suffix name="BetterAds" label="Better Ads Standard pattern"/>
-  <suffix name="AbusiveAds" label="Abusive Ads pattern"/>
-  <suffix name="AllAds" label="All Ads (BAS + Abusive) pattern"/>
+  <suffix name="AbusiveAds" label="Abusive Ads pattern">
+    <obsolete>
+      Deprecated 11/17, no longer used.
+    </obsolete>
+  </suffix>
+  <suffix name="AllAds" label="All Ads (BAS + Abusive) pattern">
+    <obsolete>
+      Deprecated 11/17, no longer used.
+    </obsolete>
+  </suffix>
   <affected-histogram name="SubresourceFilter.PageLoad.FinalURLMatch"/>
   <affected-histogram name="SubresourceFilter.PageLoad.RedirectChainLength"/>
   <affected-histogram
