@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/protected_buffer_manager_proxy.h"
+#include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
 
-#include "chrome/gpu/protected_buffer_manager.h"
+#include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
 
-namespace chromeos {
 namespace arc {
 
 GpuArcProtectedBufferManagerProxy::GpuArcProtectedBufferManagerProxy(
-    chromeos::arc::ProtectedBufferManager* protected_buffer_manager)
+    arc::ProtectedBufferManager* protected_buffer_manager)
     : protected_buffer_manager_(protected_buffer_manager) {
   DCHECK(protected_buffer_manager_);
 }
@@ -50,4 +49,3 @@ void GpuArcProtectedBufferManagerProxy::GetProtectedSharedMemoryFromHandle(
 }
 
 }  // namespace arc
-}  // namespace chromeos

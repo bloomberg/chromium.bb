@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/gpu_arc_video_decode_accelerator.h"
+#include "components/arc/video_accelerator/gpu_arc_video_decode_accelerator.h"
 
 #include <utility>
 
@@ -10,49 +10,48 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/gpu/chrome_arc_video_decode_accelerator.h"
+#include "components/arc/video_accelerator/chrome_arc_video_decode_accelerator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 // Make sure arc::mojom::VideoDecodeAccelerator::Result and
-// chromeos::arc::ArcVideoDecodeAccelerator::Result match.
+// arc::ArcVideoDecodeAccelerator::Result match.
 static_assert(
     static_cast<int>(arc::mojom::VideoDecodeAccelerator::Result::SUCCESS) ==
-        chromeos::arc::ArcVideoDecodeAccelerator::SUCCESS,
+        arc::ArcVideoDecodeAccelerator::SUCCESS,
     "enum mismatch");
 static_assert(static_cast<int>(
                   arc::mojom::VideoDecodeAccelerator::Result::ILLEGAL_STATE) ==
-                  chromeos::arc::ArcVideoDecodeAccelerator::ILLEGAL_STATE,
+                  arc::ArcVideoDecodeAccelerator::ILLEGAL_STATE,
               "enum mismatch");
 static_assert(
     static_cast<int>(
         arc::mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT) ==
-        chromeos::arc::ArcVideoDecodeAccelerator::INVALID_ARGUMENT,
+        arc::ArcVideoDecodeAccelerator::INVALID_ARGUMENT,
     "enum mismatch");
 static_assert(
     static_cast<int>(
         arc::mojom::VideoDecodeAccelerator::Result::UNREADABLE_INPUT) ==
-        chromeos::arc::ArcVideoDecodeAccelerator::UNREADABLE_INPUT,
+        arc::ArcVideoDecodeAccelerator::UNREADABLE_INPUT,
     "enum mismatch");
 static_assert(
     static_cast<int>(
         arc::mojom::VideoDecodeAccelerator::Result::PLATFORM_FAILURE) ==
-        chromeos::arc::ArcVideoDecodeAccelerator::PLATFORM_FAILURE,
+        arc::ArcVideoDecodeAccelerator::PLATFORM_FAILURE,
     "enum mismatch");
 static_assert(
     static_cast<int>(
         arc::mojom::VideoDecodeAccelerator::Result::INSUFFICIENT_RESOURCES) ==
-        chromeos::arc::ArcVideoDecodeAccelerator::INSUFFICIENT_RESOURCES,
+        arc::ArcVideoDecodeAccelerator::INSUFFICIENT_RESOURCES,
     "enum mismatch");
 
 namespace mojo {
 
 template <>
-struct TypeConverter<arc::mojom::BufferMetadataPtr,
-                     chromeos::arc::BufferMetadata> {
+struct TypeConverter<arc::mojom::BufferMetadataPtr, arc::BufferMetadata> {
   static arc::mojom::BufferMetadataPtr Convert(
-      const chromeos::arc::BufferMetadata& input) {
+      const arc::BufferMetadata& input) {
     arc::mojom::BufferMetadataPtr result = arc::mojom::BufferMetadata::New();
     result->timestamp = input.timestamp;
     result->bytes_used = input.bytes_used;
@@ -61,11 +60,10 @@ struct TypeConverter<arc::mojom::BufferMetadataPtr,
 };
 
 template <>
-struct TypeConverter<chromeos::arc::BufferMetadata,
-                     arc::mojom::BufferMetadataPtr> {
-  static chromeos::arc::BufferMetadata Convert(
+struct TypeConverter<arc::BufferMetadata, arc::mojom::BufferMetadataPtr> {
+  static arc::BufferMetadata Convert(
       const arc::mojom::BufferMetadataPtr& input) {
-    chromeos::arc::BufferMetadata result;
+    arc::BufferMetadata result;
     result.timestamp = input->timestamp;
     result.bytes_used = input->bytes_used;
     return result;
@@ -73,9 +71,8 @@ struct TypeConverter<chromeos::arc::BufferMetadata,
 };
 
 template <>
-struct TypeConverter<arc::mojom::VideoFormatPtr, chromeos::arc::VideoFormat> {
-  static arc::mojom::VideoFormatPtr Convert(
-      const chromeos::arc::VideoFormat& input) {
+struct TypeConverter<arc::mojom::VideoFormatPtr, arc::VideoFormat> {
+  static arc::mojom::VideoFormatPtr Convert(const arc::VideoFormat& input) {
     arc::mojom::VideoFormatPtr result = arc::mojom::VideoFormat::New();
     result->pixel_format = input.pixel_format;
     result->buffer_size = input.buffer_size;
@@ -91,11 +88,11 @@ struct TypeConverter<arc::mojom::VideoFormatPtr, chromeos::arc::VideoFormat> {
 };
 
 template <>
-struct TypeConverter<chromeos::arc::ArcVideoDecodeAccelerator::Config,
+struct TypeConverter<arc::ArcVideoDecodeAccelerator::Config,
                      arc::mojom::VideoDecodeAcceleratorConfigPtr> {
-  static chromeos::arc::ArcVideoDecodeAccelerator::Config Convert(
+  static arc::ArcVideoDecodeAccelerator::Config Convert(
       const arc::mojom::VideoDecodeAcceleratorConfigPtr& input) {
-    chromeos::arc::ArcVideoDecodeAccelerator::Config result;
+    arc::ArcVideoDecodeAccelerator::Config result;
     result.num_input_buffers = input->num_input_buffers;
     result.input_pixel_format = input->input_pixel_format;
     result.secure_mode = input->secure_mode;
@@ -105,7 +102,6 @@ struct TypeConverter<chromeos::arc::ArcVideoDecodeAccelerator::Config,
 
 }  // namespace mojo
 
-namespace chromeos {
 namespace arc {
 
 GpuArcVideoDecodeAccelerator::GpuArcVideoDecodeAccelerator(
@@ -279,4 +275,3 @@ void GpuArcVideoDecodeAccelerator::Flush() {
 }
 
 }  // namespace arc
-}  // namespace chromeos

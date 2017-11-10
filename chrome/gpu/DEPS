@@ -5,10 +5,5 @@ include_rules = [
   "+components/metrics",
   "+content/public/child",
   "+content/public/gpu",
-  "+media/video",
-  "+media/base/video_frame.h",
-  "+media/base/video_types.h",
-  "+media/gpu",
-  "+mojo/edk/embedder",
   "+services/service_manager/public/cpp",
 ]

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
-#define COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
+#ifndef COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
 
 #include "components/arc/common/video_decode_accelerator.mojom.h"
-#include "components/arc/video_accelerator/video_accelerator.h"
+#include "components/arc/video_accelerator/video_frame_plane.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mojo {
@@ -43,4 +43,4 @@ struct StructTraits<arc::mojom::SizeDataView, gfx::Size> {
 };
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_
+#endif  // COMPONENTS_ARC_COMMON_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_

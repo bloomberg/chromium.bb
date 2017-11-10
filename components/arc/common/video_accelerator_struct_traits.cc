@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/video_accelerator/video_accelerator_struct_traits.h"
+#include "components/arc/common/video_accelerator_struct_traits.h"
 
 namespace mojo {
 

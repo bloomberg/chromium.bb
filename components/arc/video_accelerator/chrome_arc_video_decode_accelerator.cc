@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/chrome_arc_video_decode_accelerator.h"
+#include "components/arc/video_accelerator/chrome_arc_video_decode_accelerator.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -10,12 +10,11 @@
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "base/unguessable_token.h"
-#include "chrome/gpu/protected_buffer_manager.h"
+#include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/format_utils.h"
 #include "media/gpu/gpu_video_decode_accelerator_factory.h"
 
-namespace chromeos {
 namespace arc {
 
 namespace {
@@ -29,7 +28,7 @@ const size_t kMaxBufferCount = 128;
 // VDA. Arbitrarily chosen a reasonable constant as the limit.
 const int kMaxConcurrentClients = 8;
 
-}  // anonymous namespace
+}  // namespace
 
 int ChromeArcVideoDecodeAccelerator::client_count_ = 0;
 
@@ -632,4 +631,3 @@ bool ChromeArcVideoDecodeAccelerator::ValidatePortAndIndex(
 }
 
 }  // namespace arc
-}  // namespace chromeos

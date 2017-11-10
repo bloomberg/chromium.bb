@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/gpu/gpu_arc_video_encode_accelerator.h"
+#include "components/arc/video_accelerator/gpu_arc_video_encode_accelerator.h"
 
 #include <utility>
 
@@ -16,7 +16,6 @@
 
 #define DVLOGF(x) DVLOG(x) << __func__ << "(): "
 
-namespace chromeos {
 namespace arc {
 
 namespace {
@@ -146,7 +145,7 @@ void GpuArcVideoEncodeAccelerator::Encode(
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::SharedMemoryHandle shm_handle(base::FileDescriptor(fd.release(), true),
                                       0u, guid);
-  auto shm = base::MakeUnique<base::SharedMemory>(shm_handle, true);
+  auto shm = std::make_unique<base::SharedMemory>(shm_handle, true);
 
   base::CheckedNumeric<off_t> map_offset = planes[0].offset;
   base::CheckedNumeric<size_t> map_size = allocation_size;
@@ -256,4 +255,3 @@ base::ScopedFD GpuArcVideoEncodeAccelerator::UnwrapFdFromMojoHandle(
 }
 
 }  // namespace arc
-}  // namespace chromeos

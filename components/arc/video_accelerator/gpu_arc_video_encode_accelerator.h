@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_GPU_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
-#define CHROME_GPU_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
+#ifndef COMPONENTS_ARC_VIDEO_ACCELERATOR_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
+#define COMPONENTS_ARC_VIDEO_ACCELERATOR_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
 
 #include <memory>
 #include <unordered_map>
@@ -12,11 +12,10 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "components/arc/common/video_encode_accelerator.mojom.h"
-#include "components/arc/video_accelerator/video_accelerator.h"
+#include "components/arc/video_accelerator/video_frame_plane.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/video/video_encode_accelerator.h"
 
-namespace chromeos {
 namespace arc {
 
 // GpuArcVideoEncodeAccelerator manages life-cycle and IPC message translation
@@ -85,6 +84,5 @@ class GpuArcVideoEncodeAccelerator
 };
 
 }  // namespace arc
-}  // namespace chromeos
 
-#endif  // CHROME_GPU_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
+#endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_GPU_ARC_VIDEO_ENCODE_ACCELERATOR_H_
