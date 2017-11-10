@@ -24,6 +24,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_features.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -34,10 +35,24 @@ namespace {
 // String used for source parameter in GAIA cookie manager calls.
 const char kSource[] = "ChromiumAccountReconcilor";
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Preference indicating that the Dice migration should happen at the next
 // Chrome startup.
 const char kDiceMigrationOnStartupPref[] =
     "signin.AccountReconcilor.kDiceMigrationOnStartup";
+
+const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
+
+// Used for UMA histogram kDiceMigrationStatusHistogram.
+// Do not remove or re-order values.
+enum class DiceMigrationStatus {
+  kEnabled,
+  kDisabledReadyForMigration,
+  kDisabledNotReadyForMigration,
+
+  kDiceMigrationStatusCount
+};
+#endif
 
 class AccountEqualToFunc {
  public:
@@ -96,16 +111,25 @@ AccountReconcilor::AccountReconcilor(
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   PrefService* prefs = client_->GetPrefs();
-  if (ShouldMigrateToDiceOnStartup(is_new_profile)) {
+  bool is_ready_for_dice = IsReadyForDiceMigration(is_new_profile);
+  if (is_ready_for_dice && signin::IsDiceMigrationEnabled()) {
     DCHECK(prefs);
     if (!signin::IsDiceEnabledForProfile(prefs))
       VLOG(1) << "Profile is migrating to Dice";
     signin::MigrateProfileToDice(prefs);
     DCHECK(signin::IsDiceEnabledForProfile(prefs));
   }
-  UMA_HISTOGRAM_BOOLEAN("Signin.DiceEnabledForProfile",
-                        signin::IsDiceEnabledForProfile(prefs));
+  UMA_HISTOGRAM_ENUMERATION(
+      kDiceMigrationStatusHistogram,
+      signin::IsDiceEnabledForProfile(prefs)
+          ? DiceMigrationStatus::kEnabled
+          : (is_ready_for_dice
+                 ? DiceMigrationStatus::kDisabledReadyForMigration
+                 : DiceMigrationStatus::kDisabledNotReadyForMigration),
+      DiceMigrationStatus::kDiceMigrationStatusCount);
+#endif
 }
 
 AccountReconcilor::~AccountReconcilor() {
@@ -118,7 +142,9 @@ AccountReconcilor::~AccountReconcilor() {
 // static
 void AccountReconcilor::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   registry->RegisterBooleanPref(kDiceMigrationOnStartupPref, false);
+#endif
 }
 
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
@@ -756,15 +782,20 @@ void AccountReconcilor::UnblockReconcile() {
   }
 }
 
-bool AccountReconcilor::ShouldMigrateToDiceOnStartup(bool is_new_profile) {
-  return signin::IsDiceMigrationEnabled() &&
-         (is_new_profile ||
-          client_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref));
+bool AccountReconcilor::IsReadyForDiceMigration(bool is_new_profile) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  return is_new_profile ||
+         client_->GetPrefs()->GetBoolean(kDiceMigrationOnStartupPref);
+#else
+  return false;
+#endif
 }
 
 // static
 void AccountReconcilor::SetDiceMigrationOnStartup(PrefService* prefs,
                                                   bool migrate) {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   VLOG(1) << "Dice migration on next startup: " << migrate;
   prefs->SetBoolean(kDiceMigrationOnStartupPref, migrate);
+#endif
 }
