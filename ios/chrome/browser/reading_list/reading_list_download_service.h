@@ -29,7 +29,7 @@ class ReadingListDistillerPageFactory;
 class ReadingListDownloadService
     : public KeyedService,
       public ReadingListModelObserver,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   ReadingListDownloadService(
       ReadingListModel* reading_list_model,
@@ -95,8 +95,8 @@ class ReadingListDownloadService
   // Callback for entry deletion.
   void OnDeleteEnd(const GURL& url, bool success);
 
-  // net::NetworkChangeNotifier::ConnectionTypeObserver:
-  void OnConnectionTypeChanged(
+  // net::NetworkChangeNotifier::NetworkChangeObserver:
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   ReadingListModel* reading_list_model_;
