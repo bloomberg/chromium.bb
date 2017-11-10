@@ -30,7 +30,6 @@
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
@@ -62,20 +61,6 @@
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
-@end
-
-@interface CountingObserver : NSObject<CRWWebControllerObserver>
-
-@property(nonatomic, readonly) int pageLoadedCount;
-@end
-
-@implementation CountingObserver
-@synthesize pageLoadedCount = _pageLoadedCount;
-
-- (void)pageLoaded:(CRWWebController*)webController {
-  ++_pageLoadedCount;
-}
-
 @end
 
 namespace web {
@@ -680,27 +665,6 @@ TEST_F(CRWWebControllerNativeContentTest, NativeContentVirtualURL) {
   EXPECT_EQ(navigationManager.GetLastCommittedItem()->GetVirtualURL(),
             virtual_url);
 }
-
-// A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
-// is needed;
-typedef WebTestWithWebController CRWWebControllerObserversTest;
-
-// Tests that CRWWebControllerObservers are called.
-TEST_F(CRWWebControllerObserversTest, Observers) {
-  CountingObserver* observer = [[CountingObserver alloc] init];
-  EXPECT_FALSE([web_controller() hasObservers]);
-  [web_controller() addObserver:observer];
-  EXPECT_TRUE([web_controller() hasObservers]);
-
-  EXPECT_EQ(0, [observer pageLoadedCount]);
-  [web_controller() webStateImpl]->OnPageLoaded(GURL("http://test"), false);
-  EXPECT_EQ(0, [observer pageLoadedCount]);
-  [web_controller() webStateImpl]->OnPageLoaded(GURL("http://test"), true);
-  EXPECT_EQ(1, [observer pageLoadedCount]);
-
-  [web_controller() removeObserver:observer];
-  EXPECT_FALSE([web_controller() hasObservers]);
-};
 
 // Test fixture for window.open tests.
 class WindowOpenByDomTest : public WebTestWithWebController {

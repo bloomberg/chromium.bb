@@ -68,8 +68,6 @@ source_set("test_support") {
   ]
 
   sources = [
-    "crw_fake_web_controller_observer.h",
-    "crw_fake_web_controller_observer.mm",
     "test_web_thread.cc",
     "test_web_thread_bundle.cc",
     "url_test_util.mm",

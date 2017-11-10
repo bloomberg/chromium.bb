@@ -9,7 +9,6 @@ source_set("web_state") {
     ":context_menu",
     ":navigation_context",
     ":session_certificate_policy_cache",
-    ":web_controller_observer_bridge",
     ":web_state_impl_header",
     ":wk_web_view_security_util",
     "//base",
@@ -139,20 +138,6 @@ source_set("page_viewport_state") {
   sources = [
     "page_viewport_state.h",
     "page_viewport_state.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("web_controller_observer_bridge") {
-  deps = [
-    "//base",
-    "//ios/web/public",
-  ]
-
-  sources = [
-    "web_controller_observer_bridge.h",
-    "web_controller_observer_bridge.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

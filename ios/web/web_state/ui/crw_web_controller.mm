@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/containers/mru_cache.h"
 #import "base/ios/block_types.h"
-#import "base/ios/crb_protocol_observers.h"
 #include "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/json/string_escape.h"
@@ -61,7 +60,6 @@
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_kit_constants.h"
 #import "ios/web/public/web_state/context_menu_params.h"
-#import "ios/web/public/web_state/crw_web_controller_observer.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -94,7 +92,6 @@
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "ios/web/web_state/ui/wk_back_forward_list_item_holder.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-#import "ios/web/web_state/web_controller_observer_bridge.h"
 #import "ios/web/web_state/web_state_impl.h"
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
@@ -279,12 +276,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   id<CRWNativeContent> _nativeController;
   BOOL _isHalted;  // YES if halted. Halting happens prior to destruction.
   BOOL _isBeingDestroyed;  // YES if in the process of closing.
-  // All CRWWebControllerObservers attached to the CRWWebController.
-  CRBProtocolObservers<CRWWebControllerObserver>* _observers;
-  // WebControllerObserverBridge translates WebState events and forward them
-  // to the CRWWebControllerObservers. TODO(crbug.com/675005): remove once
-  // CRWWebControllerObserver has been removed.
-  std::unique_ptr<web::WebControllerObserverBridge> _observerBridge;
   // YES if a user interaction has been registered at any time once the page has
   // loaded.
   BOOL _userInteractionRegistered;
@@ -1128,21 +1119,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([self.nativeController respondsToSelector:@selector(close)])
     [self.nativeController close];
 
-  if (_observers) {
-    DCHECK(_observerBridge);
-    [_observers webControllerWillClose:self];
-    _webStateImpl->RemoveObserver(_observerBridge.get());
-    _observerBridge.reset();
-  }
+  // Reset the delegate association.
+  _delegate = nil;
 
   if (!_isHalted) {
     [self terminateNetworkActivity];
   }
 
-  DCHECK(!_isBeingDestroyed);
-  DCHECK(!_delegate);  // Delegate should reset its association before closing.
   // Mark the destruction sequence has started, in case someone else holds a
   // strong reference and tries to continue using the tab.
+  DCHECK(!_isBeingDestroyed);
   _isBeingDestroyed = YES;
 
   // Remove the web view now. Otherwise, delegate callbacks occur.
@@ -5224,29 +5210,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)resetInjectedWebViewContentView {
   [self setWebView:nil];
   [self resetContainerView];
-}
-
-- (void)addObserver:(id<CRWWebControllerObserver>)observer {
-  DCHECK(observer);
-  if (!_observers) {
-    _observers = [CRBProtocolObservers<CRWWebControllerObserver>
-        observersWithProtocol:@protocol(CRWWebControllerObserver)];
-    _observerBridge =
-        std::make_unique<web::WebControllerObserverBridge>(_observers, self);
-    _webStateImpl->AddObserver(_observerBridge.get());
-  }
-  [_observers addObserver:observer];
-
-  if ([observer respondsToSelector:@selector(setWebViewProxy:controller:)])
-    [observer setWebViewProxy:_webViewProxy controller:self];
-}
-
-- (void)removeObserver:(id<CRWWebControllerObserver>)observer {
-  [_observers removeObserver:observer];
-}
-
-- (BOOL)hasObservers {
-  return _observers && ![_observers empty];
 }
 
 - (NSString*)referrerFromNavigationAction:(WKNavigationAction*)action {

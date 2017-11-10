@@ -17,7 +17,7 @@ goog.require('__crWeb.message');
 
   /**
    * Focus and input events for form elements are messaged to the main
-   * application for broadcast to CRWWebControllerObservers.
+   * application for broadcast to WebStateObservers.
    * This is done with a single event handler for each type being added to the
    * main document element which checks the source element of the event; this
    * is much easier to manage than adding handlers to individual elements.

@@ -34,7 +34,6 @@ enum LoadPhase {
 @protocol CRWNativeContent;
 @protocol CRWNativeContentProvider;
 @protocol CRWSwipeRecognizerProvider;
-@protocol CRWWebControllerObserver;
 @class CRWWebViewContentView;
 @protocol CRWWebViewProxy;
 class GURL;
@@ -230,13 +229,6 @@ class WebStateImpl;
 - (void)addToolbarViewToWebView:(UIView*)toolbarView;
 // Removes |toolbar| from the web view.
 - (void)removeToolbarViewFromWebView:(UIView*)toolbarView;
-
-// Adds a CRWWebControllerObserver to subscribe to page events. |observer|
-// cannot be nil.
-- (void)addObserver:(id<CRWWebControllerObserver>)observer;
-
-// Removes an attached CRWWebControllerObserver.
-- (void)removeObserver:(id<CRWWebControllerObserver>)observer;
 
 // Returns the always-visible frame, not including the part that could be
 // covered by the toolbar.
