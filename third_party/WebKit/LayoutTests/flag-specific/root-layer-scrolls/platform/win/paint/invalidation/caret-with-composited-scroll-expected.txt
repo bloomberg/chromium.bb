@@ -38,7 +38,7 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "object": "LayoutBlockFlow DIV",
           "rect": [3, 1003, 200, 16],
           "reason": "subtree"
         }
@@ -80,7 +80,7 @@
       "reason": "subtree"
     },
     {
-      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "object": "LayoutBlockFlow DIV",
       "reason": "subtree"
     },
     {
