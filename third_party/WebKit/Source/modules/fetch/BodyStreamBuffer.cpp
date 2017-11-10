@@ -225,7 +225,9 @@ ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
 ScriptPromise BodyStreamBuffer::Cancel(ScriptState* script_state,
                                        ScriptValue reason) {
   DCHECK_EQ(script_state, script_state_.get());
-  Close();
+  if (Controller())
+    Controller()->Close();
+  CancelConsumer();
   return ScriptPromise::CastUndefined(script_state);
 }
 
