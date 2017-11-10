@@ -297,9 +297,7 @@ PP_Bool ReadImageData(PP_Resource device_context_2d,
 }
 
 void RunMessageLoop(PP_Instance instance) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
-  base::RunLoop().Run();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
 }
 
 void QuitMessageLoop(PP_Instance instance) {
@@ -837,3 +835,4 @@ scoped_refptr<PluginModule> PluginModule::Create(
 }
 
 }  // namespace content
+
