@@ -10,6 +10,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/begin_frame_args_test.h"
@@ -19,6 +20,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/fake_context_factory.h"
 
 using testing::Mock;
 using testing::_;
@@ -475,6 +477,54 @@ TEST_F(CompositorTestWithMessageLoop, MAYBE_CreateAndReleaseOutputSurface) {
   compositor()->ScheduleDraw();
   DrawWaiterForTest::WaitForCompositingEnded(compositor());
   compositor()->SetRootLayer(nullptr);
+}
+
+namespace {
+
+class ReplaceWidgetContextFactory : public FakeContextFactory {
+ public:
+  ReplaceWidgetContextFactory(base::OnceClosure quit_closure)
+      : FakeContextFactory(), quit_closure_(std::move(quit_closure)) {}
+  ~ReplaceWidgetContextFactory() override { EXPECT_TRUE(called_); }
+
+  void CreateLayerTreeFrameSink(base::WeakPtr<Compositor> compositor) override {
+    called_ = true;
+    EXPECT_FALSE(inside_);
+    inside_ = true;
+
+    compositor->SetVisible(false);
+
+    gfx::AcceleratedWidget widget = compositor->ReleaseAcceleratedWidget();
+    compositor->SetAcceleratedWidget(widget);
+
+    std::move(quit_closure_).Run();
+  }
+
+ private:
+  bool inside_ = false;
+  bool called_ = false;
+  base::OnceClosure quit_closure_;
+};
+
+}  // namespace
+
+TEST(BasicCompositorTest, NoCreateLayerTreeFrameSinkReEntry) {
+  base::RunLoop loop;
+  ReplaceWidgetContextFactory context_factory(loop.QuitClosure());
+  constexpr uint32_t kDefaultClientId = 0u;
+  viz::FrameSinkIdAllocator id_allocator(kDefaultClientId);
+
+  Compositor compositor(id_allocator.NextFrameSinkId(), &context_factory,
+                        nullptr, base::ThreadTaskRunnerHandle::Get(),
+                        false /* enable_surface_synchronization */,
+                        false /* enable_pixel_canvas */);
+  compositor.SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
+
+  // The Compositor will try to make a LayerTreeFrameSink, which then releases
+  // and sets the accelerated widget to simulate the ContextFactory forcing the
+  // Compositor to make a new frame sink. This verifies that we don't re-enter
+  // the process making two frame sinks.
+  loop.Run();
 }
 
 }  // namespace ui
