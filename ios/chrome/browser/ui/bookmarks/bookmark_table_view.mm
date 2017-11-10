@@ -183,7 +183,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     self.tableView.estimatedRowHeight = kCellHeightPt;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     // Remove extra rows.
-    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     self.tableView.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     self.tableView.allowsMultipleSelectionDuringEditing = YES;

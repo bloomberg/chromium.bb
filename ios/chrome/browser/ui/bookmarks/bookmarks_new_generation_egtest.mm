@@ -2006,6 +2006,32 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 }
 
+// Tests when total height of bookmarks exceeds screen height.
+- (void)testBookmarksExceedsScreenHeight {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupBookmarksWhichExceedsScreenHeight];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Verify the bottom URL is not visible (make sure
+  // setupBookmarksWhichExceedsScreenHeight works as expected).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Bottom URL")]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify the top URL is visible (isn't covered by the navigation bar).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Top URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Test new folder could be created.  This verifies bookmarks scrolled to
+  // bottom successfully for folder name editng.
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:YES];
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+}
+
 // Tests the new folder name is committed when name editing is interrupted by
 // navigating away.
 - (void)testNewFolderNameCommittedOnNavigatingAway {
@@ -2453,6 +2479,28 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   NSString* thirdTitle = @"Third URL";
   bookmark_model->AddURL(folder3, 0, base::SysNSStringToUTF16(thirdTitle),
                          thirdURL);
+}
+
+// Loads a large set of bookmarks in the model which is longer than the screen
+// height.
++ (void)setupBookmarksWhichExceedsScreenHeight {
+  [BookmarksNewGenTestCase waitForBookmarkModelLoaded:YES];
+
+  bookmarks::BookmarkModel* bookmark_model =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState());
+
+  const GURL dummyURL = web::test::HttpServer::MakeUrl("http://google.com");
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::SysNSStringToUTF16(@"Bottom URL"), dummyURL);
+
+  NSString* dummyTitle = @"Dummy URL";
+  for (int i = 0; i < 30; i++) {
+    bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                           base::SysNSStringToUTF16(dummyTitle), dummyURL);
+  }
+  bookmark_model->AddURL(bookmark_model->mobile_node(), 0,
+                         base::SysNSStringToUTF16(@"Top URL"), dummyURL);
 }
 
 // Selects MobileBookmarks to open.
@@ -2963,9 +3011,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 //    (maybe programmatically remove the current root node from model, and
 //    trigger a sync).
 // 4. Restoring y position when opening from cache.
-// 5. Adding new folder when when existing bookmarks list covers full screen
-//    height,to ensure we scroll to the newly added folder.
-// 6. Test new folder name is committed when name editing is interrupted by
+// 5. Test new folder name is committed when name editing is interrupted by
 //    tapping context bar buttons.
 
 @end
