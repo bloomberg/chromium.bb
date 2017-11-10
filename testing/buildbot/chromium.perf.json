@@ -28094,6 +28094,11 @@
       "microdump_stackwalk"
     ]
   },
+  "Linux Builder": {
+    "additional_compile_targets": [
+      "chromedriver"
+    ]
+  },
   "Linux Perf": {
     "isolated_scripts": [
       {
@@ -44177,6 +44182,11 @@
           "upload_test_results": true
         }
       }
+    ]
+  },
+  "Mac Builder": {
+    "additional_compile_targets": [
+      "chromedriver"
     ]
   },
   "Mac Mini 8GB 10.12 Perf": {
@@ -87653,6 +87663,16 @@
           "upload_test_results": true
         }
       }
+    ]
+  },
+  "Win Builder": {
+    "additional_compile_targets": [
+      "chromedriver"
+    ]
+  },
+  "Win x64 Builder": {
+    "additional_compile_targets": [
+      "chromedriver"
     ]
   }
 }
