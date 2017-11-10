@@ -204,6 +204,28 @@ if (current_cpu == "x86" || (current_cpu == "x64" && !is_msan)) {
       sources = libvpx_srcs_x86_64_avx2
     }
   }
+
+  source_set("libvpx_intrinsics_avx512") {
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_config" ]
+    if (is_win) {
+      cflags = [ "/arch:AVX512" ]
+    } else {
+      cflags = [
+        "-mavx512f",
+        "-mavx512cd",
+        "-mavx512bw",
+        "-mavx512dq",
+        "-mavx512vl",
+      ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_avx512
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_avx512
+    }
+  }
 }
 
 if (cpu_arch_full == "arm-neon-cpu-detect") {
@@ -309,6 +331,7 @@ static_library("libvpx") {
     deps += [
       ":libvpx_intrinsics_avx",
       ":libvpx_intrinsics_avx2",
+      ":libvpx_intrinsics_avx512",
       ":libvpx_intrinsics_mmx",
       ":libvpx_intrinsics_sse2",
       ":libvpx_intrinsics_sse4_1",

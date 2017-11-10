@@ -9,10 +9,10 @@
 # Every time libvpx source code is updated just run this script.
 #
 # Usage:
-# $ ./generate_gni.sh [--disable-avx] [--only-configs]
+# $ ./generate_gni.sh [--enable-avx512] [--only-configs]
 #
 # The following optional flags are supported:
-# --disable-avx : AVX+AVX2 support is disabled.
+# --enable-avx512 : Enable AVX512.
 # --only-configs : Excludes generation of GN and GYP files (i.e. only
 #                  configuration headers are generated).
 # --disable-vp9-highbitdepth : Revert x86[_64] builds to low-bit-depth only.
@@ -21,14 +21,17 @@ export LC_ALL=C
 BASE_DIR=$(pwd)
 LIBVPX_SRC_DIR="source/libvpx"
 LIBVPX_CONFIG_DIR="source/config"
-unset DISABLE_AVX
+DISABLE_AVX512="--disable-avx512"
 HIGHBD="--enable-vp9-highbitdepth"
+
+# Only disable avx512 if it is an option.
+grep -q avx512 source/libvpx/configure || unset DISABLE_AVX512
 
 for i in "$@"
 do
 case $i in
-  --disable-avx)
-  DISABLE_AVX="--disable-avx --disable-avx2"
+  --enable-avx512)
+  unset DISABLE_AVX512
   shift
   ;;
   --only-configs)
@@ -123,7 +126,7 @@ function convert_srcs_to_project_files {
 
   # Select all x86 files ending with .c
   local intrinsic_list=$(echo "$source_list" | \
-    egrep '(mmx|sse2|sse3|ssse3|sse4|avx|avx2).c$')
+    egrep '(mmx|sse2|sse3|ssse3|sse4|avx|avx2|avx512).c$')
 
   # Select all neon files ending in C but only when building in RTCD mode
   if [ "libvpx_srcs_arm_neon_cpu_detect" == "$2" ]; then
@@ -151,6 +154,7 @@ function convert_srcs_to_project_files {
     local sse4_1_sources=$(echo "$intrinsic_list" | grep '_sse4\.c$')
     local avx_sources=$(echo "$intrinsic_list" | grep '_avx\.c$')
     local avx2_sources=$(echo "$intrinsic_list" | grep '_avx2\.c$')
+    local avx512_sources=$(echo "$intrinsic_list" | grep '_avx512\.c$')
 
     write_gni c_sources $2 "$BASE_DIR/libvpx_srcs.gni"
     write_gni assembly_sources $2_assembly "$BASE_DIR/libvpx_srcs.gni"
@@ -159,10 +163,9 @@ function convert_srcs_to_project_files {
     write_gni sse3_sources $2_sse3 "$BASE_DIR/libvpx_srcs.gni"
     write_gni ssse3_sources $2_ssse3 "$BASE_DIR/libvpx_srcs.gni"
     write_gni sse4_1_sources $2_sse4_1 "$BASE_DIR/libvpx_srcs.gni"
-    if [ -z "$DISABLE_AVX" ]; then
-      write_gni avx_sources $2_avx "$BASE_DIR/libvpx_srcs.gni"
-      write_gni avx2_sources $2_avx2 "$BASE_DIR/libvpx_srcs.gni"
-    fi
+    write_gni avx_sources $2_avx "$BASE_DIR/libvpx_srcs.gni"
+    write_gni avx2_sources $2_avx2 "$BASE_DIR/libvpx_srcs.gni"
+    write_gni avx512_sources $2_avx512 "$BASE_DIR/libvpx_srcs.gni"
   else
     local c_sources=$(echo "$source_list" | egrep '.(c|h)$')
     local assembly_sources=$(echo -e "$source_list\n$intrinsic_list" | \
@@ -236,7 +239,7 @@ function gen_rtcd_header {
 
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
-    --sym=vp8_rtcd $DISABLE_AVX $3 \
+    --sym=vp8_rtcd $DISABLE_AVX512 $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vp8/common/rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp8_rtcd.h
@@ -245,7 +248,7 @@ function gen_rtcd_header {
 
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
-    --sym=vp9_rtcd $DISABLE_AVX $3 \
+    --sym=vp9_rtcd $DISABLE_AVX512 $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vp9/common/vp9_rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vp9_rtcd.h
@@ -254,7 +257,7 @@ function gen_rtcd_header {
 
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
-    --sym=vpx_scale_rtcd $DISABLE_AVX $3 \
+    --sym=vpx_scale_rtcd $DISABLE_AVX512 $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vpx_scale/vpx_scale_rtcd.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_scale_rtcd.h
@@ -263,7 +266,7 @@ function gen_rtcd_header {
 
   $BASE_DIR/$LIBVPX_SRC_DIR/build/make/rtcd.pl \
     --arch=$2 \
-    --sym=vpx_dsp_rtcd $DISABLE_AVX $3 \
+    --sym=vpx_dsp_rtcd $DISABLE_AVX512 $3 \
     --config=$BASE_DIR/$TEMP_DIR/libvpx.config \
     $BASE_DIR/$LIBVPX_SRC_DIR/vpx_dsp/vpx_dsp_rtcd_defs.pl \
     > $BASE_DIR/$LIBVPX_CONFIG_DIR/$1/vpx_dsp_rtcd.h
@@ -337,7 +340,7 @@ echo "Generate config files."
 all_platforms="--enable-external-build --enable-postproc --enable-multi-res-encoding --enable-temporal-denoising"
 all_platforms="${all_platforms} --enable-vp9-temporal-denoising --enable-vp9-postproc --size-limit=16384x16384"
 all_platforms="${all_platforms} --enable-realtime-only --disable-install-docs"
-x86_platforms="--enable-pic --as=yasm $DISABLE_AVX $HIGHBD"
+x86_platforms="--enable-pic --as=yasm $DISABLE_AVX512 $HIGHBD"
 gen_config_files linux/ia32 "--target=x86-linux-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files linux/x64 "--target=x86_64-linux-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files linux/arm "--target=armv7-linux-gcc --disable-neon ${all_platforms}"
