@@ -487,11 +487,22 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 }
 
 void TestRenderFrameHost::PrepareForCommit() {
-  PrepareForCommitWithServerRedirect(GURL());
+  PrepareForCommitInternal(GURL(), net::HostPortPair());
+}
+
+void TestRenderFrameHost::PrepareForCommitWithSocketAddress(
+    const net::HostPortPair& socket_address) {
+  PrepareForCommitInternal(GURL(), socket_address);
 }
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
+  PrepareForCommitInternal(redirect_url, net::HostPortPair());
+}
+
+void TestRenderFrameHost::PrepareForCommitInternal(
+    const GURL& redirect_url,
+    const net::HostPortPair& socket_address) {
   if (!IsBrowserSideNavigationEnabled()) {
     // Non PlzNavigate
     if (is_waiting_for_beforeunload_ack())
@@ -536,6 +547,7 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
 
   // Simulate the network stack commit.
   scoped_refptr<ResourceResponse> response(new ResourceResponse);
+  response->head.socket_address = socket_address;
   // TODO(carlosk): ideally with PlzNavigate it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, MakeEmptyStream(), nullptr);
