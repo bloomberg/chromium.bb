@@ -104804,7 +104804,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Notifications" label="Notification permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
   <suffix name="ProtectedMedia" label="Protected media permission actions"/>
-  <suffix name="DurableStorage" label="Durable Storage permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
   <suffix name="VideoCapture" label="Camera permission actions"/>
   <suffix name="Flash" label="Flash permission actions"/>
