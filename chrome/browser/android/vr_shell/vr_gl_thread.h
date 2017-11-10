@@ -80,6 +80,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void SetExitVrPromptEnabled(bool enabled,
                               vr::UiUnsupportedMode reason) override;
   void SetSpeechRecognitionEnabled(bool enabled) override;
+  void SetRecognitionResult(const base::string16& result) override;
   void OnSpeechRecognitionStateChanged(int new_state) override;
 
  protected:

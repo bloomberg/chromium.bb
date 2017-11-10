@@ -95,7 +95,7 @@ void UiSceneManagerTest::VerifyElementsVisible(
   OnBeginFrame();
   SCOPED_TRACE(trace_context);
   for (auto name : names) {
-    SCOPED_TRACE(name);
+    SCOPED_TRACE(UiElementNameToString(name));
     auto* element = scene_->GetUiElementByName(name);
     ASSERT_NE(nullptr, element);
     EXPECT_TRUE(element->IsVisible());

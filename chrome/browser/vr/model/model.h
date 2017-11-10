@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/reticle_model.h"
+#include "chrome/browser/vr/model/speech_recognition_model.h"
 #include "chrome/browser/vr/model/web_vr_timeout_state.h"
 
 namespace vr {
@@ -22,10 +23,7 @@ struct Model {
   WebVrTimeoutState web_vr_timeout_state = kWebVrNoTimeoutPending;
   bool started_for_autopresentation = false;
 
-  bool recognizing_speech = false;
-  int speech_recognition_state = 0;
-  bool has_or_can_request_audio_permission = true;
-
+  SpeechRecognitionModel speech;
   ControllerModel controller;
   ReticleModel reticle;
 
