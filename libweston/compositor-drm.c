@@ -4428,6 +4428,101 @@ parse_gbm_format(const char *s, uint32_t default_value, uint32_t *gbm_format)
 	return ret;
 }
 
+static uint32_t
+u32distance(uint32_t a, uint32_t b)
+{
+	if (a < b)
+		return b - a;
+	else
+		return a - b;
+}
+
+/** Choose equivalent mode
+ *
+ * If the two modes are not equivalent, return NULL.
+ * Otherwise return the mode that is more likely to work in place of both.
+ *
+ * None of the fuzzy matching criteria in this function have any justification.
+ *
+ * typedef struct _drmModeModeInfo {
+ *         uint32_t clock;
+ *         uint16_t hdisplay, hsync_start, hsync_end, htotal, hskew;
+ *         uint16_t vdisplay, vsync_start, vsync_end, vtotal, vscan;
+ *
+ *         uint32_t vrefresh;
+ *
+ *         uint32_t flags;
+ *         uint32_t type;
+ *         char name[DRM_DISPLAY_MODE_LEN];
+ * } drmModeModeInfo, *drmModeModeInfoPtr;
+ */
+static const drmModeModeInfo *
+drm_mode_pick_equivalent(const drmModeModeInfo *a, const drmModeModeInfo *b)
+{
+	uint32_t refresh_a, refresh_b;
+
+	if (a->hdisplay != b->hdisplay || a->vdisplay != b->vdisplay)
+		return NULL;
+
+	if (a->flags != b->flags)
+		return NULL;
+
+	/* kHz */
+	if (u32distance(a->clock, b->clock) > 500)
+		return NULL;
+
+	refresh_a = drm_refresh_rate_mHz(a);
+	refresh_b = drm_refresh_rate_mHz(b);
+	if (u32distance(refresh_a, refresh_b) > 50)
+		return NULL;
+
+	if ((a->type ^ b->type) & DRM_MODE_TYPE_PREFERRED) {
+		if (a->type & DRM_MODE_TYPE_PREFERRED)
+			return a;
+		else
+			return b;
+	}
+
+	return a;
+}
+
+/* If the given mode info is not already in the list, add it.
+ * If it is in the list, either keep the existing or replace it,
+ * depending on which one is "better".
+ */
+static int
+drm_output_try_add_mode(struct drm_output *output, const drmModeModeInfo *info)
+{
+	struct weston_mode *base;
+	struct drm_mode *mode;
+	struct drm_backend *backend;
+	const drmModeModeInfo *chosen = NULL;
+
+	assert(info);
+
+	wl_list_for_each(base, &output->base.mode_list, link) {
+		mode = to_drm_mode(base);
+		chosen = drm_mode_pick_equivalent(&mode->mode_info, info);
+		if (chosen)
+			break;
+	}
+
+	if (chosen == info) {
+		backend = to_drm_backend(output->base.compositor);
+		drm_output_destroy_mode(backend, mode);
+		chosen = NULL;
+	}
+
+	if (!chosen) {
+		mode = drm_output_add_mode(output, info);
+		if (!mode)
+			return -1;
+	}
+	/* else { the equivalent mode is already in the list } */
+
+	return 0;
+}
+
 /** Rewrite the output's mode list
  *
  * @param output The output.
@@ -4444,22 +4539,21 @@ drm_output_update_modelist_from_heads(struct drm_output *output)
 	struct drm_backend *backend = to_drm_backend(output->base.compositor);
 	struct weston_head *head_base;
 	struct drm_head *head;
-	struct drm_mode *mode;
 	int i;
+	int ret;
 
 	assert(!output->base.enabled);
 
 	drm_mode_list_destroy(backend, &output->base.mode_list);
 
-	/* XXX: needs a strategy for combining mode lists from multiple heads */
-	head_base = weston_output_get_first_head(&output->base);
-	assert(head_base);
-	head = to_drm_head(head_base);
-
-	for (i = 0; i < head->connector->count_modes; i++) {
-		mode = drm_output_add_mode(output, &head->connector->modes[i]);
-		if (!mode)
-			return -1;
+	wl_list_for_each(head_base, &output->base.head_list, output_link) {
+		head = to_drm_head(head_base);
+		for (i = 0; i < head->connector->count_modes; i++) {
+			ret = drm_output_try_add_mode(output,
+						&head->connector->modes[i]);
+			if (ret < 0)
+				return -1;
+		}
 	}
 
 	return 0;
