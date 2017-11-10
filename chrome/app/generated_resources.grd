@@ -8160,6 +8160,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <if expr="is_linux and not chromeos">
+        <message name="IDS_MINIMIZE_WINDOW_MENU" desc="The Linux browser window menu item text for minimizing the window.">
+          Minimize
+        </message>
+        <message name="IDS_MAXIMIZE_WINDOW_MENU" desc="The Linux browser window menu item text for maximizing the window.">
+          Maximize
+        </message>
+        <message name="IDS_RESTORE_WINDOW_MENU" desc="The Linux browser window menu item text for restoring the window.">
+          Restore
+        </message>
+        <message name="IDS_CLOSE_WINDOW_MENU" desc="The Linux browser window menu item text for closing the window.">
+          Close
+        </message>
         <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
           Use system title bar and borders
         </message>

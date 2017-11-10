@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,8 +27,7 @@ SystemMenuModelDelegate::SystemMenuModelDelegate(
       browser_(browser) {
 }
 
-SystemMenuModelDelegate::~SystemMenuModelDelegate() {
-}
+SystemMenuModelDelegate::~SystemMenuModelDelegate() {}
 
 bool SystemMenuModelDelegate::IsCommandIdChecked(int command_id) const {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -61,6 +62,19 @@ bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
     trs->LoadTabsFromLastSession();
     return false;
   }
+  return true;
+}
+
+bool SystemMenuModelDelegate::IsCommandIdVisible(int command_id) const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  bool is_maximized = browser_->window()->IsMaximized();
+  switch (command_id) {
+    case IDC_MAXIMIZE_WINDOW:
+      return !is_maximized;
+    case IDC_RESTORE_WINDOW:
+      return is_maximized;
+  }
+#endif
   return true;
 }
 
