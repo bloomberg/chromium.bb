@@ -11,10 +11,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_piece.h"
 #include "net/ssl/ssl_private_key.h"
 
 namespace base {
@@ -40,15 +40,14 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     // should not be in this list.
     virtual std::vector<uint16_t> GetAlgorithmPreferences() = 0;
 
-    // Signs an |input| with the specified TLS signing algorithm. |input| must
-    // already have been hashed by the corresponding hash function (see
-    // |SSL_get_signature_algorithm_digest|). On success it returns OK and sets
+    // Signs an |input| with the specified TLS signing algorithm. |input| is
+    // the unhashed message to be signed. On success it returns OK and sets
     // |signature| to the resulting signature. Otherwise it returns a net error
     // code. It will only be called on the task runner passed to the owning
     // ThreadedSSLPrivateKey.
-    virtual Error SignDigest(uint16_t algorithm,
-                             const base::StringPiece& input,
-                             std::vector<uint8_t>* signature) = 0;
+    virtual Error Sign(uint16_t algorithm,
+                       base::span<const uint8_t> input,
+                       std::vector<uint8_t>* signature) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -60,9 +59,9 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
 
   // SSLPrivateKey implementation.
   std::vector<uint16_t> GetAlgorithmPreferences() override;
-  void SignDigest(uint16_t algorithm,
-                  const base::StringPiece& input,
-                  const SignCallback& callback) override;
+  void Sign(uint16_t algorithm,
+            base::span<const uint8_t> input,
+            const SignCallback& callback) override;
 
  private:
   ~ThreadedSSLPrivateKey() override;

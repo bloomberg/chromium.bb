@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/strings/string_piece.h"
+#include "base/containers/span.h"
 #include "net/base/net_export.h"
 #include "net/ssl/ssl_client_cert_type.h"
 
@@ -47,7 +47,7 @@ enum PrivateKeyType {
 //
 NET_EXPORT bool RawSignDigestWithPrivateKey(
     const base::android::JavaRef<jobject>& private_key,
-    const base::StringPiece& digest,
+    base::span<const uint8_t> digest,
     std::vector<uint8_t>* signature);
 
 // Returns a handle to the system AndroidEVP_PKEY object used to back a given

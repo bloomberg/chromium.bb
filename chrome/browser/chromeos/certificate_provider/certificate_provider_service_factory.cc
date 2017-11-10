@@ -53,7 +53,7 @@ class DefaultDelegate : public CertificateProviderService::Delegate,
       int request_id,
       uint16_t algorithm,
       const scoped_refptr<net::X509Certificate>& certificate,
-      const std::string& digest) override;
+      base::span<const uint8_t> digest) override;
 
   // extensions::ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -106,7 +106,7 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
     int request_id,
     uint16_t algorithm,
     const scoped_refptr<net::X509Certificate>& certificate,
-    const std::string& digest) {
+    base::span<const uint8_t> digest) {
   const std::string event_name(api_cp::OnSignDigestRequested::kEventName);
   if (!event_router_->ExtensionHasEventListener(extension_id, event_name))
     return false;

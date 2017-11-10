@@ -36,10 +36,10 @@ class ThreadedSSLPrivateKey::Core
 
   ThreadedSSLPrivateKey::Delegate* delegate() { return delegate_.get(); }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) {
-    return delegate_->SignDigest(algorithm, input, signature);
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) {
+    return delegate_->Sign(algorithm, input, signature);
   }
 
  private:
@@ -60,15 +60,15 @@ std::vector<uint16_t> ThreadedSSLPrivateKey::GetAlgorithmPreferences() {
   return core_->delegate()->GetAlgorithmPreferences();
 }
 
-void ThreadedSSLPrivateKey::SignDigest(
-    uint16_t algorithm,
-    const base::StringPiece& input,
-    const SSLPrivateKey::SignCallback& callback) {
+void ThreadedSSLPrivateKey::Sign(uint16_t algorithm,
+                                 base::span<const uint8_t> input,
+                                 const SSLPrivateKey::SignCallback& callback) {
   std::vector<uint8_t>* signature = new std::vector<uint8_t>;
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
-      base::Bind(&ThreadedSSLPrivateKey::Core::SignDigest, core_, algorithm,
-                 input.as_string(), base::Unretained(signature)),
+      base::Bind(&ThreadedSSLPrivateKey::Core::Sign, core_, algorithm,
+                 std::vector<uint8_t>(input.begin(), input.end()),
+                 base::Unretained(signature)),
       base::Bind(&DoCallback, weak_factory_.GetWeakPtr(), callback,
                  base::Owned(signature)));
 }

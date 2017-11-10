@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -1694,18 +1695,9 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
       NetLogEventType::SSL_PRIVATE_KEY_OP,
       base::Bind(&NetLogPrivateKeyOperationCallback, algorithm));
 
-  // SSLPrivateKey expects the input to be prehashed.
-  const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
-  uint8_t digest[EVP_MAX_MD_SIZE];
-  unsigned digest_len;
-  if (!md || !EVP_Digest(in, in_len, digest, &digest_len, md, nullptr)) {
-    return ssl_private_key_failure;
-  }
-
   signature_result_ = ERR_IO_PENDING;
-  ssl_config_.client_private_key->SignDigest(
-      algorithm,
-      base::StringPiece(reinterpret_cast<const char*>(digest), digest_len),
+  ssl_config_.client_private_key->Sign(
+      algorithm, base::make_span(in, in_len),
       base::Bind(&SSLClientSocketImpl::OnPrivateKeyComplete,
                  weak_factory_.GetWeakPtr()));
   return ssl_private_key_retry;

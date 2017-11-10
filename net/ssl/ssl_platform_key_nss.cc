@@ -60,20 +60,25 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
                                                       true /* supports PSS */);
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
     SECItem digest_item;
-    digest_item.data =
-        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(input.data()));
-    digest_item.len = input.size();
+    digest_item.data = digest;
+    digest_item.len = digest_len;
 
     CK_MECHANISM_TYPE mechanism = PK11_MapSignKeyType(key_->keyType);
     SECItem param = {siBuffer, nullptr, 0};
     CK_RSA_PKCS_PSS_PARAMS pss_params;
     bssl::UniquePtr<uint8_t> free_digest_info;
     if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
-      const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
       switch (EVP_MD_type(md)) {
         case NID_sha256:
           pss_params.hashAlg = CKM_SHA256;

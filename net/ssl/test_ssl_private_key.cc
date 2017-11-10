@@ -36,36 +36,31 @@ class TestSSLPlatformKey : public ThreadedSSLPrivateKey::Delegate {
                                                       true /* supports PSS */);
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
-    bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(key_.get(), nullptr));
-    if (!ctx || !EVP_PKEY_sign_init(ctx.get()) ||
-        !EVP_PKEY_CTX_set_signature_md(
-            ctx.get(), SSL_get_signature_algorithm_digest(algorithm))) {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
+    bssl::ScopedEVP_MD_CTX ctx;
+    EVP_PKEY_CTX* pctx;
+    if (!EVP_DigestSignInit(ctx.get(), &pctx,
+                            SSL_get_signature_algorithm_digest(algorithm),
+                            nullptr, key_.get())) {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
-
     if (SSL_is_signature_algorithm_rsa_pss(algorithm)) {
-      if (!EVP_PKEY_CTX_set_rsa_padding(ctx.get(), RSA_PKCS1_PSS_PADDING) ||
-          !EVP_PKEY_CTX_set_rsa_pss_saltlen(ctx.get(), -1 /* hash length */)) {
+      if (!EVP_PKEY_CTX_set_rsa_padding(pctx, RSA_PKCS1_PSS_PADDING) ||
+          !EVP_PKEY_CTX_set_rsa_pss_saltlen(pctx, -1 /* hash length */)) {
         return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
       }
     }
-
-    const uint8_t* input_ptr = reinterpret_cast<const uint8_t*>(input.data());
-    size_t input_len = input.size();
     size_t sig_len = 0;
-    if (!EVP_PKEY_sign(ctx.get(), NULL, &sig_len, input_ptr, input_len))
+    if (!EVP_DigestSign(ctx.get(), NULL, &sig_len, input.data(), input.size()))
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     signature->resize(sig_len);
-    if (!EVP_PKEY_sign(ctx.get(), signature->data(), &sig_len, input_ptr,
-                       input_len)) {
+    if (!EVP_DigestSign(ctx.get(), signature->data(), &sig_len, input.data(),
+                        input.size())) {
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
     }
-
     signature->resize(sig_len);
-
     return OK;
   }
 

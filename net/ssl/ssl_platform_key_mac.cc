@@ -102,9 +102,9 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
                                                       false /* no PSS */);
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
     crypto::OpenSSLErrStackTracer tracer(FROM_HERE);
 
     CSSM_CSP_HANDLE csp_handle;
@@ -130,15 +130,22 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
     }
     ScopedCSSM_CC_HANDLE cssm_signature(cssm_signature_raw);
 
+    // Hash the input.
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
     CSSM_DATA hash_data;
-    hash_data.Length = input.size();
-    hash_data.Data =
-        const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(input.data()));
+    hash_data.Length = digest_len;
+    hash_data.Data = digest;
 
     bssl::UniquePtr<uint8_t> free_digest_info;
     if (cssm_key_->KeyHeader.AlgorithmId == CSSM_ALGID_RSA) {
       // CSSM expects the caller to prepend the DigestInfo.
-      int hash_nid = EVP_MD_type(SSL_get_signature_algorithm_digest(algorithm));
+      int hash_nid = EVP_MD_type(md);
       int is_alloced;
       if (!RSA_add_pkcs1_prefix(&hash_data.Data, &hash_data.Length, &is_alloced,
                                 hash_nid, hash_data.Data, hash_data.Length)) {
@@ -241,22 +248,30 @@ class API_AVAILABLE(macosx(10.12)) SSLPlatformKeySecKey
     return preferences_;
   }
 
-  Error SignDigest(uint16_t algorithm,
-                   const base::StringPiece& input,
-                   std::vector<uint8_t>* signature) override {
+  Error Sign(uint16_t algorithm,
+             base::span<const uint8_t> input,
+             std::vector<uint8_t>* signature) override {
     SecKeyAlgorithm sec_algorithm = GetSecKeyAlgorithm(algorithm);
     if (!sec_algorithm) {
       NOTREACHED();
       return ERR_FAILED;
     }
 
-    base::ScopedCFTypeRef<CFDataRef> input_ref(CFDataCreateWithBytesNoCopy(
-        kCFAllocatorDefault, reinterpret_cast<const uint8_t*>(input.data()),
-        base::checked_cast<CFIndex>(input.size()), kCFAllocatorNull));
+    const EVP_MD* md = SSL_get_signature_algorithm_digest(algorithm);
+    uint8_t digest[EVP_MAX_MD_SIZE];
+    unsigned digest_len;
+    if (!md || !EVP_Digest(input.data(), input.size(), digest, &digest_len, md,
+                           nullptr)) {
+      return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
+    }
+
+    base::ScopedCFTypeRef<CFDataRef> digest_ref(CFDataCreateWithBytesNoCopy(
+        kCFAllocatorDefault, digest, base::checked_cast<CFIndex>(digest_len),
+        kCFAllocatorNull));
 
     base::ScopedCFTypeRef<CFErrorRef> error;
     base::ScopedCFTypeRef<CFDataRef> signature_ref(SecKeyCreateSignature(
-        key_, sec_algorithm, input_ref, error.InitializeInto()));
+        key_, sec_algorithm, digest_ref, error.InitializeInto()));
     if (!signature_ref) {
       LOG(ERROR) << error;
       return ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED;
