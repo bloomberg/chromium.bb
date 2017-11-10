@@ -669,6 +669,19 @@ void PaintController::CommitNewDisplayItems() {
     std::swap(raster_invalidation_tracking_info_->old_client_debug_names,
               raster_invalidation_tracking_info_->new_client_debug_names);
   }
+
+#if DCHECK_IS_ON()
+  if (VLOG_IS_ON(2)) {
+    LOG(ERROR) << "PaintController::CommitNewDisplayItems() done";
+#ifndef NDEBUG
+    if (VLOG_IS_ON(3)) {
+      ShowDebugDataWithRecords();
+      return;
+    }
+#endif
+    ShowDebugData();
+  }
+#endif
 }
 
 size_t PaintController::ApproximateUnsharedMemoryUsage() const {

@@ -152,7 +152,7 @@ String PaintController::DisplayItemListAsJSON::ClientName(
 
 void PaintController::ShowDebugDataInternal(
     DisplayItemList::JsonFlags flags) const {
-  DLOG(INFO) << "current display item list: "
+  LOG(ERROR) << "current display item list: "
              << DisplayItemListAsJSON(
                     current_paint_artifact_.GetDisplayItemList(),
                     current_cached_subsequences_,
@@ -161,7 +161,7 @@ void PaintController::ShowDebugDataInternal(
                     .Utf8()
                     .data();
 
-  DLOG(INFO) << "new display item list: "
+  LOG(ERROR) << "new display item list: "
              << DisplayItemListAsJSON(
                     new_display_item_list_, new_cached_subsequences_,
                     new_paint_chunks_.PaintChunks(),

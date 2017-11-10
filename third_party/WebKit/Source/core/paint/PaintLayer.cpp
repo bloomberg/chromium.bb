@@ -3430,12 +3430,11 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 
 }  // namespace blink
 
-#ifndef NDEBUG
-// FIXME: Rename?
+#if DCHECK_IS_ON()
 void showLayerTree(const blink::PaintLayer* layer) {
   blink::DisableCompositingQueryAsserts disabler;
   if (!layer) {
-    LOG(INFO) << "Cannot showLayerTree. Root is (nil)";
+    LOG(ERROR) << "Cannot showLayerTree. Root is (nil)";
     return;
   }
 
@@ -3450,13 +3449,13 @@ void showLayerTree(const blink::PaintLayer* layer) {
                                    blink::kLayoutAsTextDontUpdateLayout |
                                    blink::kLayoutAsTextShowLayoutState,
                                layer);
-    LOG(INFO) << output.Utf8().data();
+    LOG(ERROR) << output.Utf8().data();
   }
 }
 
 void showLayerTree(const blink::LayoutObject* layoutObject) {
   if (!layoutObject) {
-    LOG(INFO) << "Cannot showLayerTree. Root is (nil)";
+    LOG(ERROR) << "Cannot showLayerTree. Root is (nil)";
     return;
   }
   showLayerTree(layoutObject->EnclosingLayer());

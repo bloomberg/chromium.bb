@@ -96,7 +96,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   std::unique_ptr<JSONObject> LayersAsJSON(LayerTreeFlags) const;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   void ShowDebugData();
 #endif
 
