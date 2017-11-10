@@ -47,9 +47,9 @@ class SelectionModifier {
  public:
   // |frame| is used for providing settings.
   SelectionModifier(const LocalFrame& /* frame */,
-                    const VisibleSelection&,
+                    const SelectionInDOMTree&,
                     LayoutUnit);
-  SelectionModifier(const LocalFrame&, const VisibleSelection&);
+  SelectionModifier(const LocalFrame&, const SelectionInDOMTree&);
 
   LayoutUnit XPosForVerticalArrowNavigation() const {
     return x_pos_for_vertical_arrow_navigation_;
