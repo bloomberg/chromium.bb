@@ -271,8 +271,8 @@
     // assert((stream[_stateAndFlags] & STATE_MASK) === ERRORING,
     //        '_stream_.[[state]] is `"erroring"`');
     // assert(!WritableStreamHasOperationMarkedInFlight(stream),
-    //        '! WritableStreamHasOperationMarkedInFlight(_stream_) is
-    //        *false*');
+    //        '! WritableStreamHasOperationMarkedInFlight(_stream_) is ' +
+    //        '*false*');
 
     stream[_stateAndFlags] = (stream[_stateAndFlags] & ~STATE_MASK) | ERRORED;
 
@@ -467,6 +467,25 @@
     // assert(
     //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
     return stream[_storedError];
+  }
+
+  // Expose internals for TransformStream
+  function isWritableStreamWritable(stream) {
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return  (stream[_stateAndFlags] & STATE_MASK) === WRITABLE;
+  }
+
+  function isWritableStreamErroring(stream) {
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return  (stream[_stateAndFlags] & STATE_MASK) === ERRORING;
+  }
+
+  function getWritableStreamController(stream) {
+    // assert(
+    //     IsWritableStream(stream), '! IsWritableStream(stream) is true.');
+    return stream[_writableStreamController];
   }
 
   class WritableStreamDefaultWriter {
@@ -1010,4 +1029,12 @@
       WritableStreamDefaultWriterRelease;
   binding.WritableStreamDefaultWriterWrite = WritableStreamDefaultWriterWrite;
   binding.getWritableStreamStoredError = getWritableStreamStoredError;
+
+  // Exports for TransformStream
+  binding.WritableStream = WritableStream;
+  binding.WritableStreamDefaultControllerErrorIfNeeded =
+      WritableStreamDefaultControllerErrorIfNeeded;
+  binding.isWritableStreamWritable = isWritableStreamWritable;
+  binding.isWritableStreamErroring = isWritableStreamErroring;
+  binding.getWritableStreamController = getWritableStreamController;
 });

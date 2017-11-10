@@ -261,6 +261,10 @@ CONSOLE MESSAGE: line 147:     method getProperties
 CONSOLE MESSAGE: line 147:     method has
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method values
+CONSOLE MESSAGE: line 147: interface TransformStream
+CONSOLE MESSAGE: line 147:     getter readable
+CONSOLE MESSAGE: line 147:     getter writable
+CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface WritableStream
@@ -536,6 +540,10 @@ CONSOLE MESSAGE: line 147:     method getProperties
 CONSOLE MESSAGE: line 147:     method has
 CONSOLE MESSAGE: line 147:     method keys
 CONSOLE MESSAGE: line 147:     method values
+CONSOLE MESSAGE: line 147: interface TransformStream
+CONSOLE MESSAGE: line 147:     getter readable
+CONSOLE MESSAGE: line 147:     getter writable
+CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface WritableStream

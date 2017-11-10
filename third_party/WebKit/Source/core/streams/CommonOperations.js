@@ -48,7 +48,7 @@
   //   v8.log('**************************************************\n\n');
   //   class StreamsAssertionError extends Error {}
   //   throw new StreamsAssertionError('Streams Assertion Failure');
-  // }
+  // };
 
   //
   // Promise-manipulation functions
