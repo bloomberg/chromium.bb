@@ -215,8 +215,11 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
-  void OnWindowTransforming(Window* window) override;
-  void OnWindowTransformed(Window* window) override;
+  void OnWindowTargetTransformChanging(
+      Window* window,
+      const gfx::Transform& new_transform) override;
+  void OnWindowTransformed(Window* window,
+                           ui::PropertyChangeReason reason) override;
 
   // Overridden from EnvObserver:
   void OnWindowInitialized(Window* window) override;
@@ -264,6 +267,10 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
       fraction_of_time_without_user_input_recorder_;
 
   bool synthesize_mouse_move_;
+
+  // Whether a OnWindowTargetTransformChanging() call didn't have its
+  // corresponding OnWindowTransformed() call yet.
+  bool window_transforming_ = false;
 
   // How many move holds are outstanding. We try to defer dispatching
   // touch/mouse moves while the count is > 0.
