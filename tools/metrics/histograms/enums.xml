@@ -16931,6 +16931,10 @@ Called by update_net_error_codes.py.-->
   <int value="2223" label="V8ErrorPrepareStackTrace"/>
   <int value="2224" label="V8ErrorStackTraceLimit"/>
   <int value="2225" label="PaintWorklet"/>
+  <int value="2226" label="DocumentPageHideRegistered"/>
+  <int value="2227" label="DocumentPageHideFired"/>
+  <int value="2228" label="DocumentPageShowRegistered"/>
+  <int value="2229" label="DocumentPageShowFired"/>
 </enum>
 
 <enum name="FeedbackSource">
