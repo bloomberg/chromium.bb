@@ -296,7 +296,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
         bridge_->DeleteChannel(channel_to_delete->second.id);
         cached_channels_.erase(channel_to_delete);
       }
-      break;
+      return false;
     }
     default:
       // We rely on notification settings being one of ALLOW/BLOCK/DEFAULT.

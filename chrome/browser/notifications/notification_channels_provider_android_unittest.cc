@@ -271,7 +271,8 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       GetTestPattern(), ContentSettingsPattern(),
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(), nullptr);
 
-  EXPECT_TRUE(result);
+  EXPECT_FALSE(result)
+      << "SetWebsiteSetting should return false when passed a null value.";
   EXPECT_FALSE(channels_provider_->GetRuleIterator(
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string(),
       false /* incognito */));
