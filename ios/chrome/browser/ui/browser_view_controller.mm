@@ -5047,7 +5047,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   // the view hierarchy.
   [_contentArea setFrame:[sideSwipeView frame]];
 
-  [self.view insertSubview:_contentArea atIndex:0];
+  [self.view insertSubview:_contentArea aboveSubview:_fakeStatusBarView];
   [self updateVoiceSearchBarVisibilityAnimated:NO];
   [self updateToolbar];
 
