@@ -10,9 +10,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
@@ -45,12 +47,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
       std::string device_name,
       const ScanProperties& properties,
       const ScanImageToStringCallback& callback) override {
-    // Owned by the callback created in scan_to_string_completion->Start().
-    ScanToStringCompletion* scan_to_string_completion =
-        new ScanToStringCompletion();
-    base::ScopedFD fd;
-    ScanToStringCompletion::CompletionCallback file_callback =
-        scan_to_string_completion->Start(callback, &fd);
+    auto scan_data_reader = std::make_unique<ScanDataReader>();
+    base::ScopedFD fd = scan_data_reader->Start();
 
     // Issue the dbus request to scan an image.
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
@@ -79,7 +77,8 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnScanImageComplete,
-                       weak_ptr_factory_.GetWeakPtr(), file_callback));
+                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       std::move(scan_data_reader)));
   }
 
  protected:
@@ -90,52 +89,69 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
  private:
-  class ScanToStringCompletion {
+  // Reads scan data on a blocking sequence.
+  class ScanDataReader {
    public:
-    typedef base::Callback<void(bool succeeded)> CompletionCallback;
+    // In case of success, std::string holds the read data. Otherwise,
+    // nullopt.
+    using CompletionCallback =
+        base::OnceCallback<void(base::Optional<std::string> data)>;
 
-    ScanToStringCompletion() {}
-    virtual ~ScanToStringCompletion() {}
+    ScanDataReader() : weak_ptr_factory_(this) {}
 
-    // Creates a file stream in |file| that will stream image data to
-    // a string that will be supplied to |callback|.  Passes ownership
-    // of |this| to a returned callback.
-    CompletionCallback Start(const ScanImageToStringCallback& callback,
-                             base::ScopedFD* fd) {
-      CHECK(!pipe_reader_.get());
+    // Creates a pipe to read the scan data from the D-Bus service.
+    // Returns a write-side FD.
+    base::ScopedFD Start() {
+      DCHECK(!pipe_reader_.get());
+      DCHECK(!data_.has_value());
       pipe_reader_ = std::make_unique<chromeos::PipeReader>(
           base::CreateTaskRunnerWithTraits(
               {base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
-      *fd = pipe_reader_->StartIO(
-          base::BindOnce(&ScanToStringCompletion::OnScanToStringDataCompleted,
-                         base::Unretained(this)));
-      return base::Bind(&ScanToStringCompletion::OnScanToStringCompleted,
-                        base::Owned(this), callback);
+      return pipe_reader_->StartIO(base::BindOnce(
+          &ScanDataReader::OnDataRead, weak_ptr_factory_.GetWeakPtr()));
+    }
+
+    // Waits for the data read completion. If it is already done, |callback|
+    // will be called synchronously.
+    void Wait(CompletionCallback callback) {
+      DCHECK(callback_.is_null());
+      callback_ = std::move(callback);
+      MaybeCompleted();
     }
 
    private:
     // Called when a |pipe_reader_| completes reading scan data to a string.
-    void OnScanToStringDataCompleted(base::Optional<std::string> result) {
-      scanned_image_data_string_ =
-          result.has_value() ? std::move(result).value() : std::string();
+    void OnDataRead(base::Optional<std::string> data) {
+      DCHECK(!data_read_);
+      data_read_ = true;
+      data_ = std::move(data);
       pipe_reader_.reset();
+      MaybeCompleted();
     }
 
-    // Called by LorgnetteManagerImpl when scan completes.
-    void OnScanToStringCompleted(const ScanImageToStringCallback& callback,
-                                 bool succeeded) {
-      if (pipe_reader_.get())
-        pipe_reader_.reset();
-      callback.Run(succeeded, scanned_image_data_string_);
-      scanned_image_data_string_.clear();
+    void MaybeCompleted() {
+      // If data reading is not yet completed, or D-Bus call does not yet
+      // return, wait for the other.
+      if (!data_read_ || callback_.is_null())
+        return;
+
+      std::move(callback_).Run(std::move(data_));
     }
 
     std::unique_ptr<chromeos::PipeReader> pipe_reader_;
-    std::string scanned_image_data_string_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScanToStringCompletion);
+    // Set to true on data read completion.
+    bool data_read_ = false;
+
+    // Available only when |data_read_| is true.
+    base::Optional<std::string> data_;
+
+    CompletionCallback callback_;
+
+    base::WeakPtrFactory<ScanDataReader> weak_ptr_factory_;
+    DISALLOW_COPY_AND_ASSIGN(ScanDataReader);
   };
 
   // Called when ListScanners completes.
@@ -189,15 +205,27 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   }
 
   // Called when a response for ScanImage() is received.
-  void OnScanImageComplete(
-      const ScanToStringCompletion::CompletionCallback& callback,
-      dbus::Response* response) {
+  void OnScanImageComplete(const ScanImageToStringCallback& callback,
+                           std::unique_ptr<ScanDataReader> scan_data_reader,
+                           dbus::Response* response) {
     if (!response) {
       LOG(ERROR) << "Failed to scan image";
-      callback.Run(false);
+      // Do not touch |scan_data_reader|, so that RAII deletes it and
+      // cancels the inflight operation.
+      callback.Run(false, std::string());
       return;
     }
-    callback.Run(true);
+    auto* reader = scan_data_reader.get();
+    reader->Wait(base::BindOnce(
+        &LorgnetteManagerClientImpl::OnScanDataCompleted,
+        weak_ptr_factory_.GetWeakPtr(), callback, std::move(scan_data_reader)));
+  }
+
+  // Called when scan data read is completed.
+  void OnScanDataCompleted(const ScanImageToStringCallback& callback,
+                           std::unique_ptr<ScanDataReader> scan_data_reader,
+                           base::Optional<std::string> data) {
+    callback.Run(data.has_value(), data.value_or(std::string()));
   }
 
   dbus::ObjectProxy* lorgnette_daemon_proxy_;
