@@ -193,9 +193,7 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
       FROM_HERE, base::BindOnce(&PrintJob::Quit, quit_factory_.GetWeakPtr()),
       timeout);
 
-  base::MessageLoop::ScopedNestableTaskAllower allow(
-      base::MessageLoop::current());
-  base::RunLoop().Run();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
 
   return true;
 }
@@ -482,3 +480,4 @@ PrintedDocument* JobEventDetails::document() const { return document_.get(); }
 PrintedPage* JobEventDetails::page() const { return page_.get(); }
 
 }  // namespace printing
+
