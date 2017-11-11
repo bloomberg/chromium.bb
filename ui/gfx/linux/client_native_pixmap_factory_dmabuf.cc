@@ -75,10 +75,11 @@ class ClientNativePixmapFactoryDmabuf : public ClientNativePixmapFactory {
 #if defined(OS_CHROMEOS)
         return
 #if defined(ARCH_CPU_X86_FAMILY)
-            // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8
-            // and RG_88. crbug.com/356871
+            // Currently only Intel driver (i.e. minigbm and Mesa) supports R_8,
+            // RG_88 and NV12. crbug.com/356871
             format == gfx::BufferFormat::R_8 ||
             format == gfx::BufferFormat::RG_88 ||
+            format == gfx::BufferFormat::YUV_420_BIPLANAR ||
 #endif
             format == gfx::BufferFormat::BGRA_8888;
 #else
