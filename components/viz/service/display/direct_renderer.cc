@@ -606,31 +606,29 @@ bool DirectRenderer::CanSkipRenderPass(const RenderPass* render_pass) const {
   if (render_pass == current_frame()->root_render_pass)
     return false;
 
+  // TODO(crbug.com/783275): It's possible to skip a child RenderPass if damage
+  // does not overlap it, since that means nothing has changed:
+  //   ComputeScissorRectForRenderPass(render_pass).IsEmpty()
+  // However that caused crashes where the RenderPass' texture was not present
+  // (never seen the RenderPass before, or the texture was deleted when not used
+  // for a frame). It could avoid skipping if there is no texture present, which
+  // is what was done for a while, but this seems to papering over a missing
+  // damage problem, or we're failing to understand the system wholey.
+  // If attempted again this should probably CHECK() that the texture exists,
+  // and attempt to figure out where the new RenderPass texture without damage
+  // is coming from.
+
   // If the RenderPass wants to be cached, then we only draw it if we need to.
   // When damage is present, then we can't skip the RenderPass. Or if the
   // texture does not exist (first frame, or was deleted) then we can't skip
-  // the RenderPass, but that is checked above already.
+  // the RenderPass.
   if (render_pass->cache_render_pass) {
     if (render_pass->has_damage_from_contributing_content)
       return false;
     auto it = render_pass_textures_.find(render_pass->id);
     DCHECK(it != render_pass_textures_.end());
     DCHECK(it->second);
-    if (it->second->id() == 0)
-      return false;
-    // Normally the scissor rect shouldn't affect caching, as that is global
-    // damage and not local to the RenderPass. It can be part of the scissor
-    // without the contents of the RenderPass being dirty - which is why there
-    // is a check for |has_damage_from_contributing_content| above. However the
-    // damage in the RenderPass can be modified by SurfaceAggregator, so we
-    // check to verify if that's the case.
-    // TODO(danakj) This check was done to be sure to have the needed content
-    // available when partial swapping. But for a cached RenderPass we have all
-    // the content already, so this is redundant and prevents cacheing from
-    // working correctly. Just remove this?
-    if (!ComputeScissorRectForRenderPass(render_pass).IsEmpty())
-      return false;
-    return true;
+    return it->second->id() != 0;
   }
 
   return false;

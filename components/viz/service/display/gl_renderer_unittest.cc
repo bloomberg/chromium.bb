@@ -2804,6 +2804,10 @@ class FramebufferWatchingGLRenderer : public FakeRendererGL {
     return bind_child_framebuffer_calls_;
   }
 
+  void ResetBindCalls() {
+    bind_root_framebuffer_calls_ = bind_child_framebuffer_calls_ = 0;
+  }
+
  private:
   int bind_root_framebuffer_calls_ = 0;
   int bind_child_framebuffer_calls_ = 0;
@@ -2837,17 +2841,46 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
     gfx::Size viewport_size(100, 100);
     gfx::Rect child_rect(10, 10);
 
-    // Child RenderPass has no damage in it.
+    // First frame, the child and root RenderPass each have damage.
     RenderPass* child_pass =
         cc::AddRenderPass(&render_passes_in_draw_order_, 2, child_rect,
                           gfx::Transform(), cc::FilterOperations());
     cc::AddQuad(child_pass, child_rect, SK_ColorGREEN);
-    child_pass->damage_rect = gfx::Rect();
+    child_pass->damage_rect = child_rect;
 
-    // Root RenderPass has some damage that doesn't intersect the child.
     RenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, 1, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
+    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
+                          SkBlendMode::kSrcOver);
+    root_pass->damage_rect = gfx::Rect(viewport_size);
+
+    EXPECT_EQ(0, renderer.bind_root_framebuffer_calls());
+    EXPECT_EQ(0, renderer.bind_child_framebuffer_calls());
+
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+
+    // We had to draw the root, and the child.
+    EXPECT_EQ(1, renderer.bind_child_framebuffer_calls());
+    // When the RenderPassDrawQuad in the root is drawn, we may re-bind the root
+    // framebuffer. So it can be bound more than once.
+    EXPECT_GE(renderer.bind_root_framebuffer_calls(), 1);
+
+    // Reset counting.
+    renderer.ResetBindCalls();
+
+    // Second frame, the child RenderPass has no damage in it.
+    child_pass = cc::AddRenderPass(&render_passes_in_draw_order_, 2, child_rect,
+                                   gfx::Transform(), cc::FilterOperations());
+    cc::AddQuad(child_pass, child_rect, SK_ColorGREEN);
+    child_pass->damage_rect = gfx::Rect();
+
+    // Root RenderPass has some damage that doesn't intersect the child.
+    root_pass = cc::AddRenderPass(&render_passes_in_draw_order_, 1,
+                                  gfx::Rect(viewport_size), gfx::Transform(),
+                                  cc::FilterOperations());
     cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
     cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
                           SkBlendMode::kSrcOver);
