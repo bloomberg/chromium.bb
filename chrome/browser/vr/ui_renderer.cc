@@ -33,13 +33,9 @@ void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
     return;
 
   if (!elements.empty()) {
-    // Enable depth testing. Note that we do not clear the color buffer. The
-    // scene's background elements are responsible for drawing a complete
-    // background.
+    // Note that we do not clear the color buffer. The scene's background
+    // elements are responsible for drawing a complete background.
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glClear(GL_DEPTH_BUFFER_BIT);
     DrawUiView(render_info, elements);
   }
 
@@ -48,8 +44,6 @@ void UiRenderer::Draw2dBrowsing(const RenderInfo& render_info) {
 
   // The overlays do not make use of depth testing.
   glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glDepthMask(GL_FALSE);
   DrawUiView(render_info, elements_overlay);
 
   // We do want to cull backfaces on the controller, however.
@@ -70,8 +64,6 @@ void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
   // mode, this will need further testing if those get added
   // later.
   glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glDepthMask(GL_FALSE);
 
   DrawUiView(render_info, elements);
 
@@ -83,11 +75,9 @@ void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {
   // The WebVR overlay foreground is drawn as a separate pass, so we need to set
   // up our gl state before drawing.
   glEnable(GL_CULL_FACE);
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT);
   DrawUiView(render_info, scene_->GetVisibleWebVrOverlayForegroundElements());
 }
 
