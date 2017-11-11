@@ -138,20 +138,28 @@ TEST_P(SurfaceTest, Damage) {
   {
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(ToPixel(gfx::Rect(0, 0, 512, 512)),
+    EXPECT_EQ(ToPixel(gfx::Rect(buffer_size)),
               frame.render_pass_list.back()->damage_rect);
   }
 
+  gfx::RectF buffer_damage(32, 64, 16, 32);
+  gfx::Rect surface_damage = gfx::ToNearestRect(buffer_damage);
+
   // Check that damage is correct for a non-square rectangle not at the origin.
-  surface->Damage(gfx::Rect(64, 128, 16, 32));
+  surface->Damage(surface_damage);
   surface->Commit();
   RunAllPendingInMessageLoop();
+
+  // Adjust damage for DSF filtering and verify it below.
+  if (device_scale_factor() > 1.f)
+    buffer_damage.Inset(-1.f, -1.f);
 
   {
     const viz::CompositorFrame& frame =
         GetFrameFromSurface(shell_surface.get());
-    EXPECT_EQ(ToPixel(gfx::Rect(64, 128, 16, 32)),
-              frame.render_pass_list.back()->damage_rect);
+    EXPECT_TRUE(
+        gfx::RectF(frame.render_pass_list.back()->damage_rect)
+            .Contains(gfx::ScaleRect(buffer_damage, device_scale_factor())));
   }
 }
 
