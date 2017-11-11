@@ -20,16 +20,12 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_checker.h"
-#include "build/build_config.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_daemon_client.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#endif
 
 namespace device {
 
@@ -50,46 +46,29 @@ const size_t kInitialOffset = 0;
 // The MediaTransferProtocolManager implementation.
 class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
  public:
-  explicit MediaTransferProtocolManagerImpl(
-      scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : weak_ptr_factory_(this) {
-#if defined(OS_CHROMEOS)
-    DCHECK(!task_runner.get());
-#else
-    DCHECK(task_runner.get());
-    dbus::Bus::Options options;
-    options.bus_type = dbus::Bus::SYSTEM;
-    options.connection_type = dbus::Bus::PRIVATE;
-    options.dbus_task_runner = task_runner;
-    session_bus_ = new dbus::Bus(options);
-#endif
-
-    if (GetBus()) {
-      // Listen for future mtpd service owner changes, in case it is not
-      // available right now. There is no guarantee on Linux or ChromeOS that
-      // mtpd is running already.
-      mtpd_owner_changed_callback_ = base::Bind(
-          &MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
-          weak_ptr_factory_.GetWeakPtr());
-      GetBus()->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
-                                            mtpd_owner_changed_callback_);
-      GetBus()->GetServiceOwner(mtpd::kMtpdServiceName,
-                                mtpd_owner_changed_callback_);
+  MediaTransferProtocolManagerImpl()
+      : bus_(chromeos::DBusThreadManager::Get()->GetSystemBus()),
+        weak_ptr_factory_(this) {
+    // Listen for future mtpd service owner changes, in case it is not
+    // available right now. There is no guarantee that mtpd is running already.
+    mtpd_owner_changed_callback_ =
+        base::Bind(&MediaTransferProtocolManagerImpl::FinishSetupOnOriginThread,
+                   weak_ptr_factory_.GetWeakPtr());
+    if (bus_) {
+      bus_->ListenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                        mtpd_owner_changed_callback_);
+      bus_->GetServiceOwner(mtpd::kMtpdServiceName,
+                            mtpd_owner_changed_callback_);
     }
   }
 
   ~MediaTransferProtocolManagerImpl() override {
     DCHECK(g_media_transfer_protocol_manager);
     g_media_transfer_protocol_manager = NULL;
-    if (GetBus()) {
-      GetBus()->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
-                                              mtpd_owner_changed_callback_);
+    if (bus_) {
+      bus_->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
+                                          mtpd_owner_changed_callback_);
     }
-
-#if !defined(OS_CHROMEOS)
-    session_bus_->GetDBusTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&dbus::Bus::ShutdownAndBlock, session_bus_));
-#endif
 
     VLOG(1) << "MediaTransferProtocolManager Shutdown completed";
   }
@@ -608,16 +587,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     delete_object_callbacks_.pop();
   }
 
-  // Get the Bus object used to communicate with mtpd.
-  dbus::Bus* GetBus() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-#if defined(OS_CHROMEOS)
-    return chromeos::DBusThreadManager::Get()->GetSystemBus();
-#else
-    return session_bus_.get();
-#endif
-  }
-
   // Callback to finish initialization after figuring out if the mtpd service
   // has an owner, or if the service owner has changed.
   // |mtpd_service_owner| contains the name of the current owner, if any.
@@ -650,7 +619,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
     current_mtpd_owner_ = mtpd_service_owner;
 
-    mtp_client_.reset(MediaTransferProtocolDaemonClient::Create(GetBus()));
+    // |bus_| must be valid here. Otherwise, how did this method get called as a
+    // callback in the first place?
+    DCHECK(bus_);
+    mtp_client_.reset(MediaTransferProtocolDaemonClient::Create(bus_.get()));
 
     // Set up signals and start initializing |storage_info_map_|.
     mtp_client_->ListenForChanges(
@@ -665,10 +637,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   // Mtpd DBus client.
   std::unique_ptr<MediaTransferProtocolDaemonClient> mtp_client_;
 
-#if !defined(OS_CHROMEOS)
-  // And a D-Bus session for talking to mtpd.
-  scoped_refptr<dbus::Bus> session_bus_;
-#endif
+  // And a D-Bus session for talking to mtpd. Note: In production, this is never
+  // a nullptr, but in tests it oftentimes is. It may be too much work for
+  // DBusThreadManager to provide a bus in unit tests.
+  scoped_refptr<dbus::Bus> const bus_;
 
   // Device attachment / detachment observers.
   base::ObserverList<Observer> observers_;
@@ -705,12 +677,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 }  // namespace
 
 // static
-MediaTransferProtocolManager* MediaTransferProtocolManager::Initialize(
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+MediaTransferProtocolManager* MediaTransferProtocolManager::Initialize() {
   DCHECK(!g_media_transfer_protocol_manager);
 
-  g_media_transfer_protocol_manager =
-      new MediaTransferProtocolManagerImpl(task_runner);
+  g_media_transfer_protocol_manager = new MediaTransferProtocolManagerImpl();
   VLOG(1) << "MediaTransferProtocolManager initialized";
 
   return g_media_transfer_protocol_manager;

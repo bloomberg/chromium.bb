@@ -96,8 +96,7 @@ void StorageMonitorCros::Init() {
 
   if (!media_transfer_protocol_manager_) {
     media_transfer_protocol_manager_.reset(
-        device::MediaTransferProtocolManager::Initialize(
-                    scoped_refptr<base::SingleThreadTaskRunner>()));
+        device::MediaTransferProtocolManager::Initialize());
   }
 
   media_transfer_protocol_device_observer_.reset(
