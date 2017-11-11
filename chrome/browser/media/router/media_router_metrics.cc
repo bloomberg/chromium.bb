@@ -15,9 +15,6 @@ namespace media_router {
 
 namespace {
 
-constexpr char kLegacyCastPresentationUrlPrefix[] =
-    "https://google.com/cast#__castAppId__=";
-
 PresentationUrlType GetPresentationUrlType(const GURL& url) {
   if (url.SchemeIs(kDialPresentationUrlScheme))
     return PresentationUrlType::kDial;

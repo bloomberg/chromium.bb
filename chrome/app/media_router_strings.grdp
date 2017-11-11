@@ -186,6 +186,9 @@
   <message name="IDS_MEDIA_ROUTER_DESTINATION_MISSING" desc="Link to display when no Cast destinations are found which, on click, opens a page to the Chromecast help center explaining possible reasons why none are detected.">
     No Cast destinations found. Need help?
   </message>
+  <message name="IDS_MEDIA_ROUTER_WIRED_DISPLAY_SINK_NAME" desc="Name shown for a wired display that can be used as a Cast destination.">
+    Display <ph name="DISPLAY_ID">$1<ex>1</ex></ph>
+  </message>
 
   <!-- Sink Search -->
   <message name="IDS_MEDIA_ROUTER_SEARCH_LABEL" desc="Label for search input in sink list.">

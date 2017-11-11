@@ -88,6 +88,8 @@ static_library("router") {
       "mojo/media_router_mojo_impl.h",
       "mojo/media_router_mojo_metrics.cc",
       "mojo/media_router_mojo_metrics.h",
+      "mojo/wired_display_media_route_provider.cc",
+      "mojo/wired_display_media_route_provider.h",
     ]
   }
 }
@@ -123,6 +125,8 @@ static_library("test_support") {
       "discovery/mdns/mock_dns_sd_registry.h",
       "mojo/media_router_mojo_test.cc",
       "mojo/media_router_mojo_test.h",
+      "mojo/mock_mojo_media_router.cc",
+      "mojo/mock_mojo_media_router.h",
     ]
   }
 }
