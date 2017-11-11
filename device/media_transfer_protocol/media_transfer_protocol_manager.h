@@ -15,16 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 
-#if !defined(OS_LINUX)
-#error "Only used on Linux and ChromeOS"
+#if !defined(OS_CHROMEOS)
+#error "Only used on ChromeOS"
 #endif
 
 class MtpFileEntry;
 class MtpStorageInfo;
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace device {
 
@@ -173,12 +169,7 @@ class MediaTransferProtocolManager {
                             const DeleteObjectCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.
-  // On Linux, |task_runner| specifies the task runner to process asynchronous
-  // operations.
-  // On ChromeOS, |task_runner| should just be set to NULL because ChromeOS
-  // already has a dedicated task runner.
-  static MediaTransferProtocolManager* Initialize(
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+  static MediaTransferProtocolManager* Initialize();
 };
 
 }  // namespace device

@@ -19,8 +19,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
-#if !defined(OS_LINUX)
-#error "Only used on Linux and ChromeOS"
+#if !defined(OS_CHROMEOS)
+#error "Only used on ChromeOS"
 #endif
 
 class MtpFileEntry;
