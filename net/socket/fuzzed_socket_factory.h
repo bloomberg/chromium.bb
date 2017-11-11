@@ -21,9 +21,9 @@ namespace net {
 // sockets must be the same, and in the same order (both on each socket, and
 // between sockets).
 //
-// Currently doesn't support UDP or SSL sockets - just returns sockets that
+// Currently doesn't support SSL sockets - just returns sockets that
 // synchronously fail to connect when trying to create either type of socket.
-// TODO(mmenke): Add support for both types of socket.
+// TODO(mmenke): Add support for ssl sockets.
 // TODO(mmenke): add fuzzing for generation of valid cryptographically signed
 // messages.
 class FuzzedSocketFactory : public ClientSocketFactory {
