@@ -77,7 +77,6 @@ class Video(IntegrationTest):
         self.assertHasChromeProxyViaHeader(response)
         if response.response_headers['status']=='206':
           saw_range_response = True
-          self.assertEqual('201', response.response_headers['content-length'])
           content_range = response.response_headers['content-range']
           self.assertTrue(content_range.startswith('bytes 0-200/'))
           compressed_full_content_length = int(content_range.split('/')[1])
