@@ -2743,6 +2743,8 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunner.java",
       "test/android/javatests/src/org/chromium/base/test/params/BlockJUnit4RunnerDelegate.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",
+      "test/android/javatests/src/org/chromium/base/test/params/MethodParamAnnotationRule.java",
+      "test/android/javatests/src/org/chromium/base/test/params/MethodParamRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactory.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterizedFrameworkMethod.java",
       "test/android/javatests/src/org/chromium/base/test/params/ParameterSet.java",
