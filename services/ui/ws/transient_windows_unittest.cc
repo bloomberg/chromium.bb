@@ -7,6 +7,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_observer.h"
 #include "services/ui/ws/test_server_window_delegate.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -66,10 +67,23 @@ std::string ChildWindowIDsAsString(ServerWindow* parent) {
 
 }  // namespace
 
-using TransientWindowsTest = testing::Test;
+class TransientWindowsTest : public testing::Test {
+ public:
+  TransientWindowsTest() {}
+  ~TransientWindowsTest() override {}
+
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
+
+ private:
+  test::WindowServerTestHelper ws_test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransientWindowsTest);
+};
 
 TEST_F(TransientWindowsTest, TransientChildren) {
-  TestServerWindowDelegate server_window_delegate;
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
 
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&server_window_delegate, WindowId(1, 0), nullptr));
@@ -95,7 +109,7 @@ TEST_F(TransientWindowsTest, TransientChildren) {
 
 // Verifies adding doesn't restack at all.
 TEST_F(TransientWindowsTest, DontStackUponCreation) {
-  TestServerWindowDelegate delegate;
+  TestServerWindowDelegate delegate(host_frame_sink_manager());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> window0(
@@ -112,7 +126,7 @@ TEST_F(TransientWindowsTest, DontStackUponCreation) {
 // More variations around verifying ordering doesn't change when
 // adding/removing transients.
 TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
-  TestServerWindowDelegate delegate;
+  TestServerWindowDelegate delegate(host_frame_sink_manager());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> windows[4];
@@ -149,7 +163,7 @@ TEST_F(TransientWindowsTest, RestackUponAddOrRemoveTransientWindow) {
 
 // Verifies TransientWindowObserver is notified appropriately.
 TEST_F(TransientWindowsTest, TransientWindowObserverNotified) {
-  TestServerWindowDelegate delegate;
+  TestServerWindowDelegate delegate(host_frame_sink_manager());
   std::unique_ptr<ServerWindow> parent(
       CreateTestWindow(&delegate, WindowId(0, 1), nullptr));
   std::unique_ptr<ServerWindow> w1(

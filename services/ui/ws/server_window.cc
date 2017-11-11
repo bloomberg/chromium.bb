@@ -55,12 +55,11 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
   // has crashed.
   DCHECK(frame_sink_id_.is_valid());
   auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
-  if (host_frame_sink_manager) {
-    host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
+  DCHECK(host_frame_sink_manager);
+  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
 #if DCHECK_IS_ON()
-    host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
+  host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
 #endif
-  }
 }
 
 ServerWindow::~ServerWindow() {

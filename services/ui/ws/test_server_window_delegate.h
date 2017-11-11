@@ -13,7 +13,8 @@ namespace ws {
 
 class TestServerWindowDelegate : public ServerWindowDelegate {
  public:
-  TestServerWindowDelegate();
+  explicit TestServerWindowDelegate(
+      viz::HostFrameSinkManager* host_frame_sink_manager);
   ~TestServerWindowDelegate() override;
 
   void set_root_window(ServerWindow* window) { root_window_ = window; }
@@ -26,6 +27,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
                                 ServerWindow* window) override;
 
   ServerWindow* root_window_ = nullptr;
+  viz::HostFrameSinkManager* host_frame_sink_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };
