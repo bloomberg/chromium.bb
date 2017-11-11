@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/command_observer.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -122,20 +123,29 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
 }
 
 // A class registered for C++ notifications. This is used to detect changes in
-// the home button preferences and update the Touch Bar.
-class HomePrefNotificationBridge {
+// the home button preferences and the back/forward commands.
+class BrowserTouchBarNotificationBridge : public CommandObserver {
  public:
-  explicit HomePrefNotificationBridge(BrowserWindowController* bwc)
-      : bwc_(bwc) {}
+  BrowserTouchBarNotificationBridge(BrowserWindowTouchBar* observer,
+                                    BrowserWindowController* bwc)
+      : observer_(observer), bwc_(bwc) {}
 
-  ~HomePrefNotificationBridge() {}
+  ~BrowserTouchBarNotificationBridge() override {}
 
   void UpdateTouchBar() { [bwc_ invalidateTouchBar]; }
 
+ protected:
+  // CommandObserver:
+  void EnabledStateChangedForCommand(int command, bool enabled) override {
+    DCHECK(command == IDC_BACK || command == IDC_FORWARD);
+    [observer_ updateBackForwardControl];
+  }
+
  private:
+  BrowserWindowTouchBar* observer_;  // Weak.
   BrowserWindowController* bwc_;  // Weak.
 
-  DISALLOW_COPY_AND_ASSIGN(HomePrefNotificationBridge);
+  DISALLOW_COPY_AND_ASSIGN(BrowserTouchBarNotificationBridge);
 };
 
 }  // namespace
@@ -152,8 +162,8 @@ class HomePrefNotificationBridge {
   // Used to monitor the optional home button pref.
   BooleanPrefMember showHomeButton_;
 
-  // Used to receive and handle notifications for the home button pref.
-  std::unique_ptr<HomePrefNotificationBridge> notificationBridge_;
+  // Used to receive and handle notifications.
+  std::unique_ptr<BrowserTouchBarNotificationBridge> notificationBridge_;
 
   // The stop/reload button in the touch bar.
   base::scoped_nsobject<NSButton> reloadStopButton_;
@@ -171,6 +181,9 @@ class HomePrefNotificationBridge {
 // Sets up the back and forward segmented control.
 - (void)setupBackForwardControl;
 
+// Updates the starred button in the touch bar.
+- (void)updateStarredButton;
+
 // Creates and returns the search button.
 - (NSView*)searchTouchBarView API_AVAILABLE(macos(10.12));
 @end
@@ -184,15 +197,20 @@ class HomePrefNotificationBridge {
         browserWindowController:(BrowserWindowController*)bwc {
   if ((self = [self init])) {
     DCHECK(browser);
-    commandUpdater_ = browser->command_controller()->command_updater();
     browser_ = browser;
     bwc_ = bwc;
 
-    notificationBridge_.reset(new HomePrefNotificationBridge(bwc_));
+    notificationBridge_.reset(
+        new BrowserTouchBarNotificationBridge(self, bwc_));
+
+    commandUpdater_ = browser->command_controller()->command_updater();
+    commandUpdater_->AddCommandObserver(IDC_BACK, notificationBridge_.get());
+    commandUpdater_->AddCommandObserver(IDC_FORWARD, notificationBridge_.get());
+
     PrefService* prefs = browser->profile()->GetPrefs();
     showHomeButton_.Init(
         prefs::kShowHomeButton, prefs,
-        base::Bind(&HomePrefNotificationBridge::UpdateTouchBar,
+        base::Bind(&BrowserTouchBarNotificationBridge::UpdateTouchBar,
                    base::Unretained(notificationBridge_.get())));
   }
 
@@ -395,6 +413,35 @@ class HomePrefNotificationBridge {
   backForwardControl_.reset([control retain]);
 }
 
+- (void)updateBackForwardControl {
+  if (!backForwardControl_)
+    [self setupBackForwardControl];
+
+  if (@available(macOS 10.10, *))
+    [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
+
+  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
+                       forSegment:kBackSegmentIndex];
+  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
+                       forSegment:kForwardSegmentIndex];
+}
+
+- (void)updateStarredButton {
+  const gfx::VectorIcon& icon =
+      isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
+  SkColor iconColor =
+      isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
+  int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
+  if (!starredButton_) {
+    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
+                                               tooltipId, iconColor) retain]);
+    return;
+  }
+
+  [starredButton_ setImage:CreateNSImageFromIcon(icon, iconColor)];
+  [starredButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
+}
+
 - (NSView*)searchTouchBarView {
   TemplateURLService* templateUrlService =
       TemplateURLServiceFactory::GetForProfile(browser_->profile());
@@ -458,8 +505,6 @@ class HomePrefNotificationBridge {
 - (void)setIsPageLoading:(BOOL)isPageLoading {
   isPageLoading_ = isPageLoading;
   [self updateReloadStopButton];
-  [self updateBackForwardControl];
-  [self updateStarredButton];
 }
 
 @end
@@ -485,40 +530,18 @@ class HomePrefNotificationBridge {
   [reloadStopButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
 }
 
-- (void)updateBackForwardControl {
-  if (!backForwardControl_)
-    [self setupBackForwardControl];
-
-  if (@available(macOS 10.10, *))
-    [backForwardControl_ setSegmentStyle:NSSegmentStyleSeparated];
-
-  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_BACK)
-                       forSegment:kBackSegmentIndex];
-  [backForwardControl_ setEnabled:commandUpdater_->IsCommandEnabled(IDC_FORWARD)
-                       forSegment:kForwardSegmentIndex];
-}
-
-- (void)updateStarredButton {
-  const gfx::VectorIcon& icon =
-      isStarred_ ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
-  SkColor iconColor =
-      isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
-  int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  if (!starredButton_) {
-    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
-                                               tooltipId, iconColor) retain]);
-    return;
-  }
-
-  [starredButton_ setImage:CreateNSImageFromIcon(icon, iconColor)];
-  [starredButton_ setAccessibilityLabel:l10n_util::GetNSString(tooltipId)];
-}
-
 - (NSButton*)reloadStopButton {
   if (!reloadStopButton_)
     [self updateReloadStopButton];
 
   return reloadStopButton_.get();
+}
+
+- (NSSegmentedControl*)backForwardControl {
+  if (!backForwardControl_)
+    [self updateBackForwardControl];
+
+  return backForwardControl_.get();
 }
 
 @end

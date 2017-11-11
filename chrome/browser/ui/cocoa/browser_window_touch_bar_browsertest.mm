@@ -15,40 +15,16 @@
 @interface TestingBrowserWindowTouchBar : BrowserWindowTouchBar
 
 @property(nonatomic, assign) BOOL hasUpdatedReloadStop;
-@property(nonatomic, assign) BOOL hasUpdatedBackForward;
-@property(nonatomic, assign) BOOL hasUpdatedStarred;
-
-- (void)updateReloadStopButton;
-- (void)updateBackForwardControl;
-- (void)updateStarredButton;
 
 @end
 
 @implementation TestingBrowserWindowTouchBar
 
 @synthesize hasUpdatedReloadStop = hasUpdatedReloadStop_;
-@synthesize hasUpdatedBackForward = hasUpdatedBackForward_;
-@synthesize hasUpdatedStarred = hasUpdatedStarred_;
 
 - (void)updateReloadStopButton {
   [super updateReloadStopButton];
   hasUpdatedReloadStop_ = YES;
-}
-
-- (void)updateBackForwardControl {
-  [super updateBackForwardControl];
-  hasUpdatedBackForward_ = YES;
-}
-
-- (void)updateStarredButton {
-  [super updateStarredButton];
-  hasUpdatedStarred_ = YES;
-}
-
-- (void)resetFlags {
-  hasUpdatedReloadStop_ = YES;
-  hasUpdatedBackForward_ = YES;
-  hasUpdatedStarred_ = YES;
 }
 
 @end
@@ -89,19 +65,15 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, PageLoadInvalidate) {
     NSButton* reload_stop = [browser_touch_bar() reloadStopButton];
     EXPECT_TRUE(reload_stop);
 
-    BrowserWindowController* bwc = browser_window_controller();
-    [bwc setIsLoading:YES force:NO];
+    browser()->window()->UpdateReloadStopState(true, false);
     EXPECT_TRUE([browser_touch_bar() hasUpdatedReloadStop]);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedBackForward]);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedStarred]);
     EXPECT_EQ(IDC_STOP, [reload_stop tag]);
 
-    [browser_touch_bar() resetFlags];
+    // Reset the flag.
+    [browser_touch_bar() setHasUpdatedReloadStop:NO];
 
-    [bwc setIsLoading:NO force:NO];
+    browser()->window()->UpdateReloadStopState(false, false);
     EXPECT_TRUE([browser_touch_bar() hasUpdatedReloadStop]);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedBackForward]);
-    EXPECT_TRUE([browser_touch_bar() hasUpdatedStarred]);
     EXPECT_EQ(IDC_RELOAD, [reload_stop tag]);
   }
 }
