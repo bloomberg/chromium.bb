@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/feature_engagement/incognito_window/incognito_window_tracker_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/feature_promos/incognito_window_promo_bubble_view.h"
@@ -75,12 +76,18 @@ class IncognitoWindowTrackerBrowserTest : public InProcessBrowserTest {
 // Test that after meeting all the requirements, the incognito window
 // In-Product Help (IPH) promo is visible.
 IN_PROC_BROWSER_TEST_F(IncognitoWindowTrackerBrowserTest, ShowPromo) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
   // Bypass the 2 hour active session time requirement.
   EXPECT_CALL(*feature_engagement_tracker_,
               NotifyEvent(events::kIncognitoWindowSessionTimeMet));
-  IncognitoWindowTrackerFactory::GetInstance()
-      ->GetForProfile(browser()->profile())
-      ->OnSessionTimeMet();
+  auto* incognito_window_tracker =
+      IncognitoWindowTrackerFactory::GetInstance()->GetForProfile(
+          browser()->profile());
+
+  incognito_window_tracker->OnSessionTimeMet();
+
+  incognito_window_tracker
+      ->UseDefaultForChromeVariationConfirgurationReleaseTimeForTesting();
 
   // Set up feature engagement ShouldTriggerHelpUI mock.
   EXPECT_CALL(*feature_engagement_tracker_,
@@ -105,11 +112,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoWindowTrackerBrowserTest, ShowPromo) {
   handler->AllowJavascriptForTesting();
   handler->HandleClearBrowsingDataForTest();
 
-  auto* widget =
-      feature_engagement::IncognitoWindowTrackerFactory::GetInstance()
-          ->GetForProfile(browser()->profile())
-          ->incognito_promo()
-          ->GetWidget();
+  auto* widget = incognito_window_tracker->incognito_promo()->GetWidget();
 
   EXPECT_TRUE(widget->IsVisible());
 

@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/first_run/first_run.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
-#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_internal.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,6 +128,28 @@ TEST_F(FirstRunTest, DetermineFirstRunState_SuppressSwitch) {
 
   result = internal::DetermineFirstRunState(true, false, true);
   EXPECT_EQ(internal::FIRST_RUN_FALSE, result);
+}
+
+TEST_F(FirstRunTest, GetFirstRunSentinelCreationTime_Created) {
+  first_run::CreateSentinelIfNeeded();
+  // Gets the creation time of the first run sentinel.
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::File::Info info;
+  ASSERT_TRUE(base::GetFileInfo(user_data_dir.Append(chrome::kFirstRunSentinel),
+                                &info));
+
+  EXPECT_EQ(info.creation_time, first_run::GetFirstRunSentinelCreationTime());
+}
+
+TEST_F(FirstRunTest, GetFirstRunSentinelCreationTime_NotCreated) {
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::File::Info info;
+  ASSERT_FALSE(base::GetFileInfo(
+      user_data_dir.Append(chrome::kFirstRunSentinel), &info));
+
+  EXPECT_EQ(0, first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
 }
 
 }  // namespace first_run
