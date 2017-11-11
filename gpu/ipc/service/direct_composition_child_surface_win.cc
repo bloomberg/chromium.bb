@@ -7,6 +7,7 @@
 #include <d3d11_1.h>
 #include <dcomptypes.h>
 
+#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -141,6 +142,10 @@ void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
     } else if (!will_discard) {
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();
+      // TODO(sunnyps): Remove Alias calls once crbug.com/776403 is fixed.
+      base::debug::Alias(&dirty_rect);
+      gfx::Size surface_size = size_;
+      base::debug::Alias(&surface_size);
       params.DirtyRectsCount = 1;
       params.pDirtyRects = &dirty_rect;
       swap_chain_->Present1(first_swap_ ? 0 : 1, 0, &params);
