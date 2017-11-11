@@ -8,10 +8,15 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 
 namespace content {
-class FrameTreeNode;
+class RenderFrameHost;
 
-// Creates a URLLoaderFactory interface pointer for serving WebUI requests.
-mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(FrameTreeNode* node);
+// Creates a URLLoaderFactory interface pointer for serving WebUI requests to
+// the given |render_frame_host|. The factory will only create loaders for
+// requests with the same scheme as |scheme|. This is needed because there is
+// more than one scheme used for WebUI, and not all have WebUI bindings.
+mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
+    RenderFrameHost* render_frame_host,
+    const std::string& scheme);
 
 }  // namespace content
 

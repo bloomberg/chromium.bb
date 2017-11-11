@@ -736,6 +736,7 @@ test("content_browsertests") {
     "../browser/message_port_provider_browsertest.cc",
     "../browser/mojo_sandbox_browsertest.cc",
     "../browser/net_info_browsertest.cc",
+    "../browser/network_service_browsertest.cc",
     "../browser/network_service_restart_browsertest.cc",
     "../browser/payments/payment_app_browsertest.cc",
     "../browser/pointer_lock_browsertest.cc",
@@ -974,6 +975,7 @@ test("content_browsertests") {
     ]
     sources -= [
       "../browser/media/session/audio_focus_delegate_default_browsertest.cc",
+      "../browser/network_service_browsertest.cc",
       "../browser/network_service_restart_browsertest.cc",
       "../browser/pointer_lock_browsertest.cc",
       "../browser/pointer_lock_browsertest.h",

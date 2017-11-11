@@ -2810,6 +2810,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="183"
       label="BPG_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED"/>
   <int value="184" label="RFH_NEGATIVE_SELECTION_START_OFFSET"/>
+  <int value="185" label="WEBUI_BAD_SCHEME_ACCESS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">

@@ -23,7 +23,7 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
   SubresourceLoaderParams& operator=(SubresourceLoaderParams&& other);
 
   // The subresource loader factory info that is to be used to create a
-  // subresource loader in the renderer. Used by AppCache and WebUI.
+  // subresource loader in the renderer.
   mojom::URLLoaderFactoryPtrInfo loader_factory_info;
 
   // TODO(kinuko): Add the controller interface ptr for the service worker.
