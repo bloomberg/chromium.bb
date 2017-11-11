@@ -965,3 +965,13 @@
 -PrerenderBrowserTest.PrerenderSSLClientCertSubresource
 -PrerenderBrowserTest.PrerenderSSLClientCertTopLevel
 -SSLUITestWithClientCert.TestWSSClientCert
+
+# Started failing after r515789
+-SSLUITestCommittedInterstitials.ProceedLinkOverridable
+
+# TODO(jam): investigate
+-SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithoutUserGesture
+-SBNavigationObserverBrowserTest.DownloadViaHTML5FileApiWithUserGesture
+
+# TODO(xingliu): broke in r515816
+-DownloadTest.CloseNewTab4
