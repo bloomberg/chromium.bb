@@ -603,7 +603,7 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
 LayoutRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // LayoutContentRect is conceptually the same as the box's client rect.
-  LayoutSize layer_size = LayoutSize(Layer()->Size());
+  LayoutSize layer_size(Layer()->Size());
   LayoutUnit border_width = Box().BorderWidth();
   LayoutUnit border_height = Box().BorderHeight();
   LayoutUnit horizontal_scrollbar_height, vertical_scrollbar_width;
@@ -631,8 +631,9 @@ IntRect PaintLayerScrollableArea::VisibleContentRect(
   LayoutRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   // TODO(szager): It's not clear that Floor() is the right thing to do here;
   // what is the correct behavior for fractional scroll offsets?
-  return IntRect(FlooredIntPoint(layout_content_rect.Location()),
-                 RoundedIntSize(layout_content_rect.Size()));
+  return IntRect(
+      FlooredIntPoint(layout_content_rect.Location()),
+      PixelSnappedIntSize(layout_content_rect.Size(), Box().Location()));
 }
 
 IntSize PaintLayerScrollableArea::ContentsSize() const {
@@ -1215,8 +1216,9 @@ int PaintLayerScrollableArea::HorizontalScrollbarStart(int min_x) const {
 IntSize PaintLayerScrollableArea::ScrollbarOffset(
     const Scrollbar& scrollbar) const {
   if (&scrollbar == VerticalScrollbar()) {
-    return IntSize(VerticalScrollbarStart(0, Layer()->Size().Width()),
-                   Box().BorderTop().ToInt());
+    return IntSize(
+        VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
+        Box().BorderTop().ToInt());
   }
 
   if (&scrollbar == HorizontalScrollbar()) {
@@ -1556,13 +1558,13 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
   int resize_control_size = max(resize_control_rect.Height(), 0);
   if (HasVerticalScrollbar() &&
       VerticalScrollbar()->ShouldParticipateInHitTesting()) {
-    LayoutRect v_bar_rect(VerticalScrollbarStart(0, Layer()->Size().Width()),
-                          Box().BorderTop().ToInt(),
-                          VerticalScrollbar()->ScrollbarThickness(),
-                          VisibleContentRect(kIncludeScrollbars).Height() -
-                              (HasHorizontalScrollbar()
-                                   ? HorizontalScrollbar()->ScrollbarThickness()
-                                   : resize_control_size));
+    LayoutRect v_bar_rect(
+        VerticalScrollbarStart(0, Layer()->PixelSnappedSize().Width()),
+        Box().BorderTop().ToInt(), VerticalScrollbar()->ScrollbarThickness(),
+        VisibleContentRect(kIncludeScrollbars).Height() -
+            (HasHorizontalScrollbar()
+                 ? HorizontalScrollbar()->ScrollbarThickness()
+                 : resize_control_size));
     if (v_bar_rect.Contains(local_point)) {
       result.SetScrollbar(VerticalScrollbar());
       return true;
@@ -1632,7 +1634,7 @@ bool PaintLayerScrollableArea::IsPointInResizeControl(
 
   IntPoint local_point =
       RoundedIntPoint(Box().AbsoluteToLocal(absolute_point, kUseTransforms));
-  IntRect local_bounds(IntPoint(), Layer()->Size());
+  IntRect local_bounds(IntPoint(), Layer()->PixelSnappedSize());
   return ResizerCornerRect(local_bounds, resizer_hit_test_type)
       .Contains(local_point);
 }
@@ -1722,7 +1724,7 @@ IntSize PaintLayerScrollableArea::OffsetFromResizeCorner(
   // left corner.
   // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be
   // the case?
-  IntSize element_size = Layer()->Size();
+  IntSize element_size = Layer()->PixelSnappedSize();
   if (Box().ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     element_size.SetWidth(0);
   IntPoint resizer_point = IntPoint(element_size);

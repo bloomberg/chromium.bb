@@ -864,16 +864,16 @@ void PaintLayer::UpdateLayerPosition() {
 }
 
 bool PaintLayer::UpdateSize() {
-  IntSize old_size = size_;
+  LayoutSize old_size = size_;
   if (IsRootLayer() && RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    size_ = GetLayoutObject().GetDocument().View()->Size();
+    size_ = LayoutSize(GetLayoutObject().GetDocument().View()->Size());
   } else if (GetLayoutObject().IsInline() &&
              GetLayoutObject().IsLayoutInline()) {
     LayoutInline& inline_flow = ToLayoutInline(GetLayoutObject());
     IntRect line_box = EnclosingIntRect(inline_flow.LinesBoundingBox());
-    size_ = line_box.Size();
+    size_ = LayoutSize(line_box.Size());
   } else if (LayoutBox* box = GetLayoutBox()) {
-    size_ = PixelSnappedIntSize(box->Size(), box->Location());
+    size_ = box->Size();
   }
   return old_size != size_;
 }

@@ -278,15 +278,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // FIXME: size() should DCHECK(!needs_position_update_) as well, but that
   // fails in some tests, for example, fast/repaint/clipped-relative.html.
-  const IntSize& Size() const { return size_; }
+  const LayoutSize& Size() const { return size_; }
+  IntSize PixelSnappedSize() const {
+    LayoutPoint location = layout_object_.IsBox()
+                               ? ToLayoutBox(layout_object_).Location()
+                               : LayoutPoint();
+    return PixelSnappedIntSize(Size(), location);
+  }
 
-  void SetSizeHackForLayoutTreeAsText(const IntSize& size) { size_ = size; }
+  void SetSizeHackForLayoutTreeAsText(const LayoutSize& size) { size_ = size; }
 
-  LayoutRect Rect() const { return LayoutRect(Location(), LayoutSize(Size())); }
+  LayoutRect Rect() const { return LayoutRect(Location(), Size()); }
 
   // For LayoutTreeAsText
   LayoutRect RectIgnoringNeedsPositionUpdate() const {
-    return LayoutRect(location_, LayoutSize(size_));
+    return LayoutRect(location_, size_);
   }
 #if DCHECK_IS_ON()
   bool NeedsPositionUpdate() const { return needs_position_update_; }
@@ -1274,7 +1280,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   //
   // If the associated LayoutBoxModelObject is a LayoutBox, it's its border
   // box. Otherwise, this is the LayoutInline's lines' bounding box.
-  IntSize size_;
+  LayoutSize size_;
 
   // Cached normal flow values for absolute positioned elements with static
   // left/top values.

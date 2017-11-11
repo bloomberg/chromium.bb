@@ -299,7 +299,7 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
       layer_.ConvertToLayerCoords(context.root_layer, offset);
     }
   }
-  layer_bounds = LayoutRect(offset, LayoutSize(layer_.Size()));
+  layer_bounds = LayoutRect(offset, LayoutSize(layer_.PixelSnappedSize()));
 
   CalculateBackgroundClipRectWithGeometryMapper(context, fragment_data,
                                                 background_rect);
@@ -360,7 +360,7 @@ void PaintLayerClipper::CalculateRects(
     offset = *offset_from_root;
   else
     layer_.ConvertToLayerCoords(context.root_layer, offset);
-  layer_bounds = LayoutRect(offset, LayoutSize(layer_.Size()));
+  layer_bounds = LayoutRect(offset, LayoutSize(layer_.PixelSnappedSize()));
 
   // Update the clip rects that will be passed to child layers.
   if (ShouldClipOverflow(context)) {
