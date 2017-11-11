@@ -69,6 +69,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
       const gpu::TextureInUseResponses& responses) override;
 
   virtual bool IsContextLost();
+  bool HasAllocatedResourcesForTesting(
+      const RenderPassId render_pass_id) const override;
 
  protected:
   void DidChangeVisibility() override;
@@ -93,8 +95,20 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   bool CanPartialSwap() override;
   ResourceFormat BackbufferFormat() const override;
+  void UpdateRenderPassTextures(
+      const RenderPassList& render_passes_in_draw_order,
+      const base::flat_map<RenderPassId, RenderPassRequirements>&
+          render_passes_in_frame) override;
+  void AllocateRenderPassResourceIfNeeded(
+      const RenderPassId render_pass_id,
+      const gfx::Size& enlarged_size,
+      ResourceTextureHint texturehint) override;
+  bool IsRenderPassResourceAllocated(
+      const RenderPassId render_pass_id) const override;
+  const gfx::Size& GetRenderPassTextureSize(
+      const RenderPassId render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
-  void BindFramebufferToTexture(const cc::ScopedResource* resource) override;
+  void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
@@ -271,6 +285,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
                                int max_result,
                                unsigned query,
                                int multiplier);
+
+  // A map from RenderPass id to the texture used to draw the RenderPass from.
+  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
+      render_pass_textures_;
 
   using OverlayResourceLock =
       std::unique_ptr<cc::DisplayResourceProvider::ScopedReadLockGL>;

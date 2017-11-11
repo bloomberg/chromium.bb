@@ -2792,9 +2792,9 @@ class FramebufferWatchingGLRenderer : public FakeRendererGL {
     FakeRendererGL::BindFramebufferToOutputSurface();
   }
 
-  void BindFramebufferToTexture(const cc::ScopedResource* resource) override {
+  void BindFramebufferToTexture(const RenderPassId render_pass_id) override {
     ++bind_child_framebuffer_calls_;
-    FakeRendererGL::BindFramebufferToTexture(resource);
+    FakeRendererGL::BindFramebufferToTexture(render_pass_id);
   }
 
   int bind_root_framebuffer_calls() const {

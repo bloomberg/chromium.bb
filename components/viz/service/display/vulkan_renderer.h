@@ -32,7 +32,7 @@ class VIZ_SERVICE_EXPORT VulkanRenderer : public DirectRenderer {
 
   // Implementations of protected DirectRenderer functions.
   void BindFramebufferToOutputSurface() override;
-  bool BindFramebufferToTexture(const cc::ScopedResource* resource) override;
+  void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
