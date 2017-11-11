@@ -197,6 +197,8 @@ public class CastWebContentsActivity extends Activity {
     protected void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
 
+        detachWebContentsIfAny();
+
         if (mWindowDestroyedBroadcastReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(
                     mWindowDestroyedBroadcastReceiver);
@@ -217,10 +219,6 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
-        if (isStopping()) {
-            detachWebContentsIfAny();
-            releaseStreamMuteIfNecessary();
-        }
         super.onStop();
     }
 
@@ -234,6 +232,9 @@ public class CastWebContentsActivity extends Activity {
                 != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             Log.e(TAG, "Failed to obtain audio focus");
         }
+        if (mContentViewCore != null) {
+            mContentViewCore.onResume();
+        }
     }
 
     @Override
@@ -246,6 +247,10 @@ public class CastWebContentsActivity extends Activity {
         if (mAudioManager.abandonAudioFocus(null) != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             Log.e(TAG, "Failed to abandon audio focus");
         }
+        if (mContentViewCore != null) {
+            mContentViewCore.onPause();
+        }
+        releaseStreamMuteIfNecessary();
     }
 
     @Override
