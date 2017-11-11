@@ -1517,6 +1517,16 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   if (had_placeholder_client_document_loader)
     provisional_document_loader_->SetSentDidFinishLoad();
   frame_->GetDocument()->CancelParsing();
+
+  // If we're starting a regular navigation on a regular document (i.e., there
+  // was no placeholder DocumentLoader), it's not enough to cancel parsing, but
+  // we also have to check whether the document was completed, so it's in a
+  // defined state should the navigation fail.
+  if (!had_placeholder_client_document_loader &&
+      type == kFrameLoadTypeStandard &&
+      navigation_policy == kNavigationPolicyCurrentTab) {
+    frame_->GetDocument()->CheckCompleted();
+  }
   DetachDocumentLoader(provisional_document_loader_);
 
   // beforeunload fired above, and detaching a DocumentLoader can fire events,
