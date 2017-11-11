@@ -14,7 +14,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/cdm/renderer/widevine_key_system_properties.h"
@@ -41,7 +41,6 @@
 #include "base/version.h"
 #endif
 
-using content::WebPluginMimeType;
 using media::EmeFeatureSupport;
 using media::EmeSessionTypeSupport;
 using media::KeySystemProperties;
@@ -50,21 +49,17 @@ using media::SupportedCodecs;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 static bool IsPepperCdmAvailable(
     const std::string& pepper_type,
-    std::vector<WebPluginMimeType::Param>* additional_params) {
-  base::Optional<std::vector<chrome::mojom::PluginParamPtr>>
-      opt_additional_params;
-  ChromeContentRendererClient::GetPluginInfoHost()
-      ->IsInternalPluginAvailableForMimeType(pepper_type,
-                                             &opt_additional_params);
+    std::vector<base::string16>* additional_param_names,
+    std::vector<base::string16>* additional_param_values) {
+  bool is_available = false;
+  content::RenderThread::Get()->Send(
+      new ChromeViewHostMsg_IsInternalPluginAvailableForMimeType(
+          pepper_type,
+          &is_available,
+          additional_param_names,
+          additional_param_values));
 
-  if (opt_additional_params) {
-    for (auto& p : *opt_additional_params) {
-      additional_params->emplace_back(p->name, p->value);
-    }
-
-    return true;
-  }
-  return false;
+  return is_available;
 }
 
 // External Clear Key (used for testing).
@@ -95,9 +90,11 @@ static void AddExternalClearKey(
   static const char kExternalClearKeyDifferentGuidTestKeySystem[] =
       "org.chromium.externalclearkey.differentguid";
 
-  std::vector<WebPluginMimeType::Param> additional_params;
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
   if (!IsPepperCdmAvailable(cdm::kExternalClearKeyPepperType,
-                            &additional_params)) {
+                            &additional_param_names,
+                            &additional_param_values)) {
     return;
   }
 
@@ -178,14 +175,18 @@ void GetSupportedCodecsForPepperCdm(
 
 // Whether persistent-license session is supported by the CDM.
 bool IsPersistentLicenseSupportedbyCdm(
-    const std::vector<WebPluginMimeType::Param>& additional_params) {
+    const std::vector<base::string16>& additional_param_names,
+    const std::vector<base::string16>& additional_param_values) {
+  DCHECK_EQ(additional_param_names.size(), additional_param_values.size());
   const base::string16 expected_param_name =
       base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName);
-  for (const auto& p : additional_params) {
-    if (p.name == expected_param_name) {
-      return p.value == base::ASCIIToUTF16(kCdmFeatureSupported);
+  for (size_t i = 0; i < additional_param_names.size(); ++i) {
+    if (additional_param_names[i] == expected_param_name) {
+      return additional_param_values[i] ==
+             base::ASCIIToUTF16(kCdmFeatureSupported);
     }
   }
+
   return false;
 }
 
@@ -243,8 +244,11 @@ static void AddPepperBasedWidevine(
     return;
 #endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
-  std::vector<WebPluginMimeType::Param> additional_params;
-  if (!IsPepperCdmAvailable(kWidevineCdmPluginMimeType, &additional_params)) {
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
+  if (!IsPepperCdmAvailable(kWidevineCdmPluginMimeType,
+                            &additional_param_names,
+                            &additional_param_values)) {
     DVLOG(1) << "Widevine CDM is not currently available.";
     return;
   }
@@ -279,8 +283,8 @@ static void AddPepperBasedWidevine(
   }
 
   EmeSessionTypeSupport persistent_license_support =
-      GetPersistentLicenseSupport(
-          IsPersistentLicenseSupportedbyCdm(additional_params));
+      GetPersistentLicenseSupport(IsPersistentLicenseSupportedbyCdm(
+          additional_param_names, additional_param_values));
 
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 

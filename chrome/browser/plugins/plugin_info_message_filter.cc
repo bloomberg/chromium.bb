@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugins/plugin_info_host_impl.h"
+#include "chrome/browser/plugins/plugin_info_message_filter.h"
 
 #include <stddef.h>
 
@@ -33,6 +33,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -86,7 +87,7 @@ class ShutdownNotifierFactory
 
   ShutdownNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
-            "PluginInfoHostImpl") {}
+          "PluginInfoMessageFilter") {}
 
   ~ShutdownNotifierFactory() override {}
 
@@ -109,8 +110,8 @@ static void SendPluginAvailabilityUMA(const std::string& mime_type,
   if (mime_type != kWidevineCdmPluginMimeType)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("Plugin.AvailabilityStatus.WidevineCdm", status,
-                            PLUGIN_AVAILABILITY_STATUS_MAX);
+  UMA_HISTOGRAM_ENUMERATION("Plugin.AvailabilityStatus.WidevineCdm",
+                            status, PLUGIN_AVAILABILITY_STATUS_MAX);
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 }
 
@@ -136,7 +137,7 @@ bool IsPluginLoadingAccessibleResourceInWebView(
   const extensions::Extension* extension = extension_registry->GetExtensionById(
       extension_id, extensions::ExtensionRegistry::ENABLED);
   if (!extension || !extensions::WebviewInfo::IsResourceWebviewAccessible(
-                        extension, partition_id, resource.path())) {
+          extension, partition_id, resource.path())) {
     return false;
   }
 
@@ -150,14 +151,15 @@ bool IsPluginLoadingAccessibleResourceInWebView(
 
 }  // namespace
 
-PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
+PluginInfoMessageFilter::Context::Context(int render_process_id,
+                                          Profile* profile)
     : render_process_id_(render_process_id),
       resource_context_(profile->GetResourceContext()),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_registry_(extensions::ExtensionRegistry::Get(profile)),
 #endif
-      host_content_settings_map_(
-          HostContentSettingsMapFactory::GetForProfile(profile)),
+      host_content_settings_map_(HostContentSettingsMapFactory::GetForProfile(
+          profile)),
       plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
   allow_outdated_plugins_.Init(prefs::kPluginsAllowOutdated,
                                profile->GetPrefs());
@@ -176,78 +178,97 @@ PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
           content::BrowserThread::IO));
 }
 
-PluginInfoHostImpl::Context::~Context() {}
+PluginInfoMessageFilter::Context::~Context() {
+}
 
-void PluginInfoHostImpl::Context::ShutdownOnUIThread() {
+void PluginInfoMessageFilter::Context::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   always_authorize_plugins_.Destroy();
   allow_outdated_plugins_.Destroy();
   run_all_flash_in_allow_mode_.Destroy();
 }
 
-PluginInfoHostImpl::PluginInfoHostImpl(int render_process_id, Profile* profile)
-    : context_(render_process_id, profile),
+PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
+                                                 Profile* profile)
+    : BrowserMessageFilter(ChromeMsgStart),
+      context_(render_process_id, profile),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
       binding_(this) {
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
-          base::Bind(&PluginInfoHostImpl::ShutdownOnUIThread,
+          base::Bind(&PluginInfoMessageFilter::ShutdownOnUIThread,
                      base::Unretained(this)));
 }
 
-void PluginInfoHostImpl::ShutdownOnUIThread() {
+void PluginInfoMessageFilter::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   context_.ShutdownOnUIThread();
   shutdown_notifier_.reset();
 }
 
-void PluginInfoHostImplTraits::Destruct(const PluginInfoHostImpl* impl) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&PluginInfoHostImpl::DestructOnBrowserThread,
-                     base::Unretained(impl)));
+bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  IPC_BEGIN_MESSAGE_MAP(PluginInfoMessageFilter, message)
+    IPC_MESSAGE_HANDLER(
+        ChromeViewHostMsg_IsInternalPluginAvailableForMimeType,
+        OnIsInternalPluginAvailableForMimeType)
+    IPC_MESSAGE_UNHANDLED(return false)
+  IPC_END_MESSAGE_MAP()
+  return true;
+#else
+  return false;
+#endif
 }
 
-void PluginInfoHostImpl::DestructOnBrowserThread() const {
+void PluginInfoMessageFilter::OnDestruct() const {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&PluginInfoMessageFilter::DestructOnBrowserThread,
+                     base::Unretained(this)));
+}
+
+void PluginInfoMessageFilter::DestructOnBrowserThread() const {
   binding_.Close();
   // Destroy on the UI thread because we contain a |PrefMember|.
   content::BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 // static
-void PluginInfoHostImpl::RegisterUserPrefs(
+void PluginInfoMessageFilter::RegisterUserPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPluginsAllowOutdated, false);
   registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   registry->RegisterBooleanPref(prefs::kRunAllFlashInAllowMode, false);
 }
 
-PluginInfoHostImpl::~PluginInfoHostImpl() {}
+PluginInfoMessageFilter::~PluginInfoMessageFilter() {}
 
-struct PluginInfoHostImpl::GetPluginInfo_Params {
+struct PluginInfoMessageFilter::GetPluginInfo_Params {
   int render_frame_id;
   GURL url;
   url::Origin main_frame_origin;
   std::string mime_type;
 };
 
-void PluginInfoHostImpl::OnPluginInfoHostRequest(
+void PluginInfoMessageFilter::OnPluginInfoHostRequest(
     chrome::mojom::PluginInfoHostAssociatedRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void PluginInfoHostImpl::GetPluginInfo(int32_t render_frame_id,
-                                       const GURL& url,
-                                       const url::Origin& origin,
-                                       const std::string& mime_type,
-                                       const GetPluginInfoCallback& callback) {
+void PluginInfoMessageFilter::GetPluginInfo(
+    int32_t render_frame_id,
+    const GURL& url,
+    const url::Origin& origin,
+    const std::string& mime_type,
+    const GetPluginInfoCallback& callback) {
   GetPluginInfo_Params params = {render_frame_id, url, origin, mime_type};
-  PluginService::GetInstance()->GetPlugins(base::BindOnce(
-      &PluginInfoHostImpl::PluginsLoaded, this, params, std::move(callback)));
+  PluginService::GetInstance()->GetPlugins(
+      base::BindOnce(&PluginInfoMessageFilter::PluginsLoaded, this, params,
+                     std::move(callback)));
 }
 
-void PluginInfoHostImpl::PluginsLoaded(
+void PluginInfoMessageFilter::PluginsLoaded(
     const GetPluginInfo_Params& params,
     GetPluginInfoCallback callback,
     const std::vector<WebPluginInfo>& plugins) {
@@ -272,8 +293,8 @@ void PluginInfoHostImpl::PluginsLoaded(
             &component_updater::ComponentUpdateService::GetComponentForMimeType,
             base::Unretained(g_browser_process->component_updater()),
             params.mime_type),
-        base::BindOnce(&PluginInfoHostImpl::ComponentPluginLookupDone, this,
-                       params, std::move(output), std::move(callback),
+        base::BindOnce(&PluginInfoMessageFilter::ComponentPluginLookupDone,
+                       this, params, std::move(output), std::move(callback),
                        std::move(plugin_metadata)));
   } else {
     GetPluginInfoFinish(params, std::move(output), std::move(callback),
@@ -281,10 +302,13 @@ void PluginInfoHostImpl::PluginsLoaded(
   }
 }
 
-void PluginInfoHostImpl::IsInternalPluginAvailableForMimeType(
-    const std::string& mime_type,
-    const IsInternalPluginAvailableForMimeTypeCallback& callback) {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+void PluginInfoMessageFilter::OnIsInternalPluginAvailableForMimeType(
+    const std::string& mime_type,
+    bool* is_available,
+    std::vector<base::string16>* additional_param_names,
+    std::vector<base::string16>* additional_param_values) {
   std::vector<WebPluginInfo> plugins;
   PluginService::GetInstance()->GetInternalPlugins(&plugins);
 
@@ -299,27 +323,24 @@ void PluginInfoHostImpl::IsInternalPluginAvailableForMimeType(
           is_plugin_disabled = true;
           break;
         }
-        std::vector<chrome::mojom::PluginParamPtr> params(
-            mime_types[j].additional_params.size());
-        for (const auto& p : mime_types[j].additional_params) {
-          params.emplace_back(chrome::mojom::PluginParam::New(p.name, p.value));
-        }
-        std::move(callback).Run(std::move(params));
+
+        *is_available = true;
+        *additional_param_names = mime_types[j].additional_param_names;
+        *additional_param_values = mime_types[j].additional_param_values;
         SendPluginAvailabilityUMA(mime_type, PLUGIN_AVAILABLE);
         return;
       }
     }
   }
 
-  std::move(callback).Run(base::nullopt);
+  *is_available = false;
   SendPluginAvailabilityUMA(
       mime_type, is_plugin_disabled ? PLUGIN_DISABLED : PLUGIN_NOT_REGISTERED);
-#else
-  mojo::ReportBadMessage("Not supported. Must set enable_libary_cdms.");
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
-void PluginInfoHostImpl::Context::DecidePluginStatus(
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const GURL& url,
     const url::Origin& main_frame_origin,
     const WebPluginInfo& plugin,
@@ -375,7 +396,8 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
   // Check if the plugin is crashing too much.
   if (PluginService::GetInstance()->IsPluginUnstable(plugin.path) &&
       !always_authorize_plugins_.GetValue() &&
-      plugin_setting != CONTENT_SETTING_BLOCK && uses_default_content_setting) {
+      plugin_setting != CONTENT_SETTING_BLOCK &&
+      uses_default_content_setting) {
     *status = chrome::mojom::PluginStatus::kUnauthorized;
     return;
   }
@@ -420,7 +442,7 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
 #endif
 }
 
-bool PluginInfoHostImpl::Context::FindEnabledPlugin(
+bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     int render_frame_id,
     const GURL& url,
     const url::Origin& main_frame_origin,
@@ -440,10 +462,11 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
   base::FilePath not_present =
       base::FilePath::FromUTF8Unsafe(ChromeContentClient::kNotPresent);
   matching_plugins.erase(
-      std::remove_if(matching_plugins.begin(), matching_plugins.end(),
-                     [&not_present](const WebPluginInfo& info) {
-                       return info.path == not_present;
-                     }),
+      std::remove_if(
+          matching_plugins.begin(), matching_plugins.end(),
+          [&not_present](const WebPluginInfo& info) {
+            return info.path == not_present;
+          }),
       matching_plugins.end());
 #endif  // defined(GOOGLE_CHROME_BUILD)
   if (matching_plugins.empty()) {
@@ -455,9 +478,10 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
       PluginService::GetInstance()->GetFilter();
   size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
-    if (!filter || filter->IsPluginAvailable(
-                       render_process_id_, render_frame_id, resource_context_,
-                       url, main_frame_origin, &matching_plugins[i])) {
+    if (!filter ||
+        filter->IsPluginAvailable(render_process_id_, render_frame_id,
+                                  resource_context_, url, main_frame_origin,
+                                  &matching_plugins[i])) {
       break;
     }
   }
@@ -488,7 +512,7 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
   return enabled;
 }
 
-void PluginInfoHostImpl::ComponentPluginLookupDone(
+void PluginInfoMessageFilter::ComponentPluginLookupDone(
     const GetPluginInfo_Params& params,
     chrome::mojom::PluginInfoPtr output,
     GetPluginInfoCallback callback,
@@ -509,7 +533,7 @@ void PluginInfoHostImpl::ComponentPluginLookupDone(
                       std::move(plugin_metadata));
 }
 
-void PluginInfoHostImpl::GetPluginInfoFinish(
+void PluginInfoMessageFilter::GetPluginInfoFinish(
     const GetPluginInfo_Params& params,
     chrome::mojom::PluginInfoPtr output,
     GetPluginInfoCallback callback,
@@ -524,18 +548,19 @@ void PluginInfoHostImpl::GetPluginInfoFinish(
   if (output->status != chrome::mojom::PluginStatus::kNotFound) {
     main_thread_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&PluginInfoHostImpl::ReportMetrics, this,
+        base::BindOnce(&PluginInfoMessageFilter::ReportMetrics, this,
                        params.render_frame_id, output->actual_mime_type,
                        params.url, params.main_frame_origin, ukm_source_id_));
   }
   std::move(callback).Run(std::move(output));
 }
 
-void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
-                                       const base::StringPiece& mime_type,
-                                       const GURL& url,
-                                       const url::Origin& main_frame_origin,
-                                       ukm::SourceId ukm_source_id) {
+void PluginInfoMessageFilter::ReportMetrics(
+    int render_frame_id,
+    const base::StringPiece& mime_type,
+    const GURL& url,
+    const url::Origin& main_frame_origin,
+    ukm::SourceId ukm_source_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
@@ -581,7 +606,7 @@ void PluginInfoHostImpl::ReportMetrics(int render_frame_id,
       ukm_recorder->GetEntryBuilder(ukm_source_id, "Plugins.FlashInstance");
 }
 
-void PluginInfoHostImpl::Context::MaybeGrantAccess(
+void PluginInfoMessageFilter::Context::MaybeGrantAccess(
     chrome::mojom::PluginStatus status,
     const base::FilePath& path) const {
   if (status == chrome::mojom::PluginStatus::kAllowed ||
@@ -591,7 +616,7 @@ void PluginInfoHostImpl::Context::MaybeGrantAccess(
   }
 }
 
-bool PluginInfoHostImpl::Context::IsPluginEnabled(
+bool PluginInfoMessageFilter::Context::IsPluginEnabled(
     const content::WebPluginInfo& plugin) const {
   return plugin_prefs_->IsPluginEnabled(plugin);
 }

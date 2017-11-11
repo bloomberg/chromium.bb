@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFO_HOST_IMPL_H_
-#define CHROME_BROWSER_PLUGINS_PLUGIN_INFO_HOST_IMPL_H_
+#ifndef CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
 
 #include <memory>
 #include <string>
@@ -41,7 +41,7 @@ struct ComponentInfo;
 namespace content {
 class ResourceContext;
 struct WebPluginInfo;
-}  // namespace content
+}
 
 namespace extensions {
 class ExtensionRegistry;
@@ -55,17 +55,13 @@ namespace url {
 class Origin;
 }
 
-struct PluginInfoHostImplTraits;
-
-// Implements PluginInfoHost interface.
-class PluginInfoHostImpl
-    : public base::RefCountedThreadSafe<PluginInfoHostImpl,
-                                        PluginInfoHostImplTraits>,
-      public chrome::mojom::PluginInfoHost {
+// This class filters out incoming IPC messages requesting plugin information.
+class PluginInfoMessageFilter : public content::BrowserMessageFilter,
+                                public chrome::mojom::PluginInfoHost {
  public:
   struct GetPluginInfo_Params;
 
-  // Contains all the information needed by the PluginInfoHostImpl.
+  // Contains all the information needed by the PluginInfoMessageFilter.
   class Context {
    public:
     Context(int render_process_id, Profile* profile);
@@ -109,13 +105,14 @@ class PluginInfoHostImpl
     BooleanPrefMember run_all_flash_in_allow_mode_;
   };
 
-  static void Create(int render_process_id,
-                     Profile* profile,
-                     chrome::mojom::PluginInfoHostAssociatedRequest request);
+  PluginInfoMessageFilter(int render_process_id, Profile* profile);
 
-  PluginInfoHostImpl(int render_process_id, Profile* profile);
+  // content::BrowserMessageFilter methods:
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnDestruct() const override;
 
   void DestructOnBrowserThread() const;
+
   void OnPluginInfoHostRequest(
       chrome::mojom::PluginInfoHostAssociatedRequest request);
 
@@ -124,12 +121,10 @@ class PluginInfoHostImpl
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<PluginInfoHostImpl>;
-  friend struct PluginInfoHostImplTraits;
-
-  ~PluginInfoHostImpl() override;
+  friend class base::DeleteHelper<PluginInfoMessageFilter>;
 
   void ShutdownOnUIThread();
+  ~PluginInfoMessageFilter() override;
 
   // chrome::mojom::PluginInfoHost
   void GetPluginInfo(int32_t render_frame_id,
@@ -137,10 +132,6 @@ class PluginInfoHostImpl
                      const url::Origin& origin,
                      const std::string& mime_type,
                      const GetPluginInfoCallback& callback) override;
-
-  void IsInternalPluginAvailableForMimeType(
-      const std::string& mime_type,
-      const IsInternalPluginAvailableForMimeTypeCallback& callback) override;
 
   // |params| wraps the parameters passed to |OnGetPluginInfo|, because
   // |base::Bind| doesn't support the required arity <http://crbug.com/98542>.
@@ -159,6 +150,21 @@ class PluginInfoHostImpl
                            chrome::mojom::PluginInfoPtr output,
                            GetPluginInfoCallback callback,
                            std::unique_ptr<PluginMetadata> plugin_metadata);
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  // Returns whether any internal plugin supporting |mime_type| is registered
+  // and enabled. Does not determine whether the plugin can actually be
+  // instantiated (e.g. whether it has all its dependencies).
+  // When the returned *|is_available| is true, |additional_param_names| and
+  // |additional_param_values| contain the name-value pairs, if any, specified
+  // for the *first* non-disabled plugin found that is registered for
+  // |mime_type|.
+  void OnIsInternalPluginAvailableForMimeType(
+      const std::string& mime_type,
+      bool* is_available,
+      std::vector<base::string16>* additional_param_names,
+      std::vector<base::string16>* additional_param_values);
+#endif
 
   // Reports usage metrics to RAPPOR and UKM. This must be a class function,
   // because UkmService requires a friend declaration by design to call.
@@ -180,11 +186,7 @@ class PluginInfoHostImpl
   // (which unfortunately hops ~PluginInfoMesssageFilter to the UI thread).
   mutable mojo::AssociatedBinding<chrome::mojom::PluginInfoHost> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginInfoHostImpl);
+  DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };
 
-struct PluginInfoHostImplTraits {
-  static void Destruct(const PluginInfoHostImpl* impl);
-};
-
-#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INFO_HOST_IMPL_H_
+#endif  // CHROME_BROWSER_PLUGINS_PLUGIN_INFO_MESSAGE_FILTER_H_
