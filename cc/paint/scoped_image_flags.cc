@@ -18,7 +18,9 @@ SkIRect RoundOutRect(const SkRect& rect) {
 
 ScopedImageFlags::DecodeStashingImageProvider::DecodeStashingImageProvider(
     ImageProvider* source_provider)
-    : source_provider_(source_provider) {}
+    : source_provider_(source_provider) {
+  DCHECK(source_provider_);
+}
 ScopedImageFlags::DecodeStashingImageProvider::~DecodeStashingImageProvider() =
     default;
 
@@ -37,35 +39,57 @@ ScopedImageFlags::DecodeStashingImageProvider::GetDecodedDrawImage(
 }
 
 ScopedImageFlags::ScopedImageFlags(ImageProvider* image_provider,
-                                   const PaintFlags& flags,
-                                   const SkMatrix& ctm)
-    : decode_stashing_image_provider_(image_provider) {
-  if (flags.getShader()->shader_type() == PaintShader::Type::kImage) {
-    DecodeImageShader(flags, ctm);
-  } else {
-    DCHECK_EQ(flags.getShader()->shader_type(),
-              PaintShader::Type::kPaintRecord);
-    DecodeRecordShader(flags, ctm);
+                                   const PaintFlags* flags,
+                                   const SkMatrix& ctm,
+                                   uint8_t alpha)
+    : original_flags_(flags) {
+  // If no alpha override is required and flags have no images, we can use the
+  // original flags.
+  if (alpha == 255 && !flags->HasDiscardableImages())
+    return;
+
+  if (image_provider)
+    decode_stashing_image_provider_.emplace(image_provider);
+
+  modified_flags_.emplace(*flags);
+  DecodeImageShader(ctm);
+  DecodeRecordShader(ctm);
+  if (!decode_failed_ && alpha != 255) {
+    DCHECK(original_flags_->SupportsFoldingAlpha());
+    modified_flags_->setAlpha(SkMulDiv255Round(flags->getAlpha(), alpha));
   }
 }
 
 ScopedImageFlags::~ScopedImageFlags() = default;
 
-void ScopedImageFlags::DecodeImageShader(const PaintFlags& flags,
-                                         const SkMatrix& ctm) {
-  const PaintImage& paint_image = flags.getShader()->paint_image();
-  SkMatrix matrix = flags.getShader()->GetLocalMatrix();
+void ScopedImageFlags::DecodeImageShader(const SkMatrix& ctm) {
+  if (!decode_stashing_image_provider_)
+    return;
+
+  if (decode_failed_)
+    return;
+
+  if (!original_flags_->HasShader() ||
+      original_flags_->getShader()->shader_type() !=
+          PaintShader::Type::kImage) {
+    return;
+  }
+
+  const PaintImage& paint_image = original_flags_->getShader()->paint_image();
+  SkMatrix matrix = original_flags_->getShader()->GetLocalMatrix();
 
   SkMatrix total_image_matrix = matrix;
   total_image_matrix.preConcat(ctm);
   SkRect src_rect = SkRect::MakeIWH(paint_image.width(), paint_image.height());
   DrawImage draw_image(paint_image, RoundOutRect(src_rect),
-                       flags.getFilterQuality(), total_image_matrix);
+                       original_flags_->getFilterQuality(), total_image_matrix);
   auto decoded_draw_image =
-      decode_stashing_image_provider_.GetDecodedDrawImage(draw_image);
+      decode_stashing_image_provider_->GetDecodedDrawImage(draw_image);
 
-  if (!decoded_draw_image)
+  if (!decoded_draw_image) {
+    decode_failed_ = true;
     return;
+  }
 
   const auto& decoded_image = decoded_draw_image.decoded_image();
   DCHECK(decoded_image.image());
@@ -82,22 +106,34 @@ void ScopedImageFlags::DecodeImageShader(const PaintFlags& flags,
                                        .set_id(paint_image.stable_id())
                                        .set_image(std::move(sk_image))
                                        .TakePaintImage();
-  decoded_flags_.emplace(flags);
-  decoded_flags_.value().setFilterQuality(decoded_image.filter_quality());
-  decoded_flags_.value().setShader(
-      PaintShader::MakeImage(decoded_paint_image, flags.getShader()->tx(),
-                             flags.getShader()->ty(), &matrix));
+  modified_flags_->setFilterQuality(decoded_image.filter_quality());
+  modified_flags_->setShader(PaintShader::MakeImage(
+      decoded_paint_image, original_flags_->getShader()->tx(),
+      original_flags_->getShader()->ty(), &matrix));
+  return;
 }
 
-void ScopedImageFlags::DecodeRecordShader(const PaintFlags& flags,
-                                          const SkMatrix& ctm) {
-  auto decoded_shader = flags.getShader()->CreateDecodedPaintRecord(
-      ctm, &decode_stashing_image_provider_);
-  if (!decoded_shader)
+void ScopedImageFlags::DecodeRecordShader(const SkMatrix& ctm) {
+  if (!decode_stashing_image_provider_)
     return;
 
-  decoded_flags_.emplace(flags);
-  decoded_flags_.value().setShader(std::move(decoded_shader));
+  if (decode_failed_)
+    return;
+
+  if (!original_flags_->HasShader() ||
+      original_flags_->getShader()->shader_type() !=
+          PaintShader::Type::kPaintRecord) {
+    return;
+  }
+
+  auto decoded_shader = original_flags_->getShader()->CreateDecodedPaintRecord(
+      ctm, &*decode_stashing_image_provider_);
+  if (!decoded_shader) {
+    decode_failed_ = true;
+    return;
+  }
+
+  modified_flags_->setShader(std::move(decoded_shader));
 }
 
 }  // namespace cc

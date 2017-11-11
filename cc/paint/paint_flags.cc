@@ -128,4 +128,14 @@ bool PaintFlags::IsValid() const {
   return PaintOp::IsValidPaintFlagsSkBlendMode(getBlendMode());
 }
 
+bool PaintFlags::HasDiscardableImages() const {
+  if (!shader_)
+    return false;
+  else if (shader_->shader_type() == PaintShader::Type::kImage)
+    return shader_->paint_image().IsLazyGenerated();
+  else if (shader_->shader_type() == PaintShader::Type::kPaintRecord)
+    return shader_->paint_record()->HasDiscardableImages();
+  return false;
+}
+
 }  // namespace cc

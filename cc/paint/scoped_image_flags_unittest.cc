@@ -58,13 +58,32 @@ TEST(ScopedImageFlagsTest, KeepsDecodesAlive) {
   PaintFlags flags;
   flags.setShader(record_shader);
   {
-    ScopedImageFlags scoped_flags(&provider, flags, SkMatrix::I());
-    ASSERT_TRUE(scoped_flags.decoded_flags());
-    SkPaint paint = scoped_flags.decoded_flags()->ToSkPaint();
+    ScopedImageFlags scoped_flags(&provider, &flags, SkMatrix::I(), 255);
+    ASSERT_TRUE(scoped_flags.flags());
+    EXPECT_NE(scoped_flags.flags(), &flags);
+    SkPaint paint = scoped_flags.flags()->ToSkPaint();
     ASSERT_TRUE(paint.getShader());
     EXPECT_EQ(provider.ref_count(), 3);
   }
   EXPECT_EQ(provider.ref_count(), 0);
+}
+
+TEST(ScopedImageFlagsTest, NoImageProvider) {
+  PaintFlags flags;
+  flags.setAlpha(255);
+  flags.setShader(PaintShader::MakeImage(
+      CreateDiscardablePaintImage(gfx::Size(10, 10)),
+      SkShader::TileMode::kClamp_TileMode, SkShader::TileMode::kClamp_TileMode,
+      &SkMatrix::I()));
+  ScopedImageFlags scoped_flags(nullptr, &flags, SkMatrix::I(), 10);
+  EXPECT_NE(scoped_flags.flags(), &flags);
+  EXPECT_EQ(scoped_flags.flags()->getAlpha(), SkMulDiv255Round(255, 10));
+}
+
+TEST(ScopedImageFlagsTest, NoOverrides) {
+  PaintFlags flags;
+  ScopedImageFlags scoped_flags(nullptr, &flags, SkMatrix::I(), 255);
+  EXPECT_EQ(scoped_flags.flags(), &flags);
 }
 
 }  // namespace cc

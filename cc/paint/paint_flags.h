@@ -219,6 +219,8 @@ class CC_PAINT_EXPORT PaintFlags {
 
   bool IsValid() const;
 
+  bool HasDiscardableImages() const;
+
  private:
   friend class PaintOpReader;
   friend class PaintOpWriter;
