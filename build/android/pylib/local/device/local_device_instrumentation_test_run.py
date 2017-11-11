@@ -459,7 +459,8 @@ class LocalDeviceInstrumentationTestRun(
                 target, raw=True, extras=extras, timeout=timeout, retries=0)
       logmon.Close()
 
-    logging.info('Logcat saved to %s', logcat_file.Link())
+    if logcat_file.Link():
+      logging.info('Logcat saved to %s', logcat_file.Link())
 
     duration_ms = time_ms() - start_ms
 
