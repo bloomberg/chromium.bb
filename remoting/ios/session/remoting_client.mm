@@ -18,6 +18,7 @@
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/domain/host_info.h"
 #import "remoting/ios/keychain_wrapper.h"
+#import "remoting/ios/persistence/remoting_preferences.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/client/chromoting_client_runtime.h"
@@ -114,7 +115,11 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 
   // TODO(nicholss): I am not sure about the following fields yet.
   // info.capabilities =
-  // info.flags =
+  if ([RemotingPreferences.instance boolForFlag:RemotingFlagUseWebRTC]) {
+    info.flags = "useWebrtc";
+    [MDCSnackbarManager
+        showMessage:[MDCSnackbarMessage messageWithText:@"Using WebRTC"]];
+  }
 
   remoting::protocol::ClientAuthenticationConfig client_auth_config;
   client_auth_config.host_id = info.host_id;
