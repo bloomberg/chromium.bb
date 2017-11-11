@@ -77,19 +77,6 @@ class SSLBlockingPage
   friend class policy::PolicyTest_SSLErrorOverridingDisallowed_Test;
   friend class SSLUITest;
 
-  // InterstitialPageDelegate implementation.
-  void CommandReceived(const std::string& command) override;
-  void OverrideEntry(content::NavigationEntry* entry) override;
-  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
-  void OnProceed() override;
-  void OnDontProceed() override;
-
-  // SecurityInterstitialPage implementation:
-  bool ShouldCreateNewNavigation() const override;
-  void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) override;
-
- private:
   SSLBlockingPage(
       content::WebContents* web_contents,
       int cert_error,
@@ -104,6 +91,19 @@ class SSLBlockingPage
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback);
 
+  // InterstitialPageDelegate implementation.
+  void CommandReceived(const std::string& command) override;
+  void OverrideEntry(content::NavigationEntry* entry) override;
+  void OverrideRendererPrefs(content::RendererPreferences* prefs) override;
+  void OnProceed() override;
+  void OnDontProceed() override;
+
+  // SecurityInterstitialPage implementation:
+  bool ShouldCreateNewNavigation() const override;
+  void PopulateInterstitialStrings(
+      base::DictionaryValue* load_time_data) override;
+
+ private:
   void NotifyDenyCertificate();
 
   base::Callback<void(content::CertificateRequestResultType)> callback_;

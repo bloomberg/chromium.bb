@@ -231,6 +231,13 @@ class CONTENT_EXPORT NavigationHandle {
   // encountering a server redirect).
   virtual net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() = 0;
 
+  // Returns the SSLInfo for a request that failed due to a certificate error.
+  // In the case of other request failures, returns base::nullopt.
+  virtual const base::Optional<net::SSLInfo>& GetSSLInfo() = 0;
+
+  // Whether the failure for a certificate error should be fatal.
+  virtual bool ShouldSSLErrorsBeFatal() = 0;
+
   // Returns the ID of the URLRequest associated with this navigation. Can only
   // be called from NavigationThrottle::WillProcessResponse and
   // WebContentsObserver::ReadyToCommitNavigation.
@@ -280,6 +287,11 @@ class CONTENT_EXPORT NavigationHandle {
                                     bool new_method_is_post,
                                     const GURL& new_referrer_url,
                                     bool new_is_external_protocol) = 0;
+
+  // Simulates the network request failing.
+  virtual NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
+      base::Optional<net::SSLInfo> ssl_info,
+      bool should_ssl_errors_be_fatal) = 0;
 
   // Simulates the reception of the network response.
   virtual NavigationThrottle::ThrottleCheckResult

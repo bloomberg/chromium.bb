@@ -253,6 +253,18 @@ void CheckSecurityState(WebContents* tab,
   AuthState::Check(*entry, expected_authentication_state);
 }
 
+void CheckProceedLinkExists(content::RenderViewHost* rvh) {
+  int result = security_interstitials::CMD_ERROR;
+  const std::string javascript = base::StringPrintf(
+      "domAutomationController.send("
+      "(document.querySelector(\"#proceed-link\") === null) "
+      "? (%d) : (%d))",
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_TEXT_FOUND);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(rvh, javascript, &result));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND, result);
+}
+
 // This observer waits for the SSLErrorHandler to start an interstitial timer
 // for the given web contents.
 class SSLInterstitialTimerObserver {
@@ -3509,7 +3521,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
 }
 
 // Verifies that an overridable interstitial has a proceed link.
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialOptionsOverridable) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, ProceedLinkOverridable) {
   ASSERT_TRUE(https_server_expired_.Start());
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
@@ -3526,16 +3538,29 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialOptionsOverridable) {
 
   content::RenderFrameHost* rfh = interstitial_page->GetMainFrame();
   ASSERT_TRUE(content::WaitForRenderFrameReady(rfh));
-  int result = security_interstitials::CMD_ERROR;
-  const std::string javascript = base::StringPrintf(
-      "domAutomationController.send("
-      "(document.querySelector(\"#proceed-link\") === null) "
-      "? (%d) : (%d))",
-      security_interstitials::CMD_TEXT_NOT_FOUND,
-      security_interstitials::CMD_TEXT_FOUND);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(interstitial_rvh, javascript,
-                                                  &result));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND, result);
+
+  ASSERT_NO_FATAL_FAILURE(CheckProceedLinkExists(interstitial_rvh));
+}
+
+// Verifies that an overridable committed interstitial has a proceed link.
+IN_PROC_BROWSER_TEST_F(SSLUITestCommittedInterstitials,
+                       ProceedLinkOverridable) {
+  if (!content::IsBrowserSideNavigationEnabled())
+    return;
+
+  ASSERT_TRUE(https_server_expired_.Start());
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_expired_.GetURL("/ssl/google.html"));
+
+  CheckSecurityState(tab, net::CERT_STATUS_DATE_INVALID,
+                     security_state::DANGEROUS, AuthState::SHOWING_ERROR);
+
+  content::RenderFrameHost* rfh = tab->GetMainFrame();
+  ASSERT_TRUE(content::WaitForRenderFrameReady(rfh));
+
+  content::RenderViewHost* rvh = tab->GetRenderViewHost();
+  ASSERT_NO_FATAL_FAILURE(CheckProceedLinkExists(rvh));
 }
 
 // Verifies that a non-overridable interstitial does not have a proceed link.

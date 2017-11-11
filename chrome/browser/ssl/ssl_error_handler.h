@@ -17,6 +17,7 @@
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_error_assistant.pb.h"
+#include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -55,9 +56,13 @@ extern const base::Feature kSuperfishInterstitial;
 // - Check for a known captive portal certificate SPKI
 // - Wait for a name-mismatch suggested URL
 // - or Wait for a captive portal result to arrive.
+//
 // Based on the result of these checks, SSLErrorHandler will show a customized
 // interstitial, redirect to a different suggested URL, or, if all else fails,
-// show the normal SSL interstitial.
+// show the normal SSL interstitial. When --committed--interstitials is enabled,
+// it passes a constructed blocking page to the |blocking_page_ready_callback|
+// that was given to HandleSSLError(), instead of showing the interstitial
+// directly.
 //
 // This class should only be used on the UI thread because its implementation
 // uses captive_portal::CaptivePortalService which can only be accessed on the
@@ -67,6 +72,9 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                         public content::NotificationObserver {
  public:
   typedef base::Callback<void(content::WebContents*)> TimerStartedCallback;
+  typedef base::OnceCallback<void(
+      std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
+      BlockingPageReadyCallback;
 
   ~SSLErrorHandler() override;
 
@@ -114,8 +122,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
         ssl_errors::ClockState clock_state) = 0;
   };
 
-  // Entry point for the class. The parameters are the same as SSLBlockingPage
-  // constructor.
+  // Entry point for the class. All parameters except
+  // |blocking_page_ready_callback| are the same as SSLBlockingPage constructor.
+  // |blocking_page_ready_callback| is intended for committed interstitials. If
+  // |blocking_page_ready_callback| is null, this function will create a
+  // blocking page and call Show() on it. Otherwise, this function creates an
+  // interstitial and passes it to |blocking_page_ready_callback|.
   static void HandleSSLError(
       content::WebContents* web_contents,
       int cert_error,
@@ -125,7 +137,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       bool expired_previous_decision,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const base::Callback<void(content::CertificateRequestResultType)>&
-          callback);
+          decision_callback,
+      BlockingPageReadyCallback blocking_page_ready_callback);
 
   // Sets the binary proto for SSL error assistant. The binary proto
   // can be downloaded by the component updater, or set by tests.
@@ -217,7 +230,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
-  base::Callback<void(content::CertificateRequestResultType)> callback_;
+  base::Callback<void(content::CertificateRequestResultType)>
+      decision_callback_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer timer_;

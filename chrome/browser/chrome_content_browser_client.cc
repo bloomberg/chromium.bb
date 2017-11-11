@@ -97,6 +97,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
+#include "chrome/browser/ssl/ssl_error_navigation_throttle.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -639,8 +640,9 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
 class CertificateReportingServiceCertReporter : public SSLCertReporter {
  public:
   explicit CertificateReportingServiceCertReporter(
-      CertificateReportingService* service)
-      : service_(service) {}
+      content::WebContents* web_contents)
+      : service_(CertificateReportingServiceFactory::GetForBrowserContext(
+            web_contents->GetBrowserContext())) {}
   ~CertificateReportingServiceCertReporter() override {}
 
   // SSLCertReporter implementation
@@ -2270,17 +2272,14 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   // Otherwise, display an SSL blocking page. The interstitial page takes
-  // ownership of ssl_blocking_page.
-
-  CertificateReportingService* cert_reporting_service =
-      CertificateReportingServiceFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  std::unique_ptr<CertificateReportingServiceCertReporter> cert_reporter(
-      new CertificateReportingServiceCertReporter(cert_reporting_service));
-
+  // ownership of ssl_blocking_page. We pass a null BlockingPageReadyCallback()
+  // to indicate that we don't want SSLErrorHandler to take the committed
+  // interstitials code path.
   SSLErrorHandler::HandleSSLError(
       web_contents, cert_error, ssl_info, request_url, strict_enforcement,
-      expired_previous_decision, std::move(cert_reporter), callback);
+      expired_previous_decision,
+      std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
+      callback, SSLErrorHandler::BlockingPageReadyCallback());
 }
 
 void ChromeContentBrowserClient::SelectClientCertificate(
@@ -3416,6 +3415,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       TabUnderNavigationThrottle::MaybeCreate(handle);
   if (tab_under_throttle)
     throttles.push_back(std::move(tab_under_throttle));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kCommittedInterstitials)) {
+    throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
+        handle,
+        std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
+        base::Bind(&SSLErrorHandler::HandleSSLError)));
+  }
 
   return throttles;
 }

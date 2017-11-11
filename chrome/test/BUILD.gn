@@ -3401,6 +3401,8 @@ test("unit_tests") {
     "../browser/ssl/security_state_tab_helper_unittest.cc",
     "../browser/ssl/ssl_error_assistant_unittest.cc",
     "../browser/ssl/ssl_error_handler_unittest.cc",
+    "../browser/ssl/ssl_error_navigation_throttle_unittest.cc",
+    "../browser/ssl/ssl_error_tab_helper_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",
     "../browser/status_icons/status_icon_unittest.cc",
     "../browser/status_icons/status_tray_unittest.cc",
