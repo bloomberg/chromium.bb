@@ -24,9 +24,6 @@ static constexpr gfx::PointF kInvalidTargetPoint =
                 std::numeric_limits<float>::max());
 static constexpr gfx::Point3F kOrigin = {0.0f, 0.0f, 0.0f};
 
-static constexpr float kControllerQuiescenceAngularThresholdDegrees = 3.5f;
-static constexpr float kControllerQuiescenceTemporalThresholdSeconds = 1.2f;
-
 gfx::Point3F GetRayPoint(const gfx::Point3F& rayOrigin,
                          const gfx::Vector3dF& rayVector,
                          float scale) {
@@ -111,11 +108,9 @@ UiInputManager::UiInputManager(UiScene* scene) : scene_(scene) {}
 
 UiInputManager::~UiInputManager() {}
 
-void UiInputManager::HandleInput(base::TimeTicks current_time,
-                                 const ControllerModel& controller_model,
+void UiInputManager::HandleInput(const ControllerModel& controller_model,
                                  ReticleModel* reticle_model,
                                  GestureList* gesture_list) {
-  UpdateQuiescenceState(current_time, controller_model);
   gfx::Vector3dF eye_to_target;
   reticle_model->target_element_id = 0;
   reticle_model->target_local_point = kInvalidTargetPoint;
@@ -410,36 +405,6 @@ void UiInputManager::GetVisualTargetElement(
 
   HitTestElements(&scene_->root_element(), reticle_model, out_eye_to_target,
                   &closest_element_distance);
-}
-
-void UiInputManager::UpdateQuiescenceState(
-    base::TimeTicks current_time,
-    const ControllerModel& controller_model) {
-  // Update quiescence state.
-  gfx::Point3F old_position;
-  gfx::Point3F old_forward_position(0, 0, -1);
-  last_significant_controller_transform_.TransformPoint(&old_position);
-  last_significant_controller_transform_.TransformPoint(&old_forward_position);
-  gfx::Vector3dF old_forward = old_forward_position - old_position;
-  old_forward.GetNormalized(&old_forward);
-  gfx::Point3F new_position;
-  gfx::Point3F new_forward_position(0, 0, -1);
-  controller_model.transform.TransformPoint(&new_position);
-  controller_model.transform.TransformPoint(&new_forward_position);
-  gfx::Vector3dF new_forward = new_forward_position - new_position;
-  new_forward.GetNormalized(&new_forward);
-
-  float angle = AngleBetweenVectorsInDegrees(old_forward, new_forward);
-  if (angle > kControllerQuiescenceAngularThresholdDegrees || in_click_ ||
-      in_scroll_) {
-    controller_quiescent_ = false;
-    last_significant_controller_transform_ = controller_model.transform;
-    last_significant_controller_update_time_ = current_time;
-  } else if ((current_time - last_significant_controller_update_time_)
-                 .InSecondsF() >
-             kControllerQuiescenceTemporalThresholdSeconds) {
-    controller_quiescent_ = true;
-  }
 }
 
 }  // namespace vr

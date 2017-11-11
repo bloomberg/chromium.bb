@@ -23,7 +23,6 @@ struct ControllerModel {
   UiInputManager::ButtonState app_button_state = UiInputManager::UP;
   UiInputManager::ButtonState home_button_state = UiInputManager::UP;
   float opacity = 1.0f;
-  bool quiescent = false;
 };
 
 }  // namespace vr

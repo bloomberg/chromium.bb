@@ -10,7 +10,6 @@
 #include <cstdint>
 
 #include "chrome/browser/vr/content_input_delegate.h"
-#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "ui/gfx/transform.h"
 
@@ -66,8 +65,6 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   bool fullscreen_ = false;
   bool incognito_ = false;
-
-  ControllerModel last_controller_model_;
 
   DISALLOW_COPY_AND_ASSIGN(VrTestContext);
 };

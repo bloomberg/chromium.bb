@@ -414,7 +414,7 @@ void VrShellGl::OnWebVRFrameAvailable() {
 
   ui_->OnWebVrFrameAvailable();
 
-  DrawFrame(frame_index, base::TimeTicks::Now());
+  DrawFrame(frame_index);
   if (web_vr_mode_)
     ++webvr_frames_received_;
   ScheduleOrCancelWebVrFrameTimeout();
@@ -543,8 +543,7 @@ void VrShellGl::InitializeRenderer() {
   browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
-void VrShellGl::UpdateController(const gfx::Transform& head_pose,
-                                 base::TimeTicks current_time) {
+void VrShellGl::UpdateController(const gfx::Transform& head_pose) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
   gvr::Mat4f gvr_head_pose;
   TransformToGvrMat(head_pose, &gvr_head_pose);
@@ -556,13 +555,11 @@ void VrShellGl::UpdateController(const gfx::Transform& head_pose,
     controller_data.connected = false;
   browser_->UpdateGamepadData(controller_data);
 
-  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose),
-                        current_time);
+  HandleControllerInput(laser_origin, vr::GetForwardVector(head_pose));
 }
 
 void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
-                                      const gfx::Vector3dF& head_direction,
-                                      base::TimeTicks current_time) {
+                                      const gfx::Vector3dF& head_direction) {
   if (is_exiting_) {
     // When we're exiting, we don't show the reticle and the only input
     // processing we do is to handle immediate exits.
@@ -616,8 +613,8 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
   controller_model.laser_origin = laser_origin;
 
   vr::ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(current_time, controller_model,
-                                    &reticle_model, &gesture_list);
+  ui_->input_manager()->HandleInput(controller_model, &reticle_model,
+                                    &gesture_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
 }
 
@@ -763,13 +760,15 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
   }
 }
 
-void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
+void VrShellGl::DrawFrame(int16_t frame_index) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrame", "frame", frame_index);
   if (!webvr_delayed_frame_submit_.IsCancelled()) {
     webvr_delayed_frame_submit_.Cancel();
-    DrawIntoAcquiredFrame(frame_index, current_time);
+    DrawIntoAcquiredFrame(frame_index);
     return;
   }
+
+  base::TimeTicks current_time = base::TimeTicks::Now();
 
   CHECK(!acquired_frame_);
 
@@ -827,17 +826,18 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())
-    UpdateController(render_info_primary_.head_pose, current_time);
+    UpdateController(render_info_primary_.head_pose);
 
   bool textures_changed = ui_->scene()->UpdateTextures();
 
-  // TODO(mthiesse): Determine if a visible controller is actually drawn in the
-  // viewport.
-  bool controller_dirty = ui_->IsControllerVisible();
+  // TODO(mthiesse): For now, just pretend the controller isn't dirty, even
+  // though it is, so that we can measure/test this rendering path that avoids
+  // redaws. This is fine because this is still behind a flag.
+  static bool controller_dirty_ = false;
 
   // TODO(mthiesse): Refine this notion of when we need to redraw. If only a
   // portion of the screen is dirtied, we can update just redraw that portion.
-  bool redraw_needed = controller_dirty || scene_changed || textures_changed ||
+  bool redraw_needed = controller_dirty_ || scene_changed || textures_changed ||
                        content_frame_available_;
 
   bool head_moved = vr::HeadMoveExceedsThreshold(last_used_head_pose_,
@@ -855,11 +855,10 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   if (!acquired_frame_)
     return;
 
-  DrawIntoAcquiredFrame(frame_index, current_time);
+  DrawIntoAcquiredFrame(frame_index);
 }
 
-void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
-                                      base::TimeTicks current_time) {
+void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
 
   last_used_head_pose_ = render_info_primary_.head_pose;
@@ -1150,9 +1149,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // DrawFrame.
     gfx::Transform head_pose;
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
-    UpdateController(head_pose, frame_time);
+    UpdateController(head_pose);
   } else {
-    DrawFrame(-1, frame_time);
+    DrawFrame(-1);
   }
 }
 
