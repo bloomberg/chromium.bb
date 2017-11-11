@@ -4700,6 +4700,7 @@ static int predict_skip_flag(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   param.tx_type = DCT_DCT;
   param.tx_size = max_txsize_rect_lookup[bsize];
   param.bd = xd->bd;
+  param.is_hbd = get_bitdepth_data_path_index(xd);
   param.lossless = 0;
   const struct macroblockd_plane *const pd = &xd->plane[0];
   const BLOCK_SIZE plane_bsize =
@@ -4713,7 +4714,7 @@ static int predict_skip_flag(const MACROBLOCK *x, BLOCK_SIZE bsize) {
 #if CONFIG_TXMG
   av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
 #else   // CONFIG_TXMG
-  if (get_bitdepth_data_path_index(xd))
+  if (param.is_hbd)
     av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
   else
     av1_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);

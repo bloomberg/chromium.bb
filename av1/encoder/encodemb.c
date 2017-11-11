@@ -557,17 +557,17 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_MRC_TX
 
   txfm_param.bd = xd->bd;
-  const int is_hbd = get_bitdepth_data_path_index(xd);
+  txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
 
 #if CONFIG_TXMG
   av1_highbd_fwd_txfm(src_diff, coeff, diff_stride, &txfm_param);
 #else   // CONFIG_TXMG
-  fwd_txfm_func[is_hbd](src_diff, coeff, diff_stride, &txfm_param);
+  fwd_txfm_func[txfm_param.is_hbd](src_diff, coeff, diff_stride, &txfm_param);
 #endif  // CONFIG_TXMG
 
   if (xform_quant_idx != AV1_XFORM_QUANT_SKIP_QUANT) {
     if (LIKELY(!x->skip_block)) {
-      quant_func_list[xform_quant_idx][is_hbd](
+      quant_func_list[xform_quant_idx][txfm_param.is_hbd](
           coeff, tx2d_size, p, qcoeff, dqcoeff, eob, scan_order, &qparam);
     } else {
       av1_quantize_skip(tx2d_size, qcoeff, dqcoeff, eob);
@@ -724,6 +724,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
 
   if (p->eobs[block] > 0) {
     txfm_param.bd = xd->bd;
+    txfm_param.is_hbd = get_bitdepth_data_path_index(xd);
     txfm_param.tx_type = DCT_DCT;
     txfm_param.tx_size = tx_size;
     txfm_param.eob = p->eobs[block];
@@ -732,7 +733,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
         txfm_param.tx_size, plane_bsize, is_inter_block(&xd->mi[0]->mbmi),
         cm->reduced_tx_set_used);
 #if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    if (txfm_param.is_hbd) {
       av1_highbd_inv_txfm_add_4x4(dqcoeff, dst, pd->dst.stride, &txfm_param);
       return;
     }

@@ -2419,6 +2419,7 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
   txfm_param->eob = eob;
   txfm_param->lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
   txfm_param->bd = xd->bd;
+  txfm_param->is_hbd = get_bitdepth_data_path_index(xd);
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const BLOCK_SIZE plane_bsize =
       get_plane_block_size(xd->mi[0]->mbmi.sb_type, pd);
@@ -2467,9 +2468,7 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   txfm_param.stride = stride;
 #endif  // CONFIG_MRC_TX
   assert(av1_ext_tx_used[txfm_param.tx_set_type][txfm_param.tx_type]);
-
-  const int is_hbd = get_bitdepth_data_path_index(xd);
-  inv_txfm_func[is_hbd](dqcoeff, dst, stride, &txfm_param);
+  inv_txfm_func[txfm_param.is_hbd](dqcoeff, dst, stride, &txfm_param);
 }
 
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
