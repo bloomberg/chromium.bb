@@ -1,0 +1,18 @@
+diff --git a/libelf/elf_end.c b/libelf/elf_end.c
+index 160f0b88..f3a22a0c 100644
+--- a/libelf/elf_end.c
++++ b/libelf/elf_end.c
+@@ -163,13 +163,6 @@ elf_end (Elf *elf)
+ 		if (scn->data_base != scn->rawdata_base)
+ 		  free (scn->data_base);
+ 
+-		/* The section data is allocated if we couldn't mmap
+-		   the file.  Or if we had to decompress.  */
+-		if (elf->map_address == NULL
+-		    || scn->rawdata_base == scn->zdata_base
+-		    || (scn->flags & ELF_F_MALLOCED) != 0)
+-		  free (scn->rawdata_base);
+-
+ 		/* Free the list of data buffers for the section.
+ 		   We don't free the buffers themselves since this
+ 		   is the users job.  */
