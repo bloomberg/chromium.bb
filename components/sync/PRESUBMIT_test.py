@@ -1,4 +1,5 @@
-# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,17 +7,25 @@ import os
 import re
 import sys
 import unittest
+
 import PRESUBMIT
 
 sys.path.append(
   os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from PRESUBMIT_test_mocks import MockOutputApi, MockChange
+from PRESUBMIT_test_mocks import MockChange, MockOutputApi
+
+class MockCannedChecks(object):
+  def CheckChangeLintsClean(self, input_api, output_api, source_filter,
+                            lint_filters, verbose_level):
+    return []
+
 
 class MockInputApi(object):
   """ Mocked input api for unit testing of presubmit.
   This lets us mock things like file system operations and changed files.
   """
   def __init__(self):
+    self.canned_checks = MockCannedChecks()
     self.re = re
     self.os_path = os.path
     self.files = []
@@ -55,6 +64,8 @@ class MockFile(object):
 
   def AbsoluteLocalPath(self):
     return self._local_path
+
+
 # Format string used as the contents of a mock sync.proto in order to
 # test presubmit parsing of EntitySpecifics definition in that file.
 MOCK_PROTOFILE_CONTENTS = ('\n'
@@ -145,5 +156,7 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
     ]
 
     return PRESUBMIT.CheckChangeOnCommit(mock_input_api, MockOutputApi())
+
+
 if __name__ == '__main__':
   unittest.main()
