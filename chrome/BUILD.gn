@@ -1697,6 +1697,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("partner_bookmarks_javagen") {
+    sources = [
+      "browser/android/bookmarks/partner_bookmarks_reader.h",
+    ]
+  }
+
   java_cpp_enum("payments_journey_logger_enum_javagen") {
     sources = [
       "../components/payments/core/journey_logger.h",
