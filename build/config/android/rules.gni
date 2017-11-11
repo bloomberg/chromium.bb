@@ -284,11 +284,15 @@ if (enable_java_templates) {
     }
 
     jni_package = invoker.jni_package
-    base_output_dir = "${root_gen_dir}/${target_name}/${jni_package}"
+    base_output_dir = "${target_gen_dir}/${target_name}/${jni_package}"
     jni_output_dir = "${base_output_dir}/jni"
 
-    jni_generator_include =
-        "//base/android/jni_generator/jni_generator_helper.h"
+    if (defined(invoker.jni_generator_include)) {
+      jni_generator_include = invoker.jni_generator_include
+    } else {
+      jni_generator_include =
+          "//base/android/jni_generator/jni_generator_helper.h"
+    }
 
     # TODO(cjhopman): make jni_generator.py support generating jni for multiple
     # .class files from a .jar.
