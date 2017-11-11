@@ -20,6 +20,10 @@ constexpr char kCastDialPresentationUrlScheme[] = "cast-dial";
 constexpr char kDialPresentationUrlScheme[] = "dial";
 constexpr char kRemotePlaybackPresentationUrlScheme[] = "remote-playback";
 
+// URL prefix used by legacy Cast presentations.
+constexpr char kLegacyCastPresentationUrlPrefix[] =
+    "https://google.com/cast#__castAppId__=";
+
 // Helper library for protocol-specific media source object creation.
 // Returns MediaSource URI depending on the type of source.
 MediaSource MediaSourceForTab(int tab_id);
