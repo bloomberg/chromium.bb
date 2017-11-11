@@ -9,12 +9,6 @@ cr.define('settings', function() {
     initializeChangePasswordHandler() {}
 
     /**
-     * Inform PasswordProtectionService that the change password card is
-     * showing.
-     */
-    onChangePasswordPageShown() {}
-
-    /**
      * Initiate the change password process. e.g., for Gmail users, it
      * navigates to accounts.google.com; for GSuite users, it navigates to the
      * corresponding change password URLs.
@@ -29,11 +23,6 @@ cr.define('settings', function() {
     /** @override */
     initializeChangePasswordHandler() {
       chrome.send('initializeChangePasswordHandler');
-    }
-
-    /** @override */
-    onChangePasswordPageShown() {
-      chrome.send('onChangePasswordPageShown');
     }
 
     /** @override */
