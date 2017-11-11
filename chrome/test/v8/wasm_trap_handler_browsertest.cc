@@ -16,19 +16,20 @@
 #include "content/public/test/browser_test_utils.h"
 
 namespace {
-// kIsTrapHandlerSupported indicates whether the trap handler is supported
+// |kIsTrapHandlerSupported| indicates whether the trap handler is supported
 // (i.e. allowed to be enabled) on the currently platform. Currently we only
 // support non-Android, Linux x64. In the future more platforms will be
-// supported.
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
+// supported. Though this file is a browser test that is not built on Android.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86_64)
 constexpr bool kIsTrapHandlerSupported = true;
 #else
 constexpr bool kIsTrapHandlerSupported = false;
 #endif
 
-class WasmTrapHandler : public InProcessBrowserTest {
+class WasmTrapHandlerBrowserTest : public InProcessBrowserTest {
  public:
-  WasmTrapHandler() {}
+  WasmTrapHandlerBrowserTest() {}
+  ~WasmTrapHandlerBrowserTest() override {}
 
  protected:
   void RunJSTest(const std::string& js) const {
@@ -78,10 +79,10 @@ class WasmTrapHandler : public InProcessBrowserTest {
                                     "--allow-natives-syntax");
   }
 
-  DISALLOW_COPY_AND_ASSIGN(WasmTrapHandler);
+  DISALLOW_COPY_AND_ASSIGN(WasmTrapHandlerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WasmTrapHandler, OutOfBounds) {
+IN_PROC_BROWSER_TEST_F(WasmTrapHandlerBrowserTest, OutOfBounds) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const auto& url = embedded_test_server()->GetURL("/wasm/out_of_bounds.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -111,7 +112,8 @@ IN_PROC_BROWSER_TEST_F(WasmTrapHandler, OutOfBounds) {
       "poke_out_of_bounds_grow_memory_wasm()"));
 }
 
-IN_PROC_BROWSER_TEST_F(WasmTrapHandler, TrapHandlerCorrectlyConfigured) {
+IN_PROC_BROWSER_TEST_F(WasmTrapHandlerBrowserTest,
+                       TrapHandlerCorrectlyConfigured) {
   const bool is_trap_handler_enabled = IsTrapHandlerEnabled();
 // In msan builds, v8 is configured to generate arm code and run it in the
 // simulator. This results in an incorrect value here, because Chrome thinks

@@ -1393,7 +1393,6 @@ test("browser_tests") {
       "../browser/profiles/profile_browsertest.cc",
       "../browser/profiles/profile_list_desktop_browsertest.cc",
       "../browser/profiles/profile_manager_browsertest.cc",
-      "../browser/profiles/profile_window_browsertest.cc",
       "../browser/push_messaging/push_messaging_browsertest.cc",
       "../browser/referrer_policy_browsertest.cc",
       "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
@@ -1621,7 +1620,7 @@ test("browser_tests") {
       "gpu/webgl_infobar_browsertest.cc",
       "ppapi/ppapi_browsertest.cc",
       "ppapi/ppapi_filechooser_browsertest.cc",
-      "v8/wasm_trap_handler.cc",
+      "v8/wasm_trap_handler_browsertest.cc",
     ]
 
     deps += [
@@ -2321,6 +2320,8 @@ test("browser_tests") {
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/hotword_private/hotword_private_apitest.cc",
+        "../browser/extensions/api/networking_private/networking_private_apitest.cc",
+        "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/app_list/app_list_browsertest.cc",
@@ -2391,6 +2392,7 @@ test("browser_tests") {
         "../browser/net/nss_context_chromeos_browsertest.cc",
         "data/webui/certificate_viewer_ui_test-inl.h",
       ]
+      sources += [ "../browser/profiles/profile_window_browsertest.cc" ]
       if (enable_extensions) {
         sources -= [
           "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
@@ -2586,12 +2588,7 @@ test("browser_tests") {
     if (!is_posix || is_chromeos) {
       sources -= [ "../common/time_format_browsertest.cc" ]
     }
-    if (is_chromeos) {
-      sources += [
-        "../browser/extensions/api/networking_private/networking_private_apitest.cc",
-        "../browser/extensions/api/networking_private/networking_private_chromeos_apitest.cc",
-      ]
-    }
+
     if (is_mac || is_win || (is_linux && !is_chromeos)) {
       sources += [
         # Tests for non mobile and non CrOS (includes Linux, Win, Mac).

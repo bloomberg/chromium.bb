@@ -330,8 +330,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   preview_dialog->ForEachFrame(base::Bind(&CheckPdfPluginForRenderFrame));
 }
 
-#if !defined(OS_ANDROID)
-
 namespace {
 
 base::string16 GetExpectedPrefix() {
@@ -395,5 +393,3 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 }
 
 }  // namespace
-
-#endif  // !defined(OS_ANDROID)

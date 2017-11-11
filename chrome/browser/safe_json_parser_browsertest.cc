@@ -35,7 +35,6 @@ std::string MaybeToJson(const base::Value* value) {
   return json;
 }
 
-#if !defined(OS_ANDROID)
 // This class lets us wait for services to be started and tracks how many times
 // a service was started.
 class TestServiceManagerListener
@@ -116,7 +115,6 @@ class ParseCallback {
 
   DISALLOW_COPY_AND_ASSIGN(ParseCallback);
 };
-#endif
 
 }  // namespace
 
@@ -181,7 +179,6 @@ class SafeJsonParserTest : public InProcessBrowserTest {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
-#if !defined(OS_ANDROID)
 class SafeJsonParserImplTest : public InProcessBrowserTest {
  public:
   SafeJsonParserImplTest() = default;
@@ -230,7 +227,6 @@ class SafeJsonParserImplTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserImplTest);
 };
-#endif
 
 IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Parse) {
   TestParse("{}");
@@ -250,7 +246,6 @@ IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Parse) {
   TestParse("\"\\ud83f\\udffe\"");
 }
 
-#if !defined(OS_ANDROID)
 // Tests that when calling SafeJsonParser::Parse() a new service is started
 // every time.
 IN_PROC_BROWSER_TEST_F(SafeJsonParserImplTest, Isolation) {
@@ -269,4 +264,3 @@ IN_PROC_BROWSER_TEST_F(SafeJsonParserImplTest, Isolation) {
     EXPECT_EQ(2U + i, GetServiceStartCount(data_decoder::mojom::kServiceName));
   }
 }
-#endif
