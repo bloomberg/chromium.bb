@@ -10,7 +10,9 @@ void AudioStreamConsumer::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> packet,
     const base::Closure& done) {
   AddAudioPacket(std::move(packet));
-  done.Run();
+  if (done) {
+    done.Run();
+  }
 }
 
 }  // namespace remoting
