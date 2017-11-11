@@ -22,7 +22,8 @@ viz::mojom::HitTestRegionPtr CreateHitTestRegion(const aura::Window* window,
   hit_test_region->frame_sink_id = window->GetFrameSinkId();
   // Checking |layer| may not be correct, since the actual layer that embeds
   // the surface may be a descendent of |layer|, instead of |layer| itself.
-  if (window->GetLocalSurfaceId().is_valid()) {
+  if (window->IsEmbeddingClient()) {
+    DCHECK(window->GetLocalSurfaceId().is_valid());
     hit_test_region->local_surface_id = window->GetLocalSurfaceId();
     hit_test_region->flags = flags | viz::mojom::kHitTestChildSurface;
   } else {
@@ -66,7 +67,7 @@ viz::mojom::HitTestRegionListPtr HitTestDataProviderAura::GetHitTestData()
 void HitTestDataProviderAura::GetHitTestDataRecursively(
     aura::Window* window,
     viz::mojom::HitTestRegionList* hit_test_region_list) const {
-  if (window->GetLocalSurfaceId().is_valid())
+  if (window->IsEmbeddingClient())
     return;
 
   WindowTargeter* parent_targeter =

@@ -290,9 +290,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  // Only set when it is embedding another client inside.
-  viz::FrameSinkId embed_frame_sink_id_;
-
   viz::SurfaceInfo primary_surface_info_;
   viz::SurfaceInfo fallback_surface_info_;
 

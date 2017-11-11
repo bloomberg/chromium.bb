@@ -87,17 +87,23 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
     test::AuraTestBaseMus::SetUp();
 
     root_ = std::make_unique<Window>(nullptr);
+    root_->SetProperty(aura::client::kEmbedType,
+                       aura::client::WindowEmbedType::TOP_LEVEL_IN_WM);
     root_->Init(ui::LAYER_NOT_DRAWN);
     root_->SetEventTargeter(std::make_unique<WindowTargeter>());
     root_->SetBounds(gfx::Rect(0, 0, 300, 200));
     root_->Show();
 
     window2_ = new Window(nullptr);
+    window2_->SetProperty(aura::client::kEmbedType,
+                          aura::client::WindowEmbedType::EMBED_IN_OWNER);
     window2_->Init(ui::LAYER_TEXTURED);
     window2_->SetBounds(gfx::Rect(20, 30, 40, 60));
     window2_->Show();
 
     window3_ = new Window(nullptr);
+    window3_->SetProperty(aura::client::kEmbedType,
+                          aura::client::WindowEmbedType::EMBED_IN_OWNER);
     window3_->Init(ui::LAYER_TEXTURED);
     window3_->SetEventTargeter(std::make_unique<WindowTargeter>());
     window3_->SetBounds(gfx::Rect(50, 60, 100, 40));
@@ -180,7 +186,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 // Tests that the hit-test regions get expanded with a custom event targeter.
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   window3()->SetEventTargeter(std::make_unique<TestWindowTargeter>());
-  window2()->AllocateLocalSurfaceId();
+  window2()->set_embed_frame_sink_id(viz::FrameSinkId(1, 2));
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
@@ -307,7 +313,7 @@ TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
-  window3()->AllocateLocalSurfaceId();
+  window3()->set_embed_frame_sink_id(viz::FrameSinkId(1, 3));
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 1u);
@@ -320,7 +326,7 @@ TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 1u);
-  root()->AllocateLocalSurfaceId();
+  root()->set_embed_frame_sink_id(viz::FrameSinkId(1, 1));
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->regions.size(), 0u);
