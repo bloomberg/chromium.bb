@@ -10,10 +10,9 @@
 
 namespace modemfwd {
 
-const char kGetUsbIds[] = "get_usb_ids";
+const char kGetFirmwareInfo[] = "get_fw_info";
 const char kPrepareToFlash[] = "prepare_to_flash";
 const char kFlashMainFirmware[] = "flash_main_fw";
-const char kGetCarrierFirmwareInfo[] = "get_carrier_fw_info";
 const char kFlashCarrierFirmware[] = "flash_carrier_fw";
 const char kReboot[] = "reboot";
 
