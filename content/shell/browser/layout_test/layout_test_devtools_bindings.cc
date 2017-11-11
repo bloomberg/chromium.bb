@@ -19,7 +19,41 @@
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "net/base/filename_util.h"
 
+namespace {
+
+GURL GetInspectedPageURL(const GURL& test_url) {
+  std::string spec = test_url.spec();
+  std::string test_query_param = "&test=";
+  std::string test_script_url =
+      spec.substr(spec.find(test_query_param) + test_query_param.length());
+  std::string inspected_page_url = test_script_url.replace(
+      test_script_url.find("/devtools/"), std::string::npos,
+      "/devtools/resources/inspected-page.html");
+  return GURL(inspected_page_url);
+}
+
+}  // namespace
+
 namespace content {
+
+class LayoutTestDevToolsBindings::SecondaryObserver
+    : public WebContentsObserver {
+ public:
+  explicit SecondaryObserver(LayoutTestDevToolsBindings* bindings)
+      : WebContentsObserver(bindings->inspected_contents()),
+        bindings_(bindings) {}
+
+  // WebContentsObserver implementation.
+  void DocumentAvailableInMainFrame() override {
+    if (bindings_)
+      bindings_->NavigateDevToolsFrontend();
+    bindings_ = nullptr;
+  }
+
+ private:
+  LayoutTestDevToolsBindings* bindings_;
+  DISALLOW_COPY_AND_ASSIGN(SecondaryObserver);
+};
 
 // static.
 GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
@@ -73,35 +107,13 @@ GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
   return GURL(url_string);
 }
 
-// static
-LayoutTestDevToolsBindings* LayoutTestDevToolsBindings::LoadDevTools(
-    WebContents* devtools_contents_,
-    WebContents* inspected_contents_,
-    const std::string& settings,
-    const std::string& frontend_url) {
-  LayoutTestDevToolsBindings* bindings =
-      new LayoutTestDevToolsBindings(devtools_contents_, inspected_contents_);
-  bindings->SetPreferences(settings);
-  GURL devtools_url =
-      LayoutTestDevToolsBindings::GetDevToolsPathAsURL(frontend_url);
+void LayoutTestDevToolsBindings::NavigateDevToolsFrontend() {
+  GURL devtools_url = GetDevToolsPathAsURL(frontend_url_.spec());
   NavigationController::LoadURLParams params(devtools_url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-  bindings->web_contents()->GetController().LoadURLWithParams(params);
-  bindings->web_contents()->Focus();
-  return bindings;
-}
-
-// static.
-GURL LayoutTestDevToolsBindings::GetInspectedPageURL(const GURL& test_url) {
-  std::string spec = test_url.spec();
-  std::string test_query_param = "&test=";
-  std::string test_script_url =
-      spec.substr(spec.find(test_query_param) + test_query_param.length());
-  std::string inspected_page_url = test_script_url.replace(
-      test_script_url.find("/devtools/"), std::string::npos,
-      "/devtools/resources/inspected-page.html");
-  return GURL(inspected_page_url);
+  web_contents()->GetController().LoadURLWithParams(params);
+  web_contents()->Focus();
 }
 
 void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
@@ -122,9 +134,25 @@ void LayoutTestDevToolsBindings::EvaluateInFrontend(int call_id,
 
 LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
     WebContents* devtools_contents,
-    WebContents* inspected_contents)
+    WebContents* inspected_contents,
+    const std::string& settings,
+    const GURL& frontend_url,
+    bool new_harness)
     : ShellDevToolsBindings(devtools_contents, inspected_contents, nullptr),
-      ready_for_test_(false) {}
+      frontend_url_(frontend_url) {
+  SetPreferences(settings);
+
+  if (new_harness) {
+    NavigationController::LoadURLParams params(
+        GetInspectedPageURL(frontend_url));
+    params.transition_type = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    inspected_contents->GetController().LoadURLWithParams(params);
+    secondary_observer_ = base::MakeUnique<SecondaryObserver>(this);
+  } else {
+    NavigateDevToolsFrontend();
+  }
+}
 
 LayoutTestDevToolsBindings::~LayoutTestDevToolsBindings() {}
 
