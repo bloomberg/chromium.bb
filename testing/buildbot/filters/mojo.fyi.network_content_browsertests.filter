@@ -99,14 +99,9 @@
 -ResourceDispatcherHostBrowserTest.SniffNoContentTypeNoData
 -SitePerProcessIgnoreCertErrorsBrowserTest.SubresourceWithCertificateErrors
 -WebContentsImplBrowserTest.ClearNonVisiblePendingOnFail
--WebContentsImplBrowserTest.DidGetResourceResponseStartUpdatesWaitingState
 -WebContentsImplBrowserTest.DownloadImage_Deny_FileImage
 -WebContentsImplBrowserTest.LoadingStateChangedForSameDocumentNavigation
 -WebContentsImplBrowserTest.UserAgentOverride
--WorkerFetchTest.SharedWorkerHttpAuth/0
--WorkerFetchTest.SharedWorkerHttpAuth/1
--WorkerFetchTest.WorkerHttpAuth/0
--WorkerFetchTest.WorkerHttpAuth/1
 -WorkerFetchTest.WorkerTlsClientAuthFetch/0
 -WorkerFetchTest.WorkerTlsClientAuthFetch/1
 -WorkerFetchTest.WorkerTlsClientAuthImportScripts/0
@@ -126,3 +121,15 @@
 # completion. With the network service this will be equivalent to a network
 # service process crash.
 -ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
+
+# http://crbug.com/783981
+# This test should just be removed once we remove
+# WebContentsObserver::DidGetResourceResponseStart.
+-WebContentsImplBrowserTest.DidGetResourceResponseStartUpdatesWaitingState
+
+# http://crbug.com/783990
+# Add support for http auth.
+-WorkerFetchTest.SharedWorkerHttpAuth/0
+-WorkerFetchTest.SharedWorkerHttpAuth/1
+-WorkerFetchTest.WorkerHttpAuth/0
+-WorkerFetchTest.WorkerHttpAuth/1
