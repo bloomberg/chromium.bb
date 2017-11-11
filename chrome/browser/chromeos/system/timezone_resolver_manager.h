@@ -17,6 +17,16 @@ namespace system {
 
 class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
  public:
+  // This is stored as a prefs::kResolveTimezoneByGeolocationMethod
+  // and prefs::kResolveDeviceTimezoneByGeolocationMethod preferences.
+  enum class TimeZoneResolveMethod {
+    DISABLED = 0,
+    IP_ONLY = 1,
+    SEND_WIFI_ACCESS_POINTS = 2,
+    SEND_ALL_LOCATION_INFO = 3,
+    METHODS_NUMBER = 4
+  };
+
   TimeZoneResolverManager();
   ~TimeZoneResolverManager() override;
 
@@ -39,6 +49,14 @@ class TimeZoneResolverManager : public TimeZoneResolver::Delegate {
   // Returns true if TimeZoneResolver should be running and taking in account
   // all configuration data.
   bool TimeZoneResolverShouldBeRunning();
+
+  // Returns user preference value if time zone is not managed.
+  // Otherwise returns effective time zone resolve method.
+  // If |check_policy| is true, effective method calculation will also
+  // take into account current policy values.
+  static TimeZoneResolveMethod GetEffectiveUserTimeZoneResolveMethod(
+      const PrefService* user_prefs,
+      bool check_policy);
 
  private:
   int GetTimezoneManagementSetting();

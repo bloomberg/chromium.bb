@@ -503,8 +503,21 @@ const char kUserTimezone[] = "settings.timezone";
 
 // This setting disables manual timezone selection and starts periodic timezone
 // refresh.
+// Deprecated. Replaced with kResolveTimezoneByGeolocationMethod.
+// TODO(alemate): https://crbug.com/783367 Remove outdated prefs.
 const char kResolveTimezoneByGeolocation[] =
     "settings.resolve_timezone_by_geolocation";
+
+// This setting controls what information is sent to the server to get
+// device location to resolve time zone in user session. Values must
+// match TimeZoneResolverManager::TimeZoneResolveMethod enum.
+const char kResolveTimezoneByGeolocationMethod[] =
+    "settings.resolve_timezone_by_geolocation_method";
+
+// This setting is true when kResolveTimezoneByGeolocation value
+// has been migrated to kResolveTimezoneByGeolocationMethod.
+const char kResolveTimezoneByGeolocationMigratedToMethod[] =
+    "settings.resolve_timezone_by_geolocation_migrated_to_method";
 
 // A string pref set to the current input method.
 const char kLanguageCurrentInputMethod[] =
@@ -1918,9 +1931,18 @@ const char kSigninScreenTimezone[] = "settings.signin_screen_timezone";
 
 // This setting starts periodic timezone refresh when not in user session.
 // (user session is controlled by user profile preference
-// kResolveTimezoneByGeolocation
+// kResolveTimezoneByGeolocation)
+//
+// Deprecated. Superseeded by kResolveDeviceTimezoneByGeolocationMethod.
+// TODO(alemate): https://crbug.com/783367 Remove outdated prefs.
 const char kResolveDeviceTimezoneByGeolocation[] =
     "settings.resolve_device_timezone_by_geolocation";
+
+// This setting controls what information is sent to the server to get
+// device location to resolve time zone outside of user session. Values must
+// match TimeZoneResolverManager::TimeZoneResolveMethod enum.
+const char kResolveDeviceTimezoneByGeolocationMethod[] =
+    "settings.resolve_device_timezone_by_geolocation_method";
 
 // This is policy-controlled preference.
 // It has values defined in policy enum

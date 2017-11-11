@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -270,7 +271,7 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncLocale();
   } else if (pref_name == ::prefs::kUse24HourClock) {
     SyncUse24HourClock();
-  } else if (pref_name == ::prefs::kResolveTimezoneByGeolocation) {
+  } else if (pref_name == ::prefs::kResolveTimezoneByGeolocationMethod) {
     SyncTimeZoneByGeolocation();
   } else if (pref_name == ::prefs::kWebKitDefaultFixedFontSize ||
              pref_name == ::prefs::kWebKitDefaultFontSize ||
@@ -321,7 +322,7 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
   AddPrefToObserve(prefs::kArcLocationServiceEnabled);
   AddPrefToObserve(prefs::kSmsConnectEnabled);
-  AddPrefToObserve(::prefs::kResolveTimezoneByGeolocation);
+  AddPrefToObserve(::prefs::kResolveTimezoneByGeolocationMethod);
   AddPrefToObserve(::prefs::kUse24HourClock);
   AddPrefToObserve(::prefs::kWebKitDefaultFixedFontSize);
   AddPrefToObserve(::prefs::kWebKitDefaultFontSize);
@@ -601,13 +602,20 @@ void ArcSettingsServiceImpl::SyncTimeZone() const {
 
 void ArcSettingsServiceImpl::SyncTimeZoneByGeolocation() const {
   const PrefService::Preference* pref = registrar_.prefs()->FindPreference(
-      ::prefs::kResolveTimezoneByGeolocation);
+      ::prefs::kResolveTimezoneByGeolocationMethod);
   DCHECK(pref);
-  bool setTimeZoneByGeolocation = false;
-  bool value_exists = pref->GetValue()->GetAsBoolean(&setTimeZoneByGeolocation);
+  int setTimeZoneByGeolocation =
+      static_cast<int>(chromeos::system::TimeZoneResolverManager::
+                           TimeZoneResolveMethod::DISABLED);
+  bool value_exists = pref->GetValue()->GetAsInteger(&setTimeZoneByGeolocation);
   DCHECK(value_exists);
   base::DictionaryValue extras;
-  extras.SetBoolean("autoTimeZone", setTimeZoneByGeolocation);
+  extras.SetBoolean("autoTimeZone",
+                    chromeos::system::TimeZoneResolverManager::
+                            GetEffectiveUserTimeZoneResolveMethod(
+                                registrar_.prefs(), false) !=
+                        chromeos::system::TimeZoneResolverManager::
+                            TimeZoneResolveMethod::DISABLED);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_AUTO_TIME_ZONE",
                         extras);
 }
