@@ -9,12 +9,21 @@
 
 @class HostSettings;
 
+typedef NSString* RemotingFlag NS_STRING_ENUM;
+extern RemotingFlag const RemotingFlagUseWebRTC;
+
 // |RemotingPreferences| is the centralized place to ask for information about
 // defaults and prefrences.
 @interface RemotingPreferences : NSObject
 
 - (HostSettings*)settingsForHost:(NSString*)hostId;
 - (void)setSettings:(HostSettings*)settings forHost:(NSString*)hostId;
+
+- (id)objectForFlag:(RemotingFlag)flag;
+- (void)setObject:(id)object forFlag:(RemotingFlag)flag;
+- (BOOL)boolForFlag:(RemotingFlag)flag;
+- (void)setBool:(BOOL)value forFlag:(RemotingFlag)flag;
+- (void)synchronizeFlags;
 
 // Access to the singleton shared instance from this property.
 @property(nonatomic, readonly, class) RemotingPreferences* instance;
