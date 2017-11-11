@@ -96,6 +96,10 @@ class PixelIntegrationTest(
     pages = pixel_test_pages.DefaultPages(name)
     pages += pixel_test_pages.GpuRasterizationPages(name)
     pages += pixel_test_pages.ExperimentalCanvasFeaturesPages(name)
+    pages += pixel_test_pages.NoGpuProcessPages(name)
+    # The following pages should run only on platforms where SwiftShader is
+    # enabled. They are skipped on other platforms through test expectations.
+    pages += pixel_test_pages.SwiftShaderPages(name)
     if sys.platform.startswith('darwin'):
       pages += pixel_test_pages.MacSpecificPages(name)
     if sys.platform.startswith('win'):
