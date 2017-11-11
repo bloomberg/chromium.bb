@@ -121,6 +121,8 @@ class MockPasswordProtectionService
   MOCK_METHOD2(UpdateSecurityState,
                void(safe_browsing::SBThreatType, content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
+  MOCK_METHOD2(RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
+               void(bool, const history::URLRows&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);

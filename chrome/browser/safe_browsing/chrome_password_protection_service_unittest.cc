@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
@@ -234,6 +235,12 @@ class ChromePasswordProtectionServiceTest
     return test_handle->CallWillStartRequestForTesting(
         /*is_post=*/false, content::Referrer(), /*has_user_gesture=*/false,
         ui::PAGE_TRANSITION_LINK, /*is_external_protocol=*/false);
+  }
+
+  int GetSizeofUnhandledSyncPasswordReuses() {
+    DictionaryPrefUpdate unhandled_sync_password_reuses(
+        profile()->GetPrefs(), prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+    return unhandled_sync_password_reuses->size();
   }
 
  protected:
@@ -543,6 +550,37 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(content::NavigationThrottle::CANCEL,
             SimulateWillStart(test_handle.get()));
   EXPECT_FALSE(test_handle->HasCommitted());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyUnhandledSyncPasswordReuseUponClearHistoryDeletion) {
+  ASSERT_EQ(0, GetSizeofUnhandledSyncPasswordReuses());
+  GURL url_a("https://www.phishinga.com");
+  GURL url_b("https://www.phishingb.com");
+  GURL url_c("https://www.phishingc.com");
+
+  DictionaryPrefUpdate update(profile()->GetPrefs(),
+                              prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  update->SetKey(Origin::Create(url_a).Serialize(),
+                 base::Value("navigation_id_a"));
+  update->SetKey(Origin::Create(url_b).Serialize(),
+                 base::Value("navigation_id_b"));
+  update->SetKey(Origin::Create(url_c).Serialize(),
+                 base::Value("navigation_id_c"));
+
+  // Delete a https://www.phishinga.com URL.
+  history::URLRows deleted_urls;
+  deleted_urls.push_back(history::URLRow(url_a));
+  deleted_urls.push_back(history::URLRow(GURL("https://www.notinlist.com")));
+
+  service_->RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+      /*all_history=*/false, deleted_urls);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, GetSizeofUnhandledSyncPasswordReuses());
+
+  service_->RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+      /*all_history=*/true, deleted_urls);
+  EXPECT_EQ(0, GetSizeofUnhandledSyncPasswordReuses());
 }
 
 }  // namespace safe_browsing
