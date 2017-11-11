@@ -20,7 +20,7 @@
 class ContextualSearchRankerLoggerImpl;
 class DocumentWritePageLoadMetricsObserver;
 class FromGWSPageLoadMetricsLogger;
-class PluginInfoMessageFilter;
+class PluginInfoHostImpl;
 class ServiceWorkerPageLoadMetricsObserver;
 class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
@@ -90,7 +90,7 @@ class METRICS_EXPORT UkmRecorder {
   friend DocumentWritePageLoadMetricsObserver;
   friend FromGWSPageLoadMetricsLogger;
   friend LocalNetworkRequestsPageLoadMetricsObserver;
-  friend PluginInfoMessageFilter;
+  friend PluginInfoHostImpl;
   friend ServiceWorkerPageLoadMetricsObserver;
   friend SubresourceFilterMetricsObserver;
   friend TestRecordingHelper;

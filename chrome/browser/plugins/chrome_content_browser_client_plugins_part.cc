@@ -5,7 +5,7 @@
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/plugins/plugin_info_message_filter.h"
+#include "chrome/browser/plugins/plugin_info_host_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/channel_info.h"
@@ -41,12 +41,9 @@ void ChromeContentBrowserClientPluginsPart::ExposeInterfacesToRenderer(
     content::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* host) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  auto plugin_info_filter =
-      base::MakeRefCounted<PluginInfoMessageFilter>(host->GetID(), profile);
-  host->AddFilter(plugin_info_filter.get());
-  host->GetChannel()->AddAssociatedInterfaceForIOThread(
-      base::Bind(&PluginInfoMessageFilter::OnPluginInfoHostRequest,
-                 std::move(plugin_info_filter)));
+  host->GetChannel()->AddAssociatedInterfaceForIOThread(base::Bind(
+      &PluginInfoHostImpl::OnPluginInfoHostRequest,
+      base::MakeRefCounted<PluginInfoHostImpl>(host->GetID(), profile)));
 }
 
 bool ChromeContentBrowserClientPluginsPart::

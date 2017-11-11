@@ -215,6 +215,7 @@ using content::PluginInstanceThrottler;
 using content::RenderFrame;
 using content::RenderThread;
 using content::WebPluginInfo;
+using content::WebPluginMimeType;
 using extensions::Extension;
 
 namespace internal {
@@ -242,15 +243,13 @@ const char* const kPredefinedAllowedCompositorOrigins[] = {
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void AppendParams(const std::vector<base::string16>& additional_names,
-                  const std::vector<base::string16>& additional_values,
-                  WebVector<WebString>* existing_names,
-                  WebVector<WebString>* existing_values) {
-  DCHECK(additional_names.size() == additional_values.size());
+void AppendParams(
+    const std::vector<WebPluginMimeType::Param>& additional_params,
+    WebVector<WebString>* existing_names,
+    WebVector<WebString>* existing_values) {
   DCHECK(existing_names->size() == existing_values->size());
-
   size_t existing_size = existing_names->size();
-  size_t total_size = existing_size + additional_names.size();
+  size_t total_size = existing_size + additional_params.size();
 
   WebVector<WebString> names(total_size);
   WebVector<WebString> values(total_size);
@@ -260,9 +259,10 @@ void AppendParams(const std::vector<base::string16>& additional_names,
     values[i] = (*existing_values)[i];
   }
 
-  for (size_t i = 0; i < additional_names.size(); ++i) {
-    names[existing_size + i] = WebString::FromUTF16(additional_names[i]);
-    values[existing_size + i] = WebString::FromUTF16(additional_values[i]);
+  for (size_t i = 0; i < additional_params.size(); ++i) {
+    names[existing_size + i] = WebString::FromUTF16(additional_params[i].name);
+    values[existing_size + i] =
+        WebString::FromUTF16(additional_params[i].value);
   }
 
   existing_names->Swap(names);
@@ -778,8 +778,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
     WebPluginParams params(original_params);
     for (const auto& mime_type : info.mime_types) {
       if (mime_type.mime_type == actual_mime_type) {
-        AppendParams(mime_type.additional_param_names,
-                     mime_type.additional_param_values, &params.attribute_names,
+        AppendParams(mime_type.additional_params, &params.attribute_names,
                      &params.attribute_values);
         break;
       }
@@ -1059,10 +1058,9 @@ GURL ChromeContentRendererClient::GetNaClContentHandlerURL(
   base::string16 nacl_attr = ASCIIToUTF16(kNaClPluginManifestAttribute);
   for (size_t i = 0; i < plugin.mime_types.size(); ++i) {
     if (plugin.mime_types[i].mime_type == actual_mime_type) {
-      const content::WebPluginMimeType& content_type = plugin.mime_types[i];
-      for (size_t i = 0; i < content_type.additional_param_names.size(); ++i) {
-        if (content_type.additional_param_names[i] == nacl_attr)
-          return GURL(content_type.additional_param_values[i]);
+      for (const auto& p : plugin.mime_types[i].additional_params) {
+        if (p.name == nacl_attr)
+          return GURL(p.value);
       }
       break;
     }
@@ -1136,11 +1134,10 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     if (is_extension_unrestricted ||
         (is_nacl_unrestricted && !is_nacl_allowed_by_location)) {
       // Add the special '@dev' attribute.
-      std::vector<base::string16> param_names;
-      std::vector<base::string16> param_values;
-      param_names.push_back(base::ASCIIToUTF16(dev_attribute));
-      param_values.push_back(base::string16());
-      AppendParams(param_names, param_values, &params->attribute_names,
+      std::vector<WebPluginMimeType::Param> mime_params;
+      mime_params.emplace_back(base::ASCIIToUTF16(dev_attribute),
+                               base::string16());
+      AppendParams(mime_params, &params->attribute_names,
                    &params->attribute_values);
     } else {
       // If the params somehow contain '@dev', remove it.
