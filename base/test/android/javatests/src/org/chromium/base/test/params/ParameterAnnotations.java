@@ -23,6 +23,28 @@ public class ParameterAnnotations {
     }
 
     /**
+     * Annotation for methods that should be called before running a test with method parameters.
+     * @see MethodParameter
+     * @see UseMethodParameterAfter
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public @interface UseMethodParameterBefore {
+        String value();
+    }
+
+    /**
+     * Annotation for methods that should be called after running a test with method parameters.
+     * @see MethodParameter
+     * @see UseMethodParameterBefore
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    public @interface UseMethodParameterAfter {
+        String value();
+    }
+
+    /**
      * Annotation for static field of a `List<ParameterSet>` for entire test class
      */
     @Retention(RetentionPolicy.RUNTIME)
