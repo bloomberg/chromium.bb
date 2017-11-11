@@ -12,22 +12,25 @@
 namespace cc {
 class ImageProvider;
 
-// A helper class to decode images inside the provided |flags| and provide a
-// PaintFlags with the decoded images that can directly be used for
-// rasterization.
-// This class should only be used if |flags| has any discardable images.
+// A helper class to modify the flags for raster. This includes alpha folding
+// from SaveLayers and decoding images.
 class CC_PAINT_EXPORT ScopedImageFlags {
  public:
-  // |image_provider| must outlive this class.
+  // |image_provider| and |flags| must outlive this class.
   ScopedImageFlags(ImageProvider* image_provider,
-                   const PaintFlags& flags,
-                   const SkMatrix& ctm);
+                   const PaintFlags* flags,
+                   const SkMatrix& ctm,
+                   uint8_t alpha);
   ~ScopedImageFlags();
 
   // The usage of these flags should not extend beyond the lifetime of this
   // object.
-  PaintFlags* decoded_flags() {
-    return decoded_flags_ ? &decoded_flags_.value() : nullptr;
+  const PaintFlags* flags() const {
+    if (decode_failed_)
+      return nullptr;
+    if (modified_flags_)
+      return &*modified_flags_;
+    return original_flags_;
   }
 
  private:
@@ -51,12 +54,14 @@ class CC_PAINT_EXPORT ScopedImageFlags {
     DISALLOW_COPY_AND_ASSIGN(DecodeStashingImageProvider);
   };
 
-  void DecodeImageShader(const PaintFlags& flags, const SkMatrix& ctm);
+  void DecodeImageShader(const SkMatrix& ctm);
+  void DecodeRecordShader(const SkMatrix& ctm);
+  void DecodeFailed();
 
-  void DecodeRecordShader(const PaintFlags& flags, const SkMatrix& ctm);
-
-  base::Optional<PaintFlags> decoded_flags_;
-  DecodeStashingImageProvider decode_stashing_image_provider_;
+  bool decode_failed_ = false;
+  const PaintFlags* original_flags_;
+  base::Optional<PaintFlags> modified_flags_;
+  base::Optional<DecodeStashingImageProvider> decode_stashing_image_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedImageFlags);
 };

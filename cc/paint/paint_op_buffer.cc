@@ -25,54 +25,6 @@ SkIRect RoundOutRect(const SkRect& rect) {
   return result;
 }
 
-void RasterWithAlpha(const PaintOpWithFlags* op,
-                     SkCanvas* canvas,
-                     const PlaybackParams& params,
-                     uint8_t alpha) {
-  DCHECK(op->IsDrawOp());
-  DCHECK(op->IsPaintOpWithFlags());
-  DCHECK_NE(op->GetType(), PaintOpType::DrawRecord);
-  DCHECK_NE(alpha, 255u);
-
-  // This is an optimization to replicate the behaviour in SkCanvas
-  // which rejects ops that draw outside the current clip. In the
-  // general case we defer this to the SkCanvas but if we will be
-  // using an ImageProvider for pre-decoding images, we can save
-  // performing an expensive decode that will never be rasterized.
-  const bool skip_op = params.image_provider &&
-                       PaintOp::OpHasDiscardableImages(op) &&
-                       PaintOp::QuickRejectDraw(op, canvas);
-  if (skip_op)
-    return;
-
-  // Replace the PaintFlags with a copy that holds the decoded image from the
-  // ImageProvider if it consists of an image shader.
-  base::Optional<ScopedImageFlags> scoped_flags;
-  const PaintFlags* decoded_flags = &op->flags;
-  if (params.image_provider && op->HasDiscardableImagesFromFlags()) {
-    scoped_flags.emplace(params.image_provider, op->flags,
-                         canvas->getTotalMatrix());
-    decoded_flags = scoped_flags.value().decoded_flags();
-
-    // If we failed to decode the flags, skip the op.
-    if (!decoded_flags)
-      return;
-  }
-  DCHECK(decoded_flags->SupportsFoldingAlpha());
-
-  if (scoped_flags.has_value()) {
-    // If we already made a copy, just use that to override the alpha
-    // instead of making another copy.
-    PaintFlags* decoded_flags = scoped_flags.value().decoded_flags();
-    decoded_flags->setAlpha(SkMulDiv255Round(decoded_flags->getAlpha(), alpha));
-    op->RasterWithFlags(canvas, decoded_flags, params);
-  } else {
-    PaintFlags alpha_flags = op->flags;
-    alpha_flags.setAlpha(SkMulDiv255Round(alpha_flags.getAlpha(), alpha));
-    op->RasterWithFlags(canvas, &alpha_flags, params);
-  }
-}
-
 }  // namespace
 
 #define TYPES(M)      \
@@ -1435,17 +1387,7 @@ void PaintOp::DestroyThis() {
 }
 
 bool PaintOpWithFlags::HasDiscardableImagesFromFlags() const {
-  if (!IsDrawOp())
-    return false;
-
-  if (!flags.HasShader())
-    return false;
-  else if (flags.getShader()->shader_type() == PaintShader::Type::kImage)
-    return flags.getShader()->paint_image().IsLazyGenerated();
-  else if (flags.getShader()->shader_type() == PaintShader::Type::kPaintRecord)
-    return flags.getShader()->paint_record()->HasDiscardableImages();
-
-  return false;
+  return IsDrawOp() && flags.HasDiscardableImages();
 }
 
 void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,
@@ -1765,37 +1707,32 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       return;
 
     const PaintOp* op = *iter;
-    if (iter.alpha() != 255) {
-      DCHECK(op->IsPaintOpWithFlags());
-      RasterWithAlpha(static_cast<const PaintOpWithFlags*>(op), canvas, params,
-                      iter.alpha());
+
+    // This is an optimization to replicate the behaviour in SkCanvas
+    // which rejects ops that draw outside the current clip. In the
+    // general case we defer this to the SkCanvas but if we will be
+    // using an ImageProvider for pre-decoding images, we can save
+    // performing an expensive decode that will never be rasterized.
+    const bool skip_op = params.image_provider &&
+                         PaintOp::OpHasDiscardableImages(op) &&
+                         PaintOp::QuickRejectDraw(op, canvas);
+    if (skip_op)
       continue;
-    }
 
-    if (params.image_provider && PaintOp::OpHasDiscardableImages(op)) {
-      if (PaintOp::QuickRejectDraw(op, canvas))
-        continue;
-
-      auto* flags_op = op->IsPaintOpWithFlags()
-                           ? static_cast<const PaintOpWithFlags*>(op)
-                           : nullptr;
-      if (flags_op && flags_op->HasDiscardableImagesFromFlags()) {
-        ScopedImageFlags scoped_flags(params.image_provider, flags_op->flags,
-                                      canvas->getTotalMatrix());
-
-        // Only rasterize the op if we successfully decoded the image.
-        if (scoped_flags.decoded_flags()) {
-          flags_op->RasterWithFlags(canvas, scoped_flags.decoded_flags(),
-                                    params);
-        }
-        continue;
-      }
+    if (op->IsPaintOpWithFlags()) {
+      const auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
+      ScopedImageFlags scoped_flags(params.image_provider, &flags_op->flags,
+                                    canvas->getTotalMatrix(), iter.alpha());
+      if (scoped_flags.flags())
+        flags_op->RasterWithFlags(canvas, scoped_flags.flags(), params);
+      continue;
     }
 
     // TODO(enne): skip SaveLayer followed by restore with nothing in
     // between, however SaveLayer with image filters on it (or maybe
     // other PaintFlags options) are not a noop.  Figure out what these
     // are so we can skip them correctly.
+    DCHECK_EQ(iter.alpha(), 255);
     op->Raster(canvas, params);
   }
 }
