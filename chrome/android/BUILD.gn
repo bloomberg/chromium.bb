@@ -280,6 +280,7 @@ android_library("chrome_java") {
     "//chrome:offline_pages_enum_javagen",
     "//chrome:page_info_connection_type_javagen",
     "//chrome:page_info_action_javagen",
+    "//chrome:partner_bookmarks_javagen",
     "//chrome:payments_journey_logger_enum_javagen",
     "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
