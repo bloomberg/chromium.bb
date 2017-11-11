@@ -19,6 +19,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -587,9 +588,15 @@ class TaskSchedulerSingleThreadTaskRunnerManagerStartTest
 
 }  // namespace
 
+// TODO(crbug.com/784051): Reenable when no longer flaky.
+#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
+#define MAYBE_PostTaskBeforeStart FLAKY_PostTaskBeforeStart
+#else
+#define MAYBE_PostTaskBeforeStart PostTaskBeforeStart
+#endif
 // Verify that a task posted before Start() doesn't run until Start() is called.
 TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
-       PostTaskBeforeStart) {
+       MAYBE_PostTaskBeforeStart) {
   AtomicFlag manager_started;
   WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);
