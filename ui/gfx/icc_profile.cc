@@ -23,174 +23,29 @@ const uint64_t ICCProfile::test_id_color_spin_ = 2;
 const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
 const uint64_t ICCProfile::test_id_srgb_ = 4;
 
-// A MRU cache of ICC profiles. The cache key is a uin64_t which a
-// gfx::ColorSpace may use to refer back to an ICC profile in the cache. The
-// data cached for each profile is the gfx::ICCProfile structure (which includes
-// the associated gfx::ColorSpace approximations and SkColorSpace structures)
-// and whether or not the ICC profile has been histogrammed.
-class ICCProfileCache {
- public:
-  // Allow keeping around a maximum of 16 cached ICC profiles. Beware that
-  // we will do a linear search thorugh currently-cached ICC profiles,
-  // when creating a new ICC profile.
-  static const size_t kMaxCachedICCProfiles = 16;
-
-  ICCProfileCache() : id_to_icc_profile_mru_(kMaxCachedICCProfiles) {}
-  ~ICCProfileCache() {}
-
-  // Add |icc_profile| to the cache. If |icc_profile| does not have an id set
-  // yet, assign an id to it.
-  void InsertAndSetIdIfNeeded(ICCProfile* icc_profile) {
-    base::AutoLock lock(lock_);
-
-    if (FindByIdUnderLock(icc_profile->id_, icc_profile))
-      return;
-
-    if (FindByDataUnderLock(icc_profile->data_.data(),
-                            icc_profile->data_.size(), icc_profile)) {
-      return;
-    }
-
-    if (!icc_profile->id_)
-      icc_profile->id_ = next_unused_id_++;
-
-    Entry entry;
-    entry.icc_profile = *icc_profile;
-    id_to_icc_profile_mru_.Put(icc_profile->id_, entry);
-  }
-
-  // We maintain UMA histograms of display ICC profiles. Only histogram a
-  // display once for each |display_id| (because we will re-read the same
-  // ICC profile repeatedly when reading other display profiles, which will
-  // skew samples). Return true if we need to histogram this profile for
-  // |display_id|, and ensure that all future calls will return false for
-  // |display_id|.
-  bool GetAndSetNeedsHistogram(uint64_t display_id,
-                               const ICCProfile& icc_profile) {
-    base::AutoLock lock(lock_);
-
-    // If we don't find the profile in the cache, don't histogram it.
-    auto found = id_to_icc_profile_mru_.Get(icc_profile.id_);
-    if (found == id_to_icc_profile_mru_.end())
-      return false;
-
-    // If we have already histogrammed this display, don't histogram it.
-    std::set<int64_t>& histogrammed_display_ids =
-        found->second.histogrammed_display_ids;
-    if (histogrammed_display_ids.count(display_id))
-      return false;
-
-    // Histogram this display, and mark that we have done so.
-    histogrammed_display_ids.insert(display_id);
-    return true;
-  }
-
-  // Move this ICC profile to the most recently used end of the cache,
-  // re-inserting if needed.
-  void TouchEntry(const ICCProfile& icc_profile) {
-    base::AutoLock lock(lock_);
-
-    if (!icc_profile.id_)
-      return;
-
-    // Look up the profile by id to move it to the front of the MRU.
-    auto found = id_to_icc_profile_mru_.Get(icc_profile.id_);
-    if (found != id_to_icc_profile_mru_.end())
-      return;
-
-    // Look up the profile by its data. If there is a new entry for the same
-    // data, don't add a duplicate.
-    if (FindByDataUnderLock(icc_profile.data_.data(), icc_profile.data_.size(),
-                            nullptr)) {
-      return;
-    }
-
-    // If the entry was not found, insert it.
-    Entry entry;
-    entry.icc_profile = icc_profile;
-    id_to_icc_profile_mru_.Put(icc_profile.id_, entry);
-  }
-
-  // Look up an ICC profile in the cache by its data (to ensure that the same
-  // data gets the same id every time). On success, return true and populate
-  // |icc_profile| with the associated profile.
-  bool FindByData(const void* data, size_t size, ICCProfile* icc_profile) {
-    base::AutoLock lock(lock_);
-    return FindByDataUnderLock(data, size, icc_profile);
-  }
-
-  // Look up an ICC profile in the cache by its id. On success, return true and
-  // populate |icc_profile| with the associated profile.
-  bool FindById(uint64_t id, ICCProfile* icc_profile) {
-    base::AutoLock lock(lock_);
-    return FindByIdUnderLock(id, icc_profile);
-  }
-
- private:
-  struct Entry {
-    ICCProfile icc_profile;
-
-    // The set of display ids which have have caused this ICC profile to be
-    // recorded in UMA histograms. Only record an ICC profile once per display
-    // id (since the same profile will be re-read repeatedly, e.g, when displays
-    // are resized).
-    std::set<int64_t> histogrammed_display_ids;
-  };
-
-  // Body for FindById, executed when the cache lock is already held.
-  bool FindByIdUnderLock(uint64_t id, ICCProfile* icc_profile) {
-    lock_.AssertAcquired();
-    if (!id)
-      return false;
-
-    auto found = id_to_icc_profile_mru_.Get(id);
-    if (found == id_to_icc_profile_mru_.end())
-      return false;
-
-    *icc_profile = found->second.icc_profile;
-    return true;
-  }
-
-  // Body for FindByData, executed when the cache lock is already held.
-  bool FindByDataUnderLock(const void* data,
-                           size_t size,
-                           ICCProfile* icc_profile) {
-    lock_.AssertAcquired();
-    if (size == 0)
-      return false;
-
-    for (const auto& id_entry_pair : id_to_icc_profile_mru_) {
-      const ICCProfile& cached_profile = id_entry_pair.second.icc_profile;
-      const std::vector<char>& iter_data = cached_profile.data_;
-      if (iter_data.size() != size || memcmp(data, iter_data.data(), size))
-        continue;
-
-      if (icc_profile) {
-        *icc_profile = cached_profile;
-        id_to_icc_profile_mru_.Get(cached_profile.id_);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  // Start from-ICC-data IDs at the end of the hard-coded test id list above.
-  uint64_t next_unused_id_ = 10;
-  base::MRUCache<uint64_t, Entry> id_to_icc_profile_mru_;
-
-  // Lock that must be held to access |id_to_icc_profile_mru_| and
-  // |next_unused_id_|.
-  base::Lock lock_;
-};
-
 namespace {
 
-static base::LazyInstance<ICCProfileCache>::DestructorAtExit g_cache =
+const uint64_t kEmptyProfileId = 5;
+
+// Start from-ICC-data IDs at the end of the hard-coded test id list above.
+uint64_t g_next_unused_id = 10;
+
+using ProfileCacheBase = base::MRUCache<uint64_t, ICCProfile>;
+class ProfileCache : public ProfileCacheBase {
+ public:
+  static const size_t kMaxCachedICCProfiles = 16;
+  ProfileCache() : ProfileCacheBase(kMaxCachedICCProfiles) {}
+};
+base::LazyInstance<ProfileCache>::DestructorAtExit g_cache =
+    LAZY_INSTANCE_INITIALIZER;
+
+// Lock that must be held to access |g_cache| and |g_next_unused_id|.
+base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-ICCProfile::AnalyzeResult ICCProfile::Initialize() {
+ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
   // Start out with no parametric data.
 
   // Parse the profile and attempt to create a SkColorSpaceXform out of it.
@@ -270,11 +125,19 @@ ICCProfile& ICCProfile::operator=(const ICCProfile& other) = default;
 ICCProfile::~ICCProfile() = default;
 
 bool ICCProfile::operator==(const ICCProfile& other) const {
-  return data_ == other.data_;
+  if (!internals_ && !other.internals_)
+    return true;
+  if (internals_ && other.internals_)
+    return internals_->data_ == other.internals_->data_;
+  return false;
 }
 
 bool ICCProfile::operator!=(const ICCProfile& other) const {
   return !(*this == other);
+}
+
+bool ICCProfile::IsValid() const {
+  return internals_ ? internals_->is_valid_ : false;
 }
 
 // static
@@ -283,79 +146,132 @@ ICCProfile ICCProfile::FromData(const void* data, size_t size) {
 }
 
 // static
-ICCProfile ICCProfile::FromDataWithId(const void* data,
+ICCProfile ICCProfile::FromDataWithId(const void* data_as_void,
                                       size_t size,
                                       uint64_t new_profile_id) {
-  ICCProfile icc_profile;
+  const char* data_as_byte = reinterpret_cast<const char*>(data_as_void);
+  std::vector<char> new_profile_data(data_as_byte, data_as_byte + size);
 
-  if (!size)
-    return icc_profile;
+  base::AutoLock lock(g_lock.Get());
 
-  // Create a new cached id and add it to the cache.
-  icc_profile.id_ = new_profile_id;
-  const char* data_as_char = reinterpret_cast<const char*>(data);
-  icc_profile.data_.insert(icc_profile.data_.begin(), data_as_char,
-                           data_as_char + size);
-  icc_profile.ComputeColorSpaceAndCache();
-  return icc_profile;
-}
+  if (new_profile_id) {
+    // If this has specified an id, see if we have an entry for it (and ensure
+    // that that entry have the same data).
+    auto found = g_cache.Get().Get(new_profile_id);
+    if (found != g_cache.Get().end()) {
+      const ICCProfile& cached_profile = found->second;
+      DCHECK(new_profile_data == cached_profile.internals_->data_);
+      return cached_profile;
+    }
+  }
 
-// static
-const std::vector<char>& ICCProfile::GetData() const {
-  return data_;
+  // See if there is already an entry with the same data. If so, return that
+  // entry (even if that means ignoring the profile id that we were provided).
+  for (const auto& iter : g_cache.Get()) {
+    const ICCProfile& iter_profile = iter.second;
+    if (new_profile_data == iter_profile.internals_->data_)
+      return iter_profile;
+  }
+
+  // Create a new id for this data if one was not specified. Always ensure that
+  // the emptry profile have the same id.
+  if (!new_profile_id) {
+    if (size == 0)
+      new_profile_id = kEmptyProfileId;
+    else
+      new_profile_id = g_next_unused_id++;
+  }
+
+  // Create a new profile for this data.
+  ICCProfile new_profile;
+  new_profile.internals_ = base::MakeRefCounted<Internals>(
+      std::move(new_profile_data), new_profile_id);
+  g_cache.Get().Put(new_profile_id, new_profile);
+  return new_profile;
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
-  g_cache.Get().TouchEntry(*this);
+  if (!internals_)
+    return ColorSpace();
 
-  if (!is_valid_)
+  TouchCacheEntry();
+
+  if (!internals_->is_valid_)
     return ColorSpace();
 
   gfx::ColorSpace color_space;
-  if (is_parametric_) {
+  if (internals_->is_parametric_) {
     color_space = GetParametricColorSpace();
-    color_space.icc_profile_sk_color_space_ = sk_color_space_;
+    color_space.icc_profile_sk_color_space_ = internals_->sk_color_space_;
   } else {
-    color_space =
-        ColorSpace::CreateCustom(to_XYZD50_, ColorSpace::TransferID::ICC_BASED);
-    color_space.icc_profile_id_ = id_;
-    color_space.icc_profile_sk_color_space_ = sk_color_space_;
+    color_space = ColorSpace::CreateCustom(internals_->to_XYZD50_,
+                                           ColorSpace::TransferID::ICC_BASED);
+    color_space.icc_profile_id_ = internals_->id_;
+    color_space.icc_profile_sk_color_space_ = internals_->sk_color_space_;
   }
   return color_space;
 }
 
 ColorSpace ICCProfile::GetParametricColorSpace() const {
-  g_cache.Get().TouchEntry(*this);
+  if (!internals_)
+    return ColorSpace();
 
-  if (!is_valid_)
+  TouchCacheEntry();
+
+  if (!internals_->is_valid_)
     return ColorSpace();
 
   ColorSpace color_space =
-      sk_color_space_->isSRGB()
+      internals_->sk_color_space_->isSRGB()
           ? ColorSpace::CreateSRGB()
-          : ColorSpace::CreateCustom(to_XYZD50_, transfer_fn_);
-  if (is_parametric_)
-    color_space.icc_profile_id_ = id_;
+          : ColorSpace::CreateCustom(internals_->to_XYZD50_,
+                                     internals_->transfer_fn_);
+  if (internals_->is_parametric_)
+    color_space.icc_profile_id_ = internals_->id_;
   return color_space;
 }
 
 // static
 bool ICCProfile::FromId(uint64_t id,
                         ICCProfile* icc_profile) {
-  return g_cache.Get().FindById(id, icc_profile);
+  base::AutoLock lock(g_lock.Get());
+
+  auto found = g_cache.Get().Get(id);
+  if (found != g_cache.Get().end()) {
+    *icc_profile = found->second;
+    return true;
+  }
+  *icc_profile = ICCProfile();
+  return false;
 }
 
-void ICCProfile::ComputeColorSpaceAndCache() {
+void ICCProfile::TouchCacheEntry() const {
+  if (!internals_)
+    return;
+  base::AutoLock lock(g_lock.Get());
+
+  // Query for an existing cache entry.
+  auto found = g_cache.Get().Get(internals_->id_);
+  if (found != g_cache.Get().end())
+    return;
+
+  // Check if there are any cache entries with the same data, and refuse to add
+  // a duplicate entry with the same data but a different id.
+  // TODO(ccameron): This is a bit odd, but this preserves existing behavior.
+  for (const auto& iter : g_cache.Get()) {
+    const ICCProfile& iter_profile = iter.second;
+    if (internals_->data_ == iter_profile.internals_->data_)
+      return;
+  }
+
+  // Insert a new cache entry if none existed.
+  g_cache.Get().Put(internals_->id_, *this);
+}
+
+ICCProfile::Internals::Internals(std::vector<char> data, uint64_t id)
+    : id_(id), data_(std::move(data)) {
   // Early out for empty entries.
   if (data_.empty())
-    return;
-
-  // If this id already exists in the cache, copy |this| from the cache entry.
-  if (g_cache.Get().FindById(id_, this))
-    return;
-
-  // If this data already exists in the cache, copy |this| from the cache entry.
-  if (g_cache.Get().FindByData(data_.data(), data_.size(), this))
     return;
 
   // Parse the ICC profile
@@ -384,14 +300,21 @@ void ICCProfile::ComputeColorSpaceAndCache() {
       is_parametric_ = false;
       break;
   }
-
-  // Add to the cache.
-  g_cache.Get().InsertAndSetIdIfNeeded(this);
 }
 
+ICCProfile::Internals::~Internals() {}
+
 void ICCProfile::HistogramDisplay(int64_t display_id) const {
-  if (!g_cache.Get().GetAndSetNeedsHistogram(display_id, *this))
+  if (!internals_)
     return;
+  internals_->HistogramDisplay(display_id);
+}
+
+void ICCProfile::Internals::HistogramDisplay(int64_t display_id) {
+  // Ensure that we histogram this profile only once per display id.
+  if (histogrammed_display_ids_.count(display_id))
+    return;
+  histogrammed_display_ids_.insert(display_id);
 
   UMA_HISTOGRAM_ENUMERATION("Blink.ColorSpace.Destination.ICCResult",
                             analyze_result_, kICCProfileAnalyzeLast);

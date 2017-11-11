@@ -550,7 +550,7 @@ bool ColorSpace::GetICCProfileData(std::vector<char>* output_data) const {
   // If this was created from an ICC profile, retrieve that exact profile.
   ICCProfile icc_profile;
   if (ICCProfile::FromId(icc_profile_id_, &icc_profile)) {
-    *output_data = icc_profile.data_;
+    *output_data = icc_profile.internals_->data_;
     return true;
   }
 
