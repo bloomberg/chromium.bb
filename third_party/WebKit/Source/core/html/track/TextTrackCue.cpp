@@ -54,9 +54,9 @@ void TextTrackCue::CueWillChange() {
     track_->CueWillChange(this);
 }
 
-void TextTrackCue::CueDidChange() {
+void TextTrackCue::CueDidChange(CueMutationAffectsOrder affects_order) {
   if (track_)
-    track_->CueDidChange(this);
+    track_->CueDidChange(this, affects_order == kCueMutationAffectsOrder);
 }
 
 TextTrack* TextTrackCue::track() const {
@@ -87,7 +87,7 @@ void TextTrackCue::setStartTime(double value) {
 
   CueWillChange();
   start_time_ = value;
-  CueDidChange();
+  CueDidChange(kCueMutationAffectsOrder);
 }
 
 void TextTrackCue::setEndTime(double value) {
@@ -97,7 +97,7 @@ void TextTrackCue::setEndTime(double value) {
 
   CueWillChange();
   end_time_ = value;
-  CueDidChange();
+  CueDidChange(kCueMutationAffectsOrder);
 }
 
 void TextTrackCue::setPauseOnExit(bool value) {

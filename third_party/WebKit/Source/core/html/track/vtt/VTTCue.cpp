@@ -237,8 +237,8 @@ String VTTCue::ToString() const {
 }
 #endif
 
-void VTTCue::CueDidChange() {
-  TextTrackCue::CueDidChange();
+void VTTCue::CueDidChange(CueMutationAffectsOrder affects_order) {
+  TextTrackCue::CueDidChange(affects_order);
   display_tree_should_change_ = true;
 }
 

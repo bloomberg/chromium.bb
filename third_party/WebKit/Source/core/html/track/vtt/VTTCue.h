@@ -161,7 +161,8 @@ class VTTCue final : public TextTrackCue {
 
   VTTCueBox* GetDisplayTree();
 
-  void CueDidChange() override;
+  void CueDidChange(
+      CueMutationAffectsOrder = kCueMutationDoesNotAffectOrder) override;
 
   void CreateVTTNodeTree();
   void CopyVTTNodeToDOMTree(ContainerNode* vtt_node, ContainerNode* root);
