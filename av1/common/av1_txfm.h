@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 #define MAX_TXFM_STAGE_NUM 12
+#define DIVIDE_AND_ROUND(x, y) (((x) + ((y) >> 1)) / (y))
 
 static const int cos_bit_min = 10;
 static const int cos_bit_max = 16;
@@ -237,15 +238,43 @@ static INLINE TX_TYPE av1_rotate_tx_type(TX_TYPE tx_type) {
 #endif  // CONFIG_TXMG
 
 #if CONFIG_MRC_TX
+static INLINE void sum1x5(uint16_t *input, uint16_t *output, int dim) {
+  memset(output, 0, sizeof(*output) * dim);
+  // Border padding
+  input[dim + 2] = input[dim + 3] = input[dim + 1];
+  input[0] = input[1] = input[2];
+  input += 2;
+
+  for (int i = 0; i < dim; i++)
+    for (int j = -2; j < 3; j++) output[i] += input[i + j];
+}
+
+// Smooths the residual over a 5x5 window and thresholds to produce a mask
 static INLINE int get_mrc_diff_mask_inter(const int16_t *diff, int diff_stride,
                                           uint8_t *mask, int mask_stride,
                                           int width, int height) {
-  // placeholder mask generation function
   assert(SIGNAL_MRC_MASK_INTER);
   int n_masked_vals = 0;
+  uint16_t tmp_out[MAX_SB_SIZE], tmp_in[MAX_SB_SIZE + 4], out[MAX_SB_SQUARE];
+  const uint16_t thresh = 10;
+
+  // Rows
   for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j)
+      tmp_in[j + 2] = abs(diff[i * diff_stride + j]);
+    sum1x5(tmp_in, tmp_out, width);
     for (int j = 0; j < width; ++j) {
-      mask[i * mask_stride + j] = diff[i * diff_stride + j] > 100 ? 1 : 0;
+      out[i * MAX_SB_SIZE + j] = (uint16_t)DIVIDE_AND_ROUND(tmp_out[j], 5);
+    }
+  }
+
+  // Columns
+  for (int j = 0; j < width; ++j) {
+    for (int i = 0; i < height; ++i) tmp_in[i + 2] = out[i * MAX_SB_SIZE + j];
+    sum1x5(tmp_in, tmp_out, height);
+    for (int i = 0; i < height; ++i) {
+      mask[i * mask_stride + j] =
+          (uint8_t)DIVIDE_AND_ROUND(tmp_out[i], 5) > thresh;
       n_masked_vals += mask[i * mask_stride + j];
     }
   }

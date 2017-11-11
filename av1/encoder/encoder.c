@@ -4453,8 +4453,6 @@ static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
           dimension_is_ok(oheight, rsz->resize_height, rsz->superres_denom));
 }
 
-#define DIVIDE_AND_ROUND(x, y) (((x) + ((y) >> 1)) / (y))
-
 static int validate_size_scales(RESIZE_MODE resize_mode,
                                 SUPERRES_MODE superres_mode, int owidth,
                                 int oheight, size_params_type *rsz) {
@@ -4510,7 +4508,6 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
   }
   return dimensions_are_ok(owidth, oheight, rsz);
 }
-#undef DIVIDE_AND_ROUND
 #endif  // CONFIG_FRAME_SUPERRES
 
 // Calculates resize and superres params for next frame
