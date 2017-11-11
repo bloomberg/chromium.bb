@@ -557,6 +557,17 @@ void CreateSentinelIfNeeded() {
     internal::CreateSentinel();
 }
 
+base::Time GetFirstRunSentinelCreationTime() {
+  base::FilePath first_run_sentinel;
+  base::Time first_run_sentinel_creation_time = base::Time();
+  if (first_run::internal::GetFirstRunSentinelFilePath(&first_run_sentinel)) {
+    base::File::Info info;
+    if (base::GetFileInfo(first_run_sentinel, &info))
+      first_run_sentinel_creation_time = info.creation_time;
+  }
+  return first_run_sentinel_creation_time;
+}
+
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)

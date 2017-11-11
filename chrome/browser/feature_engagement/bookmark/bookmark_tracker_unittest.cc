@@ -12,9 +12,11 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/feature_engagement/feature_tracker.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -147,6 +149,8 @@ class BookmarkTrackerTest : public testing::Test {
         "name:bookmark_clicked;comparator:any;window:3650;storage:3650";
     bookmark_params["session_rate"] = "<=3";
     bookmark_params["availability"] = "any";
+    bookmark_params["x_date_released_in_seconds"] = base::DoubleToString(
+        first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
 
     SetFeatureParams(kIPHBookmarkFeature, bookmark_params);
 

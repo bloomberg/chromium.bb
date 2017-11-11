@@ -7,14 +7,17 @@
 #include <memory>
 
 #include "base/feature_list.h"
+#include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/feature_engagement/session_duration_updater.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -55,6 +58,8 @@ class TestFeatureTracker : public FeatureTracker {
   base::TimeDelta GetSessionTimeRequiredToShowWrapper() {
     return GetSessionTimeRequiredToShow();
   }
+
+  bool IsNewUserWrapper() { return IsNewUser(); }
 
   void OnSessionTimeMet() override {}
 
@@ -133,10 +138,10 @@ TEST_F(FeatureTrackerTest, TestAddAndRemoveObservers) {
   EXPECT_FALSE(mock_feature_tracker_->IsObserving());
 }
 
-class FeatureTrackerMinutesTest : public testing::Test {
+class FeatureTrackerParamsTest : public testing::Test {
  public:
-  FeatureTrackerMinutesTest() = default;
-  ~FeatureTrackerMinutesTest() override = default;
+  FeatureTrackerParamsTest() = default;
+  ~FeatureTrackerParamsTest() override = default;
 
   // testing::Test:
   void SetUp() override {
@@ -189,12 +194,12 @@ class FeatureTrackerMinutesTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  DISALLOW_COPY_AND_ASSIGN(FeatureTrackerMinutesTest);
+  DISALLOW_COPY_AND_ASSIGN(FeatureTrackerParamsTest);
 };
 
 // Test that session time defaults to the time in the constructor if there is no
 // field param value.
-TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithNoFieldTrialValue) {
+TEST_F(FeatureTrackerParamsTest, TestSessionTimeWithNoFieldTrialValue) {
   std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
       std::make_unique<testing::StrictMock<MockTestFeatureTracker>>(
           testing_profile_manager_->CreateTestingProfile(kTestProfileName));
@@ -206,7 +211,7 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithNoFieldTrialValue) {
 }
 
 // Test that session time defaults to the valid time from the field param value.
-TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithValidFieldTrialValue) {
+TEST_F(FeatureTrackerParamsTest, TestSessionTimeWithValidFieldTrialValue) {
   std::map<std::string, std::string> new_tab_params;
   new_tab_params["x_minutes"] = "1";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
@@ -223,7 +228,7 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithValidFieldTrialValue) {
 
 // Test that session time defaults to the time in the constructor if the field
 // param value is empty string.
-TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithEmptyFieldTrialValue) {
+TEST_F(FeatureTrackerParamsTest, TestSessionTimeWithEmptyFieldTrialValue) {
   std::map<std::string, std::string> new_tab_params;
   new_tab_params["x_minutes"] = "";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
@@ -240,7 +245,7 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithEmptyFieldTrialValue) {
 
 // Test that session time defaults to the time in the constructor if the field
 // param value is invalid.
-TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithInvalidFieldTrialValue) {
+TEST_F(FeatureTrackerParamsTest, TestSessionTimeWithInvalidFieldTrialValue) {
   std::map<std::string, std::string> new_tab_params;
   new_tab_params["x_minutes"] = "12g4";
   SetFeatureParams(kIPHNewTabFeature, new_tab_params);
@@ -253,6 +258,81 @@ TEST_F(FeatureTrackerMinutesTest, TestSessionTimeWithInvalidFieldTrialValue) {
             base::TimeDelta::FromMinutes(kTestTimeDeltaInMinutes));
 
   mock_feature_tracker.get()->RemoveSessionDurationObserver();
+}
+
+// Test that the user is new if the creation time of the first run sentinel is
+// after the enabled time of the experiment.
+TEST_F(FeatureTrackerParamsTest, TestIsNewUser_DefaultTime) {
+  // Setting the experiment timestamp equal to the first run sentinel timestamp.
+  std::map<std::string, std::string> new_tab_params;
+  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+      first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
+  SetFeatureParams(kIPHNewTabFeature, new_tab_params);
+
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_TRUE(mock_feature_tracker->IsNewUserWrapper());
+}
+
+// Test that the user is not considered a new user if the creation time is more
+// than 24 hours ago.
+TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_DefaultTime) {
+  // Setting the experiment timestamp equal to one second older than what is
+  // considered a new user.
+  std::map<std::string, std::string> new_tab_params;
+  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+      first_run::GetFirstRunSentinelCreationTime().ToDoubleT() +
+      base::TimeDelta::FromHours(24).InSeconds() + 1);
+  SetFeatureParams(kIPHNewTabFeature, new_tab_params);
+
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_FALSE(mock_feature_tracker->IsNewUserWrapper());
+}
+
+// Test that the user is not considered a new user if the creation time is more
+// than the custom time threshold limit which in this case is 28 hours ago.
+TEST_F(FeatureTrackerParamsTest, TestIsNewUser_CustomTime) {
+  std::map<std::string, std::string> new_tab_params;
+  new_tab_params["x_new_user_creation_time_threshold_in_seconds"] =
+      base::DoubleToString(base::TimeDelta::FromHours(28).InSeconds());
+
+  // Setting the experiment timestamp equal to the limit of what is considered a
+  // new user.
+  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+      first_run::GetFirstRunSentinelCreationTime().ToDoubleT());
+  SetFeatureParams(kIPHNewTabFeature, new_tab_params);
+
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_TRUE(mock_feature_tracker->IsNewUserWrapper());
+}
+
+// Test that the user is not considered a new user if the creation time is more
+// than the custom time threshold limit which in this case is 28 hours ago.
+TEST_F(FeatureTrackerParamsTest, TestIsNotNewUser_CustomTime) {
+  std::map<std::string, std::string> new_tab_params;
+  new_tab_params["x_new_user_creation_time_threshold_in_seconds"] =
+      base::DoubleToString(base::TimeDelta::FromHours(28).InSeconds());
+
+  // Setting the experiment timestamp equal to one second older than what is
+  // considered a new user.
+  new_tab_params["x_date_released_in_seconds"] = base::Int64ToString(
+      first_run::GetFirstRunSentinelCreationTime().ToDoubleT() +
+      base::TimeDelta::FromHours(28).InSeconds() + 1);
+  SetFeatureParams(kIPHNewTabFeature, new_tab_params);
+
+  std::unique_ptr<MockTestFeatureTracker> mock_feature_tracker =
+      base::MakeUnique<testing::StrictMock<MockTestFeatureTracker>>(
+          testing_profile_manager_->CreateTestingProfile(kTestProfileName));
+
+  EXPECT_FALSE(mock_feature_tracker->IsNewUserWrapper());
 }
 
 }  // namespace

@@ -84,12 +84,16 @@ IN_PROC_BROWSER_TEST_F(NewTabTrackerBrowserTest, TestShowPromo) {
   if (IsExperimentalTabStripEnabled())
     return;
 
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // Bypassing the 2 hour active session time requirement.
   EXPECT_CALL(*feature_engagement_tracker_,
               NotifyEvent(events::kNewTabSessionTimeMet));
-  NewTabTrackerFactory::GetInstance()
-      ->GetForProfile(browser()->profile())
-      ->OnSessionTimeMet();
+  auto* new_tab_tracker =
+      NewTabTrackerFactory::GetInstance()->GetForProfile(browser()->profile());
+  new_tab_tracker->OnSessionTimeMet();
+  new_tab_tracker
+      ->UseDefaultForChromeVariationConfirgurationReleaseTimeForTesting();
 
   // Navigate in the omnibox.
   EXPECT_CALL(*feature_engagement_tracker_,
