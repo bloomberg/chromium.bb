@@ -248,7 +248,9 @@ void GLImageNativePixmap::Flush() {
       EGL_NONE,
   };
   if (!eglImageFlushExternalEXT(display, egl_image_, attribs)) {
-    LOG(ERROR) << "Failed to flush rendering";
+    // TODO(reveman): Investigate why we're hitting the following log
+    // statement on ARM devices. b/63364517
+    DLOG(WARNING) << "Failed to flush rendering";
     return;
   }
 }
