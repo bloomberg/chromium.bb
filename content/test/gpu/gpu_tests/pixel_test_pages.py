@@ -523,6 +523,54 @@ def ExperimentalCanvasFeaturesPages(base_name):
 ]
 
 
+# Only add these tests on platforms where SwiftShader is enabled.
+# Currently this is Windows and Linux.
+def SwiftShaderPages(base_name):
+  browser_args = ['--disable-gpu']
+  suffix = "_SwiftShader"
+  return [
+    PixelTestPage(
+      'pixel_canvas2d.html',
+      base_name + '_Canvas2DRedBox' + suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_css3d.html',
+      base_name + '_CSS3DBlueBox' + suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_webgl_aa_alpha.html',
+      base_name + '_WebGLGreenTriangle_AA_Alpha' + suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+  ]
+
+# Test rendering where GPU process is blocked.
+def NoGpuProcessPages(base_name):
+  browser_args = ['--disable-gpu', '--disable-software-rasterizer']
+  suffix = "_NoGpuProcess"
+  return [
+    PixelTestPage(
+      'pixel_canvas2d.html',
+      base_name + '_Canvas2DRedBox' + suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_css3d.html',
+      base_name + '_CSS3DBlueBox' + suffix,
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      browser_args=browser_args),
+  ]
+
 # Pages that should be run with various macOS specific command line
 # arguments.
 def MacSpecificPages(base_name):
