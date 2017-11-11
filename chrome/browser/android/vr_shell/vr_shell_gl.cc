@@ -243,6 +243,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
+
   unsigned int textures[2];
   glGenTextures(2, textures);
   unsigned int content_texture_id = textures[0];
@@ -479,11 +482,15 @@ void VrShellGl::InitializeRenderer() {
 
   specs_[kFramePrimaryBuffer].SetSamples(
       web_vr_mode_ ? kNumSamplesPerPixelWebVr : kNumSamplesPerPixelBrowserUi);
+  specs_[kFramePrimaryBuffer].SetDepthStencilFormat(
+      GVR_DEPTH_STENCIL_FORMAT_NONE);
 
   specs_[kFrameWebVrBrowserUiBuffer].SetSize(
       {render_size_default.width / kWebVrBrowserUiSizeFactor,
        render_size_default.height / kWebVrBrowserUiSizeFactor});
   specs_[kFrameWebVrBrowserUiBuffer].SetSamples(2);
+  specs_[kFrameWebVrBrowserUiBuffer].SetDepthStencilFormat(
+      GVR_DEPTH_STENCIL_FORMAT_NONE);
   render_size_webvr_ui_ = {
       render_size_default.width / kWebVrBrowserUiSizeFactor,
       render_size_default.height / kWebVrBrowserUiSizeFactor};
@@ -1035,8 +1042,6 @@ void VrShellGl::DrawWebVr() {
   TRACE_EVENT0("gpu", "VrShellGl::DrawWebVr");
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
   glDisable(GL_CULL_FACE);
-  glDepthMask(GL_FALSE);
-  glDisable(GL_DEPTH_TEST);
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_BLEND);
   glDisable(GL_POLYGON_OFFSET_FILL);

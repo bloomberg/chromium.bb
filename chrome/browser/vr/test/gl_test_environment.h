@@ -24,7 +24,6 @@ class GlTestEnvironment {
   scoped_refptr<gl::GLContext> context_;
   GLuint vao_ = 0;
   GLuint frame_buffer_ = 0;
-  GLuint depth_render_buffer_ = 0;
 };
 
 }  // namespace vr
