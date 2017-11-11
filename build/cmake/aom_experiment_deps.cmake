@@ -99,7 +99,7 @@ macro (fix_experiment_configs)
 
   if (CONFIG_FRAME_REFS)
     if (NOT CONFIG_FRAME_MARKER)
-	    change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_FRAME_REFS)
+      change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_FRAME_REFS)
     endif ()
   endif ()
 
