@@ -42,7 +42,7 @@ static constexpr float kAudioPermissionPromptWidth = 0.552f * kContentDistance;
 static constexpr float kAudioPermissionPromptHeight = 0.2f * kContentDistance;
 
 static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
-static constexpr float kExitPromptBackplaneSize = 1000.0;
+static constexpr float kPromptBackplaneSize = 1000.0;
 
 // Distance-independent milimeter size of the URL bar.
 static constexpr float kUrlBarWidthDMM = 0.672f;

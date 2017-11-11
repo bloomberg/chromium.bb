@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/exclusive_screen_toast.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
-#include "chrome/browser/vr/elements/exit_prompt_backplane.h"
 #include "chrome/browser/vr/elements/full_screen_rect.h"
 #include "chrome/browser/vr/elements/grid.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
@@ -635,7 +634,7 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   auto hit_target = base::MakeUnique<InvisibleHitTarget>();
   hit_target->set_name(kSpeechRecognitionResultBackplane);
   hit_target->set_draw_phase(kPhaseForeground);
-  hit_target->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  hit_target->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
   hit_target->SetTranslate(0.0, 0.0, kTextureOffset);
   scene_->AddUiElement(kSpeechRecognitionResult, std::move(hit_target));
 
@@ -688,13 +687,17 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   microphone_icon->SetSize(kCloseButtonWidth, kCloseButtonHeight);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(microphone_icon));
 
-  auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
-      &UiSceneManager::OnExitRecognizingSpeechClicked, base::Unretained(this)));
+  auto backplane = base::MakeUnique<InvisibleHitTarget>();
   speech_recognition_prompt_backplane_ = backplane.get();
   backplane->set_name(kSpeechRecognitionListeningBackplane);
   backplane->set_draw_phase(kPhaseForeground);
-  backplane->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  backplane->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
   backplane->SetTranslate(0.0, 0.0, kTextureOffset);
+  EventHandlers event_handlers;
+  event_handlers.button_up = base::Bind(
+      &UiSceneManager::OnExitRecognizingSpeechClicked, base::Unretained(this));
+  backplane->set_event_handlers(event_handlers);
+
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(backplane));
 
   UiElement* browser_foregroud =
@@ -911,15 +914,18 @@ void UiSceneManager::CreateExitPrompt() {
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
   // reticle roughly planar with the content if near content.
-  auto backplane = base::MakeUnique<ExitPromptBackplane>(base::Bind(
-      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this)));
+  auto backplane = base::MakeUnique<InvisibleHitTarget>();
   exit_prompt_backplane_ = backplane.get();
   element = std::move(backplane);
   element->set_name(kExitPromptBackplane);
   element->set_draw_phase(kPhaseForeground);
-  element->SetSize(kExitPromptBackplaneSize, kExitPromptBackplaneSize);
+  element->SetSize(kPromptBackplaneSize, kPromptBackplaneSize);
   element->SetTranslate(0.0, kContentVerticalOffset + kExitPromptVerticalOffset,
                         kTextureOffset - kContentDistance);
+  EventHandlers event_handlers;
+  event_handlers.button_up = base::Bind(
+      &UiSceneManager::OnExitPromptBackplaneClicked, base::Unretained(this));
+  element->set_event_handlers(event_handlers);
   element->AddBinding(VR_BIND_FUNC(
       bool, UiSceneManager, this, browsing_mode() && model->prompting_to_exit(),
       UiElement, element.get(), SetVisible));
