@@ -58,6 +58,7 @@ repack("repack_unscaled_resources") {
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/ios/chrome/ios_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
+    "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
   ]
@@ -65,6 +66,7 @@ repack("repack_unscaled_resources") {
     ":ios_resources",
     "//components/resources",
     "//ios/web:resources",
+    "//mojo/public/js:resources",
     "//net:net_resources",
     "//ui/resources",
   ]

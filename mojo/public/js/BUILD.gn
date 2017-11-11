@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//tools/grit/grit_rule.gni")
+
 interfaces_bindings_gen_dir = "$root_gen_dir/mojo/public/interfaces/bindings"
 
 source_set("js") {
@@ -93,5 +95,24 @@ group("tests") {
 
   public_deps = [
     ":bindings",
+  ]
+}
+
+grit("resources") {
+  source = "mojo_bindings_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  outputs = [
+    "grit/mojo_bindings_resources.h",
+    "mojo_bindings_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    ":new_bindings",
   ]
 }

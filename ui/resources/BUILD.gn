@@ -49,9 +49,6 @@ grit("webui_resources_grd") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//mojo/public/js:new_bindings",
-  ]
 }
 
 if (!is_mac) {
@@ -168,6 +165,7 @@ repack("repack_ui_test_pak_100_percent") {
   ]
 
   sources = [
+    "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -184,6 +182,7 @@ repack("repack_ui_test_pak_100_percent") {
   output = "$root_out_dir/ui_test.pak"
 
   deps = [
+    "//mojo/public/js:resources",
     "//ui/resources",
     "//ui/strings",
   ]

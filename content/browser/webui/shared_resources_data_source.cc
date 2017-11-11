@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -45,7 +46,7 @@ const struct {
   const char* const path;
   const int resource_id;
 } kAdditionalResourceMapEntries[] = {
-    {"js/mojo_bindings.js", IDR_WEBUI_MOJO_BINDINGS_JS},
+    {"js/mojo_bindings.js", IDR_MOJO_BINDINGS_JS},
 };
 
 void AddResource(const std::string& path,
