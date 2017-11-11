@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/test/fakes/crw_test_back_forward_list.h"
+#import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 
 #import <WebKit/WebKit.h>
 
@@ -13,11 +13,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CRWTestBackForwardList (PrivateMethods)
+@interface CRWFakeBackForwardList (PrivateMethods)
 - (NSArray*)mockSublistWithURLArray:(NSArray<NSString*>*)URLs;
 @end
 
-@implementation CRWTestBackForwardList
+@implementation CRWFakeBackForwardList
 
 @synthesize backList;
 @synthesize forwardList;
@@ -47,7 +47,7 @@
 - (void)setCurrentURL:(NSString*)currentItemURL
          backListURLs:(nullable NSArray<NSString*>*)backListURLs
       forwardListURLs:(nullable NSArray<NSString*>*)forwardListURLs {
-  self.currentItem = [CRWTestBackForwardList itemWithURLString:currentItemURL];
+  self.currentItem = [CRWFakeBackForwardList itemWithURLString:currentItemURL];
   self.backList = [self mockSublistWithURLArray:backListURLs];
   self.forwardList = [self mockSublistWithURLArray:forwardListURLs];
 }
@@ -82,7 +82,7 @@
 - (NSArray*)mockSublistWithURLArray:(NSArray<NSString*>*)URLs {
   NSMutableArray* array = [NSMutableArray arrayWithCapacity:URLs.count];
   for (NSString* URL : URLs) {
-    [array addObject:[CRWTestBackForwardList itemWithURLString:URL]];
+    [array addObject:[CRWFakeBackForwardList itemWithURLString:URL]];
   }
   return [NSArray arrayWithArray:array];
 }

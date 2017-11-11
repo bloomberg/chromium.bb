@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_TEST_FAKES_TEST_NAVIGATION_MANAGER_DELEGATE_H_
-#define IOS_WEB_TEST_FAKES_TEST_NAVIGATION_MANAGER_DELEGATE_H_
+#ifndef IOS_WEB_TEST_FAKES_FAKE_NAVIGATION_MANAGER_DELEGATE_H_
+#define IOS_WEB_TEST_FAKES_FAKE_NAVIGATION_MANAGER_DELEGATE_H_
 
 #import "ios/web/navigation/navigation_manager_delegate.h"
 
@@ -12,7 +12,7 @@ class GURL;
 
 namespace web {
 
-class TestNavigationManagerDelegate : public NavigationManagerDelegate {
+class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
   void ClearTransientContent() override;
   void RecordPageStateInNavigationItem() override;
@@ -38,4 +38,4 @@ class TestNavigationManagerDelegate : public NavigationManagerDelegate {
 
 }  // namespace web
 
-#endif  // IOS_WEB_TEST_FAKES_TEST_NAVIGATION_MANAGER_DELEGATE_H_
+#endif  // IOS_WEB_TEST_FAKES_FAKE_NAVIGATION_MANAGER_DELEGATE_H_

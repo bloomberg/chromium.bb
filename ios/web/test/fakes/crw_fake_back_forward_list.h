@@ -11,8 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class WKBackForwardListItem;
 
-// A CRWTestBackForwardList can be used to stub out WKBackForwardList in tests.
-@interface CRWTestBackForwardList : NSObject
+// A CRWFakeBackForwardList can be used to stub out WKBackForwardList in tests.
+@interface CRWFakeBackForwardList : NSObject
 
 // Returns an OCMock of WKBackForwardListItem with the given URL.
 + (WKBackForwardListItem*)itemWithURLString:(NSString*)URL;

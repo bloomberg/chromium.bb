@@ -17,7 +17,7 @@
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/test/fakes/crw_test_back_forward_list.h"
+#import "ios/web/test/fakes/crw_fake_back_forward_list.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +62,7 @@ bool AppendingUrlRewriter(GURL* url, BrowserState* browser_state) {
 }
 
 // Mock class for NavigationManagerDelegate.
-class TestNavigationManagerDelegate : public NavigationManagerDelegate {
+class MockNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
   void SetSessionController(CRWSessionController* session_controller) {
     session_controller_ = session_controller;
@@ -119,7 +119,7 @@ class NavigationManagerTest
     } else {
       manager_.reset(new WKBasedNavigationManagerImpl);
       mock_web_view_ = OCMClassMock([WKWebView class]);
-      mock_wk_list_ = [[CRWTestBackForwardList alloc] init];
+      mock_wk_list_ = [[CRWFakeBackForwardList alloc] init];
       OCMStub([mock_web_view_ backForwardList]).andReturn(mock_wk_list_);
       delegate_.SetWKWebView(mock_web_view_);
     }
@@ -136,7 +136,7 @@ class NavigationManagerTest
   CRWSessionController* session_controller() { return controller_; }
   NavigationManagerImpl* navigation_manager() { return manager_.get(); }
 
-  TestNavigationManagerDelegate& navigation_manager_delegate() {
+  MockNavigationManagerDelegate& navigation_manager_delegate() {
     return delegate_;
   }
 
@@ -152,12 +152,12 @@ class NavigationManagerTest
     }
   }
 
-  CRWTestBackForwardList* mock_wk_list_;
+  CRWFakeBackForwardList* mock_wk_list_;
   WKWebView* mock_web_view_;
 
  private:
   TestBrowserState browser_state_;
-  TestNavigationManagerDelegate delegate_;
+  MockNavigationManagerDelegate delegate_;
   std::unique_ptr<NavigationManagerImpl> manager_;
   CRWSessionController* controller_;
 };
@@ -702,11 +702,11 @@ TEST_P(NavigationManagerTest, OffsetsWithPendingTransientEntry) {
   // mock_wk_list_ so that the associated NavigationItem objects are retained
   // throughout the test case.
   WKBackForwardListItem* wk_item0 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/0"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/0"];
   WKBackForwardListItem* wk_item1 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/1"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/1"];
   WKBackForwardListItem* wk_item2 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/2"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/2"];
 
   // Create a transient item in the middle of the navigation stack and go back
   // to it (pending index is 1, current index is 2).
@@ -1330,7 +1330,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   // This test manipuates the WKBackForwardListItems in mock_wk_list_ directly
   // because it relies on the associated NavigationItems.
   WKBackForwardListItem* wk_item1 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.1.com"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.1.com"];
 
   // GURL::Replacements that will replace a GURL's scheme with the test native
   // scheme.
@@ -1355,7 +1355,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  WKBackForwardListItem* wk_native_item2 = [CRWTestBackForwardList
+  WKBackForwardListItem* wk_native_item2 = [CRWFakeBackForwardList
       itemWithURLString:base::SysUTF8ToNSString(item2_url.spec())];
   mock_wk_list_.currentItem = wk_native_item2;
   mock_wk_list_.backList = @[ wk_item1 ];
@@ -1370,7 +1370,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
   WKBackForwardListItem* wk_item2 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.2.com"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.2.com"];
   mock_wk_list_.currentItem = wk_item2;
   mock_wk_list_.backList = @[ wk_item1, wk_native_item2 ];
   navigation_manager()->CommitPendingItem();
@@ -1390,7 +1390,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  WKBackForwardListItem* wk_native_item3 = [CRWTestBackForwardList
+  WKBackForwardListItem* wk_native_item3 = [CRWFakeBackForwardList
       itemWithURLString:base::SysUTF8ToNSString(item3_url.spec())];
   mock_wk_list_.currentItem = wk_native_item3;
   mock_wk_list_.backList = @[ wk_item1, wk_native_item2, wk_item2 ];
@@ -1405,7 +1405,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
   WKBackForwardListItem* wk_item3 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.3.com"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.3.com"];
   mock_wk_list_.currentItem = wk_item3;
   mock_wk_list_.backList =
       @[ wk_item1, wk_native_item2, wk_item2, wk_native_item3 ];
@@ -1806,9 +1806,9 @@ TEST_P(NavigationManagerTest, GetIndexOfItem) {
   // This test manipuates the WKBackForwardListItems in mock_wk_list_ directly
   // to retain the NavigationItem association.
   WKBackForwardListItem* wk_item0 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/0"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/0"];
   WKBackForwardListItem* wk_item1 =
-      [CRWTestBackForwardList itemWithURLString:@"http://www.url.com/1"];
+      [CRWFakeBackForwardList itemWithURLString:@"http://www.url.com/1"];
 
   // Create two items and add them to the NavigationManagerImpl.
   navigation_manager()->AddPendingItem(

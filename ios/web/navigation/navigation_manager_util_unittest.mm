@@ -10,7 +10,7 @@
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/public/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/test/fakes/test_navigation_manager_delegate.h"
+#import "ios/web/test/fakes/fake_navigation_manager_delegate.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,7 +41,7 @@ class NavigationManagerUtilTest : public PlatformTest,
   }
 
   std::unique_ptr<NavigationManagerImpl> manager_;
-  web::TestNavigationManagerDelegate delegate_;
+  web::FakeNavigationManagerDelegate delegate_;
   CRWSessionController* controller_;
 
  private:

@@ -18,7 +18,7 @@
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#include "ios/web/test/fakes/test_navigation_manager_delegate.h"
+#include "ios/web/test/fakes/fake_navigation_manager_delegate.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -78,7 +78,7 @@ class CRWSessionControllerTest : public PlatformTest {
 
   web::TestWebThreadBundle thread_bundle_;
   web::TestBrowserState browser_state_;
-  web::TestNavigationManagerDelegate delegate_;
+  web::FakeNavigationManagerDelegate delegate_;
   CRWSessionController* session_controller_;
   // Implements RAII pattern for navigation manager objects created by
   // CreateNavigationManagerForSessionController.

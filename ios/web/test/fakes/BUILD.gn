@@ -15,9 +15,9 @@ source_set("fakes") {
   ]
 
   sources = [
-    "crw_test_back_forward_list.h",
-    "crw_test_back_forward_list.mm",
-    "test_navigation_manager_delegate.h",
-    "test_navigation_manager_delegate.mm",
+    "crw_fake_back_forward_list.h",
+    "crw_fake_back_forward_list.mm",
+    "fake_navigation_manager_delegate.h",
+    "fake_navigation_manager_delegate.mm",
   ]
 }
