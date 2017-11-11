@@ -194,6 +194,9 @@
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_PrimaryDisconnected
 -WindowTreeHostManagerTest.UpdateMouseLocationAfterDisplayChange_SwapPrimary
 
+# TODO: Panel focus is broken. http://crbug.com/780936
+-WorkspaceControllerTest.WindowEdgeMouseHitTestPanel
+
 # TODO: Needs virtual keyboard. http://crbug.com/616909
 -WorkspaceLayoutManagerKeyboardTest.AdjustWindowForA11yKeyboard
 -WorkspaceLayoutManagerKeyboardTest.ChildWindowFocused

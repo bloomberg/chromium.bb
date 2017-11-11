@@ -140,12 +140,6 @@ class LockScreenNoteTakingTest : public ExtensionBrowserTest {
       return false;
     }
 
-    if (lock_screen_apps::StateController::Get()->GetLockScreenNoteState() !=
-        ash::mojom::TrayActionState::kActive) {
-      *error = "App not in active state.";
-      return false;
-    }
-
     if (!ready_to_close.WaitUntilSatisfied()) {
       *error = "Failed waiting for readyToClose message.";
       return false;
