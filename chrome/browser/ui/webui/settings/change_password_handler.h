@@ -5,12 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHANGE_PASSWORD_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHANGE_PASSWORD_HANDLER_H_
 
-#include <memory>
-#include <vector>
-
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -23,11 +18,11 @@ class ChromePasswordProtectionService;
 namespace settings {
 
 // Chrome "Change Password" settings page UI handler.
-class ChangePasswordHandler
-    : public SettingsPageUIHandler,
-      public safe_browsing::ChromePasswordProtectionService::Observer {
+class ChangePasswordHandler : public SettingsPageUIHandler {
  public:
-  explicit ChangePasswordHandler(Profile* profile);
+  explicit ChangePasswordHandler(
+      Profile* profile,
+      safe_browsing::ChromePasswordProtectionService* service);
   ~ChangePasswordHandler() override;
 
   // settings::SettingsPageUIHandler:
@@ -35,34 +30,18 @@ class ChangePasswordHandler
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
-  // safe_browsing::ChromePasswordProtectionService::Observer:
-  void OnStartingGaiaPasswordChange() override {}
-  void OnGaiaPasswordChanged() override;
-  void OnMarkingSiteAsLegitimate(const GURL& url) override;
-  void OnGaiaPasswordReuseWarningShown() override;
-  void InvokeActionForTesting(
-      safe_browsing::ChromePasswordProtectionService::WarningAction action)
-      override;
-  safe_browsing::ChromePasswordProtectionService::WarningUIType
-  GetObserverType() override;
-
  private:
   void HandleInitialize(const base::ListValue* args);
 
-  void HandleChangePasswordPageShown(const base::ListValue* args);
-
   void HandleChangePassword(const base::ListValue* args);
+
+  void UpdateChangePasswordCardVisibility();
 
   Profile* profile_;
 
   PrefChangeRegistrar pref_registrar_;
 
   safe_browsing::ChromePasswordProtectionService* service_;
-
-  // Listen to ChromePasswordProtectionService notification.
-  ScopedObserver<safe_browsing::ChromePasswordProtectionService,
-                 safe_browsing::ChromePasswordProtectionService::Observer>
-      password_protection_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangePasswordHandler);
 };

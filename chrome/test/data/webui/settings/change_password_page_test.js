@@ -6,14 +6,8 @@
 class TestChangePasswordBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
-      'onChangePasswordPageShown',
       'changePassword',
     ]);
-  }
-
-  /** @override */
-  onChangePasswordPageShown() {
-    this.methodCalled('onChangePasswordPageShown');
   }
 
   /** @override */
@@ -37,8 +31,6 @@ suite('ChangePasswordHandler', function() {
     changePasswordPage =
         document.createElement('settings-change-password-page');
     document.body.appendChild(changePasswordPage);
-
-    return browserProxy.whenCalled('onChangePasswordPageShown');
   });
 
   teardown(function() {

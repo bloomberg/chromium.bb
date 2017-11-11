@@ -259,10 +259,6 @@ void ChromePasswordProtectionService::ShowModalWarning(
       base::Value(
           base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
 
-  // Informs observers.
-  for (auto& observer : observer_list_)
-    observer.OnGaiaPasswordReuseWarningShown();
-
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
 }
@@ -697,6 +693,8 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
     // Opens chrome://settings page in a new tab.
     OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+    RecordWarningAction(PasswordProtectionService::CHROME_SETTINGS,
+                        PasswordProtectionService::SHOWN);
   } else if (action == PasswordProtectionService::IGNORE_WARNING) {
     // No need to change state.
     LogPasswordReuseDialogInteraction(
@@ -728,6 +726,8 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
 
     // Opens chrome://settings page in a new tab.
     OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+    RecordWarningAction(PasswordProtectionService::CHROME_SETTINGS,
+                        PasswordProtectionService::SHOWN);
     return;
   }
 

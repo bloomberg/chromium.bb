@@ -65,6 +65,14 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   void SimulateAction(ChromePasswordProtectionService* service,
                       ChromePasswordProtectionService::WarningUIType ui_type,
                       ChromePasswordProtectionService::WarningAction action) {
+    if (ui_type == PasswordProtectionService::CHROME_SETTINGS) {
+      service->OnUserAction(
+          browser()->tab_strip_model()->GetActiveWebContents(),
+          safe_browsing::PasswordProtectionService::CHROME_SETTINGS,
+          safe_browsing::PasswordProtectionService::CHANGE_PASSWORD);
+      return;
+    }
+
     for (auto& observer : service->observer_list_) {
       if (ui_type == observer.GetObserverType()) {
         observer.InvokeActionForTesting(action);

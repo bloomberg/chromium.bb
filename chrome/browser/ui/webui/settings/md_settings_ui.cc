@@ -220,10 +220,13 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 #endif  // defined(OS_WIN)
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
-  AddSettingsPageUIHandler(base::MakeUnique<ChangePasswordHandler>(profile));
-  html_source->AddBoolean("changePasswordEnabled",
-                          safe_browsing::ChromePasswordProtectionService::
-                              ShouldShowChangePasswordSettingUI(profile));
+  safe_browsing::ChromePasswordProtectionService* password_protection =
+      safe_browsing::ChromePasswordProtectionService::
+          GetPasswordProtectionService(profile);
+  if (password_protection) {
+    AddSettingsPageUIHandler(
+        base::MakeUnique<ChangePasswordHandler>(profile, password_protection));
+  }
 #endif
 
 #if defined(OS_CHROMEOS)
