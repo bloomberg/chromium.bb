@@ -8,11 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/time/time.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/transform.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -40,12 +38,9 @@ class UiInputManager {
   explicit UiInputManager(UiScene* scene);
   ~UiInputManager();
   // TODO(tiborg): Use generic gesture type instead of blink::WebGestureEvent.
-  void HandleInput(base::TimeTicks current_time,
-                   const ControllerModel& controller_model,
+  void HandleInput(const ControllerModel& controller_model,
                    ReticleModel* reticle_model,
                    GestureList* gesture_list);
-
-  bool controller_quiescent() const { return controller_quiescent_; }
 
  private:
   void SendFlingCancel(GestureList* gesture_list,
@@ -70,8 +65,6 @@ class UiInputManager {
   void GetVisualTargetElement(const ControllerModel& controller_model,
                               ReticleModel* reticle_model,
                               gfx::Vector3dF* out_eye_to_target) const;
-  void UpdateQuiescenceState(base::TimeTicks current_time,
-                             const ControllerModel& controller_model);
 
   UiScene* scene_;
   int hover_target_id_ = 0;
@@ -84,10 +77,6 @@ class UiInputManager {
   bool in_scroll_ = false;
 
   ButtonState previous_button_state_ = ButtonState::UP;
-
-  base::TimeTicks last_significant_controller_update_time_;
-  gfx::Transform last_significant_controller_transform_;
-  bool controller_quiescent_ = false;
 };
 
 }  // namespace vr

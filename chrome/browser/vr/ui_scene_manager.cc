@@ -719,11 +719,11 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
 }
 
 void UiSceneManager::CreateController(Model* model) {
-  auto root = base::MakeUnique<UiElement>();
-  root->set_name(kControllerRoot);
-  root->SetVisible(true);
-  root->set_hit_testable(false);
-  root->AddBinding(base::MakeUnique<Binding<bool>>(
+  auto group = base::MakeUnique<UiElement>();
+  group->set_name(kControllerGroup);
+  group->SetVisible(true);
+  group->set_hit_testable(false);
+  group->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m, UiSceneManager* mgr) {
             return mgr->browsing_mode() ||
@@ -731,25 +731,8 @@ void UiSceneManager::CreateController(Model* model) {
           },
           base::Unretained(model), base::Unretained(this)),
       base::Bind([](UiElement* v, const bool& b) { v->SetVisible(b); },
-                 base::Unretained(root.get()))));
-  scene_->AddUiElement(kRoot, std::move(root));
-
-  auto group = base::MakeUnique<UiElement>();
-  group->set_name(kControllerGroup);
-  group->SetVisible(true);
-  group->set_hit_testable(false);
-  group->SetTransitionedProperties({OPACITY});
-  group->AddBinding(base::MakeUnique<Binding<bool>>(
-      base::Bind([](Model* m) { return !m->controller.quiescent; },
-                 base::Unretained(model)),
-      base::Bind(
-          [](UiElement* e, const bool& visible) {
-            e->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-                visible ? kControllerFadeInMs : kControllerFadeOutMs));
-            e->SetVisible(visible);
-          },
-          base::Unretained(group.get()))));
-  scene_->AddUiElement(kControllerRoot, std::move(group));
+                 base::Unretained(group.get()))));
+  scene_->AddUiElement(kRoot, std::move(group));
 
   auto controller = base::MakeUnique<Controller>();
   controller->set_draw_phase(kPhaseForeground);

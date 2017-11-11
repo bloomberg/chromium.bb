@@ -161,7 +161,6 @@ void Ui::OnControllerUpdated(const ControllerModel& controller_model,
                              const ReticleModel& reticle_model) {
   model_->controller = controller_model;
   model_->reticle = reticle_model;
-  model_->controller.quiescent = input_manager_->controller_quiescent();
 }
 
 void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
