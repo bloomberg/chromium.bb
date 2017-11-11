@@ -644,13 +644,13 @@ class PreviewsStateResourceDispatcherHostDelegate
   }
 
   PreviewsState DeterminePreviewsState(
-      const net::URLRequest& request,
+      net::URLRequest* request,
       content::ResourceContext* resource_context,
       content::PreviewsState previews_to_allow) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     EXPECT_FALSE(should_get_previews_state_called_);
     should_get_previews_state_called_ = true;
-    EXPECT_EQ(main_frame_url_, request.url());
+    EXPECT_EQ(main_frame_url_, request->url());
     return previews_state_;
   }
 

@@ -181,7 +181,7 @@ class TestResourceDispatcherHostDelegate final
   }
 
   PreviewsState DeterminePreviewsState(
-      const net::URLRequest& url_request,
+      net::URLRequest* url_request,
       content::ResourceContext* resource_context,
       PreviewsState previews_to_allow) override {
     ADD_FAILURE() << "DeterminePreviewsState should not be called.";

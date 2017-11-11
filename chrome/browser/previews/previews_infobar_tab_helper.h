@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/previews/core/previews_user_data.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -37,6 +38,12 @@ class PreviewsInfoBarTabHelper
     displayed_preview_timestamp_ = displayed_preview_timestamp;
   }
 
+  // The Previews information related to the navigation that was most recently
+  // finished.
+  previews::PreviewsUserData* previews_user_data() const {
+    return previews_user_data_.get();
+  }
+
  private:
   friend class content::WebContentsUserData<PreviewsInfoBarTabHelper>;
   friend class PreviewsInfoBarTabHelperUnitTest;
@@ -52,6 +59,10 @@ class PreviewsInfoBarTabHelper
 
   // True if the InfoBar with a timestamp was shown for the page.
   bool displayed_preview_timestamp_;
+
+  // The Previews information related to the navigation that was most recently
+  // finished.
+  std::unique_ptr<previews::PreviewsUserData> previews_user_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsInfoBarTabHelper);
 };

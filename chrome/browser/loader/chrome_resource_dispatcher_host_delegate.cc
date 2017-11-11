@@ -59,6 +59,7 @@
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -889,7 +890,7 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
 
 content::PreviewsState
 ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
-    const net::URLRequest& url_request,
+    net::URLRequest* url_request,
     content::ResourceContext* resource_context,
     content::PreviewsState previews_to_allow) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
@@ -900,19 +901,21 @@ ChromeResourceDispatcherHostDelegate::DeterminePreviewsState(
 
   previews::PreviewsIOData* previews_io_data = io_data->previews_io_data();
   if (data_reduction_proxy_io_data && previews_io_data) {
-    if (data_reduction_proxy_io_data->ShouldEnableLoFi(url_request,
+    previews::PreviewsUserData::Create(url_request,
+                                       previews_io_data->GeneratePageId());
+    if (data_reduction_proxy_io_data->ShouldEnableLoFi(*url_request,
                                                        previews_io_data)) {
       previews_state |= content::SERVER_LOFI_ON;
     }
-    if (data_reduction_proxy_io_data->ShouldEnableLitePages(url_request,
+    if (data_reduction_proxy_io_data->ShouldEnableLitePages(*url_request,
                                                             previews_io_data)) {
       previews_state |= content::SERVER_LITE_PAGE_ON;
     }
 
     // Check for enabled client-side previews if data saver is enabled.
     if (data_reduction_proxy_io_data->IsEnabled()) {
-      previews_state |=
-          previews::DetermineClientPreviewsState(url_request, previews_io_data);
+      previews_state |= previews::DetermineClientPreviewsState(
+          *url_request, previews_io_data);
     }
   }
 
@@ -961,6 +964,12 @@ ChromeResourceDispatcherHostDelegate::GetNavigationData(
   // when content makes a clone of NavigationData for the UI thread.
   if (data_reduction_proxy_data)
     data->SetDataReductionProxyData(data_reduction_proxy_data->DeepCopy());
+
+  previews::PreviewsUserData* previews_user_data =
+      previews::PreviewsUserData::GetData(*request);
+  if (previews_user_data)
+    data->set_previews_user_data(previews_user_data->DeepCopy());
+
   return data;
 }
 

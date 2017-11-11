@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_IO_DATA_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_IO_DATA_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -94,6 +96,10 @@ class PreviewsIOData : public PreviewsDecider,
       const std::vector<std::string>& host_blacklist_from_server)
       const override;
 
+  // Generates a page ID that is guaranteed to be unique from any other page ID
+  // generated in this browser session. Also, guaranteed to be non-zero.
+  uint64_t GeneratePageId();
+
  protected:
   // Posts a task to SetIOData for |previews_ui_service_| on the UI thread with
   // a weak pointer to |this|. Virtualized for testing.
@@ -131,6 +137,8 @@ class PreviewsIOData : public PreviewsDecider,
 
   // Whether the preview is enabled. Valid after Initialize() is called.
   PreviewsIsEnabledCallback is_enabled_callback_;
+
+  uint64_t page_id_;
 
   base::WeakPtrFactory<PreviewsIOData> weak_factory_;
 
