@@ -894,15 +894,6 @@
 # crbug.com/778846 DCHECK() failed at URLDataManagerBackend::CheckURLIsValid().
 # Note: these may flake pass, but don't enable them.
 -CrSettingsPeoplePageTest.All
--DomDistillerTabUtilsBrowserTest.TestDistillIntoWebContents
--DomDistillerViewerSourceBrowserTest.DistillerJavaScriptExposed
--DomDistillerViewerSourceBrowserTest.DistillerJavaScriptNotInMainWorld
--DomDistillerViewerSourceBrowserTest.EarlyTemplateLoad
--DomDistillerViewerSourceBrowserTest.MultiPageArticle
--DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleExists
--DomDistillerViewerSourceBrowserTest.NoWebUIBindingsArticleNotFound
--DomDistillerViewerSourceBrowserTest.PrefPersist
--PrintPreviewDialogControllerBrowserTest.PdfPluginDisabled
 -PrintPreviewDialogControllerBrowserTest.PrintPreviewPdfAccessibility
 
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.

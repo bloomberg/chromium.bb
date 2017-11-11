@@ -13,11 +13,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_internals_url_loader.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/histogram_internals_url_loader.h"
+#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/webui/network_error_url_loader.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -38,7 +40,8 @@ namespace content {
 namespace {
 
 class WebUIURLLoaderFactory;
-base::LazyInstance<std::map<int, std::unique_ptr<WebUIURLLoaderFactory>>>::Leaky
+base::LazyInstance<std::map<GlobalFrameRoutingId,
+                            std::unique_ptr<WebUIURLLoaderFactory>>>::Leaky
     g_web_ui_url_loader_factories = LAZY_INSTANCE_INITIALIZER;
 
 void CallOnError(mojom::URLLoaderClientPtrInfo client_info, int error_code) {
@@ -205,14 +208,12 @@ void StartURLLoader(const ResourceRequest& request,
 }
 
 class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
-                              public FrameTreeNode::Observer {
+                              public WebContentsObserver {
  public:
-  WebUIURLLoaderFactory(FrameTreeNode* ftn)
-      : frame_tree_node_id_(ftn->frame_tree_node_id()),
-        storage_partition_(static_cast<StoragePartitionImpl*>(
-            ftn->current_frame_host()->GetProcess()->GetStoragePartition())) {
-    ftn->AddObserver(this);
-  }
+  WebUIURLLoaderFactory(RenderFrameHost* rfh, const std::string& scheme)
+      : WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
+        render_frame_host_(rfh),
+        scheme_(scheme) {}
 
   ~WebUIURLLoaderFactory() override {}
 
@@ -232,8 +233,16 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (request.url.scheme() != scheme_) {
+      ReceivedBadMessage(render_frame_host_->GetProcess(),
+                         bad_message::WEBUI_BAD_SCHEME_ACCESS);
+      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      return;
+    }
+
     if (request.url.host_piece() == kChromeUINetworkViewCacheHost) {
-      storage_partition_->GetNetworkContext()->HandleViewCacheRequest(
+      GetStoragePartition()->GetNetworkContext()->HandleViewCacheRequest(
           request.url, std::move(client));
       return;
     }
@@ -244,7 +253,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
           base::BindOnce(&StartBlobInternalsURLLoader, request,
                          client.PassInterface(),
                          base::Unretained(ChromeBlobStorageContext::GetFor(
-                             storage_partition_->browser_context()))));
+                             GetStoragePartition()->browser_context()))));
       return;
     }
 
@@ -259,26 +268,41 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
       return;
     }
 
+    // We pass the FrameTreeNode ID to get to the WebContents because requests
+    // from frames can happen while the RFH is changed for a cross-process
+    // navigation. The URLDataSources just need the WebContents; the specific
+    // frame doesn't matter.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &StartURLLoader, request, frame_tree_node_id_,
+            &StartURLLoader, request, render_frame_host_->GetFrameTreeNodeId(),
             client.PassInterface(),
-            storage_partition_->browser_context()->GetResourceContext()));
+            GetStoragePartition()->browser_context()->GetResourceContext()));
   }
 
   void Clone(mojom::URLLoaderFactoryRequest request) override {
     loader_factory_bindings_.AddBinding(this, std::move(request));
   }
 
-  // FrameTreeNode::Observer implementation:
-  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
-    g_web_ui_url_loader_factories.Get().erase(frame_tree_node_id_);
+  // WebContentsObserver implementation:
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override {
+    if (render_frame_host != render_frame_host_)
+      return;
+    g_web_ui_url_loader_factories.Get().erase(
+        GlobalFrameRoutingId(render_frame_host_->GetRoutingID(),
+                             render_frame_host_->GetProcess()->GetID()));
   }
 
+  const std::string& scheme() const { return scheme_; }
+
  private:
-  int frame_tree_node_id_;
-  StoragePartitionImpl* storage_partition_;
+  StoragePartitionImpl* GetStoragePartition() {
+    return static_cast<StoragePartitionImpl*>(
+        render_frame_host_->GetProcess()->GetStoragePartition());
+  }
+
+  RenderFrameHost* render_frame_host_;
+  std::string scheme_;
   mojo::BindingSet<mojom::URLLoaderFactory> loader_factory_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIURLLoaderFactory);
@@ -286,12 +310,18 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
 }  // namespace
 
-mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(FrameTreeNode* node) {
-  int ftn_id = node->frame_tree_node_id();
-  if (g_web_ui_url_loader_factories.Get()[ftn_id].get() == nullptr)
-    g_web_ui_url_loader_factories.Get()[ftn_id] =
-        std::make_unique<WebUIURLLoaderFactory>(node);
-  return g_web_ui_url_loader_factories.Get()[ftn_id]->CreateBinding();
+mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(
+    RenderFrameHost* render_frame_host,
+    const std::string& scheme) {
+  GlobalFrameRoutingId routing_id(render_frame_host->GetRoutingID(),
+                                  render_frame_host->GetProcess()->GetID());
+  if (g_web_ui_url_loader_factories.Get().find(routing_id) ==
+          g_web_ui_url_loader_factories.Get().end() ||
+      g_web_ui_url_loader_factories.Get()[routing_id]->scheme() != scheme) {
+    g_web_ui_url_loader_factories.Get()[routing_id] =
+        std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme);
+  }
+  return g_web_ui_url_loader_factories.Get()[routing_id]->CreateBinding();
 }
 
 }  // namespace content
