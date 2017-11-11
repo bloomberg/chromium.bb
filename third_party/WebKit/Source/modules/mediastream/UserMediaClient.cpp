@@ -75,10 +75,4 @@ void UserMediaClient::ApplyConstraints(ApplyConstraintsRequest* request) {
   }
 }
 
-void UserMediaClient::StopTrack(MediaStreamComponent* track) {
-  if (client_) {
-    client_->StopTrack(WebMediaStreamTrack(track));
-  }
-}
-
 }  // namespace blink

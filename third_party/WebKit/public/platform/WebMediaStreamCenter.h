@@ -49,6 +49,9 @@ class WebMediaStreamCenter {
   virtual void DidSetContentHint(const WebMediaStreamTrack&) {}
   virtual void DidEnableMediaStreamTrack(const WebMediaStreamTrack&) {}
   virtual void DidDisableMediaStreamTrack(const WebMediaStreamTrack&) {}
+  virtual bool DidStopMediaStreamTrack(const WebMediaStreamTrack&) {
+    return false;
+  }
 
   // Source functionality.
   virtual void DidStopMediaStreamSource(const WebMediaStreamSource&) {}

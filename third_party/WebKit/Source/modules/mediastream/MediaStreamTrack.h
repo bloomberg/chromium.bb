@@ -39,6 +39,7 @@
 namespace blink {
 
 class AudioSourceProvider;
+class ExceptionState;
 class ImageCapture;
 class MediaTrackCapabilities;
 class MediaTrackConstraints;
@@ -73,7 +74,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   String readyState() const;
 
-  void stopTrack(ExecutionContext*);
+  void stopTrack(ExceptionState&);
   virtual MediaStreamTrack* clone(ScriptState*);
 
   // This function is called when constrains have been successfully applied.
