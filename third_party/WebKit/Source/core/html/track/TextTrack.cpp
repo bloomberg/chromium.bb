@@ -286,14 +286,14 @@ void TextTrack::CueWillChange(TextTrackCue* cue) {
     GetCueTimeline()->RemoveCue(this, cue);
 }
 
-void TextTrack::CueDidChange(TextTrackCue* cue) {
+void TextTrack::CueDidChange(TextTrackCue* cue, bool update_cue_index) {
   // This method is called through cue->track(), which should imply that this
   // track has a list of cues.
   DCHECK(cues_ && cue->track() == this);
 
   // Make sure the TextTrackCueList order is up to date.
-  // FIXME: Only need to do this if the change was to any of the timestamps.
-  cues_->UpdateCueIndex(cue);
+  if (update_cue_index)
+    cues_->UpdateCueIndex(cue);
 
   // Since a call to cueDidChange is always preceded by a call to
   // cueWillChange, the cue should no longer be active when we reach this

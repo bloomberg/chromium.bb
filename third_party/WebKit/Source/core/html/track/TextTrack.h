@@ -100,7 +100,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
   void removeCue(TextTrackCue*, ExceptionState&);
 
   void CueWillChange(TextTrackCue*);
-  void CueDidChange(TextTrackCue*);
+  void CueDidChange(TextTrackCue*, bool update_cue_index);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(cuechange);
 
