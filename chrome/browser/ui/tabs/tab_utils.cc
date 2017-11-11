@@ -21,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
@@ -335,12 +336,15 @@ bool AreExperimentalMuteControlsEnabled() {
       switches::kEnableTabAudioMuting);
 }
 
-bool CanToggleAudioMute(content::WebContents* contents) {
+bool CanToggleAudioMute(content::WebContents* contents, TabMutedReason reason) {
   switch (GetTabAlertStateForContents(contents)) {
     case TabAlertState::NONE:
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
-      return true;
+      // chrome:// URLs can't be muted due to the sound content setting.
+      return reason != TabMutedReason::CONTENT_SETTING ||
+             !contents->GetLastCommittedURL().SchemeIs(
+                 content::kChromeUIScheme);
     case TabAlertState::MEDIA_RECORDING:
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
@@ -381,8 +385,18 @@ TabMutedResult SetTabAudioMuted(content::WebContents* contents,
     return TabMutedResult::FAIL_NOT_ENABLED;
   }
 
-  if (!chrome::CanToggleAudioMute(contents))
-    return TabMutedResult::FAIL_TABCAPTURE;
+  if (!chrome::CanToggleAudioMute(contents, reason)) {
+    if (reason != TabMutedReason::CONTENT_SETTING ||
+        GetTabAudioMutedReason(contents) != TabMutedReason::CONTENT_SETTING) {
+      return TabMutedResult::FAIL_TABCAPTURE;
+    }
+
+    // If we're just unmuting a chrome:// URL tab that had been muted because
+    // the previous website on the tab was muted via content settings, then we
+    // will allow the unmute. Otherwise, return since we can't toggle mute.
+    if (mute)
+      return TabMutedResult::FAIL_MUTE_DISALLOWED;
+  }
 
   contents->SetAudioMuted(mute);
 
