@@ -11,6 +11,8 @@
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/notifier_settings_view.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -116,21 +118,8 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      int max_height,
                                      bool initially_settings_visible)
     : message_center_(message_center),
-      tray_(tray),
-      scroller_(nullptr),
-      settings_view_(nullptr),
-      no_notifications_view_(nullptr),
-      button_bar_(nullptr),
       settings_visible_(initially_settings_visible),
-      source_view_(nullptr),
-      source_height_(0),
-      target_view_(nullptr),
-      target_height_(0),
-      is_closing_(false),
-      is_locked_(message_center_->IsLockedState()),
-      mode_(Mode::NO_NOTIFICATIONS),
-      context_menu_controller_(this),
-      focus_manager_(nullptr) {
+      is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
   if (is_locked_)
     mode_ = Mode::LOCKED;
   else if (initially_settings_visible)
@@ -235,6 +224,12 @@ void MessageCenterView::ClearAllClosableNotifications() {
   SetViewHierarchyEnabled(scroller_, false);
   message_list_view_->ClearAllClosableNotifications(
       scroller_->GetVisibleRect());
+}
+
+void MessageCenterView::OnLockStateChanged(bool locked) {
+  is_locked_ = locked;
+  UpdateButtonBarStatus();
+  Update(true /* animate */);
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
@@ -439,12 +434,6 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
     message_list_view_->ResetRepositionSession();
 
   UpdateNotification(id);
-}
-
-void MessageCenterView::OnLockedStateChanged(bool locked) {
-  is_locked_ = locked;
-  UpdateButtonBarStatus();
-  Update(true /* animate */);
 }
 
 void MessageCenterView::OnQuietModeChanged(bool is_quiet_mode) {

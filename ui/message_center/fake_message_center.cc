@@ -31,19 +31,11 @@ size_t FakeMessageCenter::NotificationCount() const {
   return 0u;
 }
 
-size_t FakeMessageCenter::UnreadNotificationCount() const {
-  return 0u;
-}
-
 bool FakeMessageCenter::HasPopupNotifications() const {
   return false;
 }
 
 bool FakeMessageCenter::IsQuietMode() const {
-  return false;
-}
-
-bool FakeMessageCenter::IsLockedState() const {
   return false;
 }
 
@@ -113,8 +105,6 @@ void FakeMessageCenter::DisplayedNotification(const std::string& id,
                                               const DisplaySource source) {}
 
 void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {}
-
-void FakeMessageCenter::SetLockedState(bool locked) {}
 
 void FakeMessageCenter::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {

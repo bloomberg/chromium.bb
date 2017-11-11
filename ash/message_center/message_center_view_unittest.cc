@@ -116,10 +116,8 @@ class FakeMessageCenterImpl : public FakeMessageCenter {
     if (type == RemoveType::NON_PINNED)
       remove_all_closable_notification_called_ = true;
   }
-  bool IsLockedState() const override { return locked_; }
   bool remove_all_closable_notification_called_ = false;
   NotificationList::Notifications visible_notifications_;
-  bool locked_ = false;
 };
 
 // This is the class we are testing, but we need to override some functions
@@ -343,7 +341,7 @@ int MessageCenterViewTest::GetCallCount(CallType type) {
 }
 
 void MessageCenterViewTest::SetLockedState(bool locked) {
-  GetMessageCenterView()->OnLockedStateChanged(locked);
+  GetMessageCenterView()->OnLockStateChanged(locked);
 }
 
 void MessageCenterViewTest::ClickOnNotification(

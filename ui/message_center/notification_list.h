@@ -145,7 +145,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   Notifications GetVisibleNotifications(
       const NotificationBlockers& blockers) const;
   size_t NotificationCount(const NotificationBlockers& blockers) const;
-  size_t UnreadCount(const NotificationBlockers& blockers) const;
 
  private:
   friend class NotificationListTest;

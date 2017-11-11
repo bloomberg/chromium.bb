@@ -14,7 +14,7 @@ namespace ash {
 
 // A notification blocker which suppresses notifications popups based on the
 // session state reported by the SessionController. Only active (logged in,
-// unlocked) sessions will show popups.
+// unlocked) sessions will show notifications.
 class ASH_EXPORT LoginStateNotificationBlocker
     : public message_center::NotificationBlocker,
       public SessionObserver {
@@ -25,6 +25,8 @@ class ASH_EXPORT LoginStateNotificationBlocker
 
  private:
   // message_center::NotificationBlocker overrides:
+  bool ShouldShowNotification(
+      const message_center::Notification& notification) const override;
   bool ShouldShowNotificationAsPopup(
       const message_center::Notification& notification) const override;
 

@@ -25,10 +25,8 @@ class FakeMessageCenter : public MessageCenter {
   void AddNotificationBlocker(NotificationBlocker* blocker) override;
   void RemoveNotificationBlocker(NotificationBlocker* blocker) override;
   size_t NotificationCount() const override;
-  size_t UnreadNotificationCount() const override;
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
-  bool IsLockedState() const override;
   message_center::Notification* FindVisibleNotificationById(
       const std::string& id) override;
   const NotificationList::Notifications& GetVisibleNotifications() override;
@@ -59,7 +57,6 @@ class FakeMessageCenter : public MessageCenter {
   void DisplayedNotification(const std::string& id,
                              const DisplaySource source) override;
   void SetQuietMode(bool in_quiet_mode) override;
-  void SetLockedState(bool locked) override;
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void SetVisibility(Visibility visible) override;
   bool IsMessageCenterVisible() const override;
