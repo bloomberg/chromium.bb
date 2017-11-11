@@ -39,14 +39,8 @@ struct CONTENT_EXPORT WebPluginMimeType {
   base::string16 description;
 
   // Extra parameters to include when instantiating the plugin.
-  struct Param {
-    Param() = default;
-    Param(base::string16 n, base::string16 v)
-        : name(std::move(n)), value(std::move(v)) {}
-    base::string16 name;
-    base::string16 value;
-  };
-  std::vector<Param> additional_params;
+  std::vector<base::string16> additional_param_names;
+  std::vector<base::string16> additional_param_values;
 };
 
 // Describes an available Pepper plugin.
