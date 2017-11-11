@@ -39,10 +39,11 @@ class SharedSampler : public base::RefCountedThreadSafe<SharedSampler> {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_pool_runner);
 
   struct SamplingResult {
+    base::TimeDelta cpu_time;
+    int64_t hard_faults_per_second;
     int idle_wakeups_per_second;
     int64_t physical_bytes;
     base::Time start_time;
-    base::TimeDelta cpu_time;
   };
   using OnSamplingCompleteCallback =
       base::Callback<void(base::Optional<SamplingResult>)>;

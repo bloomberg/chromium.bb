@@ -99,6 +99,7 @@ class TaskGroup {
   int64_t gdi_peak_handles() const { return gdi_peak_handles_; }
   int64_t user_current_handles() const { return user_current_handles_; }
   int64_t user_peak_handles() const { return user_peak_handles_; }
+  int64_t hard_faults_per_second() const { return hard_faults_per_second_; }
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -178,15 +179,16 @@ class TaskGroup {
   int64_t gdi_peak_handles_;
   int64_t user_current_handles_;
   int64_t user_peak_handles_;
+  int64_t hard_faults_per_second_;
 #endif  // defined(OS_WIN)
 #if BUILDFLAG(ENABLE_NACL)
   int nacl_debug_stub_port_;
 #endif  // BUILDFLAG(ENABLE_NACL)
-  int idle_wakeups_per_second_;
 #if defined(OS_LINUX)
   // The number of file descriptors currently open by the process.
   int open_fd_count_;
 #endif  // defined(OS_LINUX)
+  int idle_wakeups_per_second_;
   bool gpu_memory_has_duplicates_;
   bool is_backgrounded_;
 
