@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/views/extensions/extension_install_dialog_view.h"
 
+#include <string>
 #include <utility>
 
 #include "base/macros.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -17,7 +20,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/webui/extensions/extension_settings_handler.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,11 +47,8 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
 
   void SetUpOnMainThread() override;
 
-  // Creates and returns an install prompt of |prompt_type_|, optionally setting
-  // |permissions|.
+  // Creates and returns an install prompt of |prompt_type_|.
   std::unique_ptr<ExtensionInstallPrompt::Prompt> CreatePrompt();
-  std::unique_ptr<ExtensionInstallPrompt::Prompt> CreatePrompt(
-      const PermissionMessages& permissions);
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -60,7 +62,7 @@ class ExtensionInstallDialogViewTestBase : public ExtensionBrowserTest {
 
 ExtensionInstallDialogViewTestBase::ExtensionInstallDialogViewTestBase(
     ExtensionInstallPrompt::PromptType prompt_type)
-    : extension_(NULL), prompt_type_(prompt_type), web_contents_(NULL) {}
+    : extension_(nullptr), prompt_type_(prompt_type), web_contents_(nullptr) {}
 
 void ExtensionInstallDialogViewTestBase::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
@@ -225,4 +227,119 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   // Ensure default button (cancel) has focus.
   EXPECT_TRUE(delegate_view->GetInitiallyFocusedView()->HasFocus());
   delegate_view->Close();
+}
+
+class ExtensionInstallDialogViewInteractiveBrowserTest
+    : public DialogBrowserTest {
+ public:
+  ExtensionInstallDialogViewInteractiveBrowserTest() {}
+
+  // DialogBrowserTest:
+  void ShowDialog(const std::string& name) override {
+    extensions::ChromeTestExtensionLoader loader(browser()->profile());
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    scoped_refptr<const extensions::Extension> extension = loader.LoadExtension(
+        test_data_dir.AppendASCII("extensions/uitest/long_name"));
+
+    SkBitmap icon;
+    // The dialog will downscale large images.
+    icon.allocN32Pixels(800, 800);
+    icon.eraseARGB(255, 128, 255, 128);
+
+    auto prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(
+        external_install_ ? ExtensionInstallPrompt::EXTERNAL_INSTALL_PROMPT
+                          : ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
+    prompt->AddPermissions(permissions_,
+                           ExtensionInstallPrompt::REGULAR_PERMISSIONS);
+
+    if (from_webstore_)
+      prompt->SetWebstoreData("69,420", true, 2.5, 37);
+
+    auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+    auto install_prompt =
+        std::make_unique<ExtensionInstallPrompt>(web_contents);
+    install_prompt->ShowDialog(
+        base::Bind([](ExtensionInstallPrompt::Result r) {}), extension.get(),
+        &icon, std::move(prompt), ExtensionInstallPrompt::ShowDialogCallback());
+  }
+
+  void set_external_install() { external_install_ = true; }
+  void set_from_webstore() { from_webstore_ = true; }
+
+  void AddPermission(std::string permission) {
+    permissions_.push_back(
+        PermissionMessage(base::ASCIIToUTF16(permission), PermissionIDSet()));
+  }
+
+  void AddPermissionWithDetails(
+      std::string main_permission,
+      std::vector<base::string16> detailed_permissions) {
+    permissions_.push_back(
+        PermissionMessage(base::ASCIIToUTF16(main_permission),
+                          PermissionIDSet(), std::move(detailed_permissions)));
+  }
+
+ private:
+  bool external_install_ = false;
+  bool from_webstore_ = false;
+  PermissionMessages permissions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogViewInteractiveBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_Simple) {
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_External) {
+  set_external_install();
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_ExternalWithPermission) {
+  set_external_install();
+  AddPermission("Example permission");
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_FromWebstore) {
+  set_from_webstore();
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_FromWebstoreWithPermission) {
+  set_from_webstore();
+  AddPermission("Example permission");
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_MultilinePermission) {
+  AddPermission(
+      "In the shade of the house, in the sunshine of the riverbank "
+      "near the boats, in the shade of the Sal-wood forest, in the "
+      "shade of the fig tree is where Siddhartha grew up");
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_ManyPermissions) {
+  for (int i = 0; i < 20; i++)
+    AddPermission("Example permission");
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewInteractiveBrowserTest,
+                       InvokeDialog_DetailedPermission) {
+  AddPermissionWithDetails("Example header permission",
+                           {base::ASCIIToUTF16("Detailed permission 1"),
+                            base::ASCIIToUTF16("Detailed permission 2"),
+                            base::ASCIIToUTF16("Detailed permission 3")});
+  RunDialog();
 }
