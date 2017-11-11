@@ -54,6 +54,7 @@ class TaskManagerImpl : public TaskManagerInterface,
                             bool* has_duplicates) const override;
   base::MemoryState GetMemoryState(TaskId task_id) const override;
   int GetIdleWakeupsPerSecond(TaskId task_id) const override;
+  int GetHardFaultsPerSecond(TaskId task_id) const override;
   int GetNaClDebugStubPort(TaskId task_id) const override;
   void GetGDIHandles(TaskId task_id,
                      int64_t* current,

@@ -2994,6 +2994,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle wake ups
           </message>
+          <message name="IDS_TASK_MANAGER_HARD_FAULTS_COLUMN" desc="Task manager hard fault count column">
+            Hard faults
+          </message>
           <message name="IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN" desc="Task manager open fds (file descriptors) count column">
             File descriptors
           </message>
@@ -3076,6 +3079,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
           </message>
           <message name="IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN" desc="Task manager idle processor wakeups column">
             Idle Wake Ups
+          </message>
+          <message name="IDS_TASK_MANAGER_HARD_FAULTS_COLUMN" desc="Task manager hard fault count column">
+            Hard Faults
           </message>
           <message name="IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN" desc="Task manager open fds (file descriptors) count column">
             File Descriptors

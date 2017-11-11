@@ -94,6 +94,11 @@ const TableColumnData kColumns[] = {
     {IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      arraysize("idlewakeups") * kCharWidth, -1, true, false, false},
 
+#if defined(OS_WIN)
+    {IDS_TASK_MANAGER_HARD_FAULTS_COLUMN, ui::TableColumn::RIGHT, -1, 0,
+     arraysize("100000") * kCharWidth, -1, true, false, false},
+#endif
+
 #if defined(OS_LINUX)
     {IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      arraysize("999") * kCharWidth, -1, true, false, false},
@@ -145,6 +150,7 @@ std::string GetColumnIdAsString(int column_id) {
     COLUMN_CASE(IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN);
     COLUMN_CASE(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
     COLUMN_CASE(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN);
+    COLUMN_CASE(IDS_TASK_MANAGER_HARD_FAULTS_COLUMN);
     COLUMN_CASE(IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN);
     COLUMN_CASE(IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN);
     COLUMN_CASE(IDS_TASK_MANAGER_MEMORY_STATE_COLUMN);

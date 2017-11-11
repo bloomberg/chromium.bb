@@ -141,6 +141,7 @@ struct ProcessData {
   ProcessData() = default;
   ProcessData(ProcessData&&) = default;
 
+  int64_t hard_fault_count;
   int64_t physical_bytes;
   base::Time start_time;
   base::TimeDelta cpu_time;
@@ -249,7 +250,8 @@ SharedSampler::~SharedSampler() {}
 
 int64_t SharedSampler::GetSupportedFlags() const {
   return REFRESH_TYPE_IDLE_WAKEUPS | REFRESH_TYPE_PHYSICAL_MEMORY |
-         REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME;
+         REFRESH_TYPE_START_TIME | REFRESH_TYPE_CPU_TIME |
+         REFRESH_TYPE_HARD_FAULTS;
 }
 
 void SharedSampler::RegisterCallback(
@@ -411,6 +413,7 @@ std::unique_ptr<ProcessDataSnapshot> SharedSampler::CaptureSnapshot() {
         // not count context switches for threads that are missing in the most
         // recent snapshot.
         ProcessData process_data;
+        process_data.hard_fault_count = pi->HardFaultCount;
         process_data.physical_bytes =
             static_cast<int64_t>(pi->WorkingSetPrivateSize);
         process_data.start_time = ConvertTicksToTime(pi->CreateTime);
@@ -478,9 +481,12 @@ SharedSampler::AllSamplingResults SharedSampler::MakeResultsFromTwoSnapshots(
         process_id, &prev_iter, prev_snapshot.processes.end());
 
     // Delta between the old snapshot and the new snapshot.
+    int64_t hard_faults_delta = 0;
     int idle_wakeups_delta;
 
     if (prev_snapshot_process) {
+      hard_faults_delta =
+          process.hard_fault_count - prev_snapshot_process->hard_fault_count;
       // Processes match between two snapshots. Diff context switches.
       idle_wakeups_delta =
           CountContextSwitchesDelta(*prev_snapshot_process, process);
@@ -492,6 +498,8 @@ SharedSampler::AllSamplingResults SharedSampler::MakeResultsFromTwoSnapshots(
 
     ProcessIdAndSamplingResult result;
     result.process_id = process_id;
+    result.data.hard_faults_per_second =
+        static_cast<int>(round(hard_faults_delta / time_delta));
     result.data.idle_wakeups_per_second =
         static_cast<int>(round(idle_wakeups_delta / time_delta));
     result.data.physical_bytes = process.physical_bytes;
@@ -512,6 +520,7 @@ SharedSampler::AllSamplingResults SharedSampler::MakeResultsFromSnapshot(
     result.process_id = pair.first;
     // Use 0 for Idle Wakeups / sec in this case. This is consistent with
     // ProcessMetrics::CalculateIdleWakeupsPerSecond implementation.
+    result.data.hard_faults_per_second = 0;
     result.data.idle_wakeups_per_second = 0;
     result.data.physical_bytes = pair.second.physical_bytes;
     result.data.start_time = pair.second.start_time;

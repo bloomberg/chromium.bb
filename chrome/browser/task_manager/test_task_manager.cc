@@ -71,6 +71,10 @@ int TestTaskManager::GetIdleWakeupsPerSecond(TaskId task_id) const {
   return -1;
 }
 
+int TestTaskManager::GetHardFaultsPerSecond(TaskId task_id) const {
+  return -1;
+}
+
 int TestTaskManager::GetNaClDebugStubPort(TaskId task_id) const {
   return -1;
 }

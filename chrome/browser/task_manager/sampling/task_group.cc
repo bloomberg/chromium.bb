@@ -100,14 +100,15 @@ TaskGroup::TaskGroup(
       gdi_peak_handles_(-1),
       user_current_handles_(-1),
       user_peak_handles_(-1),
+      hard_faults_per_second_(-1),
 #endif  // defined(OS_WIN)
 #if BUILDFLAG(ENABLE_NACL)
       nacl_debug_stub_port_(nacl::kGdbDebugStubPortUnknown),
 #endif  // BUILDFLAG(ENABLE_NACL)
-      idle_wakeups_per_second_(-1),
 #if defined(OS_LINUX)
       open_fd_count_(-1),
 #endif  // defined(OS_LINUX)
+      idle_wakeups_per_second_(-1),
       gpu_memory_has_duplicates_(false),
       is_backgrounded_(false),
       weak_ptr_factory_(this) {
@@ -336,19 +337,21 @@ void TaskGroup::OnSamplerRefreshDone(
   // TODO(wez): Migrate the TaskGroup fields to Optional<> so we can remove
   // the need for all this sentinel-handling logic.
   if (results) {
-    start_time_ = results->start_time;
     cpu_time_ = results->cpu_time;
     idle_wakeups_per_second_ = results->idle_wakeups_per_second;
 #if defined(OS_WIN)
+    hard_faults_per_second_ = results->hard_faults_per_second;
     memory_usage_.physical_bytes = results->physical_bytes;
 #endif
+    start_time_ = results->start_time;
   } else {
-    start_time_ = base::Time();
     cpu_time_ = base::TimeDelta();
     idle_wakeups_per_second_ = -1;
 #if defined(OS_WIN)
+    hard_faults_per_second_ = 0;
     memory_usage_.physical_bytes = -1;
 #endif
+    start_time_ = base::Time();
   }
 
   OnBackgroundRefreshTypeFinished(expected_on_bg_done_flags_ &

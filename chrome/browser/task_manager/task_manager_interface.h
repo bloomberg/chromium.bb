@@ -110,6 +110,10 @@ class TaskManagerInterface {
   // refresh cycle. A value of -1 means no valid value is currently available.
   virtual int GetIdleWakeupsPerSecond(TaskId task_id) const = 0;
 
+  // Returns the number of hard page faults per second since the last refresh
+  // cycle. A value of -1 means no valid value is currently available.
+  virtual int GetHardFaultsPerSecond(TaskId task_id) const = 0;
+
   // Returns the NaCl GDB debug stub port. A value of
   // |nacl::kGdbDebugStubPortUnknown| means no valid value is currently
   // available. A value of -2 means NaCl is not enabled for this build.
