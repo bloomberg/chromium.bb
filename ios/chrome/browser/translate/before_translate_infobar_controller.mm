@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -268,8 +269,7 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
 
   // Creates and adds the view containing the UIPickerView and the
   // UINavigationBar.
-  UIView* parentView =
-      [[UIApplication sharedApplication] keyWindow].rootViewController.view;
+  UIView* parentView = top_view_controller::TopPresentedViewController().view;
   // Convert the parent frame to handle device rotation.
   CGRect parentFrame =
       CGRectApplyAffineTransform([parentView frame], [parentView transform]);
