@@ -62,20 +62,27 @@ void ParamTraits<gfx::ColorSpace>::Log(const gfx::ColorSpace& p,
 
 void ParamTraits<gfx::ICCProfile>::Write(base::Pickle* m,
                                          const gfx::ICCProfile& p) {
-  WriteParam(m, p.id_);
-  WriteParam(m, p.data_);
+  if (p.internals_) {
+    WriteParam(m, p.internals_->id_);
+    WriteParam(m, p.internals_->data_);
+  } else {
+    uint64_t id = 0;
+    std::vector<char> data;
+    WriteParam(m, id);
+    WriteParam(m, data);
+  }
 }
 
 bool ParamTraits<gfx::ICCProfile>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         gfx::ICCProfile* r) {
-  if (!ReadParam(m, iter, &r->id_))
+  uint64_t id;
+  std::vector<char> data;
+  if (!ReadParam(m, iter, &id))
     return false;
-  if (!ReadParam(m, iter, &r->data_))
+  if (!ReadParam(m, iter, &data))
     return false;
-  // Ensure that this entry is added to the global ICC profile cache, if it
-  // is not there already.
-  r->ComputeColorSpaceAndCache();
+  *r = gfx::ICCProfile::FromDataWithId(data.data(), data.size(), id);
   return true;
 }
 

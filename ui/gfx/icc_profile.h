@@ -6,9 +6,11 @@
 #define UI_GFX_ICC_PROFILE_H_
 
 #include <stdint.h>
+#include <set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/color_space.h"
 
 #if defined(OS_MACOSX)
@@ -23,7 +25,6 @@ template <typename, typename> struct StructTraits;
 
 namespace gfx {
 
-class ICCProfileCache;
 
 // Used to represent a full ICC profile, usually retrieved from a monitor. It
 // can be lossily compressed into a ColorSpace object. This structure should
@@ -40,8 +41,9 @@ class COLOR_SPACE_EXPORT ICCProfile {
   bool operator==(const ICCProfile& other) const;
   bool operator!=(const ICCProfile& other) const;
 
-  // Returns true if this profile was successfully parsed by SkICC.
-  bool IsValid() const { return is_valid_; }
+  // Returns true if this profile was successfully parsed by SkICC and will
+  // return a valid ColorSpace.
+  bool IsValid() const;
 
 #if defined(OS_MACOSX)
   static ICCProfile FromCGColorSpace(CGColorSpaceRef cg_color_space);
@@ -59,29 +61,11 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // if the parametric approximation is almost exact.
   ColorSpace GetParametricColorSpace() const;
 
-  const std::vector<char>& GetData() const;
-
   // Histogram how we this was approximated by a gfx::ColorSpace. Only
   // histogram a given profile once per display.
   void HistogramDisplay(int64_t display_id) const;
 
  private:
-  // This must match ICCProfileAnalyzeResult enum in histograms.xml.
-  enum AnalyzeResult {
-    kICCExtractedMatrixAndAnalyticTrFn = 0,
-    kICCExtractedMatrixAndApproximatedTrFn = 1,
-    kICCFailedToConvergeToApproximateTrFn = 2,
-    kICCFailedToExtractRawTrFn = 3,
-    kICCFailedToExtractMatrix = 4,
-    kICCFailedToParse = 5,
-    kICCFailedToExtractSkColorSpace = 6,
-    kICCFailedToCreateXform = 7,
-    kICCFailedToApproximateTrFnAccurately = 8,
-    kICCExtractedSRGBColorSpace = 9,
-    kICCProfileAnalyzeLast = kICCExtractedSRGBColorSpace,
-  };
-
-  friend class ICCProfileCache;
   friend ICCProfile ICCProfileForTestingAdobeRGB();
   friend ICCProfile ICCProfileForTestingColorSpin();
   friend ICCProfile ICCProfileForTestingGenericRGB();
@@ -99,43 +83,74 @@ class COLOR_SPACE_EXPORT ICCProfile {
   // This method is used to hard-code the |id_| to a specific value, and is
   // used by layout test methods to ensure that they don't conflict with the
   // values generated in the browser.
-  static ICCProfile FromDataWithId(const void* icc_profile,
-                                   size_t size,
-                                   uint64_t id);
+  static ICCProfile FromDataWithId(const void* data, size_t size, uint64_t id);
 
-  AnalyzeResult Initialize();
-  void ComputeColorSpaceAndCache();
+  // Move the cache entry for this profile to the most recently used place.
+  void TouchCacheEntry() const;
 
-  // This globally identifies this ICC profile. It is used to look up this ICC
-  // profile from a ColorSpace object created from it. The object is invalid if
-  // |id_| is zero.
-  uint64_t id_ = 0;
-  std::vector<char> data_;
+  class Internals : public base::RefCountedThreadSafe<ICCProfile::Internals> {
+   public:
+    Internals(std::vector<char>, uint64_t id);
+    void HistogramDisplay(int64_t display_id);
 
-  // The result of attepting to extract a color space from the color profile.
-  AnalyzeResult analyze_result_ = kICCFailedToParse;
+    // This must match ICCProfileAnalyzeResult enum in histograms.xml.
+    enum AnalyzeResult {
+      kICCExtractedMatrixAndAnalyticTrFn = 0,
+      kICCExtractedMatrixAndApproximatedTrFn = 1,
+      kICCFailedToConvergeToApproximateTrFn = 2,
+      kICCFailedToExtractRawTrFn = 3,
+      kICCFailedToExtractMatrix = 4,
+      kICCFailedToParse = 5,
+      kICCFailedToExtractSkColorSpace = 6,
+      kICCFailedToCreateXform = 7,
+      kICCFailedToApproximateTrFnAccurately = 8,
+      kICCExtractedSRGBColorSpace = 9,
+      kICCProfileAnalyzeLast = kICCExtractedSRGBColorSpace,
+    };
 
-  // True iff we can create a valid ColorSpace (and ColorTransform) from this
-  // object. The transform may be LUT-based (using an SkColorSpaceXform to
-  // compute the lut).
-  bool is_valid_ = false;
+    // This globally identifies this ICC profile. It is used to look up this ICC
+    // profile from a ColorSpace object created from it. The object is invalid
+    // if |id_| is zero.
+    const uint64_t id_ = 0;
+    const std::vector<char> data_;
 
-  // True iff |to_XYZD50_| and |transfer_fn_| are accurate representations of
-  // the data in this profile. In this case ColorTransforms created from this
-  // profile will be analytic and not LUT-based.
-  bool is_parametric_ = false;
+    // The result of attepting to extract a color space from the color profile.
+    AnalyzeResult analyze_result_ = kICCFailedToParse;
 
-  // Results of Skia parsing the ICC profile data.
-  sk_sp<SkColorSpace> sk_color_space_;
+    // True iff we can create a valid ColorSpace (and ColorTransform) from this
+    // object. The transform may be LUT-based (using an SkColorSpaceXform to
+    // compute the lut).
+    bool is_valid_ = false;
 
-  // The best-fit parametric primaries and transfer function.
-  SkMatrix44 to_XYZD50_;
-  SkColorSpaceTransferFn transfer_fn_;
+    // True iff |to_XYZD50_| and |transfer_fn_| are accurate representations of
+    // the data in this profile. In this case ColorTransforms created from this
+    // profile will be analytic and not LUT-based.
+    bool is_parametric_ = false;
 
-  // The L-infinity error of the parametric color space fit. This is undefined
-  // unless |analyze_result_| is kICCFailedToApproximateTrFnAccurately or
-  // kICCExtractedMatrixAndApproximatedTrFn.
-  float transfer_fn_error_ = 0;
+    // Results of Skia parsing the ICC profile data.
+    sk_sp<SkColorSpace> sk_color_space_;
+
+    // The best-fit parametric primaries and transfer function.
+    SkMatrix44 to_XYZD50_;
+    SkColorSpaceTransferFn transfer_fn_;
+
+    // The L-infinity error of the parametric color space fit. This is undefined
+    // unless |analyze_result_| is kICCFailedToApproximateTrFnAccurately or
+    // kICCExtractedMatrixAndApproximatedTrFn.
+    float transfer_fn_error_ = 0;
+
+    // The set of display ids which have have caused this ICC profile to be
+    // recorded in UMA histograms. Only record an ICC profile once per display
+    // id (since the same profile will be re-read repeatedly, e.g, when displays
+    // are resized).
+    std::set<int64_t> histogrammed_display_ids_;
+
+   protected:
+    friend class base::RefCountedThreadSafe<ICCProfile::Internals>;
+    AnalyzeResult Initialize();
+    virtual ~Internals();
+  };
+  scoped_refptr<Internals> internals_;
 
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, BT709toSRGBICC);
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
