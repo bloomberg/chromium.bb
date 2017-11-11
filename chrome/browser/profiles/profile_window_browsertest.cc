@@ -40,8 +40,9 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-// This test verifies the Desktop implementation of Guest only.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+#error "This test verifies the Desktop implementation of Guest only."
+#endif
 
 namespace {
 
@@ -292,5 +293,3 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowWebUIBrowserTest,
   EXPECT_TRUE(RunJavascriptTest("testPodFocused",
                                 base::Value(expected_path.AsUTF8Unsafe())));
 }
-
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

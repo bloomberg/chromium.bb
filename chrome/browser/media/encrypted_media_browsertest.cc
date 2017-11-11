@@ -30,17 +30,12 @@
 #include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/build_info.h"
-#endif
-
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "chrome/browser/media/library_cdm_test_helper.h"
-#include "media/base/media_switches.h"
 #include "media/cdm/cdm_paths.h"
 #endif
 
@@ -157,11 +152,10 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
-  void RunEncryptedMediaTestPage(
-      const std::string& html_page,
-      const std::string& key_system,
-      base::StringPairs& query_params,
-      const std::string& expected_title) {
+  void RunEncryptedMediaTestPage(const std::string& html_page,
+                                 const std::string& key_system,
+                                 const base::StringPairs& query_params,
+                                 const std::string& expected_title) {
     DVLOG(1) << "Mojo CDM " << (IsUsingMojoCdm() ? "" : " not") << " enabled.";
     base::StringPairs new_query_params = query_params;
     StartLicenseServerIfNeeded(key_system, &new_query_params);
