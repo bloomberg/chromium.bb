@@ -41,7 +41,6 @@ class MockVideoFrameProvider : public cc::VideoFrameProvider {
   MOCK_METHOD0(HasCurrentFrame, bool());
   MOCK_METHOD0(GetCurrentFrame, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(PutCurrentFrame, void());
-  MOCK_METHOD0(task_runner, scoped_refptr<base::SingleThreadTaskRunner>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoFrameProvider);
@@ -88,6 +87,12 @@ class MockVideoFrameResourceProvider
 
   MOCK_METHOD1(Initialize, void(viz::ContextProvider*));
   MOCK_METHOD1(AppendQuads, void(viz::RenderPass*));
+  MOCK_METHOD2(PrepareSendToParent,
+               void(const cc::LayerTreeResourceProvider::ResourceIdArray&,
+                    std::vector<viz::TransferableResource>*));
+  MOCK_METHOD1(
+      ReceiveReturnsFromParent,
+      void(const std::vector<viz::ReturnedResource>& transferable_resources));
   MOCK_METHOD0(ObtainContextProvider, void());
 
  private:
@@ -177,6 +182,7 @@ TEST_F(VideoFrameSubmitterTest,
   EXPECT_CALL(*provider_, PutCurrentFrame());
   EXPECT_CALL(*sink_, SetNeedsBeginFrame(false));
   EXPECT_CALL(*resource_provider_, AppendQuads(_));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
 
   submitter_->StopUsingProvider();
 
@@ -213,6 +219,7 @@ TEST_F(VideoFrameSubmitterTest, DidReceiveFrameSubmitsFrame) {
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
   EXPECT_CALL(*provider_, PutCurrentFrame());
   EXPECT_CALL(*resource_provider_, AppendQuads(_));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
 
   submitter_->DidReceiveFrame();
   scoped_task_environment_.RunUntilIdle();
@@ -235,6 +242,7 @@ TEST_F(VideoFrameSubmitterTest, OnBeginFrameSubmitsFrame) {
   EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _));
   EXPECT_CALL(*provider_, PutCurrentFrame());
   EXPECT_CALL(*resource_provider_, AppendQuads(_));
+  EXPECT_CALL(*resource_provider_, PrepareSendToParent(_, _));
 
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
@@ -292,6 +300,16 @@ TEST_F(VideoFrameSubmitterTest, NotRenderingDoesNotProduceFrame) {
   viz::BeginFrameArgs args = begin_frame_source_->CreateBeginFrameArgs(
       BEGINFRAME_FROM_HERE, now_src_.get());
   submitter_->OnBeginFrame(args);
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(VideoFrameSubmitterTest, ReturnsResourceOnCompositorAck) {
+  MakeSubmitter();
+  scoped_task_environment_.RunUntilIdle();
+
+  WTF::Vector<viz::ReturnedResource> resources;
+  EXPECT_CALL(*resource_provider_, ReceiveReturnsFromParent(_));
+  submitter_->DidReceiveCompositorFrameAck(resources);
   scoped_task_environment_.RunUntilIdle();
 }
 
