@@ -4557,8 +4557,6 @@ static_library("test_support") {
       "chooser_controller/fake_bluetooth_chooser_controller.h",
       "chooser_controller/fake_usb_chooser_controller.cc",
       "chooser_controller/fake_usb_chooser_controller.h",
-      "chooser_controller/mock_chooser_controller.cc",
-      "chooser_controller/mock_chooser_controller.h",
       "download/test_download_shelf.cc",
       "download/test_download_shelf.h",
       "profile_resetter/profile_resetter_test_base.cc",
@@ -4621,6 +4619,13 @@ static_library("test_support") {
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]
+  }
+
+  if (is_mac && !mac_views_browser) {
+    sources += [
+      "chooser_controller/mock_chooser_controller.cc",
+      "chooser_controller/mock_chooser_controller.h",
+    ]
   }
 
   if (enable_app_list) {

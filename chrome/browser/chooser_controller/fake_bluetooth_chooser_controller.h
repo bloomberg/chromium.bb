@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHOOSER_CONTROLLER_FAKE_BLUETOOTH_CHOOSER_CONTROLLER_H_
 #define CHROME_BROWSER_CHOOSER_CONTROLLER_FAKE_BLUETOOTH_CHOOSER_CONTROLLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
@@ -39,6 +41,7 @@ class FakeBluetoothChooserController : public ChooserController {
   static constexpr int kSignalStrengthLevel4 = 4;
 
   struct FakeDevice {
+    std::string name;
     bool connected;
     bool paired;
     int signal_strength;

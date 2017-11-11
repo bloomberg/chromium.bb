@@ -101,31 +101,38 @@ class BluetoothChooserBrowserTest : public DialogBrowserTest {
   }
 
   void AddDeviceForAllStrengths() {
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Device with Strength 0",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel0});
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Device with Strength 1",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel1});
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Device with Strength 2",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel2});
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Device with Strength 3",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel3});
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Device with Strength 4",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel4});
   }
 
   void AddConnectedDevice() {
-    devices_.push_back({FakeBluetoothChooserController::CONNECTED,
+    devices_.push_back({"Connected Device",
+                        FakeBluetoothChooserController::CONNECTED,
                         FakeBluetoothChooserController::NOT_PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel4});
   }
 
   void AddPairedDevice() {
-    devices_.push_back({FakeBluetoothChooserController::NOT_CONNECTED,
+    devices_.push_back({"Paired Device",
+                        FakeBluetoothChooserController::NOT_CONNECTED,
                         FakeBluetoothChooserController::PAIRED,
                         FakeBluetoothChooserController::kSignalStrengthLevel4});
   }

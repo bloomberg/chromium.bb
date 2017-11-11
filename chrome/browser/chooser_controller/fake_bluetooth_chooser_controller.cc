@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chooser_controller/fake_bluetooth_chooser_controller.h"
 
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,7 +41,7 @@ int FakeBluetoothChooserController::GetSignalStrengthLevel(size_t index) const {
 }
 
 base::string16 FakeBluetoothChooserController::GetOption(size_t index) const {
-  return base::ASCIIToUTF16(base::StringPrintf("Device #%zu", index));
+  return base::ASCIIToUTF16(devices_.at(index).name);
 }
 
 bool FakeBluetoothChooserController::IsConnected(size_t index) const {

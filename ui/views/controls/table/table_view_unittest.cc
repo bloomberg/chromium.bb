@@ -757,6 +757,26 @@ TEST_F(TableViewTest, Selection) {
   table_->set_observer(NULL);
 }
 
+TEST_F(TableViewTest, RemoveUnselectedRows) {
+  TableViewObserverImpl observer;
+  table_->set_observer(&observer);
+
+  // Select a middle row.
+  table_->Select(2);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  // Remove the last row. This should notify of a change.
+  model_->RemoveRow(3);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=2 anchor=2 selection=2", SelectionStateAsString());
+
+  // Remove the first row. This should also notify of a change.
+  model_->RemoveRow(0);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=1 anchor=1 selection=1", SelectionStateAsString());
+}
+
 // 0 1 2 3:
 // select 3 -> 0 1 2 [3]
 // remove 3 -> 0 1 2 (none selected)
@@ -1225,6 +1245,15 @@ TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
   helper_->SetSelectionModel(new_selection);
   model_->RemoveRow(0);
   table_->RequestFocus();
+}
+
+TEST_F(TableViewTest, RemovingInvalidRowIsNoOp) {
+  table_->Select(3);
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+  table_->OnItemsRemoved(4, 1);
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
+  table_->OnItemsRemoved(2, 0);
+  EXPECT_EQ("active=3 anchor=3 selection=3", SelectionStateAsString());
 }
 
 namespace {
