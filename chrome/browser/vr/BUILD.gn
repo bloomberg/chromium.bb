@@ -47,8 +47,6 @@ static_library("vr_common") {
     "elements/exclusive_screen_toast_texture.h",
     "elements/exit_prompt.cc",
     "elements/exit_prompt.h",
-    "elements/exit_prompt_backplane.cc",
-    "elements/exit_prompt_backplane.h",
     "elements/exit_prompt_texture.cc",
     "elements/exit_prompt_texture.h",
     "elements/exit_warning_texture.cc",
