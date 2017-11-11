@@ -26,7 +26,6 @@
 namespace cc {
 class FilterOperations;
 class OutputSurface;
-class ScopedResource;
 }  // namespace cc
 
 namespace gfx {
@@ -57,12 +56,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   void SetVisible(bool visible);
   void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order);
-  bool HasAllocatedResourcesForTesting(RenderPassId render_pass_id) const;
   void DrawFrame(RenderPassList* render_passes_in_draw_order,
                  float device_scale_factor,
                  const gfx::Size& device_viewport_size);
 
   // Public interface implemented by subclasses.
+  virtual bool HasAllocatedResourcesForTesting(
+      const RenderPassId render_pass_id) const = 0;
   virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
@@ -102,6 +102,11 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     SURFACE_INITIALIZATION_MODE_PRESERVE,
     SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR,
     SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR,
+  };
+
+  struct RenderPassRequirements {
+    gfx::Size size;
+    ResourceTextureHint hint;
   };
 
   static gfx::RectF QuadVertexRect();
@@ -154,8 +159,20 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
   virtual ResourceFormat BackbufferFormat() const = 0;
+  virtual void UpdateRenderPassTextures(
+      const RenderPassList& render_passes_in_draw_order,
+      const base::flat_map<RenderPassId, RenderPassRequirements>&
+          render_passes_in_frame) = 0;
+  virtual void AllocateRenderPassResourceIfNeeded(
+      const RenderPassId render_pass_id,
+      const gfx::Size& enlarged_size,
+      ResourceTextureHint texturehint) = 0;
+  virtual bool IsRenderPassResourceAllocated(
+      const RenderPassId render_pass_id) const = 0;
+  virtual const gfx::Size& GetRenderPassTextureSize(
+      const RenderPassId render_pass_id) = 0;
   virtual void BindFramebufferToOutputSurface() = 0;
-  virtual void BindFramebufferToTexture(const cc::ScopedResource* resource) = 0;
+  virtual void BindFramebufferToTexture(const RenderPassId render_pass_id) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
   virtual void PrepareSurfaceForPass(
       SurfaceInitializationMode initialization_mode,
@@ -207,9 +224,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // DirectComposition layers needed to be used.
   int frames_since_using_dc_layers_ = 0;
 
-  // A map from RenderPass id to the texture used to draw the RenderPass from.
-  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
-      render_pass_textures_;
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass.
   base::flat_map<RenderPassId, TileDrawQuad> render_pass_bypass_quads_;

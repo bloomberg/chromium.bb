@@ -17,6 +17,7 @@ namespace cc {
 class OutputSurface;
 class RenderPassDrawQuad;
 class ResourceProvider;
+class ScopedResource;
 }  // namespace cc
 
 namespace viz {
@@ -40,11 +41,26 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     disable_picture_quad_image_filtering_ = disable;
   }
 
+  bool HasAllocatedResourcesForTesting(
+      const RenderPassId render_pass_id) const override;
+
  protected:
   bool CanPartialSwap() override;
   ResourceFormat BackbufferFormat() const override;
+  void UpdateRenderPassTextures(
+      const RenderPassList& render_passes_in_draw_order,
+      const base::flat_map<RenderPassId, RenderPassRequirements>&
+          render_passes_in_frame) override;
+  void AllocateRenderPassResourceIfNeeded(
+      const RenderPassId render_pass_id,
+      const gfx::Size& enlarged_size,
+      ResourceTextureHint texturehint) override;
+  bool IsRenderPassResourceAllocated(
+      const RenderPassId render_pass_id) const override;
+  const gfx::Size& GetRenderPassTextureSize(
+      const RenderPassId render_pass_id) override;
   void BindFramebufferToOutputSurface() override;
-  void BindFramebufferToTexture(const cc::ScopedResource* texture) override;
+  void BindFramebufferToTexture(const RenderPassId render_pass_id) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
   void PrepareSurfaceForPass(SurfaceInitializationMode initialization_mode,
                              const gfx::Rect& render_pass_scissor) override;
@@ -88,6 +104,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   sk_sp<SkShader> GetBackgroundFilterShader(
       const RenderPassDrawQuad* quad,
       SkShader::TileMode content_tile_mode) const;
+
+  // A map from RenderPass id to the texture used to draw the RenderPass from.
+  base::flat_map<RenderPassId, std::unique_ptr<cc::ScopedResource>>
+      render_pass_textures_;
 
   bool disable_picture_quad_image_filtering_ = false;
 
