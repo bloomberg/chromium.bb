@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -31,7 +32,9 @@ namespace device {
 
 namespace {
 
-MediaTransferProtocolManager* g_media_transfer_protocol_manager = NULL;
+#if DCHECK_IS_ON()
+MediaTransferProtocolManager* g_media_transfer_protocol_manager = nullptr;
+#endif
 
 // When reading directory entries, this is the number of entries for
 // GetFileInfo() to read in one operation. If set too low, efficiency goes down
@@ -63,8 +66,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   ~MediaTransferProtocolManagerImpl() override {
+#if DCHECK_IS_ON()
     DCHECK(g_media_transfer_protocol_manager);
-    g_media_transfer_protocol_manager = NULL;
+    g_media_transfer_protocol_manager = nullptr;
+#endif
     if (bus_) {
       bus_->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
                                           mtpd_owner_changed_callback_);
@@ -89,11 +94,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   const std::vector<std::string> GetStorages() const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     std::vector<std::string> storages;
-    for (StorageInfoMap::const_iterator it = storage_info_map_.begin();
-         it != storage_info_map_.end();
-         ++it) {
-      storages.push_back(it->first);
-    }
+    storages.reserve(storage_info_map_.size());
+    for (const auto& info : storage_info_map_)
+      storages.push_back(info.first);
     return storages;
   }
 
@@ -102,7 +105,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
       const std::string& storage_name) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
     StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
-    return it != storage_info_map_.end() ? &it->second : NULL;
+    return it != storage_info_map_.end() ? &it->second : nullptr;
   }
 
   // MediaTransferProtocolManager override.
@@ -350,12 +353,12 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   void OnEnumerateStorages(const std::vector<std::string>& storage_names) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(mtp_client_);
-    for (size_t i = 0; i < storage_names.size(); ++i) {
-      if (base::ContainsKey(storage_info_map_, storage_names[i])) {
+    for (const auto& name : storage_names) {
+      if (base::ContainsKey(storage_info_map_, name)) {
         // OnStorageChanged() might have gotten called first.
         continue;
       }
-      OnStorageAttached(storage_names[i]);
+      OnStorageAttached(name);
     }
   }
 
@@ -479,10 +482,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
     // Use |sorted_file_ids| to sanity check and make sure the results are a
     // subset of the requested file ids.
-    for (size_t i = 0; i < file_entries.size(); ++i) {
-      std::vector<uint32_t>::const_iterator it =
-          std::lower_bound(sorted_file_ids.begin(), sorted_file_ids.end(),
-                           file_entries[i].item_id());
+    for (const auto& entry : file_entries) {
+      std::vector<uint32_t>::const_iterator it = std::lower_bound(
+          sorted_file_ids.begin(), sorted_file_ids.end(), entry.item_id());
       if (it == sorted_file_ids.end()) {
         OnReadDirectoryError();
         return;
@@ -603,13 +605,12 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     // Save a copy of |storage_info_map_| keys as |storage_info_map_| can
     // change in OnStorageDetached().
     std::vector<std::string> storage_names;
-    for (StorageInfoMap::const_iterator it = storage_info_map_.begin();
-         it != storage_info_map_.end();
-         ++it) {
-      storage_names.push_back(it->first);
-    }
-    for (size_t i = 0; i != storage_names.size(); ++i)
-      OnStorageDetached(storage_names[i]);
+    storage_names.reserve(storage_info_map_.size());
+    for (const auto& info : storage_info_map_)
+      storage_names.push_back(info.first);
+
+    for (const auto& name : storage_names)
+      OnStorageDetached(name);
 
     if (mtpd_service_owner.empty()) {
       current_mtpd_owner_.clear();
@@ -622,7 +623,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     // |bus_| must be valid here. Otherwise, how did this method get called as a
     // callback in the first place?
     DCHECK(bus_);
-    mtp_client_.reset(MediaTransferProtocolDaemonClient::Create(bus_.get()));
+    mtp_client_ = MediaTransferProtocolDaemonClient::Create(bus_.get());
 
     // Set up signals and start initializing |storage_info_map_|.
     mtp_client_->ListenForChanges(
@@ -677,13 +678,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 }  // namespace
 
 // static
-MediaTransferProtocolManager* MediaTransferProtocolManager::Initialize() {
-  DCHECK(!g_media_transfer_protocol_manager);
+std::unique_ptr<MediaTransferProtocolManager>
+MediaTransferProtocolManager::Initialize() {
+  auto manager = std::make_unique<MediaTransferProtocolManagerImpl>();
 
-  g_media_transfer_protocol_manager = new MediaTransferProtocolManagerImpl();
   VLOG(1) << "MediaTransferProtocolManager initialized";
 
-  return g_media_transfer_protocol_manager;
+#if DCHECK_IS_ON()
+  DCHECK(!g_media_transfer_protocol_manager);
+  g_media_transfer_protocol_manager = manager.get();
+#endif
+
+  return manager;
 }
 
 }  // namespace device

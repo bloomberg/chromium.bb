@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -31,55 +32,56 @@ class MediaTransferProtocolManager {
   // A callback to handle the result of GetStorageInfoFromDevice.
   // The first argument is the returned storage info.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const MtpStorageInfo& storage_info,
-                              const bool error)>
-      GetStorageInfoFromDeviceCallback;
+  using GetStorageInfoFromDeviceCallback =
+      base::Callback<void(const MtpStorageInfo& storage_info,
+                          const bool error)>;
 
   // A callback to handle the result of OpenStorage.
   // The first argument is the returned handle.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const std::string& handle,
-                              bool error)> OpenStorageCallback;
+  using OpenStorageCallback =
+      base::Callback<void(const std::string& handle, bool error)>;
 
   // A callback to handle the result of CloseStorage.
   // The argument is true if there was an error.
-  typedef base::Callback<void(bool error)> CloseStorageCallback;
+  using CloseStorageCallback = base::Callback<void(bool error)>;
 
   // A callback to handle the result of CreateDirectory.
   // The first argument is true if there was an error.
-  typedef base::Callback<void(bool error)> CreateDirectoryCallback;
+  using CreateDirectoryCallback = base::Callback<void(bool error)>;
 
   // A callback to handle the result of ReadDirectory.
   // The first argument is a vector of file entries.
   // The second argument is true if there are more file entries.
   // The third argument is true if there was an error.
-  typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
-                              bool has_more,
-                              bool error)> ReadDirectoryCallback;
+  using ReadDirectoryCallback =
+      base::Callback<void(const std::vector<MtpFileEntry>& file_entries,
+                          bool has_more,
+                          bool error)>;
 
   // A callback to handle the result of ReadFileChunk.
   // The first argument is a string containing the file data.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const std::string& data,
-                              bool error)> ReadFileCallback;
+  using ReadFileCallback =
+      base::Callback<void(const std::string& data, bool error)>;
 
   // A callback to handle the result of GetFileInfo.
   // The first argument is a file entry.
   // The second argument is true if there was an error.
-  typedef base::Callback<void(const MtpFileEntry& file_entry,
-                              bool error)> GetFileInfoCallback;
+  using GetFileInfoCallback =
+      base::Callback<void(const MtpFileEntry& file_entry, bool error)>;
 
   // A callback to handle the result of RenameObject.
   // The first argument is true if there was an error.
-  typedef base::Callback<void(bool error)> RenameObjectCallback;
+  using RenameObjectCallback = base::Callback<void(bool error)>;
 
   // A callback to handle the result of CopyFileFromLocal.
   // The first argument is true if there was an error.
-  typedef base::Callback<void(bool error)> CopyFileFromLocalCallback;
+  using CopyFileFromLocalCallback = base::Callback<void(bool error)>;
 
   // A callback to handle the result of DeleteObject.
   // The first argument is true if there was an error.
-  typedef base::Callback<void(bool error)> DeleteObjectCallback;
+  using DeleteObjectCallback = base::Callback<void(bool error)>;
 
   // Implement this interface to be notified about MTP storage
   // attachment / detachment events.
@@ -169,7 +171,7 @@ class MediaTransferProtocolManager {
                             const DeleteObjectCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.
-  static MediaTransferProtocolManager* Initialize();
+  static std::unique_ptr<MediaTransferProtocolManager> Initialize();
 };
 
 }  // namespace device

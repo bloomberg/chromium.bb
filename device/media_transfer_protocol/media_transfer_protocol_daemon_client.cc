@@ -161,7 +161,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     {
-      dbus::MessageWriter array_writer(NULL);
+      dbus::MessageWriter array_writer(nullptr);
       writer.OpenArray("u", &array_writer);
 
       size_t end_offset = file_ids.size();
@@ -260,16 +260,11 @@ class MediaTransferProtocolDaemonClientImpl
       { mtpd::kMTPStorageAttached, true },
       { mtpd::kMTPStorageDetached, false },
     };
-    const size_t kNumSignalEventTuples = arraysize(kSignalEventTuples);
-
-    for (size_t i = 0; i < kNumSignalEventTuples; ++i) {
+    for (const auto& event : kSignalEventTuples) {
       proxy_->ConnectToSignal(
-          mtpd::kMtpdInterface,
-          kSignalEventTuples[i].signal_name,
+          mtpd::kMtpdInterface, event.signal_name,
           base::Bind(&MediaTransferProtocolDaemonClientImpl::OnMTPStorageSignal,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     handler,
-                     kSignalEventTuples[i].is_attach),
+                     weak_ptr_factory_.GetWeakPtr(), handler, event.is_attach),
           base::Bind(&MediaTransferProtocolDaemonClientImpl::OnSignalConnected,
                      weak_ptr_factory_.GetWeakPtr()));
     }
@@ -373,24 +368,23 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    std::vector<uint32_t> file_ids;
     dbus::MessageReader reader(response);
-    dbus::MessageReader array_reader(NULL);
+    dbus::MessageReader array_reader(nullptr);
     if (!reader.PopArray(&array_reader) || reader.HasMoreData()) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
       error_callback.Run();
       return;
     }
 
+    std::vector<uint32_t> file_ids;
     while (array_reader.HasMoreData()) {
       uint32_t file_id;
-      if (array_reader.PopUint32(&file_id)) {
-        file_ids.push_back(file_id);
-      } else {
+      if (!array_reader.PopUint32(&file_id)) {
         LOG(ERROR) << kInvalidResponseMsg << response->ToString();
         error_callback.Run();
         return;
       }
+      file_ids.push_back(file_id);
     }
     callback.Run(file_ids);
   }
@@ -404,7 +398,6 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    std::vector<MtpFileEntry> file_entries;
     dbus::MessageReader reader(response);
     MtpFileEntries entries_protobuf;
     if (!reader.PopArrayOfBytesAsProto(&entries_protobuf)) {
@@ -413,6 +406,8 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
+    std::vector<MtpFileEntry> file_entries;
+    file_entries.reserve(entries_protobuf.file_entries_size());
     for (int i = 0; i < entries_protobuf.file_entries_size(); ++i)
       file_entries.push_back(entries_protobuf.file_entries(i));
     callback.Run(file_entries);
@@ -428,7 +423,7 @@ class MediaTransferProtocolDaemonClientImpl
       return;
     }
 
-    const uint8_t* data_bytes = NULL;
+    const uint8_t* data_bytes = nullptr;
     size_t data_length = 0;
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&data_bytes, &data_length)) {
@@ -495,7 +490,7 @@ class MediaTransferProtocolDaemonClientImpl
                               << signal << " failed.";
   }
 
-  dbus::ObjectProxy* proxy_;
+  dbus::ObjectProxy* const proxy_;
 
   bool listen_for_changes_called_;
 
@@ -516,9 +511,9 @@ MediaTransferProtocolDaemonClient::MediaTransferProtocolDaemonClient() {}
 MediaTransferProtocolDaemonClient::~MediaTransferProtocolDaemonClient() {}
 
 // static
-MediaTransferProtocolDaemonClient* MediaTransferProtocolDaemonClient::Create(
-    dbus::Bus* bus) {
-  return new MediaTransferProtocolDaemonClientImpl(bus);
+std::unique_ptr<MediaTransferProtocolDaemonClient>
+MediaTransferProtocolDaemonClient::Create(dbus::Bus* bus) {
+  return std::make_unique<MediaTransferProtocolDaemonClientImpl>(bus);
 }
 
 }  // namespace device
