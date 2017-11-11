@@ -13,6 +13,8 @@
 #include "base/sequence_checker.h"
 #include "extensions/common/extension_id.h"
 
+class GURL;
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -53,6 +55,12 @@ class RulesetManager {
   // Returns whether the given |request| should be blocked.
   bool ShouldBlockRequest(const net::URLRequest& request,
                           bool is_incognito_context) const;
+
+  // Returns whether the given |request| should be redirected along with the
+  // |redirect_url|. |redirect_url| must not be null.
+  bool ShouldRedirectRequest(const net::URLRequest& request,
+                             bool is_incognito_context,
+                             GURL* redirect_url) const;
 
   // Returns the number of RulesetMatcher currently being managed.
   size_t GetMatcherCountForTest() const { return rules_map_.size(); }

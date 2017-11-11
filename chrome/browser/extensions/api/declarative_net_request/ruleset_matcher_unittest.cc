@@ -15,6 +15,7 @@
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,10 +76,42 @@ TEST_P(RulesetMatcherTest, ShouldBlockRequest) {
 
   EXPECT_TRUE(matcher->ShouldBlockRequest(
       GURL("http://google.com"), url::Origin(),
-      url_pattern_index::flat::ElementType_SUBDOCUMENT, false));
+      url_pattern_index::flat::ElementType_SUBDOCUMENT, true));
   EXPECT_FALSE(matcher->ShouldBlockRequest(
       GURL("http://yahoo.com"), url::Origin(),
-      url_pattern_index::flat::ElementType_SUBDOCUMENT, false));
+      url_pattern_index::flat::ElementType_SUBDOCUMENT, true));
+}
+
+// Tests a simple redirect rule.
+TEST_P(RulesetMatcherTest, ShouldRedirectRequest) {
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("google.com");
+  rule.priority = kMinValidPriority;
+  rule.action->type = std::string("redirect");
+  rule.action->redirect_url = std::string("http://yahoo.com");
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
+
+  int expected_checksum;
+  ASSERT_TRUE(
+      ExtensionPrefs::Get(browser_context())
+          ->GetDNRRulesetChecksum(extension()->id(), &expected_checksum));
+
+  std::unique_ptr<RulesetMatcher> matcher;
+  EXPECT_EQ(RulesetMatcher::kLoadSuccess,
+            RulesetMatcher::CreateVerifiedMatcher(
+                file_util::GetIndexedRulesetPath(extension()->path()),
+                expected_checksum, &matcher));
+
+  GURL redirect_url;
+  EXPECT_TRUE(matcher->ShouldRedirectRequest(
+      GURL("http://google.com"), url::Origin(),
+      url_pattern_index::flat::ElementType_SUBDOCUMENT, true, &redirect_url));
+  EXPECT_EQ(GURL("http://yahoo.com"), redirect_url);
+
+  EXPECT_FALSE(matcher->ShouldRedirectRequest(
+      GURL("http://yahoo.com"), url::Origin(),
+      url_pattern_index::flat::ElementType_SUBDOCUMENT, true, &redirect_url));
 }
 
 // Tests that a modified ruleset file fails verification.

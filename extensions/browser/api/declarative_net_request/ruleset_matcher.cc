@@ -16,6 +16,7 @@
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
+#include "url/gurl.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -25,6 +26,9 @@ namespace {
 void DeleteRulesetHelper(std::unique_ptr<base::MemoryMappedFile> ruleset) {
   base::AssertBlockingAllowed();
 }
+
+using FindRuleStrategy =
+    url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
 
 }  // namespace
 
@@ -82,28 +86,72 @@ bool RulesetMatcher::ShouldBlockRequest(const GURL& url,
                                         const url::Origin& first_party_origin,
                                         flat_rule::ElementType element_type,
                                         bool is_third_party) const {
-  using FindRuleStrategy =
-      url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime."
+      "SingleExtension");
+
+  // Don't exclude generic rules from being matched. A generic rule is one with
+  // an empty included domains list.
+  const bool disable_generic_rules = false;
+
+  bool success =
+      !!blacklist_matcher_.FindMatch(
+          url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
+          is_third_party, disable_generic_rules, FindRuleStrategy::kAny) &&
+      !whitelist_matcher_.FindMatch(
+          url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
+          is_third_party, disable_generic_rules, FindRuleStrategy::kAny);
+  return success;
+}
+
+bool RulesetMatcher::ShouldRedirectRequest(
+    const GURL& url,
+    const url::Origin& first_party_origin,
+    flat_rule::ElementType element_type,
+    bool is_third_party,
+    GURL* redirect_url) const {
+  DCHECK(redirect_url);
+  DCHECK_NE(flat_rule::ElementType_WEBSOCKET, element_type);
 
   SCOPED_UMA_HISTOGRAM_TIMER(
-      "DeclarativeNetRequest.ShouldBlockRequestTime.SingleExtension");
+      "Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime."
+      "SingleExtension");
 
-  bool success = !!blacklist_matcher_.FindMatch(
-                     url, first_party_origin, element_type,
-                     flat_rule::ActivationType_NONE, is_third_party,
-                     false /*disable_generic_rules*/, FindRuleStrategy::kAny) &&
-                 !whitelist_matcher_.FindMatch(
-                     url, first_party_origin, element_type,
-                     flat_rule::ActivationType_NONE, is_third_party,
-                     false /*disable_generic_rules*/, FindRuleStrategy::kAny);
-  return success;
+  // Don't exclude generic rules from being matched. A generic rule is one with
+  // an empty included domains list.
+  const bool disable_generic_rules = false;
+
+  // Retrieve the highest priority matching rule corresponding to the given
+  // request parameters.
+  const flat_rule::UrlRule* rule = redirect_matcher_.FindMatch(
+      url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
+      is_third_party, disable_generic_rules,
+      FindRuleStrategy::kHighestPriority);
+  if (!rule)
+    return false;
+
+  // Find the UrlRuleMetadata corresponding to |rule|. Since |metadata_list_| is
+  // sorted by rule id, use LookupByKey which binary searches for fast lookup.
+  const flat::UrlRuleMetadata* metadata =
+      metadata_list_->LookupByKey(rule->id());
+
+  // There must be a UrlRuleMetadata object corresponding to each redirect rule.
+  DCHECK(metadata);
+  DCHECK_EQ(metadata->id(), rule->id());
+
+  *redirect_url = GURL(base::StringPiece(metadata->redirect_url()->c_str(),
+                                         metadata->redirect_url()->size()));
+  DCHECK(redirect_url->is_valid());
+  return true;
 }
 
 RulesetMatcher::RulesetMatcher(std::unique_ptr<base::MemoryMappedFile> ruleset)
     : ruleset_(std::move(ruleset)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_->data())),
       blacklist_matcher_(root_->blacklist_index()),
-      whitelist_matcher_(root_->whitelist_index()) {}
+      whitelist_matcher_(root_->whitelist_index()),
+      redirect_matcher_(root_->redirect_index()),
+      metadata_list_(root_->extension_metadata()) {}
 
 }  // namespace declarative_net_request
 }  // namespace extensions
