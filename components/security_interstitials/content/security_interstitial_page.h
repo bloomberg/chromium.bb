@@ -41,6 +41,9 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   // Prevents creating the actual interstitial view for testing.
   void DontCreateViewForTesting();
 
+  // InterstitialPageDelegate method:
+  std::string GetHTMLContents() override;
+
  protected:
   // Returns true if the interstitial should create a new navigation entry.
   virtual bool ShouldCreateNewNavigation() const = 0;
@@ -54,9 +57,6 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
   virtual void AfterShow() {}
 
   virtual int GetHTMLTemplateId();
-
-  // InterstitialPageDelegate method:
-  std::string GetHTMLContents() override;
 
   // Returns the formatted host name for the request url.
   base::string16 GetFormattedHostName() const;

@@ -335,7 +335,7 @@ NavigationHandleImpl::GetConnectionInfo() {
   return connection_info_;
 }
 
-base::Optional<net::SSLInfo> NavigationHandleImpl::GetSSLInfo() {
+const base::Optional<net::SSLInfo>& NavigationHandleImpl::GetSSLInfo() {
   return ssl_info_;
 }
 
@@ -438,6 +438,19 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
                       scoped_refptr<net::HttpResponseHeaders>(),
                       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN, nullptr,
                       base::Bind(&UpdateThrottleCheckResult, &result));
+
+  // Reset the callback to ensure it will not be called later.
+  complete_callback_.Reset();
+  return result;
+}
+
+NavigationThrottle::ThrottleCheckResult
+NavigationHandleImpl::CallWillFailRequestForTesting(
+    base::Optional<net::SSLInfo> ssl_info,
+    bool should_ssl_errors_be_fatal) {
+  NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
+  WillFailRequest(ssl_info, should_ssl_errors_be_fatal,
+                  base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
