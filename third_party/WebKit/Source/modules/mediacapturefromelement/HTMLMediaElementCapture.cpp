@@ -61,7 +61,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
   if (event->type() == EventTypeNames::ended) {
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
-      track->stopTrack(ASSERT_NO_EXCEPTION);
+      track->stopTrack(context);
       media_stream_->RemoveTrackByComponent(track->Component());
     }
 
@@ -75,7 +75,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
   if (media_element_->GetLoadType() == WebMediaPlayer::kLoadTypeMediaStream) {
     const MediaStreamTrackVector tracks = media_stream_->getTracks();
     for (const auto& track : tracks) {
-      track->stopTrack(ASSERT_NO_EXCEPTION);
+      track->stopTrack(context);
       media_stream_->RemoveTrackByComponent(track->Component());
     }
     MediaStreamDescriptor* const descriptor =

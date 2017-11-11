@@ -48,7 +48,7 @@ enum MediaStreamTrackState {
     attribute EventHandler onended;
 
     [CallWith=ScriptState] MediaStreamTrack clone();
-    [ImplementedAs=stopTrack, RaisesException] void stop();
+    [ImplementedAs=stopTrack, CallWith=ExecutionContext] void stop();
 
     MediaTrackCapabilities getCapabilities();
     MediaTrackConstraints getConstraints();

@@ -869,6 +869,20 @@
     }
     video.srcObject = canvas_stream;
   }
+
+  function concurrentGetUserMediaStop() {
+    var num_stopped = 0;
+    const N = 250;
+    for (var i = 0; i < N; i++) {
+      navigator.mediaDevices.getUserMedia({video: true}).then(s => {
+        setTimeout(() => {
+          s.getVideoTracks()[0].stop();
+          if (++num_stopped == N)
+            reportTestSuccess();
+        }, 1);
+      }).catch(e => failTest("getUserMedia failed: " + e.name));
+    }
+  }
   </script>
 </head>
 <body>
