@@ -1126,6 +1126,14 @@ static void search_switchable(const RestorationTileLimits *limits,
   RestorationType best_rtype = RESTORE_NONE;
 
   for (RestorationType r = 0; r < RESTORE_SWITCHABLE_TYPES; ++r) {
+    // Check for the condition that wiener or sgrproj search could not
+    // find a solution or the solution was worse than RESTORE_NONE.
+    // In either case the best_rtype will be set as RESTORE_NONE. These
+    // should be skipped from the test below.
+    if (r > RESTORE_NONE) {
+      if (rusi->best_rtype[r - 1] == RESTORE_NONE) continue;
+    }
+
     const int64_t sse = rusi->sse[r];
     int64_t coeff_pcost = 0;
     switch (r) {
@@ -1134,10 +1142,10 @@ static void search_switchable(const RestorationTileLimits *limits,
         coeff_pcost =
             count_wiener_bits(wiener_win, &rusi->wiener, &rsc->wiener);
         break;
-      default:
-        assert(r == RESTORE_SGRPROJ);
+      case RESTORE_SGRPROJ:
         coeff_pcost = count_sgrproj_bits(&rusi->sgrproj, &rsc->sgrproj);
         break;
+      default: assert(0); break;
     }
     const int64_t coeff_bits = coeff_pcost << AV1_PROB_COST_SHIFT;
     const int64_t bits = x->switchable_restore_cost[r] + coeff_bits;
