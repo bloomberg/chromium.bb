@@ -38,6 +38,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
+      int frame_tree_node_id,
       std::unique_ptr<ThrottlingURLLoader> url_loader,
       std::vector<GURL> url_chain,
       base::Optional<ResourceRequestCompletionStatus> completion_status);
@@ -72,6 +73,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
+      int frame_tree_node_id,
       std::vector<GURL> url_chain,
       base::Optional<ResourceRequestCompletionStatus> completion_status);
 
@@ -98,6 +100,9 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // Callback to run after download starts.
   DownloadUrlParameters::OnStartedCallback callback_;
+
+  // Used to get WebContents in browser process.
+  int frame_tree_node_id_ = 0;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 
