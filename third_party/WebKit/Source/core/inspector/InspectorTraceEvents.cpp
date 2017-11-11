@@ -50,6 +50,7 @@ namespace blink {
 namespace {
 
 void* AsyncId(unsigned long identifier) {
+  // This value should be odd to avoid collisions with regular pointers.
   return reinterpret_cast<void*>((identifier << 1) | 1);
 }
 

@@ -50,12 +50,21 @@
 namespace blink {
 namespace probe {
 
+namespace {
+void* AsyncId(void* task) {
+  // Blink uses odd ids for network requests and even ids for everything else.
+  // We should make all of them even before reporting to V8 to avoid collisions
+  // with internal V8 async events.
+  return reinterpret_cast<void*>(reinterpret_cast<intptr_t>(task) << 1);
+}
+}  // namespace
+
 AsyncTask::AsyncTask(ExecutionContext* context,
                      void* task,
                      const char* step,
                      bool enabled)
     : debugger_(enabled ? ThreadDebugger::From(ToIsolate(context)) : nullptr),
-      task_(task),
+      task_(AsyncId(task)),
       recurring_(step) {
   if (recurring_) {
     TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask",
@@ -84,7 +93,7 @@ void AsyncTaskScheduled(ExecutionContext* context,
                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
                           "data", InspectorAsyncTask::Data(name));
   if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
-    debugger->AsyncTaskScheduled(name, task, true);
+    debugger->AsyncTaskScheduled(name, AsyncId(task), true);
 }
 
 void AsyncTaskScheduledBreakable(ExecutionContext* context,
@@ -96,7 +105,7 @@ void AsyncTaskScheduledBreakable(ExecutionContext* context,
 
 void AsyncTaskCanceled(ExecutionContext* context, void* task) {
   if (ThreadDebugger* debugger = ThreadDebugger::From(ToIsolate(context)))
-    debugger->AsyncTaskCanceled(task);
+    debugger->AsyncTaskCanceled(AsyncId(task));
   TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
                         TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));
 }
