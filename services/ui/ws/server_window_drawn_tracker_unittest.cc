@@ -10,6 +10,7 @@
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_drawn_tracker_observer.h"
 #include "services/ui/ws/test_server_window_delegate.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -71,8 +72,23 @@ WindowId MakeWindowId() {
 
 }  // namespace
 
-TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
-  TestServerWindowDelegate server_window_delegate;
+class ServerWindowDrawnTrackerTest : public testing::Test {
+ public:
+  ServerWindowDrawnTrackerTest() {}
+  ~ServerWindowDrawnTrackerTest() override {}
+
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
+
+ private:
+  test::WindowServerTestHelper ws_test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServerWindowDrawnTrackerTest);
+};
+
+TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   std::unique_ptr<ServerWindow> window(
       new ServerWindow(&server_window_delegate, MakeWindowId()));
   server_window_delegate.set_root_window(window.get());
@@ -111,8 +127,8 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfDeletionAndVisibility) {
   EXPECT_FALSE(drawn_observer.is_drawn());
 }
 
-TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
-  TestServerWindowDelegate server_window_delegate;
+TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -138,8 +154,8 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingFromRoot) {
   EXPECT_TRUE(drawn_observer.is_drawn());
 }
 
-TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
-  TestServerWindowDelegate server_window_delegate;
+TEST_F(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -169,8 +185,8 @@ TEST(ServerWindowDrawnTrackerTest, ChangeBecauseOfRemovingAncestorFromRoot) {
   EXPECT_TRUE(drawn_observer.is_drawn());
 }
 
-TEST(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
-  TestServerWindowDelegate server_window_delegate;
+TEST_F(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   ServerWindow child1(&server_window_delegate, MakeWindowId());
   ServerWindow child2(&server_window_delegate, MakeWindowId());
@@ -210,8 +226,8 @@ TEST(ServerWindowDrawnTrackerTest, VisibilityChangeFromNonParentAncestor) {
   EXPECT_TRUE(child3.IsDrawn());
 }
 
-TEST(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
-  TestServerWindowDelegate server_window_delegate;
+TEST_F(ServerWindowDrawnTrackerTest, TreeHierarchyChangeFromNonParentAncestor) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   ServerWindow root(&server_window_delegate, MakeWindowId());
   ServerWindow child1(&server_window_delegate, MakeWindowId());
   ServerWindow child2(&server_window_delegate, MakeWindowId());

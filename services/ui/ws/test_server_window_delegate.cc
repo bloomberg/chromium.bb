@@ -9,12 +9,14 @@
 namespace ui {
 namespace ws {
 
-TestServerWindowDelegate::TestServerWindowDelegate() {}
+TestServerWindowDelegate::TestServerWindowDelegate(
+    viz::HostFrameSinkManager* host_frame_sink_manager)
+    : host_frame_sink_manager_(host_frame_sink_manager) {}
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
 viz::HostFrameSinkManager* TestServerWindowDelegate::GetHostFrameSinkManager() {
-  return nullptr;
+  return host_frame_sink_manager_;
 }
 
 ServerWindow* TestServerWindowDelegate::GetRootWindowForDrawn(

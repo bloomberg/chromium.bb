@@ -6,13 +6,29 @@
 
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_server_window_delegate.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
 namespace ws {
 
-TEST(WindowCoordinateConversions, Transform) {
-  TestServerWindowDelegate window_delegate;
+class WindowCoordinateConversions : public testing::Test {
+ public:
+  WindowCoordinateConversions() {}
+  ~WindowCoordinateConversions() override {}
+
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
+
+ private:
+  test::WindowServerTestHelper ws_test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowCoordinateConversions);
+};
+
+TEST_F(WindowCoordinateConversions, Transform) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);

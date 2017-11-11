@@ -39,13 +39,17 @@ class DragTestWindow : public DragTargetConnection {
     base::Callback<void(uint32_t)> callback;
   };
 
-  DragTestWindow(DragControllerTest* parent, const WindowId& id)
-      : parent_(parent), window_delegate_(), window_(&window_delegate_, id) {
+  DragTestWindow(DragControllerTest* parent,
+                 TestServerWindowDelegate* window_delegate,
+                 const WindowId& id)
+      : parent_(parent),
+        window_delegate_(window_delegate),
+        window_(window_delegate_, id) {
     window_.SetCanAcceptDrops(true);
   }
   ~DragTestWindow() override;
 
-  TestServerWindowDelegate* delegate() { return &window_delegate_; }
+  TestServerWindowDelegate* delegate() { return window_delegate_; }
   ServerWindow* window() { return &window_; }
 
   QueuedType queue_response_type() {
@@ -129,7 +133,7 @@ class DragTestWindow : public DragTargetConnection {
 
  private:
   DragControllerTest* parent_;
-  TestServerWindowDelegate window_delegate_;
+  TestServerWindowDelegate* window_delegate_;
   ServerWindow window_;
   std::unordered_map<std::string, std::vector<uint8_t>> mime_data_;
   uint32_t times_received_drag_drop_start_ = 0;
@@ -144,7 +148,7 @@ class DragControllerTest : public testing::Test,
   std::unique_ptr<DragTestWindow> BuildWindow() {
     WindowId id(1, ++window_id_);
     std::unique_ptr<DragTestWindow> p =
-        base::MakeUnique<DragTestWindow>(this, id);
+        base::MakeUnique<DragTestWindow>(this, window_delegate_.get(), id);
     server_window_by_id_[id] = p->window();
     connection_by_window_[p->window()] = p.get();
     return p;
@@ -212,7 +216,8 @@ class DragControllerTest : public testing::Test,
   void SetUp() override {
     testing::Test::SetUp();
 
-    window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+    window_delegate_ = base::MakeUnique<TestServerWindowDelegate>(
+        ws_test_helper_.window_server()->GetHostFrameSinkManager());
     root_window_ =
         base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
     window_delegate_->set_root_window(root_window_.get());
@@ -260,6 +265,8 @@ class DragControllerTest : public testing::Test,
   }
 
   int window_id_ = 3;
+
+  test::WindowServerTestHelper ws_test_helper_;
 
   ui::CursorType cursor_;
 

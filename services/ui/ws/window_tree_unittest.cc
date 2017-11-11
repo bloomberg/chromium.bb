@@ -1194,7 +1194,7 @@ TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
   ServerWindow* window = nullptr;
   EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
 
-  TestServerWindowDelegate delegate;
+  TestServerWindowDelegate delegate(window_server()->GetHostFrameSinkManager());
   WindowId window_id(42, 1337);
   ServerWindow unknown_window(&delegate, window_id);
   const float new_opacity = 0.5f;

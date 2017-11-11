@@ -11,6 +11,7 @@
 #include "services/ui/ws/focus_controller_observer.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_server_window_delegate.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -74,8 +75,23 @@ class TestFocusControllerObserver : public FocusControllerObserver {
 
 }  // namespace
 
-TEST(FocusControllerTest, Basic) {
-  TestServerWindowDelegate server_window_delegate;
+class FocusControllerTest : public testing::Test {
+ public:
+  FocusControllerTest() {}
+  ~FocusControllerTest() override {}
+
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
+
+ private:
+  test::WindowServerTestHelper ws_test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusControllerTest);
+};
+
+TEST_F(FocusControllerTest, Basic) {
+  TestServerWindowDelegate server_window_delegate(host_frame_sink_manager());
   ServerWindow root(&server_window_delegate, WindowId(1, 1));
   server_window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -149,12 +165,14 @@ namespace {
 // returns the last ancestor as the root of a window.
 class TestServerWindowDelegate2 : public ServerWindowDelegate {
  public:
-  TestServerWindowDelegate2() = default;
+  explicit TestServerWindowDelegate2(
+      viz::HostFrameSinkManager* host_frame_sink_manager)
+      : host_frame_sink_manager_(host_frame_sink_manager) {}
   ~TestServerWindowDelegate2() override = default;
 
   // ServerWindowDelegate:
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override {
-    return nullptr;
+    return host_frame_sink_manager_;
   }
   ServerWindow* GetRootWindowForDrawn(const ServerWindow* window) override {
     const ServerWindow* root = window;
@@ -167,13 +185,15 @@ class TestServerWindowDelegate2 : public ServerWindowDelegate {
                                 ServerWindow* window) override {}
 
  private:
+  viz::HostFrameSinkManager* host_frame_sink_manager_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate2);
 };
 
 }  // namespace
 
-TEST(FocusControllerTest, ActiveWindowMovesToDifferentDisplay) {
-  TestServerWindowDelegate2 server_window_delegate;
+TEST_F(FocusControllerTest, ActiveWindowMovesToDifferentDisplay) {
+  TestServerWindowDelegate2 server_window_delegate(host_frame_sink_manager());
   ServerWindow root1(&server_window_delegate, WindowId(1, 1));
   root1.SetVisible(true);
   root1.set_is_activation_parent(true);

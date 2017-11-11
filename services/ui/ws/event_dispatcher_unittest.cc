@@ -288,6 +288,9 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
     return test_event_dispatcher_delegate_.get();
   }
   EventDispatcher* event_dispatcher() { return event_dispatcher_.get(); }
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
 
   void DispatchEvent(EventDispatcher* dispatcher,
                      const ui::Event& event,
@@ -323,12 +326,12 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
     event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
   }
 
+  WindowServerTestHelper ws_test_helper_;
+
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
   std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
   std::unique_ptr<EventDispatcher> event_dispatcher_;
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherTest);
 };
@@ -433,7 +436,8 @@ void EventDispatcherTest::SetUp() {
   }
   testing::TestWithParam<bool>::SetUp();
 
-  window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+  window_delegate_ =
+      base::MakeUnique<TestServerWindowDelegate>(host_frame_sink_manager());
   root_window_ =
       base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
   root_window_->set_is_activation_parent(true);
@@ -459,6 +463,9 @@ class EventDispatcherVizTargeterTest
     return test_event_dispatcher_delegate_.get();
   }
   EventDispatcher* event_dispatcher() { return event_dispatcher_.get(); }
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
   viz::AggregatedHitTestRegion* aggregated_hit_test_region() {
     return static_cast<viz::AggregatedHitTestRegion*>(active_buffer_.get());
   }
@@ -495,13 +502,13 @@ class EventDispatcherVizTargeterTest
     event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
   }
 
+  WindowServerTestHelper ws_test_helper_;
+
   std::unique_ptr<TestServerWindowDelegate> window_delegate_;
   std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<TestEventDispatcherDelegate> test_event_dispatcher_delegate_;
   std::unique_ptr<EventDispatcher> event_dispatcher_;
   mojo::ScopedSharedBufferMapping active_buffer_;
-
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcherVizTargeterTest);
 };
@@ -515,7 +522,8 @@ void EventDispatcherVizTargeterTest::SetUp() {
   }
   testing::Test::SetUp();
 
-  window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+  window_delegate_ =
+      base::MakeUnique<TestServerWindowDelegate>(host_frame_sink_manager());
   root_window_ =
       base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
   root_window_->set_is_activation_parent(true);
@@ -2302,7 +2310,7 @@ TEST_P(EventDispatcherTest, ChildModal) {
 }
 
 TEST_P(EventDispatcherTest, DontCancelWhenMovedToSeparateDisplay) {
-  TestServerWindowDelegate window_delegate2;
+  TestServerWindowDelegate window_delegate2(host_frame_sink_manager());
   ServerWindow root2(&window_delegate2, WindowId(1, 100));
   root2.set_is_activation_parent(true);
   window_delegate2.set_root_window(&root2);

@@ -6,14 +6,29 @@
 
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/test_server_window_delegate.h"
-#include "services/ui/ws/window_finder.h"
+#include "services/ui/ws/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
 namespace ws {
 
-TEST(WindowFinderTest, FindDeepestVisibleWindow) {
-  TestServerWindowDelegate window_delegate;
+class WindowFinderTest : public testing::Test {
+ public:
+  WindowFinderTest() {}
+  ~WindowFinderTest() override {}
+
+  viz::HostFrameSinkManager* host_frame_sink_manager() {
+    return ws_test_helper_.window_server()->GetHostFrameSinkManager();
+  }
+
+ private:
+  test::WindowServerTestHelper ws_test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowFinderTest);
+};
+
+TEST_F(WindowFinderTest, FindDeepestVisibleWindow) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
@@ -57,8 +72,8 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
                          .window);
 }
 
-TEST(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -108,8 +123,8 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowNonClientArea) {
   EXPECT_FALSE(result.in_non_client_area);
 }
 
-TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -132,8 +147,8 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
                                   .window);
 }
 
-TEST(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -159,8 +174,8 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowOverNonTarget) {
                          .window);
 }
 
-TEST(WindowFinderTest, NonClientPreferredOverChild) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, NonClientPreferredOverChild) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
   root.SetVisible(true);
@@ -186,8 +201,8 @@ TEST(WindowFinderTest, NonClientPreferredOverChild) {
                         .window);
 }
 
-TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
@@ -232,8 +247,8 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
                          .window);
 }
 
-TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
-  TestServerWindowDelegate window_delegate;
+TEST_F(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
+  TestServerWindowDelegate window_delegate(host_frame_sink_manager());
   ServerWindow root(&window_delegate, WindowId(1, 2));
   root.set_event_targeting_policy(
       mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
