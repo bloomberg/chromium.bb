@@ -779,6 +779,24 @@ TEST_F(UiSceneManagerTest, OmniboxSuggestionBindings) {
   EXPECT_EQ(NumVisibleChildren(kSuggestionLayout), initially_visible);
 }
 
+TEST_F(UiSceneManagerTest, ControllerQuiescence) {
+  MakeManager(kNotInCct, kNotInWebVr);
+  OnBeginFrame();
+  EXPECT_TRUE(IsVisible(kControllerGroup));
+  model_->controller.quiescent = true;
+  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
+  EXPECT_TRUE(IsVisible(kControllerGroup));
+  EXPECT_TRUE(AnimateBy(MsToDelta(100)));
+  EXPECT_FALSE(IsVisible(kControllerGroup));
+
+  UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
+  model_->controller.quiescent = false;
+  EXPECT_TRUE(AnimateBy(MsToDelta(100)));
+  EXPECT_GT(1.0f, controller_group->computed_opacity());
+  EXPECT_TRUE(AnimateBy(MsToDelta(150)));
+  EXPECT_EQ(1.0f, controller_group->computed_opacity());
+}
+
 TEST_F(UiSceneManagerTest, CloseButtonColorBindings) {
   MakeManager(kInCct, kNotInWebVr);
   EXPECT_TRUE(IsVisible(kCloseButton));

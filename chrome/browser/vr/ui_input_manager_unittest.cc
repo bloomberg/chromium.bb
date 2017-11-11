@@ -75,7 +75,7 @@ class UiInputManagerTest : public testing::Test {
     controller_model.touchpad_button_state = button_state;
     ReticleModel reticle_model;
     GestureList gesture_list;
-    input_manager_->HandleInput(controller_model, &reticle_model,
+    input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
                                 &gesture_list);
   }
 
@@ -113,11 +113,13 @@ TEST_F(UiInputManagerTest, ReticleRenderTarget) {
   ReticleModel reticle_model;
   GestureList gesture_list;
 
-  input_manager_->HandleInput(controller_model, &reticle_model, &gesture_list);
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
   EXPECT_EQ(0, reticle_model.target_element_id);
 
   controller_model.laser_direction = kForwardVector;
-  input_manager_->HandleInput(controller_model, &reticle_model, &gesture_list);
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
   EXPECT_EQ(p_element->id(), reticle_model.target_element_id);
   EXPECT_NEAR(-1.0, reticle_model.target_point.z(), kEpsilon);
 }
@@ -247,7 +249,8 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
   controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
   ReticleModel reticle_model;
   GestureList gesture_list;
-  input_manager_->HandleInput(controller_model, &reticle_model, &gesture_list);
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
 
   // We should have hit the content quad if our math was correct.
   ASSERT_NE(0, reticle_model.target_element_id);
@@ -258,7 +261,8 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
   // set the expected number of calls to zero.
   EXPECT_CALL(*content_input_delegate_, OnContentMove(testing::_)).Times(0);
 
-  input_manager_->HandleInput(controller_model, &reticle_model, &gesture_list);
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
 }
 
 TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
@@ -277,7 +281,8 @@ TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
   controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
   ReticleModel reticle_model;
   GestureList gesture_list;
-  input_manager_->HandleInput(controller_model, &reticle_model, &gesture_list);
+  input_manager_->HandleInput(MsToTicks(1), controller_model, &reticle_model,
+                              &gesture_list);
 
   // We should have hit the exit prompt if our math was correct.
   ASSERT_NE(0, reticle_model.target_element_id);

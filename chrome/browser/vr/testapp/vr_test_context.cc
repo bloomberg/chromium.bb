@@ -223,8 +223,8 @@ ControllerModel VrTestContext::UpdateController() {
   // Hit testing is done in terms of this synthesized controller model.
   GestureList gesture_list;
   ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(controller_model, &reticle_model,
-                                    &gesture_list);
+  ui_->input_manager()->HandleInput(base::TimeTicks::Now(), controller_model,
+                                    &reticle_model, &gesture_list);
 
   // Now that we have accurate hit information, we use this to construct a
   // controller model for display.
