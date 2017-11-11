@@ -376,7 +376,8 @@ public class FeatureUtilities {
      */
     public static boolean shouldShowChromeHomePromoForStartup() {
         if (DeviceFormFactor.isTablet() || isChromeHomeEnabled()
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO_ON_STARTUP)) {
             return false;
         }
 
