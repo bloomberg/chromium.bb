@@ -105,6 +105,7 @@ source_set("browser") {
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
+    "//mojo/public/js:resources",
     "//net",
     "//net:extras",
     "//net:http_server",

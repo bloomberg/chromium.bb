@@ -379,6 +379,10 @@
   "third_party/libaddressinput/chromium/address_input_strings.grd": {
     "messages": [28700],
   },
+
+  "mojo/public/js/mojo_bindings_resources.grd": {
+    "includes": [28800],
+  },
   # END "everything else" section.
   # Everything but chrome/, components/, content/, and ios/
 
