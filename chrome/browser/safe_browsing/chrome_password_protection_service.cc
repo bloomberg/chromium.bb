@@ -612,6 +612,28 @@ void ChromePasswordProtectionService::UpdateSecurityState(
                                     /*is_pending=*/true, threat_type);
 }
 
+void ChromePasswordProtectionService::
+    RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+        bool all_history,
+        const history::URLRows& deleted_rows) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(all_history || !deleted_rows.empty());
+
+  DictionaryPrefUpdate unhandled_sync_password_reuses(
+      profile_->GetPrefs(), prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  if (all_history) {
+    unhandled_sync_password_reuses->Clear();
+    return;
+  }
+
+  for (const history::URLRow& row : deleted_rows) {
+    if (!row.url().SchemeIsHTTPOrHTTPS())
+      continue;
+    unhandled_sync_password_reuses->RemoveKey(
+        Origin::Create(row.url()).Serialize());
+  }
+}
+
 void ChromePasswordProtectionService::CheckGaiaPasswordChange() {
   std::string new_gaia_password_hash = profile_->GetPrefs()->GetString(
       password_manager::prefs::kSyncPasswordHash);

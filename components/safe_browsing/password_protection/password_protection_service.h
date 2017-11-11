@@ -330,6 +330,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   void RemoveContentSettingsOnURLsDeleted(bool all_history,
                                           const history::URLRows& deleted_rows);
 
+  // Posted to UI thread by OnURLsDeleted(...). This function remove the related
+  // entries in kSafeBrowsingUnhandledSyncPasswordReuses.
+  virtual void RemoveUnhandledSyncPasswordReuseOnURLsDeleted(
+      bool all_history,
+      const history::URLRows& deleted_rows) = 0;
+
   // Helper function called by RemoveContentSettingsOnURLsDeleted(..). It
   // calculate the number of verdicts of |type| that associate with |url|.
   int GetVerdictCountForURL(const GURL& url,

@@ -555,6 +555,11 @@ void PasswordProtectionService::OnURLsDeleted(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,
                  GetWeakPtr(), all_history, deleted_rows));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PasswordProtectionService::
+                     RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
+                 GetWeakPtr(), all_history, deleted_rows));
 }
 
 void PasswordProtectionService::HistoryServiceBeingDeleted(
