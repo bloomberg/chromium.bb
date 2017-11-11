@@ -22,6 +22,7 @@ The information can include symbol names, offsets, and source locations.
 import glob
 import itertools
 import logging
+import multiprocessing
 import os
 import re
 import struct
@@ -43,6 +44,19 @@ CHROME_SYMBOLS_DIR = None
 ARCH = "arm"
 TOOLCHAIN_INFO = None
 SECONDARY_ABI_OUTPUT_PATH = None
+
+
+# Function lines look like:
+#   000177b0 <android::IBinder::~IBinder()+0x2c>:
+# We pull out the address and function first. Then we check for an optional
+# offset. This is tricky due to functions that look like "operator+(..)+0x2c"
+_FUNC_REGEXP = re.compile(r'(^[a-f0-9]*) \<(.*)\>:$')
+_OFFSET_REGEXP = re.compile(r'(.*)\+0x([a-f0-9]*)')
+
+# A disassembly line looks like:
+#   177b2:  b510        push  {r4, lr}
+_ASM_REGEXP = re.compile(r'(^[ a-f0-9]*):[ a-f0-0]*.*$')
+
 
 # See:
 # http://bugs.python.org/issue14315
@@ -528,6 +542,53 @@ def StripPC(addr):
     return addr & ~1
   return addr
 
+
+def ComputeObjdumpResultForUniqueAddr(target_addr_symbols):
+  target_addr, symbols = target_addr_symbols
+  result = {}
+  start_addr_dec = str(StripPC(int(target_addr, 16)))
+  stop_addr_dec = str(StripPC(int(target_addr, 16)) + 8)
+  cmd = [ToolPath("objdump"),
+         "--section=.text",
+         "--demangle",
+         "--disassemble",
+         "--start-address=" + start_addr_dec,
+         "--stop-address=" + stop_addr_dec,
+         symbols]
+
+  current_symbol = None    # The current function symbol in the disassembly.
+  current_symbol_addr = 0  # The address of the current function.
+
+  stream = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
+  for line in stream:
+    # Is it a function line like:
+    #   000177b0 <android::IBinder::~IBinder()>:
+    components = _FUNC_REGEXP.match(line)
+    if components:
+      # This is a new function, so record the current function and its address.
+      current_symbol_addr = int(components.group(1), 16)
+      current_symbol = components.group(2)
+
+      # Does it have an optional offset like: "foo(..)+0x2c"?
+      components = _OFFSET_REGEXP.match(current_symbol)
+      if components:
+        current_symbol = components.group(1)
+        offset = components.group(2)
+        if offset:
+          current_symbol_addr -= int(offset, 16)
+
+    # Is it an disassembly line like:
+    #   177b2:  b510        push  {r4, lr}
+    components = _ASM_REGEXP.match(line)
+    if components:
+      addr = components.group(1)
+      i_addr = int(addr, 16)
+      i_target = StripPC(int(target_addr, 16))
+      if i_addr == i_target:
+        result[target_addr] = (current_symbol, i_target - current_symbol_addr)
+  stream.close()
+  return result
+
 @MemoizedForSet
 def CallObjdumpForSet(lib, unique_addrs):
   """Use objdump to find out the names of the containing functions.
@@ -546,66 +607,21 @@ def CallObjdumpForSet(lib, unique_addrs):
   if not os.path.exists(symbols):
     return None
 
-  symbols = SYMBOLS_DIR + lib
-  if not os.path.exists(symbols):
-    return None
-
   result = {}
-
-  # Function lines look like:
-  #   000177b0 <android::IBinder::~IBinder()+0x2c>:
-  # We pull out the address and function first. Then we check for an optional
-  # offset. This is tricky due to functions that look like "operator+(..)+0x2c"
-  func_regexp = re.compile("(^[a-f0-9]*) \<(.*)\>:$")
-  offset_regexp = re.compile("(.*)\+0x([a-f0-9]*)")
-
-  # A disassembly line looks like:
-  #   177b2:  b510        push  {r4, lr}
-  asm_regexp = re.compile("(^[ a-f0-9]*):[ a-f0-0]*.*$")
-
-  for target_addr in unique_addrs:
-    start_addr_dec = str(StripPC(int(target_addr, 16)))
-    stop_addr_dec = str(StripPC(int(target_addr, 16)) + 8)
-    cmd = [ToolPath("objdump"),
-           "--section=.text",
-           "--demangle",
-           "--disassemble",
-           "--start-address=" + start_addr_dec,
-           "--stop-address=" + stop_addr_dec,
-           symbols]
-
-    current_symbol = None    # The current function symbol in the disassembly.
-    current_symbol_addr = 0  # The address of the current function.
-
-    stream = subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
-    for line in stream:
-      # Is it a function line like:
-      #   000177b0 <android::IBinder::~IBinder()>:
-      components = func_regexp.match(line)
-      if components:
-        # This is a new function, so record the current function and its address.
-        current_symbol_addr = int(components.group(1), 16)
-        current_symbol = components.group(2)
-
-        # Does it have an optional offset like: "foo(..)+0x2c"?
-        components = offset_regexp.match(current_symbol)
-        if components:
-          current_symbol = components.group(1)
-          offset = components.group(2)
-          if offset:
-            current_symbol_addr -= int(offset, 16)
-
-      # Is it an disassembly line like:
-      #   177b2:  b510        push  {r4, lr}
-      components = asm_regexp.match(line)
-      if components:
-        addr = components.group(1)
-        i_addr = int(addr, 16)
-        i_target = StripPC(int(target_addr, 16))
-        if i_addr == i_target:
-          result[target_addr] = (current_symbol, i_target - current_symbol_addr)
-    stream.close()
-
+  if unique_addrs:
+    if len(unique_addrs) > 1:
+      pool = multiprocessing.pool.ThreadPool(
+          processes=min(10, len(unique_addrs)))
+      results = pool.map(
+          ComputeObjdumpResultForUniqueAddr,
+          [(unique_addrs, symbols) for unique_addrs in unique_addrs])
+      pool.close()
+      pool.join()
+      for each_result in results:
+        result.update(each_result)
+    else:
+      result = ComputeObjdumpResultForUniqueAddr(
+          (unique_addrs[0], symbols))
   return result
 
 
