@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/storage_monitor_chromeos.h"
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -94,14 +96,14 @@ void StorageMonitorCros::Init() {
   DiskMountManager::GetInstance()->AddObserver(this);
   CheckExistingMountPoints();
 
+  // Tests may have already set a MTP manager.
   if (!media_transfer_protocol_manager_) {
-    media_transfer_protocol_manager_.reset(
-        device::MediaTransferProtocolManager::Initialize());
+    media_transfer_protocol_manager_ =
+        device::MediaTransferProtocolManager::Initialize();
   }
-
-  media_transfer_protocol_device_observer_.reset(
-      new MediaTransferProtocolDeviceObserverChromeOS(
-          receiver(), media_transfer_protocol_manager_.get()));
+  media_transfer_protocol_device_observer_ =
+      std::make_unique<MediaTransferProtocolDeviceObserverChromeOS>(
+          receiver(), media_transfer_protocol_manager_.get());
 }
 
 void StorageMonitorCros::CheckExistingMountPoints() {
@@ -111,16 +113,13 @@ void StorageMonitorCros::CheckExistingMountPoints() {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
-  const DiskMountManager::MountPointMap& mount_point_map =
-      DiskMountManager::GetInstance()->mount_points();
-  for (DiskMountManager::MountPointMap::const_iterator it =
-      mount_point_map.begin(); it != mount_point_map.end(); ++it) {
+  for (const auto& it : DiskMountManager::GetInstance()->mount_points()) {
     base::PostTaskAndReplyWithResult(
         blocking_task_runner.get(), FROM_HERE,
         base::Bind(&MediaStorageUtil::HasDcim,
-                   base::FilePath(it->second.mount_path)),
+                   base::FilePath(it.second.mount_path)),
         base::Bind(&StorageMonitorCros::AddMountedPath,
-                   weak_ptr_factory_.GetWeakPtr(), it->second));
+                   weak_ptr_factory_.GetWeakPtr(), it.second));
   }
 
   // Note: Relies on scheduled tasks on the |blocking_task_runner| being

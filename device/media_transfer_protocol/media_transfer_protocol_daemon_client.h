@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -38,57 +39,56 @@ namespace device {
 class MediaTransferProtocolDaemonClient {
  public:
   // A callback to be called when DBus method call fails.
-  typedef base::Closure ErrorCallback;
+  using ErrorCallback = base::Closure;
 
   // A callback to handle the result of EnumerateAutoMountableDevices.
   // The argument is the enumerated storage names.
-  typedef base::Callback<void(const std::vector<std::string>& storage_names)
-                         > EnumerateStoragesCallback;
+  using EnumerateStoragesCallback =
+      base::Callback<void(const std::vector<std::string>& storage_names)>;
 
   // A callback to handle the result of GetStorageInfo.
   // The argument is the information about the specified storage.
-  typedef base::Callback<void(const MtpStorageInfo& storage_info)
-                         > GetStorageInfoCallback;
+  using GetStorageInfoCallback =
+      base::Callback<void(const MtpStorageInfo& storage_info)>;
 
   // A callback to handle the result of OpenStorage.
   // The argument is the returned handle.
-  typedef base::Callback<void(const std::string& handle)> OpenStorageCallback;
+  using OpenStorageCallback = base::Callback<void(const std::string& handle)>;
 
   // A callback to handle the result of CloseStorage.
-  typedef base::Closure CloseStorageCallback;
+  using CloseStorageCallback = base::Closure;
 
   // A callback to handle the result of CreateDirectory.
-  typedef base::Closure CreateDirectoryCallback;
+  using CreateDirectoryCallback = base::Closure;
 
   // A callback to handle the result of ReadDirectoryEntryIds.
   // The argument is a vector of file ids.
-  typedef base::Callback<void(const std::vector<uint32_t>& file_ids)>
-      ReadDirectoryEntryIdsCallback;
+  using ReadDirectoryEntryIdsCallback =
+      base::Callback<void(const std::vector<uint32_t>& file_ids)>;
 
   // A callback to handle the result of GetFileInfo.
   // The argument is a vector of file entries.
-  typedef base::Callback<void(const std::vector<MtpFileEntry>& file_entries)
-                         > GetFileInfoCallback;
+  using GetFileInfoCallback =
+      base::Callback<void(const std::vector<MtpFileEntry>& file_entries)>;
 
   // A callback to handle the result of ReadFileChunkById.
   // The argument is a string containing the file data.
-  typedef base::Callback<void(const std::string& data)> ReadFileCallback;
+  using ReadFileCallback = base::Callback<void(const std::string& data)>;
 
   // A callback to handle the result of RenameObject.
-  typedef base::Closure RenameObjectCallback;
+  using RenameObjectCallback = base::Closure;
 
   // A callback to handle the result of CopyFileFromLocal.
-  typedef base::Closure CopyFileFromLocalCallback;
+  using CopyFileFromLocalCallback = base::Closure;
 
   // A callback to handle the result of DeleteObject.
-  typedef base::Closure DeleteObjectCallback;
+  using DeleteObjectCallback = base::Closure;
 
   // A callback to handle storage attach/detach events.
   // The first argument is true for attach, false for detach.
   // The second argument is the storage name.
-  typedef base::Callback<void(bool is_attach,
-                              const std::string& storage_name)
-                         > MTPStorageEventHandler;
+  using MTPStorageEventHandler =
+      base::Callback<void(bool is_attach, const std::string& storage_name)>;
 
   virtual ~MediaTransferProtocolDaemonClient();
 
@@ -204,8 +204,9 @@ class MediaTransferProtocolDaemonClient {
   // signal is received.
   virtual void ListenForChanges(const MTPStorageEventHandler& handler) = 0;
 
-  // Factory function, creates a new instance and returns ownership.
-  static MediaTransferProtocolDaemonClient* Create(dbus::Bus* bus);
+  // Factory function, creates a new instance.
+  static std::unique_ptr<MediaTransferProtocolDaemonClient> Create(
+      dbus::Bus* bus);
 
  protected:
   // Create() should be used instead.
