@@ -151,16 +151,18 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     const base::TimeTicks& start_time,
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
-    int32_t* downstream_throughput_kbps) const {
+    int32_t* downstream_throughput_kbps,
+    size_t* observations_count) const {
   if (recent_effective_connection_type_) {
     GetRecentHttpRTT(start_time, http_rtt);
-    GetRecentTransportRTT(start_time, transport_rtt);
+    GetRecentTransportRTT(start_time, transport_rtt, observations_count);
     GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps);
     return recent_effective_connection_type_.value();
   }
   return NetworkQualityEstimator::
       GetRecentEffectiveConnectionTypeAndNetworkQuality(
-          start_time, http_rtt, transport_rtt, downstream_throughput_kbps);
+          start_time, http_rtt, transport_rtt, downstream_throughput_kbps,
+          observations_count);
 }
 
 bool TestNetworkQualityEstimator::GetRecentHttpRTT(
@@ -182,20 +184,23 @@ bool TestNetworkQualityEstimator::GetRecentHttpRTT(
 
 bool TestNetworkQualityEstimator::GetRecentTransportRTT(
     const base::TimeTicks& start_time,
-    base::TimeDelta* rtt) const {
+    base::TimeDelta* rtt,
+    size_t* observations_count) const {
   if (start_time.is_null()) {
     if (start_time_null_transport_rtt_) {
       *rtt = start_time_null_transport_rtt_.value();
       return true;
     }
-    return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt);
+    return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt,
+                                                          observations_count);
   }
 
   if (recent_transport_rtt_) {
     *rtt = recent_transport_rtt_.value();
     return true;
   }
-  return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt);
+  return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt,
+                                                        observations_count);
 }
 
 base::Optional<base::TimeDelta> TestNetworkQualityEstimator::GetTransportRTT()
@@ -230,12 +235,14 @@ base::TimeDelta TestNetworkQualityEstimator::GetRTTEstimateInternal(
         disallowed_observation_sources,
     base::TimeTicks start_time,
     const base::Optional<NetworkQualityEstimator::Statistic>& statistic,
-    int percentile) const {
+    int percentile,
+    size_t* observations_count) const {
   if (rtt_estimate_internal_)
     return rtt_estimate_internal_.value();
 
   return NetworkQualityEstimator::GetRTTEstimateInternal(
-      disallowed_observation_sources, start_time, statistic, percentile);
+      disallowed_observation_sources, start_time, statistic, percentile,
+      observations_count);
 }
 
 void TestNetworkQualityEstimator::SetAccuracyRecordingIntervals(

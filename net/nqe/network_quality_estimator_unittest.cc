@@ -228,8 +228,8 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   EXPECT_EQ(kbps, estimator.GetDownstreamThroughputKbps().value());
   base::TimeDelta transport_rtt;
   EXPECT_FALSE(estimator.GetTransportRTT());
-  EXPECT_FALSE(
-      estimator.GetRecentTransportRTT(base::TimeTicks(), &transport_rtt));
+  EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(),
+                                               &transport_rtt, nullptr));
 
   // Verify the contents of the net log.
   EXPECT_LE(
@@ -394,7 +394,8 @@ TEST(NetworkQualityEstimatorTest, Caching) {
     EXPECT_EQ(kbps, estimator.GetDownstreamThroughputKbps().value());
     EXPECT_NE(EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
               estimator.GetEffectiveConnectionType());
-    EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+    EXPECT_FALSE(
+        estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
     EXPECT_FALSE(estimator.GetTransportRTT());
 
     histogram_tester.ExpectBucketCount("NQE.CachedNetworkQualityAvailable",
@@ -508,7 +509,8 @@ TEST(NetworkQualityEstimatorTest, CachingDisabled) {
   EXPECT_EQ(kbps, estimator.GetDownstreamThroughputKbps().value());
   EXPECT_NE(EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
             estimator.GetEffectiveConnectionType());
-  EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_FALSE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_FALSE(estimator.GetTransportRTT());
 
   histogram_tester.ExpectTotalCount("NQE.CachedNetworkQualityAvailable", 0);
@@ -602,10 +604,11 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   disallowed_observation_sources.push_back(
       NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC);
 
-  EXPECT_EQ(nqe::internal::InvalidRTT(),
-            estimator.GetRTTEstimateInternal(
-                disallowed_observation_sources, base::TimeTicks(),
-                base::Optional<NetworkQualityEstimator::Statistic>(), 100));
+  EXPECT_EQ(
+      nqe::internal::InvalidRTT(),
+      estimator.GetRTTEstimateInternal(
+          disallowed_observation_sources, base::TimeTicks(),
+          base::Optional<NetworkQualityEstimator::Statistic>(), 100, nullptr));
   EXPECT_EQ(nqe::internal::INVALID_RTT_THROUGHPUT,
             estimator.GetDownlinkThroughputKbpsEstimateInternal(
                 base::TimeTicks(), 100));
@@ -628,10 +631,11 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
     EXPECT_GT(estimator.GetDownlinkThroughputKbpsEstimateInternal(
                   base::TimeTicks(), i),
               0);
-    EXPECT_LT(estimator.GetRTTEstimateInternal(
-                  disallowed_observation_sources, base::TimeTicks(),
-                  base::Optional<NetworkQualityEstimator::Statistic>(), i),
-              base::TimeDelta::Max());
+    EXPECT_LT(
+        estimator.GetRTTEstimateInternal(
+            disallowed_observation_sources, base::TimeTicks(),
+            base::Optional<NetworkQualityEstimator::Statistic>(), i, nullptr),
+        base::TimeDelta::Max());
 
     if (i != 0) {
       // Throughput percentiles are in decreasing order.
@@ -644,10 +648,11 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
       EXPECT_GE(
           estimator.GetRTTEstimateInternal(
               disallowed_observation_sources, base::TimeTicks(),
-              base::Optional<NetworkQualityEstimator::Statistic>(), i),
+              base::Optional<NetworkQualityEstimator::Statistic>(), i, nullptr),
           estimator.GetRTTEstimateInternal(
               disallowed_observation_sources, base::TimeTicks(),
-              base::Optional<NetworkQualityEstimator::Statistic>(), i - 1));
+              base::Optional<NetworkQualityEstimator::Statistic>(), i - 1,
+              nullptr));
     }
   }
 }
@@ -709,7 +714,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(115), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(55), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
@@ -731,7 +737,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservations) {
   // Taken from network_quality_estimator_params.cc.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(272), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(209), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT());
   EXPECT_TRUE(
@@ -810,7 +817,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
@@ -824,7 +832,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(2000), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
@@ -840,7 +849,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   // Taken from network_quality_estimator_params.cc.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1726), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1531), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
@@ -854,7 +864,8 @@ TEST(NetworkQualityEstimatorTest, DefaultObservationsOverridden) {
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(272), rtt);
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(209), rtt);
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
   EXPECT_TRUE(
@@ -1329,9 +1340,9 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
     int32_t downstream_throughput_kbps;
     EXPECT_EQ(test.expect_network_quality_available,
               estimator.GetRecentHttpRTT(test.start_timestamp, &http_rtt));
-    EXPECT_EQ(
-        test.expect_network_quality_available,
-        estimator.GetRecentTransportRTT(test.start_timestamp, &transport_rtt));
+    EXPECT_EQ(test.expect_network_quality_available,
+              estimator.GetRecentTransportRTT(test.start_timestamp,
+                                              &transport_rtt, nullptr));
     EXPECT_EQ(test.expect_network_quality_available,
               estimator.GetRecentDownlinkThroughputKbps(
                   test.start_timestamp, &downstream_throughput_kbps));
@@ -1482,7 +1493,8 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
   int32_t kbps;
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_FALSE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_FALSE(estimator.GetTransportRTT());
   EXPECT_TRUE(
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
@@ -2173,7 +2185,8 @@ TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
     EXPECT_EQ(NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP, observation.source);
   }
 
-  EXPECT_FALSE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_FALSE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
 
   // Verify that observations from TCP and QUIC are passed on to the observers.
   base::TimeDelta tcp_rtt(base::TimeDelta::FromMilliseconds(1));
@@ -2212,7 +2225,8 @@ TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   EXPECT_EQ(quic_rtt.InMilliseconds(),
             rtt_observer.observations().at(3).rtt_ms);
 
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
 }
 
 // TestTCPSocketRTT requires kernel support for tcp_info struct, and so it is
@@ -2258,7 +2272,8 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   base::TimeDelta rtt;
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_EQ(rtt, estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
 
   // Send two requests. Verify that the completion of each request generates at
@@ -2291,7 +2306,8 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   }
   EXPECT_TRUE(estimator.GetRecentHttpRTT(base::TimeTicks(), &rtt));
   EXPECT_NE(nqe::internal::InvalidRTT(), estimator.GetHttpRTT().value());
-  EXPECT_TRUE(estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt));
+  EXPECT_TRUE(
+      estimator.GetRecentTransportRTT(base::TimeTicks(), &rtt, nullptr));
   EXPECT_EQ(rtt, estimator.GetTransportRTT().value());
 
   estimator.SimulateNetworkChange(

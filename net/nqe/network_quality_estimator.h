@@ -248,9 +248,13 @@ class NET_EXPORT NetworkQualityEstimator
   // Returns true if the median RTT at the transport layer is available and sets
   // |rtt| to the median of transport layer RTT observations since
   // |start_time|. |rtt| should not be null. Virtualized for testing.
+  // If |observations_count| is not null, then it is set to the number of
+  // transport RTT observations that are available when computing the RTT
+  // estimate.
   // TODO(tbansal): Change it to return transport RTT as base::TimeDelta.
   virtual bool GetRecentTransportRTT(const base::TimeTicks& start_time,
-                                     base::TimeDelta* rtt) const
+                                     base::TimeDelta* rtt,
+                                     size_t* observations_count) const
       WARN_UNUSED_RESULT;
 
   // Returns true if median downstream throughput is available and sets |kbps|
@@ -279,12 +283,16 @@ class NET_EXPORT NetworkQualityEstimator
   // and |downstream_throughput_kbps| are set to the expected HTTP RTT,
   // transport RTT and downstream throughput (in kilobits per second) based on
   // observations taken since |start_time|. Virtualized for testing.
+  // If |transport_rtt_observation_count| is not null, then it is set to the
+  // number of transport RTT observations that are available when computing the
+  // effective connection type.
   virtual EffectiveConnectionType
   GetRecentEffectiveConnectionTypeAndNetworkQuality(
       const base::TimeTicks& start_time,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
-      int32_t* downstream_throughput_kbps) const;
+      int32_t* downstream_throughput_kbps,
+      size_t* transport_rtt_observation_count) const;
 
   // Notifies |this| of a new transport layer RTT. Called by socket watchers.
   // Protected for testing.
@@ -304,12 +312,15 @@ class NET_EXPORT NetworkQualityEstimator
   // be slower than the returned estimate with 0.1 probability. |statistic|
   // is the statistic that should be used for computing the estimate. If unset,
   // the default statistic is used. Virtualized for testing.
+  // If |observations_count| is not null, then it is set to the number of RTT
+  // observations that were available when computing the RTT estimate.
   virtual base::TimeDelta GetRTTEstimateInternal(
       const std::vector<NetworkQualityObservationSource>&
           disallowed_observation_sources,
       base::TimeTicks start_time,
       const base::Optional<Statistic>& statistic,
-      int percentile) const;
+      int percentile,
+      size_t* observations_count) const;
   int32_t GetDownlinkThroughputKbpsEstimateInternal(
       const base::TimeTicks& start_time,
       int percentile) const;
@@ -456,6 +467,9 @@ class NET_EXPORT NetworkQualityEstimator
   // |http_rtt|, |transport_rtt| and |downstream_throughput_kbps| are
   // set to the expected HTTP RTT, transport RTT and downstream throughput (in
   // kilobits per second) based on observations taken since |start_time|.
+  // If |transport_rtt_observation_count| is not null, then it is set to the
+  // number of transport RTT observations that were available when computing the
+  // effective connection type.
   EffectiveConnectionType GetRecentEffectiveConnectionTypeUsingMetrics(
       const base::TimeTicks& start_time,
       MetricUsage http_rtt_metric,
@@ -463,7 +477,8 @@ class NET_EXPORT NetworkQualityEstimator
       MetricUsage downstream_throughput_kbps_metric,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
-      int32_t* downstream_throughput_kbps) const;
+      int32_t* downstream_throughput_kbps,
+      size_t* transport_rtt_observation_count) const;
 
   // Values of external estimate provider status. This enum must remain
   // synchronized with the enum of the same name in
@@ -605,6 +620,9 @@ class NET_EXPORT NetworkQualityEstimator
   // type was last recomputed.
   size_t rtt_observations_size_at_last_ect_computation_;
   size_t throughput_observations_size_at_last_ect_computation_;
+
+  // Number of transport RTT samples available when the ECT was last computed.
+  size_t transport_rtt_observation_count_last_ect_computation_;
 
   // Number of RTT observations received since the effective connection type was
   // last computed.

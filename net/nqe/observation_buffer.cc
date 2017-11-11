@@ -56,7 +56,8 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
     const base::Optional<int32_t>& current_signal_strength,
     int percentile,
     const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources) const {
+        disallowed_observation_sources,
+    size_t* observations_count) const {
   // Stores weighted observations in increasing order by value.
   std::vector<WeightedObservation> weighted_observations;
 
@@ -66,6 +67,12 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
   ComputeWeightedObservations(begin_timestamp, current_signal_strength,
                               &weighted_observations, &total_weight,
                               disallowed_observation_sources);
+
+  if (observations_count) {
+    // |observations_count| may be null.
+    *observations_count = weighted_observations.size();
+  }
+
   if (weighted_observations.empty())
     return base::nullopt;
 
