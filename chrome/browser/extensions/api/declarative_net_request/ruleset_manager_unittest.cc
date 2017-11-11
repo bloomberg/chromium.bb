@@ -15,6 +15,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -206,6 +207,36 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
       manager->ShouldBlockRequest(*request, true /*is_incognito_context*/));
   EXPECT_TRUE(
       manager->ShouldBlockRequest(*request, false /*is_incognito_context*/));
+}
+
+// Test redirect rules.
+TEST_P(RulesetManagerTest, Redirect) {
+  RulesetManager* manager = info_map()->GetRulesetManager();
+  ASSERT_TRUE(manager);
+
+  // Add an extension ruleset which redirects "example.com" to "google.com".
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("example.com");
+  rule.priority = kMinValidPriority;
+  rule.action->type = std::string("redirect");
+  rule.action->redirect_url = std::string("http://google.com");
+  std::unique_ptr<RulesetMatcher> matcher;
+  ASSERT_NO_FATAL_FAILURE(
+      CreateMatcherForRules({rule}, "test_extension", &matcher));
+  manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher));
+
+  const bool is_incognito_context = false;
+  GURL redirect_url;
+  std::unique_ptr<net::URLRequest> request =
+      GetRequestForURL("http://example.com");
+  EXPECT_TRUE(manager->ShouldRedirectRequest(*request, is_incognito_context,
+                                             &redirect_url));
+  EXPECT_EQ(GURL("http://google.com"), redirect_url);
+
+  // Ensure web-socket requests are not redirected.
+  request = GetRequestForURL("ws://example.com");
+  EXPECT_FALSE(manager->ShouldRedirectRequest(*request, is_incognito_context,
+                                              &redirect_url));
 }
 
 INSTANTIATE_TEST_CASE_P(,

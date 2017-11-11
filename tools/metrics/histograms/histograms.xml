@@ -22321,6 +22321,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Extensions.DeclarativeNetRequest.ShouldRedirecRequestTime.SingleExtension"
+    units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Time taken to evaluate whether a network request should be redirected for a
+    single extension ruleset. Emitted for network requests visible to the
+    extension.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime.AllExtensions"
+    units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Time taken to evaluate whether a network request should be redirected as per
+    the Declarative Net Request API. This includes the time taken to evaluate
+    all the extension rulesets. Emitted for non-sensitive network requests seen
+    by the Extension System.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeRulesStorageInitialization" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time spent until rules storage delegate gets ready.</summary>

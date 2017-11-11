@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <algorithm>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -23,6 +26,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
@@ -110,8 +114,14 @@ class DeclarativeNetRequestBrowserTest
   }
 
  protected:
+  content::WebContents* web_contents(Browser* browser) const {
+    return browser->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::WebContents* web_contents() const { return web_contents(browser()); }
+
   content::RenderFrameHost* GetMainFrame(Browser* browser) const {
-    return browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    return web_contents(browser)->GetMainFrame();
   }
 
   content::RenderFrameHost* GetMainFrame() const {
@@ -120,13 +130,11 @@ class DeclarativeNetRequestBrowserTest
 
   content::RenderFrameHost* GetFrameByName(const std::string& name) const {
     return content::FrameMatchingPredicate(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        base::Bind(&content::FrameMatchesName, name));
+        web_contents(), base::Bind(&content::FrameMatchesName, name));
   }
 
   content::PageType GetPageType(Browser* browser) const {
-    return browser->tab_strip_model()
-        ->GetActiveWebContents()
+    return web_contents(browser)
         ->GetController()
         .GetLastCommittedEntry()
         ->GetPageType();
@@ -642,6 +650,191 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                                ? content::PAGE_TYPE_NORMAL
                                                : content::PAGE_TYPE_ERROR;
     EXPECT_EQ(expected_page_type, GetPageType());
+  }
+}
+
+// Tests that multiple enabled extensions with declarative rulesets having
+// redirect rules behave correctly with preference given to more recently
+// installed extensions.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       RedirectRequests_MultipleExtensions) {
+  const int kNumExtensions = 4;
+
+  auto redirect_url_for_extension_number = [this](size_t num) {
+    return embedded_test_server()
+        ->GetURL(std::to_string(num) + ".com", "/pages_with_script/index.html")
+        .spec();
+  };
+
+  TestRule rule = CreateGenericRule();
+  rule.id = kMinValidID;
+  rule.priority = kMinValidPriority;
+  rule.action->type = std::string("redirect");
+  rule.condition->url_filter = std::string("example.com");
+
+  base::Time last_extension_install_time = base::Time::Min();
+
+  // Add |kNumExtensions| each redirecting example.com to a different redirect
+  // url.
+  for (size_t i = 1; i <= kNumExtensions; ++i) {
+    rule.action->redirect_url = redirect_url_for_extension_number(i);
+    ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}, std::to_string(i)));
+
+    // Verify that the install time of this extension is greater than the last
+    // extension.
+    base::Time install_time = ExtensionPrefs::Get(profile())->GetInstallTime(
+        last_loaded_extension_id());
+    EXPECT_GT(install_time, last_extension_install_time);
+    last_extension_install_time = install_time;
+  }
+
+  // Load a url on example.com. It should be redirected to the redirect url
+  // corresponding to the most recently installed extension.
+  GURL url = embedded_test_server()->GetURL("example.com",
+                                            "/pages_with_script/page.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+  EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+  GURL final_url = web_contents()->GetLastCommittedURL();
+  EXPECT_EQ(GURL(redirect_url_for_extension_number(kNumExtensions)), final_url);
+}
+
+// Tests a combination of blocking and redirect rules.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
+  auto get_url_for_host = [this](std::string hostname) {
+    return embedded_test_server()
+        ->GetURL(hostname, "/pages_with_script/index.html")
+        .spec();
+  };
+
+  struct {
+    std::string url_filter;
+    int id;
+    std::string action_type;
+    base::Optional<std::string> redirect_url;
+  } rules_data[] = {
+      {"example.com", 1, "redirect", get_url_for_host("yahoo.com")},
+      {"yahoo.com", 2, "redirect", get_url_for_host("google.com")},
+      {"abc.com", 3, "redirect", get_url_for_host("def.com")},
+      {"def.com", 4, "blacklist", base::nullopt},
+      {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
+  };
+
+  // Load the extension.
+  std::vector<TestRule> rules;
+  for (const auto& rule_data : rules_data) {
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = rule_data.url_filter;
+    rule.id = rule_data.id;
+    rule.priority = kMinValidPriority;
+    rule.action->type = rule_data.action_type;
+    rule.action->redirect_url = rule_data.redirect_url;
+    rules.push_back(rule);
+  }
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  struct {
+    std::string hostname;
+    bool expected_main_frame_loaded;
+    base::Optional<std::string> expected_final_hostname;
+    base::Optional<size_t> expected_redirect_chain_length;
+  } test_cases[] = {
+      // example.com -> yahoo.com -> google.com.
+      {"example.com", true, std::string("google.com"), 3},
+      // yahoo.com -> google.com.
+      {"yahoo.com", true, std::string("google.com"), 2},
+      // abc.com -> def.com (blocked).
+      // Note def.com won't be redirected since blocking rules are given
+      // priority over redirect rules.
+      {"abc.com", false, base::nullopt, base::nullopt},
+      // def.com (blocked).
+      {"def.com", false, base::nullopt, base::nullopt},
+  };
+
+  for (const auto& test_case : test_cases) {
+    std::string url = get_url_for_host(test_case.hostname);
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), GURL(url));
+
+    if (!test_case.expected_main_frame_loaded) {
+      EXPECT_FALSE(WasFrameWithScriptLoaded(GetMainFrame()));
+      EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
+    } else {
+      EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+      EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+
+      GURL final_url = web_contents()->GetLastCommittedURL();
+      EXPECT_EQ(GURL(get_url_for_host(*test_case.expected_final_hostname)),
+                final_url);
+
+      EXPECT_EQ(*test_case.expected_redirect_chain_length,
+                web_contents()
+                    ->GetController()
+                    .GetLastCommittedEntry()
+                    ->GetRedirectChain()
+                    .size());
+    }
+  }
+}
+
+// Tests that the redirect url within an extension ruleset is chosen based on
+// the highest priority matching rule.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
+  const size_t kNumPatternTypes = 7;
+
+  auto hostname_for_number = [](size_t num) {
+    return std::to_string(num) + ".com";
+  };
+
+  auto redirect_url_for_priority = [this,
+                                    hostname_for_number](size_t priority) {
+    return embedded_test_server()
+        ->GetURL(hostname_for_number(priority + 1),
+                 "/pages_with_script/index.html")
+        .spec();
+  };
+
+  std::vector<TestRule> rules;
+  TestRule rule = CreateGenericRule();
+  int id = kMinValidID;
+  for (size_t i = 1; i <= kNumPatternTypes; i++) {
+    // For pattern type |i|, add |i| rules with priority from 1 to |i|, each
+    // with a different redirect url.
+    std::string pattern = hostname_for_number(i) + "*page.html";
+
+    for (size_t j = 1; j <= i; j++) {
+      rule.id = id++;
+      rule.priority = j;
+      rule.action->type = std::string("redirect");
+      rule.action->redirect_url = redirect_url_for_priority(j);
+      rule.condition->url_filter = pattern;
+      rules.push_back(rule);
+    }
+  }
+
+  // Shuffle the rules to ensure that the order in which rules are added has no
+  // effect on the test.
+  std::random_shuffle(rules.begin(), rules.end());
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  for (size_t i = 0; i <= kNumPatternTypes + 1; ++i) {
+    GURL url = embedded_test_server()->GetURL(hostname_for_number(i),
+                                              "/pages_with_script/page.html");
+    SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    EXPECT_TRUE(WasFrameWithScriptLoaded(GetMainFrame()));
+    GURL final_url = web_contents()->GetLastCommittedURL();
+
+    bool expect_redirection = i >= 1 && i <= kNumPatternTypes;
+    if (expect_redirection) {
+      // For pattern type |i|, the highest prioirity for any rule was |i|.
+      EXPECT_EQ(GURL(redirect_url_for_priority(i)), final_url);
+    } else {
+      EXPECT_EQ(url, final_url);
+    }
   }
 }
 
