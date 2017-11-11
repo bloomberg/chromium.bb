@@ -38,6 +38,12 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   virtual void Initialize(viz::ContextProvider*);
   virtual void AppendQuads(viz::RenderPass*);
 
+  virtual void PrepareSendToParent(
+      const cc::LayerTreeResourceProvider::ResourceIdArray& resource_ids,
+      std::vector<viz::TransferableResource>* transferable_resources);
+  virtual void ReceiveReturnsFromParent(
+      const std::vector<viz::ReturnedResource>& transferable_resources);
+
  private:
   WebContextProviderCallback context_provider_callback_;
   viz::SharedBitmapManager* shared_bitmap_manager_;

@@ -6,6 +6,7 @@
 
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "cc/base/filter_operations.h"
+#include "cc/resources/resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -120,6 +121,15 @@ void VideoFrameSubmitter::SubmitFrame(
   compositor_frame.metadata.device_scale_factor = 1;
   compositor_frame.metadata.may_contain_video = true;
 
+  cc::ResourceProvider::ResourceIdArray resources;
+  for (auto* quad : render_pass->quad_list) {
+    for (viz::ResourceId resource_id : quad->resources) {
+      resources.push_back(resource_id);
+    }
+  }
+  resource_provider_->PrepareSendToParent(resources,
+                                          &compositor_frame.resource_list);
+
   compositor_frame.render_pass_list.push_back(std::move(render_pass));
 
   // TODO(lethalantidote): Address third/fourth arg in SubmitCompositorFrame.
@@ -154,7 +164,19 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
-    const WTF::Vector<viz::ReturnedResource>& resources) {}
+    const WTF::Vector<viz::ReturnedResource>& resources) {
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  ReclaimResources(resources);
+}
+
+void VideoFrameSubmitter::ReclaimResources(
+    const WTF::Vector<viz::ReturnedResource>& resources) {
+  DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
+  WebVector<viz::ReturnedResource> temp_resources = resources;
+  std::vector<viz::ReturnedResource> std_resources =
+      temp_resources.ReleaseVector();
+  resource_provider_->ReceiveReturnsFromParent(std_resources);
+}
 
 void VideoFrameSubmitter::DidPresentCompositorFrame(
     uint32_t presentation_token,

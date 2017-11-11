@@ -76,4 +76,16 @@ void VideoFrameResourceProvider::AppendQuads(viz::RenderPass* render_pass) {
                            SkColorSetRGB(r % 255, g % 255, b % 255), false);
 }
 
+void VideoFrameResourceProvider::PrepareSendToParent(
+    const cc::LayerTreeResourceProvider::ResourceIdArray& resource_ids,
+    std::vector<viz::TransferableResource>* transferable_resources) {
+  resource_provider_->PrepareSendToParent(resource_ids, transferable_resources);
+}
+
+void VideoFrameResourceProvider::ReceiveReturnsFromParent(
+    const std::vector<viz::ReturnedResource>& transferable_resources) {
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
+  resource_provider_->ReceiveReturnsFromParent(transferable_resources);
+}
+
 }  // namespace blink
