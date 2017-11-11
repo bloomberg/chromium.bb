@@ -195,6 +195,9 @@ static constexpr float kSuggestionTextFieldWidth = 0.3f;
 static constexpr float kSuggestionContentTextHeight = 0.02f;
 static constexpr float kSuggestionDescriptionTextHeight = 0.015f;
 
+static constexpr int kControllerFadeInMs = 200;
+static constexpr int kControllerFadeOutMs = 550;
+
 static constexpr float kSpeechRecognitionResultTextYOffset = 0.5f;
 static constexpr int kSpeechRecognitionResultTimeoutSeconds = 2;
 

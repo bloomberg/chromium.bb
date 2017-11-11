@@ -19,6 +19,7 @@
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "device/vr/vr_service.mojom.h"
@@ -121,8 +122,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
                       int viewport_offset,
                       const gfx::Size& render_size,
                       vr::RenderInfo* out_render_info);
-  void DrawFrame(int16_t frame_index);
-  void DrawIntoAcquiredFrame(int16_t frame_index);
+  void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
+  void DrawIntoAcquiredFrame(int16_t frame_index, base::TimeTicks current_time);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFenceEGL> fence);
@@ -131,11 +132,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
-  void UpdateController(const gfx::Transform& head_pose);
+  void UpdateController(const gfx::Transform& head_pose,
+                        base::TimeTicks current_time);
 
   void SendImmediateExitRequestIfNecessary();
   void HandleControllerInput(const gfx::Point3F& laser_origin,
-                             const gfx::Vector3dF& head_direction);
+                             const gfx::Vector3dF& head_direction,
+                             base::TimeTicks current_time);
   void HandleControllerAppButtonActivity(
       const gfx::Vector3dF& controller_direction);
 
