@@ -10,6 +10,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_command_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_touch_bar.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
@@ -36,6 +39,10 @@ NSString* const kNewTabTouchId = @"NEW-TAB";
 NSString* const kExitFullscreenTouchId = @"EXIT-FULLSCREEN";
 NSString* const kFullscreenOriginLabelTouchId = @"FULLSCREEN-ORIGIN-LABEL";
 
+// The button indexes in the back and forward segment control.
+const int kBackSegmentIndex = 0;
+const int kForwardSegmentIndex = 1;
+
 }  // namespace
 
 class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
@@ -52,6 +59,8 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
         isKindOfClass:[BrowserWindowController class]];
     [[bwc_ stub] invalidateTouchBar];
 
+    command_updater_ = browser()->command_controller()->command_updater();
+
     touch_bar_.reset([[BrowserWindowTouchBar alloc] initWithBrowser:browser()
                                             browserWindowController:bwc_]);
   }
@@ -66,10 +75,16 @@ class BrowserWindowTouchBarUnitTest : public CocoaProfileTest {
     return ui::GetTouchBarItemId(kBrowserWindowTouchBarId, id);
   }
 
+  void UpdateCommandEnabled(int id, bool enabled) {
+    command_updater_->UpdateCommandEnabled(id, enabled);
+  }
+
   void TearDown() override { CocoaProfileTest::TearDown(); }
 
   // A mock BrowserWindowController object.
   id bwc_;
+
+  CommandUpdater* command_updater_;  // Weak, owned by Browser.
 
   // Used to enable the the browser window touch bar.
   base::test::ScopedFeatureList feature_list;
@@ -150,5 +165,29 @@ TEST_F(BrowserWindowTouchBarUnitTest, ReloadOrStopTouchBarItem) {
     item = [touch_bar_ touchBar:touch_bar
           makeItemForIdentifier:GetBrowserTouchBarItemId(kReloadOrStopTouchId)];
     EXPECT_EQ(IDC_STOP, [[item view] tag]);
+  }
+}
+
+// Tests to see if the back/forward items on the touch bar is in sync with the
+// back and forward commands.
+TEST_F(BrowserWindowTouchBarUnitTest, BackForwardCommandUpdate) {
+  if (@available(macOS 10.12.2, *)) {
+    NSSegmentedControl* back_forward_control = [touch_bar_ backForwardControl];
+
+    UpdateCommandEnabled(IDC_BACK, true);
+    UpdateCommandEnabled(IDC_FORWARD, true);
+    EXPECT_TRUE([back_forward_control isEnabledForSegment:kBackSegmentIndex]);
+    EXPECT_TRUE(
+        [back_forward_control isEnabledForSegment:kForwardSegmentIndex]);
+
+    UpdateCommandEnabled(IDC_BACK, false);
+    EXPECT_FALSE([back_forward_control isEnabledForSegment:kBackSegmentIndex]);
+    EXPECT_TRUE(
+        [back_forward_control isEnabledForSegment:kForwardSegmentIndex]);
+
+    UpdateCommandEnabled(IDC_FORWARD, false);
+    EXPECT_FALSE([back_forward_control isEnabledForSegment:kBackSegmentIndex]);
+    EXPECT_FALSE(
+        [back_forward_control isEnabledForSegment:kForwardSegmentIndex]);
   }
 }
