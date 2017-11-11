@@ -2401,7 +2401,7 @@ void av1_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-#if CONFIG_TX64X64
+#if CONFIG_TX64X64 && !(CONFIG_DAALA_TX64 && CONFIG_DAALA_TX32)
 static void fidtx64(const tran_low_t *input, tran_low_t *output) {
   int i;
   for (i = 0; i < 64; ++i)
