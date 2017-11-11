@@ -47,5 +47,5 @@ layer at (433,419) size 82x3
   LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 82.08x2.88 [bgcolor=#4285F4]
 layer at (169,386) size 52x70 backgroundClip at (12,397) size 576x47 clip at (12,397) size 576x47
   LayoutBlockFlow (positioned) zI: 2 {DIV} at (27.88,-34.55) size 51.83x69.11
-layer at (490,386) size 52x70 backgroundClip at (12,397) size 576x47 clip at (12,397) size 576x47
+layer at (490,386) size 51x70 backgroundClip at (12,397) size 576x47 clip at (12,397) size 576x47
   LayoutBlockFlow (positioned) zI: 2 {DIV} at (82.52,-34.55) size 51.83x69.11
