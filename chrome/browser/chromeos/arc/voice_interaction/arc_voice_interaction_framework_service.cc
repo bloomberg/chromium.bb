@@ -372,9 +372,6 @@ void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
   if (enabled)
     return;
 
-  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
-  // TODO(xiaohuic): remove deprecated prefs::kVoiceInteractionPrefSynced.
-  prefs->SetBoolean(prefs::kVoiceInteractionPrefSynced, false);
   SetVoiceInteractionSetupCompletedInternal(false);
   SetVoiceInteractionEnabled(false, base::BindOnce(&DoNothing<bool>));
   SetVoiceInteractionContextEnabled(false);
