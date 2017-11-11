@@ -288,18 +288,6 @@ size_t NotificationList::NotificationCount(
   return GetVisibleNotifications(blockers).size();
 }
 
-size_t NotificationList::UnreadCount(
-    const NotificationBlockers& blockers) const {
-  Notifications notifications = GetVisibleNotifications(blockers);
-  size_t unread_count = 0;
-  for (Notifications::const_iterator iter = notifications.begin();
-       iter != notifications.end(); ++iter) {
-    if (!(*iter)->IsRead())
-      ++unread_count;
-  }
-  return unread_count;
-}
-
 NotificationList::OwnedNotifications::iterator
 NotificationList::GetNotification(const std::string& id) {
   for (auto iter = notifications_.begin(); iter != notifications_.end();

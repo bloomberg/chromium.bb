@@ -402,12 +402,6 @@ bool WebNotificationTray::IsMessageCenterBubbleVisible() const {
           message_center_bubble()->bubble()->IsVisible());
 }
 
-void WebNotificationTray::UpdateAfterLoginStatusChange(
-    LoginStatus login_status) {
-  message_center()->SetLockedState(login_status == LoginStatus::LOCKED);
-  OnMessageCenterTrayChanged();
-}
-
 void WebNotificationTray::UpdateAfterShelfAlignmentChange() {
   TrayBackgroundView::UpdateAfterShelfAlignmentChange();
   // Destroy any existing bubble so that it will be rebuilt correctly.

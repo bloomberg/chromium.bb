@@ -57,9 +57,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   // quiet mode expires.
   virtual void OnQuietModeChanged(bool in_quiet_mode) {}
 
-  // Called when the user locks (or unlocks) the screen.
-  virtual void OnLockedStateChanged(bool locked) {}
-
   // Called when the blocking state of |blocker| is changed.
   virtual void OnBlockingStateChanged(NotificationBlocker* blocker) {}
 };

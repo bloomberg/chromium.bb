@@ -70,9 +70,6 @@ class ASH_EXPORT WebNotificationTray
   // Returns true if the message center bubble is visible.
   bool IsMessageCenterBubbleVisible() const;
 
-  // Called when the login status is changed.
-  void UpdateAfterLoginStatusChange(LoginStatus login_status);
-
   // Overridden from TrayBackgroundView.
   void UpdateAfterShelfAlignmentChange() override;
   void AnchorUpdated() override;
