@@ -379,7 +379,7 @@ cr.define('settings', function() {
         r.TRIGGERED_RESET_DIALOG =
             r.ADVANCED.createChild('/triggeredResetProfileSettings');
         r.TRIGGERED_RESET_DIALOG.isNavigableDialog = true;
-        // <if expr="is_win">
+        // <if expr="_google_chrome and is_win">
         // This should only be added if the feature is enabled.
         if (loadTimeData.getBoolean('userInitiatedCleanupsEnabled')) {
           r.CHROME_CLEANUP = r.RESET.createChild('/cleanup');

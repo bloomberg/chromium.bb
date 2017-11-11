@@ -15,7 +15,7 @@
 <link rel="import" href="powerwash_dialog.html">
 </if>
 
-<if expr="is_win">
+<if expr="_google_chrome and is_win">
 <link rel="import" href="../chrome_cleanup_page/chrome_cleanup_page.html">
 </if>
 
@@ -59,7 +59,7 @@
         </template>
 </if>
 <!-- This needs to be conditioned to a feature being enabled. -->
-<if expr="is_win">
+<if expr="_google_chrome and is_win">
         <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]" restamp>
           <div class="settings-box two-line" id="chromeCleanupSubpageTrigger"
               on-tap="onChromeCleanupTap_" actionable>
@@ -77,7 +77,7 @@
         </template>
 </if>
       </neon-animatable>
-<if expr="is_win">
+<if expr="_google_chrome and is_win">
       <template is="dom-if" if="[[userInitiatedCleanupsEnabled_]]">
         <template is="dom-if" route-path="/cleanup">
           <settings-subpage id="chromeCleanupSubpage"

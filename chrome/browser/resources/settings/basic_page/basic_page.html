@@ -27,7 +27,7 @@
 <link rel="import" href="../default_browser_page/default_browser_page.html">
 </if>
 
-<if expr="is_win">
+<if expr="_google_chrome and is_win">
 <link rel="import" href="../chrome_cleanup_page/chrome_cleanup_page.html">
 </if>
 
@@ -124,7 +124,7 @@
           </settings-section>
         </template>
 </if>
-<if expr="is_win">
+<if expr="_google_chrome and is_win">
         <template is="dom-if" if="[[showChromeCleanup]]" restamp>
           <settings-section section="chromeCleanup">
             <settings-chrome-cleanup-page></settings-chrome-cleanup-page>

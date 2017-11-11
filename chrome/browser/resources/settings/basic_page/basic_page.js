@@ -29,7 +29,7 @@ Polymer({
     /** @type {!AndroidAppsInfo|undefined} */
     androidAppsInfo: Object,
 
-    // <if expr="is_win">
+    // <if expr="_google_chrome and is_win">
     showChromeCleanup: {
       type: Boolean,
       value: function() {
@@ -110,7 +110,7 @@ Polymer({
   attached: function() {
     this.currentRoute_ = settings.getCurrentRoute();
 
-    // <if expr="is_win">
+    // <if expr="_google_chrome and is_win">
     this.addEventListener('chrome-cleanup-dismissed', () => {
       this.showChromeCleanup = false;
     });
