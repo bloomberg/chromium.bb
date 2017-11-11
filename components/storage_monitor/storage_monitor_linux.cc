@@ -14,6 +14,7 @@
 #include <limits>
 #include <list>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -38,7 +39,7 @@
 
 namespace storage_monitor {
 
-typedef MtabWatcherLinux::MountPointDeviceMap MountPointDeviceMap;
+using MountPointDeviceMap = MtabWatcherLinux::MountPointDeviceMap;
 
 namespace {
 

@@ -5,13 +5,13 @@
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 #include <algorithm>
-#include <map>
 #include <memory>
-#include <set>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -104,7 +104,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   const MtpStorageInfo* GetStorageInfo(
       const std::string& storage_name) const override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    StorageInfoMap::const_iterator it = storage_info_map_.find(storage_name);
+    const auto it = storage_info_map_.find(storage_name);
     return it != storage_info_map_.end() ? &it->second : nullptr;
   }
 
@@ -303,7 +303,6 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
 
  private:
   // Map of storage names to storage info.
-  using StorageInfoMap = std::map<std::string, MtpStorageInfo>;
   using GetStorageInfoFromDeviceCallbackQueue =
       base::queue<GetStorageInfoFromDeviceCallback>;
   // Callback queues - DBus communication is in-order, thus callbacks are
@@ -647,10 +646,10 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   base::ObserverList<Observer> observers_;
 
   // Map to keep track of attached storages by name.
-  StorageInfoMap storage_info_map_;
+  base::flat_map<std::string, MtpStorageInfo> storage_info_map_;
 
   // Set of open storage handles.
-  std::set<std::string> handles_;
+  base::flat_set<std::string> handles_;
 
   dbus::Bus::GetServiceOwnerCallback mtpd_owner_changed_callback_;
 
