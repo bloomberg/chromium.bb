@@ -1,21 +1,29 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function loaded()
-{
-    var template = document.querySelector("#tmpl");
-    var root = document.querySelector("#host").createShadowRoot();
-    root.appendChild(template.content.cloneNode(true));
-    var rootClosed = document.querySelector("#hostClosed").attachShadow({mode: 'closed'});
-    rootClosed.appendChild(template.content.cloneNode(true));
-    runTest();
-}
+(async function() {
+  TestRunner.addResult(`Tests that shadow roots are displayed correctly in breadcrumbs.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+      <input type="text">
+      <div id="host"></div>
+      <div id="hostClosed"></div>
+      <template id="tmpl">
+          <style>.red { color: red; }</style>
+          <div id="inner" class="red">inner</div>
+      </template>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var template = document.querySelector("#tmpl");
+      var root = document.querySelector("#host").createShadowRoot();
+      root.appendChild(template.content.cloneNode(true));
+      var rootClosed = document.querySelector("#hostClosed").attachShadow({mode: 'closed'});
+      rootClosed.appendChild(template.content.cloneNode(true));
+  `);
 
-function test() {
   Common.settingForTest('showUAShadowDOM').set(true);
   ElementsTestRunner.expandElementsTree(step0);
 
@@ -57,24 +65,4 @@ function test() {
   function matchClosedShadowRoot(node) {
     return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
   }
-}
-
-</script>
-</head>
-
-<body onload="loaded()">
-<p>
-Tests that shadow roots are displayed correctly in breadcrumbs.
-</p>
-
-<input type="text">
-<div id="host"></div>
-<div id="hostClosed"></div>
-<template id="tmpl">
-    <style>.red { color: red; }</style>
-    <div id="inner" class="red">inner</div>
-</template>
-
-
-</body>
-</html>
+})();

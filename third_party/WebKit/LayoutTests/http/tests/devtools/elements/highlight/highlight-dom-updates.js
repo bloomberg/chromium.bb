@@ -1,47 +1,57 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function appendChild(parentId, id)
-{
-    var e = document.createElement("span");
-    e.id = id;
-    document.getElementById(parentId).appendChild(e);
-}
+(async function() {
+  TestRunner.addResult(`Tests DOM update highlights in the DOM tree.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <div id="container">
+          <div id="attrTest" attrfoo="foo"></div>
+          <div id="childTest"></div>
+          <div id="textTest"></div>
+      </div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function appendChild(parentId, id)
+      {
+          var e = document.createElement("span");
+          e.id = id;
+          document.getElementById(parentId).appendChild(e);
+      }
 
-function remove(id)
-{
-    document.getElementById(id).remove();
-}
+      function remove(id)
+      {
+          document.getElementById(id).remove();
+      }
 
-function removeFirstChild(id)
-{
-    document.getElementById(id).firstChild.remove();
-}
+      function removeFirstChild(id)
+      {
+          document.getElementById(id).firstChild.remove();
+      }
 
-function setAttribute(id, name, value)
-{
-    var e = document.getElementById(id);
-    if (value === undefined)
-        e.removeAttribute(name);
-    else
-        e.setAttribute(name, value);
-}
+      function setAttribute(id, name, value)
+      {
+          var e = document.getElementById(id);
+          if (value === undefined)
+              e.removeAttribute(name);
+          else
+              e.setAttribute(name, value);
+      }
 
-function setTextContent(id, content)
-{
-    document.getElementById(id).textContent = content;
-}
+      function setTextContent(id, content)
+      {
+          document.getElementById(id).textContent = content;
+      }
 
-function setFirstChildTextContent(id, content)
-{
-    document.getElementById(id).firstChild.textContent = content;
-}
+      function setFirstChildTextContent(id, content)
+      {
+          document.getElementById(id).firstChild.textContent = content;
+      }
+  `);
 
-function test() {
   var attrTestNode;
   var childTestNode;
   var textTestNode;
@@ -137,21 +147,4 @@ function test() {
       next();
     }
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests DOM update highlights in the DOM tree.
-</p>
-
-<div id="container">
-    <div id="attrTest" attrFoo="foo"></div>
-    <div id="childTest"></div>
-    <div id="textTest"></div>
-</div>
-
-</body>
-</html>
+})();

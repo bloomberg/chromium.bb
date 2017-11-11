@@ -1,10 +1,24 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `This test verifies that the correct node is revealed in the DOM tree when asked to reveal a user-agent shadow DOM node.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p id="description"></p>
+
+      <p id="test1"></p>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var input = document.createElement("input");
+      input.id = "nested-input";
+      input.value = "test";
+      test1.createShadowRoot().appendChild(input);
+    `);
+
   ElementsTestRunner.firstElementsTreeOutline().addEventListener(
       Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
 
@@ -37,22 +51,4 @@ function test() {
       });
     }
   });
-}
-</script>
-</head>
-
-<body onload="runTest()">
-
-<p id="description">This test verifies that the correct node is revealed in the DOM tree when asked to reveal a user-agent shadow DOM node.</p>
-
-<p id="test1"></p>
-
-<script>
-var input = document.createElement("input");
-input.id = "nested-input";
-input.value = "test";
-test1.createShadowRoot().appendChild(input);
-</script>
-
-</body>
-</html>
+})();

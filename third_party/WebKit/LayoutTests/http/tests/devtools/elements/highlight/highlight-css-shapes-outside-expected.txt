@@ -1,3 +1,5 @@
+Highlight CSS shapes.
+
 circle{
   "paths": [
     {
