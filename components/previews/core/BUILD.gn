@@ -21,6 +21,8 @@ static_library("core") {
     "previews_opt_out_store.h",
     "previews_opt_out_store_sql.cc",
     "previews_opt_out_store_sql.h",
+    "previews_user_data.cc",
+    "previews_user_data.h",
   ]
 
   deps = [
@@ -42,6 +44,7 @@ source_set("unit_tests") {
     "previews_experiments_unittest.cc",
     "previews_logger_unittest.cc",
     "previews_opt_out_store_sql_unittest.cc",
+    "previews_user_data_unittest.cc",
   ]
 
   deps = [

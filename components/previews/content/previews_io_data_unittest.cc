@@ -1011,6 +1011,17 @@ TEST_F(PreviewsIODataTest,
   EXPECT_FALSE(ui_service()->blacklist_ignored());
 }
 
+TEST_F(PreviewsIODataTest, GeneratePageIdMakesUniqueNonZero) {
+  InitializeUIService();
+  std::unordered_set<uint64_t> page_id_set;
+  size_t number_of_generated_ids = 10;
+  for (size_t i = 0; i < number_of_generated_ids; i++) {
+    page_id_set.insert(io_data()->GeneratePageId());
+  }
+  EXPECT_EQ(number_of_generated_ids, page_id_set.size());
+  EXPECT_EQ(page_id_set.end(), page_id_set.find(0u));
+}
+
 }  // namespace
 
 }  // namespace previews

@@ -215,7 +215,7 @@ bool IsValidatedSCT(
 // the main frame, it is a limitation on which previews to allow.
 PreviewsState DeterminePreviewsState(PreviewsState previews_to_allow,
                                      ResourceDispatcherHostDelegate* delegate,
-                                     const net::URLRequest& request,
+                                     net::URLRequest* request,
                                      ResourceContext* resource_context,
                                      bool is_main_frame) {
   // If previews have already been turned off, or we are inheriting values on a
@@ -1317,7 +1317,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
   PreviewsState previews_state = request_data.previews_state;
   if (!IsBrowserSideNavigationEnabled()) {
     previews_state = DeterminePreviewsState(
-        request_data.previews_state, delegate_, *new_request, resource_context,
+        request_data.previews_state, delegate_, new_request.get(),
+        resource_context,
         request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME);
   }
 
@@ -2075,7 +2076,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   }
 
   PreviewsState previews_state = DeterminePreviewsState(
-      info.common_params.previews_state, delegate_, *new_request,
+      info.common_params.previews_state, delegate_, new_request.get(),
       resource_context, info.is_main_frame);
 
   // Make extra info and read footer (contains request ID).

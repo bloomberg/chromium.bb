@@ -86,7 +86,7 @@ class ChromeResourceDispatcherHostDelegate
   void RequestComplete(net::URLRequest* url_request) override;
   // Returns a bitmask of potentially several Previews optimizations.
   content::PreviewsState DeterminePreviewsState(
-      const net::URLRequest& url_request,
+      net::URLRequest* url_request,
       content::ResourceContext* resource_context,
       content::PreviewsState previews_to_allow) override;
   content::NavigationData* GetNavigationData(

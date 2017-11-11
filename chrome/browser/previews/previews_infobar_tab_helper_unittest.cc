@@ -24,6 +24,7 @@
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/offline_pages/features/features.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/previews/core/previews_user_data.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/previews_state.h"
@@ -84,13 +85,17 @@ class PreviewsInfoBarTabHelperUnitTest
   }
 
   void SetPreviewsState(content::PreviewsState previews_state) {
+    ChromeNavigationData* nav_data =
+        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
+    if (nav_data) {
+      nav_data->set_previews_state(previews_state);
+      return;
+    }
     std::unique_ptr<ChromeNavigationData> chrome_nav_data(
         new ChromeNavigationData());
     chrome_nav_data->set_previews_state(previews_state);
-    std::unique_ptr<content::NavigationData> nav_data(
-        chrome_nav_data.release());
     content::WebContentsTester::For(web_contents())
-        ->SetNavigationData(test_handle_.get(), std::move(nav_data));
+        ->SetNavigationData(test_handle_.get(), std::move(chrome_nav_data));
   }
 
   void SimulateWillProcessResponseWithProxyHeader() {
@@ -117,6 +122,24 @@ class PreviewsInfoBarTabHelperUnitTest
   }
 
   void CallDidFinishNavigation() { test_handle_.reset(); }
+
+  void set_previews_user_data(
+      std::unique_ptr<previews::PreviewsUserData> previews_user_data) {
+    EXPECT_TRUE(test_handle_);
+    EXPECT_TRUE(previews_user_data);
+    // Store Previews information for this navigation.
+    ChromeNavigationData* nav_data =
+        static_cast<ChromeNavigationData*>(test_handle_->GetNavigationData());
+    if (nav_data) {
+      nav_data->set_previews_user_data(std::move(previews_user_data));
+      return;
+    }
+    std::unique_ptr<ChromeNavigationData> navigation_data =
+        base::MakeUnique<ChromeNavigationData>();
+    navigation_data->set_previews_user_data(std::move(previews_user_data));
+    content::WebContentsTester::For(web_contents())
+        ->SetNavigationData(test_handle_.get(), std::move(navigation_data));
+  }
 
  private:
   std::unique_ptr<content::NavigationHandle> test_handle_;
@@ -179,6 +202,28 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateNoScriptPreviewsInfoBar) {
       ->NavigateAndCommit(GURL(kTestUrl));
 
   EXPECT_FALSE(infobar_tab_helper->displayed_preview_infobar());
+}
+
+TEST_F(PreviewsInfoBarTabHelperUnitTest, TestPreviewsIDSet) {
+  PreviewsInfoBarTabHelper* infobar_tab_helper =
+      PreviewsInfoBarTabHelper::FromWebContents(web_contents());
+
+  SimulateCommit();
+
+  uint64_t id = 5u;
+  std::unique_ptr<previews::PreviewsUserData> previews_user_data =
+      base::MakeUnique<previews::PreviewsUserData>(id);
+  set_previews_user_data(std::move(previews_user_data));
+
+  CallDidFinishNavigation();
+  EXPECT_TRUE(infobar_tab_helper->previews_user_data());
+  EXPECT_EQ(id, infobar_tab_helper->previews_user_data()->page_id());
+
+  // Navigate to reset the displayed state.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  EXPECT_FALSE(infobar_tab_helper->previews_user_data());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
