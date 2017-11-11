@@ -53,6 +53,8 @@ class ShellDevToolsBindings : public WebContentsObserver,
                           const base::Value* arg3);
   ~ShellDevToolsBindings() override;
 
+  WebContents* inspected_contents() { return inspected_contents_; }
+
  protected:
   // content::DevToolsAgentHostClient implementation.
   void AgentHostClosed(DevToolsAgentHost* agent_host) override;

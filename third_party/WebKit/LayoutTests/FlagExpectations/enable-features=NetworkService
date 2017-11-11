@@ -183,6 +183,11 @@ crbug.com/764474 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affec
 crbug.com/764474 fast/loader/reload-zero-byte-plugin.html [ Failure ]
 crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeout ]
 
+# DevTools crbug.com/783982
+crbug.com/783982 http/tests/devtools/startup/console/console-uncaught-promise-no-inspector.html [ Failure ]
+crbug.com/783982 http/tests/devtools/elements/styles-2/property-ui-location.html [ Failure ]
+crbug.com/783982 http/tests/devtools/elements/styles-1/empty-background-url.html [ Failure ]
+
 # http/tests/fetch
 crbug.com/778721 http/tests/fetch/serviceworker-proxied/thorough/auth-base-https-other-https.html [ Pass Failure Timeout ]
 crbug.com/778721 http/tests/fetch/serviceworker-proxied/thorough/cookie-nocors-other-https.html [ Pass Failure Timeout ]
