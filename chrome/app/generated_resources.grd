@@ -8039,7 +8039,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
       </if>
 
-      <message name="IDS_USED_EXISTING_BROWSER" desc="Linux-specific message printed to console when the app is ran a second time, causing a new window to show rather than starting up a new browser.">
+      <message name="IDS_USED_EXISTING_BROWSER" desc="Message printed to console when the app is ran a second time, causing a new window to show rather than starting up a new browser.">
         Created new window in existing browser session.
       </message>
 
