@@ -719,24 +719,26 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"chromeCleanupExplanation", IDS_CHROME_CLEANUP_WEBUI_EXPLANATION},
+      {"chromeCleanupExplanation",
+       IDS_SETTINGS_RESET_CLEANUP_EXPLANATION_REMOVE},
       {"chromeCleanupDoneButtonLabel",
-       IDS_CHROME_CLEANUP_WEBUI_DONE_BUTTON_LABEL},
-      {"chromeCleanupLinkShowFiles", IDS_CHROME_CLEANUP_WEBUI_LINK_SHOW_FILES},
+       IDS_SETTINGS_RESET_CLEANUP_DONE_BUTTON_LABEL},
+      {"chromeCleanupLinkShowFiles",
+       IDS_SETTINGS_RESET_CLEANUP_LINK_SHOW_FILES},
       {"chromeCleanupLogsUploadPermission", IDS_CHROME_CLEANUP_LOGS_PERMISSION},
       {"chromeCleanupRemoveButtonLabel",
-       IDS_CHROME_CLEANUP_WEBUI_REMOVE_BUTTON_LABEL},
+       IDS_SETTINGS_RESET_CLEANUP_REMOVE_BUTTON_LABEL},
       {"chromeCleanupRestartButtonLabel",
-       IDS_CHROME_CLEANUP_WEBUI_RESTART_BUTTON_LABEL},
+       IDS_SETTINGS_RESET_CLEANUP_RESTART_BUTTON_LABEL},
       {"chromeCleanupTitleErrorCantRemove",
-       IDS_CHROME_CLEANUP_WEBUI_TITLE_ERROR_CANT_REMOVE},
-      {"chromeCleanupTitleRemove", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVE},
-      {"chromeCleanupTitleRemoved", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVED},
-      {"chromeCleanupTitleRemoving", IDS_CHROME_CLEANUP_WEBUI_TITLE_REMOVING},
-      {"chromeCleanupTitleRestart", IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART},
+       IDS_SETTINGS_RESET_CLEANUP_TITLE_ERROR_CANT_REMOVE},
+      {"chromeCleanupTitleRemove", IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVE},
+      {"chromeCleanupTitleRemoved", IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVED},
+      {"chromeCleanupTitleRemoving", IDS_SETTINGS_RESET_CLEANUP_TITLE_REMOVING},
+      {"chromeCleanupTitleRestart", IDS_SETTINGS_RESET_CLEANUP_TITLE_RESTART},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -753,11 +755,11 @@ void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
                          "Find and remove harmful software");
 
   base::string16 powered_by_html =
-      l10n_util::GetStringFUTF16(IDS_CHROME_CLEANUP_WEBUI_FOOTER_POWERED_BY,
+      l10n_util::GetStringFUTF16(IDS_SETTINGS_RESET_CLEANUP_FOOTER_POWERED_BY,
                                  L"<span id='powered-by-logo'></span>");
   html_source->AddString("chromeCleanupPoweredByHtml", powered_by_html);
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
@@ -2069,9 +2071,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAboutStrings(html_source);
   AddAppearanceStrings(html_source, profile);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   AddChromeCleanupStrings(html_source);
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
   AddChangePasswordStrings(html_source);
   AddClearBrowsingDataStrings(html_source);

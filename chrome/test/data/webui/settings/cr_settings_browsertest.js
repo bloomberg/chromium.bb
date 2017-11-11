@@ -547,7 +547,7 @@ TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN)');
+GEN('#if defined(OS_WIN) and defined(GOOGLE_CHROME_BUILD)');
 /**
  * @constructor
  * @extends {CrSettingsBrowserTest}
