@@ -58,10 +58,11 @@ class DeviceChooserContentView : public views::View,
                               const gfx::Range& range,
                               int event_flags) override;
 
+  views::StyledLabel* footnote_link() { return footnote_link_.get(); }
+
   base::string16 GetWindowTitle() const;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
-  views::StyledLabel* footnote_link();
   void Accept();
   void Cancel();
   void Close();
@@ -71,12 +72,6 @@ class DeviceChooserContentView : public views::View,
  private:
   friend class ChooserDialogViewTest;
   friend class DeviceChooserContentViewTest;
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, InitialState);
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, AdapterOnAndOffAndOn);
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest,
-                           DiscoveringAndNoOptionAddedAndIdle);
-  FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest,
-                           DiscoveringAndOneOptionAddedAndSelectedAndIdle);
   FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickRescanLink);
   FRIEND_TEST_ALL_PREFIXES(DeviceChooserContentViewTest, ClickGetHelpLink);
 

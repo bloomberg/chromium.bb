@@ -496,6 +496,7 @@ void TableView::OnItemsMoved(int old_start, int length, int new_start) {
 }
 
 void TableView::OnItemsRemoved(int start, int length) {
+  DCHECK_GE(start, 0);
   // Determine the currently selected index in terms of the view. We inline the
   // implementation here since ViewToModel() has DCHECKs that fail since the
   // model has changed but |model_to_view_| has not been updated yet.
