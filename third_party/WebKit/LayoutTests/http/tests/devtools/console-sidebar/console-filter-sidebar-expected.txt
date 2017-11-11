@@ -42,17 +42,12 @@ SIDEBAR:
 > > console-filter-sidebar.js
 > No verbose
 
-Running: selectingGroup
-Selecting item: 4 user messages
+Running: selectingErrorGroup
+Selecting item: 1 error
 MESSAGES:
-log-source.js:3 Log from log-source
-console-filter-sidebar.js:14 Log from test
-log-source.js:8 Warning from log-source
-warn2 @ log-source.js:8
-(anonymous) @ console-filter-sidebar.js:48
 console-filter-sidebar.js:19 Error from test
 error1 @ console-filter-sidebar.js:19
-(anonymous) @ console-filter-sidebar.js:52
+(anonymous) @ console-filter-sidebar.js:54
 
 SIDEBAR:
 > 4 messages
@@ -69,6 +64,14 @@ SIDEBAR:
 > > log-source.js
 > > console-filter-sidebar.js
 > No verbose
+
+Running: selectingFileGroup
+Selecting item: log-source.js
+MESSAGES:
+log-source.js:3 Log from log-source
+log-source.js:8 Warning from log-source
+warn2 @ log-source.js:8
+(anonymous) @ console-filter-sidebar.js:50
 
 Running: clearConsole
 SIDEBAR:
