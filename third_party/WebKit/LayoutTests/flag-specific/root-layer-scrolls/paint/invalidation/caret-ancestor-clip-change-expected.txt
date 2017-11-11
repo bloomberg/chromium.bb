@@ -30,6 +30,11 @@
           "object": "LayoutBlockFlow DIV id='clip'",
           "rect": [8, 58, 200, 250],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 8, 1, 107],
+          "reason": "caret"
         }
       ]
     }
@@ -50,6 +55,10 @@
     {
       "object": "RootInlineBox",
       "reason": "geometry"
+    },
+    {
+      "object": "Caret",
+      "reason": "caret"
     }
   ]
 }

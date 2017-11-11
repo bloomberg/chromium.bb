@@ -17,27 +17,36 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTextControl (positioned) INPUT id='input'",
-          "rect": [8, 8, 244, 67],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow DIV",
-          "rect": [30, 30, 200, 23],
+          "rect": [8, 8, 200, 300],
           "reason": "geometry"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [30, 30, 45, 23],
-          "reason": "full"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [8, 8, 200, 300],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='clip'",
+          "rect": [8, 58, 200, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [11, 8, 1, 111],
+          "reason": "caret"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTextControl (positioned) INPUT id='input'",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV id='clip'",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow DIV",
@@ -48,12 +57,8 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'NEW'",
-      "reason": "full"
+      "object": "Caret",
+      "reason": "caret"
     }
   ]
 }
