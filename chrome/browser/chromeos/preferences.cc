@@ -79,6 +79,33 @@ const char* const kLanguageRemapPrefs[] = {
     prefs::kLanguageRemapEscapeKeyTo, prefs::kLanguageRemapBackspaceKeyTo,
     prefs::kLanguageRemapDiamondKeyTo};
 
+// Migrates kResolveTimezoneByGeolocation value to
+// kResolveTimezoneByGeolocationMethod.
+// Default preference value will become another default value.
+// TODO(alemate): https://crbug.com/783367 Remove outdated prefs.
+void TryMigrateToResolveTimezoneByGeolocationMethod(PrefService* prefs) {
+  if (prefs->GetBoolean(prefs::kResolveTimezoneByGeolocationMigratedToMethod))
+    return;
+
+  prefs->SetBoolean(prefs::kResolveTimezoneByGeolocationMigratedToMethod, true);
+  const PrefService::Preference* old_preference =
+      prefs->FindPreference(prefs::kResolveTimezoneByGeolocation);
+  if (old_preference->IsDefaultValue())
+    return;
+
+  const PrefService::Preference* new_preference =
+      prefs->FindPreference(prefs::kResolveTimezoneByGeolocationMethod);
+  if (!new_preference->IsDefaultValue())
+    return;
+
+  const system::TimeZoneResolverManager::TimeZoneResolveMethod method(
+      old_preference->GetValue()->GetBool()
+          ? system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY
+          : system::TimeZoneResolverManager::TimeZoneResolveMethod::DISABLED);
+  prefs->SetInteger(prefs::kResolveTimezoneByGeolocationMethod,
+                    static_cast<int>(method));
+}
+
 }  // namespace
 
 Preferences::Preferences()
@@ -125,6 +152,10 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kSigninScreenTimezone, std::string());
   registry->RegisterBooleanPref(prefs::kResolveDeviceTimezoneByGeolocation,
                                 true);
+  registry->RegisterIntegerPref(
+      prefs::kResolveDeviceTimezoneByGeolocationMethod,
+      static_cast<int>(
+          system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY));
   registry->RegisterIntegerPref(
       prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
@@ -366,6 +397,16 @@ void Preferences::RegisterProfilePrefs(
       prefs::kResolveTimezoneByGeolocation, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
+  registry->RegisterBooleanPref(
+      prefs::kResolveTimezoneByGeolocationMigratedToMethod, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  registry->RegisterIntegerPref(
+      prefs::kResolveTimezoneByGeolocationMethod,
+      static_cast<int>(
+          system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
   registry->RegisterBooleanPref(prefs::kCaptivePortalAuthenticationIgnoresProxy,
                                 true);
 
@@ -444,6 +485,8 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kUserTimezone, callback);
   pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocation, callback);
+  pref_change_registrar_.Add(prefs::kResolveTimezoneByGeolocationMethod,
+                             callback);
   pref_change_registrar_.Add(prefs::kUse24HourClock, callback);
   for (auto* remap_pref : kLanguageRemapPrefs)
     pref_change_registrar_.Add(remap_pref, callback);
@@ -753,18 +796,33 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     system::UpdateSystemTimezone(ProfileHelper::Get()->GetProfileByUser(user_));
   }
 
-  if (pref_name == prefs::kResolveTimezoneByGeolocation &&
+  if ((pref_name == prefs::kResolveTimezoneByGeolocation ||
+       pref_name == prefs::kResolveTimezoneByGeolocationMethod) &&
       reason != REASON_ACTIVE_USER_CHANGED) {
-    const bool value = prefs_->GetBoolean(prefs::kResolveTimezoneByGeolocation);
+    if (pref_name == prefs::kResolveTimezoneByGeolocationMethod &&
+        !prefs_->FindPreference(prefs::kResolveTimezoneByGeolocationMethod)
+             ->IsDefaultValue()) {
+      prefs_->SetBoolean(prefs::kResolveTimezoneByGeolocationMigratedToMethod,
+                         true);
+    }
     if (user_is_owner) {
-      g_browser_process->local_state()->SetBoolean(
-          prefs::kResolveDeviceTimezoneByGeolocation, value);
+      // Policy check is false here, because there is no owner for enterprise.
+      g_browser_process->local_state()->SetInteger(
+          prefs::kResolveDeviceTimezoneByGeolocationMethod,
+          static_cast<int>(system::TimeZoneResolverManager::
+                               GetEffectiveUserTimeZoneResolveMethod(
+                                   prefs_, false /* check_policy */)));
     }
     if (user_is_primary_) {
       g_browser_process->platform_part()
           ->GetTimezoneResolverManager()
           ->UpdateTimezoneResolver();
-      if (!value && reason == REASON_PREF_CHANGED) {
+      if (system::TimeZoneResolverManager::
+                  GetEffectiveUserTimeZoneResolveMethod(
+                      prefs_, true /* check_policy */) ==
+              system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                  DISABLED &&
+          reason == REASON_PREF_CHANGED) {
         // Allow immediate timezone update on Stop + Start.
         g_browser_process->local_state()->ClearPref(
             TimeZoneResolver::kLastTimeZoneRefreshTime);
@@ -790,6 +848,10 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
 void Preferences::OnIsSyncingChanged() {
   DVLOG(1) << "OnIsSyncingChanged";
+
+  // By this moment, |prefs| are already synchronized.
+  TryMigrateToResolveTimezoneByGeolocationMethod(prefs_);
+
   ForceNaturalScrollDefault();
 }
 

@@ -189,7 +189,7 @@ bool HasSystemTimezonePolicy() {
 
 bool IsTimezonePrefsManaged(const std::string& pref_name) {
   DCHECK(pref_name == prefs::kUserTimezone ||
-         pref_name == prefs::kResolveTimezoneByGeolocation);
+         pref_name == prefs::kResolveTimezoneByGeolocationMethod);
 
   std::string policy_timezone;
   if (CrosSettings::Get()->GetString(kSystemTimezonePolicy, &policy_timezone) &&
@@ -211,7 +211,7 @@ bool IsTimezonePrefsManaged(const std::string& pref_name) {
       return false;
     case enterprise_management::SystemTimezoneProto::DISABLED:
       // This only disables resolving.
-      return pref_name == prefs::kResolveTimezoneByGeolocation;
+      return pref_name == prefs::kResolveTimezoneByGeolocationMethod;
     case enterprise_management::SystemTimezoneProto::IP_ONLY:
     case enterprise_management::SystemTimezoneProto::SEND_WIFI_ACCESS_POINTS:
     case enterprise_management::SystemTimezoneProto::SEND_ALL_LOCATION_INFO:

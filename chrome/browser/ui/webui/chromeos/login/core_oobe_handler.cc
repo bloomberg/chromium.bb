@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -362,8 +363,10 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
 
   if (IsRemoraRequisition()) {
     // CfM devices default to static timezone.
-    g_browser_process->local_state()->SetBoolean(
-        prefs::kResolveDeviceTimezoneByGeolocation, false);
+    g_browser_process->local_state()->SetInteger(
+        prefs::kResolveDeviceTimezoneByGeolocationMethod,
+        static_cast<int>(chromeos::system::TimeZoneResolverManager::
+                             TimeZoneResolveMethod::DISABLED));
   }
 
   // Exit Chrome to force the restart as soon as a new requisition is set.

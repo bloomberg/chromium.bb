@@ -20,6 +20,19 @@ settings.TimeZoneAutoDetectPolicy = {
   FORCED_OFF: 2,
 };
 
+/**
+ * Describes values of prefs.settings.resolve_timezone_by_geolocation_method.
+ * Must be kept in sync with TimeZoneResolverManager::TimeZoneResolveMethod
+ * enum.
+ * @enum {number}
+ */
+settings.TimeZoneAutoDetectMethod = {
+  DISABLED: 0,
+  IP_ONLY: 1,
+  SEND_WIFI_ACCESS_POINTS: 2,
+  SEND_ALL_LOCATION_INFO: 3
+};
+
 Polymer({
   is: 'settings-date-time-page',
 
@@ -59,7 +72,7 @@ Polymer({
       type: Boolean,
       computed: 'computeTimeZoneAutoDetect_(' +
           'timeZoneAutoDetectPolicy_,' +
-          'prefs.settings.resolve_timezone_by_geolocation.value)',
+          'prefs.settings.resolve_timezone_by_geolocation_method.value)',
     },
 
     /**
@@ -138,7 +151,9 @@ Polymer({
    */
   onTimeZoneAutoDetectChange_: function(e) {
     this.setPrefValue(
-        'settings.resolve_timezone_by_geolocation', e.target.checked);
+        'settings.resolve_timezone_by_geolocation_method',
+        e.target.checked ? settings.TimeZoneAutoDetectMethod.IP_ONLY :
+                           settings.TimeZoneAutoDetectMethod.DISABLED);
   },
 
   /** @private */
@@ -157,14 +172,15 @@ Polymer({
 
   /**
    * @param {settings.TimeZoneAutoDetectPolicy} timeZoneAutoDetectPolicy
-   * @param {boolean} prefValue Value of the geolocation pref.
+   * @param {settings.TimeZoneAutoDetectMethod} prefValue
+   *     prefs.settings.resolve_timezone_by_geolocation_method.value
    * @return {boolean} Whether time zone auto-detect is enabled.
    * @private
    */
   computeTimeZoneAutoDetect_: function(timeZoneAutoDetectPolicy, prefValue) {
     switch (timeZoneAutoDetectPolicy) {
       case settings.TimeZoneAutoDetectPolicy.NONE:
-        return prefValue;
+        return prefValue != settings.TimeZoneAutoDetectMethod.DISABLED;
       case settings.TimeZoneAutoDetectPolicy.FORCED_ON:
         return true;
       case settings.TimeZoneAutoDetectPolicy.FORCED_OFF:
@@ -241,12 +257,12 @@ Polymer({
    * Computes visibility of user timezone preference.
    * @param {?chrome.settingsPrivate.PrefObject} prefUserTimezone
    *     pref.settings.timezone
-   * @param {boolean} prefResolveValue
-   *     prefs.settings.resolve_timezone_by_geolocation.value
+   * @param {settings.TimeZoneAutoDetectMethod} prefResolveValue
+   *     prefs.settings.resolve_timezone_by_geolocation_method.value
    * @private
    */
   isUserTimeZoneSelectorHidden_: function(prefUserTimezone, prefResolveValue) {
     return (prefUserTimezone && prefUserTimezone.controlledBy != null) ||
-        prefResolveValue;
+        prefResolveValue != settings.TimeZoneAutoDetectMethod.DISABLED;
   },
 });

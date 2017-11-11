@@ -36,7 +36,7 @@ void ApplyTimeZone(const TimeZoneResponseData* timezone);
 // Returns true if given timezone preference is enterprise-managed.
 // Works for:
 // - prefs::kUserTimezone
-// - prefs::kResolveTimezoneByGeolocation
+// - prefs::kResolveTimezoneByGeolocationMethod
 bool IsTimezonePrefsManaged(const std::string& pref_name);
 
 // Updates system timezone from user profile data if needed.
