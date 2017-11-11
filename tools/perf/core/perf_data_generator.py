@@ -140,8 +140,8 @@ def get_fyi_waterfall_config():
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org and stgao@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'Android Compile': ['microdump_stackwalk'],
-    'Android arm64 Compile': ['microdump_stackwalk'],
+    'Android Compile': ['microdump_stackwalk', 'angle_perftests'],
+    'Android arm64 Compile': ['microdump_stackwalk', 'angle_perftests'],
     'Linux Builder': ['chromedriver'],
     'Mac Builder': ['chromedriver'],
     'Win Builder': ['chromedriver'],
@@ -179,6 +179,7 @@ def get_waterfall_config():
        'perf_tests': [
          ('tracing_perftests', 'build73-b1--device2'),
          ('gpu_perftests', 'build73-b1--device2'),
+         ('angle_perftests', 'build73-b1--device4'),
          #  ('cc_perftests', 'build73-b1--device2'),  # crbug.com/721757
         ]
       }

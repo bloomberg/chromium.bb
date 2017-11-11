@@ -3,7 +3,8 @@
   "AAAAA2 See //tools/perf/generate_perf_data to make changes": {},
   "Android Compile": {
     "additional_compile_targets": [
-      "microdump_stackwalk"
+      "microdump_stackwalk",
+      "angle_perftests"
     ]
   },
   "Android Nexus5 Perf": {
@@ -4719,6 +4720,26 @@
   },
   "Android Nexus5X Perf": {
     "isolated_scripts": [
+      {
+        "args": [],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build73-b1--device4",
+              "os": "Android",
+              "pool": "Chrome-perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 600,
+          "upload_test_results": true
+        }
+      },
       {
         "args": [
           "blink_perf.bindings",
@@ -28091,7 +28112,8 @@
   },
   "Android arm64 Compile": {
     "additional_compile_targets": [
-      "microdump_stackwalk"
+      "microdump_stackwalk",
+      "angle_perftests"
     ]
   },
   "Linux Builder": {
