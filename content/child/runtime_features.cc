@@ -412,6 +412,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (base::FeatureList::IsEnabled(features::kStopLoadingInBackground))
     WebRuntimeFeatures::EnableStopLoadingInBackgroundAndroid(true);
+
+  WebRuntimeFeatures::EnablePWAFullCodeCache(
+      base::FeatureList::IsEnabled(features::kPWAFullCodeCache));
 };
 
 }  // namespace content
