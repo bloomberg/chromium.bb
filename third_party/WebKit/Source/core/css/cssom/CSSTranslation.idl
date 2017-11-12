@@ -6,8 +6,8 @@
 // like "transform".
 // Spec: https://drafts.css-houdini.org/css-typed-om/#csstranslation
 [
-    Constructor(CSSNumericValue x, CSSNumericValue y),
-    Constructor(CSSNumericValue x, CSSNumericValue y, CSSNumericValue z),
+    Constructor(CSSNumericValue x, CSSNumericValue y,
+        optional CSSNumericValue z),
     Exposed=(Window,PaintWorklet),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
