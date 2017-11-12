@@ -1532,6 +1532,8 @@ test("browser_tests") {
       "../browser/ui/test/browser_dialog_browsertest.cc",
       "../browser/ui/test/test_browser_dialog.cc",
       "../browser/ui/test/test_browser_dialog.h",
+      "../browser/ui/test/test_browser_dialog_mac.h",
+      "../browser/ui/test/test_browser_dialog_mac.mm",
       "../browser/ui/toolbar/browser_actions_bar_browsertest.cc",
       "../browser/ui/toolbar/browser_actions_bar_browsertest.h",
       "../browser/ui/toolbar/component_toolbar_actions_browsertest.cc",
