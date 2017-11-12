@@ -4,6 +4,7 @@
 #
 # ------------
 #-name: Afrikaans ongekontrakteerde
+#-display-name: Afrikaans braille
 #
 #+locale:af
 #+type:literary

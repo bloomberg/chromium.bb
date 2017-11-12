@@ -1,3 +1,5 @@
+#-display-name: Russian braille
+
 #+locale:ru
 #+type:literary
 #+grade:1

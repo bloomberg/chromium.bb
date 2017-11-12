@@ -1,6 +1,8 @@
 # liblouis: Welsh Grade 1 table
 #
 # ------------
+#-display-name: Welsh uncontracted braille
+#
 #+locale:cy
 #+type:literary
 #+contraction:no

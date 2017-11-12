@@ -1,6 +1,8 @@
 # liblouis: Portuguese Grade 1 Braille Table
 #
 # -----------
+#-display-name: Portuguese uncontracted braille
+#
 #+locale:pt
 #+type:literary
 #+contraction:no

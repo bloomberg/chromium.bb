@@ -1,6 +1,8 @@
 # liblouis: Hungarian Computer Braille table
 #
 # -----------
+#-display-name: Hungarian computer braille
+#
 #+locale:hu
 #+type:computer
 #+dots:8

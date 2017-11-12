@@ -1,3 +1,5 @@
+#-display-name: Italian braille
+
 #+locale:it
 #+type:literary
 #+dots:6

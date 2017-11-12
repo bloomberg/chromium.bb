@@ -1,3 +1,5 @@
+#-display-name: Arabic braille
+
 #+locale:ar
 #+type:literary
 #+contraction:no

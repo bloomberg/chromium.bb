@@ -1,3 +1,5 @@
+#-display-name: Kannada braille
+
 #+locale:kn
 #+type:literary
 #+grade:1

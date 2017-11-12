@@ -2,6 +2,7 @@
 #
 # -----------
 #-name: Schweizerdeutsche Vollschrift
+#-display-name: Swiss High German partially contracted braille
 #
 #+locale:de-CH
 #+type:literary

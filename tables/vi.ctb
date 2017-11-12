@@ -1,4 +1,6 @@
 # -----------
+#-display-name: Vietnamese computer braille
+#
 #+locale:vi
 #+type:computer
 #+dots:8

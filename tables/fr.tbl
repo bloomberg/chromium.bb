@@ -1,3 +1,5 @@
+#-display-name: French contracted braille
+
 #+locale:fr
 #+type:literary
 #+contraction:full

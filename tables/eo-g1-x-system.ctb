@@ -1,6 +1,8 @@
 # liblouis braille Table - Esperanto X System
 #
 # -----------
+#-display-name: Esperanto x-system braille
+#
 #+locale:eo-xsistemo
 #+type:literary
 #+grade:1

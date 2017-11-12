@@ -2,6 +2,7 @@
 #
 # -----------
 #-name: Deutsche Basisschrift
+#-display-name: German uncontracted braille
 #
 #+locale:de
 #+type:literary

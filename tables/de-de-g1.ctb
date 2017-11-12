@@ -2,6 +2,7 @@
 #
 # -----------
 #-name: Deutsche Vollschrift
+#-display-name: German partially contracted braille
 #
 #+locale:de
 #+type:literary

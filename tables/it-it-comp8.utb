@@ -1,6 +1,8 @@
 # liblouis: Italiano 8 punti
 
 # -----------
+#-display-name: Italian computer braille
+#
 #+locale:it
 #+type:computer
 #+dots:8

@@ -1,4 +1,5 @@
 #-name: Deutsche Kurzschrift
+#-display-name: German fully contracted braille
 
 #+locale:de
 #+type:literary

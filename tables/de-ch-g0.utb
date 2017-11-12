@@ -2,6 +2,7 @@
 #
 # -----------
 #-name: Schweizerdeutsche Basisschrift
+#-display-name: Swiss High German uncontracted braille
 #
 #+locale:de-CH
 #+type:literary

@@ -1,6 +1,8 @@
 # liblouis: Persian  Grade 1 Braille table
 #
 # -----------
+#-display-name: Persian braille
+#
 #+locale:fa-IR
 #+contraction:no
 #+grade:1

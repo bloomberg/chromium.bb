@@ -1,4 +1,5 @@
 #-name: British English grade 2
+#-display-name: U.K. English contracted braille
 
 #+locale:en-GB
 #+type:literary

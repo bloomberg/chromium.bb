@@ -28,6 +28,7 @@
 ### Table Metadata
 
 #-name: Dansk fuldskrift 8-punkt
+#-display-name: Danish 8-dot uncontracted braille
 
 #+locale: da
 #+type: literary

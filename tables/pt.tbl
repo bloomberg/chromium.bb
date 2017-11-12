@@ -1,3 +1,5 @@
+#-display-name: Portuguese contracted braille
+
 #+locale:pt
 #+type:literary
 #+contraction:full

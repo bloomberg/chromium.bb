@@ -1,6 +1,8 @@
 # liblouis: Table for Septuagint and Greek New Testament in Unicode
 #
 # -----------
+#-display-name: Ancient Greek braille
+#
 #+locale:grc
 #
 # TODO: Please correct the metadata above. It is not meant to be

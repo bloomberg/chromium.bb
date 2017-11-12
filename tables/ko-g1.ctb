@@ -1,6 +1,8 @@
 # liblouis: Korean Grade 1 (Uncontracted)
 #
 # -----------
+#-display-name: Korean uncontracted braille
+#
 #+locale:ko
 #+type:literary
 #+contraction:no

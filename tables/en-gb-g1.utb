@@ -2,6 +2,7 @@
 #
 # ------------
 #-name: British English grade 1
+#-display-name: U.K. English uncontracted braille
 #
 #+locale:en-GB
 #+type:literary

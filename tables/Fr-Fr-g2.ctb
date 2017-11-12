@@ -1,6 +1,8 @@
 # liblouis: French Grade 2 Table
 
 # -----------
+#-display-name: French contracted braille
+
 #+locale:fr
 #+type:literary
 #+contraction:full

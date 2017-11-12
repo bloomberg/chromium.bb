@@ -1,3 +1,5 @@
+#-display-name: Swedish braille
+
 #+locale:sv
 #+type:literary
 #+grade:1

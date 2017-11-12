@@ -1,6 +1,8 @@
 # Finnish 6-dot braille based on the official specification document
 #
 # -----------
+#-display-name: Finnish braille
+#
 #+locale:fi
 #+type:literary
 #+contraction:no

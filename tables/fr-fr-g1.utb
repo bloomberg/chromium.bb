@@ -1,6 +1,8 @@
 # liblouis: French Grade 1 table
 
 # -----------
+#-display-name: French uncontracted braille
+#
 #+locale:fr
 #+type:literary
 #+contraction:no

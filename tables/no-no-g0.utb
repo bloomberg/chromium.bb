@@ -1,6 +1,8 @@
 # liblouis: Norwegian Grade 0 Braille Table, uncontracted braille
 #
 # -----------
+#-display-name: Norwegian uncontracted braille
+#
 #+locale:no
 #+type:literary
 #+contraction:no

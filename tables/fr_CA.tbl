@@ -1,3 +1,5 @@
+#-display-name: Canadian French contracted braille
+
 #+locale:fr-CA
 #+type:literary
 #+contraction:full

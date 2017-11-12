@@ -1,3 +1,5 @@
+#-display-name: Ethiopic braille
+
 #+locale:gez
 #+type:literary
 #+grade:1

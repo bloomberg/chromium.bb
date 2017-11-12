@@ -1,4 +1,5 @@
 #-name: Schweizerdeutsche Kurzschrift
+#-display-name: Swiss High German fully contracted braille
 
 #+locale:de-CH
 #+type:literary

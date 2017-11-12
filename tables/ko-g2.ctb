@@ -1,6 +1,8 @@
 # liblouis: Korean Grade 2 (Contracted)
 #
 # -----------
+#-display-name: Korean contracted braille
+#
 #+locale:ko
 #+type:literary
 #+contraction:full

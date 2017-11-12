@@ -2,6 +2,8 @@
 # liblouis: Maori Braille Table
 #
 # -----------
+#-display-name: Maori braille
+#
 #+locale:mi
 #+type:literary
 #+contraction:no
