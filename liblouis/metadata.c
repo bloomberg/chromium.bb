@@ -401,7 +401,7 @@ analyzeTable(const char *table, int activeOnly) {
 				;
 			else if (info.line[0] == '#') {
 				if (info.linelen >= 2 &&
-						(info.line[1] == '+' || (!activeOnly && info.line[1] == '-'))) {
+						(info.line[1] == '+' || (!activeOnly && info.line[1] == '-' && !(info.linelen > 2 && info.line[2] == '-')))) {
 					int active = (info.line[1] == '+');
 					widechar *key = NULL;
 					widechar *val = NULL;
