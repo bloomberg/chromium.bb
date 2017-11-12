@@ -341,6 +341,13 @@ void PaintOpReader::Read(const std::vector<PaintTypeface>& typefaces,
   if (!data || !valid_)
     return;
 
+  // Skia expects the following to be true, make sure we don't pass it incorrect
+  // data.
+  if (!data->data() || !SkIsAlign4(data->size())) {
+    valid_ = false;
+    return;
+  }
+
   TypefacesCatalog catalog;
   catalog.typefaces = &typefaces;
   *blob = SkTextBlob::Deserialize(data->data(), data->size(), &ResolveTypeface,
