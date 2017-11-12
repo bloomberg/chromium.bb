@@ -1199,6 +1199,10 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 
   Stop();
 
+  GetPeerConnectionHandlers()->erase(this);
+  if (peer_connection_tracker_)
+    peer_connection_tracker_->UnregisterPeerConnection(this);
+
   UMA_HISTOGRAM_COUNTS_10000(
       "WebRTC.NumDataChannelsPerPeerConnection", num_data_channels_created_);
 }
@@ -1923,11 +1927,6 @@ void RTCPeerConnectionHandler::Stop() {
     peer_connection_tracker_->TrackStop(this);
 
   native_peer_connection_->Close();
-
-  GetPeerConnectionHandlers()->erase(this);
-  if (peer_connection_tracker_)
-    peer_connection_tracker_->UnregisterPeerConnection(this);
-  peer_connection_tracker_ = nullptr;
 
   // This object may no longer forward call backs to blink.
   is_closed_ = true;
