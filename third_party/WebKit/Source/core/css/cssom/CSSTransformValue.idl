@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 [
-    Constructor(),
-    Constructor(sequence<CSSTransformComponent> transformComponents),
+    Constructor(optional sequence<CSSTransformComponent> transforms),
     Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM)
 ] interface CSSTransformValue : CSSStyleValue {
     // https://github.com/w3c/css-houdini-drafts/issues/358
