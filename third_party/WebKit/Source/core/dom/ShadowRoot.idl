@@ -29,7 +29,7 @@
 interface ShadowRoot : DocumentFragment {
     readonly attribute ShadowRootMode mode;
     readonly attribute Element host;
-    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute HTMLString innerHTML;
+    [CEReactions, CustomElementCallbacks, Custom=Setter] attribute HTMLString innerHTML;
     readonly attribute boolean delegatesFocus;
 };
 

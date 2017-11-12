@@ -82,8 +82,8 @@ interface Element : Node {
     // https://w3c.github.io/DOM-Parsing/#extensions-to-the-element-interface
     //
     // TODO(mkwst): Write a spec for the `TrustedHTML` variants.
-    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter, RuntimeCallStatsCounter=ElementInnerHTML] attribute HTMLString innerHTML;
-    [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute HTMLString outerHTML;
+    [CEReactions, CustomElementCallbacks, Custom=Setter, RuntimeCallStatsCounter=ElementInnerHTML] attribute HTMLString innerHTML;
+    [CEReactions, CustomElementCallbacks, Custom=Setter] attribute HTMLString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, HTMLString text);
 
     // Pointer Lock
