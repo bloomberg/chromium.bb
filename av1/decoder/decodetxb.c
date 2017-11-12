@@ -286,6 +286,19 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
 
+#if CONFIG_LV_MAP_MULTI
+      for (idx = 0; idx < COEFF_BASE_RANGE / (BR_CDF_SIZE - 1); ++idx) {
+        int k = av1_read_record_symbol4(
+            counts, r, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
+            BR_CDF_SIZE, ACCT_STR);
+        *level += k;
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+      if (*level <= NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
+        cul_level += *level;
+        continue;
+      }
+#else
       for (idx = 0; idx < BASE_RANGE_SETS; ++idx) {
         // printf("br: %d %d %d %d\n", txs_ctx, plane_type, idx, ctx);
         if (av1_read_record_bin(
@@ -318,7 +331,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       }
 
       if (idx < BASE_RANGE_SETS) continue;
-
+#endif
       // decode 0-th order Golomb code
       *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
       // Save golomb in tcoeffs because adding it to level may incur overflow

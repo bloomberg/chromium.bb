@@ -75,7 +75,9 @@ typedef struct {
   int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
 #endif
   int lps_cost[LEVEL_CONTEXTS][COEFF_BASE_RANGE + 1];
+#if !CONFIG_LV_MAP_MULTI
   int br_cost[BASE_RANGE_SETS][LEVEL_CONTEXTS][2];
+#endif
 #if CONFIG_CTX1D
   int eob_mode_cost[TX_CLASSES][2];
   int empty_line_cost[TX_CLASSES][EMPTY_LINE_CONTEXTS][2];

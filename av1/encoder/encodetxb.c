@@ -469,6 +469,15 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
 
       int base_range = level - 1 - NUM_BASE_LEVELS;
+#if CONFIG_LV_MAP_MULTI
+      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
+        aom_write_cdf4(w, k, ec_ctx->coeff_br_cdf[txs_ctx][plane_type][ctx],
+                       BR_CDF_SIZE);
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+      if (base_range < COEFF_BASE_RANGE) continue;
+#else
       int br_set_idx = 0;
       int br_base = 0;
       int br_offset = 0;
@@ -501,7 +510,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       }
 
       if (br_set_idx < BASE_RANGE_SETS) continue;
-
+#endif
       // use 0-th order Golomb code to handle the residual level.
       write_golomb(
           w, abs(tcoeff[scan[c]]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
@@ -2271,6 +2280,16 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
       ctx = get_br_ctx(levels, scan[c], bwl, level_counts[scan[c]]);
 
       int base_range = level - 1 - NUM_BASE_LEVELS;
+#if CONFIG_LV_MAP_MULTI
+      for (idx = 0; idx < COEFF_BASE_RANGE; idx += BR_CDF_SIZE - 1) {
+        int k = AOMMIN(base_range - idx, BR_CDF_SIZE - 1);
+        // printf("br_update: %d %d %2d : %2d %d\n", txsize_ctx, plane, ctx,
+        // base_range, k);
+        update_cdf(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][ctx], k,
+                   BR_CDF_SIZE);
+        if (k < BR_CDF_SIZE - 1) break;
+      }
+#else
       int br_set_idx = base_range < COEFF_BASE_RANGE
                            ? coeff_to_br_index[base_range]
                            : BASE_RANGE_SETS;
@@ -2304,6 +2323,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
           update_bin(ec_ctx->coeff_br_cdf[txsize_ctx][plane_type][idx][ctx], 0,
                      2);
       }
+#endif
       // use 0-th order Golomb code to handle the residual level.
     }
   }

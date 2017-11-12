@@ -209,6 +209,7 @@ static const int br_level_map[9] = {
   0, 0, 1, 1, 2, 2, 3, 3, 3,
 };
 
+#if !CONFIG_LV_MAP_MULTI
 static const int coeff_to_br_index[COEFF_BASE_RANGE] = {
   0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
 };
@@ -220,6 +221,7 @@ static const int br_index_to_coeff[BASE_RANGE_SETS] = {
 static const int br_extra_bits[BASE_RANGE_SETS] = {
   1, 2, 3,
 };
+#endif
 
 #define BR_MAG_OFFSET 1
 // TODO(angiebird): optimize this function by using a table to map from

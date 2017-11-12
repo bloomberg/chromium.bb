@@ -569,14 +569,36 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
           av1_cost_tokens_from_cdf(
               pcost->base_cost[layer][ctx],
               fc->coeff_base_cdf[tx_size][plane][layer][ctx], NULL);
-#endif
       for (int br = 0; br < BASE_RANGE_SETS; ++br)
         for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx)
           av1_cost_tokens_from_cdf(pcost->br_cost[br][ctx],
                                    fc->coeff_br_cdf[tx_size][plane][br][ctx],
                                    NULL);
+#endif
 
       for (int ctx = 0; ctx < LEVEL_CONTEXTS; ++ctx) {
+#if CONFIG_LV_MAP_MULTI
+        int br_rate[BR_CDF_SIZE];
+        int prev_cost = 0;
+        int i, j;
+        av1_cost_tokens_from_cdf(br_rate, fc->coeff_br_cdf[tx_size][plane][ctx],
+                                 NULL);
+        // printf("br_rate: ");
+        // for(j = 0; j < BR_CDF_SIZE; j++)
+        //  printf("%4d ", br_rate[j]);
+        // printf("\n");
+        for (i = 0; i < COEFF_BASE_RANGE; i += BR_CDF_SIZE - 1) {
+          for (j = 0; j < BR_CDF_SIZE - 1; j++) {
+            pcost->lps_cost[ctx][i + j] = prev_cost + br_rate[j];
+          }
+          prev_cost += br_rate[j];
+        }
+        pcost->lps_cost[ctx][i] = prev_cost;
+// printf("lps_cost: %d %d %2d : ", tx_size, plane, ctx);
+// for (i = 0; i <= COEFF_BASE_RANGE; i++)
+//  printf("%5d ", pcost->lps_cost[ctx][i]);
+// printf("\n");
+#else
         int lps_rate[2];
         av1_cost_tokens_from_cdf(lps_rate,
                                  fc->coeff_lps_cdf[tx_size][plane][ctx], NULL);
@@ -611,6 +633,7 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc) {
           }
           // load the base range cost
         }
+#endif
       }
 #if CONFIG_CTX1D
       for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)

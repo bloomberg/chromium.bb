@@ -99,8 +99,14 @@ extern "C" {
 #define LEVEL_CONTEXTS (BR_TMP_OFFSET * BR_REF_CAT)
 
 #define NUM_BASE_LEVELS 2
+
+#if CONFIG_LV_MAP_MULTI
+#define BR_CDF_SIZE (4)
+#define COEFF_BASE_RANGE (4 * (BR_CDF_SIZE - 1))
+#else
 #define COEFF_BASE_RANGE (16 - NUM_BASE_LEVELS)
 #define BASE_RANGE_SETS 3
+#endif
 
 #define COEFF_CONTEXT_BITS 6
 #define COEFF_CONTEXT_MASK ((1 << COEFF_CONTEXT_BITS) - 1)

@@ -498,9 +498,10 @@ const aom_prob default_coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS] = {
     { 133, 128, 129, 144, 128, 116, 135, 128, 43,  101, 100, 128,
       140, 163, 158, 173, 205, 128, 165, 171, 128, 128, 210, 163,
       172, 184, 192, 176, 201, 183, 177, 190, 128, 192, 199, 144,
-      192, 192, 1,   196, 192, 255, 171, 178, 255, 128, 171, 179 } }
+      192, 192, 128, 196, 192, 255, 171, 178, 255, 128, 171, 179 } }
 };
 
+#if !CONFIG_LV_MAP_MULTI
 const aom_prob
     default_coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS] = {
       { { { 62,  128, 54,  116, 128, 51,  97,  128, 59,  68,  107, 128,
@@ -600,6 +601,7 @@ const aom_prob
             26,  27,  128, 126, 128, 255, 63, 142, 128, 128, 1,   1,
             125, 159, 128, 173, 212, 128, 85, 189, 128, 128, 255, 171 } } }
     };
+#endif
 #if CONFIG_CTX1D
 static const aom_prob default_eob_mode[TX_SIZES][PLANE_TYPES][TX_CLASSES] = {
   { { 128, 176, 157 }, { 128, 222, 198 } },
@@ -3230,7 +3232,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->dc_sign, default_dc_sign);
   av1_copy(fc->coeff_base, default_coeff_base);
   av1_copy(fc->coeff_lps, default_coeff_lps);
+#if !CONFIG_LV_MAP_MULTI
   av1_copy(fc->coeff_br, default_coeff_br);
+#endif
 #if CONFIG_CTX1D
   av1_copy(fc->eob_mode, default_eob_mode);
   av1_copy(fc->empty_line, default_empty_line);
