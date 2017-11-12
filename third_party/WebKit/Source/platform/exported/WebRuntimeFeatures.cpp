@@ -482,4 +482,8 @@ void WebRuntimeFeatures::EnableStopLoadingInBackgroundAndroid(bool enable) {
   RuntimeEnabledFeatures::SetStopLoadingInBackgroundAndroidEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePWAFullCodeCache(bool enable) {
+  RuntimeEnabledFeatures::SetPWAFullCodeCacheEnabled(enable);
+}
+
 }  // namespace blink

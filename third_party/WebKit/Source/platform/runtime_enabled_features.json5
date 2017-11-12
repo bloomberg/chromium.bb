@@ -841,6 +841,9 @@
       status: "stable",
     },
     {
+      name: "PWAFullCodeCache"
+    },
+    {
       name: "ReducedReferrerGranularity",
     },
     {
