@@ -509,7 +509,6 @@ post_process_cmdline() {
 
       # Provisional adopted
       soft_enable reference_buffer
-      soft_enable loopfiltering_across_tiles
       soft_enable palette_throughput
       soft_enable tempmv_signaling
       soft_enable ext_comp_refs
