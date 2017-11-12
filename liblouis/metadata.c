@@ -630,6 +630,51 @@ lou_findTable(const char *query) {
 	}
 }
 
+typedef struct {
+	char *name;
+	int matchQuotient;
+} TableMatch;
+
+static int
+cmpMatches(TableMatch *m1, TableMatch *m2) {
+	if (m1->matchQuotient > m2->matchQuotient)
+		return -1;
+	else
+		return 1;
+}
+
+char **EXPORT_CALL
+lou_findTables(const char *query) {
+	char **tablesArray;
+	List *matches = NULL;
+	if (!tableIndex) indexTablePath();
+	List *queryFeatures = parseQuery(query);
+	List *l;
+	for (l = tableIndex; l; l = l->tail) {
+		TableMeta *table = l->head;
+		int quotient = matchFeatureLists(queryFeatures, table->features, 0);
+		if (quotient > 0) {
+			TableMatch m = { strdup(table->name), quotient };
+			matches = list_conj(matches, memcpy(malloc(sizeof(m)), &m, sizeof(m)),
+					(int (*)(void *, void *))cmpMatches, NULL, free);
+		}
+	}
+	list_free(queryFeatures);
+	if (matches) {
+		_lou_logMessage(LOG_INFO, "%d matches found", list_size(matches));
+		int i = 0;
+		tablesArray = malloc((1 + list_size(matches)) * sizeof(void *));
+		for (; matches; matches = matches->tail)
+			tablesArray[i++] = ((TableMatch *)matches->head)->name;
+		tablesArray[i] = NULL;
+		list_free(matches);
+		return tablesArray;
+	} else {
+		_lou_logMessage(LOG_INFO, "No table could be found for query '%s'", query);
+		return NULL;
+	}
+}
+
 const char *EXPORT_CALL
 lou_getTableInfo(const char *table, const char *key) {
 	const char *value = NULL;

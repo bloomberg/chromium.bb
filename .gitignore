@@ -315,6 +315,16 @@ output.txt
 /windows/utils/Makefile
 /windows/utils/Makefile.in
 
+# /extra/generate-display-names
+
+/extra/generate-display-names/.go-packages/
+/extra/generate-display-names/.libs/
+/extra/generate-display-names/displayLanguage.a
+/extra/generate-display-names/displayLanguage.h
+/extra/generate-display-names/generate
+/extra/generate-display-names/generate.o
+/extra/generate-display-names/generate.log
+
 # stuff for local development
 local/
 local
