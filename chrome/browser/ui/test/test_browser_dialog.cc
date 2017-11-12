@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_features.h"
-#include "ui/base/test/user_interactive_test_case.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
@@ -21,6 +20,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"  // nogncheck
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/test/test_browser_dialog_mac.h"
 #endif
 
 namespace {
@@ -52,8 +55,10 @@ class WidgetCloser : public views::WidgetObserver {
   void OnWidgetDestroyed(views::Widget* widget) override {
     widget_->RemoveObserver(this);
     widget_ = nullptr;
-    base::RunLoop::QuitCurrentDeprecated();
+    run_loop_.Quit();
   }
+
+  void Wait() { run_loop_.Run(); }
 
  private:
   void CloseAction() {
@@ -73,6 +78,7 @@ class WidgetCloser : public views::WidgetObserver {
     }
   }
 
+  base::RunLoop run_loop_;
   const DialogAction action_;
   views::Widget* widget_;
 
@@ -154,7 +160,10 @@ void TestBrowserDialog::RunDialog() {
   }
 
   WidgetCloser closer(added[0], action);
-  ::test::RunTestInteractively();
+#if defined(OS_MACOSX)
+  internal::TestBrowserDialogInteractiveSetUp();
+#endif
+  closer.Wait();
 }
 
 void TestBrowserDialog::UseMdOnly() {

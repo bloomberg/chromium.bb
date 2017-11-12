@@ -654,7 +654,6 @@ static_library("test_support") {
     "test/ui_controls_internal_win.h",
     "test/ui_controls_mac.mm",
     "test/ui_controls_win.cc",
-    "test/user_interactive_test_case.h",
   ]
 
   if (!is_ios) {
@@ -683,12 +682,6 @@ static_library("test_support") {
       "test/ios/ui_view_test_utils.h",
       "test/ios/ui_view_test_utils.mm",
     ]
-  }
-
-  if (is_mac) {
-    sources += [ "test/user_interactive_test_case_mac.mm" ]
-  } else {
-    sources += [ "test/user_interactive_test_case.cc" ]
   }
 
   public_deps = [
