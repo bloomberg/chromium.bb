@@ -11,9 +11,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,7 +116,8 @@ class TabStatsTrackerTest : public testing::Test {
     power_monitor_.reset(new base::PowerMonitor(
         std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
 
-    MetricsService::RegisterPrefs(pref_service_.registry());
+    TabStatsTracker::RegisterPrefs(pref_service_.registry());
+
     // The tab stats tracker has to be created after the power monitor as it's
     // using it.
     tab_stats_tracker_.reset(new TestTabStatsTracker(&pref_service_));

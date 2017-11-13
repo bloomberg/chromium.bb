@@ -185,9 +185,12 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
+#include "chrome/browser/metrics/tab_stats_tracker.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
+#include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #include "chrome/browser/upgrade_detector.h"
 #endif
 
@@ -236,6 +239,7 @@
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -254,10 +258,6 @@
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -279,11 +279,6 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/webui/md_history_ui.h"
-#include "chrome/browser/ui/webui/settings/md_settings_ui.h"
 #endif
 
 namespace {
@@ -328,7 +323,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   ChromeTracingDelegate::RegisterPrefs(registry);
-  variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
@@ -345,13 +339,18 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   ssl_config::SSLConfigServiceManager::RegisterPrefs(registry);
-  subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
   startup_metric_utils::RegisterPrefs(registry);
+  subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
+  variations::VariationsService::RegisterPrefs(registry);
 
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
   policy::RegisterPrefs(registry);
+
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  BackgroundModeManager::RegisterPrefs(registry);
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterPrefs(registry);
@@ -367,24 +366,16 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
   registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
   registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);
-  registry->RegisterListPref(kStabilityLaunchedActivityCounts);
   registry->RegisterListPref(kStabilityCrashedActivityCounts);
-#endif
-
-#if !defined(OS_ANDROID)
-  task_manager::TaskManagerInterface::RegisterPrefs(registry);
-#endif  // !defined(OS_ANDROID)
-
-#if BUILDFLAG(ENABLE_BACKGROUND)
-  BackgroundModeManager::RegisterPrefs(registry);
-#endif
-
-#if !defined(OS_ANDROID)
-  RegisterBrowserPrefs(registry);
-  StartupBrowserCreator::RegisterLocalStatePrefs(registry);
+  registry->RegisterListPref(kStabilityLaunchedActivityCounts);
+#else
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   gcm::RegisterPrefs(registry);
+  metrics::TabStatsTracker::RegisterPrefs(registry);
+  RegisterBrowserPrefs(registry);
+  StartupBrowserCreator::RegisterLocalStatePrefs(registry);
+  task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);

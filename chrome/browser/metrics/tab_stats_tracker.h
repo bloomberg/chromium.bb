@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/metrics/daily_event.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace metrics {
@@ -39,6 +40,9 @@ class TabStatsTracker : public TabStripModelObserver,
 
   // Returns the |TabStatsTracker| global instance.
   static TabStatsTracker* GetInstance();
+
+  // Registers prefs used to track tab stats.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Accessors.
   const TabStatsDataStore::TabsStats& tab_stats() const;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/metrics/tab_stats_data_store.h"
 
-#include "components/metrics/metrics_service.h"
+#include "chrome/browser/metrics/tab_stats_tracker.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ TEST_F(TabStatsDataStoreTest, TabStatsGetsReloadedFromLocalState) {
   // As the TabStatsTracker constructor restores its state from the pref service
   // the maximums should be restored.
   TestingPrefServiceSimple pref_service;
-  MetricsService::RegisterPrefs(pref_service.registry());
+  TabStatsTracker::RegisterPrefs(pref_service.registry());
   std::unique_ptr<TabStatsDataStore> data_store(
       std::make_unique<TabStatsDataStore>(&pref_service));
   size_t expected_tab_count = 12;

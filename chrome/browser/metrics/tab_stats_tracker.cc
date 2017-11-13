@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/metrics/metrics_pref_names.h"
+#include "chrome/common/pref_names.h"
+#include "components/metrics/daily_event.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace metrics {
@@ -102,6 +104,13 @@ void TabStatsTracker::SetInstance(std::unique_ptr<TabStatsTracker> instance) {
 
 TabStatsTracker* TabStatsTracker::GetInstance() {
   return g_instance;
+}
+
+void TabStatsTracker::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kTabStatsTotalTabCountMax, 0);
+  registry->RegisterIntegerPref(prefs::kTabStatsMaxTabsPerWindow, 0);
+  registry->RegisterIntegerPref(prefs::kTabStatsWindowCountMax, 0);
+  DailyEvent::RegisterPref(registry, prefs::kTabStatsDailySample);
 }
 
 void TabStatsTracker::TabStatsDailyObserver::OnDailyEvent() {

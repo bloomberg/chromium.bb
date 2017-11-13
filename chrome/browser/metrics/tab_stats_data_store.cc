@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/metrics/metrics_pref_names.h"
+#include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 namespace metrics {

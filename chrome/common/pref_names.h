@@ -894,6 +894,12 @@ extern const char kPrefetchUsageMixedCount[];
 
 extern const char kMediaEngagementSchemaVersion[];
 
+// Preferences for recording metrics about tab and window usage.
+extern const char kTabStatsTotalTabCountMax[];
+extern const char kTabStatsMaxTabsPerWindow[];
+extern const char kTabStatsWindowCountMax[];
+extern const char kTabStatsDailySample[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
