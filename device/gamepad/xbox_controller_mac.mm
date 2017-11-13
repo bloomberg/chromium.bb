@@ -89,6 +89,15 @@ struct Xbox360ButtonData {
   uint16_t dummy3;
 };
 
+struct Xbox360RumbleData {
+  uint8_t command;
+  uint8_t size;
+  uint8_t dummy1;
+  uint8_t big;
+  uint8_t little;
+  uint8_t dummy2[3];
+};
+
 struct XboxOneButtonData {
   bool sync : 1;
   bool dummy1 : 1;  // Always 0.
@@ -131,13 +140,31 @@ struct XboxOneGuideData {
   uint8_t down;
   uint8_t dummy1;
 };
+
+struct XboxOneRumbleData {
+  uint8_t command;
+  uint8_t dummy1;
+  uint8_t counter;
+  uint8_t size;
+  uint8_t mode;
+  uint8_t rumble_mask;
+  uint8_t trigger_left;
+  uint8_t trigger_right;
+  uint8_t weak_magnitude;
+  uint8_t strong_magnitude;
+  uint8_t duration;
+  uint8_t period;
+  uint8_t extra;
+};
 #pragma pack(pop)
 
 static_assert(sizeof(Xbox360ButtonData) == 18, "Xbox360ButtonData wrong size");
+static_assert(sizeof(Xbox360RumbleData) == 8, "Xbox360RumbleData wrong size");
 static_assert(sizeof(XboxOneButtonData) == 14, "XboxOneButtonData wrong size");
 static_assert(sizeof(XboxOneEliteButtonData) == 29,
               "XboxOneEliteButtonData wrong size");
 static_assert(sizeof(XboxOneGuideData) == 2, "XboxOneGuideData wrong size");
+static_assert(sizeof(XboxOneRumbleData) == 13, "XboxOneRumbleData wrong size");
 
 // From MSDN:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone
@@ -278,15 +305,113 @@ XboxControllerMac::XboxControllerMac(Delegate* delegate)
       delegate_(delegate),
       controller_type_(UNKNOWN_CONTROLLER),
       read_endpoint_(0),
-      control_endpoint_(0) {}
+      control_endpoint_(0),
+      counter_(0),
+      sequence_id_(0) {}
 
 XboxControllerMac::~XboxControllerMac() {
+  if (playing_effect_callback_)
+    RunCallbackOnMojoThread(
+        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
   if (source_)
     CFRunLoopSourceInvalidate(source_);
   if (interface_ && interface_is_open_)
     (*interface_)->USBInterfaceClose(interface_);
   if (device_ && device_is_open_)
     (*device_)->USBDeviceClose(device_);
+}
+
+void XboxControllerMac::PlayEffect(
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  if (type !=
+      mojom::GamepadHapticEffectType::GamepadHapticEffectTypeDualRumble) {
+    // Only dual-rumble effects are supported.
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultNotSupported);
+    return;
+  }
+
+  int sequence_id = ++sequence_id_;
+
+  if (playing_effect_callback_) {
+    RunCallbackOnMojoThread(
+        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
+  }
+
+  playing_effect_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  playing_effect_callback_ = std::move(callback);
+
+  PlayDualRumbleEffect(sequence_id, params->duration, params->start_delay,
+                       params->strong_magnitude, params->weak_magnitude);
+}
+
+void XboxControllerMac::ResetVibration(
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  ++sequence_id_;
+  if (playing_effect_callback_) {
+    SetVibration(0.0, 0.0);
+    RunCallbackOnMojoThread(
+        mojom::GamepadHapticsResult::GamepadHapticsResultPreempted);
+  }
+  std::move(callback).Run(
+      mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
+}
+
+void XboxControllerMac::PlayDualRumbleEffect(int sequence_id,
+                                             double duration,
+                                             double start_delay,
+                                             double strong_magnitude,
+                                             double weak_magnitude) {
+  playing_effect_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&XboxControllerMac::StartVibration, base::Unretained(this),
+                     sequence_id, duration, strong_magnitude, weak_magnitude),
+      base::TimeDelta::FromMillisecondsD(start_delay));
+}
+
+void XboxControllerMac::StartVibration(int sequence_id,
+                                       double duration,
+                                       double strong_magnitude,
+                                       double weak_magnitude) {
+  if (sequence_id != sequence_id_)
+    return;
+  SetVibration(strong_magnitude, weak_magnitude);
+
+  playing_effect_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&XboxControllerMac::StopVibration, base::Unretained(this),
+                     sequence_id),
+      base::TimeDelta::FromMillisecondsD(duration));
+}
+
+void XboxControllerMac::StopVibration(int sequence_id) {
+  if (sequence_id != sequence_id_)
+    return;
+  SetVibration(0.0, 0.0);
+
+  RunCallbackOnMojoThread(
+      mojom::GamepadHapticsResult::GamepadHapticsResultComplete);
+}
+
+void XboxControllerMac::SetVibration(double strong_magnitude,
+                                     double weak_magnitude) {
+  // Clamp magnitudes to [0,1]
+  strong_magnitude =
+      std::max<double>(0.0, std::min<double>(strong_magnitude, 1.0));
+  weak_magnitude = std::max<double>(0.0, std::min<double>(weak_magnitude, 1.0));
+
+  if (controller_type_ == XBOX_360_CONTROLLER) {
+    WriteXbox360Rumble(static_cast<uint8_t>(strong_magnitude * 255.0),
+                       static_cast<uint8_t>(weak_magnitude * 255.0));
+  } else if (controller_type_ == XBOX_ONE_CONTROLLER_2013 ||
+             controller_type_ == XBOX_ONE_CONTROLLER_2015 ||
+             controller_type_ == XBOX_ONE_ELITE_CONTROLLER ||
+             controller_type_ == XBOX_ONE_S_CONTROLLER) {
+    WriteXboxOneRumble(static_cast<uint8_t>(strong_magnitude * 255.0),
+                       static_cast<uint8_t>(weak_magnitude * 255.0));
+  }
 }
 
 bool XboxControllerMac::OpenDevice(io_service_t service) {
@@ -675,6 +800,34 @@ void XboxControllerMac::IOError() {
     delegate_->XboxControllerError(this);
 }
 
+void XboxControllerMac::WriteXbox360Rumble(uint8_t strong_magnitude,
+                                           uint8_t weak_magnitude) {
+  const UInt8 length = sizeof(Xbox360RumbleData);
+
+  // This buffer will be released in WriteComplete when WritePipeAsync
+  // finishes.
+  UInt8* buffer = new UInt8[length];
+
+  Xbox360RumbleData* rumble_data = reinterpret_cast<Xbox360RumbleData*>(buffer);
+  memset(buffer, 0, length);
+  rumble_data->command = 0x00;  // Rumble
+  rumble_data->size = length;
+
+  // Set rumble intensities.
+  rumble_data->big = strong_magnitude;
+  rumble_data->little = weak_magnitude;
+
+  kern_return_t kr =
+      (*interface_)
+          ->WritePipeAsync(interface_, control_endpoint_, buffer,
+                           (UInt32)length, WriteComplete, buffer);
+  if (kr != KERN_SUCCESS) {
+    delete[] buffer;
+    IOError();
+    return;
+  }
+}
+
 void XboxControllerMac::WriteXboxOneInit() {
   const UInt8 length = 5;
 
@@ -695,6 +848,61 @@ void XboxControllerMac::WriteXboxOneInit() {
     IOError();
     return;
   }
+}
+
+void XboxControllerMac::WriteXboxOneRumble(uint8_t strong_magnitude,
+                                           uint8_t weak_magnitude) {
+  const UInt8 length = sizeof(XboxOneRumbleData);
+
+  // This buffer will be released in WriteComplete when WritePipeAsync
+  // finishes.
+  UInt8* buffer = new UInt8[length];
+
+  XboxOneRumbleData* rumble_data = reinterpret_cast<XboxOneRumbleData*>(buffer);
+  rumble_data->command = 0x09;
+  rumble_data->dummy1 = 0x00;
+  rumble_data->counter = counter_++;
+  rumble_data->size = 0x09;
+  rumble_data->mode = 0x00;
+  rumble_data->rumble_mask = 0x0f;
+  rumble_data->duration = 0xff;
+  rumble_data->period = 0x00;
+  rumble_data->extra = 0x00;
+
+  // Set rumble intensities.
+  rumble_data->trigger_left = 0x00;
+  rumble_data->trigger_right = 0x00;
+  rumble_data->weak_magnitude = weak_magnitude;
+  rumble_data->strong_magnitude = strong_magnitude;
+
+  kern_return_t kr =
+      (*interface_)
+          ->WritePipeAsync(interface_, control_endpoint_, buffer,
+                           (UInt32)length, WriteComplete, buffer);
+  if (kr != KERN_SUCCESS) {
+    delete[] buffer;
+    IOError();
+    return;
+  }
+}
+
+void XboxControllerMac::RunCallbackOnMojoThread(
+    mojom::GamepadHapticsResult result) {
+  if (playing_effect_task_runner_->RunsTasksInCurrentSequence()) {
+    DoRunCallback(std::move(playing_effect_callback_), result);
+    return;
+  }
+
+  playing_effect_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&XboxControllerMac::DoRunCallback,
+                                std::move(playing_effect_callback_), result));
+}
+
+// static
+void XboxControllerMac::DoRunCallback(
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+    mojom::GamepadHapticsResult result) {
+  std::move(callback).Run(result);
 }
 
 }  // namespace device

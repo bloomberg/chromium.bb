@@ -55,6 +55,34 @@ void XboxDataFetcher::GetGamepadData(bool devices_changed_hint) {
   }
 }
 
+void XboxDataFetcher::PlayEffect(
+    int source_id,
+    mojom::GamepadHapticEffectType type,
+    mojom::GamepadEffectParametersPtr params,
+    mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback) {
+  XboxControllerMac* controller = ControllerForLocation(source_id);
+  if (!controller) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  controller->PlayEffect(type, std::move(params), std::move(callback));
+}
+
+void XboxDataFetcher::ResetVibration(
+    int source_id,
+    mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback) {
+  XboxControllerMac* controller = ControllerForLocation(source_id);
+  if (!controller) {
+    std::move(callback).Run(
+        mojom::GamepadHapticsResult::GamepadHapticsResultError);
+    return;
+  }
+
+  controller->ResetVibration(std::move(callback));
+}
+
 void XboxDataFetcher::OnAddedToProvider() {
   RegisterForNotifications();
 }
@@ -226,6 +254,10 @@ void XboxDataFetcher::AddController(XboxControllerMac* controller) {
   state->mapper = 0;
   state->axis_mask = 0;
   state->button_mask = 0;
+
+  // Assume all Xbox gamepads support vibration effects.
+  state->data.vibration_actuator.type = GamepadHapticActuatorType::kDualRumble;
+  state->data.vibration_actuator.not_null = true;
 }
 
 void XboxDataFetcher::RemoveController(XboxControllerMac* controller) {

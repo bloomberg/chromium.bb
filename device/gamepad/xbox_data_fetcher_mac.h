@@ -29,7 +29,16 @@ class XboxDataFetcher : public GamepadDataFetcher,
 
   GamepadSource source() override;
 
+  // GamepadDataFetcher overrides
   void GetGamepadData(bool devices_changed_hint) override;
+  void PlayEffect(
+      int source_id,
+      mojom::GamepadHapticEffectType,
+      mojom::GamepadEffectParametersPtr,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback) override;
+  void ResetVibration(
+      int source_id,
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback) override;
 
   bool RegisterForNotifications();
   bool RegisterForDeviceNotifications(
