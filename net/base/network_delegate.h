@@ -206,8 +206,6 @@ class NET_EXPORT NetworkDelegate {
 
   // This corresponds to URLRequestDelegate::OnResponseStarted.
   virtual void OnResponseStarted(URLRequest* request, int net_error);
-  // Deprecated.
-  virtual void OnResponseStarted(URLRequest* request);
 
   // Called when bytes are received from the network, such as after receiving
   // headers or reading raw response bytes. This includes localhost requests.

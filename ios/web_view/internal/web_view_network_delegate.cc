@@ -42,7 +42,8 @@ int WebViewNetworkDelegate::OnHeadersReceived(
 void WebViewNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                               const GURL& new_location) {}
 
-void WebViewNetworkDelegate::OnResponseStarted(net::URLRequest* request) {}
+void WebViewNetworkDelegate::OnResponseStarted(net::URLRequest* request,
+                                               int net_error) {}
 
 void WebViewNetworkDelegate::OnNetworkBytesReceived(net::URLRequest* request,
                                                     int64_t bytes_received) {}

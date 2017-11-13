@@ -173,10 +173,11 @@ void ConnectivityCheckerImpl::OnNetworkChangedInternal() {
   Check();
 }
 
-void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
+void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request,
+                                                int net_error) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   int http_response_code =
-      (request->status().is_success() &&
+      (net_error == net::OK &&
        request->response_info().headers.get() != nullptr)
           ? request->response_info().headers->response_code()
           : net::HTTP_BAD_REQUEST;

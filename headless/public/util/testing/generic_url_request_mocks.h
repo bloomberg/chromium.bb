@@ -129,7 +129,7 @@ class MockURLRequestDelegate : public net::URLRequest::Delegate {
   MockURLRequestDelegate();
   ~MockURLRequestDelegate() override;
 
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   const std::string& response_data() const;
   const net::IOBufferWithSize* metadata() const;

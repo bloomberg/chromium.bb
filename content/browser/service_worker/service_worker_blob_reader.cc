@@ -51,8 +51,9 @@ void ServiceWorkerBlobReader::OnSSLCertificateError(
   NOTREACHED();
 }
 
-void ServiceWorkerBlobReader::OnResponseStarted(net::URLRequest* request) {
-  // TODO(falken): This should check request->status() per URLRequest::Delegate
+void ServiceWorkerBlobReader::OnResponseStarted(net::URLRequest* request,
+                                                int net_error) {
+  // TODO(falken): This should check net_error per URLRequest::Delegate
   // contract.
   // TODO(falken): Add Content-Length, Content-Type if they were not provided in
   // the ServiceWorkerResponse.

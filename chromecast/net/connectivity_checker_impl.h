@@ -47,7 +47,7 @@ class ConnectivityCheckerImpl
 
  private:
   // UrlRequest::Delegate implementation:
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,

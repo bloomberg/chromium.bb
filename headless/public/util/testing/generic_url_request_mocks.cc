@@ -164,7 +164,8 @@ void MockCookieStore::SendCookies(const GURL& url,
 MockURLRequestDelegate::MockURLRequestDelegate() {}
 MockURLRequestDelegate::~MockURLRequestDelegate() {}
 
-void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request) {}
+void MockURLRequestDelegate::OnResponseStarted(net::URLRequest* request,
+                                               int net_error) {}
 void MockURLRequestDelegate::OnReadCompleted(net::URLRequest* request,
                                              int bytes_read) {}
 const std::string& MockURLRequestDelegate::response_data() const {

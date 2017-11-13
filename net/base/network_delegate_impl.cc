@@ -44,12 +44,7 @@ void NetworkDelegateImpl::OnBeforeRedirect(URLRequest* request,
                                            const GURL& new_location) {}
 
 void NetworkDelegateImpl::OnResponseStarted(URLRequest* request,
-                                            int net_error) {
-  OnResponseStarted(request);
-}
-
-// Deprecated.
-void NetworkDelegateImpl::OnResponseStarted(URLRequest* request) {}
+                                            int net_error) {}
 
 void NetworkDelegateImpl::OnNetworkBytesReceived(URLRequest* request,
                                                  int64_t bytes_received) {}

@@ -206,11 +206,6 @@ bool NetworkDelegate::CanUseReportingClient(const url::Origin& origin,
 }
 
 void NetworkDelegate::OnResponseStarted(URLRequest* request, int net_error) {
-  OnResponseStarted(request);
-}
-
-// Deprecated
-void NetworkDelegate::OnResponseStarted(URLRequest* request) {
   NOTREACHED();
 }
 
