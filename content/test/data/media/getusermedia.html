@@ -33,42 +33,40 @@
   function getUserMediaAndStop(constraints) {
     console.log('Calling getUserMediaAndStop. constraints : ' +
         JSON.stringify(constraints));
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           detectVideoInLocalView1(stream).then(() => {
             stream.getVideoTracks()[0].stop();
             waitForVideoToStop('local-view-1');
           });
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   // Requests getusermedia and expects it to succeed.
   function getUserMediaAndExpectSuccess(constraints) {
     console.log('Calling getUserMediaAndExpectSuccess.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        reportTestSuccess,
-        failedCallback);
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(reportTestSuccess)
+        .catch(failedCallback);
   }
 
   // Requests getusermedia and expects it to fail. The error name is returned
   // to the test.
   function getUserMediaAndExpectFailure(constraints) {
     console.log('Calling getUserMediaAndExpectFailure.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) { failTest('Unexpectedly succeeded getUserMedia.'); },
-        function(error) { sendValueToTest(error.name); });
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          failTest('Unexpectedly succeeded getUserMedia.');
+        })
+        .catch(error => { sendValueToTest(error.name); });
   }
 
   // Requests getusermedia and sets it up to test audio muting callbacks.
   function getUserMediaForAudioMutingTest(initial_muted_state) {
     console.log('Calling getUserMediaForAudioMutingTest.');
-    navigator.webkitGetUserMedia(
-        {audio: true},
-        function (stream) {
+    navigator.mediaDevices.getUserMedia({audio: true})
+        .then(stream => {
           var track = stream.getAudioTracks()[0];
           track.onmute = function(event) {
             cancelTestTimeout();
@@ -86,15 +84,14 @@
             failTest("Expected track.muted to be: " + initial_muted_state +
                      ", was: " + track.muted);
           }
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   function renderClonedMediastreamAndStop(constraints, waitTimeInSeconds) {
     console.log('Calling renderClonedMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           var duplicate = stream.clone();
           assertEquals(stream.getVideoTracks().length, 1);
           assertEquals(duplicate.getVideoTracks().length, 1);
@@ -102,15 +99,14 @@
                           duplicate.getVideoTracks()[0].id);
           detectVideoInLocalView1(stream)
               .then(reportTestSuccess);
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   function renderDuplicatedMediastreamAndStop(constraints, waitTimeInSeconds) {
     console.log('Calling renderDuplicateMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           var duplicate = new MediaStream(stream);
           assertEquals(stream.getVideoTracks().length, 1);
           assertEquals(duplicate.getVideoTracks().length, 1);
@@ -118,15 +114,14 @@
                        duplicate.getVideoTracks()[0].id);
           detectVideoInLocalView1(duplicate)
               .then(reportTestSuccess);
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   function renderSameTrackMediastreamAndStop(constraints, waitTimeInSeconds) {
     console.log('Calling renderSameTrackMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           var duplicate = new MediaStream();
           duplicate.addTrack(stream.getVideoTracks()[0]);
           assertEquals(duplicate.getVideoTracks().length, 1);
@@ -135,15 +130,14 @@
                        duplicate.getVideoTracks()[0].id);
           detectVideoInLocalView1(duplicate)
               .then(reportTestSuccess);
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   function renderClonedTrackMediastreamAndStop(constraints, waitTimeInSeconds) {
     console.log('Calling renderClonedTrackMediastreamAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           var duplicate = new MediaStream();
           duplicate.addTrack(stream.getVideoTracks()[0].clone());
           assertEquals(duplicate.getVideoTracks().length, 1);
@@ -152,31 +146,32 @@
                           duplicate.getVideoTracks()[0].id)
           detectVideoInLocalView1(duplicate)
               .then(reportTestSuccess);
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
   }
 
   function getUserMediaAndRenderInSeveralVideoTags() {
-    navigator.webkitGetUserMedia(
-        {video: true},
-        createMultipleVideoRenderersAndPause,
-        function(error) { failedCallback(); });
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(createMultipleVideoRenderersAndPause)
+        .catch(failedCallback);
   }
 
   // Gets a video stream up, analyses it and returns the aspect ratio to the
   // test through the automation controller.
   function getUserMediaAndAnalyseAndStop(constraints) {
     console.log('Calling getUserMediaAndAnalyseAndStop.');
-    navigator.webkitGetUserMedia(
-        constraints, displayDetectAndAnalyzeVideo, failedCallback);
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(displayDetectAndAnalyzeVideo)
+        .catch(failedCallback);
   }
 
   // This test that a MediaStream can be cloned and that the clone can
   // be rendered.
   function getUserMediaAndClone() {
     console.log('Calling getUserMediaAndClone.');
-    navigator.webkitGetUserMedia({video: true, audio: true},
-        createAndRenderClone, failedCallback);
+    navigator.mediaDevices.getUserMedia({video: true, audio: true})
+        .then(createAndRenderClone)
+        .catch(failedCallback);
   }
 
   // Creates two MediaStream and renders them locally. When the video of both
@@ -186,23 +181,21 @@
   function twoGetUserMediaAndStop(constraints) {
     var stream1 = null;
     var stream2 = null;
-    navigator.webkitGetUserMedia(
-        constraints,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
           stream1 = stream;
           attachMediaStream(stream, 'local-view-1');
           requestSecondGetUserMedia();
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
     var requestSecondGetUserMedia = function() {
-      navigator.webkitGetUserMedia(
-          constraints,
-          function(stream) {
+      navigator.mediaDevices.getUserMedia(constraints)
+          .then(stream => {
             stream2 = stream;
             attachMediaStream(stream, 'local-view-2');
             stopBothVideoTracksAndVerify();
-          },
-          failedCallback);
+          })
+          .catch(failedCallback);
     };
 
     var stopBothVideoTracksAndVerify = function() {
@@ -211,7 +204,8 @@
       detectVideoStopped('local-view-2').then(() => {
         detectVideoInLocalView1(stream1).then(() => {
           stream1.getVideoTracks()[0].stop();
-          waitForVideoToStop('local-view-1');
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
         });
       });
     };
@@ -219,9 +213,8 @@
 
   function twoGetUserMedia(constraints1, constraints2) {
     var result="";
-    navigator.webkitGetUserMedia(
-        constraints1,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints1)
+        .then(stream => {
           displayDetectAndAnalyzeVideoInElement(
               stream,
               function(aspectRatio) {
@@ -229,12 +222,11 @@
                 requestSecondGetUserMedia();
               },
               'local-view-1');
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
     var requestSecondGetUserMedia = function() {
-      navigator.webkitGetUserMedia(
-          constraints2,
-          function(stream) {
+      navigator.mediaDevices.getUserMedia(constraints2)
+          .then(stream => {
             displayDetectAndAnalyzeVideoInElement(
                 stream,
                 function(aspectRatio) {
@@ -242,8 +234,8 @@
                   sendValueToTest(result);
                 },
                 'local-view-2');
-          },
-          failedCallback);
+          })
+          .catch(failedCallback);
     }
   }
 
@@ -261,9 +253,8 @@
       eventOccured();
     };
 
-    navigator.webkitGetUserMedia(
-        constraints1,
-        function(stream) {
+    navigator.mediaDevices.getUserMedia(constraints1)
+        .then(stream => {
           requestSecondGetUserMedia();
           attachMediaStream(stream, 'local-view-1');
           detectVideoPlaying('local-view-1')
@@ -271,20 +262,19 @@
                 validateFrameRate('local-view-1', expected_frame_rate1,
                                   validateFrameRateCallback);
               });
-        },
-        failedCallback);
+        })
+        .catch(failedCallback);
     var requestSecondGetUserMedia = function() {
-      navigator.webkitGetUserMedia(
-          constraints2,
-          function(stream) {
+      navigator.mediaDevices.getUserMedia(constraints2)
+          .then(stream => {
             attachMediaStream(stream, 'local-view-2');
             detectVideoPlaying('local-view-2')
                 .then(() => {
                   validateFrameRate('local-view-2', expected_frame_rate2,
                                     validateFrameRateCallback);
                 });
-          },
-          failedCallback);
+          })
+          .catch(failedCallback);
     }
   }
 
@@ -296,9 +286,8 @@
 
     function onIframeLoaded() {
       var iframe  = window.document.querySelector('iframe');
-      iframe.contentWindow.navigator.webkitGetUserMedia(
-          constraints,
-          function (stream) {
+      iframe.contentWindow.navigator.mediaDevices.getUserMedia(constraints)
+          .then(stream => {
             // Remove the iframe from the parent within the callback scope.
             window.parent.document.querySelector('iframe').remove();
             // This function enqueues reporting test success, rather than doing
@@ -308,8 +297,8 @@
             setTimeout(function () {
               window.parent.reportTestSuccess();
             }, 0);
-          },
-          window.parent.failedCallback);
+          })
+          .catch(window.parent.failedCallback);
     }
   }
 
@@ -321,12 +310,11 @@
 
     function onIframeLoaded() {
       var iframe  = window.document.querySelector('iframe');
-      iframe.contentWindow.navigator.webkitGetUserMedia(
-          constraints,
-          function (stream) {
+      iframe.contentWindow.navigator.mediaDevices.getUserMedia(constraints)
+          .then(stream => {
             window.parent.failTest('GetUserMedia call succeeded unexpectedly.');
-          },
-          function (error) {
+          })
+          .catch(error => {
             // Remove the iframe from the parent within the callback scope.
             window.parent.document.querySelector('iframe').remove();
             // This function enqueues reporting test success, rather than doing
@@ -538,7 +526,7 @@
         stream.getAudioTracks()[0].stop();
         reportTestSuccess();
       })
-      .catch(_=>{
+      .catch(_ => {
         failTest("getUserMedia failed")
       });
   }
@@ -553,7 +541,7 @@
         stream.getAudioTracks()[0].stop();
         reportTestSuccess();
       })
-      .catch(_=>{
+      .catch(_ => {
         failTest("getUserMedia failed")
       });
   }
@@ -743,7 +731,7 @@
           reportTestSuccess();
         });
       })
-      .catch(_=>{
+      .catch(_ => {
         failTest("Unexpected failure")
       });
   }
@@ -788,7 +776,7 @@
             });
           })
       })
-      .catch(_=>{
+      .catch(_ => {
         failTest("Unexpected failure")
       });
   }

@@ -12,10 +12,9 @@
 
   function startVideoCaptureAndVerifySize() {
     console.log('Calling getUserMediaAndWaitForVideoRendering.');
-    navigator.webkitGetUserMedia(
-        CONSTRAINTS,
-        gotStreamCallback,
-        failedCallback);
+    navigator.mediaDevices.getUserMedia(CONSTRAINTS)
+        .then(gotStreamCallback)
+        .catch(failedCallback);
   }
 
   function failedCallback(error) {

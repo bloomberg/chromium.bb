@@ -132,16 +132,6 @@ function detectVideo(videoElementName, predicate) {
   });
 }
 
-function waitForVideoWithResolution(element, expected_width, expected_height) {
-  addExpectedEvent();
-  detectVideoPlaying(element)
-      .then((resolution) => {
-        assertEquals(expected_width, resolution.width);
-        assertEquals(expected_height, resolution.height);
-        eventOccured();
-      });
-}
-
 function waitForVideo(videoElement) {
   addExpectedEvent();
   detectVideoPlaying(videoElement)
