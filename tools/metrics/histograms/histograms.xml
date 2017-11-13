@@ -43656,6 +43656,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.PushedStreamVaryResponseHeader"
+    enum="PushedStreamVaryResponseHeaderValues">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    Information about the value of the Vary response header in HTTP/2 pushed
+    streams.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicActiveSessions">
   <owner>rch@chromium.org</owner>
   <summary>
