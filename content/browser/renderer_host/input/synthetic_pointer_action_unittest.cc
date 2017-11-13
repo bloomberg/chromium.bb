@@ -80,6 +80,11 @@ class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
     return 0.0f;
   }
 
+  int GetMouseWheelMinimumGranularity() const override {
+    NOTIMPLEMENTED();
+    return 0.0f;
+  }
+
   WebInputEvent::Type type() const { return type_; }
 
  protected:

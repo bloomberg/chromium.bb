@@ -747,6 +747,17 @@ float RenderWidgetHostViewAndroid::GetBottomControlsHeight() const {
   return content_view_core_->GetBottomControlsHeightDip();
 }
 
+int RenderWidgetHostViewAndroid::GetMouseWheelMinimumGranularity() const {
+  if (!content_view_core_)
+    return 0;
+
+  // On Android, mouse wheel MotionEvents specify the number of ticks and how
+  // many pixels each tick scrolls. This multiplier is specified by device
+  // metrics (See RenderCoordinates::mWheelScrollFactor) so the minimum
+  // granularity will be the size of this tick multiplier.
+  return content_view_core_->GetMouseWheelMinimumGranularity();
+}
+
 void RenderWidgetHostViewAndroid::UpdateCursor(const WebCursor& cursor) {
   CursorInfo cursor_info;
   cursor.GetCursorInfo(&cursor_info);

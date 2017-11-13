@@ -587,6 +587,14 @@ float ContentViewCore::GetBottomControlsHeightDip() const {
   return GetBottomControlsHeightPix() / dpi_scale();
 }
 
+int ContentViewCore::GetMouseWheelMinimumGranularity() const {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
+  if (j_obj.is_null())
+    return 0;
+  return Java_ContentViewCore_getMouseWheelTickMultiplier(env, j_obj);
+}
+
 void ContentViewCore::SendScreenRectsAndResizeWidget() {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view) {

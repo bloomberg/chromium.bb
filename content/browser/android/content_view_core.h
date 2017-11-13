@@ -244,6 +244,7 @@ class ContentViewCore : public WebContentsObserver {
   bool DoBrowserControlsShrinkBlinkSize() const;
   float GetTopControlsHeightDip() const;
   float GetBottomControlsHeightDip() const;
+  int GetMouseWheelMinimumGranularity() const;
 
   void UpdateCursor(const content::CursorInfo& info);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);

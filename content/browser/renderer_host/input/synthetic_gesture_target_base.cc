@@ -124,6 +124,10 @@ float SyntheticGestureTargetBase::GetMinScalingSpanInDips() const {
   return 0.0f;
 }
 
+int SyntheticGestureTargetBase::GetMouseWheelMinimumGranularity() const {
+  return host_->GetView()->GetMouseWheelMinimumGranularity();
+}
+
 bool SyntheticGestureTargetBase::PointIsWithinContents(int x, int y) const {
   gfx::Rect bounds = host_->GetView()->GetViewBounds();
   bounds -= bounds.OffsetFromOrigin();  // Translate the bounds to (0,0).

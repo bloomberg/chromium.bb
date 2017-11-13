@@ -157,13 +157,30 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelInputEvents(
       gfx::Vector2dF delta = GetPositionDeltaAtTime(event_timestamp) -
                              current_move_segment_total_delta_;
 
-      blink::WebMouseWheelEvent::Phase phase =
-          needs_scroll_begin_ ? blink::WebMouseWheelEvent::kPhaseBegan
-                              : blink::WebMouseWheelEvent::kPhaseChanged;
-      DCHECK(delta.x() || delta.y());
-      ForwardMouseWheelEvent(target, delta, phase, event_timestamp);
-      current_move_segment_total_delta_ += delta;
-      needs_scroll_begin_ = false;
+      // Android MotionEvents that carry mouse wheel ticks and the tick
+      // granularity. Since it's not easy to change this granularity, it means
+      // we can only scroll in terms of number of these ticks. Note also: if
+      // the delta is smaller than one tick size we wont send an event or
+      // accumulate it in current_move_segment_total_delta_ so that we don't
+      // consider that delta applied. If we did, slow scrolls would be entirely
+      // lost since we'd send 0 ticks in each event but assume delta was
+      // applied.
+      int pixels_per_wheel_tick = target->GetMouseWheelMinimumGranularity();
+      if (pixels_per_wheel_tick) {
+        int wheel_ticks_x = static_cast<int>(delta.x() / pixels_per_wheel_tick);
+        int wheel_ticks_y = static_cast<int>(delta.y() / pixels_per_wheel_tick);
+        delta = gfx::Vector2dF(wheel_ticks_x * pixels_per_wheel_tick,
+                               wheel_ticks_y * pixels_per_wheel_tick);
+      }
+
+      if (delta.x() || delta.y()) {
+        blink::WebMouseWheelEvent::Phase phase =
+            needs_scroll_begin_ ? blink::WebMouseWheelEvent::kPhaseBegan
+                                : blink::WebMouseWheelEvent::kPhaseChanged;
+        ForwardMouseWheelEvent(target, delta, phase, event_timestamp);
+        current_move_segment_total_delta_ += delta;
+        needs_scroll_begin_ = false;
+      }
 
       if (FinishedCurrentMoveSegment(event_timestamp)) {
         if (!IsLastMoveSegment()) {
@@ -298,6 +315,9 @@ gfx::Vector2dF SyntheticSmoothMoveGesture::GetPositionDeltaAtTime(
     const base::TimeTicks& timestamp) const {
   // Make sure the final delta is correct. Using the computation below can lead
   // to issues with floating point precision.
+  // TODO(bokan): This comment makes it sound like we have pixel perfect
+  // precision. In fact, gestures can accumulate a significant amount of
+  // error (e.g. due to snapping to physical pixels on each event).
   if (FinishedCurrentMoveSegment(timestamp))
     return params_.distances[current_move_segment_];
 

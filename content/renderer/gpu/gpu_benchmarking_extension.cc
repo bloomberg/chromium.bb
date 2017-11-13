@@ -584,6 +584,9 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetMethod("scrollBounce", &GpuBenchmarking::ScrollBounce)
       .SetMethod("pinchBy", &GpuBenchmarking::PinchBy)
       .SetMethod("pageScaleFactor", &GpuBenchmarking::PageScaleFactor)
+      .SetMethod("setPageScaleFactor", &GpuBenchmarking::SetPageScaleFactor)
+      .SetMethod("setBrowserControlsShown",
+                 &GpuBenchmarking::SetBrowserControlsShown)
       .SetMethod("tap", &GpuBenchmarking::Tap)
       .SetMethod("pointerActionSequence",
                  &GpuBenchmarking::PointerActionSequence)
@@ -873,6 +876,23 @@ float GpuBenchmarking::PageScaleFactor() {
   if (!context.Init(false))
     return 0.0;
   return context.web_view()->PageScaleFactor();
+}
+
+void GpuBenchmarking::SetPageScaleFactor(float scale) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return;
+  context.web_view()->SetPageScaleFactor(scale);
+}
+
+void GpuBenchmarking::SetBrowserControlsShown(bool show) {
+  GpuBenchmarkingContext context;
+  if (!context.Init(false))
+    return;
+  context.web_view()->UpdateBrowserControlsState(
+      blink::kWebBrowserControlsBoth,
+      show ? blink::kWebBrowserControlsShown : blink::kWebBrowserControlsHidden,
+      false);
 }
 
 float GpuBenchmarking::VisualViewportY() {

@@ -23,6 +23,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -119,6 +120,13 @@ void RenderWidgetHostViewBase::SelectionBoundsChanged(
 
 float RenderWidgetHostViewBase::GetBottomControlsHeight() const {
   return 0.f;
+}
+
+int RenderWidgetHostViewBase::GetMouseWheelMinimumGranularity() const {
+  // Most platforms can specify the floating-point delta in the wheel event so
+  // they don't have a minimum granularity. Android is currently the only
+  // platform that overrides this.
+  return 0;
 }
 
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,

@@ -53,6 +53,7 @@ const int kPointerAssumedStoppedTimeMs = 43;
 const float kTouchSlopInDips = 7.0f;
 const float kMinScalingSpanInDips = 27.5f;
 const int kTouchPointersLength = 16;
+const int kMouseWheelTickMultiplier = 0;
 
 enum TouchGestureType { TOUCH_SCROLL, TOUCH_DRAG };
 
@@ -150,6 +151,10 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   }
 
   float GetTouchSlopInDips() const override { return kTouchSlopInDips; }
+
+  int GetMouseWheelMinimumGranularity() const override {
+    return kMouseWheelTickMultiplier;
+  }
 
   float GetMinScalingSpanInDips() const override {
     return kMinScalingSpanInDips;
