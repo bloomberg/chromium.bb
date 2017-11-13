@@ -1826,4 +1826,4 @@ virtual/mojo-loading/http/tests/ManualTests/ [ WontFix ]
 # changes to subpixel offsets of composited layers to detect under-invalidation
 # in testing, whereas otherwise we do not do so if the composited layer has a
 # direct compositing reason (for performance). Only applies to SPv1.
-Bug(none) paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ WontFix ]
+paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ WontFix ]
