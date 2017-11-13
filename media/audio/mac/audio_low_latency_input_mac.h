@@ -136,10 +136,6 @@ class MEDIA_EXPORT AUAudioInputStream
   // Stop listening for changes in device properties.
   void DeRegisterDeviceChangeListener();
 
-  // Gets the fixed capture hardware latency and store it during initialization.
-  // Returns 0 if not available.
-  base::TimeDelta GetHardwareLatency();
-
   // Gets the current capture time.
   base::TimeTicks GetCaptureTime(const AudioTimeStamp* input_time_stamp);
 

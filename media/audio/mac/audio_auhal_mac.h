@@ -119,9 +119,6 @@ class AUHALStream : public AudioOutputStream {
   // Creates the input and output busses.
   void CreateIOBusses();
 
-  // Returns the fixed hardware latency, or zero if not available.
-  base::TimeDelta GetHardwareLatency();
-
   // Returns the playout time for a given AudioTimeStamp.
   base::TimeTicks GetPlayoutTime(const AudioTimeStamp* output_time_stamp);
 

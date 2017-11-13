@@ -485,7 +485,9 @@ bool AUAudioInputStream::Open() {
   }
 
   // The hardware latency is fixed and will not change during the call.
-  hardware_latency_ = GetHardwareLatency();
+  hardware_latency_ = AudioManagerMac::GetHardwareLatency(
+      audio_unit_, input_device_id_, kAudioDevicePropertyScopeInput,
+      format_.mSampleRate);
 
   // The master channel is 0, Left and right are channels 1 and 2.
   // And the master channel is not counted in |number_of_channels_in_frame_|.
@@ -1057,36 +1059,6 @@ int AUAudioInputStream::HardwareSampleRate() {
     return 0.0;
 
   return static_cast<int>(nominal_sample_rate);
-}
-
-base::TimeDelta AUAudioInputStream::GetHardwareLatency() {
-  if (!audio_unit_ || input_device_id_ == kAudioObjectUnknown) {
-    DLOG(WARNING) << "Audio unit object is NULL or device ID is unknown";
-    return base::TimeDelta();
-  }
-
-  // Get audio unit latency.
-  Float64 audio_unit_latency_sec = 0.0;
-  UInt32 size = sizeof(audio_unit_latency_sec);
-  OSStatus result = AudioUnitGetProperty(
-      audio_unit_, kAudioUnitProperty_Latency, kAudioUnitScope_Global, 0,
-      &audio_unit_latency_sec, &size);
-  OSSTATUS_DLOG_IF(WARNING, result != noErr, result)
-      << "Could not get audio unit latency";
-
-  // Get input audio device latency.
-  AudioObjectPropertyAddress property_address = {
-      kAudioDevicePropertyLatency, kAudioDevicePropertyScopeInput,
-      kAudioObjectPropertyElementMaster};
-  UInt32 device_latency_frames = 0;
-  size = sizeof(device_latency_frames);
-  result = AudioObjectGetPropertyData(input_device_id_, &property_address, 0,
-                                      nullptr, &size, &device_latency_frames);
-  DLOG_IF(WARNING, result != noErr) << "Could not get audio device latency.";
-
-  return base::TimeDelta::FromSecondsD(audio_unit_latency_sec) +
-         AudioTimestampHelper::FramesToTime(device_latency_frames,
-                                            format_.mSampleRate);
 }
 
 base::TimeTicks AUAudioInputStream::GetCaptureTime(

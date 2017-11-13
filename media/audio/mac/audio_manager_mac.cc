@@ -26,6 +26,7 @@
 #include "media/audio/mac/coreaudio_dispatch_override.h"
 #include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/channel_layout.h"
 #include "media/base/limits.h"
@@ -1069,6 +1070,49 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   }
 
   return (result == noErr);
+}
+
+// static
+base::TimeDelta AudioManagerMac::GetHardwareLatency(
+    AudioUnit audio_unit,
+    AudioDeviceID device_id,
+    AudioObjectPropertyScope scope,
+    int sample_rate) {
+  if (!audio_unit || device_id == kAudioObjectUnknown) {
+    DLOG(WARNING) << "Audio unit object is NULL or device ID is unknown";
+    return base::TimeDelta();
+  }
+
+  // Get audio unit latency.
+  Float64 audio_unit_latency_sec = 0.0;
+  UInt32 size = sizeof(audio_unit_latency_sec);
+  OSStatus result = AudioUnitGetProperty(audio_unit, kAudioUnitProperty_Latency,
+                                         kAudioUnitScope_Global, 0,
+                                         &audio_unit_latency_sec, &size);
+  OSSTATUS_DLOG_IF(WARNING, result != noErr, result)
+      << "Could not get audio unit latency";
+
+  // Get audio device latency.
+  AudioObjectPropertyAddress property_address = {
+      kAudioDevicePropertyLatency, scope, kAudioObjectPropertyElementMaster};
+  UInt32 device_latency_frames = 0;
+  size = sizeof(device_latency_frames);
+  result = AudioObjectGetPropertyData(device_id, &property_address, 0, nullptr,
+                                      &size, &device_latency_frames);
+  OSSTATUS_DLOG_IF(WARNING, result != noErr, result)
+      << "Could not get audio device latency.";
+
+  property_address.mSelector = kAudioStreamPropertyLatency;
+  UInt32 stream_latency_frames = 0;
+  size = sizeof(stream_latency_frames);
+  result = AudioObjectGetPropertyData(device_id, &property_address, 0, nullptr,
+                                      &size, &stream_latency_frames);
+  OSSTATUS_DLOG_IF(WARNING, result != noErr, result)
+      << "Could not get stream latency.";
+
+  return base::TimeDelta::FromSecondsD(audio_unit_latency_sec) +
+         AudioTimestampHelper::FramesToTime(
+             device_latency_frames + stream_latency_frames, sample_rate);
 }
 
 bool AudioManagerMac::IncreaseIOBufferSizeIfPossible(AudioDeviceID device_id) {
