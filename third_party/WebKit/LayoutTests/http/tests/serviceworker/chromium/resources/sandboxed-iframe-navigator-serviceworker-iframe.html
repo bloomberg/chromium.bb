@@ -1,10 +1,13 @@
 <script>
-window.onmessage = function (e) {
-  var id = e.data['id'];
+window.onmessage = function(e) {
+  const id = e.data['id'];
   try {
     var sw = window.navigator.serviceWorker;
   } catch (e) {
-    window.top.postMessage({id: id, result:e.toString()}, '*');
+    window.top.postMessage({
+        id: id,
+        result: 'navigator.serviceWorker failed: ' + e.name
+      }, '*');
     return;
   }
 
@@ -13,7 +16,10 @@ window.onmessage = function (e) {
         window.top.postMessage({id: id, result:'ok'}, '*');
       })
     .catch(function(e) {
-        window.top.postMessage({id: id, result:e.toString()}, '*');
-      });
+        window.top.postMessage({
+            id: id,
+            result: 'getRegistration() failed: ' + e.name
+          }, '*');
+        });
 };
 </script>
