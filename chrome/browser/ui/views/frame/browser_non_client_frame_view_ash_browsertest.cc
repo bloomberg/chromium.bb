@@ -51,6 +51,44 @@
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+// Toggles fullscreen mode and waits for the notification.
+void ToggleFullscreenModeAndWait(Browser* browser) {
+  FullscreenNotificationObserver waiter;
+  chrome::ToggleFullscreenMode(browser);
+  waiter.Wait();
+}
+
+// Enters fullscreen mode for tab and waits for the notification.
+void EnterFullscreenModeForTabAndWait(Browser* browser,
+                                      content::WebContents* web_contents) {
+  FullscreenNotificationObserver waiter;
+  browser->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->EnterFullscreenModeForTab(web_contents, GURL());
+  waiter.Wait();
+}
+
+// Exits fullscreen mode for tab and waits for the notification.
+void ExitFullscreenModeForTabAndWait(Browser* browser,
+                                     content::WebContents* web_contents) {
+  FullscreenNotificationObserver waiter;
+  browser->exclusive_access_manager()
+      ->fullscreen_controller()
+      ->ExitFullscreenModeForTab(web_contents);
+  waiter.Wait();
+}
+
+// Exits fullscreen mode and waits for the notification.
+void ExitFullscreenModeAndWait(BrowserView* browser_view) {
+  FullscreenNotificationObserver waiter;
+  browser_view->ExitFullscreen();
+  waiter.Wait();
+}
+
+}  // namespace
+
 using views::Widget;
 
 using BrowserNonClientFrameViewAshTest = InProcessBrowserTest;
@@ -116,12 +154,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 
   // The frame should be painted again when fullscreen is exited and the caption
   // buttons should be visible.
-  {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
-  }
+  ToggleFullscreenModeAndWait(browser());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
 }
@@ -156,22 +189,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Enter both browser fullscreen and tab fullscreen. Entering browser
   // fullscreen should enable immersive fullscreen.
-  {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    chrome::ToggleFullscreenMode(browser());
-    waiter->Wait();
-  }
-  {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    browser()
-        ->exclusive_access_manager()
-        ->fullscreen_controller()
-        ->EnterFullscreenModeForTab(web_contents, GURL());
-    waiter->Wait();
-  }
+  ToggleFullscreenModeAndWait(browser());
+  EnterFullscreenModeForTabAndWait(browser(), web_contents);
   EXPECT_TRUE(immersive_mode_controller->IsEnabled());
 
   // An immersive reveal shows the buttons and the top of the frame.
@@ -190,15 +209,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
   EXPECT_EQ(0, frame_view->header_painter_->GetHeaderHeightForPainting());
 
   // Repeat test but without tab fullscreen.
-  {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    browser()
-        ->exclusive_access_manager()
-        ->fullscreen_controller()
-        ->ExitFullscreenModeForTab(web_contents);
-    waiter->Wait();
-  }
+  ExitFullscreenModeForTabAndWait(browser(), web_contents);
 
   // Immersive reveal should have same behavior as before.
   revealed_lock.reset(immersive_mode_controller->GetRevealedLock(
@@ -216,12 +227,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
 
   // Exiting immersive fullscreen should make the caption buttons and the frame
   // visible again.
-  {
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    browser_view->ExitFullscreen();
-    waiter->Wait();
-  }
+  ExitFullscreenModeAndWait(browser_view);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_TRUE(frame_view->ShouldPaint());
   EXPECT_TRUE(frame_view->caption_button_container_->visible());
@@ -513,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
                        V1BackButton) {
   browser()->window()->Close();
 
-  // Open a new browser window (app or tabbed depending on a parameter).
+  // Open a new app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", true /* trusted_source */, gfx::Rect(),
       browser()->profile(), true);
@@ -528,4 +534,71 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshBackButtonTest,
   ASSERT_TRUE(frame_view->back_button_);
   EXPECT_TRUE(frame_view->back_button_->visible());
   EXPECT_TRUE(frame_view->back_button_->enabled());
+}
+
+// Test the normal type browser's kTopViewInset is always 0.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, TopViewInset) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view->immersive_mode_controller();
+  aura::Window* window = browser()->window()->GetNativeWindow();
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // The kTopViewInset should be 0 when in immersive mode.
+  ToggleFullscreenModeAndWait(browser());
+  EXPECT_TRUE(immersive_mode_controller->IsEnabled());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // An immersive reveal shows the top of the frame.
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+      immersive_mode_controller->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // End the reveal and exit immersive mode.
+  // The kTopViewInset should be 0 when immersive mode is exited.
+  revealed_lock.reset();
+  ToggleFullscreenModeAndWait(browser());
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+}
+
+// Test the V1 apps' kTopViewInset.
+IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
+  browser()->window()->Close();
+
+  // Open a new app window.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = new Browser(params);
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view->immersive_mode_controller();
+  aura::Window* window = browser->window()->GetNativeWindow();
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // The kTopViewInset should be 0 when in immersive mode.
+  ToggleFullscreenModeAndWait(browser);
+  EXPECT_TRUE(immersive_mode_controller->IsEnabled());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // An immersive reveal shows the top of the frame.
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+      immersive_mode_controller->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_EQ(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // End the reveal and exit immersive mode.
+  // The kTopViewInset should be larger than 0 again when immersive mode is
+  // exited.
+  revealed_lock.reset();
+  ToggleFullscreenModeAndWait(browser);
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
 }
