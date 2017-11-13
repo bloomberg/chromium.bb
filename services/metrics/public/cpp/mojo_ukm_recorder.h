@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "services/metrics/public/cpp/metrics_export.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
@@ -43,11 +44,15 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
   static std::unique_ptr<MojoUkmRecorder> Create(
       service_manager::Connector* connector);
 
+  base::WeakPtr<MojoUkmRecorder> GetWeakPtr();
+
  private:
   // UkmRecorder:
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   mojom::UkmRecorderInterfacePtr interface_;
+
+  base::WeakPtrFactory<MojoUkmRecorder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoUkmRecorder);
 };

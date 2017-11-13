@@ -131,7 +131,8 @@ class QueueingConnectionFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(QueueingConnectionFilter);
 };
 
-viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
+viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
+    service_manager::Connector* connector) {
   viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor =
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
@@ -140,6 +141,7 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
   auto* process = ChildProcess::current();
   deps.shutdown_event = process->GetShutDownEvent();
   deps.io_thread_task_runner = process->io_task_runner();
+  deps.connector = connector;
   return deps;
 }
 
@@ -163,7 +165,9 @@ GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
 GpuChildThread::GpuChildThread(const ChildThreadImpl::Options& options,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
     : ChildThreadImpl(options),
-      viz_main_(this, CreateVizMainDependencies(), std::move(gpu_init)),
+      viz_main_(this,
+                CreateVizMainDependencies(GetConnector()),
+                std::move(gpu_init)),
       weak_factory_(this) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
