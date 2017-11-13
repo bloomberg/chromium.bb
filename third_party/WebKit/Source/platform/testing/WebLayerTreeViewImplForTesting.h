@@ -5,11 +5,12 @@
 #ifndef WebLayerTreeViewImplForTesting_h
 #define WebLayerTreeViewImplForTesting_h
 
+#include <memory>
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebLayerTreeView.h"
-#include <memory>
 
 namespace cc {
 class AnimationHost;

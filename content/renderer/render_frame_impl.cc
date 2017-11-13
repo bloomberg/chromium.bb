@@ -4457,7 +4457,7 @@ bool RenderFrameImpl::RunModalPromptDialog(
                                 default_value.Utf16(),
                                 frame_->GetDocument().Url(), &result);
   if (ok)
-    actual_value->Assign(WebString::FromUTF16(result));
+    *actual_value = WebString::FromUTF16(result);
   return ok;
 }
 
