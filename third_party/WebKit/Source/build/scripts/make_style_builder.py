@@ -36,7 +36,7 @@ from name_utilities import lower_first
 import template_expander
 
 
-def calculate_functions_to_declare(property_):
+def calculate_apply_functions_to_declare(property_):
     property_['should_declare_functions'] = \
         not property_['longhands'] \
         and not property_['direction_aware_options'] \
@@ -52,6 +52,10 @@ def calculate_functions_to_declare(property_):
                  property_['custom_apply_functions_value']) \
         and property_['property_class'] \
         and isinstance(property_['property_class'], types.BooleanType)
+    if property_['custom_apply_functions_all']:
+        if (property_['upper_camel_name'] in
+                ['Clip', 'ColumnCount', 'ColumnGap', 'ColumnWidth', 'ZIndex']):
+            property_['use_property_class_in_stylebuilder'] = True
 
 
 class StyleBuilderWriter(json5_generator.Writer):
@@ -73,7 +77,7 @@ class StyleBuilderWriter(json5_generator.Writer):
         self._properties = self._json5_properties.longhands + \
             self._json5_properties.shorthands
         for property_ in self._properties:
-            calculate_functions_to_declare(property_)
+            calculate_apply_functions_to_declare(property_)
 
     @property
     def css_properties(self):

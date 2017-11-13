@@ -121,34 +121,6 @@ namespace blink {
 {{apply_animation('CSSPropertyTransitionProperty', 'Property', 'Transition')}}
 {{apply_animation('CSSPropertyTransitionTimingFunction', 'TimingFunction', 'Transition')}}
 
-{% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto') %}
-{% set property = properties_by_id[property_id] %}
-{% set auto_getter = auto_getter or 'HasAuto' + property.name_for_methods %}
-{% set auto_setter = auto_setter or 'SetHasAuto' + property.name_for_methods %}
-{{declare_initial_function(property_id)}} {
-  state.Style()->{{auto_setter}}();
-}
-
-{{declare_inherit_function(property_id)}} {
-  if (state.ParentStyle()->{{auto_getter}}())
-    state.Style()->{{auto_setter}}();
-  else
-    {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
-}
-
-{{declare_value_function(property_id)}} {
-  if (value.IsIdentifierValue() && ToCSSIdentifierValue(value).GetValueID() == {{auto_identity}})
-    state.Style()->{{auto_setter}}();
-  else
-    {{convert_and_set_value(property)}}
-}
-{% endmacro %}
-{{apply_auto('CSSPropertyClip')}}
-{{apply_auto('CSSPropertyColumnCount')}}
-{{apply_auto('CSSPropertyColumnGap', auto_getter='HasNormalColumnGap', auto_setter='SetHasNormalColumnGap', auto_identity='CSSValueNormal')}}
-{{apply_auto('CSSPropertyColumnWidth')}}
-{{apply_auto('CSSPropertyZIndex')}}
-
 static bool lengthMatchesAllSides(const LengthBox& lengthBox,
                                   const Length& length) {
   return (lengthBox.Left() == length &&
