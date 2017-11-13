@@ -234,12 +234,6 @@ class CC_PAINT_EXPORT PaintOpWithFlags : public PaintOp {
 
 class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
  public:
-  enum class AnnotationType {
-    URL,
-    LinkToDestination,
-    NamedDestination,
-  };
-
   static constexpr PaintOpType kType = PaintOpType::Annotate;
   AnnotateOp(PaintCanvas::AnnotationType annotation_type,
              const SkRect& rect,
