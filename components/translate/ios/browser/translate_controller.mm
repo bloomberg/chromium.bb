@@ -26,19 +26,24 @@ const char kCommandPrefix[] = "translate";
 
 TranslateController::TranslateController(web::WebState* web_state,
                                          JsTranslateManager* manager)
-    : web::WebStateObserver(web_state),
+    : web_state_(web_state),
       observer_(nullptr),
       js_manager_(manager),
       weak_method_factory_(this) {
   DCHECK(js_manager_);
-  DCHECK(web::WebStateObserver::web_state());
-  web_state->AddScriptCommandCallback(
+  DCHECK(web_state_);
+  web_state_->AddObserver(this);
+  web_state_->AddScriptCommandCallback(
       base::Bind(&TranslateController::OnJavascriptCommandReceived,
                  base::Unretained(this)),
       kCommandPrefix);
 }
 
 TranslateController::~TranslateController() {
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
 }
 
 void TranslateController::InjectTranslateScript(
@@ -143,7 +148,10 @@ bool TranslateController::OnTranslateComplete(
 // web::WebStateObserver implementation.
 
 void TranslateController::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 }  // namespace translate
