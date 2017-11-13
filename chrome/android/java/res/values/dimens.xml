@@ -326,8 +326,7 @@
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
     <dimen name="ntp_logo_height">116dp</dimen>
     <dimen name="ntp_logo_margin_top_modern">25dp</dimen>
-    <!-- bottom_control_container_height + 8 -->
-    <dimen name="ntp_logo_margin_bottom_modern">64dp</dimen>
+    <dimen name="ntp_logo_margin_bottom_modern">8dp</dimen>
     <dimen name="ntp_search_box_height">62dp</dimen>
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
