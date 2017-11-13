@@ -189,11 +189,26 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 			case CTO_WholeWord:
 				if (data[-1] == '^' && rule->charslen == text_len) break;
 				goto next_rule;
-			case CTO_BegWord:
+			case CTO_SuffixableWord:
 				if (data[-1] == '^') break;
 				goto next_rule;
-			case CTO_EndWord:
+			case CTO_PrefixableWord:
 				if (rule->charslen == text_len) break;
+				goto next_rule;
+			case CTO_BegWord:
+				if (data[-1] == '^' && rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_BegMidWord:
+				if (rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_MidWord:
+				if (data[-1] != '^' && rule->charslen < text_len) break;
+				goto next_rule;
+			case CTO_MidEndWord:
+				if (data[-1] != '^') break;
+				goto next_rule;
+			case CTO_EndWord:
+				if (data[-1] != '^' && rule->charslen == text_len) break;
 				goto next_rule;
 			case CTO_NoCross:
 				break;
@@ -397,7 +412,12 @@ findRelevantRules(widechar *text, widechar **rules_str) {
 				switch (rule->opcode) {
 				case CTO_Always:
 				case CTO_WholeWord:
+				case CTO_SuffixableWord:
+				case CTO_PrefixableWord:
 				case CTO_BegWord:
+				case CTO_BegMidWord:
+				case CTO_MidWord:
+				case CTO_MidEndWord:
 				case CTO_EndWord:
 				case CTO_NoCross:
 					break;
