@@ -14,6 +14,7 @@
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/test/fake_web_frame_scheduler.h"
+#include "platform/scheduler/test/fake_web_view_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -173,26 +174,74 @@ TEST_F(RendererMetricsHelperTest, Metrics) {
 }
 
 TEST_F(RendererMetricsHelperTest, GetFrameTypeTest) {
-  FakeWebFrameScheduler frame1(
-      true, true, WebFrameScheduler::FrameType::kMainFrame, false, false);
-  EXPECT_EQ(GetFrameType(&frame1), FrameType::MAIN_FRAME_VISIBLE);
+  DCHECK_EQ(GetFrameType(nullptr), FrameType::NONE);
 
-  FakeWebFrameScheduler frame2(
-      true, false, WebFrameScheduler::FrameType::kSubframe, false, false);
-  EXPECT_EQ(GetFrameType(&frame2), FrameType::SAME_ORIGIN_HIDDEN);
+  std::unique_ptr<FakeWebFrameScheduler> frame1 =
+      FakeWebFrameScheduler::Builder()
+          .SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+          .SetIsPageVisible(true)
+          .SetIsFrameVisible(true)
+          .Build();
+  EXPECT_EQ(GetFrameType(frame1.get()), FrameType::MAIN_FRAME_VISIBLE);
 
-  FakeWebFrameScheduler frame3(
-      true, false, WebFrameScheduler::FrameType::kSubframe, true, false);
-  EXPECT_EQ(GetFrameType(&frame3), FrameType::CROSS_ORIGIN_HIDDEN);
+  std::unique_ptr<FakeWebFrameScheduler> frame2 =
+      FakeWebFrameScheduler::Builder()
+          .SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+          .SetIsPageVisible(true)
+          .Build();
+  EXPECT_EQ(GetFrameType(frame2.get()), FrameType::SAME_ORIGIN_HIDDEN);
 
-  FakeWebFrameScheduler frame4(
-      false, false, WebFrameScheduler::FrameType::kSubframe, false, false);
-  EXPECT_EQ(GetFrameType(&frame4), FrameType::SAME_ORIGIN_BACKGROUND);
+  std::unique_ptr<FakeWebFrameScheduler> frame3 =
+      FakeWebFrameScheduler::Builder()
+          .SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+          .SetIsPageVisible(true)
+          .SetIsCrossOrigin(true)
+          .Build();
+  EXPECT_EQ(GetFrameType(frame3.get()), FrameType::CROSS_ORIGIN_HIDDEN);
 
-  FakeWebFrameScheduler frame5(
-      false, false, WebFrameScheduler::FrameType::kMainFrame, false, true);
-  DCHECK_EQ(GetFrameType(&frame5),
+  std::unique_ptr<FakeWebFrameScheduler> frame4 =
+      FakeWebFrameScheduler::Builder()
+          .SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+          .Build();
+  EXPECT_EQ(GetFrameType(frame4.get()), FrameType::SAME_ORIGIN_BACKGROUND);
+
+  std::unique_ptr<FakeWebFrameScheduler> frame5 =
+      FakeWebFrameScheduler::Builder()
+          .SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+          .SetIsExemptFromThrottling(true)
+          .Build();
+  DCHECK_EQ(GetFrameType(frame5.get()),
             FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_SELF);
+
+  std::unique_ptr<FakeWebViewScheduler> view1 =
+      FakeWebViewScheduler::Builder().SetIsPlayingAudio(true).Build();
+
+  std::unique_ptr<FakeWebFrameScheduler> frame6 =
+      FakeWebFrameScheduler::Builder()
+          .SetWebViewScheduler(view1.get())
+          .SetIsFrameVisible(true)
+          .SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+          .Build();
+  DCHECK_EQ(GetFrameType(frame6.get()), FrameType::SAME_ORIGIN_VISIBLE_SERVICE);
+
+  std::unique_ptr<FakeWebFrameScheduler> frame7 =
+      FakeWebFrameScheduler::Builder()
+          .SetWebViewScheduler(view1.get())
+          .SetIsCrossOrigin(true)
+          .SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+          .Build();
+  DCHECK_EQ(GetFrameType(frame7.get()), FrameType::CROSS_ORIGIN_HIDDEN_SERVICE);
+
+  std::unique_ptr<FakeWebViewScheduler> view2 =
+      FakeWebViewScheduler::Builder().SetIsThrottlingExempt(true).Build();
+
+  std::unique_ptr<FakeWebFrameScheduler> frame8 =
+      FakeWebFrameScheduler::Builder()
+          .SetWebViewScheduler(view2.get())
+          .SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+          .Build();
+  DCHECK_EQ(GetFrameType(frame8.get()),
+            FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_OTHER);
 }
 
 TEST_F(RendererMetricsHelperTest, BackgroundedRendererTransition) {

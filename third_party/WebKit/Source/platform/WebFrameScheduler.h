@@ -120,7 +120,7 @@ class WebFrameScheduler {
   virtual scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) = 0;
 
   // Returns the parent WebViewScheduler.
-  virtual WebViewScheduler* GetWebViewScheduler() = 0;
+  virtual WebViewScheduler* GetWebViewScheduler() const = 0;
 
   // Returns a ScopedVirtualTimePauser which can be used to vote for pausing
   // virtual time. Virtual time will be paused if any ScopedVirtualTimePauser
@@ -151,9 +151,12 @@ class WebFrameScheduler {
   virtual std::unique_ptr<ActiveConnectionHandle>
   OnActiveConnectionCreated() = 0;
 
-  // Returns true if this frame is should not throttled (e.g. because of audio
-  // or an active connection).
-  virtual bool IsExemptFromThrottling() const = 0;
+  // Returns true if this frame is should not throttled (e.g. due to an active
+  // connection).
+  // Note that this only applies to the current frame,
+  // use GetWebViewScheduler()->IsExemptFromBudgetBasedThrottling for
+  // the status of the page.
+  virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
 };
 
 }  // namespace blink

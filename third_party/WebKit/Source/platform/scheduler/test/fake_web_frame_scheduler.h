@@ -29,17 +29,20 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
 class FakeWebFrameScheduler : public WebFrameScheduler {
  public:
   FakeWebFrameScheduler()
-      : is_page_visible_(false),
+      : web_view_scheduler_(nullptr),
+        is_page_visible_(false),
         is_frame_visible_(false),
         frame_type_(WebFrameScheduler::FrameType::kSubframe),
         is_cross_origin_(false),
         is_exempt_from_throttling_(false) {}
-  FakeWebFrameScheduler(bool is_page_visible,
+  FakeWebFrameScheduler(WebViewScheduler* web_view_scheduler,
+                        bool is_page_visible,
                         bool is_frame_visible,
                         WebFrameScheduler::FrameType frame_type,
                         bool is_cross_origin,
                         bool is_exempt_from_throttling)
-      : is_page_visible_(is_page_visible),
+      : web_view_scheduler_(web_view_scheduler),
+        is_page_visible_(is_page_visible),
         is_frame_visible_(is_frame_visible),
         frame_type_(frame_type),
         is_cross_origin_(is_cross_origin),
@@ -47,6 +50,56 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
     DCHECK(frame_type_ != FrameType::kMainFrame || !is_cross_origin);
   }
   ~FakeWebFrameScheduler() override {}
+
+  class Builder {
+   public:
+    Builder() {}
+
+    std::unique_ptr<FakeWebFrameScheduler> Build() {
+      return std::make_unique<FakeWebFrameScheduler>(
+          web_view_scheduler_, is_page_visible_, is_frame_visible_, frame_type_,
+          is_cross_origin_, is_exempt_from_throttling_);
+    }
+
+    Builder& SetWebViewScheduler(WebViewScheduler* web_view_scheduler) {
+      web_view_scheduler_ = web_view_scheduler;
+      return *this;
+    }
+
+    Builder& SetIsPageVisible(bool is_page_visible) {
+      is_page_visible_ = is_page_visible;
+      return *this;
+    }
+
+    Builder& SetIsFrameVisible(bool is_frame_visible) {
+      is_frame_visible_ = is_frame_visible;
+      return *this;
+    }
+
+    Builder& SetFrameType(WebFrameScheduler::FrameType frame_type) {
+      frame_type_ = frame_type;
+      return *this;
+    }
+
+    Builder& SetIsCrossOrigin(bool is_cross_origin) {
+      is_cross_origin_ = is_cross_origin;
+      return *this;
+    }
+
+    Builder& SetIsExemptFromThrottling(bool is_exempt_from_throttling) {
+      is_exempt_from_throttling_ = is_exempt_from_throttling;
+      return *this;
+    }
+
+   private:
+    WebViewScheduler* web_view_scheduler_ = nullptr;
+    bool is_page_visible_ = false;
+    bool is_frame_visible_ = false;
+    WebFrameScheduler::FrameType frame_type_ =
+        WebFrameScheduler::FrameType::kMainFrame;
+    bool is_cross_origin_ = false;
+    bool is_exempt_from_throttling_ = false;
+  };
 
   // WebFrameScheduler implementation:
   void AddThrottlingObserver(ObserverType, Observer*) override {}
@@ -64,7 +117,9 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override {
     return nullptr;
   }
-  WebViewScheduler* GetWebViewScheduler() override { return nullptr; }
+  WebViewScheduler* GetWebViewScheduler() const override {
+    return web_view_scheduler_;
+  }
   ScopedVirtualTimePauser CreateScopedVirtualTimePauser() {
     return ScopedVirtualTimePauser();
   }
@@ -76,11 +131,13 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
     return nullptr;
   }
-  bool IsExemptFromThrottling() const override {
+  bool IsExemptFromBudgetBasedThrottling() const override {
     return is_exempt_from_throttling_;
   }
 
  private:
+  WebViewScheduler* web_view_scheduler_;  // NOT OWNED
+
   bool is_page_visible_;
   bool is_frame_visible_;
   WebFrameScheduler::FrameType frame_type_;

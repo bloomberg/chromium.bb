@@ -213,6 +213,10 @@ void WebViewSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
   renderer_scheduler_->OnAudioStateChanged();
 }
 
+bool WebViewSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
+  return has_active_connection_;
+}
+
 bool WebViewSchedulerImpl::HasActiveConnectionForTest() const {
   return has_active_connection_;
 }
@@ -221,7 +225,7 @@ void WebViewSchedulerImpl::RequestBeginMainFrameNotExpected(bool new_state) {
   delegate_->RequestBeginMainFrameNotExpected(new_state);
 }
 
-bool WebViewSchedulerImpl::IsAudioPlaying() const {
+bool WebViewSchedulerImpl::IsPlayingAudio() const {
   return is_audio_playing_;
 }
 

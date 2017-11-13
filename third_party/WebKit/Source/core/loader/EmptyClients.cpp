@@ -88,7 +88,7 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   WebFrameScheduler::FrameType GetFrameType() const override {
     return WebFrameScheduler::FrameType::kSubframe;
   }
-  WebViewScheduler* GetWebViewScheduler() override { return nullptr; }
+  WebViewScheduler* GetWebViewScheduler() const override { return nullptr; }
   ScopedVirtualTimePauser CreateScopedVirtualTimePauser() {
     return ScopedVirtualTimePauser();
   }
@@ -100,7 +100,7 @@ class EmptyFrameScheduler : public WebFrameScheduler {
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
     return nullptr;
   }
-  bool IsExemptFromThrottling() const override { return false; }
+  bool IsExemptFromBudgetBasedThrottling() const override { return false; }
 };
 
 PopupMenu* EmptyChromeClient::OpenPopupMenu(LocalFrame&, HTMLSelectElement&) {

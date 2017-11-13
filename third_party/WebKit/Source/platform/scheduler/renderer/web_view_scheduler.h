@@ -117,6 +117,12 @@ class PLATFORM_EXPORT WebViewScheduler {
 
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
+  virtual bool IsPlayingAudio() const = 0;
+
+  // Returns true if the page should be exempted from aggressive throttling
+  // (e.g. due to a page maintaining an active connection).
+  virtual bool IsExemptFromBudgetBasedThrottling() const = 0;
+
   virtual bool HasActiveConnectionForTest() const = 0;
 
   virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;

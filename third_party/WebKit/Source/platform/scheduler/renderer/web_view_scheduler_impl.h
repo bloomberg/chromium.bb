@@ -57,6 +57,8 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   void SetMaxVirtualTimeTaskStarvationCount(
       int max_task_starvation_count) override;
   void AudioStateChanged(bool is_audio_playing) override;
+  bool IsPlayingAudio() const override;
+  bool IsExemptFromBudgetBasedThrottling() const override;
   bool HasActiveConnectionForTest() const override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
   void AddVirtualTimeObserver(VirtualTimeObserver*) override;
@@ -71,8 +73,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
 
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
   void OnNavigation();
-
-  bool IsAudioPlaying() const;
 
   void OnConnectionUpdated();
 
