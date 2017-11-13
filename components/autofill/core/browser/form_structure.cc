@@ -320,6 +320,8 @@ void RationalizePhoneNumberFieldPredictionsInSection(
   // valid set of fields that can compose a whole number. The |found_*| pointers
   // will be set to that set of fields when iteration finishes.
   for (AutofillField* field : *fields_in_section) {
+    if (!field->is_focusable)
+      continue;
     ServerFieldType current_field_type = field->Type().GetStorableType();
     switch (current_field_type) {
       case PHONE_HOME_NUMBER:

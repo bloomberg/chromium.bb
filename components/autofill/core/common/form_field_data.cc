@@ -125,7 +125,7 @@ FormFieldData::FormFieldData()
     : max_length(0),
       is_autofilled(false),
       check_status(NOT_CHECKABLE),
-      is_focusable(false),
+      is_focusable(true),
       should_autocomplete(true),
       role(ROLE_ATTRIBUTE_OTHER),
       text_direction(base::i18n::UNKNOWN_DIRECTION),
@@ -133,8 +133,7 @@ FormFieldData::FormFieldData()
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
 
-FormFieldData::~FormFieldData() {
-}
+FormFieldData::~FormFieldData() {}
 
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
@@ -184,33 +183,59 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   // context.)
 
   // Like SameFieldAs this ignores the value.
-  if (label < field.label) return true;
-  if (label > field.label) return false;
-  if (name < field.name) return true;
-  if (name > field.name) return false;
-  if (id < field.id) return true;
-  if (id > field.id) return false;
-  if (form_control_type < field.form_control_type) return true;
-  if (form_control_type > field.form_control_type) return false;
-  if (autocomplete_attribute < field.autocomplete_attribute) return true;
-  if (autocomplete_attribute > field.autocomplete_attribute) return false;
-  if (placeholder < field.placeholder) return true;
-  if (placeholder > field.placeholder) return false;
-  if (max_length < field.max_length) return true;
-  if (max_length > field.max_length) return false;
-  if (css_classes < field.css_classes) return true;
-  if (css_classes > field.css_classes) return false;
+  if (label < field.label)
+    return true;
+  if (label > field.label)
+    return false;
+  if (name < field.name)
+    return true;
+  if (name > field.name)
+    return false;
+  if (id < field.id)
+    return true;
+  if (id > field.id)
+    return false;
+  if (form_control_type < field.form_control_type)
+    return true;
+  if (form_control_type > field.form_control_type)
+    return false;
+  if (autocomplete_attribute < field.autocomplete_attribute)
+    return true;
+  if (autocomplete_attribute > field.autocomplete_attribute)
+    return false;
+  if (placeholder < field.placeholder)
+    return true;
+  if (placeholder > field.placeholder)
+    return false;
+  if (max_length < field.max_length)
+    return true;
+  if (max_length > field.max_length)
+    return false;
+  if (css_classes < field.css_classes)
+    return true;
+  if (css_classes > field.css_classes)
+    return false;
   // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
-  if (IsCheckable(check_status) < IsCheckable(field.check_status)) return true;
-  if (IsCheckable(check_status) > IsCheckable(field.check_status)) return false;
-  if (is_focusable < field.is_focusable) return true;
-  if (is_focusable > field.is_focusable) return false;
-  if (should_autocomplete < field.should_autocomplete) return true;
-  if (should_autocomplete > field.should_autocomplete) return false;
-  if (role < field.role) return true;
-  if (role > field.role) return false;
-  if (text_direction < field.text_direction) return true;
-  if (text_direction > field.text_direction) return false;
+  if (IsCheckable(check_status) < IsCheckable(field.check_status))
+    return true;
+  if (IsCheckable(check_status) > IsCheckable(field.check_status))
+    return false;
+  if (is_focusable < field.is_focusable)
+    return true;
+  if (is_focusable > field.is_focusable)
+    return false;
+  if (should_autocomplete < field.should_autocomplete)
+    return true;
+  if (should_autocomplete > field.should_autocomplete)
+    return false;
+  if (role < field.role)
+    return true;
+  if (role > field.role)
+    return false;
+  if (text_direction < field.text_direction)
+    return true;
+  if (text_direction > field.text_direction)
+    return false;
   // See SameFieldAs above for why we don't check option_values/contents.
   return false;
 }
