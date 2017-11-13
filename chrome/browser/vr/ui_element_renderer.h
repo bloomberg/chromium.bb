@@ -5,8 +5,23 @@
 #ifndef CHROME_BROWSER_VR_UI_ELEMENT_RENDERER_H_
 #define CHROME_BROWSER_VR_UI_ELEMENT_RENDERER_H_
 
+#include <memory>
+#include <vector>
+
+#include "base/macros.h"
 #include "chrome/browser/vr/controller_mesh.h"
+#include "chrome/browser/vr/elements/controller.h"
+#include "chrome/browser/vr/elements/grid.h"
+#include "chrome/browser/vr/elements/laser.h"
+#include "chrome/browser/vr/elements/reticle.h"
+#include "chrome/browser/vr/macros.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/transform.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace gfx {
 class RectF;
@@ -16,7 +31,20 @@ class Transform;
 
 namespace vr {
 
-// This is the interface offered by VrShell's GL system to UI elements.
+class BaseRenderer;
+class ExternalTexturedQuadRenderer;
+class GradientQuadRenderer;
+class TexturedQuadRenderer;
+class WebVrRenderer;
+
+// An instance of this class is passed to UiElements by the UiRenderer in order
+// to issue the GL commands for drawing the frame. In some ways, this class is a
+// bit of unnecessary abstraction, but by having all the renderers owned by a
+// single class, we gain several benefits. For one, we know when the shader
+// programs are being changed and this lets us do batching (see the textured
+// quad renderer). It also is a central point of contact that can let all
+// renderers know to recreate their state in the event of a GL context
+// loss/recreation.
 class UiElementRenderer {
  public:
   enum TextureLocation {
@@ -24,40 +52,68 @@ class UiElementRenderer {
     kTextureLocationExternal,
   };
 
-  virtual ~UiElementRenderer() {}
+  UiElementRenderer();
+  VIRTUAL_FOR_MOCKS ~UiElementRenderer();
 
-  virtual void DrawTexturedQuad(int texture_data_handle,
-                                TextureLocation texture_location,
-                                const gfx::Transform& view_proj_matrix,
-                                const gfx::RectF& copy_rect,
-                                float opacity,
-                                gfx::SizeF element_size,
-                                float corner_radius) = 0;
-
-  virtual void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
-                                const SkColor edge_color,
-                                const SkColor center_color,
-                                float opacity,
-                                gfx::SizeF element_size,
-                                float corner_radius) = 0;
-
-  virtual void DrawGradientGridQuad(const gfx::Transform& view_proj_matrix,
-                                    const SkColor edge_color,
-                                    const SkColor center_color,
-                                    const SkColor grid_color,
-                                    int gridline_count,
-                                    float opacity) = 0;
+  VIRTUAL_FOR_MOCKS void DrawTexturedQuad(
+      int texture_data_handle,
+      TextureLocation texture_location,
+      const gfx::Transform& model_view_proj_matrix,
+      const gfx::RectF& copy_rect,
+      float opacity,
+      gfx::SizeF element_size,
+      float corner_radius);
+  VIRTUAL_FOR_MOCKS void DrawGradientQuad(
+      const gfx::Transform& model_view_proj_matrix,
+      const SkColor edge_color,
+      const SkColor center_color,
+      float opacity,
+      gfx::SizeF element_size,
+      float corner_radius);
+  VIRTUAL_FOR_MOCKS void DrawGradientGridQuad(
+      const gfx::Transform& model_view_proj_matrix,
+      const SkColor edge_color,
+      const SkColor center_color,
+      const SkColor grid_color,
+      int gridline_count,
+      float opacity);
 
   // TODO(crbug/779108) This presumes a Daydream controller.
-  virtual void DrawController(ControllerMesh::State state,
-                              float opacity,
-                              const gfx::Transform& view_proj_matrix) = 0;
+  VIRTUAL_FOR_MOCKS void DrawController(ControllerMesh::State state,
+                                        float opacity,
+                                        const gfx::Transform& view_proj_matrix);
 
-  virtual void DrawLaser(float opacity,
-                         const gfx::Transform& view_proj_matrix) = 0;
+  VIRTUAL_FOR_MOCKS void DrawLaser(float opacity,
+                                   const gfx::Transform& view_proj_matrix);
 
-  virtual void DrawReticle(float opacity,
-                           const gfx::Transform& view_proj_matrix) = 0;
+  VIRTUAL_FOR_MOCKS void DrawReticle(float opacity,
+                                     const gfx::Transform& view_proj_matrix);
+
+  VIRTUAL_FOR_MOCKS void DrawWebVr(int texture_data_handle);
+
+  void Flush();
+  void SetUpController(std::unique_ptr<ControllerMesh> mesh);
+
+ protected:
+  explicit UiElementRenderer(bool use_gl);
+
+ private:
+  void Init();
+  void FlushIfNecessary(BaseRenderer* renderer);
+
+  BaseRenderer* last_renderer_ = nullptr;
+
+  std::unique_ptr<ExternalTexturedQuadRenderer>
+      external_textured_quad_renderer_;
+  std::unique_ptr<TexturedQuadRenderer> textured_quad_renderer_;
+  std::unique_ptr<GradientQuadRenderer> gradient_quad_renderer_;
+  std::unique_ptr<WebVrRenderer> webvr_renderer_;
+  std::unique_ptr<Reticle::Renderer> reticle_renderer_;
+  std::unique_ptr<Laser::Renderer> laser_renderer_;
+  std::unique_ptr<Controller::Renderer> controller_renderer_;
+  std::unique_ptr<Grid::Renderer> gradient_grid_renderer_;
+
+  DISALLOW_COPY_AND_ASSIGN(UiElementRenderer);
 };
 
 }  // namespace vr

@@ -16,11 +16,11 @@
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
-#include "chrome/browser/vr/vr_shell_renderer.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/security_state/core/security_state.h"
 #include "components/toolbar/vector_icons.h"
@@ -253,7 +253,7 @@ void VrTestContext::OnGlInitialized(const gfx::Size& window_size) {
   ui_->OnGlInitialized(content_texture_id,
                        UiElementRenderer::kTextureLocationLocal, false);
 
-  ui_->vr_shell_renderer()->GetControllerRenderer()->SetUp(
+  ui_->ui_element_renderer()->SetUpController(
       ControllerMesh::LoadFromResources());
 }
 

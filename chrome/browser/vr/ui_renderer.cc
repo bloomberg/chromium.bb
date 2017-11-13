@@ -6,14 +6,14 @@
 
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
-#include "chrome/browser/vr/vr_shell_renderer.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace vr {
 
-UiRenderer::UiRenderer(UiScene* scene, VrShellRenderer* vr_shell_renderer)
-    : scene_(scene), vr_shell_renderer_(vr_shell_renderer) {}
+UiRenderer::UiRenderer(UiScene* scene, UiElementRenderer* ui_element_renderer)
+    : scene_(scene), ui_element_renderer_(ui_element_renderer) {}
 
 UiRenderer::~UiRenderer() = default;
 
@@ -83,7 +83,7 @@ void UiRenderer::DrawWebVrOverlayForeground(const RenderInfo& render_info) {
 
 void UiRenderer::DrawUiView(const RenderInfo& render_info,
                             const std::vector<const UiElement*>& elements) {
-  TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
+  TRACE_EVENT0("gpu", "UiRenderer::DrawUiView");
 
   auto sorted_elements = GetElementsInDrawOrder(elements);
 
@@ -105,13 +105,13 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
   for (const auto* element : elements) {
     DrawElement(view_proj_matrix, *element);
   }
-  vr_shell_renderer_->Flush();
+  ui_element_renderer_->Flush();
 }
 
 void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
                              const UiElement& element) {
   DCHECK_GE(element.draw_phase(), 0);
-  element.Render(vr_shell_renderer_,
+  element.Render(ui_element_renderer_,
                  view_proj_matrix * element.world_space_transform());
 }
 

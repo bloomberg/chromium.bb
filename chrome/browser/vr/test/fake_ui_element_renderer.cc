@@ -8,7 +8,7 @@
 
 namespace vr {
 
-FakeUiElementRenderer::FakeUiElementRenderer() {}
+FakeUiElementRenderer::FakeUiElementRenderer() : UiElementRenderer(false) {}
 FakeUiElementRenderer::~FakeUiElementRenderer() {}
 
 void FakeUiElementRenderer::DrawTexturedQuad(

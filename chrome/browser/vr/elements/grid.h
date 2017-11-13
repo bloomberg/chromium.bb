@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_GRID_H_
 
 #include "chrome/browser/vr/elements/rect.h"
+#include "chrome/browser/vr/renderers/base_quad_renderer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace vr {
@@ -30,6 +31,32 @@ class Grid : public Rect {
   void set_gridline_count(int gridline_count) {
     gridline_count_ = gridline_count;
   }
+
+  class Renderer : public BaseQuadRenderer {
+   public:
+    Renderer();
+    ~Renderer() override;
+
+    void Draw(const gfx::Transform& model_view_proj_matrix,
+              SkColor edge_color,
+              SkColor center_color,
+              SkColor grid_color,
+              int gridline_count,
+              float opacity);
+
+    static void CreateBuffers();
+
+   private:
+    GLuint model_view_proj_matrix_handle_;
+    GLuint scene_radius_handle_;
+    GLuint center_color_handle_;
+    GLuint edge_color_handle_;
+    GLuint grid_color_handle_;
+    GLuint opacity_handle_;
+    GLuint lines_count_handle_;
+
+    DISALLOW_COPY_AND_ASSIGN(Renderer);
+  };
 
  private:
   SkColor grid_color_ = SK_ColorWHITE;

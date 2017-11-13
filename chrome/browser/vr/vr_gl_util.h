@@ -8,8 +8,14 @@
 #include <array>
 #include <string>
 
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_bindings.h"
+
+#define SHADER(Src) "#version 100\n" #Src
+#define OEIE_SHADER(Src) \
+  "#version 100\n#extension GL_OES_EGL_image_external : require\n" #Src
+#define VOID_OFFSET(x) reinterpret_cast<void*>(x)
 
 namespace gfx {
 class RectF;
@@ -40,6 +46,12 @@ GLuint CreateAndLinkProgram(GLuint vertex_shader_handle,
 gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
                                const gfx::Transform& model_matrix,
                                const gfx::SizeF& size);
+
+// Sets default texture parameters given a texture type.
+void SetTexParameters(GLenum texture_type);
+
+// Sets color uniforms given an SkColor.
+void SetColorUniform(GLuint handle, SkColor c);
 
 }  // namespace vr
 

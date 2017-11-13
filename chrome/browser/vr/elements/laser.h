@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_LASER_H_
 
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/renderers/base_quad_renderer.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace vr {
@@ -16,6 +17,25 @@ class Laser : public UiElement {
  public:
   explicit Laser(Model* model);
   ~Laser() override;
+
+  class Renderer : public BaseQuadRenderer {
+   public:
+    Renderer();
+    ~Renderer() override;
+
+    void Draw(float opacity, const gfx::Transform& view_proj_matrix);
+
+   private:
+    GLuint model_view_proj_matrix_handle_;
+    GLuint texture_unit_handle_;
+    GLuint texture_data_handle_;
+    GLuint color_handle_;
+    GLuint fade_point_handle_;
+    GLuint fade_end_handle_;
+    GLuint opacity_handle_;
+
+    DISALLOW_COPY_AND_ASSIGN(Renderer);
+  };
 
  private:
   void Render(UiElementRenderer* renderer,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VR_ELEMENTS_RETICLE_H_
 
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/renderers/base_quad_renderer.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 namespace vr {
@@ -19,6 +20,29 @@ class Reticle : public UiElement {
   ~Reticle() override;
 
   UiElement* TargetElement() const;
+
+  class Renderer : public BaseQuadRenderer {
+   public:
+    Renderer();
+    ~Renderer() override;
+
+    void Draw(float opacity, const gfx::Transform& view_proj_matrix);
+
+    static const char* VertexShader();
+
+   private:
+    GLuint model_view_proj_matrix_handle_;
+    GLuint color_handle_;
+    GLuint ring_diameter_handle_;
+    GLuint inner_hole_handle_;
+    GLuint inner_ring_end_handle_;
+    GLuint inner_ring_thickness_handle_;
+    GLuint mid_ring_end_handle_;
+    GLuint mid_ring_opacity_handle_;
+    GLuint opacity_handle_;
+
+    DISALLOW_COPY_AND_ASSIGN(Renderer);
+  };
 
  private:
   void Render(UiElementRenderer* renderer,
