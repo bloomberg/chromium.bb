@@ -125,7 +125,7 @@ float ShapeResultBloberizer::FillGlyphs(const StringView& text,
                                         const ShapeResult* result) {
   DCHECK(result);
   DCHECK(to <= text.length());
-  if (CanUseFastPath(from, to, text.length(), result->HasVerticalOffsets()))
+  if (CanUseFastPath(from, to, result))
     return FillFastHorizontalGlyphs(result);
 
   float advance = 0;
@@ -278,6 +278,15 @@ bool ShapeResultBloberizer::CanUseFastPath(unsigned from,
                                            unsigned length,
                                            bool has_vertical_offsets) {
   return !from && to == length && !has_vertical_offsets &&
+         GetType() != ShapeResultBloberizer::Type::kTextIntercepts;
+}
+
+bool ShapeResultBloberizer::CanUseFastPath(unsigned from,
+                                           unsigned to,
+                                           const ShapeResult* shape_result) {
+  return from <= shape_result->StartIndexForResult() &&
+         to >= shape_result->EndIndexForResult() &&
+         !shape_result->HasVerticalOffsets() &&
          GetType() != ShapeResultBloberizer::Type::kTextIntercepts;
 }
 

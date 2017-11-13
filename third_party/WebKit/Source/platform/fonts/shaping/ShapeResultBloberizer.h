@@ -115,6 +115,7 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
                       unsigned to,
                       unsigned length,
                       bool has_vertical_offsets);
+  bool CanUseFastPath(unsigned from, unsigned to, const ShapeResult*);
   float FillFastHorizontalGlyphs(const ShapeResultBuffer&, TextDirection);
   float FillFastHorizontalGlyphs(const ShapeResult*, float advance = 0);
 

@@ -102,7 +102,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   }
 
   NGTextFragmentPaintInfo PaintInfo() const {
-    return NGTextFragmentPaintInfo{Text(), StartOffset(), EndOffset(),
+    return NGTextFragmentPaintInfo{text_, StartOffset(), EndOffset(),
                                    TextShapeResult()};
   }
 
