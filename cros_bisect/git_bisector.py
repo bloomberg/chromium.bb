@@ -37,7 +37,7 @@ class GitBisector(common.OptionsChecker):
   """
 
   REQUIRED_ARGS = ('good', 'bad', 'remote', 'eval_repeat', 'auto_threshold',
-                   'board', 'eval_raise_on_error')
+                   'board', 'eval_raise_on_error', 'skip_failed_commit')
 
   def __init__(self, options, builder, evaluator):
     """Constructor.
@@ -52,6 +52,8 @@ class GitBisector(common.OptionsChecker):
         * auto_threshold: True to set threshold automatically without prompt.
         * board: board name of the DUT.
         * eval_raise_on_error: If set, raises if evaluation failed.
+        * skip_failed_commit: If set, mark the failed commit (build failed /
+            no result) as 'skip' instead of 'bad'.
       builder: Builder to build/deploy image. Should contain repo_dir.
       evaluator: Evaluator to get score
     """
@@ -66,6 +68,7 @@ class GitBisector(common.OptionsChecker):
     self.auto_threshold = options.auto_threshold
     self.board = options.board
     self.eval_raise_on_error = options.eval_raise_on_error
+    self.skip_failed_commit = options.skip_failed_commit
 
     # Initialized in ObtainBisectBoundaryScore().
     self.good_commit_info = None
@@ -305,11 +308,17 @@ class GitBisector(common.OptionsChecker):
     """Builds with current commit and deploys to DUT.
 
     It is the default behavior of BuildDeployEval().
+
+    Returns:
+      True if the builder successfully builds and deploys to DUT.
+      False otherwise.
     """
     # TODO(deanliao): Handle build/deploy fail case.
     build_label = self.current_commit.sha1
     build_to_deploy = self.builder.Build(build_label)
-    self.builder.Deploy(self.remote, build_to_deploy, build_label)
+    if not build_to_deploy:
+      return False
+    return self.builder.Deploy(self.remote, build_to_deploy, build_label)
 
   def BuildDeployEval(self, eval_label=None, customize_build_deploy=None):
     """Builds the image, deploys to DUT and evaluates performance.
@@ -337,11 +346,15 @@ class GitBisector(common.OptionsChecker):
       self.current_commit.score = score
     else:
       if customize_build_deploy:
-        customize_build_deploy()
+        build_deploy_result = customize_build_deploy()
       else:
-        self.BuildDeploy()
-      self.current_commit.score = self.evaluator.Evaluate(
-          self.remote, eval_label, self.eval_repeat)
+        build_deploy_result = self.BuildDeploy()
+      if build_deploy_result:
+        self.current_commit.score = self.evaluator.Evaluate(
+            self.remote, eval_label, self.eval_repeat)
+      else:
+        logging.error('Builder fails to build/deploy for %s', eval_label)
+        self.current_commit.score = common.Score()
 
     self.bisect_log.append(self.current_commit)
     if not self.current_commit.score and self.eval_raise_on_error:
@@ -357,10 +370,14 @@ class GitBisector(common.OptionsChecker):
     Returns:
       'good' if the score is closer to given good one; otherwise (including
       score is None), 'bad'.
+      Note that if self.skip_failed_commit is set, returns 'skip' for empty
+      score.
     """
     label = 'bad'
     if not score:
-      logging.error('No score. Marked as bad.')
+      if self.skip_failed_commit:
+        label = 'skip'
+      logging.error('No score. Marked as %s', label)
       return label
 
     good_score = self.good_commit_info.score

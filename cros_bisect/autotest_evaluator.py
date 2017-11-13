@@ -32,7 +32,7 @@ class AutotestEvaluator(evaluator.Evaluator):
   to watch (currently support float value).
   """
   AUTOTEST_BASE = '/usr/local/autotest'
-  AUTOTEST_CLIENT = os.path.join(AUTOTEST_BASE, 'bin/autotest_client')
+  AUTOTEST_CLIENT = os.path.join(AUTOTEST_BASE, 'bin', 'autotest_client')
   REQUIRED_ARGS = evaluator.Evaluator.REQUIRED_ARGS + (
       'board', 'chromium_dir', 'cros_dir', 'test_name', 'metric',
       'metric_take_average', 'eval_passing_only')
@@ -89,20 +89,20 @@ class AutotestEvaluator(evaluator.Evaluator):
       If autotest ran successfully, or --eval-failsafe is set, it returns
       if the test report is retrieved from DUT. Otherwise, False.
     """
-    def RetrieveReport(dut):
+    def RetrieveReport(dut, remote_report_file):
       """Retrieves report from DUT to local.
 
       Args:
         dut: a RemoteAccess object to access DUT.
+        remote_report_file: path of the report on DUT to retrieve.
 
       Returns:
         True if a report is copied from DUT to local path (report_file).
       """
-      remote_report_file = '%s/results/default/%s/results/%s' % (
-          self.AUTOTEST_BASE, self.test_name, self.RESULT_FILENAME)
       logging.info('Copy report from DUT(%s:%s) to %s',
                    dut.remote_host, remote_report_file, report_file)
-      scp_result = dut.ScpToLocal(remote_report_file, report_file)
+      scp_result = dut.ScpToLocal(remote_report_file, report_file,
+                                  error_code_ok=True)
       if scp_result.returncode != 0:
         logging.error('Failed to copy report from DUT(%s:%s) to host(%s)',
                       dut.remote_host, remote_report_file, report_file)
@@ -111,7 +111,12 @@ class AutotestEvaluator(evaluator.Evaluator):
 
     # TODO(deanliao): Deal with the case that test control file is not the
     #     same as below.
-    test_target = '%s/tests/%s/control' % (self.AUTOTEST_BASE, self.test_name)
+    test_target = os.path.join(self.AUTOTEST_BASE, 'tests', self.test_name,
+                               'control')
+
+    remote_report_file = os.path.join(
+        self.AUTOTEST_BASE, 'results', 'default', self.test_name, 'results',
+        self.RESULT_FILENAME)
 
     with osutils.TempDir() as temp_dir:
       dut = remote_access.RemoteAccess(
@@ -123,23 +128,23 @@ class AutotestEvaluator(evaluator.Evaluator):
 
       # Make sure that both self.AUTOTEST_CLIENT and test_target exist.
       sanity_check_result = dut.RemoteSh(['ls'] + run_test_command,
-                                         error_code_ok=True)
+                                         error_code_ok=True, ssh_error_ok=True)
       if sanity_check_result.returncode != 0:
         logging.info('Failed to run autotest from DUT %s: One of %s does not '
                      'exist.', dut.remote_host, run_test_command)
         return False
 
-      run_test_result = dut.RemoteSh(run_test_command, error_code_ok=True)
+      run_test_result = dut.RemoteSh(run_test_command, error_code_ok=True,
+                                     ssh_error_ok=True)
       run_test_returncode = run_test_result.returncode
-      if run_test_returncode == 0:
-        logging.info('Ran successfully.')
-        return RetrieveReport(dut)
-      else:
+
+      if run_test_returncode != 0:
         logging.info('Run failed (returncode: %d)', run_test_returncode)
         if self.eval_passing_only:
           return False
-        else:
-          return RetrieveReport(dut)
+      else:
+        logging.info('Ran successfully.')
+      return RetrieveReport(dut, remote_report_file)
 
   def LookupReportFile(self):
     """Looks up autotest report file.
@@ -150,8 +155,8 @@ class AutotestEvaluator(evaluator.Evaluator):
       Path to report file. None if not found.
     """
     # Default result dir: /tmp/test_that_latest
-    results_dir = self.ResolvePathFromChroot(
-        '/tmp/test_that_latest/results-1-%s' % self.test_name)
+    results_dir = self.ResolvePathFromChroot(os.path.join(
+        '/tmp', 'test_that_latest', 'results-1-%s' % self.test_name))
     # Invoking "find" command is faster than using os.walkdir().
     try:
       command_result = cros_build_lib.RunCommand(
@@ -197,7 +202,7 @@ class AutotestEvaluator(evaluator.Evaluator):
                      self.cros_dir)
       self.SetupCrosRepo()
 
-    board_path = self.ResolvePathFromChroot('/build/%s' % self.board)
+    board_path = self.ResolvePathFromChroot(os.path.join('/build', self.board))
     if os.path.isdir(board_path):
       return True
 

@@ -99,7 +99,7 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
         good=self.GOOD_COMMIT_SHA1, bad=self.BAD_COMMIT_SHA1, remote=self.DUT,
         eval_repeat=self.REPEAT, auto_threshold=False, reuse_eval=False,
         cros_flash_sleep=0.01, cros_flash_retry=3, cros_flash_backoff=1,
-        eval_raise_on_error=False)
+        eval_raise_on_error=False, skip_failed_commit=False)
 
     self.repo_dir = os.path.join(self.tempdir,
                                  builder_module.Builder.DEFAULT_REPO_DIR)
@@ -246,6 +246,41 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
     evaluate_mock.assert_called_with(
         self.DUT, 'cros_%s' % self.BAD_CROS_VERSION, self.REPEAT)
 
+  def testObtainBisectBoundaryScoreImplCrosVersionFlashError(self):
+    """Tests ObtainBisectBoundaryScoreImpl() with CrOS version."""
+    self.SetUpBisectorWithCrosVersion()
+    # Inject good_commit and bad_commit as if
+    # bisector.ResolveChromeBisectRangeFromCrosVersion() being run.
+    self.bisector.good_commit = self.GOOD_COMMIT_SHA1
+    self.bisector.bad_commit = self.BAD_COMMIT_SHA1
+
+    git_mock = self.StartPatcher(git_bisector_unittest.GitMock(self.repo_dir))
+    git_mock.AddRunGitResult(['checkout', self.GOOD_COMMIT_SHA1])
+    git_mock.AddRunGitResult(['checkout', self.BAD_COMMIT_SHA1])
+
+    self.PatchObject(chrome_on_cros_bisector.ChromeOnCrosBisector,
+                     'UpdateCurrentCommit')
+    evaluate_mock = self.PatchObject(DummyEvaluator, 'Evaluate')
+
+    # Mock FlashCrosImage() to verify that customize_build_deploy is assigned
+    # as expected.
+    flash_cros_image_mock = self.PatchObject(
+        chrome_on_cros_bisector.ChromeOnCrosBisector, 'FlashCrosImage')
+    flash_cros_image_mock.side_effect = flash.FlashError('Flash failed.')
+
+    with self.assertRaises(flash.FlashError):
+      self.bisector.ObtainBisectBoundaryScoreImpl(True)
+
+    flash_cros_image_mock.assert_called_with(
+        self.bisector.GetCrosXbuddyPath(self.GOOD_CROS_VERSION))
+    evaluate_mock.assert_not_called()
+
+    with self.assertRaises(flash.FlashError):
+      self.bisector.ObtainBisectBoundaryScoreImpl(False)
+    flash_cros_image_mock.assert_called_with(
+        self.bisector.GetCrosXbuddyPath(self.BAD_CROS_VERSION))
+    evaluate_mock.assert_not_called()
+
   def testGetCrosXbuddyPath(self):
     """Tests GetCrosXbuddyPath()."""
     self.assertEqual(
@@ -312,6 +347,47 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
     flash_cros_image_mock.assert_has_calls(expected_flash_cros_calls)
     evaluate_mock.assert_has_calls(expected_evaluate_calls)
     self.assertEqual(2, build_deploy_mock.call_count)
+
+  def testExchangeChromeSanityCheckFlashError(self):
+    """Tests the flow of exchanging Chrome between good and bad CrOS."""
+    self.SetUpBisectorWithCrosVersion()
+
+    # Inject good_commit and bad_commit as if
+    # bisector.ResolveChromeBisectRangeFromCrosVersion() has been run.
+    self.bisector.good_commit = self.GOOD_COMMIT_SHA1
+    self.bisector.bad_commit = self.BAD_COMMIT_SHA1
+
+    # Inject commit_info and threshold as if
+    # bisector.ObtainBisectBoundaryScore() and bisector.GetThresholdFromUser()
+    # has been run.
+    self.SetDefaultCommitInfo()
+    self.bisector.threshold = self.THRESHOLD
+
+    # Try bad Chrome first.
+    git_mock = self.StartPatcher(git_bisector_unittest.GitMock(self.repo_dir))
+    git_mock.AddRunGitResult(['checkout', self.BAD_COMMIT_SHA1])
+    git_mock.AddRunGitResult(['checkout', self.GOOD_COMMIT_SHA1])
+
+    self.PatchObject(chrome_on_cros_bisector.ChromeOnCrosBisector,
+                     'UpdateCurrentCommit')
+
+    evaluate_mock = self.PatchObject(DummyEvaluator, 'Evaluate')
+
+    # Mock FlashCrosImage() to verify that customize_build_deploy is assigned
+    # as expected.
+    flash_cros_image_mock = self.PatchObject(
+        chrome_on_cros_bisector.ChromeOnCrosBisector, 'FlashCrosImage',
+        side_effect=flash.FlashError('Flash failed.'))
+
+    build_deploy_mock = self.PatchObject(
+        chrome_on_cros_bisector.ChromeOnCrosBisector, 'BuildDeploy')
+
+    with self.assertRaises(flash.FlashError):
+      self.bisector.ExchangeChromeSanityCheck()
+
+    evaluate_mock.assert_not_called()
+    flash_cros_image_mock.assert_called()
+    build_deploy_mock.assert_not_called()
 
   def testFlashImage(self):
     """Tests FlashImage()."""

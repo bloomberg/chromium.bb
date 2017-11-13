@@ -161,6 +161,10 @@ that is close to the failure point, in particular from the corresponding branch.
         '--eval-raise-on-error', action='store_true',
         help='If set, stop bisect if it fails to evaluate a commit. '
              'Otherwise, the failed commit is labeled as bad.')
+    parser.add_argument(
+        '--skip-failed-commit', action='store_true',
+        help='If set, skip the failed commit (build failed / no result) rather '
+             'than marking it as bad commit.')
 
   def ProcessOptions(self):
     """Process self.options.

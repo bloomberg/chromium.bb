@@ -16,6 +16,7 @@ from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from chromite.lib import remote_access
 from chromite.lib import remote_access_unittest
 
 
@@ -24,8 +25,9 @@ class RemoteShScpMock(remote_access_unittest.RemoteShMock):
 
   ATTRS = ('RemoteSh', 'ScpToLocal')
 
-  def ScpToLocal(self, _, remote, local):
-    return self._results['ScpToLocal'].LookupResult(([remote, local], ))
+  def ScpToLocal(self, _, remote, local, **kwargs):
+    return self._results['ScpToLocal'].LookupResult(
+        ([remote, local],), kwargs=kwargs)
 
 
 class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
@@ -136,6 +138,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """Tests that RunTestFromDut() invokes expected commands."""
     rsh_mock = self.StartPatcher(RemoteShScpMock())
     rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
         [self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
@@ -149,7 +153,33 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """Tests RunTestFromDut() when autotest control file is missing."""
     rsh_mock = self.StartPatcher(RemoteShScpMock())
     rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=1)
+    self.assertFalse(self.evaluator.RunTestFromDut(self.DUT, self.REPORT_FILE))
+
+  def testRunTestFromDutLsSshError(self):
+    """Tests RunTestFromDut() when autotest control file is missing."""
+    rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
+        ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET],
+        returncode=remote_access.SSH_ERROR_CODE)
+    self.assertFalse(self.evaluator.RunTestFromDut(self.DUT, self.REPORT_FILE))
+
+  def testRunTestFromDutAutotestSshErrorWithEvalPassingOnly(self):
+    """Tests RunTestFromDut() with failed autotest and --eval-passing-only."""
+    self.UpdateOptionsAndEvaluator(dict(eval_passing_only=True))
+
+    rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
+        ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
+    rsh_mock.AddCmdResult(
+        [self.AUTOTEST_CLIENT, self.TEST_TARGET],
+        returncode=remote_access.SSH_ERROR_CODE)
 
     self.assertFalse(self.evaluator.RunTestFromDut(self.DUT, self.REPORT_FILE))
 
@@ -158,6 +188,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     self.UpdateOptionsAndEvaluator(dict(eval_passing_only=True))
 
     rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
     rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
@@ -173,6 +205,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """
     rsh_mock = self.StartPatcher(RemoteShScpMock())
     rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
         [self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=1)
@@ -185,6 +219,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
   def testRunTestFromDutScpReportFail(self):
     """Tests RunTestFromDut() when it failed to remote copy report file."""
     rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
     rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
@@ -204,6 +240,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """
     self.UpdateOptionsAndEvaluator(dict(eval_failsafe=True))
     rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
     rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
@@ -376,6 +414,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     # Mock RunTestFromDut success.
     rsh_mock = self.StartPatcher(RemoteShScpMock())
     rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
+    rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
         [self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
@@ -386,7 +426,7 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
 
     rsh_mock.AddCmdResult(
         [self.REMOTE_REPORT_FILE, report_file], returncode=0,
-        mock_attr='ScpToLocal')
+        kwargs={'error_code_ok': True}, mock_attr='ScpToLocal')
 
     eval_score = self.evaluator.Evaluate(self.DUT, self.BUILD_LABEL)
     self.assertEqual(1, len(eval_score.values))
@@ -399,6 +439,8 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """Tests Evaluate() with repeat=2 which runs test from DUT."""
     # Mock RunTestFromDut success.
     rsh_mock = self.StartPatcher(RemoteShScpMock())
+    rsh_mock.AddCmdResult(
+        ['rm', '-f', self.REMOTE_REPORT_FILE], returncode=0)
     rsh_mock.AddCmdResult(
         ['ls', self.AUTOTEST_CLIENT, self.TEST_TARGET], returncode=0)
     rsh_mock.AddCmdResult(
@@ -434,6 +476,9 @@ class TestAutotestEvaluator(cros_test_lib.MockTempDirTestCase):
     """Tests Evaluate() which runs test from host."""
     # Mock RunTestFromDut fail.
     command_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    command_mock.AddCmdResult(
+        partial_mock.InOrder(['rm', '-f', self.REMOTE_REPORT_FILE]),
+        returncode=0)
     command_mock.AddCmdResult(
         partial_mock.InOrder([self.AUTOTEST_CLIENT, self.TEST_TARGET]),
         returncode=1)

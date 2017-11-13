@@ -149,7 +149,7 @@ class ChromeOnCrosBisector(git_bisector.GitBisector):
     def FlashBuildDeploy(cros_version):
       """Flashes DUT first then builds/deploys Chrome."""
       self.FlashCrosImage(self.GetCrosXbuddyPath(cros_version))
-      self.BuildDeploy()
+      return self.BuildDeploy()
 
     def Evaluate(cros_version, chromium_commit):
       self.Git(['checkout', chromium_commit])
@@ -191,18 +191,29 @@ class ChromeOnCrosBisector(git_bisector.GitBisector):
   def FlashCrosImage(self, xbuddy_path):
     """Flashes CrOS image to DUT.
 
+    It returns True when it successfully flashes image to DUT. Raises exception
+    when it fails after retry.
+
     Args:
       xbuddy_path: xbuddy path to CrOS image to flash.
+
+    Returns:
+      True
+
+    Raises:
+      FlashError: An unrecoverable error occured.
     """
     logging.notice('cros flash %s', xbuddy_path)
     @retry_util.WithRetry(
         self.cros_flash_retry, log_all_retries=True,
         sleep=self.cros_flash_sleep,
         backoff_factor=self.cros_flash_backoff)
-    def do_flash():
+    def flash_with_retry():
       flash.Flash(self.remote, xbuddy_path, board=self.board,
                   clobber_stateful=True, disable_rootfs_verification=True)
-    do_flash()
+
+    flash_with_retry()
+    return True
 
   def CrosVersionToChromeCommit(self, cros_version):
     """Resolves head commit of the Chrome used by the CrOS version.
