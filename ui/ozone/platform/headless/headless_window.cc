@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
-#include "base/strings/string_number_conversions.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -24,15 +22,6 @@ HeadlessWindow::HeadlessWindow(PlatformWindowDelegate* delegate,
 
 HeadlessWindow::~HeadlessWindow() {
   manager_->RemoveWindow(widget_, this);
-}
-
-base::FilePath HeadlessWindow::path() {
-  base::FilePath base_path = manager_->base_path();
-  if (base_path.empty() || base_path == base::FilePath("/dev/null"))
-    return base_path;
-
-  // Disambiguate multiple window output files with the window id.
-  return base_path.Append(base::IntToString(widget_));
 }
 
 gfx::Rect HeadlessWindow::GetBounds() {
