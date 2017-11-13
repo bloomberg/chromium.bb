@@ -14,6 +14,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -87,6 +88,7 @@ void WaylandKeyboard::Key(void* data,
                           uint32_t key,
                           uint32_t state) {
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
+  keyboard->connection_->set_serial(serial);
 
   DomCode dom_code =
       KeycodeConverter::NativeKeycodeToDomCode(key + kXkbKeycodeOffset);

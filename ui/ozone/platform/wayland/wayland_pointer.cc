@@ -8,6 +8,7 @@
 #include <wayland-client.h>
 
 #include "ui/events/event.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 // TODO(forney): Handle version 5 of wl_pointer.
@@ -23,6 +24,8 @@ WaylandPointer::WaylandPointer(wl_pointer* pointer,
   };
 
   wl_pointer_add_listener(obj_.get(), &listener, this);
+
+  cursor_.reset(new WaylandCursor);
 }
 
 WaylandPointer::~WaylandPointer() {}
@@ -100,6 +103,7 @@ void WaylandPointer::Button(void* data,
   if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
     type = ET_MOUSE_PRESSED;
     pointer->flags_ |= flag;
+    pointer->connection_->set_serial(serial);
   } else {
     type = ET_MOUSE_RELEASED;
     pointer->flags_ &= ~flag;

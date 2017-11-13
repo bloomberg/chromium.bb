@@ -7,6 +7,7 @@
 
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/ozone/platform/wayland/wayland_cursor.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
 namespace ui {
@@ -15,6 +16,13 @@ class WaylandPointer {
  public:
   WaylandPointer(wl_pointer* pointer, const EventDispatchCallback& callback);
   virtual ~WaylandPointer();
+
+  void set_connection(WaylandConnection* connection) {
+    connection_ = connection;
+    cursor_->Init(obj_.get(), connection_);
+  }
+
+  WaylandCursor* cursor() { return cursor_.get(); }
 
  private:
   // wl_pointer_listener
@@ -45,6 +53,8 @@ class WaylandPointer {
                    uint32_t axis,
                    wl_fixed_t value);
 
+  WaylandConnection* connection_ = nullptr;
+  std::unique_ptr<WaylandCursor> cursor_;
   wl::Object<wl_pointer> obj_;
   EventDispatchCallback callback_;
   gfx::PointF location_;
