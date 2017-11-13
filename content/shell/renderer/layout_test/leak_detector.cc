@@ -33,9 +33,9 @@ const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 
-// In the initial state, there are two SuspendableObjects (FontFaceSet created
-// by HTMLDocument and SuspendableTimer created by DocumentLoader).
-const int kInitialNumberOfLiveSuspendableObject = 2;
+// In the initial state, there are two PausableObjects (FontFaceSet created
+// by HTMLDocument and PausableTimer created by DocumentLoader).
+const int kInitialNumberOfLivePausableObject = 2;
 
 // This includes not only about:blank's context but also ScriptRegexp (e.g.
 // created by isValidEmailAddress in EmailInputType.cpp). The leak detector
@@ -52,7 +52,7 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
       kInitialNumberOfLiveLayoutObjects;
   previous_result_.number_of_live_resources = kInitialNumberOfLiveResources;
   previous_result_.number_of_live_pausable_objects =
-      kInitialNumberOfLiveSuspendableObject;
+      kInitialNumberOfLivePausableObject;
   previous_result_.number_of_live_script_promises =
       kInitialNumberOfScriptPromises;
   previous_result_.number_of_live_frames = kInitialNumberOfLiveFrames;
