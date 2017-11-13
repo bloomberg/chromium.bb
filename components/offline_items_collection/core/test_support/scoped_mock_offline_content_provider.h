@@ -17,10 +17,13 @@ class ScopedMockOfflineContentProvider : public MockOfflineContentProvider {
   class ScopedMockObserver : public MockObserver {
    public:
     explicit ScopedMockObserver(OfflineContentProvider* provider);
+    ScopedMockObserver();
     ~ScopedMockObserver() override;
 
+    void AddProvider(OfflineContentProvider* provider);
+
    private:
-    OfflineContentProvider* const provider_;
+    OfflineContentProvider* provider_;
   };
 
   ScopedMockOfflineContentProvider(const std::string& name_space,
