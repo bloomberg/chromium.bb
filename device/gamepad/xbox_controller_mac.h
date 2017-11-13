@@ -15,6 +15,8 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioplugininterface.h"
 #include "base/macros.h"
+#include "base/sequenced_task_runner.h"
+#include "device/gamepad/public/interfaces/gamepad.mojom.h"
 
 struct IOUSBDeviceStruct320;
 struct IOUSBInterfaceStruct300;
@@ -97,6 +99,14 @@ class XboxControllerMac {
 
   void SetLEDPattern(LEDPattern pattern);
 
+  void PlayEffect(
+      mojom::GamepadHapticEffectType type,
+      mojom::GamepadEffectParametersPtr params,
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback);
+
+  void ResetVibration(
+      mojom::GamepadHapticsManager::ResetVibrationActuatorCallback callback);
+
   UInt32 location_id() { return location_id_; }
   int GetVendorId() const;
   int GetProductId() const;
@@ -107,6 +117,9 @@ class XboxControllerMac {
  private:
   static void WriteComplete(void* context, IOReturn result, void* arg0);
   static void GotData(void* context, IOReturn result, void* arg0);
+  static void DoRunCallback(
+      mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback callback,
+      mojom::GamepadHapticsResult result);
 
   void ProcessXbox360Packet(size_t length);
   void ProcessXboxOnePacket(size_t length);
@@ -114,7 +127,23 @@ class XboxControllerMac {
 
   void IOError();
 
+  void PlayDualRumbleEffect(int sequence_id,
+                            double duration,
+                            double start_delay,
+                            double strong_magnitude,
+                            double weak_magnitude);
+  void StartVibration(int sequence_id,
+                      double duration,
+                      double strong_magnitude,
+                      double weak_magnitude);
+  void StopVibration(int sequence_id);
+  void SetVibration(double strong_magnitude, double weak_magnitude);
+
+  void RunCallbackOnMojoThread(mojom::GamepadHapticsResult result);
+
+  void WriteXbox360Rumble(uint8_t strong_magnitude, uint8_t weak_magnitude);
   void WriteXboxOneInit();
+  void WriteXboxOneRumble(uint8_t strong_magnitude, uint8_t weak_magnitude);
 
   // Handle for the USB device. IOUSBDeviceStruct320 is the latest version of
   // the device API that is supported on Mac OS 10.6.
@@ -149,6 +178,13 @@ class XboxControllerMac {
   ControllerType controller_type_;
   int read_endpoint_;
   int control_endpoint_;
+
+  uint8_t counter_;
+
+  int sequence_id_;
+  scoped_refptr<base::SequencedTaskRunner> playing_effect_task_runner_;
+  mojom::GamepadHapticsManager::PlayVibrationEffectOnceCallback
+      playing_effect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(XboxControllerMac);
 };
