@@ -503,12 +503,12 @@ class TestImporter(object):
         Either a user name (which is assumed to have a chromium.org email
         address) or a full email address (for other cases) is returned.
         """
-        username = 'qyearsley'  # Fallback in case of failure.
+        username = ''
         try:
             username = self._fetch_ecosystem_infra_sheriff_username()
         except (IOError, KeyError, ValueError) as error:
             _log.error('Exception while fetching current sheriff: %s', error)
-        return username
+        return username or 'qyearsley'  # Fallback in case of failure.
 
     def _fetch_ecosystem_infra_sheriff_username(self):
         content = self.host.web.get_binary(ROTATIONS_URL)

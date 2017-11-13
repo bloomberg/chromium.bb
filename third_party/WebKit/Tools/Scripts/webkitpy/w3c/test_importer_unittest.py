@@ -324,6 +324,36 @@ class TestImporterTest(LoggingTestCase):
             'No JSON object could be decoded\n'
         ])
 
+    def test_tbr_reviewer_nobody_on_rotation(self):
+        host = MockHost()
+        yesterday = (datetime.date.fromtimestamp(host.time()) -
+                     datetime.timedelta(days=1)).isoformat()
+        host.web.urls[ROTATIONS_URL] = json.dumps({
+            'calendar': [
+                {
+                    'date': yesterday,
+                    'participants': [['some-sheriff']],
+                },
+            ],
+            'rotations': ['ecosystem_infra']
+        })
+        importer = TestImporter(host)
+        self.assertEqual('qyearsley', importer.tbr_reviewer())
+        self.assertLog([])
+
+        today = datetime.date.fromtimestamp(host.time()).isoformat()
+        host.web.urls[ROTATIONS_URL] = json.dumps({
+            'calendar': [
+                {
+                    'date': today,
+                    'participants': [[''], ['some-sheriff']],
+                },
+            ],
+            'rotations': ['ecosystem_infra', 'other-rotation']
+        })
+        self.assertEqual('qyearsley', importer.tbr_reviewer())
+        self.assertLog([])
+
     def test_tbr_reviewer(self):
         host = MockHost()
         today = datetime.date.fromtimestamp(host.time()).isoformat()
