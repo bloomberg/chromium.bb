@@ -319,14 +319,12 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
   std::vector<uint64_t> to_doom_individually_hashes;
 
   // For each of the entry hashes, there are two cases:
-  // 1. The entry is either open or pending doom, and so it should be doomed
-  //    individually to avoid flakes.
-  // 2. The entry is not in use at all, so we can call
+  // 1. There are corresponding entries in active set, pending doom, or both
+  //    sets, and so the hash should be doomed individually to avoid flakes.
+  // 2. The hash is not in active use at all, so we can call
   //    SimpleSynchronousEntry::DoomEntrySet and delete the files en masse.
   for (int i = mass_doom_entry_hashes->size() - 1; i >= 0; --i) {
     const uint64_t entry_hash = (*mass_doom_entry_hashes)[i];
-    CHECK(active_entries_.count(entry_hash) == 0 ||
-          entries_pending_doom_.count(entry_hash) == 0);
     if (!active_entries_.count(entry_hash) &&
         !entries_pending_doom_.count(entry_hash)) {
       continue;
