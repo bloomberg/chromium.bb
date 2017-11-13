@@ -1037,7 +1037,7 @@ if (is_win) {
       info_plist = "//third_party/widevine/cdm/widevine_resources.plist"
       extra_substitutions = [
         "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
-        "BUNDLE_ID=widevine_resources",
+        "BUNDLE_ID=widevine-resources",
       ]
       executable_name = "Widevine Resources"
     }
