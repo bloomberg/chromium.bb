@@ -21,7 +21,6 @@ class TickClock;
 }
 
 namespace net {
-class NetworkQualityEstimator;
 class NetLog;
 class ProxyServer;
 }
@@ -156,9 +155,6 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
                           base::TimeDelta* min_retry_delay));
   MOCK_METHOD1(SecureProxyCheck,
                void(SecureProxyCheckerCallback fetcher_callback));
-  MOCK_METHOD1(
-      IsNetworkQualityProhibitivelySlow,
-      bool(const net::NetworkQualityEstimator* network_quality_estimator));
 
   using DataReductionProxyConfig::UpdateConfigForTesting;
 

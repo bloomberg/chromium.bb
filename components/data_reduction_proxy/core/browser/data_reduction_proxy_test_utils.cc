@@ -459,6 +459,7 @@ DataReductionProxyTestContext::Builder::Build() {
         std::move(params), task_runner, net_log.get(), configurator.get(),
         event_creator.get()));
   } else {
+    test_context_flags ^= USE_MOCK_CONFIG;
     if (!proxy_servers_.empty()) {
       params->SetProxiesForHttp(proxy_servers_);
     }

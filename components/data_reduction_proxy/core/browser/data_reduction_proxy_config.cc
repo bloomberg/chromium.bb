@@ -170,6 +170,11 @@ bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
   return true;
 }
 
+void DataReductionProxyConfig::OnNewClientConfigFetched() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ReloadConfig();
+}
+
 void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(configurator_);

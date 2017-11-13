@@ -120,6 +120,16 @@ class DataReductionProxyConfigTest : public testing::Test {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
 
     test_context_ = DataReductionProxyTestContext::Builder()
+                        .WithMockDataReductionProxyService()
+                        .Build();
+
+    ResetSettings();
+
+    expected_params_.reset(new TestDataReductionProxyParams());
+  }
+
+  void RecreateContextWithMockConfig() {
+    test_context_ = DataReductionProxyTestContext::Builder()
                         .WithMockConfig()
                         .WithMockDataReductionProxyService()
                         .Build();
@@ -240,7 +250,7 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
   ResetSettings();
 
   config()->UpdateConfigForTesting(true, false, true);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
@@ -259,21 +269,21 @@ TEST_F(DataReductionProxyConfigTest,
   config()->UpdateConfigForTesting(true /* enabled */,
                                    false /* secure_proxies_allowed */,
                                    true /* insecure_proxies_allowed */);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
   config()->UpdateConfigForTesting(true, true, false);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
             GetConfiguredProxiesForHttp());
 
   config()->UpdateConfigForTesting(true, false, false);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   config()->UpdateConfigForTesting(true, true, true);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
@@ -294,6 +304,7 @@ TEST_F(DataReductionProxyConfigTest,
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
+  RecreateContextWithMockConfig();
   const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
   const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
       "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
@@ -305,7 +316,7 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
 
   // The proxy is enabled initially.
   config()->UpdateConfigForTesting(true, true, true);
-  config()->ReloadConfig();
+  config()->OnNewClientConfigFetched();
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
@@ -917,9 +928,6 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFi) {
   scoped_feature_list.InitAndEnableFeature(
       features::kDataReductionProxyDecidesTransform);
 
-  // Expect network quality check is never called.
-  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_)).Times(0);
-
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> request = context.CreateRequest(
@@ -940,9 +948,6 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePages) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kDataReductionProxyDecidesTransform);
-
-  // Expect network quality check is never called.
-  EXPECT_CALL(*config(), IsNetworkQualityProhibitivelySlow(_)).Times(0);
 
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
