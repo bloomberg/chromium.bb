@@ -84,14 +84,6 @@ blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
       native_event.hwnd, native_event.message, native_event.wParam,
       native_event.lParam, EventTimeStampToSeconds(time_stamp), pointer_type);
 }
-
-blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(
-    const base::NativeEvent& native_event,
-    const base::TimeTicks& time_stamp) {
-  return WebKeyboardEventBuilder::Build(
-      native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, EventTimeStampToSeconds(time_stamp));
-}
 #endif  // defined(OS_WIN)
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromUiEvent(const KeyEvent& event) {
@@ -310,25 +302,28 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event) {
-// Windows can figure out whether or not to construct a RawKeyDown or a Char
-// WebInputEvent based on the type of message carried in
-// event.native_event(). X11 is not so fortunate, there is no separate
-// translated event type, so DesktopHostLinux sends an extra KeyEvent with
-// is_char() == true. We need to pass the KeyEvent to the X11 function
-// to detect this case so the right event type can be constructed.
+  // TODO(wez): Work out how this comment relates to the code below.
+  // Windows can figure out whether or not to construct a RawKeyDown or a Char
+  // WebInputEvent based on the type of message carried in
+  // event.native_event(). X11 is not so fortunate, there is no separate
+  // translated event type, so DesktopHostLinux sends an extra KeyEvent with
+  // is_char() == true. We need to pass the KeyEvent to the X11 function
+  // to detect this case so the right event type can be constructed.
+  blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEventFromUiEvent(event);
 #if defined(OS_WIN)
   if (event.HasNativeEvent()) {
-    // Key events require no translation.
-    blink::WebKeyboardEvent webkit_event(MakeWebKeyboardEventFromNativeEvent(
-        event.native_event(), event.time_stamp()));
-    webkit_event.SetModifiers(webkit_event.GetModifiers() |
-                              DomCodeToWebInputEventModifiers(event.code()));
-    webkit_event.dom_code = static_cast<int>(event.code());
-    webkit_event.dom_key = static_cast<int>(event.GetDomKey());
-    return webkit_event;
+    const base::NativeEvent& native_event = event.native_event();
+
+    // System key events are explicitly distinguished, under Windows.
+    webkit_event.is_system_key = native_event.message == WM_SYSCHAR ||
+                                 native_event.message == WM_SYSKEYDOWN ||
+                                 native_event.message == WM_SYSKEYUP;
+
+    // Copy the OEM scancode, including flag bits, directly from the event.
+    webkit_event.native_key_code = static_cast<int>(native_event.lParam);
   }
 #endif
-  return MakeWebKeyboardEventFromUiEvent(event);
+  return webkit_event;
 }
 
 blink::WebGestureEvent MakeWebGestureEvent(

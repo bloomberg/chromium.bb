@@ -18,64 +18,6 @@ namespace ui {
 static const unsigned long kDefaultScrollLinesPerWheelDelta = 3;
 static const unsigned long kDefaultScrollCharsPerWheelDelta = 1;
 
-WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
-                                                UINT message,
-                                                WPARAM wparam,
-                                                LPARAM lparam,
-                                                double time_stamp) {
-  WebInputEvent::Type type = WebInputEvent::kUndefined;
-  bool is_system_key = false;
-  switch (message) {
-    case WM_SYSKEYDOWN:
-      is_system_key = true;
-    // fallthrough
-    case WM_KEYDOWN:
-      type = WebInputEvent::kRawKeyDown;
-      break;
-    case WM_SYSKEYUP:
-      is_system_key = true;
-    // fallthrough
-    case WM_KEYUP:
-      type = WebInputEvent::kKeyUp;
-      break;
-    case WM_IME_CHAR:
-      type = WebInputEvent::kChar;
-      break;
-    case WM_SYSCHAR:
-      is_system_key = true;
-    // fallthrough
-    case WM_CHAR:
-      type = WebInputEvent::kChar;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  WebKeyboardEvent result(
-      type, ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState()),
-      time_stamp);
-  result.is_system_key = is_system_key;
-  result.windows_key_code = static_cast<int>(wparam);
-  // Record the scan code (along with other context bits) for this key event.
-  result.native_key_code = static_cast<int>(lparam);
-
-  if (result.GetType() == WebInputEvent::kChar ||
-      result.GetType() == WebInputEvent::kRawKeyDown) {
-    result.text[0] = result.windows_key_code;
-    result.unmodified_text[0] = result.windows_key_code;
-  }
-  // NOTE: There doesn't seem to be a way to query the mouse button state in
-  // this case.
-
-  // Bit 30 of lParam represents the "previous key state". If set, the key was
-  // already down, therefore this is an auto-repeat. Only apply this to key
-  // down events, to match DOM semantics.
-  if ((result.GetType() == WebInputEvent::kRawKeyDown) && (lparam & 0x40000000))
-    result.SetModifiers(result.GetModifiers() | WebInputEvent::kIsAutoRepeat);
-
-  return result;
-}
-
 // WebMouseEvent --------------------------------------------------------------
 
 static int g_last_click_count = 0;
