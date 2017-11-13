@@ -70,6 +70,17 @@ class FakeProofVerifier : public ProofVerifier {
   }
 
  private:
+  // Implementation of ProofVerifierCallback that fails if the callback is ever
+  // run.
+  class FailingProofVerifierCallback : public ProofVerifierCallback {
+   public:
+    void Run(bool ok,
+             const std::string& error_details,
+             std::unique_ptr<ProofVerifyDetails>* details) override {
+      FAIL();
+    }
+  };
+
   class VerifyChainPendingOp {
    public:
     VerifyChainPendingOp(const string& hostname,
@@ -89,10 +100,12 @@ class FakeProofVerifier : public ProofVerifier {
 
     void Run() {
       // FakeProofVerifier depends on crypto_test_utils::ProofVerifierForTesting
-      // running synchronously, and passes a null callback.
+      // running synchronously. It passes a FailingProofVerifierCallback and
+      // runs the original callback after asserting that the verification ran
+      // synchronously.
       QuicAsyncStatus status = delegate_->VerifyCertChain(
           hostname_, certs_, context_, error_details_, details_,
-          std::unique_ptr<ProofVerifierCallback>());
+          QuicMakeUnique<FailingProofVerifierCallback>());
       ASSERT_NE(status, QUIC_PENDING);
       callback_->Run(status == QUIC_SUCCESS, *error_details_, details_);
     }
@@ -320,7 +333,7 @@ TEST_F(TlsHandshakerTest, CancelPendingProofSource) {
   proof_source->InvokePendingCallback(0);
 }
 
-TEST_F(TlsHandshakerTest, DISABLED_HandshakeWithAsyncProofVerifier) {
+TEST_F(TlsHandshakerTest, HandshakeWithAsyncProofVerifier) {
   EXPECT_CALL(*client_conn_, CloseConnection(_, _, _)).Times(0);
   EXPECT_CALL(*server_conn_, CloseConnection(_, _, _)).Times(0);
   // Enable FakeProofVerifier to capture call to VerifyCertChain and run it
