@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/config.h"
@@ -222,8 +222,9 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
   caps_lock_enabled_ = enabled;
 
   // Send an a11y alert.
-  Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
-      enabled ? A11Y_ALERT_CAPS_ON : A11Y_ALERT_CAPS_OFF);
+  Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
+      enabled ? mojom::AccessibilityAlert::CAPS_ON
+              : mojom::AccessibilityAlert::CAPS_OFF);
 
   if (tray_view())
     tray_view()->SetVisible(caps_lock_enabled_);

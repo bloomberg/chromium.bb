@@ -41,7 +41,7 @@ PrefService* GetActivePrefService() {
 
 AccessibilityController::AccessibilityController(
     service_manager::Connector* connector)
-    : connector_(connector) {
+    : connector_(connector), binding_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
@@ -73,6 +73,11 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilityScreenMagnifierEnabled);
 }
 
+void AccessibilityController::BindRequest(
+    mojom::AccessibilityControllerRequest request) {
+  binding_.Bind(std::move(request));
+}
+
 void AccessibilityController::SetLargeCursorEnabled(bool enabled) {
   PrefService* prefs = GetActivePrefService();
   if (!prefs)
@@ -97,6 +102,17 @@ bool AccessibilityController::IsHighContrastEnabled() const {
   return high_contrast_enabled_;
 }
 
+void AccessibilityController::TriggerAccessibilityAlert(
+    mojom::AccessibilityAlert alert) {
+  if (client_)
+    client_->TriggerAccessibilityAlert(alert);
+}
+
+void AccessibilityController::SetClient(
+    mojom::AccessibilityControllerClientPtr client) {
+  client_ = std::move(client);
+}
+
 void AccessibilityController::OnSigninScreenPrefServiceInitialized(
     PrefService* prefs) {
   ObservePrefs(prefs);
@@ -105,6 +121,10 @@ void AccessibilityController::OnSigninScreenPrefServiceInitialized(
 void AccessibilityController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
   ObservePrefs(prefs);
+}
+
+void AccessibilityController::FlushMojoForTest() {
+  client_.FlushForTesting();
 }
 
 void AccessibilityController::ObservePrefs(PrefService* prefs) {

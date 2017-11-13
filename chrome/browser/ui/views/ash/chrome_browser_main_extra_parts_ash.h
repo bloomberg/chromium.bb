@@ -19,6 +19,7 @@ namespace ui {
 class UserActivityDetector;
 }
 
+class AccessibilityControllerClient;
 class AshInit;
 class CastConfigClientMediaRouter;
 class ChromeNewWindowClient;
@@ -52,6 +53,8 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
   void PostMainMessageLoopRun() override;
 
  private:
+  std::unique_ptr<AccessibilityControllerClient>
+      accessibility_controller_client_;
   std::unique_ptr<ChromeShellContentState> chrome_shell_content_state_;
   std::unique_ptr<CastConfigClientMediaRouter> cast_config_client_media_router_;
   std::unique_ptr<MediaClient> media_client_;

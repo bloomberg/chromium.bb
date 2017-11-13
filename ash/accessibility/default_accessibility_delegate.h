@@ -47,8 +47,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
       AccessibilityNotificationVisibility notify) override;
   void SaveScreenMagnifierScale(double scale) override;
   double GetSavedScreenMagnifierScale() override;
-  void TriggerAccessibilityAlert(AccessibilityAlert alert) override;
-  AccessibilityAlert GetLastAccessibilityAlert() override;
   bool ShouldToggleSpokenFeedbackViaTouch() override;
   void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
   void PlayEarcon(int sound_key) override;
@@ -68,7 +66,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   bool tap_dragging_enabled_ = false;
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
-  AccessibilityAlert accessibility_alert_ = A11Y_ALERT_NONE;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
 };

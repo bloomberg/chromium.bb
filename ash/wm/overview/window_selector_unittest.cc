@@ -6,12 +6,12 @@
 #include <memory>
 #include <vector>
 
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
@@ -404,13 +404,17 @@ TEST_F(WindowSelectorTest, OverviewScreenRotation) {
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_F(WindowSelectorTest, A11yAlertOnOverviewMode) {
   gfx::Rect bounds(0, 0, 400, 400);
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+  TestAccessibilityControllerClient client;
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetClient(client.CreateInterfacePtrAndBind());
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  EXPECT_NE(delegate->GetLastAccessibilityAlert(),
-            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+  EXPECT_NE(mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
+            client.last_a11y_alert());
   ToggleOverview();
-  EXPECT_EQ(delegate->GetLastAccessibilityAlert(),
-            A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
+  controller->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
+            client.last_a11y_alert());
 }
 
 // Tests that there are no crashes when there is not enough screen space
