@@ -1304,9 +1304,7 @@ config("default_warnings") {
         "-Wno-tautological-constant-compare",
         "-Wtautological-constant-out-of-range-compare",
       ]
-    } else if (use_xcode_clang && xcode_version_int >= 830) {
-      # This is necessary to allow a progressive transition from using xcode 8.0
-      # to 8.3 or more recent. Remove when all bots are migrated to 8.3.
+    } else if (use_xcode_clang) {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
         "-Wno-undefined-var-template",
