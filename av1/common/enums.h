@@ -38,7 +38,7 @@ extern "C" {
 #define MAX_SB_SQUARE (MAX_SB_SIZE * MAX_SB_SIZE)
 
 #if CONFIG_EXT_PARTITION_TYPES
-#define USE_RECT_TX_EXT 0
+#define USE_RECT_TX_EXT 1
 #endif
 
 // Min superblock size

@@ -412,3 +412,63 @@ void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X64, bd);
 }
 #endif  // CONFIG_TX64X64
+
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
+void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
+                               int stride, TX_TYPE tx_type, int bd) {
+  int txfm_buf[4 * 16 + 16 + 16];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_4X16, bd);
+}
+
+void av1_inv_txfm2d_add_16x4_c(const int32_t *input, uint16_t *output,
+                               int stride, TX_TYPE tx_type, int bd) {
+#if CONFIG_TXMG
+  int txfm_buf[4 * 16 + 16 + 16];
+  int32_t rinput[4 * 16];
+  uint16_t routput[4 * 16];
+  TX_SIZE tx_size = TX_16X4;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
+  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
+  int w = tx_size_wide[tx_size];
+  int h = tx_size_high[tx_size];
+  int rw = h;
+  int rh = w;
+  transpose_int32(rinput, rw, input, w, w, h);
+  transpose_uint16(routput, rw, output, stride, w, h);
+  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
+  transpose_uint16(output, stride, routput, rw, rw, rh);
+#else
+  int txfm_buf[4 * 16 + 16 + 16];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_16X4, bd);
+#endif  // CONFIG_TXMG
+}
+
+void av1_inv_txfm2d_add_8x32_c(const int32_t *input, uint16_t *output,
+                               int stride, TX_TYPE tx_type, int bd) {
+  int txfm_buf[8 * 32 + 32 + 32];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_8X32, bd);
+}
+
+void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
+                               int stride, TX_TYPE tx_type, int bd) {
+#if CONFIG_TXMG
+  int txfm_buf[8 * 32 + 32 + 32];
+  int32_t rinput[8 * 32];
+  uint16_t routput[8 * 32];
+  TX_SIZE tx_size = TX_32X8;
+  TX_SIZE rtx_size = av1_rotate_tx_size(tx_size);
+  TX_TYPE rtx_type = av1_rotate_tx_type(tx_type);
+  int w = tx_size_wide[tx_size];
+  int h = tx_size_high[tx_size];
+  int rw = h;
+  int rh = w;
+  transpose_int32(rinput, rw, input, w, w, h);
+  transpose_uint16(routput, rw, output, stride, w, h);
+  inv_txfm2d_add_facade(rinput, routput, rw, txfm_buf, rtx_type, rtx_size, bd);
+  transpose_uint16(output, stride, routput, rw, rw, rh);
+#else
+  int txfm_buf[8 * 32 + 32 + 32];
+  inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X8, bd);
+#endif  // CONFIG_TXMG
+}
+#endif

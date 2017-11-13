@@ -247,6 +247,28 @@ static void highbd_fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                          txfm_param->bd);
 }
 
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
+static void highbd_fwd_txfm_16x4(const int16_t *src_diff, tran_low_t *coeff,
+                                 int diff_stride, TxfmParam *txfm_param) {
+  av1_fht16x4(src_diff, coeff, diff_stride, txfm_param);
+}
+
+static void highbd_fwd_txfm_4x16(const int16_t *src_diff, tran_low_t *coeff,
+                                 int diff_stride, TxfmParam *txfm_param) {
+  av1_fht4x16(src_diff, coeff, diff_stride, txfm_param);
+}
+
+static void highbd_fwd_txfm_32x8(const int16_t *src_diff, tran_low_t *coeff,
+                                 int diff_stride, TxfmParam *txfm_param) {
+  av1_fht32x8(src_diff, coeff, diff_stride, txfm_param);
+}
+
+static void highbd_fwd_txfm_8x32(const int16_t *src_diff, tran_low_t *coeff,
+                                 int diff_stride, TxfmParam *txfm_param) {
+  av1_fht8x32(src_diff, coeff, diff_stride, txfm_param);
+}
+#endif
+
 static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TxfmParam *txfm_param) {
   int32_t *dst_coeff = (int32_t *)coeff;
@@ -571,6 +593,20 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_4X4:
       highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param);
       break;
+#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
+    case TX_4X16:
+      highbd_fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
+      break;
+    case TX_16X4:
+      highbd_fwd_txfm_16x4(src_diff, coeff, diff_stride, txfm_param);
+      break;
+    case TX_8X32:
+      highbd_fwd_txfm_8x32(src_diff, coeff, diff_stride, txfm_param);
+      break;
+    case TX_32X8:
+      highbd_fwd_txfm_32x8(src_diff, coeff, diff_stride, txfm_param);
+      break;
+#endif
     default: assert(0); break;
   }
 #endif
