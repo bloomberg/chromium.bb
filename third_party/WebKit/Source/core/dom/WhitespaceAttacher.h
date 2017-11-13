@@ -18,7 +18,6 @@ class Text;
 // attach whitespace LayoutObjects when necessary. For more details about white-
 // space LayoutObjects, see the WhitespaceLayoutObjects.md file in this
 // directory.
-// TODO(rune@opera.com): Update WhitespaceLayoutObjects.md documentation.
 //
 // As RebuildLayoutTree walks from last to first child, we track the last text
 // node, or the last skipped display:contents element we have seen. These are
