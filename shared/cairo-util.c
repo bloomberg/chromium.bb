@@ -39,6 +39,10 @@
 #include "image-loader.h"
 #include "config-parser.h"
 
+#ifdef HAVE_PANGO
+#include <pango/pangocairo.h>
+#endif
+
 void
 surface_flush_device(cairo_surface_t *surface)
 {
@@ -451,14 +455,42 @@ theme_destroy(struct theme *t)
 	free(t);
 }
 
+#ifdef HAVE_PANGO
+static PangoLayout *
+create_layout(cairo_t *cr, const char *title)
+{
+	PangoLayout *layout;
+	PangoFontDescription *desc;
+
+	layout = pango_cairo_create_layout(cr);
+	pango_layout_set_text(layout, title, -1);
+	desc = pango_font_description_from_string("Sans Bold 10");
+	pango_layout_set_font_description(layout, desc);
+	pango_font_description_free(desc);
+	pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
+	pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
+	pango_layout_set_auto_dir (layout, FALSE);
+	pango_layout_set_single_paragraph_mode (layout, TRUE);
+	pango_layout_set_width (layout, -1);
+
+	return layout;
+}
+#endif
+
+#ifdef HAVE_PANGO
+#define SHOW_TEXT(cr) \
+	pango_cairo_show_layout(cr, title_layout)
+#else
+#define SHOW_TEXT(cr) \
+	cairo_show_text(cr, title)
+#endif
+
 void
 theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
 		   const char *title, cairo_rectangle_int_t *title_rect,
 		   struct wl_list *buttons, uint32_t flags)
 {
-	cairo_text_extents_t extents;
-	cairo_font_extents_t font_extents;
 	cairo_surface_t *source;
 	int x, y, margin, top_margin;
 	int text_width, text_height;
@@ -497,6 +529,23 @@ theme_render_frame(struct theme *t,
 				 title_rect->width, title_rect->height);
 		cairo_clip(cr);
 		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+#ifdef HAVE_PANGO
+		PangoLayout *title_layout;
+		PangoRectangle logical;
+
+		title_layout = create_layout(cr, title);
+
+		pango_layout_get_pixel_extents (title_layout, NULL, &logical);
+		text_width = MIN(title_rect->width, logical.width);
+		text_height = logical.height;
+		if (text_width < logical.width)
+		  pango_layout_set_width (title_layout, text_width * PANGO_SCALE);
+		
+#else
+		cairo_text_extents_t extents;
+		cairo_font_extents_t font_extents;
+
 		cairo_select_font_face(cr, "sans",
 				       CAIRO_FONT_SLANT_NORMAL,
 				       CAIRO_FONT_WEIGHT_BOLD);
@@ -505,6 +554,7 @@ theme_render_frame(struct theme *t,
 		cairo_font_extents (cr, &font_extents);
 		text_width = extents.width;
 		text_height = font_extents.descent - font_extents.ascent;
+#endif
 
 		x = (width - text_width) / 2;
 		y = margin + (t->titlebar_height - text_height) / 2;
@@ -516,14 +566,14 @@ theme_render_frame(struct theme *t,
 		if (flags & THEME_FRAME_ACTIVE) {
 			cairo_move_to(cr, x + 1, y  + 1);
 			cairo_set_source_rgb(cr, 1, 1, 1);
-			cairo_show_text(cr, title);
+			SHOW_TEXT(cr);
 			cairo_move_to(cr, x, y);
 			cairo_set_source_rgb(cr, 0, 0, 0);
-			cairo_show_text(cr, title);
+			SHOW_TEXT(cr);
 		} else {
 			cairo_move_to(cr, x, y);
 			cairo_set_source_rgb(cr, 0.4, 0.4, 0.4);
-			cairo_show_text(cr, title);
+			SHOW_TEXT(cr);
 		}
 	}
 }

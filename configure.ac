@@ -448,6 +448,9 @@ if test x$enable_weston_launch = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
+if test "x$have_pango" = "xyes"; then
+  AC_DEFINE([HAVE_PANGO], [1], [Have pango])]
+fi
 
 AM_CONDITIONAL(HAVE_CAIRO_GLESV2,
 	       [test "x$have_cairo_egl" = "xyes" -a "x$cairo_modules" = "xcairo-glesv2" -a "x$enable_egl" = "xyes"])

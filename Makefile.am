@@ -1138,12 +1138,14 @@ libshared_cairo_la_CFLAGS =			\
 	$(COMPOSITOR_CFLAGS)			\
 	$(PIXMAN_CFLAGS)			\
 	$(CAIRO_CFLAGS)				\
+	$(PANGO_CFLAGS)				\
 	$(PNG_CFLAGS)				\
 	$(WEBP_CFLAGS)
 
 libshared_cairo_la_LIBADD =			\
 	$(PIXMAN_LIBS)				\
 	$(CAIRO_LIBS)				\
+	$(PANGO_LIBS)				\
 	$(PNG_LIBS)				\
 	$(WEBP_LIBS)				\
 	$(JPEG_LIBS)
