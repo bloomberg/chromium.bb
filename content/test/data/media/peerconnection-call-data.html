@@ -41,10 +41,14 @@
       'mandatory': {'RtpDataChannels': true, 'DtlsSrtpKeyAgreement': false}
     });
     setupDataChannel({reliable: false});
-    navigator.webkitGetUserMedia({audio: true, video: true},
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-    waitForVideo('remote-view-1');
-    waitForVideo('remote-view-2');
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .then(addStreamToBothConnectionsAndNegotiate)
+        .catch(printGetUserMediaError);
+
+    Promise.all([
+      detectVideoPlaying('remote-view-1'),
+      detectVideoPlaying('remote-view-2')
+    ]).then(reportTestSuccess);
   }
 
   // Test only a data channel.
@@ -64,21 +68,27 @@
   function callWithDataAndMedia() {
     createConnections({optional:[{RtpDataChannels: true}]});
     setupDataChannel({reliable: false});
-    navigator.webkitGetUserMedia({audio: true, video: true},
-      addStreamToBothConnectionsAndNegotiate,
-      printGetUserMediaError);
-    waitForVideo('remote-view-1');
-    waitForVideo('remote-view-2');
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .then(addStreamToBothConnectionsAndNegotiate)
+        .catch(printGetUserMediaError);
+
+    Promise.all([
+      detectVideoPlaying('remote-view-1'),
+      detectVideoPlaying('remote-view-2')
+    ]).then(reportTestSuccess);
   }
 
   function callWithSctpDataAndMedia() {
     createConnections({optional: [{DtlsSrtpKeyAgreement: true}]});
     setupSctpDataChannel({reliable: true});
-    navigator.webkitGetUserMedia({audio: true, video: true},
-      addStreamToBothConnectionsAndNegotiate,
-      printGetUserMediaError);
-    waitForVideo('remote-view-1');
-    waitForVideo('remote-view-2');
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+        .then(addStreamToBothConnectionsAndNegotiate)
+        .catch(printGetUserMediaError);
+
+    Promise.all([
+      detectVideoPlaying('remote-view-1'),
+      detectVideoPlaying('remote-view-2')
+    ]).then(reportTestSuccess);
   }
 
   // Test call with a data channel and later add audio and video.
@@ -90,11 +100,14 @@
     // Set an event handler for when the data channel has been closed.
     setAllEventsOccuredHandler(function() {
       // When the video is flowing the test is done.
-      setAllEventsOccuredHandler(reportTestSuccess);
-      navigator.webkitGetUserMedia({audio: true, video: true},
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
-      waitForVideo('remote-view-1');
-      waitForVideo('remote-view-2');
+      navigator.mediaDevices.getUserMedia({audio: true, video: true})
+          .then(addStreamToBothConnectionsAndNegotiate)
+          .catch(printGetUserMediaError);
+
+      Promise.all([
+        detectVideoPlaying('remote-view-1'),
+        detectVideoPlaying('remote-view-2')
+      ]).then(reportTestSuccess);
     });
   }
 
@@ -213,7 +226,7 @@
   }
 
   function createConnection(constraints, remoteView) {
-    var pc = new webkitRTCPeerConnection(null, constraints);
+    var pc = new RTCPeerConnection(null, constraints);
     pc.onaddstream = function(event) {
       onRemoteStream(event, remoteView);
     }

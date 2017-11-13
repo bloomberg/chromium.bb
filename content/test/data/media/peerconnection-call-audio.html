@@ -27,15 +27,17 @@
   // we expect audio to be playing after the second renegotiation.
   function callAndRenegotiateToAudio(constraints, renegotiationConstraints) {
     createConnections(null);
-    navigator.webkitGetUserMedia(constraints,
-        addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(addStreamToBothConnectionsAndNegotiate)
+        .catch(printGetUserMediaError);
 
     waitForConnectionToStabilize(gFirstConnection, function() {
       gFirstConnection.removeStream(gLocalStream);
       gSecondConnection.removeStream(gLocalStream);
 
-      navigator.webkitGetUserMedia(renegotiationConstraints,
-          addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+      navigator.mediaDevices.getUserMedia(renegotiationConstraints)
+          .then(addStreamToTheFirstConnectionAndNegotiate)
+          .catch(printGetUserMediaError);
 
       var onCallEstablished = function() {
         ensureAudioPlaying(gSecondConnection);
@@ -49,8 +51,9 @@
     createConnections(null);
 
     // Add the local stream to gFirstConnection to play one-way audio.
-    navigator.webkitGetUserMedia(constraints,
-      addStreamToTheFirstConnectionAndNegotiate, printGetUserMediaError);
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(addStreamToTheFirstConnectionAndNegotiate)
+        .catch(printGetUserMediaError);
 
     var onCallEstablished = function() {
       ensureAudioPlaying(gSecondConnection);
@@ -163,7 +166,7 @@
   }
 
   function createConnection(constraints, remoteView) {
-    var pc = new webkitRTCPeerConnection(null, constraints);
+    var pc = new RTCPeerConnection(null, constraints);
     pc.onaddstream = function(event) {
       onRemoteStream(event, remoteView);
     }

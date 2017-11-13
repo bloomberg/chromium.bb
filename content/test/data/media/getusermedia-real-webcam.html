@@ -7,8 +7,9 @@
   };
 
   function getUserMediaAndReturnVideoDimensions(constraints) {
-    navigator.webkitGetUserMedia(
-        constraints, gotStreamCallback, failedCallback);
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(gotStreamCallback)
+        .catch(failedCallback);
   }
 
   function failedCallback(error) {
