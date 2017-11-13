@@ -12,6 +12,7 @@
 #include "platform/bindings/V8PerContextData.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/text/TextPosition.h"
@@ -129,10 +130,8 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptModule CompileModule(const String& script,
                                      const String& url_str,
+                                     const ScriptFetchOptions&,
                                      AccessControlStatus,
-                                     network::mojom::FetchCredentialsMode,
-                                     const String& nonce,
-                                     ParserDisposition,
                                      const TextPosition&,
                                      ExceptionState&) = 0;
 

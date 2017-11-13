@@ -66,10 +66,8 @@ class ModulatorImplBase : public Modulator {
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
+                             const ScriptFetchOptions&,
                              AccessControlStatus,
-                             network::mojom::FetchCredentialsMode,
-                             const String& nonce,
-                             ParserDisposition,
                              const TextPosition&,
                              ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;

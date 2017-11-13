@@ -77,8 +77,7 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
   ScriptModule referrer_record = ScriptModule::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;",
-      "referrer.js", kSharableCrossOrigin,
-      network::mojom::FetchCredentialsMode::kOmit, "", kParserInserted,
+      "referrer.js", ScriptFetchOptions(), kSharableCrossOrigin,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
@@ -92,8 +91,8 @@ ModuleScript* CreateTargetModuleScript(
     ScriptModuleState state = ScriptModuleState::kInstantiated) {
   ScriptModule record = ScriptModule::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", "target.js",
-      kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
-      kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+      ScriptFetchOptions(), kSharableCrossOrigin,
+      TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL url("https://example.com/target.js");
   auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
   if (state != ScriptModuleState::kInstantiated) {

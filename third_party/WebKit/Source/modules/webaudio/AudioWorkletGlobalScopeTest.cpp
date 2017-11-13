@@ -135,9 +135,8 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     EXPECT_TRUE(script_state);
     ScriptModule module = ScriptModule::Compile(
         script_state->GetIsolate(), source_code, "worklet.js",
-        kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit,
-        "" /* nonce */, kParserInserted, TextPosition::MinimumPosition(),
-        ASSERT_NO_EXCEPTION);
+        ScriptFetchOptions(), kSharableCrossOrigin,
+        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
     EXPECT_FALSE(module.IsNull());
     ScriptValue exception = module.Instantiate(script_state);
     EXPECT_TRUE(exception.IsEmpty());

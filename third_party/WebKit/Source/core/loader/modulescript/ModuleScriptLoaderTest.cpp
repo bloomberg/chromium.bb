@@ -80,19 +80,16 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
-  ScriptModule CompileModule(
-      const String& script,
-      const String& url_str,
-      AccessControlStatus access_control_status,
-      network::mojom::FetchCredentialsMode credentials_mode,
-      const String& nonce,
-      ParserDisposition parser_state,
-      const TextPosition& position,
-      ExceptionState& exception_state) override {
+  ScriptModule CompileModule(const String& script,
+                             const String& url_str,
+                             const ScriptFetchOptions& options,
+                             AccessControlStatus access_control_status,
+                             const TextPosition& position,
+                             ExceptionState& exception_state) override {
     ScriptState::Scope scope(script_state_.get());
     return ScriptModule::Compile(script_state_->GetIsolate(), script, url_str,
-                                 access_control_status, credentials_mode, nonce,
-                                 parser_state, position, exception_state);
+                                 options, access_control_status, position,
+                                 exception_state);
   }
 
   void SetModuleRequests(const Vector<String>& requests) {

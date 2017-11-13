@@ -114,10 +114,8 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
 
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
+                                           const ScriptFetchOptions&,
                                            AccessControlStatus,
-                                           network::mojom::FetchCredentialsMode,
-                                           const String& nonce,
-                                           ParserDisposition,
                                            const TextPosition&,
                                            ExceptionState&) {
   NOTREACHED();

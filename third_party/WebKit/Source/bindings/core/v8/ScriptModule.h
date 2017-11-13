@@ -10,6 +10,7 @@
 #include "platform/bindings/SharedPersistent.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/TextPosition.h"
@@ -49,10 +50,8 @@ class CORE_EXPORT ScriptModule final {
   static ScriptModule Compile(v8::Isolate*,
                               const String& source,
                               const String& file_name,
+                              const ScriptFetchOptions&,
                               AccessControlStatus,
-                              network::mojom::FetchCredentialsMode,
-                              const String& nonce,
-                              ParserDisposition,
                               const TextPosition&,
                               ExceptionState&);
 
