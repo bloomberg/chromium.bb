@@ -82,34 +82,6 @@ class IOThreadBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Make sure that the system URLRequestContext does not cache responses. Main
-// reason for this test is that caching requires memory, so this guards against
-// accidentally hooking up a cache.
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, NoCache) {
-  GURL cacheable_url = embedded_test_server()->GetURL("/cachetime");
-  // Request a cacheable resource. Request should succeed.
-  TestURLFetcherDelegate fetcher_delegate;
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      cacheable_url, net::URLFetcher::GET, &fetcher_delegate);
-  fetcher->SetRequestContext(
-      g_browser_process->io_thread()->system_url_request_context_getter());
-  fetcher->Start();
-  fetcher_delegate.WaitForCompletion();
-  EXPECT_EQ(200, fetcher->GetResponseCode());
-
-  // Shut down server and re-request resource.  Request should fail.
-  TestURLFetcherDelegate failed_fetcher_delegate;
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-  fetcher = net::URLFetcher::Create(cacheable_url, net::URLFetcher::GET,
-                                    &failed_fetcher_delegate);
-  fetcher->SetRequestContext(
-      g_browser_process->io_thread()->system_url_request_context_getter());
-  fetcher->Start();
-  failed_fetcher_delegate.WaitForCompletion();
-  EXPECT_FALSE(fetcher->GetStatus().is_success());
-  EXPECT_EQ(net::ERR_CONNECTION_REFUSED, fetcher->GetStatus().error());
-}
-
 class IOThreadBrowserTestWithHangingPacRequest : public IOThreadBrowserTest {
  public:
   IOThreadBrowserTestWithHangingPacRequest() {}
