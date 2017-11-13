@@ -960,6 +960,7 @@ static void set_tile_info(AV1_COMP *cpi) {
 
 #if CONFIG_MAX_TILE
     set_tile_info_max_tile(cpi);
+    (void)cm;
 #else
   int min_log2_tile_cols, max_log2_tile_cols;
   av1_get_tile_n_bits(cm->mi_cols, &min_log2_tile_cols, &max_log2_tile_cols);
