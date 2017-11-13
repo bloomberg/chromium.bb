@@ -67,7 +67,7 @@ TEST(PatchTest, ParseSerializeElementMatch) {
       3, 0, 0, 0,  // new_offset
       2, 0, 0, 0,  // old_length
       4, 0, 0, 0,  // new_length
-      6, 0, 0, 0,  // kExeTypeDex
+      7, 0, 0, 0,  // kExeTypeDex
   };
   BufferSource buffer_source(data.data(), data.size());
   ElementMatch element_match = {};
