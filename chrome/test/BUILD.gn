@@ -2367,6 +2367,7 @@ test("browser_tests") {
         "//components/arc:arc_test_support",
         "//components/prefs",
         "//components/user_manager:test_support",
+        "//services/network/public/interfaces",
         "//services/preferences/public/cpp",
         "//services/preferences/public/interfaces",
         "//services/service_manager/public/cpp",
