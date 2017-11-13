@@ -40,7 +40,7 @@
 #include <windows.h>
 #endif
 
-extern const char kDotfile_Help[] =
+const char kDotfile_Help[] =
     R"(.gn file
 
   When gn starts, it will search the current directory and parent directories

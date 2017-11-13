@@ -56,7 +56,7 @@ size_t BackUpToLineBegin(const std::string& data, size_t offset) {
 
   size_t cur = offset;
   do {
-    cur --;
+    cur--;
     if (Tokenizer::IsNewline(data, cur))
       return cur + 1;  // Want the first character *after* the newline.
   } while (cur > 0);
@@ -328,10 +328,10 @@ int EditArgsFile(const std::string& build_dir) {
 
 }  // namespace
 
-extern const char kArgs[] = "args";
-extern const char kArgs_HelpShort[] =
+const char kArgs[] = "args";
+const char kArgs_HelpShort[] =
     "args: Display or configure arguments declared by the build.";
-extern const char kArgs_Help[] =
+const char kArgs_Help[] =
     R"(gn args <out_dir> [--list] [--short] [--args] [--overrides-only]
 
   See also "gn help buildargs" for a more high-level overview of how

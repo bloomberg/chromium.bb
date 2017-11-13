@@ -656,10 +656,9 @@ Value RunSharedLibrary(Scope* scope,
 
 // source_set ------------------------------------------------------------------
 
-extern const char kSourceSet[] = "source_set";
-extern const char kSourceSet_HelpShort[] =
-    "source_set: Declare a source set target.";
-extern const char kSourceSet_Help[] =
+const char kSourceSet[] = "source_set";
+const char kSourceSet_HelpShort[] = "source_set: Declare a source set target.";
+const char kSourceSet_Help[] =
     R"(source_set: Declare a source set target.
 
   A source set is a collection of sources that get compiled, but are not linked
@@ -685,11 +684,7 @@ extern const char kSourceSet_Help[] =
 
 Variables
 
-)"
-    CONFIG_VALUES_VARS_HELP
-    DEPS_VARS
-    DEPENDENT_CONFIG_VARS
-    GENERAL_TARGET_VARS;
+)" CONFIG_VALUES_VARS_HELP DEPS_VARS DEPENDENT_CONFIG_VARS GENERAL_TARGET_VARS;
 
 Value RunSourceSet(Scope* scope,
                    const FunctionCallNode* function,
