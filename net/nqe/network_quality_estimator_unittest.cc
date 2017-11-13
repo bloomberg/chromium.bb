@@ -1877,8 +1877,24 @@ TEST(NetworkQualityEstimatorTest, TestTransportRttUsedForHttpRttComputation) {
     variation_params["add_default_platform_observations"] = "false";
     TestNetworkQualityEstimator estimator(variation_params);
 
+    std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+        new base::SimpleTestTickClock());
+    tick_clock->Advance(base::TimeDelta::FromSeconds(1));
+    base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+    estimator.SetTickClockForTesting(std::move(tick_clock));
+
     estimator.set_start_time_null_http_rtt(test.http_rtt);
     estimator.set_start_time_null_transport_rtt(test.transport_rtt);
+
+    // Minimum number of transport RTT samples that should be present before
+    // transport RTT estimate can be used to clamp the HTTP RTT.
+    estimator.SetTransportRTTAtastECTSampleCount(
+        estimator.params()->http_rtt_transport_rtt_min_count());
+
+    // Add one observation to ensure ECT is not computed for each request.
+    estimator.AddAndNotifyObserversOfRTT(NetworkQualityEstimator::Observation(
+        test.http_rtt.InMilliseconds(), tick_clock_ptr->NowTicks(), INT32_MIN,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
 
     estimator.RunOneRequest();
     EXPECT_EQ(test.expected_http_rtt, estimator.GetHttpRTT());

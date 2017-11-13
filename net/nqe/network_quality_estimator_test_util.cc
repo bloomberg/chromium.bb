@@ -189,6 +189,10 @@ bool TestNetworkQualityEstimator::GetRecentTransportRTT(
   if (start_time.is_null()) {
     if (start_time_null_transport_rtt_) {
       *rtt = start_time_null_transport_rtt_.value();
+      if (transport_rtt_observation_count_last_ect_computation_) {
+        *observations_count =
+            transport_rtt_observation_count_last_ect_computation_.value();
+      }
       return true;
     }
     return NetworkQualityEstimator::GetRecentTransportRTT(start_time, rtt,

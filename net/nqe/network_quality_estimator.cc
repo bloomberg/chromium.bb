@@ -1300,17 +1300,22 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   if (*http_rtt != nqe::internal::InvalidRTT() &&
       *transport_rtt != nqe::internal::InvalidRTT()) {
     // Use transport RTT to clamp the HTTP RTT between lower and upper bounds.
-    if (params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
-      *http_rtt = std::max(
-          *http_rtt,
-          *transport_rtt *
-              params_->lower_bound_http_rtt_transport_rtt_multiplier());
-    }
-    if (params_->upper_bound_http_rtt_transport_rtt_multiplier() > 0) {
-      *http_rtt = std::min(
-          *http_rtt,
-          *transport_rtt *
-              params_->upper_bound_http_rtt_transport_rtt_multiplier());
+    // To improve accuracy, the transport RTT estimate is used only when the
+    // transport RTT estimate was computed using at least 5 observations.
+    if (transport_rtt_observation_count_last_ect_computation_ >=
+        params_->http_rtt_transport_rtt_min_count()) {
+      if (params_->lower_bound_http_rtt_transport_rtt_multiplier() > 0) {
+        *http_rtt = std::max(
+            *http_rtt,
+            *transport_rtt *
+                params_->lower_bound_http_rtt_transport_rtt_multiplier());
+      }
+      if (params_->upper_bound_http_rtt_transport_rtt_multiplier() > 0) {
+        *http_rtt = std::min(
+            *http_rtt,
+            *transport_rtt *
+                params_->upper_bound_http_rtt_transport_rtt_multiplier());
+      }
     }
   }
 
@@ -1791,10 +1796,10 @@ void NetworkQualityEstimator::
     observer.OnEffectiveConnectionTypeChanged(effective_connection_type_);
 
   // Add the estimates of the current network to the cache store.
-    network_quality_store_->Add(current_network_id_,
-                                nqe::internal::CachedNetworkQuality(
-                                    tick_clock_->NowTicks(), network_quality_,
-                                    effective_connection_type_));
+  network_quality_store_->Add(current_network_id_,
+                              nqe::internal::CachedNetworkQuality(
+                                  tick_clock_->NowTicks(), network_quality_,
+                                  effective_connection_type_));
 }
 
 void NetworkQualityEstimator::NotifyObserversOfRTTOrThroughputComputed() const {
