@@ -34,6 +34,10 @@ class AccessPolicyDelegate {
   virtual bool IsWindowCreatedByWindowManager(
       const ServerWindow* window) const = 0;
 
+  // Returns true if the tree intercepts events targetted at |window|.
+  virtual bool ShouldInterceptEventsForAccessPolicy(
+      const ServerWindow* window) const = 0;
+
  protected:
   virtual ~AccessPolicyDelegate() {}
 };

@@ -188,6 +188,7 @@ class WindowTree : public mojom::WindowTree,
                  const ClientWindowId& child_id);
   bool AddTransientWindow(const ClientWindowId& window_id,
                           const ClientWindowId& transient_window_id);
+  bool RemoveWindowFromParent(const ClientWindowId& window_id);
   bool DeleteWindow(const ClientWindowId& window_id);
   bool SetModalType(const ClientWindowId& window_id, ModalType modal_type);
   bool SetChildModalParent(const ClientWindowId& window_id,
@@ -624,6 +625,8 @@ class WindowTree : public mojom::WindowTree,
   bool IsWindowRootOfAnotherTreeForAccessPolicy(
       const ServerWindow* window) const override;
   bool IsWindowCreatedByWindowManager(
+      const ServerWindow* window) const override;
+  bool ShouldInterceptEventsForAccessPolicy(
       const ServerWindow* window) const override;
 
   // DragSource:
