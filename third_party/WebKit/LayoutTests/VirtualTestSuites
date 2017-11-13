@@ -269,6 +269,18 @@
     "args": ["--enable-slimming-paint-v2"]
   },
   {
+    "prefix": "spv175",
+    "base": "compositing",
+    "args": ["--enable-slimming-paint-v175"],
+    "references_use_default_args": true
+  },
+  {
+    "prefix": "spv175",
+    "base": "paint",
+    "args": ["--enable-slimming-paint-v175"],
+    "references_use_default_args": true
+  },
+  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]
