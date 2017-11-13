@@ -35,36 +35,33 @@ class PLATFORM_EXPORT SegmentedSubstring {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  SegmentedSubstring()
-      : length_(0), do_not_exclude_line_numbers_(true), is8_bit_(false) {
-    data_.string16_ptr = 0;
-  }
+  SegmentedSubstring() { data_.string8_ptr = nullptr; }
 
   SegmentedSubstring(const String& str)
       : length_(str.length()),
-        do_not_exclude_line_numbers_(true),
         string_(str) {
     if (length_) {
       if (string_.Is8Bit()) {
         is8_bit_ = true;
         data_.string8_ptr = string_.Characters8();
+        current_char_ = *data_.string8_ptr;
       } else {
         is8_bit_ = false;
         data_.string16_ptr = string_.Characters16();
+        current_char_ = *data_.string16_ptr;
       }
     } else {
-      is8_bit_ = false;
+      is8_bit_ = true;
       data_.string8_ptr = nullptr;
     }
   }
 
   void Clear() {
     length_ = 0;
-    data_.string16_ptr = nullptr;
-    is8_bit_ = false;
+    is8_bit_ = true;
+    data_.string8_ptr = nullptr;
+    current_char_ = 0;
   }
-
-  bool Is8Bit() { return is8_bit_; }
 
   bool ExcludeLineNumbers() const { return !do_not_exclude_line_numbers_; }
   bool DoNotExcludeLineNumbers() const { return do_not_exclude_line_numbers_; }
@@ -88,43 +85,34 @@ class PLATFORM_EXPORT SegmentedSubstring {
     if (!length_)
       return false;
 
-    if (is8_bit_) {
-      if (data_.string8_ptr == string_.Characters8())
-        return false;
+    // This checks if either 8 or 16 bit strings are in the first character
+    // (where we can't rewind). Since length_ is greater than zero, we can check
+    // the Impl() directly and avoid a branch here.
+    if (data_.void_ptr == string_.Impl()->Bytes())
+      return false;
 
+    if (is8_bit_) {
       if (*(data_.string8_ptr - 1) != c)
         return false;
 
       --data_.string8_ptr;
-      ++length_;
-      return true;
+    } else {
+      if (*(data_.string16_ptr - 1) != c)
+        return false;
+
+      --data_.string16_ptr;
     }
 
-    if (data_.string16_ptr == string_.Characters16())
-      return false;
-
-    if (*(data_.string16_ptr - 1) != c)
-      return false;
-
-    --data_.string16_ptr;
+    current_char_ = c;
     ++length_;
     return true;
   }
 
-  UChar GetCurrentChar8() { return *data_.string8_ptr; }
+  UChar GetCurrentChar() const { return current_char_; }
 
-  UChar GetCurrentChar16() {
-    return data_.string16_ptr ? *data_.string16_ptr : 0;
-  }
-
-  UChar IncrementAndGetCurrentChar8() {
-    DCHECK(data_.string8_ptr);
-    return *++data_.string8_ptr;
-  }
-
-  UChar IncrementAndGetCurrentChar16() {
-    DCHECK(data_.string16_ptr);
-    return *++data_.string16_ptr;
+  void IncrementAndDecrementLength() {
+    current_char_ = is8_bit_ ? *++data_.string8_ptr : *++data_.string16_ptr;
+    --length_;
   }
 
   String CurrentSubString(unsigned length) {
@@ -132,34 +120,19 @@ class PLATFORM_EXPORT SegmentedSubstring {
     return string_.Substring(offset, length);
   }
 
-  ALWAYS_INLINE UChar GetCurrentChar() {
-    DCHECK(length_);
-    if (Is8Bit())
-      return GetCurrentChar8();
-    return GetCurrentChar16();
-  }
-
-  ALWAYS_INLINE UChar IncrementAndGetCurrentChar() {
-    DCHECK(length_);
-    if (Is8Bit())
-      return IncrementAndGetCurrentChar8();
-    return IncrementAndGetCurrentChar16();
-  }
-
-  ALWAYS_INLINE bool HaveOneCharacterLeft() const { return length_ == 1; }
-
   ALWAYS_INLINE void DecrementLength() { --length_; }
 
   ALWAYS_INLINE int length() const { return length_; }
 
- private:
   union {
     const LChar* string8_ptr;
     const UChar* string16_ptr;
+    const void* void_ptr;
   } data_;
-  int length_;
-  bool do_not_exclude_line_numbers_;
-  bool is8_bit_;
+  int length_ = 0;
+  UChar current_char_ = 0;
+  bool do_not_exclude_line_numbers_ = true;
+  bool is8_bit_ = true;
   String string_;
 };
 
@@ -168,29 +141,19 @@ class PLATFORM_EXPORT SegmentedString {
 
  public:
   SegmentedString()
-      : current_char_(0),
-        number_of_characters_consumed_prior_to_current_string_(0),
+      : number_of_characters_consumed_prior_to_current_string_(0),
         number_of_characters_consumed_prior_to_current_line_(0),
         current_line_(0),
         closed_(false),
-        empty_(true),
-        fast_path_flags_(kNoFastPath),
-        advance_func_(&SegmentedString::AdvanceEmpty),
-        advance_and_update_line_number_func_(&SegmentedString::AdvanceEmpty) {}
+        empty_(true) {}
 
   SegmentedString(const String& str)
       : current_string_(str),
-        current_char_(0),
         number_of_characters_consumed_prior_to_current_string_(0),
         number_of_characters_consumed_prior_to_current_line_(0),
         current_line_(0),
         closed_(false),
-        empty_(!str.length()),
-        fast_path_flags_(kNoFastPath) {
-    if (current_string_.length())
-      current_char_ = current_string_.GetCurrentChar();
-    UpdateAdvanceFunctionPointers();
-  }
+        empty_(!str.length()) {}
 
   void Clear();
   void Close();
@@ -228,34 +191,34 @@ class PLATFORM_EXPORT SegmentedString {
   }
 
   void Advance() {
-    if (fast_path_flags_ & kUse8BitAdvance) {
-      current_char_ = current_string_.IncrementAndGetCurrentChar8();
-      DecrementAndCheckLength();
-      return;
+    if (LIKELY(current_string_.length() > 1)) {
+      current_string_.IncrementAndDecrementLength();
+    } else {
+      AdvanceSubstring();
     }
-
-    (this->*advance_func_)();
   }
 
-  inline void AdvanceAndUpdateLineNumber() {
-    if (fast_path_flags_ & kUse8BitAdvance) {
-      bool have_new_line =
-          (current_char_ == '\n') &
-          !!(fast_path_flags_ & kUse8BitAdvanceAndUpdateLineNumbers);
-      current_char_ = current_string_.IncrementAndGetCurrentChar8();
-      DecrementAndCheckLength();
-
-      if (have_new_line) {
-        ++current_line_;
-        number_of_characters_consumed_prior_to_current_line_ =
-            number_of_characters_consumed_prior_to_current_string_ +
-            current_string_.NumberOfCharactersConsumed();
-      }
-
-      return;
+  void UpdateLineNumber() {
+    if (LIKELY(current_string_.DoNotExcludeLineNumbers())) {
+      ++current_line_;
+      // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet;
+      // it does with length() decrement below.
+      number_of_characters_consumed_prior_to_current_line_ =
+          NumberOfCharactersConsumed() + 1;
     }
+  }
 
-    (this->*advance_and_update_line_number_func_)();
+  void AdvanceAndUpdateLineNumber() {
+    DCHECK_GE(current_string_.length(), 1);
+
+    if (current_string_.GetCurrentChar() == '\n')
+      UpdateLineNumber();
+
+    if (LIKELY(current_string_.length() > 1)) {
+      current_string_.IncrementAndDecrementLength();
+    } else {
+      AdvanceSubstring();
+    }
   }
 
   void AdvanceAndASSERT(UChar expected_character) {
@@ -276,17 +239,15 @@ class PLATFORM_EXPORT SegmentedString {
 
   void AdvancePastNewlineAndUpdateLineNumber() {
     DCHECK_EQ(CurrentChar(), '\n');
-    if (current_string_.length() > 1) {
-      int new_line_flag = current_string_.DoNotExcludeLineNumbers();
-      current_line_ += new_line_flag;
-      if (new_line_flag)
-        number_of_characters_consumed_prior_to_current_line_ =
-            NumberOfCharactersConsumed() + 1;
-      DecrementAndCheckLength();
-      current_char_ = current_string_.IncrementAndGetCurrentChar();
-      return;
+    DCHECK_GE(current_string_.length(), 1);
+
+    UpdateLineNumber();
+
+    if (LIKELY(current_string_.length() > 1)) {
+      current_string_.IncrementAndDecrementLength();
+    } else {
+      AdvanceSubstring();
     }
-    AdvanceAndUpdateLineNumberSlowCase();
   }
 
   // Writes the consumed characters into consumedCharacters, which must
@@ -302,7 +263,7 @@ class PLATFORM_EXPORT SegmentedString {
 
   String ToString() const;
 
-  UChar CurrentChar() const { return current_char_; }
+  UChar CurrentChar() const { return current_string_.GetCurrentChar(); }
 
   // The method is moderately slow, comparing to currentLine method.
   OrdinalNumber CurrentColumn() const;
@@ -315,66 +276,10 @@ class PLATFORM_EXPORT SegmentedString {
                           int prolog_length);
 
  private:
-  enum FastPathFlags {
-    kNoFastPath = 0,
-    kUse8BitAdvanceAndUpdateLineNumbers = 1 << 0,
-    kUse8BitAdvance = 1 << 1,
-  };
-
   void Append(const SegmentedSubstring&);
   void Prepend(const SegmentedSubstring&, PrependType);
 
-  void Advance8();
-  void Advance16();
-  void AdvanceAndUpdateLineNumber8();
-  void AdvanceAndUpdateLineNumber16();
-  void AdvanceSlowCase();
-  void AdvanceAndUpdateLineNumberSlowCase();
-  void AdvanceEmpty();
   void AdvanceSubstring();
-
-  void UpdateSlowCaseFunctionPointers();
-
-  void DecrementAndCheckLength() {
-    DCHECK_GT(current_string_.length(), 1);
-    current_string_.DecrementLength();
-    if (current_string_.HaveOneCharacterLeft())
-      UpdateSlowCaseFunctionPointers();
-  }
-
-  void UpdateAdvanceFunctionPointers() {
-    if (current_string_.length() > 1) {
-      if (current_string_.Is8Bit()) {
-        advance_func_ = &SegmentedString::Advance8;
-        fast_path_flags_ = kUse8BitAdvance;
-        if (current_string_.DoNotExcludeLineNumbers()) {
-          advance_and_update_line_number_func_ =
-              &SegmentedString::AdvanceAndUpdateLineNumber8;
-          fast_path_flags_ |= kUse8BitAdvanceAndUpdateLineNumbers;
-        } else {
-          advance_and_update_line_number_func_ = &SegmentedString::Advance8;
-        }
-        return;
-      }
-
-      advance_func_ = &SegmentedString::Advance16;
-      fast_path_flags_ = kNoFastPath;
-      if (current_string_.DoNotExcludeLineNumbers())
-        advance_and_update_line_number_func_ =
-            &SegmentedString::AdvanceAndUpdateLineNumber16;
-      else
-        advance_and_update_line_number_func_ = &SegmentedString::Advance16;
-      return;
-    }
-
-    if (!current_string_.length() && !IsComposite()) {
-      advance_func_ = &SegmentedString::AdvanceEmpty;
-      fast_path_flags_ = kNoFastPath;
-      advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
-    }
-
-    UpdateSlowCaseFunctionPointers();
-  }
 
   inline LookAheadResult LookAheadInline(const String& string,
                                          TextCaseSensitivity case_sensitivity) {
@@ -407,16 +312,12 @@ class PLATFORM_EXPORT SegmentedString {
   bool IsComposite() const { return !substrings_.IsEmpty(); }
 
   SegmentedSubstring current_string_;
-  UChar current_char_;
   int number_of_characters_consumed_prior_to_current_string_;
   int number_of_characters_consumed_prior_to_current_line_;
   int current_line_;
   Deque<SegmentedSubstring> substrings_;
   bool closed_;
   bool empty_;
-  unsigned char fast_path_flags_;
-  void (SegmentedString::*advance_func_)();
-  void (SegmentedString::*advance_and_update_line_number_func_)();
 };
 
 }  // namespace blink
