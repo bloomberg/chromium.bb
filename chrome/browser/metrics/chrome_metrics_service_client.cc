@@ -147,7 +147,7 @@
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 const int kMaxHistogramStorageKiB = 100 << 10;  // 100 MiB
 #else
 const int kMaxHistogramStorageKiB = 500 << 10;  // 500 MiB
