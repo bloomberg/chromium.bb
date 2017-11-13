@@ -341,6 +341,13 @@ ChildThreadImpl::Options::Builder::AddStartupFilter(
   return *this;
 }
 
+ChildThreadImpl::Options::Builder&
+ChildThreadImpl::Options::Builder::IPCTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner) {
+  options_.ipc_task_runner = ipc_task_runner;
+  return *this;
+}
+
 ChildThreadImpl::Options ChildThreadImpl::Options::Builder::Build() {
   return options_;
 }
@@ -381,6 +388,7 @@ ChildThreadImpl::ChildThreadImpl(const Options& options)
       browser_process_io_runner_(options.browser_process_io_runner),
       channel_connected_factory_(
           new base::WeakPtrFactory<ChildThreadImpl>(this)),
+      ipc_task_runner_(options.ipc_task_runner),
       weak_factory_(this) {
   Init(options);
 }
@@ -432,10 +440,10 @@ void ChildThreadImpl::Init(const Options& options) {
   IPC::Logging::GetInstance();
 #endif
 
-  channel_ =
-      IPC::SyncChannel::Create(this, ChildProcess::current()->io_task_runner(),
-                               base::ThreadTaskRunnerHandle::Get(),
-                               ChildProcess::current()->GetShutDownEvent());
+  channel_ = IPC::SyncChannel::Create(
+      this, ChildProcess::current()->io_task_runner(),
+      ipc_task_runner_ ? ipc_task_runner_ : base::ThreadTaskRunnerHandle::Get(),
+      ChildProcess::current()->GetShutDownEvent());
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   if (!IsInBrowserProcess())
     IPC::Logging::GetInstance()->SetIPCSender(this);
