@@ -926,6 +926,11 @@
 -ReferrerPolicyTest.HttpsContextMenuOrigin
 -ReferrerPolicyTest.HttpsContextMenuRedirect
 
+# crbug.com/781565
+-DownloadTest.CloseNewTab1
+-DownloadTest.CloseNewTab2
+-DownloadTest.CloseNewTab3
+
 # http://crbug.com/783990
 # Add support for http auth.
 -LoginPromptBrowserTest.AllowCrossdomainPromptForSubframes
