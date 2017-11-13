@@ -37,6 +37,9 @@ namespace content_settings {
 namespace {
 
 // These settings are no longer used, and should be deleted on profile startup.
+const char kObsoleteDomainToOriginMigrationStatus[] =
+    "profile.content_settings.domain_to_origin_migration_status";
+
 #if !defined(OS_IOS)
 const char kObsoleteFullscreenExceptionsPref[] =
     "profile.content_settings.exceptions.fullscreen";
@@ -70,6 +73,7 @@ void PrefProvider::RegisterProfilePrefs(
 
   // These prefs have been removed, but need to be registered so they can
   // be deleted on startup.
+  registry->RegisterIntegerPref(kObsoleteDomainToOriginMigrationStatus, 0);
 #if !defined(OS_IOS)
   registry->RegisterDictionaryPref(
       kObsoleteFullscreenExceptionsPref,
@@ -221,6 +225,9 @@ void PrefProvider::Notify(
 void PrefProvider::DiscardObsoletePreferences() {
   if (is_incognito_)
     return;
+
+  prefs_->ClearPref(kObsoleteDomainToOriginMigrationStatus);
+
   // These prefs were never stored on iOS/Android so they don't need to be
   // deleted.
 #if !defined(OS_IOS)

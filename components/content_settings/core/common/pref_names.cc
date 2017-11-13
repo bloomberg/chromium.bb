@@ -18,12 +18,6 @@ const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 const char kContentSettingsWindowLastTabIndex[] =
     "content_settings_window.last_tab_index";
 
-// Integer that indicates the status of migrating domain scoped settings to
-// origin scoped settings.
-// TODO(lshang): Remove this when all migration is done. See crbug.com/621398.
-const char kDomainToOriginMigrationStatus[] =
-    "profile.content_settings.domain_to_origin_migration_status";
-
 // Preferences that are exclusively used to store managed values for default
 // content settings.
 const char kManagedDefaultCookiesSetting[] =
