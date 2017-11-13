@@ -28,17 +28,18 @@ const MetafilePlayer* PrintedPage::metafile() const {
   return metafile_.get();
 }
 
-void PrintedPage::GetCenteredPageContentRect(
-    const gfx::Size& paper_size, gfx::Rect* content_rect) const {
-  *content_rect = page_content_rect();
+gfx::Rect PrintedPage::GetCenteredPageContentRect(
+    const gfx::Size& paper_size) const {
+  gfx::Rect content_rect = page_content_rect();
   if (paper_size.width() > page_size().width()) {
     int diff = paper_size.width() - page_size().width();
-    content_rect->set_x(content_rect->x() + diff / 2);
+    content_rect.set_x(content_rect.x() + diff / 2);
   }
   if (paper_size.height() > page_size().height()) {
     int diff = paper_size.height() - page_size().height();
-    content_rect->set_y(content_rect->y() + diff / 2);
+    content_rect.set_y(content_rect.y() + diff / 2);
   }
+  return content_rect;
 }
 
 }  // namespace printing

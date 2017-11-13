@@ -41,9 +41,9 @@ void PrintedDocument::RenderPrintedPage(
 
   DCHECK(context);
 
-  const PageSetup& page_setup(immutable_.settings_.page_setup_device_units());
-  gfx::Rect content_area;
-  page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
+  const PageSetup& page_setup = immutable_.settings_.page_setup_device_units();
+  gfx::Rect content_area =
+      page.GetCenteredPageContentRect(page_setup.physical_size());
 
   // Save the state to make sure the context this function call does not modify
   // the device context.
@@ -52,8 +52,8 @@ void PrintedDocument::RenderPrintedPage(
   skia::InitializeDC(context);
   {
     // Save the state (again) to apply the necessary world transformation.
-    int saved_state = SaveDC(context);
-    DCHECK_NE(saved_state, 0);
+    int saved_state_inner = SaveDC(context);
+    DCHECK_NE(saved_state_inner, 0);
 
     // Setup the matrix to translate and scale to the right place. Take in
     // account the actual shrinking factor.
@@ -66,16 +66,15 @@ void PrintedDocument::RenderPrintedPage(
         page.shrink_factor());
 
     ::StartPage(context);
-    if (!page.metafile()->SafePlayback(context)) {
-      NOTREACHED();
-    }
+    bool played_back = page.metafile()->SafePlayback(context);
+    DCHECK(played_back);
     ::EndPage(context);
 
-    BOOL res = RestoreDC(context, saved_state);
+    BOOL res = RestoreDC(context, saved_state_inner);
     DCHECK_NE(res, 0);
   }
 
-  int res = RestoreDC(context, saved_state);
+  BOOL res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
 }
 

@@ -43,8 +43,7 @@ class PRINTING_EXPORT PrintedPage
 
   // Get page content rect adjusted based on
   // http://dev.w3.org/csswg/css3-page/#positioning-page-box
-  void GetCenteredPageContentRect(const gfx::Size& paper_size,
-                                  gfx::Rect* content_rect) const;
+  gfx::Rect GetCenteredPageContentRect(const gfx::Size& paper_size) const;
 
  private:
   friend class base::RefCountedThreadSafe<PrintedPage>;
