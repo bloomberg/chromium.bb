@@ -25,8 +25,8 @@ struct CC_EXPORT MutatorInputState {
     int animation_player_id = 0;
     // Name associated with worklet animation player.
     std::string name;
-    // Worklet animation player's current time.
-    base::TimeTicks current_time;
+    // Worklet animation player's current time, from its associated timeline.
+    double current_time = 0;
   };
 
   MutatorInputState();

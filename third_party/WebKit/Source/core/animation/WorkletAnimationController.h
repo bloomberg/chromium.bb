@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class Document;
 class WorkletAnimationBase;
 
 // Handles AnimationWorklet animations on the main-thread.
@@ -27,7 +28,7 @@ class WorkletAnimationBase;
 class CORE_EXPORT WorkletAnimationController
     : public GarbageCollectedFinalized<WorkletAnimationController> {
  public:
-  WorkletAnimationController();
+  WorkletAnimationController(Document*);
   virtual ~WorkletAnimationController();
 
   void AttachAnimation(WorkletAnimationBase&);
@@ -40,6 +41,8 @@ class CORE_EXPORT WorkletAnimationController
  private:
   HeapHashSet<Member<WorkletAnimationBase>> pending_animations_;
   HeapHashSet<Member<WorkletAnimationBase>> compositor_animations_;
+
+  Member<Document> document_;
 };
 
 }  // namespace blink
