@@ -56,7 +56,7 @@ scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     scoped_refptr<NGPhysicalBoxFragment> page(
         ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
 
-    container_builder_.AddChild(page, page_offset);
+    container_builder_.AddChild(result, page_offset);
 
     NGBoxFragment logical_fragment(writing_mode, *page);
     intrinsic_block_size =

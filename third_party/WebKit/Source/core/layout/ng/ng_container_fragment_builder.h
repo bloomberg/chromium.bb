@@ -51,6 +51,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   virtual NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
                                                const NGLogicalOffset&);
+
+  // This version of AddChild will not propagate floats/out_of_flow.
+  // Use the AddChild(NGLayoutResult) variant if NGLayoutResult is available.
   virtual NGContainerFragmentBuilder& AddChild(
       scoped_refptr<NGPhysicalFragment>,
       const NGLogicalOffset&);

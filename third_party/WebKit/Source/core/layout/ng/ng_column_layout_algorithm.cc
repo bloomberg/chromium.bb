@@ -113,7 +113,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
         ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
 
     NGLogicalOffset logical_offset(column_inline_offset, column_block_offset);
-    container_builder_.AddChild(column, logical_offset);
+    container_builder_.AddChild(result, logical_offset);
 
     intrinsic_block_size = std::max(
         intrinsic_block_size,
