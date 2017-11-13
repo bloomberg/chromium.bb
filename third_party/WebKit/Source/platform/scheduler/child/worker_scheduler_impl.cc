@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "platform/Histogram.h"
@@ -90,6 +91,11 @@ scoped_refptr<SingleThreadIdleTaskRunner>
 WorkerSchedulerImpl::IdleTaskRunner() {
   DCHECK(initialized_);
   return idle_helper_.IdleTaskRunner();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerSchedulerImpl::IPCTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 bool WorkerSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {

@@ -31,6 +31,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;

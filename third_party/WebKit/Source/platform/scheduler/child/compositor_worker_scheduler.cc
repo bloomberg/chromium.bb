@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/scheduler_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
@@ -45,6 +46,11 @@ CompositorWorkerScheduler::IdleTaskRunner() {
   // vsync. https://crbug.com/609532
   return base::MakeRefCounted<SingleThreadIdleTaskRunner>(
       thread_->task_runner(), this);
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+CompositorWorkerScheduler::IPCTaskRunner() {
+  return base::ThreadTaskRunnerHandle::Get();
 }
 
 bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {

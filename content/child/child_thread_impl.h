@@ -239,6 +239,8 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
+
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
@@ -256,6 +258,7 @@ struct ChildThreadImpl::Options {
   std::vector<IPC::MessageFilter*> startup_filters;
   mojo::edk::OutgoingBrokerClientInvitation* broker_client_invitation;
   std::string in_process_service_request_token;
+  scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
  private:
   Options();
@@ -269,6 +272,8 @@ class ChildThreadImpl::Options::Builder {
   Builder& AutoStartServiceManagerConnection(bool auto_start);
   Builder& ConnectToBrowser(bool connect_to_browser);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
+  Builder& IPCTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
 
   Options Build();
 
