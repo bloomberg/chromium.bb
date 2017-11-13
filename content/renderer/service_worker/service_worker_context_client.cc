@@ -1680,7 +1680,7 @@ void ServiceWorkerContextClient::DispatchPushEvent(
   // Only set data to be a valid string if the payload had decrypted data.
   blink::WebString data;
   if (!payload.is_null)
-    data.Assign(blink::WebString::FromUTF8(payload.data));
+    data = blink::WebString::FromUTF8(payload.data);
   proxy_->DispatchPushEvent(request_id, data);
 }
 

@@ -33,7 +33,7 @@
 
 #include <string>
 #include "WebCommon.h"
-#include "WebPrivatePtr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/latin1_string_conversions.h"
 #include "base/strings/nullable_string16.h"
@@ -97,22 +97,17 @@ class WebString {
     kStrictReplacingErrorsWithFFFD,
   };
 
-  ~WebString() { Reset(); }
+  BLINK_PLATFORM_EXPORT ~WebString();
+  BLINK_PLATFORM_EXPORT WebString();
+  BLINK_PLATFORM_EXPORT WebString(const WebUChar* data, size_t len);
 
-  WebString() {}
+  BLINK_PLATFORM_EXPORT WebString(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString(WebString&&);
 
-  WebString(const WebUChar* data, size_t len) { Assign(data, len); }
-
-  WebString(const WebString& s) { Assign(s); }
-
-  WebString& operator=(const WebString& s) {
-    Assign(s);
-    return *this;
-  }
+  BLINK_PLATFORM_EXPORT WebString& operator=(const WebString&);
+  BLINK_PLATFORM_EXPORT WebString& operator=(WebString&&);
 
   BLINK_PLATFORM_EXPORT void Reset();
-  BLINK_PLATFORM_EXPORT void Assign(const WebString&);
-  BLINK_PLATFORM_EXPORT void Assign(const WebUChar* data, size_t len);
 
   BLINK_PLATFORM_EXPORT bool Equals(const WebString&) const;
   BLINK_PLATFORM_EXPORT bool Equals(const char* characters, size_t len) const;
@@ -123,7 +118,7 @@ class WebString {
   BLINK_PLATFORM_EXPORT size_t length() const;
 
   bool IsEmpty() const { return !length(); }
-  bool IsNull() const { return private_.IsNull(); }
+  bool IsNull() const { return !impl_; }
 
   BLINK_PLATFORM_EXPORT std::string Utf8(
       UTF8ConversionMode = UTF8ConversionMode::kLenient) const;
@@ -139,10 +134,8 @@ class WebString {
   }
 
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(const base::string16&);
-
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(
       const base::NullableString16&);
-
   BLINK_PLATFORM_EXPORT static WebString FromUTF16(
       const base::Optional<base::string16>&);
 
@@ -175,13 +168,11 @@ class WebString {
   BLINK_PLATFORM_EXPORT static WebString FromASCII(const std::string&);
 
   template <int N>
-  WebString(const char (&data)[N]) {
-    Assign(FromUTF8(data, N - 1));
-  }
+  WebString(const char (&data)[N]) : WebString(FromUTF8(data, N - 1)) {}
 
   template <int N>
   WebString& operator=(const char (&data)[N]) {
-    Assign(FromUTF8(data, N - 1));
+    *this = FromUTF8(data, N - 1);
     return *this;
   }
 
@@ -202,9 +193,7 @@ class WebString {
   BLINK_PLATFORM_EXPORT const WebLChar* Data8() const;
   BLINK_PLATFORM_EXPORT const WebUChar* Data16() const;
 
-  BLINK_PLATFORM_EXPORT void Assign(WTF::StringImpl*);
-
-  WebPrivatePtr<WTF::StringImpl> private_;
+  scoped_refptr<WTF::StringImpl> impl_;
 };
 
 inline bool operator==(const WebString& a, const char* b) {

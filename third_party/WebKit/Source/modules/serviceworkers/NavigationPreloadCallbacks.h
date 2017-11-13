@@ -5,6 +5,7 @@
 #ifndef NavigationPreloadCallbacks_h
 #define NavigationPreloadCallbacks_h
 
+#include "platform/heap/Persistent.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 
 namespace blink {

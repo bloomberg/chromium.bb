@@ -5,6 +5,7 @@
 #ifndef WebRTCRtpReceiver_h
 #define WebRTCRtpReceiver_h
 
+#include <memory>
 #include "WebCommon.h"
 #include "WebString.h"
 #include "WebVector.h"
