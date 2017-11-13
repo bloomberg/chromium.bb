@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
 #define UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -90,6 +91,11 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
   message_center::MessageCenter* message_center_;
   bool message_center_visible_;
   bool popups_visible_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<base::CancelableClosure> hide_empty_message_center_callback_;
+#endif
+
   // |delegate_| is a weak pointer that must live longer than MessageCenterTray.
   MessageCenterTrayDelegate* delegate_;
 

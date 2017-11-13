@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -121,10 +122,16 @@ bool MessageCenterTray::ShowMessageCenterBubble(bool show_by_click) {
 }
 
 bool MessageCenterTray::HideMessageCenterBubble() {
+#if defined(OS_CHROMEOS)
+  // TODO(yoshiki): Move the message center bubble related logic to ash/.
+  hide_empty_message_center_callback_.reset();
+#endif
+
   if (!message_center_visible_)
     return false;
   delegate_->HideMessageCenter();
   MarkMessageCenterHidden();
+
   return true;
 }
 
@@ -242,8 +249,25 @@ void MessageCenterTray::OnBlockingStateChanged(NotificationBlocker* blocker) {
 }
 
 void MessageCenterTray::OnMessageCenterChanged() {
-  if (message_center_visible_ && message_center_->NotificationCount() == 0)
-    HideMessageCenterBubble();
+#if defined(OS_CHROMEOS)
+  // TODO(yoshiki): Move the message center bubble related logic to ash/.
+  if (message_center_visible_ && message_center_->NotificationCount() == 0) {
+    if (hide_empty_message_center_callback_)
+      return;
+
+    hide_empty_message_center_callback_ =
+        std::make_unique<base::CancelableClosure>(base::Bind(
+            base::IgnoreResult(&MessageCenterTray::HideMessageCenterBubble),
+            base::Unretained(this)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, hide_empty_message_center_callback_->callback());
+    return;
+  }
+
+  // Cancel the callback if necessary.
+  if (hide_empty_message_center_callback_)
+    hide_empty_message_center_callback_.reset();
+#endif
 
   if (popups_visible_ && !message_center_->HasPopupNotifications())
     HidePopupBubbleInternal();
