@@ -4,6 +4,7 @@
 
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "components/consent_auditor/consent_auditor.h"
@@ -45,7 +46,10 @@ KeyedService* ConsentAuditorFactory::BuildServiceInstanceFor(
   return new consent_auditor::ConsentAuditor(
       profile->GetPrefs(),
       browser_sync::UserEventServiceFactory::GetForProfile(profile),
-      version_info::GetVersionNumber());
+      // The browser version and locale do not change runtime, so we can pass
+      // them directly.
+      version_info::GetVersionNumber(),
+      g_browser_process->GetApplicationLocale());
 }
 
 // static
