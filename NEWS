@@ -9,6 +9,8 @@ For a detailed list of all the changes refer to [[https://github.com/liblouis/li
 ** Braille table improvements
 - Addition of Nemeth and Kangxi radical characters to Chinese braille
   (zh-tw.ctb) thanks to Bo-Cheng Jhan and 黃偉豪.
+- New Norwegian 6-dot display braille table for Braillo embossers
+  thanks to Lars Bjørndal
 
 ** New, renamed or removed tables
 *** New

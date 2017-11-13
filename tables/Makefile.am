@@ -273,6 +273,7 @@ table_files = \
 	nl.tbl \
 	no-no-8dot-fallback-6dot-g0.utb \
 	no-no-8dot.utb \
+	no-no-braillo-047-01.dis \
 	no-no-chardefs6.uti \
 	no-no-comp8.ctb \
 	no-no.dis \
