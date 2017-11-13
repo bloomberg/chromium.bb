@@ -678,7 +678,7 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
 
   GURL url(params.url);
 #if BUILDFLAG(ENABLE_PLUGINS)
-  chrome::mojom::PluginInfoPtr plugin_info;
+  chrome::mojom::PluginInfoPtr plugin_info = chrome::mojom::PluginInfo::New();
   GetPluginInfoHost()->GetPluginInfo(
       render_frame->GetRoutingID(), url,
       render_frame->GetWebFrame()->Top()->GetSecurityOrigin(), orig_mime_type,
