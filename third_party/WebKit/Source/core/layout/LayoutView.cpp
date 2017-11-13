@@ -41,7 +41,6 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/ViewPaintInvalidator.h"
 #include "core/paint/ViewPainter.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -448,11 +447,6 @@ void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
   // explicitly).
   rects.push_back(LayoutRect(LayoutPoint::Zero(),
                              LayoutSize(GetFrameView()->ContentsSize())));
-}
-
-PaintInvalidationReason LayoutView::InvalidatePaint(
-    const PaintInvalidatorContext& context) const {
-  return ViewPaintInvalidator(*this, context).InvalidatePaint();
 }
 
 void LayoutView::Paint(const PaintInfo& paint_info,
