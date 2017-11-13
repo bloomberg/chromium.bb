@@ -1320,6 +1320,8 @@ test("browser_tests") {
       "../browser/metrics/process_memory_metrics_emitter_browsertest.cc",
       "../browser/metrics/startup_metrics_browsertest.cc",
       "../browser/metrics/tab_reactivation_tracker_browsertest.cc",
+      "../browser/metrics/tab_stats_data_store_unittests.cc",
+      "../browser/metrics/tab_stats_tracker_unittests.cc",
       "../browser/metrics/ukm_browsertest.cc",
       "../browser/net/chrome_mojo_proxy_resolver_factory_browsertest.cc",
       "../browser/net/chrome_network_delegate_browsertest.cc",
@@ -2587,8 +2589,6 @@ test("browser_tests") {
         "../browser/extensions/api/image_writer_private/image_writer_utility_client_browsertest.cc",
         "../browser/metrics/desktop_session_duration/audible_contents_tracker_browsertest.cc",
         "../browser/metrics/desktop_session_duration/chrome_visibility_observer_browsertest.cc",
-        "../browser/metrics/tab_stats_data_store_unittests.cc",
-        "../browser/metrics/tab_stats_tracker_unittests.cc",
         "../browser/profiles/profile_statistics_browsertest.cc",
       ]
     }
