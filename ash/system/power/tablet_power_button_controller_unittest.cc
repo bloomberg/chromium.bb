@@ -4,6 +4,8 @@
 
 #include "ash/system/power/tablet_power_button_controller.h"
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
@@ -635,6 +637,26 @@ TEST_F(TabletPowerButtonControllerTest,
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+}
+
+// Tests that a11y alert is sent on tablet power button induced screen state
+// change.
+TEST_F(TabletPowerButtonControllerTest, A11yAlert) {
+  TestAccessibilityControllerClient client;
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetClient(client.CreateInterfacePtrAndBind());
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, true);
+  controller->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_OFF, client.last_a11y_alert());
+
+  PressPowerButton();
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
+  controller->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::SCREEN_ON, client.last_a11y_alert());
+  ReleasePowerButton();
 }
 
 using NoTabletModePowerButtonControllerTest = NoTabletModePowerButtonTestBase;

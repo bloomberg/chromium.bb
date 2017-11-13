@@ -1161,6 +1161,8 @@ split_static_library("ui") {
       "app_list/search/launcher_search/launcher_search_provider.h",
       "app_list/search/launcher_search/launcher_search_result.cc",
       "app_list/search/launcher_search/launcher_search_result.h",
+      "ash/accessibility/accessibility_controller_client.cc",
+      "ash/accessibility/accessibility_controller_client.h",
       "ash/app_list/app_list_controller_ash.cc",
       "ash/app_list/app_list_controller_ash.h",
       "ash/app_list/app_list_presenter_delegate_mus.cc",

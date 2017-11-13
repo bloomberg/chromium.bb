@@ -133,15 +133,6 @@ double DefaultAccessibilityDelegate::GetSavedScreenMagnifierScale() {
   return std::numeric_limits<double>::min();
 }
 
-void DefaultAccessibilityDelegate::TriggerAccessibilityAlert(
-    AccessibilityAlert alert) {
-  accessibility_alert_ = alert;
-}
-
-AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
-  return accessibility_alert_;
-}
-
 bool DefaultAccessibilityDelegate::ShouldToggleSpokenFeedbackViaTouch() {
   return false;
 }

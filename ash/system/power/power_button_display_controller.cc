@@ -4,7 +4,7 @@
 
 #include "ash/system/power/power_button_display_controller.h"
 
-#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
@@ -69,8 +69,9 @@ void PowerButtonDisplayController::SetDisplayForcedOff(bool forced_off) {
     Shell::Get()->media_controller()->SuspendMediaSessions();
 
   // Send an a11y alert.
-  Shell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(
-      forced_off ? A11Y_ALERT_SCREEN_OFF : A11Y_ALERT_SCREEN_ON);
+  Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
+      forced_off ? mojom::AccessibilityAlert::SCREEN_OFF
+                 : mojom::AccessibilityAlert::SCREEN_ON);
 }
 
 void PowerButtonDisplayController::PowerManagerRestarted() {

@@ -13,6 +13,7 @@ mojom("interfaces_internal") {
 
   sources = [
     "accelerator_controller.mojom",
+    "accessibility_controller.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
     "cast_config.mojom",

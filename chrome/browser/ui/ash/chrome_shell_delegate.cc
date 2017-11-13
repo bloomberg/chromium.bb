@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -253,52 +252,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return std::numeric_limits<double>::min();
   }
 
-  void TriggerAccessibilityAlert(ash::AccessibilityAlert alert) override {
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    if (profile) {
-      int msg = 0;
-      switch (alert) {
-        case ash::A11Y_ALERT_CAPS_ON:
-          msg = IDS_A11Y_ALERT_CAPS_ON;
-          break;
-        case ash::A11Y_ALERT_CAPS_OFF:
-          msg = IDS_A11Y_ALERT_CAPS_OFF;
-          break;
-        case ash::A11Y_ALERT_SCREEN_ON:
-          // Enable automation manager when alert is screen-on, as it is
-          // previously disabled by alert screen-off.
-          SetAutomationManagerEnabled(profile, true);
-          msg = IDS_A11Y_ALERT_SCREEN_ON;
-          break;
-        case ash::A11Y_ALERT_SCREEN_OFF:
-          msg = IDS_A11Y_ALERT_SCREEN_OFF;
-          break;
-        case ash::A11Y_ALERT_WINDOW_NEEDED:
-          msg = IDS_A11Y_ALERT_WINDOW_NEEDED;
-          break;
-        case ash::A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED:
-          msg = IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED;
-          break;
-        case ash::A11Y_ALERT_NONE:
-          msg = 0;
-          break;
-      }
-
-      if (msg) {
-        AutomationManagerAura::GetInstance()->HandleAlert(
-            profile, l10n_util::GetStringUTF8(msg));
-        // After handling the alert, if the alert is screen-off, we should
-        // disable automation manager to handle any following a11y events.
-        if (alert == ash::A11Y_ALERT_SCREEN_OFF)
-          SetAutomationManagerEnabled(profile, false);
-      }
-    }
-  }
-
-  ash::AccessibilityAlert GetLastAccessibilityAlert() override {
-    return ash::A11Y_ALERT_NONE;
-  }
-
   void OnTwoFingerTouchStart() override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->OnTwoFingerTouchStart();
@@ -334,16 +287,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
   }
 
  private:
-  void SetAutomationManagerEnabled(content::BrowserContext* context,
-                                   bool enabled) {
-    DCHECK(context);
-    AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
-    if (enabled)
-      manager->Enable(context);
-    else
-      manager->Disable();
-  }
-
   DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateImpl);
 };
 

@@ -5,10 +5,11 @@
 #include "ash/accelerators/accelerator_controller.h"
 
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_delegate.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/media_controller.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -1196,13 +1197,19 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  AccessibilityDelegate* delegate = Shell::Get()->accessibility_delegate();
+  TestAccessibilityControllerClient client;
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  controller->SetClient(client.CreateInterfacePtrAndBind());
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
+    controller->FlushMojoForTest();
     EXPECT_TRUE(
         GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]));
-    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    controller->FlushMojoForTest();
+    EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_NEEDED,
+              client.last_a11y_alert());
   }
 
   // Make sure we don't alert if we do have a window.
@@ -1210,9 +1217,12 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
+    controller->FlushMojoForTest();
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
-    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    controller->FlushMojoForTest();
+    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
+              client.last_a11y_alert());
   }
 
   // Don't alert if we have a minimized window either.
@@ -1220,9 +1230,12 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     GetController()->PerformActionIfEnabled(WINDOW_MINIMIZE);
-    delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
+    controller->TriggerAccessibilityAlert(mojom::AccessibilityAlert::NONE);
+    controller->FlushMojoForTest();
     GetController()->PerformActionIfEnabled(kActionsNeedingWindow[i]);
-    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
+    controller->FlushMojoForTest();
+    EXPECT_NE(mojom::AccessibilityAlert::WINDOW_NEEDED,
+              client.last_a11y_alert());
   }
 }
 

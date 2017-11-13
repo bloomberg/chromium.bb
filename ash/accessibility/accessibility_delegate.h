@@ -110,12 +110,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // is not saved, return a negative value.
   virtual double GetSavedScreenMagnifierScale() = 0;
 
-  // Triggers an accessibility alert to give the user feedback.
-  virtual void TriggerAccessibilityAlert(AccessibilityAlert alert) = 0;
-
-  // Gets the last accessibility alert that was triggered.
-  virtual AccessibilityAlert GetLastAccessibilityAlert() = 0;
-
   // Called when we first detect two fingers are held down, which can be
   // used to toggle spoken feedback on some touch-only devices.
   virtual void OnTwoFingerTouchStart() {}

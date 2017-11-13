@@ -1,0 +1,43 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module ash.mojom;
+
+enum AccessibilityAlert {
+  // Default value, indicates no accessibility alert.
+  NONE,
+
+  // Caps Lock is On.
+  CAPS_ON,
+
+  // Caps Lock is Off.
+  CAPS_OFF,
+
+  // Screen turned on by tablet power button.
+  SCREEN_ON,
+
+  // Screen turned off by tablet power button.
+  SCREEN_OFF,
+
+  // Alerted when no window avaiable and accelerators operated which requires at
+  // least one window.
+  WINDOW_NEEDED,
+
+  // Entered overview mode.
+  WINDOW_OVERVIEW_MODE_ENTERED
+};
+
+// Interface for ash client (e.g. Chrome) to control and query accessibility
+// features.
+interface AccessibilityController {
+  // Sets the client interface.
+  SetClient(AccessibilityControllerClient client);
+};
+
+// Interface for ash to request accessibility service from its client (e.g.
+// Chrome).
+interface AccessibilityControllerClient {
+  // Triggers an accessibility alert to give the user feedback.
+  TriggerAccessibilityAlert(AccessibilityAlert alert);
+};
