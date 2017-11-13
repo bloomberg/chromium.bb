@@ -57,10 +57,6 @@ const StylePropertyShorthand& transitionShorthandForParsing() {
   return transition_longhands;
 }
 
-bool isShorthandProperty(CSSPropertyID id) {
-  return shorthandForProperty(id).length();
-}
-
 unsigned indexOfShorthandForLonghand(
     CSSPropertyID shorthand_id,
     const Vector<StylePropertyShorthand, 4>& shorthands) {

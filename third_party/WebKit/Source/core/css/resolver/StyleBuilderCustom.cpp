@@ -114,7 +114,8 @@ static inline bool IsValidVisitedLinkProperty(CSSPropertyID id) {
 void StyleBuilder::ApplyProperty(CSSPropertyID id,
                                  StyleResolverState& state,
                                  const CSSValue& value) {
-  bool is_inherited = CSSProperty::Get(id).IsInherited();
+  const CSSProperty& property = CSSProperty::Get(id);
+  bool is_inherited = property.IsInherited();
   if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||
                                     value.IsPendingSubstitutionValue())) {
     bool omit_animation_tainted =
@@ -130,8 +131,8 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
     return;
   }
 
-  DCHECK(!isShorthandProperty(id)) << "Shorthand property id = " << id
-                                   << " wasn't expanded at parsing time";
+  DCHECK(!property.IsShorthand())
+      << "Shorthand property id = " << id << " wasn't expanded at parsing time";
 
   bool is_inherit = state.ParentNode() && value.IsInheritedValue();
   bool is_initial = value.IsInitialValue() ||

@@ -26,7 +26,7 @@ CSSStyleValueVector ParseCSSStyleValue(const String& property_name,
     return CSSStyleValueVector();
   }
 
-  if (isShorthandProperty(property_id)) {
+  if (CSSProperty::Get(property_id).IsShorthand()) {
     exception_state.ThrowTypeError(
         "Parsing shorthand properties is not supported");
     return CSSStyleValueVector();

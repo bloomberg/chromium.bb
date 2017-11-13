@@ -73,7 +73,7 @@ PropertyHandleSet StringKeyframe::Properties() const {
   for (unsigned i = 0; i < css_property_map_->PropertyCount(); ++i) {
     CSSPropertyValueSet::PropertyReference property_reference =
         css_property_map_->PropertyAt(i);
-    DCHECK(!isShorthandProperty(property_reference.Id()))
+    DCHECK(!CSSProperty::Get(property_reference.Id()).IsShorthand())
         << "Web Animations: Encountered unexpanded shorthand CSS property ("
         << property_reference.Id() << ").";
     if (property_reference.Id() == CSSPropertyVariable)

@@ -126,17 +126,19 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
   CSSPropertyID property_id =
       static_cast<CSSPropertyID>(index + firstCSSProperty);
   DCHECK(isCSSPropertyIDWithName(property_id));
+  const CSSProperty& property_class =
+      CSSProperty::Get(resolveCSSPropertyID(property_id));
 
   // Since "all" is expanded, we don't need to process "all".
   // We should not process expanded shorthands (e.g. font, background,
   // and so on) either.
-  if (isShorthandProperty(property_id) || property_id == CSSPropertyAll)
+  if (property_class.IsShorthand() || property_id == CSSPropertyAll)
     return false;
 
   // The all property is a shorthand that resets all CSS properties except
   // direction and unicode-bidi. It only accepts the CSS-wide keywords.
   // c.f. http://dev.w3.org/csswg/css-cascade/#all-shorthand
-  if (!CSSProperty::Get(resolveCSSPropertyID(property_id)).IsAffectedByAll())
+  if (!property_class.IsAffectedByAll())
     return longhand_property_used_.test(index);
 
   return true;
@@ -238,7 +240,7 @@ String StylePropertySerializer::AsText() const {
     DCHECK(property_class.IsEnabled());
     // All shorthand properties should have been expanded at parse time.
     DCHECK(property_set_.IsDescriptorContext() ||
-           (property_class.IsProperty() && !isShorthandProperty(property_id)));
+           (property_class.IsProperty() && !property_class.IsShorthand()));
     DCHECK(!property_set_.IsDescriptorContext() ||
            property_class.IsDescriptor());
 #endif

@@ -3399,7 +3399,7 @@ Vector<String> Internals::getCSSPropertyLonghands() const {
   Vector<String> result;
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
     CSSPropertyID property = static_cast<CSSPropertyID>(id);
-    if (!isShorthandProperty(property)) {
+    if (CSSProperty::Get(property).IsLonghand()) {
       result.push_back(getPropertyNameString(property));
     }
   }
@@ -3410,7 +3410,7 @@ Vector<String> Internals::getCSSPropertyShorthands() const {
   Vector<String> result;
   for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
     CSSPropertyID property = static_cast<CSSPropertyID>(id);
-    if (isShorthandProperty(property)) {
+    if (CSSProperty::Get(property).IsShorthand()) {
       result.push_back(getPropertyNameString(property));
     }
   }
