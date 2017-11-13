@@ -75,8 +75,8 @@ theme_set_background_source(struct theme *t, cairo_t *cr, uint32_t flags);
 void
 theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
-		   const char *title, struct wl_list *buttons,
-		   uint32_t flags);
+		   const char *title, cairo_rectangle_int_t *title_rect,
+		   struct wl_list *buttons, uint32_t flags);
 
 enum theme_location {
 	THEME_LOCATION_INTERIOR = 0,

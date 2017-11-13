@@ -454,13 +454,14 @@ theme_destroy(struct theme *t)
 void
 theme_render_frame(struct theme *t,
 		   cairo_t *cr, int width, int height,
-		   const char *title, struct wl_list *buttons,
-		   uint32_t flags)
+		   const char *title, cairo_rectangle_int_t *title_rect,
+		   struct wl_list *buttons, uint32_t flags)
 {
 	cairo_text_extents_t extents;
 	cairo_font_extents_t font_extents;
 	cairo_surface_t *source;
 	int x, y, margin, top_margin;
+	int text_width, text_height;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0);
@@ -491,11 +492,10 @@ theme_render_frame(struct theme *t,
 		    t->width, top_margin);
 
 	if (title || !wl_list_empty(buttons)) {
-		cairo_rectangle (cr, margin + t->width, margin,
-				 width - (margin + t->width) * 2,
-				 t->titlebar_height - t->width);
-		cairo_clip(cr);
 
+		cairo_rectangle (cr, title_rect->x, title_rect->y,
+				 title_rect->width, title_rect->height);
+		cairo_clip(cr);
 		cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 		cairo_select_font_face(cr, "sans",
 				       CAIRO_FONT_SLANT_NORMAL,
@@ -503,11 +503,15 @@ theme_render_frame(struct theme *t,
 		cairo_set_font_size(cr, 14);
 		cairo_text_extents(cr, title, &extents);
 		cairo_font_extents (cr, &font_extents);
-		x = (width - extents.width) / 2;
-		y = margin +
-			(t->titlebar_height -
-			 font_extents.ascent - font_extents.descent) / 2 +
-			font_extents.ascent;
+		text_width = extents.width;
+		text_height = font_extents.descent - font_extents.ascent;
+
+		x = (width - text_width) / 2;
+		y = margin + (t->titlebar_height - text_height) / 2;
+		if (x < title_rect->x)
+			x = title_rect->x;
+		else if (x + text_width > (title_rect->x + title_rect->width))
+			x = (title_rect->x + title_rect->width) - text_width;
 
 		if (flags & THEME_FRAME_ACTIVE) {
 			cairo_move_to(cr, x + 1, y  + 1);

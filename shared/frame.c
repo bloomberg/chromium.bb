@@ -98,6 +98,8 @@ struct frame {
 	int opaque_margin;
 	int geometry_dirty;
 
+	cairo_rectangle_int_t title_rect;
+
 	uint32_t status;
 
 	struct wl_list buttons;
@@ -532,6 +534,11 @@ frame_refresh_geometry(struct frame *frame)
 		}
 	}
 
+	frame->title_rect.x = x_l;
+	frame->title_rect.y = y;
+	frame->title_rect.width = x_r - x_l;
+	frame->title_rect.height = titlebar_height;
+
 	frame->geometry_dirty = 0;
 }
 
@@ -938,7 +945,8 @@ frame_repaint(struct frame *frame, cairo_t *cr)
 
 	cairo_save(cr);
 	theme_render_frame(frame->theme, cr, frame->width, frame->height,
-			   frame->title, &frame->buttons, flags);
+			   frame->title, &frame->title_rect,
+			   &frame->buttons, flags);
 	cairo_restore(cr);
 
 	wl_list_for_each(button, &frame->buttons, link)
