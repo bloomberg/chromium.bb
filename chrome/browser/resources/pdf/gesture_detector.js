@@ -29,11 +29,29 @@ class GestureDetector {
     this.element_.addEventListener(
         'touchcancel', boundOnTouch, {passive: true});
 
+    this.element_.addEventListener(
+        'wheel',
+        /** @type {function(!Event)} */ (this.onWheel_.bind(this)),
+        {passive: false});
+
     this.pinchStartEvent_ = null;
     this.lastTouchTouchesCount_ = 0;
 
     /** @private {?TouchEvent} */
     this.lastEvent_ = null;
+
+    /**
+     * The scale relative to the start of the pinch when handling ctrl-wheels.
+     * null when there is no ongoing pinch.
+     * @private {?number}
+     */
+    this.accumulatedWheelScale_ = null;
+    /**
+     * A timeout ID from setTimeout used for sending the pinchend event when
+     * handling ctrl-wheels.
+     * @private {?number}
+     */
+    this.wheelEndTimeout_ = null;
 
     /** @private {!Map<string, !Array<!Function>>} */
     this.listeners_ =
@@ -131,6 +149,63 @@ class GestureDetector {
     });
 
     this.lastEvent_ = event;
+  }
+
+  /**
+   * The callback for wheel events on the element.
+   * @private
+   * @param {!WheelEvent} event Wheel event on the element.
+   */
+  onWheel_(event) {
+    // We handle ctrl-wheels to invoke our own pinch zoom. On Mac, synthetic
+    // ctrl-wheels are created from trackpad pinches. We handle these ourselves
+    // to prevent the browser's native pinch zoom. We also use our pinch
+    // zooming mechanism for handling non-synthetic ctrl-wheels. This allows us
+    // to anchor the zoom around the mouse position instead of the scroll
+    // position.
+    if (!event.ctrlKey)
+      return;
+
+    event.preventDefault();
+
+    let wheelScale = Math.exp(-event.deltaY / 100);
+    // Clamp scale changes from the wheel event as they can be
+    // quite dramatic for non-synthetic ctrl-wheels.
+    let scale = Math.min(1.25, Math.max(0.75, wheelScale));
+    let position = {x: event.clientX, y: event.clientY};
+
+    if (this.accumulatedWheelScale_ == null) {
+      this.accumulatedWheelScale_ = 1.0;
+      this.notify_({type: 'pinchstart', center: position});
+    }
+
+    this.accumulatedWheelScale_ *= scale;
+    this.notify_({
+      type: 'pinchupdate',
+      scaleRatio: scale,
+      direction: scale > 1.0 ? 'in' : 'out',
+      startScaleRatio: this.accumulatedWheelScale_,
+      center: position
+    });
+
+    // We don't get any phase information for the ctrl-wheels, so we don't know
+    // when the gesture ends. We'll just use a timeout to send the pinch end
+    // event a short time after the last ctrl-wheel we see.
+    if (this.wheelEndTimeout_ != null) {
+      window.clearTimeout(this.wheelEndTimeout_);
+      this.wheelEndTimeout_ = null;
+    }
+    let gestureEndDelayMs = 100;
+    let endEvent = {
+      type: 'pinchend',
+      startScaleRatio: this.accumulatedWheelScale_,
+      center: position
+    };
+    this.wheelEndTimeout_ = window.setTimeout(function(endEvent) {
+      this.notify_(endEvent);
+      this.wheelEndTimeout_ = null;
+      this.accumulatedWheelScale_ = null;
+    }.bind(this), gestureEndDelayMs, endEvent);
   }
 
   /**

@@ -768,6 +768,55 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
   widget_host->ForwardWheelEvent(wheel_event);
 }
 
+#if !defined(OS_MACOSX)
+void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
+                                     const gfx::Point& point,
+                                     bool zoom_in,
+                                     blink::WebMouseWheelEvent::Phase phase) {
+  blink::WebMouseWheelEvent wheel_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kControlKey,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+
+  wheel_event.SetPositionInWidget(point.x(), point.y());
+  wheel_event.delta_y =
+      (zoom_in ? 1.0 : -1.0) * ui::MouseWheelEvent::kWheelDelta;
+  wheel_event.wheel_ticks_y = (zoom_in ? 1.0 : -1.0);
+  wheel_event.has_precise_scrolling_deltas = false;
+  wheel_event.phase = phase;
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetRenderViewHost()->GetWidget());
+  widget_host->ForwardWheelEvent(wheel_event);
+}
+#endif  // !defined(OS_MACOSX)
+
+void SimulateGesturePinchSequence(WebContents* web_contents,
+                                  const gfx::Point& point,
+                                  float scale,
+                                  blink::WebGestureDevice source_device) {
+  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
+      web_contents->GetRenderViewHost()->GetWidget());
+
+  blink::WebGestureEvent pinch_begin(
+      blink::WebInputEvent::kGesturePinchBegin,
+      blink::WebInputEvent::kNoModifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  pinch_begin.source_device = source_device;
+  pinch_begin.x = point.x();
+  pinch_begin.y = point.y();
+  pinch_begin.global_x = point.x();
+  pinch_begin.global_y = point.y();
+  widget_host->ForwardGestureEvent(pinch_begin);
+
+  blink::WebGestureEvent pinch_update(pinch_begin);
+  pinch_update.SetType(blink::WebInputEvent::kGesturePinchUpdate);
+  pinch_update.data.pinch_update.scale = scale;
+  widget_host->ForwardGestureEvent(pinch_update);
+
+  blink::WebGestureEvent pinch_end(pinch_begin);
+  pinch_update.SetType(blink::WebInputEvent::kGesturePinchEnd);
+  widget_host->ForwardGestureEvent(pinch_end);
+}
+
 void SimulateGestureScrollSequence(WebContents* web_contents,
                                    const gfx::Point& point,
                                    const gfx::Vector2dF& delta) {

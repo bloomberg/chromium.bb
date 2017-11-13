@@ -1314,7 +1314,43 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PostMessageForZeroSizedEmbed) {
   EXPECT_EQ("\"POST_MESSAGE_OK\"", message);
 }
 
+// In response to the events sent in |send_events|, ensures the PDF viewer zooms
+// in and that the viewer's custom pinch zooming mechanism is used to do so.
+void EnsureCustomPinchZoomInvoked(WebContents* guest_contents,
+                                  WebContents* contents,
+                                  base::OnceClosure send_events) {
+  ASSERT_TRUE(content::ExecuteScript(
+      guest_contents,
+      "var gestureDetector = new GestureDetector(viewer.plugin_); "
+      "var updatePromise = new Promise(function(resolve) { "
+      "  gestureDetector.addEventListener('pinchupdate', resolve); "
+      "});"));
+
+  zoom::ZoomChangedWatcher zoom_watcher(
+      contents,
+      base::BindRepeating(
+          [](const zoom::ZoomController::ZoomChangedEventData& event) {
+            return event.new_zoom_level > event.old_zoom_level &&
+                   event.zoom_mode == zoom::ZoomController::ZOOM_MODE_MANUAL &&
+                   !event.can_show_bubble;
+          }));
+
+  std::move(send_events).Run();
+
+  bool got_update;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      guest_contents,
+      "updatePromise.then(function(update) { "
+      "  window.domAutomationController.send(!!update); "
+      "});",
+      &got_update));
+  EXPECT_TRUE(got_update);
+
+  zoom_watcher.Wait();
+}
+
 #if defined(OS_MACOSX)
+
 // Test that "smart zoom" (double-tap with two fingers on Mac trackpad)
 // is disabled for the PDF viewer. This prevents the viewer's controls from
 // being scaled off screen (see crbug.com/676668).
@@ -1332,6 +1368,51 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, SmartZoomDisabled) {
   EXPECT_TRUE(browser()->PreHandleGestureEvent(GetActiveWebContents(),
                                                smart_zoom_event));
 }
+
+// Ensure that Mac trackpad pinch events are handled by the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TrackpadPinchInvokesCustomZoom) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  base::OnceClosure send_pinch = base::BindOnce(
+      [](WebContents* guest_contents) {
+        const gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+        const gfx::Point mouse_position(guest_rect.width() / 2,
+                                        guest_rect.height() / 2);
+        content::SimulateGesturePinchSequence(guest_contents, mouse_position,
+                                              1.23,
+                                              blink::kWebGestureDeviceTouchpad);
+      },
+      guest_contents);
+
+  EnsureCustomPinchZoomInvoked(guest_contents, GetActiveWebContents(),
+                               std::move(send_pinch));
+}
+
+#else  // !defined(OS_MACOSX)
+
+// Ensure that ctrl-wheel events are handled by the PDF viewer.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  base::OnceClosure send_ctrl_wheel = base::BindOnce(
+      [](WebContents* guest_contents) {
+        const gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+        const gfx::Point mouse_position(guest_rect.width() / 2,
+                                        guest_rect.height() / 2);
+        content::SimulateMouseWheelCtrlZoomEvent(
+            guest_contents, mouse_position, true,
+            blink::WebMouseWheelEvent::kPhaseBegan);
+      },
+      guest_contents);
+
+  EnsureCustomPinchZoomInvoked(guest_contents, GetActiveWebContents(),
+                               std::move(send_ctrl_wheel));
+}
+
 #endif  // defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ContextMenuCoordinates) {
