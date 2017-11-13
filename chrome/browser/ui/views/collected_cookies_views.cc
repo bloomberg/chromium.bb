@@ -55,10 +55,6 @@
 
 namespace {
 
-// Spacing between the infobar frame and its contents.
-const int kInfobarVerticalPadding = 3;
-const int kInfobarHorizontalPadding = 8;
-
 // Dimensions of the tree views.
 const int kTreeViewWidth = 400;
 const int kTreeViewHeight = 125;
@@ -186,11 +182,22 @@ class InfobarView : public views::View {
   // Initialize contents and layout.
   void Init() {
     AddChildView(content_);
-    content_->SetLayoutManager(new views::BoxLayout(
-        views::BoxLayout::kHorizontal,
-        gfx::Insets(kInfobarVerticalPadding, kInfobarHorizontalPadding),
-        ChromeLayoutProvider::Get()->GetDistanceMetric(
-            DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
+    // The containing dialog content view has no margins so that its
+    // TabbedPane can span the full width of the dialog, but because of
+    // that, InfobarView needs to impose its own horizontal margin.
+    gfx::Insets dialog_insets =
+        ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG);
+    // No top inset is needed because the control above the infobar imposes one,
+    // but the button bar below the infobar has no margin, so a small bottom
+    // inset is needed.
+    gfx::Insets layout_insets(0, dialog_insets.left(),
+                              ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                  DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
+                              dialog_insets.right());
+    content_->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, layout_insets,
+                             ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                 DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
     content_->AddChildView(info_image_);
     content_->AddChildView(label_);
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());
