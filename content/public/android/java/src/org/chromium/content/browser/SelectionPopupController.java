@@ -1184,6 +1184,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @CalledByNative
     private void onShowUnhandledTapUIIfNeeded(int x, int y) {
+        if (x < 0 || y < 0 || mView.getWidth() < x || mView.getHeight() < y) return;
         if (mSelectionClient != null) {
             mSelectionClient.showUnhandledTapUIIfNeeded(x, y);
         }
