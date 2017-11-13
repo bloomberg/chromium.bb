@@ -44,6 +44,8 @@ const char* MainThreadTaskQueue::NameForQueueType(
       return "FrameLoadingControlTQ";
     case MainThreadTaskQueue::QueueType::V8:
       return "V8TQ";
+    case MainThreadTaskQueue::QueueType::IPC:
+      return "IPCTQ";
     case MainThreadTaskQueue::QueueType::OTHER:
       return "OtherTQ";
     case MainThreadTaskQueue::QueueType::COUNT:
@@ -62,6 +64,7 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     case QueueType::IDLE:
     case QueueType::TEST:
     case QueueType::V8:
+    case QueueType::IPC:
       return QueueClass::NONE;
     case QueueType::DEFAULT_LOADING:
     case QueueType::FRAME_LOADING:
