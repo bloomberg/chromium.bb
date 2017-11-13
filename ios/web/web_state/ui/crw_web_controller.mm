@@ -2944,17 +2944,13 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // The wrapper error uses the URL of the error and not the requested URL
     // (which can be different in case of a redirect) to match desktop Chrome
     // behavior.
-    NSError* wrapperError = [NSError
-        errorWithDomain:[error domain]
-                   code:[error code]
+    error = [NSError
+        errorWithDomain:error.domain
+                   code:error.code
                userInfo:@{
-                 NSURLErrorFailingURLStringErrorKey : [errorURL absoluteString],
-                 NSUnderlyingErrorKey : error
+                 NSURLErrorFailingURLStringErrorKey : errorURL.absoluteString,
+                 NSUnderlyingErrorKey : error,
                }];
-    [self loadCompleteWithSuccess:NO forNavigation:navigation];
-    [self loadErrorInNativeView:wrapperError
-              navigationContext:navigationContext];
-    return;
   }
 
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
