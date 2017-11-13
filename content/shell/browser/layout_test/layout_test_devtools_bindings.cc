@@ -50,6 +50,11 @@ class LayoutTestDevToolsBindings::SecondaryObserver
     bindings_ = nullptr;
   }
 
+  // WebContentsObserver implementation.
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    BlinkTestController::Get()->HandleNewRenderFrameHost(render_frame_host);
+  }
+
  private:
   LayoutTestDevToolsBindings* bindings_;
   DISALLOW_COPY_AND_ASSIGN(SecondaryObserver);
@@ -143,12 +148,12 @@ LayoutTestDevToolsBindings::LayoutTestDevToolsBindings(
   SetPreferences(settings);
 
   if (new_harness) {
+    secondary_observer_ = base::MakeUnique<SecondaryObserver>(this);
     NavigationController::LoadURLParams params(
         GetInspectedPageURL(frontend_url));
     params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     inspected_contents->GetController().LoadURLWithParams(params);
-    secondary_observer_ = base::MakeUnique<SecondaryObserver>(this);
   } else {
     NavigateDevToolsFrontend();
   }
