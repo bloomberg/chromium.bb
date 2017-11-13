@@ -71,7 +71,7 @@ instead of "initial value".
 |   <shadow:root>
 |       id="placeholder"
 |       pseudo="-internal-input-suggestedx"
-|       style="display: none !important;"
+|       style="display: block !important;"
 |       shadow:pseudoId="-internal-input-suggested"
 |     <div>
 | <select>

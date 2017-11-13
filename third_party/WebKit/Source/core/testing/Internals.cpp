@@ -1379,6 +1379,35 @@ void Internals::setSuggestedValue(Element* element,
     select->SetSuggestedValue(value);
 }
 
+void Internals::setAutofilledValue(Element* element,
+                                   const String& value,
+                                   ExceptionState& exception_state) {
+  DCHECK(element);
+  if (!element->IsFormControlElement()) {
+    exception_state.ThrowDOMException(
+        kInvalidNodeTypeError,
+        "The element provided is not a form control element.");
+    return;
+  }
+
+  if (auto* input = ToHTMLInputElementOrNull(*element)) {
+    input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
+    input->setValue(value, kDispatchInputAndChangeEvent);
+    input->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
+  }
+
+  if (auto* textarea = ToHTMLTextAreaElementOrNull(*element)) {
+    textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keydown));
+    textarea->setValue(value, kDispatchInputAndChangeEvent);
+    textarea->DispatchScopedEvent(Event::CreateBubble(EventTypeNames::keyup));
+  }
+
+  if (auto* select = ToHTMLSelectElementOrNull(*element))
+    select->setValue(value, kDispatchInputAndChangeEvent);
+
+  ToHTMLFormControlElement(element)->SetAutofilled(true);
+}
+
 void Internals::setEditingValue(Element* element,
                                 const String& value,
                                 ExceptionState& exception_state) {

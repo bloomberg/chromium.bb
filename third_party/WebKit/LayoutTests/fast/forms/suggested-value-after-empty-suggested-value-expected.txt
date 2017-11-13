@@ -118,7 +118,7 @@ Input after setting suggestedValue:
 |     <div>
 |       id="placeholder"
 |       pseudo="-internal-input-suggested"
-|       style="display: none !important;"
+|       style="display: block !important;"
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
