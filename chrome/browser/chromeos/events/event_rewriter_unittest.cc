@@ -1953,6 +1953,67 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
     CheckKeyTestCase(rewriter_, test);
 }
 
+TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
+  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+
+  // Not adding a keyboard simulates a failure in getting top row layout, which
+  // will fallback to Layout1 in which case keys are rewritten to their default
+  // values.
+  KeyTestCase invalid_layout_tests[] = {
+      // F2 -> Forward
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2},
+       {ui::VKEY_BROWSER_FORWARD, ui::DomCode::BROWSER_FORWARD, ui::EF_NONE,
+        ui::DomKey::BROWSER_FORWARD}},
+      // F3 -> Refresh
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
+       {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
+        ui::DomKey::BROWSER_REFRESH}},
+      // F4 -> Launch App 2
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+        ui::DomKey::ZOOM_TOGGLE}},
+      // F7 -> Brightness up
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F7, ui::DomCode::F7, ui::EF_NONE, ui::DomKey::F7},
+       {ui::VKEY_BRIGHTNESS_UP, ui::DomCode::BRIGHTNESS_UP, ui::EF_NONE,
+        ui::DomKey::BRIGHTNESS_UP}}};
+
+  for (const auto& test : invalid_layout_tests)
+    CheckKeyTestCase(rewriter_, test);
+
+  // Adding a keyboard with a valid layout will take effect.
+  rewriter_->KeyboardDeviceAddedForTesting(
+      kKeyboardDeviceId, "PC Keyboard",
+      ui::EventRewriterChromeOS::kKbdTopRowLayout2);
+  KeyTestCase layout2_tests[] = {
+      // F2 -> Refresh
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F2, ui::DomCode::F2, ui::EF_NONE, ui::DomKey::F2},
+       {ui::VKEY_BROWSER_REFRESH, ui::DomCode::BROWSER_REFRESH, ui::EF_NONE,
+        ui::DomKey::BROWSER_REFRESH}},
+      // F3 -> Launch App 2
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F3, ui::DomCode::F3, ui::EF_NONE, ui::DomKey::F3},
+       {ui::VKEY_MEDIA_LAUNCH_APP2, ui::DomCode::ZOOM_TOGGLE, ui::EF_NONE,
+        ui::DomKey::ZOOM_TOGGLE}},
+      // F4 -> Launch App 1
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F4, ui::DomCode::F4, ui::EF_NONE, ui::DomKey::F4},
+       {ui::VKEY_MEDIA_LAUNCH_APP1, ui::DomCode::SELECT_TASK, ui::EF_NONE,
+        ui::DomKey::LAUNCH_MY_COMPUTER}},
+      // F7 -> Media Play/Pause
+      {ui::ET_KEY_PRESSED,
+       {ui::VKEY_F7, ui::DomCode::F7, ui::EF_NONE, ui::DomKey::F7},
+       {ui::VKEY_MEDIA_PLAY_PAUSE, ui::DomCode::MEDIA_PLAY_PAUSE, ui::EF_NONE,
+        ui::DomKey::MEDIA_PLAY_PAUSE}}};
+
+  for (const auto& test : layout2_tests)
+    CheckKeyTestCase(rewriter_, test);
+}
+
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithSearchRemapped) {
   // Remap Search to Control.
   chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());

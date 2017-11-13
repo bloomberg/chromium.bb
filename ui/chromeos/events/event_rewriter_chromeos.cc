@@ -274,15 +274,15 @@ EventRewriterChromeOS::EventRewriterChromeOS(
 
 EventRewriterChromeOS::~EventRewriterChromeOS() {}
 
-EventRewriterChromeOS::DeviceType
-EventRewriterChromeOS::KeyboardDeviceAddedForTesting(
+void EventRewriterChromeOS::KeyboardDeviceAddedForTesting(
     int device_id,
     const std::string& device_name,
     KeyboardTopRowLayout layout) {
   // Tests must avoid XI2 reserved device IDs.
   DCHECK((device_id < 0) || (device_id > 1));
-  return KeyboardDeviceAddedInternal(device_id, device_name, kUnknownVendorId,
-                                     kUnknownProductId, layout);
+  KeyboardDeviceAddedInternal(
+      device_id,
+      GetDeviceType(device_name, kUnknownVendorId, kUnknownProductId), layout);
 }
 
 void EventRewriterChromeOS::RewriteMouseButtonEventForTesting(
@@ -346,36 +346,40 @@ void EventRewriterChromeOS::BuildRewrittenKeyEvent(
 }
 
 // static
-EventRewriterChromeOS::KeyboardTopRowLayout
-EventRewriterChromeOS::GetKeyboardTopRowLayout(
-    const base::FilePath& device_path) {
+bool EventRewriterChromeOS::GetKeyboardTopRowLayout(
+    const base::FilePath& device_path,
+    KeyboardTopRowLayout* out_layout) {
   device::ScopedUdevPtr udev(device::udev_new());
   if (!udev.get())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+    return false;
 
   device::ScopedUdevDevicePtr device(device::udev_device_new_from_syspath(
       udev.get(), device_path.value().c_str()));
   if (!device.get())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+    return false;
 
   const char kLayoutProperty[] = "CROS_KEYBOARD_TOP_ROW_LAYOUT";
   std::string layout =
       device::UdevDeviceGetPropertyValue(device.get(), kLayoutProperty);
-  if (layout.empty())
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+  if (layout.empty()) {
+    *out_layout = EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+    return true;
+  }
 
   int layout_id;
   if (!base::StringToInt(layout, &layout_id)) {
     LOG(WARNING) << "Failed to parse " << kLayoutProperty << " value '"
                  << layout << "'";
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+    return false;
   }
   if (layout_id < EventRewriterChromeOS::kKbdTopRowLayoutMin ||
       layout_id > EventRewriterChromeOS::kKbdTopRowLayoutMax) {
     LOG(WARNING) << "Invalid " << kLayoutProperty << " '" << layout << "'";
-    return EventRewriterChromeOS::kKbdTopRowLayoutDefault;
+    return false;
   }
-  return static_cast<EventRewriterChromeOS::KeyboardTopRowLayout>(layout_id);
+  *out_layout =
+      static_cast<EventRewriterChromeOS::KeyboardTopRowLayout>(layout_id);
+  return true;
 }
 
 void EventRewriterChromeOS::DeviceKeyPressedOrReleased(int device_id) {
@@ -1165,32 +1169,13 @@ int EventRewriterChromeOS::RewriteModifierClick(
   return ui::EF_NONE;
 }
 
-EventRewriterChromeOS::DeviceType
-EventRewriterChromeOS::KeyboardDeviceAddedInternal(
+void EventRewriterChromeOS::KeyboardDeviceAddedInternal(
     int device_id,
-    const std::string& device_name,
-    int vendor_id,
-    int product_id,
+    DeviceType type,
     KeyboardTopRowLayout layout) {
-  const DeviceType type = GetDeviceType(device_name, vendor_id, product_id);
-  if (type == kDeviceAppleKeyboard) {
-    VLOG(1) << "Apple keyboard '" << device_name << "' connected: "
-            << "id=" << device_id;
-  } else if (type == kDeviceHotrodRemote) {
-    VLOG(1) << "Hotrod remote '" << device_name << "' connected: "
-            << "id=" << device_id;
-  } else if (type == kDeviceVirtualCoreKeyboard) {
-    VLOG(1) << "Xorg virtual '" << device_name << "' connected: "
-            << "id=" << device_id;
-  } else {
-    VLOG(1) << "Unknown keyboard '" << device_name << "' connected: "
-            << "id=" << device_id;
-  }
-
   // Always overwrite the existing device_id since the X server may reuse a
   // device id for an unattached device.
   device_id_to_info_[device_id] = {type, layout};
-  return type;
 }
 
 EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
@@ -1201,9 +1186,32 @@ EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices();
   for (const auto& keyboard : keyboard_devices) {
     if (keyboard.id == device_id) {
-      return KeyboardDeviceAddedInternal(
-          keyboard.id, keyboard.name, keyboard.vendor_id, keyboard.product_id,
-          GetKeyboardTopRowLayout(keyboard.sys_path));
+      const DeviceType type =
+          GetDeviceType(keyboard.name, keyboard.vendor_id, keyboard.product_id);
+      if (type == kDeviceAppleKeyboard) {
+        VLOG(1) << "Apple keyboard '" << keyboard.name << "' connected: "
+                << "id=" << device_id;
+      } else if (type == kDeviceHotrodRemote) {
+        VLOG(1) << "Hotrod remote '" << keyboard.name << "' connected: "
+                << "id=" << device_id;
+      } else if (type == kDeviceVirtualCoreKeyboard) {
+        VLOG(1) << "Xorg virtual '" << keyboard.name << "' connected: "
+                << "id=" << device_id;
+      } else {
+        VLOG(1) << "Unknown keyboard '" << keyboard.name << "' connected: "
+                << "id=" << device_id;
+      }
+
+      KeyboardTopRowLayout layout;
+      if (GetKeyboardTopRowLayout(keyboard.sys_path, &layout)) {
+        // Don't store a device info when an error occurred while reading from
+        // udev. This gives a chance to reattempt reading from udev on
+        // subsequent key events, rather than being stuck in a bad state until
+        // next reboot. crbug.com/783166.
+        KeyboardDeviceAddedInternal(keyboard.id, type, layout);
+      }
+
+      return type;
     }
   }
   return kDeviceUnknown;
