@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugins/plugin_info_message_filter.h"
+#include "chrome/browser/plugins/plugin_info_host_impl.h"
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -87,9 +87,9 @@ bool FakePluginServiceFilter::CanLoadPlugin(int render_process_id,
 
 }  // namespace
 
-class PluginInfoMessageFilterTest : public ::testing::Test {
+class PluginInfoHostImplTest : public ::testing::Test {
  public:
-  PluginInfoMessageFilterTest()
+  PluginInfoHostImplTest()
       : foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
         bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
         fake_flash_path_(FILE_PATH_LITERAL("/path/to/fake/flash")),
@@ -99,8 +99,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
 
   void SetUp() override {
     content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plugin"),
-                                      foo_plugin_path_,
-                                      base::ASCIIToUTF16("1"),
+                                      foo_plugin_path_, base::ASCIIToUTF16("1"),
                                       base::ASCIIToUTF16("The Foo plugin."));
     content::WebPluginMimeType mime_type;
     mime_type.mime_type = "foo/bar";
@@ -110,8 +109,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
 
     content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plugin"),
-                                      bar_plugin_path_,
-                                      base::ASCIIToUTF16("1"),
+                                      bar_plugin_path_, base::ASCIIToUTF16("1"),
                                       base::ASCIIToUTF16("The Bar plugin."));
     mime_type.mime_type = "foo/bar";
     bar_plugin.mime_types.push_back(mime_type);
@@ -143,21 +141,18 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   }
 
  protected:
-  TestingProfile* profile() {
-    return &profile_;
-  }
+  TestingProfile* profile() { return &profile_; }
 
-  PluginInfoMessageFilter::Context* context() {
-    return &context_;
-  }
+  PluginInfoHostImpl::Context* context() { return &context_; }
 
   void VerifyPluginContentSetting(const GURL& url,
                                   const std::string& plugin,
                                   ContentSetting expected_setting,
                                   bool expected_is_default,
                                   bool expected_is_managed) {
-    ContentSetting setting = expected_setting == CONTENT_SETTING_DEFAULT ?
-        CONTENT_SETTING_BLOCK : CONTENT_SETTING_DEFAULT;
+    ContentSetting setting = expected_setting == CONTENT_SETTING_DEFAULT
+                                 ? CONTENT_SETTING_BLOCK
+                                 : CONTENT_SETTING_DEFAULT;
     bool is_default = !expected_is_default;
     bool is_managed = !expected_is_managed;
 
@@ -183,11 +178,11 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   base::ShadowingAtExitManager at_exit_manager_;  // Destroys the PluginService.
   content::TestBrowserThreadBundle test_thread_bundle;
   TestingProfile profile_;
-  PluginInfoMessageFilter::Context context_;
+  PluginInfoHostImpl::Context context_;
   HostContentSettingsMap* host_content_settings_map_;
 };
 
-TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
+TEST_F(PluginInfoHostImplTest, FindEnabledPlugin) {
   filter_.set_plugin_enabled(foo_plugin_path_, true);
   filter_.set_plugin_enabled(bar_plugin_path_, true);
   {
@@ -238,7 +233,7 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
   }
 }
 
-TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
+TEST_F(PluginInfoHostImplTest, PreferHtmlOverPlugins) {
   // The HTML5 By Default feature hides Flash using the plugin filter.
   filter_.set_plugin_enabled(fake_flash_path_, false);
 
@@ -273,7 +268,7 @@ TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
   EXPECT_EQ(chrome::mojom::PluginStatus::kBlockedNoLoading, status);
 }
 
-TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
+TEST_F(PluginInfoHostImplTest, RunAllFlashInAllowMode) {
   filter_.set_plugin_enabled(fake_flash_path_, true);
 
   // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
@@ -315,7 +310,7 @@ TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
   EXPECT_THAT(status, Eq(chrome::mojom::PluginStatus::kAllowed));
 }
 
-TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
+TEST_F(PluginInfoHostImplTest, GetPluginContentSetting) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
 
@@ -325,9 +320,9 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
 
   // Set plugins to Plugin Power Saver on example.com and subdomains.
   GURL host("http://example.com/");
-  map->SetContentSettingDefaultScope(host, GURL(),
-                         CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-                         CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  map->SetContentSettingDefaultScope(
+      host, GURL(), CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
+      CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   // Allow plugin "foo" on all sites.
   map->SetContentSettingCustomScope(
@@ -335,16 +330,19 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
       CONTENT_SETTINGS_TYPE_PLUGINS, "foo", CONTENT_SETTING_ALLOW);
 
   GURL unmatched_host("https://www.google.com");
-  ASSERT_EQ(CONTENT_SETTING_BLOCK, map->GetContentSetting(
-      unmatched_host, unmatched_host, CONTENT_SETTINGS_TYPE_PLUGINS,
-      std::string()));
+  ASSERT_EQ(
+      CONTENT_SETTING_BLOCK,
+      map->GetContentSetting(unmatched_host, unmatched_host,
+                             CONTENT_SETTINGS_TYPE_PLUGINS, std::string()));
   ASSERT_EQ(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT,
             map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
                                    std::string()));
-  ASSERT_EQ(CONTENT_SETTING_ALLOW, map->GetContentSetting(
-      host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "foo"));
-  ASSERT_EQ(CONTENT_SETTING_DEFAULT, map->GetContentSetting(
-      host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "bar"));
+  ASSERT_EQ(
+      CONTENT_SETTING_ALLOW,
+      map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "foo"));
+  ASSERT_EQ(
+      CONTENT_SETTING_DEFAULT,
+      map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_PLUGINS, "bar"));
 
   // "foo" is allowed everywhere.
   VerifyPluginContentSetting(host, "foo", CONTENT_SETTING_ALLOW, false, false);
@@ -355,8 +353,8 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
       host, "bar", CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, false, false);
 
   // Otherwise, use the default.
-  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK,
-                             true, false);
+  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK, true,
+                             false);
 
   // Block plugins via policy.
   sync_preferences::TestingPrefServiceSyncable* prefs =
@@ -367,6 +365,6 @@ TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {
   // All plugins should be blocked now.
   VerifyPluginContentSetting(host, "foo", CONTENT_SETTING_BLOCK, true, true);
   VerifyPluginContentSetting(host, "bar", CONTENT_SETTING_BLOCK, true, true);
-  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK,
-                             true, true);
+  VerifyPluginContentSetting(unmatched_host, "bar", CONTENT_SETTING_BLOCK, true,
+                             true);
 }

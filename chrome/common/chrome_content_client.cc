@@ -248,18 +248,18 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                          kWidevineCdmPluginMimeTypeDescription);
 
     // Put codec support string in additional param.
-    mime_type.additional_param_names.push_back(
-        base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
-    mime_type.additional_param_values.push_back(base::ASCIIToUTF16(
-        base::JoinString(codecs_supported,
-                         std::string(1, kCdmSupportedCodecsValueDelimiter))));
+    mime_type.additional_params.emplace_back(
+        base::ASCIIToUTF16(kCdmSupportedCodecsParamName),
+        base::ASCIIToUTF16(base::JoinString(
+            codecs_supported,
+            std::string(1, kCdmSupportedCodecsValueDelimiter))));
 
     // Put persistent license support string in additional param.
-    mime_type.additional_param_names.push_back(
-        base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName));
-    mime_type.additional_param_values.push_back(base::ASCIIToUTF16(
-        is_persistent_license_supported ? kCdmFeatureSupported
-                                        : kCdmFeatureNotSupported));
+    mime_type.additional_params.emplace_back(
+        base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName),
+        base::ASCIIToUTF16(is_persistent_license_supported
+                               ? kCdmFeatureSupported
+                               : kCdmFeatureNotSupported));
 
     info.mime_types.push_back(mime_type);
 

@@ -151,17 +151,16 @@ bool MakeWidevineCdmPluginInfo(const base::Version& version,
       kWidevineCdmPluginMimeTypeDescription);
 
   // Put codec support string in additional param.
-  widevine_cdm_mime_type.additional_param_names.push_back(
-      base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
-  widevine_cdm_mime_type.additional_param_values.push_back(
+  widevine_cdm_mime_type.additional_params.emplace_back(
+      base::ASCIIToUTF16(kCdmSupportedCodecsParamName),
       base::ASCIIToUTF16(codecs));
 
   // Put persistent license support string in additional param.
-  widevine_cdm_mime_type.additional_param_names.push_back(
-      base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName));
-  widevine_cdm_mime_type.additional_param_values.push_back(base::ASCIIToUTF16(
-      is_persistent_license_supported ? kCdmFeatureSupported
-                                      : kCdmFeatureNotSupported));
+  widevine_cdm_mime_type.additional_params.emplace_back(
+      base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName),
+      base::ASCIIToUTF16(is_persistent_license_supported
+                             ? kCdmFeatureSupported
+                             : kCdmFeatureNotSupported));
 
   plugin_info->mime_types.push_back(widevine_cdm_mime_type);
   plugin_info->permissions = kWidevineCdmPluginPermissions;

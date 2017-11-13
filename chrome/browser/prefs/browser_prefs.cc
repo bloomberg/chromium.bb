@@ -148,7 +148,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugin_info_message_filter.h"
+#include "chrome/browser/plugins/plugin_info_host_impl.h"
 #include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
@@ -522,7 +522,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  PluginInfoMessageFilter::RegisterUserPrefs(registry);
+  PluginInfoHostImpl::RegisterUserPrefs(registry);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
