@@ -241,6 +241,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer> observers_;
 
+  // Stores information about in-progress download items.
+  std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
+
   // The current active browser context.
   BrowserContext* browser_context_;
 

@@ -38,6 +38,10 @@ bool DownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
 
+download::InProgressCache* DownloadManagerDelegate::GetInProgressCache() {
+  return nullptr;
+}
+
 std::string
 DownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
   return std::string();

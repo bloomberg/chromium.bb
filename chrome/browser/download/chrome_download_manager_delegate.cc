@@ -47,6 +47,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -215,11 +216,16 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(content::DownloadItem::kInvalidId),
       download_prefs_(new DownloadPrefs(profile)),
-      check_for_file_existence_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BACKGROUND,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      weak_ptr_factory_(this) {}
+      disk_access_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      weak_ptr_factory_(this) {
+  DCHECK(!profile_->GetPath().empty());
+  base::FilePath metadata_cache_file =
+      profile_->GetPath().Append(chrome::kDownloadMetadataStoreFilename);
+  download_metadata_cache_.reset(new download::InProgressCache(
+      metadata_cache_file, disk_access_task_runner_));
+}
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
   // If a DownloadManager was set for this, Shutdown() must be called.
@@ -496,6 +502,12 @@ void ChromeDownloadManagerDelegate::ChooseSavePath(
       callback);
 }
 
+download::InProgressCache* ChromeDownloadManagerDelegate::GetInProgressCache() {
+  // TODO(crbug.com/778425): Make sure the cache is initialized.
+  DCHECK(download_metadata_cache_ != nullptr);
+  return download_metadata_cache_.get();
+}
+
 void ChromeDownloadManagerDelegate::SanitizeSavePackageResourceName(
     base::FilePath* filename) {
   safe_browsing::FileTypePolicies* file_type_policies =
@@ -594,7 +606,7 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
   }
 #endif
   base::PostTaskAndReplyWithResult(
-      check_for_file_existence_task_runner_.get(), FROM_HERE,
+      disk_access_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::PathExists, download->GetTargetFilePath()),
       std::move(callback));
 }

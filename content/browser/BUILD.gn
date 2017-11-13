@@ -40,6 +40,7 @@ source_set("browser") {
     "//cc/paint",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
+    "//components/download/downloader/in_progress",
     "//components/filesystem:lib",
     "//components/leveldb:lib",
     "//components/link_header_util",
