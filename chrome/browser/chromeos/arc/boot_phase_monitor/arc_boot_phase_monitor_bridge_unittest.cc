@@ -10,7 +10,6 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -19,6 +18,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/browser_sync/profile_sync_test_util.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,7 +29,8 @@ namespace {
 class ArcBootPhaseMonitorBridgeTest : public testing::Test {
  public:
   ArcBootPhaseMonitorBridgeTest()
-      : user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
+      : user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()) {}
   ~ArcBootPhaseMonitorBridgeTest() override = default;
 
   void SetUp() override {
@@ -117,7 +118,7 @@ class ArcBootPhaseMonitorBridgeTest : public testing::Test {
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcBootPhaseMonitorBridge> boot_phase_monitor_bridge_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   size_t disable_cpu_restriction_counter_;
   size_t record_uma_counter_;

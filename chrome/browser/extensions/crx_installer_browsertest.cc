@@ -61,9 +61,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 class SkBitmap;
@@ -747,7 +747,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, KioskOnlyTest) {
   const AccountId account_id(AccountId::FromUserEmail("example@example.com"));
   fake_user_manager->AddKioskAppUser(account_id);
   fake_user_manager->LoginUser(account_id);
-  chromeos::ScopedUserManagerEnabler scoped_user_manager(fake_user_manager);
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
   EXPECT_TRUE(InstallExtension(crx_path, 1));
 }
 

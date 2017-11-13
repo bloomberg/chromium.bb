@@ -28,9 +28,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 namespace extensions {
@@ -118,8 +118,9 @@ class UpdateInstallGateTest : public testing::Test {
     // Needed to allow ChromeProcessManagerDelegate to allow background pages.
     fake_user_manager_ = new chromeos::FakeChromeUserManager();
     // Takes ownership of fake_user_manager_.
-    scoped_user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
+    scoped_user_manager_enabler_ =
+        std::make_unique<user_manager::ScopedUserManager>(
+            base::WrapUnique(fake_user_manager_));
     fake_user_manager_->AddUser(account_id);
     fake_user_manager_->LoginUser(account_id);
 #endif
@@ -216,8 +217,7 @@ class UpdateInstallGateTest : public testing::Test {
 #if defined(OS_CHROMEOS)
   // Needed for creating ExtensionService.
   chromeos::FakeChromeUserManager* fake_user_manager_ = nullptr;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler>
-      scoped_user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
 #endif
 
   std::unique_ptr<UpdateInstallGate> delayer_;

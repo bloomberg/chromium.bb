@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/common/extensions/api/gcm.h"
@@ -24,6 +23,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/browser/extension_host.h"
@@ -45,7 +45,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
       : power_manager_client_(new FakePowerManagerClient()),
         test_screen_(aura::TestScreen::Create(gfx::Size())),
         fake_user_manager_(new FakeChromeUserManager()),
-        scoped_user_manager_enabler_(fake_user_manager_) {
+        scoped_user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
     DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
         base::WrapUnique(power_manager_client_));
 
@@ -151,7 +151,7 @@ class ExtensionEventObserverTest : public ::testing::Test {
 
   // Owned by |scoped_user_manager_enabler_|.
   FakeChromeUserManager* fake_user_manager_;
-  ScopedUserManagerEnabler scoped_user_manager_enabler_;
+  user_manager::ScopedUserManager scoped_user_manager_enabler_;
 
   std::vector<scoped_refptr<extensions::Extension>> created_apps_;
 

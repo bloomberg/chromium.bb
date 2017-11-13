@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -25,6 +24,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_session.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -45,8 +45,8 @@ std::string ArcAppTest::GetAppId(const arc::mojom::ShortcutInfo& shortcut) {
 }
 
 ArcAppTest::ArcAppTest() {
-  user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-      new chromeos::FakeChromeUserManager()));
+  user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+      std::make_unique<chromeos::FakeChromeUserManager>());
   CreateFakeAppsAndPackages();
 }
 

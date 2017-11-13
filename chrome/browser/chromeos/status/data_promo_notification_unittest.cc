@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -19,6 +18,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -96,8 +96,8 @@ class DataPromoNotificationTest : public testing::Test {
     const AccountId test_account_id(AccountId::FromUserEmail(kTestUserName));
     user_manager->AddUser(test_account_id);
     user_manager->LoginUser(test_account_id);
-    user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(user_manager.release()));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -147,7 +147,7 @@ class DataPromoNotificationTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
-  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:

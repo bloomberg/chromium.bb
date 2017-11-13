@@ -25,10 +25,10 @@ class FakeAppInstance;
 
 namespace chromeos {
 class FakeChromeUserManager;
-class ScopedUserManagerEnabler;
 }
 
 namespace user_manager {
+class ScopedUserManager;
 class User;
 }
 
@@ -109,7 +109,7 @@ class ArcAppTest {
       arc_play_store_enabled_preference_handler_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
 
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::vector<arc::mojom::AppInfo> fake_apps_;
   std::vector<arc::mojom::AppInfo> fake_default_apps_;
   std::vector<arc::mojom::ArcPackageInfo> fake_packages_;

@@ -24,11 +24,11 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/chromeos/test/touch_device_manager_test_api.h"
@@ -96,8 +96,7 @@ class DisplayPreferencesTest : public ash::AshTestBase {
  protected:
   DisplayPreferencesTest()
       : mock_user_manager_(new MockUserManager),
-        user_manager_enabler_(mock_user_manager_) {
-  }
+        user_manager_enabler_(base::WrapUnique(mock_user_manager_)) {}
 
   ~DisplayPreferencesTest() override {}
 
@@ -242,7 +241,7 @@ class DisplayPreferencesTest : public ash::AshTestBase {
 
  private:
   MockUserManager* mock_user_manager_;  // Not owned.
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   TestingPrefServiceSimple local_state_;
   std::unique_ptr<ash::WindowTreeHostManager::Observer> observer_;
 

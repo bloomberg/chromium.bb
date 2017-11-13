@@ -17,12 +17,9 @@
 class AccountId;
 class PrefService;
 
-namespace chromeos {
-class ScopedUserManagerEnabler;
-}
-
 namespace user_manager {
 
+class ScopedUserManager;
 class RemoveUserDelegate;
 
 // Interface for UserManagerBase - that provides base implementation for
@@ -414,7 +411,7 @@ class USER_MANAGER_EXPORT UserManager {
   static UserManager* instance;
 
  private:
-  friend class chromeos::ScopedUserManagerEnabler;
+  friend class ScopedUserManager;
 
   // Same as Get() but doesn't won't crash is current instance is NULL.
   static UserManager* GetForTesting();

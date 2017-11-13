@@ -35,7 +35,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 namespace {
@@ -92,9 +92,8 @@ class SiteSettingsHandlerTest : public testing::Test {
             CONTENT_SETTINGS_TYPE_COOKIES)),
         handler_(&profile_) {
 #if defined(OS_CHROMEOS)
-    mock_user_manager_ = new chromeos::MockUserManager;
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(mock_user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::MockUserManager>());
 #endif
   }
 
@@ -286,8 +285,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
   SiteSettingsHandler handler_;
 #if defined(OS_CHROMEOS)
-  chromeos::MockUserManager* mock_user_manager_;  // Not owned.
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
 };
 

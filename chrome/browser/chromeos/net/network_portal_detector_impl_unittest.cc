@@ -11,13 +11,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,6 +32,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/object_path.h"
@@ -84,7 +85,8 @@ class NetworkPortalDetectorImplTest
     cl->AppendSwitch(switches::kDisableNetworkPortalNotification);
 
     FakeChromeUserManager* user_manager = new FakeChromeUserManager();
-    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager));
 
     DBusThreadManager::Initialize();
     base::StatisticsRecorder::Initialize();
@@ -296,7 +298,7 @@ class NetworkPortalDetectorImplTest
   Profile* profile_ = nullptr;
   std::unique_ptr<NetworkPortalDetectorImpl> network_portal_detector_;
   std::unique_ptr<base::HistogramSamples> original_samples_;
-  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   TestingProfileManager test_profile_manager_;
 };
 

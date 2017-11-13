@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -57,6 +56,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -282,7 +282,7 @@ class DeviceStatusCollectorTest : public testing::Test {
                 "device_id")),
         settings_helper_(false),
         user_manager_(new chromeos::MockUserManager()),
-        user_manager_enabler_(user_manager_),
+        user_manager_enabler_(base::WrapUnique(user_manager_)),
         got_session_status_(false),
         fake_device_local_account_(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
                                    kKioskAccountId,
@@ -505,7 +505,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   // Only set after MockRunningKioskApp was called.
   std::unique_ptr<TestingProfile> testing_profile_;
   chromeos::MockUserManager* const user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   em::DeviceStatusReportRequest device_status_;
   em::SessionStatusReportRequest session_status_;
   bool got_session_status_;

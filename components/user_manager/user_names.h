@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_LOGIN_USER_NAMES_H_
-#define CHROMEOS_LOGIN_USER_NAMES_H_
+#ifndef COMPONENTS_USER_MANAGER_USER_NAMES_H_
+#define COMPONENTS_USER_MANAGER_USER_NAMES_H_
 
 #include <string>
 
@@ -46,4 +46,4 @@ USER_MANAGER_EXPORT const AccountId& DemoAccountId();
 
 }  // namespace user_manager
 
-#endif  // CHROMEOS_LOGIN_USER_NAMES_H_
+#endif  // COMPONENTS_USER_MANAGER_USER_NAMES_H_

@@ -9,15 +9,16 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +45,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
       : version_updater_(VersionUpdater::Create(nullptr)),
         fake_update_engine_client_(NULL),
         mock_user_manager_(new MockUserManager()),
-        user_manager_enabler_(mock_user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(mock_user_manager_)) {}
 
   ~VersionUpdaterCrosTest() override {}
 
@@ -100,7 +101,7 @@ class VersionUpdaterCrosTest : public ::testing::Test {
   FakeUpdateEngineClient* fake_update_engine_client_;  // Not owned.
 
   MockUserManager* mock_user_manager_;  // Not owned.
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCrosTest);
 };

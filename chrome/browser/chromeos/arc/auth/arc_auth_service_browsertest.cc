@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -39,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,9 +91,8 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
@@ -178,7 +177,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   Profile* profile() { return profile_.get(); }
 
  private:
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
 

@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -25,6 +24,7 @@
 #include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,7 +49,8 @@ class MockArcProvisionNotificationServiceDelegate
 class ArcProvisionNotificationServiceTest : public testing::Test {
  protected:
   ArcProvisionNotificationServiceTest()
-      : user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
+      : user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()) {}
 
   void SetUp() override {
     chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
@@ -119,7 +120,7 @@ class ArcProvisionNotificationServiceTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;

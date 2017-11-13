@@ -6,11 +6,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/arc/arc_bridge_service.h"
@@ -21,6 +21,7 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -131,8 +132,8 @@ class ArcPolicyBridgeTest : public testing::Test {
     // Setting up user profile for ReportCompliance() tests.
     chromeos::FakeChromeUserManager* const fake_user_manager =
         new chromeos::FakeChromeUserManager();
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(fake_user_manager);
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager));
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId("user@gmail.com", "1111111111"));
     fake_user_manager->AddUser(account_id);
@@ -160,7 +161,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestServiceManagerContext service_manager_context_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::RunLoop run_loop_;
   TestingProfile* profile_;

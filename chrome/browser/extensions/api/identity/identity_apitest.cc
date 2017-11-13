@@ -18,9 +18,9 @@
 #include "components/prefs/pref_service.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "extensions/common/extension_builder.h"
 #endif
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -1883,7 +1883,8 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonWhitelisted) {
   // GetAuthToken() should return UserNotSignedIn in public sessions for
   // non-whitelisted extensions.
-  chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager_);
+  user_manager::ScopedUserManager user_manager_enabler(
+      base::WrapUnique(user_manager_));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateTestExtension("test-id"));
   std::string error = utils::RunFunctionAndReturnError(
@@ -1895,7 +1896,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonWhitelisted) {
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
   // GetAuthToken() should return a token for whitelisted extensions.
-  chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager_);
+  user_manager::ScopedUserManager user_manager_enabler(
+      base::WrapUnique(user_manager_));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateTestExtension("ljacajndfccfgnfohlgkdphmbnpkjflk"));
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);

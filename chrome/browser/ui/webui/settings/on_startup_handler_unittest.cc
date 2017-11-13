@@ -7,11 +7,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -48,8 +49,8 @@ class OnStartupHandlerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     chromeos::FakeChromeUserManager* fake_user_manager =
         new chromeos::FakeChromeUserManager;
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(fake_user_manager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager));
     constexpr char kFakeEmail[] = "fake_id@gmail.com";
     profile_ = profile_manager_.CreateTestingProfile(kFakeEmail);
     fake_user_manager->AddUser(AccountId::FromUserEmail(kFakeEmail));
@@ -71,7 +72,7 @@ class OnStartupHandlerTest : public testing::Test {
   std::unique_ptr<TestOnStartupHandler> handler_;
   Profile* profile_;
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
   content::TestWebUI web_ui_;
 };

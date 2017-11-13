@@ -1122,8 +1122,6 @@ source_set("chromeos") {
     "login/users/multi_profile_user_controller_delegate.h",
     "login/users/scoped_test_user_manager.cc",
     "login/users/scoped_test_user_manager.h",
-    "login/users/scoped_user_manager_enabler.cc",
-    "login/users/scoped_user_manager_enabler.h",
     "login/users/supervised_user_manager.h",
     "login/users/supervised_user_manager_impl.cc",
     "login/users/supervised_user_manager_impl.h",

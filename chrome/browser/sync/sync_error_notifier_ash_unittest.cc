@@ -10,7 +10,6 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,6 +20,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
@@ -147,8 +147,8 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
 // Test that SyncErrorNotifier shows an notification if a passphrase is
 // required.
 TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
-  chromeos::ScopedUserManagerEnabler scoped_enabler(
-      new chromeos::MockUserManager());
+  user_manager::ScopedUserManager scoped_enabler(
+      std::make_unique<chromeos::MockUserManager>());
   ASSERT_FALSE(notification_ui_manager_->FindById(
       kNotificationId, NotificationUIManager::GetProfileID(profile_)));
 

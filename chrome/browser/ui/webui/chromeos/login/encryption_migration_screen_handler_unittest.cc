@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
@@ -24,6 +23,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,7 +119,8 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
     // Set up a MockUserManager.
     MockUserManager* mock_user_manager = new NiceMock<MockUserManager>();
     scoped_user_manager_enabler_ =
-        base::MakeUnique<ScopedUserManagerEnabler>(mock_user_manager);
+        std::make_unique<user_manager::ScopedUserManager>(
+            base::WrapUnique(mock_user_manager));
 
     // This is used by EncryptionMigrationScreenHandler to mount the existing
     // cryptohome. Ownership of mock_homedir_methods_ is transferred to
@@ -219,7 +220,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
   // Must be the first member.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  std::unique_ptr<ScopedUserManagerEnabler> scoped_user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   cryptohome::MockHomedirMethods* mock_homedir_methods_ = nullptr;
   FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_ = nullptr;

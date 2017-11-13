@@ -7,14 +7,15 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -107,8 +108,9 @@ class FileSystemApiConsentProviderTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()->SetLocalState(
         testing_pref_service_.get());
     user_manager_ = new chromeos::FakeChromeUserManager;
-    scoped_user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(user_manager_));
+    scoped_user_manager_enabler_ =
+        std::make_unique<user_manager::ScopedUserManager>(
+            base::WrapUnique(user_manager_));
   }
 
   void TearDown() override {
@@ -123,8 +125,7 @@ class FileSystemApiConsentProviderTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> testing_pref_service_;
   chromeos::FakeChromeUserManager*
       user_manager_;  // Owned by the scope enabler.
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler>
-      scoped_user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 

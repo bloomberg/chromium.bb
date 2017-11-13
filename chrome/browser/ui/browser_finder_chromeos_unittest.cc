@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 
 namespace test {
@@ -32,7 +33,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
   BrowserFinderChromeOSTest()
       : multi_user_window_manager_(nullptr),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   TestingProfile* CreateMultiUserProfile(const AccountId& account_id) {
     TestingProfile* profile =
@@ -97,7 +98,7 @@ class BrowserFinderChromeOSTest : public BrowserWithTestWindowTest {
 
   // |fake_user_manager_| is owned by |user_manager_enabler_|
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFinderChromeOSTest);
 };

@@ -6,8 +6,8 @@
 
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,9 +60,8 @@ class ArcSupportHostTest : public testing::Test {
   ~ArcSupportHostTest() override = default;
 
   void SetUp() override {
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
 
     profile_ = std::make_unique<TestingProfile>();
     support_host_ = std::make_unique<ArcSupportHost>(profile_.get());
@@ -115,7 +114,7 @@ class ArcSupportHostTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcSupportHost> support_host_;
   std::unique_ptr<FakeArcSupport> fake_arc_support_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   std::unique_ptr<MockAuthDelegate> auth_delegate_;
   std::unique_ptr<MockTermsOfServiceDelegate> tos_delegate_;

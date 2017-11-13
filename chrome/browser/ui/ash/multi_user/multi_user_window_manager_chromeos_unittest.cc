@@ -23,12 +23,12 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
@@ -46,6 +46,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
@@ -148,7 +149,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   MultiUserWindowManagerChromeOSTest()
       : multi_user_window_manager_(NULL),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   void SetUp() override;
   void TearDown() override;
@@ -293,7 +294,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;

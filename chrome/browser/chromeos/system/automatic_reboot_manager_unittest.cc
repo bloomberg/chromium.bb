@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,7 +23,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -32,6 +32,7 @@
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -204,7 +205,7 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
 
   TestingPrefServiceSimple local_state_;
   MockUserManager* mock_user_manager_;  // Not owned.
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   FakePowerManagerClient* power_manager_client_ = nullptr;  // Not owned.
   FakeUpdateEngineClient* update_engine_client_ = nullptr;  // Not owned.
@@ -305,7 +306,7 @@ AutomaticRebootManagerBasicTest::AutomaticRebootManagerBasicTest()
       reset_main_thread_task_runner_(
           base::ThreadTaskRunnerHandle::OverrideForTesting(task_runner_)),
       mock_user_manager_(new MockUserManager),
-      user_manager_enabler_(mock_user_manager_) {}
+      user_manager_enabler_(base::WrapUnique(mock_user_manager_)) {}
 
 AutomaticRebootManagerBasicTest::~AutomaticRebootManagerBasicTest() {
 }

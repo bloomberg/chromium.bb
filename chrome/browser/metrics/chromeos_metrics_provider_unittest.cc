@@ -7,13 +7,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -137,7 +138,8 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileUserCount) {
   // |scoped_enabler| takes over the lifetime of |user_manager|.
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
-  chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
+  user_manager::ScopedUserManager scoped_enabler(
+      base::WrapUnique(user_manager));
   user_manager->AddKioskAppUser(account_id1);
   user_manager->AddKioskAppUser(account_id2);
   user_manager->AddKioskAppUser(account_id3);
@@ -160,7 +162,8 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
   // |scoped_enabler| takes over the lifetime of |user_manager|.
   chromeos::FakeChromeUserManager* user_manager =
       new chromeos::FakeChromeUserManager();
-  chromeos::ScopedUserManagerEnabler scoped_enabler(user_manager);
+  user_manager::ScopedUserManager scoped_enabler(
+      base::WrapUnique(user_manager));
   user_manager->AddKioskAppUser(account_id1);
   user_manager->AddKioskAppUser(account_id2);
   user_manager->AddKioskAppUser(account_id3);

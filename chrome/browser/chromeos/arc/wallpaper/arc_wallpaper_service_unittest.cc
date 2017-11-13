@@ -13,8 +13,8 @@
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
 #include "chrome/browser/image_decoder.h"
@@ -26,6 +26,7 @@
 #include "components/arc/test/fake_wallpaper_instance.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -61,7 +62,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
  public:
   ArcWallpaperServiceTest()
       : user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(user_manager_)) {}
   ~ArcWallpaperServiceTest() override = default;
 
   void SetUp() override {
@@ -118,7 +119,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
 
  private:
   chromeos::FakeChromeUserManager* const user_manager_ = nullptr;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   arc::ArcServiceManager arc_service_manager_;
   // testing_profile_ needs to be deleted before arc_service_manager_.
   TestingProfile testing_profile_;

@@ -7,16 +7,17 @@
 #include "ash/test/ash_test_base.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,7 +42,7 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
  public:
   SigninPrepareUserListTest()
       : fake_user_manager_(new FakeChromeUserManager()),
-        user_manager_enabler_(fake_user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   ~SigninPrepareUserListTest() override {}
 
@@ -77,7 +78,7 @@ class SigninPrepareUserListTest : public ash::AshTestBase,
   void OnUserNotAllowed(const std::string& user_email) override {}
 
   FakeChromeUserManager* fake_user_manager_;
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::map<std::string, proximity_auth::mojom::AuthType> user_auth_type_map;
   std::unique_ptr<MultiProfileUserController> controller_;

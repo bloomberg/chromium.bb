@@ -9,11 +9,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller_delegate.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
@@ -25,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/x509_certificate.h"
@@ -123,7 +124,7 @@ class MultiProfileUserControllerTest
  public:
   MultiProfileUserControllerTest()
       : fake_user_manager_(new FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_),
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
         user_not_allowed_count_(0) {
     for (size_t i = 0; i < arraysize(kUsers); ++i) {
       test_users_.push_back(AccountId::FromUserEmail(kUsers[i]));
@@ -214,7 +215,7 @@ class MultiProfileUserControllerTest
   std::unique_ptr<policy::PolicyCertVerifier> cert_verifier_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   FakeChromeUserManager* fake_user_manager_;  // Not owned
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<MultiProfileUserController> controller_;
 

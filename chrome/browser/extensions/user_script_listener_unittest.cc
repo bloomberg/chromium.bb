@@ -37,7 +37,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 using content::ResourceThrottle;
@@ -152,9 +152,8 @@ class UserScriptListenerTest : public testing::Test {
 
   void SetUp() override {
 #if defined(OS_CHROMEOS)
-    user_manager_enabler_ =
-        base::MakeUnique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
 #endif
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("test-profile");
@@ -225,7 +224,7 @@ class UserScriptListenerTest : public testing::Test {
   TestingProfile* profile_;
   ExtensionService* service_;
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
 };
 

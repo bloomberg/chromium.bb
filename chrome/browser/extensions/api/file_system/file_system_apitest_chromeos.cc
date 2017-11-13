@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -14,13 +15,13 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/file_system/consent_provider.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/file_system/file_system_api.h"
 #include "extensions/browser/event_router.h"
@@ -239,7 +240,7 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
  protected:
   base::ScopedTempDir temp_dir_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   // Creates a testing file system in a testing directory.
   void CreateTestingFileSystem(const std::string& mount_point_name,
@@ -264,8 +265,8 @@ class FileSystemApiTestForRequestFileSystem : public PlatformAppBrowserTest {
   // Simulates entering the kiosk session.
   void EnterKioskSession() {
     fake_user_manager_ = new chromeos::FakeChromeUserManager();
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager_));
 
     const AccountId kiosk_app_account_id =
         AccountId::FromUserEmail("kiosk@foobar.com");

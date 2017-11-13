@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -97,6 +96,7 @@
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -1171,8 +1171,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     profile_manager_->SetLoggedIn(true);
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
 
     // Initialize the WallpaperManager singleton.
     chromeos::WallpaperManager::Initialize();
@@ -1287,7 +1287,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
         user_manager::UserManager::Get());
   }
 
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   ProfileToNameMap created_profiles_;
 

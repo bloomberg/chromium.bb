@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -32,6 +31,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/known_user.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -143,9 +143,8 @@ class ChromeArcUtilTest : public testing::Test {
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
 
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(
-            new FakeUserManagerWithLocalState());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<FakeUserManagerWithLocalState>());
     chromeos::WallpaperManager::Initialize();
     profile_ = std::make_unique<TestingProfile>();
     profile_->set_profile_name(kTestProfileName);
@@ -175,7 +174,7 @@ class ChromeArcUtilTest : public testing::Test {
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeArcUtilTest);
@@ -532,9 +531,8 @@ class ArcMigrationTest : public testing::Test {
   ~ArcMigrationTest() override {}
 
   void SetUp() override {
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(
-            new FakeUserManagerWithLocalState());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<FakeUserManagerWithLocalState>());
     // Used by FakeChromeUserManager.
     chromeos::WallpaperManager::Initialize();
     profile_ = std::make_unique<TestingProfile>();
@@ -558,7 +556,7 @@ class ArcMigrationTest : public testing::Test {
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcMigrationTest);

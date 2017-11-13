@@ -10,9 +10,11 @@
 #include "ash/public/cpp/app_types.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -39,27 +41,6 @@ class ScopedArcFeature {
  private:
   base::test::ScopedFeatureList feature_list;
   DISALLOW_COPY_AND_ASSIGN(ScopedArcFeature);
-};
-
-// Helper to enable user_manager::FakeUserManager while it is in scope.
-// TODO(xiyuan): Remove after ScopedUserManagerEnabler is moved to user_manager.
-class ScopedUserManager {
- public:
-  explicit ScopedUserManager(user_manager::UserManager* user_manager)
-      : user_manager_(user_manager) {
-    DCHECK(!user_manager::UserManager::IsInitialized());
-    user_manager->Initialize();
-  }
-  ~ScopedUserManager() {
-    DCHECK_EQ(user_manager::UserManager::Get(), user_manager_);
-    user_manager_->Shutdown();
-    user_manager_->Destroy();
-  }
-
- private:
-  user_manager::UserManager* const user_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserManager);
 };
 
 // Fake user that can be created with a specified type.
@@ -202,8 +183,10 @@ TEST_F(ArcUtilTest, IsArcAppWindow) {
 }
 
 TEST_F(ArcUtilTest, IsArcAllowedForUser) {
-  user_manager::FakeUserManager fake_user_manager;
-  ScopedUserManager scoped_user_manager(&fake_user_manager);
+  user_manager::FakeUserManager* fake_user_manager =
+      new user_manager::FakeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
 
   struct {
     user_manager::UserType user_type;
@@ -226,12 +209,12 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
 
   // An ephemeral user is a logged in user but unknown to UserManager when
   // ephemeral policy is set.
-  fake_user_manager.SetEphemeralUsersEnabled(true);
-  fake_user_manager.UserLoggedIn(AccountId::FromUserEmail("test@test.com"),
-                                 "test@test.com-hash", false);
-  const user_manager::User* ephemeral_user = fake_user_manager.GetActiveUser();
+  fake_user_manager->SetEphemeralUsersEnabled(true);
+  fake_user_manager->UserLoggedIn(AccountId::FromUserEmail("test@test.com"),
+                                  "test@test.com-hash", false);
+  const user_manager::User* ephemeral_user = fake_user_manager->GetActiveUser();
   ASSERT_TRUE(ephemeral_user);
-  ASSERT_TRUE(fake_user_manager.IsUserCryptohomeDataEphemeral(
+  ASSERT_TRUE(fake_user_manager->IsUserCryptohomeDataEphemeral(
       ephemeral_user->GetAccountId()));
 
   // Ephemeral user is not allowed for ARC.
