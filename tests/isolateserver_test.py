@@ -1314,11 +1314,22 @@ class DiskCacheTest(TestCase):
       cache.write(*self.to_hash('e'))
 
   def test_cleanup(self):
-    # Inject an item without a state.json. It will be deleted on cleanup.
+    # Inject an item without a state.json, one is lost. Both will be deleted on
+    # cleanup.
+    self._free_disk = 1003
+    cache = self.get_cache()
+    h_foo = hashlib.sha1('foo').hexdigest()
+    self.assertEqual([], sorted(cache._lru._items.iteritems()))
+    with cache:
+      cache.write(h_foo, ['foo'])
+    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
+
     h_a = self.to_hash('a')[0]
     isolateserver.file_write(os.path.join(self.tempdir, h_a), 'a')
-    cache = self.get_cache()
-    self.assertEqual([], sorted(cache._lru._items.iteritems()))
+    os.remove(os.path.join(self.tempdir, h_foo))
+
+    # Still hasn't realized that the file is missing.
+    self.assertEqual([h_foo], [i[0] for i in cache._lru._items.iteritems()])
     self.assertEqual(
         sorted([h_a, u'state.json']), sorted(os.listdir(self.tempdir)))
     cache.cleanup()

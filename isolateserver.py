@@ -1162,37 +1162,38 @@ class DiskCache(LocalCache):
     At that point, the cache was already loaded, trimmed to respect cache
     policies.
     """
-    fs.chmod(self.cache_dir, 0700)
-    # Ensure that all files listed in the state still exist and add new ones.
-    previous = self._lru.keys_set()
-    # It'd be faster if there were a readdir() function.
-    for filename in fs.listdir(self.cache_dir):
-      if filename == self.STATE_FILE:
-        fs.chmod(os.path.join(self.cache_dir, filename), 0600)
-        continue
-      if filename in previous:
-        fs.chmod(os.path.join(self.cache_dir, filename), 0400)
-        previous.remove(filename)
+    with self._lock:
+      fs.chmod(self.cache_dir, 0700)
+      # Ensure that all files listed in the state still exist and add new ones.
+      previous = self._lru.keys_set()
+      # It'd be faster if there were a readdir() function.
+      for filename in fs.listdir(self.cache_dir):
+        if filename == self.STATE_FILE:
+          fs.chmod(os.path.join(self.cache_dir, filename), 0600)
+          continue
+        if filename in previous:
+          fs.chmod(os.path.join(self.cache_dir, filename), 0400)
+          previous.remove(filename)
+          continue
+
+        # An untracked file. Delete it.
+        logging.warning('Removing unknown file %s from cache', filename)
+        p = self._path(filename)
+        if fs.isdir(p):
+          try:
+            file_path.rmtree(p)
+          except OSError:
+            pass
+        else:
+          file_path.try_remove(p)
         continue
 
-      # An untracked file. Delete it.
-      logging.warning('Removing unknown file %s from cache', filename)
-      p = self._path(filename)
-      if fs.isdir(p):
-        try:
-          file_path.rmtree(p)
-        except OSError:
-          pass
-      else:
-        file_path.try_remove(p)
-      continue
-
-    if previous:
-      # Filter out entries that were not found.
-      logging.warning('Removed %d lost files', len(previous))
-      for filename in previous:
-        self._lru.pop(filename)
-      self._save()
+      if previous:
+        # Filter out entries that were not found.
+        logging.warning('Removed %d lost files', len(previous))
+        for filename in previous:
+          self._lru.pop(filename)
+        self._save()
 
     # What remains to be done is to hash every single item to
     # detect corruption, then save to ensure state.json is up to date.
