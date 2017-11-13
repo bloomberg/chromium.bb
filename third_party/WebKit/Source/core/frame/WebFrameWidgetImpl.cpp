@@ -257,6 +257,9 @@ void WebFrameWidgetImpl::BeginFrame(double last_frame_time_monotonic) {
     return;
 
   UpdateGestureAnimation(last_frame_time_monotonic);
+
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      local_root_->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::Animate(*GetPage(), last_frame_time_monotonic);
   GetPage()->GetValidationMessageClient().LayoutOverlay();
 }
@@ -268,6 +271,9 @@ void WebFrameWidgetImpl::UpdateAllLifecyclePhases() {
 
   if (WebDevToolsAgentImpl* devtools = local_root_->DevToolsAgentImpl())
     devtools->PaintOverlay();
+
+  DocumentLifecycle::AllowThrottlingScope throttling_scope(
+      local_root_->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateAllLifecyclePhases(*GetPage(),
                                                *local_root_->GetFrame());
   UpdateLayerTreeBackgroundColor();
@@ -755,6 +761,14 @@ void WebFrameWidgetImpl::SetIsInert(bool inert) {
   DCHECK(local_root_->Parent());
   DCHECK(local_root_->Parent()->IsWebRemoteFrame());
   local_root_->GetFrame()->SetIsInert(inert);
+}
+
+void WebFrameWidgetImpl::UpdateRenderThrottlingStatus(bool is_throttled,
+                                                      bool subtree_throttled) {
+  DCHECK(local_root_->Parent());
+  DCHECK(local_root_->Parent()->IsWebRemoteFrame());
+  local_root_->GetFrameView()->UpdateRenderThrottlingStatus(is_throttled,
+                                                            subtree_throttled);
 }
 
 void WebFrameWidgetImpl::HandleMouseLeave(LocalFrame& main_frame,

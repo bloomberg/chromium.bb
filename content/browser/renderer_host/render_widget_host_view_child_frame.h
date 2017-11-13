@@ -218,6 +218,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void SetIsInert();
 
+  void UpdateRenderThrottlingStatus();
+
   bool has_frame() { return has_frame_; }
 
   ui::TextInputType GetTextInputType() const;
