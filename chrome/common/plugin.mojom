@@ -67,6 +67,11 @@ struct PluginInfo {
   mojo.common.mojom.String16 group_name;
 };
 
+struct PluginParam {
+  mojo.common.mojom.String16 name;
+  mojo.common.mojom.String16 value;
+};
+
 interface PluginInfoHost {
   // Return information about a plugin for the given URL and MIME type.
   // Includes specific reasons why a plugin can't be used, for example because
@@ -76,6 +81,16 @@ interface PluginInfoHost {
                 url.mojom.Url url,
                 url.mojom.Origin origin,
                 string mime_type) => (PluginInfo plugin_info);
+
+  // Returns whether any internal plugin supporting |mime_type| is registered
+  // and enabled. Does not determine whether the plugin can actually be
+  // instantiated (e.g. whether it has all its dependencies).
+  // When a plugin is available, the returned |additional_params| contain the
+  // name-value pairs, if any, specified for the *first* non-disabled plugin
+  // found that is registered for |mime_type|.
+  [Sync]
+  IsInternalPluginAvailableForMimeType(string mime_type) => (
+      array<PluginParam>? additional_params);
 };
 
 // Plugin messages sent from a host to the renderer.
