@@ -248,6 +248,29 @@ void CompositingRequirementsUpdater::Update(
                   absolute_descendant_bounding_box, compositing_reasons_stats);
 }
 
+void CompositingRequirementsUpdater::MaybeEnableCompositedScrolling(
+    PaintLayer* layer,
+    CompositingReasons& reasons) {
+  // Add CompositingReasonOverflowScrollingTouch for layers that do not
+  // already have it but need it.
+  // Note that m_compositingReasonFinder.directReasons(layer) already includes
+  // CompositingReasonOverflowScrollingTouch for anything that has
+  // layer->needsCompositedScrolling() true. That is, for cases where we
+  // explicitly decide not to have LCD text or cases where the layer will
+  // still support LCD text even if the layer is composited.
+  if (reasons && layer->ScrollsOverflow() &&
+      !layer->NeedsCompositedScrolling()) {
+    // We can get here for a scroller that will be composited for some other
+    // reason and hence will already use grayscale AA text. We recheck for
+    // needsCompositedScrolling ignoring LCD to correctly add the
+    // CompositingReasonOverflowScrollingTouch reason to layers that can
+    // support it with grayscale AA text.
+    layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
+    if (layer->NeedsCompositedScrolling())
+      reasons |= kCompositingReasonOverflowScrollingTouch;
+  }
+}
+
 void CompositingRequirementsUpdater::UpdateRecursive(
     PaintLayer* ancestor_layer,
     PaintLayer* layer,
@@ -301,24 +324,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     if (layer->IsRootLayer() && compositor->RootShouldAlwaysComposite())
       reasons_to_composite |= kCompositingReasonRoot;
 
-    // Add CompositingReasonOverflowScrollingTouch for layers that do not
-    // already have it but need it.
-    // Note that m_compositingReasonFinder.directReasons(layer) already includes
-    // CompositingReasonOverflowScrollingTouch for anything that has
-    // layer->needsCompositedScrolling() true. That is, for cases where we
-    // explicitly decide not to have LCD text or cases where the layer will
-    // still support LCD text even if the layer is composited.
-    if (reasons_to_composite && layer->ScrollsOverflow() &&
-        !layer->NeedsCompositedScrolling()) {
-      // We can get here for a scroller that will be composited for some other
-      // reason and hence will already use grayscale AA text. We recheck for
-      // needsCompositedScrolling ignoring LCD to correctly add the
-      // CompositingReasonOverflowScrollingTouch reason to layers that can
-      // support it with grayscale AA text.
-      layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
-      if (layer->NeedsCompositedScrolling())
-        reasons_to_composite |= kCompositingReasonOverflowScrollingTouch;
-    }
+    MaybeEnableCompositedScrolling(layer, reasons_to_composite);
   }
 
   if ((reasons_to_composite & kCompositingReasonOverflowScrollingTouch) &&
@@ -503,6 +509,13 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         compositor->RootShouldAlwaysComposite()) {
       reasons_to_composite |= kCompositingReasonRoot;
       current_recursion_data.subtree_is_compositing_ = true;
+      // Try again to enable composited scrolling if root became composited due
+      // to subtree_is_compositing_ or overlap.
+      // TODO(skobes): At this point we've already done recursion to descendant
+      // layers, possibly with has_composited_scrolling_ancestor_ == false.
+      // We should refactor overlap testing etc. to be independent of having
+      // composited scrolling ancestors. See crbug.com/777672, crbug.com/782991.
+      MaybeEnableCompositedScrolling(layer, reasons_to_composite);
     } else {
       compositor->SetCompositingModeEnabled(false);
       reasons_to_composite = kCompositingReasonNone;
