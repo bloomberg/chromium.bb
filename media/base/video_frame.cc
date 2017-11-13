@@ -1208,6 +1208,7 @@ void VideoFrame::AllocateMemory(bool zero_initialize_memory) {
   if (NumPlanes(format_) == 1) {
     data_size = AllocationSize(format_, coded_size_);
     offset[0] = 0;
+    strides_[0] = row_bytes(0);
   } else {
     for (size_t plane = 0; plane < NumPlanes(format_); ++plane) {
       // The *2 in alignment for height is because some formats (e.g. h264)
