@@ -52,15 +52,15 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   int Open(const MediaStreamDevice& device) override;
   void Close(int session_id) override;
 
-#if defined(OS_CHROMEOS)
-  // Owns a keyboard mic stream registration.
+  // Owns a keyboard mic stream registration. Dummy implementation on platforms
+  // other than Chrome OS.
   class KeyboardMicRegistration {
    public:
+#if defined(OS_CHROMEOS)
     // No registration.
-    KeyboardMicRegistration();
+    KeyboardMicRegistration() = default;
 
     KeyboardMicRegistration(KeyboardMicRegistration&& other);
-    KeyboardMicRegistration& operator=(KeyboardMicRegistration&& other);
 
     ~KeyboardMicRegistration();
 
@@ -75,9 +75,11 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
     // a member of the AudioInputDeviceManager, which lives as long as the IO
     // thread, so the pointer will be valid for the lifetime of the
     // registration.
-    int* shared_registration_count_;
+    int* shared_registration_count_ = nullptr;
+#endif
   };
 
+#if defined(OS_CHROMEOS)
   // Registers that a stream using keyboard mic has been opened or closed.
   // Keeps count of how many such streams are open and activates and
   // inactivates the keyboard mic accordingly. The (in)activation is done on the

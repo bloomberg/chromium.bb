@@ -43,10 +43,8 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       media::UserInputMonitor* user_input_monitor,
       AudioInputDeviceManager* audio_input_device_manager,
       std::unique_ptr<media::AudioLog> audio_log,
-#if defined(OS_CHROMEOS)
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
-#endif
       uint32_t shared_memory_count,
       int stream_id,
       int session_id,
@@ -70,10 +68,8 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
       std::unique_ptr<AudioInputSyncWriter> writer,
       std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
       std::unique_ptr<media::AudioLog> audio_log,
-#if defined(OS_CHROMEOS)
       AudioInputDeviceManager::KeyboardMicRegistration
           keyboard_mic_registration,
-#endif
       int stream_id,
       int render_process_id,
       int render_frame_id,
@@ -97,10 +93,8 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
   std::unique_ptr<base::CancelableSyncSocket> foreign_socket_;
   const std::unique_ptr<media::AudioLog> audio_log_;
   scoped_refptr<media::AudioInputController> controller_;
-#if defined(OS_CHROMEOS)
   const AudioInputDeviceManager::KeyboardMicRegistration
       keyboard_mic_registration_;
-#endif
   const int stream_id_;
   const int render_process_id_;
   base::WeakPtrFactory<AudioInputDelegateImpl> weak_factory_;
