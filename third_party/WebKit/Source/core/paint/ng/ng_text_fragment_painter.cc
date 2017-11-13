@@ -120,8 +120,8 @@ void NGTextFragmentPainter::Paint(const Document& document,
           &has_line_through_decoration);
     }
 
-    int start_offset = 0;
-    int end_offset = length;
+    int start_offset = text_fragment.StartOffset();
+    int end_offset = start_offset + length;
 
     if (paint_selected_text_separately && selection_start < selection_end) {
       start_offset = selection_end;

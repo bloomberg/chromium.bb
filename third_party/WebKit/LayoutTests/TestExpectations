@@ -550,7 +550,6 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/fixed-pos-moves-with-abspos
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/styledEmptyInlinesWithBRs.html [ Crash Failure ]
 
 ### Crash site: ShapeResultBloberizer.cpp
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/crash-new-continuation-with-outline.html [ Crash ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-position-top-align.html [ Crash Failure ]
 # Crashes in SPv2 only?
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Crash Failure ]
@@ -558,9 +557,6 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repea
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-positioned-reparenting.html [ Crash ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
-
-### Crash site: ng_inline_node.cc
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-adjust-position-crash.html [ Crash ]
 
 ### Image/text failures only on LayoutNGPaintFragments
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/001.html [ Failure ]
