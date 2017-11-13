@@ -47,6 +47,7 @@ static void amdgpu_bo_export_import(void);
 static void amdgpu_bo_metadata(void);
 static void amdgpu_bo_map_unmap(void);
 static void amdgpu_memory_alloc(void);
+static void amdgpu_mem_fail_alloc(void);
 
 CU_TestInfo bo_tests[] = {
 	{ "Export/Import",  amdgpu_bo_export_import },
@@ -55,6 +56,7 @@ CU_TestInfo bo_tests[] = {
 #endif
 	{ "CPU map/unmap",  amdgpu_bo_map_unmap },
 	{ "Memory alloc Test",  amdgpu_memory_alloc },
+	{ "Memory fail alloc Test",  amdgpu_mem_fail_alloc },
 	CU_TEST_INFO_NULL,
 };
 
@@ -243,4 +245,26 @@ static void amdgpu_memory_alloc(void)
 
 	r = gpu_mem_free(bo, va_handle, bo_mc, 4096);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_mem_fail_alloc(void)
+{
+	amdgpu_bo_handle bo;
+	int r;
+	struct amdgpu_bo_alloc_request req = {0};
+	amdgpu_bo_handle buf_handle;
+
+	/* Test impossible mem allocation, 1TB */
+	req.alloc_size = 0xE8D4A51000;
+	req.phys_alignment = 4096;
+	req.preferred_heap = AMDGPU_GEM_DOMAIN_VRAM;
+	req.flags = AMDGPU_GEM_CREATE_NO_CPU_ACCESS;
+
+	r = amdgpu_bo_alloc(device_handle, &req, &buf_handle);
+	CU_ASSERT_EQUAL(r, -ENOMEM);
+
+	if (!r) {
+		r = amdgpu_bo_free(bo);
+		CU_ASSERT_EQUAL(r, 0);
+	}
 }
