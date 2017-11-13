@@ -190,8 +190,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
     case ProxyPrefs::kModeCount:
       NOTREACHED();
   }
-  // TODO(crbug.com/703565): remove std::move() once compiler support improves.
-  return std::move(extension_pref);
+  return extension_pref;
 }
 
 }  // namespace extensions
