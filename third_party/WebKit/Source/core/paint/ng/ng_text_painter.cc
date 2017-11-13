@@ -82,7 +82,7 @@ void NGTextPainter::PaintInternal(unsigned start_offset,
 void NGTextPainter::ClipDecorationsStripe(float upper,
                                           float stripe_width,
                                           float dilation) {
-  if (!fragment_.Length())
+  if (!fragment_.Length() || !fragment_.TextShapeResult())
     return;
 
   NGTextFragmentPaintInfo fragment_paint_info = fragment_.PaintInfo();
