@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_CREATE_GR_GL_INTERFACE_H_
-#define GPU_COMMAND_BUFFER_SERVICE_CREATE_GR_GL_INTERFACE_H_
+#ifndef UI_GL_INIT_CREATE_GR_GL_INTERFACE_H_
+#define UI_GL_INIT_CREATE_GR_GL_INTERFACE_H_
 
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
+
+#include "ui/gl/init/gl_init_export.h"
 
 namespace gl {
 struct GLVersionInfo;
 }
 
-namespace gpu {
-namespace gles2 {
+namespace gl {
+namespace init {
 
 // Creates a GrGLInterface by taking function pointers from the current
 // GL bindings.
-sk_sp<const GrGLInterface> CreateGrGLInterface(
+GL_INIT_EXPORT sk_sp<const GrGLInterface> CreateGrGLInterface(
     const gl::GLVersionInfo& version_info);
 
-}  // namespace gles2
-}  // namespace gpu
+}  // namespace init
+}  // namespace gl
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_CREATE_GR_GL_INTERFACE_H_
+#endif  // UI_GL_INIT_CREATE_GR_GL_INTERFACE_H_

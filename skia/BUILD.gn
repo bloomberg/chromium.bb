@@ -8,7 +8,6 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//printing/features/features.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
-import("//device/vr/features/features.gni")
 
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
@@ -417,29 +416,6 @@ component("skia") {
       # Select the right BitmapPlatformDevice.
       "ext/raster_handle_allocator_win.cc",
     ]
-  }
-
-  if (enable_vr) {
-    sources -= [
-      "//third_party/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp",
-      "//third_party/skia/src/gpu/gl/GrGLDefaultInterface_none.cpp",
-    ]
-    sources +=
-        [ "//third_party/skia/src/gpu/gl/GrGLDefaultInterface_native.cpp" ]
-    if (is_android) {
-      # TODO(782871): Enable Ganesh.
-      sources +=
-          [ "//third_party/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp" ]
-    } else if (is_linux) {
-      sources += [ "//third_party/skia/src/gpu/gl/glx/GrGLCreateNativeInterface_glx.cpp" ]
-      libs = [ "GL" ]
-    } else if (is_win) {
-      sources += [ "//third_party/skia/src/gpu/gl/win/GrGLCreateNativeInterface_win.cpp" ]
-      libs += [ "OpenGL32.lib" ]
-    } else {
-      sources +=
-          [ "//third_party/skia/src/gpu/gl/GrGLCreateNativeInterface_none.cpp" ]
-    }
   }
 
   if (is_clang && !is_nacl) {

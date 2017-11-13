@@ -8,15 +8,25 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/GrContextOptions.h"
-#include "third_party/skia/include/gpu/GrTypes.h"
-#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 
 namespace vr {
 
 GaneshSurfaceProvider::GaneshSurfaceProvider() {
-  gr_context_ = GrContext::MakeGL(nullptr);
+  const char* version_str =
+      reinterpret_cast<const char*>(glGetString(GL_VERSION));
+  const char* renderer_str =
+      reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+  std::string extensions_string(gl::GetGLExtensionsFromCurrentContext());
+  gl::ExtensionSet extensions(gl::MakeExtensionSet(extensions_string));
+  gl::GLVersionInfo gl_version_info(version_str, renderer_str, extensions);
+  sk_sp<const GrGLInterface> gr_interface =
+      gl::init::CreateGrGLInterface(gl_version_info);
+  DCHECK(gr_interface.get());
+  gr_context_ = GrContext::MakeGL(gr_interface.get());
   DCHECK(gr_context_.get());
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &main_fbo_);
 }

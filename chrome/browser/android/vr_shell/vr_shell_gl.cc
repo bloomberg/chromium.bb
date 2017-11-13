@@ -263,9 +263,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   if (!reinitializing)
     InitializeRenderer();
 
-  // TODO(782871): Enable Ganesh.
   ui_->OnGlInitialized(content_texture_id,
-                       vr::UiElementRenderer::kTextureLocationExternal, false);
+                       vr::UiElementRenderer::kTextureLocationExternal, true);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 

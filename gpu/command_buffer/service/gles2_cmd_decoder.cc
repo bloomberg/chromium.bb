@@ -36,7 +36,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
-#include "gpu/command_buffer/service/create_gr_gl_interface.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -97,6 +96,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 
 #if defined(OS_MACOSX)
 #include <IOSurface/IOSurface.h>
@@ -3761,7 +3761,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     // there's a failure.
     supports_oop_raster_ = true;
     sk_sp<const GrGLInterface> interface(
-        CreateGrGLInterface(gl_version_info()));
+        gl::init::CreateGrGLInterface(gl_version_info()));
     if (!interface) {
       DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                      "failed.";
