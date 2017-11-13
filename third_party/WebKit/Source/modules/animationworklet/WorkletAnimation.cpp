@@ -10,6 +10,7 @@
 #include "core/animation/Timing.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/layout/LayoutBox.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -54,6 +55,70 @@ bool ValidateTimeline(const DocumentTimelineOrScrollTimeline& timeline,
   }
   return true;
 }
+
+bool CheckElementComposited(const Element& target) {
+  return target.GetLayoutObject() &&
+         target.GetLayoutObject()->GetCompositingState() ==
+             kPaintsIntoOwnBacking;
+}
+
+CompositorElementId GetCompositorScrollElementId(const Element& element) {
+  DCHECK(element.GetLayoutObject());
+  DCHECK(element.GetLayoutObject()->HasLayer());
+  return CompositorElementIdFromUniqueObjectId(
+      element.GetLayoutObject()->UniqueId(),
+      CompositorElementIdNamespace::kScroll);
+}
+
+// Convert the blink concept of a ScrollTimeline orientation into the cc one.
+//
+// The compositor does not know about writing modes, so we have to convert the
+// web concepts of 'block' and 'inline' direction into absolute vertical or
+// horizontal directions.
+//
+// TODO(smcgruer): If the writing mode of a scroller changes, we have to update
+// any related cc::ScrollTimeline somehow.
+CompositorScrollTimeline::ScrollDirection ConvertOrientation(
+    ScrollTimeline::ScrollDirection orientation,
+    bool is_horizontal_writing_mode) {
+  switch (orientation) {
+    case ScrollTimeline::Block:
+      return is_horizontal_writing_mode ? CompositorScrollTimeline::Vertical
+                                        : CompositorScrollTimeline::Horizontal;
+    case ScrollTimeline::Inline:
+      return is_horizontal_writing_mode ? CompositorScrollTimeline::Horizontal
+                                        : CompositorScrollTimeline::Vertical;
+    default:
+      NOTREACHED();
+      return CompositorScrollTimeline::Vertical;
+  }
+}
+
+// Converts a blink::ScrollTimeline into a cc::ScrollTimeline.
+//
+// If the timeline cannot be converted, returns nullptr.
+std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
+    const DocumentTimelineOrScrollTimeline& timeline) {
+  if (!timeline.IsScrollTimeline())
+    return nullptr;
+
+  ScrollTimeline* scroll_timeline = timeline.GetAsScrollTimeline();
+  Element* scroll_source = scroll_timeline->scrollSource();
+  CompositorElementId element_id = GetCompositorScrollElementId(*scroll_source);
+
+  DoubleOrScrollTimelineAutoKeyword time_range;
+  scroll_timeline->timeRange(time_range);
+  // TODO(smcgruer): Handle 'auto' time range value.
+  DCHECK(time_range.IsDouble());
+
+  LayoutBox* box = scroll_source->GetLayoutBox();
+  DCHECK(box);
+  CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
+      scroll_timeline->GetOrientation(), box->IsHorizontalWritingMode());
+
+  return std::make_unique<CompositorScrollTimeline>(element_id, orientation,
+                                                    time_range.GetAsDouble());
+}
 }  // namespace
 
 WorkletAnimation* WorkletAnimation::Create(
@@ -78,9 +143,6 @@ WorkletAnimation* WorkletAnimation::Create(
   Document& document = effects.at(0)->Target()->GetDocument();
   WorkletAnimation* animation = new WorkletAnimation(
       animator_name, document, effects, timeline, std::move(options));
-  if (CompositorAnimationTimeline* compositor_timeline =
-          document.Timeline().CompositorTimeline())
-    compositor_timeline->PlayerAttached(*animation);
 
   return animation;
 }
@@ -100,10 +162,6 @@ WorkletAnimation::WorkletAnimation(
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   DCHECK(Platform::Current()->CompositorSupport());
-
-  compositor_player_ =
-      CompositorAnimationPlayer::CreateWorkletPlayer(animator_name_);
-  compositor_player_->SetAnimationDelegate(this);
 }
 
 String WorkletAnimation::playState() {
@@ -127,39 +185,71 @@ void WorkletAnimation::cancel() {
   }
 }
 
-bool WorkletAnimation::StartOnCompositor() {
+bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   DCHECK(IsMainThread());
-  Element& target = *effects_.at(0)->Target();
+  KeyframeEffectReadOnly* target_effect = effects_.at(0);
+  Element& target = *target_effect->Target();
 
-  // TODO(smcgruer): Creating a WorkletAnimaiton should be a hint to blink
+  // CheckCanStartAnimationOnCompositor requires that the property-specific
+  // keyframe groups have been created. To ensure this we manually snapshot the
+  // frames in the target effect.
+  // TODO(smcgruer): This shouldn't be necessary - Animation doesn't do this.
+  ToKeyframeEffectModelBase(target_effect->Model())
+      ->SnapshotAllCompositorKeyframes(target, target.ComputedStyleRef(),
+                                       target.ParentComputedStyle());
+
+  if (!CheckElementComposited(target)) {
+    if (failure_message)
+      *failure_message = "The target element is not composited.";
+    return false;
+  }
+
+  if (timeline_.IsScrollTimeline() &&
+      !CheckElementComposited(
+          *timeline_.GetAsScrollTimeline()->scrollSource())) {
+    if (failure_message)
+      *failure_message = "The ScrollTimeline scrollSource is not composited.";
+    return false;
+  }
+
+  double playback_rate = 1;
+  CompositorAnimations::FailureCode failure_code =
+      target_effect->CheckCanStartAnimationOnCompositor(playback_rate);
+
+  if (!failure_code.Ok()) {
+    play_state_ = Animation::kIdle;
+    if (failure_message)
+      *failure_message = failure_code.reason;
+    return false;
+  }
+
+  if (!compositor_player_) {
+    compositor_player_ = CompositorAnimationPlayer::CreateWorkletPlayer(
+        animator_name_, ToCompositorScrollTimeline(timeline_));
+    compositor_player_->SetAnimationDelegate(this);
+  }
+
+  // Register ourselves on the compositor timeline. This will cause our cc-side
+  // animation player to be registered.
+  if (CompositorAnimationTimeline* compositor_timeline =
+          document_->Timeline().CompositorTimeline())
+    compositor_timeline->PlayerAttached(*this);
+
+  // TODO(smcgruer): Creating a WorkletAnimation should be a hint to blink
   // compositing that the animated element should be promoted. Otherwise this
   // fails. http://crbug.com/776533
   CompositorAnimations::AttachCompositedLayers(target,
                                                compositor_player_.get());
 
-  double animation_playback_rate = 1;
-  ToKeyframeEffectModelBase(effects_.at(0)->Model())
-      ->SnapshotAllCompositorKeyframes(target, target.ComputedStyleRef(),
-                                       target.ParentComputedStyle());
+  double start_time = std::numeric_limits<double>::quiet_NaN();
+  double time_offset = 0;
+  int group = 0;
 
-  bool success =
-      effects_.at(0)
-          ->CheckCanStartAnimationOnCompositor(animation_playback_rate)
-          .Ok();
-
-  if (success) {
-    double start_time = std::numeric_limits<double>::quiet_NaN();
-    double time_offset = 0;
-    int group = 0;
-
-    // TODO(smcgruer): We need to start all of the effects, not just the first.
-    effects_.at(0)->StartAnimationOnCompositor(group, start_time, time_offset,
-                                               animation_playback_rate,
-                                               compositor_player_.get());
-  }
-
-  play_state_ = success ? Animation::kRunning : Animation::kIdle;
-  return success;
+  // TODO(smcgruer): We need to start all of the effects, not just the first.
+  effects_.at(0)->StartAnimationOnCompositor(
+      group, start_time, time_offset, playback_rate, compositor_player_.get());
+  play_state_ = Animation::kRunning;
+  return true;
 }
 
 void WorkletAnimation::Dispose() {
@@ -168,8 +258,10 @@ void WorkletAnimation::Dispose() {
   if (CompositorAnimationTimeline* compositor_timeline =
           document_->Timeline().CompositorTimeline())
     compositor_timeline->PlayerDestroyed(*this);
-  compositor_player_->SetAnimationDelegate(nullptr);
-  compositor_player_ = nullptr;
+  if (compositor_player_) {
+    compositor_player_->SetAnimationDelegate(nullptr);
+    compositor_player_ = nullptr;
+  }
 }
 
 void WorkletAnimation::Trace(blink::Visitor* visitor) {

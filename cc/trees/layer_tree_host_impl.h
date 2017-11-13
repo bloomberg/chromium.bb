@@ -654,7 +654,8 @@ class CC_EXPORT LayerTreeHostImpl
       scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner);
 
   // Virtual for testing.
-  virtual bool AnimateLayers(base::TimeTicks monotonic_time);
+  virtual bool AnimateLayers(base::TimeTicks monotonic_time,
+                             bool is_active_tree);
 
   bool is_likely_to_require_a_draw() const {
     return is_likely_to_require_a_draw_;

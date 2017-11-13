@@ -25,6 +25,7 @@ namespace cc {
 class MutatorEvents;
 class MutatorHostClient;
 class LayerTreeMutator;
+class ScrollTree;
 
 // A MutatorHost owns all the animation and mutation effects.
 // There is just one MutatorHost for LayerTreeHost on main renderer thread
@@ -58,9 +59,13 @@ class MutatorHost {
   virtual bool NeedsTickAnimations() const = 0;
 
   virtual bool ActivateAnimations() = 0;
-  virtual bool TickAnimations(base::TimeTicks monotonic_time) = 0;
+  // TODO(smcgruer): Once we only tick scroll-based animations on scroll, we
+  // don't need to pass the scroll tree in here.
+  virtual bool TickAnimations(base::TimeTicks monotonic_time,
+                              const ScrollTree& scroll_tree) = 0;
   // Tick animations that depends on scroll offset.
-  virtual void TickScrollAnimations(base::TimeTicks monotonic_time) = 0;
+  virtual void TickScrollAnimations(base::TimeTicks monotonic_time,
+                                    const ScrollTree& scroll_tree) = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
 

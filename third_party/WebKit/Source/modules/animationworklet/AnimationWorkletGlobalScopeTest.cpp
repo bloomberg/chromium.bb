@@ -184,6 +184,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     CompositorMutatorInputState::AnimationState test_animation_state;
     test_animation_state.animation_player_id = 1;
     test_animation_state.name = "test";
+    test_animation_state.current_time = 5000;
     state.animations = {test_animation_state};
 
     std::unique_ptr<CompositorMutatorOutputState> output =
@@ -235,6 +236,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     CompositorMutatorInputState::AnimationState test_animation_state;
     test_animation_state.animation_player_id = 1;
     test_animation_state.name = "test";
+    test_animation_state.current_time = 5000;
     state.animations = {test_animation_state};
 
     std::unique_ptr<CompositorMutatorOutputState> output =
@@ -290,7 +292,7 @@ TEST_F(AnimationWorkletGlobalScopeTest, ConstructAndAnimate) {
       &AnimationWorkletGlobalScopeTest::RunConstructAndAnimateTestOnWorklet);
 }
 
-TEST_F(AnimationWorkletGlobalScopeTest, AnimtionOutput) {
+TEST_F(AnimationWorkletGlobalScopeTest, AnimationOutput) {
   RunTestOnWorkletThread(
       &AnimationWorkletGlobalScopeTest::RunAnimateOutputTestOnWorklet);
 }
