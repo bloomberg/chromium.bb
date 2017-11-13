@@ -515,6 +515,7 @@ class CORE_EXPORT Node : public EventTarget {
   void SetNeedsStyleInvalidation();
 
   void UpdateDistribution();
+  bool MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const;
 
   void SetIsLink(bool f);
 

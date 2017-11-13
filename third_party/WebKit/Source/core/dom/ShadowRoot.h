@@ -102,6 +102,8 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
 
+  void SetNeedsAssignmentRecalc();
+
   // For V0
   ShadowRoot* YoungerShadowRoot() const;
   ShadowRoot* OlderShadowRoot() const;

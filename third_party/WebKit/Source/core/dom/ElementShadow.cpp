@@ -125,7 +125,15 @@ void ElementShadow::Detach(const Node::AttachContext& context) {
     root->DetachLayoutTree(children_context);
 }
 
+void ElementShadow::SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc() {
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() && IsV1())
+    YoungestShadowRoot().SetNeedsAssignmentRecalc();
+  else
+    SetNeedsDistributionRecalc();
+}
+
 void ElementShadow::SetNeedsDistributionRecalc() {
+  DCHECK(!(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() && IsV1()));
   if (needs_distribution_recalc_)
     return;
   needs_distribution_recalc_ = true;
