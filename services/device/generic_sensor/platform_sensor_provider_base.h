@@ -57,6 +57,8 @@ class PlatformSensorProviderBase {
 
   std::vector<mojom::SensorType> GetPendingRequestTypes();
 
+  bool CreateSharedBufferIfNeeded();
+
   mojo::ScopedSharedBufferMapping MapSharedBufferForType(
       mojom::SensorType type);
 
@@ -65,7 +67,6 @@ class PlatformSensorProviderBase {
  private:
   friend class PlatformSensor;  // To call RemoveSensor();
 
-  bool CreateSharedBufferIfNeeded();
   void FreeResourcesIfNeeded();
   void RemoveSensor(mojom::SensorType type, PlatformSensor* sensor);
 

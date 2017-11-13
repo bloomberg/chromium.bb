@@ -70,7 +70,7 @@ FakePlatformSensorProvider::~FakePlatformSensorProvider() = default;
 
 mojo::ScopedSharedBufferMapping FakePlatformSensorProvider::GetMapping(
     mojom::SensorType type) {
-  return MapSharedBufferForType(type);
+  return CreateSharedBufferIfNeeded() ? MapSharedBufferForType(type) : nullptr;
 }
 
 void FakePlatformSensorProvider::CreateSensorInternal(
