@@ -371,7 +371,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
         # have an assigned waterfall.
         for slave_name in config.slave_configs:
           self.assertIn(slave_name, self.site_config)
-          self.assertTrue(self.site_config[slave_name].active_waterfall)
+          self.assertTrue(
+              self.site_config[slave_name].active_waterfall,
+              '"%s" is not in an active waterfall' % slave_name)
           self.assertNotEqual(self.site_config[slave_name].active_waterfall,
                               waterfall.WATERFALL_TRYBOT)
       else:

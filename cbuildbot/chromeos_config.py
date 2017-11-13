@@ -2177,6 +2177,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'reef',
   ])
+  _nyc_no_hwtest_experimental_boards = frozenset(['coral',])
   _nyc_vmtest_boards = frozenset([
       'betty',
       'betty-arc64',
@@ -2196,6 +2197,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           _nyc_no_hwtest_boards,
           board_configs,
           site_config.templates.nyc_android_pfq,
+      ) +
+      site_config.AddForBoards(
+          'nyc-android-pfq',
+          _nyc_no_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.nyc_android_pfq,
+          important=False,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
       ) +
       site_config.AddForBoards(
           'nyc-android-pfq',
@@ -2568,6 +2577,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
     ('reef-uni',       None,             None),            # reef (APL)
+    ('coral',          None,             None),            # coral (APL)
     (None,             None,             None),            # poppy (KBL)
   ])
 
@@ -3066,6 +3076,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'nyan_big',
       'scarlet',
+      'coral',
   ])
 
   _chromte_pfq_tryjob_boards = (
