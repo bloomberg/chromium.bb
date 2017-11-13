@@ -213,7 +213,8 @@ public class InfoBarContainer extends SwipableOverlayView {
         addView(mLayout, new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT,
                 LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL));
 
-        mIPHSupport = new IPHInfoBarSupport(context);
+        mIPHSupport = new IPHInfoBarSupport(new IPHBubbleDelegateImpl(context));
+
         mLayout.addAnimationListener(mIPHSupport);
         addObserver(mIPHSupport);
 
