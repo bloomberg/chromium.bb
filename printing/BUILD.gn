@@ -221,7 +221,14 @@ component("printing") {
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",
     ]
-  } else if (is_linux) {  # Non-ChromeOS Linux.
+  } else if (is_android) {
+    sources += [
+      "printing_context_android.cc",
+      "printing_context_android.h",
+    ]
+
+    deps += [ ":printing_jni_headers" ]
+  } else if (is_linux) {  # Desktop Linux.
     sources += [
       "printed_document_linux.cc",
       "printing_context_linux.cc",
@@ -229,14 +236,7 @@ component("printing") {
     ]
   }
 
-  if (is_android) {
-    sources += [
-      "printing_context_android.cc",
-      "printing_context_android.h",
-    ]
-
-    deps += [ ":printing_jni_headers" ]
-  } else {
+  if (!is_android) {
     sources += [
       "pdf_transform.cc",
       "pdf_transform.h",

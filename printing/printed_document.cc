@@ -48,16 +48,17 @@ void DebugDumpPageTask(const base::string16& doc_name,
   if (g_debug_dump_info.Get().empty())
     return;
 
-  base::string16 filename = doc_name;
-  filename +=
-      base::ASCIIToUTF16(base::StringPrintf("_%04d", page->page_number()));
-  base::FilePath file_path =
+  static constexpr base::FilePath::CharType kExtension[] =
 #if defined(OS_WIN)
-      PrintedDocument::CreateDebugDumpPath(filename, FILE_PATH_LITERAL(".emf"));
-#else   // OS_WIN
-      PrintedDocument::CreateDebugDumpPath(filename, FILE_PATH_LITERAL(".pdf"));
-#endif  // OS_WIN
-  base::File file(file_path,
+      FILE_PATH_LITERAL(".emf");
+#else
+      FILE_PATH_LITERAL(".pdf");
+#endif
+
+  base::string16 name = doc_name;
+  name += base::ASCIIToUTF16(base::StringPrintf("_%04d", page->page_number()));
+  base::FilePath path = PrintedDocument::CreateDebugDumpPath(name, kExtension);
+  base::File file(path,
                   base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   page->metafile()->SaveTo(&file);
 }
