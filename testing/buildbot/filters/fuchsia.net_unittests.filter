@@ -14,3 +14,6 @@
 # These stress tests take a very long time on emulated ARM cores.
 -SupportedVersion/QuicConnectionTest.TooManySentPackets/*
 -RangeOfTreeSizes/CTLogVerifierTestUsingGenerator.VerifiesValidConsistencyProof/*
+
+# Flaky, https://crbug.com/784448.
+-DiskCacheBackendTest.InvalidEntry5
