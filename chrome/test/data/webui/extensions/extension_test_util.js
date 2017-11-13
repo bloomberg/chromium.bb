@@ -80,7 +80,7 @@ cr.define('extension_test_util', function() {
       }
       expectEquals(0, missingEvents.length, JSON.stringify(missingEvents));
     },
-  }
+  };
 
   /**
    * A mock delegate for the item, capable of testing functionality.

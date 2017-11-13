@@ -19,7 +19,7 @@ cr.define('md_history.history_routing_test', function() {
       setup(function() {
         app = replaceApp();
         assertEquals('chrome://history/', window.location.href);
-        sidebar = app.$['content-side-bar']
+        sidebar = app.$['content-side-bar'];
         toolbar = app.$['toolbar'];
         return PolymerTest.flushTasks();
       });

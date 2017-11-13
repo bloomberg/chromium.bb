@@ -323,7 +323,7 @@ cr.define('settings', function() {
       var prefPath = 'prefs.settings.language.preload_engines.value';
       var enabledInputMethods = this.settingsPrefs_.get(prefPath).split(',');
       enabledInputMethods.push(inputMethodId);
-      this.settingsPrefs_.set(prefPath, enabledInputMethods.join(','))
+      this.settingsPrefs_.set(prefPath, enabledInputMethods.join(','));
     }
 
     /**

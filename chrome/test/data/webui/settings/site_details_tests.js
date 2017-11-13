@@ -117,7 +117,7 @@ suite('SiteDetails', function() {
     document.body.appendChild(siteDetailsElement);
     siteDetailsElement.origin = origin;
     return siteDetailsElement;
-  };
+  }
 
   test('all site settings are shown', function() {
     // Add ContentsSettingsTypes which are not supposed to be shown on the Site
@@ -351,7 +351,7 @@ suite('SiteDetails', function() {
           assertEquals(
               settings.routes.SITE_SETTINGS.path,
               settings.getCurrentRoute().path);
-        })
+        });
   });
 
   test('resetting permissions will set ads back to default', function() {

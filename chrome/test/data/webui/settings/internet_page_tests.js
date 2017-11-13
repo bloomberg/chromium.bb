@@ -51,12 +51,12 @@ suite('Internet', function() {
     return new Promise(resolve => {
       internetPage.async(resolve);
     });
-  };
+  }
 
   function setNetworksForTest(networks) {
     api_.resetForTest();
     api_.addNetworksForTest(networks);
-  };
+  }
 
   setup(function() {
     PolymerTest.clearBody();

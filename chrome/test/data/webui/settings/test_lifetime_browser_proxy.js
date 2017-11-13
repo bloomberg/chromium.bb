@@ -26,7 +26,7 @@ cr.define('settings', function() {
     relaunch() {
       this.methodCalled('relaunch');
     }
-  };
+  }
 
   if (cr.isChromeOS) {
     /** @override */

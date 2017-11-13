@@ -408,7 +408,7 @@ cr.define('device_page_tests', function() {
         var page = devicePage.$$('settings-' + subpage);
         return assert(page);
       });
-    };
+    }
 
     /**
      * @param {settings.IdleBehavior} idleBehavior
@@ -430,7 +430,7 @@ cr.define('device_page_tests', function() {
             hasLid: hasLid,
           });
       Polymer.dom.flush();
-    };
+    }
 
     /**
      * @param {!HTMLElement} select

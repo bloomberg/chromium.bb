@@ -410,7 +410,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
         displayName: '',
         setting: setting,
         source: source,
-      })
+      });
     }, this);
     return Promise.resolve(exceptionList);
   }

@@ -15,7 +15,7 @@ var setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
   };
   androidAppsPage.androidAppsInfo = appsInfo;
   Polymer.dom.flush();
-}
+};
 
 suite('AndroidAppsPageTests', function() {
   setup(function() {

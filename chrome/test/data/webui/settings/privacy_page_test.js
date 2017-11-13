@@ -348,14 +348,14 @@ cr.define('settings_privacy_page', function() {
       return new Promise(function(resolve) { element.async(resolve); })
           .then(function() {
             assertTrue(element.$$('#importantSitesDialog').open);
-            var firstImportantSite = element.$$('important-site-checkbox')
+            var firstImportantSite = element.$$('important-site-checkbox');
             assertTrue(!!firstImportantSite);
             assertEquals(
                 'google.com', firstImportantSite.site.registerableDomain);
-            assertTrue(firstImportantSite.site.isChecked)
+            assertTrue(firstImportantSite.site.isChecked);
             // Choose to keep storage for google.com.
             MockInteractions.tap(firstImportantSite.$$('#checkbox'));
-            assertFalse(firstImportantSite.site.isChecked)
+            assertFalse(firstImportantSite.site.isChecked);
             // Confirm deletion.
             MockInteractions.tap(element.$$('#importantSitesConfirm'));
             return testBrowserProxy.whenCalled('clearBrowsingData')

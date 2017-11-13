@@ -14,7 +14,7 @@ cr.define('user_manager.import_supervised_user_tests', function() {
        */
       var getProfileName = function(element) {
         return element.querySelector('.profile-name').textContent.trim();
-      }
+      };
 
       setup(function() {
         importElement = document.createElement('import-supervised-user');

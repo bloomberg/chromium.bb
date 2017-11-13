@@ -89,7 +89,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
         },
         'version': '1.0'
       };
-    };
+    }
 
     function waitForEvent(element, eventName) {
       return new Promise(function(resolve) {
@@ -100,7 +100,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
 
         element.addEventListener(eventName, listener);
       });
-    };
+    }
 
     function requestSetup(destId, destinationSearch) {
       var origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
@@ -121,7 +121,7 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       } else {
         destinationSearch.handleOnDestinationSelect_(dest);
       }
-    };
+    }
 
     setup(function() {
       nativeLayer_ = new print_preview.NativeLayerStub();

@@ -41,7 +41,7 @@ suite('route', function() {
       assertEquals(expectedNavigatePreviousResult,
                    settings.getCurrentRoute());
     });
-  };
+  }
 
   test('tree structure', function() {
     // Set up root page routes.

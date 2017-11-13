@@ -61,7 +61,7 @@ FakeDataMaker.exceptionEntry = function(url) {
  */
 FakeDataMaker.emptyAddressEntry = function() {
   return {};
-}
+};
 
 /**
  * Creates a fake address entry for testing.
@@ -94,7 +94,7 @@ FakeDataMaker.emptyCreditCardEntry = function() {
   var now = new Date();
   var expirationMonth = now.getMonth() + 1;
   var ret = {};
-  ret.expirationMonth = expirationMonth.toString()
+  ret.expirationMonth = expirationMonth.toString();
   ret.expirationYear = now.getFullYear().toString();
   return ret;
 };

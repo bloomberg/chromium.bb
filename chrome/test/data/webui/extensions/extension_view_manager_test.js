@@ -45,7 +45,7 @@ cr.define('extension_view_manager_tests', function() {
             assertViewVisible('viewTwo', false);
             assertViewVisible('viewThree', false);
 
-            return viewManager.switchView('viewThree')
+            return viewManager.switchView('viewThree');
           })
           .then(() => {
             assertViewVisible('viewOne', false);
@@ -71,7 +71,7 @@ cr.define('extension_view_manager_tests', function() {
       ].forEach(type => {
         viewOne.addEventListener(type, () => {
           fired[type] = true;
-        })
+        });
       });
 
       // Setup the switch promise first.

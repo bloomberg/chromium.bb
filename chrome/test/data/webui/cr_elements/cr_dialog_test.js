@@ -87,7 +87,7 @@ suite('cr-dialog', function() {
     // MockInteractions triggers event listeners synchronously.
     hiddenButton.addEventListener('click', function() {
       assertNotReached('Hidden button received a click.');
-    })
+    });
     var clicked = false;
     actionButton.addEventListener('click', function() {
       clicked = true;

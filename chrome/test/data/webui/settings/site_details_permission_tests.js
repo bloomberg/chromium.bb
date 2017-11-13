@@ -60,7 +60,7 @@ suite('SiteDetailsPermission', function() {
       assertDeepEquals([testElement.category], args[1]);
       assertEquals(expectedContentSetting, args[2]);
     });
-  };
+  }
 
   test('camera category', function() {
     var origin = 'https://www.example.com';
@@ -98,7 +98,7 @@ suite('SiteDetailsPermission', function() {
 
   test('default string is correct', function() {
     var origin = 'https://www.example.com';
-    browserProxy.setPrefs(prefs)
+    browserProxy.setPrefs(prefs);
     testElement.category = settings.ContentSettingsTypes.CAMERA;
     testElement.label = 'Camera';
     testElement.site = {
@@ -209,7 +209,7 @@ suite('SiteDetailsPermission', function() {
       assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
       assertTrue(testElement.$.permission.disabled);
       assertEquals(testSetting, testElement.$.permission.value);
-    };
+    }
 
     // Permissions that have been set by enterprise policy.
     var policySourceStrings = {};
@@ -233,7 +233,7 @@ suite('SiteDetailsPermission', function() {
       assertTrue(testElement.$.permissionItem.classList.contains('two-line'));
       assertTrue(testElement.$.permission.disabled);
       assertEquals(testSetting, testElement.$.permission.value);
-    };
+    }
 
     // Finally, check if changing the source from a non-user-controlled setting
     // (policy) back to a user-controlled one re-enables the control.

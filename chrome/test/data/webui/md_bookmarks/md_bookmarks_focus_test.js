@@ -432,7 +432,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       return new Promise(function(resolve) {
         listenOnce(el, 'close', function(e) {
           resolve();
-        })
+        });
       });
     }
 
