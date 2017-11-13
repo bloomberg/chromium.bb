@@ -383,12 +383,10 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
 // Returns false if justification failed and should fall back to start-aligned.
 bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   LayoutUnit inline_size;
-  for (const NGInlineItemResult& item_result : line_info->Results())
-    inline_size += item_result.inline_size;
   LayoutUnit available_width = line_info->AvailableWidth();
   if (line_info->LineEndShapeResult())
     available_width -= line_info->LineEndShapeResult()->SnappedWidth();
-  LayoutUnit expansion = available_width - inline_size;
+  LayoutUnit expansion = available_width - line_info->Width();
   if (expansion <= 0)
     return false;  // no expansion is needed.
 
