@@ -211,7 +211,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
   if (!render_frame() || !plugin())
     return;
 
-  chrome::mojom::PluginInfoPtr plugin_info;
+  chrome::mojom::PluginInfoPtr plugin_info = chrome::mojom::PluginInfo::New();
   std::string mime_type(GetPluginParams().mime_type.Utf8());
 
   ChromeContentRendererClient::GetPluginInfoHost()->GetPluginInfo(
