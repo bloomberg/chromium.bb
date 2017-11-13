@@ -415,6 +415,7 @@ namespace networkingPrivate {
     DOMString? ClientCertType;
     DOMString? CompLZO;
     boolean? CompNoAdapt;
+    DOMString[]? ExtraHosts;
     boolean? IgnoreDefaultRoute;
     DOMString? KeyDirection;
     DOMString? NsCertType;
@@ -454,6 +455,7 @@ namespace networkingPrivate {
     ManagedDOMString? ClientCertType;
     ManagedDOMString? CompLZO;
     ManagedBoolean? CompNoAdapt;
+    ManagedDOMStringList? ExtraHosts;
     ManagedBoolean? IgnoreDefaultRoute;
     ManagedDOMString? KeyDirection;
     ManagedDOMString? NsCertType;
