@@ -27,8 +27,8 @@ void PrintedDocument::RenderPrintedPage(
   DCHECK(context);
 
   const PageSetup& page_setup(immutable_.settings_.page_setup_device_units());
-  gfx::Rect content_area;
-  page.GetCenteredPageContentRect(page_setup.physical_size(), &content_area);
+  gfx::Rect content_area =
+      page.GetCenteredPageContentRect(page_setup.physical_size());
 
   const MetafilePlayer* metafile = page.metafile();
   // Each Metafile is a one-page PDF, and pages use 1-based indexing.
