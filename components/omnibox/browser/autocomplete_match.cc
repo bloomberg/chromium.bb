@@ -199,8 +199,10 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
     case Type::CLIPBOARD:
     case Type::PHYSICAL_WEB:
     case Type::PHYSICAL_WEB_OVERFLOW:
-    case Type::TAB_SEARCH:
       return omnibox::kHttpIcon;
+
+    case Type::TAB_SEARCH:
+      return omnibox::kTabIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_HISTORY:
