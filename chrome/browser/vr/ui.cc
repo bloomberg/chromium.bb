@@ -13,11 +13,11 @@
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/speech_recognizer.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
-#include "chrome/browser/vr/vr_shell_renderer.h"
 #include "chrome/common/chrome_features.h"
 
 namespace vr {
@@ -136,9 +136,9 @@ bool Ui::ShouldRenderWebVr() {
 void Ui::OnGlInitialized(unsigned int content_texture_id,
                          UiElementRenderer::TextureLocation content_location,
                          bool use_ganesh) {
-  vr_shell_renderer_ = base::MakeUnique<VrShellRenderer>();
+  ui_element_renderer_ = base::MakeUnique<UiElementRenderer>();
   ui_renderer_ =
-      base::MakeUnique<UiRenderer>(scene_.get(), vr_shell_renderer_.get());
+      base::MakeUnique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
   if (use_ganesh) {
     provider_ = base::MakeUnique<GaneshSurfaceProvider>();
   } else {

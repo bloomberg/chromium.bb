@@ -28,9 +28,9 @@
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/ui.h"
+#include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/vr_gl_util.h"
-#include "chrome/browser/vr/vr_shell_renderer.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
@@ -1047,7 +1047,7 @@ void VrShellGl::DrawWebVr() {
   glDisable(GL_POLYGON_OFFSET_FILL);
 
   glViewport(0, 0, webvr_surface_size_.width(), webvr_surface_size_.height());
-  ui_->vr_shell_renderer()->GetWebVrRenderer()->Draw(webvr_texture_id_);
+  ui_->ui_element_renderer()->DrawWebVr(webvr_texture_id_);
 }
 
 void VrShellGl::OnPause() {
@@ -1110,7 +1110,7 @@ base::WeakPtr<vr::BrowserUiInterface> VrShellGl::GetBrowserUiWeakPtr() {
 }
 
 void VrShellGl::SetControllerMesh(std::unique_ptr<vr::ControllerMesh> mesh) {
-  ui_->vr_shell_renderer()->GetControllerRenderer()->SetUp(std::move(mesh));
+  ui_->ui_element_renderer()->SetUpController(std::move(mesh));
 }
 
 void VrShellGl::OnVSync(base::TimeTicks frame_time) {

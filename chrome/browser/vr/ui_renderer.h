@@ -14,7 +14,7 @@ namespace vr {
 class UiElement;
 class UiScene;
 class UiElement;
-class VrShellRenderer;
+class UiElementRenderer;
 
 // Provides information for rendering such as the viewport and view/projection
 // matrix.
@@ -36,8 +36,7 @@ struct RenderInfo {
 // Renders a UI scene.
 class UiRenderer {
  public:
-  UiRenderer(UiScene* scene,
-             VrShellRenderer* vr_shell_renderer);
+  UiRenderer(UiScene* scene, UiElementRenderer* ui_element_renderer);
   ~UiRenderer();
 
   void Draw(const RenderInfo& render_info);
@@ -62,7 +61,7 @@ class UiRenderer {
                    const UiElement& element);
 
   UiScene* scene_ = nullptr;
-  VrShellRenderer* vr_shell_renderer_ = nullptr;
+  UiElementRenderer* ui_element_renderer_ = nullptr;
 };
 
 }  // namespace vr

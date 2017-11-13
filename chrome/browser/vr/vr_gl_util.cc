@@ -118,4 +118,16 @@ gfx::SizeF CalculateScreenSize(const gfx::Transform& proj_matrix,
                         2.0f);
 }
 
+void SetTexParameters(GLenum texture_type) {
+  glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+void SetColorUniform(GLuint handle, SkColor c) {
+  glUniform4f(handle, SkColorGetR(c) / 255.0, SkColorGetG(c) / 255.0,
+              SkColorGetB(c) / 255.0, SkColorGetA(c) / 255.0);
+}
+
 }  // namespace vr

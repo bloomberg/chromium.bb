@@ -23,7 +23,6 @@ class UiInputManager;
 class UiRenderer;
 class UiScene;
 class UiSceneManager;
-class VrShellRenderer;
 struct ControllerModel;
 struct Model;
 struct OmniboxSuggestions;
@@ -48,7 +47,9 @@ class Ui : public BrowserUiInterface {
 
   // TODO(crbug.com/767957): Refactor to hide these behind the UI interface.
   UiScene* scene() { return scene_.get(); }
-  VrShellRenderer* vr_shell_renderer() { return vr_shell_renderer_.get(); }
+  UiElementRenderer* ui_element_renderer() {
+    return ui_element_renderer_.get();
+  }
   UiRenderer* ui_renderer() { return ui_renderer_.get(); }
   UiInputManager* input_manager() { return input_manager_.get(); }
 
@@ -99,7 +100,7 @@ class Ui : public BrowserUiInterface {
   std::unique_ptr<vr::Model> model_;
   std::unique_ptr<vr::ContentInputDelegate> content_input_delegate_;
   std::unique_ptr<vr::UiSceneManager> scene_manager_;
-  std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
+  std::unique_ptr<vr::UiElementRenderer> ui_element_renderer_;
   std::unique_ptr<vr::UiInputManager> input_manager_;
   std::unique_ptr<vr::UiRenderer> ui_renderer_;
   std::unique_ptr<SkiaSurfaceProvider> provider_;
