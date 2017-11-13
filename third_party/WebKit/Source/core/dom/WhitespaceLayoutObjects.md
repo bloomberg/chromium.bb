@@ -1,6 +1,6 @@
 # Whitespace LayoutObjects
 
-Text nodes which only contain whitespace sometimes have a layout object and
+Text nodes which only contain whitespaces sometimes have a layout object and
 sometimes they don't. This document tries to explain why and how these layout
 objects are created.
 
@@ -33,7 +33,7 @@ to layout/rendering. Hence, we can skip creating a LayoutText for it.
 
 Out-of-flow elements like absolutely positioned elements do not affect inline
 or block in-flow layout. That means we can skip such elements when considering
-the need whitespace layout objects.
+the need for whitespace layout objects.
 
 Example:
 
@@ -61,48 +61,44 @@ Whitespace nodes are also significant in editing mode.
 
 ## How
 
-### Initial layout tree attachment
+We decide if we need to attach or re-attach the layout tree for a text node as
+part of the layout tree rebuild. A layout tree rebuild starts at the
+documentElement by calling Element::RebuildLayoutTree.
 
-When attaching a layout tree, we walk the flat-tree in a depth-first order
-walking the siblings from left to right. As we reach a text node, we check if
-we need to create a layout object in textLayoutObjectIsNeeded(). In particular,
-if we found that it only contains whitespace, we start traversing the
-previously added layout object siblings, skipping out-of-flow elements, to
-decide if we need to create a whitespace layout object.
+### RebuildLayoutTree
+
+The Element::RebuildLayoutTree traversal happens in the flat tree order
+traversing children from right to left (see RebuildChildrenLayoutTrees in the
+ContainerNode class). We keep track of the last seen text node in an instance
+of the WhitespaceAttacher class which is passed to the various traversal
+methods.
 
 Important methods:
 
-    Text::attachLayoutTree()
-    Text::textLayoutObjectIsNeeded()
+    WhitespaceAttacher::*
+    Element::RebuildLayoutTree
+    ContainerNode::RebuildChildrenLayoutTrees
 
-### Layout object re-attachment
+### Attaching a layout tree
 
-During style recalculation, elements whose computed value for display changes
-will have its layout sub-tree re-attached. Attachment of the descendant layout
-objects happens the same way as for initial layout tree attachment, but the
-interesting part for whitespace layout objects is how they are affected by
-re-attachment of sibling elements. Sibling nodes may or may not be re-attached
-during the same style recalc traversal depending on whether they change their
-computed display values or not.
+Once we encounter a node which needs re-attachment during RebuildLayoutTree, we
+do a Node::AttachLayoutTree for that sub-tree. AttachLayoutTree attaches nodes
+in the flat tree order, but as opposed to RebuildLayoutTree, siblings are
+attached from left to right. In order to decide if a whitespace Text node needs
+a LayoutObject or not, we keep track of the previous in-flow layout tree
+sibling in the AttachContext passed to AttachLayoutTree.
 
-#### Style recalc traversal
+When a sub-tree has been (re-)attached, we know which is the last in-flow
+LayoutObject of that subtree (normally the root, unless the root is
+display:contents or display:none). This last in-flow layout object, stored in
+the AttachContext, is passed into the WhitespaceAttacher to see if a sub-sequent
+whitespace node needs to be re-attached due to a different display type for the
+root of the (re-)attached subtree. See following sub-section.
 
-An important prerequisite for how whitespace layout objects are re-attached
-is the traversal order we use for style recalc. The current traversal order
-makes it hard or costly to implement whitespace re-attachment without bugs in
-the presence of shadow trees, but let's describe what we do here.
+Important methods:
 
-Style recalc happens in the shadow-including tree order with the exception that
-siblings are traversed from right to left. The ::before and ::after pseudo
-elements are recalculated in left-to-right (!?!) order, before and after
-shadow-including descendants respectively.
-
-Inheritance happens down the flat-tree. Since we are not traversing in
-flat-tree order, we implement this propagation from slot/content elements down
-to assigned/distributed nodes by marking these nodes with LocalStyleChange when
-we need to do inheritance propagation (done in HTMLSlotElement::willRecalcStyle
-for instance). This works since light-tree children are traversed after the
-shadow tree(s).
+    Text::AttachLayoutTree()
+    Text::TextLayoutObjectIsNeeded()
 
 #### Re-attaching whitespace layout objects
 
@@ -115,50 +111,16 @@ Example:
 
 Initially, we don't need a layout object for the whitespace above. If we change
 the position of the first span to static, we need a layout object for the
-whitespace. During style recalc we keep track of the last text node sibling we
-traversed. The text node is reset when we traverse an element with a layout
-box. Remember that we traverse from right to left. That means we have stored
-the whitespace node above when we re-attach the left-most span. After
-re-attachment we re-attach the stored text node to see if the need for a
-layout object changed. If the text node re-attach changed the need for a layout
-object we continue to re-attach following layout object siblings until we
-reach an element with a layout object, or the re-attach was a no-op.
+whitespace. During layout tree rebuild, we keep track of the last text node
+sibling in the WhitespaceAttacher. The text node is reset when we encounter a
+node with an in-flow layout box. Remember that we traverse from right to left.
+That means we have stored the whitespace node above in the WhitespaceAttacher
+when we re-attach the left-most span. After re-attachment we re-attach the
+stored text node based on passing the first span with its LayoutObject as
+previous in-flow into WhitespaceAttacher::DidReattachElement.
 
-The need for a whitespace layout object is dictated by the layout tree
-structure which is based on the flat-tree. That means the tracked text node
-solution we use does not work properly when (re-)attaching slotted and
-distributed nodes.
+DidReattachElement will re-attach whitespace siblings as necessary.
 
-Example:
+#### Known issues
 
-    <div id="host">
-        <:shadow-root>
-            <span style="position:absolute">A</span><slot></slot>
-        </:shadow-root>
-        <span>B</span>
-    </div>
-
-Initially, the whitespace before the B span above does not get a layout object.
-If we change the absolute positioned span in the shadow tree to static, we need
-to have a layout object for that whitespace node. However, since we traverse
-the light-tree children of #host after the shadow tree, we do not see the text
-node before re-attaching the absolute positioned span.
-
-Likewise we currently have issues with ::before and ::after elements because we
-do not keep track of text nodes and pass them to ::before/::after element
-re-attachments. See the "Known issues" below.
-
-Important methods:
-
-    Element::recalcStyle()
-    ContainerNode::recalcDescendantStyles()
-    Node::reattachWhitespaceSiblingsIfNeeded()
-    Text::textLayoutObjectIsNeeded()
-    Text::reattachLayoutTreeIfNeeded()
-    Text::recalcTextStyle()
-
-Known issues:
-
-    https://crbug.com/648931
-    https://crbug.com/648951
-    https://crbug.com/650168
+    https://crbug.com/750758
