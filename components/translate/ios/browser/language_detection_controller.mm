@@ -40,27 +40,30 @@ LanguageDetectionController::LanguageDetectionController(
     web::WebState* web_state,
     JsLanguageDetectionManager* manager,
     PrefService* prefs)
-    : web::WebStateObserver(web_state),
-      js_manager_(manager),
-      weak_method_factory_(this) {
-  DCHECK(web::WebStateObserver::web_state());
+    : web_state_(web_state), js_manager_(manager), weak_method_factory_(this) {
+  DCHECK(web_state_);
   DCHECK(js_manager_);
   translate_enabled_.Init(prefs::kEnableTranslate, prefs);
-  web_state->AddScriptCommandCallback(
+  web_state_->AddObserver(this);
+  web_state_->AddScriptCommandCallback(
       base::Bind(&LanguageDetectionController::OnTextCaptured,
                  base::Unretained(this)),
       kCommandPrefix);
 }
 
 LanguageDetectionController::~LanguageDetectionController() {
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
 }
 
 void LanguageDetectionController::StartLanguageDetection() {
   if (!translate_enabled_.GetValue())
     return;  // Translate disabled in preferences.
-  DCHECK(web_state());
-  const GURL& url = web_state()->GetVisibleURL();
-  if (!web::UrlHasWebScheme(url) || !web_state()->ContentIsHTML())
+  DCHECK(web_state_);
+  const GURL& url = web_state_->GetVisibleURL();
+  if (!web::UrlHasWebScheme(url) || !web_state_->ContentIsHTML())
     return;
   [js_manager_ inject];
   [js_manager_ startLanguageDetection];
@@ -135,7 +138,7 @@ void LanguageDetectionController::OnTextRetrieved(
   details.html_root_language = html_lang;
   details.adopted_language = language;
 
-  language::IOSLanguageDetectionTabHelper::FromWebState(web_state())
+  language::IOSLanguageDetectionTabHelper::FromWebState(web_state_)
       ->OnLanguageDetermined(details);
 }
 
@@ -158,6 +161,7 @@ void LanguageDetectionController::ExtractContentLanguageHeader(
 void LanguageDetectionController::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
+  DCHECK_EQ(web_state_, web_state);
   if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS)
     StartLanguageDetection();
 }
@@ -165,6 +169,7 @@ void LanguageDetectionController::PageLoaded(
 void LanguageDetectionController::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
   if (navigation_context->IsSameDocument()) {
     StartLanguageDetection();
   } else {
@@ -173,7 +178,10 @@ void LanguageDetectionController::DidFinishNavigation(
 }
 
 void LanguageDetectionController::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 }  // namespace translate
