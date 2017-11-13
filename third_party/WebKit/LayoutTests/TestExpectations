@@ -3857,6 +3857,12 @@ crbug.com/781171 [ Android ] external/wpt/css/css-timing/step-timing-functions-o
 # Sheriff failures 2017-11-07
 crbug.com/782067 [ Mac10.10 Mac10.11 ] fast/css/no-recalc-on-no-op-inline-style-changes.html [ Pass Failure ]
 
+# Sheriff failures 2017-11-13
+crbug.com/783800 imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Failure ]
+crbug.com/783800 imagecapture/MediaStreamTrack-applyConstraints-getSettings.html [ Pass Failure ]
+crbug.com/783301 imagecapture/MediaStreamTrack-getSettings.html [ Pass Failure ]
+crbug.com/783301 imagecapture/MediaStreamTrack-getCapabilities.html [ Pass Failure ]
+
 # Async Cookie API: hard to debug, also covered by working tests
 crbug.com/783229 external/wpt/async_cookies/cookie_store_tests.tentative.html [ Skip ]
 crbug.com/783229 external/wpt/async_cookies/cookie_store_tests.tentative.https.html [ Skip ]
