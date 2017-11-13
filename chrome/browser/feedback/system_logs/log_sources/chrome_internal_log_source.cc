@@ -173,8 +173,8 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
-      syncer::sync_ui_util::ConstructAboutInformation(service,
-                                                      chrome::GetChannel()));
+      syncer::sync_ui_util::ConstructAboutInformation_DEPRECATED(
+          service, chrome::GetChannel()));
 
   // Remove identity section.
   base::ListValue* details = NULL;
