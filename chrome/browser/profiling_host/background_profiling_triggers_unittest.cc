@@ -27,24 +27,28 @@ namespace {
 constexpr uint32_t kProcessMallocTriggerKb = 2 * 1024 * 1024;  // 2 Gig
 
 OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
-                              uint32_t private_footprint_kb) {
+                              uint32_t private_footprint_kb,
+                              uint32_t shared_footprint_kb) {
   using memory_instrumentation::mojom::VmRegion;
   std::vector<memory_instrumentation::mojom::VmRegionPtr> vm_regions;
   return memory_instrumentation::mojom::OSMemDump::New(
-      resident_set_kb, private_footprint_kb, std::move(vm_regions));
+      resident_set_kb, private_footprint_kb, shared_footprint_kb,
+      std::move(vm_regions));
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,
                      base::ProcessId pid,
                      ProcessType process_type,
                      uint32_t resident_set_kb,
-                     uint32_t private_memory_kb) {
+                     uint32_t private_memory_kb,
+                     uint32_t shared_footprint_kb) {
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->pid = pid;
   pmd->process_type = process_type;
   pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
-  pmd->os_dump = GetFakeOSMemDump(resident_set_kb, private_memory_kb);
+  pmd->os_dump =
+      GetFakeOSMemDump(resident_set_kb, private_memory_kb, shared_footprint_kb);
   (*global_dump)->process_dumps.push_back(std::move(pmd));
 }
 
@@ -52,16 +56,16 @@ GlobalMemoryDumpPtr GetLargeMemoryDump() {
   GlobalMemoryDumpPtr dump(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
   PopulateMetrics(&dump, 1, ProcessType::BROWSER, kProcessMallocTriggerKb,
-                  kProcessMallocTriggerKb);
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
   PopulateMetrics(&dump, 2, ProcessType::RENDERER, kProcessMallocTriggerKb,
-                  kProcessMallocTriggerKb);
-  PopulateMetrics(&dump, 3, ProcessType::RENDERER, 1, 1);
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
+  PopulateMetrics(&dump, 3, ProcessType::RENDERER, 1, 1, 1);
   PopulateMetrics(&dump, 4, ProcessType::GPU, kProcessMallocTriggerKb,
-                  kProcessMallocTriggerKb);
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
   PopulateMetrics(&dump, 5, ProcessType::OTHER, kProcessMallocTriggerKb,
-                  kProcessMallocTriggerKb);
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
   PopulateMetrics(&dump, 6, ProcessType::RENDERER, kProcessMallocTriggerKb,
-                  kProcessMallocTriggerKb);
+                  kProcessMallocTriggerKb, kProcessMallocTriggerKb);
   return dump;
 }
 
@@ -110,28 +114,28 @@ TEST_F(BackgroundProfilingTriggersTest, OnReceivedMemoryDump_EmptyCases) {
 
   GlobalMemoryDumpPtr dump_browser(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
-  PopulateMetrics(&dump_browser, 1, ProcessType::BROWSER, 1, 1);
+  PopulateMetrics(&dump_browser, 1, ProcessType::BROWSER, 1, 1, 1);
   triggers_.OnReceivedMemoryDump(true, std::move(dump_browser));
   EXPECT_TRUE(triggers_.pids().empty());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_gpu(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
-  PopulateMetrics(&dump_gpu, 1, ProcessType::GPU, 1, 1);
+  PopulateMetrics(&dump_gpu, 1, ProcessType::GPU, 1, 1, 1);
   triggers_.OnReceivedMemoryDump(true, std::move(dump_gpu));
   EXPECT_TRUE(triggers_.pids().empty());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_renderer(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
-  PopulateMetrics(&dump_renderer, 1, ProcessType::RENDERER, 1, 1);
+  PopulateMetrics(&dump_renderer, 1, ProcessType::RENDERER, 1, 1, 1);
   triggers_.OnReceivedMemoryDump(true, std::move(dump_renderer));
   EXPECT_TRUE(triggers_.pids().empty());
   triggers_.Reset();
 
   GlobalMemoryDumpPtr dump_other(
       memory_instrumentation::mojom::GlobalMemoryDump::New());
-  PopulateMetrics(&dump_other, 1, ProcessType::OTHER, 1, 1);
+  PopulateMetrics(&dump_other, 1, ProcessType::OTHER, 1, 1, 1);
   triggers_.OnReceivedMemoryDump(true, std::move(dump_other));
   EXPECT_TRUE(triggers_.pids().empty());
   triggers_.Reset();

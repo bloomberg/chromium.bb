@@ -59,7 +59,7 @@ class GraphProcessorTest : public testing::Test {
 };
 
 TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
-  std::map<ProcessId, ProcessMemoryDump> process_dumps;
+  std::map<ProcessId, const ProcessMemoryDump*> process_dumps;
 
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
   ProcessMemoryDump pmd(new HeapProfilerSerializationState, dump_args);
@@ -74,7 +74,7 @@ TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
   auto* weak =
       pmd.CreateWeakSharedGlobalAllocatorDump(MemoryAllocatorDumpGuid(1));
 
-  process_dumps.emplace(1, std::move(pmd));
+  process_dumps.emplace(1, &pmd);
 
   auto global_dump = GraphProcessor::CreateMemoryGraph(process_dumps);
 
@@ -112,7 +112,7 @@ TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
 }
 
 TEST_F(GraphProcessorTest, SmokeComputeSharedFootprint) {
-  std::map<ProcessId, ProcessMemoryDump> process_dumps;
+  std::map<ProcessId, const ProcessMemoryDump*> process_dumps;
 
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
   ProcessMemoryDump pmd1(new HeapProfilerSerializationState, dump_args);
@@ -163,8 +163,8 @@ TEST_F(GraphProcessorTest, SmokeComputeSharedFootprint) {
   pmd1.CreateSharedMemoryOwnershipEdge(p1_d2->guid(), token, 1);
   pmd2.CreateSharedMemoryOwnershipEdge(p2_d1->guid(), token, 2);
 
-  process_dumps.emplace(1, std::move(pmd1));
-  process_dumps.emplace(2, std::move(pmd2));
+  process_dumps.emplace(1, &pmd1);
+  process_dumps.emplace(2, &pmd2);
 
   auto graph = GraphProcessor::CreateMemoryGraph(process_dumps);
   auto pid_to_sizes = GraphProcessor::ComputeSharedFootprintFromGraph(*graph);

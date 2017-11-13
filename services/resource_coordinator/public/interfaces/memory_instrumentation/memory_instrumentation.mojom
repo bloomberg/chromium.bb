@@ -156,6 +156,10 @@ struct OSMemDump {
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
   uint32 private_footprint_kb = 0;
 
+  // This is roughly non-private, anonymous, non-discardable, resident memory
+  // in kilobytes. For more details, see https://goo.gl/3kPb9S.
+  uint32 shared_footprint_kb = 0;
+
   // This field is present only when the dump is obtained through
   // Coordinator.GetVmRegionsForHeapProfiler(), empty in the generic case of
   // RequestGlobalMemoryDump().
