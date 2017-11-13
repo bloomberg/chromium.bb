@@ -41125,6 +41125,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.DetachableResourceHandler.Duration" units="ms">
+  <obsolete>
+    Removed in Chrome 64.
+  </obsolete>
   <owner>yhirano@chromium.org</owner>
   <summary>
     Duration of time that a request associated with DetachableResourceHandler
