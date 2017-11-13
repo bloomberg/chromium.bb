@@ -161,10 +161,6 @@ void URLRequest::Delegate::OnSSLCertificateError(URLRequest* request,
 
 void URLRequest::Delegate::OnResponseStarted(URLRequest* request,
                                              int net_error) {
-  OnResponseStarted(request);
-}
-
-void URLRequest::Delegate::OnResponseStarted(URLRequest* request) {
   NOTREACHED();
 }
 

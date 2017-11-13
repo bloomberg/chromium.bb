@@ -216,9 +216,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     // meta data about the response is available, including for example HTTP
     // response headers if this is a request for a HTTP resource.
     virtual void OnResponseStarted(URLRequest* request, int net_error);
-    // Deprecated.
-    // TODO(maksims): Remove this;
-    virtual void OnResponseStarted(URLRequest* request);
 
     // Called when the a Read of the response body is completed after an
     // IO_PENDING status from a Read() call.

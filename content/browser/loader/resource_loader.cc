@@ -418,14 +418,14 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
       info->GetWebContentsGetterForRequest(), ssl_info, fatal);
 }
 
-void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
+void ResourceLoader::OnResponseStarted(net::URLRequest* unused, int net_error) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "ResourceLoader::OnResponseStarted");
   DCHECK_EQ(request_.get(), unused);
 
   DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
-  if (!request_->status().is_success()) {
+  if (net_error != net::OK) {
     ResponseCompleted();
     return;
   }
