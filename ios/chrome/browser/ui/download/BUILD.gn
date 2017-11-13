@@ -52,3 +52,21 @@ source_set("unit_tests") {
     "//third_party/ocmock:ocmock",
   ]
 }
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "pass_kit_egtest.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/third_party/earl_grey:earl_grey+link",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
+}
