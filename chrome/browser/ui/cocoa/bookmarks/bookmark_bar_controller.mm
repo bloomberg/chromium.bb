@@ -710,49 +710,33 @@ bool operator!=(const BookmarkBarLayout& lhs, const BookmarkBarLayout& rhs) {
   [sender highlight:YES];
 }
 
-- (void)setButtonFlashStateOff:(id)sender {
+- (void)setButtonFlashStateOffAndCleanUp:(id)sender {
   [sender highlight:NO];
-}
-
-- (void)cleanupAfterMenuFlashThread:(id)sender {
   [self closeFolderAndStopTrackingMenus];
 
-  // Items retained by doMenuFlashOnSeparateThread below.
+  // Release the items retained by doMenuFlashOnSeparateThread.
   [sender release];
   [self release];
 }
 
-// End runMenuFlashThread helper methods.
-
 // This call is invoked only by doMenuFlashOnSeparateThread below.
 // It makes the selected BookmarkButton (which is masquerading as a menu item)
-// flash a few times to give confirmation feedback, then it closes the menu.
+// flash once to give confirmation feedback, then it closes the menu.
 // It spends all its time sleeping or scheduling UI work on the main thread.
 - (void)runMenuFlashThread:(id)sender {
 
   // Check this is not running on the main thread, as it sleeps.
   DCHECK(![NSThread isMainThread]);
 
-  // Duration of flash phases and number of flashes designed to evoke a
-  // slightly retro "more mac-like than the Mac" feel.
-  // Current Cocoa UI has a barely perceptible flash,probably because Apple
-  // doesn't fire the action til after the animation and so there's a hurry.
-  // As this code is fully asynchronous, it can take its time.
-  const float kBBOnFlashTime = 0.08;
-  const float kBBOffFlashTime = 0.08;
-  const int kBookmarkButtonMenuFlashes = 3;
+  // Duration of flash when the item is clicked on.
+  const float kBBFlashTime = 0.08;
 
-  for (int count = 0 ; count < kBookmarkButtonMenuFlashes ; count++) {
-    [self performSelectorOnMainThread:@selector(setButtonFlashStateOn:)
-                           withObject:sender
-                        waitUntilDone:NO];
-    [NSThread sleepForTimeInterval:kBBOnFlashTime];
-    [self performSelectorOnMainThread:@selector(setButtonFlashStateOff:)
-                           withObject:sender
-                        waitUntilDone:NO];
-    [NSThread sleepForTimeInterval:kBBOffFlashTime];
-  }
-  [self performSelectorOnMainThread:@selector(cleanupAfterMenuFlashThread:)
+  [self performSelectorOnMainThread:@selector(setButtonFlashStateOn:)
+                         withObject:sender
+                      waitUntilDone:NO];
+  [NSThread sleepForTimeInterval:kBBFlashTime];
+
+  [self performSelectorOnMainThread:@selector(setButtonFlashStateOffAndCleanUp:)
                          withObject:sender
                       waitUntilDone:NO];
 }
