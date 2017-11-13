@@ -499,10 +499,16 @@ GpuImageDecodeCache::~GpuImageDecodeCache() {
   // Unregister this component with memory_coordinator::ClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      base::StringPrintf("Compositing.%s.CachedImagesCount.Gpu",
-                         GetClientNameForMetrics()),
-      lifetime_max_items_in_cache_, 1, 1000, 20);
+  // TODO(vmpstr): If we don't have a client name, it may cause problems in
+  // unittests, since most tests don't set the name but some do. The UMA system
+  // expects the name to be always the same. This assertion is violated in the
+  // tests that do set the name.
+  if (GetClientNameForMetrics()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        base::StringPrintf("Compositing.%s.CachedImagesCount.Gpu",
+                           GetClientNameForMetrics()),
+        lifetime_max_items_in_cache_, 1, 1000, 20);
+  }
 }
 
 ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRef(
