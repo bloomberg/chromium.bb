@@ -30,6 +30,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "keyword_search.icon",
     "star.1x.icon",
     "star.icon",
+    "tab.icon",
   ]
 }
 
