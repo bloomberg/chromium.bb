@@ -62,7 +62,7 @@ class TabStripImpl : public TabStrip,
   explicit TabStripImpl(std::unique_ptr<TabStripController> controller);
   ~TabStripImpl() override;
 
-  // TabStripBase implementation:
+  // TabStrip implementation:
   TabStripImpl* AsTabStripImpl() override;
   int GetMaxX() const override;
   void SetBackgroundOffset(const gfx::Point& offset) override;
@@ -246,10 +246,10 @@ class TabStripImpl : public TabStrip,
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
 
  private:
-  typedef std::vector<Tab*> Tabs;
-  typedef std::map<int, Tabs> TabsClosingMap;
-  typedef std::pair<TabsClosingMap::iterator, Tabs::iterator>
-      FindClosingTabResult;
+  using Tabs = std::vector<Tab*>;
+  using TabsClosingMap = std::map<int, Tabs>;
+  using FindClosingTabResult =
+      std::pair<TabsClosingMap::iterator, Tabs::iterator>;
 
   class RemoveTabDelegate;
 

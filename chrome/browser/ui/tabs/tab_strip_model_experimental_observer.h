@@ -12,12 +12,16 @@ class TabDataExperimental;
 class TabStripModelExperimentalObserver {
  public:
   // If the group is null the index is into the toplevel tab strip.
-  virtual void TabInsertedAt(/*Group* group,*/ int index) = 0;
+  virtual void TabInsertedAt(/*Group* group,*/ int index, bool is_active) = 0;
   virtual void TabClosedAt(/*Group* group,*/ int index) = 0;
 
   virtual void TabChangedAt(int index,
                             const TabDataExperimental& data,
                             TabStripModelObserver::TabChangeType type) = 0;
+
+  virtual void TabSelectionChanged(
+      const ui::ListSelectionModel& old_selection,
+      const ui::ListSelectionModel& new_selection) = 0;
 
   /* TODO(brettw) add group notifications. Some initial thinking:
   struct GroupCreateParams {

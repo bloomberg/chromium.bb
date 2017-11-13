@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_impl.h"
 
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/tabs/tab_strip_model_experimental.h"
 #endif
 
@@ -18,7 +18,7 @@ const base::Feature kExperimentalTabControllerFeature{
 };
 
 bool IsExperimentalTabStripEnabled() {
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
   return base::FeatureList::IsEnabled(kExperimentalTabControllerFeature);
 #else
   return false;
@@ -30,7 +30,7 @@ std::unique_ptr<TabStripModel> CreateTabStripModel(
     Profile* profile) {
   // The experimental controller currently just crashes so don't inflict it on
   // people yet who may have accidentally triggered this feature.
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
   if (IsExperimentalTabStripEnabled())
     return base::MakeUnique<TabStripModelExperimental>(delegate, profile);
 #endif

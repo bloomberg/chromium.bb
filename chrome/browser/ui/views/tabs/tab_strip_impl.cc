@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/adapters.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -1666,12 +1667,11 @@ void TabStripImpl::UpdateTabsClosingMap(int index, int delta) {
                                         tabs.begin(), tabs.end());
   }
   TabsClosingMap updated_map;
-  for (TabsClosingMap::iterator i(tabs_closing_map_.begin());
-       i != tabs_closing_map_.end(); ++i) {
-    if (i->first > index)
-      updated_map[i->first + delta] = i->second;
-    else if (i->first < index)
-      updated_map[i->first] = i->second;
+  for (auto& i : tabs_closing_map_) {
+    if (i.first > index)
+      updated_map[i.first + delta] = i.second;
+    else if (i.first < index)
+      updated_map[i.first] = i.second;
   }
   if (delta > 0 && tabs_closing_map_.find(index) != tabs_closing_map_.end())
     updated_map[index + delta] = tabs_closing_map_[index];
@@ -1784,8 +1784,7 @@ TabDragController* TabStripImpl::ReleaseDragController() {
 TabStripImpl::FindClosingTabResult TabStripImpl::FindClosingTab(
     const Tab* tab) {
   DCHECK(tab->closing());
-  for (TabsClosingMap::iterator i(tabs_closing_map_.begin());
-       i != tabs_closing_map_.end(); ++i) {
+  for (auto i = tabs_closing_map_.begin(); i != tabs_closing_map_.end(); ++i) {
     Tabs::iterator j = std::find(i->second.begin(), i->second.end(), tab);
     if (j != i->second.end())
       return FindClosingTabResult(i, j);
@@ -1798,10 +1797,8 @@ void TabStripImpl::PaintClosingTabs(int index,
                                     const views::PaintInfo& paint_info) {
   if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
     return;
-
-  const Tabs& tabs = tabs_closing_map_[index];
-  for (Tabs::const_reverse_iterator i(tabs.rbegin()); i != tabs.rend(); ++i)
-    (*i)->Paint(paint_info);
+  for (Tab* tab : base::Reversed(tabs_closing_map_[index]))
+    tab->Paint(paint_info);
 }
 
 void TabStripImpl::UpdateStackedLayoutFromMouseEvent(

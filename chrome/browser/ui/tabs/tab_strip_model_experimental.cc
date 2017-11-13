@@ -174,7 +174,7 @@ void TabStripModelExperimental::InsertWebContentsAt(
   selection_model_.IncrementFrom(index);
 
   for (auto& observer : exp_observers_)
-    observer.TabInsertedAt(index);
+    observer.TabInsertedAt(index, active);
   for (auto& observer : observers_)
     observer.TabInsertedAt(this, contents, index, active);
 
@@ -342,7 +342,6 @@ void TabStripModelExperimental::CloseAllTabs() {
     closing.push_back(tab.contents_);
 
   InternalCloseTabs(closing);
-  NOTIMPLEMENTED();
 }
 
 bool TabStripModelExperimental::TabsAreLoading() const {
@@ -431,19 +430,22 @@ void TabStripModelExperimental::AddWebContents(content::WebContents* contents,
 }
 
 void TabStripModelExperimental::CloseSelectedTabs() {
-  NOTIMPLEMENTED();
+  std::vector<content::WebContents*> closed_contents;
+  for (int index : selection_model_.selected_indices())
+    closed_contents.push_back(tabs_[index].contents_);
+  InternalCloseTabs(closed_contents);
 }
 
 void TabStripModelExperimental::SelectNextTab() {
-  NOTIMPLEMENTED();
+  ActivateTabAt((active_index() + 1) % count(), true);
 }
 
 void TabStripModelExperimental::SelectPreviousTab() {
-  NOTIMPLEMENTED();
+  ActivateTabAt((count() + active_index() - 1) % count(), true);
 }
 
 void TabStripModelExperimental::SelectLastTab() {
-  NOTIMPLEMENTED();
+  ActivateTabAt(count() - 1, true);
 }
 
 void TabStripModelExperimental::MoveTabNext() {
@@ -549,6 +551,8 @@ void TabStripModelExperimental::NotifyIfActiveOrSelectionChanged(
   NotifyIfActiveTabChanged(old_contents, notify_types);
 
   if (selection_model() != old_model) {
+    for (auto& observer : exp_observers_)
+      observer.TabSelectionChanged(old_model, selection_model());
     for (auto& observer : observers_)
       observer.TabSelectionChanged(this, old_model);
   }
@@ -616,6 +620,8 @@ void TabStripModelExperimental::InternalCloseTabs(
       continue;
     }
 
+    for (auto& observer : exp_observers_)
+      observer.TabClosedAt(index);
     for (auto& observer : observers_)
       observer.TabClosingAt(this, closing_contents, index);
 
