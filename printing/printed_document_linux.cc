@@ -5,13 +5,17 @@
 #include "printing/printed_document.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "printing/page_number.h"
 #include "printing/printed_page.h"
 #include "printing/printing_context_linux.h"
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#error "This file is not used on Android / ChromeOS"
+#endif
+
 namespace printing {
 
-#if !defined(OS_ANDROID)
 void PrintedDocument::RenderPrintedPage(
     const PrintedPage& page, PrintingContext* context) const {
 #ifndef NDEBUG
@@ -32,6 +36,5 @@ void PrintedDocument::RenderPrintedPage(
     }
   }
 }
-#endif  // !OS_ANDROID
 
 }  // namespace printing
