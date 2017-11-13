@@ -17,40 +17,17 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 106, 106, 1],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [10, 104, 102, 1],
-          "reason": "incremental"
-        },
-        {
           "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [11, 45, 100, 25],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='target'",
-          "rect": [11, 44, 50, 25],
-          "reason": "geometry"
+          "rect": [61, 45, 50, 25],
+          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTable TABLE",
-      "reason": "incremental"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "incremental"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='target'",
-      "reason": "geometry"
+      "reason": "incremental"
     }
   ]
 }
