@@ -533,8 +533,8 @@ void TextFieldInputType::UpdateView() {
     // updated. In this case, updateView() is called but we should not
     // update the view value.
     GetElement().SetInnerEditorValue(VisibleValue());
+    GetElement().UpdatePlaceholderVisibility();
   }
-  GetElement().UpdatePlaceholderVisibility();
 }
 
 void TextFieldInputType::FocusAndSelectSpinButtonOwner() {
