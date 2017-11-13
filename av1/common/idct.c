@@ -2516,27 +2516,6 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   inv_txfm_func[txfm_param.is_hbd](dqcoeff, dst, stride, &txfm_param);
 }
 
-void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
-                                        int blk_row, int blk_col, int eob) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-  const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
-  const int dst_stride = pd->dst.stride;
-  uint8_t *dst =
-      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  av1_inverse_transform_block(xd, dqcoeff,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              mrc_mask,
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                              plane, tx_type, tx_size, dst, dst_stride, eob);
-}
-
 void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                              TxfmParam *txfm_param) {
   assert(av1_ext_tx_used[txfm_param->tx_set_type][txfm_param->tx_type]);

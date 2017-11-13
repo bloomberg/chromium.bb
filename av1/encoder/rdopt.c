@@ -1929,6 +1929,27 @@ int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
+void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
+                                        int blk_row, int blk_col, int eob) {
+  struct macroblockd_plane *const pd = &xd->plane[plane];
+  tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
+  const TX_TYPE tx_type =
+      av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
+  const int dst_stride = pd->dst.stride;
+  uint8_t *dst =
+      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  av1_inverse_transform_block(xd, dqcoeff,
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              plane, tx_type, tx_size, dst, dst_stride, eob);
+}
+
 void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                     BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
                     TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
