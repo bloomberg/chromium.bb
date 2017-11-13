@@ -61,7 +61,7 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
-crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure Pass ]
+crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
 
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Failure ]
 
@@ -3501,8 +3501,8 @@ crbug.com/755405 [ Android ] fast/layers/opacity-transforms.html [ Failure ]
 crbug.com/755405 [ Android ] fast/selectors/018.html [ Failure ]
 crbug.com/755405 [ Android ] fast/selectors/061.html [ Failure ]
 crbug.com/755405 [ Android ] images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Failure ]
-crbug.com/755405 [ Android ] paint/invalidation/focus-layers.html [ Failure ]
-crbug.com/755405 [ Android ] paint/invalidation/selected-replaced.html [ Failure Timeout ]
+crbug.com/755405 [ Android ] paint/invalidation/outline/focus-layers.html [ Failure ]
+crbug.com/755405 [ Android ] paint/invalidation/selection/selected-replaced.html [ Failure Timeout ]
 crbug.com/755405 [ Android ] paint/invalidation/shadow-multiple.html [ Failure ]
 crbug.com/755405 [ Android ] svg/as-background-image/svg-width-100p-as-background.html [ Failure ]
 crbug.com/755405 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
@@ -3575,9 +3575,9 @@ crbug.com/757165 [ Win ] http/tests/devtools/extensions/extensions-panel.html [ 
 crbug.com/757165 [ Win ] http/tests/devtools/sources/ui-source-code-metadata.js [ Skip ]
 crbug.com/757165 [ Win ] http/tests/misc/client-hints-accept-meta-preloader.html [ Skip ]
 crbug.com/757165 [ Win ] inspector-protocol/debugger/debugger-evaluate-in-worker-while-pause-in-page.js [ Skip ]
-crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
-crbug.com/757165 [ Win ] paint/invalidation/filter-repaint-on-accelerated-layer.html [ Skip ]
-crbug.com/757165 [ Win ] paint/invalidation/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
+crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-accelerated-child-with-filter-child.html [ Skip ]
+crbug.com/757165 [ Win ] paint/invalidation/filters/filter-repaint-on-accelerated-layer.html [ Skip ]
+crbug.com/757165 [ Win ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-filter-modified.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/mojo-loading/http/tests/devtools/console/console-filter-test.js [ Skip ]
@@ -3814,7 +3814,7 @@ crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [
 crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 
 # Sheriff failures 2017-10-13
-crbug.com/774437 paint/invalidation/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
+crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774463 [ Win7 Debug ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
 crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html [ Pass Failure ]
