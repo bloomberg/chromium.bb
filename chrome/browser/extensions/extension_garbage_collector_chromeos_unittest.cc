@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -26,6 +25,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/plugin_service.h"
@@ -59,8 +59,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
 
     // Initialize the UserManager singleton to a fresh FakeChromeUserManager
     // instance.
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
 
     GetFakeUserManager()->AddUser(user_manager::StubAccountId());
     GetFakeUserManager()->LoginUser(user_manager::StubAccountId());
@@ -139,7 +139,7 @@ class ExtensionGarbageCollectorChromeOSUnitTest
   }
 
  private:
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   base::ScopedTempDir cache_dir_;
 };
 

@@ -8,11 +8,11 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -32,6 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,7 +130,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
         extension_(ExtensionBuilder("Test").Build()),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_) {
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
     // Set up the default behavior of mocks.
     ON_CALL(mock_async_method_caller_, TpmAttestationRegisterKey(_, _, _, _))
         .WillByDefault(Invoke(RegisterKeyCallbackTrue));
@@ -218,7 +219,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   TestingProfileManager profile_manager_;
   // fake_user_manager_ is owned by user_manager_enabler_.
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   PrefService* prefs_ = nullptr;
 };
 

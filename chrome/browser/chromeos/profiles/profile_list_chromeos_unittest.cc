@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
@@ -23,6 +22,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,8 +63,8 @@ class ProfileListChromeOSTest : public testing::Test {
 
     // Initialize the UserManager singleton to a fresh FakeChromeUserManager
     // instance.
-    user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(new FakeChromeUserManager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<FakeChromeUserManager>());
   }
 
   FakeChromeUserManager* GetFakeChromeUserManager() {
@@ -112,7 +112,7 @@ class ProfileListChromeOSTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager manager_;
   std::unique_ptr<MockObserver> mock_observer_;
-  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<AvatarMenu> avatar_menu_;
   ChromeShellDelegate chrome_shell_delegate_;
 

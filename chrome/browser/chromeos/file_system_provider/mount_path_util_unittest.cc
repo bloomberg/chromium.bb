@@ -8,18 +8,19 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
@@ -69,7 +70,8 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("testing-profile");
     user_manager_ = new FakeChromeUserManager();
-    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager_));
     user_manager_->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
     file_system_provider_service_ = Service::Get(profile_);
@@ -80,7 +82,7 @@ class FileSystemProviderMountPathUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;  // Owned by TestingProfileManager.
-  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   FakeChromeUserManager* user_manager_;
   Service* file_system_provider_service_;  // Owned by its factory.
 };

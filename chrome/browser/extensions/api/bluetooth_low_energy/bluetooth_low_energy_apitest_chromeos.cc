@@ -4,14 +4,15 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,15 +48,15 @@ class BluetoothLowEnergyApiTestChromeOs : public PlatformAppBrowserTest {
 
  protected:
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
 
   void EnterKioskSession() {
     fake_user_manager_ = new chromeos::FakeChromeUserManager();
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(fake_user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager_));
 
     const AccountId kiosk_account_id(
         AccountId::FromUserEmail("kiosk@foobar.com"));

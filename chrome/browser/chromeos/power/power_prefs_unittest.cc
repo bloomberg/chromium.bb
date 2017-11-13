@@ -11,10 +11,10 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -33,6 +33,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -259,14 +260,14 @@ class PowerPrefsUserSessionTest : public PowerPrefsTest {
 
  private:
   FakeChromeUserManager* user_manager_;
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerPrefsUserSessionTest);
 };
 
 PowerPrefsUserSessionTest::PowerPrefsUserSessionTest()
     : user_manager_(new FakeChromeUserManager),
-      user_manager_enabler_(user_manager_) {}
+      user_manager_enabler_(base::WrapUnique(user_manager_)) {}
 
 void PowerPrefsUserSessionTest::SetUp() {
   PowerPrefsTest::SetUp();

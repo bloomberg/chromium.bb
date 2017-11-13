@@ -8,13 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -37,6 +37,7 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
@@ -51,7 +52,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
   ExternalProviderImplChromeOSTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager()),
-        scoped_user_manager_(fake_user_manager_) {}
+        scoped_user_manager_(base::WrapUnique(fake_user_manager_)) {}
 
   ~ExternalProviderImplChromeOSTest() override {}
 
@@ -89,7 +90,7 @@ class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
   std::unique_ptr<base::ScopedPathOverride> external_externsions_overrides_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler scoped_user_manager_;
+  user_manager::ScopedUserManager scoped_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplChromeOSTest);
 };

@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen_view_observer.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -53,6 +52,7 @@
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -157,7 +157,8 @@ class ArcSessionManagerTestBase : public testing::Test {
  public:
   ArcSessionManagerTestBase()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        user_manager_enabler_(new chromeos::FakeChromeUserManager()) {}
+        user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()) {}
   ~ArcSessionManagerTestBase() override = default;
 
   void SetUp() override {
@@ -234,7 +235,7 @@ class ArcSessionManagerTestBase : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTestBase);

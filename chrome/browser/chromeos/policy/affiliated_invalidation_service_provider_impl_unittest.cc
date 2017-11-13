@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -31,6 +30,7 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -132,7 +132,7 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   chromeos::ScopedStubInstallAttributes install_attributes_;
   std::unique_ptr<chromeos::ScopedTestDeviceSettingsService>
       test_device_settings_service_;
@@ -192,7 +192,7 @@ AffiliatedInvalidationServiceProviderImplTest::
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
-      user_manager_enabler_(fake_user_manager_),
+      user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
       install_attributes_(
           chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
               "example.com",

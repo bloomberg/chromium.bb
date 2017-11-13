@@ -95,10 +95,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1427,7 +1427,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       new testing::NiceMock<chromeos::MockUserManager>();
   mock_user_manager->SetActiveUser(
       AccountId::FromUserEmail("test@example.com"));
-  chromeos::ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
+  user_manager::ScopedUserManager user_manager_enabler(
+      base::WrapUnique(mock_user_manager));
 
   // Owned by DBusThreadManager.
   FakeCryptohomeClient* cryptohome_client = new FakeCryptohomeClient();

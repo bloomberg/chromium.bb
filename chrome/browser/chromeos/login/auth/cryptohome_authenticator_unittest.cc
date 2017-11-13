@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -45,6 +44,7 @@
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_key_util.h"
@@ -183,7 +183,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   CryptohomeAuthenticatorTest()
       : user_context_(AccountId::FromUserEmail("me@nowhere.org")),
         user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(user_manager_),
+        user_manager_enabler_(base::WrapUnique(user_manager_)),
         mock_caller_(NULL),
         owner_key_util_(new ownership::MockOwnerKeyUtil()) {
     // Testing profile must be initialized after user_manager_ +
@@ -367,7 +367,7 @@ class CryptohomeAuthenticatorTest : public testing::Test {
   chromeos::FakeChromeUserManager* user_manager_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
 

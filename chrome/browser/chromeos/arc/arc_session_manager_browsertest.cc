@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
@@ -44,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -121,8 +121,8 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
     // Init ArcSessionManager for testing.
     ArcServiceLauncher::Get()->ResetForTesting();
     ArcSessionManager::DisableUIForTesting();
@@ -208,7 +208,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
   FakeProfileOAuth2TokenService* token_service_;

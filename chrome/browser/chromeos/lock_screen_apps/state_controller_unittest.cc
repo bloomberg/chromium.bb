@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -44,6 +43,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -394,7 +394,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  public:
   LockScreenAppStateTest()
       : fake_user_manager_(new chromeos::FakeChromeUserManager),
-        user_manager_enabler_(fake_user_manager_),
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   ~LockScreenAppStateTest() override = default;
@@ -704,7 +704,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   TestingProfileManager profile_manager_;
 
   // Run loop used to throttle test until async state controller initialization

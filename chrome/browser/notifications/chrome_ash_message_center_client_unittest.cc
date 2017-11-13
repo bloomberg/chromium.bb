@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -42,8 +42,8 @@ class ChromeAshMessageCenterClientTest : public testing::Test {
     ASSERT_TRUE(testing_profile_manager_.SetUp());
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
-    user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
-        new chromeos::FakeChromeUserManager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
   }
 
   void TearDown() override { client_.reset(); }
@@ -97,7 +97,7 @@ class ChromeAshMessageCenterClientTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
   std::unique_ptr<ChromeAshMessageCenterClient> client_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAshMessageCenterClientTest);
 };

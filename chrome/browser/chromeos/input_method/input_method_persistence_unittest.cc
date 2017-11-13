@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -20,6 +20,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +38,7 @@ class InputMethodPersistenceTest : public testing::Test {
   InputMethodPersistenceTest()
       : mock_profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_user_manager_(new chromeos::FakeChromeUserManager()),
-        user_manager_enabler_(fake_user_manager_) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
 
   void SetUp() override {
     ASSERT_TRUE(mock_profile_manager_.SetUp());
@@ -75,7 +76,7 @@ class InputMethodPersistenceTest : public testing::Test {
   MockInputMethodManagerImpl mock_manager_;
   TestingProfileManager mock_profile_manager_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 };
 
 TEST_F(InputMethodPersistenceTest, TestLifetime) {

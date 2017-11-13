@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/simple_test_clock.h"
@@ -12,7 +13,6 @@
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -20,6 +20,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,7 +62,7 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
 
   MockUserManager* user_manager_;  // Not owned.
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
 
   std::unique_ptr<TestingProfile> profile_;
   base::SimpleTestClock clock_;
@@ -76,7 +77,7 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
 SAMLOfflineSigninLimiterTest::SAMLOfflineSigninLimiterTest()
     : runner_(new base::TestSimpleTaskRunner),
       user_manager_(new MockUserManager),
-      user_manager_enabler_(user_manager_),
+      user_manager_enabler_(base::WrapUnique(user_manager_)),
       limiter_(NULL) {}
 
 SAMLOfflineSigninLimiterTest::~SAMLOfflineSigninLimiterTest() {

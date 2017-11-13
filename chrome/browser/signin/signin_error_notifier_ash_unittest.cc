@@ -9,10 +9,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -25,6 +25,7 @@
 #include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
@@ -47,8 +48,8 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(profile_manager_->SetUp());
 
     mock_user_manager_ = new chromeos::MockUserManager();
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(mock_user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(mock_user_manager_));
 
     error_controller_ =
         SigninErrorControllerFactory::GetForProfile(GetProfile());
@@ -84,7 +85,7 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
   SigninErrorController* error_controller_;
   NotificationUIManager* notification_ui_manager_;
   chromeos::MockUserManager* mock_user_manager_;  // Not owned.
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 };
 
 TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {

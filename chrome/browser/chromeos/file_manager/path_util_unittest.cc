@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,7 +77,8 @@ TEST(FileManagerPathUtilTest, ConvertPathToArcUrl) {
 
   chromeos::FakeChromeUserManager* const fake_user_manager =
       new chromeos::FakeChromeUserManager;
-  chromeos::ScopedUserManagerEnabler user_manager_enabler(fake_user_manager);
+  user_manager::ScopedUserManager user_manager_enabler(
+      base::WrapUnique(fake_user_manager));
 
   const AccountId account_id(
       AccountId::FromUserEmailGaiaId("user@gmail.com", "1111111111"));

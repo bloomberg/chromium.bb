@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/net/network_portal_notification_controller.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
@@ -65,7 +65,8 @@ class NotificationObserver : public message_center::MessageCenterObserver {
 class NetworkPortalNotificationControllerTest : public testing::Test {
  public:
   NetworkPortalNotificationControllerTest()
-      : user_manager_enabler_(new chromeos::FakeChromeUserManager()),
+      : user_manager_enabler_(
+            std::make_unique<chromeos::FakeChromeUserManager>()),
         controller_(nullptr) {}
   ~NetworkPortalNotificationControllerTest() override {}
 
@@ -91,7 +92,7 @@ class NetworkPortalNotificationControllerTest : public testing::Test {
   NotificationObserver& observer() { return observer_; }
 
  private:
-  ScopedUserManagerEnabler user_manager_enabler_;
+  user_manager::ScopedUserManager user_manager_enabler_;
   NetworkPortalNotificationController controller_;
   NotificationObserver observer_;
 

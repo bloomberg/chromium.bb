@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -39,7 +40,7 @@ ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
 DeviceSettingsTestBase::DeviceSettingsTestBase()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       user_manager_(new FakeChromeUserManager()),
-      user_manager_enabler_(user_manager_),
+      user_manager_enabler_(base::WrapUnique(user_manager_)),
       owner_key_util_(new ownership::MockOwnerKeyUtil()) {
   OwnerSettingsServiceChromeOSFactory::SetDeviceSettingsServiceForTesting(
       &device_settings_service_);

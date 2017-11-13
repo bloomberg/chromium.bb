@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -23,6 +22,7 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/policy_switches.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
@@ -82,9 +82,8 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
         "localhost", content::BrowserThread::GetTaskRunnerForThread(
                          content::BrowserThread::IO));
 
-    user_manager_enabler_ =
-        std::make_unique<chromeos::ScopedUserManagerEnabler>(
-            new chromeos::FakeChromeUserManager());
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::make_unique<chromeos::FakeChromeUserManager>());
 
     const AccountId account_id(AccountId::FromUserEmail(kFakeUserName));
     GetFakeUserManager()->AddArcKioskAppUser(account_id);
@@ -142,7 +141,7 @@ class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<policy::TestRequestInterceptor> interceptor_;
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthCodeFetcherBrowserTest);
 };

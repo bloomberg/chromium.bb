@@ -24,7 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif
 
 namespace settings {
@@ -58,8 +58,8 @@ class ProfileInfoHandlerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     chromeos::FakeChromeUserManager* fake_user_manager =
         new chromeos::FakeChromeUserManager;
-    user_manager_enabler_.reset(
-        new chromeos::ScopedUserManagerEnabler(fake_user_manager));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(fake_user_manager));
     profile_ = profile_manager_.CreateTestingProfile(fake_email);
     fake_user_manager->AddUser(AccountId::FromUserEmail(fake_email));
 #else
@@ -106,7 +106,7 @@ class ProfileInfoHandlerTest : public testing::Test {
   content::TestWebUI web_ui_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
 
   Profile* profile_;

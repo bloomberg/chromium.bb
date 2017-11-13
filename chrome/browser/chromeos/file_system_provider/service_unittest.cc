@@ -21,12 +21,12 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
@@ -211,7 +211,8 @@ class FileSystemProviderServiceTest : public testing::Test {
     user_manager_ = new FakeChromeUserManager();
     user_manager_->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
-    user_manager_enabler_.reset(new ScopedUserManagerEnabler(user_manager_));
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        base::WrapUnique(user_manager_));
     extension_registry_.reset(new extensions::ExtensionRegistry(profile_));
 
     service_.reset(new Service(profile_, extension_registry_.get()));
@@ -234,7 +235,7 @@ class FileSystemProviderServiceTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   FakeChromeUserManager* user_manager_;
-  std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
   std::unique_ptr<Service> service_;
   scoped_refptr<extensions::Extension> extension_;
