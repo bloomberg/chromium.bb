@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/streams/stream.h"
+#include "content/browser/streams/stream_metadata.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
@@ -19,15 +20,14 @@
 
 namespace content {
 
-StreamURLRequestJob::StreamURLRequestJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
-    scoped_refptr<Stream> stream)
+StreamURLRequestJob::StreamURLRequestJob(net::URLRequest* request,
+                                         net::NetworkDelegate* network_delegate,
+                                         scoped_refptr<Stream> stream)
     : net::URLRangeRequestJob(request, network_delegate),
       stream_(stream),
-      headers_set_(false),
       pending_buffer_size_(0),
       total_bytes_read_(0),
+      raw_body_bytes_(0),
       max_range_(0),
       request_failed_(false),
       error_code_(net::OK),
@@ -110,6 +110,7 @@ int StreamURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   switch (stream_->ReadRawData(buf, to_read, &bytes_read)) {
     case Stream::STREAM_HAS_DATA:
       total_bytes_read_ += bytes_read;
+      raw_body_bytes_ = stream_->metadata()->raw_body_bytes();
       return bytes_read;
     case Stream::STREAM_COMPLETE:
       return stream_->GetStatus();
@@ -126,32 +127,42 @@ int StreamURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
 }
 
 bool StreamURLRequestJob::GetMimeType(std::string* mime_type) const {
-  if (!response_info_)
+  const StreamMetadata* metadata = stream_->metadata();
+  if (!metadata || !metadata->response_info().headers)
     return false;
 
   // TODO(zork): Support registered MIME types if needed.
-  return response_info_->headers->GetMimeType(mime_type);
+  return metadata->response_info().headers->GetMimeType(mime_type);
 }
 
 void StreamURLRequestJob::GetResponseInfo(net::HttpResponseInfo* info) {
-  if (response_info_)
-    *info = *response_info_;
+  if (failed_response_info_) {
+    *info = *failed_response_info_;
+    return;
+  }
+  const StreamMetadata* metadata = stream_->metadata();
+  if (metadata)
+    *info = metadata->response_info();
 }
 
 int64_t StreamURLRequestJob::GetTotalReceivedBytes() const {
-  int64_t total_received_bytes = 0;
-  if (response_info_)
-    total_received_bytes = response_info_->headers->raw_headers().size();
-  if (stream_.get())
-    total_received_bytes += total_bytes_read_;
-  return total_received_bytes;
+  if (!stream_)
+    return 0;
+  const StreamMetadata* metadata = stream_->metadata();
+  if (!metadata)
+    return 0;
+  return metadata->total_received_bytes();
+}
+
+int64_t StreamURLRequestJob::prefilter_bytes_read() const {
+  return raw_body_bytes_;
 }
 
 void StreamURLRequestJob::DidStart() {
   if (range_parse_result() == net::OK && ranges().size() > 0) {
     // Only one range is supported, and it must start at the first byte.
     if (ranges().size() > 1 || ranges()[0].first_byte_position() != 0) {
-      NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
+      NotifyMethodNotSupported();
       return;
     }
 
@@ -160,42 +171,17 @@ void StreamURLRequestJob::DidStart() {
 
   // This class only supports GET requests.
   if (request()->method() != "GET") {
-    NotifyFailure(net::ERR_METHOD_NOT_SUPPORTED);
+    NotifyMethodNotSupported();
     return;
   }
-
-  HeadersCompleted(net::HTTP_OK);
+  NotifyHeadersComplete();
 }
 
-void StreamURLRequestJob::NotifyFailure(int error_code) {
+void StreamURLRequestJob::NotifyMethodNotSupported() {
+  const net::HttpStatusCode status_code = net::HTTP_METHOD_NOT_ALLOWED;
   request_failed_ = true;
-  error_code_ = error_code;
+  error_code_ = net::ERR_METHOD_NOT_SUPPORTED;
 
-  // This method can only be called before headers are set.
-  DCHECK(!headers_set_);
-
-  // TODO(zork): Share these with BlobURLRequestJob.
-  net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
-  switch (error_code) {
-    case net::ERR_ACCESS_DENIED:
-      status_code = net::HTTP_FORBIDDEN;
-      break;
-    case net::ERR_FILE_NOT_FOUND:
-      status_code = net::HTTP_NOT_FOUND;
-      break;
-    case net::ERR_METHOD_NOT_SUPPORTED:
-      status_code = net::HTTP_METHOD_NOT_ALLOWED;
-      break;
-    case net::ERR_FAILED:
-      break;
-    default:
-      DCHECK(false);
-      break;
-  }
-  HeadersCompleted(status_code);
-}
-
-void StreamURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
   std::string status("HTTP/1.1 ");
   status.append(base::IntToString(status_code));
   status.append(" ");
@@ -203,18 +189,8 @@ void StreamURLRequestJob::HeadersCompleted(net::HttpStatusCode status_code) {
   status.append("\0\0", 2);
   net::HttpResponseHeaders* headers = new net::HttpResponseHeaders(status);
 
-  if (status_code == net::HTTP_OK) {
-    std::string content_type_header(net::HttpRequestHeaders::kContentType);
-    content_type_header.append(": ");
-    content_type_header.append("text/plain");
-    headers->AddHeader(content_type_header);
-  }
-
-  response_info_.reset(new net::HttpResponseInfo());
-  response_info_->headers = headers;
-
-  headers_set_ = true;
-
+  failed_response_info_.reset(new net::HttpResponseInfo());
+  failed_response_info_->headers = headers;
   NotifyHeadersComplete();
 }
 

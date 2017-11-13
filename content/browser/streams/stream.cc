@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/browser/streams/stream_handle_impl.h"
+#include "content/browser/streams/stream_metadata.h"
 #include "content/browser/streams/stream_read_observer.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/streams/stream_write_observer.h"
@@ -82,6 +83,24 @@ void Stream::Abort() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void Stream::OnResponseStarted(const net::HttpResponseInfo& response_info) {
+  DCHECK(!metadata_);
+  if (response_info.headers) {
+    metadata_.reset(new StreamMetadata(response_info));
+    return;
+  }
+  // Assume request wasn't backed by HTTP and produce fake "200 OK" response,
+  // as some consumers expect it for, say, data urls.
+  net::HttpResponseInfo fake_response_info = response_info;
+  fake_response_info.headers = new net::HttpResponseHeaders("HTTP/1.1 200 OK");
+  metadata_ = std::make_unique<StreamMetadata>(fake_response_info);
+}
+
+void Stream::UpdateNetworkStats(int64_t raw_body_bytes, int64_t total_bytes) {
+  metadata_->set_raw_body_bytes(raw_body_bytes);
+  metadata_->set_total_received_bytes(total_bytes);
 }
 
 void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {

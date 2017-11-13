@@ -15,6 +15,7 @@
 #include "url/gurl.h"
 
 namespace net {
+class HttpResponseInfo;
 class IOBuffer;
 }
 
@@ -22,6 +23,7 @@ namespace content {
 
 class StreamHandle;
 class StreamHandleImpl;
+class StreamMetadata;
 class StreamReadObserver;
 class StreamRegistry;
 class StreamWriteObserver;
@@ -64,6 +66,13 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   // |registry_| and make coming ReadRawData() calls return STREAM_ABORTED.
   void Abort();
 
+  // Passes HTTP response information associated with the response body
+  // transferred through this.
+  void OnResponseStarted(const net::HttpResponseInfo& response_info);
+
+  // Updates actual counts of bytes transferred by the network.
+  void UpdateNetworkStats(int64_t raw_body_bytes, int64_t total_bytes);
+
   // Adds the data in |buffer| to the stream.  Takes ownership of |buffer|.
   void AddData(scoped_refptr<net::IOBuffer> buffer, size_t size);
   // Adds data of |size| at |data| to the stream. This method creates a copy
@@ -98,6 +107,8 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   size_t last_total_buffered_bytes() const {
     return last_total_buffered_bytes_;
   }
+
+  StreamMetadata* metadata() const { return metadata_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<Stream>;
@@ -135,6 +146,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   StreamWriteObserver* write_observer_;
 
   StreamHandleImpl* stream_handle_;
+  std::unique_ptr<StreamMetadata> metadata_;
 
   base::WeakPtrFactory<Stream> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(Stream);

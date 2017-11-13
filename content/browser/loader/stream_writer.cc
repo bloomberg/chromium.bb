@@ -35,6 +35,16 @@ void StreamWriter::InitializeStream(StreamRegistry* registry,
   stream_ = new Stream(registry, this, url);
 }
 
+void StreamWriter::OnResponseStarted(
+    const net::HttpResponseInfo& response_info) {
+  stream_->OnResponseStarted(response_info);
+}
+
+void StreamWriter::UpdateNetworkStats(int64_t raw_body_bytes,
+                                      int64_t total_bytes) {
+  stream_->UpdateNetworkStats(raw_body_bytes, total_bytes);
+}
+
 void StreamWriter::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                               int* buf_size,
                               int min_size) {
