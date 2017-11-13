@@ -482,6 +482,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/metrics/sample_vector.cc',
       'base/metrics/sparse_histogram.cc',
       'base/metrics/statistics_recorder.cc',
+      'base/observer_list_threadsafe.cc',
       'base/path_service.cc',
       'base/pending_task.cc',
       'base/pickle.cc',
