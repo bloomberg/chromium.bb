@@ -534,8 +534,8 @@ bool ProfileSyncServiceHarness::IsTypePreferred(syncer::ModelType type) {
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
   std::unique_ptr<base::DictionaryValue> value(
-      syncer::sync_ui_util::ConstructAboutInformation(service(),
-                                                      chrome::GetChannel()));
+      syncer::sync_ui_util::ConstructAboutInformation_DEPRECATED(
+          service(), chrome::GetChannel()));
   std::string service_status;
   base::JSONWriter::WriteWithOptions(
       *value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &service_status);

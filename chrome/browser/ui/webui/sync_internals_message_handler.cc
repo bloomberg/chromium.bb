@@ -57,9 +57,8 @@ int64_t StringAtIndexToInt64(const base::ListValue* list, int index) {
 }  //  namespace
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler()
-    : SyncInternalsMessageHandler(
-          base::BindRepeating(
-              &syncer::sync_ui_util::ConstructAboutInformation)) {}
+    : SyncInternalsMessageHandler(base::BindRepeating(
+          &syncer::sync_ui_util::ConstructAboutInformation_DEPRECATED)) {}
 
 SyncInternalsMessageHandler::SyncInternalsMessageHandler(
     AboutSyncDataDelegate about_sync_data_delegate)
