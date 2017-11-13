@@ -100,6 +100,16 @@
       :-webkit-any(.checkbox, .radio) label:hover {
         color: black;
       }
+
+      :host .radio input[type='radio'],
+      :host label input[type='checkbox'] {
+        --min-size: 13.19px;
+        --size: 1.1em;
+        height: var(--size);
+        min-height: var(--min-size);
+        min-width: var(--min-size);
+        width: var(--size);
+      }
    </style>
   </template>
 </dom-module>

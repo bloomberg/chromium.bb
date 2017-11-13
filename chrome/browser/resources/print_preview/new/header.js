@@ -34,7 +34,7 @@ Polymer({
       computed: 'computeErrorOrStateString_(model.previewLoading, ' +
           'model.previewFailed, model.cloudPrintError, ' +
           'model.privetExtensionError, model.invalidSettings, ' +
-          'model.printTicketInvalid, printInProgress_)'
+          'model.copiesInvalid, model.scalingInvalid, printInProgress_)'
     },
 
     /**
@@ -88,7 +88,8 @@ Polymer({
     if (this.model.privetExtensionError != '')
       return this.model.privetExtensionError;
     if (this.model.invalidSettings || this.model.previewFailed ||
-        this.model.previewLoading || this.model.printTicketInvalid) {
+        this.model.previewLoading || this.model.copiesInvalid ||
+        this.model.scalingInvalid) {
       return '';
     }
     if (this.printInProgress_) {

@@ -3,6 +3,11 @@
 <link rel="import" href="header.html">
 <link rel="import" href="copies_settings.html">
 <link rel="import" href="layout_settings.html">
+<link rel="import" href="color_settings.html">
+<link rel="import" href="media_size_settings.html">
+<link rel="import" href="margins_settings.html">
+<link rel="import" href="dpi_settings.html">
+<link rel="import" href="scaling_settings.html">
 
 <dom-module id="print-preview-app">
   <template>
@@ -42,11 +47,12 @@
         <print-preview-copies-settings model="{{model_}}">
         </print-preview-copies-settings>
         <print-preview-layout-settings></print-preview-layout-settings>
-        <div>Color</div>
-        <div>Paper size</div>
-        <div>Margins</div>
-        <div>Quality</div>
-        <div>Scale</div>
+        <print-preview-color-settings></print-preview-color-settings>
+        <print-preview-media-size-settings></print-preview-media-size-settings>
+        <print-preview-margins-settings></print-preview-margins-settings>
+        <print-preview-dpi-settings></print-preview-dpi-settings>
+        <print-preview-scaling-settings model="{{model_}}">
+        </print-preview-scaling-settings>
         <div>Options</div>
         <div>Advanced</div>
       </div>
