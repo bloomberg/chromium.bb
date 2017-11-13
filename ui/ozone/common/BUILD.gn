@@ -33,5 +33,9 @@ source_set("common") {
     "//ui/gl:gl_features",
   ]
 
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+
   visibility = [ "//ui/ozone/platform/*" ]
 }

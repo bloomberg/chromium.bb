@@ -8,19 +8,19 @@
 #include <memory>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace ui {
 
-class HeadlessWindowManager;
-
 class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  HeadlessSurfaceFactory();
-  explicit HeadlessSurfaceFactory(HeadlessWindowManager* window_manager);
+  explicit HeadlessSurfaceFactory(base::FilePath base_path);
   ~HeadlessSurfaceFactory() override;
+
+  base::FilePath GetPathForWidget(gfx::AcceleratedWidget widget);
 
   // SurfaceFactoryOzone:
   std::vector<gl::GLImplementation> GetAllowedGLImplementations() override;
@@ -34,7 +34,10 @@ class HeadlessSurfaceFactory : public SurfaceFactoryOzone {
       gfx::BufferUsage usage) override;
 
  private:
-  HeadlessWindowManager* window_manager_;
+  void CheckBasePath() const;
+
+  // Base path for window output PNGs.
+  base::FilePath base_path_;
 
   std::unique_ptr<GLOzone> osmesa_implementation_;
 

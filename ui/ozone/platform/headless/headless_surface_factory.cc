@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -18,6 +19,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gl_ozone_osmesa.h"
+#include "ui/ozone/platform/headless/gl_surface_osmesa_png.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -37,7 +39,7 @@ void WriteDataToFile(const base::FilePath& location, const SkBitmap& bitmap) {
 // TODO(altimin): Find a proper way to capture rendering output.
 class FileSurface : public SurfaceOzoneCanvas {
  public:
-  explicit FileSurface(const base::FilePath& location) : location_(location) {}
+  explicit FileSurface(const base::FilePath& location) : base_path_(location) {}
   ~FileSurface() override {}
 
   // SurfaceOzoneCanvas overrides:
@@ -47,7 +49,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   }
   sk_sp<SkSurface> GetSurface() override { return surface_; }
   void PresentCanvas(const gfx::Rect& damage) override {
-    if (location_.empty())
+    if (base_path_.empty())
       return;
     SkBitmap bitmap;
     bitmap.allocPixels(surface_->getCanvas()->imageInfo());
@@ -58,7 +60,7 @@ class FileSurface : public SurfaceOzoneCanvas {
       base::PostTaskWithTraits(
           FROM_HERE,
           {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-          base::Bind(&WriteDataToFile, location_, bitmap));
+          base::Bind(&WriteDataToFile, base_path_, bitmap));
     }
   }
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override {
@@ -66,7 +68,7 @@ class FileSurface : public SurfaceOzoneCanvas {
   }
 
  private:
-  base::FilePath location_;
+  base::FilePath base_path_;
   sk_sp<SkSurface> surface_;
 };
 
@@ -103,20 +105,46 @@ class TestPixmap : public gfx::NativePixmap {
   DISALLOW_COPY_AND_ASSIGN(TestPixmap);
 };
 
+class GLOzoneOSMesaHeadless : public GLOzoneOSMesa {
+ public:
+  explicit GLOzoneOSMesaHeadless(HeadlessSurfaceFactory* surface_factory)
+      : surface_factory_(surface_factory) {}
+
+  ~GLOzoneOSMesaHeadless() override = default;
+
+  // GLOzone:
+  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
+      gfx::AcceleratedWidget window) override {
+    return gl::InitializeGLSurface(
+        new GLSurfaceOSMesaPng(surface_factory_->GetPathForWidget(window)));
+  }
+
+ private:
+  HeadlessSurfaceFactory* const surface_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLOzoneOSMesaHeadless);
+};
+
 }  // namespace
 
-HeadlessSurfaceFactory::HeadlessSurfaceFactory()
-    : HeadlessSurfaceFactory(nullptr) {}
-
-HeadlessSurfaceFactory::HeadlessSurfaceFactory(
-    HeadlessWindowManager* window_manager)
-    : window_manager_(window_manager) {
+HeadlessSurfaceFactory::HeadlessSurfaceFactory(base::FilePath base_path)
+    : base_path_(base_path) {
+  CheckBasePath();
 #if !defined(OS_FUCHSIA)
-  osmesa_implementation_ = std::make_unique<GLOzoneOSMesa>();
+  osmesa_implementation_ = std::make_unique<GLOzoneOSMesaHeadless>(this);
 #endif
 }
 
-HeadlessSurfaceFactory::~HeadlessSurfaceFactory() {}
+HeadlessSurfaceFactory::~HeadlessSurfaceFactory() = default;
+
+base::FilePath HeadlessSurfaceFactory::GetPathForWidget(
+    gfx::AcceleratedWidget widget) {
+  if (base_path_.empty() || base_path_ == base::FilePath("/dev/null"))
+    return base_path_;
+
+  // Disambiguate multiple window output files with the window id.
+  return base_path_.Append(base::IntToString(widget) + ".png");
+}
 
 std::vector<gl::GLImplementation>
 HeadlessSurfaceFactory::GetAllowedGLImplementations() {
@@ -139,8 +167,7 @@ GLOzone* HeadlessSurfaceFactory::GetGLOzone(
 
 std::unique_ptr<SurfaceOzoneCanvas>
 HeadlessSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
-  HeadlessWindow* window = window_manager_->GetWindow(widget);
-  return base::WrapUnique<SurfaceOzoneCanvas>(new FileSurface(window->path()));
+  return std::make_unique<FileSurface>(GetPathForWidget(widget));
 }
 
 scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
@@ -149,6 +176,18 @@ scoped_refptr<gfx::NativePixmap> HeadlessSurfaceFactory::CreateNativePixmap(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
   return new TestPixmap(format);
+}
+
+void HeadlessSurfaceFactory::CheckBasePath() const {
+  if (base_path_.empty())
+    return;
+
+  if (!DirectoryExists(base_path_) && !base::CreateDirectory(base_path_) &&
+      base_path_ != base::FilePath("/dev/null"))
+    PLOG(FATAL) << "Unable to create output directory";
+
+  if (!base::PathIsWritable(base_path_))
+    PLOG(FATAL) << "Unable to write to output location";
 }
 
 }  // namespace ui

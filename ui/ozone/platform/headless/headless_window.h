@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_H_
 #define UI_OZONE_PLATFORM_HEADLESS_HEADLESS_WINDOW_H_
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -22,9 +21,6 @@ class HeadlessWindow : public PlatformWindow {
                  HeadlessWindowManager* manager,
                  const gfx::Rect& bounds);
   ~HeadlessWindow() override;
-
-  // Path for image file for this window.
-  base::FilePath path();
 
   // PlatformWindow:
   gfx::Rect GetBounds() override;
