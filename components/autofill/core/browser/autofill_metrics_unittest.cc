@@ -76,8 +76,7 @@ using ExpectedUkmMetrics =
 class TestPersonalDataManager : public PersonalDataManager {
  public:
   TestPersonalDataManager()
-      : PersonalDataManager("en-US"),
-        autofill_enabled_(true) {
+      : PersonalDataManager("en-US"), autofill_enabled_(true) {
     CreateTestAutofillProfiles(&web_profiles_);
   }
 
@@ -529,8 +528,8 @@ void AutofillMetricsTest::SetUp() {
   account_tracker_.reset(new AccountTrackerService());
   account_tracker_->Initialize(signin_client_.get());
 
-  signin_manager_.reset(new FakeSigninManagerBase(signin_client_.get(),
-                                                  account_tracker_.get()));
+  signin_manager_.reset(
+      new FakeSigninManagerBase(signin_client_.get(), account_tracker_.get()));
   signin_manager_->Initialize(autofill_client_.GetPrefs());
 
   personal_data_.reset(new TestPersonalDataManager());
@@ -543,8 +542,7 @@ void AutofillMetricsTest::SetUp() {
       autofill_driver_.get(), &autofill_client_, personal_data_.get()));
 
   external_delegate_.reset(new AutofillExternalDelegate(
-      autofill_manager_.get(),
-      autofill_driver_.get()));
+      autofill_manager_.get(), autofill_driver_.get()));
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 }
 
@@ -578,15 +576,15 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   std::vector<ServerFieldType> heuristic_types, server_types;
   FormFieldData field;
 
-  test::CreateTestFormField(
-      "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FIRST);
 
-  test::CreateTestFormField(
-      "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
@@ -1053,13 +1051,13 @@ TEST_F(AutofillMetricsTest, TimingMetrics) {
   form.action = GURL("http://example.com/submit.html");
 
   FormFieldData field;
-  test::CreateTestFormField(
-      "Autofilled", "autofilled", "Elvis Aaron Presley", "text", &field);
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
 
-  test::CreateTestFormField(
-      "Autofill Failed", "autofillfailed", "buddy@gmail.com", "text", &field);
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
 
@@ -1506,20 +1504,20 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   std::vector<ServerFieldType> heuristic_types, server_types;
 
   FormFieldData field;
-  test::CreateTestFormField(
-      "Both match", "match", "Elvis Aaron Presley", "text", &field);
+  test::CreateTestFormField("Both match", "match", "Elvis Aaron Presley",
+                            "text", &field);
   field.is_autofilled = true;
   form.fields.push_back(field);
   heuristic_types.push_back(NAME_FULL);
   server_types.push_back(NAME_FULL);
-  test::CreateTestFormField(
-      "Both mismatch", "mismatch", "buddy@gmail.com", "text", &field);
+  test::CreateTestFormField("Both mismatch", "mismatch", "buddy@gmail.com",
+                            "text", &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(PHONE_HOME_NUMBER);
   server_types.push_back(PHONE_HOME_NUMBER);
-  test::CreateTestFormField(
-      "Only heuristics match", "mixed", "Memphis", "text", &field);
+  test::CreateTestFormField("Only heuristics match", "mixed", "Memphis", "text",
+                            &field);
   field.is_autofilled = false;
   form.fields.push_back(field);
   heuristic_types.push_back(ADDRESS_HOME_CITY);
@@ -1534,12 +1532,11 @@ TEST_F(AutofillMetricsTest, SaneMetricsWithCacheMismatch) {
   // |form_structure| will be owned by |autofill_manager_|.
   autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
 
-
   // Add a field and re-arrange the remaining form fields before submitting.
   std::vector<FormFieldData> cached_fields = form.fields;
   form.fields.clear();
-  test::CreateTestFormField(
-      "New field", "new field", "Tennessee", "text", &field);
+  test::CreateTestFormField("New field", "new field", "Tennessee", "text",
+                            &field);
   form.fields.push_back(field);
   form.fields.push_back(cached_fields[2]);
   form.fields.push_back(cached_fields[1]);
@@ -2198,9 +2195,9 @@ TEST_F(AutofillMetricsTest, StoredServerCreditCardCounts_Unmasked) {
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->set_autofill_enabled(true);
-  personal_data_->Init(
-      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(),
-      account_tracker_.get(), signin_manager_.get(), false);
+  personal_data_->Init(autofill_client_.GetDatabase(),
+                       autofill_client_.GetPrefs(), account_tracker_.get(),
+                       signin_manager_.get(), false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", true, 1);
 }
 
@@ -2208,9 +2205,9 @@ TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
 TEST_F(AutofillMetricsTest, AutofillIsDisabledAtStartup) {
   base::HistogramTester histogram_tester;
   personal_data_->set_autofill_enabled(false);
-  personal_data_->Init(
-      autofill_client_.GetDatabase(), autofill_client_.GetPrefs(),
-      account_tracker_.get(), signin_manager_.get(), false);
+  personal_data_->Init(autofill_client_.GetDatabase(),
+                       autofill_client_.GetPrefs(), account_tracker_.get(),
+                       signin_manager_.get(), false);
   histogram_tester.ExpectUniqueSample("Autofill.IsEnabled.Startup", false, 1);
 }
 
@@ -3919,8 +3916,8 @@ TEST_F(AutofillMetricsTest, CreditCardWillSubmitFormEvents) {
         AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, 0);
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
-        AutofillMetrics
-            ::FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE,
+        AutofillMetrics ::
+            FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_SUBMITTED_ONCE,
         0);
   }
 
@@ -4974,6 +4971,74 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
     expected_form_submission_ukm_metrics.push_back(
         {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
+    VerifyFormInteractionUkm(test_ukm_recorder_, form,
+                             UkmFormSubmittedType::kEntryName,
+                             expected_form_submission_ukm_metrics);
+
+    AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
+    VerifyFormInteractionUkm(test_ukm_recorder_, form,
+                             UkmFieldFillStatusType::kEntryName,
+                             expected_field_fill_status_ukm_metrics);
+  }
+}
+
+// Verify that we correctly log the submitted form's state with fields
+// having |only_fill_when_focused|=true.
+TEST_F(
+    AutofillMetricsTest,
+    AutofillFormSubmittedState_DoNotCountUnfilledFieldsWithOnlyFillWhenFocused) {
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Billing Phone", "billing_phone", "", "text",
+                            &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Verify if the form is otherwise filled with a field having
+  // |only_fill_when_focused|=true, we consider the form is all filled.
+  {
+    base::HistogramTester histogram_tester;
+    base::UserActionTester user_action_tester;
+    autofill_manager_->OnFormsSeen(forms, TimeTicks::Now());
+    EXPECT_EQ(1U, test_ukm_recorder_.entries_count());
+    EXPECT_EQ(1U, test_ukm_recorder_.sources_count());
+    VerifyDeveloperEngagementUkm(
+        test_ukm_recorder_, form,
+        {AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS});
+    histogram_tester.ExpectTotalCount("Autofill.FormSubmittedState", 0);
+
+    form.fields[0].value = ASCIIToUTF16("Elvis Aaron Presley");
+    form.fields[0].is_autofilled = true;
+    form.fields[1].value = ASCIIToUTF16("theking@gmail.com");
+    form.fields[1].is_autofilled = true;
+    form.fields[2].value = ASCIIToUTF16("12345678901");
+    form.fields[2].is_autofilled = true;
+
+    autofill_manager_->SubmitForm(form, TimeTicks::Now());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.FormSubmittedState",
+        AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL, 1);
+    EXPECT_EQ(1, user_action_tester.GetActionCount(
+                     "Autofill_FormSubmitted_FilledAll"));
+
+    ExpectedUkmMetrics expected_form_submission_ukm_metrics;
+    ExpectedUkmMetrics expected_field_fill_status_ukm_metrics;
+
+    expected_form_submission_ukm_metrics.push_back(
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
+          AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL},
          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
                              UkmFormSubmittedType::kEntryName,

@@ -382,6 +382,11 @@ void LogPredictionQualityMetrics(
   // purposes, but remember whether or not it was empty for more precise logging
   // later.
   bool is_empty = (actual_type == EMPTY_TYPE);
+  // TODO(crbug.com/780471): Do not log anything if a field is empty and is not
+  // supposed to be automatically filled for now. Long term solution is add a
+  // server enum to capture this case to accurately collect metrics.
+  if (is_empty && field.only_fill_when_focused())
+    return;
   bool is_ambiguous = (actual_type == AMBIGUOUS_TYPE);
   if (is_empty || is_ambiguous)
     actual_type = UNKNOWN_TYPE;
