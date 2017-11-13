@@ -352,7 +352,7 @@ public class NotificationPlatformBridge {
         // This flag ensures the broadcast is delivered with foreground priority. It also means the
         // receiver gets a shorter timeout interval before it may be killed, but this is ok because
         // we schedule a job to handle the intent in NotificationService.Receiver on N+.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         }
 
