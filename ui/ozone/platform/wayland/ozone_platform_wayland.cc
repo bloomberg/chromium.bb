@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ui_features.h"
 #include "ui/display/manager/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -13,7 +14,6 @@
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -88,7 +88,7 @@ class OzonePlatformWayland : public OzonePlatform {
         std::make_unique<StubKeyboardLayoutEngine>());
 #endif
 
-    cursor_factory_.reset(new CursorFactoryOzone);
+    cursor_factory_.reset(new BitmapCursorFactoryOzone);
     overlay_manager_.reset(new StubOverlayManager);
     input_controller_ = CreateStubInputController();
     surface_factory_.reset(new WaylandSurfaceFactory(connection_.get()));
@@ -114,7 +114,7 @@ class OzonePlatformWayland : public OzonePlatform {
  private:
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_;
+  std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_;
   std::unique_ptr<StubOverlayManager> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
