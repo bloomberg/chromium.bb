@@ -92,6 +92,10 @@ class TranslateController : public web::WebStateObserver {
   // web::WebStateObserver implementation:
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   Observer* observer_;
   base::scoped_nsobject<JsTranslateManager> js_manager_;
   base::WeakPtrFactory<TranslateController> weak_method_factory_;
