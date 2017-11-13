@@ -33817,6 +33817,21 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Service Worker timeout while processing event"/>
 </enum>
 
+<enum name="PushedStreamVaryResponseHeaderValues">
+  <int value="0" label="There is no Vary header."/>
+  <int value="1" label="The value of Vary is empty."/>
+  <int value="2" label="The value of Vary is &quot;*&quot;."/>
+  <int value="3"
+      label="The value of Vary is &quot;accept-encoding&quot; (case
+             insensitive)."/>
+  <int value="4"
+      label="The value of Vary contains &quot;accept-encoding&quot; (case
+             insensitive) and some other field names as well."/>
+  <int value="5"
+      label="The value of Vary does not contain &quot;accept-encoding&quot;,
+             is not empty, and is not &quot;*&quot;."/>
+</enum>
+
 <enum name="PushGetRegistrationStatus">
   <int value="0" label="Successful"/>
   <int value="1" label="No push service"/>

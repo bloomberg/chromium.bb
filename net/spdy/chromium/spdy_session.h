@@ -553,6 +553,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                            ServerPushValidCrossOrigin);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest,
                            ServerPushValidCrossOriginWithOpenSession);
+  FRIEND_TEST_ALL_PREFIXES(RecordPushedStreamHistogramTest, VaryResponseHeader);
 
   using PendingStreamRequestQueue =
       base::circular_deque<base::WeakPtr<SpdyStreamRequest>>;
@@ -809,6 +810,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void RecordPingRTTHistogram(base::TimeDelta duration);
   void RecordHistograms();
   void RecordProtocolErrorHistogram(SpdyProtocolErrorDetails details);
+  static void RecordPushedStreamVaryResponseHeaderHistogram(
+      const SpdyHeaderBlock& headers);
 
   // DCHECKs that |availability_state_| >= STATE_GOING_AWAY, that
   // there are no pending stream creation requests, and that there are

@@ -6264,4 +6264,40 @@ TEST(CanPoolTest, CanPoolWithAcceptablePins) {
       &tss, ssl_info, "www.example.org", "mail.example.org"));
 }
 
+TEST(RecordPushedStreamHistogramTest, VaryResponseHeader) {
+  struct {
+    size_t num_headers;
+    const char* headers[2];
+    int expected_bucket;
+  } test_cases[] = {{0, {}, 0},
+                    {1, {"foo", "bar"}, 0},
+                    {1, {"vary", ""}, 1},
+                    {1, {"vary", "*"}, 2},
+                    {1, {"vary", "accept-encoding"}, 3},
+                    {1, {"vary", "foo , accept-encoding ,bar"}, 4},
+                    {1, {"vary", "\taccept-encoding, foo"}, 4},
+                    {1, {"vary", "foo"}, 5},
+                    {1, {"vary", "fooaccept-encoding"}, 5},
+                    {1, {"vary", "foo, accept-encodingbar"}, 5}};
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SpdyHeaderBlock headers;
+    for (size_t j = 0; j < test_cases[i].num_headers; ++j) {
+      headers[test_cases[i].headers[2 * j]] = test_cases[i].headers[2 * j + 1];
+    }
+    base::HistogramTester histograms;
+    histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 0);
+    SpdySession::RecordPushedStreamVaryResponseHeaderHistogram(headers);
+    histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 1);
+    histograms.ExpectBucketCount("Net.PushedStreamVaryResponseHeader",
+                                 test_cases[i].expected_bucket, 1);
+    // Adding an unrelated header field should not change how Vary is parsed.
+    headers["foo"] = "bar";
+    SpdySession::RecordPushedStreamVaryResponseHeaderHistogram(headers);
+    histograms.ExpectTotalCount("Net.PushedStreamVaryResponseHeader", 2);
+    histograms.ExpectBucketCount("Net.PushedStreamVaryResponseHeader",
+                                 test_cases[i].expected_bucket, 2);
+  }
+}
+
 }  // namespace net
