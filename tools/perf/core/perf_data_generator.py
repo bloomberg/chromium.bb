@@ -9,13 +9,11 @@
 the src/testing/buildbot directory and benchmark.csv in the src/tools/perf
 directory. Maintaining these files by hand is too unwieldy.
 """
-import argparse
 import collections
 import csv
 import json
 import os
 import re
-import sys
 import sets
 
 
@@ -982,26 +980,6 @@ def append_extra_tests(waterfall, tests):
         tests[key] = value
 
 
-def tests_are_up_to_date(waterfalls):
-  up_to_date = True
-  all_tests = {}
-  for w in waterfalls:
-    tests = generate_all_tests(w)
-    # Note: |all_tests| don't cover those manually-specified tests added by
-    # append_extra_tests().
-    all_tests.update(tests)
-    append_extra_tests(w, tests)
-    tests_data = json.dumps(tests, indent=2, separators=(',', ': '),
-                            sort_keys=True)
-    config_file = get_json_config_file_for_waterfall(w)
-    with open(config_file, 'r') as fp:
-      config_data = fp.read().strip()
-    up_to_date &= tests_data == config_data
-  verify_all_tests_in_benchmark_csv(all_tests,
-                                    get_all_waterfall_benchmarks_metadata())
-  return up_to_date
-
-
 def update_all_tests(waterfalls):
   all_tests = {}
   for w in waterfalls:
@@ -1177,33 +1155,11 @@ def update_benchmark_csv():
     writer.writerows(csv_data)
 
 
-def main(args):
-  parser = argparse.ArgumentParser(
-      description=('Generate perf test\' json config and benchmark.csv. '
-                   'This needs to be done anytime you add/remove any existing'
-                   'benchmarks in tools/perf/benchmarks.'))
-  parser.add_argument(
-      '--validate-only', action='store_true', default=False,
-      help=('Validate whether the perf json generated will be the same as the '
-            'existing configs. This does not change the contain of existing '
-            'configs'))
-  options = parser.parse_args(args)
-
+def main():
   waterfall = get_waterfall_config()
   waterfall['name'] = 'chromium.perf'
   fyi_waterfall = get_fyi_waterfall_config()
   fyi_waterfall['name'] = 'chromium.perf.fyi'
 
-  if options.validate_only:
-    if tests_are_up_to_date([fyi_waterfall, waterfall]):
-      print 'All the perf JSON config files are up-to-date. \\o/'
-      return 0
-    else:
-      print ('The perf JSON config files are not up-to-date. Please run %s '
-             'without --validate-only flag to update the perf JSON '
-             'configs and benchmark.csv.') % sys.argv[0]
-      return 1
-  else:
-    update_all_tests([fyi_waterfall, waterfall])
-    update_benchmark_csv()
-  return 0
+  update_all_tests([fyi_waterfall, waterfall])
+  update_benchmark_csv()
