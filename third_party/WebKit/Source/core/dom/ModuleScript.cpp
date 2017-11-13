@@ -30,10 +30,8 @@ ModuleScript* ModuleScript::Create(const String& source_text,
                                  "ModuleScript", "Create");
 
   // Delegate to Modulator::CompileModule to process Steps 3-5.
-  // TODO(kouhei): pass ScriptFetchOptions to CompileModule.
   ScriptModule result = modulator->CompileModule(
-      source_text, base_url.GetString(), access_control_status,
-      options.CredentialsMode(), options.Nonce(), options.ParserState(),
+      source_text, base_url.GetString(), options, access_control_status,
       start_position, exception_state);
 
   // CreateInternal processes Steps 8-13.

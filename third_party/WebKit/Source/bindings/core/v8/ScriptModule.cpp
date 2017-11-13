@@ -42,22 +42,19 @@ ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
 
 ScriptModule::~ScriptModule() {}
 
-ScriptModule ScriptModule::Compile(
-    v8::Isolate* isolate,
-    const String& source,
-    const String& file_name,
-    AccessControlStatus access_control_status,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    const String& nonce,
-    ParserDisposition parser_state,
-    const TextPosition& text_position,
-    ExceptionState& exception_state) {
+ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
+                                   const String& source,
+                                   const String& file_name,
+                                   const ScriptFetchOptions& options,
+                                   AccessControlStatus access_control_status,
+                                   const TextPosition& text_position,
+                                   ExceptionState& exception_state) {
   v8::TryCatch try_catch(isolate);
   v8::Local<v8::Module> module;
 
   if (!V8ScriptRunner::CompileModule(
            isolate, source, file_name, access_control_status, text_position,
-           ReferrerScriptInfo(credentials_mode, nonce, parser_state))
+           ReferrerScriptInfo::FromScriptFetchOptions(options))
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());

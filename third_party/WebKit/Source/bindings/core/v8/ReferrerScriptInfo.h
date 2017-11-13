@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
@@ -28,6 +29,11 @@ class CORE_EXPORT ReferrerScriptInfo {
       : credentials_mode_(credentials_mode),
         nonce_(nonce),
         parser_state_(parser_state) {}
+  static ReferrerScriptInfo FromScriptFetchOptions(
+      const ScriptFetchOptions& options) {
+    return ReferrerScriptInfo(options.CredentialsMode(), options.Nonce(),
+                              options.ParserState());
+  }
 
   static ReferrerScriptInfo FromV8HostDefinedOptions(
       v8::Local<v8::Context>,

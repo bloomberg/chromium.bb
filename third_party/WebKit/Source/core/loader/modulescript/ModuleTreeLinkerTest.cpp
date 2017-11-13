@@ -82,8 +82,8 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
 
     ScriptModule script_module = ScriptModule::Compile(
         script_state_->GetIsolate(), source_text.ToString(), url.GetString(),
-        kSharableCrossOrigin, network::mojom::FetchCredentialsMode::kOmit, "",
-        kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
+        ScriptFetchOptions(), kSharableCrossOrigin,
+        TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
     auto* module_script = ModuleScript::CreateForTest(this, script_module, url);
     auto result_request = dependency_module_requests_map_.insert(
         script_module, dependency_module_requests);
