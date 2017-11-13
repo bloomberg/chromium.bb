@@ -211,8 +211,6 @@ source_set("common_sources") {
     "resource_request.h",
     "resource_request_body.cc",
     "resource_request_body.h",
-    "resource_request_completion_status.cc",
-    "resource_request_completion_status.h",
     "resource_response.cc",
     "resource_response.h",
     "resource_response_info.cc",

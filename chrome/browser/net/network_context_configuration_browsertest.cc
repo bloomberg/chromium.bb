@@ -311,7 +311,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   EXPECT_TRUE(mojo::common::BlockingCopyToString(client.response_body_release(),
                                                  &response_body));
   client.RunUntilComplete();
-  EXPECT_EQ(net::OK, client.completion_status().error_code);
+  EXPECT_EQ(net::OK, client.status().error_code);
 
   // The response body from the above test should only appear in the view-cache
   // result if there is an on-disk cache.

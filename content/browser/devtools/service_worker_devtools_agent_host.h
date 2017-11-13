@@ -14,11 +14,14 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
+namespace network {
+struct URLLoaderStatus;
+}
+
 namespace content {
 
 struct ResourceRequest;
 struct ResourceResponseHead;
-struct ResourceRequestCompletionStatus;
 
 class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
@@ -53,9 +56,8 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   void NavigationPreloadResponseReceived(const std::string& request_id,
                                          const GURL& url,
                                          const ResourceResponseHead& head);
-  void NavigationPreloadCompleted(
-      const std::string& request_id,
-      const ResourceRequestCompletionStatus& completion_status);
+  void NavigationPreloadCompleted(const std::string& request_id,
+                                  const network::URLLoaderStatus& status);
 
   int64_t service_worker_version_id() const;
   GURL scope() const;

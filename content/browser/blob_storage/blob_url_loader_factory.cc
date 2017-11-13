@@ -189,13 +189,13 @@ class BlobURLLoader : public storage::MojoBlobReader::Delegate,
           status_code, nullptr, nullptr, 0, 0);
       client_->OnReceiveResponse(response, base::nullopt, nullptr);
     }
-    ResourceRequestCompletionStatus request_complete_data;
+    network::URLLoaderStatus status;
     // TODO(kinuko): We should probably set the error_code here,
     // while it makes existing tests fail. crbug.com/732750
-    request_complete_data.completion_time = base::TimeTicks::Now();
-    request_complete_data.encoded_body_length = total_written_bytes;
-    request_complete_data.decoded_body_length = total_written_bytes;
-    client_->OnComplete(request_complete_data);
+    status.completion_time = base::TimeTicks::Now();
+    status.encoded_body_length = total_written_bytes;
+    status.decoded_body_length = total_written_bytes;
+    client_->OnComplete(status);
   }
 
   mojo::Binding<mojom::URLLoader> binding_;

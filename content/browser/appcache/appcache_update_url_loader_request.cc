@@ -161,7 +161,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnStartLoadingResponseBody(
 }
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnComplete(
-    const ResourceRequestCompletionStatus& status) {
+    const network::URLLoaderStatus& status) {
   response_status_ = status;
   // We inform the URLFetcher about a failure only here. For the success case
   // OnResponseCompleted() is invoked by URLFetcher::OnReadCompleted().

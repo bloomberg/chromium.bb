@@ -93,7 +93,7 @@ class NavigationPreloadLoaderClient final : public mojom::URLLoaderClient {
     // We could call OnResponseStream() here, but for simplicity, don't do
     // anything until OnComplete().
   }
-  void OnComplete(const ResourceRequestCompletionStatus& status) override {
+  void OnComplete(const network::URLLoaderStatus& status) override {
     blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
     auto stream_handle = blink::mojom::ServiceWorkerStreamHandle::New();
     stream_handle->callback_request = mojo::MakeRequest(&stream_callback);
@@ -183,7 +183,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                                          MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
-    ResourceRequestCompletionStatus status;
+    network::URLLoaderStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
   }
@@ -626,7 +626,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, Basic) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilComplete();
 
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
@@ -641,7 +641,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NoActiveWorker) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
 
   client_.RunUntilComplete();
-  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client_.status().error_code);
 }
 
 // Test that the request body is passed to the fetch event.
@@ -739,7 +739,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   data_pipe.producer_handle.reset();
 
   client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
 
   // Test the body.
   std::string response;
@@ -777,7 +777,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse_Abort) {
   data_pipe.producer_handle.reset();
 
   client_.RunUntilComplete();
-  EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED, client_.status().error_code);
 
   // Test the body.
   std::string response;
@@ -828,7 +828,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponseAndCancel) {
 
   client_.RunUntilComplete();
   EXPECT_FALSE(data_pipe.consumer_handle.is_valid());
-  EXPECT_EQ(net::ERR_ABORTED, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED, client_.status().error_code);
 }
 
 // Test when the service worker responds with network fallback.
@@ -854,7 +854,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, ErrorResponse) {
   EXPECT_EQ(JobResult::kHandledRequest, result);
 
   client_.RunUntilComplete();
-  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client_.status().error_code);
 }
 
 // Test when dispatching the fetch event to the service worker failed.
@@ -923,7 +923,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, NavigationPreload) {
   ASSERT_EQ(JobResult::kHandledRequest, result);
   client_.RunUntilComplete();
 
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
   const ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
 

@@ -351,11 +351,11 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
-    ResourceRequestCompletionStatus completion_status(net::OK);
-    completion_status.encoded_data_length = arraysize(kTestData);
-    completion_status.encoded_body_length = arraysize(kTestData);
-    completion_status.decoded_body_length = arraysize(kTestData);
-    peer()->OnCompletedRequest(completion_status);
+    network::URLLoaderStatus status(net::OK);
+    status.encoded_data_length = arraysize(kTestData);
+    status.encoded_body_length = arraysize(kTestData);
+    status.decoded_body_length = arraysize(kTestData);
+    peer()->OnCompletedRequest(status);
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
     EXPECT_FALSE(client()->error());
@@ -363,11 +363,11 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
-    ResourceRequestCompletionStatus completion_status(net::ERR_FAILED);
-    completion_status.encoded_data_length = arraysize(kTestData);
-    completion_status.encoded_body_length = arraysize(kTestData);
-    completion_status.decoded_body_length = arraysize(kTestData);
-    peer()->OnCompletedRequest(completion_status);
+    network::URLLoaderStatus status(net::ERR_FAILED);
+    status.encoded_data_length = arraysize(kTestData);
+    status.encoded_body_length = arraysize(kTestData);
+    status.decoded_body_length = arraysize(kTestData);
+    peer()->OnCompletedRequest(status);
     EXPECT_FALSE(client()->did_finish());
     ASSERT_TRUE(client()->error());
     EXPECT_EQ(net::ERR_FAILED, client()->error()->reason());
@@ -592,11 +592,11 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
   // cancel in DoReceiveDataFtp, before the request finishes.
   client()->set_delete_on_receive_data();
 
-  ResourceRequestCompletionStatus completion_status(net::OK);
-  completion_status.encoded_data_length = arraysize(kTestData);
-  completion_status.encoded_body_length = arraysize(kTestData);
-  completion_status.decoded_body_length = arraysize(kTestData);
-  peer()->OnCompletedRequest(completion_status);
+  network::URLLoaderStatus status(net::OK);
+  status.encoded_data_length = arraysize(kTestData);
+  status.encoded_body_length = arraysize(kTestData);
+  status.decoded_body_length = arraysize(kTestData);
+  peer()->OnCompletedRequest(status);
   EXPECT_FALSE(client()->did_finish());
 }
 

@@ -16,9 +16,12 @@ namespace net {
 struct RedirectInfo;
 }
 
+namespace network {
+struct URLLoaderStatus;
+}
+
 namespace content {
 
-struct ResourceRequestCompletionStatus;
 struct ResourceResponseInfo;
 
 // This is implemented by our custom resource loader within content. The Peer
@@ -90,8 +93,7 @@ class CONTENT_EXPORT RequestPeer {
 
   // Called when the response is complete.  This method signals completion of
   // the resource load.
-  virtual void OnCompletedRequest(
-      const ResourceRequestCompletionStatus& completion_status) = 0;
+  virtual void OnCompletedRequest(const network::URLLoaderStatus& status) = 0;
 
   virtual ~RequestPeer() {}
 };

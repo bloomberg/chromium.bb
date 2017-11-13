@@ -81,7 +81,7 @@ void TestRequestPeer::OnReceivedCachedMetadata(const char* data, int len) {
 }
 
 void TestRequestPeer::OnCompletedRequest(
-    const ResourceRequestCompletionStatus& completion_status) {
+    const network::URLLoaderStatus& status) {
   if (context_->cancelled)
     return;
   EXPECT_TRUE(context_->received_response);

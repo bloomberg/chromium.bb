@@ -42,7 +42,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -76,6 +75,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_file_job.h"
 #include "net/url_request/url_request_simple_job.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "url/url_util.h"
 
 using content::ResourceRequestInfo;
@@ -703,8 +703,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
             util::IsIncognitoEnabled(extension_id, browser_context),
             registry->enabled_extensions(),
             *ProcessMap::Get(browser_context))) {
-      client->OnComplete(
-          content::ResourceRequestCompletionStatus(net::ERR_BLOCKED_BY_CLIENT));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_BLOCKED_BY_CLIENT));
       return;
     }
 
@@ -712,8 +711,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
     if (!GetDirectoryForExtensionURL(request.url, extension_id, extension,
                                      registry->disabled_extensions(),
                                      &directory_path)) {
-      client->OnComplete(
-          content::ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
@@ -748,14 +746,13 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
       MojoResult result = pipe.producer_handle->WriteData(
           contents.data(), &size, MOJO_WRITE_DATA_FLAG_NONE);
       if (result != MOJO_RESULT_OK || size < contents.size()) {
-        client->OnComplete(
-            content::ResourceRequestCompletionStatus(net::ERR_FAILED));
+        client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
         return;
       }
 
       client->OnReceiveResponse(head, base::nullopt, nullptr);
       client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
-      client->OnComplete(content::ResourceRequestCompletionStatus(net::OK));
+      client->OnComplete(network::URLLoaderStatus(net::OK));
       return;
     }
 
@@ -770,8 +767,7 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
     // files there are internal implementation details that should not be
     // considered part of the extension.
     if (base::FilePath(kMetadataFolder).IsParent(relative_path)) {
-      client->OnComplete(
-          content::ResourceRequestCompletionStatus(net::ERR_FILE_NOT_FOUND));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FILE_NOT_FOUND));
       return;
     }
 
@@ -791,8 +787,8 @@ class ExtensionURLLoaderFactory : public content::mojom::URLLoaderFactory {
         extension_id = new_extension_id;
         relative_path = base::FilePath::FromUTF8Unsafe(new_relative_path);
       } else {
-        client->OnComplete(content::ResourceRequestCompletionStatus(
-            net::ERR_BLOCKED_BY_CLIENT));
+        client->OnComplete(
+            network::URLLoaderStatus(net::ERR_BLOCKED_BY_CLIENT));
         return;
       }
     }

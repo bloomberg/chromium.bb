@@ -11,13 +11,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 namespace {
 
@@ -91,12 +91,12 @@ void ExtensionLocalizationPeer::OnTransferSizeUpdated(int transfer_size_diff) {
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    const content::ResourceRequestCompletionStatus& completion_status) {
+    const network::URLLoaderStatus& status) {
   // Give sub-classes a chance at altering the data.
-  if (completion_status.error_code != net::OK) {
+  if (status.error_code != net::OK) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_);
-    content::ResourceRequestCompletionStatus aborted_status(completion_status);
+    network::URLLoaderStatus aborted_status(status);
     aborted_status.error_code = net::ERR_ABORTED;
     original_peer_->OnCompletedRequest(aborted_status);
     return;
@@ -107,7 +107,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnReceivedResponse(response_info_);
   if (!data_.empty())
     original_peer_->OnReceivedData(base::MakeUnique<StringData>(data_));
-  original_peer_->OnCompletedRequest(completion_status);
+  original_peer_->OnCompletedRequest(status);
 }
 
 void ExtensionLocalizationPeer::ReplaceMessages() {

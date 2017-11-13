@@ -1,6 +1,7 @@
 specific_include_rules = {
   ".*\.cc": [
     "+content/common",
+    "+services/network/public/cpp",
     "+third_party/WebKit/common",
   ],
   "resource_request_body.h": [

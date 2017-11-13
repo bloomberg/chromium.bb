@@ -14,13 +14,13 @@
 #include "content/common/resource_messages.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -64,11 +64,10 @@ class TestRequestPeer : public RequestPeer {
 
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
 
-  void OnCompletedRequest(
-      const ResourceRequestCompletionStatus& completion_status) override {
+  void OnCompletedRequest(const network::URLLoaderStatus& status) override {
     EXPECT_FALSE(context_->complete);
     context_->complete = true;
-    context_->error_code = completion_status.error_code;
+    context_->error_code = status.error_code;
     context_->run_loop_quit_closure.Run();
   }
 
@@ -189,7 +188,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
       message_loop_.task_runner()));
   consumer->ArmOrNotify();
 
-  consumer->OnComplete(ResourceRequestCompletionStatus());
+  consumer->OnComplete(network::URLLoaderStatus());
   mojo::ScopedDataPipeProducerHandle writer =
       std::move(data_pipe.producer_handle);
   std::string buffer = "hello";
@@ -224,7 +223,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
       message_loop_.task_runner()));
   consumer->ArmOrNotify();
 
-  consumer->OnComplete(ResourceRequestCompletionStatus());
+  consumer->OnComplete(network::URLLoaderStatus());
   mojo::ScopedDataPipeProducerHandle writer =
       std::move(data_pipe.producer_handle);
   std::string buffer = "hello";
@@ -256,7 +255,7 @@ TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
       message_loop_.task_runner()));
   consumer->ArmOrNotify();
 
-  ResourceRequestCompletionStatus status;
+  network::URLLoaderStatus status;
   status.error_code = net::ERR_FAILED;
   data_pipe.producer_handle.reset();
   consumer->OnComplete(status);

@@ -75,15 +75,14 @@ ResourceDownloader::InterceptNavigationResponse(
     const SSLStatus& ssl_status,
     std::unique_ptr<ThrottlingURLLoader> url_loader,
     std::vector<GURL> url_chain,
-    base::Optional<ResourceRequestCompletionStatus> completion_status) {
+    base::Optional<network::URLLoaderStatus> status) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request),
       std::make_unique<DownloadSaveInfo>(), content::DownloadItem::kInvalidId,
       std::string(), false, false, false);
   downloader->InterceptResponse(std::move(url_loader), response,
                                 std::move(consumer_handle), ssl_status,
-                                std::move(url_chain),
-                                std::move(completion_status));
+                                std::move(url_chain), std::move(status));
   return downloader;
 }
 
@@ -143,7 +142,7 @@ void ResourceDownloader::InterceptResponse(
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
     std::vector<GURL> url_chain,
-    base::Optional<ResourceRequestCompletionStatus> completion_status) {
+    base::Optional<network::URLLoaderStatus> status) {
   url_loader_ = std::move(url_loader);
   url_loader_->set_forwarding_client(&response_handler_);
   net::SSLInfo info;
@@ -153,8 +152,8 @@ void ResourceDownloader::InterceptResponse(
                                       base::Optional<net::SSLInfo>(info),
                                       mojom::DownloadedTempFilePtr());
   response_handler_.OnStartLoadingResponseBody(std::move(consumer_handle));
-  if (completion_status.has_value())
-    response_handler_.OnComplete(completion_status.value());
+  if (status.has_value())
+    response_handler_.OnComplete(status.value());
 }
 
 void ResourceDownloader::OnResponseStarted(

@@ -61,7 +61,7 @@ class CacheURLLoader {
         mojo::common::BlockingCopyFromString(data_, data_pipe.producer_handle));
 
     client_->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-    ResourceRequestCompletionStatus status(net::OK);
+    network::URLLoaderStatus status(net::OK);
     status.encoded_data_length = data_.size();
     status.encoded_body_length = data_.size();
     client_->OnComplete(status);

@@ -12,7 +12,6 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
@@ -23,6 +22,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -110,7 +110,7 @@ class MockNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
     ASSERT_EQ(MOJO_RESULT_OK, result);
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
-    ResourceRequestCompletionStatus status;
+    network::URLLoaderStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
   }
@@ -267,7 +267,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success) {
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
 
   // The client should have received the response.
   EXPECT_TRUE(client_.has_received_response());
@@ -291,7 +291,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_EmptyBody) {
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
 
   // The client should have received the response.
   EXPECT_TRUE(client_.has_received_response());
@@ -321,7 +321,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_LargeBody) {
   SetUpRegistration(kScriptURL);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
 
   // The client should have received the response.
   EXPECT_TRUE(client_.has_received_response());
@@ -345,7 +345,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_404) {
   client_.RunUntilComplete();
 
   // The request should be failed because of the 404 response.
-  EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_INVALID_RESPONSE, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -363,7 +363,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_Redirect) {
   client_.RunUntilComplete();
 
   // The request should be failed because of the redirected response.
-  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_UNSAFE_REDIRECT, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -383,7 +383,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_CertificateError) {
 
   // The request should be failed because of the response with the certificate
   // error.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -400,7 +400,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_NoMimeType) {
   client_.RunUntilComplete();
 
   // The request should be failed because of the response with no MIME type.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -419,7 +419,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_BadMimeType) {
 
   // The request should be failed because of the response with the bad MIME
   // type.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -440,7 +440,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Success_PathRestriction) {
   SetUpRegistration(kScriptURL, kScope);
   DoRequest(kScriptURL);
   client_.RunUntilComplete();
-  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+  EXPECT_EQ(net::OK, client_.status().error_code);
 
   // The client should have received the response.
   EXPECT_TRUE(client_.has_received_response());
@@ -469,7 +469,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_PathRestriction) {
   client_.RunUntilComplete();
 
   // The request should be failed because the scope is not allowed.
-  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_INSECURE_RESPONSE, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.
@@ -488,7 +488,7 @@ TEST_F(ServiceWorkerScriptURLLoaderTest, Error_RedundantWorker) {
   client_.RunUntilComplete();
 
   // The request should be aborted.
-  EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client_.status().error_code);
   EXPECT_FALSE(client_.has_received_response());
 
   // The response shouldn't be stored in the storage.

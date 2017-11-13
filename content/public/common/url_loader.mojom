@@ -105,6 +105,6 @@ interface URLLoaderClient {
 
   // Called when the loading completes. No notification will be dispatched for
   // this client after this message arrives.
-  OnComplete(URLLoaderStatus completion_status);
+  OnComplete(URLLoaderStatus status);
 };
 

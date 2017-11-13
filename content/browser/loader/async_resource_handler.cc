@@ -23,13 +23,13 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/network/upload_progress_tracker.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/upload_progress.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -314,7 +314,7 @@ void AsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 }
 
 void AsyncResourceHandler::OnResponseCompleted(
-    const net::URLRequestStatus& status,
+    const net::URLRequestStatus& request_status,
     std::unique_ptr<ResourceController> controller) {
   ResourceMessageFilter* filter = GetFilter();
   if (!filter) {
@@ -341,25 +341,23 @@ void AsyncResourceHandler::OnResponseCompleted(
   // WebURLLoaderImpl::OnCompletedRequest that routes this message to a WebCore
   // ResourceHandleInternal which asserts on its state and crashes. By crashing
   // when the message is sent, we should get better crash reports.
-  CHECK(status.status() != net::URLRequestStatus::SUCCESS ||
+  CHECK(request_status.status() != net::URLRequestStatus::SUCCESS ||
         sent_received_response_msg_);
 
-  int error_code = status.error();
+  int error_code = request_status.error();
 
-  DCHECK(status.status() != net::URLRequestStatus::IO_PENDING);
+  DCHECK(request_status.status() != net::URLRequestStatus::IO_PENDING);
 
-  ResourceRequestCompletionStatus request_complete_data;
-  request_complete_data.error_code = error_code;
-  request_complete_data.exists_in_cache = request()->response_info().was_cached;
-  request_complete_data.completion_time = TimeTicks::Now();
-  request_complete_data.encoded_data_length =
-      request()->GetTotalReceivedBytes();
-  request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
-  request_complete_data.decoded_body_length = total_read_body_bytes_;
-  filter->Send(
-      new ResourceMsg_RequestComplete(GetRequestID(), request_complete_data));
+  network::URLLoaderStatus loader_status;
+  loader_status.error_code = error_code;
+  loader_status.exists_in_cache = request()->response_info().was_cached;
+  loader_status.completion_time = TimeTicks::Now();
+  loader_status.encoded_data_length = request()->GetTotalReceivedBytes();
+  loader_status.encoded_body_length = request()->GetRawBodyBytes();
+  loader_status.decoded_body_length = total_read_body_bytes_;
+  filter->Send(new ResourceMsg_RequestComplete(GetRequestID(), loader_status));
 
-  if (status.is_success())
+  if (request_status.is_success())
     RecordHistogram();
   controller->Resume();
 }

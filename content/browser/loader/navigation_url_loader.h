@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
-#include "content/public/common/resource_request_completion_status.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 class GURL;
 
@@ -72,7 +72,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       base::OnceCallback<void(std::unique_ptr<ResourceRequest>,
                               std::unique_ptr<ThrottlingURLLoader>,
                               std::vector<GURL>,
-                              base::Optional<ResourceRequestCompletionStatus>)>;
+                              base::Optional<network::URLLoaderStatus>)>;
 
   // This method is called to intercept the url response. Caller is responsible
   // for handling the URLLoader later on. The callback should be called on the

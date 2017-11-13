@@ -616,17 +616,15 @@ void URLLoader::NotifyCompleted(int error_code) {
   if (consumer_handle_.is_valid())
     SendResponseToClient();
 
-  ResourceRequestCompletionStatus request_complete_data;
-  request_complete_data.error_code = error_code;
-  request_complete_data.exists_in_cache =
-      url_request_->response_info().was_cached;
-  request_complete_data.completion_time = base::TimeTicks::Now();
-  request_complete_data.encoded_data_length =
-      url_request_->GetTotalReceivedBytes();
-  request_complete_data.encoded_body_length = url_request_->GetRawBodyBytes();
-  request_complete_data.decoded_body_length = total_written_bytes_;
+  network::URLLoaderStatus status;
+  status.error_code = error_code;
+  status.exists_in_cache = url_request_->response_info().was_cached;
+  status.completion_time = base::TimeTicks::Now();
+  status.encoded_data_length = url_request_->GetTotalReceivedBytes();
+  status.encoded_body_length = url_request_->GetRawBodyBytes();
+  status.decoded_body_length = total_written_bytes_;
 
-  url_loader_client_->OnComplete(request_complete_data);
+  url_loader_client_->OnComplete(status);
   DeleteIfNeeded();
 }
 

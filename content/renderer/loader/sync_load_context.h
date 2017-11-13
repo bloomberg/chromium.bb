@@ -56,8 +56,7 @@ class SyncLoadContext : public RequestPeer {
   void OnDownloadedData(int len, int encoded_data_length) override;
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnCompletedRequest(
-      const ResourceRequestCompletionStatus& completion_status) override;
+  void OnCompletedRequest(const network::URLLoaderStatus& status) override;
 
   // This raw pointer will remain valid for the lifetime of this object because
   // it remains on the stack until |event_| is signaled.

@@ -23,10 +23,13 @@ namespace net {
 struct RedirectInfo;
 }  // namespace net
 
+namespace network {
+struct URLLoaderStatus;
+}  // namespace network
+
 namespace content {
 class ResourceDispatcher;
 class URLResponseBodyConsumer;
-struct ResourceRequestCompletionStatus;
 struct ResourceResponseHead;
 
 class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
@@ -60,7 +63,7 @@ class CONTENT_EXPORT URLLoaderClientImpl final : public mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+  void OnComplete(const network::URLLoaderStatus& status) override;
 
  private:
   bool NeedsStoringMessage() const;

@@ -8,12 +8,15 @@ static_library("cpp") {
   sources = [
     "net_adapters.cc",
     "net_adapters.h",
+    "url_loader_status.cc",
+    "url_loader_status.h",
   ]
 
   deps = [
     "//base",
     "//mojo/common",
     "//net",
+    "//services/network/public/interfaces",
   ]
 }
 

@@ -22,16 +22,19 @@ class HttpRequestHeaders;
 class URLRequest;
 }  // namespace net
 
+namespace network {
+struct URLLoaderStatus;
+}  // namespace network
+
 namespace content {
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
-struct GlobalRequestID;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
+struct GlobalRequestID;
 struct InterceptedRequestInfo;
 struct ResourceRequest;
-struct ResourceRequestCompletionStatus;
 struct ResourceResponseHead;
 
 namespace protocol {
@@ -113,7 +116,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                                          const ResourceResponseHead& head);
   void NavigationPreloadCompleted(
       const std::string& request_id,
-      const ResourceRequestCompletionStatus& completion_status);
+      const network::URLLoaderStatus& completion_status);
   void NavigationFailed(NavigationRequest* navigation_request);
 
   bool enabled() const { return enabled_; }

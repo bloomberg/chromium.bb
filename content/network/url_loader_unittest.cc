@@ -200,11 +200,10 @@ class URLLoaderTest : public testing::Test {
     client_.RunUntilComplete();
     if (body) {
       EXPECT_EQ(body->size(),
-                static_cast<size_t>(
-                    client()->completion_status().decoded_body_length));
+                static_cast<size_t>(client()->status().decoded_body_length));
     }
 
-    return client_.completion_status().error_code;
+    return client_.status().error_code;
   }
 
   void LoadAndCompareFile(const std::string& path) {
@@ -224,17 +223,14 @@ class URLLoaderTest : public testing::Test {
     EXPECT_EQ(expected, body);
     // The file isn't compressed, so both encoded and decoded body lengths
     // should match the read body length.
-    EXPECT_EQ(
-        expected.size(),
-        static_cast<size_t>(client()->completion_status().decoded_body_length));
-    EXPECT_EQ(
-        expected.size(),
-        static_cast<size_t>(client()->completion_status().encoded_body_length));
+    EXPECT_EQ(expected.size(),
+              static_cast<size_t>(client()->status().decoded_body_length));
+    EXPECT_EQ(expected.size(),
+              static_cast<size_t>(client()->status().encoded_body_length));
     // Over the wire length should include headers, so should be longer.
     // TODO(mmenke): Worth adding better tests for encoded_data_length?
-    EXPECT_LT(
-        expected.size(),
-        static_cast<size_t>(client()->completion_status().encoded_data_length));
+    EXPECT_LT(expected.size(),
+              static_cast<size_t>(client()->status().encoded_data_length));
   }
 
   // Adds a MultipleWritesInterceptor for MultipleWritesInterceptor::GetURL()
@@ -430,11 +426,11 @@ TEST_F(URLLoaderTest, GzipTest) {
   EXPECT_EQ("Body", body);
   // Deflating a 4-byte string should result in a longer string - main thing to
   // check here, though, is that the two lengths are of different.
-  EXPECT_LT(client()->completion_status().decoded_body_length,
-            client()->completion_status().encoded_body_length);
+  EXPECT_LT(client()->status().decoded_body_length,
+            client()->status().encoded_body_length);
   // Over the wire length should include headers, so should be longer.
-  EXPECT_LT(client()->completion_status().encoded_body_length,
-            client()->completion_status().encoded_data_length);
+  EXPECT_LT(client()->status().encoded_body_length,
+            client()->status().encoded_data_length);
 }
 
 TEST_F(URLLoaderTest, ErrorBeforeHeaders) {

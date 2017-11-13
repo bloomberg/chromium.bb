@@ -62,7 +62,7 @@ class FakeNetworkURLLoaderFactory final : public mojom::URLLoaderFactory {
                                          MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
     client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
 
-    ResourceRequestCompletionStatus status;
+    network::URLLoaderStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
   }
@@ -391,7 +391,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
   StartRequest(factory.get(), request, &loader, &client);
   client->RunUntilComplete();
 
-  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client->status().error_code);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
@@ -523,7 +523,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
   // inflight fetch event.
   EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
   EXPECT_TRUE(client->has_received_completion());
-  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client->status().error_code);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
@@ -569,7 +569,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   data_pipe.producer_handle.reset();
 
   client->RunUntilComplete();
-  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_EQ(net::OK, client->status().error_code);
 
   // Test the body.
   std::string response;
@@ -616,7 +616,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
   StartRequest(factory.get(), request, &loader, &client);
   client->RunUntilComplete();
 
-  EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  EXPECT_EQ(net::ERR_FAILED, client->status().error_code);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
@@ -634,7 +634,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   StartRequest(factory.get(), request, &loader, &client);
   client->RunUntilRedirectReceived();
 
-  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_EQ(net::OK, client->status().error_code);
   EXPECT_TRUE(client->has_received_redirect());
   {
     const net::RedirectInfo& redirect_info = client->redirect_info();
@@ -649,7 +649,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   loader->FollowRedirect();
   client->RunUntilRedirectReceived();
 
-  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_EQ(net::OK, client->status().error_code);
   EXPECT_TRUE(client->has_received_redirect());
   {
     const net::RedirectInfo& redirect_info = client->redirect_info();
@@ -683,7 +683,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   data_pipe.producer_handle.reset();
 
   client->RunUntilComplete();
-  EXPECT_EQ(net::OK, client->completion_status().error_code);
+  EXPECT_EQ(net::OK, client->status().error_code);
 
   // Test the body.
   std::string response;
@@ -719,7 +719,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
     client->RunUntilRedirectReceived();
 
     EXPECT_TRUE(client->has_received_redirect());
-    EXPECT_EQ(net::OK, client->completion_status().error_code);
+    EXPECT_EQ(net::OK, client->status().error_code);
     const net::RedirectInfo& redirect_info = client->redirect_info();
     EXPECT_EQ(302, redirect_info.status_code);
     EXPECT_EQ("GET", redirect_info.new_method);
@@ -737,8 +737,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
 
   // Fetch can't follow the redirect response 21 times.
   EXPECT_FALSE(client->has_received_redirect());
-  EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS,
-            client->completion_status().error_code);
+  EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS, client->status().error_code);
 }
 
 // Test when the service worker responds with network fallback to CORS request.

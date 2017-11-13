@@ -122,27 +122,25 @@ class FileURLDirectoryLoader
     client.Bind(std::move(client_info));
 
     if (!net::FileURLToFilePath(request.url, &path_)) {
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
     base::File::Info info;
     if (!base::GetFileInfo(path_, &info) || !info.is_directory) {
-      client->OnComplete(
-          ResourceRequestCompletionStatus(net::ERR_FILE_NOT_FOUND));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FILE_NOT_FOUND));
       return;
     }
 
     if (!GetContentClient()->browser()->IsFileAccessAllowed(
             path_, base::MakeAbsoluteFilePath(path_), profile_path)) {
-      client->OnComplete(
-          ResourceRequestCompletionStatus(net::ERR_ACCESS_DENIED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_ACCESS_DENIED));
       return;
     }
 
     mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
     if (!pipe.consumer_handle.is_valid()) {
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
@@ -255,7 +253,7 @@ class FileURLDirectoryLoader
       completion_status = net::ERR_FAILED;
     }
 
-    client_->OnComplete(ResourceRequestCompletionStatus(completion_status));
+    client_->OnComplete(network::URLLoaderStatus(completion_status));
     client_.reset();
     MaybeDeleteSelf();
   }
@@ -323,21 +321,19 @@ class FileURLLoader : public mojom::URLLoader {
 
     base::FilePath path;
     if (!net::FileURLToFilePath(request.url, &path)) {
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
     base::File::Info info;
     if (!base::GetFileInfo(path, &info)) {
-      client->OnComplete(
-          ResourceRequestCompletionStatus(net::ERR_FILE_NOT_FOUND));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FILE_NOT_FOUND));
       return;
     }
 
     if (info.is_directory) {
       if (directory_loading_policy == DirectoryLoadingPolicy::kFail) {
-        client->OnComplete(
-            ResourceRequestCompletionStatus(net::ERR_FILE_NOT_FOUND));
+        client->OnComplete(network::URLLoaderStatus(net::ERR_FILE_NOT_FOUND));
         return;
       }
 
@@ -397,14 +393,13 @@ class FileURLLoader : public mojom::URLLoader {
     if (file_access_policy == FileAccessPolicy::kRestricted &&
         !GetContentClient()->browser()->IsFileAccessAllowed(
             path, base::MakeAbsoluteFilePath(path), profile_path)) {
-      client->OnComplete(
-          ResourceRequestCompletionStatus(net::ERR_ACCESS_DENIED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_ACCESS_DENIED));
       return;
     }
 
     mojo::DataPipe pipe(kDefaultFileUrlPipeSize);
     if (!pipe.consumer_handle.is_valid()) {
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
@@ -419,7 +414,7 @@ class FileURLLoader : public mojom::URLLoader {
     int initial_read_result =
         file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
     if (initial_read_result < 0) {
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
     size_t initial_read_size = static_cast<size_t>(initial_read_result);
@@ -441,8 +436,8 @@ class FileURLLoader : public mojom::URLLoader {
       }
 
       if (fail) {
-        client->OnComplete(ResourceRequestCompletionStatus(
-            net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
+        client->OnComplete(
+            network::URLLoaderStatus(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE));
         return;
       }
     }
@@ -518,9 +513,9 @@ class FileURLLoader : public mojom::URLLoader {
 
   void OnFileWritten(MojoResult result) {
     if (result == MOJO_RESULT_OK)
-      client_->OnComplete(ResourceRequestCompletionStatus(net::OK));
+      client_->OnComplete(network::URLLoaderStatus(net::OK));
     else
-      client_->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client_->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
     client_.reset();
     MaybeDeleteSelf();
   }

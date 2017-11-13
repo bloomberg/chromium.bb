@@ -183,7 +183,7 @@ class NetworkServiceTestWithService
 // works.
 TEST_F(NetworkServiceTestWithService, Basic) {
   LoadURL(test_server()->GetURL("/echo"));
-  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(net::OK, client()->status().error_code);
 }
 
 // Verifies that raw headers are only reported if requested.
@@ -283,21 +283,20 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
 
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
-  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(net::OK, client()->status().error_code);
 
   request.headers.AddHeaderFromString(
       "X-DevTools-Emulate-Network-Conditions-Client-Id: 42");
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
-  EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
-            client()->completion_status().error_code);
+  EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED, client()->status().error_code);
 
   network_conditions = mojom::NetworkConditions::New();
   network_conditions->offline = false;
   context()->SetNetworkConditions("42", std::move(network_conditions));
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
-  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(net::OK, client()->status().error_code);
 
   network_conditions = mojom::NetworkConditions::New();
   network_conditions->offline = true;
@@ -307,12 +306,11 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
       "X-DevTools-Emulate-Network-Conditions-Client-Id: 42");
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
-  EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
-            client()->completion_status().error_code);
+  EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED, client()->status().error_code);
   context()->SetNetworkConditions("42", nullptr);
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
-  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(net::OK, client()->status().error_code);
 }
 
 class TestNetworkChangeManagerClient

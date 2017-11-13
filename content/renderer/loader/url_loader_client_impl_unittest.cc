@@ -176,10 +176,10 @@ TEST_F(URLLoaderClientImplTest, OnTransferSizeUpdated) {
 
 TEST_F(URLLoaderClientImplTest, OnCompleteWithoutResponseBody) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
@@ -190,7 +190,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithoutResponseBody) {
 
 TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
@@ -209,7 +209,7 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
   EXPECT_TRUE(request_peer_context_.received_response);
   EXPECT_EQ("hello", request_peer_context_.data);
 
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.complete);
   base::RunLoop().RunUntilIdle();
@@ -224,13 +224,13 @@ TEST_F(URLLoaderClientImplTest, OnCompleteWithResponseBody) {
 // restore the order.
 TEST_F(URLLoaderClientImplTest, OnCompleteShouldBeTheLastMessage) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
@@ -256,13 +256,13 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveResponse) {
   request_peer_context_.cancel_on_receive_response = true;
 
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
@@ -278,7 +278,7 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
   request_peer_context_.cancel_on_receive_data = true;
 
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   mojo::DataPipe data_pipe(DataPipeOptions());
   uint32_t size = 5;
@@ -290,7 +290,7 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_EQ("", request_peer_context_.data);
@@ -306,10 +306,10 @@ TEST_F(URLLoaderClientImplTest, CancelOnReceiveData) {
 
 TEST_F(URLLoaderClientImplTest, Defer) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
@@ -331,7 +331,7 @@ TEST_F(URLLoaderClientImplTest, Defer) {
 
 TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
@@ -344,7 +344,7 @@ TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
 
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
@@ -372,7 +372,7 @@ TEST_F(URLLoaderClientImplTest, DeferWithResponseBody) {
 // we have a separate test.
 TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
   mojo::DataPipe data_pipe(DataPipeOptions());
@@ -386,7 +386,7 @@ TEST_F(URLLoaderClientImplTest, DeferWithTransferSizeUpdated) {
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   url_loader_client_->OnTransferSizeUpdated(4);
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);
@@ -419,7 +419,7 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
 
   net::RedirectInfo redirect_info;
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveRedirect(redirect_info, response_head);
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
@@ -434,7 +434,7 @@ TEST_F(URLLoaderClientImplTest, SetDeferredDuringFlushingDeferredMessage) {
   url_loader_client_->OnStartLoadingResponseBody(
       std::move(data_pipe.consumer_handle));
   url_loader_client_->OnTransferSizeUpdated(4);
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_EQ(0, request_peer_context_.seen_redirects);
   EXPECT_FALSE(request_peer_context_.received_response);
@@ -481,12 +481,12 @@ TEST_F(URLLoaderClientImplTest,
   request_peer_context_.defer_on_transfer_size_updated = true;
 
   ResourceResponseHead response_head;
-  ResourceRequestCompletionStatus completion_status;
+  network::URLLoaderStatus status;
 
   url_loader_client_->OnReceiveResponse(response_head, base::nullopt, nullptr);
 
   url_loader_client_->OnTransferSizeUpdated(4);
-  url_loader_client_->OnComplete(completion_status);
+  url_loader_client_->OnComplete(status);
 
   EXPECT_FALSE(request_peer_context_.received_response);
   EXPECT_FALSE(request_peer_context_.complete);

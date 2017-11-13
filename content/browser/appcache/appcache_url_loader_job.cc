@@ -319,20 +319,19 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  ResourceRequestCompletionStatus request_complete_data(error_code);
+  network::URLLoaderStatus status(error_code);
   if (!error_code) {
     const net::HttpResponseInfo* http_info =
         is_range_request() ? range_response_info_.get()
                            : (info_ ? info_->http_response_info() : nullptr);
-    request_complete_data.exists_in_cache = http_info->was_cached;
-    request_complete_data.completion_time = base::TimeTicks::Now();
-    request_complete_data.encoded_body_length =
+    status.exists_in_cache = http_info->was_cached;
+    status.completion_time = base::TimeTicks::Now();
+    status.encoded_body_length =
         is_range_request() ? range_response_info_->headers->GetContentLength()
                            : (info_ ? info_->response_data_size() : 0);
-    request_complete_data.decoded_body_length =
-        request_complete_data.encoded_body_length;
+    status.decoded_body_length = status.encoded_body_length;
   }
-  client_->OnComplete(request_complete_data);
+  client_->OnComplete(status);
 
   if (delivery_type_ == APPCACHED_DELIVERY) {
     AppCacheHistograms::CountResponseRetrieval(

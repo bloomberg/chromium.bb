@@ -48,7 +48,7 @@ void CallOnError(mojom::URLLoaderClientPtrInfo client_info, int error_code) {
   mojom::URLLoaderClientPtr client;
   client.Bind(std::move(client_info));
 
-  ResourceRequestCompletionStatus status;
+  network::URLLoaderStatus status;
   status.error_code = error_code;
   client->OnComplete(status);
 }
@@ -112,7 +112,7 @@ void ReadData(scoped_refptr<ResourceResponse> headers,
   CHECK_EQ(result, MOJO_RESULT_OK);
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-  ResourceRequestCompletionStatus status(net::OK);
+  network::URLLoaderStatus status(net::OK);
   status.encoded_data_length = output_size;
   status.encoded_body_length = output_size;
   client->OnComplete(status);
@@ -237,7 +237,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
     if (request.url.scheme() != scheme_) {
       ReceivedBadMessage(render_frame_host_->GetProcess(),
                          bad_message::WEBUI_BAD_SCHEME_ACCESS);
-      client->OnComplete(ResourceRequestCompletionStatus(net::ERR_FAILED));
+      client->OnComplete(network::URLLoaderStatus(net::ERR_FAILED));
       return;
     }
 
