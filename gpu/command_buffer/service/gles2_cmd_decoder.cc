@@ -20294,7 +20294,7 @@ void GLES2DecoderImpl::DoBeginRasterCHROMIUM(GLuint texture_id,
 
   // Resolve requested msaa samples with GrGpu capabilities.
   int final_msaa_count = gr_context_->caps()->getSampleCount(
-      msaa_sample_count, gr_texture.config());
+      msaa_sample_count, static_cast<GrPixelConfig>(pixel_config));
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
       gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
       nullptr, &surface_props);
