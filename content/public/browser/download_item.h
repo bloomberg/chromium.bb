@@ -110,7 +110,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     // down.
     virtual void OnDownloadDestroyed(DownloadItem* download) {}
 
-   protected:
     virtual ~Observer() {}
   };
 

@@ -37,6 +37,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
@@ -2281,6 +2282,16 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
   download_params->set_fetch_error_body(fetch_error_body_);
+
+  auto* manager_delegate = GetBrowserContext()->GetDownloadManagerDelegate();
+  if (manager_delegate) {
+    download::InProgressCache* in_progress_cache =
+        manager_delegate->GetInProgressCache();
+    download::DownloadEntry* entry =
+        in_progress_cache->RetrieveEntry(GetGuid());
+    if (entry)
+      download_params->set_request_origin(entry->request_origin);
+  }
 
   // Note that resumed downloads disallow redirects. Hence the referrer URL
   // (which is the contents of the Referer header for the last download request)

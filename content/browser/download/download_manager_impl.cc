@@ -22,6 +22,8 @@
 #include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "components/download/downloader/in_progress/download_entry.h"
+#include "components/download/downloader/in_progress/in_progress_cache.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/download/download_create_info.h"
@@ -279,6 +281,53 @@ base::FilePath GetTemporaryDownloadDirectory() {
 
 }  // namespace
 
+// Responsible for persisting the in-progress metadata associated with a
+// download.
+class InProgressDownloadObserver : public DownloadItem::Observer {
+ public:
+  explicit InProgressDownloadObserver(
+      download::InProgressCache* in_progress_cache);
+  ~InProgressDownloadObserver() override;
+
+ private:
+  // DownloadItem::Observer
+  void OnDownloadUpdated(DownloadItem* download) override;
+  void OnDownloadRemoved(DownloadItem* download) override;
+
+  // The persistent cache to store in-progress metadata.
+  download::InProgressCache* in_progress_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(InProgressDownloadObserver);
+};
+
+InProgressDownloadObserver::InProgressDownloadObserver(
+    download::InProgressCache* in_progress_cache)
+    : in_progress_cache_(in_progress_cache) {}
+
+InProgressDownloadObserver::~InProgressDownloadObserver() = default;
+
+void InProgressDownloadObserver::OnDownloadUpdated(DownloadItem* download) {
+  // TODO(crbug.com/778425): Properly handle fail/resume/retry for downloads
+  // that are in the INTERRUPTED state for a long time.
+  switch (download->GetState()) {
+    case DownloadItem::DownloadState::COMPLETE:
+    case DownloadItem::DownloadState::CANCELLED:
+      if (in_progress_cache_)
+        in_progress_cache_->RemoveEntry(download->GetGuid());
+      break;
+    case DownloadItem::DownloadState::IN_PROGRESS:
+      // TODO(crbug.com/778425): After RetrieveEntry has been implemented, do a
+      // check to make sure the entry exists in the cache.
+      break;
+    default:
+      break;
+  }
+}
+
+void InProgressDownloadObserver::OnDownloadRemoved(DownloadItem* download) {
+  in_progress_cache_->RemoveEntry(download->GetGuid());
+}
+
 DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       file_factory_(new DownloadFileFactory()),
@@ -473,6 +522,16 @@ void DownloadManagerImpl::StartDownloadWithId(
   }
 #endif
 
+  if (delegate_) {
+    if (!in_progress_download_observer_) {
+      in_progress_download_observer_.reset(
+          new InProgressDownloadObserver(delegate_->GetInProgressCache()));
+    }
+    // May already observe this item, remove observer first.
+    download->RemoveObserver(in_progress_download_observer_.get());
+    download->AddObserver(in_progress_download_observer_.get());
+  }
+
   std::unique_ptr<DownloadFile> download_file;
 
   if (info->result == DOWNLOAD_INTERRUPT_REASON_NONE) {
@@ -623,6 +682,7 @@ DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
     int render_view_route_id,
     int render_frame_route_id,
     bool do_not_prompt_for_login) {
+  LOG(ERROR) << "BeginDownloadRequest";
   if (ResourceDispatcherHostImpl::Get()->is_shutdown())
     return DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN;
 
@@ -860,6 +920,13 @@ void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
+  download::InProgressCache* in_progress_cache =
+      GetBrowserContext()->GetDownloadManagerDelegate()->GetInProgressCache();
+  if (in_progress_cache) {
+    in_progress_cache->AddOrReplaceEntry(download::DownloadEntry(
+        params.get()->guid(), params.get()->request_origin()));
+  }
+
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
         params.get());
