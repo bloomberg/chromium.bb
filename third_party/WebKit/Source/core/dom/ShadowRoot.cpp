@@ -232,6 +232,14 @@ void ShadowRoot::RemovedFrom(ContainerNode* insertion_point) {
   DocumentFragment::RemovedFrom(insertion_point);
 }
 
+void ShadowRoot::SetNeedsAssignmentRecalc() {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  DCHECK(IsV1());
+  if (!slot_assignment_)
+    return;
+  return slot_assignment_->SetNeedsAssignmentRecalc();
+}
+
 void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
 

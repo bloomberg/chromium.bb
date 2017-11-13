@@ -7,6 +7,7 @@
 
 #include "core/dom/TreeOrderedMap.h"
 #include "platform/heap/Handle.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
@@ -47,6 +48,14 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
 
+  void SetNeedsAssignmentRecalc() {
+    DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+    needs_assignment_recalc_ = true;
+  }
+
+  // For Incremental Shadow DOM
+  void ResolveAssignmentNg();
+
   void Trace(blink::Visitor*);
 
  private:
@@ -73,7 +82,8 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   Member<TreeOrderedMap> slot_map_;
   WeakMember<ShadowRoot> owner_;
   unsigned needs_collect_slots_ : 1;
-  unsigned slot_count_ : 31;
+  unsigned needs_assignment_recalc_ : 1;  // For Incremental Shadow DOM
+  unsigned slot_count_ : 30;
 };
 
 }  // namespace blink

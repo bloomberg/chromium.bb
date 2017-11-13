@@ -69,6 +69,7 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
 
   void DistributeIfNeeded();
 
+  void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
   void SetNeedsDistributionRecalc();
   bool NeedsDistributionRecalc() const { return needs_distribution_recalc_; }
 

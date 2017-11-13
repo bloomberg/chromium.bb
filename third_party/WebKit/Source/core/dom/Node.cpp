@@ -744,7 +744,19 @@ bool Node::NeedsDistributionRecalc() const {
   return ShadowIncludingRoot().ChildNeedsDistributionRecalc();
 }
 
+bool Node::MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const {
+  if (!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    return true;
+  if (isConnected() && !GetDocument().MayContainV0Shadow()) {
+    DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
+    return false;
+  }
+  return true;
+}
+
 void Node::UpdateDistribution() {
+  if (!MayContainLegacyNodeTreeWhereDistributionShouldBeSupported())
+    return;
   // Extra early out to avoid spamming traces.
   if (isConnected() && !GetDocument().ChildNeedsDistributionRecalc())
     return;

@@ -2577,7 +2577,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
 
   // TODO(hayato): Confirm that we can skip this if a shadow tree is v1.
   if (ElementShadow* shadow = Shadow())
-    shadow->SetNeedsDistributionRecalc();
+    shadow->SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
 }
 
 void Element::FinishParsingChildren() {

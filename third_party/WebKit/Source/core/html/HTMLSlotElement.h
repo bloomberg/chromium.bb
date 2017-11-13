@@ -112,6 +112,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void DispatchSlotChangeEvent();
   void ClearSlotChangeEventEnqueued() { slotchange_event_enqueued_ = false; }
 
+  // For Incremental Shadow DOM
+  void ClearAssignedNodes();
+
   static AtomicString NormalizeSlotName(const AtomicString&);
 
   virtual void Trace(blink::Visitor*);
@@ -132,6 +135,8 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   static void LazyReattachDistributedNodesByDynamicProgramming(
       const HeapVector<Member<Node>>&,
       const HeapVector<Member<Node>>&);
+
+  void SetNeedsDistributionRecalcWillBeSetNeedsAssignmentRecalc();
 
   HeapVector<Member<Node>> assigned_nodes_;
   HeapVector<Member<Node>> distributed_nodes_;

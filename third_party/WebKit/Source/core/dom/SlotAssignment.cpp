@@ -189,7 +189,33 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
   DCHECK(owner.IsV1());
 }
 
+void SlotAssignment::ResolveAssignmentNg() {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+
+  if (!needs_assignment_recalc_)
+    return;
+  needs_assignment_recalc_ = false;
+
+  for (Member<HTMLSlotElement> slot : Slots())
+    slot->ClearAssignedNodes();
+
+  for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
+    if (!child.IsSlotable()) {
+      // TODO(hayato): Avoid LazyReattach
+      child.LazyReattachIfAttached();
+      continue;
+    }
+    if (HTMLSlotElement* slot = FindSlotByName(child.SlotName())) {
+      slot->AppendAssignedNode(child);
+      // TODO(hayato): Avoid LazyReattach
+      child.LazyReattachIfAttached();
+    }
+  }
+}
+
 void SlotAssignment::ResolveAssignment() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+
   for (Member<HTMLSlotElement> slot : Slots())
     slot->SaveAndClearDistribution();
 
@@ -207,6 +233,8 @@ void SlotAssignment::ResolveAssignment() {
 }
 
 void SlotAssignment::ResolveDistribution() {
+  DCHECK(!RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+
   ResolveAssignment();
   const HeapVector<Member<HTMLSlotElement>>& slots = Slots();
 
