@@ -2553,8 +2553,8 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
 
   // Override skipping rectangular partition operations for edge blocks
-  const int force_horz_split = (mi_row + mi_step >= cm->mi_rows);
-  const int force_vert_split = (mi_col + mi_step >= cm->mi_cols);
+  const int has_rows = (mi_row + mi_step < cm->mi_rows);
+  const int has_cols = (mi_col + mi_step < cm->mi_cols);
   const int xss = x->e_mbd.plane[1].subsampling_x;
   const int yss = x->e_mbd.plane[1].subsampling_y;
 
@@ -2568,30 +2568,28 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   int none_complexity = 0;
 #endif
 
-  int partition_none_allowed = !force_horz_split && !force_vert_split;
-  int partition_horz_allowed =
-      !force_vert_split && yss <= xss && bsize_at_least_8x8;
-  int partition_vert_allowed =
-      !force_horz_split && xss <= yss && bsize_at_least_8x8;
+  int partition_none_allowed = has_rows && has_cols;
+  int partition_horz_allowed = has_cols && yss <= xss && bsize_at_least_8x8;
+  int partition_vert_allowed = has_rows && xss <= yss && bsize_at_least_8x8;
 
   (void)*tp_orig;
 
-  if (force_horz_split || force_vert_split) {
+  if (!(has_rows && has_cols)) {
     tmp_partition_cost[PARTITION_NONE] = INT_MAX;
 
-    if (!force_vert_split) {  // force_horz_split only
+    if (has_cols) {
       tmp_partition_cost[PARTITION_VERT] = INT_MAX;
       tmp_partition_cost[PARTITION_HORZ] =
           av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_HORZ], 0);
       tmp_partition_cost[PARTITION_SPLIT] =
           av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_HORZ], 1);
-    } else if (!force_horz_split) {  // force_vert_split only
+    } else if (has_rows) {
       tmp_partition_cost[PARTITION_HORZ] = INT_MAX;
       tmp_partition_cost[PARTITION_VERT] =
           av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_VERT], 0);
       tmp_partition_cost[PARTITION_SPLIT] =
           av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_VERT], 1);
-    } else {  // force_ horz_split && force_vert_split horz_split
+    } else {
       tmp_partition_cost[PARTITION_HORZ] = INT_MAX;
       tmp_partition_cost[PARTITION_VERT] = INT_MAX;
       tmp_partition_cost[PARTITION_SPLIT] = 0;
@@ -2636,13 +2634,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     // Note: Further partitioning is NOT allowed when bsize == min_size already.
     const int partition_allowed = (bsize <= max_size && bsize > min_size);
     partition_none_allowed &= no_partition_allowed;
-    partition_horz_allowed &= partition_allowed || force_horz_split;
-    partition_vert_allowed &= partition_allowed || force_vert_split;
+    partition_horz_allowed &= partition_allowed || !has_rows;
+    partition_vert_allowed &= partition_allowed || !has_cols;
     do_square_split &= bsize > min_size;
   }
   if (cpi->sf.use_square_partition_only) {
-    partition_horz_allowed &= force_horz_split;
-    partition_vert_allowed &= force_vert_split;
+    partition_horz_allowed &= !has_rows;
+    partition_vert_allowed &= !has_cols;
   }
 
   xd->above_txfm_context =
@@ -2892,7 +2890,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     horz_rd[0] = sum_rdc.rdcost;
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-    if (sum_rdc.rdcost < temp_best_rdcost && !force_horz_split) {
+    if (sum_rdc.rdcost < temp_best_rdcost && has_rows) {
       PICK_MODE_CONTEXT *ctx_h = &pc_tree->horizontal[0];
       update_state(cpi, tile_data, td, ctx_h, mi_row, mi_col, subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row, mi_col,
@@ -2977,7 +2975,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     vert_rd[0] = sum_rdc.rdcost;
 #endif  // CONFIG_EXT_PARTITION_TYPES
     const int64_t vert_max_rdcost = best_rdc.rdcost;
-    if (sum_rdc.rdcost < vert_max_rdcost && !force_vert_split) {
+    if (sum_rdc.rdcost < vert_max_rdcost && has_cols) {
       update_state(cpi, tile_data, td, &pc_tree->vertical[0], mi_row, mi_col,
                    subsize, 1);
       encode_superblock(cpi, tile_data, td, tp, DRY_RUN_NORMAL, mi_row, mi_col,
@@ -3203,7 +3201,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                                 pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
-  if (horz4_partition_allowed && !force_horz_split &&
+  if (horz4_partition_allowed && has_rows &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
@@ -3243,7 +3241,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                                 pc_tree->partitioning == PARTITION_SPLIT ||
                                 pc_tree->partitioning == PARTITION_NONE);
   }
-  if (vert4_partition_allowed && !force_vert_split &&
+  if (vert4_partition_allowed && has_cols &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
