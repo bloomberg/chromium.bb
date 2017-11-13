@@ -315,7 +315,7 @@ class CORE_EXPORT Element : public ContainerNode {
   AttrNodeList* GetAttrNodeList();
 
   CSSStyleDeclaration* style();
-  StylePropertyMap* styleMap();
+  StylePropertyMap* attributeStyleMap();
 
   const QualifiedName& TagQName() const { return tag_name_; }
   String tagName() const { return nodeName(); }

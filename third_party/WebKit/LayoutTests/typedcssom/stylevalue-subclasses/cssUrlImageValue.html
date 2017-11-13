@@ -13,7 +13,7 @@ function loadImageResource(imageValue) {
   // Set a CSSURLImageValue on an element so it can be loaded.
   let target = newDivWithStyle('');
   document.body.append(target);
-  target.styleMap.set('background-image', imageValue);
+  target.attributeStyleMap.set('background-image', imageValue);
 
   // add a new Image element to know if the image resource has been loaded
   let image = new Image();

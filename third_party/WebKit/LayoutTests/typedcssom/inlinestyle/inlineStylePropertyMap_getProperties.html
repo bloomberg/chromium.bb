@@ -8,37 +8,37 @@
 
 test(function() {
   testElement.style = '';
-  assert_array_equals(testElement.styleMap.getProperties(), []);
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), []);
 }, "getProperties returns an empty list when no properties have been set");
 
 test(function() {
   testElement.style = '';
-  testElement.styleMap.set('width', new CSSUnitValue(10, 'px'));
-  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+  testElement.attributeStyleMap.set('width', new CSSUnitValue(10, 'px'));
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['width']);
 }, "getProperties returns the name of a property if it is set");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSUnitValue(10, 'px'));
-  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+  testElement.attributeStyleMap.set('width', new CSSUnitValue(10, 'px'));
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['width']);
 
-  testElement.styleMap.get('height');
-  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+  testElement.attributeStyleMap.get('height');
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['width']);
 }, "Accessing another property doesn't add a spurious result");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSUnitValue(10, 'px'));
-  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+  testElement.attributeStyleMap.set('width', new CSSUnitValue(10, 'px'));
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['width']);
 
-  testElement.styleMap.delete('width');
-  assert_array_equals(testElement.styleMap.getProperties(), []);
+  testElement.attributeStyleMap.delete('width');
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), []);
 }, "property name does not appear in result after deletion");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSUnitValue(10, 'px'));
-  assert_array_equals(testElement.styleMap.getProperties(), ['width']);
+  testElement.attributeStyleMap.set('width', new CSSUnitValue(10, 'px'));
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['width']);
 
-  testElement.styleMap.set('border-top-width', new CSSUnitValue(10, 'px'));
-  var result = testElement.styleMap.getProperties();
+  testElement.attributeStyleMap.set('border-top-width', new CSSUnitValue(10, 'px'));
+  var result = testElement.attributeStyleMap.getProperties();
   // TODO(meade): The spec should describe an order for this.
   assert_equals(result.length, 2);
   assert_true(result.indexOf('width') >= 0);
@@ -49,17 +49,17 @@ test(function() {
   testElement.style = '';
   testElement.style.setProperty('--my-custom-property', '5px');
 
-  assert_array_equals(testElement.styleMap.getProperties(), ['--my-custom-property']);
+  assert_array_equals(testElement.attributeStyleMap.getProperties(), ['--my-custom-property']);
 }, "getProperties returns expected values for custom properties");
 
 test(function() {
     testElement.style.cssText = "@apply --foo";
-    assert_array_equals(testElement.styleMap.getProperties(), ['@apply']);
+    assert_array_equals(testElement.attributeStyleMap.getProperties(), ['@apply']);
 }, "getProperties returns expected values when @apply is used");
 
 test(function() {
     testElement.style.cssText = "@apply --foo; @apply --bar;";
-    assert_array_equals(testElement.styleMap.getProperties(), ['@apply']);
+    assert_array_equals(testElement.attributeStyleMap.getProperties(), ['@apply']);
 }, "getProperties returns only one @apply when multiple things are applied");
 
 </script>

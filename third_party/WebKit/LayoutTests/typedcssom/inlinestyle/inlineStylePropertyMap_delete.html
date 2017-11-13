@@ -9,40 +9,40 @@
 // Delete
 test(function() {
   testElement.style.width = '80px';
-  assert_equals(testElement.styleMap.get('width').toString(), '80px');
+  assert_equals(testElement.attributeStyleMap.get('width').toString(), '80px');
 
-  testElement.styleMap.delete('width');
-  assert_equals(testElement.styleMap.get('width'), null);
+  testElement.attributeStyleMap.delete('width');
+  assert_equals(testElement.attributeStyleMap.get('width'), null);
   assert_equals(testElement.style.width, '');
 }, "delete() removes the value from the property when set in element.style");
 
 test(function() {
-  testElement.styleMap.set('width', new CSSUnitValue(100, 'px'));
-  assert_equals(testElement.styleMap.get('width').toString(), '100px');
+  testElement.attributeStyleMap.set('width', new CSSUnitValue(100, 'px'));
+  assert_equals(testElement.attributeStyleMap.get('width').toString(), '100px');
 
-  testElement.styleMap.delete('width');
-  assert_equals(testElement.styleMap.get('width'), null);
+  testElement.attributeStyleMap.delete('width');
+  assert_equals(testElement.attributeStyleMap.get('width'), null);
   assert_equals(testElement.style.width, '');
 }, "delete() removes the value from the property when set in element.styleMap");
 
 test(function() {
   testElement.style.width = '90px';
-  assert_equals(testElement.styleMap.get('width').toString(), '90px');
+  assert_equals(testElement.attributeStyleMap.get('width').toString(), '90px');
 
-  testElement.styleMap.delete('WIdtH');
-  assert_equals(testElement.styleMap.get('width'), null);
+  testElement.attributeStyleMap.delete('WIdtH');
+  assert_equals(testElement.attributeStyleMap.get('width'), null);
   assert_equals(testElement.style.width, '');
 }, "delete() works when mixed case is used for the property name");
 
 test(function() {
-  assert_equals(testElement.styleMap.get('height'), null);
-  testElement.styleMap.delete('height');
-  assert_equals(testElement.styleMap.get('height'), null);
+  assert_equals(testElement.attributeStyleMap.get('height'), null);
+  testElement.attributeStyleMap.delete('height');
+  assert_equals(testElement.attributeStyleMap.get('height'), null);
 }, "delete() does nothing if the property isn't set");
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.delete('lemons');
+    testElement.attributeStyleMap.delete('lemons');
   });
 }, "Attempting to delete an invalid property throws");
 

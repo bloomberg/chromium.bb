@@ -8,7 +8,7 @@
 
 test(function() {
   testElement.style.width = "calc(42px + var(--foo, 15em) + var(--bar, var(--test) + 15px))";
-  var result = [...testElement.styleMap.get('width')];
+  var result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 5);
   assert_equals(result[0], "calc(42px + ");
   assert_equals(result[1].variable, "--foo");
@@ -27,7 +27,7 @@ test(function() {
 
 test(function() {
   testElement.style.width = "var(--a, 10px, 20px, 30em)";
-  var result = [...testElement.styleMap.get('width')];
+  var result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 1);
   assert_equals(result[0].variable, "--a");
   assert_equals([...result[0].fallback].length, 1);
@@ -36,7 +36,7 @@ test(function() {
 
 test(function() {
   testElement.style.width = "   var(   --a   ,   5px   )  ";
-  var result = [...testElement.styleMap.get('width')];
+  var result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 2);
   assert_equals(result[0].variable, "--a");
   assert_equals([...result[0].fallback].length, 1);
@@ -44,7 +44,7 @@ test(function() {
   assert_equals(result[1], " ");
 
   testElement.style.width = "  calc(  var(  --test, 30px ) + 15px  )";
-  result = [...testElement.styleMap.get('width')];
+  result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 3);
   assert_equals(result[0], "calc( ");
   assert_equals(result[1].variable, "--test");
@@ -55,14 +55,14 @@ test(function() {
 
 test(function() {
   testElement.style.width = "   var(  --a  )  ";
-  var result = [...testElement.styleMap.get('width')];
+  var result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 2);
   assert_equals(result[0].variable, "--a");
   assert_equals(result[0].fallback, null);
   assert_equals(result[1], " ");
 
   testElement.style.width = " calc( var(  --test ) + 15px  ) ";
-  result = [...testElement.styleMap.get('width')];
+  result = [...testElement.attributeStyleMap.get('width')];
   assert_equals(result.length, 3);
   assert_equals(result[0], "calc( ");
   assert_equals(result[1].variable, "--test");

@@ -128,7 +128,7 @@ let crashTestStrings = {
 for (let inputString in crashTestStrings) {
   test(() => {
     testElement.style.transform = inputString;
-    let result = testElement.styleMap.get('transform');
+    let result = testElement.attributeStyleMap.get('transform');
     assert_equals(result.constructor, CSSStyleValue,
         'result is a base CSSStyleValue');
     assert_equals(result.toString(), crashTestStrings[inputString]);
@@ -138,14 +138,14 @@ for (let inputString in crashTestStrings) {
 // TODO(meade): Remove/update this test once translate is supported.
 test(function() {
   testElement.style.transform = 'translateY(50px)';
-  testElement.styleMap.entries();
+  testElement.attributeStyleMap.entries();
 }, "Unhandled translate case doesn't crash.");
 
 test(function() {
   // Clear transform
   let transform = new CSSTransformValue([new CSSPerspective(CSS.px(-5))]);
   assert_throws(new TypeError(), () => {
-    testElement.styleMap.set('transform', transform);
+    testElement.attributeStyleMap.set('transform', transform);
   });
 }, "Invalid perspective (negative length) doesn't crash");
 

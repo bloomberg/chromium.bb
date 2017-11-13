@@ -9,16 +9,14 @@
 <script>
 'use strict';
 
-// FIXME(774933): change .styleMap to .attributeStyleMap
-
 test(() => {
-  const styleMap = document.getElementById('target-empty').styleMap;
+  const styleMap = document.getElementById('target-empty').attributeStyleMap;
   const properties = styleMap.getProperties();
   assert_equals(properties.length, 0);
 }, 'Calling StylePropertyMap.getProperties on an empty property model returns a zero-length array');
 
 test(() => {
-  const styleMap = document.getElementById('target-multiple').styleMap;
+  const styleMap = document.getElementById('target-multiple').attributeStyleMap;
   const properties = styleMap.getProperties();
   assert_array_equals(properties,
     ['color', 'transition-duration', 'width', '--A', '--B', '--C']);
