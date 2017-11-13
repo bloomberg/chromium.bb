@@ -6,30 +6,33 @@
 #define MediaControlLoadingPanelElement_h
 
 #include "modules/ModulesExport.h"
+#include "modules/media_controls/elements/MediaControlAnimationEventListener.h"
 #include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 
 class ContainerNode;
+class Element;
 class HTMLDivElement;
 class MediaControlsImpl;
 
 // The loading panel shows the semi-transparent white mask and the transparent
 // loading spinner.
 class MODULES_EXPORT MediaControlLoadingPanelElement final
-    : public MediaControlDivElement {
+    : public MediaControlDivElement,
+      public MediaControlAnimationEventListener::Observer {
+  USING_GARBAGE_COLLECTED_MIXIN(MediaControlLoadingPanelElement);
+
  public:
   explicit MediaControlLoadingPanelElement(MediaControlsImpl&);
 
   // Update the state based on the Media Controls state.
   void UpdateDisplayState();
 
-  void Trace(Visitor*) override;
+  void Trace(Visitor*);
 
  private:
   friend class MediaControlLoadingPanelElementTest;
-
-  class AnimationEventListener;
 
   enum State {
     // The loading panel is hidden.
@@ -44,8 +47,9 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   };
 
   // These are used by AnimationEventListener to notify of animation events.
-  void OnAnimationEnd();
-  void OnAnimationIteration();
+  void OnAnimationEnd() override;
+  void OnAnimationIteration() override;
+  Element& WatchedAnimationElement() const override;
 
   // This sets the "animation-iteration-count" CSS property on the mask
   // background elements.
@@ -65,7 +69,7 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   int animation_count_ = 0;
   State state_ = State::kHidden;
 
-  Member<AnimationEventListener> event_listener_;
+  Member<MediaControlAnimationEventListener> event_listener_;
   Member<HTMLDivElement> mask1_background_;
   Member<HTMLDivElement> mask2_background_;
 };

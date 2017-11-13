@@ -21,6 +21,8 @@ blink_modules_sources("media_controls") {
     "MediaControlsWindowEventListener.h",
     "MediaDownloadInProductHelpManager.cpp",
     "MediaDownloadInProductHelpManager.h",
+    "elements/MediaControlAnimationEventListener.cpp",
+    "elements/MediaControlAnimationEventListener.h",
     "elements/MediaControlButtonPanelElement.cpp",
     "elements/MediaControlButtonPanelElement.h",
     "elements/MediaControlCastButtonElement.cpp",

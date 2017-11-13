@@ -24,57 +24,6 @@ static const char kInfinite[] = "infinite";
 
 namespace blink {
 
-// Listens for animationend and animationiteration DOM events on a HTML element
-// provided by the loading panel. When the events are called it calls the
-// OnAnimation* methods on the loading panel.
-//
-// This exists because we need to know when the animation ends so we can reset
-// the element and we also need to keep track of how many iterations the
-// animation has gone through so we can nicely stop the animation at the end of
-// the current one.
-class MediaControlLoadingPanelElement::AnimationEventListener final
-    : public EventListener {
- public:
-  AnimationEventListener(MediaControlLoadingPanelElement* panel)
-      : EventListener(EventListener::kCPPEventListenerType), panel_(panel) {
-    Object().addEventListener(EventTypeNames::animationend, this, false);
-    Object().addEventListener(EventTypeNames::animationiteration, this, false);
-  };
-
-  void Detach() {
-    Object().removeEventListener(EventTypeNames::animationend, this, false);
-    Object().removeEventListener(EventTypeNames::animationiteration, this,
-                                 false);
-  };
-
-  bool operator==(const EventListener& other) const override {
-    return this == &other;
-  };
-
-  virtual void Trace(blink::Visitor* visitor) {
-    visitor->Trace(panel_);
-    EventListener::Trace(visitor);
-  };
-
- private:
-  void handleEvent(ExecutionContext* execution_context, Event* event) {
-    if (event->type() == EventTypeNames::animationend) {
-      panel_->OnAnimationEnd();
-      return;
-    }
-    if (event->type() == EventTypeNames::animationiteration) {
-      panel_->OnAnimationIteration();
-      return;
-    }
-
-    NOTREACHED();
-  };
-
-  HTMLDivElement& Object() { return *panel_->mask1_background_; };
-
-  Member<MediaControlLoadingPanelElement> panel_;
-};
-
 MediaControlLoadingPanelElement::MediaControlLoadingPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaControlsPanel) {
@@ -144,8 +93,7 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   mask2_background_ = MediaControlElementsHelper::CreateDivWithId(
       "spinner-mask-2-background", mask2);
 
-  event_listener_ =
-      new MediaControlLoadingPanelElement::AnimationEventListener(this);
+  event_listener_ = new MediaControlAnimationEventListener(this);
 
   // The four cutoffs are responsible for filling the background of the loading
   // panel with white, whilst leaving a small box in the middle that is
@@ -238,7 +186,13 @@ void MediaControlLoadingPanelElement::OnAnimationIteration() {
   animation_count_ += 1;
 }
 
+Element& MediaControlLoadingPanelElement::WatchedAnimationElement() const {
+  DCHECK(mask1_background_);
+  return *mask1_background_;
+}
+
 void MediaControlLoadingPanelElement::Trace(blink::Visitor* visitor) {
+  MediaControlAnimationEventListener::Observer::Trace(visitor);
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
   visitor->Trace(mask1_background_);
