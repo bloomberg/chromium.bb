@@ -9,11 +9,6 @@
 -TabCaptureApiPixelTest.OffscreenTabEndToEnd
 -TabCaptureApiPixelTest.OffscreenTabEvilTests
 
-# TODO: fix, see http://crbug.com/755272.
--PDFExtensionTest.RedirectsFailInPlugin
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaHttp/0
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
-
 # TODO: fix, see http://crbug.com/755303.
 -StartupMetricsTest.ReportsValues
 
@@ -24,23 +19,9 @@
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/3
 
 # TODO: fix, http://crbug.com/755328
--NaClExtensionTest.MainFrameIsRemote
--WebViewTests/WebViewDPITest.Shim_TestAutosizeHeight/0
--WebViewTests/WebViewDPITest.Shim_TestAutosizeHeight/1
--WebViewTests/WebViewDPITest.Shim_TestAutosizeRemoveAttributes/0
--WebViewTests/WebViewDPITest.Shim_TestAutosizeRemoveAttributes/1
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
--WebViewTests/WebViewSizeTest.AutoSize/0
--WebViewTests/WebViewSizeTest.AutoSize/1
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/0
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeHeight/1
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/0
--WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/1
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
-
-# TODO(sky): investigate failure.
--ExtensionOptionsApiTests/ExtensionOptionsApiTest.ExtensionCanEmbedOwnOptions/0
 
 # content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/774269.
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
