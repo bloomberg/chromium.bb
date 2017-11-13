@@ -7,7 +7,7 @@ mr_module_names = [
 ]
 mr_module_specs = [
   "module=common:8",
-  "module=mirroring_common:73:common",
+  "module=mirroring_common:74:common",
   "module=background_script:4:mirroring_common",
 ]
 mr_module_files = [
@@ -87,6 +87,7 @@ mr_module_files = [
   "presentation_services/cloud_webrtc/webrtc_presentation_session.js",
   "external_message_listener.js",
   "internal_message_listener.js",
+  "init_helper.js",
   "interface_data/route_message.js",
   "interface_data/mojo.js",
   "manager/mr_event_senders/throttling_sender.js",
