@@ -47,7 +47,7 @@ def _CheckNoContentUnitTestsInChrome(input_api, output_api):
   """Makes sure that no unit tests from content/ are included in unit_tests."""
   problems = []
   for f in input_api.AffectedFiles():
-    if not f.LocalPath().endswith('chrome_tests.gypi'):
+    if not f.LocalPath().endswith('BUILD.gn'):
       continue
 
     for line_num, line in f.ChangedContents():
@@ -59,7 +59,7 @@ def _CheckNoContentUnitTestsInChrome(input_api, output_api):
     return []
   return [output_api.PresubmitPromptWarning(
       'Unit tests located in content/ should be added to the ' +
-      'content_tests.gypi:content_unittests target.',
+      'content_unittests target.',
       items=problems)]
 
 
