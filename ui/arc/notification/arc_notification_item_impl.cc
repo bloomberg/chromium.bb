@@ -91,7 +91,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   }
 
   message_center::NotifierId notifier_id(
-      message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
+      message_center::NotifierId::ARC_APPLICATION, kNotifierId);
   notifier_id.profile_id = profile_id_.GetUserEmail();
 
   auto notification = std::make_unique<message_center::Notification>(
