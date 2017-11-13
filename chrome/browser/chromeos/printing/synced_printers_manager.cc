@@ -198,9 +198,15 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
         LOG(WARNING) << "Duplicate printer ignored.";
         continue;
       }
+
+      auto new_printer = RecommendedPrinterToPrinter(*printer_dictionary);
+      if (!new_printer) {
+        LOG(WARNING) << "Recommended printer is malformed.";
+        continue;
+      }
+
       new_ids.push_back(id);
-      new_printers.insert(
-          {id, *RecommendedPrinterToPrinter(*printer_dictionary)});
+      new_printers.insert({id, *new_printer});
     }
 
     // Objects not in the most recent update get deallocated after method
