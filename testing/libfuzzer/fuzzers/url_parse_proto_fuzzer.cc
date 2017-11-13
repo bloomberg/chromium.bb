@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// includes copied from url_parse_fuzzer.cc
+#include <assert.h>
+#include <stdlib.h>
+
+#include <iostream>
+
+// Includes copied from url_parse_fuzzer.cc
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
 #include "url/gurl.h"
@@ -13,8 +18,6 @@
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 // Header information about the Protocol Buffer Url class.
 #include "testing/libfuzzer/fuzzers/url.pb.h"
-
-#include <assert.h>
 
 // The code using TestCase is copied from url_parse_fuzzer.cc
 struct TestCase {
@@ -127,5 +130,11 @@ std::string protobuf_to_string(const Url& url) {
 // for fuzzing.
 DEFINE_BINARY_PROTO_FUZZER(const Url& url_protobuf) {
   std::string url_string = protobuf_to_string(url_protobuf);
+
+  // Allow native input to be retrieved easily.
+  // Note that there will be a trailing newline that is not part of url_string.
+  if (getenv("LPM_DUMP_NATIVE_INPUT"))
+    std::cout << url_string << std::endl;
+
   GURL url(url_string);
 }

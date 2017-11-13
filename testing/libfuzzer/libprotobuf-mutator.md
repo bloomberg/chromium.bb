@@ -1,7 +1,7 @@
 # Getting Started with libprotobuf-mutator in Chrome
 
 *** note
-**Note:** libprotobuf-mutator is new to Chromium and does not (yet) have a
+**Note:** libprotobuf-mutator (LPM) is new to Chromium and does not (yet) have a
 long track record of success. Also, writing fuzzers with libprotobuf-mutator
 will probably require more effort than writing fuzzers with libFuzzer alone.
 If you run into problems, send an email to [fuzzing@chromium.org] for help.
@@ -57,12 +57,12 @@ original definition is optimized for `LITE_RUNTIME`).
 Create a new .proto using `proto2` or `proto3` syntax and define a message that
 you want libFuzzer to mutate.
 
-``` cpp
+``` protocol-buffer
 syntax = "proto2";
 
 package my_fuzzer;
 
-message MyFormat {
+message MyProtoFormat {
     // Define a format for libFuzzer to mutate here.
 }
 ```
@@ -75,17 +75,37 @@ the definition of the Url message.
 Create a new .cc and write a `DEFINE_BINARY_PROTO_FUZZER` function:
 
 ```cpp
+// Needed since we use getenv().
+#include <stdlib.h>
+
+// Needed since we use std::cout.
+#include <iostream>
+
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
+
 // Assuming the .proto file is path/to/your/proto_file/my_format.proto.
 #include "path/to/your/proto_file/my_format.pb.h"
 
 // Silence logging from the protobuf library.
 protobuf_mutator::protobuf::LogSilencer log_silencer;
-
-DEFINE_BINARY_PROTO_FUZZER(const my_fuzzer::MyFormat& my_format) {
   // Put your conversion code here (if needed) and then pass the result to
   // your fuzzing code (or just pass "my_format", if your target accepts
   // protobufs).
+DEFINE_BINARY_PROTO_FUZZER(const my_fuzzer::MyFormat& my_proto_format) {
+    // Convert your protobuf to whatever format your targeted code accepts
+    // if it doesn't accept protobufs.
+    std::string native_input = convert_to_native_input(my_proto_format);
+
+    // You should provide a way to easily retreive the native input for
+    // a given protobuf input. This is useful for debugging and for seeing
+    // the inputs that cause targeted_code to crash (which is the reason we are
+    // here!). Note how this is done before the targeted_code is called since we
+    // can't print after the program has crashed.
+    if (getenv("LPM_DUMP_NATIVE_INPUT"))
+      std::cout << native_input << std::endl;
+
+    // Now test your targeted code using the converted protobuf input.
+    targeted_code(native_input);
 }
 ```
 
@@ -96,10 +116,20 @@ in this guide since it is format-specific. However, a good example of conversion
 code (and a fuzzer target) can be found in
 `testing/libfuzzer/fuzzers/url_parse_proto_fuzzer.cc`. That example thoroughly
 documents how it converts the Url protobuf message into a real URL string.
-Note that `DEFINE_TEXT_PROTO_FUZZER` may be used instead of
-`DEFINE_BINARY_PROTO_FUZZER`. The former may make it easier to debug how
-libFuzzer is mutating inputs, since those inputs will be in text format before
-it is passed to our code, rather than binary.
+Note that `DEFINE_TEXT_PROTO_FUZZER` can be used during development instead of
+`DEFINE_BINARY_PROTO_FUZZER`. `DEFINE_TEXT_PROTO_FUZZER` comes with a
+performance penalty but causes the corpus to be stored in a human readable (and
+modifiable) string-based format.
+A good convention is printing the native input when the `LPM_DUMP_NATIVE_INPUT`
+env variable is set. This will make it easy to retreive the actual input that
+causes the code to crash instead of the protobuf version of it (eg you can get
+the URL string that causes an input to crash rather than a protobuf). Since it
+is only a convention it is strongly recommended even though it isn't necessary.
+You don't need to do this if the native input of targeted_code is protobufs.
+Beware that printing a newline can make the output invalid for some formats. In
+this case you should use `fflush(0)` since otherwise the program may crash
+before native_input is actually printed.
+
 
 ### Define the GN Target
 Define a fuzzer_test target and include your protobuf definition and
@@ -131,7 +161,62 @@ it is pretty much the same as if the fuzzer were a standard libFuzzer-based
 fuzzer (with minor exceptions, like your seed corpus must be in protobuf
 format).
 
-[libFuzzer in Chromium]: getting_started.md
+### Tips
+* If you have messages that are defined recursively (eg: message `Foo` has a
+field of type `Foo`), make sure to bound recursive calls to code converting
+your message into native input. Otherwise you will (probably) end up with an
+out of memory error. The code coverage benefits of allowing unlimited
+recursion in a message are probably fairly low for most targets anyway.
+
+* Remember that proto definitions can be changed in ways that are backwards
+compatible (such as adding explicit values to an `enum`). This means that you
+can make changes to your definitions while preserving the usefulness of your
+corpus. In general adding fields will be backwards compatible but removing them
+(particulary if they are `required`) is not.
+
+* Make sure you understand the meaning of the different protobuf modifiers such
+as `oneof` and `repeated` as they can be counter-intuitive. `oneof` means "At
+most one of" while `repeated` means "At least zero". You can hack around these
+meanings if you need "at least one of" or "exactly one of" something. For
+example, this is the proto code for exactly one of: `MessageA` or `MessageB` or
+`MessageC`:
+
+```protocol-buffer
+message MyFormat {
+    oneof a_or_b {
+      MessageA message_a = 1;
+      MessageB message_b = 2;
+    }
+    required MessageC message_c = 3;
+}
+```
+
+And here is the C++ code that converts it.
+
+```c++
+std::string Convert(MyFormat& my_format) {
+  if (my_format.has_message_a())
+    return ConvertMessageA(my_format.message_a());
+  else if (my_format.has_message_b())
+    return ConvertMessageB(my_format.message_b());
+  else // Fall through to the default case, message_c.
+    return ConvertMessageC(my_format.message_c());
+}
+```
+
+* Check out some of the [existing proto fuzzers], as not only will they be helpful
+examples, but it is possible that your format is already defined or partially
+defined by an existing proto definition.
+
+* libprotobuf-mutator supports both proto2 and proto3 syntax. Be aware though
+that it handles strings differently in each because of differences in the way
+the proto library handles strings in each syntax (in short, proto3 strings must
+actually be UTF-8 while in proto2 they do not). See [here] for more details.
+
+
+[libfuzzer in Chromium]: getting_started.md
 [Protocol Buffers]: https://developers.google.com/protocol-buffers/docs/cpptutorial
 [fuzzing@chromium.org]: mailto:fuzzing@chromium.org
 [this]: https://github.com/google/libprotobuf-mutator/tree/master/examples/libfuzzer/libfuzzer_example.cc
+[existing proto fuzzers]: https://cs.chromium.org/search/?q=DEFINE_(BINARY_%7CTEXT_)?PROTO_FUZZER+-file:src/third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h&sq=package:chromium&type=cs
+[here]: https://github.com/google/libprotobuf-mutator/blob/master/README.md#utf-8-strings
