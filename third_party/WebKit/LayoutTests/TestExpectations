@@ -130,8 +130,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-crbug.com/784278 typedcssom/stylevalue-normalization/normalize-ident.html [ Failure ]
-
 # ====== Paint team owned tests to here ======
 
 #### external/wpt/css/css-position
