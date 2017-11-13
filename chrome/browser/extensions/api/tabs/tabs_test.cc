@@ -46,6 +46,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -2178,10 +2179,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TemporaryAddressSpoof) {
   EXPECT_EQ(url, second_web_contents->GetVisibleURL());
 }
 
-// Window created by chrome.windows.create should be in the same SiteInstance
-// and BrowsingInstance as the opener - this is a regression test for
-// https://crbug.com/597750.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
+// Tests how chrome.windows.create behaves when setSelfAsOpener parameter is
+// used.  setSelfAsOpener was introduced as a fix for https://crbug.com/713888
+// and https://crbug.com/718489.  This is a (slightly morphed) regression test
+// for https://crbug.com/597750.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_WithOpener) {
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
   ASSERT_TRUE(extension);
@@ -2196,28 +2198,51 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
   content::WebContents* new_contents = nullptr;
   {
     content::WebContentsAddedObserver observer;
-    ASSERT_TRUE(content::ExecuteScript(old_contents,
-                                       "window.name = 'old-contents';\n"
-                                       "chrome.windows.create({url: '" +
-                                           extension_url.spec() + "'})"));
+    std::string script = base::StringPrintf(
+        R"( window.name = 'old-contents';
+            chrome.windows.create({url: '%s', setSelfAsOpener: true}); )",
+        extension_url.spec().c_str());
+    ASSERT_TRUE(content::ExecuteScript(old_contents, script));
     new_contents = observer.GetWebContents();
     ASSERT_TRUE(content::WaitForLoadStop(new_contents));
   }
 
-  // Verify that the old and new tab are in the same process and SiteInstance.
-  // Note: both test assertions are important - one observed failure mode was
-  // having the same process, but different SiteInstance.
+  // Navigate the old and the new tab to a web URL.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL web_url1 = embedded_test_server()->GetURL("/title1.html");
+  GURL web_url2 = embedded_test_server()->GetURL("/title2.html");
+  {
+    content::TestNavigationObserver nav_observer(new_contents, 1);
+    ASSERT_TRUE(content::ExecuteScript(
+        new_contents, "window.location = '" + web_url1.spec() + "';"));
+    nav_observer.Wait();
+  }
+  {
+    content::TestNavigationObserver nav_observer(old_contents, 1);
+    ASSERT_TRUE(content::ExecuteScript(
+        old_contents, "window.location = '" + web_url2.spec() + "';"));
+    nav_observer.Wait();
+  }
+  EXPECT_EQ(web_url1, new_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(web_url2, old_contents->GetMainFrame()->GetLastCommittedURL());
+
+  // Verify that the old and new tab are in the same process.
   EXPECT_EQ(old_contents->GetMainFrame()->GetProcess(),
             new_contents->GetMainFrame()->GetProcess());
-  EXPECT_EQ(old_contents->GetMainFrame()->GetSiteInstance(),
-            new_contents->GetMainFrame()->GetSiteInstance());
 
-  // Verify that the |new_contents| doesn't have a |window.opener| set.
-  bool window_opener_cast_to_bool = true;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_contents, "window.domAutomationController.send(!!window.opener)",
-      &window_opener_cast_to_bool));
-  EXPECT_FALSE(window_opener_cast_to_bool);
+  // Verify the old and new contents are in the same BrowsingInstance.
+  EXPECT_TRUE(
+      old_contents->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+          new_contents->GetMainFrame()->GetSiteInstance()));
+
+  // Verify that the |new_contents| has |window.opener| set.
+  std::string location_of_opener;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      new_contents,
+      "window.domAutomationController.send(window.opener.location.href)",
+      &location_of_opener));
+  EXPECT_EQ(old_contents->GetMainFrame()->GetLastCommittedURL().spec(),
+            location_of_opener);
 
   // Verify that |new_contents| can find |old_contents| using window.open/name.
   std::string location_of_other_window;
@@ -2228,6 +2253,49 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreateVsSiteInstance) {
       &location_of_other_window));
   EXPECT_EQ(old_contents->GetMainFrame()->GetLastCommittedURL().spec(),
             location_of_other_window);
+}
+
+// Tests how chrome.windows.create behaves when setSelfAsOpener parameter is not
+// used.  setSelfAsOpener was introduced as a fix for https://crbug.com/713888
+// and https://crbug.com/718489.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowsCreate_NoOpener) {
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("../simple_with_file"));
+  ASSERT_TRUE(extension);
+
+  // Navigate a tab to an extension page.
+  GURL extension_url = extension->GetResourceURL("file.html");
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  content::WebContents* old_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Execute chrome.windows.create and store the new tab in |new_contents|.
+  content::WebContents* new_contents = nullptr;
+  {
+    content::WebContentsAddedObserver observer;
+    std::string script = base::StringPrintf(
+        R"( window.name = 'old-contents';
+            chrome.windows.create({url: '%s'}); )",
+        extension_url.spec().c_str());
+    ASSERT_TRUE(content::ExecuteScript(old_contents, script));
+    new_contents = observer.GetWebContents();
+    ASSERT_TRUE(content::WaitForLoadStop(new_contents));
+  }
+
+  // Verify the old and new contents are NOT in the same BrowsingInstance.
+  EXPECT_FALSE(
+      old_contents->GetMainFrame()->GetSiteInstance()->IsRelatedSiteInstance(
+          new_contents->GetMainFrame()->GetSiteInstance()));
+
+  // Verify that the |new_contents| doesn't have |window.opener| set.
+  bool opener_as_bool = true;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      new_contents, "window.domAutomationController.send(!!window.opener)",
+      &opener_as_bool));
+  EXPECT_FALSE(opener_as_bool);
+
+  // TODO(lukasza): http://crbug.com/718489: Verify that |new_contents| can NOT
+  // find |old_contents| using window.open/name.
 }
 
 }  // namespace extensions

@@ -227,6 +227,11 @@
                 "$ref": "WindowState",
                 "optional": true,
                 "description": "The initial state of the window. The 'minimized', 'maximized' and 'fullscreen' states cannot be combined with 'left', 'top', 'width' or 'height'."
+              },
+              "setSelfAsOpener": {
+                "type": "boolean",
+                "optional": true,
+                "description": "If 'setSelfAsOpener' is true, then the newly created window will have its 'window.opener' set to the caller and will be in the same <a href=\"https://www.w3.org/TR/html51/browsers.html#unit-of-related-browsing-contexts\">unit of related browsing contexts</a> as the caller."
               }
             },
             "optional": true

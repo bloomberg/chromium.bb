@@ -26,7 +26,7 @@ NavigateParams::NavigateParams(WebContents* a_target_contents)
       target_contents(a_target_contents),
       source_contents(nullptr),
       disposition(WindowOpenDisposition::CURRENT_TAB),
-      force_new_process_for_new_contents(false),
+      opener(nullptr),
       trusted_source(false),
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
@@ -50,7 +50,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       target_contents(NULL),
       source_contents(NULL),
       disposition(WindowOpenDisposition::CURRENT_TAB),
-      force_new_process_for_new_contents(false),
+      opener(nullptr),
       trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),
@@ -73,7 +73,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
       target_contents(a_target_contents),
       source_contents(NULL),
       disposition(WindowOpenDisposition::CURRENT_TAB),
-      force_new_process_for_new_contents(false),
+      opener(nullptr),
       trusted_source(false),
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
@@ -99,7 +99,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       target_contents(NULL),
       source_contents(NULL),
       disposition(WindowOpenDisposition::NEW_FOREGROUND_TAB),
-      force_new_process_for_new_contents(false),
+      opener(nullptr),
       trusted_source(false),
       transition(a_transition),
       is_renderer_initiated(false),
@@ -130,8 +130,6 @@ void FillNavigateParamsFromOpenURLParams(NavigateParams* nav_params,
   nav_params->redirect_chain = params.redirect_chain;
   nav_params->extra_headers = params.extra_headers;
   nav_params->disposition = params.disposition;
-  nav_params->force_new_process_for_new_contents =
-      params.force_new_process_for_new_contents;
   nav_params->trusted_source = false;
   nav_params->is_renderer_initiated = params.is_renderer_initiated;
   nav_params->should_replace_current_entry =
