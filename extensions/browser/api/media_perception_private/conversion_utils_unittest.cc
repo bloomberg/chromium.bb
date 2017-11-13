@@ -224,6 +224,10 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   state.status = media_perception::STATUS_RESTARTING;
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(state_proto.status(), mri::State::RESTARTING);
+
+  state.status = media_perception::STATUS_STOPPED;
+  state_proto = StateIdlToProto(state);
+  EXPECT_EQ(mri::State::STATUS_UNSPECIFIED, state_proto.status());
 }
 
 }  // namespace extensions

@@ -216,6 +216,7 @@ mri::State::Status StateStatusIdlToProto(const State& state) {
     case STATUS_RESTARTING:
       return mri::State::RESTARTING;
     case STATUS_SERVICE_ERROR:
+    case STATUS_STOPPED:  // Process is stopped by MPP.
     case STATUS_NONE:
       return mri::State::STATUS_UNSPECIFIED;
   }

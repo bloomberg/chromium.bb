@@ -87,4 +87,15 @@ void MediaPerceptionPrivateGetDiagnosticsFunction::GetDiagnosticsCallback(
   Respond(OneArgument(diagnostics.ToValue()));
 }
 
+MediaPerceptionPrivateSetAnalyticsComponentFunction::
+    MediaPerceptionPrivateSetAnalyticsComponentFunction() {}
+
+MediaPerceptionPrivateSetAnalyticsComponentFunction::
+    ~MediaPerceptionPrivateSetAnalyticsComponentFunction() {}
+
+ExtensionFunction::ResponseAction
+MediaPerceptionPrivateSetAnalyticsComponentFunction::Run() {
+  return RespondNow(Error("Not implemented."));
+}
+
 }  // namespace extensions
