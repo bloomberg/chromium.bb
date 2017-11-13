@@ -118,11 +118,6 @@ class DataReductionProxyConfig
   // InitDataReductionProxySettings.
   void SetProxyConfig(bool enabled, bool at_startup);
 
-  // Provides a mechanism for an external object to force |this| to refresh
-  // the Data Reduction Proxy configuration from |config_values_| and apply to
-  // |configurator_|. Used by the Data Reduction Proxy config service client.
-  void ReloadConfig();
-
   // Returns true if a Data Reduction Proxy was used for the given |request|.
   // If true, |proxy_info.proxy_servers.front()| will contain the name of the
   // proxy that was used. Subsequent entries in |proxy_info.proxy_servers| will
@@ -207,6 +202,9 @@ class DataReductionProxyConfig
 
   std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
+  // Called when a new client config has been fetched.
+  void OnNewClientConfigFetched();
+
  protected:
   // Should be called when there is a change in the status of the availability
   // of the insecure data saver proxies triggered due to warmup URL.
@@ -245,6 +243,11 @@ class DataReductionProxyConfig
     NETWORK_QUALITY_AT_LAST_QUERY_SLOW,
     NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW
   };
+
+  // Provides a mechanism for an external object to force |this| to refresh
+  // the Data Reduction Proxy configuration from |config_values_| and apply to
+  // |configurator_|. Used by the Data Reduction Proxy config service client.
+  void ReloadConfig();
 
   // NetworkChangeNotifier::IPAddressObserver implementation:
   void OnIPAddressChanged() override;

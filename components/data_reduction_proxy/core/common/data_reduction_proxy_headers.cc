@@ -54,12 +54,6 @@ const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
 const char kChromeProxyActionBypass[] = "bypass";
 
-// Actions for tamper detection fingerprints.
-const char kChromeProxyActionFingerprintChromeProxy[]   = "fcp";
-const char kChromeProxyActionFingerprintVia[]           = "fvia";
-const char kChromeProxyActionFingerprintOtherHeaders[]  = "foh";
-const char kChromeProxyActionFingerprintContentLength[] = "fcl";
-
 const int kShortBypassMaxSeconds = 59;
 const int kMediumBypassMaxSeconds = 300;
 
@@ -468,56 +462,6 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
   }
   // There is no bypass event.
   return BYPASS_EVENT_TYPE_MAX;
-}
-
-bool GetDataReductionProxyActionFingerprintChromeProxy(
-    const net::HttpResponseHeaders* headers,
-    std::string* chrome_proxy_fingerprint) {
-  return GetDataReductionProxyActionValue(
-      headers,
-      kChromeProxyActionFingerprintChromeProxy,
-      chrome_proxy_fingerprint);
-}
-
-bool GetDataReductionProxyActionFingerprintVia(
-    const net::HttpResponseHeaders* headers,
-    std::string* via_fingerprint) {
-  return GetDataReductionProxyActionValue(
-      headers,
-      kChromeProxyActionFingerprintVia,
-      via_fingerprint);
-}
-
-bool GetDataReductionProxyActionFingerprintOtherHeaders(
-    const net::HttpResponseHeaders* headers,
-    std::string* other_headers_fingerprint) {
-  return GetDataReductionProxyActionValue(
-      headers,
-      kChromeProxyActionFingerprintOtherHeaders,
-      other_headers_fingerprint);
-}
-
-bool GetDataReductionProxyActionFingerprintContentLength(
-    const net::HttpResponseHeaders* headers,
-    std::string* content_length_fingerprint) {
-  return GetDataReductionProxyActionValue(
-      headers,
-      kChromeProxyActionFingerprintContentLength,
-      content_length_fingerprint);
-}
-
-void GetDataReductionProxyHeaderWithFingerprintRemoved(
-    const net::HttpResponseHeaders* headers,
-    std::vector<std::string>* values) {
-  DCHECK(values);
-
-  std::string value;
-  size_t iter = 0;
-  while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
-    if (StartsWithActionPrefix(value, kChromeProxyActionFingerprintChromeProxy))
-      continue;
-    values->push_back(std::move(value));
-  }
 }
 
 int64_t GetDataReductionProxyOFCL(const net::HttpResponseHeaders* headers) {
