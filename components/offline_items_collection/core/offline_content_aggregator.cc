@@ -169,7 +169,7 @@ void OfflineContentAggregator::AddObserver(
 
   observers_.AddObserver(observer);
 
-  if (sent_on_items_available_) {
+  if (sent_on_items_available_ || providers_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&OfflineContentAggregator::CheckAndNotifyItemsAvailable,
@@ -224,9 +224,6 @@ void OfflineContentAggregator::OnItemUpdated(const OfflineItem& item) {
 }
 
 void OfflineContentAggregator::CheckAndNotifyItemsAvailable() {
-  if (providers_.size() == 0)
-    return;
-
   // If we haven't sent out the initialization message yet, make sure all
   // underlying OfflineContentProviders are ready before notifying observers
   // that we're ready to send items.

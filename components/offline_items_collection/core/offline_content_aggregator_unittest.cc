@@ -477,5 +477,14 @@ TEST_F(OfflineContentAggregatorTest, SameProviderWithMultipleNamespaces) {
   EXPECT_FALSE(provider.HasObserver(&aggregator_));
 }
 
+// Test that ensures if no provider is registered, the observer can get an
+// initialization signal.
+TEST_F(OfflineContentAggregatorTest, NoProviderWithObserver) {
+  ScopedMockOfflineContentProvider::ScopedMockObserver observer;
+  EXPECT_CALL(observer, OnItemsAvailable(&aggregator_)).Times(1);
+  observer.AddProvider(&aggregator_);
+  task_runner_->RunUntilIdle();
+}
+
 }  // namespace
 }  // namespace offline_items_collection

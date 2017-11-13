@@ -15,8 +15,19 @@ ScopedMockOfflineContentProvider::ScopedMockObserver::ScopedMockObserver(
   provider_->AddObserver(this);
 }
 
+ScopedMockOfflineContentProvider::ScopedMockObserver::ScopedMockObserver()
+    : provider_(nullptr) {}
+
 ScopedMockOfflineContentProvider::ScopedMockObserver::~ScopedMockObserver() {
-  provider_->RemoveObserver(this);
+  if (provider_)
+    provider_->RemoveObserver(this);
+}
+
+void ScopedMockOfflineContentProvider::ScopedMockObserver::AddProvider(
+    OfflineContentProvider* provider) {
+  DCHECK(!provider_) << "Already has a provider.";
+  provider_ = provider;
+  provider_->AddObserver(this);
 }
 
 ScopedMockOfflineContentProvider::ScopedMockOfflineContentProvider(
