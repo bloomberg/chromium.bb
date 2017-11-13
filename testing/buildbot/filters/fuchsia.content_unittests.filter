@@ -55,3 +55,6 @@
 
 # Flaky: https://crbug.com/780508.
 -ServiceWorkerProviderHostTest.*
+
+# Flaky, https://crbug.com/784449.
+-WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange*
