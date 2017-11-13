@@ -28,7 +28,7 @@
       let oscFrequency = nyquistFrequency / 16;
 
       // The actual peak values from each analyser.  Useful for examining the
-      // results in Chrome.
+      // actual peak values.
       let peakValue = new Array(numberOfAnalysers);
 
       // For a 0dBFS sine wave, we would expect the FFT magnitude to be 0dB as
@@ -102,9 +102,8 @@
         osc.connect(analyser);
 
         osc.start();
-        context.oncomplete = checkResult(order, analyser, should);
-        return context.startRendering().then(function(audioBuffer) {
-          checkResult(audioBuffer, order, analyser);
+        return context.startRendering().then(() => {
+          checkResult(order, analyser, should)();
         });
       }
 
