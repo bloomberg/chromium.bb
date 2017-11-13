@@ -25,8 +25,8 @@ Notes:
 | GET    | /session/{session id}/window/handles                           | Get Window Handles         | Complete           |
 | POST   | /session/{session id}/frame                                    | Switch To Frame            | Partially Complete | [1992](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1992)
 | POST   | /session/{session id}/frame/parent                             | Switch To Parent Frame     |                    |
-| GET    | /session/{session id}/window/rect                              | Get Window Rect            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
-| POST   | /session/{session id}/window/rect                              | Set Window Rect            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
+| GET    | /session/{session id}/window/rect                              | Get Window Rect            | Complete           |
+| POST   | /session/{session id}/window/rect                              | Set Window Rect            | Complete           |
 | POST   | /session/{session id}/window/maximize                          | Maximize Window            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
 | POST   | /session/{session id}/window/minimize                          | Minimize Window            | Incomplete         | [1940](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1940)
 | POST   | /session/{session id}/window/fullscreen                        | Fullscreen Window          | Partially Complete | [1993](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1993)
