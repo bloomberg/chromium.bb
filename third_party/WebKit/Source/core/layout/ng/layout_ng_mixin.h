@@ -5,6 +5,8 @@
 #ifndef LayoutNGMixin_h
 #define LayoutNGMixin_h
 
+#include <type_traits>
+
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -21,6 +23,10 @@ class NGLayoutResult;
 
 template <typename Base>
 class CORE_TEMPLATE_CLASS_EXPORT LayoutNGMixin : public Base {
+  static_assert(
+      std::is_base_of<LayoutBlockFlow, Base>::value,
+      "Base class of LayoutNGMixin must be LayoutBlockFlow or derived class.");
+
  public:
   explicit LayoutNGMixin(Element* element) : Base(element) {}
   ~LayoutNGMixin() override;
