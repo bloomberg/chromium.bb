@@ -300,10 +300,6 @@ crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-out
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-right-001.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-001-left-overflow.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-left-overflow.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-002-right-table.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-left-overflow.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-left-table.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-003-right-table.xht [ Failure ]
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-wrap-bfc-004.xht [ Failure ]
@@ -468,7 +464,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/truncation-rtl.html 
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/010.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/014.html [ Failure Crash ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/015.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/018.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/020.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/022.html [ Failure ]
@@ -520,13 +515,10 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/032.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/033.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/057.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/103.html [ Failure ]
 
 ### virtual/layout_ng/fast/block/margin-collapse/block-inside-inline
-crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/006.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/010.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/011.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/012.html [ Failure ]
