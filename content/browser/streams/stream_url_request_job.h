@@ -34,26 +34,28 @@ class CONTENT_EXPORT StreamURLRequestJob
   bool GetMimeType(std::string* mime_type) const override;
   void GetResponseInfo(net::HttpResponseInfo* info) override;
   int64_t GetTotalReceivedBytes() const override;
+  int64_t prefilter_bytes_read() const override;
 
  protected:
   ~StreamURLRequestJob() override;
 
  private:
   void DidStart();
-  void NotifyFailure(int);
-  void HeadersCompleted(net::HttpStatusCode status_code);
+  void NotifyMethodNotSupported();
+  void UpdateNetworkBytesRead();
   void ClearStream();
 
   scoped_refptr<content::Stream> stream_;
-  bool headers_set_;
   scoped_refptr<net::IOBuffer> pending_buffer_;
   int pending_buffer_size_;
-  std::unique_ptr<net::HttpResponseInfo> response_info_;
 
   // Total bytes received for this job.
   int total_bytes_read_;
+  int64_t raw_body_bytes_;
+
   int max_range_;
   bool request_failed_;
+  std::unique_ptr<net::HttpResponseInfo> failed_response_info_;
   int error_code_;  // Only set if request_failed_.
 
   base::WeakPtrFactory<StreamURLRequestJob> weak_factory_;

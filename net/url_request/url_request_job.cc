@@ -251,6 +251,10 @@ void URLRequestJob::FollowDeferredRedirect() {
   FollowRedirect(*redirect_info);
 }
 
+int64_t URLRequestJob::prefilter_bytes_read() const {
+  return prefilter_bytes_read_;
+}
+
 bool URLRequestJob::GetMimeType(std::string* mime_type) const {
   return false;
 }

@@ -14,6 +14,7 @@ class GURL;
 
 namespace net {
 class IOBuffer;
+class HttpResponseInfo;
 }
 
 namespace content {
@@ -45,6 +46,14 @@ class StreamWriter : public StreamWriteObserver {
   void InitializeStream(StreamRegistry* registry,
                         const GURL& origin,
                         const base::Closure& cancel_callback);
+
+  // Passes HTTP response information associated with the response body
+  // transferred through this stream. This should be called before
+  // OnReadCompleted is ever called.
+  void OnResponseStarted(const net::HttpResponseInfo& response_info);
+
+  // Updates actual counts of bytes transferred by the network.
+  void UpdateNetworkStats(int64_t raw_body_bytes, int64_t total_bytes);
 
   // Prepares a buffer to read data from the request. This call will be followed
   // by either OnReadCompleted (on successful read or EOF) or destruction.  The

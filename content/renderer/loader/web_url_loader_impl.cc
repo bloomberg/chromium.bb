@@ -744,11 +744,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   // received on the browser side, and has been passed down to the renderer.
   if (stream_override_) {
     CHECK(IsBrowserSideNavigationEnabled());
-    // Compute the delta between the response sizes so that the accurate
-    // transfer size can be reported at the end of the request.
-    stream_override_->total_transfer_size_delta =
-        stream_override_->response.encoded_data_length -
-        initial_info.encoded_data_length;
     info = stream_override_->response;
 
     // Replay the redirects that happened during navigation.
@@ -917,12 +912,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       client_->DidFail(error, total_transfer_size, encoded_body_size,
                        status.decoded_body_length);
     } else {
-      // PlzNavigate: compute the accurate transfer size for navigations.
-      if (stream_override_) {
-        DCHECK(IsBrowserSideNavigationEnabled());
-        total_transfer_size += stream_override_->total_transfer_size_delta;
-      }
-
       client_->DidFinishLoading(
           (status.completion_time - TimeTicks()).InSecondsF(),
           total_transfer_size, encoded_body_size, status.decoded_body_length);
