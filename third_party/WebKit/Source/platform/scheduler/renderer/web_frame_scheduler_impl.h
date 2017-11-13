@@ -67,7 +67,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   bool IsCrossOrigin() const override;
   WebFrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<WebTaskRunner> GetTaskRunner(TaskType) override;
-  WebViewScheduler* GetWebViewScheduler() override;
+  WebViewScheduler* GetWebViewScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
                                 bool is_reload,
@@ -76,7 +76,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void OnFirstMeaningfulPaint() override;
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
-  bool IsExemptFromThrottling() const override;
+  bool IsExemptFromBudgetBasedThrottling() const override;
 
   bool has_active_connection() const { return active_connection_count_; }
 

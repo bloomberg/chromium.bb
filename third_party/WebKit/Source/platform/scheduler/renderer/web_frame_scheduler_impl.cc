@@ -370,7 +370,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
   return unpausable_task_queue_;
 }
 
-blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() {
+blink::WebViewScheduler* WebFrameSchedulerImpl::GetWebViewScheduler() const {
   return parent_web_view_scheduler_;
 }
 
@@ -543,7 +543,7 @@ base::WeakPtr<WebFrameSchedulerImpl> WebFrameSchedulerImpl::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-bool WebFrameSchedulerImpl::IsExemptFromThrottling() const {
+bool WebFrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
   return has_active_connection();
 }
 

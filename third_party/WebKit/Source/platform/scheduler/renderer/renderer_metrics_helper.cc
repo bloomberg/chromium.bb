@@ -64,8 +64,19 @@ FrameThrottlingState GetFrameThrottlingState(
     return FrameThrottlingState::HIDDEN;
   }
 
-  if (frame_scheduler.IsExemptFromThrottling())
+  WebViewScheduler* web_view_scheduler = frame_scheduler.GetWebViewScheduler();
+  if (web_view_scheduler && web_view_scheduler->IsPlayingAudio()) {
+    if (frame_scheduler.IsFrameVisible())
+      return FrameThrottlingState::VISIBLE_SERVICE;
+    return FrameThrottlingState::HIDDEN_SERVICE;
+  }
+
+  if (frame_scheduler.IsExemptFromBudgetBasedThrottling())
     return FrameThrottlingState::BACKGROUND_EXEMPT_SELF;
+
+  if (web_view_scheduler &&
+      web_view_scheduler->IsExemptFromBudgetBasedThrottling())
+    return FrameThrottlingState::BACKGROUND_EXEMPT_OTHER;
 
   return FrameThrottlingState::BACKGROUND;
 }
