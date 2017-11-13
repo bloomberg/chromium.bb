@@ -402,58 +402,6 @@ ContentSettingsPattern ContentSettingsPattern::FromString(
 }
 
 // static
-bool ContentSettingsPattern::MigrateFromDomainToOrigin(
-    const ContentSettingsPattern& domain_pattern,
-    ContentSettingsPattern* origin_pattern) {
-  DCHECK(origin_pattern);
-
-  // Generated patterns with ::FromURL (which we want to migrate) must either
-  // have a scheme wildcard or be https.
-  if (domain_pattern.parts_.scheme != url::kHttpsScheme &&
-      !domain_pattern.parts_.is_scheme_wildcard) {
-    return false;
-  }
-
-  // Generated patterns using ::FromURL with the HTTPs scheme can not have a
-  // port wildcard.
-  if (domain_pattern.parts_.is_port_wildcard &&
-      domain_pattern.parts_.scheme == url::kHttpsScheme) {
-    return false;
-  }
-
-  // Patterns generated with ::FromURL will always have a domain wildcard. Those
-  // generated with ::FromURLNoWildcard don't.
-  if (!domain_pattern.parts_.has_domain_wildcard)
-    return false;
-
-  // Generated patterns with ::FromURL will always have a host.
-  if (domain_pattern.parts_.host.empty())
-    return false;
-
-  ContentSettingsPattern::Builder builder;
-  if (domain_pattern.parts_.is_scheme_wildcard)
-    builder.WithScheme(url::kHttpScheme);
-  else
-    builder.WithScheme(domain_pattern.parts_.scheme);
-
-  builder.WithHost(domain_pattern.parts_.host);
-
-  if (domain_pattern.parts_.is_port_wildcard) {
-    if (domain_pattern.parts_.scheme == url::kHttpsScheme) {
-      builder.WithPort(GetDefaultPort(url::kHttpsScheme));
-    } else {
-      builder.WithPort(GetDefaultPort(url::kHttpScheme));
-    }
-  } else {
-    builder.WithPort(domain_pattern.parts_.port);
-  }
-
-  *origin_pattern = builder.Build();
-
-  return true;
-}
-
-// static
 void ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
     const char* const* schemes,
     size_t count) {
