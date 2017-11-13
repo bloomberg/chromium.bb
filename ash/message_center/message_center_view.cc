@@ -26,9 +26,9 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
+#include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
@@ -43,7 +43,6 @@
 #include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
-using message_center::MessageCenterTray;
 using message_center::MessageView;
 using message_center::Notification;
 using message_center::NotificationList;
@@ -113,11 +112,13 @@ class EmptyNotificationView : public views::View {
 
 // MessageCenterView ///////////////////////////////////////////////////////////
 
-MessageCenterView::MessageCenterView(MessageCenter* message_center,
-                                     MessageCenterTray* tray,
-                                     int max_height,
-                                     bool initially_settings_visible)
+MessageCenterView::MessageCenterView(
+    MessageCenter* message_center,
+    message_center::UiController* ui_controller,
+    int max_height,
+    bool initially_settings_visible)
     : message_center_(message_center),
+      ui_controller_(ui_controller),
       settings_visible_(initially_settings_visible),
       is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
   if (is_locked_)
@@ -453,7 +454,7 @@ void MessageCenterView::RemoveNotification(const std::string& notification_id,
 
 std::unique_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
     const message_center::Notification& notification) {
-  return tray_->CreateNotificationMenuModel(notification);
+  return ui_controller_->CreateNotificationMenuModel(notification);
 }
 
 void MessageCenterView::ClickOnNotificationButton(
