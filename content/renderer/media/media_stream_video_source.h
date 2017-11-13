@@ -66,7 +66,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
                 const VideoTrackAdapterSettings& track_adapter_settings,
                 const VideoCaptureDeliverFrameCB& frame_callback,
                 const ConstraintsCallback& callback);
-  void RemoveTrack(MediaStreamVideoTrack* track);
+  void RemoveTrack(MediaStreamVideoTrack* track, base::OnceClosure callback);
 
   // Reconfigures this MediaStreamVideoSource to use |adapter_settings| on
   // |track|, as long as |track| is connected to this source.
@@ -253,6 +253,7 @@ class CONTENT_EXPORT MediaStreamVideoSource : public MediaStreamSource {
   void StartFrameMonitoring();
   void UpdateTrackSettings(MediaStreamVideoTrack* track,
                            const VideoTrackAdapterSettings& adapter_settings);
+  void DidRemoveLastTrack(base::OnceClosure callback, RestartResult result);
 
   State state_;
 
