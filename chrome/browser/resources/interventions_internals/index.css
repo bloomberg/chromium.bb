@@ -83,7 +83,6 @@ nav {
 }
 
 table {
-  border: 1px solid white;
   border-collapse: separate;
   font-size: 90%;
   margin-top: 10px;
@@ -93,7 +92,7 @@ table {
 }
 
 td {
-  border: 2px solid white;
+  border: 1px solid white;
   padding: 10px;
   text-align: left;
 }
@@ -103,16 +102,16 @@ tr:nth-child(odd) td {
 }
 
 th {
-  background: rgb(0, 92, 185);
-  border: 2px solid white;
+  background: rgb(0, 191, 255);
+  border: 0;
   color: white;
-  padding: 15px;
+  padding-bottom: 5px;
+  padding-top: 5px;
   text-align: center;
 }
 
 td.log-time {
   font-size: 80%;
-  word-wrap: break-word;
 }
 
 td.log-description {
@@ -164,14 +163,17 @@ td.log-url .url-tooltip::after {
   position: absolute;
 }
 
-@media(min-device-width: 768px) {
+@media(min-device-width: 600px) {
   body {
     font-size: 85%;
   }
 
+  .log-time {
+    width: 15%;
+  }
+
   td.log-time {
     font-size: 80%;
-    width: 15%;
   }
 
   .log-type {
@@ -179,7 +181,7 @@ td.log-url .url-tooltip::after {
   }
 
   td.log-type {
-    font-size: 100%;
+    font-siz15e: 100%;
   }
 }
 
@@ -190,7 +192,7 @@ td.log-url .url-tooltip::after {
 
   .log-time {
     font-size: 100%;
-    width: 15%;
+    width: 8%;
   }
 
   td.log-description {
