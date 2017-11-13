@@ -31,6 +31,11 @@ loadTable(const char *tableList) {
 }
 
 extern int
+hyphenationEnabled() {
+	return table->hyphenStatesArray;
+}
+
+extern int
 isLetter(widechar c) {
 	static unsigned long int hash;
 	static TranslationTableOffset offset;

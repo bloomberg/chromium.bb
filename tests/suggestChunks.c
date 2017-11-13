@@ -13,6 +13,7 @@ without any warranty. */
 #include "internal.h"
 
 extern void loadTable(const char *tableList);
+extern int hyphenationEnabled();
 extern widechar toLowercase(widechar c);
 extern int suggestChunks(widechar *text, widechar *braille, char *hyphen_string);
 
@@ -48,6 +49,7 @@ int main(int argc, char **argv) {
 	loadTable("tests/tables/suggestChunks.ctb");
 	
 	result |= test_toLowercase();
+	result |= hyphenationEnabled();
 	
 	result |= check_suggestion("foobar", "FUBR", "^00x00$");
 	

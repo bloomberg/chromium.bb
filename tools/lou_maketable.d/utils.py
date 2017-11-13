@@ -104,6 +104,8 @@ def compare_chunks(expected_hyphen_string, actual_hyphen_string, text):
                               expected_hyphen_string, actual_hyphen_string))
     return chunk_errors if re.search(r"[-\.]", chunk_errors) else None
 
+# split a string into words consisting of only letters (at least two)
+# return an empty list if the provided hyphen string does not have zeros at all positions before and after non-letters
 def split_into_words(text, hyphen_string):
     exit_if_not(len(hyphen_string) == len(text) - 1 and re.search("^[01x]+$", hyphen_string))
     words = []
