@@ -33,6 +33,13 @@ const gfx::ImageSkia CreateSolidColorImage(int width,
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
 
+gfx::Image DeepCopyImage(const gfx::Image& image) {
+  if (image.IsEmpty())
+    return gfx::Image();
+  std::unique_ptr<gfx::ImageSkia> image_skia(image.CopyImageSkia());
+  return gfx::Image(*image_skia);
+}
+
 }  // namespace
 
 NotificationItem::NotificationItem(const base::string16& title,
@@ -158,6 +165,29 @@ Notification& Notification::operator=(const Notification& other) {
 }
 
 Notification::~Notification() = default;
+
+// static
+std::unique_ptr<Notification> Notification::DeepCopy(
+    const Notification& notification,
+    bool include_body_image,
+    bool include_small_image,
+    bool include_icon_images) {
+  std::unique_ptr<Notification> notification_copy =
+      std::make_unique<Notification>(notification);
+  notification_copy->set_icon(DeepCopyImage(notification_copy->icon()));
+  notification_copy->set_image(include_body_image
+                                   ? DeepCopyImage(notification_copy->image())
+                                   : gfx::Image());
+  notification_copy->set_small_image(
+      include_small_image ? notification_copy->small_image() : gfx::Image());
+  for (size_t i = 0; i < notification_copy->buttons().size(); i++) {
+    notification_copy->SetButtonIcon(
+        i, include_icon_images
+               ? DeepCopyImage(notification_copy->buttons()[i].icon)
+               : gfx::Image());
+  }
+  return notification_copy;
+}
 
 bool Notification::IsRead() const {
   return is_read_ || optional_fields_.priority == MIN_PRIORITY;

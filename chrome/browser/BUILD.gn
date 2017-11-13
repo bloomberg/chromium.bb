@@ -2799,6 +2799,8 @@ split_static_library("browser") {
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",
+      "notifications/notification_image_retainer.cc",
+      "notifications/notification_image_retainer.h",
       "notifications/notification_template_builder.cc",
       "notifications/notification_template_builder.h",
     ]

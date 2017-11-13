@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 
+#include <windows.ui.notifications.h>
 #include <wrl/client.h>
 #include <wrl/wrappers/corewrappers.h>
 #include <memory>
@@ -11,9 +12,11 @@
 #include "base/hash.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/notifications/mock_notification_image_retainer.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notification.h"
@@ -28,6 +31,7 @@ namespace {
 
 const char kOrigin[] = "https://www.google.com/";
 const char kNotificationId[] = "id";
+const char kProfileId[] = "Default";
 
 }  // namespace
 
@@ -46,14 +50,18 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         L"message", gfx::Image(), L"display_source", origin,
         message_center::NotifierId(origin),
         message_center::RichNotificationData(), nullptr /* delegate */);
+    MockNotificationImageRetainer image_retainer;
     std::unique_ptr<NotificationTemplateBuilder> builder =
-        NotificationTemplateBuilder::Build(*notification);
+        NotificationTemplateBuilder::Build(&image_retainer, kProfileId,
+                                           *notification);
 
-    return notification_platform_bridge_win_->GetToastNotification(
+    return notification_platform_bridge_win_->GetToastNotificationForTesting(
         *notification, *builder, toast);
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<NotificationPlatformBridgeWin>
       notification_platform_bridge_win_;
 
