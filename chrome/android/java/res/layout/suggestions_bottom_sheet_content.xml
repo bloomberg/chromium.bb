@@ -13,5 +13,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        android:paddingTop="@dimen/bottom_control_container_height" />
+        android:paddingTop="@dimen/bottom_control_container_height"
+        android:clipToPadding="false" />
+
+    <!-- The logo should be rendered on top of the RecyclerView, so it goes below in code order. -->
+    <org.chromium.chrome.browser.ntp.LogoView
+        android:id="@+id/search_provider_logo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ntp_logo_height"
+        android:layout_marginTop="@dimen/ntp_logo_margin_top_modern"
+        android:layout_marginBottom="@dimen/ntp_logo_margin_bottom_modern" />
+
 </FrameLayout>

@@ -198,8 +198,8 @@ public final class ContentSuggestionsTestUtils {
             }
 
             @Override
-            public void visitLogo() {
-                describeItem("LOGO");
+            public void visitPlaceholderItem() {
+                describeItem("PLACEHOLDER_CARD");
             }
 
             private void describeItem(String description) {
