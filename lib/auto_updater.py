@@ -953,9 +953,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
               self.REMOTE_HOSTLOG_FILE_PATH), partial_filename])),
           **self._cmd_kwargs_omit_error)
 
-  def _Reboot(self, error_stage):
+  def _Reboot(self, error_stage, cold_reboot=False):
     try:
-      self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+      self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT,
+                         cold_reboot=cold_reboot)
     except cros_build_lib.DieSystemExit:
       raise ChromiumOSUpdateError('%s cannot recover from reboot at %s' % (
           self.device.hostname, error_stage))
@@ -1281,7 +1282,16 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   def PostCheckStatefulUpdate(self):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
-    self._Reboot('post check of stateful update')
+    # crbug.com/768542 - change to cold reset in order to check if
+    # Ethernet dongle could be probed correctly when EC is reset
+    # for AU. Call chromeos-setgoodkernel to get rid of possible
+    # hiccups from possible short reboot intervals between RootfsUpdate
+    # and StatefulUpdate.
+    try:
+      self.device.RunCommand(['/usr/sbin/chromeos-setgoodkernel'])
+    except cros_build_lib.RunCommandError as e:
+      raise StatefulUpdateError('failed to setgoodkernel: %s.', e)
+    self._Reboot('post check of stateful update', cold_reboot=True)
     if self._clobber_stateful:
       for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
         test_file_path = os.path.join(folder,
