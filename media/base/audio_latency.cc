@@ -142,8 +142,13 @@ int AudioLatency::GetInteractiveBufferSize(int hardware_buffer_size) {
   // the jitter.
   const int kSmallBufferSize = 1024;
   const int kDefaultCallbackBufferSize = 2048;
+
+  LOG(INFO) << "audioHardwareBufferSize = " << hardware_buffer_size;
+
   if (hardware_buffer_size <= kSmallBufferSize)
-    return kDefaultCallbackBufferSize;
+    hardware_buffer_size = kDefaultCallbackBufferSize;
+
+  LOG(INFO) << "callbackBufferSize      = " << hardware_buffer_size;
 #endif
 
   return hardware_buffer_size;
