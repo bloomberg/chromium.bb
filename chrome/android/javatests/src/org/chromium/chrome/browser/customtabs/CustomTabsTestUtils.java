@@ -32,7 +32,7 @@ public class CustomTabsTestUtils {
     public static Intent createMinimalCustomTabIntent(
             Context context, String url) {
         CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder(
-                CustomTabsSession.createDummySessionForTesting(
+                CustomTabsSession.createMockSessionForTesting(
                         new ComponentName(context, ChromeLauncherActivity.class)));
         CustomTabsIntent customTabsIntent = builder.build();
         Intent intent = customTabsIntent.intent;
