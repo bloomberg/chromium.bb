@@ -1,5 +1,3 @@
-phajdan.jr@chromium.org
-
 per-file *task_scheduler*=file://base/task_scheduler/OWNERS
 
 # Metrics-related test utilties:
