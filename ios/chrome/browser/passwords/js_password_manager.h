@@ -48,13 +48,6 @@
                 password:(NSString*)password
        completionHandler:(void (^)(BOOL))completionHandler;
 
-// Fills all password fields in the form identified by |formName| with
-// |password| and invokes |completionHandler| with true if any fields were
-// filled.
-- (void)fillPasswordForm:(NSString*)formName
-   withGeneratedPassword:(NSString*)password
-       completionHandler:(void (^)(BOOL))completionHandler;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_JS_PASSWORD_MANAGER_H_

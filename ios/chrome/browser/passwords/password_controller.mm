@@ -310,16 +310,13 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
 @synthesize notifyAutoSigninViewController = _notifyAutoSigninViewController;
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate {
+- (instancetype)initWithWebState:(web::WebState*)webState {
   self = [self initWithWebState:webState
-            passwordsUiDelegate:delegate
                          client:nullptr];
   return self;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
                           client:(std::unique_ptr<PasswordManagerClient>)
                                      passwordManagerClient {
   DCHECK(webState);
@@ -893,27 +890,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
         }
         break;
     }
-  }
-
-  // Fill in as much data about the fields as is required for password
-  // generation.
-  const base::ListValue* fieldList = nullptr;
-  if (!dictionary->GetList("fields", &fieldList))
-    return NO;
-  for (size_t i = 0; i < fieldList->GetSize(); ++i) {
-    const base::DictionaryValue* fieldDictionary = nullptr;
-    if (!fieldList->GetDictionary(i, &fieldDictionary))
-      return NO;
-    base::string16 element;
-    base::string16 type;
-    if (!fieldDictionary->GetString("element", &element) ||
-        !fieldDictionary->GetString("type", &type)) {
-      return NO;
-    }
-    autofill::FormFieldData field;
-    field.name = std::move(element);
-    field.form_control_type = base::UTF16ToUTF8(type);
-    form->form_data.fields.push_back(field);
   }
 
   return YES;

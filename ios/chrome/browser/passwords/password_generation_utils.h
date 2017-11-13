@@ -10,10 +10,6 @@
 
 namespace passwords {
 
-// Returns the frame determined by moving |inner_frame| inside |outer_frame|
-// for the password generation input accessory views.
-CGRect GetGenerationAccessoryFrame(CGRect outer_frame, CGRect inner_frame);
-
 // Block types for |RunSearchPipeline|.
 typedef void (^PipelineBlock)(void (^completion)(BOOL));
 typedef void (^PipelineCompletionBlock)(NSUInteger index);

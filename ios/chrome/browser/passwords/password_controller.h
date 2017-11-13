@@ -62,13 +62,11 @@ class PasswordManagerDriver;
 @property(weak, nonatomic) id<PasswordControllerDelegate> delegate;
 
 // |webState| should not be nil.
-- (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
+- (instancetype)initWithWebState:(web::WebState*)webState;
 
 // This is just for testing.
 - (instancetype)
    initWithWebState:(web::WebState*)webState
-passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
              client:(std::unique_ptr<password_manager::PasswordManagerClient>)
                         passwordManagerClient NS_DESIGNATED_INITIALIZER;
 

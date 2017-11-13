@@ -37,16 +37,6 @@ void RunSearchPipeline(NSArray* blocks,
 
 }  // namespace
 
-CGRect GetGenerationAccessoryFrame(CGRect outer_frame, CGRect inner_frame) {
-  CGFloat x = kPadding;
-  if (base::i18n::IsRTL())
-    x = CGRectGetWidth(outer_frame) - CGRectGetWidth(inner_frame) - kPadding;
-  const CGFloat y =
-      (CGRectGetHeight(outer_frame) - CGRectGetHeight(inner_frame)) / 2.0;
-  inner_frame.origin = CGPointMake(x, y);
-  return inner_frame;
-}
-
 void RunSearchPipeline(NSArray* blocks, PipelineCompletionBlock on_complete) {
   RunSearchPipeline(blocks, on_complete, 0);
 }
