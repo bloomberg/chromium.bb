@@ -2569,6 +2569,7 @@ send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 	struct weston_wm_window *window = get_wm_window(surface);
 	struct weston_wm *wm = window->wm;
 	struct theme *t = window->wm->theme;
+	int new_width, new_height;
 	int vborder, hborder;
 
 	if (window->decorate && !window->fullscreen) {
@@ -2580,14 +2581,20 @@ send_configure(struct weston_surface *surface, int32_t width, int32_t height)
 	}
 
 	if (width > hborder)
-		window->width = width - hborder;
+		new_width = width - hborder;
 	else
-		window->width = 1;
+		new_width = 1;
 
 	if (height > vborder)
-		window->height = height - vborder;
+		new_height = height - vborder;
 	else
-		window->height = 1;
+		new_height = 1;
+
+	if (window->width == new_width && window->height == new_height)
+		return;
+
+	window->width = new_width;
+	window->height = new_height;
 
 	if (window->frame)
 		frame_resize_inside(window->frame, window->width, window->height);
