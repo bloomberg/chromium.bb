@@ -4,7 +4,7 @@ Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
     0) chained1 (async-callstack-fetch.js:18)
-    [Promise.resolve]
+    [Promise.then]
     0) doFetch (async-callstack-fetch.js:17)
     [setTimeout]
     0) testFunction (async-callstack-fetch.js:12)
@@ -14,7 +14,7 @@ Call stack:
 
 Call stack:
     0) chained4 (async-callstack-fetch.js:22)
-    [Promise.resolve]
+    [Promise.then]
     0) doFetch (async-callstack-fetch.js:21)
     [setTimeout]
     0) testFunction (async-callstack-fetch.js:12)
