@@ -41,8 +41,9 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
       DISTANCE_CONTROL_LIST_VERTICAL);
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  // Turn on highlighting when the button is hovered.
+  // Turn on highlighting when the button is hovered or focused.
   SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  GetInkDrop()->SetShowHighlightOnFocus(true);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
