@@ -364,8 +364,10 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
     content::WebContents* web_contents,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
+  if (!web_contents)
+    return INVALID_URL;
   GURL last_committed_url = web_contents->GetLastCommittedURL();
-  if (!web_contents || !last_committed_url.is_valid())
+  if (!last_committed_url.is_valid())
     return INVALID_URL;
   bool has_user_gesture = HasUserGesture(web_contents);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
