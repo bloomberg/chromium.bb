@@ -98,6 +98,7 @@ class QUIC_EXPORT_PRIVATE TlsClientHandshaker
   ProofVerifierCallbackImpl* proof_verify_callback_ = nullptr;
   std::unique_ptr<ProofVerifyDetails> verify_details_;
   enum ssl_verify_result_t verify_result_ = ssl_verify_retry;
+  std::string cert_verify_error_details_;
 
   bool encryption_established_ = false;
   bool handshake_confirmed_ = false;
