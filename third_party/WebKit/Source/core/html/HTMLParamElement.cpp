@@ -45,10 +45,16 @@ const AtomicString& HTMLParamElement::Value() const {
   return FastGetAttribute(valueAttr);
 }
 
+// HTML5 says that an object resource's URL is specified by the object's
+// data attribute, not by a param element. However, for compatibility, also
+// allow the resource's URL to be given by a param of the named "code",
+// "data", "movie", "src" or "url".
 bool HTMLParamElement::IsURLParameter(const String& name) {
-  return DeprecatedEqualIgnoringCase(name, "data") ||
+  return DeprecatedEqualIgnoringCase(name, "code") ||
+         DeprecatedEqualIgnoringCase(name, "data") ||
          DeprecatedEqualIgnoringCase(name, "movie") ||
-         DeprecatedEqualIgnoringCase(name, "src");
+         DeprecatedEqualIgnoringCase(name, "src") ||
+         DeprecatedEqualIgnoringCase(name, "url");
 }
 
 bool HTMLParamElement::IsURLAttribute(const Attribute& attribute) const {
