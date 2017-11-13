@@ -20,7 +20,7 @@ test(function() {
   for (var i = 0; i < gettingProperties.length; i++) {
     var value = 10 * (i + 1);
     testElement.style[gettingProperties[i]] = "" + value;
-    var result = testElement.styleMap.get(gettingProperties[i]);
+    var result = testElement.attributeStyleMap.get(gettingProperties[i]);
     assert_equals(result.constructor.name, CSSUnitValue.name,
         "result from " + gettingProperties[i].name);
     assert_equals(result.value, value);
@@ -30,7 +30,7 @@ test(function() {
 test(function() {
   testElement.style.animationIterationCount = "6.2, 9.8, 1";
 
-  var result = testElement.styleMap.getAll('animation-iteration-count');
+  var result = testElement.attributeStyleMap.getAll('animation-iteration-count');
   assert_equals(result.length, 3);
   assert_equals(result[0].constructor.name, CSSUnitValue.name);
   assert_equals(result[1].constructor.name, CSSUnitValue.name);

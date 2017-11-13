@@ -1779,6 +1779,7 @@ interface Element : Node
     attribute @@unscopables
     getter accessibleNode
     getter assignedSlot
+    getter attributeStyleMap
     getter attributes
     getter childElementCount
     getter children
@@ -1818,7 +1819,6 @@ interface Element : Node
     getter scrollWidth
     getter shadowRoot
     getter slot
-    getter styleMap
     getter tagName
     method after
     method animate

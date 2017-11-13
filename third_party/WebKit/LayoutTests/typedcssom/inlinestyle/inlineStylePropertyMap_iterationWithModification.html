@@ -9,7 +9,7 @@
 test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
-  var iterator = testElement.styleMap.entries();
+  var iterator = testElement.attributeStyleMap.entries();
   var entry = iterator.next();
   assert_equals(entry.value[0], 'width');
   assert_equals(entry.value[1].constructor.name, CSSUnitValue.name);
@@ -29,7 +29,7 @@ test(function() {
 test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
-  var iterator = testElement.styleMap.values();
+  var iterator = testElement.attributeStyleMap.values();
   var entry = iterator.next();
   assert_equals(entry.value.constructor.name, CSSUnitValue.name);
   assert_equals(entry.value.toString(), '60px');
@@ -47,7 +47,7 @@ test(function() {
 test(function() {
   testElement.style = "width: 60px; border-left-width: 30px;";
 
-  var iterator = testElement.styleMap.keys();
+  var iterator = testElement.attributeStyleMap.keys();
   var entry = iterator.next();
   assert_equals(entry.value, 'width');
 

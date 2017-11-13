@@ -59,7 +59,7 @@ test(() => {
 
 test(() => {
   let target = newDivWithStyle('width: 10px');
-  const styleMap = target.styleMap;
+  const styleMap = target.attributeStyleMap;
   assert_style_value_equals(styleMap.get('width'), CSS.px(10));
 
   target.style.width = '20px';

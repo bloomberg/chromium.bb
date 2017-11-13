@@ -4352,7 +4352,7 @@ CSSStyleDeclaration* Element::style() {
   return &EnsureElementRareData().EnsureInlineCSSStyleDeclaration(this);
 }
 
-StylePropertyMap* Element::styleMap() {
+StylePropertyMap* Element::attributeStyleMap() {
   if (!IsStyledElement())
     return nullptr;
   return &EnsureElementRareData().EnsureInlineStylePropertyMap(this);

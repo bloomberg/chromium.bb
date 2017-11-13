@@ -9,8 +9,7 @@
 <script>
 'use strict';
 
-// FIXME(774933): change this to Element.attributeStyleMap
-const styleMap = document.getElementById('target').styleMap;
+const styleMap = document.getElementById('target').attributeStyleMap;
 
 test(() => {
   assert_throws(new TypeError(), () => styleMap.get('lemon'));

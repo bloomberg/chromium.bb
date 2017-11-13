@@ -14,7 +14,7 @@
 test(function() {
   testElement.style.backgroundColor = '#00FF00';
 
-  var result = testElement.styleMap.get('background-color');
+  var result = testElement.attributeStyleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
   assert_equals(result.toString(), 'rgb(0, 255, 0)');
 }, 'Unsupported property returns a base StyleValue with the correct toString().');
@@ -22,9 +22,9 @@ test(function() {
 test(function() {
   testElement.style.backgroundColor = '#00FF00';
 
-  secondElement.styleMap.set('background-color', testElement.styleMap.get('background-color'));
+  secondElement.attributeStyleMap.set('background-color', testElement.attributeStyleMap.get('background-color'));
 
-  var result = secondElement.styleMap.get('background-color');
+  var result = secondElement.attributeStyleMap.get('background-color');
   assert_equals(result.constructor, CSSStyleValue);
   assert_equals(result.toString(), 'rgb(0, 255, 0)');
 }, 'Setting the same property using the result of getting an unknown value works');
@@ -32,9 +32,9 @@ test(function() {
 test(function() {
   testElement.style.color = '#00FF00';
 
-  secondElement.styleMap.set('border-left-color', testElement.styleMap.get('color'));
+  secondElement.attributeStyleMap.set('border-left-color', testElement.attributeStyleMap.get('color'));
 
-  var result = secondElement.styleMap.get('border-left-color');
+  var result = secondElement.attributeStyleMap.get('border-left-color');
   assert_equals(result.constructor, CSSStyleValue);
   assert_equals(result.toString(), 'rgb(0, 255, 0)');
 }, 'Setting a different property using the result of getting an unknown value works');

@@ -26,7 +26,7 @@ test(() => {
 }, 'CSSKeywordValue from DOMString modified through "value" setter serializes correctly');
 
 test(() => {
-  let result = newDivWithStyle('width: auto').styleMap.get('width');
+  let result = newDivWithStyle('width: auto').attributeStyleMap.get('width');
   result.value = 'lemon';
   assert_equals(result.toString(), 'lemon');
 }, 'CSSKeywordValue from CSSOM modified through "value" setter serializes correctly');

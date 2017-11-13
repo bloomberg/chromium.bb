@@ -9,9 +9,9 @@
 test(function() {
   testElement.style = "";
 
-  var entryIterator = testElement.styleMap.entries();
-  var keyIterator = testElement.styleMap.keys();
-  var valueIterator = testElement.styleMap.values();
+  var entryIterator = testElement.attributeStyleMap.entries();
+  var keyIterator = testElement.attributeStyleMap.keys();
+  var valueIterator = testElement.attributeStyleMap.values();
 
   assert_true(entryIterator.next().done);
   assert_true(keyIterator.next().done);
@@ -21,7 +21,7 @@ test(function() {
 test(function() {
   testElement.style = "width: 50px";
 
-  var iterator = testElement.styleMap.entries();
+  var iterator = testElement.attributeStyleMap.entries();
   var entry = iterator.next();
   assert_false(entry.done);
   // Should only be one entry.
@@ -35,7 +35,7 @@ test(function() {
 test(function() {
   testElement.style = "width: 60px";
 
-  var iterator = testElement.styleMap.keys();
+  var iterator = testElement.attributeStyleMap.keys();
   var entry = iterator.next();
   assert_false(entry.done);
   // Should only be one entry.
@@ -47,7 +47,7 @@ test(function() {
 test(function() {
   testElement.style = "width: 70px";
 
-  var iterator = testElement.styleMap.values();
+  var iterator = testElement.attributeStyleMap.values();
   var entry = iterator.next();
   assert_false(entry.done);
   // Should only be one entry.
@@ -62,7 +62,7 @@ test(function() {
 
   var entries = {};
   var numEntries = 0;
-  for (let value of testElement.styleMap.entries()) {
+  for (let value of testElement.attributeStyleMap.entries()) {
     numEntries++;
     entries[value[0]] = value[1];
   }
@@ -92,7 +92,7 @@ test(function() {
 
 test(function() {
   testElement.style = "background-color: var(--bg-color);";
-  var entries = [...testElement.styleMap.values()];
+  var entries = [...testElement.attributeStyleMap.values()];
 
   assert_equals(entries.length, 1);
   assert_equals(entries[0].constructor, CSSUnparsedValue);
@@ -106,7 +106,7 @@ test(function() {
   testElement.style = '';
   testElement.style.setProperty('--my-custom-property', '5px');
 
-  var entries = [...testElement.styleMap.entries()];
+  var entries = [...testElement.attributeStyleMap.entries()];
   assert_equals(entries.length, 1);
   var propertyAndValue = entries[0];
   assert_equals(propertyAndValue.length, 2);
@@ -119,7 +119,7 @@ test(function() {
 test(function() {
   testElement.style.cssText = "@apply --foo";
 
-  var entries = [...testElement.styleMap.entries()];
+  var entries = [...testElement.attributeStyleMap.entries()];
   assert_equals(entries.length, 1);
   var propertyAndValue = entries[0];
   assert_equals(propertyAndValue.length, 2);

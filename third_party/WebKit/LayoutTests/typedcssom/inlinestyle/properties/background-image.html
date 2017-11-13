@@ -7,10 +7,10 @@
 <div id="testElement"></div>
 <script>
 test(function() {
-  testElement.styleMap.set('background-image', new CSSURLImageValue(''));
+  testElement.attributeStyleMap.set('background-image', new CSSURLImageValue(''));
   document.body.offsetTop;
-  assert_equals(testElement.styleMap.get('background-image').intrinsicHeight, 0);
-  assert_equals(testElement.styleMap.get('background-image').intrinsicWidth, 0);
+  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicHeight, 0);
+  assert_equals(testElement.attributeStyleMap.get('background-image').intrinsicWidth, 0);
 }, "Check that setting background-image to CSSURLImageValue('') doesn't cause a crash");
 
 runInlineStylePropertyMapTests( {
