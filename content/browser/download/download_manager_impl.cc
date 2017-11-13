@@ -194,7 +194,6 @@ void InterceptNavigationResponse(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
-    int frame_tree_node_id,
     std::unique_ptr<ResourceRequest> resource_request,
     std::unique_ptr<ThrottlingURLLoader> url_loader,
     std::vector<GURL> url_chain,
@@ -203,9 +202,8 @@ void InterceptNavigationResponse(
   DownloadManagerImpl::UniqueUrlDownloadHandlerPtr resource_downloader(
       ResourceDownloader::InterceptNavigationResponse(
           download_manager, std::move(resource_request), response,
-          std::move(consumer_handle), ssl_status, frame_tree_node_id,
-          std::move(url_loader), std::move(url_chain),
-          std::move(completion_status))
+          std::move(consumer_handle), ssl_status, std::move(url_loader),
+          std::move(url_chain), std::move(completion_status))
           .release());
 
   BrowserThread::PostTask(
@@ -675,14 +673,13 @@ NavigationURLLoader::NavigationInterceptionCB
 DownloadManagerImpl::GetNavigationInterceptionCB(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
-    const SSLStatus& ssl_status,
-    int frame_tree_node_id) {
+    const SSLStatus& ssl_status) {
   return base::BindOnce(
       &InterceptNavigationResponse,
       base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
                      weak_factory_.GetWeakPtr()),
       weak_factory_.GetWeakPtr(), response, std::move(consumer_handle),
-      ssl_status, frame_tree_node_id);
+      ssl_status);
 }
 
 int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
