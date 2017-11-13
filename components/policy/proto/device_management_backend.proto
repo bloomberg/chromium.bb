@@ -359,7 +359,8 @@ message PolicyData {
   optional string username = 7;
 
   // In this field the DMServer should echo back the "deviceid" HTTP parameter
-  // from the request.
+  // from the request. This is also used for user and device local accounts ids,
+  // see client_id in code.
   optional string device_id = 8;
 
   // Indicates which state this association with DMServer is in. This can be

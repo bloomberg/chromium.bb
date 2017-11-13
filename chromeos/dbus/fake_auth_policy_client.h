@@ -9,9 +9,11 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
 #include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 
 class AccountId;
 
@@ -105,11 +107,16 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   authpolicy::ErrorType auth_error_ = authpolicy::ERROR_NONE;
 
  private:
+  void OnDevicePolicyRetrieved(
+      RefreshPolicyCallback callback,
+      SessionManagerClient::RetrievePolicyResponseType response_type,
+      const std::string& protobuf);
   bool started_ = false;
   // If valid called after GetUserStatusCallback is called.
   base::OnceClosure on_get_status_closure_;
   std::string display_name_;
   std::string given_name_;
+  std::string machine_name_;
   authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
   authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =
@@ -118,6 +125,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   base::TimeDelta dbus_operation_delay_ = base::TimeDelta::FromSeconds(3);
   base::TimeDelta disk_operation_delay_ =
       base::TimeDelta::FromMilliseconds(100);
+
+  base::WeakPtrFactory<FakeAuthPolicyClient> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);
 };
 

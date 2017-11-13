@@ -43,6 +43,7 @@ const char kPassword[] = "password";
 constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
 
 constexpr char kDeviceId[] = "device_id";
+constexpr char kAdMachineName[] = "machine_name";
 constexpr char kTestActiveDirectoryUser[] = "test-user";
 constexpr char kAdMachineInput[] = "machineNameInput";
 constexpr char kAdUserInput[] = "userInput";
@@ -60,6 +61,17 @@ constexpr char kNewPassword[] = "new_password";
 constexpr char kDifferentNewPassword[] = "different_new_password";
 
 constexpr char kCloseButtonId[] = "closeButton";
+
+// Used for the callback from FakeAuthPolicy::JoinAdDomain.
+void OnJoinedDomain(authpolicy::ErrorType error) {
+  EXPECT_EQ(authpolicy::ERROR_NONE, error);
+}
+
+// Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
+void OnRefreshedPolicy(const base::Closure& closure, bool status) {
+  EXPECT_TRUE(status);
+  closure.Run();
+}
 
 class TestAuthPolicyClient : public FakeAuthPolicyClient {
  public:
@@ -124,9 +136,12 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   void MarkAsActiveDirectoryEnterprise() {
     StartupUtils::MarkOobeCompleted();
     base::RunLoop loop;
+    fake_auth_policy_client()->JoinAdDomain(
+        kAdMachineName, kTestActiveDirectoryUser + ("@" + test_realm_),
+        -1 /* password_fd */, base::BindOnce(&OnJoinedDomain));
+
     fake_auth_policy_client()->RefreshDevicePolicy(
-        base::BindOnce(&ActiveDirectoryLoginTest::OnRefreshedPolicy,
-                       base::Unretained(this), loop.QuitClosure()));
+        base::BindOnce(&OnRefreshedPolicy, loop.QuitClosure()));
     loop.Run();
   }
 
@@ -301,12 +316,6 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
   const std::string test_realm_;
 
  private:
-  // Used for the callback from FakeAuthPolicy::RefreshDevicePolicy.
-  void OnRefreshedPolicy(const base::Closure& closure, bool status) {
-    EXPECT_TRUE(status);
-    closure.Run();
-  }
-
   ScopedStubInstallAttributes install_attributes_;
   TestAuthPolicyClient* fake_auth_policy_client_;
 
