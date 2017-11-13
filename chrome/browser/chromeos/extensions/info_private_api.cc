@@ -351,10 +351,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
   }
 
   if (property_name == kPropertySupportedTimezones) {
-    std::unique_ptr<base::ListValue> values =
-        chromeos::system::GetTimezoneList();
-    // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
-    return std::move(values);
+    return chromeos::system::GetTimezoneList();
   }
 
   const char* pref_name = GetBoolPrefNameForApiProperty(property_name.c_str());
