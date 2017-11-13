@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdlib.h>
+
+#include <iostream>
+
 #include "javascript_parser.pb.h"  // from out/gen
 #include "testing/libfuzzer/fuzzers/javascript_parser_proto_to_string.h"
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
@@ -47,6 +51,10 @@ DEFINE_BINARY_PROTO_FUZZER(
   v8::Context::Scope context_scope(context);
 
   std::string source_string = protobuf_to_string(source_protobuf);
+
+  if (getenv("LPM_DUMP_NATIVE_INPUT"))
+    std::cout << source_string << std::endl;
+
   v8::Local<v8::String> source_v8_string =
       v8::String::NewFromUtf8(isolate, source_string.c_str(),
                               v8::NewStringType::kNormal)
