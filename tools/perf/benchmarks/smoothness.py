@@ -150,7 +150,7 @@ class SmoothnessToughWebGLCases(_Smoothness):
 
 
 @benchmark.Owner(emails=['kbr@chromium.org', 'zmo@chromium.org'])
-class SmoothnessMaps(perf_benchmark.PerfBenchmark):
+class SmoothnessMaps(_Smoothness):
   page_set = page_sets.MapsPageSet
 
   @classmethod
