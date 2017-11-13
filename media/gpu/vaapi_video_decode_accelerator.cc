@@ -479,12 +479,11 @@ void VaapiVideoDecodeAccelerator::TryOutputSurface() {
 
 void VaapiVideoDecodeAccelerator::QueueInputBuffer(
     const BitstreamBuffer& bitstream_buffer) {
+  VLOGF(4) << "Queueing new input buffer id: " << bitstream_buffer.id()
+           << " size: " << (int)bitstream_buffer.size();
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("Video Decoder", "QueueInputBuffer", "input_id",
                bitstream_buffer.id());
-
-  VLOGF(4) << "Queueing new input buffer id: " << bitstream_buffer.id()
-           << " size: " << (int)bitstream_buffer.size();
 
   base::AutoLock auto_lock(lock_);
   if (bitstream_buffer.size() == 0) {
@@ -576,8 +575,8 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
 }
 
 void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
-  lock_.AssertAcquired();
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
   DCHECK(curr_input_buffer_.get());
 
   const int32_t id = curr_input_buffer_->id();
@@ -594,18 +593,15 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
 // TODO(posciak): refactor the whole class to remove sleeping in wait for
 // surfaces, and reschedule DecodeTask instead.
 bool VaapiVideoDecodeAccelerator::WaitForSurfaces_Locked() {
-  lock_.AssertAcquired();
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
 
   while (available_va_surfaces_.empty() &&
          (state_ == kDecoding || state_ == kIdle)) {
     surfaces_available_.Wait();
   }
 
-  if (state_ != kDecoding && state_ != kIdle)
-    return false;
-
-  return true;
+  return state_ == kDecoding || state_ == kIdle;
 }
 
 void VaapiVideoDecodeAccelerator::DecodeTask() {
@@ -746,7 +742,6 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 void VaapiVideoDecodeAccelerator::Decode(
     const BitstreamBuffer& bitstream_buffer) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
                bitstream_buffer.id());
 
@@ -783,7 +778,6 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
 void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<PictureBuffer>& buffers) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
   base::AutoLock auto_lock(lock_);
   DCHECK(pictures_.empty());
 
@@ -853,8 +847,8 @@ static void CloseGpuMemoryBufferHandle(
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
     const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   VLOGF(2) << "Importing picture id: " << picture_buffer_id;
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
     CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
@@ -891,10 +885,10 @@ void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
 
 void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
     int32_t picture_buffer_id) {
+  VLOGF(4) << "picture id=" << picture_buffer_id;
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
-  VLOGF(4) << "picture id=" << picture_buffer_id;
 
   if (!PictureById(picture_buffer_id)) {
     // It's possible that we've already posted a DismissPictureBuffer for this
@@ -914,10 +908,10 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
 }
 
 void VaapiVideoDecodeAccelerator::FlushTask() {
+  VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(curr_input_buffer_.get() && curr_input_buffer_->IsFlushRequest());
 
-  VLOGF(2) << "Flush task";
 
   curr_input_buffer_.reset();
 
@@ -936,14 +930,15 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
 }
 
 void VaapiVideoDecodeAccelerator::Flush() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   VLOGF(2) << "Got flush request";
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Queue a dummy buffer, which means flush.
   QueueInputBuffer(media::BitstreamBuffer());
 }
 
 void VaapiVideoDecodeAccelerator::FinishFlush() {
+  VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   finish_flush_pending_ = false;
@@ -972,13 +967,11 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&Client::NotifyFlushDone, client_));
-
-  VLOGF(2) << "Flush finished";
 }
 
 void VaapiVideoDecodeAccelerator::ResetTask() {
+  VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  VLOGF(2) << "ResetTask";
 
   // All the decoding tasks from before the reset request from client are done
   // by now, as this task was scheduled after them and client is expected not
@@ -998,8 +991,8 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
 }
 
 void VaapiVideoDecodeAccelerator::Reset() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   VLOGF(2) << "Got reset request";
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // This will make any new decode tasks exit early.
   base::AutoLock auto_lock(lock_);
@@ -1029,8 +1022,8 @@ void VaapiVideoDecodeAccelerator::Reset() {
 }
 
 void VaapiVideoDecodeAccelerator::FinishReset() {
+  VLOGF(2);
   DCHECK(task_runner_->BelongsToCurrentThread());
-  VLOGF(2) << "FinishReset";
   base::AutoLock auto_lock(lock_);
 
   if (state_ != kResetting) {
@@ -1069,8 +1062,6 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
         FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
                               base::Unretained(this)));
   }
-
-  VLOGF(2) << "Reset finished";
 }
 
 void VaapiVideoDecodeAccelerator::Cleanup() {
