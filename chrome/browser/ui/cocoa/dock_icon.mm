@@ -17,13 +17,20 @@ using content::BrowserThread;
 namespace {
 
 // The fraction of the size of the dock icon that the badge is.
-const float kBadgeFraction = 0.4f;
+constexpr CGFloat kBadgeFraction = 0.375f;
+constexpr CGFloat kBadgeMargin = 4;
+constexpr CGFloat kBadgeStrokeWidth = 6;
 
-// The indentation of the badge.
-const float kBadgeIndent = 5.0f;
+constexpr struct {
+  CGFloat offset, radius, opacity;
+} kBadgeShadows[] = {
+    {0, 2, 0.14},
+    {2, 2, 0.12},
+    {1, 3, 0.2},
+};
 
 // The maximum update rate for the dock icon. 200ms = 5fps.
-const int64_t kUpdateFrequencyMs = 200;
+constexpr int64_t kUpdateFrequencyMs = 200;
 
 }  // namespace
 
@@ -66,88 +73,57 @@ const int64_t kUpdateFrequencyMs = 200;
   if (downloads_ == 0)
     return;
 
-  NSRect badgeRect = [self bounds];
-  badgeRect.size.height = (int)(kBadgeFraction * badgeRect.size.height);
-  int newWidth = kBadgeFraction * NSWidth(badgeRect);
-  badgeRect.origin.x = NSWidth(badgeRect) - newWidth;
-  badgeRect.size.width = newWidth;
+  const CGFloat badgeSize = NSWidth(self.bounds) * kBadgeFraction;
+  const NSRect badgeRect =
+      NSMakeRect(NSMaxX(self.bounds) - badgeSize - kBadgeMargin, kBadgeMargin,
+                 badgeSize, badgeSize);
+  const CGFloat badgeRadius = badgeSize / 2;
+  const NSPoint badgeCenter = NSMakePoint(NSMidX(badgeRect), NSMidY(badgeRect));
 
-  CGFloat badgeRadius = NSMidY(badgeRect);
+  NSBezierPath* backgroundPath =
+      [NSBezierPath bezierPathWithOvalInRect:badgeRect];
+  [[NSColor clearColor] setFill];
 
-  badgeRect.origin.x -= kBadgeIndent;
-  badgeRect.origin.y += kBadgeIndent;
-
-  NSPoint badgeCenter = NSMakePoint(NSMidX(badgeRect), NSMidY(badgeRect));
-
-  // Background
-  NSColor* backgroundColor = [NSColor colorWithCalibratedRed:0.85
-                                                       green:0.85
-                                                        blue:0.85
-                                                       alpha:1.0];
-  NSColor* backgroundHighlight =
-      [backgroundColor blendedColorWithFraction:0.85
-                                        ofColor:[NSColor whiteColor]];
-  base::scoped_nsobject<NSGradient> backgroundGradient(
-      [[NSGradient alloc] initWithStartingColor:backgroundHighlight
-                                    endingColor:backgroundColor]);
-  NSBezierPath* badgeEdge = [NSBezierPath bezierPathWithOvalInRect:badgeRect];
-  {
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  shadow.get().shadowColor = [NSColor blackColor];
+  for (const auto shadowProps : kBadgeShadows) {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    [badgeEdge addClip];
-    [backgroundGradient drawFromCenter:badgeCenter
-                                radius:0.0
-                              toCenter:badgeCenter
-                                radius:badgeRadius
-                               options:0];
+    shadow.get().shadowOffset = NSMakeSize(0, -shadowProps.offset);
+    shadow.get().shadowBlurRadius = shadowProps.radius;
+    [[NSColor colorWithCalibratedWhite:0 alpha:shadowProps.opacity] setFill];
+    [shadow set];
+    [backgroundPath fill];
   }
 
-  // Slice
+  [[NSColor colorWithCalibratedRed:0xec / 255.0
+                             green:0xf3 / 255.0
+                              blue:0xfe / 255.0
+                             alpha:1] setFill];
+  [backgroundPath fill];
+
+  // Stroke
   if (!indeterminate_) {
-    NSColor* sliceColor = [NSColor colorWithCalibratedRed:0.45
-                                                    green:0.8
-                                                     blue:0.25
-                                                    alpha:1.0];
-    NSColor* sliceHighlight =
-        [sliceColor blendedColorWithFraction:0.4
-                                     ofColor:[NSColor whiteColor]];
-    base::scoped_nsobject<NSGradient> sliceGradient(
-        [[NSGradient alloc] initWithStartingColor:sliceHighlight
-                                      endingColor:sliceColor]);
-    NSBezierPath* progressSlice;
+    NSBezierPath* strokePath;
     if (progress_ >= 1.0) {
-      progressSlice = [NSBezierPath bezierPathWithOvalInRect:badgeRect];
+      strokePath = [NSBezierPath bezierPathWithOvalInRect:badgeRect];
     } else {
       CGFloat endAngle = 90.0 - 360.0 * progress_;
       if (endAngle < 0.0)
         endAngle += 360.0;
-      progressSlice = [NSBezierPath bezierPath];
-      [progressSlice moveToPoint:badgeCenter];
-      [progressSlice appendBezierPathWithArcWithCenter:badgeCenter
-                                                radius:badgeRadius
-                                            startAngle:90.0
-                                              endAngle:endAngle
-                                             clockwise:YES];
-      [progressSlice closePath];
+      strokePath = [NSBezierPath bezierPath];
+      [strokePath
+          appendBezierPathWithArcWithCenter:badgeCenter
+                                     radius:badgeRadius - kBadgeStrokeWidth / 2
+                                 startAngle:90.0
+                                   endAngle:endAngle
+                                  clockwise:YES];
     }
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    [progressSlice addClip];
-    [sliceGradient drawFromCenter:badgeCenter
-                           radius:0.0
-                         toCenter:badgeCenter
-                           radius:badgeRadius
-                          options:0];
-  }
-
-  // Edge
-  {
-    gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    [[NSColor whiteColor] set];
-    base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-    [shadow.get() setShadowOffset:NSMakeSize(0, -2)];
-    [shadow setShadowBlurRadius:2];
-    [shadow set];
-    [badgeEdge setLineWidth:2];
-    [badgeEdge stroke];
+    [strokePath setLineWidth:kBadgeStrokeWidth];
+    [[NSColor colorWithCalibratedRed:0x42 / 255.0
+                               green:0x85 / 255.0
+                                blue:0xf4 / 255.0
+                               alpha:1] setStroke];
+    [strokePath stroke];
   }
 
   // Download count
@@ -156,21 +132,19 @@ const int64_t kUpdateFrequencyMs = 200;
   NSString* countString =
       [formatter stringFromNumber:[NSNumber numberWithInt:downloads_]];
 
-  base::scoped_nsobject<NSShadow> countShadow([[NSShadow alloc] init]);
-  [countShadow setShadowBlurRadius:3.0];
-  [countShadow.get() setShadowColor:[NSColor whiteColor]];
-  [countShadow.get() setShadowOffset:NSMakeSize(0.0, 0.0)];
-  NSMutableDictionary* countAttrsDict =
-      [NSMutableDictionary dictionaryWithObjectsAndKeys:
-          [NSColor blackColor], NSForegroundColorAttributeName,
-          countShadow.get(), NSShadowAttributeName,
-          nil];
-  CGFloat countFontSize = badgeRadius;
+  CGFloat countFontSize = 24;
   NSSize countSize = NSZeroSize;
   base::scoped_nsobject<NSAttributedString> countAttrString;
   while (1) {
-    NSFont* countFont = [NSFont fontWithName:@"Helvetica-Bold"
-                                        size:countFontSize];
+    NSFont* countFont;
+    if (@available(macOS 10.11, *)) {
+      countFont =
+          [NSFont systemFontOfSize:countFontSize weight:NSFontWeightMedium];
+    } else {
+      countFont = [[NSFontManager sharedFontManager]
+          convertWeight:YES
+                 ofFont:[NSFont systemFontOfSize:countFontSize]];
+    }
 
     // This will generally be plain Helvetica.
     if (!countFont)
@@ -180,12 +154,15 @@ const int64_t kUpdateFrequencyMs = 200;
     if (!countFont)
       break;
 
-    [countAttrsDict setObject:countFont forKey:NSFontAttributeName];
-    countAttrString.reset(
-        [[NSAttributedString alloc] initWithString:countString
-                                        attributes:countAttrsDict]);
+    countAttrString.reset([[NSAttributedString alloc]
+        initWithString:countString
+            attributes:@{
+              NSForegroundColorAttributeName :
+                  [NSColor colorWithCalibratedWhite:0 alpha:0.65],
+              NSFontAttributeName : countFont,
+            }]);
     countSize = [countAttrString size];
-    if (countSize.width > badgeRadius * 1.5) {
+    if (countSize.width > (badgeRadius - kBadgeStrokeWidth) * 1.5) {
       countFontSize -= 1.0;
     } else {
       break;
@@ -194,7 +171,7 @@ const int64_t kUpdateFrequencyMs = 200;
 
   NSPoint countOrigin = badgeCenter;
   countOrigin.x -= countSize.width / 2;
-  countOrigin.y -= countSize.height / 2.2;  // tweak; otherwise too low
+  countOrigin.y -= countSize.height / 2;
 
   [countAttrString.get() drawAtPoint:countOrigin];
 }
