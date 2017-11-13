@@ -20,7 +20,10 @@
       ]
     },
     "build13-b1--device4": {
-      "benchmarks": []
+      "benchmarks": [
+        "speedometer-future",
+        "speedometer2-future"
+      ]
     },
     "build13-b1--device5": {
       "benchmarks": [
@@ -197,7 +200,10 @@
       ]
     },
     "build73-b1--device4": {
-      "benchmarks": []
+      "benchmarks": [
+        "speedometer-future",
+        "speedometer2-future"
+      ]
     },
     "build73-b1--device5": {
       "benchmarks": [
@@ -364,7 +370,9 @@
     "build164-b1--device2": {
       "benchmarks": [
         "loading.desktop",
-        "smoothness.simple_mobile_sites"
+        "smoothness.simple_mobile_sites",
+        "speedometer-future",
+        "speedometer2-future"
       ]
     },
     "build164-b1--device3": {
@@ -552,7 +560,10 @@
       ]
     },
     "build15-b1--device4": {
-      "benchmarks": []
+      "benchmarks": [
+        "speedometer-future",
+        "speedometer2-future"
+      ]
     },
     "build15-b1--device5": {
       "benchmarks": [
@@ -774,7 +785,9 @@
     "build113-b1--device2": {
       "benchmarks": [
         "dromaeo.domcorequery",
-        "dromaeo.domcoretraverse"
+        "dromaeo.domcoretraverse",
+        "speedometer-future",
+        "speedometer2-future"
       ]
     },
     "build113-b1--device3": {
@@ -1036,7 +1049,10 @@
       ]
     },
     "build9-b1--device4": {
-      "benchmarks": []
+      "benchmarks": [
+        "speedometer-future",
+        "speedometer2-future"
+      ]
     },
     "build9-b1--device5": {
       "benchmarks": [
@@ -1084,7 +1100,10 @@
       ]
     },
     "build17-b1--device4": {
-      "benchmarks": []
+      "benchmarks": [
+        "speedometer-future",
+        "speedometer2-future"
+      ]
     },
     "build17-b1--device5": {
       "benchmarks": [
@@ -1256,7 +1275,9 @@
     },
     "build245-m4--device3": {
       "benchmarks": [
-        "blink_perf.owp_storage"
+        "blink_perf.owp_storage",
+        "speedometer-future",
+        "speedometer2-future"
       ]
     },
     "build245-m4--device4": {
@@ -1476,7 +1497,9 @@
         "smoothness.tough_path_rendering_cases",
         "smoothness.tough_scrolling_cases",
         "speedometer",
+        "speedometer-future",
         "speedometer2",
+        "speedometer2-future",
         "tab_switching.typical_25",
         "thread_times.tough_compositor_cases"
       ]
@@ -1609,6 +1632,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "thread_times.tough_scrolling_cases",
         "v8.browsing_desktop",
@@ -1725,6 +1750,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc"
@@ -1838,6 +1865,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -1952,6 +1981,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -2066,6 +2097,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -2208,6 +2241,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc"
@@ -2237,7 +2272,9 @@
     },
     "build138-b1": {
       "benchmarks": [
-        "smoothness.maps"
+        "smoothness.maps",
+        "speedometer-future",
+        "speedometer2-future"
       ]
     },
     "build139-b1": {
@@ -2484,6 +2521,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -2533,7 +2572,9 @@
     },
     "build202-b4": {
       "benchmarks": [
-        "smoothness.maps"
+        "smoothness.maps",
+        "speedometer-future",
+        "speedometer2-future"
       ]
     },
     "build203-b4": {
@@ -2782,6 +2823,8 @@
         "smoothness.tough_animation_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc"
@@ -2893,6 +2936,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "thread_times.tough_scrolling_cases",
         "v8.browsing_desktop",
@@ -3008,6 +3053,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -3122,6 +3169,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -3236,6 +3285,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "thread_times.tough_scrolling_cases",
         "v8.browsing_desktop",
@@ -3349,6 +3400,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "thread_times.tough_scrolling_cases",
         "v8.browsing_desktop",
@@ -3464,6 +3517,8 @@
         "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
         "smoothness.tough_canvas_cases",
         "smoothness.tough_pinch_zoom_cases",
+        "speedometer-future",
+        "speedometer2-future",
         "start_with_url.cold.startup_pages",
         "v8.browsing_desktop",
         "v8.detached_context_age_in_gc",
@@ -3566,7 +3621,9 @@
     "smoothness.tough_webgl_ad_cases",
     "smoothness.tough_webgl_cases",
     "speedometer",
+    "speedometer-future",
     "speedometer2",
+    "speedometer2-future",
     "start_with_url.cold.startup_pages",
     "start_with_url.warm.startup_pages",
     "system_health.common_desktop",
