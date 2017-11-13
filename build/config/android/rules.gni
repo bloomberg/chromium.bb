@@ -56,14 +56,19 @@ template("create_native_executable_dist") {
       _libraries_list,
     ]
     rebased_binaries = rebase_path([ invoker.binary ], root_build_dir)
+    _libraries_dir = rebase_path(root_shlib_dir, root_build_dir)
+    if (is_clang) {
+      _libraries_dir +=
+          "," +
+          rebase_path("$clang_base_path/lib/clang/$clang_version/lib/linux",
+                      root_build_dir)
+    }
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--input-libraries=$rebased_binaries",
       "--libraries-dir",
-      rebase_path(root_shlib_dir, root_build_dir) + "," +
-          rebase_path("$clang_base_path/lib/clang/$clang_version/lib/linux",
-                      root_build_dir),
+      _libraries_dir,
       "--output",
       rebase_path(_libraries_list, root_build_dir),
       "--readelf",
