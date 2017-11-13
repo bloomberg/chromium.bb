@@ -74,10 +74,10 @@ class RendererInterfaceBinders {
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
 template <typename Interface>
-void ForwardRequest(const char* service_name,
-                    mojo::InterfaceRequest<Interface> request,
-                    RenderProcessHost* host,
-                    const url::Origin& origin) {
+void ForwardServiceRequest(const char* service_name,
+                           mojo::InterfaceRequest<Interface> request,
+                           RenderProcessHost* host,
+                           const url::Origin& origin) {
   auto* connector = BrowserContext::GetConnectorFor(host->GetBrowserContext());
   connector->BindInterface(service_name, std::move(request));
 }
@@ -89,17 +89,17 @@ void ForwardRequest(const char* service_name,
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      &ForwardServiceRequest<shape_detection::mojom::BarcodeDetection>,
+      shape_detection::mojom::kServiceName));
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      &ForwardServiceRequest<shape_detection::mojom::FaceDetectionProvider>,
+      shape_detection::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::BarcodeDetection>,
+      base::Bind(&ForwardServiceRequest<shape_detection::mojom::TextDetection>,
                  shape_detection::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::FaceDetectionProvider>,
-                 shape_detection::mojom::kServiceName));
-  parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardRequest<shape_detection::mojom::TextDetection>,
-                 shape_detection::mojom::kServiceName));
-  parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardRequest<device::mojom::VibrationManager>,
+      base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
                  device::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::WebSocketRequest request,
