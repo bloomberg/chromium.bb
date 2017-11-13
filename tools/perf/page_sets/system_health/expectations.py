@@ -86,6 +86,8 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
 
 class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
+    self.DisableStory('background:tools:gmail', [expectations.ANDROID_NEXUS5],
+                      'crbug.com/784400')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
                       'crbug.com/708300')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],

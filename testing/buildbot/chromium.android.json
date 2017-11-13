@@ -5267,6 +5267,28 @@
         "test": "viz_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=android-chromium",
+          "--device=android"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead",
+              "temp_band": "<30"
+            }
+          ],
+          "hard_timeout": 1500,
+          "shards": 15
+        }
+      }
+    ],
     "junit_tests": [
       {
         "test": "base_junit_tests"
