@@ -30408,80 +30408,6 @@
         ],
         "vm_tests": []
     },
-    "lasilla-sky-llvm-next-toolchain": {
-        "_template": "llvm_next_toolchain",
-        "afdo_use": false,
-        "boards": [
-            "lasilla-sky"
-        ],
-        "chrome_sdk": false,
-        "hw_tests": [],
-        "hw_tests_override": [],
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false
-    },
-    "lasilla-sky-llvm-next-toolchain-tryjob": {
-        "_template": "llvm_next_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "afdo_use": false,
-        "boards": [
-            "lasilla-sky"
-        ],
-        "chrome_sdk": false,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [],
-        "hw_tests_override": null,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false
-    },
-    "lasilla-sky-llvm-toolchain": {
-        "_template": "llvm_toolchain",
-        "afdo_use": false,
-        "boards": [
-            "lasilla-sky"
-        ],
-        "chrome_sdk": false,
-        "hw_tests": [],
-        "hw_tests_override": [],
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false
-    },
-    "lasilla-sky-llvm-toolchain-tryjob": {
-        "_template": "llvm_toolchain",
-        "active_waterfall": "chromiumos.tryserver",
-        "afdo_use": false,
-        "boards": [
-            "lasilla-sky"
-        ],
-        "chrome_sdk": false,
-        "debug": true,
-        "display_label": "tryjob",
-        "hw_tests": [],
-        "hw_tests_override": null,
-        "image_test": false,
-        "images": [
-            "base",
-            "test"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false
-    },
     "lasilla-sky-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
         "boards": [
@@ -30570,7 +30496,6 @@
     },
     "lasilla-sky-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "afdo_use": false,
         "boards": [
             "lasilla-sky"
@@ -33422,7 +33347,6 @@
             "lakitu_next-release",
             "lars-release",
             "lasilla-ground-release",
-            "lasilla-sky-release",
             "lassen-release",
             "leon-release",
             "link-release",
@@ -33589,7 +33513,6 @@
             "lakitu_next-release",
             "lars-release",
             "lasilla-ground-release",
-            "lasilla-sky-release",
             "lassen-release",
             "leon-release",
             "link-release",
