@@ -26,6 +26,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.components.signin.AccountManagerDelegateException;
@@ -119,6 +120,7 @@ public class AccountSigninView extends FrameLayout {
 
     private final AccountsChangeObserver mAccountsChangedObserver;
     private final ProfileDataCache.Observer mProfileDataCacheObserver;
+    private final ProfileDataCache mProfileDataCache;
     private List<String> mAccountNames;
     private AccountSigninChooseView mSigninChooseView;
     private ButtonCompat mPositiveButton;
@@ -127,7 +129,6 @@ public class AccountSigninView extends FrameLayout {
     private Listener mListener;
     private Delegate mDelegate;
     private @UndoBehavior int mUndoBehavior;
-    private ProfileDataCache mProfileDataCache;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
     private @StringRes int mCancelButtonTextId;
@@ -148,6 +149,9 @@ public class AccountSigninView extends FrameLayout {
         super(context, attrs);
         mAccountsChangedObserver = this::triggerUpdateAccounts;
         mProfileDataCacheObserver = (String accountId) -> updateProfileData();
+        mProfileDataCache = new ProfileDataCache(context, Profile.getLastUsedProfile(),
+                context.getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
+
         mCancelButtonTextId = R.string.no_thanks;
     }
 
@@ -155,14 +159,12 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
-     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromSelectionPage(ProfileDataCache profileDataCache, boolean isChildAccount,
-            Delegate delegate, Listener listener) {
-        setProfileDataCache(profileDataCache);
+    public void initFromSelectionPage(
+            boolean isChildAccount, Delegate delegate, Listener listener) {
         mIsChildAccount = isChildAccount;
         mUndoBehavior = UNDO_BACK_TO_SELECTION;
         mDelegate = delegate;
@@ -174,13 +176,10 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from account selection page. After selecting the account, signin
      * confirmation page will be opened.
      *
-     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromAddAccountPage(
-            ProfileDataCache profileDataCache, Delegate delegate, Listener listener) {
-        setProfileDataCache(profileDataCache);
+    public void initFromAddAccountPage(Delegate delegate, Listener listener) {
         mIsChildAccount = false; // Children profiles can't add accounts.
         mUndoBehavior = UNDO_ABORT;
         mDelegate = delegate;
@@ -195,7 +194,6 @@ public class AccountSigninView extends FrameLayout {
      * Initializes the view from signin confirmation page. The account name should be provided by
      * the caller.
      *
-     * @param profileDataCache ProfileDataCache that will be used to retrieve user account info.
      * @param isChildAccount Whether this view is for a child account.
      * @param accountName An account that should be used for confirmation page and signin.
      * @param isDefaultAccount Whether {@param accountName} is a default account, used for metrics.
@@ -203,24 +201,15 @@ public class AccountSigninView extends FrameLayout {
      * @param delegate The UI object creation delegate.
      * @param listener The account selection event listener.
      */
-    public void initFromConfirmationPage(ProfileDataCache profileDataCache, boolean isChildAccount,
-            String accountName, boolean isDefaultAccount, @UndoBehavior int undoBehavior,
-            Delegate delegate, Listener listener) {
-        setProfileDataCache(profileDataCache);
+    public void initFromConfirmationPage(boolean isChildAccount, String accountName,
+            boolean isDefaultAccount, @UndoBehavior int undoBehavior, Delegate delegate,
+            Listener listener) {
         mIsChildAccount = isChildAccount;
         mUndoBehavior = undoBehavior;
         mDelegate = delegate;
         mListener = listener;
         showConfirmSigninPageAccountTrackerServiceCheck(accountName, isDefaultAccount);
         triggerUpdateAccounts();
-    }
-
-    private void setProfileDataCache(ProfileDataCache profileDataCache) {
-        assert mProfileDataCache == null;
-        mProfileDataCache = profileDataCache;
-        if (ViewCompat.isAttachedToWindow(this)) {
-            mProfileDataCache.addObserver(mProfileDataCacheObserver);
-        }
     }
 
     @Override
@@ -253,9 +242,7 @@ public class AccountSigninView extends FrameLayout {
         super.onAttachedToWindow();
         triggerUpdateAccounts();
         AccountManagerFacade.get().addObserver(mAccountsChangedObserver);
-        if (mProfileDataCache != null) {
-            mProfileDataCache.addObserver(mProfileDataCacheObserver);
-        }
+        mProfileDataCache.addObserver(mProfileDataCacheObserver);
     }
 
     @Override
@@ -264,9 +251,7 @@ public class AccountSigninView extends FrameLayout {
             mConfirmSyncDataStateMachine.cancel(false /* dismissDialogs */);
             mConfirmSyncDataStateMachine = null;
         }
-        if (mProfileDataCache != null) {
-            mProfileDataCache.removeObserver(mProfileDataCacheObserver);
-        }
+        mProfileDataCache.removeObserver(mProfileDataCacheObserver);
         AccountManagerFacade.get().removeObserver(mAccountsChangedObserver);
         super.onDetachedFromWindow();
     }
@@ -303,10 +288,6 @@ public class AccountSigninView extends FrameLayout {
      * Refresh the list of available system accounts asynchronously.
      */
     private void triggerUpdateAccounts() {
-        if (mProfileDataCache == null) {
-            return;
-        }
-
         AccountManagerFacade.get().getGoogleAccountNames(this::updateAccounts);
     }
 
