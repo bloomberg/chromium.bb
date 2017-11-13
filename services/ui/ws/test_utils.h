@@ -643,6 +643,12 @@ class TestWindowServerDelegate : public WindowServerDelegate {
 
   bool got_on_no_more_displays() const { return got_on_no_more_displays_; }
 
+  // Does an Embed() in |tree| at |window| returning the TestWindowTreeBinding
+  // that resulred (null on failure).
+  TestWindowTreeBinding* Embed(WindowTree* tree,
+                               ServerWindow* window,
+                               int flags = 0);
+
   // WindowServerDelegate:
   void StartDisplayInit() override;
   void OnNoMoreDisplays() override;
@@ -733,6 +739,10 @@ class WindowEventTargetingHelper {
   }
   TestWindowTreeClient* wm_client() { return wm_client_; }
   WindowServer* window_server() { return ws_test_helper_.window_server(); }
+
+  TestWindowServerDelegate* test_window_server_delegate() {
+    return ws_test_helper_.window_server_delegate();
+  }
 
  private:
   WindowServerTestHelper ws_test_helper_;
@@ -872,7 +882,8 @@ ServerWindow* NewWindowInTree(WindowTree* tree,
                               ClientWindowId* client_id = nullptr);
 ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
                                         ServerWindow* parent,
-                                        ClientWindowId* client_id = nullptr);
+                                        ClientWindowId* client_id = nullptr,
+                                        const gfx::Rect& bounds = gfx::Rect());
 
 // Converts an atomic 32 to a point. The cursor location is represented as an
 // atomic 32.

@@ -515,6 +515,20 @@ TestWindowServerDelegate::TestWindowServerDelegate()
           base::MakeUnique<TestThreadedImageCursorsFactory>()) {}
 TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
+TestWindowTreeBinding* TestWindowServerDelegate::Embed(WindowTree* tree,
+                                                       ServerWindow* window,
+                                                       int flags) {
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request = mojo::MakeRequest(&client);
+  ClientWindowId client_window_id;
+  if (!tree->IsWindowKnown(window, &client_window_id))
+    return nullptr;
+
+  tree->Embed(client_window_id, std::move(client), flags);
+  last_client()->Bind(std::move(client_request));
+  return last_binding();
+}
+
 void TestWindowServerDelegate::StartDisplayInit() {}
 
 void TestWindowServerDelegate::OnNoMoreDisplays() {
@@ -802,7 +816,8 @@ ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id) {
 
 ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
                                         ServerWindow* parent,
-                                        ClientWindowId* client_id) {
+                                        ClientWindowId* client_id,
+                                        const gfx::Rect& bounds) {
   if (!parent)
     return nullptr;
   ClientWindowId parent_client_id;
@@ -815,9 +830,11 @@ ServerWindow* NewWindowInTreeWithParent(WindowTree* tree,
     return nullptr;
   if (!tree->AddWindow(parent_client_id, client_window_id))
     return nullptr;
+  ServerWindow* window = tree->GetWindowByClientId(client_window_id);
+  window->SetBounds(bounds);
   if (client_id)
     *client_id = client_window_id;
-  return tree->GetWindowByClientId(client_window_id);
+  return window;
 }
 
 gfx::Point Atomic32ToPoint(base::subtle::Atomic32 atomic) {

@@ -204,6 +204,10 @@ class WindowTreeTest : public testing::Test {
     return CreateTreeViaFactory(window_server(), user_id, binding);
   }
 
+  TestWindowServerDelegate* test_window_server_delegate() {
+    return window_event_targeting_helper_.test_window_server_delegate();
+  }
+
  protected:
   WindowEventTargetingHelper window_event_targeting_helper_;
 
@@ -2091,6 +2095,81 @@ TEST_F(WindowTreeTest, PerformWmAction) {
           child_tree->ClientWindowIdToTransportId(embed_window_id2_in_child),
           "test-action");
   EXPECT_EQ("test-action", wm_internal.last_wm_action());
+}
+
+TEST_F(WindowTreeTest, EmbedderInterceptsEventsSeesWindowsInEmbeddedClients) {
+  // Make the root visible and give it bounds.
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  const gfx::Rect bounds(0, 0, 20, 20);
+  wm_root->SetBounds(bounds);
+  wm_root->SetVisible(true);
+
+  // Create window for embedded (|w1|).
+  ClientWindowId w1_id;
+  ServerWindow* w1 =
+      NewWindowInTreeWithParent(wm_tree(), wm_root, &w1_id, bounds);
+  ASSERT_TRUE(w1);
+
+  // Embed a new client in |w1|.
+  TestWindowTreeBinding* embed_binding1 =
+      test_window_server_delegate()->Embed(wm_tree(), w1);
+  // Set the user-id to a non-empty string, this way
+  // kEmbedFlagEmbedderInterceptsEvents is honored.
+  WindowTreeTestApi(embed_binding1->tree()).set_user_id("x");
+  ASSERT_TRUE(embed_binding1);
+
+  // Create |w2| (in the embedded tree).
+  ClientWindowId w2_id;
+  ServerWindow* w2 =
+      NewWindowInTreeWithParent(embed_binding1->tree(), w1, &w2_id, bounds);
+  ASSERT_TRUE(w2);
+
+  // Embed a new client in |w2|.
+  TestWindowTreeBinding* embed_binding2 = test_window_server_delegate()->Embed(
+      embed_binding1->tree(), w2, mojom::kEmbedFlagEmbedderInterceptsEvents);
+  ASSERT_TRUE(embed_binding2);
+
+  // Create |w3| as a child of |w2|.
+  ClientWindowId w3_id;
+  ServerWindow* w3 =
+      NewWindowInTreeWithParent(embed_binding2->tree(), w2, &w3_id, bounds);
+  ASSERT_TRUE(w3);
+
+  // Embed a new client in |w3|.
+  TestWindowTreeBinding* embed_binding3 =
+      test_window_server_delegate()->Embed(embed_binding2->tree(), w3);
+  ASSERT_TRUE(embed_binding3);
+
+  // Create |w4| as a child of |w3|.
+  ClientWindowId w4_id;
+  ServerWindow* w4 =
+      NewWindowInTreeWithParent(embed_binding3->tree(), w3, &w4_id, bounds);
+  ASSERT_TRUE(w4);
+
+  // |w4| and |w3| should be known to embed_binding1->tree() because of
+  // kEmbedFlagEmbedderInterceptsEvents. |w3| should not be known to
+  // embed_binding2->tree(), because it has an invalid user id.
+  EXPECT_TRUE(embed_binding1->tree()->IsWindowKnown(w3, nullptr));
+  ClientWindowId w4_in_tree1_id;
+  EXPECT_TRUE(embed_binding1->tree()->IsWindowKnown(w4, &w4_in_tree1_id));
+  EXPECT_FALSE(embed_binding2->tree()->IsWindowKnown(w4, nullptr));
+
+  // Verify an event targetting |w4| goes to embed_binding1->tree().
+  embed_binding1->client()->tracker()->changes()->clear();
+  AckPreviousEvent();
+  DispatchEventWithoutAck(CreatePointerDownEvent(5, 5));
+  WindowManagerStateTestApi wm_state_test_api(
+      wm_tree()->window_manager_state());
+  EXPECT_EQ(embed_binding1->tree(),
+            wm_state_test_api.tree_awaiting_input_ack());
+  // Event targets |w4|, but goes to embed_binding1->tree() (because of
+  // kEmbedFlagEmbedderInterceptsEvents).
+  EXPECT_EQ(1u, embed_binding1->client()->tracker()->changes()->size());
+  EXPECT_EQ("InputEvent window=" + ClientWindowIdToString(w4_in_tree1_id) +
+                " event_action=16",
+            SingleChangeToDescription(
+                *embed_binding1->client()->tracker()->changes()));
 }
 
 }  // namespace test
