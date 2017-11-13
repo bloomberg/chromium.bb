@@ -3,16 +3,17 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for extension-keyboard-shortcuts. */
-cr.define('extension_keyboard_shortcut_tests', function() {
+cr.define('extension_shortcut_tests', function() {
   /** @enum {string} */
   var TestNames = {
+    IsValidKeyCode: 'isValidKeyCode',
+    KeyStrokeToString: 'keystrokeToString',
     Layout: 'Layout',
-    // The ShortcutUtil test suite is all js-based (no UI), so we can execute
-    // multiple in a single browser test without worrying about timing out.
-    ShortcutUtil: 'ExtensionShortcutUtilTest',
   };
 
-  suite('ExtensionKeyboardShortcutTest', function() {
+  var suiteName = 'ExtensionShortcutTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.KeyboardShortcuts} */
     var keyboardShortcuts;
     /** @type {chrome.developerPrivate.ExtensionInfo} */
@@ -90,10 +91,8 @@ cr.define('extension_keyboard_shortcut_tests', function() {
       commands = card2.querySelectorAll('.command-entry');
       assertEquals(2, commands.length);
     });
-  });
 
-  suite(assert(TestNames.ShortcutUtil), function() {
-    test('isValidKeyCode test', function() {
+    test(TestNames.IsValidKeyCode, function() {
       expectTrue(extensions.isValidKeyCode('A'.charCodeAt(0)));
       expectTrue(extensions.isValidKeyCode('F'.charCodeAt(0)));
       expectTrue(extensions.isValidKeyCode('Z'.charCodeAt(0)));
@@ -110,7 +109,7 @@ cr.define('extension_keyboard_shortcut_tests', function() {
       expectFalse(extensions.isValidKeyCode(27));   // Escape
     });
 
-    test('keystrokeToString test', function() {
+    test(TestNames.KeyStrokeToString, function() {
       // Creating an event with the KeyboardEvent ctor doesn't work. Fake it.
       var e = {keyCode: 'A'.charCodeAt(0)};
       expectEquals('A', extensions.keystrokeToString(e));
@@ -122,6 +121,7 @@ cr.define('extension_keyboard_shortcut_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

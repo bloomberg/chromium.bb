@@ -27,7 +27,9 @@ cr.define('extension_load_error_tests', function() {
     }
   }
 
-  suite('ExtensionLoadErrorTests', function() {
+  var suiteName = 'ExtensionLoadErrorTests';
+
+  suite(suiteName, function() {
     /** @type {extensions.LoadError} */
     var loadError;
 
@@ -91,6 +93,7 @@ cr.define('extension_load_error_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

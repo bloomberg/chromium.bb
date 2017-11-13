@@ -12,9 +12,9 @@ cr.define('extension_view_manager_tests', function() {
 
   var viewManager;
   var views;
+  var suiteName = 'ExtensionViewManagerTest';
 
-  suite('ExtensionViewManagerTest', function() {
-
+  suite(suiteName, function() {
     // Initialize an extension item before each test.
     setup(function() {
       PolymerTest.clearBody();
@@ -102,6 +102,7 @@ cr.define('extension_view_manager_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

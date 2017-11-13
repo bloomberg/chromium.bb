@@ -47,7 +47,9 @@ cr.define('extension_pack_dialog_tests', function() {
     },
   };
 
-  suite('ExtensionPackDialogTests', function() {
+  var suiteName = 'ExtensionPackDialogTests';
+
+  suite(suiteName, function() {
     /** @type {extensions.PackDialog} */
     var packDialog;
 
@@ -212,6 +214,7 @@ cr.define('extension_pack_dialog_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

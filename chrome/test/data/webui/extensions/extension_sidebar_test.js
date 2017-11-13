@@ -10,7 +10,9 @@ cr.define('extension_sidebar_tests', function() {
     SetSelected: 'set selected',
   };
 
-  suite('ExtensionSidebarTest', function() {
+  var suiteName = 'ExtensionSidebarTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.Sidebar} */
     var sidebar;
 
@@ -61,6 +63,7 @@ cr.define('extension_sidebar_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

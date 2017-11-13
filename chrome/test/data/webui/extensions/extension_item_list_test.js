@@ -11,7 +11,9 @@ cr.define('extension_item_list_tests', function() {
     NoSearchResultsMsg: 'empty item list filtering results',
   };
 
-  suite('ExtensionItemListTest', function() {
+  var suiteName = 'ExtensionItemListTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.ItemList} */
     var itemList;
     var testVisible;
@@ -102,6 +104,7 @@ cr.define('extension_item_list_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

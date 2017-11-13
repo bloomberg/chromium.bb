@@ -36,7 +36,9 @@ cr.define('extension_error_page_tests', function() {
     },
   };
 
-  suite('ExtensionErrorPageTest', function() {
+  var suiteName = 'ExtensionErrorPageTest';
+
+  suite(suiteName, function() {
     /** @type {chrome.developerPrivate.ExtensionInfo} */
     var extensionData;
 
@@ -212,6 +214,7 @@ cr.define('extension_error_page_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

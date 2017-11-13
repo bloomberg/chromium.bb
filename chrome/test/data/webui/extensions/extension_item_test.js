@@ -75,7 +75,9 @@ cr.define('extension_item_tests', function() {
     RemoveButton: 'remove button hidden when necessary',
   };
 
-  suite('ExtensionItemTest', function() {
+  var suiteName = 'ExtensionItemTest';
+
+  suite(suiteName, function() {
     /**
      * Extension item created before each test.
      * @type {extensions.Item}
@@ -265,6 +267,7 @@ cr.define('extension_item_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });
