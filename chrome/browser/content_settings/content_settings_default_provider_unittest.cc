@@ -175,7 +175,7 @@ TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePreferences) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK, prefs->GetInteger(kGeolocationPrefPath));
 }
 
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePluginsAllow) {
   PrefService* prefs = profile_.GetPrefs();
   const std::string& plugins_pref_path =
@@ -208,7 +208,7 @@ TEST_F(ContentSettingsDefaultProviderTest, DiscardObsoletePluginsAllow) {
               prefs->GetInteger(plugins_pref_path));
   }
 }
-#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 TEST_F(ContentSettingsDefaultProviderTest, OffTheRecord) {
   DefaultProvider otr_provider(profile_.GetPrefs(), true /* incognito */);
