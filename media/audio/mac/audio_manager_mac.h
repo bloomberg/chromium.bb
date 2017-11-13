@@ -112,6 +112,14 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
                              bool* size_was_changed,
                              size_t* io_buffer_frame_size);
 
+  // Returns the latency for the given audio unit and device. Total latency is
+  // the sum of the latency of the AudioUnit, device, and stream. If any one
+  // component of the latency can't be retrieved it is considered as zero.
+  static base::TimeDelta GetHardwareLatency(AudioUnit audio_unit,
+                                            AudioDeviceID device_id,
+                                            AudioObjectPropertyScope scope,
+                                            int sample_rate);
+
   // Number of constructed output and input streams.
   size_t output_streams() const { return output_streams_.size(); }
   size_t low_latency_input_streams() const {
