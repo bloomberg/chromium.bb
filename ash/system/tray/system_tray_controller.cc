@@ -13,7 +13,7 @@
 namespace ash {
 
 SystemTrayController::SystemTrayController()
-    : hour_clock_type_(base::GetHourClockType()) {}
+    : binding_(this), hour_clock_type_(base::GetHourClockType()) {}
 
 SystemTrayController::~SystemTrayController() {}
 
@@ -140,7 +140,7 @@ void SystemTrayController::RequestRestartForUpdate() {
 }
 
 void SystemTrayController::BindRequest(mojom::SystemTrayRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {

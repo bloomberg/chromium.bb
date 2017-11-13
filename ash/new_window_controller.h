@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -38,7 +38,7 @@ class ASH_EXPORT NewWindowController : public mojom::NewWindowController {
   void OpenFeedbackPage();
 
  private:
-  mojo::BindingSet<mojom::NewWindowController> bindings_;
+  mojo::Binding<mojom::NewWindowController> binding_;
 
   mojom::NewWindowClientAssociatedPtr client_;
 

@@ -31,7 +31,8 @@ std::string CalculateHash(const std::string& password,
 
 }  // namespace
 
-LockScreenController::LockScreenController() = default;
+LockScreenController::LockScreenController() : binding_(this) {}
+
 LockScreenController::~LockScreenController() = default;
 
 // static
@@ -48,7 +49,7 @@ void LockScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
 }
 
 void LockScreenController::BindRequest(mojom::LockScreenRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void LockScreenController::SetClient(mojom::LockScreenClientPtr client) {

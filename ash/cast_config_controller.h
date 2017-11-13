@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -29,8 +29,7 @@ class CastConfigControllerObserver {
 
 // We want to establish our connection lazily and preferably only once, as
 // TrayCast instances will come and go.
-class CastConfigController : public ash::mojom::CastConfig,
-                             public ash::mojom::CastConfigClient {
+class CastConfigController : public ash::mojom::CastConfig {
  public:
   CastConfigController();
   ~CastConfigController() override;
@@ -48,14 +47,14 @@ class CastConfigController : public ash::mojom::CastConfig,
   void SetClient(mojom::CastConfigClientAssociatedPtrInfo client) override;
   void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;
 
-  // ash::mojom::CastConfigClient:
-  void RequestDeviceRefresh() override;
-  void CastToSink(mojom::CastSinkPtr sink) override;
-  void StopCasting(mojom::CastRoutePtr route) override;
+  // Methods to forward to |client_|.
+  void RequestDeviceRefresh();
+  void CastToSink(mojom::CastSinkPtr sink);
+  void StopCasting(mojom::CastRoutePtr route);
 
  private:
-  // Bindings for the CastConfig interface.
-  mojo::BindingSet<mojom::CastConfig> bindings_;
+  // Binding for the CastConfig interface.
+  mojo::Binding<mojom::CastConfig> binding_;
 
   mojom::CastConfigClientAssociatedPtr client_;
 

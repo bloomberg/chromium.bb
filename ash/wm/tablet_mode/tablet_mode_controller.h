@@ -21,7 +21,7 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "chromeos/dbus/power_manager_client.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -213,7 +213,7 @@ class ASH_EXPORT TabletModeController
   bool lid_is_closed_;
 
   // Whether title bars should be shown be auto hidden in tablet mode.
-  const bool auto_hide_title_bars_ = false;
+  const bool auto_hide_title_bars_;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge
   // is approaching vertical to remove abrupt acceleration that can lead to
@@ -221,8 +221,8 @@ class ASH_EXPORT TabletModeController
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
 
-  // Bindings for the TabletModeController interface.
-  mojo::BindingSet<mojom::TabletModeController> bindings_;
+  // Binding for the TabletModeController interface.
+  mojo::Binding<mojom::TabletModeController> binding_;
 
   // Client interface (e.g. in chrome).
   mojom::TabletModeClientPtr client_;

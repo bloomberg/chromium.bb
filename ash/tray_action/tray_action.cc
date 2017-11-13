@@ -13,7 +13,7 @@
 
 namespace ash {
 
-TrayAction::TrayAction() = default;
+TrayAction::TrayAction() : binding_(this) {}
 
 TrayAction::~TrayAction() = default;
 
@@ -26,7 +26,7 @@ void TrayAction::RemoveObserver(TrayActionObserver* observer) {
 }
 
 void TrayAction::BindRequest(mojom::TrayActionRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 mojom::TrayActionState TrayAction::GetLockScreenNoteState() const {

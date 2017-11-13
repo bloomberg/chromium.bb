@@ -11,7 +11,7 @@
 
 namespace ash {
 
-ImeController::ImeController() = default;
+ImeController::ImeController() : binding_(this) {}
 
 ImeController::~ImeController() = default;
 
@@ -24,7 +24,7 @@ void ImeController::RemoveObserver(Observer* observer) {
 }
 
 void ImeController::BindRequest(mojom::ImeControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void ImeController::SetClient(mojom::ImeControllerClientPtr client) {
