@@ -1,0 +1,24 @@
+This is a testharness.js-based test.
+PASS Constructing a CSSTranslation with a CSSUnitValue with type other than length or percent for the coordinates throws a TypeError
+PASS Constructing a CSSTranslation with a CSSMathValue that doesn't match <length-percentage> for the coordinates throws a TypeError
+PASS Updating CSSTranslation.x to a CSSUnitValue with type other than length or percent throws a TypeError
+PASS Updating CSSTranslation.x to a CSSMathValue that doesn't match <length-percentage> throws a TypeError
+PASS Updating CSSTranslation.y to a CSSUnitValue with type other than length or percent throws a TypeError
+PASS Updating CSSTranslation.y to a CSSMathValue that doesn't match <length-percentage> throws a TypeError
+PASS Updating CSSTranslation.z to a CSSUnitValue with type other than length or percent throws a TypeError
+PASS Updating CSSTranslation.z to a CSSMathValue that doesn't match <length-percentage> throws a TypeError
+PASS CSSTranslation can be constructed from two length or percent coordinates
+PASS CSSTranslation can be constructed from three length or percent coordinates
+FAIL CSSTranslation can be constructed from CSSMathValues Failed to construct 'CSSTranslation': Must pass length or percentage to X and Y of CSSTranslation
+PASS CSSTranslation.x can be updated to a length
+PASS CSSTranslation.x can be updated to a percent
+FAIL CSSTranslation.x can be updated to a CSSMathValue Failed to set the 'x' property on 'CSSTranslation': Must pass length or percentage to X of CSSTranslation
+PASS CSSTranslation.y can be updated to a length
+PASS CSSTranslation.y can be updated to a percent
+FAIL CSSTranslation.y can be updated to a CSSMathValue Failed to set the 'y' property on 'CSSTranslation': Must pass length or percent to Y of CSSTranslation
+PASS CSSTranslation.z can be updated to a length
+FAIL CSSTranslation.z can be updated to a percent Failed to set the 'z' property on 'CSSTranslation': Must pass length to Z of CSSTranslation
+FAIL CSSTranslation.z can be updated to a CSSMathValue Failed to set the 'z' property on 'CSSTranslation': Must pass length to Z of CSSTranslation
+PASS Modifying CSSTranslation.is2D can be updated to true or false
+Harness: the test ran to completion.
+
