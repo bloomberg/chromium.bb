@@ -15,12 +15,12 @@ function postMessageAndWaitResult(frame) {
   });
 }
 
-window.onmessage = function (e) {
+window.onmessage = function(e) {
   message = e.data;
   var id = message['id'];
-  var calback = callbacks[id];
+  var callback = callbacks[id];
   delete callbacks[id];
-  calback(message['result']);
+  callback(message.result);
 };
 
 promise_test(function(t) {
@@ -29,12 +29,11 @@ promise_test(function(t) {
     return with_iframe(url)
       .then(function(f) {
           frame = f;
+          add_result_callback(() => { frame.remove(); });
           return postMessageAndWaitResult(f);
         })
       .then(function(result) {
-          frame.remove();
           assert_equals(result, 'ok');
-          t.done();
         });
   }, 'Accessing navigator.serviceWorker in normal iframe should not throw.');
 
@@ -44,14 +43,13 @@ promise_test(function(t) {
     return with_sandboxed_iframe(url, 'allow-scripts')
       .then(function(f) {
           frame = f;
+          add_result_callback(() => { frame.remove(); });
           return postMessageAndWaitResult(f);
         })
       .then(function(result) {
-          frame.remove();
           assert_equals(
               result,
-              'SecurityError: Failed to read the \'serviceWorker\' property from \'Navigator\': Service worker is disabled because the context is sandboxed and lacks the \'allow-same-origin\' flag.');
-          t.done();
+              'navigator.serviceWorker failed: SecurityError');
         });
   }, 'Accessing navigator.serviceWorker in sandboxed iframe should throw.');
 
@@ -61,12 +59,11 @@ promise_test(function(t) {
     return with_sandboxed_iframe(url, 'allow-scripts allow-same-origin')
       .then(function(f) {
           frame = f;
+          add_result_callback(() => { frame.remove(); });
           return postMessageAndWaitResult(f);
         })
       .then(function(result) {
-          frame.remove();
           assert_equals(result, 'ok');
-          t.done();
         });
   },
   'Accessing navigator.serviceWorker in sandboxed iframe with ' +
@@ -77,32 +74,42 @@ promise_test(function(t) {
     var frame;
     return new Promise(function(resolve) {
           frame = document.createElement('iframe');
+          add_result_callback(() => { frame.remove(); });
           frame.sandbox = '';
           frame.src = url;
           frame.onload = resolve;
           document.body.appendChild(frame);
-          // Switching the sandbox attribute during loading the iframe.
+          // Switch the sandbox attribute while loading the iframe.
           frame.sandbox = 'allow-scripts allow-same-origin';
         })
       .then(function() {
           return postMessageAndWaitResult(frame)
         })
       .then(function(result) {
-          frame.remove();
-          // TODO(nhiroki): According to the HTML5 spec, dynamically changing
-          // the sandbox attribute does not have to immediately affect the
-          // restriction, so in this case, the frame would be expected to act as
-          // if it still doesn't have 'allow-scripts allow-same-origin' and to
-          // raise a security exception when 'serviceWorker' attribute is
-          // accessed.
+          // The HTML spec seems to say that changing the sandbox attribute
+          // after the iframe is inserted into its parent document does not
+          // affect the sandboxing. If that's true, the frame should still
+          // act as if it still doesn't have
+          // 'allow-scripts allow-same-origin' set and throw a SecurityError.
+          //
+          // 1) From Section 4.8.5 "The iframe element":
+          // "When an iframe element is inserted into a document that has a
+          // browsing context, the user agent must create a new browsing
+          // context..."
+          // 2) "Create a new browsing context" expands to Section 7.1
+          // "Browsing contexts", which includes creating a Document and
+          // "Implement the sandboxing for document."
+          // 3) "Implement the sandboxing" expands to Section 7.6 "Sandboxing",
+          // which includes "populate document's active sandboxing flag set".
+          //
+          // It's not clear whether navigation subsequently creates a new
+          // Document, but I'm assuming it wouldn't.
           // https://html.spec.whatwg.org/multipage/embedded-content.html#attr-iframe-sandbox
           assert_equals(
               result,
-              'InvalidStateError: Failed to get a ServiceWorkerRegistration: The document is in an invalid state.');
-          t.done();
+              'navigator.serviceWorker failed: SecurityError');
         });
-  }, 'Switching iframe sandbox attribute during loading the iframe should ' +
-     'not crash (http://crbug.com/532855)');
+  }, 'Switching iframe sandbox attribute while loading the iframe');
 
 </script>
 </body>
