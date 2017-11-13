@@ -151,14 +151,14 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
   int32_t best_param;
 
   force_wmtype(wm, wmtype);
-  best_error = av1_warp_error(
-      wm,
+  best_error = av1_warp_error(wm,
 #if CONFIG_HIGHBITDEPTH
-      use_hbd, bd,
+                              use_hbd, bd,
 #endif  // CONFIG_HIGHBITDEPTH
-      ref, r_width, r_height, r_stride, dst + border * d_stride + border,
-      border, border, d_width - 2 * border, d_height - 2 * border, d_stride, 0,
-      0, SCALE_SUBPEL_SHIFTS, SCALE_SUBPEL_SHIFTS, best_frame_error);
+                              ref, r_width, r_height, r_stride,
+                              dst + border * d_stride + border, border, border,
+                              d_width - 2 * border, d_height - 2 * border,
+                              d_stride, 0, 0, best_frame_error);
   best_error = AOMMIN(best_error, best_frame_error);
   step = 1 << (n_refinements - 1);
   for (i = 0; i < n_refinements; i++, step >>= 1) {
@@ -177,7 +177,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
           ref, r_width, r_height, r_stride, dst + border * d_stride + border,
           border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
-          0, 0, SCALE_SUBPEL_SHIFTS, SCALE_SUBPEL_SHIFTS, best_error);
+          0, 0, best_error);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -193,7 +193,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
           ref, r_width, r_height, r_stride, dst + border * d_stride + border,
           border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
-          0, 0, SCALE_SUBPEL_SHIFTS, SCALE_SUBPEL_SHIFTS, best_error);
+          0, 0, best_error);
       if (step_error < best_error) {
         best_error = step_error;
         best_param = *param;
@@ -212,8 +212,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
 #endif  // CONFIG_HIGHBITDEPTH
             ref, r_width, r_height, r_stride, dst + border * d_stride + border,
             border, border, d_width - 2 * border, d_height - 2 * border,
-            d_stride, 0, 0, SCALE_SUBPEL_SHIFTS, SCALE_SUBPEL_SHIFTS,
-            best_error);
+            d_stride, 0, 0, best_error);
         if (step_error < best_error) {
           best_error = step_error;
           best_param = *param;

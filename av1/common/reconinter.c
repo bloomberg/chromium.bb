@@ -103,7 +103,7 @@ static INLINE void av1_make_inter_predictor(
 #endif  // CONFIG_HIGHBITDEPTH
                    pre_buf->buf0, pre_buf->width, pre_buf->height,
                    pre_buf->stride, dst, p_col, p_row, w, h, dst_stride,
-                   pd->subsampling_x, pd->subsampling_y, xs, ys, conv_params);
+                   pd->subsampling_x, pd->subsampling_y, conv_params);
     return;
   }
 #if CONFIG_HIGHBITDEPTH
