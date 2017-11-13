@@ -54,12 +54,12 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
       const std::vector<GURL>& redirect_chain,
-      const base::TimeTicks& navigation_start) {};
+      const base::TimeTicks& navigation_start) {}
 
   // The RenderFrameHostImpl has failed a provisional load.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {};
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
   // The RenderFrameHostImpl has failed to load the document.
   virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
@@ -120,7 +120,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const std::string& extra_headers,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
-      bool force_new_process_for_new_contents,
       bool should_replace_current_entry,
       bool user_gesture,
       blink::WebTriggeringEventInfo triggering_event_info) {}
@@ -176,8 +175,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // TODO(carlosk): once PlzNavigate is the only navigation implementation
   // remove the URL parameter and rename this method to better suit its naming
   // conventions.
-  virtual void LogResourceRequestTime(
-    base::TimeTicks timestamp, const GURL& url) {};
+  virtual void LogResourceRequestTime(base::TimeTicks timestamp,
+                                      const GURL& url) {}
 
   // Called to record the time it took to execute the before unload hook for the
   // current navigation.

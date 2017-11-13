@@ -71,7 +71,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const std::string& extra_headers,
       const Referrer& referrer,
       WindowOpenDisposition disposition,
-      bool force_new_process_for_new_contents,
       bool should_replace_current_entry,
       bool user_gesture,
       blink::WebTriggeringEventInfo triggering_event_info) override;

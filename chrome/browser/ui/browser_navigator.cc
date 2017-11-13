@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/browser_navigator.h"
 
 #include <algorithm>
+#include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -32,6 +34,8 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
@@ -352,12 +356,29 @@ class ScopedTargetContentsOwner {
 
 content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
                                            const GURL& url) {
+  // Always create the new WebContents in a new SiteInstance (and therefore a
+  // new BrowsingInstance), *unless* there's a |params.opener|.
+  //
+  // Note that the SiteInstance below is only for the "initial" placement of the
+  // new WebContents (i.e. if subsequent navigation [including the initial
+  // navigation] triggers a cross-process transfer, then the opener and new
+  // contents can end up in separate processes).  This is fine, because even if
+  // subsequent navigation is cross-process (i.e. cross-SiteInstance), then it
+  // will stay in the same BrowsingInstance (creating frame proxies as needed)
+  // preserving the requested opener relationship along the way.
+  scoped_refptr<content::SiteInstance> initial_site_instance_for_new_contents =
+      params.opener
+          ? params.opener->GetSiteInstance()
+          : tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url);
+
   WebContents::CreateParams create_params(
-      params.browser->profile(),
-      params.source_site_instance && !params.force_new_process_for_new_contents
-          ? params.source_site_instance
-          : tab_util::GetSiteInstanceForNewTab(params.browser->profile(), url));
+      params.browser->profile(), initial_site_instance_for_new_contents);
   create_params.main_frame_name = params.frame_name;
+  if (params.opener) {
+    create_params.opener_render_frame_id = params.opener->GetRoutingID();
+    create_params.opener_render_process_id =
+        params.opener->GetProcess()->GetID();
+  }
   if (params.source_contents) {
     create_params.initial_size =
         params.source_contents->GetContainerBounds().size();
@@ -471,6 +492,7 @@ void Navigate(NavigateParams* params) {
   if (GetSourceProfile(params) != params->browser->profile()) {
     // A tab is being opened from a link from a different profile, we must reset
     // source information that may cause state to be shared.
+    params->opener = nullptr;
     params->source_contents = nullptr;
     params->source_site_instance = nullptr;
     params->referrer = content::Referrer();
