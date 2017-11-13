@@ -404,6 +404,10 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "upper_bound_http_rtt_transport_rtt_multiplier",
               -1)),
+      http_rtt_transport_rtt_min_count_(
+          GetValueForVariationParam(params_,
+                                    "http_rtt_transport_rtt_min_count",
+                                    5)),
       increase_in_transport_rtt_logging_interval_(
           base::TimeDelta::FromMillisecondsD(
               GetDoubleValueForVariationParamWithDefaultValue(

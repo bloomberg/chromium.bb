@@ -227,6 +227,10 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // changed to |network_quality|.
   void NotifyObserversOfEffectiveConnectionType(EffectiveConnectionType type);
 
+  void SetTransportRTTAtastECTSampleCount(size_t count) {
+    transport_rtt_observation_count_last_ect_computation_ = count;
+  }
+
   const NetworkQualityEstimatorParams* params() const;
 
   using NetworkQualityEstimator::SetTickClockForTesting;
@@ -293,6 +297,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // If true, notifications are not sent to any of the observers.
   const bool suppress_notifications_for_testing_;
+
+  base::Optional<size_t> transport_rtt_observation_count_last_ect_computation_;
 
   // Net log provided to network quality estimator.
   std::unique_ptr<net::BoundTestNetLog> net_log_;
