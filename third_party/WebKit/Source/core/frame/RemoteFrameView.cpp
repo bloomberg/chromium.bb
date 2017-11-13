@@ -4,7 +4,6 @@
 
 #include "core/frame/RemoteFrameView.h"
 
-#include "core/dom/ElementVisibilityObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -39,10 +38,6 @@ void RemoteFrameView::AttachToLayout() {
   is_attached_ = true;
   if (ParentFrameView()->IsVisible())
     SetParentVisible(true);
-
-  SetupRenderThrottling();
-  subtree_throttled_ = ParentFrameView()->CanThrottleRendering();
-
   FrameRectsChanged();
 }
 
@@ -172,54 +167,8 @@ IntRect RemoteFrameView::ConvertFromRootFrame(
   return rect_in_root_frame;
 }
 
-void RemoteFrameView::SetupRenderThrottling() {
-  if (visibility_observer_)
-    return;
-
-  Element* target_element = GetFrame().DeprecatedLocalOwner();
-  if (!target_element)
-    return;
-
-  visibility_observer_ = new ElementVisibilityObserver(
-      target_element, WTF::Bind(
-                          [](RemoteFrameView* remote_view, bool is_visible) {
-                            remote_view->UpdateRenderThrottlingStatus(
-                                !is_visible, remote_view->subtree_throttled_);
-                          },
-                          WrapWeakPersistent(this)));
-  visibility_observer_->Start();
-}
-
-void RemoteFrameView::UpdateRenderThrottlingStatus(bool hidden,
-                                                   bool subtree_throttled) {
-  TRACE_EVENT0("blink", "RemoteFrameView::UpdateRenderThrottlingStatus");
-  bool was_throttled = CanThrottleRendering();
-
-  // Note that we disallow throttling of 0x0 and display:none frames because
-  // some sites use them to drive UI logic.
-  HTMLFrameOwnerElement* owner_element = remote_frame_->DeprecatedLocalOwner();
-  hidden_for_throttling_ = hidden && !FrameRect().IsEmpty() &&
-                           (owner_element && owner_element->GetLayoutObject());
-  subtree_throttled_ = subtree_throttled;
-
-  bool is_throttled = CanThrottleRendering();
-  if (was_throttled != is_throttled) {
-    remote_frame_->Client()->UpdateRenderThrottlingStatus(is_throttled,
-                                                          subtree_throttled_);
-  }
-}
-
-bool RemoteFrameView::CanThrottleRendering() const {
-  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
-    return false;
-  if (subtree_throttled_)
-    return true;
-  return hidden_for_throttling_;
-}
-
 void RemoteFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_frame_);
-  visitor->Trace(visibility_observer_);
 }
 
 }  // namespace blink

@@ -46,10 +46,6 @@ class WebRemoteFrameClient {
   // Set or clear the inert property on the remote frame.
   virtual void SetIsInert(bool) {}
 
-  // Toggles render throttling for the remote frame.
-  virtual void UpdateRenderThrottlingStatus(bool is_throttled,
-                                            bool subtree_throttled) {}
-
   // This frame updated its opener to another frame.
   virtual void DidChangeOpener(WebFrame* opener) {}
 

@@ -106,8 +106,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   bool GetCompositionCharacterBounds(WebVector<WebRect>& bounds) override;
   void SetRemoteViewportIntersection(const WebRect&) override;
   void SetIsInert(bool) override;
-  void UpdateRenderThrottlingStatus(bool is_throttled,
-                                    bool subtree_throttled) override;
 
   // WebFrameWidget implementation.
   WebLocalFrameImpl* LocalRoot() const override { return local_root_; }
