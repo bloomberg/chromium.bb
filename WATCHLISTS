@@ -855,9 +855,6 @@
     'filesapp_ui': {
       'filepath': 'ui/file_manager'
     },
-    'ftp': {
-      'filepath': 'ftp',
-    },
     'fuchsia': {
       'filepath': 'fuchsia',
     },
@@ -2013,7 +2010,6 @@
                  'oka+watch@chromium.org',
                  'yamaguchi+watch@chromium.org'],
     'filesapp_ui': ['mtomasz+watch@chromium.org'],
-    'ftp': ['phajdan.jr@chromium.org'],
     'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gamepad': ['cco3+watch@chromium.org',
