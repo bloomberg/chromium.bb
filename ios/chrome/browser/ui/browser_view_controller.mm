@@ -4340,6 +4340,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
   if (self.isOffTheRecord != command.incognito) {
+    // Must take a snapshot of the tab before we switch the incognito mode
+    // because the currentTab will change after the switch.
+    Tab* currentTab = [_model currentTab];
+    if (currentTab) {
+      [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
+    }
     // Not for this browser state, send it on its way.
     [self.dispatcher switchModesAndOpenNewTab:command];
     return;
@@ -4376,8 +4382,15 @@ bubblePresenterForFeature:(const base::Feature&)feature
   DCHECK(self.visible || self.dismissingModal ||
          (TabSwitcherPresentsBVCEnabled() &&
           self.parentViewController.isBeingPresented));
+
+  // In most cases, we want to take a snapshot of the current tab before opening
+  // a new tab. However, if the current tab is not fully visible (did not finish
+  // |-viewDidAppear:|, then we must not take an empty snapshot, replacing an
+  // existing snapshot for the tab. This can happen when a new regular tab is
+  // opened from an incognito tab. A different BVC is displayed, which may not
+  // have enough time to finish appearing before a snapshot is requested.
   Tab* currentTab = [_model currentTab];
-  if (currentTab) {
+  if (currentTab && self.viewVisible) {
     [currentTab updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
   }
   [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
