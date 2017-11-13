@@ -72,7 +72,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
     virtual ~Delegate() {}
   };
 
-  using CanMakePaymentCallback = base::OnceCallback<void(bool)>;
+  using StatusCallback = base::OnceCallback<void(bool)>;
 
   PaymentRequestState(content::BrowserContext* context,
                       const GURL& top_level_origin,
@@ -95,12 +95,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods asynchronously.
-  void CanMakePayment(CanMakePaymentCallback callback);
+  void CanMakePayment(StatusCallback callback);
 
-  // Returns true if the payment methods that the merchant website have
-  // requested are supported. For example, may return true for "basic-card", but
-  // false for "https://bobpay.com".
-  bool AreRequestedMethodsSupported() const;
+  // Checks if the payment methods that the merchant website have
+  // requested are supported asynchronously. For example, may return true for
+  // "basic-card", but false for "https://bobpay.com".
+  void AreRequestedMethodsSupported(StatusCallback callback);
 
   // Returns authenticated user email, or empty string.
   std::string GetAuthenticatedEmail() const;
@@ -235,7 +235,11 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
   // result.
-  void CheckCanMakePayment(CanMakePaymentCallback callback);
+  void CheckCanMakePayment(StatusCallback callback);
+
+  // Checks if the payment methods that the merchant website have
+  // requested are supported and call the |callback| to return the result.
+  void CheckRequestedMethodsSupported(StatusCallback callback);
 
   void OnAddressNormalized(bool success,
                            const autofill::AutofillProfile& normalized_profile);
@@ -255,7 +259,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::PersonalDataManager* personal_data_manager_;
   JourneyLogger* journey_logger_;
 
-  CanMakePaymentCallback can_make_payment_callback_;
+  StatusCallback can_make_payment_callback_;
+  StatusCallback are_requested_methods_supported_callback_;
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_shipping_option_error_profile_;

@@ -107,9 +107,12 @@ class PaymentRequest : public mojom::PaymentRequest,
   // the first one being the most precise.
   void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
 
-  // The PaymentRequestState::CanMakePaymentCallback. Checks for query quota and
-  // may send QUERY_QUOTA_EXCEEDED.
+  // The callback for PaymentRequestState::CanMakePayment. Checks for query
+  // quota and may send QUERY_QUOTA_EXCEEDED.
   void CanMakePaymentCallback(bool can_make_payment);
+
+  // The callback for PaymentRequestState::AreRequestedMethodsSupported.
+  void AreRequestedMethodsSupportedCallback(bool methods_supported);
 
   // Sends either CAN_MAKE_PAYMENT or CANNOT_MAKE_PAYMENT to the renderer,
   // depending on |can_make_payment| value. Never sends QUERY_QUOTA_EXCEEDED.
