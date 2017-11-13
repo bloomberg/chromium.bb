@@ -24,10 +24,8 @@ namespace blink {
 unsigned SegmentedString::length() const {
   unsigned length = current_string_.length();
   if (IsComposite()) {
-    Deque<SegmentedSubstring>::const_iterator it = substrings_.begin();
-    Deque<SegmentedSubstring>::const_iterator e = substrings_.end();
-    for (; it != e; ++it)
-      length += it->length();
+    for (auto& substring : substrings_)
+      length += substring.length();
   }
   return length;
 }
@@ -35,15 +33,12 @@ unsigned SegmentedString::length() const {
 void SegmentedString::SetExcludeLineNumbers() {
   current_string_.SetExcludeLineNumbers();
   if (IsComposite()) {
-    Deque<SegmentedSubstring>::iterator it = substrings_.begin();
-    Deque<SegmentedSubstring>::iterator e = substrings_.end();
-    for (; it != e; ++it)
-      it->SetExcludeLineNumbers();
+    for (auto& substring : substrings_)
+      substring.SetExcludeLineNumbers();
   }
 }
 
 void SegmentedString::Clear() {
-  current_char_ = 0;
   current_string_.Clear();
   number_of_characters_consumed_prior_to_current_string_ = 0;
   number_of_characters_consumed_prior_to_current_line_ = 0;
@@ -51,9 +46,6 @@ void SegmentedString::Clear() {
   substrings_.clear();
   closed_ = false;
   empty_ = true;
-  fast_path_flags_ = kNoFastPath;
-  advance_func_ = &SegmentedString::AdvanceEmpty;
-  advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
 }
 
 void SegmentedString::Append(const SegmentedSubstring& s) {
@@ -65,7 +57,6 @@ void SegmentedString::Append(const SegmentedSubstring& s) {
     number_of_characters_consumed_prior_to_current_string_ +=
         current_string_.NumberOfCharactersConsumed();
     current_string_ = s;
-    UpdateAdvanceFunctionPointers();
   } else {
     substrings_.push_back(s);
   }
@@ -79,10 +70,8 @@ void SegmentedString::Push(UChar c) {
   // however it will fail if the SegmentedSubstring is empty, or
   // when we prepended some text while consuming a SegmentedSubstring by
   // document.write().
-  if (current_string_.PushIfPossible(c)) {
-    current_char_ = c;
+  if (current_string_.PushIfPossible(c))
     return;
-  }
 
   Prepend(SegmentedString(String(&c, 1)), PrependType::kUnconsume);
 }
@@ -101,12 +90,10 @@ void SegmentedString::Prepend(const SegmentedSubstring& s, PrependType type) {
     number_of_characters_consumed_prior_to_current_string_ -= s.length();
   if (!current_string_.length()) {
     current_string_ = s;
-    UpdateAdvanceFunctionPointers();
   } else {
     // Shift our m_currentString into our list.
     substrings_.push_front(current_string_);
     current_string_ = s;
-    UpdateAdvanceFunctionPointers();
   }
   empty_ = false;
 }
@@ -122,26 +109,19 @@ void SegmentedString::Append(const SegmentedString& s) {
 
   Append(s.current_string_);
   if (s.IsComposite()) {
-    Deque<SegmentedSubstring>::const_iterator it = s.substrings_.begin();
-    Deque<SegmentedSubstring>::const_iterator e = s.substrings_.end();
-    for (; it != e; ++it)
-      Append(*it);
+    for (auto& substring : s.substrings_)
+      Append(substring);
   }
-  current_char_ =
-      current_string_.length() ? current_string_.GetCurrentChar() : 0;
 }
 
 void SegmentedString::Prepend(const SegmentedString& s, PrependType type) {
   if (s.IsComposite()) {
-    Deque<SegmentedSubstring>::const_reverse_iterator it =
-        s.substrings_.rbegin();
-    Deque<SegmentedSubstring>::const_reverse_iterator e = s.substrings_.rend();
+    auto it = s.substrings_.rbegin();
+    auto e = s.substrings_.rend();
     for (; it != e; ++it)
       Prepend(*it, type);
   }
   Prepend(s.current_string_, type);
-  current_char_ =
-      current_string_.length() ? current_string_.GetCurrentChar() : 0;
 }
 
 void SegmentedString::AdvanceSubstring() {
@@ -154,13 +134,9 @@ void SegmentedString::AdvanceSubstring() {
     // string, not as part of "prior to current string."
     number_of_characters_consumed_prior_to_current_string_ -=
         current_string_.NumberOfCharactersConsumed();
-    UpdateAdvanceFunctionPointers();
   } else {
     current_string_.Clear();
     empty_ = true;
-    fast_path_flags_ = kNoFastPath;
-    advance_func_ = &SegmentedString::AdvanceEmpty;
-    advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
   }
 }
 
@@ -168,10 +144,8 @@ String SegmentedString::ToString() const {
   StringBuilder result;
   current_string_.AppendTo(result);
   if (IsComposite()) {
-    Deque<SegmentedSubstring>::const_iterator it = substrings_.begin();
-    Deque<SegmentedSubstring>::const_iterator e = substrings_.end();
-    for (; it != e; ++it)
-      it->AppendTo(result);
+    for (auto& substring : substrings_)
+      substring.AppendTo(result);
   }
   return result.ToString();
 }
@@ -182,94 +156,6 @@ void SegmentedString::Advance(unsigned count, UChar* consumed_characters) {
     consumed_characters[i] = CurrentChar();
     Advance();
   }
-}
-
-void SegmentedString::Advance8() {
-  DecrementAndCheckLength();
-  current_char_ = current_string_.IncrementAndGetCurrentChar8();
-}
-
-void SegmentedString::Advance16() {
-  DecrementAndCheckLength();
-  current_char_ = current_string_.IncrementAndGetCurrentChar16();
-}
-
-void SegmentedString::AdvanceAndUpdateLineNumber8() {
-  DCHECK_EQ(current_string_.GetCurrentChar(), current_char_);
-  if (current_char_ == '\n') {
-    ++current_line_;
-    number_of_characters_consumed_prior_to_current_line_ =
-        NumberOfCharactersConsumed() + 1;
-  }
-  DecrementAndCheckLength();
-  current_char_ = current_string_.IncrementAndGetCurrentChar8();
-}
-
-void SegmentedString::AdvanceAndUpdateLineNumber16() {
-  DCHECK_EQ(current_string_.GetCurrentChar(), current_char_);
-  if (current_char_ == '\n') {
-    ++current_line_;
-    number_of_characters_consumed_prior_to_current_line_ =
-        NumberOfCharactersConsumed() + 1;
-  }
-  DecrementAndCheckLength();
-  current_char_ = current_string_.IncrementAndGetCurrentChar16();
-}
-
-void SegmentedString::AdvanceSlowCase() {
-  if (current_string_.length()) {
-    current_string_.DecrementLength();
-    if (!current_string_.length())
-      AdvanceSubstring();
-  } else if (!IsComposite()) {
-    current_string_.Clear();
-    empty_ = true;
-    fast_path_flags_ = kNoFastPath;
-    advance_func_ = &SegmentedString::AdvanceEmpty;
-    advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
-  }
-  current_char_ =
-      current_string_.length() ? current_string_.GetCurrentChar() : 0;
-}
-
-void SegmentedString::AdvanceAndUpdateLineNumberSlowCase() {
-  if (current_string_.length()) {
-    if (current_string_.GetCurrentChar() == '\n' &&
-        current_string_.DoNotExcludeLineNumbers()) {
-      ++current_line_;
-      // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet;
-      // it does with length() decrement below.
-      number_of_characters_consumed_prior_to_current_line_ =
-          NumberOfCharactersConsumed() + 1;
-    }
-    current_string_.DecrementLength();
-    if (!current_string_.length())
-      AdvanceSubstring();
-    else
-      current_string_.IncrementAndGetCurrentChar();  // Only need the ++
-  } else if (!IsComposite()) {
-    current_string_.Clear();
-    empty_ = true;
-    fast_path_flags_ = kNoFastPath;
-    advance_func_ = &SegmentedString::AdvanceEmpty;
-    advance_and_update_line_number_func_ = &SegmentedString::AdvanceEmpty;
-  }
-
-  current_char_ =
-      current_string_.length() ? current_string_.GetCurrentChar() : 0;
-}
-
-void SegmentedString::AdvanceEmpty() {
-  DCHECK(!current_string_.length());
-  DCHECK(!IsComposite());
-  current_char_ = 0;
-}
-
-void SegmentedString::UpdateSlowCaseFunctionPointers() {
-  fast_path_flags_ = kNoFastPath;
-  advance_func_ = &SegmentedString::AdvanceSlowCase;
-  advance_and_update_line_number_func_ =
-      &SegmentedString::AdvanceAndUpdateLineNumberSlowCase;
 }
 
 OrdinalNumber SegmentedString::CurrentLine() const {
