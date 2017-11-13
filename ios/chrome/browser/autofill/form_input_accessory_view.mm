@@ -24,9 +24,6 @@ namespace {
 // The alpha value of the background color.
 const CGFloat kBackgroundColorAlpha = 1.0;
 
-// Horizontal margin around the custom view.
-const CGFloat kCustomViewHorizontalMargin = 2;
-
 // The width of the separators of the previous and next buttons.
 const CGFloat kNavigationButtonSeparatorWidth = 1;
 
@@ -36,17 +33,13 @@ const CGFloat kNavigationAreaSeparatorShadowWidth = 2;
 // The width of the navigation area / custom view separator asset.
 const CGFloat kNavigationAreaSeparatorWidth = 1;
 
-// Returns YES if the keyboard close button should be shown on the accessory.
-BOOL ShouldShowCloseButton() {
-  return !IsIPadIdiom();
-}
-
 }  // namespace
 
 @interface FormInputAccessoryView ()
 
 // Returns a view that shows navigation buttons.
-- (UIView*)viewForNavigationButtons;
+- (UIView*)viewForNavigationButtonsUsingDelegate:
+    (id<FormInputAccessoryViewDelegate>)delegate;
 
 // Adds a navigation button for Autofill in |view| that has |normalImage| for
 // state UIControlStateNormal, a |pressedImage| for states
@@ -71,36 +64,19 @@ BOOL ShouldShowCloseButton() {
 
 @end
 
-@implementation FormInputAccessoryView {
-  // Delegate of this view.
-  __weak id<FormInputAccessoryViewDelegate> _delegate;
+@implementation FormInputAccessoryView
+
+- (void)setUpWithCustomView:(UIView*)customView {
+  [self addSubview:customView];
+  customView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(self, customView);
+
+  [[self class] addBackgroundImageInView:self
+                           withImageName:@"autofill_keyboard_background"];
 }
 
-- (instancetype)initWithDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
-  DCHECK(delegate);
-  self = [super initWithFrame:CGRectZero];
-  if (self) {
-    _delegate = delegate;
-  }
-  return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView {
-  self = [super initWithFrame:frame];
-  if (self) {
-    customView.frame =
-        CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
-    [self addSubview:customView];
-
-    [[self class] addBackgroundImageInView:self
-                             withImageName:@"autofill_keyboard_background"];
-  }
-  return self;
-}
-
-- (void)initializeViewWithCustomView:(UIView*)customView
-                           leftFrame:(CGRect)leftFrame
-                          rightFrame:(CGRect)rightFrame {
+- (void)setUpWithNavigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate
+                         customView:(UIView*)customView {
   self.translatesAutoresizingMaskIntoConstraints = NO;
   UIView* customViewContainer = [[UIView alloc] init];
   customViewContainer.translatesAutoresizingMaskIntoConstraints = NO;
@@ -113,56 +89,10 @@ BOOL ShouldShowCloseButton() {
   customView.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(customViewContainer, customView);
 
-  UIView* navViewContent = [self viewForNavigationButtons];
+  UIView* navViewContent =
+      [self viewForNavigationButtonsUsingDelegate:delegate];
   [navView addSubview:navViewContent];
 
-  bool splitKeyboard = CGRectGetWidth(rightFrame) != 0;
-  if (splitKeyboard) {
-    NSString* navViewBackgroundImageName = nil;
-    NSString* customViewContainerBackgroundImageName = nil;
-    BOOL isRTL = base::i18n::IsRTL();
-    if (isRTL) {
-      navView.frame = leftFrame;
-      navViewBackgroundImageName = @"autofill_keyboard_background_left";
-      customViewContainer.frame = rightFrame;
-      customViewContainerBackgroundImageName =
-          @"autofill_keyboard_background_right";
-    } else {
-      customViewContainer.frame = leftFrame;
-      customViewContainerBackgroundImageName =
-          @"autofill_keyboard_background_left";
-      navView.frame = rightFrame;
-      navViewBackgroundImageName = @"autofill_keyboard_background_right";
-    }
-
-    [[self class]
-        addBackgroundImageInView:customViewContainer
-                   withImageName:customViewContainerBackgroundImageName];
-    [[self class] addBackgroundImageInView:navView
-                             withImageName:navViewBackgroundImageName];
-
-    [NSLayoutConstraint activateConstraints:@[
-      [navViewContent.topAnchor constraintEqualToAnchor:navView.topAnchor],
-      [navViewContent.bottomAnchor
-          constraintEqualToAnchor:navView.bottomAnchor],
-      [navViewContent.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:navView.leadingAnchor],
-      [navViewContent.trailingAnchor
-          constraintEqualToAnchor:navView.trailingAnchor],
-
-      [customView.topAnchor
-          constraintEqualToAnchor:customViewContainer.topAnchor],
-      [customView.bottomAnchor
-          constraintEqualToAnchor:customViewContainer.bottomAnchor],
-      [customView.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:customViewContainer
-                                                   .leadingAnchor],
-      [customView.trailingAnchor
-          constraintEqualToAnchor:customViewContainer.trailingAnchor
-                         constant:kCustomViewHorizontalMargin],
-    ]];
-
-  } else {
     AddSameConstraints(navView, navViewContent);
 
     [[self class] addBackgroundImageInView:self
@@ -184,7 +114,6 @@ BOOL ShouldShowCloseButton() {
       [navView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
       [navView.bottomAnchor constraintEqualToAnchor:layoutGuide.bottomAnchor],
     ]];
-  }
 }
 
 #pragma mark -
@@ -202,7 +131,8 @@ UIImage* ButtonImage(NSString* name) {
   return StretchableImageFromUIImage(rawImage, 1, 0);
 }
 
-- (UIView*)viewForNavigationButtons {
+- (UIView*)viewForNavigationButtonsUsingDelegate:
+    (id<FormInputAccessoryViewDelegate>)delegate {
   UIView* navView = [[UIView alloc] init];
   navView.translatesAutoresizingMaskIntoConstraints = NO;
 
@@ -214,7 +144,7 @@ UIImage* ButtonImage(NSString* name) {
       addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_prev")
                              pressedImage:ButtonImage(@"autofill_prev_pressed")
                             disabledImage:ButtonImage(@"autofill_prev_inactive")
-                                   target:_delegate
+                                   target:delegate
                                    action:@selector
                                    (selectPreviousElementWithButtonPress)
                                   enabled:NO
@@ -232,7 +162,7 @@ UIImage* ButtonImage(NSString* name) {
       addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_next")
                              pressedImage:ButtonImage(@"autofill_next_pressed")
                             disabledImage:ButtonImage(@"autofill_next_inactive")
-                                   target:_delegate
+                                   target:delegate
                                    action:@selector
                                    (selectNextElementWithButtonPress)
                                   enabled:NO
@@ -240,70 +170,56 @@ UIImage* ButtonImage(NSString* name) {
   [nextButton setAccessibilityLabel:l10n_util::GetNSString(
                                         IDS_IOS_AUTOFILL_ACCNAME_NEXT_FIELD)];
 
-  [_delegate fetchPreviousAndNextElementsPresenceWithCompletionHandler:
-                 ^(BOOL hasPreviousElement, BOOL hasNextElement) {
-                   previousButton.enabled = hasPreviousElement;
-                   nextButton.enabled = hasNextElement;
-                 }];
+  [delegate fetchPreviousAndNextElementsPresenceWithCompletionHandler:^(
+                BOOL hasPreviousElement, BOOL hasNextElement) {
+    previousButton.enabled = hasPreviousElement;
+    nextButton.enabled = hasNextElement;
+  }];
 
-  NSString* horizontalConstraint =
-      @"H:|[separator1(==areaSeparatorWidth)][previousButton]["
-      @"separator2(==buttonSeparatorWidth)][nextButton]";
+  // Add internal separator.
+  UIView* internalSeparator2 =
+      [[self class] createImageViewWithImageName:@"autofill_middle_sep"
+                                          inView:navView];
 
-  NSMutableArray<NSString*>* constraints =
-      [NSMutableArray arrayWithObjects:@"V:|-(topPadding)-[separator1]|",
-                                       @"V:|-(topPadding)-[previousButton]|",
-                                       @"V:|-(topPadding)-[previousButton]|",
-                                       @"V:|-(topPadding)-[separator2]|",
-                                       @"V:|-(topPadding)-[nextButton]|", nil];
+  UIButton* closeButton = [self
+      addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_close")
+                             pressedImage:ButtonImage(@"autofill_close_pressed")
+                            disabledImage:nil
+                                   target:delegate
+                                   action:@selector
+                                   (closeKeyboardWithButtonPress)
+                                  enabled:YES
+                                   inView:navView];
+  [closeButton
+      setAccessibilityLabel:l10n_util::GetNSString(
+                                IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)];
 
-  NSMutableDictionary* views = [NSMutableDictionary
-      dictionaryWithObjectsAndKeys:separator, @"separator1", previousButton,
-                                   @"previousButton", internalSeparator,
-                                   @"separator2", nextButton, @"nextButton",
-                                   nil];
+  ApplyVisualConstraintsWithMetrics(
+      @[
+        (@"H:|[separator1(==areaSeparatorWidth)][previousButton][separator2(=="
+         @"buttonSeparatorWidth)][nextButton][internalSeparator2("
+         @"buttonSeparatorWidth)][closeButton]|"),
+        @"V:|-(topPadding)-[separator1]|",
+        @"V:|-(topPadding)-[previousButton]|",
+        @"V:|-(topPadding)-[previousButton]|",
+        @"V:|-(topPadding)-[separator2]|", @"V:|-(topPadding)-[nextButton]|",
+        @"V:|-(topPadding)-[internalSeparator2]|",
+        @"V:|-(topPadding)-[closeButton]|"
+      ],
+      @{
+        @"separator1" : separator,
+        @"previousButton" : previousButton,
+        @"separator2" : internalSeparator,
+        @"nextButton" : nextButton,
+        @"internalSeparator2" : internalSeparator2,
+        @"closeButton" : closeButton
+      },
+      @{
 
-  if (ShouldShowCloseButton()) {
-    // Add internal separator.
-    UIView* internalSeparator2 =
-        [[self class] createImageViewWithImageName:@"autofill_middle_sep"
-                                            inView:navView];
-
-    UIButton* closeButton =
-        [self addKeyboardNavButtonWithNormalImage:ButtonImage(@"autofill_close")
-                                     pressedImage:ButtonImage(
-                                                      @"autofill_close_pressed")
-                                    disabledImage:nil
-                                           target:_delegate
-                                           action:@selector
-                                           (closeKeyboardWithButtonPress)
-                                          enabled:YES
-                                           inView:navView];
-    [closeButton
-        setAccessibilityLabel:l10n_util::GetNSString(
-                                  IDS_IOS_AUTOFILL_ACCNAME_HIDE_KEYBOARD)];
-
-    [views setObject:internalSeparator2 forKey:@"internalSeparator2"];
-    [views setObject:closeButton forKey:@"closeButton"];
-
-    [constraints addObject:@"V:|-(topPadding)-[closeButton]|"];
-    [constraints addObject:@"V:|-(topPadding)-[internalSeparator2]|"];
-
-    horizontalConstraint =
-        [horizontalConstraint stringByAppendingString:
-                                  @"[internalSeparator2(buttonSeparatorWidth)]["
-                                  @"closeButton]"];
-  }
-
-  [constraints addObject:[horizontalConstraint stringByAppendingString:@"|"]];
-
-  NSDictionary* metrics = @{
-
-    @"areaSeparatorWidth" : @(kNavigationAreaSeparatorWidth),
-    @"buttonSeparatorWidth" : @(kNavigationButtonSeparatorWidth),
-    @"topPadding" : @(1)
-  };
-  ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+        @"areaSeparatorWidth" : @(kNavigationAreaSeparatorWidth),
+        @"buttonSeparatorWidth" : @(kNavigationButtonSeparatorWidth),
+        @"topPadding" : @(1)
+      });
 
   return navView;
 }

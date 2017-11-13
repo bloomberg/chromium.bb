@@ -121,43 +121,6 @@ NSArray* FindDescendantToolbarItemsForActionName(
   return toolbarItems;
 }
 
-// Computes the frame of each part of the accessory view of the keyboard. It is
-// assumed that the keyboard has either two parts (when it is split) or one part
-// (when it is merged).
-//
-// If there are two parts, the frame of the left part is returned in
-// |leftFrame| and the frame of the right part is returned in |rightFrame|.
-// If there is only one part, the frame is returned in |leftFrame| and
-// |rightFrame| has size zero.
-//
-// Heuristics are used to compute this information. It returns false if the
-// number of |inputAccessoryView.subviews| is not 2.
-bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
-                                  CGRect* leftFrame,
-                                  CGRect* rightFrame) {
-  // It is observed (on iOS 6) there are always two subviews in the original
-  // input accessory view. When the keyboard is split, each subview represents
-  // one part of the accesssary view of the keyboard. When the keyboard is
-  // merged, one subview has the same frame as that of the whole accessory view
-  // and the other has zero size with the screen width as origin.x.
-  // The computation here is based on this observation.
-  NSArray* subviews = inputAccessoryView.subviews;
-  if (subviews.count != 2)
-    return false;
-
-  CGRect first_frame = static_cast<UIView*>(subviews[0]).frame;
-  CGRect second_frame = static_cast<UIView*>(subviews[1]).frame;
-  if (CGRectGetMinX(first_frame) < CGRectGetMinX(second_frame) ||
-      CGRectGetWidth(second_frame) == 0) {
-    *leftFrame = first_frame;
-    *rightFrame = second_frame;
-  } else {
-    *rightFrame = first_frame;
-    *leftFrame = second_frame;
-  }
-  return true;
-}
-
 }  // namespace
 
 @interface FormInputAccessoryViewController ()
@@ -321,8 +284,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 - (void)showCustomInputAccessoryView:(UIView*)view {
   DCHECK(view);
   if (IsIPadIdiom()) {
-    // On iPads running iOS 9 or later, there's no inputAccessoryView available
-    // so we attach the custom view directly to the keyboard view instead.
+    // On iPad, there's no inputAccessoryView available, so we attach the custom
+    // view directly to the keyboard view instead.
     [_customAccessoryView removeFromSuperview];
 
     // If the keyboard isn't visible don't show the custom view.
@@ -346,30 +309,26 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     }
     _suggestionsHaveBeenShown = YES;
 
+    _customAccessoryView = [[FormInputAccessoryView alloc] init];
+    [_customAccessoryView setUpWithCustomView:view];
+
     CGFloat height = autofill::kInputAccessoryHeight;
     CGRect contentFrame = self.webViewProxy.frame;
-    CGRect frame = CGRectMake(contentFrame.origin.x, -height,
-                              contentFrame.size.width, height);
-    _customAccessoryView =
-        [[FormInputAccessoryView alloc] initWithFrame:frame customView:view];
+    _customAccessoryView.frame = CGRectMake(contentFrame.origin.x, -height,
+                                            contentFrame.size.width, height);
+
     UIView* keyboardView = [self getKeyboardView];
     DCHECK(keyboardView);
     [keyboardView addSubview:_customAccessoryView];
   } else {
-    // On all other versions, the custom view replaces the default UI of the
+    // On iPhone, the custom view replaces the default UI of the
     // inputAccessoryView.
     [self restoreDefaultInputAccessoryView];
-    CGRect leftFrame;
-    CGRect rightFrame;
     UIView* inputAccessoryView = [self.webViewProxy keyboardAccessory];
-    if (ComputeFramesOfKeyboardParts(inputAccessoryView, &leftFrame,
-                                     &rightFrame)) {
+    if (inputAccessoryView) {
       [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
-      _customAccessoryView =
-          [[FormInputAccessoryView alloc] initWithDelegate:self];
-      [_customAccessoryView initializeViewWithCustomView:view
-                                               leftFrame:leftFrame
-                                              rightFrame:rightFrame];
+      _customAccessoryView = [[FormInputAccessoryView alloc] init];
+      [_customAccessoryView setUpWithNavigationDelegate:self customView:view];
       [inputAccessoryView addSubview:_customAccessoryView];
       AddSameConstraints(_customAccessoryView, inputAccessoryView);
     }
