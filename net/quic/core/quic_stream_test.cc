@@ -448,6 +448,20 @@ TEST_F(QuicStreamTest, FinalByteOffsetFromRst) {
   EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
 }
 
+TEST_F(QuicStreamTest, InvalidFinalByteOffsetFromRst) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_FALSE(stream_->HasFinalReceivedByteOffset());
+  QuicRstStreamFrame rst_frame(stream_->id(), QUIC_STREAM_CANCELLED,
+                               0xFFFFFFFFFFFF);
+  // Stream should not accept the frame, and the connection should be closed.
+  EXPECT_CALL(*connection_,
+              CloseConnection(QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA, _, _));
+  stream_->OnStreamReset(rst_frame);
+  EXPECT_TRUE(stream_->HasFinalReceivedByteOffset());
+  stream_->OnClose();
+}
+
 TEST_F(QuicStreamTest, FinalByteOffsetFromZeroLengthStreamFrame) {
   // When receiving Trailers, an empty stream frame is created with the FIN set,
   // and is passed to OnStreamFrame. The Trailers may be sent in advance of

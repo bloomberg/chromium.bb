@@ -143,6 +143,13 @@ int QuicStream::num_duplicate_frames_received() const {
 void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   rst_received_ = true;
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
+  if (flow_controller_.FlowControlViolation() ||
+      connection_flow_controller_->FlowControlViolation()) {
+    CloseConnectionWithDetails(
+        QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
+        "Flow control violation after increasing offset");
+    return;
+  }
 
   stream_error_ = frame.error_code;
   CloseWriteSide();
@@ -411,6 +418,10 @@ void QuicStream::OnClose() {
     rst_sent_ = true;
   }
 
+  if (flow_controller_.FlowControlViolation() ||
+      connection_flow_controller_->FlowControlViolation()) {
+    return;
+  }
   // The stream is being closed and will not process any further incoming bytes.
   // As there may be more bytes in flight, to ensure that both endpoints have
   // the same connection level flow control state, mark all unreceived or
