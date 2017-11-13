@@ -61,7 +61,7 @@ class CONTENT_EXPORT MediaStreamAudioTrack : public MediaStreamTrack {
 
   // Halts the flow of audio data from the source (and to the sinks), and then
   // notifies all sinks of the "ended" state.
-  void Stop() final;
+  void StopAndNotify(base::OnceClosure callback) final;
 
   // MediaStreamTrack override.
   void SetEnabled(bool enabled) override;

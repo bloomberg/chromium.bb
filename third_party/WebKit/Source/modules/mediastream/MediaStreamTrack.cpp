@@ -275,12 +275,17 @@ String MediaStreamTrack::readyState() const {
   return String();
 }
 
-void MediaStreamTrack::stopTrack(ExceptionState& exception_state) {
+void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
   if (Ended())
     return;
 
   ready_state_ = MediaStreamSource::kReadyStateEnded;
-  MediaStreamCenter::Instance().DidStopMediaStreamTrack(Component());
+  Document* document = ToDocument(execution_context);
+  UserMediaController* user_media =
+      UserMediaController::From(document->GetFrame());
+  if (user_media)
+    user_media->StopTrack(Component());
+
   PropagateTrackEnded();
 }
 

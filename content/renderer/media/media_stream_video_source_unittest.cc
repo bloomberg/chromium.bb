@@ -70,6 +70,8 @@ class MediaStreamVideoSourceTest : public ::testing::Test {
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
+  MOCK_METHOD0(MockNotification, void());
+
  protected:
   MediaStreamVideoSource* source() { return mock_source_; }
 
@@ -635,6 +637,40 @@ TEST_F(MediaStreamVideoSourceTest, FailedRestartAfterStopForRestart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(track.Source().GetReadyState(),
             blink::WebMediaStreamSource::kReadyStateEnded);
+}
+
+TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartSupported) {
+  blink::WebMediaStreamTrack web_track = CreateTrack("123");
+  mock_source()->EnableStopForRestart();
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(NumberOfSuccessConstraintsCallbacks(), 1);
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+
+  EXPECT_CALL(*this, MockNotification());
+  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  track->StopAndNotify(base::BindOnce(
+      &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(MediaStreamVideoSourceTest, StartStopAndNotifyRestartNotSupported) {
+  blink::WebMediaStreamTrack web_track = CreateTrack("123");
+  mock_source()->DisableStopForRestart();
+  mock_source()->StartMockedSource();
+  EXPECT_EQ(NumberOfSuccessConstraintsCallbacks(), 1);
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateLive);
+
+  EXPECT_CALL(*this, MockNotification());
+  MediaStreamTrack* track = MediaStreamTrack::GetTrack(web_track);
+  track->StopAndNotify(base::BindOnce(
+      &MediaStreamVideoSourceTest::MockNotification, base::Unretained(this)));
+  EXPECT_EQ(web_track.Source().GetReadyState(),
+            blink::WebMediaStreamSource::kReadyStateEnded);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace content
