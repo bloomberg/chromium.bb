@@ -2115,7 +2115,7 @@ void BrowserView::InitViews() {
   top_container_ = new TopContainerView(this);
   AddChildView(top_container_);
 
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
   if (IsExperimentalTabStripEnabled()) {
     tabstrip_ = new TabStripExperimental(browser_->tab_strip_model());
     top_container_->AddChildView(tabstrip_);  // Takes ownership.

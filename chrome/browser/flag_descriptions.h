@@ -1363,9 +1363,6 @@ extern const char kEnableD3DVsyncDescription[];
 extern const char kEnableDesktopIosPromotionsName[];
 extern const char kEnableDesktopIosPromotionsDescription[];
 
-extern const char kExperimentalTabControllerName[];
-extern const char kExperimentalTabControllerDescription[];
-
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];
 
@@ -1772,6 +1769,13 @@ extern const char kUiSlowAnimationsName[];
 extern const char kUiSlowAnimationsDescription[];
 
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(TOOLKIT_VIEWS)
+
+extern const char kExperimentalTabControllerName[];
+extern const char kExperimentalTabControllerDescription[];
+
+#endif  // defined(TOOLKIT_VIEWS)
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 

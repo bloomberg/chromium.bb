@@ -154,8 +154,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#include "chrome/browser/ui/tabs/tab_features.h"
 #endif  // OS_WIN
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/tabs/tab_features.h"
+#endif
 
 using flags_ui::FeatureEntry;
 using flags_ui::kOsMac;
@@ -3547,11 +3550,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopLoadingInBackgroundDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kStopLoadingInBackground)},
 
-#if defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS)
     {"experimental-tab-controller",
      flag_descriptions::kExperimentalTabControllerName,
-     flag_descriptions::kExperimentalTabControllerDescription, kOsWin,
-     FEATURE_VALUE_TYPE(kExperimentalTabControllerFeature)},
+     flag_descriptions::kExperimentalTabControllerDescription,
+     kOsWin | kOsLinux, FEATURE_VALUE_TYPE(kExperimentalTabControllerFeature)},
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
