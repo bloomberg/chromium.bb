@@ -117,13 +117,6 @@ base::string16 CreateNotificationTitle(
   return title;
 }
 
-gfx::Image DeepCopyImage(const gfx::Image& image) {
-  if (image.IsEmpty())
-    return gfx::Image();
-  std::unique_ptr<gfx::ImageSkia> image_skia(image.CopyImageSkia());
-  return gfx::Image(*image_skia);
-}
-
 void EscapeUnsafeCharacters(std::string* message) {
   // Canonical's notification development guidelines recommends only
   // escaping the '&', '<', and '>' characters:
@@ -291,20 +284,11 @@ class NotificationPlatformBridgeLinuxImpl
       const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // Notifications contain gfx::Image's which have reference counts
-    // that are not thread safe.  Because of this, we duplicate the
-    // notification and its images.  Wrap the notification in a
-    // unique_ptr to transfer ownership of the notification (and the
-    // non-thread-safe reference counts) to the task runner thread.
-    auto notification_copy =
-        std::make_unique<message_center::Notification>(notification);
-    notification_copy->set_icon(DeepCopyImage(notification_copy->icon()));
-    notification_copy->set_image(body_images_supported_.value()
-                                     ? DeepCopyImage(notification_copy->image())
-                                     : gfx::Image());
-    notification_copy->set_small_image(gfx::Image());
-    for (size_t i = 0; i < notification_copy->buttons().size(); i++)
-      notification_copy->SetButtonIcon(i, gfx::Image());
+    // Make a deep copy of the notification as its resources cannot safely
+    // be passed between threads.
+    auto notification_copy = message_center::Notification::DeepCopy(
+        notification, body_images_supported_.value(),
+        /*include_small_image=*/false, /*include_icon_images=*/false);
 
     PostTaskToTaskRunnerThread(base::BindOnce(
         &NotificationPlatformBridgeLinuxImpl::DisplayOnTaskRunner, this,

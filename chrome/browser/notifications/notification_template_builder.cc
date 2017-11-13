@@ -4,6 +4,7 @@
 
 #include "chrome/browser/notifications/notification_template_builder.h"
 
+#include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -11,11 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/notifications/notification_image_retainer.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/notification.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace {
@@ -33,22 +36,29 @@ const char kButtonIndex[] = "buttonIndex=";
 const char kContent[] = "content";
 const char kContextMenu[] = "contextMenu";
 const char kForeground[] = "foreground";
+const char kHero[] = "hero";
+const char kHintCrop[] = "hint-crop";
+const char kHintCropNone[] = "none";
+const char kImageElement[] = "image";
+const char kImageUri[] = "imageUri";
 const char kInputElement[] = "input";
 const char kInputId[] = "id";
 const char kInputType[] = "type";
 const char kNotificationSettings[] = "notificationSettings";
 const char kPlaceholderContent[] = "placeHolderContent";
 const char kPlacement[] = "placement";
+const char kPlacementAppLogoOverride[] = "appLogoOverride";
 const char kReminder[] = "reminder";
 const char kScenario[] = "scenario";
 const char kSilent[] = "silent";
+const char kSrc[] = "src";
 const char kText[] = "text";
-const char kTrue[] = "true";
-const char kUserResponse[] = "userResponse";
 const char kTextElement[] = "text";
 const char kToastElement[] = "toast";
 const char kToastElementDisplayTimestamp[] = "displayTimestamp";
 const char kToastElementLaunchAttribute[] = "launch";
+const char kTrue[] = "true";
+const char kUserResponse[] = "userResponse";
 const char kVisualElement[] = "visual";
 
 // Name of the template used for default Chrome notifications.
@@ -64,9 +74,11 @@ const char* NotificationTemplateBuilder::context_menu_label_override_ = nullptr;
 
 // static
 std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
+    NotificationImageRetainer* notification_image_retainer,
+    const std::string& profile_id,
     const message_center::Notification& notification) {
-  std::unique_ptr<NotificationTemplateBuilder> builder =
-      base::WrapUnique(new NotificationTemplateBuilder);
+  std::unique_ptr<NotificationTemplateBuilder> builder = base::WrapUnique(
+      new NotificationTemplateBuilder(notification_image_retainer, profile_id));
 
   builder->StartToastElement(notification.id(), notification);
   builder->StartVisualElement();
@@ -74,20 +86,25 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   builder->StartBindingElement(kDefaultTemplate);
 
   // Content for the toast template.
-  builder->WriteTextElement("1", base::UTF16ToUTF8(notification.title()),
+  builder->WriteTextElement(base::UTF16ToUTF8(notification.title()),
                             TextType::NORMAL);
-  builder->WriteTextElement("2", base::UTF16ToUTF8(notification.message()),
+  builder->WriteTextElement(base::UTF16ToUTF8(notification.message()),
                             TextType::NORMAL);
-  builder->WriteTextElement("3",
-                            builder->FormatOrigin(notification.origin_url()),
+  builder->WriteTextElement(builder->FormatOrigin(notification.origin_url()),
                             TextType::ATTRIBUTION);
+
+  if (!notification.icon().IsEmpty())
+    builder->WriteIconElement(notification);
+
+  if (!notification.image().IsEmpty())
+    builder->WriteLargeImageElement(notification);
 
   builder->EndBindingElement();
   builder->EndVisualElement();
 
   builder->StartActionsElement();
   if (!notification.buttons().empty())
-    builder->AddActions(notification.buttons());
+    builder->AddActions(notification);
   builder->AddContextMenu();
   builder->EndActionsElement();
 
@@ -99,8 +116,12 @@ std::unique_ptr<NotificationTemplateBuilder> NotificationTemplateBuilder::Build(
   return builder;
 }
 
-NotificationTemplateBuilder::NotificationTemplateBuilder()
-    : xml_writer_(std::make_unique<XmlWriter>()) {
+NotificationTemplateBuilder::NotificationTemplateBuilder(
+    NotificationImageRetainer* notification_image_retainer,
+    const std::string& profile_id)
+    : xml_writer_(std::make_unique<XmlWriter>()),
+      image_retainer_(notification_image_retainer),
+      profile_id_(profile_id) {
   xml_writer_->StartWriting();
 }
 
@@ -171,8 +192,7 @@ void NotificationTemplateBuilder::EndBindingElement() {
   xml_writer_->EndElement();
 }
 
-void NotificationTemplateBuilder::WriteTextElement(const std::string& id,
-                                                   const std::string& content,
+void NotificationTemplateBuilder::WriteTextElement(const std::string& content,
                                                    TextType text_type) {
   xml_writer_->StartElement(kTextElement);
   if (text_type == TextType::ATTRIBUTION)
@@ -181,8 +201,39 @@ void NotificationTemplateBuilder::WriteTextElement(const std::string& id,
   xml_writer_->EndElement();
 }
 
+void NotificationTemplateBuilder::WriteIconElement(
+    const message_center::Notification& notification) {
+  WriteImageElement(notification.icon(), notification.origin_url(),
+                    kPlacementAppLogoOverride, kHintCropNone);
+}
+
+void NotificationTemplateBuilder::WriteLargeImageElement(
+    const message_center::Notification& notification) {
+  WriteImageElement(notification.image(), notification.origin_url(), kHero,
+                    std::string());
+}
+
+void NotificationTemplateBuilder::WriteImageElement(
+    const gfx::Image& image,
+    const GURL& origin,
+    const std::string& placement,
+    const std::string& hint_crop) {
+  base::FilePath path =
+      image_retainer_->RegisterTemporaryImage(image, profile_id_, origin);
+  if (!path.empty()) {
+    xml_writer_->StartElement(kImageElement);
+    xml_writer_->AddAttribute(kPlacement, placement);
+    xml_writer_->AddAttribute(kSrc, base::UTF16ToUTF8(path.value()));
+    if (!hint_crop.empty())
+      xml_writer_->AddAttribute(kHintCrop, hint_crop);
+    xml_writer_->EndElement();
+  }
+}
+
 void NotificationTemplateBuilder::AddActions(
-    const std::vector<message_center::ButtonInfo>& buttons) {
+    const message_center::Notification& notification) {
+  const std::vector<message_center::ButtonInfo>& buttons =
+      notification.buttons();
   bool inline_reply = false;
   std::string placeholder;
   for (const auto& button : buttons) {
@@ -203,7 +254,7 @@ void NotificationTemplateBuilder::AddActions(
   }
 
   for (size_t i = 0; i < buttons.size(); ++i)
-    WriteActionElement(buttons[i], i);
+    WriteActionElement(buttons[i], i, notification.origin_url());
 }
 
 void NotificationTemplateBuilder::AddContextMenu() {
@@ -230,14 +281,21 @@ void NotificationTemplateBuilder::WriteAudioSilentElement() {
 
 void NotificationTemplateBuilder::WriteActionElement(
     const message_center::ButtonInfo& button,
-    int index) {
-  // TODO(finnur): Implement button images (imageUri).
-
+    int index,
+    const GURL& origin) {
   xml_writer_->StartElement(kActionElement);
   xml_writer_->AddAttribute(kActivationType, kForeground);
-  xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title).c_str());
+  xml_writer_->AddAttribute(kContent, base::UTF16ToUTF8(button.title));
   std::string param = std::string(kButtonIndex) + base::IntToString(index);
-  xml_writer_->AddAttribute(kArguments, param.c_str());
+  xml_writer_->AddAttribute(kArguments, param);
+
+  if (!button.icon.IsEmpty()) {
+    base::FilePath path = image_retainer_->RegisterTemporaryImage(
+        button.icon, profile_id_, origin);
+    if (!path.empty())
+      xml_writer_->AddAttribute(kImageUri, path.AsUTF8Unsafe());
+  }
+
   xml_writer_->EndElement();
 }
 
