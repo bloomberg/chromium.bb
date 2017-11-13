@@ -49,65 +49,9 @@ var testParams = [
 
 for (let params of testParams) {
   test(() => {
-    assert_equals(params.input.x.value, params.x.value);
-    assert_equals(params.input.x.unit, params.x.unit);
-    assert_equals(params.input.y.value, params.y.value);
-    assert_equals(params.input.y.unit, params.y.unit);
-    if (params.is2D) {
-      assert_equals(params.input.z.value, 0);
-    } else {
-      assert_equals(params.input.z.value, params.z.value);
-      assert_equals(params.input.z.unit, params.z.unit);
-    }
-  }, "x, y, and z values are correct for " + params.cssText);
-
-  test(() => {
-    assert_equals(params.input.is2D, params.is2D);
-  }, "is2D value is correct for " + params.cssText);
-
-  test(() => {
     assert_equals(params.input.toString(), params.cssText);
   }, "toString value is correct for " + params.cssText);
 }
-
-test(() => {
-  let translation = new CSSTranslation(
-      new CSSUnitValue(10, 'percent'),
-      new CSSUnitValue(20, 'percent'));
-  assert_equals(translation.x.value, 10);
-  assert_equals(translation.x.unit, 'percent');
-  assert_equals(translation.y.value, 20);
-  assert_equals(translation.y.unit, 'percent');
-  assert_equals(translation.z.value, 0);
-
-  let translation3d = new CSSTranslation(
-      new CSSUnitValue(30, 'percent'),
-      new CSSUnitValue(40, 'percent'),
-      CSS.px(0));
-  assert_equals(translation3d.x.value, 30);
-  assert_equals(translation3d.x.unit, 'percent');
-  assert_equals(translation3d.y.value, 40);
-  assert_equals(translation3d.y.unit, 'percent');
-  assert_equals(translation3d.z.value, 0);
-}, "Constructor accepts percent for x and y");
-
-test(() => {
-  assert_throws(new TypeError(), () => {
-    new CSSTranslation(new CSSUnitValue(10, 'deg'), CSS.px(0));
-  });
-  assert_throws(new TypeError(), () => {
-    new CSSTranslation(CSS.px(0), new CSSUnitValue(10, 'deg'));
-  });
-  assert_throws(new TypeError(), () => {
-    new CSSTranslation(new CSSUnitValue(10, 'deg'), CSS.px(0), CSS.px(0));
-  });
-  assert_throws(new TypeError(), () => {
-    new CSSTranslation(CSS.px(0), new CSSUnitValue(10, 'deg'), CSS.px(0));
-  });
-  assert_throws(new TypeError(), () => {
-    new CSSTranslation(CSS.px(0), CSS.px(0), new CSSUnitValue(10, 'deg'));
-  });
-}, "Constructor throws when invalid numeric values are given to each argument");
 
 test(() => {
   assert_throws(new TypeError(), () => {
@@ -122,49 +66,6 @@ test(() => {
   assert_throws(new TypeError(), () => { new CSSTranslation(); });
   assert_throws(new TypeError(), () => { new CSSTranslation(CSS.px(0)); });
 }, "Invalid number of arguments to constructor throws an exception.");
-
-for (let attribute of ["x", "y"]) {
-  test(() => {
-    let validLength = new CSSUnitValue(5, 'px');
-    let translation = new CSSTranslation(validLength, validLength, validLength);
-    let newValue = new CSSUnitValue(10, 'percent');
-
-    assert_equals(translation[attribute].value, 5);
-    assert_equals(translation[attribute].unit, 'px');
-    translation[attribute] = newValue;
-    assert_equals(translation[attribute].value, 10);
-    assert_equals(translation[attribute].unit, 'percent');
-  }, attribute + " can be set to a percent");
-}
-
-for (let attribute of ["x", "y", "z"]) {
-  let validLength = new CSSUnitValue(5, 'px');
-
-  test(() => {
-    let translation = new CSSTranslation(validLength, validLength, validLength);
-    let newValue = new CSSUnitValue(10, 'em');
-
-    assert_equals(translation[attribute].value, 5);
-    assert_equals(translation[attribute].unit, 'px');
-    translation[attribute] = newValue;
-    assert_equals(translation[attribute].value, 10);
-    assert_equals(translation[attribute].unit, 'em');
-  }, attribute + " can be set to a valid numeric value");
-
-  test(() => {
-    let translation = new CSSTranslation(validLength, validLength, validLength);
-    assert_throws(new TypeError(), () => {
-      translation[attribute] = new CSSUnitValue(20, 'deg');
-    });
-  }, attribute + " throws when set to an invalid numeric value");
-}
-
-test(() => {
-  let translation = new CSSTranslation(CSS.px(0), CSS.px(0));
-  assert_throws(new TypeError(), () => {
-    translation.z = new CSSUnitValue(30, 'percent');
-  });
-}, "Setting z throws for length containing percentage");
 
 test(() => {
   let expectedMatrix = (new DOMMatrixReadOnly()).translate(1, 2, 3);
