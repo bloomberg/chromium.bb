@@ -104,10 +104,6 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
   """A base class for Dromaeo benchmarks."""
   test = _DromaeoMeasurement
 
-  @classmethod
-  def Name(cls):
-    return 'dromaeo'
-
   def CreateStorySet(self, options):
     """Makes a PageSet for Dromaeo benchmarks."""
     # Subclasses are expected to define class members called query_param and
@@ -122,6 +118,30 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
     url = 'http://dromaeo.com?%s' % self.query_param
     ps.AddStory(page_module.Page(
         url, ps, ps.base_dir, make_javascript_deterministic=False, name=url))
+    return ps
+
+
+@benchmark.Owner(emails=['jbroman@chromium.org',
+                         'yukishiino@chromium.org',
+                         'haraken@chromium.org'])
+class DromaeoBenchmark(_DromaeoBenchmark):
+
+  test = _DromaeoMeasurement
+
+  @classmethod
+  def Name(cls):
+    return 'dromaeo'
+
+  def CreateStorySet(self, options):
+    archive_data_file = '../page_sets/data/dromaeo.json'
+    ps = story.StorySet(
+        archive_data_file=archive_data_file,
+        base_dir=os.path.dirname(os.path.abspath(__file__)),
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
+    for query_param in ['dom-attr', 'dom-modify', 'dom-query', 'dom-traverse']:
+      url = 'http://dromaeo.com?%s' % query_param
+      ps.AddStory(page_module.Page(
+          url, ps, ps.base_dir, make_javascript_deterministic=False, name=url))
     return ps
 
 
