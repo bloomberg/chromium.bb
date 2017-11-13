@@ -166,12 +166,13 @@ class MockClientProcess : public mojom::ClientProcess {
 
     ON_CALL(*this, RequestChromeMemoryDump(_, _))
         .WillByDefault(
-            Invoke([](const MemoryDumpRequestArgs& args,
-                      const RequestChromeMemoryDumpCallback& callback) {
+            Invoke([pid](const MemoryDumpRequestArgs& args,
+                         const RequestChromeMemoryDumpCallback& callback) {
               MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
               auto pmd =
                   std::make_unique<ProcessMemoryDump>(nullptr, dump_args);
-              auto* mad = pmd->CreateAllocatorDump("malloc");
+              auto* mad = pmd->CreateAllocatorDump(
+                  "malloc", base::trace_event::MemoryAllocatorDumpGuid(pid));
               mad->AddScalar(MemoryAllocatorDump::kNameSize,
                              MemoryAllocatorDump::kUnitsBytes, 1024);
 
@@ -454,7 +455,9 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
         auto* bytes = MemoryAllocatorDump::kUnitsBytes;
         const uint32_t kB = 1024;
 
-        pmd->CreateAllocatorDump("malloc")->AddScalar(size, bytes, 1 * kB);
+        pmd->CreateAllocatorDump("malloc",
+                                 base::trace_event::MemoryAllocatorDumpGuid(1))
+            ->AddScalar(size, bytes, 1 * kB);
         pmd->CreateAllocatorDump("malloc/ignored")
             ->AddScalar(size, bytes, 99 * kB);
 
@@ -489,7 +492,8 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
                         callback) {
             MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
             auto pmd = std::make_unique<ProcessMemoryDump>(nullptr, dump_args);
-            auto* mad = pmd->CreateAllocatorDump("malloc");
+            auto* mad = pmd->CreateAllocatorDump(
+                "malloc", base::trace_event::MemoryAllocatorDumpGuid(2));
             mad->AddScalar(MemoryAllocatorDump::kNameSize,
                            MemoryAllocatorDump::kUnitsBytes, 1024 * 2);
             callback.Run(true, args.dump_guid, std::move(pmd));

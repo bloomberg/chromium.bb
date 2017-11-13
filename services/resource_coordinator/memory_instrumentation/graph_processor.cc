@@ -32,35 +32,31 @@ Node::Entry::ScalarUnits EntryUnitsFromString(std::string units) {
   }
 }
 
-void AddEntryToNode(Node* node, const MemoryAllocatorDump::Entry& entry) {
-  switch (entry.entry_type) {
-    case MemoryAllocatorDump::Entry::EntryType::kUint64:
-      node->AddEntry(entry.name, EntryUnitsFromString(entry.units),
-                     entry.value_uint64);
-      break;
-    case MemoryAllocatorDump::Entry::EntryType::kString:
-      node->AddEntry(entry.name, entry.value_string);
-      break;
-  }
-}
-
 }  // namespace
 
 // static
 std::unique_ptr<GlobalDumpGraph> GraphProcessor::CreateMemoryGraph(
-    const std::map<ProcessId, ProcessMemoryDump>& process_dumps) {
+    const GraphProcessor::MemoryDumpMap& process_dumps) {
   auto global_graph = std::make_unique<GlobalDumpGraph>();
 
   // First pass: collects allocator dumps into a graph and populate
   // with entries.
   for (const auto& pid_to_dump : process_dumps) {
+    // There can be null entries in the map; simply filter these out.
+    if (!pid_to_dump.second)
+      continue;
+
     auto* graph = global_graph->CreateGraphForProcess(pid_to_dump.first);
-    CollectAllocatorDumps(pid_to_dump.second, global_graph.get(), graph);
+    CollectAllocatorDumps(*pid_to_dump.second, global_graph.get(), graph);
   }
 
   // Second pass: generate the graph of edges between the nodes.
   for (const auto& pid_to_dump : process_dumps) {
-    AddEdges(pid_to_dump.second, global_graph.get());
+    // There can be null entries in the map; simply filter these out.
+    if (!pid_to_dump.second)
+      continue;
+
+    AddEdges(*pid_to_dump.second, global_graph.get());
   }
 
   return global_graph;
@@ -124,6 +120,11 @@ GraphProcessor::ComputeSharedFootprintFromGraph(
   // owned by shared memory nodes.
   Node* global_root =
       global_graph.shared_memory_graph()->root()->GetChild("global");
+
+  // If there are no global dumps then just return an empty map with no data.
+  if (!global_root) {
+    return std::map<base::ProcessId, uint64_t>();
+  }
 
   struct GlobalNodeOwners {
     std::list<Edge*> edges;
@@ -224,9 +225,15 @@ void GraphProcessor::CollectAllocatorDumps(
 
     // Copy any entries not already present into the node.
     for (auto& entry : dump.entries()) {
-      // Check that there are not multiple entries with the same name.
-      DCHECK(node->entries()->find(entry.name) == node->entries()->end());
-      AddEntryToNode(node, entry);
+      switch (entry.entry_type) {
+        case MemoryAllocatorDump::Entry::EntryType::kUint64:
+          node->AddEntry(entry.name, EntryUnitsFromString(entry.units),
+                         entry.value_uint64);
+          break;
+        case MemoryAllocatorDump::Entry::EntryType::kString:
+          node->AddEntry(entry.name, entry.value_string);
+          break;
+      }
     }
   }
 }
@@ -265,8 +272,8 @@ void GraphProcessor::AddEdges(
 // static
 void GraphProcessor::MarkImplicitWeakParentsRecursively(Node* node) {
   // Ensure that we aren't in a bad state where we have an implicit node
-  // which doesn't have any children.
-  DCHECK(node->is_explicit() || !node->children()->empty());
+  // which doesn't have any children (which is not the root node).
+  DCHECK(node->is_explicit() || !node->children()->empty() || !node->parent());
 
   // Check that at this stage, any node which is weak is only so because
   // it was explicitly created as such.
