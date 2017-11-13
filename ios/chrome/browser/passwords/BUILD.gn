@@ -34,14 +34,8 @@ source_set("passwords") {
     "password_controller.h",
     "password_controller.mm",
     "password_form_filler.h",
-    "password_generation_edit_view.h",
-    "password_generation_edit_view.mm",
-    "password_generation_offer_view.h",
-    "password_generation_offer_view.mm",
-    "password_generation_prompt_delegate.h",
     "password_tab_helper.h",
     "password_tab_helper.mm",
-    "passwords_ui_delegate.h",
     "update_password_infobar_controller.h",
     "update_password_infobar_controller.mm",
   ]
@@ -185,29 +179,4 @@ js_compile_unchecked("injected_js") {
   sources = [
     "resources/password_controller.js",
   ]
-}
-
-source_set("passwords_internal") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "password_generation_prompt_view.h",
-    "password_generation_prompt_view.mm",
-    "password_generation_prompt_view_controller.h",
-    "password_generation_prompt_view_controller.mm",
-    "passwords_ui_delegate_impl.h",
-    "passwords_ui_delegate_impl.mm",
-  ]
-  deps = [
-    ":passwords",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/common",
-    "//ios/third_party/material_components_ios",
-    "//ios/third_party/material_roboto_font_loader_ios",
-    "//ui/base",
-  ]
-  libs = [ "UIKit.framework" ]
 }

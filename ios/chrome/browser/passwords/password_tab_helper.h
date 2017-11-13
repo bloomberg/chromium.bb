@@ -23,9 +23,7 @@ class PasswordTabHelper : public web::WebStateObserver,
   ~PasswordTabHelper() override;
 
   // Creates a PasswordTabHelper and attaches it to the given |web_state|.
-  // |password_ui_delegate| may be nil.
-  static void CreateForWebState(web::WebState* web_state,
-                                id<PasswordsUiDelegate> passwords_ui_delegate);
+  static void CreateForWebState(web::WebState* web_state);
 
   // Sets the PasswordController dispatcher.
   void SetDispatcher(id<ApplicationCommands> dispatcher);
@@ -41,8 +39,7 @@ class PasswordTabHelper : public web::WebStateObserver,
   id<PasswordFormFiller> GetPasswordFormFiller();
 
  private:
-  PasswordTabHelper(web::WebState* web_state,
-                    id<PasswordsUiDelegate> passwords_ui_delegate);
+  explicit PasswordTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver implementation.
   void WebStateDestroyed(web::WebState* web_state) override;

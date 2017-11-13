@@ -105,7 +105,6 @@ PasswordController* CreatePasswordController(
   if (weak_client)
     *weak_client = client.get();
   return [[PasswordController alloc] initWithWebState:web_state
-                                  passwordsUiDelegate:nil
                                                client:std::move(client)];
 }
 

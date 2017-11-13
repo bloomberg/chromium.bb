@@ -17,14 +17,11 @@ DEFINE_WEB_STATE_USER_DATA_KEY(PasswordTabHelper);
 PasswordTabHelper::~PasswordTabHelper() = default;
 
 // static
-void PasswordTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    id<PasswordsUiDelegate> passwords_ui_delegate) {
+void PasswordTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new PasswordTabHelper(
-                               web_state, passwords_ui_delegate)));
+                           base::WrapUnique(new PasswordTabHelper(web_state)));
   }
 }
 
@@ -45,13 +42,9 @@ id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
   return controller_.passwordFormFiller;
 }
 
-PasswordTabHelper::PasswordTabHelper(
-    web::WebState* web_state,
-    id<PasswordsUiDelegate> passwords_ui_delegate)
+PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)
     : web::WebStateObserver(web_state),
-      controller_([[PasswordController alloc]
-             initWithWebState:web_state
-          passwordsUiDelegate:passwords_ui_delegate]) {
+      controller_([[PasswordController alloc] initWithWebState:web_state]) {
   DCHECK(web::WebStateObserver::web_state());
 }
 

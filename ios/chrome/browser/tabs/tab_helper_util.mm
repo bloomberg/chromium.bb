@@ -25,7 +25,6 @@
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
-#import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -105,8 +104,7 @@ void AttachTabHelpers(web::WebState* web_state) {
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
 
-  PasswordTabHelper::CreateForWebState(web_state,
-                                       [[PasswordsUiDelegateImpl alloc] init]);
+  PasswordTabHelper::CreateForWebState(web_state);
 
   AutofillTabHelper::CreateForWebState(web_state, nullptr);
 
