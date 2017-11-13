@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_DELEGATE_H_
-#define UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_DELEGATE_H_
+#ifndef UI_MESSAGE_CENTER_UI_DELEGATE_H_
+#define UI_MESSAGE_CENTER_UI_DELEGATE_H_
 
 #include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 
-// A MessageCenterTrayDelegate class is responsible for managing the various UI
-// surfaces that should be displayed when the MessageCenter is changed.
-class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
+// A UiDelegate class is responsible for managing the various UI surfaces
+// (MessageCenter and popups) as notifications are added and updated.
+// Implementations are platform specific.
+class MESSAGE_CENTER_EXPORT UiDelegate {
  public:
-  virtual ~MessageCenterTrayDelegate() {};
+  virtual ~UiDelegate(){};
 
   // Called whenever a change to the visible UI has occurred.
-  virtual void OnMessageCenterTrayChanged() = 0;
+  virtual void OnMessageCenterContentsChanged() = 0;
 
   // Display the popup bubbles for new notifications to the user.  Returns true
   // if popups were actually displayed to the user.
@@ -40,4 +41,4 @@ class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_DELEGATE_H_
+#endif  // UI_MESSAGE_CENTER_UI_DELEGATE_H_
