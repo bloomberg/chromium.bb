@@ -926,16 +926,20 @@ def _CheckFilePermissions(input_api, output_api):
       'tools', 'checkperms', 'checkperms.py')
   args = [input_api.python_executable, checkperms_tool,
           '--root', input_api.change.RepositoryRoot()]
-  for f in input_api.AffectedFiles():
-    # checkperms.py file/directory arguments must be relative to the repository.
-    args += ['--file', f.LocalPath()]
-  try:
-    input_api.subprocess.check_output(args)
-    return []
-  except input_api.subprocess.CalledProcessError as error:
-    return [output_api.PresubmitError(
-        'checkperms.py failed:',
-        long_text=error.output)]
+  with input_api.CreateTemporaryFile() as file_list:
+    for f in input_api.AffectedFiles():
+      # checkperms.py file/directory arguments must be relative to the
+      # repository.
+      file_list.write(f.LocalPath() + '\n')
+    file_list.close()
+    args += ['--file-list', file_list.name]
+    try:
+      input_api.subprocess.check_output(args)
+      return []
+    except input_api.subprocess.CalledProcessError as error:
+      return [output_api.PresubmitError(
+          'checkperms.py failed:',
+          long_text=error.output)]
 
 
 def _CheckTeamTags(input_api, output_api):
