@@ -615,6 +615,9 @@ typedef struct AV1_COMP {
 #if CONFIG_INTRABC
   // A flag to indicate if intrabc is ever used in current frame.
   int intrabc_used;
+  int dv_cost[2][MV_VALS];
+  // TODO(huisu@google.com): we can update dv_joint_cost per SB.
+  int dv_joint_cost[MV_JOINTS];
 #endif  // CONFIG_INTRABC
 } AV1_COMP;
 

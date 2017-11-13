@@ -715,10 +715,9 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 #if CONFIG_INTRABC
   if (frame_is_intra_only(cm) && cm->allow_screen_content_tools &&
       cpi->oxcf.pass != 1) {
-    av1_build_nmv_cost_table(
-        x->nmv_vec_cost[0],
-        cm->allow_high_precision_mv ? x->nmvcost_hp[0] : x->nmvcost[0],
-        &cm->fc->ndvc, MV_SUBPEL_NONE);
+    int *dvcost[2] = { &cpi->dv_cost[0][MV_MAX], &cpi->dv_cost[1][MV_MAX] };
+    av1_build_nmv_cost_table(cpi->dv_joint_cost, dvcost, &cm->fc->ndvc,
+                             MV_SUBPEL_NONE);
   }
 #endif
 

@@ -8873,11 +8873,12 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     x->skip = 0;
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
-    assert(x->mvcost == x->mv_cost_stack[0]);
+    int *dvcost[2] = { (int *)&cpi->dv_cost[0][MV_MAX],
+                       (int *)&cpi->dv_cost[1][MV_MAX] };
     // TODO(aconverse@google.com): The full motion field defining discount
     // in MV_COST_WEIGHT is too large. Explore other values.
-    int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, x->nmvjointcost,
-                                  x->mvcost, MV_COST_WEIGHT_SUB);
+    int rate_mv = av1_mv_bit_cost(&dv, &dv_ref.as_mv, cpi->dv_joint_cost,
+                                  dvcost, MV_COST_WEIGHT_SUB);
     const int rate_mode = x->intrabc_cost[1];
     RD_STATS rd_stats, rd_stats_uv;
     av1_subtract_plane(x, bsize, 0);
