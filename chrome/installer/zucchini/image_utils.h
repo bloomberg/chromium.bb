@@ -155,9 +155,10 @@ enum ExecutableType : uint32_t {
   kExeTypeWin32X86 = 1,
   kExeTypeWin32X64 = 2,
   kExeTypeElfX86 = 3,
-  kExeTypeElfArm32 = 4,
-  kExeTypeElfAArch64 = 5,
-  kExeTypeDex = 6,
+  kExeTypeElfX64 = 4,
+  kExeTypeElfArm32 = 5,
+  kExeTypeElfAArch64 = 6,
+  kExeTypeDex = 7,
   kNumExeType
 };
 
