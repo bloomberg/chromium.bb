@@ -144,7 +144,7 @@ void DownloadResponseHandler::OnReceiveRedirect(
     // middle box. Trigger another interruption so that the DownloadItem can
     // retry.
     abort_reason_ = DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE;
-    OnComplete(ResourceRequestCompletionStatus(net::OK));
+    OnComplete(network::URLLoaderStatus(net::OK));
     return;
   }
   url_chain_.push_back(redirect_info.new_url);
@@ -180,10 +180,10 @@ void DownloadResponseHandler::OnStartLoadingResponseBody(
 }
 
 void DownloadResponseHandler::OnComplete(
-    const ResourceRequestCompletionStatus& completion_status) {
+    const network::URLLoaderStatus& status) {
   DownloadInterruptReason reason = HandleRequestCompletionStatus(
-      static_cast<net::Error>(completion_status.error_code),
-      has_strong_validators_, cert_status_, abort_reason_);
+      static_cast<net::Error>(status.error_code), has_strong_validators_,
+      cert_status_, abort_reason_);
 
   if (client_ptr_) {
     client_ptr_->OnStreamCompleted(

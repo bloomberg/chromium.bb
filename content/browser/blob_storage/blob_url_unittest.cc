@@ -300,7 +300,7 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       }
       response_headers_ = url_loader_client.response_head().headers;
       response_metadata_ = url_loader_client.cached_metadata();
-      response_error_code_ = url_loader_client.completion_status().error_code;
+      response_error_code_ = url_loader_client.status().error_code;
     } else {
       std::unique_ptr<net::URLRequest> request =
           url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY,

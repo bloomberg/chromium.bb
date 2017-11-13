@@ -31,7 +31,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/test/test_browser_context.h"
@@ -52,6 +51,7 @@
 #include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_filter.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -196,7 +196,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   client.response_head().headers->GetNormalizedHeader("content-type",
                                                       &content_type);
   EXPECT_EQ("text/html", content_type);
-  EXPECT_EQ(0, client.completion_status().error_code);
+  EXPECT_EQ(0, client.status().error_code);
 
   std::string contents;
   while (true) {
@@ -217,13 +217,13 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   EXPECT_EQ(expected, contents);
   EXPECT_EQ(static_cast<int64_t>(expected.size()) +
                 client.response_head().encoded_data_length,
-            client.completion_status().encoded_data_length);
+            client.status().encoded_data_length);
   EXPECT_EQ(static_cast<int64_t>(expected.size()),
-            client.completion_status().encoded_body_length);
+            client.status().encoded_body_length);
   // OnTransferSizeUpdated is not dispatched as report_raw_headers is not set.
   EXPECT_EQ(0, client.body_transfer_size());
   EXPECT_GT(client.response_head().encoded_data_length, 0);
-  EXPECT_GT(client.completion_status().encoded_data_length, 0);
+  EXPECT_GT(client.status().encoded_data_length, 0);
 }
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
@@ -250,9 +250,9 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
 
-  EXPECT_EQ(net::ERR_TIMED_OUT, client.completion_status().error_code);
-  EXPECT_EQ(0, client.completion_status().encoded_data_length);
-  EXPECT_EQ(0, client.completion_status().encoded_body_length);
+  EXPECT_EQ(net::ERR_TIMED_OUT, client.status().error_code);
+  EXPECT_EQ(0, client.status().encoded_data_length);
+  EXPECT_EQ(0, client.status().encoded_body_length);
 }
 
 // In this case, the loading fails after receiving a response.
@@ -280,9 +280,9 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
 
-  EXPECT_EQ(net::ERR_TIMED_OUT, client.completion_status().error_code);
-  EXPECT_GT(client.completion_status().encoded_data_length, 0);
-  EXPECT_EQ(0, client.completion_status().encoded_body_length);
+  EXPECT_EQ(net::ERR_TIMED_OUT, client.status().error_code);
+  EXPECT_GT(client.status().encoded_data_length, 0);
+  EXPECT_EQ(0, client.status().encoded_body_length);
 }
 
 // This test tests a case where resource loading is cancelled before started.
@@ -308,7 +308,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
 
-  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED, client.status().error_code);
 }
 
 // This test tests a case where resource loading is cancelled before started.
@@ -337,7 +337,7 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
 
-  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED, client.status().error_code);
 }
 
 TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
@@ -387,7 +387,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   client.response_head().headers->GetNormalizedHeader("content-type",
                                                       &content_type);
   EXPECT_EQ("text/html", content_type);
-  EXPECT_EQ(0, client.completion_status().error_code);
+  EXPECT_EQ(0, client.status().error_code);
 
   std::string contents;
   base::ReadFileToString(client.response_head().download_file_path, &contents);
@@ -403,9 +403,9 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   EXPECT_EQ(expected, contents);
   EXPECT_EQ(static_cast<int64_t>(expected.size()) +
                 client.response_head().encoded_data_length,
-            client.completion_status().encoded_data_length);
+            client.status().encoded_data_length);
   EXPECT_EQ(static_cast<int64_t>(expected.size()),
-            client.completion_status().encoded_body_length);
+            client.status().encoded_body_length);
 }
 
 TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
@@ -464,7 +464,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   ASSERT_TRUE(client.has_received_completion());
 
   EXPECT_EQ(200, client.response_head().headers->response_code());
-  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+  EXPECT_EQ(net::ERR_ABORTED, client.status().error_code);
 }
 
 TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
@@ -514,16 +514,15 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
       &expected_encoded_body);
 
   EXPECT_GT(client.response_head().encoded_data_length, 0);
-  EXPECT_GT(client.completion_status().encoded_data_length, 0);
+  EXPECT_GT(client.status().encoded_data_length, 0);
   EXPECT_EQ(static_cast<int64_t>(expected_encoded_body.size()),
             client.body_transfer_size());
   EXPECT_EQ(200, client.response_head().headers->response_code());
   EXPECT_EQ(
       client.response_head().encoded_data_length + client.body_transfer_size(),
-      client.completion_status().encoded_data_length);
+      client.status().encoded_data_length);
   EXPECT_NE(client.body_transfer_size(), static_cast<int64_t>(contents.size()));
-  EXPECT_EQ(client.body_transfer_size(),
-            client.completion_status().encoded_body_length);
+  EXPECT_EQ(client.body_transfer_size(), client.status().encoded_body_length);
   EXPECT_EQ(contents, "Hello World!\n");
 }
 

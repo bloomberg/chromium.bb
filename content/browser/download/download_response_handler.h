@@ -56,8 +56,7 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(
-      const ResourceRequestCompletionStatus& completion_status) override;
+  void OnComplete(const network::URLLoaderStatus& status) override;
 
   // Sets the URL chain when the download is intercepted from navigation.
   void SetURLChain(std::vector<GURL> url_chain);

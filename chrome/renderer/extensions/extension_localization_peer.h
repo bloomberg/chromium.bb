@@ -43,8 +43,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   void OnDownloadedData(int len, int encoded_data_length) override {}
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
-  void OnCompletedRequest(const content::ResourceRequestCompletionStatus&
-                              completion_status) override;
+  void OnCompletedRequest(const network::URLLoaderStatus& status) override;
 
  private:
   friend class ExtensionLocalizationPeerTest;

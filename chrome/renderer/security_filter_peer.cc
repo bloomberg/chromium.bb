@@ -11,10 +11,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/grit/generated_resources.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
 SecurityFilterPeer::SecurityFilterPeer(
@@ -138,7 +138,7 @@ void ReplaceContentPeer::OnReceivedData(std::unique_ptr<ReceivedData> data) {
 }
 
 void ReplaceContentPeer::OnCompletedRequest(
-    const content::ResourceRequestCompletionStatus& completion_status) {
+    const network::URLLoaderStatus& status) {
   content::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.content_length = static_cast<int>(data_.size());
@@ -147,7 +147,7 @@ void ReplaceContentPeer::OnCompletedRequest(
     original_peer_->OnReceivedData(base::MakeUnique<content::FixedReceivedData>(
         data_.data(), data_.size()));
   }
-  content::ResourceRequestCompletionStatus ok_status(completion_status);
+  network::URLLoaderStatus ok_status(status);
   ok_status.error_code = net::OK;
   original_peer_->OnCompletedRequest(ok_status);
 }

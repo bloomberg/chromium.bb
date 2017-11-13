@@ -20,13 +20,13 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 namespace content {
 namespace {
@@ -414,7 +414,7 @@ net::IOBufferWithSize* MojoAsyncResourceHandler::GetResponseMetadata(
 }
 
 void MojoAsyncResourceHandler::OnResponseCompleted(
-    const net::URLRequestStatus& status,
+    const net::URLRequestStatus& request_status,
     std::unique_ptr<ResourceController> controller) {
   // Ensure sending the final upload progress message here, since
   // OnResponseCompleted can be called without OnResponseStarted on cancellation
@@ -433,23 +433,22 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
   // WebURLLoaderImpl::OnCompletedRequest that routes this message to a WebCore
   // ResourceHandleInternal which asserts on its state and crashes. By crashing
   // when the message is sent, we should get better crash reports.
-  CHECK(status.status() != net::URLRequestStatus::SUCCESS ||
+  CHECK(request_status.status() != net::URLRequestStatus::SUCCESS ||
         sent_received_response_message_);
 
-  int error_code = status.error();
+  int error_code = request_status.error();
 
-  DCHECK_NE(status.status(), net::URLRequestStatus::IO_PENDING);
+  DCHECK_NE(request_status.status(), net::URLRequestStatus::IO_PENDING);
 
-  ResourceRequestCompletionStatus request_complete_data;
-  request_complete_data.error_code = error_code;
-  request_complete_data.exists_in_cache = request()->response_info().was_cached;
-  request_complete_data.completion_time = base::TimeTicks::Now();
-  request_complete_data.encoded_data_length =
-      request()->GetTotalReceivedBytes();
-  request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
-  request_complete_data.decoded_body_length = total_written_bytes_;
+  network::URLLoaderStatus loader_status;
+  loader_status.error_code = error_code;
+  loader_status.exists_in_cache = request()->response_info().was_cached;
+  loader_status.completion_time = base::TimeTicks::Now();
+  loader_status.encoded_data_length = request()->GetTotalReceivedBytes();
+  loader_status.encoded_body_length = request()->GetRawBodyBytes();
+  loader_status.decoded_body_length = total_written_bytes_;
 
-  url_loader_client_->OnComplete(request_complete_data);
+  url_loader_client_->OnComplete(loader_status);
   controller->Resume();
 }
 

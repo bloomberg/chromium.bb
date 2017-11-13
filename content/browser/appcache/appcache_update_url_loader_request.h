@@ -67,7 +67,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+  void OnComplete(const network::URLLoaderStatus& status) override;
 
  private:
   UpdateURLLoaderRequest(URLLoaderFactoryGetter* loader_factory_getter,
@@ -92,7 +92,7 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
 
   ResourceRequest request_;
   ResourceResponseHead response_;
-  ResourceRequestCompletionStatus response_status_;
+  network::URLLoaderStatus response_status_;
   // Response details.
   std::unique_ptr<net::HttpResponseInfo> http_response_info_;
   // Binds the URLLoaderClient interface to the channel.

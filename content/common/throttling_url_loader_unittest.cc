@@ -57,7 +57,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnComplete(int error_code) {
-    ResourceRequestCompletionStatus data;
+    network::URLLoaderStatus data;
     data.error_code = error_code;
     client_ptr_->OnComplete(data);
   }
@@ -154,7 +154,7 @@ class TestURLLoaderClient : public mojom::URLLoaderClient {
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {}
-  void OnComplete(const ResourceRequestCompletionStatus& status) override {
+  void OnComplete(const network::URLLoaderStatus& status) override {
     on_complete_called_++;
     if (on_complete_callback_)
       on_complete_callback_.Run(status.error_code);

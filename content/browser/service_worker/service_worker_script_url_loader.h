@@ -80,7 +80,7 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+  void OnComplete(const network::URLLoaderStatus& status) override;
 
   // Buffer size for reading script data from network.
   const static uint32_t kReadBufferSize;
@@ -117,7 +117,7 @@ class CONTENT_EXPORT ServiceWorkerScriptURLLoader
 
   // This is the last method that is called on this class. Notifies the final
   // result to |client_| and clears all mojo connections etc.
-  void CommitCompleted(const ResourceRequestCompletionStatus& status);
+  void CommitCompleted(const network::URLLoaderStatus& status);
 
   const GURL request_url_;
 

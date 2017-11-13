@@ -660,6 +660,7 @@ source_set("blink_headers") {
     "//media/midi:mojo_shared_cpp_sources",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/system:system",
+    "//services/network/public/cpp:cpp",
     "//services/network/public/interfaces:interfaces",
     "//v8:v8_headers",
   ]

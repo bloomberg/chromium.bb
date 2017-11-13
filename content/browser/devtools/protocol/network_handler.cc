@@ -41,7 +41,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_devtools_info.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -50,6 +49,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 namespace content {
 namespace protocol {
@@ -991,23 +991,22 @@ void NetworkHandler::NavigationPreloadResponseReceived(
 
 void NetworkHandler::NavigationPreloadCompleted(
     const std::string& request_id,
-    const ResourceRequestCompletionStatus& completion_status) {
+    const network::URLLoaderStatus& status) {
   if (!enabled_)
     return;
-  if (completion_status.error_code != net::OK) {
+  if (status.error_code != net::OK) {
     frontend_->LoadingFailed(
         request_id,
         base::TimeTicks::Now().ToInternalValue() /
             static_cast<double>(base::Time::kMicrosecondsPerSecond),
-        Page::ResourceTypeEnum::Other,
-        net::ErrorToString(completion_status.error_code),
-        completion_status.error_code == net::Error::ERR_ABORTED);
+        Page::ResourceTypeEnum::Other, net::ErrorToString(status.error_code),
+        status.error_code == net::Error::ERR_ABORTED);
   }
   frontend_->LoadingFinished(
       request_id,
-      completion_status.completion_time.ToInternalValue() /
+      status.completion_time.ToInternalValue() /
           static_cast<double>(base::Time::kMicrosecondsPerSecond),
-      completion_status.encoded_data_length);
+      status.encoded_data_length);
 }
 
 void NetworkHandler::NavigationFailed(NavigationRequest* navigation_request) {

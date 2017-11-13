@@ -26,7 +26,7 @@ void StartHistogramInternalsURLLoader(const ResourceRequest& request,
   CHECK(mojo::common::BlockingCopyFromString(data, data_pipe.producer_handle));
 
   client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-  ResourceRequestCompletionStatus status(net::OK);
+  network::URLLoaderStatus status(net::OK);
   status.encoded_data_length = data.size();
   status.encoded_body_length = data.size();
   client->OnComplete(status);

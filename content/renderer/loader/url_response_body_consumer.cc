@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/common/resource_messages.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/site_isolation_stats_gatherer.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 namespace content {
 
@@ -61,11 +61,11 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
 URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
 
 void URLResponseBodyConsumer::OnComplete(
-    const ResourceRequestCompletionStatus& status) {
+    const network::URLLoaderStatus& status) {
   if (has_been_cancelled_)
     return;
   has_received_completion_ = true;
-  completion_status_ = status;
+  status_ = status;
   NotifyCompletionIfAppropriate();
 }
 
@@ -127,7 +127,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
       return;
     }
     if (result != MOJO_RESULT_OK) {
-      completion_status_.error_code = net::ERR_FAILED;
+      status_.error_code = net::ERR_FAILED;
       has_seen_end_of_data_ = true;
       has_received_completion_ = true;
       NotifyCompletionIfAppropriate();
@@ -171,7 +171,7 @@ void URLResponseBodyConsumer::NotifyCompletionIfAppropriate() {
   // Cancel this instance in order not to notify twice.
   Cancel();
 
-  resource_dispatcher_->OnRequestComplete(request_id_, completion_status_);
+  resource_dispatcher_->OnRequestComplete(request_id_, status_);
   // |this| may be deleted.
 }
 

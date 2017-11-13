@@ -342,15 +342,13 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   }
 
   // Navigation is intercepted, transfer the |resource_request_|, |url_loader_|
-  // and the |completion_status_| to the new owner. The new owner is
-  // responsible for handling all the mojom::URLLoaderClient callbacks from now
-  // on.
+  // and the |status_| to the new owner. The new owner is responsible for
+  // handling all the mojom::URLLoaderClient callbacks from now on.
   void InterceptNavigation(
       NavigationURLLoader::NavigationInterceptionCB callback) {
     std::move(callback).Run(std::move(resource_request_),
-                            std::move(url_loader_),
-                            std::move(url_chain_),
-                            std::move(completion_status_));
+                            std::move(url_loader_), std::move(url_chain_),
+                            std::move(status_));
   }
 
   base::Optional<SubresourceLoaderParams> TakeSubresourceLoaderParams() {
@@ -388,7 +386,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {
     if (--redirect_limit_ == 0) {
-      OnComplete(ResourceRequestCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
+      OnComplete(network::URLLoaderStatus(net::ERR_TOO_MANY_REDIRECTS));
       return;
     }
 
@@ -427,20 +425,19 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
             owner_, base::Passed(&body)));
   }
 
-  void OnComplete(
-      const ResourceRequestCompletionStatus& completion_status) override {
-    if (completion_status.error_code != net::OK && !received_response_) {
+  void OnComplete(const network::URLLoaderStatus& status) override {
+    if (status.error_code != net::OK && !received_response_) {
       // If the default loader (network) was used to handle the URL load
       // request we need to see if the handlers want to potentially create a
       // new loader for the response. e.g. AppCache.
       if (MaybeCreateLoaderForResponse(ResourceResponseHead()))
         return;
     }
-    completion_status_ = completion_status;
+    status_ = status;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&NavigationURLLoaderNetworkService::OnComplete, owner_,
-                       completion_status));
+                       status));
   }
 
   // Returns true if a handler wants to handle the response, i.e. return a
@@ -511,7 +508,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // the case that the response is intercepted by download, and OnComplete() is
   // already called while we are transferring the |url_loader_| and response
   // body to download code.
-  base::Optional<ResourceRequestCompletionStatus> completion_status_;
+  base::Optional<network::URLLoaderStatus> status_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderRequestController);
 };
@@ -691,8 +688,8 @@ void NavigationURLLoaderNetworkService::OnStartLoadingResponseBody(
 }
 
 void NavigationURLLoaderNetworkService::OnComplete(
-    const ResourceRequestCompletionStatus& completion_status) {
-  if (completion_status.error_code == net::OK)
+    const network::URLLoaderStatus& status) {
+  if (status.error_code == net::OK)
     return;
 
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
@@ -703,9 +700,8 @@ void NavigationURLLoaderNetworkService::OnComplete(
   // errors.
   bool should_ssl_errors_be_fatal = true;
 
-  delegate_->OnRequestFailed(completion_status.exists_in_cache,
-                             completion_status.error_code, ssl_info_,
-                             should_ssl_errors_be_fatal);
+  delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
+                             ssl_info_, should_ssl_errors_be_fatal);
 }
 
 bool NavigationURLLoaderNetworkService::IsDownload() const {

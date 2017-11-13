@@ -410,8 +410,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnReceivedData(std::unique_ptr<ReceivedData> data);
   void OnTransferSizeUpdated(int transfer_size_diff);
   void OnReceivedCachedMetadata(const char* data, int len);
-  void OnCompletedRequest(
-      const ResourceRequestCompletionStatus& completion_status);
+  void OnCompletedRequest(const network::URLLoaderStatus& status);
 
  private:
   friend class base::RefCounted<Context>;
@@ -469,8 +468,7 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
   void OnTransferSizeUpdated(int transfer_size_diff) override;
   void OnReceivedCachedMetadata(const char* data, int len) override;
-  void OnCompletedRequest(
-      const ResourceRequestCompletionStatus& completion_status) override;
+  void OnCompletedRequest(const network::URLLoaderStatus& status) override;
 
  private:
   scoped_refptr<Context> context_;
@@ -886,9 +884,9 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
-    const ResourceRequestCompletionStatus& completion_status) {
-  int64_t total_transfer_size = completion_status.encoded_data_length;
-  int64_t encoded_body_size = completion_status.encoded_body_length;
+    const network::URLLoaderStatus& status) {
+  int64_t total_transfer_size = status.encoded_data_length;
+  int64_t encoded_body_size = status.encoded_body_length;
 
   if (stream_override_ && stream_override_->stream_url.is_empty()) {
     // TODO(kinuko|scottmg|jam): This is wrong. https://crbug.com/705744.
@@ -901,7 +899,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     ftp_listing_delegate_.reset(nullptr);
   }
 
-  if (body_stream_writer_ && completion_status.error_code != net::OK)
+  if (body_stream_writer_ && status.error_code != net::OK)
     body_stream_writer_->Fail();
   body_stream_writer_.reset();
 
@@ -910,14 +908,14 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         "loading", "WebURLLoaderImpl::Context::OnCompletedRequest",
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
-    if (completion_status.error_code != net::OK) {
-      WebURLError error(completion_status.error_code,
-                        completion_status.exists_in_cache
+    if (status.error_code != net::OK) {
+      WebURLError error(status.error_code,
+                        status.exists_in_cache
                             ? WebURLError::HasCopyInCache::kTrue
                             : WebURLError::HasCopyInCache::kFalse,
                         WebURLError::IsWebSecurityViolation::kFalse, url_);
       client_->DidFail(error, total_transfer_size, encoded_body_size,
-                       completion_status.decoded_body_length);
+                       status.decoded_body_length);
     } else {
       // PlzNavigate: compute the accurate transfer size for navigations.
       if (stream_override_) {
@@ -926,9 +924,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       }
 
       client_->DidFinishLoading(
-          (completion_status.completion_time - TimeTicks()).InSecondsF(),
-          total_transfer_size, encoded_body_size,
-          completion_status.decoded_body_length);
+          (status.completion_time - TimeTicks()).InSecondsF(),
+          total_transfer_size, encoded_body_size, status.decoded_body_length);
     }
   }
 }
@@ -1027,10 +1024,10 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
       OnReceivedData(std::make_unique<FixedReceivedData>(data.data(), size));
   }
 
-  ResourceRequestCompletionStatus completion_status(error_code);
-  completion_status.encoded_body_length = data.size();
-  completion_status.decoded_body_length = data.size();
-  OnCompletedRequest(completion_status);
+  network::URLLoaderStatus status(error_code);
+  status.encoded_body_length = data.size();
+  status.decoded_body_length = data.size();
+  OnCompletedRequest(status);
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1077,8 +1074,8 @@ void WebURLLoaderImpl::RequestPeerImpl::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
-    const ResourceRequestCompletionStatus& completion_status) {
-  context_->OnCompletedRequest(completion_status);
+    const network::URLLoaderStatus& status) {
+  context_->OnCompletedRequest(status);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------

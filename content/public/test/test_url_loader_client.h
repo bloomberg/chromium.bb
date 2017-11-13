@@ -10,13 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/url_loader_status.h"
 
 namespace content {
 
@@ -26,7 +26,7 @@ namespace content {
 //   TestURLLoaderClient client;
 //   factory_->CreateLoaderAndStart(..., client.CreateInterfacePtr(), ...);
 //   client.RunUntilComplete();
-//   EXPECT_EQ(net::OK, client.completion_status().error_code);
+//   EXPECT_EQ(net::OK, client.status().error_code);
 //   ...
 class TestURLLoaderClient final : public mojom::URLLoaderClient {
  public:
@@ -46,7 +46,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
                         OnUploadProgressCallback ack_callback) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void OnComplete(const ResourceRequestCompletionStatus& status) override;
+  void OnComplete(const network::URLLoaderStatus& status) override;
 
   bool has_received_response() const { return has_received_response_; }
   bool has_received_redirect() const { return has_received_redirect_; }
@@ -66,9 +66,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   mojo::ScopedDataPipeConsumerHandle response_body_release() {
     return std::move(response_body_);
   }
-  const ResourceRequestCompletionStatus& completion_status() const {
-    return completion_status_;
-  }
+  const network::URLLoaderStatus& status() const { return status_; }
   int64_t download_data_length() const { return download_data_length_; }
   int64_t encoded_download_data_length() const {
     return encoded_download_data_length_;
@@ -104,7 +102,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   net::RedirectInfo redirect_info_;
   std::string cached_metadata_;
   mojo::ScopedDataPipeConsumerHandle response_body_;
-  ResourceRequestCompletionStatus completion_status_;
+  network::URLLoaderStatus status_;
   bool has_received_response_ = false;
   bool has_received_redirect_ = false;
   bool has_data_downloaded_ = false;

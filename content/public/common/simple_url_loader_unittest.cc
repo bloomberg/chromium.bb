@@ -25,7 +25,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/public/common/network_service.mojom.h"
 #include "content/public/common/resource_request.h"
-#include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -43,6 +42,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/url_loader_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -913,42 +913,42 @@ class MockURLLoader : public mojom::URLLoader {
           break;
         }
         case TestLoaderEvent::kResponseComplete: {
-          ResourceRequestCompletionStatus request_complete_data;
-          request_complete_data.error_code = net::OK;
-          request_complete_data.decoded_body_length = CountBytesToSend();
-          client_->OnComplete(request_complete_data);
+          network::URLLoaderStatus status;
+          status.error_code = net::OK;
+          status.decoded_body_length = CountBytesToSend();
+          client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteFailed: {
-          ResourceRequestCompletionStatus request_complete_data;
+          network::URLLoaderStatus status;
           // Use an error that SimpleURLLoader doesn't create itself, so clear
           // when this is the source of the error code.
-          request_complete_data.error_code = net::ERR_TIMED_OUT;
-          request_complete_data.decoded_body_length = CountBytesToSend();
-          client_->OnComplete(request_complete_data);
+          status.error_code = net::ERR_TIMED_OUT;
+          status.decoded_body_length = CountBytesToSend();
+          client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteNetworkChanged: {
-          ResourceRequestCompletionStatus request_complete_data;
-          request_complete_data.error_code = net::ERR_NETWORK_CHANGED;
-          request_complete_data.decoded_body_length = CountBytesToSend();
-          client_->OnComplete(request_complete_data);
+          network::URLLoaderStatus status;
+          status.error_code = net::ERR_NETWORK_CHANGED;
+          status.decoded_body_length = CountBytesToSend();
+          client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteTruncated: {
-          ResourceRequestCompletionStatus request_complete_data;
-          request_complete_data.error_code = net::OK;
-          request_complete_data.decoded_body_length = CountBytesToSend() + 1;
-          client_->OnComplete(request_complete_data);
+          network::URLLoaderStatus status;
+          status.error_code = net::OK;
+          status.decoded_body_length = CountBytesToSend() + 1;
+          client_->OnComplete(status);
           break;
         }
         case TestLoaderEvent::kResponseCompleteWithExtraData: {
           // Make sure |decoded_body_length| doesn't underflow.
           DCHECK_GT(CountBytesToSend(), 0u);
-          ResourceRequestCompletionStatus request_complete_data;
-          request_complete_data.error_code = net::OK;
-          request_complete_data.decoded_body_length = CountBytesToSend() - 1;
-          client_->OnComplete(request_complete_data);
+          network::URLLoaderStatus status;
+          status.error_code = net::OK;
+          status.decoded_body_length = CountBytesToSend() - 1;
+          client_->OnComplete(status);
         }
         case TestLoaderEvent::kClientPipeClosed: {
           EXPECT_TRUE(binding_.is_bound());

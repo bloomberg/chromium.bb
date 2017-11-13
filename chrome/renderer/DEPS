@@ -50,6 +50,7 @@ include_rules = [
   "+media/base",
   "+ppapi/c",
   "+ppapi/shared_impl",
+  "+services/network/public/cpp",
   "+services/service_manager/public/cpp",
   "+skia",
   "+storage/common",
