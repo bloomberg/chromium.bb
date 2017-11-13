@@ -214,9 +214,7 @@ String AbstractPropertySetCSSStyleDeclaration::GetPropertyShorthand(
   CSSPropertyID property_id = cssPropertyID(property_name);
 
   // Custom properties don't have shorthands, so we can ignore them here.
-  if (!property_id || property_id == CSSPropertyVariable)
-    return String();
-  if (isShorthandProperty(property_id))
+  if (!property_id || !CSSProperty::Get(property_id).IsLonghand())
     return String();
   CSSPropertyID shorthand_id = PropertySet().GetPropertyShorthand(property_id);
   if (!shorthand_id)

@@ -1506,7 +1506,7 @@ void StyleResolver::ApplyAllProperty(
         CSSProperty::Get(resolveCSSPropertyID(property_id));
 
     // StyleBuilder does not allow any expanded shorthands.
-    if (isShorthandProperty(property_id))
+    if (property_class.IsShorthand())
       continue;
 
     // all shorthand spec says:

@@ -1649,8 +1649,8 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
                               CSSPropertyID current_shorthand,
                               const CSSParserContext& context,
                               CSSParserTokenRange& range) {
-  DCHECK(!isShorthandProperty(unresolved_property));
   CSSPropertyID property_id = resolveCSSPropertyID(unresolved_property);
+  DCHECK(!CSSProperty::Get(property_id).IsShorthand());
   if (CSSParserFastPaths::IsKeywordPropertyID(property_id)) {
     if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
             property_id, range.Peek().Id(), context.Mode()))
@@ -1659,11 +1659,12 @@ const CSSValue* ParseLonghand(CSSPropertyID unresolved_property,
     return ConsumeIdent(range);
   }
 
-  const Longhand& property = ToLonghand(CSSProperty::Get(property_id));
-  const CSSValue* result = property.ParseSingleValue(
-      range, context,
-      CSSParserLocalContext(isPropertyAlias(unresolved_property),
-                            current_shorthand));
+  const CSSValue* result =
+      ToLonghand(CSSProperty::Get(property_id))
+          .ParseSingleValue(
+              range, context,
+              CSSParserLocalContext(isPropertyAlias(unresolved_property),
+                                    current_shorthand));
   return result;
 }
 

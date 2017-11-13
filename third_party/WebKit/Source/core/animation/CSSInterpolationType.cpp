@@ -137,7 +137,7 @@ CSSInterpolationType::CSSInterpolationType(
     const PropertyRegistration* registration)
     : InterpolationType(property), registration_(registration) {
   DCHECK(!GetProperty().IsCSSCustomProperty() || registration);
-  DCHECK(!isShorthandProperty(CssProperty()));
+  DCHECK(!CSSProperty::Get(CssProperty()).IsShorthand());
 }
 
 InterpolationValue CSSInterpolationType::MaybeConvertSingle(

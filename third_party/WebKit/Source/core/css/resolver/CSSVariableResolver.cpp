@@ -226,7 +226,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     CSSPropertyID id,
     const CSSValue& value,
     bool disallow_animation_tainted) {
-  DCHECK(!isShorthandProperty(id));
+  DCHECK(!CSSProperty::Get(id).IsShorthand());
 
   if (value.IsPendingSubstitutionValue()) {
     return ResolvePendingSubstitutions(id, ToCSSPendingSubstitutionValue(value),
