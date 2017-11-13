@@ -5,6 +5,7 @@
 // This file contains the unit tests for the bit utilities.
 
 #include "base/bits.h"
+#include "build/build_config.h"
 
 #include <stddef.h>
 
@@ -61,24 +62,112 @@ TEST(BitsTest, Align) {
   EXPECT_EQ(kSizeTMax / 2 + 1, Align(1, kSizeTMax / 2 + 1));
 }
 
-TEST(BitsTest, CLZWorks) {
-  EXPECT_EQ(32u, CountLeadingZeroBits32(0u));
-  EXPECT_EQ(31u, CountLeadingZeroBits32(1u));
-  EXPECT_EQ(1u, CountLeadingZeroBits32(1u << 30));
-  EXPECT_EQ(0u, CountLeadingZeroBits32(1u << 31));
+TEST(BitsTest, CountLeadingZeroBits8) {
+  EXPECT_EQ(8u, CountLeadingZeroBits(uint8_t{0}));
+  EXPECT_EQ(7u, CountLeadingZeroBits(uint8_t{1}));
+  for (uint8_t shift = 0; shift <= 7; shift++) {
+    EXPECT_EQ(7u - shift,
+              CountLeadingZeroBits(static_cast<uint8_t>(1 << shift)));
+  }
+  EXPECT_EQ(4u, CountLeadingZeroBits(uint8_t{0x0f}));
+}
+
+TEST(BitsTest, CountLeadingZeroBits16) {
+  EXPECT_EQ(16u, CountLeadingZeroBits(uint16_t{0}));
+  EXPECT_EQ(15u, CountLeadingZeroBits(uint16_t{1}));
+  for (uint16_t shift = 0; shift <= 15; shift++) {
+    EXPECT_EQ(15u - shift,
+              CountLeadingZeroBits(static_cast<uint16_t>(1 << shift)));
+  }
+  EXPECT_EQ(4u, CountLeadingZeroBits(uint16_t{0x0f0f}));
+}
+
+TEST(BitsTest, CountLeadingZeroBits32) {
+  EXPECT_EQ(32u, CountLeadingZeroBits(uint32_t{0}));
+  EXPECT_EQ(31u, CountLeadingZeroBits(uint32_t{1}));
+  for (uint32_t shift = 0; shift <= 31; shift++) {
+    EXPECT_EQ(31u - shift, CountLeadingZeroBits(uint32_t{1} << shift));
+  }
+  EXPECT_EQ(4u, CountLeadingZeroBits(uint32_t{0x0f0f0f0f}));
+}
+
+TEST(BitsTest, CountTrailingeZeroBits8) {
+  EXPECT_EQ(8u, CountTrailingZeroBits(uint8_t{0}));
+  EXPECT_EQ(7u, CountTrailingZeroBits(uint8_t{128}));
+  for (uint8_t shift = 0; shift <= 7; shift++) {
+    EXPECT_EQ(shift, CountTrailingZeroBits(static_cast<uint8_t>(1 << shift)));
+  }
+  EXPECT_EQ(4u, CountTrailingZeroBits(uint8_t{0xf0}));
+}
+
+TEST(BitsTest, CountTrailingeZeroBits16) {
+  EXPECT_EQ(16u, CountTrailingZeroBits(uint16_t{0}));
+  EXPECT_EQ(15u, CountTrailingZeroBits(uint16_t{32768}));
+  for (uint16_t shift = 0; shift <= 15; shift++) {
+    EXPECT_EQ(shift, CountTrailingZeroBits(static_cast<uint16_t>(1 << shift)));
+  }
+  EXPECT_EQ(4u, CountTrailingZeroBits(uint16_t{0xf0f0}));
+}
+
+TEST(BitsTest, CountTrailingeZeroBits32) {
+  EXPECT_EQ(32u, CountTrailingZeroBits(uint32_t{0}));
+  EXPECT_EQ(31u, CountTrailingZeroBits(uint32_t{1} << 31));
+  for (uint32_t shift = 0; shift <= 31; shift++) {
+    EXPECT_EQ(shift, CountTrailingZeroBits(uint32_t{1} << shift));
+  }
+  EXPECT_EQ(4u, CountTrailingZeroBits(uint32_t{0xf0f0f0f0}));
+}
 
 #if defined(ARCH_CPU_64_BITS)
-  EXPECT_EQ(64u, CountLeadingZeroBitsSizeT(0ull));
-  EXPECT_EQ(63u, CountLeadingZeroBitsSizeT(1ull));
-  EXPECT_EQ(32u, CountLeadingZeroBitsSizeT(1ull << 31));
-  EXPECT_EQ(1u, CountLeadingZeroBitsSizeT(1ull << 62));
-  EXPECT_EQ(0u, CountLeadingZeroBitsSizeT(1ull << 63));
+
+TEST(BitsTest, CountLeadingZeroBits64) {
+  EXPECT_EQ(64u, CountLeadingZeroBits(uint64_t{0}));
+  EXPECT_EQ(63u, CountLeadingZeroBits(uint64_t{1}));
+  for (uint64_t shift = 0; shift <= 63; shift++) {
+    EXPECT_EQ(63u - shift, CountLeadingZeroBits(uint64_t{1} << shift));
+  }
+  EXPECT_EQ(4u, CountLeadingZeroBits(uint64_t{0x0f0f0f0f0f0f0f0f}));
+}
+
+TEST(BitsTest, CountTrailingeZeroBits64) {
+  EXPECT_EQ(64u, CountTrailingZeroBits(uint64_t{0}));
+  EXPECT_EQ(63u, CountTrailingZeroBits(uint64_t{1} << 63));
+  for (uint64_t shift = 0; shift <= 31; shift++) {
+    EXPECT_EQ(shift, CountTrailingZeroBits(uint64_t{1} << shift));
+  }
+  EXPECT_EQ(4u, CountTrailingZeroBits(uint64_t{0xf0f0f0f0f0f0f0f0}));
+}
+
+#endif  // ARCH_CPU_64_BITS
+
+TEST(BitsTest, CountLeadingZeroBitsSizeT) {
+#if defined(ARCH_CPU_64_BITS)
+  EXPECT_EQ(64u, CountLeadingZeroBitsSizeT(size_t{0}));
+  EXPECT_EQ(63u, CountLeadingZeroBitsSizeT(size_t{1}));
+  EXPECT_EQ(32u, CountLeadingZeroBitsSizeT(size_t{1} << 31));
+  EXPECT_EQ(1u, CountLeadingZeroBitsSizeT(size_t{1} << 62));
+  EXPECT_EQ(0u, CountLeadingZeroBitsSizeT(size_t{1} << 63));
 #else
-  EXPECT_EQ(32u, CountLeadingZeroBitsSizeT(0u));
-  EXPECT_EQ(31u, CountLeadingZeroBitsSizeT(1u));
-  EXPECT_EQ(1u, CountLeadingZeroBitsSizeT(1u << 30));
-  EXPECT_EQ(0u, CountLeadingZeroBitsSizeT(1u << 31));
-#endif
+  EXPECT_EQ(32u, CountLeadingZeroBitsSizeT(size_t{0}));
+  EXPECT_EQ(31u, CountLeadingZeroBitsSizeT(size_t{1}));
+  EXPECT_EQ(1u, CountLeadingZeroBitsSizeT(size_t{1} << 30));
+  EXPECT_EQ(0u, CountLeadingZeroBitsSizeT(size_t{1} << 31));
+#endif  // ARCH_CPU_64_BITS
+}
+
+TEST(BitsTest, CountTrailingZeroBitsSizeT) {
+#if defined(ARCH_CPU_64_BITS)
+  EXPECT_EQ(64u, CountTrailingZeroBitsSizeT(size_t{0}));
+  EXPECT_EQ(63u, CountTrailingZeroBitsSizeT(size_t{1} << 63));
+  EXPECT_EQ(31u, CountTrailingZeroBitsSizeT(size_t{1} << 31));
+  EXPECT_EQ(1u, CountTrailingZeroBitsSizeT(size_t{2}));
+  EXPECT_EQ(0u, CountTrailingZeroBitsSizeT(size_t{1}));
+#else
+  EXPECT_EQ(32u, CountTrailingZeroBitsSizeT(size_t{0}));
+  EXPECT_EQ(31u, CountTrailingZeroBitsSizeT(size_t{1} << 31));
+  EXPECT_EQ(1u, CountTrailingZeroBitsSizeT(size_t{2}));
+  EXPECT_EQ(0u, CountTrailingZeroBitsSizeT(size_t{1}));
+#endif  // ARCH_CPU_64_BITS
 }
 
 }  // namespace bits
