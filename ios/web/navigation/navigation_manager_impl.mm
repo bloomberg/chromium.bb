@@ -355,7 +355,7 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
   WebClient* client = GetWebClient();
   for (int index = GetLastCommittedItemIndex(); index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
-    if (!client->IsAppSpecificURL(item->GetVirtualURL()))
+    if (!client->IsAppSpecificURL(item->GetURL()))
       return item;
   }
   return nullptr;
