@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -27,8 +27,7 @@ class MediaCaptureObserver {
 // Provides the MediaController interface to the outside world. This lets a
 // consumer of ash provide a MediaClient, which we will dispatch to if one has
 // been provided to us.
-class MediaController : public mojom::MediaController,
-                        public mojom::MediaClient {
+class MediaController : public mojom::MediaController {
  public:
   MediaController();
   ~MediaController() override;
@@ -43,17 +42,17 @@ class MediaController : public mojom::MediaController,
   void NotifyCaptureState(
       const std::vector<mojom::MediaCaptureState>& capture_states) override;
 
-  // mojom::MediaClient:
-  void HandleMediaNextTrack() override;
-  void HandleMediaPlayPause() override;
-  void HandleMediaPrevTrack() override;
-  void RequestCaptureState() override;
-  void SuspendMediaSessions() override;
+  // Methods that forward to |client_|.
+  void HandleMediaNextTrack();
+  void HandleMediaPlayPause();
+  void HandleMediaPrevTrack();
+  void RequestCaptureState();
+  void SuspendMediaSessions();
 
  private:
   friend class MultiProfileMediaTrayItemTest;
 
-  mojo::BindingSet<mojom::MediaController> bindings_;
+  mojo::Binding<mojom::MediaController> binding_;
 
   mojom::MediaClientAssociatedPtr client_;
 

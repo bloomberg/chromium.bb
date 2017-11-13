@@ -6,12 +6,12 @@
 
 namespace ash {
 
-MediaController::MediaController() {}
+MediaController::MediaController() : binding_(this) {}
 
 MediaController::~MediaController() {}
 
 void MediaController::BindRequest(mojom::MediaControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void MediaController::AddObserver(MediaCaptureObserver* observer) {

@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
 
@@ -67,7 +67,7 @@ class ASH_EXPORT TrayAction : public mojom::TrayAction {
 
   base::ObserverList<TrayActionObserver> observers_;
 
-  mojo::BindingSet<mojom::TrayAction> bindings_;
+  mojo::Binding<mojom::TrayAction> binding_;
 
   mojom::TrayActionClientPtr tray_action_client_;
 

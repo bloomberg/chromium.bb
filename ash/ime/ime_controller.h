@@ -12,7 +12,7 @@
 #include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace ui {
 class Accelerator;
@@ -100,8 +100,8 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   std::vector<std::string> GetCandidateImesForAccelerator(
       const ui::Accelerator& accelerator) const;
 
-  // Bindings for users of the mojo interface.
-  mojo::BindingSet<mojom::ImeController> bindings_;
+  // Binding for the mojo interface.
+  mojo::Binding<mojom::ImeController> binding_;
 
   // Client interface back to IME code in chrome.
   mojom::ImeControllerClientPtr client_;

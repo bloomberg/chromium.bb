@@ -9,7 +9,7 @@
 
 namespace ash {
 
-CastConfigController::CastConfigController() {}
+CastConfigController::CastConfigController() : binding_(this) {}
 
 CastConfigController::~CastConfigController() {}
 
@@ -27,7 +27,7 @@ void CastConfigController::RemoveObserver(
 }
 
 void CastConfigController::BindRequest(mojom::CastConfigRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void CastConfigController::SetClient(

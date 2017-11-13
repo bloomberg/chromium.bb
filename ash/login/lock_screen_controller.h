@@ -9,7 +9,7 @@
 #include "ash/public/interfaces/lock_screen.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class PrefRegistrySimple;
 
@@ -109,8 +109,8 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
   // Client interface in chrome browser. May be null in tests.
   mojom::LockScreenClientPtr lock_screen_client_;
 
-  // Bindings for the LockScreen interface.
-  mojo::BindingSet<mojom::LockScreen> bindings_;
+  // Binding for the LockScreen interface.
+  mojo::Binding<mojom::LockScreen> binding_;
 
   // User authentication call that will run when we have system salt.
   PendingAuthenticateUserCall pending_user_auth_;

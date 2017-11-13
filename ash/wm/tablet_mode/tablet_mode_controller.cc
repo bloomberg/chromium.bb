@@ -121,6 +121,7 @@ TabletModeController::TabletModeController()
       lid_is_closed_(false),
       auto_hide_title_bars_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTabletAutohideTitlebars)),
+      binding_(this),
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
@@ -201,7 +202,7 @@ void TabletModeController::AddWindow(aura::Window* window) {
 
 void TabletModeController::BindRequest(
     mojom::TabletModeControllerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+  binding_.Bind(std::move(request));
 }
 
 void TabletModeController::AddObserver(TabletModeObserver* observer) {
@@ -389,7 +390,7 @@ void TabletModeController::LeaveTabletMode() {
 }
 
 void TabletModeController::FlushForTesting() {
-  bindings_.FlushForTesting();
+  binding_.FlushForTesting();
 }
 
 void TabletModeController::OnShellInitialized() {
