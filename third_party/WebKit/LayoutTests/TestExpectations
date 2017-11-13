@@ -3239,6 +3239,17 @@ crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/modu
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
+crbug.com/778796 http/tests/devtools/console/console-custom-formatters.js [ Skip ]
+crbug.com/778796 http/tests/devtools/console/console-uncaught-promise-in-worker.js [ Skip ]
+crbug.com/778796 http/tests/devtools/sources/debugger-async/async-callstack-promises.js [ Skip ]
+crbug.com/778796 http/tests/devtools/sources/debugger-step/debugger-step-through-promises.js [ Skip ]
+crbug.com/778796 http/tests/devtools/sources/debugger/async-callstack-fetch.js [ Skip ]
+crbug.com/778796 virtual/mojo-loading/http/tests/devtools/console/console-custom-formatters.js [ Skip ]
+crbug.com/778796 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise-in-worker.js [ Skip ]
+crbug.com/778796 virtual/mojo-loading/http/tests/devtools/sources/debugger-async/async-callstack-promises.js [ Skip ]
+crbug.com/778796 virtual/mojo-loading/http/tests/devtools/sources/debugger-step/debugger-step-through-promises.js [ Skip ]
+crbug.com/778796 virtual/mojo-loading/http/tests/devtools/sources/debugger/async-callstack-fetch.js [ Skip ]
+
 # known bug: import() inside set{Timeout,Interval}
 crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-classic.html [ Failure ]
 crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-module.html [ Failure ]
