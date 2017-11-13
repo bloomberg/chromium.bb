@@ -56,15 +56,7 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
             ]
             property_['superclass'] = superclass
             class_data = self.get_class(property_)
-            # Functions should only be declared on the property classes if they are
-            # implemented and not shared (denoted by property_class = true. Shared
-            # classes are denoted by property_class = "some string").
-            property_['should_declare_application_functions'] = \
-                property_['unique'] \
-                and property_['is_property'] \
-                and not property_['longhands'] \
-                and not property_['direction_aware_options'] \
-                and not property_['builder_skip']
+            self.calculate_apply_functions_to_declare(property_)
             self._outputs[class_data.classname + '.h'] = (
                 self.generate_property_h_builder(
                     class_data.classname, property_))
@@ -79,6 +71,35 @@ class CSSPropertyHeadersWriter(CSSPropertyWriter):
                 'property': property_,
             }
         return generate_property_h
+
+    def calculate_apply_functions_to_declare(self, property_):
+        # Functions should only be declared on the property classes if they are
+        # implemented and not shared (denoted by property_class = true. Shared
+        # classes are denoted by property_class = "some string").
+        property_['should_declare_apply_functions'] = \
+            property_['unique'] \
+            and property_['is_property'] \
+            and not property_['longhands'] \
+            and not property_['direction_aware_options'] \
+            and not property_['builder_skip']
+        if property_['custom_apply_functions_all']:
+            property_name = property_['upper_camel_name']
+            if (property_name in
+                    ['Clip', 'ColumnCount', 'ColumnWidth', 'ZIndex']):
+                property_['custom_apply'] = "auto"
+                property_['custom_apply_args'] = {'auto_identity': 'CSSValueAuto'}
+            if property_name == 'ColumnGap':
+                property_['custom_apply'] = "auto"
+                property_['custom_apply_args'] = {
+                    'auto_getter': 'HasNormalColumnGap',
+                    'auto_setter': 'SetHasNormalColumnGap',
+                    'auto_identity': 'CSSValueNormal'}
+        property_['should_implement_apply_functions'] = (
+            property_['should_declare_apply_functions'] and
+            (not (property_['custom_apply_functions_initial'] and
+                  property_['custom_apply_functions_inherit'] and
+                  property_['custom_apply_functions_value']) or
+             'custom_apply' in property_.keys()))
 
     def validate_input(self):
         # First collect which classes correspond to which properties.

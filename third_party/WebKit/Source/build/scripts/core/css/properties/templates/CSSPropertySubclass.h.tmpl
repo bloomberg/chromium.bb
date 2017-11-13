@@ -14,7 +14,7 @@
 {% if property.direction_aware_options %}
 #include "core/StylePropertyShorthand.h"
 {% endif %}
-{% if property.should_declare_application_functions %}
+{% if property.should_implement_apply_functions %}
 #include "core/css/resolver/StyleResolverState.h"
   {% if property.converter == "CSSPrimitiveValue" %}
 #include "core/css/CSSPrimitiveValue.h"
@@ -77,9 +77,19 @@ class {{property_classname}} : public {{property.superclass}} {
   {% if property.is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
-  {% if property.should_declare_application_functions %}
+  {# Style builder functions #}
+{% macro declare_initial() %}
+void ApplyInitial(StyleResolverState& state) const override {
+{%- endmacro %}
+{% macro declare_inherit() %}
+void ApplyInherit(StyleResolverState& state) const override {
+{%- endmacro %}
+{% macro declare_value() %}
+void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
+{%- endmacro %}
+  {% if property.should_declare_apply_functions %}
     {% if not property.custom_apply_functions_initial %}
-  void ApplyInitial(StyleResolverState& state) const override {
+  {{declare_initial()}}
       {% if property.svg %}
     {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
       {% elif property.font %}
@@ -94,7 +104,7 @@ class {{property_classname}} : public {{property.superclass}} {
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
     {% if not property.custom_apply_functions_inherit %}
-  void ApplyInherit(StyleResolverState& state) const override {
+  {{declare_inherit()}}
       {% if property.svg %}
     {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
       {% elif property.font %}
@@ -109,7 +119,7 @@ class {{property_classname}} : public {{property.superclass}} {
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
     {% if not property.custom_apply_functions_value %}
-  void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
+  {{declare_value()}}
     {{convert_and_set_value(property)}}
       {% if property.independent %}
     state.Style()->{{property.is_inherited_setter}}(false);
@@ -117,6 +127,30 @@ class {{property_classname}} : public {{property.superclass}} {
   }
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
+    {% if property.custom_apply == "auto" %}
+    {% set auto_getter = property.custom_apply_args['auto_getter'] or
+                         'HasAuto' + property.name_for_methods %}
+    {% set auto_setter = property.custom_apply_args['auto_setter'] or
+                         'SetHasAuto' + property.name_for_methods %}
+    {% set auto_identity = property.custom_apply_args['auto_identity'] or
+                           'CSSValueAuto' %}
+  {{declare_initial()}}
+    state.Style()->{{auto_setter}}();
+  }
+  {{declare_inherit()}}
+    if (state.ParentStyle()->{{auto_getter}}())
+      state.Style()->{{auto_setter}}();
+    else
+      {{set_value(property)}}(state.ParentStyle()->{{property.getter}}());
+  }
+  {{declare_value()}}
+    if (value.IsIdentifierValue() &&
+        ToCSSIdentifierValue(value).GetValueID() == {{auto_identity}})
+      state.Style()->{{auto_setter}}();
+    else
+      {{convert_and_set_value(property)}}
+  }
+    {% endif %}
   {% endif %}
   {% if 'Percent' in property.typedom_types %}
   bool SupportsPercentage() const override { return true; }
