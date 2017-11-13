@@ -4004,6 +4004,9 @@ void PDFiumEngine::Form_OutputSelectedRect(FPDF_FORMFILLINFO* param,
   pp::Rect rect = engine->pages_[page_index]->PageToScreen(
       engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
       bottom, engine->current_rotation_);
+  if (rect.IsEmpty())
+    return;
+
   engine->form_highlights_.push_back(rect);
 }
 

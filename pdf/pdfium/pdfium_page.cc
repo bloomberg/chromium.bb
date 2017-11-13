@@ -501,10 +501,16 @@ void PDFiumPage::CalculateLinks() {
 
     int rect_count = FPDFLink_CountRects(links, i);
     for (int j = 0; j < rect_count; ++j) {
-      double left, top, right, bottom;
+      double left;
+      double top;
+      double right;
+      double bottom;
       FPDFLink_GetRect(links, i, j, &left, &top, &right, &bottom);
-      link.rects.push_back(
-          PageToScreen(pp::Point(), 1.0, left, top, right, bottom, 0));
+      pp::Rect rect =
+          PageToScreen(pp::Point(), 1.0, left, top, right, bottom, 0);
+      if (rect.IsEmpty())
+        continue;
+      link.rects.push_back(rect);
     }
     links_.push_back(link);
   }
