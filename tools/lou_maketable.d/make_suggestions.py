@@ -21,11 +21,11 @@
 import argparse
 from utils import *
 
-def update_counters(correct, init=False):
+def update_counters(total, init=False):
     if not init:
         sys.stderr.write("\033[1A\033[K")
         sys.stderr.write("\033[1A\033[K")
-    sys.stderr.write(("%d words correctly translated\n" % correct))
+    sys.stderr.write(("%d words processed\n" % total))
     sys.stderr.flush()
 
 def main():
@@ -36,6 +36,8 @@ def main():
                         help="translation table including hyphenation patterns")
     parser.add_argument('-n', type=int, default=10, dest="MAX_PROBLEMS",
                         help="maximal number of suggestions")
+    parser.add_argument('--non-interactive', type=bool, default=False, dest="NON_INTERACTIVE",
+                        help="commit all suggestions without providing details")
     parser.add_argument('--print-total-rate', type=bool, default=False, dest="TOTAL_RATE",
                         help="print the total number of correctly translated words (takes longer)")
     args = parser.parse_args()
@@ -45,7 +47,8 @@ def main():
     load_table(args.TABLE)
     problems = 0
     correct = 0
-    update_counters(correct, init=True)
+    total = 0
+    update_counters(total, init=True)
     for text, braille in c.fetchall():
         problem = False
         if braille:
@@ -72,23 +75,28 @@ def main():
                             comments.append("> " + "\t".join(rule))
                     suggest_rules.append({"opcode": "word", "text": text, "braille": braille})
             if problem and problems < args.MAX_PROBLEMS:
-                println("# >>>\t%s\t%s" % (text, braille or ""))
-                for comment in comments:
-                    println("# | " + comment)
-                println("# |__")
-                for row in suggest_rows:
-                    println("#\t%(text)s\t%(braille)s" % row)
-                for rule in suggest_rules:
-                    println("# %(opcode)s\t%(text)s\t%(braille)s" % rule)
+                if args.NON_INTERACTIVE and suggest_rules:
+                    for rule in suggest_rules:
+                        println("%(opcode)s\t%(text)s\t%(braille)s" % rule)
+                else:
+                    println("# >>>\t%s\t%s" % (text, braille or ""))
+                    for comment in comments:
+                        println("# | " + comment)
+                    println("# |__")
+                    for row in suggest_rows:
+                        println("#\t%(text)s\t%(braille)s" % row)
+                    for rule in suggest_rules:
+                        println("# %(opcode)s\t%(text)s\t%(braille)s" % rule)
                     println()
-                problems += 1
+                    problems += 1
                 if not args.TOTAL_RATE and problems >= args.MAX_PROBLEMS:
                     break
             else:
                 correct += 1
-                update_counters(correct)
+            total += 1
+            update_counters(total)
     if args.TOTAL_RATE:
-        println("### %d out of %d (%.1f %%) words translated correctly" % (correct, correct + problems, math.floor(1000 * correct / (correct + problems)) / 10))
+        println("### %d out of %d (%.1f %%) words translated correctly" % (correct, total, math.floor(1000 * correct / total) / 10))
     elif correct > 0:
         println("### %d words translated correctly" % correct)
     conn.close()
