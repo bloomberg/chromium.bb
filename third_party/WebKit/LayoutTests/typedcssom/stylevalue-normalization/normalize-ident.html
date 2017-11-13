@@ -15,7 +15,7 @@ test(() => {
 
 test(() => {
   assert_style_value_equals(
-      newDivWithStyle('width: auto').styleMap.get('width'),
+      newDivWithStyle('width: auto').attributeStyleMap.get('width'),
       new CSSKeywordValue('auto'));
 }, 'CSS identifiers are normalized from CSSOM to CSSKeywordValues');
 
