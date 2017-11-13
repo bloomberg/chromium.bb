@@ -161,6 +161,8 @@ struct weston_wm_window {
 	struct weston_output_weak_ref legacy_fullscreen_output;
 	int saved_width, saved_height;
 	int decorate;
+	uint32_t last_button_time;
+	int did_double;
 	int override_redirect;
 	int fullscreen;
 	int has_alpha;
@@ -1930,6 +1932,7 @@ weston_wm_window_close(struct weston_wm_window *window, xcb_timestamp_t time)
 	}
 }
 
+#define DOUBLE_CLICK_PERIOD 250
 static void
 weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 {
@@ -1942,6 +1945,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	enum theme_location location;
 	enum wl_pointer_button_state button_state;
 	uint32_t button_id;
+	uint32_t double_click = 0;
 
 	wm_log("XCB_BUTTON_%s (detail %d)\n",
 	       button->response_type == XCB_BUTTON_PRESS ?
@@ -1962,6 +1966,19 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 		WL_POINTER_BUTTON_STATE_RELEASED;
 	button_id = button->detail == 1 ? BTN_LEFT : BTN_RIGHT;
 
+	if (button_state == WL_POINTER_BUTTON_STATE_PRESSED) {
+		if (button->time - window->last_button_time <= DOUBLE_CLICK_PERIOD) {
+			double_click = 1;
+			window->did_double = 1;
+		} else
+			window->did_double = 0;
+
+		window->last_button_time = button->time;
+	} else if (window->did_double == 1) {
+		double_click = 1;
+		window->did_double = 0;
+	}
+
 	/* Make sure we're looking at the right location.  The frame
 	 * could have received a motion event from a pointer from a
 	 * different wl_seat, but under X it looks like our core
@@ -1969,8 +1986,13 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	 * location before deciding what to do. */
 	location = frame_pointer_motion(window->frame, NULL,
 					button->event_x, button->event_y);
-	location = frame_pointer_button(window->frame, NULL,
-					button_id, button_state);
+	if (double_click)
+		location = frame_double_click(window->frame, NULL,
+					      button_id, button_state);
+	else
+		location = frame_pointer_button(window->frame, NULL,
+						button_id, button_state);
+
 	if (frame_status(window->frame) & FRAME_STATUS_REPAINT)
 		weston_wm_window_schedule_repaint(window);
 
