@@ -54,8 +54,11 @@ const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
     double right;
     double bottom;
     FPDFText_GetRect(page_->GetTextPage(), i, &left, &top, &right, &bottom);
-    cached_screen_rects_.push_back(
-        page_->PageToScreen(offset, zoom, left, top, right, bottom, rotation));
+    pp::Rect rect =
+        page_->PageToScreen(offset, zoom, left, top, right, bottom, rotation);
+    if (rect.IsEmpty())
+      continue;
+    cached_screen_rects_.push_back(rect);
   }
 
   return cached_screen_rects_;
