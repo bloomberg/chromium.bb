@@ -302,7 +302,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         MockInteractions.tap(pinPasswordRadioButton);
         assertTrue(isSetupPinButtonVisible());
-        assertRadioButtonActive(pinPasswordRadioButton)
+        assertRadioButtonActive(pinPasswordRadioButton);
 
         Polymer.dom.flush();
         MockInteractions.tap(getFromElement('#setupPinButton'));

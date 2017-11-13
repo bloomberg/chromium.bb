@@ -158,7 +158,7 @@ suite('CategoryDefaultSetting', function() {
         .then(() => assertNotReached());
     return browserProxy.whenCalled('getDefaultValueForContentType').then(() => {
       assertEquals(false, testElement.categoryEnabled);
-    })
+    });
   });
 
   function testTristateCategory(

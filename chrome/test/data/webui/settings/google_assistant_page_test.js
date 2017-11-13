@@ -70,9 +70,7 @@ suite('GoogleAssistantHandler', function() {
     Polymer.dom.flush();
     assertTrue(button.checked);
     return browserProxy.whenCalled('setGoogleAssistantEnabled')
-        .then(function(arg) {
-          assertTrue(arg);
-        });
+        .then(assertTrue);
   });
 
   test('toggleAssistantContext', function() {
@@ -89,10 +87,7 @@ suite('GoogleAssistantHandler', function() {
     Polymer.dom.flush();
     assertTrue(button.checked);
     return browserProxy.whenCalled('setGoogleAssistantContextEnabled')
-        .then(function(arg) {
-          assertTrue(arg);
-        });
-    ;
+        .then(assertTrue);
   });
 
   test('tapOnAssistantSettings', function() {

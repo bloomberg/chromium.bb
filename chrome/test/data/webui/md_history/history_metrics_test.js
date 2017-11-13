@@ -39,7 +39,7 @@ suite('Metrics', function() {
       /** @override */
       recordAction: function(action) {
         if (!(action in this.actionMap))
-          this.actionMap[action] = 0
+          this.actionMap[action] = 0;
 
         this.actionMap[action]++;
       },

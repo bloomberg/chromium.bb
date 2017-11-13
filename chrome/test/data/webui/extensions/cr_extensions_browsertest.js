@@ -551,7 +551,7 @@ var CrExtensionsViewManagerTest = class extends CrExtensionsBrowserTest {
       'extension_view_manager_test.js',
     ]);
   }
-}
+};
 
 TEST_F('CrExtensionsViewManagerTest', 'VisibilityTest', function() {
   mocha.grep(assert(extension_view_manager_tests.TestNames.Visibility)).run();
@@ -577,7 +577,7 @@ var CrExtensionsToggleRowTest = class extends CrExtensionsBrowserTest {
       'toggle_row_test.js',
     ]);
   }
-}
+};
 
 TEST_F('CrExtensionsToggleRowTest', 'ToggleRowTest', function() {
   mocha.run();

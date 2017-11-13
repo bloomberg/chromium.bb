@@ -19,7 +19,7 @@ suite('CrPolicyIndicatorBehavior', function() {
   });
 
   test('default indicator is blank', function() {
-    assertEquals(CrPolicyIndicatorType.NONE, indicator.indicatorType)
+    assertEquals(CrPolicyIndicatorType.NONE, indicator.indicatorType);
     assertFalse(indicator.indicatorVisible);
   });
 

@@ -65,7 +65,7 @@ suite('cr-scrollable-behavior', function() {
     ironList.scrollToIndex(index);
     container.dispatchEvent(new CustomEvent('scroll'));
     Polymer.dom.flush();
-  };
+  }
 
   test('scroll', function() {
     assertTrue(container.classList.contains('can-scroll'));

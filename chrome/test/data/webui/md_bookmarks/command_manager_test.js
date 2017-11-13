@@ -161,7 +161,7 @@ suite('<bookmarks-command-manager>', function() {
   test('undo and redo commands trigger', function() {
     var undoModifier = cr.isMac ? 'meta' : 'ctrl';
     var undoKey = 'z';
-    var redoModifier = cr.isMac ? ['meta', 'shift'] : 'ctrl'
+    var redoModifier = cr.isMac ? ['meta', 'shift'] : 'ctrl';
     var redoKey = cr.isMac ? 'Z' : 'y';
 
     MockInteractions.pressAndReleaseKeyOn(
@@ -406,7 +406,7 @@ suite('<bookmarks-item> CommandManager integration', function() {
     openedTabs = [];
     chrome.tabs.create = function(createConfig) {
       openedTabs.push(createConfig);
-    }
+    };
   });
 
   function assertOpenedTabs(tabs) {

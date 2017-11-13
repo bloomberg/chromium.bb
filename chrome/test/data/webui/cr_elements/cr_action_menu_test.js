@@ -358,7 +358,7 @@ suite('CrActionMenu', function() {
       `;
       menu = document.querySelector('dialog[is=cr-action-menu]');
       dots = document.querySelector('#dots');
-    })
+    });
 
     // Show the menu, scrolling the body to the button.
     test('simple offscreen', function() {

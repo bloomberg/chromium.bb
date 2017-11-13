@@ -193,7 +193,7 @@ cr.define('extension_error_page_tests', function() {
       MockInteractions.tap(errorElements[1]);
       expectEquals(nextRuntimeError, errorPage.getSelectedError());
       expectTrue(!!mockDelegate.requestFileSourceArgs);
-      args = mockDelegate.requestFileSourceArgs
+      args = mockDelegate.requestFileSourceArgs;
       expectEquals('other_source.html', args.pathSuffix);
       expectTrue(ironCollapses[1].opened);
       expectFalse(ironCollapses[0].opened);

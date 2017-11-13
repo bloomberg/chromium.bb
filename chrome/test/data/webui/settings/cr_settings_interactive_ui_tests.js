@@ -108,5 +108,5 @@ CrSettingsAnimatedPagesTest.prototype = {
 };
 
 TEST_F('CrSettingsAnimatedPagesTest', 'All', function() {
-  mocha.run()
+  mocha.run();
 });

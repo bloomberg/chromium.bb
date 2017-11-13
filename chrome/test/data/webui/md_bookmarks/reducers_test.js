@@ -114,8 +114,7 @@ suite('selection state', function() {
               createItem('3'),
               createItem('4'),
             ]),
-        createItem('5'),
-    );
+        createItem('5'));
 
     action = select(['2', '4', '5'], '4', true, false);
     selection = bookmarks.SelectionState.updateSelection(selection, action);
@@ -131,8 +130,7 @@ suite('selection state', function() {
     var nodeMap = testTree(
         createFolder('1', []),
         createItem('2'),
-        createItem('3'),
-    );
+        createItem('3'));
 
     action = select(['2', '3'], '2', true, false);
     selection = bookmarks.SelectionState.updateSelection(selection, action);

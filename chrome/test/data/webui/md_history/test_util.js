@@ -121,7 +121,7 @@ function waitForEvent(element, eventName, predicate) {
 
       resolve();
       element.removeEventListener(eventName, listener);
-    }
+    };
 
     element.addEventListener(eventName, listener);
   });

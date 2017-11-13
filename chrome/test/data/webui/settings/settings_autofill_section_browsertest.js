@@ -56,7 +56,7 @@ function asyncForEach(items, loopBody) {
         loopBody(item).then(loop);
       else
         resolve();
-    };
+    }
 
     loop();
   });

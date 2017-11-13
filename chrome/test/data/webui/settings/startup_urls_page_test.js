@@ -338,7 +338,7 @@ cr.define('settings_startup_urls_page', function() {
       Polymer.dom.flush();
       assertTrue(!!element.$$('dialog[is=cr-action-menu]'));
 
-      var removeButton = element.shadowRoot.querySelector('#remove')
+      var removeButton = element.shadowRoot.querySelector('#remove');
       MockInteractions.tap(removeButton);
       return browserProxy.whenCalled('removeStartupPage').then(
           function(modelIndex) {

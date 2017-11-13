@@ -153,7 +153,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'DISABLED_EasyUnlock', function() {
 
             var turnOffButton = lockScreen.$$('#easyUnlockTurnOff');
             assertTrue(!!turnOffButton);
-            expectFalse(turnOffButton.hidden)
+            expectFalse(turnOffButton.hidden);
 
             MockInteractions.tap(turnOffButton);
             return browserProxy.whenCalled('getTurnOffFlowStatus');

@@ -71,7 +71,7 @@ cr.define('settings_toggle_button', () => {
     });
 
     test('fires a single change event per tap', () => {
-      counter = 0
+      counter = 0;
       testElement.addEventListener('change', () => {
         ++counter;
       });

@@ -152,6 +152,6 @@ function findFolderNode(rootNode, id) {
       return node;
 
     node.root.querySelectorAll('bookmarks-folder-node')
-        .forEach((x) => {nodes.unshift(x)});
+        .forEach((x) => {nodes.unshift(x);});
   }
 }

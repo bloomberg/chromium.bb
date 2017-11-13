@@ -1287,7 +1287,7 @@ cr.define('print_preview_test', function() {
     test('NoPDFPluginErrorMessage', function() {
       previewArea.checkPluginCompatibility_ = function() {
         return false;
-      }
+      };
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('FooDevice'));
       setInitialSettings();
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
@@ -1421,7 +1421,7 @@ cr.define('print_preview_test', function() {
 
       // Ensure all capabilities are available for fetch.
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID1'));
-      nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID2'))
+      nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID2'));
       nativeLayer.setLocalDestinationCapabilities(getCddTemplate('ID3'));
 
       // For crbug.com/666595. If multiple destinations are fetched there may

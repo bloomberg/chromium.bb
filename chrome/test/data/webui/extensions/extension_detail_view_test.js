@@ -151,7 +151,7 @@ cr.define('extension_detail_view_tests', function() {
       var testWarningVisible = function(id, isVisible) {
         var f = isVisible ? expectTrue : expectFalse;
         f(extension_test_util.isVisible(item, id));
-      }
+      };
 
       testWarningVisible('#corrupted-warning', false);
       testWarningVisible('#suspicious-warning', false);
