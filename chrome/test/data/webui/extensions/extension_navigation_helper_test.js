@@ -25,7 +25,9 @@ cr.define('extension_navigation_helper_tests', function() {
     });
   }
 
-  suite('ExtensionNavigationHelperTest', function() {
+  var suiteName = 'ExtensionNavigationHelperTest';
+
+  suite(suiteName, function() {
     let navigationHelper;
 
     setup(function() {
@@ -193,6 +195,7 @@ cr.define('extension_navigation_helper_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

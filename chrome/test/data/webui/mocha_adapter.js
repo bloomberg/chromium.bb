@@ -65,6 +65,16 @@ function BrowserTestReporter(runner) {
   });
 }
 
+/**
+ * Helper function provided to make running a single Mocha test more robust.
+ * @param {string} suiteName
+ * @param {string} testName
+ */
+window.runMochaTest = function(suiteName, testName) {
+  const escapedTestName = testName.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+  mocha.grep(new RegExp('^' + suiteName + ' ' + escapedTestName + '$')).run();
+};
+
 // Configure mocha.
 mocha.setup({
   // Use TDD interface instead of BDD.

@@ -16,7 +16,9 @@ cr.define('extension_manager_tests', function() {
     return assert(list.find(function(el) { return el.name == name; }));
   }
 
-  suite('ExtensionManagerTest', function() {
+  var suiteName = 'ExtensionManagerTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.Manager} */
     var manager;
 
@@ -119,6 +121,7 @@ cr.define('extension_manager_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

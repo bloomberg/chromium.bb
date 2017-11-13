@@ -15,7 +15,9 @@ cr.define('extension_options_dialog_tests', function() {
   var MIN_HEIGHT = '300px';
   var MIN_WIDTH = '300px';
 
-  suite('ExtensionOptionsDialogTests', function() {
+  var suiteName = 'ExtensionOptionsDialogTests';
+
+  suite(suiteName, function() {
     /** @type {extensions.OptionsDialog} */
     var optionsDialog;
 
@@ -99,6 +101,7 @@ cr.define('extension_options_dialog_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

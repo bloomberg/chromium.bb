@@ -9,7 +9,9 @@ cr.define('extension_code_section_tests', function() {
     Layout: 'layout',
   };
 
-  suite('ExtensionCodeSectionTest', function() {
+  var suiteName = 'ExtensionCodeSectionTest';
+
+  suite(suiteName, function() {
     /** @type {chrome.developerPrivate.RequestFileSourceResponse} */
     var code = {
       beforeHighlight: 'this part before the highlight\nAnd this too\n',
@@ -59,6 +61,7 @@ cr.define('extension_code_section_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

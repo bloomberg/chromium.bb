@@ -30,7 +30,9 @@ cr.define('extension_shortcut_input_tests', function() {
     Basic: 'basic',
   };
 
-  suite('ExtensionShortcutInputTest', function() {
+  const suiteName = 'ExtensionShortcutInputTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.ShortcutInput} */
     var input;
     setup(function() {
@@ -126,6 +128,7 @@ cr.define('extension_shortcut_input_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

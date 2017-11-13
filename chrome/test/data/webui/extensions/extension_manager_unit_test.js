@@ -46,7 +46,9 @@ cr.define('extension_manager_tests', function() {
     }
   }
 
-  suite('ExtensionManagerUnitTest', function() {
+  var suiteName = 'ExtensionManagerUnitTest';
+
+  suite(suiteName, function() {
     /** @type {extensions.Manager} */
     let manager;
 
@@ -300,6 +302,7 @@ cr.define('extension_manager_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

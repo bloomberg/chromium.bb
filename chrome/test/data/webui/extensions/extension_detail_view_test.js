@@ -12,7 +12,9 @@ cr.define('extension_detail_view_tests', function() {
     Warnings: 'warnings',
   };
 
-  suite('ExtensionItemTest', function() {
+  var suiteName = 'ExtensionDetailViewTest';
+
+  suite(suiteName, function() {
     /**
      * Extension item created before each test.
      * @type {extensions.Item}
@@ -205,6 +207,7 @@ cr.define('extension_detail_view_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });

@@ -41,7 +41,8 @@ cr.define('extension_toolbar_tests', function() {
     ClickHandlers: 'click handlers',
   };
 
-  suite('ExtensionToolbarTest', function() {
+  var suiteName = 'ExtensionToolbarTest';
+  suite(suiteName, function() {
     /** @type {MockDelegate} */
     var mockDelegate;
 
@@ -100,6 +101,7 @@ cr.define('extension_toolbar_tests', function() {
   });
 
   return {
+    suiteName: suiteName,
     TestNames: TestNames,
   };
 });
