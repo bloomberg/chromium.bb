@@ -109,7 +109,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
 
   // The element of the set is the identifier of
   // BluetoothRemoteGattCharacteristicWin instance.
-  std::set<std::string> discovery_completed_included_charateristics_;
+  std::set<std::string> discovery_completed_included_characteristics_;
 
   // Flag indicates if discovery complete notification has been send out to
   // avoid duplicate notification.

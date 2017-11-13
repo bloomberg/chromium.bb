@@ -104,7 +104,7 @@ void BluetoothRemoteGattServiceWin::GattCharacteristicDiscoveryComplete(
   DCHECK(included_characteristics_.find(characteristic->GetIdentifier()) !=
          included_characteristics_.end());
 
-  discovery_completed_included_charateristics_.insert(
+  discovery_completed_included_characteristics_.insert(
       characteristic->GetIdentifier());
   adapter_->NotifyGattCharacteristicAdded(characteristic);
   NotifyGattDiscoveryCompleteForServiceIfNecessary();
@@ -179,7 +179,7 @@ void BluetoothRemoteGattServiceWin::UpdateIncludedCharacteristics(
 
 void BluetoothRemoteGattServiceWin::
     NotifyGattDiscoveryCompleteForServiceIfNecessary() {
-  if (discovery_completed_included_charateristics_.size() ==
+  if (discovery_completed_included_characteristics_.size() ==
           included_characteristics_.size() &&
       IsDiscoveryComplete() && !discovery_complete_notified_) {
     adapter_->NotifyGattDiscoveryComplete(this);
@@ -220,13 +220,13 @@ bool BluetoothRemoteGattServiceWin::DoesCharacteristicExist(
 
 void BluetoothRemoteGattServiceWin::RemoveIncludedCharacteristic(
     std::string identifier) {
-  discovery_completed_included_charateristics_.erase(identifier);
+  discovery_completed_included_characteristics_.erase(identifier);
   included_characteristics_[identifier].reset();
   included_characteristics_.erase(identifier);
 }
 
 void BluetoothRemoteGattServiceWin::ClearIncludedCharacteristics() {
-  discovery_completed_included_charateristics_.clear();
+  discovery_completed_included_characteristics_.clear();
   // Explicitly reset to null to ensure that calling GetCharacteristic() on the
   // removed characteristic in GattDescriptorRemoved() returns null.
   for (auto& entry : included_characteristics_)
