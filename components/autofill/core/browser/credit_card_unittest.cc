@@ -187,6 +187,50 @@ TEST(CreditCardTest, BankNameAndLastFourDigitsStrings) {
   EXPECT_EQ(UTF8ToUTF16(std::string("Chase")), obfuscated3);
 }
 
+// Tests function NetworkOrBankNameAndLastFourDigits.
+TEST(CreditCardTest, NetworkOrBankNameAndLastFourDigitsStrings) {
+  // Case 1: Experiment off -> show network name.
+  CreditCard credit_card1(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2010",
+                          "1");
+  credit_card1.set_bank_name("Chase");
+  base::string16 obfuscated1 =
+      credit_card1.NetworkOrBankNameAndLastFourDigits();
+  EXPECT_FALSE(credit_card1.bank_name().empty());
+  EXPECT_EQ(
+      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
+      obfuscated1);
+
+  // Turn on feature flag.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kAutofillCreditCardBankNameDisplay);
+
+  // Case 2: Bank name is empty -> show network name.
+  CreditCard credit_card2(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card2, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2010",
+                          "1");
+  EXPECT_TRUE(credit_card2.bank_name().empty());
+  base::string16 obfuscated2 =
+      credit_card2.NetworkOrBankNameAndLastFourDigits();
+  EXPECT_EQ(
+      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
+      obfuscated2);
+
+  // Case 3: Experiment on && bank name not empty -> show bank name.
+  CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
+  test::SetCreditCardInfo(&credit_card3, "John Dillinger",
+                          "5105 1051 0510 5100" /* Mastercard */, "01", "2010",
+                          "1");
+  credit_card3.set_bank_name("Chase");
+  base::string16 obfuscated3 =
+      credit_card3.NetworkOrBankNameAndLastFourDigits();
+  EXPECT_FALSE(credit_card3.bank_name().empty());
+  EXPECT_EQ(UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "5100"),
+            obfuscated3);
+}
+
 TEST(CreditCardTest, AssignmentOperator) {
   CreditCard a(base::GenerateGUID(), "some origin");
   test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010",
