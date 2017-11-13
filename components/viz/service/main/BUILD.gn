@@ -24,6 +24,8 @@ source_set("main") {
     "//gpu/ipc/service",
     "//ipc",
     "//mojo/public/cpp/system",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/viz/privileged/interfaces",
     "//ui/gfx:memory_buffer",

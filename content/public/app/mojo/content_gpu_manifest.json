@@ -20,7 +20,8 @@
       "requires": {
         "*": [ "app" ],
         "content_browser": [ "gpu" ],
-        "device": [ "device:power_monitor" ]
+        "device": [ "device:power_monitor" ],
+        "metrics": [ "url_keyed_metrics" ]
       }
     }
   }

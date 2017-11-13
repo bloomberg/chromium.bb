@@ -8,7 +8,7 @@
 #include "services/viz/service.h"
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
-  viz::Service* viz_service = new viz::Service;
+  viz::Service* viz_service = new viz::Service();
   service_manager::ServiceRunner runner(viz_service);
   runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(service_request_handle);
