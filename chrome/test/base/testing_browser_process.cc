@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/network_connection_tracker.h"
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -54,6 +55,25 @@
 #if !defined(OS_ANDROID)
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #endif
+
+namespace {
+
+class MockNetworkConnectionTracker : public content::NetworkConnectionTracker {
+ public:
+  MockNetworkConnectionTracker() : content::NetworkConnectionTracker() {}
+  ~MockNetworkConnectionTracker() override {}
+
+  bool GetConnectionType(content::mojom::ConnectionType* type,
+                         ConnectionTypeCallback callback) override {
+    *type = content::mojom::ConnectionType::CONNECTION_UNKNOWN;
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockNetworkConnectionTracker);
+};
+
+}  // namespace
 
 // static
 TestingBrowserProcess* TestingBrowserProcess::GetGlobal() {
@@ -145,7 +165,11 @@ TestingBrowserProcess::system_network_context_manager() {
 
 content::NetworkConnectionTracker*
 TestingBrowserProcess::network_connection_tracker() {
-  return nullptr;
+  if (!network_connection_tracker_) {
+    network_connection_tracker_ =
+        std::make_unique<MockNetworkConnectionTracker>();
+  }
+  return network_connection_tracker_.get();
 }
 
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
@@ -433,6 +457,11 @@ TestingBrowserProcess::pref_service_factory() const {
 void TestingBrowserProcess::SetSystemRequestContext(
     net::URLRequestContextGetter* context_getter) {
   system_request_context_ = context_getter;
+}
+
+void TestingBrowserProcess::SetNetworkConnectionTracker(
+    std::unique_ptr<content::NetworkConnectionTracker> tracker) {
+  network_connection_tracker_ = std::move(tracker);
 }
 
 void TestingBrowserProcess::SetNotificationUIManager(

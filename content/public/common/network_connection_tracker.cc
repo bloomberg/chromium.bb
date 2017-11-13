@@ -32,15 +32,18 @@ static const int32_t kConnectionTypeInvalid = -1;
 
 }  // namespace
 
-NetworkConnectionTracker::NetworkConnectionTracker(
-    mojom::NetworkService* network_service)
+NetworkConnectionTracker::NetworkConnectionTracker()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()),
       connection_type_(kConnectionTypeInvalid),
       network_change_observer_list_(
           new base::ObserverListThreadSafe<NetworkConnectionObserver>(
               base::ObserverListBase<
                   NetworkConnectionObserver>::NOTIFY_EXISTING_ONLY)),
-      binding_(this) {
+      binding_(this) {}
+
+void NetworkConnectionTracker::Initialize(
+    mojom::NetworkService* network_service) {
+  DCHECK(!binding_.is_bound());
   DCHECK(network_service);
   // Get NetworkChangeManagerPtr.
   mojom::NetworkChangeManagerPtr manager_ptr;
