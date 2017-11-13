@@ -5,9 +5,6 @@
 #ifndef CHROME_COMMON_SWITCH_UTILS_H_
 #define CHROME_COMMON_SWITCH_UTILS_H_
 
-#include <map>
-#include <string>
-
 #include "base/command_line.h"
 
 namespace switches {

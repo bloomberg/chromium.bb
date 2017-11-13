@@ -22,22 +22,21 @@ namespace {
 // Chrome restarts itself. If your key is designed to only be used once,
 // or if it does not make sense when restarting a background instance to
 // pick up an automatic update, be sure to add it to this list.
-const char* const kSwitchesToRemoveOnAutorestart[] = {
-  switches::kApp,
-  switches::kAppId,
-  switches::kForceFirstRun,
-  switches::kMakeDefaultBrowser,
-  switches::kNoStartupWindow,
-  switches::kRestoreLastSession,
-  switches::kShowAppList,
-  switches::kWinJumplistAction
-};
+constexpr const char* kSwitchesToRemoveOnAutorestart[] = {
+    switches::kApp,
+    switches::kAppId,
+    switches::kForceFirstRun,
+    switches::kMakeDefaultBrowser,
+    switches::kNoStartupWindow,
+    switches::kRestoreLastSession,
+    switches::kShowAppList,
+    switches::kWinJumplistAction};
 
 }  // namespace
 
 void RemoveSwitchesForAutostart(base::CommandLine::SwitchMap* switch_list) {
-  for (size_t i = 0; i < arraysize(kSwitchesToRemoveOnAutorestart); ++i)
-    switch_list->erase(kSwitchesToRemoveOnAutorestart[i]);
+  for (const char* switch_to_remove : kSwitchesToRemoveOnAutorestart)
+    switch_list->erase(switch_to_remove);
 
 #if defined(OS_WIN)
   // The relaunched browser process shouldn't reuse the /prefetch:# switch of
