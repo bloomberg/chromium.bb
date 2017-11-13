@@ -20,6 +20,8 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -34,34 +36,9 @@ namespace {
 const size_t kMaxMachineNameLength = 15;
 const char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
 
-// Drop stub policy file of |policy_type| at |policy_path| containing
-// |serialized_payload|.
-bool WritePolicyFile(const base::FilePath& policy_path,
-                     const std::string& serialized_payload,
-                     const std::string& policy_type,
-                     const base::TimeDelta& delay) {
-  base::PlatformThread::Sleep(delay);
-
-  em::PolicyData data;
-  data.set_policy_value(serialized_payload);
-  data.set_policy_type(policy_type);
-
-  em::PolicyFetchResponse response;
-  CHECK(data.SerializeToString(response.mutable_policy_data()));
-  std::string serialized_response;
-  CHECK(response.SerializeToString(&serialized_response));
-
-  if (!base::CreateDirectory(policy_path.DirName()))
-    return false;
-
-  // Note that in theory there could be a short time window in which a
-  // concurrent reader sees a partial (and thus invalid) file, but given the
-  // small file size that seems very unlikely in practice.
-  const int bytes_written = base::WriteFile(
-      policy_path, serialized_response.c_str(), serialized_response.size());
-  if (bytes_written < 0)
-    return false;
-  return bytes_written == static_cast<int>(serialized_response.size());
+void OnStorePolicy(chromeos::AuthPolicyClient::RefreshPolicyCallback callback,
+                   bool success) {
+  std::move(callback).Run(success);
 }
 
 // Posts |closure| on the ThreadTaskRunner with |delay|.
@@ -77,6 +54,27 @@ void RunSignalCallback(const std::string& interface_name,
                        dbus::ObjectProxy::SignalCallback signal_callback) {
   signal_callback.Run(
       std::make_unique<dbus::Signal>(interface_name, method_name).get());
+}
+
+void StoreDevicePolicy(
+    const std::string& machine_name,
+    chromeos::AuthPolicyClient::RefreshPolicyCallback callback) {
+  em::ChromeDeviceSettingsProto policy;
+  std::string payload;
+  CHECK(policy.SerializeToString(&payload));
+
+  em::PolicyFetchResponse response;
+  em::PolicyData policy_data;
+  policy_data.set_policy_type("google/chromeos/device");
+  policy_data.set_device_id(machine_name);
+  policy_data.set_policy_value(payload);
+  policy_data.set_timestamp(base::Time::Now().ToJavaTime());
+  response.set_policy_data(policy_data.SerializeAsString());
+  chromeos::SessionManagerClient* session_manager_client =
+      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
+  session_manager_client->StoreDevicePolicy(
+      response.SerializeAsString(),
+      base::Bind(&OnStorePolicy, base::Passed(std::move(callback))));
 }
 
 }  // namespace
@@ -110,6 +108,8 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
       error = authpolicy::ERROR_PARSE_UPN_FAILED;
     }
   }
+  if (error == authpolicy::ERROR_NONE)
+    machine_name_ = machine_name;
   PostDelayedClosure(base::BindOnce(std::move(callback), error),
                      dbus_operation_delay_);
 }
@@ -176,25 +176,20 @@ void FakeAuthPolicyClient::RefreshDevicePolicy(RefreshPolicyCallback callback) {
     std::move(callback).Run(false);
     return;
   }
-  base::FilePath policy_path;
-  if (!PathService::Get(chromeos::FILE_OWNER_KEY, &policy_path)) {
-    std::move(callback).Run(false);
+
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
+
+  if (machine_name_.empty()) {
+    // We need to set a new timestamp below. So we fetch the policy to get the
+    // machine name. So we could set it as well.
+    session_manager_client->RetrieveDevicePolicy(
+        base::BindOnce(&FakeAuthPolicyClient::OnDevicePolicyRetrieved,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
-  policy_path = policy_path.DirName().AppendASCII("stub_device_policy");
 
-  em::ChromeDeviceSettingsProto policy;
-  std::string payload;
-  CHECK(policy.SerializeToString(&payload));
-
-  // Drop file for SessionManagerClientStubImpl to read.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&WritePolicyFile, policy_path, payload,
-                     "google/chromeos/device", disk_operation_delay_),
-      std::move(callback));
+  StoreDevicePolicy(machine_name_, std::move(callback));
 }
 
 void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
@@ -204,30 +199,24 @@ void FakeAuthPolicyClient::RefreshUserPolicy(const AccountId& account_id,
     std::move(callback).Run(false);
     return;
   }
-  base::FilePath policy_path;
-  if (!PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_path)) {
-    std::move(callback).Run(false);
-    return;
-  }
-  const cryptohome::Identification cryptohome_identification(account_id);
-  const std::string sanitized_username =
-      chromeos::CryptohomeClient::GetStubSanitizedUsername(
-          cryptohome_identification);
-  policy_path = policy_path.AppendASCII(sanitized_username);
-  policy_path = policy_path.AppendASCII("stub_policy");
+  SessionManagerClient* session_manager_client =
+      DBusThreadManager::Get()->GetSessionManagerClient();
 
   em::CloudPolicySettings policy;
   std::string payload;
   CHECK(policy.SerializeToString(&payload));
 
-  // Drop file for SessionManagerClientStubImpl to read.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&WritePolicyFile, policy_path, payload,
-                     "google/chromeos/user", disk_operation_delay_),
-      std::move(callback));
+  em::PolicyFetchResponse response;
+  em::PolicyData policy_data;
+  policy_data.set_policy_type("google/chromeos/user");
+  policy_data.set_username(account_id.GetUserEmail());
+  policy_data.set_device_id(account_id.GetObjGuid());
+  policy_data.set_timestamp(base::Time::Now().ToJavaTime());
+  policy_data.set_policy_value(payload);
+  response.set_policy_data(policy_data.SerializeAsString());
+  session_manager_client->StorePolicyForUser(
+      cryptohome::Identification(account_id), response.SerializeAsString(),
+      base::Bind(&OnStorePolicy, base::Passed(std::move(callback))));
 }
 
 void FakeAuthPolicyClient::ConnectToSignal(
@@ -240,6 +229,24 @@ void FakeAuthPolicyClient::ConnectToSignal(
       base::BindOnce(RunSignalCallback, authpolicy::kAuthPolicyInterface,
                      signal_name, signal_callback),
       dbus_operation_delay_);
+}
+
+void FakeAuthPolicyClient::OnDevicePolicyRetrieved(
+    RefreshPolicyCallback callback,
+    SessionManagerClient::RetrievePolicyResponseType response_type,
+    const std::string& protobuf) {
+  if (response_type !=
+      SessionManagerClient::RetrievePolicyResponseType::SUCCESS) {
+    std::move(callback).Run(false);
+    return;
+  }
+  em::PolicyFetchResponse response;
+  response.ParseFromString(protobuf);
+  em::PolicyData policy_data;
+  policy_data.ParseFromString(response.policy_data());
+  if (policy_data.has_device_id())
+    machine_name_ = policy_data.device_id();
+  StoreDevicePolicy(machine_name_, std::move(callback));
 }
 
 }  // namespace chromeos

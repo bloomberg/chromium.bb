@@ -53,6 +53,7 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   void OnStoreError(CloudPolicyStore* cloud_policy_store) override;
 
   CloudPolicyStore* store() const { return store_.get(); }
+  PolicyScheduler* scheduler() { return scheduler_.get(); }
 
   // Helper function to force a policy fetch timeout.
   void ForceTimeoutForTest();
