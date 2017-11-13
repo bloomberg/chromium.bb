@@ -51,19 +51,19 @@ void WebFaviconDriver::CreateForWebState(
 
 gfx::Image WebFaviconDriver::GetFavicon() const {
   web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
   return item ? item->GetFavicon().image : gfx::Image();
 }
 
 bool WebFaviconDriver::FaviconIsValid() const {
   web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
   return item ? item->GetFavicon().valid : false;
 }
 
 GURL WebFaviconDriver::GetActiveURL() {
   web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetVisibleItem();
   return item ? item->GetURL() : GURL();
 }
 
@@ -103,8 +103,8 @@ void WebFaviconDriver::DownloadManifest(const GURL& url,
 }
 
 bool WebFaviconDriver::IsOffTheRecord() {
-  DCHECK(web_state());
-  return web_state()->GetBrowserState()->IsOffTheRecord();
+  DCHECK(web_state_);
+  return web_state_->GetBrowserState()->IsOffTheRecord();
 }
 
 void WebFaviconDriver::OnFaviconUpdated(
@@ -122,7 +122,7 @@ void WebFaviconDriver::OnFaviconUpdated(
   }
 
   web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetVisibleItem();
   DCHECK(item);
 
   web::FaviconStatus& favicon_status = item->GetFavicon();
@@ -155,16 +155,23 @@ void WebFaviconDriver::OnFaviconDeleted(
 WebFaviconDriver::WebFaviconDriver(web::WebState* web_state,
                                    FaviconService* favicon_service,
                                    history::HistoryService* history_service)
-    : web::WebStateObserver(web_state),
-      FaviconDriverImpl(favicon_service, history_service),
-      image_fetcher_(web_state->GetBrowserState()->GetRequestContext()) {}
+    : FaviconDriverImpl(favicon_service, history_service),
+      image_fetcher_(web_state->GetBrowserState()->GetRequestContext()),
+      web_state_(web_state) {
+  web_state_->AddObserver(this);
+}
 
 WebFaviconDriver::~WebFaviconDriver() {
+  // WebFaviconDriver is owned by WebState (as it is a WebStateUserData), so
+  // the WebStateDestroyed will be called before the destructor and the member
+  // field reset to null.
+  DCHECK(!web_state_);
 }
 
 void WebFaviconDriver::DidStartNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
   SetFaviconOutOfDateForPage(navigation_context->GetUrl(),
                              /*force_reload=*/false);
 }
@@ -172,6 +179,7 @@ void WebFaviconDriver::DidStartNavigation(
 void WebFaviconDriver::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
+  DCHECK_EQ(web_state_, web_state);
   if (navigation_context->GetError())
     return;
 
@@ -191,9 +199,16 @@ void WebFaviconDriver::DidFinishNavigation(
 void WebFaviconDriver::FaviconUrlUpdated(
     web::WebState* web_state,
     const std::vector<web::FaviconURL>& candidates) {
+  DCHECK_EQ(web_state_, web_state);
   DCHECK(!candidates.empty());
   candidates_ = FaviconURLsFromWebFaviconURLs(candidates);
   FaviconUrlUpdatedInternal(candidates_);
+}
+
+void WebFaviconDriver::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
 
 void WebFaviconDriver::FaviconUrlUpdatedInternal(
