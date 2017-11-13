@@ -20,14 +20,15 @@ class ContentSettingsInfo {
  public:
   enum IncognitoBehavior {
     // Content setting will be inherited from regular to incognito profiles
-    // as usual.
-    // TODO(dullweber): Remove as soon as INHERIT_IF_LESS_PERMISSIVE was tested.
+    // as usual. This should only be used for features that don't allow access
+    // to user data e.g. popup blocker or features that are allowed by default.
     INHERIT_IN_INCOGNITO,
 
     // Content settings can be inherited if the setting is less permissive
     // than the initial default value of the content setting. Example: A setting
     // with an initial value of ASK will be inherited if it is set to BLOCK or
-    // ASK but ALLOW will become ASK in incognito mode.
+    // ASK but ALLOW will become ASK in incognito mode. This should be used for
+    // all settings that allow access to user data, e.g. geolocation.
     INHERIT_IF_LESS_PERMISSIVE
   };
 

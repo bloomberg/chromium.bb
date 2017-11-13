@@ -848,8 +848,8 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
 }
 
 TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
-  // The popup setting has an initial value of BLOCK, so  popup doesn't inherit
-  // settings to incognito
+  // The popup setting has an initial value of BLOCK, but it is allowed
+  // to inherit ALLOW settings because it doesn't provide access to user data.
   TestingProfile profile;
   Profile* otr_profile = profile.GetOffTheRecordProfile();
   HostContentSettingsMap* host_content_settings_map =
@@ -866,7 +866,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
             otr_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
 
-  // Changing content settings on the main map should not affect the
+  // Changing content settings on the main map should affect the
   // incognito map.
   host_content_settings_map->SetContentSettingDefaultScope(
       host, GURL(), CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
@@ -874,9 +874,9 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
-  EXPECT_EQ(CONTENT_SETTING_BLOCK,
-            otr_map->GetContentSetting(
-                host, host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            otr_map->GetContentSetting(host, host, CONTENT_SETTINGS_TYPE_POPUPS,
+                                       std::string()));
 
   // Changing content settings on the incognito map should NOT affect the
   // main map.
