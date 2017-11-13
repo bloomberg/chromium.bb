@@ -74,6 +74,10 @@ class LanguageDetectionController : public web::WebStateObserver {
                            web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   JsLanguageDetectionManager* js_manager_;
   BooleanPrefMember translate_enabled_;
   std::string content_language_header_;
