@@ -111,7 +111,7 @@ void DOMURL::UpdateSearchParams(const String& query_string) {
 #if DCHECK_IS_ON()
   DCHECK_EQ(search_params_->UrlObject(), this);
 #endif
-  search_params_->SetInput(query_string);
+  search_params_->SetInputWithoutUpdate(query_string);
 }
 
 }  // namespace blink

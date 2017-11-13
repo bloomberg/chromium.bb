@@ -50,7 +50,7 @@ class CORE_EXPORT URLSearchParams final : public ScriptWrappable,
   bool has(const String&) const;
   void set(const String& name, const String& value);
   void sort();
-  void SetInput(const String&);
+  void SetInputWithoutUpdate(const String&);
 
   // Internal helpers
   scoped_refptr<EncodedFormData> ToEncodedFormData() const;
