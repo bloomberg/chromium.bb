@@ -129,8 +129,8 @@ class NetworkConnectionTrackerTest : public testing::Test {
     network_service_ =
         NetworkService::Create(std::move(network_service_request),
                                /*netlog=*/nullptr);
-    tracker_ =
-        std::make_unique<NetworkConnectionTracker>(network_service_.get());
+    tracker_ = std::make_unique<NetworkConnectionTracker>();
+    tracker_->Initialize(network_service_.get());
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
   }
 
@@ -219,7 +219,8 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
       mojo::MakeRequest(&network_service_ptr);
   std::unique_ptr<NetworkService> network_service =
       NetworkService::Create(std::move(network_service_request), nullptr);
-  NetworkConnectionTracker tracker(network_service_ptr.get());
+  NetworkConnectionTracker tracker;
+  tracker.Initialize(network_service_ptr.get());
 
   ConnectionTypeGetter getter1(&tracker), getter2(&tracker);
   // These two GetConnectionType() will finish asynchonously because network

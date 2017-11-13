@@ -7,14 +7,16 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
+#include "content/public/common/network_change_manager.mojom.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 #if !defined(OS_CHROMEOS)
-#include "net/base/network_change_notifier.h"
+#include "content/public/common/network_connection_tracker.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
@@ -25,7 +27,7 @@ class Profile;
 class ChromeSigninClient
     : public SigninClient,
 #if !defined(OS_CHROMEOS)
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public content::NetworkConnectionTracker::NetworkConnectionObserver,
 #endif
       public SigninErrorController::Observer,
       public gaia::GaiaOAuthClient::Delegate,
@@ -34,7 +36,6 @@ class ChromeSigninClient
   explicit ChromeSigninClient(
       Profile* profile, SigninErrorController* signin_error_controller);
   ~ChromeSigninClient() override;
-  void Shutdown() override;
   void DoFinalInit() override;
 
   // Utility method.
@@ -97,9 +98,9 @@ class ChromeSigninClient
                          const GoogleServiceAuthError& error) override;
 
 #if !defined(OS_CHROMEOS)
-  // net::NetworkChangeController::NetworkChangeObserver implementation.
-  void OnNetworkChanged(net::NetworkChangeNotifier::ConnectionType type)
-      override;
+  // content::NetworkConnectionTracker::NetworkConnectionObserver
+  // implementation.
+  void OnConnectionChanged(content::mojom::ConnectionType type) override;
 #endif
 
   void AfterCredentialsCopied() override;
@@ -131,6 +132,8 @@ class ChromeSigninClient
 
   std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
   std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
+
+  base::WeakPtrFactory<ChromeSigninClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };

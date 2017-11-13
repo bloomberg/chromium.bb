@@ -147,6 +147,8 @@ class TestingBrowserProcess : public BrowserProcess {
       std::unique_ptr<optimization_guide::OptimizationGuideService>
           optimization_guide_service);
   void SetSystemRequestContext(net::URLRequestContextGetter* context_getter);
+  void SetNetworkConnectionTracker(
+      std::unique_ptr<content::NetworkConnectionTracker> tracker);
   void SetNotificationUIManager(
       std::unique_ptr<NotificationUIManager> notification_ui_manager);
   void SetNotificationPlatformBridge(
@@ -166,6 +168,8 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   bool created_browser_policy_connector_ = false;
+  std::unique_ptr<content::NetworkConnectionTracker>
+      network_connection_tracker_;
   std::unique_ptr<ProfileManager> profile_manager_;
   std::unique_ptr<NotificationUIManager> notification_ui_manager_;
   std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge_;
