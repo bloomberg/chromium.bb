@@ -40,7 +40,7 @@ class ChromeOmniboxEditController : public OmniboxEditController {
   ~ChromeOmniboxEditController() override;
 
  private:
-  CommandUpdater* command_updater_;
+  CommandUpdater* const command_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxEditController);
 };
