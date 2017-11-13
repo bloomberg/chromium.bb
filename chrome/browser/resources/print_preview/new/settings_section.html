@@ -10,6 +10,8 @@
       ::slotted([slot=controls]) {
         -webkit-padding-end: 20px;
         display: table-cell;
+        padding-bottom: 5px;
+        padding-top: 5px;
         width: 99%;
       }
 
@@ -22,13 +24,10 @@
         margin-bottom: 0;
         margin-top: 0;
         min-width: 70px;
-        vertical-align: middle;
-      }
-
-      :host ::slotted([slot=title]),
-      :host ::slotted([slot=controls]) {
         padding-bottom: 5px;
         padding-top: 5px;
+        vertical-align: middle;
+        @apply --settings-section-title-style;
       }
     </style>
     <slot name="title"></slot>

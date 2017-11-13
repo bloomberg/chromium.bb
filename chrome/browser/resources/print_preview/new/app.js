@@ -20,7 +20,10 @@ Polymer({
         copies: 1,
         pageRange: [1],
         duplex: false,
-        printTicketInvalid: false
+        copiesInvalid: false,
+        scalingInvalid: false,
+        isPdfDocument: true,
+        fitToPageScaling: '94',
       },
     },
   }
