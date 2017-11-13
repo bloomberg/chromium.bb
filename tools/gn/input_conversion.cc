@@ -146,7 +146,7 @@ Value DoConvertInputToValue(const Settings* settings,
 
 }  // namespace
 
-extern const char kInputConversion_Help[] =
+const char kInputConversion_Help[] =
     R"(input_conversion: Specifies how to transform input to a variable.
 
   input_conversion is an argument to read_file and exec_script that specifies
