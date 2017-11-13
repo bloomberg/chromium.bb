@@ -1363,6 +1363,9 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 
   web::NavigationItem* native_item1 =
       navigation_manager()->GetLastCommittedItem();
+  // Having a non-app-specific URL should not change the fact that the native
+  // item should be skipped when determining user agent inheritance.
+  native_item1->SetVirtualURL(GURL("http://non-app-specific-url"));
   ASSERT_EQ(web::UserAgentType::NONE, native_item1->GetUserAgentType());
   navigation_manager()->AddPendingItem(
       GURL("http://www.2.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
