@@ -23,7 +23,8 @@ class ConsentAuditor : public KeyedService {
  public:
   ConsentAuditor(PrefService* pref_service,
                  syncer::UserEventService* user_event_service,
-                 const std::string& product_version);
+                 const std::string& app_version,
+                 const std::string& app_locale);
   ~ConsentAuditor() override;
 
   // KeyedService:
@@ -43,7 +44,8 @@ class ConsentAuditor : public KeyedService {
  private:
   PrefService* pref_service_;
   syncer::UserEventService* user_event_service_;
-  std::string product_version_;
+  std::string app_version_;
+  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsentAuditor);
 };

@@ -20,16 +20,19 @@ namespace {
 
 const char kLocalConsentDescriptionKey[] = "description";
 const char kLocalConsentConfirmationKey[] = "confirmation";
-const char kLocalConsentVersionInfoKey[] = "version";
+const char kLocalConsentVersionKey[] = "version";
+const char kLocalConsentLocaleKey[] = "locale";
 
 }  // namespace
 
 ConsentAuditor::ConsentAuditor(PrefService* pref_service,
                                syncer::UserEventService* user_event_service,
-                               const std::string& product_version)
+                               const std::string& app_version,
+                               const std::string& app_locale)
     : pref_service_(pref_service),
       user_event_service_(user_event_service),
-      product_version_(product_version) {
+      app_version_(app_version),
+      app_locale_(app_locale) {
   DCHECK(pref_service_);
   DCHECK(user_event_service_);
 }
@@ -56,9 +59,8 @@ void ConsentAuditor::RecordLocalConsent(const std::string& feature,
   base::DictionaryValue record;
   record.SetKey(kLocalConsentDescriptionKey, base::Value(description_text));
   record.SetKey(kLocalConsentConfirmationKey, base::Value(confirmation_text));
-  record.SetKey(kLocalConsentVersionInfoKey, base::Value(product_version_));
-
-  // TODO(msramek): Record the user language. crbug.com/781765
+  record.SetKey(kLocalConsentVersionKey, base::Value(app_version_));
+  record.SetKey(kLocalConsentLocaleKey, base::Value(app_locale_));
 
   consents->SetKey(feature, std::move(record));
 }
