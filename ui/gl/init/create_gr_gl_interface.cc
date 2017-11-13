@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/create_gr_gl_interface.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gpu {
-namespace gles2 {
+namespace gl {
+namespace init {
 
 namespace {
 
@@ -502,5 +502,5 @@ sk_sp<const GrGLInterface> CreateGrGLInterface(
   return returned;
 }
 
-}  // namespace gles2
-}  // namespace gpu
+}  // namespace init
+}  // namespace gl

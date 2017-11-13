@@ -8,10 +8,13 @@ component("init") {
   output_name = "gl_init"
 
   public = [
+    "create_gr_gl_interface.h",
     "gl_factory.h",
   ]
 
   sources = [
+    "create_gr_gl_interface.cc",
+    "create_gr_gl_interface.h",
     "gl_factory.cc",
     "gl_factory.h",
     "gl_init_export.h",
