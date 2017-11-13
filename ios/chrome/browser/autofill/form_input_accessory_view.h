@@ -14,20 +14,14 @@
 // way of the playInputClick method.
 @interface FormInputAccessoryView : UIView<UIInputViewAudioFeedback>
 
-// Initializes with |delegate|.
-- (instancetype)initWithDelegate:(id<FormInputAccessoryViewDelegate>)delegate;
+// Sets up the view with the given |customView|. Navigation controls are shown
+// and use |delegate| for actions.
+- (void)setUpWithNavigationDelegate:(id<FormInputAccessoryViewDelegate>)delegate
+                         customView:(UIView*)customView;
 
-// Initializes with |frame| to show |customView|. Navigation controls are not
+// Sets up the view with the given |customView|. Navigation controls are not
 // shown.
-- (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView;
-
-// Initializes the view with the given |customView|.
-// If the size of |rightFrame| is non-zero, the view will be split into two
-// parts with |leftFrame| and |rightFrame|. Otherwise the Autofill view will
-// be shown in |leftFrame|.
-- (void)initializeViewWithCustomView:(UIView*)customView
-                           leftFrame:(CGRect)leftFrame
-                          rightFrame:(CGRect)rightFrame;
+- (void)setUpWithCustomView:(UIView*)customView;
 
 @end
 
