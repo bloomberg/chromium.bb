@@ -475,6 +475,7 @@ _arm_internal_release_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
     'bob',
+    'capri',
     'cobblepot',
     'daisy',
     'daisy_skate',
@@ -711,6 +712,7 @@ _lassen_boards = frozenset([
 ])
 
 _loonix_boards = frozenset([
+    'capri',
     'cobblepot',
     'gonzo',
     'lasilla-ground',
@@ -2366,6 +2368,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
   _paladin_experimental_boards = _paladin_new_boards | frozenset([
+      'capri', # contact:ghines@
       'cobblepot', # contact:jkoleszar@
       'gonzo', # contact:icoolidge@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
