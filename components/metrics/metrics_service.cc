@@ -144,7 +144,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/metrics/daily_event.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log.h"
@@ -206,12 +205,6 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterInt64Pref(prefs::kUninstallLaunchCount, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
-
-  // Register the tab stats metrics.
-  registry->RegisterIntegerPref(prefs::kTabStatsTotalTabCountMax, 0);
-  registry->RegisterIntegerPref(prefs::kTabStatsMaxTabsPerWindow, 0);
-  registry->RegisterIntegerPref(prefs::kTabStatsWindowCountMax, 0);
-  metrics::DailyEvent::RegisterPref(registry, prefs::kTabStatsDailySample);
 }
 
 MetricsService::MetricsService(MetricsStateManager* state_manager,

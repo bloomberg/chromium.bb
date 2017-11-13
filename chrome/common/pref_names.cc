@@ -2512,4 +2512,19 @@ const char kPrefetchUsageMixedCount[] = "offline_pages.prefetch_mixed_count";
 // will be wiped.
 const char kMediaEngagementSchemaVersion[] = "media.engagement.schema_version";
 
+// Maximum number of tabs that has been opened since the last time it has been
+// reported.
+const char kTabStatsTotalTabCountMax[] = "tab_stats.total_tab_count_max";
+
+// Maximum number of tabs that has been opened in a single window since the last
+// time it has been reported.
+const char kTabStatsMaxTabsPerWindow[] = "tab_stats.max_tabs_per_window";
+
+// Maximum number of windows that has been opened since the last time it has
+// been reported.
+const char kTabStatsWindowCountMax[] = "tab_stats.window_count_max";
+
+//  Timestamp of the last time the tab stats daily metrics have been reported.
+const char kTabStatsDailySample[] = "tab_stats.last_daily_sample";
+
 }  // namespace prefs
