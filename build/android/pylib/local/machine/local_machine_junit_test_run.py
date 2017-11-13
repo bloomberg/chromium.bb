@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 import os
 import zipfile
 
@@ -82,6 +83,9 @@ class LocalMachineJunitTestRun(test_run.TestRun):
       if resource_dirs:
         jvm_args += ['-Dchromium.robolectric.resource.dirs=%s' %
                      ':'.join(resource_dirs)]
+
+      if logging.getLogger().isEnabledFor(logging.INFO):
+        jvm_args += ['-Drobolectric.logging=stdout']
 
       if self._test_instance.coverage_dir:
         if not os.path.exists(self._test_instance.coverage_dir):
