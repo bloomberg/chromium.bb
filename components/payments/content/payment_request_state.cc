@@ -102,9 +102,14 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
   get_all_instruments_finished_ = true;
   NotifyOnGetAllPaymentInstrumentsFinished();
 
-  // fullfill the pending CanMakePayment call.
+  // Fullfill the pending CanMakePayment call.
   if (can_make_payment_callback_)
     CheckCanMakePayment(std::move(can_make_payment_callback_));
+
+  // Fullfill the pending AreRequestedMethodsSupported call.
+  if (are_requested_methods_supported_callback_)
+    CheckRequestedMethodsSupported(
+        std::move(are_requested_methods_supported_callback_));
 }
 
 void PaymentRequestState::
@@ -128,7 +133,7 @@ void PaymentRequestState::OnSpecUpdated() {
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
-void PaymentRequestState::CanMakePayment(CanMakePaymentCallback callback) {
+void PaymentRequestState::CanMakePayment(StatusCallback callback) {
   if (!get_all_instruments_finished_) {
     can_make_payment_callback_ = std::move(callback);
     return;
@@ -140,7 +145,7 @@ void PaymentRequestState::CanMakePayment(CanMakePaymentCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void PaymentRequestState::CheckCanMakePayment(CanMakePaymentCallback callback) {
+void PaymentRequestState::CheckCanMakePayment(StatusCallback callback) {
   bool can_make_payment_value = false;
   for (const auto& instrument : available_instruments_) {
     if (instrument->IsValidForCanMakePayment()) {
@@ -151,9 +156,25 @@ void PaymentRequestState::CheckCanMakePayment(CanMakePaymentCallback callback) {
   std::move(callback).Run(can_make_payment_value);
 }
 
-bool PaymentRequestState::AreRequestedMethodsSupported() const {
-  return !spec_->supported_card_networks().empty() ||
-         !available_instruments_.empty();
+void PaymentRequestState::AreRequestedMethodsSupported(
+    StatusCallback callback) {
+  if (!get_all_instruments_finished_) {
+    are_requested_methods_supported_callback_ = std::move(callback);
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PaymentRequestState::CheckRequestedMethodsSupported,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void PaymentRequestState::CheckRequestedMethodsSupported(
+    StatusCallback callback) {
+  DCHECK(get_all_instruments_finished_);
+
+  std::move(callback).Run(!spec_->supported_card_networks().empty() ||
+                          !available_instruments_.empty());
 }
 
 std::string PaymentRequestState::GetAuthenticatedEmail() const {
