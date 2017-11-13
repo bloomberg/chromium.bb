@@ -221,7 +221,3 @@ crbug.com/778721 http/tests/fetch/workers/thorough/redirect-nocors-other-https.h
 crbug.com/778721 http/tests/fetch/workers/thorough/redirect-password-other-https.html [ Pass Failure ]
 crbug.com/778721 http/tests/fetch/workers/thorough/redirect-password.html [ Pass Failure ]
 crbug.com/778721 http/tests/fetch/workers/thorough/scheme-blob.html [ Pass Failure ]
-
-# broke in r515816
-Bug(none) fast/dom/HTMLAnchorElement/anchor-download.html [ Timeout ]
-Bug(none) fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Timeout ]
