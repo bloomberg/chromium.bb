@@ -70,6 +70,10 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
 
   // Returns the page scale factor applied as a result of pinch-zoom.
   float PageScaleFactor();
+  // Sets the page scale factor applied as a result of pinch-zoom.
+  void SetPageScaleFactor(float scale);
+
+  void SetBrowserControlsShown(bool shown);
 
   void ClearImageCache();
   int RunMicroBenchmark(gin::Arguments* args);

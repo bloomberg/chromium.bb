@@ -200,6 +200,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The height of the bottom bar.
   virtual float GetBottomControlsHeight() const;
 
+  // If mouse wheels can only specify the number of ticks of some static
+  // multiplier constant, this method returns that constant (in DIPs). If mouse
+  // wheels can specify an arbitrary delta this returns 0.
+  virtual int GetMouseWheelMinimumGranularity() const;
+
   // Called prior to forwarding input event messages to the renderer, giving
   // the view a chance to perform in-process event filtering or processing.
   // Return values of |NOT_CONSUMED| or |UNKNOWN| will result in |input_event|

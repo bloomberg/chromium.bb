@@ -128,6 +128,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool DoBrowserControlsShrinkBlinkSize() const override;
   float GetTopControlsHeight() const override;
   float GetBottomControlsHeight() const override;
+  int GetMouseWheelMinimumGranularity() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
   void FocusedNodeChanged(bool is_editable_node,

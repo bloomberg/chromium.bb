@@ -42,6 +42,11 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   // Returns the minimum number of DIPs two touch pointers have to be apart
   // to perform a pinch-zoom.
   virtual float GetMinScalingSpanInDips() const = 0;
+
+  // If mouse wheels can only specify the number of ticks of some static
+  // multiplier constant, this method returns that constant (in DIPs). If mouse
+  // wheels can specify an arbitrary delta this returns 0.
+  virtual int GetMouseWheelMinimumGranularity() const = 0;
 };
 
 }  // namespace content

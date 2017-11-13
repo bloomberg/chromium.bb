@@ -658,6 +658,15 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     /**
+     * @return The number of pixels (DIPs) each tick of the mouse wheel should scroll.
+     */
+    @CalledByNative
+    public float getMouseWheelTickMultiplier() {
+        return mRenderCoordinates.getWheelScrollFactor()
+                / mRenderCoordinates.getDeviceScaleFactor();
+    }
+
+    /**
      * @return The selected text (empty if no text selected).
      */
     @VisibleForTesting
