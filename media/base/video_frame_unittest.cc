@@ -158,6 +158,7 @@ TEST(VideoFrame, CreateFrame) {
   frame = VideoFrame::CreateFrame(media::PIXEL_FORMAT_ARGB, size,
                                   gfx::Rect(size), size, kTimestamp);
   EXPECT_EQ(media::PIXEL_FORMAT_ARGB, frame->format());
+  EXPECT_GE(frame->stride(VideoFrame::kARGBPlane), frame->coded_size().width());
 
   // Test double planar frame.
   frame = VideoFrame::CreateFrame(media::PIXEL_FORMAT_NV12, size,
