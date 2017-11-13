@@ -7,6 +7,10 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
+    t.add_cleanup(function() {
+        internals.setUserPreferredLanguages([]);
+        internals.settings.setTextTrackKindUserPreference("default");
+    });
 
     // Set user preferred languages.
     internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr']);

@@ -9,5 +9,8 @@ test(function() {
     // Set user preferred languages.
     internals.setUserPreferredLanguages(['jp', 'es-ES', 'en', 'fr']);
     internals.settings.setTextTrackKindUserPreference('captions');
+
+    internals.setUserPreferredLanguages([]);
+    internals.settings.setTextTrackKindUserPreference("default");
 });
 </script>

@@ -16,6 +16,10 @@
 <script>
 async_test(function(t) {
     var video = document.querySelector("video");
+    t.add_cleanup(function() {
+        internals.setUserPreferredLanguages([]);
+        internals.settings.setTextTrackKindUserPreference("default");
+    });
     internals.setUserPreferredLanguages(["jp", "es", "en", "fr"]);
     video.src = findMediaFile("video", "../content/test");
 
