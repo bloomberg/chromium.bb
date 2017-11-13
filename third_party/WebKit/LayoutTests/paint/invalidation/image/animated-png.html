@@ -1,0 +1,22 @@
+<!doctype HTML>
+<body>
+<div style="height: 2000px; width: 2000px;">
+    <img id="targetImage">
+</div>
+<script src="../resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+function repaintTest() {
+    if (window.internals)
+        internals.advanceImageAnimation(targetImage);
+    requestAnimationFrame(function() {
+        finishRepaintTest();
+    });
+}
+
+window.onload = function() {
+    targetImage.onload = runRepaintTest;
+    targetImage.src="../../../fast/backgrounds/resources/red-green-animated.png";
+}
+</script>
