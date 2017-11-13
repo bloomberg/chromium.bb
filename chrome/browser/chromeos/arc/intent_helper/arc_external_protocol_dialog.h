@@ -59,6 +59,9 @@ bool IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
     const GURL& last_url,
     ui::PageTransition last_page_transition);
 
+bool IsChromeAnAppCandidateForTesting(
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -11,7 +12,8 @@ namespace arc {
 
 namespace {
 
-constexpr char kChromePackageName[] = "org.chromium.arc.intent_helper";
+const char* kChromePackageName =
+    ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
 // Creates and returns a new IntentHandlerInfo object.
 mojom::IntentHandlerInfoPtr Create(const std::string& name,
@@ -553,6 +555,51 @@ TEST(ArcExternalProtocolDialogTest,
       url_a_foo, from_api, url_a_foo, from_api));
   EXPECT_FALSE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
       url_a_foo, from_api, url_a_bar, from_api));
+}
+
+// Tests that IsChromeAnAppCandidate works as intended.
+TEST(ArcExternalProtocolDialogTest, TestIsChromeAnAppCandidate) {
+  // First 3 cases are valid, just switching the position of Chrome.
+  std::vector<mojom::IntentHandlerInfoPtr> handlers;
+  handlers.push_back(Create("fake app 1", "fake.app.package", false,
+                            GURL("https://www.fo.com")));
+  handlers.push_back(Create("fake app 2", "fake.app.package2", false,
+                            GURL("https://www.bar.com")));
+  handlers.push_back(
+      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
+  EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers));
+
+  std::vector<mojom::IntentHandlerInfoPtr> handlers2;
+  handlers2.push_back(Create("fake app 1", "fake.app.package", false,
+                             GURL("https://www.fo.com")));
+  handlers2.push_back(
+      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
+  handlers2.push_back(Create("fake app 2", "fake.app.package2", false,
+                             GURL("https://www.bar.com")));
+  EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers2));
+
+  std::vector<mojom::IntentHandlerInfoPtr> handlers3;
+  handlers3.push_back(
+      Create("Chrome", kChromePackageName, false, GURL("https://www/")));
+  handlers3.push_back(Create("fake app 1", "fake.app.package", false,
+                             GURL("https://www.fo.com")));
+  handlers3.push_back(Create("fake app 2", "fake.app.package2", false,
+                             GURL("https://www.bar.com")));
+  EXPECT_TRUE(IsChromeAnAppCandidateForTesting(handlers3));
+
+  // Only non-Chrome apps.
+  std::vector<mojom::IntentHandlerInfoPtr> handlers4;
+  handlers4.push_back(Create("fake app 1", "fake.app.package", false,
+                             GURL("https://www.fo.com")));
+  handlers4.push_back(Create("fake app 2", "fake.app.package2", false,
+                             GURL("https://www.bar.com")));
+  handlers4.push_back(
+      Create("fake app 3", "fake.app.package3", false, GURL("https://www/")));
+  EXPECT_FALSE(IsChromeAnAppCandidateForTesting(handlers4));
+
+  // Empty vector case.
+  EXPECT_FALSE(IsChromeAnAppCandidateForTesting(
+      std::vector<mojom::IntentHandlerInfoPtr>()));
 }
 
 }  // namespace arc
