@@ -159,19 +159,13 @@ def main(args):
     print 'You much specify either --arch, --all or --running-as-hook'
     return 1
 
-  # Desktop Chromium OS builds require the stretch sysroot.
-  # TODO(thomasanderson): only download this when the GN arg target_os
-  # == 'chromeos', when the functionality to perform the check becomes
-  # available.
-  InstallSysroot('Stretch', 'amd64')
-
   return 0
 
 
 def InstallDefaultSysrootForArch(target_arch):
   if target_arch not in VALID_ARCHS:
     raise Error('Unknown architecture: %s' % target_arch)
-  InstallSysroot('Jessie', target_arch)
+  InstallSysroot('Stretch', target_arch)
 
 
 def InstallSysroot(target_platform, target_arch):
