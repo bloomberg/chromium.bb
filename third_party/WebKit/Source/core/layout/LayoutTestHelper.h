@@ -17,6 +17,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/PageTestBase.h"
+#include "platform/testing/UseMockScrollbarSettings.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -66,7 +67,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<LocalFrame> parent_;
 };
 
-class RenderingTest : public PageTestBase {
+class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   USING_FAST_MALLOC(RenderingTest);
 
  public:
@@ -75,7 +76,7 @@ class RenderingTest : public PageTestBase {
   }
   virtual ChromeClient& GetChromeClient() const;
 
-  RenderingTest(LocalFrameClient* = nullptr);
+  explicit RenderingTest(LocalFrameClient* = nullptr);
 
  protected:
   void SetUp() override;

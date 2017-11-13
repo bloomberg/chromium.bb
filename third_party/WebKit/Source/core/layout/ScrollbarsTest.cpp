@@ -1322,7 +1322,7 @@ class ScrollbarAppearanceTest
   ScrollbarAppearanceTest() : mock_scrollbars_(false, GetParam()) {}
 
  private:
-  FrameTestHelpers::UseMockScrollbarSettings mock_scrollbars_;
+  UseMockScrollbarSettings mock_scrollbars_;
 };
 
 class StubWebThemeEngine : public WebThemeEngine {
