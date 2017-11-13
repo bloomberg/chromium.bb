@@ -225,7 +225,7 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
       ShouldRequestExpirationDate()
           ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE
           : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
-      card_.NetworkAndLastFourDigits());
+      card_.NetworkOrBankNameAndLastFourDigits());
 #endif
 }
 
@@ -240,7 +240,8 @@ base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
   }
   // The iOS UI shows the card details in the instructions text since they
   // don't fit in the title.
-  return l10n_util::GetStringFUTF16(ids, card_.NetworkAndLastFourDigits());
+  return l10n_util::GetStringFUTF16(ids,
+                                    card_.NetworkOrBankNameAndLastFourDigits());
 #else
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);

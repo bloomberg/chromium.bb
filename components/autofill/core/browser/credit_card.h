@@ -223,8 +223,10 @@ class CreditCard : public AutofillDataModel {
   base::string16 NetworkForDisplay() const;
   // A label for this card formatted as 'IssuerNetwork - 2345'.
   base::string16 NetworkAndLastFourDigits() const;
-  // A label for this card formatted as 'BankName - 2345'.
-  base::string16 BankNameAndLastFourDigits() const;
+  // A label for this card formatted as 'BankName' - 2345' if bank name
+  // experiment turned on and bank name available; otherwise, formated as
+  // 'IssuerNetwork - 2345'.
+  base::string16 NetworkOrBankNameAndLastFourDigits() const;
   // Localized expiration for this card formatted as 'Exp: 06/17'.
   base::string16 AbbreviatedExpirationDateForDisplay() const;
   // Returns the date when the card was last used in autofill.
@@ -238,6 +240,7 @@ class CreditCard : public AutofillDataModel {
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, BankNameAndLastFourDigitsStrings);
 
   base::string16 Expiration2DigitYearAsString() const;
 
@@ -255,6 +258,9 @@ class CreditCard : public AutofillDataModel {
   // The month and year are zero if not present.
   int Expiration4DigitYear() const { return expiration_year_; }
   int Expiration2DigitYear() const { return expiration_year_ % 100; }
+
+  // A label for this card formatted as 'BankName - 2345'.
+  base::string16 BankNameAndLastFourDigits() const;
 
   // See enum definition above.
   RecordType record_type_;

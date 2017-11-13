@@ -163,7 +163,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cardNumberItem.textFieldValue =
       autofill::IsCreditCardLocal(_creditCard)
           ? base::SysUTF16ToNSString(_creditCard.number())
-          : base::SysUTF16ToNSString(_creditCard.NetworkAndLastFourDigits());
+          : base::SysUTF16ToNSString(
+                _creditCard.NetworkOrBankNameAndLastFourDigits());
   cardNumberItem.textFieldEnabled = isEditing;
   cardNumberItem.autofillUIType = AutofillUITypeCreditCardNumber;
   cardNumberItem.keyboardType = UIKeyboardTypeNumberPad;
