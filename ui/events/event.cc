@@ -1118,6 +1118,7 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
   }
 
   CHECK_EQ(ui::ET_KEY_PRESSED, event.type());
+
   if (!(*last_key_event)) {
     *last_key_event = new KeyEvent(event);
     return false;
@@ -1125,16 +1126,36 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
     // The KeyEvent is created from the same native event.
     return ((*last_key_event)->flags() & ui::EF_IS_REPEAT) != 0;
   }
-  if (event.key_code() == (*last_key_event)->key_code() &&
-      event.flags() == ((*last_key_event)->flags() & ~ui::EF_IS_REPEAT) &&
-      (event.time_stamp() - (*last_key_event)->time_stamp()).InMilliseconds() <
-          kMaxAutoRepeatTimeMs) {
+
+  DCHECK(*last_key_event);
+  bool is_repeat = false;
+
+#if defined(OS_WIN)
+  if (event.HasNativeEvent()) {
+    // Bit 30 of lParam represents the "previous key state". If set, the key
+    // was already down, therefore this is an auto-repeat.
+    is_repeat = (event.native_event().lParam & 0x40000000) != 0;
+  } else
+#endif
+  {
+    // Note that this is only reach for non-native events under Windows.
+    if (event.key_code() == (*last_key_event)->key_code() &&
+        event.flags() == ((*last_key_event)->flags() & ~ui::EF_IS_REPEAT) &&
+        (event.time_stamp() - (*last_key_event)->time_stamp())
+                .InMilliseconds() < kMaxAutoRepeatTimeMs) {
+      is_repeat = true;
+    }
+  }
+
+  if (is_repeat) {
     (*last_key_event)->set_time_stamp(event.time_stamp());
     (*last_key_event)->set_flags((*last_key_event)->flags() | ui::EF_IS_REPEAT);
     return true;
   }
+
   delete *last_key_event;
   *last_key_event = new KeyEvent(event);
+
   return false;
 }
 

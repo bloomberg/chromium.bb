@@ -13,15 +13,6 @@
 
 namespace ui {
 
-class WebKeyboardEventBuilder {
- public:
-  static blink::WebKeyboardEvent Build(HWND hwnd,
-                                       UINT message,
-                                       WPARAM wparam,
-                                       LPARAM lparam,
-                                       double time_stamp);
-};
-
 class WebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(

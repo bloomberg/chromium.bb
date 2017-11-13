@@ -428,8 +428,9 @@ TEST(EventTest, KeyEventCode) {
 #endif  // OS_WIN
 }
 
-namespace {
 #if defined(USE_X11)
+namespace {
+
 void SetKeyEventTimestamp(XEvent* event, int64_t time) {
   event->xkey.time = time & UINT32_MAX;
 }
@@ -438,24 +439,13 @@ void AdvanceKeyEventTimestamp(XEvent* event) {
   event->xkey.time++;
 }
 
-#elif defined(OS_WIN)
-void SetKeyEventTimestamp(MSG& msg, int64_t time) {
-  msg.time = static_cast<long>(time);
-}
-
-void AdvanceKeyEventTimestamp(MSG& msg) {
-  msg.time++;
-}
-#endif
 }  // namespace
 
-#if defined(USE_X11) || defined(OS_WIN)
 TEST(EventTest, AutoRepeat) {
   const uint16_t kNativeCodeA =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_A);
   const uint16_t kNativeCodeB =
       ui::KeycodeConverter::DomCodeToNativeKeycode(DomCode::US_B);
-#if defined(USE_X11)
 
   ScopedXI2Event native_event_a_pressed;
   native_event_a_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, kNativeCodeA);
@@ -476,15 +466,7 @@ TEST(EventTest, AutoRepeat) {
   // IBUS-GTK uses the mask (1 << 25) to detect reposted event.
   static_cast<XEvent*>(native_event_a_pressed_nonstandard_state)->xkey.state |=
       1 << 25;
-#elif defined(OS_WIN)
-  const LPARAM lParam_a = GetLParamFromScanCode(kNativeCodeA);
-  const LPARAM lParam_b = GetLParamFromScanCode(kNativeCodeB);
-  MSG native_event_a_pressed = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
-  MSG native_event_a_pressed_1500 = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
-  MSG native_event_a_pressed_3000 = { NULL, WM_KEYDOWN, VKEY_A, lParam_a };
-  MSG native_event_a_released = { NULL, WM_KEYUP, VKEY_A, lParam_a };
-  MSG native_event_b_pressed = { NULL, WM_KEYUP, VKEY_B, lParam_b };
-#endif
+
   int64_t ticks_base =
       (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds() - 5000;
   SetKeyEventTimestamp(native_event_a_pressed, ticks_base);
@@ -548,7 +530,6 @@ TEST(EventTest, AutoRepeat) {
     EXPECT_FALSE(key_a4_released.is_repeat());
   }
 
-#if defined(USE_X11)
   {
     KeyEvent key_a4_pressed(native_event_a_pressed);
     EXPECT_FALSE(key_a4_pressed.is_repeat());
@@ -565,9 +546,8 @@ TEST(EventTest, AutoRepeat) {
     KeyEvent key_a1_with_same_event(native_event_a_pressed);
     EXPECT_FALSE(key_a1_with_same_event.is_repeat());
   }
-#endif
 }
-#endif  // USE_X11 || OS_WIN
+#endif  // USE_X11
 
 TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
   const base::TimeTicks time = base::TimeTicks();
