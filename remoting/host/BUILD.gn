@@ -744,7 +744,10 @@ if (enable_me2me_host) {
     }
 
     if (remoting_multi_process != 0) {
-      deps += [ "//mojo/edk/system" ]
+      deps += [
+        "//mojo/edk/embedder:headers",
+        "//mojo/edk/system",
+      ]
     }
   }
 

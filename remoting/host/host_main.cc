@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/evaluate_capability.h"
 #include "remoting/host/host_exit_codes.h"
@@ -28,6 +27,10 @@
 #include "remoting/host/setup/me2me_native_messaging_host.h"
 #include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
+
+#if defined(REMOTING_MULTI_PROCESS)
+#include "mojo/edk/embedder/embedder.h"
+#endif  // defined(REMOTING_MULTI_PROCESS)
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
