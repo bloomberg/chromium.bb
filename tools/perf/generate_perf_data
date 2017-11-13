@@ -9,4 +9,4 @@ from core import perf_data_generator
 
 
 if __name__ == '__main__':
-  sys.exit(perf_data_generator.main(sys.argv[1:]))
+  sys.exit(perf_data_generator.main())
