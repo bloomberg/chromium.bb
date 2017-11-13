@@ -145,25 +145,20 @@ void AudioInputRendererHost::OnCreateStream(
         ->RegisterKeyboardMicStream(
             base::BindOnce(&AudioInputRendererHost::DoCreateStream, this,
                            stream_id, render_frame_id, session_id, config));
-  } else {
-    DoCreateStream(stream_id, render_frame_id, session_id, config,
-                   AudioInputDeviceManager::KeyboardMicRegistration());
+    return;
   }
-#else
-  DoCreateStream(stream_id, render_frame_id, session_id, config);
 #endif
+  DoCreateStream(stream_id, render_frame_id, session_id, config,
+                 AudioInputDeviceManager::KeyboardMicRegistration());
 }
 
 void AudioInputRendererHost::DoCreateStream(
     int stream_id,
     int render_frame_id,
     int session_id,
-    const AudioInputHostMsg_CreateStream_Config& config
-#if defined(OS_CHROMEOS)
-    ,
-    AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration
-#endif
-    ) {
+    const AudioInputHostMsg_CreateStream_Config& config,
+    AudioInputDeviceManager::KeyboardMicRegistration
+        keyboard_mic_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK_GT(render_frame_id, 0);
@@ -180,9 +175,7 @@ void AudioInputRendererHost::DoCreateStream(
           media_stream_manager_->audio_input_device_manager(),
           MediaInternals::GetInstance()->CreateAudioLog(
               media::AudioLogFactory::AUDIO_INPUT_CONTROLLER),
-#if defined(OS_CHROMEOS)
           std::move(keyboard_mic_registration),
-#endif
           config.shared_memory_count, stream_id, session_id, render_process_id_,
           render_frame_id, config.automatic_gain_control, config.params);
 

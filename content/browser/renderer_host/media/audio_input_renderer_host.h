@@ -145,12 +145,8 @@ class CONTENT_EXPORT AudioInputRendererHost
       int stream_id,
       int render_frame_id,
       int session_id,
-      const AudioInputHostMsg_CreateStream_Config& config
-#if defined(OS_CHROMEOS)
-      ,
-      AudioInputDeviceManager::KeyboardMicRegistration registration
-#endif
-      );
+      const AudioInputHostMsg_CreateStream_Config& config,
+      AudioInputDeviceManager::KeyboardMicRegistration registration);
 
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);

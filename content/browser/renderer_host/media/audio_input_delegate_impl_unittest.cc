@@ -182,9 +182,7 @@ class AudioInputDelegateTest : public testing::Test {
         media_stream_manager_.audio_input_device_manager(),
         MediaInternals::GetInstance()->CreateAudioLog(
             media::AudioLogFactory::AudioComponent::AUDIO_INPUT_CONTROLLER),
-#if defined(OS_CHROMEOS)
         AudioInputDeviceManager::KeyboardMicRegistration(),
-#endif
         shared_memory_count, kStreamId, session_id, kRenderProcessId,
         kRenderFrameId, enable_agc, ValidAudioParameters());
   }

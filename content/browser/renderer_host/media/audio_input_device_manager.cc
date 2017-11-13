@@ -132,23 +132,11 @@ void AudioInputDeviceManager::Close(int session_id) {
 }
 
 #if defined(OS_CHROMEOS)
-AudioInputDeviceManager::KeyboardMicRegistration::KeyboardMicRegistration()
-    : shared_registration_count_(nullptr) {}
-
 AudioInputDeviceManager::KeyboardMicRegistration::KeyboardMicRegistration(
     KeyboardMicRegistration&& other)
     : shared_registration_count_(other.shared_registration_count_) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   other.shared_registration_count_ = nullptr;
-}
-
-AudioInputDeviceManager::KeyboardMicRegistration&
-AudioInputDeviceManager::KeyboardMicRegistration::operator=(
-    KeyboardMicRegistration&& other) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DeregisterIfNeeded();
-  shared_registration_count_ = other.shared_registration_count_;
-  return *this;
 }
 
 AudioInputDeviceManager::KeyboardMicRegistration::~KeyboardMicRegistration() {

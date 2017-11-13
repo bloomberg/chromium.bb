@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "build/build_config.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
@@ -107,9 +106,7 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
     media::UserInputMonitor* user_input_monitor,
     AudioInputDeviceManager* audio_input_device_manager,
     std::unique_ptr<media::AudioLog> audio_log,
-#if defined(OS_CHROMEOS)
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
-#endif
     uint32_t shared_memory_count,
     int stream_id,
     int session_id,
@@ -154,9 +151,7 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
       subscriber, audio_manager, mirroring_manager, user_input_monitor,
       possibly_modified_parameters, std::move(writer),
       std::move(foreign_socket), std::move(audio_log),
-#if defined(OS_CHROMEOS)
       std::move(keyboard_mic_registration),
-#endif
       stream_id, render_process_id, render_frame_id, automatic_gain_control,
       device));
 }
@@ -170,9 +165,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
     std::unique_ptr<AudioInputSyncWriter> writer,
     std::unique_ptr<base::CancelableSyncSocket> foreign_socket,
     std::unique_ptr<media::AudioLog> audio_log,
-#if defined(OS_CHROMEOS)
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
-#endif
     int stream_id,
     int render_process_id,
     int render_frame_id,
@@ -184,9 +177,7 @@ AudioInputDelegateImpl::AudioInputDelegateImpl(
       foreign_socket_(std::move(foreign_socket)),
       audio_log_(std::move(audio_log)),
       controller_(),
-#if defined(OS_CHROMEOS)
       keyboard_mic_registration_(std::move(keyboard_mic_registration)),
-#endif
       stream_id_(stream_id),
       render_process_id_(render_process_id),
       weak_factory_(this) {
