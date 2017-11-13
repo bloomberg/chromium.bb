@@ -10,15 +10,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
-#include "net/cookies/cookie_store.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/cookies/canonical_cookie.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 
 namespace {
 
-const char kCookieDefinition[] = "A=1";
-const char kCookieHostname[] = "http://host1";
+const char kCookieName[] = "A";
+const char kCookieValue[] = "1";
+const char kCookieHostname[] = "host1.com";
 
 using content::BrowserThread;
 
@@ -29,24 +31,22 @@ class RemoveCookieTester {
   explicit RemoveCookieTester(Profile* profile);
   ~RemoveCookieTester();
 
-  std::string GetCookie(const std::string& host);
-  void AddCookie(const std::string& host, const std::string& definition);
+  bool GetCookie(const std::string& host, net::CanonicalCookie* cookie);
+  void AddCookie(const std::string& host,
+                 const std::string& name,
+                 const std::string& value);
 
  private:
-  void GetCookieOnIOThread(net::URLRequestContextGetter* context_getter,
-                           const std::string& host);
-  void SetCookieOnIOThread(net::URLRequestContextGetter* context_getter,
-                           const std::string& host,
-                           const std::string& definition);
-  void GetCookieCallback(const std::string& cookies);
-  void SetCookieCallback(bool result);
+  void GetCookieListCallback(const std::vector<net::CanonicalCookie>& cookies);
+  void SetCanonicalCookieCallback(bool result);
 
   void BlockUntilNotified();
   void Notify();
 
-  std::string last_cookies_;
+  std::vector<net::CanonicalCookie> last_cookies_;
   bool waiting_callback_;
   Profile* profile_;
+  network::mojom::CookieManagerPtr cookie_manager_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
@@ -55,81 +55,57 @@ class RemoveCookieTester {
 RemoveCookieTester::RemoveCookieTester(Profile* profile)
     : waiting_callback_(false),
       profile_(profile) {
+  content::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetNetworkContext();
+  network_context->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
 }
 
 RemoveCookieTester::~RemoveCookieTester() {}
 
-// Returns true, if the given cookie exists in the cookie store.
-std::string RemoveCookieTester::GetCookie(const std::string& host) {
+// Returns true and sets |*cookie| if the given cookie exists in
+// the cookie store.
+bool RemoveCookieTester::GetCookie(const std::string& host,
+                                   net::CanonicalCookie* cookie) {
   last_cookies_.clear();
   DCHECK(!waiting_callback_);
   waiting_callback_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RemoveCookieTester::GetCookieOnIOThread,
-                     base::Unretained(this),
-                     base::Unretained(profile_->GetRequestContext()), host));
+  net::CookieOptions cookie_options;
+  cookie_manager_->GetCookieList(
+      GURL("http://" + host + "/"), cookie_options,
+      base::BindOnce(&RemoveCookieTester::GetCookieListCallback,
+                     base::Unretained(this)));
   BlockUntilNotified();
-  return last_cookies_;
+  DCHECK_GE(1u, last_cookies_.size());
+  if (0u == last_cookies_.size())
+    return false;
+  *cookie = last_cookies_[0];
+  return true;
 }
 
 void RemoveCookieTester::AddCookie(const std::string& host,
-                                   const std::string& definition) {
+                                   const std::string& name,
+                                   const std::string& value) {
   DCHECK(!waiting_callback_);
   waiting_callback_ = true;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &RemoveCookieTester::SetCookieOnIOThread, base::Unretained(this),
-          base::Unretained(profile_->GetRequestContext()), host, definition));
+  cookie_manager_->SetCanonicalCookie(
+      net::CanonicalCookie(name, value, host, "/", base::Time(), base::Time(),
+                           base::Time(), false, false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      false /* secure_source */, true /* modify_http_only */,
+      base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
+                     base::Unretained(this)));
   BlockUntilNotified();
 }
 
-void RemoveCookieTester::GetCookieOnIOThread(
-    net::URLRequestContextGetter* context_getter,
-    const std::string& host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CookieStore* cookie_store = context_getter->
-      GetURLRequestContext()->cookie_store();
-  cookie_store->GetCookiesWithOptionsAsync(
-      GURL(host), net::CookieOptions(),
-      base::Bind(&RemoveCookieTester::GetCookieCallback,
-                 base::Unretained(this)));
-}
-
-void RemoveCookieTester::SetCookieOnIOThread(
-    net::URLRequestContextGetter* context_getter,
-    const std::string& host,
-    const std::string& definition) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CookieStore* cookie_store = context_getter->
-      GetURLRequestContext()->cookie_store();
-  cookie_store->SetCookieWithOptionsAsync(
-      GURL(host), definition, net::CookieOptions(),
-      base::Bind(&RemoveCookieTester::SetCookieCallback,
-                 base::Unretained(this)));
-}
-
-void RemoveCookieTester::GetCookieCallback(const std::string& cookies) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&RemoveCookieTester::GetCookieCallback,
-                       base::Unretained(this), cookies));
-    return;
-  }
+void RemoveCookieTester::GetCookieListCallback(
+    const std::vector<net::CanonicalCookie>& cookies) {
   last_cookies_ = cookies;
   Notify();
 }
 
-void RemoveCookieTester::SetCookieCallback(bool result) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&RemoveCookieTester::SetCookieCallback,
-                       base::Unretained(this), result));
-    return;
-  }
+void RemoveCookieTester::SetCanonicalCookieCallback(bool result) {
   ASSERT_TRUE(result);
   Notify();
 }
@@ -161,12 +137,16 @@ class ProfileResetTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProfileResetTest, ResetCookiesAndSiteData) {
   RemoveCookieTester tester(browser()->profile());
-  tester.AddCookie(kCookieHostname, kCookieDefinition);
-  ASSERT_EQ(kCookieDefinition, tester.GetCookie(kCookieHostname));
+  std::string host_prefix("http://");
+  tester.AddCookie(kCookieHostname, kCookieName, kCookieValue);
+  net::CanonicalCookie cookie;
+  ASSERT_TRUE(tester.GetCookie(kCookieHostname, &cookie));
+  EXPECT_EQ(kCookieName, cookie.Name());
+  EXPECT_EQ(kCookieValue, cookie.Value());
 
   ResetAndWait(ProfileResetter::COOKIES_AND_SITE_DATA);
 
-  EXPECT_EQ("", tester.GetCookie(kCookieHostname));
+  EXPECT_FALSE(tester.GetCookie(host_prefix + kCookieHostname, &cookie));
 }
 
 }  // namespace
