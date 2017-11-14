@@ -167,10 +167,13 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<CdmProcessPolicy>();
     case SANDBOX_TYPE_PDF_COMPOSITOR:
       return std::make_unique<PdfCompositorProcessPolicy>();
+    case SANDBOX_TYPE_NETWORK:
+      // TODO(tsepez): implement this.
+      return std::make_unique<AllowAllPolicy>();
     case SANDBOX_TYPE_NO_SANDBOX:
     default:
       NOTREACHED();
-      return std::make_unique<AllowAllPolicy>();
+      return nullptr;
   }
 }
 
