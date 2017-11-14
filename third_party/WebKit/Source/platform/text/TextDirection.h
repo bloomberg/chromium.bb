@@ -27,6 +27,8 @@
 #define TextDirection_h
 
 #include <cstdint>
+#include <iosfwd>
+#include "platform/PlatformExport.h"
 
 namespace blink {
 
@@ -52,6 +54,9 @@ inline bool IsRtl(TextDirection direction) {
 inline TextDirection DirectionFromLevel(unsigned level) {
   return level & 1 ? TextDirection::kRtl : TextDirection::kLtr;
 }
-}
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, TextDirection);
+
+}  // namespace blink
 
 #endif
