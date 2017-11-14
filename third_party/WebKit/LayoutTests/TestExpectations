@@ -1488,8 +1488,8 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
+crbug.com/700795 http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Timeout Pass ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Timeout Pass ]
 
 crbug.com/769357 [ Win7 Debug ] virtual/mojo-loading/http/tests/misc/webtiming-slow-load.php [ Failure Pass ]
 

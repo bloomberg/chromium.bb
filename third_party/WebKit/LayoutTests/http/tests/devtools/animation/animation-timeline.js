@@ -1,65 +1,67 @@
-<html>
-<head>
-<style type="text/css">
-#node {
-    transition: background-color 150ms cubic-bezier(0, 0.5, 0.5, 1);
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#node.css-anim {
-    animation: anim 300ms ease-in-out;
-}
+(async function() {
+  TestRunner.addResult(`Tests the display of animations on the animation timeline.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      #node {
+          transition: background-color 150ms cubic-bezier(0, 0.5, 0.5, 1);
+      }
 
-@keyframes anim {
-    from {
-        width: 100px;
-    }
-    to {
-        width: 200px;
-    }
-}
-</style>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/elements-test.js"></script>
-<script>
-var animation;
+      #node.css-anim {
+          animation: anim 300ms ease-in-out;
+      }
 
-function startAnimationWithDelay()
-{
-    animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, id: "testId" });
-}
+      @keyframes anim {
+          from {
+              width: 100px;
+          }
+          to {
+              width: 200px;
+          }
+      }
+      </style>
+      <div id="node" style="background-color: red; height: 100px"></div>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      var animation;
 
-function startAnimationWithEndDelay()
-{
-    animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200, id: "testId2" });
-}
+      function startAnimationWithDelay()
+      {
+          animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, id: "testId" });
+      }
 
-function startAnimationWithStepTiming()
-{
-    animation = node.animate([{ width: "100px", easing: "steps(5, end)" }, { width: "200px", easing: "step-start" }], { duration: 200, id: "testId3" });
-}
+      function startAnimationWithEndDelay()
+      {
+          animation = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200, id: "testId2" });
+      }
 
-function startCSSAnimation()
-{
-    node.classList.add("css-anim");
-}
+      function startAnimationWithStepTiming()
+      {
+          animation = node.animate([{ width: "100px", easing: "steps(5, end)" }, { width: "200px", easing: "step-start" }], { duration: 200, id: "testId3" });
+      }
 
-function startCSSTransition()
-{
-    node.style.backgroundColor = "blue";
-}
+      function startCSSAnimation()
+      {
+          node.classList.add("css-anim");
+      }
 
-var initialize_Animations = function() {
+      function startCSSTransition()
+      {
+          node.style.backgroundColor = "blue";
+      }
+  `);
 
-    InspectorTest.preloadModule("animation");
-}
-
-function test() {
   // Override timeline width for testing
   Animation.AnimationTimeline.prototype.width = function() {
     return 1000;
   };
 
-  UI.viewManager.showView('animations');
+  await UI.viewManager.showView('animations');
   var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
   TestRunner.evaluateInPage('startAnimationWithDelay()');
   ElementsTestRunner.waitForAnimationAdded(step2);
@@ -110,17 +112,4 @@ function test() {
     ElementsTestRunner.dumpAnimationTimeline(timeline);
     TestRunner.completeTest();
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests the display of animations on the animation timeline.
-</p>
-
-<div id="node" style="background-color: red; height: 100px"></div>
-
-</body>
-</html>
+})();
