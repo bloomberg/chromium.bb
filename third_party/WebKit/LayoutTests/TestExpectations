@@ -1302,8 +1302,8 @@ crbug.com/492664 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.x
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 
-crbug.com/760367 http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
-crbug.com/760367 virtual/mojo-loading/http/tests/devtools/console/console-tainted-globals.html [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
+crbug.com/760367 virtual/mojo-loading/http/tests/devtools/console/console-tainted-globals.js [ NeedsManualRebaseline Timeout ]
 crbug.com/760367 http/tests/devtools/runtime/runtime-callFunctionOn.js [ NeedsManualRebaseline Timeout ]
 crbug.com/760367 virtual/mojo-loading/http/tests/devtools/runtime/runtime-callFunctionOn.js [ NeedsManualRebaseline Timeout ]
 
@@ -2018,8 +2018,8 @@ crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Time
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
 crbug.com/751952 fast/dom/Range/getClientRects.html [ Pass Failure ]
-crbug.com/751952 http/tests/devtools/console/console-format.html [ Pass Failure ]
-crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-format.html [ Pass Failure ]
+crbug.com/751952 http/tests/devtools/console/console-format.js [ Pass Failure ]
+crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-format.js [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/unit/datagrid-editable-longtext.js [ Pass Failure ]
 crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 crbug.com/751952 virtual/mojo-loading/http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
@@ -2615,8 +2615,8 @@ crbug.com/657646 [ Win ] fast/text/font-stretch-variant.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/drawBidiText.html [ Failure Pass ]
 crbug.com/657646 [ Win ] fast/text/font-features/caps-native-synthesis.html [ Failure Pass ]
 
-crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.html [ Skip ]
-crbug.com/664450 virtual/mojo-loading/http/tests/devtools/console/console-on-animation-worklet.html [ Skip ]
+crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
+crbug.com/664450 virtual/mojo-loading/http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
 
 # Fail when run with --enable-wptserve due to data: URLs treated as cross-origin: (crbug.com/508730)
 crbug.com/508730 external/wpt/dom/nodes/Document-contentType/contentType/contenttype_datauri_02.html [ Failure ]

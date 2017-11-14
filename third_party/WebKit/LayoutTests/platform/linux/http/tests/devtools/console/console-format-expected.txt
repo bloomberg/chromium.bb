@@ -1,396 +1,288 @@
-CONSOLE MESSAGE: line 27: test,test2,,,test4,,,,,
-CONSOLE MESSAGE: line 28: %o
-CONSOLE MESSAGE: line 29: %O
-CONSOLE MESSAGE: line 30: Test for zero "%f" in formatter
-CONSOLE MESSAGE: line 31: %% self-escape1
-CONSOLE MESSAGE: line 32: %%s self-escape2
-CONSOLE MESSAGE: line 33: %%ss self-escape3
-CONSOLE MESSAGE: line 34: %%s%s%%s self-escape4
-CONSOLE MESSAGE: line 35: %%%%% self-escape5
-CONSOLE MESSAGE: line 36: %%%s self-escape6
-CONSOLE MESSAGE: line 12: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-CONSOLE MESSAGE: line 13: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-CONSOLE MESSAGE: line 12: /foo\\bar\sbaz/i
-CONSOLE MESSAGE: line 13: /foo\\bar\sbaz/i
-CONSOLE MESSAGE: line 12: test
-CONSOLE MESSAGE: line 13: test
-CONSOLE MESSAGE: line 12: test named "test"
-CONSOLE MESSAGE: line 13: test named "test"
-CONSOLE MESSAGE: line 12: Error
-CONSOLE MESSAGE: line 13: Error
-CONSOLE MESSAGE: line 12: Error: my error message
-CONSOLE MESSAGE: line 13: Error: my error message
-CONSOLE MESSAGE: line 12: Error: my multiline
-error message
-CONSOLE MESSAGE: line 13: Error: my multiline
-error message
-CONSOLE MESSAGE: line 12: [object HTMLParagraphElement]
-CONSOLE MESSAGE: line 13: [object HTMLParagraphElement]
-CONSOLE MESSAGE: line 12: function () { return 1; }
-CONSOLE MESSAGE: line 13: function () { return 1; }
-CONSOLE MESSAGE: line 12: function () {
-        return 2;
-    }
-CONSOLE MESSAGE: line 13: function () {
-        return 2;
-    }
-CONSOLE MESSAGE: line 12: 0.12
-CONSOLE MESSAGE: line 13: 0.12
-CONSOLE MESSAGE: line 12: http://webkit.org/
-CONSOLE MESSAGE: line 13: http://webkit.org/
-CONSOLE MESSAGE: line 12: null
-CONSOLE MESSAGE: line 13: 
-CONSOLE MESSAGE: line 12: undefined
-CONSOLE MESSAGE: line 13: 
-CONSOLE MESSAGE: line 12: [object Attr]
-CONSOLE MESSAGE: line 13: [object Attr]
-CONSOLE MESSAGE: line 12: [object Attr]
-CONSOLE MESSAGE: line 13: [object Attr]
-CONSOLE MESSAGE: line 12: [object Attr]
-CONSOLE MESSAGE: line 13: [object Attr]
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: NaN
-CONSOLE MESSAGE: line 13: NaN
-CONSOLE MESSAGE: line 12: Infinity
-CONSOLE MESSAGE: line 13: Infinity
-CONSOLE MESSAGE: line 12: -Infinity
-CONSOLE MESSAGE: line 13: -Infinity
-CONSOLE MESSAGE: line 12: test,test2,,,test4,,,,,
-CONSOLE MESSAGE: line 13: test,test2,,,test4,,,,,
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: function () {}
-CONSOLE MESSAGE: line 13: function () {}
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: [object SVGSVGElement]
-CONSOLE MESSAGE: line 13: [object SVGSVGElement]
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: 0
-CONSOLE MESSAGE: line 13: 0
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: function Object() { [native code] }
-CONSOLE MESSAGE: line 13: function Object() { [native code] }
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: function ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-CONSOLE MESSAGE: line 13: function ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-CONSOLE MESSAGE: line 12: 42.0000
-CONSOLE MESSAGE: line 13: 42.0000
-CONSOLE MESSAGE: line 12: abc
-CONSOLE MESSAGE: line 13: abc
-CONSOLE MESSAGE: line 12: [object Uint16Array]
-CONSOLE MESSAGE: line 13: [object Uint16Array]
-CONSOLE MESSAGE: line 12: [object Text]
-CONSOLE MESSAGE: line 13: [object Text]
-CONSOLE MESSAGE: line 12: [object DOMException]
-CONSOLE MESSAGE: line 13: [object DOMException]
-CONSOLE MESSAGE: line 12: [object Uint8Array]
-CONSOLE MESSAGE: line 13: [object Uint8Array]
-CONSOLE MESSAGE: line 12: [object Uint8Array]
-CONSOLE MESSAGE: line 13: [object Uint8Array]
-CONSOLE MESSAGE: line 12: [object Uint8Array]
-CONSOLE MESSAGE: line 13: [object Uint8Array]
-CONSOLE MESSAGE: line 12: [object Object]
-CONSOLE MESSAGE: line 13: [object Object]
-CONSOLE MESSAGE: line 12: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-CONSOLE MESSAGE: line 13: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-CONSOLE MESSAGE: line 12: test
-CONSOLE MESSAGE: line 13: test
-CONSOLE MESSAGE: line 12: 42.0000
-CONSOLE MESSAGE: line 13: 42.0000
-CONSOLE MESSAGE: line 12: abc
-CONSOLE MESSAGE: line 13: abc
 Tests that console logging dumps proper messages.
 
- console-format.html:22 Array(10)
-console-format.html:23 Array(10)
-console-format.html:24 Array(10)
-console-format.html:25 Test for zero "0" in formatter
-console-format.html:26 % self-escape1 dummy
-console-format.html:27 %s self-escape2 dummy
-console-format.html:28 %ss self-escape3 dummy
-console-format.html:29 %sdummy%s self-escape4
-console-format.html:30 %%% self-escape5 dummy
-console-format.html:31 %dummy self-escape6
-console-format.html:7 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-console-format.html:8 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
+console-format.js:34 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format.js:35 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format.js:36 Array(10)
+console-format.js:37 Test for zero "0" in formatter
+console-format.js:38 % self-escape1 dummy
+console-format.js:39 %s self-escape2 dummy
+console-format.js:40 %ss self-escape3 dummy
+console-format.js:41 %sdummy%s self-escape4
+console-format.js:42 %%% self-escape5 dummy
+console-format.js:43 %dummy self-escape6
+console-format.js:21 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+console-format.js:22 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
 globals[0]
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-console-format.html:7 /foo\\bar\sbaz/i
-console-format.html:8 [/foo\\bar\sbaz/i]
+console-format.js:21 /foo\\bar\sbaz/i
+console-format.js:22 [/foo\\bar\sbaz/i]
 globals[1]
 /foo\\bar\sbaz/i
-console-format.html:7 test
-console-format.html:8 ["test"]
+console-format.js:21 test
+console-format.js:22 ["test"]
 globals[2]
 "test"
-console-format.html:7 test named "test"
-console-format.html:8 ["test named "test""]
+console-format.js:21 test named "test"
+console-format.js:22 ["test named "test""]
 globals[3]
 "test named "test""
-console-format.html:7 Error
-console-format.html:8 [Error
+console-format.js:21 Error
+console-format.js:22 [Error
 ]
 globals[4]
 Error
-console-format.html:7 Error: my error message
-console-format.html:8 [Error: my error message
+console-format.js:21 Error: my error message
+console-format.js:22 [Error: my error message
 ]
 globals[5]
 Error: my error message
-console-format.html:7 Error: my multiline
+console-format.js:21 Error: my multiline
 error message
-console-format.html:8 [Error: my multiline
+console-format.js:22 [Error: my multiline
 error message
 ]
 globals[6]
 Error: my multiline
 error message
-console-format.html:7 
-    <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:8 [p#p]
+console-format.js:21 
+    <p id="p"></p>
+console-format.js:22 [p#p]
 globals[7]
-    <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 ƒ () { return 1; }
-console-format.html:8 [ƒ]
+    <p id="p"></p>
+console-format.js:21 ƒ () { return 1; }
+console-format.js:22 [ƒ]
 globals[8]
 ƒ () { return 1; }
-console-format.html:7 ƒ () {
-        return 2;
-    }
-console-format.html:8 [ƒ]
+console-format.js:21 ƒ () {
+          return 2;
+      }
+console-format.js:22 [ƒ]
 globals[9]
 ƒ () {
-        return 2;
-    }
-console-format.html:7 0.12
-console-format.html:8 [0.12]
+          return 2;
+      }
+console-format.js:21 0.12
+console-format.js:22 [0.12]
 globals[10]
 0.12
-console-format.html:7 http://webkit.org/
-console-format.html:8 ["http://webkit.org/"]
+console-format.js:21 http://webkit.org/
+console-format.js:22 ["http://webkit.org/"]
 globals[11]
 "http://webkit.org/"
-console-format.html:7 null
-console-format.html:8 [null]
+console-format.js:21 null
+console-format.js:22 [null]
 globals[12]
 null
-console-format.html:7 undefined
-console-format.html:8 [undefined]
+console-format.js:21 undefined
+console-format.js:22 [undefined]
 globals[13]
 undefined
-console-format.html:7 
+console-format.js:21 
     attr=""
-console-format.html:8 [attr]
+console-format.js:22 [attr]
 globals[14]
     attr=""
-console-format.html:7 
+console-format.js:21 
     attr="value"
-console-format.html:8 [attr]
+console-format.js:22 [attr]
 globals[15]
     attr="value"
-console-format.html:7 
+console-format.js:21 
     id="x"
-console-format.html:8 [id]
+console-format.js:22 [id]
 globals[16]
     id="x"
-console-format.html:7 {}
-console-format.html:8 [{…}]
+console-format.js:21 {}
+console-format.js:22 [{…}]
 globals[17]
 {}
-console-format.html:7 NaN
-console-format.html:8 [NaN]
+console-format.js:21 NaN
+console-format.js:22 [NaN]
 globals[18]
 NaN
-console-format.html:7 Infinity
-console-format.html:8 [Infinity]
+console-format.js:21 Infinity
+console-format.js:22 [Infinity]
 globals[19]
 Infinity
-console-format.html:7 -Infinity
-console-format.html:8 [-Infinity]
+console-format.js:21 -Infinity
+console-format.js:22 [-Infinity]
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
-console-format.html:8 [Array(10)]
+console-format.js:21 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format.js:22 [Array(10)]
 globals[21]
 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
-console-format.html:7 {}
-console-format.html:8 [{…}]
+console-format.js:21 {}
+console-format.js:22 [{…}]
 globals[22]
 {}
-console-format.html:7 [ƒ]
-console-format.html:8 [Array(1)]
+console-format.js:21 [ƒ]
+console-format.js:22 [Array(1)]
 globals[23]
 [ƒ]
-console-format.html:7 {bar: "bar"}
-console-format.html:8 [{…}]
+console-format.js:21 {bar: "bar"}
+console-format.js:22 [{…}]
 globals[24]
 {bar: "bar"}
-console-format.html:7 
+console-format.js:21 
     <svg id="svg-node"></svg>
-console-format.html:8 [svg#svg-node]
+console-format.js:22 [svg#svg-node]
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
-console-format.html:8 [{…}]
+console-format.js:21 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
+console-format.js:22 [{…}]
 globals[26]
 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
-console-format.html:7 -0
-console-format.html:8 [-0]
+console-format.js:21 -0
+console-format.js:22 [-0]
 globals[27]
 -0
-console-format.html:7 {}
-console-format.html:8 [{…}]
+console-format.js:21 {}
+console-format.js:22 [{…}]
 globals[28]
 {}
-console-format.html:7 ƒ Object() { [native code] }
-console-format.html:8 [ƒ]
+console-format.js:21 ƒ Object() { [native code] }
+console-format.js:22 [ƒ]
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
-console-format.html:8 [{…}]
+console-format.js:21 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
+console-format.js:22 [{…}]
 globals[30]
 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
-console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-console-format.html:8 [ƒ]
+console-format.js:21 ƒ ( /**/ foo/**/, /*/**/bar,
+      /**/baz) {}
+console-format.js:22 [ƒ]
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-console-format.html:7 Number {42}
-console-format.html:8 [Number]
+      /**/baz) {}
+console-format.js:21 Number {42}
+console-format.js:22 [Number]
 globals[32]
 Number {42}
-console-format.html:7 String {"abc"}
-console-format.html:8 [String]
+console-format.js:21 String {"abc"}
+console-format.js:22 [String]
 globals[33]
 String {"abc"}
-console-format.html:7 Uint16Array(3) [1, 2, 3]
-console-format.html:8 [Uint16Array(3)]
+console-format.js:21 Uint16Array(3) [1, 2, 3]
+console-format.js:22 [Uint16Array(3)]
 globals[34]
 Uint16Array(3) [1, 2, 3]
-console-format.html:7 #text
-console-format.html:8 [text]
+console-format.js:21 #text
+console-format.js:22 [text]
 globals[35]
 #text
-console-format.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format.js:21 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:7 Uint8Array [3]
-console-format.html:8 [Uint8Array(1)]
+console-format.js:21 Uint8Array [3]
+console-format.js:22 [Uint8Array(1)]
 globals[37]
 Uint8Array [3]
-console-format.html:7 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format.html:8 [Uint8Array(400)]
+console-format.js:21 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format.js:22 [Uint8Array(400)]
 globals[38]
 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format.html:7 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format.html:8 [Uint8Array(400000000)]
+console-format.js:21 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format.js:22 [Uint8Array(400000000)]
 globals[39]
 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
-console-format.html:7 namespace.longSubNamespace.x.className {}
-console-format.html:8 [n…e.l…e.x.className]
+console-format.js:21 namespace.longSubNamespace.x.className {}
+console-format.js:22 [n…e.l…e.x.className]
 globals[40]
 namespace.longSubNamespace.x.className {}
-console-format.html:7 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
-console-format.html:8 [Array(200)]
+console-format.js:21 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+console-format.js:22 [Array(200)]
 globals[41]
 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
-console-format.html:7 ["test"]
-console-format.html:8 [Array(1)]
+console-format.js:21 ["test"]
+console-format.js:22 [Array(1)]
 globals[42]
 ["test"]
-console-format.html:7 Number {42, 1: "foo", a: "bar"}
-console-format.html:8 [Number]
+console-format.js:21 Number {42, 1: "foo", a: "bar"}
+console-format.js:22 [Number]
 globals[43]
 Number {42, 1: "foo", a: "bar"}
-console-format.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
-console-format.html:8 [String]
+console-format.js:21 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+console-format.js:22 [String]
 globals[44]
 String {"abc", 3: "foo", 01: "foo", a: "bar"}
 Expanded all messages
-console-format.html:22 Array(10)
+console-format.js:34 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
     foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:23 Array(10)
+console-format.js:35 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
     foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:24 Array(10)
+console-format.js:36 Array(10)
     0: "test"
     1: "test2"
     4: "test4"
     foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:25 Test for zero "0" in formatter
-console-format.html:26 % self-escape1 dummy
-console-format.html:27 %s self-escape2 dummy
-console-format.html:28 %ss self-escape3 dummy
-console-format.html:29 %sdummy%s self-escape4
-console-format.html:30 %%% self-escape5 dummy
-console-format.html:31 %dummy self-escape6
-console-format.html:7 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-console-format.html:8 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
+console-format.js:37 Test for zero "0" in formatter
+console-format.js:38 % self-escape1 dummy
+console-format.js:39 %s self-escape2 dummy
+console-format.js:40 %ss self-escape3 dummy
+console-format.js:41 %sdummy%s self-escape4
+console-format.js:42 %%% self-escape5 dummy
+console-format.js:43 %dummy self-escape6
+console-format.js:21 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
+console-format.js:22 [/^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\…?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i]
     0: /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
     length: 1
     __proto__: Array(0)
 globals[0]
 /^url\(\s*(?:(?:"(?:[^\\\"]|(?:\\[\da-f]{1,6}\s?|\.))*"|'(?:[^\\\']|(?:\\[\da-f]{1,6}\s?|\.))*')|(?:[!#$%&*-~\w]|(?:\\[\da-f]{1,6}\s?|\.))*)\s*\)/i
-console-format.html:7 /foo\\bar\sbaz/i
-console-format.html:8 [/foo\\bar\sbaz/i]
+console-format.js:21 /foo\\bar\sbaz/i
+console-format.js:22 [/foo\\bar\sbaz/i]
     0: /foo\\bar\sbaz/i
     length: 1
     __proto__: Array(0)
 globals[1]
 /foo\\bar\sbaz/i
-console-format.html:7 test
-console-format.html:8 ["test"]
+console-format.js:21 test
+console-format.js:22 ["test"]
     0: "test"
     length: 1
     __proto__: Array(0)
 globals[2]
 "test"
-console-format.html:7 test named "test"
-console-format.html:8 ["test named "test""]
+console-format.js:21 test named "test"
+console-format.js:22 ["test named "test""]
     0: "test named "test""
     length: 1
     __proto__: Array(0)
 globals[3]
 "test named "test""
-console-format.html:7 Error
-console-format.html:8 [Error
+console-format.js:21 Error
+console-format.js:22 [Error
 ]
     0: Error
     length: 1
     __proto__: Array(0)
 globals[4]
 Error
-console-format.html:7 Error: my error message
-console-format.html:8 [Error: my error message
+console-format.js:21 Error: my error message
+console-format.js:22 [Error: my error message
 ]
     0: Error: my error message
     length: 1
     __proto__: Array(0)
 globals[5]
 Error: my error message
-console-format.html:7 Error: my multiline
+console-format.js:21 Error: my multiline
 error message
-console-format.html:8 [Error: my multiline
+console-format.js:22 [Error: my multiline
 error message
 ]
     0: Error: my multiline
@@ -400,89 +292,89 @@ error message
 globals[6]
 Error: my multiline
 error message
-console-format.html:7 
-    <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:8 [p#p]
+console-format.js:21 
+    <p id="p"></p>
+console-format.js:22 [p#p]
     0: p#p
     length: 1
     __proto__: Array(0)
 globals[7]
-    <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 ƒ () { return 1; }
-console-format.html:8 [ƒ]
+    <p id="p"></p>
+console-format.js:21 ƒ () { return 1; }
+console-format.js:22 [ƒ]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
 globals[8]
 ƒ () { return 1; }
-console-format.html:7 ƒ () {
-        return 2;
-    }
-console-format.html:8 [ƒ]
+console-format.js:21 ƒ () {
+          return 2;
+      }
+console-format.js:22 [ƒ]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
 globals[9]
 ƒ () {
-        return 2;
-    }
-console-format.html:7 0.12
-console-format.html:8 [0.12]
+          return 2;
+      }
+console-format.js:21 0.12
+console-format.js:22 [0.12]
     0: 0.12
     length: 1
     __proto__: Array(0)
 globals[10]
 0.12
-console-format.html:7 http://webkit.org/
-console-format.html:8 ["http://webkit.org/"]
+console-format.js:21 http://webkit.org/
+console-format.js:22 ["http://webkit.org/"]
     0: "http://webkit.org/"
     length: 1
     __proto__: Array(0)
 globals[11]
 "http://webkit.org/"
-console-format.html:7 null
-console-format.html:8 [null]
+console-format.js:21 null
+console-format.js:22 [null]
     0: null
     length: 1
     __proto__: Array(0)
 globals[12]
 null
-console-format.html:7 undefined
-console-format.html:8 [undefined]
+console-format.js:21 undefined
+console-format.js:22 [undefined]
     0: undefined
     length: 1
     __proto__: Array(0)
 globals[13]
 undefined
-console-format.html:7 
+console-format.js:21 
     attr=""
-console-format.html:8 [attr]
+console-format.js:22 [attr]
     0: attr
     length: 1
     __proto__: Array(0)
 globals[14]
     attr=""
-console-format.html:7 
+console-format.js:21 
     attr="value"
-console-format.html:8 [attr]
+console-format.js:22 [attr]
     0: attr
     length: 1
     __proto__: Array(0)
 globals[15]
     attr="value"
-console-format.html:7 
+console-format.js:21 
     id="x"
-console-format.html:8 [id]
+console-format.js:22 [id]
     0: id
     length: 1
     __proto__: Array(0)
 globals[16]
     id="x"
-console-format.html:7 {}
+console-format.js:21 {}
     length: (...)
     get length: ƒ length()
     __proto__: Object
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {}
     length: 1
     __proto__: Array(0)
@@ -491,35 +383,35 @@ globals[17]
     length: (...)
     get length: ƒ length()
     __proto__: Object
-console-format.html:7 NaN
-console-format.html:8 [NaN]
+console-format.js:21 NaN
+console-format.js:22 [NaN]
     0: NaN
     length: 1
     __proto__: Array(0)
 globals[18]
 NaN
-console-format.html:7 Infinity
-console-format.html:8 [Infinity]
+console-format.js:21 Infinity
+console-format.js:22 [Infinity]
     0: Infinity
     length: 1
     __proto__: Array(0)
 globals[19]
 Infinity
-console-format.html:7 -Infinity
-console-format.html:8 [-Infinity]
+console-format.js:21 -Infinity
+console-format.js:22 [-Infinity]
     0: -Infinity
     length: 1
     __proto__: Array(0)
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
+console-format.js:21 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
     foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:8 [Array(10)]
+console-format.js:22 [Array(10)]
     0: (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     length: 1
     __proto__: Array(0)
@@ -531,20 +423,20 @@ globals[21]
     foo: {}
     length: 10
     __proto__: Array(0)
-console-format.html:7 {}
+console-format.js:21 {}
     __proto__: Object
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {}
     length: 1
     __proto__: Array(0)
 globals[22]
 {}
     __proto__: Object
-console-format.html:7 [ƒ]
+console-format.js:21 [ƒ]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
-console-format.html:8 [Array(1)]
+console-format.js:22 [Array(1)]
     0: [ƒ]
     length: 1
     __proto__: Array(0)
@@ -553,10 +445,10 @@ globals[23]
     0: ƒ ()
     length: 1
     __proto__: Array(0)
-console-format.html:7 {bar: "bar"}
+console-format.js:21 {bar: "bar"}
     bar: "bar"
     __proto__: Object
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {bar: "bar"}
     length: 1
     __proto__: Array(0)
@@ -564,15 +456,15 @@ globals[24]
 {bar: "bar"}
     bar: "bar"
     __proto__: Object
-console-format.html:7 
+console-format.js:21 
     <svg id="svg-node"></svg>
-console-format.html:8 [svg#svg-node]
+console-format.js:22 [svg#svg-node]
     0: svg#svg-node
     length: 1
     __proto__: Array(0)
 globals[25]
     <svg id="svg-node"></svg>
-console-format.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
+console-format.js:21 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
     enumerableProp: 4
     __underscoreEnumerableProp__: 5
     abc: 3
@@ -582,7 +474,7 @@ console-format.html:7 {enumerableProp: 4, __underscoreEnumerableProp__: 5, __und
     get bar: ƒ ()
     set bar: ƒ (x)
     __proto__: Object
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {enumerableProp: 4, __underscoreEnumerableProp__: 5, __underscoreNonEnumerableProp: 2, abc: 3, getFoo: ƒ, …}
     length: 1
     __proto__: Array(0)
@@ -597,30 +489,30 @@ globals[26]
     get bar: ƒ ()
     set bar: ƒ (x)
     __proto__: Object
-console-format.html:7 -0
-console-format.html:8 [-0]
+console-format.js:21 -0
+console-format.js:22 [-0]
     0: -0
     length: 1
     __proto__: Array(0)
 globals[27]
 -0
-console-format.html:7 {}
+console-format.js:21 {}
     No properties
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {}
     length: 1
     __proto__: Array(0)
 globals[28]
 {}
     No properties
-console-format.html:7 ƒ Object() { [native code] }
-console-format.html:8 [ƒ]
+console-format.js:21 ƒ Object() { [native code] }
+console-format.js:22 [ƒ]
     0: ƒ Object()
     length: 1
     __proto__: Array(0)
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
+console-format.js:21 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     constructor: ƒ Object()
     hasOwnProperty: ƒ hasOwnProperty()
     isPrototypeOf: ƒ isPrototypeOf()
@@ -634,7 +526,7 @@ console-format.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: 
     __lookupSetter__: ƒ __lookupSetter__()
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
-console-format.html:8 [{…}]
+console-format.js:22 [{…}]
     0: {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     length: 1
     __proto__: Array(0)
@@ -653,19 +545,19 @@ globals[30]
     __lookupSetter__: ƒ __lookupSetter__()
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
-console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-console-format.html:8 [ƒ]
-    0: ƒ ( /**/ foo/**/, /*/**/bar,     /**/baz)
+console-format.js:21 ƒ ( /**/ foo/**/, /*/**/bar,
+      /**/baz) {}
+console-format.js:22 [ƒ]
+    0: ƒ ( /**/ foo/**/, /*/**/bar,       /**/baz)
     length: 1
     __proto__: Array(0)
 globals[31]
 ƒ ( /**/ foo/**/, /*/**/bar,
-    /**/baz) {}
-console-format.html:7 Number {42}
+      /**/baz) {}
+console-format.js:21 Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:8 [Number]
+console-format.js:22 [Number]
     0: Number {42}
     length: 1
     __proto__: Array(0)
@@ -673,14 +565,14 @@ globals[32]
 Number {42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {"abc"}
+console-format.js:21 String {"abc"}
     0: "a"
     1: "b"
     2: "c"
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format.html:8 [String]
+console-format.js:22 [String]
     0: String {"abc"}
     length: 1
     __proto__: Array(0)
@@ -692,7 +584,7 @@ String {"abc"}
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format.html:7 Uint16Array(3) [1, 2, 3]
+console-format.js:21 Uint16Array(3) [1, 2, 3]
     0: 1
     1: 2
     2: 3
@@ -702,7 +594,7 @@ console-format.html:7 Uint16Array(3) [1, 2, 3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format.html:8 [Uint16Array(3)]
+console-format.js:22 [Uint16Array(3)]
     0: Uint16Array(3) [1, 2, 3]
     length: 1
     __proto__: Array(0)
@@ -717,21 +609,21 @@ Uint16Array(3) [1, 2, 3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format.html:7 #text
-console-format.html:8 [text]
+console-format.js:21 #text
+console-format.js:22 [text]
     0: text
     length: 1
     __proto__: Array(0)
 globals[35]
 #text
-console-format.html:7 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:8 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
+console-format.js:21 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+console-format.js:22 [DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of th…]
     0: DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
     length: 1
     __proto__: Array(0)
 globals[36]
 DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-console-format.html:7 Uint8Array [3]
+console-format.js:21 Uint8Array [3]
     0: 3
     buffer: (...)
     byteLength: (...)
@@ -739,7 +631,7 @@ console-format.html:7 Uint8Array [3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format.html:8 [Uint8Array(1)]
+console-format.js:22 [Uint8Array(1)]
     0: Uint8Array [3]
     length: 1
     __proto__: Array(0)
@@ -752,14 +644,14 @@ Uint8Array [3]
     length: (...)
     Symbol(Symbol.toStringTag): (...)
     __proto__: TypedArray
-console-format.html:7 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format.js:21 Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99]
     [100 … 199]
     [200 … 299]
     [300 … 399]
     foo: "bar"
     __proto__: TypedArray
-console-format.html:8 [Uint8Array(400)]
+console-format.js:22 [Uint8Array(400)]
     0: Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     length: 1
     __proto__: Array(0)
@@ -771,13 +663,13 @@ Uint8Array(400) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     [300 … 399]
     foo: "bar"
     __proto__: TypedArray
-console-format.html:7 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
+console-format.js:21 Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     [0 … 99999999]
     [100000000 … 199999999]
     [200000000 … 299999999]
     [300000000 … 399999999]
     __proto__: TypedArray
-console-format.html:8 [Uint8Array(400000000)]
+console-format.js:22 [Uint8Array(400000000)]
     0: Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, …]
     length: 1
     __proto__: Array(0)
@@ -788,21 +680,21 @@ Uint8Array(400000000) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     [200000000 … 299999999]
     [300000000 … 399999999]
     __proto__: TypedArray
-console-format.html:7 namespace.longSubNamespace.x.className {}
+console-format.js:21 namespace.longSubNamespace.x.className {}
     __proto__: Object
-console-format.html:8 [n…e.l…e.x.className]
+console-format.js:22 [n…e.l…e.x.className]
     0: namespace.longSubNamespace.x.className {}
     length: 1
     __proto__: Array(0)
 globals[40]
 namespace.longSubNamespace.x.className {}
     __proto__: Object
-console-format.html:7 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
+console-format.js:21 (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
     [0 … 99]
     [100 … 199]
     length: 200
     __proto__: Array(0)
-console-format.html:8 [Array(200)]
+console-format.js:22 [Array(200)]
     0: (200) [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …]
     length: 1
     __proto__: Array(0)
@@ -812,11 +704,11 @@ globals[41]
     [100 … 199]
     length: 200
     __proto__: Array(0)
-console-format.html:7 ["test"]
+console-format.js:21 ["test"]
     0: "test"
     length: 1
     __proto__: Array(0)
-console-format.html:8 [Array(1)]
+console-format.js:22 [Array(1)]
     0: ["test"]
     length: 1
     __proto__: Array(0)
@@ -825,12 +717,12 @@ globals[42]
     0: "test"
     length: 1
     __proto__: Array(0)
-console-format.html:7 Number {42, 1: "foo", a: "bar"}
+console-format.js:21 Number {42, 1: "foo", a: "bar"}
     1: "foo"
     a: "bar"
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:8 [Number]
+console-format.js:22 [Number]
     0: Number {42, 1: "foo", a: "bar"}
     length: 1
     __proto__: Array(0)
@@ -840,7 +732,7 @@ Number {42, 1: "foo", a: "bar"}
     a: "bar"
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
+console-format.js:21 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     0: "a"
     01: "foo"
     1: "b"
@@ -850,7 +742,7 @@ console-format.html:7 String {"abc", 3: "foo", 01: "foo", a: "bar"}
     length: 3
     __proto__: String
     [[PrimitiveValue]]: "abc"
-console-format.html:8 [String]
+console-format.js:22 [String]
     0: String {"abc", 3: "foo", 01: "foo", a: "bar"}
     length: 1
     __proto__: Array(0)

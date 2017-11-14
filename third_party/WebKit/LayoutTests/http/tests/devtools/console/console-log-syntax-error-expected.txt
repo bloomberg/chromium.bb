@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 3: Uncaught SyntaxError: Unexpected token )
 Tests that syntax errors are logged into console and doesn't cause browser crash.
 
 syntax-error.js:3 Uncaught SyntaxError: Unexpected token )

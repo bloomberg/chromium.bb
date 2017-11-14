@@ -254,7 +254,7 @@ crbug.com/522646 http/tests/media/encrypted-media/encrypted-media-encrypted-even
 crbug.com/522646 virtual/mojo-loading/http/tests/media/encrypted-media/encrypted-media-encrypted-event-different-origin.html [ Slow ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Slow ]
 crbug.com/411164 [ Win ] virtual/mojo-loading/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Slow ]
-crbug.com/510337 http/tests/devtools/console/console-format.html [ Slow ]
+crbug.com/510337 http/tests/devtools/console/console-format.js [ Slow ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Slow ]
 crbug.com/357427 virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Slow ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Slow ]
