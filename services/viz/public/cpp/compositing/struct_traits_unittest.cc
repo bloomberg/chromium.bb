@@ -97,7 +97,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   const base::TimeDelta interval = base::TimeDelta::FromMilliseconds(1337);
   const BeginFrameArgs::BeginFrameArgsType type = BeginFrameArgs::NORMAL;
   const bool on_critical_path = true;
-  const uint32_t source_id = 5;
+  const uint64_t source_id = 5;
   const uint64_t sequence_number = 10;
   BeginFrameArgs input;
   input.source_id = source_id;
@@ -121,7 +121,7 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
 }
 
 TEST_F(StructTraitsTest, BeginFrameAck) {
-  const uint32_t source_id = 5;
+  const uint64_t source_id = 5;
   const uint64_t sequence_number = 10;
   const bool has_damage = true;
   BeginFrameAck input;

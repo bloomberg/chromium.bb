@@ -13,7 +13,7 @@ namespace viz {
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number) {
   return CreateBeginFrameArgsForTesting(location, source_id, sequence_number,
                                         base::TimeTicks::Now());
@@ -21,7 +21,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     base::TimeTicks frame_time) {
   return BeginFrameArgs::Create(
@@ -33,7 +33,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
@@ -47,7 +47,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
@@ -62,7 +62,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     base::SimpleTestTickClock* now_src) {
   base::TimeTicks now = now_src->NowTicks();

@@ -63,13 +63,16 @@ namespace {
 static base::AtomicSequenceNumber g_next_source_id;
 }  // namespace
 
+// TODO(kylechar): Use the higher 32 bits of |source_id_| for process restart
+// id.
 BeginFrameSource::BeginFrameSource() : source_id_(g_next_source_id.GetNext()) {}
 
 BeginFrameSource::~BeginFrameSource() = default;
 
 void BeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  state->SetInteger("source_id", source_id_);
+  // The lower 32 bits of source_id are the interesting piece of |source_id_|.
+  state->SetInteger("source_id", static_cast<uint32_t>(source_id_));
 }
 
 // StubBeginFrameSource ---------------------------------------------------

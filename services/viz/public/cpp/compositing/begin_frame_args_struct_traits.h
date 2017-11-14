@@ -28,7 +28,7 @@ struct StructTraits<viz::mojom::BeginFrameArgsDataView, viz::BeginFrameArgs> {
     return args.sequence_number;
   }
 
-  static uint32_t source_id(const viz::BeginFrameArgs& args) {
+  static uint64_t source_id(const viz::BeginFrameArgs& args) {
     return args.source_id;
   }
 
@@ -50,7 +50,7 @@ struct StructTraits<viz::mojom::BeginFrameAckDataView, viz::BeginFrameAck> {
     return ack.sequence_number;
   }
 
-  static uint32_t source_id(const viz::BeginFrameAck& ack) {
+  static uint64_t source_id(const viz::BeginFrameAck& ack) {
     return ack.source_id;
   }
 

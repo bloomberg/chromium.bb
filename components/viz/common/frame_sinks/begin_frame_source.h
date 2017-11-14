@@ -113,7 +113,7 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // process, but not across processes. This is used to create BeginFrames that
   // originate at this source. Note that BeginFrameSources may pass on
   // BeginFrames created by other sources, with different IDs.
-  uint32_t source_id() const { return source_id_; }
+  uint64_t source_id() const { return source_id_; }
 
   // BeginFrameObservers use DidFinishFrame to provide back pressure to a frame
   // source about frame processing (rather than toggling SetNeedsBeginFrames
@@ -133,7 +133,10 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   virtual void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
-  uint32_t source_id_;
+  // The higher 32 bits are used for a process restart id that changes if a
+  // process allocating BeginFrameSources has been restarted. The lower 32 bits
+  // are allocated from an atomic sequence.
+  uint64_t source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BeginFrameSource);
 };
