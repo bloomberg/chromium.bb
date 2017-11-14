@@ -35,6 +35,7 @@
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/send_zygote_child_ping_linux.h"
@@ -45,6 +46,7 @@
 #include "services/service_manager/embedder/set_process_title.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 
 // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
@@ -577,6 +579,17 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
     args.push_back(arg);
     if (arg.compare(0, channel_id_prefix.length(), channel_id_prefix) == 0)
       channel_id = arg.substr(channel_id_prefix.length());
+  }
+
+  if (process_type == switches::kRendererProcess) {
+    // timezone_id is obtained from ICU in zygote host so that it can't be
+    // invalid. For an unknown reason, if an invalid ID is passed down here,
+    // the worst result would be that timezone would be set to Etc/Unknown.
+    base::string16 timezone_id;
+    if (!iter.ReadString16(&timezone_id))
+      return -1;
+    icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
+        icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
   }
 
   if (!iter.ReadInt(&numfds))

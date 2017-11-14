@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/i18n/unicodestring.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -25,6 +26,7 @@
 #include "media/base/media_switches.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -103,6 +105,12 @@ pid_t ZygoteCommunication::ForkRequest(
   for (std::vector<std::string>::const_iterator i = argv.begin();
        i != argv.end(); ++i)
     pickle.WriteString(*i);
+  if (process_type == switches::kRendererProcess) {
+    std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
+    icu::UnicodeString timezone_id;
+    pickle.WriteString16(
+        base::i18n::UnicodeStringToString16(timezone->getID(timezone_id)));
+  }
 
   // Fork requests contain one file descriptor for the PID oracle, and one
   // more for each file descriptor mapping for the child process.
