@@ -4160,6 +4160,21 @@
             ]
         }
     ],
+    "WebRTC-ProbingScreenshareBwe": [
+        {
+            "platforms": [
+                "win",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "1.0,2875,80,40,-60,3"
+                }
+            ]
+        }
+    ],
     "WebRtcUseEchoCanceller3": [
         {
             "platforms": [
