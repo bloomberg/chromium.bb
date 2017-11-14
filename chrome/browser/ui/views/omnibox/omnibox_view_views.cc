@@ -197,8 +197,8 @@ void OmniboxViewViews::OnTabChanged(const content::WebContents* web_contents) {
   if (state) {
     // This assumes that the omnibox has already been focused or blurred as
     // appropriate; otherwise, a subsequent OnFocus() or OnBlur() call could
-    // goof up the selection.  See comments at the end of
-    // BrowserView::ActiveTabChanged().
+    // goof up the selection.  See comments on OnActiveTabChanged() call in
+    // Browser::ActiveTabChanged().
     SelectRange(state->selection);
     saved_selection_for_focus_change_ = state->saved_selection_for_focus_change;
   }
