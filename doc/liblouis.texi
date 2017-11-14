@@ -1819,7 +1819,7 @@ Print the version number, then exit successfully.
 
 Most test programs let you specify one or multiple tables to use.
 These tables are usually found in standard locations in the file
-system or local to where the command is executed. @xref{How tables are
+system or local to where the command is executed. @pxref{How tables are
 found} for a description on how the tables are located.
 
 @menu
@@ -2707,7 +2707,7 @@ translation table.
 
 @anchor{translation-tables}
 The @code{tableList} parameter points to a list of translation tables
-separated by commas. @xref{How tables are found} for a description on
+separated by commas. @pxref{How tables are found} for a description on
 how the tables are located in the file system. If only one table is
 given, no comma should be used after it. It is these tables which
 control just how the translation is made, whether in Grade 2, Grade 1,
