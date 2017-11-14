@@ -1468,9 +1468,9 @@ static int div_mult[32] = {
 // altogether.
 static void get_mv_projection(MV *output, MV ref, int num, int den) {
   output->row =
-      (int16_t)(ROUND_POWER_OF_TWO(ref.row * num * div_mult[den], 14));
+      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.row * num * div_mult[den], 14));
   output->col =
-      (int16_t)(ROUND_POWER_OF_TWO(ref.col * num * div_mult[den], 14));
+      (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14));
 }
 
 #define MAX_OFFSET_WIDTH 64
