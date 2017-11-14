@@ -1968,7 +1968,6 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
   if (cursor_changed) {
     UpdateCursorViewPosition();
     UpdateCursorVisibility();
-    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_SELECTION_CHANGED, true);
   }
   if (text_changed || cursor_changed) {
     OnCaretBoundsChanged();
@@ -2036,6 +2035,7 @@ void Textfield::OnCaretBoundsChanged() {
     GetInputMethod()->OnCaretBoundsChanged(this);
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
+  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_SELECTION_CHANGED, true);
 }
 
 void Textfield::OnBeforeUserAction() {
