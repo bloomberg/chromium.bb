@@ -41,6 +41,10 @@ constexpr char kThrottledErrorDescription[] =
     "information.";
 }  // namespace
 
+int ResourceError::BlockedByXSSAuditorErrorCode() {
+  return net::ERR_BLOCKED_BY_XSS_AUDITOR;
+}
+
 ResourceError ResourceError::CancelledError(const KURL& url) {
   return ResourceError(net::ERR_ABORTED, url);
 }
@@ -49,9 +53,9 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
     const KURL& url,
     ResourceRequestBlockedReason blocked_reason) {
   ResourceError error = CancelledError(url);
-  error.SetIsAccessCheck(true);
-  if (blocked_reason == ResourceRequestBlockedReason::kSubresourceFilter)
-    error.SetShouldCollapseInitiator(true);
+  error.is_access_check_ = true;
+  error.should_collapse_initiator_ =
+      blocked_reason == ResourceRequestBlockedReason::kSubresourceFilter;
   return error;
 }
 
@@ -86,14 +90,14 @@ ResourceError::ResourceError(const WebURLError& error)
     : error_code_(error.reason()),
       failing_url_(error.url()),
       is_access_check_(error.is_web_security_violation()),
-      stale_copy_in_cache_(error.has_copy_in_cache()) {
+      has_copy_in_cache_(error.has_copy_in_cache()) {
   DCHECK_NE(error_code_, 0);
   InitializeDescription();
 }
 
 ResourceError ResourceError::Copy() const {
   ResourceError error_copy(error_code_, failing_url_.Copy());
-  error_copy.stale_copy_in_cache_ = stale_copy_in_cache_;
+  error_copy.has_copy_in_cache_ = has_copy_in_cache_;
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_access_check_ = is_access_check_;
   return error_copy;
@@ -101,8 +105,8 @@ ResourceError ResourceError::Copy() const {
 
 ResourceError::operator WebURLError() const {
   return WebURLError(error_code_,
-                     stale_copy_in_cache_ ? WebURLError::HasCopyInCache::kTrue
-                                          : WebURLError::HasCopyInCache::kFalse,
+                     has_copy_in_cache_ ? WebURLError::HasCopyInCache::kTrue
+                                        : WebURLError::HasCopyInCache::kFalse,
                      is_access_check_
                          ? WebURLError::IsWebSecurityViolation::kTrue
                          : WebURLError::IsWebSecurityViolation::kFalse,
@@ -122,7 +126,7 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
   if (a.IsAccessCheck() != b.IsAccessCheck())
     return false;
 
-  if (a.StaleCopyInCache() != b.StaleCopyInCache())
+  if (a.HasCopyInCache() != b.HasCopyInCache())
     return false;
 
   return true;
@@ -138,6 +142,10 @@ bool ResourceError::IsCancellation() const {
 
 bool ResourceError::IsCacheMiss() const {
   return error_code_ == net::ERR_CACHE_MISS;
+}
+
+bool ResourceError::WasBlockedByResponse() const {
+  return error_code_ == net::ERR_BLOCKED_BY_RESPONSE;
 }
 
 void ResourceError::InitializeDescription() {
