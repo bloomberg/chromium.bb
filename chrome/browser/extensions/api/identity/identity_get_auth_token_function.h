@@ -140,6 +140,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void CompleteFunctionWithResult(const std::string& access_token);
   void CompleteFunctionWithError(const std::string& error);
 
+  // Whether a signin flow should be initiated in the user's current state.
+  bool ShouldStartSigninFlow();
+
   // Initiate/complete the sub-flows.
   void StartSigninFlow();
   void StartMintTokenFlow(IdentityMintRequestQueue::MintType type);
