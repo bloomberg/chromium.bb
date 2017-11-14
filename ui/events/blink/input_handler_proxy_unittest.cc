@@ -2969,12 +2969,8 @@ TEST_P(InputHandlerProxyTest, FlingBoost) {
   time += dt;
   CancelFling(time);
 
-  // The GestureScrollBegin should be swallowed by the fling if it hits the same
-  // scrolling layer.
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(true));
-
+  // The GestureScrollBegin should be swallowed by the fling if a fling cancel
+  // is deferred.
   time += dt;
   gesture_.SetTimeStampSeconds(InSecondsF(time));
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
@@ -3078,36 +3074,6 @@ TEST_P(InputHandlerProxyTest, FlingBoost) {
   VERIFY_AND_RESET_MOCKS();
 }
 
-TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollTargetsDifferentLayer) {
-  base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
-  base::TimeTicks time = base::TimeTicks() + dt;
-  WebFloatPoint fling_delta = WebFloatPoint(1000, 0);
-  WebPoint fling_point = WebPoint(7, 13);
-  StartFling(time, blink::kWebGestureDeviceTouchscreen, fling_delta,
-             fling_point);
-
-  // Cancel the fling.  The fling cancellation should be deferred to allow
-  // fling boosting events to arrive.
-  time += dt;
-  CancelFling(time);
-
-  // If the GestureScrollBegin targets a different layer, the fling should be
-  // cancelled and the scroll should be handled as usual.
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(false));
-  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
-  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(kImplThreadScrollState));
-
-  time += dt;
-  gesture_.SetTimeStampSeconds(InSecondsF(time));
-  gesture_.SetType(WebInputEvent::kGestureScrollBegin);
-  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
-
-  VERIFY_AND_RESET_MOCKS();
-}
-
 TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   base::TimeDelta dt = base::TimeDelta::FromMilliseconds(10);
   base::TimeTicks time = base::TimeTicks() + dt;
@@ -3121,12 +3087,8 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   time += dt;
   CancelFling(time);
 
-  // The GestureScrollBegin should be swallowed by the fling if it hits the same
-  // scrolling layer.
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(true));
-
+  // The GestureScrollBegin should be swallowed by the fling if a fling cancel
+  // is deferred.
   time += dt;
   gesture_.SetTimeStampSeconds(InSecondsF(time));
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
@@ -3165,12 +3127,8 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfNotAnimated) {
   time += base::TimeDelta::FromMilliseconds(100);
   CancelFling(time);
 
-  // The GestureScrollBegin should be swallowed by the fling if it hits the same
-  // scrolling layer.
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(true));
-
+  // The GestureScrollBegin should be swallowed by the fling if a fling cancel
+  // is deferred.
   time += dt;
   gesture_.SetTimeStampSeconds(InSecondsF(time));
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
@@ -3242,12 +3200,8 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollInDifferentDirection) {
   time += dt;
   CancelFling(time);
 
-  // The GestureScrollBegin should be swallowed by the fling if it hits the same
-  // scrolling layer.
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(true));
-
+  // The GestureScrollBegin should be swallowed by the fling if a fling cancel
+  // is deferred.
   time += dt;
   gesture_.SetTimeStampSeconds(InSecondsF(time));
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
@@ -3346,9 +3300,6 @@ TEST_P(InputHandlerProxyTest, FlingBoostTerminatedDuringScrollSequence) {
   time += dt;
   gesture_.SetTimeStampSeconds(InSecondsF(time));
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
-  EXPECT_CALL(mock_input_handler_,
-              IsCurrentlyScrollingLayerAt(testing::_, testing::_))
-      .WillOnce(testing::Return(true));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();

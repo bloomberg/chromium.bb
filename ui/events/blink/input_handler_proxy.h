@@ -38,6 +38,7 @@ class TestInputHandlerProxy;
 
 class CompositorThreadEventQueue;
 class EventWithCallback;
+class FlingBooster;
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
 class SynchronousInputHandler;
@@ -149,14 +150,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   EventDisposition HandleTouchMove(const blink::WebTouchEvent& event);
   EventDisposition HandleTouchEnd(const blink::WebTouchEvent& event);
 
-  // Returns true if the event should be suppressed due to to an active,
-  // boost-enabled fling, in which case further processing should cease.
-  bool FilterInputEventForFlingBoosting(const blink::WebInputEvent& event);
-
-  // Schedule a time in the future after which a boost-enabled fling will
-  // terminate without further momentum from the user (see |Animate()|).
-  void ExtendBoostedFlingTimeout(const blink::WebGestureEvent& event);
-
   // Returns true if we scrolled by the increment.
   bool TouchpadFlingScroll(const blink::WebFloatSize& increment);
 
@@ -199,6 +192,9 @@ class InputHandlerProxy : public cc::InputHandlerClient,
       bool* is_touching_scrolling_layer,
       cc::TouchAction* white_listed_touch_action);
 
+  void UpdateCurrentFlingState(const blink::WebGestureEvent& fling_start_event,
+                               const gfx::Vector2dF& velocity);
+
   std::unique_ptr<blink::WebGestureCurve> fling_curve_;
   // Parameters for the active fling animation, stored in case we need to
   // transfer it out later.
@@ -206,15 +202,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   InputHandlerProxyClient* client_;
   cc::InputHandler* input_handler_;
-
-  // Time at which an active fling should expire due to a deferred cancellation
-  // event. A call to |Animate()| after this time will end the fling.
-  double deferred_fling_cancel_time_seconds_;
-
-  // The last event that extended the lifetime of the boosted fling. If the
-  // event was a scroll gesture, a GestureScrollBegin will be inserted if the
-  // fling terminates (via |CancelCurrentFling()|).
-  blink::WebGestureEvent last_fling_boost_event_;
 
   // When present, Animates are not requested to the InputHandler, but to this
   // SynchronousInputHandler instead. And all Animate() calls are expected to
@@ -274,6 +261,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   bool has_ongoing_compositor_scroll_fling_pinch_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
+
+  std::unique_ptr<FlingBooster> fling_booster_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };
