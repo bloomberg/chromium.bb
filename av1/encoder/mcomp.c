@@ -189,7 +189,7 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
                           src_address, src_stride, second_pred, mask,        \
                           mask_stride, invert_mask, &sse);                   \
     } else {                                                                 \
-      if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)  \
+      if (xd->jcp_param.use_jnt_comp_avg)                                    \
         thismse = vfp->jsvaf(pre(y, y_stride, r, c), y_stride, sp(c), sp(r), \
                              src_address, src_stride, &sse, second_pred,     \
                              &xd->jcp_param);                                \
@@ -384,7 +384,7 @@ static unsigned int setup_center_error(
                            mask, mask_stride, invert_mask);
       } else {
 #if CONFIG_JNT_COMP
-        if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+        if (xd->jcp_param.use_jnt_comp_avg)
           aom_jnt_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
                                 y_stride, &xd->jcp_param);
         else
@@ -407,7 +407,7 @@ static unsigned int setup_center_error(
                          mask, mask_stride, invert_mask);
     } else {
 #if CONFIG_JNT_COMP
-      if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+      if (xd->jcp_param.use_jnt_comp_avg)
         aom_jnt_comp_avg_pred(comp_pred, second_pred, w, h, y + offset,
                               y_stride, &xd->jcp_param);
       else
@@ -712,7 +712,7 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
                                      mask_stride, invert_mask);
       } else {
 #if CONFIG_JNT_COMP
-        if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+        if (xd->jcp_param.use_jnt_comp_avg)
           aom_jnt_comp_avg_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,
                                           subpel_y_q3, y, y_stride,
                                           &xd->jcp_param);
@@ -823,8 +823,7 @@ int av1_find_best_sub_pixel_tree(
                                 mask_stride, invert_mask, &sse);
           } else {
 #if CONFIG_JNT_COMP
-            if (xd->jcp_param.fwd_offset != -1 &&
-                xd->jcp_param.bck_offset != -1)
+            if (xd->jcp_param.use_jnt_comp_avg)
               thismse =
                   vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
                              src_stride, &sse, second_pred, &xd->jcp_param);
@@ -875,7 +874,7 @@ int av1_find_best_sub_pixel_tree(
                               mask_stride, invert_mask, &sse);
         } else {
 #if CONFIG_JNT_COMP
-          if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+          if (xd->jcp_param.use_jnt_comp_avg)
             thismse =
                 vfp->jsvaf(pre_address, y_stride, sp(tc), sp(tr), src_address,
                            src_stride, &sse, second_pred, &xd->jcp_param);
@@ -1458,7 +1457,7 @@ int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
   unsigned int unused;
 
 #if CONFIG_JNT_COMP
-  if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+  if (xd->jcp_param.use_jnt_comp_avg)
     return vfp->jsvaf(get_buf_from_mv(in_what, best_mv), in_what->stride, 0, 0,
                       what->buf, what->stride, &unused, second_pred,
                       &xd->jcp_param) +
@@ -2482,7 +2481,7 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                mvsad_err_cost(x, best_mv, &fcenter_mv, error_per_bit);
   } else {
 #if CONFIG_JNT_COMP
-    if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+    if (xd->jcp_param.use_jnt_comp_avg)
       best_sad = fn_ptr->jsdaf(what->buf, what->stride,
                                get_buf_from_mv(in_what, best_mv),
                                in_what->stride, second_pred, &xd->jcp_param) +
@@ -2510,7 +2509,7 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              second_pred, mask, mask_stride, invert_mask);
         } else {
 #if CONFIG_JNT_COMP
-          if (xd->jcp_param.fwd_offset != -1 && xd->jcp_param.bck_offset != -1)
+          if (xd->jcp_param.use_jnt_comp_avg)
             sad = fn_ptr->jsdaf(what->buf, what->stride,
                                 get_buf_from_mv(in_what, &mv), in_what->stride,
                                 second_pred, &xd->jcp_param);

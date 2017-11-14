@@ -313,7 +313,7 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       int32_t *dst_x = dst + y * dst_stride + x;
 #if CONFIG_JNT_COMP
       __m128i result;
-      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+      if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           result = _mm_srai_epi32(
               _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
@@ -343,7 +343,7 @@ static void vfilter(const int32_t *src, int src_stride, int32_t *dst,
       for (int k = 0; k < ntaps; ++k) sum += filter[k] * src_x[k];
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) - sub32;
 #if CONFIG_JNT_COMP
-      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+      if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 
@@ -432,7 +432,7 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       int32_t *dst_x = dst + y * dst_stride + x;
 #if CONFIG_JNT_COMP
       __m128i result;
-      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+      if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           result = _mm_srai_epi32(
               _mm_add_epi32(_mm_add_epi32(_mm_loadu_si128((__m128i *)dst_x),
@@ -462,7 +462,7 @@ static void vfilter8(const int32_t *src, int src_stride, int32_t *dst,
       for (int k = 0; k < ntaps; ++k) sum += filter[k] * src_x[k];
       CONV_BUF_TYPE res = ROUND_POWER_OF_TWO(sum, conv_params->round_1) - sub32;
 #if CONFIG_JNT_COMP
-      if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+      if (conv_params->use_jnt_comp_avg) {
         if (conv_params->do_average) {
           dst[y * dst_stride + x] += res * conv_params->bck_offset;
 

@@ -36,6 +36,7 @@ typedef struct ConvolveParams {
   int plane;
   int do_post_rounding;
 #if CONFIG_JNT_COMP
+  int use_jnt_comp_avg;
   int fwd_offset;
   int bck_offset;
 #endif

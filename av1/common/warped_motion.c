@@ -535,8 +535,7 @@ void av1_highbd_warp_affine_c(const int32_t *mat, const uint16_t *ref,
                          conv_params->round_0 - conv_params->round_1)) -
                   (1 << (offset_bits_vert - conv_params->round_1));
 #if CONFIG_JNT_COMP
-            if (conv_params->fwd_offset != -1 &&
-                conv_params->bck_offset != -1) {
+            if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
                 *p += sum * conv_params->bck_offset;
                 *p = ROUND_POWER_OF_TWO(*p, DIST_PRECISION_BITS - 1);
@@ -628,8 +627,7 @@ static int64_t highbd_warp_error(
 
   ConvolveParams conv_params = get_conv_params(0, 0, 0);
 #if CONFIG_JNT_COMP
-  conv_params.fwd_offset = -1;
-  conv_params.bck_offset = -1;
+  conv_params.use_jnt_comp_avg = 0;
 #endif
   for (int i = p_row; i < p_row + p_height; i += WARP_ERROR_BLOCK) {
     for (int j = p_col; j < p_col + p_width; j += WARP_ERROR_BLOCK) {
@@ -864,8 +862,7 @@ void av1_warp_affine_c(const int32_t *mat, const uint8_t *ref, int width,
                          conv_params->round_0 - conv_params->round_1)) -
                   (1 << (offset_bits_vert - conv_params->round_1));
 #if CONFIG_JNT_COMP
-            if (conv_params->fwd_offset != -1 &&
-                conv_params->bck_offset != -1) {
+            if (conv_params->use_jnt_comp_avg) {
               if (conv_params->do_average) {
                 *p += sum * conv_params->bck_offset;
                 *p = ROUND_POWER_OF_TWO(*p, DIST_PRECISION_BITS - 1);
@@ -952,8 +949,7 @@ static int64_t warp_error(WarpedMotionParams *wm, const uint8_t *const ref,
   uint8_t tmp[WARP_ERROR_BLOCK * WARP_ERROR_BLOCK];
   ConvolveParams conv_params = get_conv_params(0, 0, 0);
 #if CONFIG_JNT_COMP
-  conv_params.fwd_offset = -1;
-  conv_params.bck_offset = -1;
+  conv_params.use_jnt_comp_avg = 0;
 #endif
 
   for (int i = p_row; i < p_row + p_height; i += WARP_ERROR_BLOCK) {

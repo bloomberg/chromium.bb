@@ -264,9 +264,9 @@ class ConvolveScaleTestBase : public ::testing::Test {
 #if CONFIG_JNT_COMP
   void SetConvParamOffset(int i, int j) {
     if (i == -1 && j == -1) {
-      convolve_params_.fwd_offset = -1;
-      convolve_params_.bck_offset = -1;
+      convolve_params_.use_jnt_comp_avg = 0;
     } else {
+      convolve_params_.use_jnt_comp_avg = 1;
       convolve_params_.fwd_offset = quant_dist_lookup_table[i][j][0];
       convolve_params_.bck_offset = quant_dist_lookup_table[i][j][1];
     }

@@ -319,7 +319,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
           res_lo =
               _mm_srl_epi16(res_lo, _mm_cvtsi32_si128(conv_params->round_1));
 #if CONFIG_JNT_COMP
-          if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+          if (conv_params->use_jnt_comp_avg) {
             if (comp_avg) {
               const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p),
                                                 _mm_mullo_epi32(res_lo, wt1));
@@ -342,8 +342,7 @@ void av1_warp_affine_sse4_1(const int32_t *mat, const uint8_t *ref, int width,
             res_hi =
                 _mm_srl_epi16(res_hi, _mm_cvtsi32_si128(conv_params->round_1));
 #if CONFIG_JNT_COMP
-            if (conv_params->fwd_offset != -1 &&
-                conv_params->bck_offset != -1) {
+            if (conv_params->use_jnt_comp_avg) {
               if (comp_avg) {
                 const __m128i sum = _mm_add_epi32(_mm_loadu_si128(p + 1),
                                                   _mm_mullo_epi32(res_hi, wt1));

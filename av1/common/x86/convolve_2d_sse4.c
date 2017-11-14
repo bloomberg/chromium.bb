@@ -190,7 +190,7 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
         const __m128i res_hi_round =
             _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
 
-        if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->use_jnt_comp_avg) {
           // NOTE(chengchen):
           // only this part is different from av1_convolve_2d_sse2
           // original c function at: av1/common/convolve.c:
@@ -409,7 +409,7 @@ void av1_jnt_convolve_2d_sse4_1(const uint8_t *src, int src_stride,
         const __m128i res_hi_round =
             _mm_sra_epi32(_mm_add_epi32(res_hi, round_const), round_shift);
 
-        if (conv_params->fwd_offset != -1 && conv_params->bck_offset != -1) {
+        if (conv_params->use_jnt_comp_avg) {
           // FIXME(chengchen): validate this implementation
           // original c function at: av1/common/convolve.c: av1_convolve_2d_c
           __m128i *const p = (__m128i *)&dst[i * dst_stride + j];

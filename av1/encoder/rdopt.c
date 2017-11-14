@@ -5894,7 +5894,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_JNT_COMP
     const int order_idx = id != 0;
     av1_jnt_comp_weight_assign(cm, mbmi, order_idx, &xd->jcp_param.fwd_offset,
-                               &xd->jcp_param.bck_offset, 1);
+                               &xd->jcp_param.bck_offset,
+                               &xd->jcp_param.use_jnt_comp_avg, 1);
 #endif  // CONFIG_JNT_COMP
 
     // Do compound motion search on the current reference frame.
@@ -6537,7 +6538,8 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
 
 #if CONFIG_JNT_COMP
   av1_jnt_comp_weight_assign(cm, mbmi, 0, &xd->jcp_param.fwd_offset,
-                             &xd->jcp_param.bck_offset, 1);
+                             &xd->jcp_param.bck_offset,
+                             &xd->jcp_param.use_jnt_comp_avg, 1);
 #endif  // CONFIG_JNT_COMP
 
   if (scaled_ref_frame) {

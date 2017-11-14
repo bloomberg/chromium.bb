@@ -924,14 +924,14 @@ typedef struct SubpelParams {
 #if CONFIG_JNT_COMP
 void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
                                 int order_idx, int *fwd_offset, int *bck_offset,
-                                int is_compound) {
+                                int *use_jnt_comp_avg, int is_compound) {
   assert(fwd_offset != NULL && bck_offset != NULL);
   if (!is_compound || mbmi->compound_idx) {
-    *fwd_offset = -1;
-    *bck_offset = -1;
+    *use_jnt_comp_avg = 0;
     return;
   }
 
+  *use_jnt_comp_avg = 1;
   const int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
   const int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
   const int cur_frame_index = cm->cur_frame->cur_frame_offset;
@@ -1256,7 +1256,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         get_conv_params_no_round(ref, ref, plane, tmp_dst, MAX_SB_SIZE);
 #if CONFIG_JNT_COMP
     av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
-                               &conv_params.bck_offset, is_compound);
+                               &conv_params.bck_offset,
+                               &conv_params.use_jnt_comp_avg, is_compound);
 #endif  // CONFIG_JNT_COMP
 
 #else

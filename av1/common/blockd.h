@@ -591,6 +591,7 @@ typedef struct cfl_ctx {
 
 #if CONFIG_JNT_COMP
 typedef struct jnt_comp_params {
+  int use_jnt_comp_avg;
   int fwd_offset;
   int bck_offset;
 } JNT_COMP_PARAMS;

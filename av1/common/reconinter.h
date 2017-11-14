@@ -563,7 +563,7 @@ void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
 #if CONFIG_JNT_COMP
 void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
                                 int order_idx, int *fwd_offset, int *bck_offset,
-                                int is_compound);
+                                int *use_jnt_comp_avg, int is_compound);
 #endif  // CONFIG_JNT_COMP
 
 #ifdef __cplusplus

@@ -140,10 +140,8 @@ void AV1Convolve2DTest::RunCheckOutput2(convolve_2d_func test_impl) {
           get_conv_params_no_round(0, do_average, 0, output2, MAX_SB_SIZE);
 
       // Test special case where fwd and bck offsets are -1
-      conv_params1.fwd_offset = -1;
-      conv_params1.bck_offset = -1;
-      conv_params2.fwd_offset = -1;
-      conv_params2.bck_offset = -1;
+      conv_params1.use_jnt_comp_avg = 0;
+      conv_params2.use_jnt_comp_avg = 0;
 
       for (subx = 0; subx < 16; ++subx)
         for (suby = 0; suby < 16; ++suby) {
@@ -179,6 +177,8 @@ void AV1Convolve2DTest::RunCheckOutput2(convolve_2d_func test_impl) {
       // Test different combination of fwd and bck offset weights
       for (l = 0; l < 2; ++l) {
         for (m = 0; m < 4; ++m) {
+          conv_params1.use_jnt_comp_avg = 1;
+          conv_params2.use_jnt_comp_avg = 1;
           conv_params1.fwd_offset = quant_dist_lookup_table[l][m][0];
           conv_params1.bck_offset = quant_dist_lookup_table[l][m][1];
           conv_params2.fwd_offset = quant_dist_lookup_table[l][m][0];
