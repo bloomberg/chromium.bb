@@ -34,6 +34,8 @@ SchedulerSettings::AsValue() const {
   state->SetBoolean("enable_latency_recovery", enable_latency_recovery);
   state->SetBoolean("wait_for_all_pipeline_stages_before_draw",
                     wait_for_all_pipeline_stages_before_draw);
+  state->SetBoolean("enable_surface_synchronization",
+                    enable_surface_synchronization);
   return std::move(state);
 }
 
