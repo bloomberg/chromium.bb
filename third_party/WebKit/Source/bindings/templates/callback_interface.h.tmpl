@@ -25,12 +25,13 @@ class {{exported}}{{v8_class}} final
   ~{{v8_class}}() override = default;
 
 {% for method in methods %}
-  {# TODO(yukishiino): Implement "call a user object's operation". #}
   {# TODO(yukishiino): Add |ScriptWrappable* callback_this_value| as the first
      argument of the IDL operations. The callsites must pass callback_this_value
      explicitly. #}
   {# TODO(yukishiino): Change the return type to v8::Maybe<T> so that the
      function returns a return value or throws an exception. #}
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
 
 {% endfor %}
@@ -39,7 +40,7 @@ class {{exported}}{{v8_class}} final
 {% set single_operation_enum_value =
       'kSingleOperation' if is_single_operation_callback_interface else
       'kNotSingleOperation' %}
-  {{v8_class}}(v8::Local<v8::Object> callback_object)
+  explicit {{v8_class}}(v8::Local<v8::Object> callback_object)
       : CallbackInterfaceBase(callback_object, {{single_operation_enum_value}}) {}
 };
 

@@ -32,7 +32,6 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
 
   virtual ~CallbackInterfaceBase() = default;
 
-  // Accessors to non-members
   v8::Isolate* GetIsolate() {
     return callback_relevant_script_state_->GetIsolate();
   }
@@ -41,11 +40,12 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
                         SingleOperationOrNot);
 
-  // Accessors to members
   v8::Local<v8::Object> CallbackObject() {
     return callback_object_.NewLocal(GetIsolate());
   }
-  bool IsCallbackObjectCallable() const { return callback_object_is_callable_; }
+  // Returns true iff the callback interface is a single operation callback
+  // interface and the callback interface type value is callable.
+  bool IsCallbackObjectCallable() const { return is_callback_object_callable_; }
   ScriptState* CallbackRelevantScriptState() {
     return callback_relevant_script_state_.get();
   }
@@ -55,11 +55,14 @@ class PLATFORM_EXPORT CallbackInterfaceBase {
   // The "callback interface type" value.
   // TODO(yukishiino): Replace ScopedPersistent with TraceWrapperMember.
   ScopedPersistent<v8::Object> callback_object_;
-  bool callback_object_is_callable_ = false;
+  bool is_callback_object_callable_ = false;
   // The associated Realm of the callback interface type value. Note that the
   // callback interface type value can be different from the function object
   // to be invoked.
   scoped_refptr<ScriptState> callback_relevant_script_state_;
+  // The callback context, i.e. the incumbent Realm when an ECMAScript value is
+  // converted to an IDL value.
+  // https://heycam.github.io/webidl/#dfn-callback-context
   scoped_refptr<ScriptState> incumbent_script_state_;
 };
 

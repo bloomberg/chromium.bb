@@ -28,26 +28,44 @@ class CORE_EXPORT V8TestCallbackInterface final
 
   ~V8TestCallbackInterface() override = default;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethod() override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   bool booleanMethod() override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethodBooleanArg(bool boolArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethodSequenceArg(const HeapVector<Member<TestInterfaceEmpty>>& sequenceArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethodFloatArg(float floatArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
 
+  // Performs "call a user object's operation".
+  // https://heycam.github.io/webidl/#call-a-user-objects-operation
   void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
 
  private:
-  V8TestCallbackInterface(v8::Local<v8::Object> callback_object)
+  explicit V8TestCallbackInterface(v8::Local<v8::Object> callback_object)
       : CallbackInterfaceBase(callback_object, kNotSingleOperation) {}
 };
 
