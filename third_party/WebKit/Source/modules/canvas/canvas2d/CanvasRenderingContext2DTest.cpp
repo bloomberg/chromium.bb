@@ -300,7 +300,7 @@ class MockImageBufferSurfaceForOverwriteTesting
 
 #define TEST_OVERDRAW_SETUP(EXPECTED_OVERDRAWS)                                \
   std::unique_ptr<MockImageBufferSurfaceForOverwriteTesting> mock_surface =    \
-      WTF::MakeUnique<MockImageBufferSurfaceForOverwriteTesting>(              \
+      std::make_unique<MockImageBufferSurfaceForOverwriteTesting>(             \
           IntSize(10, 10), CanvasColorParams());                               \
   MockImageBufferSurfaceForOverwriteTesting* surface_ptr = mock_surface.get(); \
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(                     \
@@ -523,7 +523,7 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
 
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionByDefault) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -534,7 +534,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionByDefault) {
 
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -551,7 +551,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderOverdrawLimit) {
 
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -568,7 +568,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverOverdrawLimit) {
 
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -582,7 +582,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit) {
   IntSize source_size(10,
                       10 * CanvasHeuristicParameters::kExpensiveImageSizeRatio);
   std::unique_ptr<UnacceleratedImageBufferSurface> source_surface =
-      WTF::MakeUnique<UnacceleratedImageBufferSurface>(source_size);
+      std::make_unique<UnacceleratedImageBufferSurface>(source_size);
   source_canvas->CreateImageBufferUsingSurfaceForTesting(
       std::move(source_surface));
 
@@ -602,7 +602,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit) {
 
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -616,7 +616,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit) {
   IntSize source_size(
       10, 10 * CanvasHeuristicParameters::kExpensiveImageSizeRatio + 1);
   std::unique_ptr<UnacceleratedImageBufferSurface> source_surface =
-      WTF::MakeUnique<UnacceleratedImageBufferSurface>(source_size);
+      std::make_unique<UnacceleratedImageBufferSurface>(source_size);
   source_canvas->CreateImageBufferUsingSurfaceForTesting(
       std::move(source_surface));
 
@@ -637,7 +637,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit) {
 TEST_F(CanvasRenderingContext2DTest,
        NoLayerPromotionUnderExpensivePathPointCount) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -659,7 +659,7 @@ TEST_F(CanvasRenderingContext2DTest,
 TEST_F(CanvasRenderingContext2DTest,
        LayerPromotionOverExpensivePathPointCount) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -680,7 +680,7 @@ TEST_F(CanvasRenderingContext2DTest,
 
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -702,7 +702,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWhenPathIsConcave) {
 
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithRectangleClip) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -718,7 +718,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithRectangleClip) {
 
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -741,7 +741,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithComplexClip) {
 
 TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -760,7 +760,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionWithBlurredShadow) {
 
 TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithSharpShadow) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -775,7 +775,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionWithSharpShadow) {
 
 TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -793,7 +793,7 @@ TEST_F(CanvasRenderingContext2DTest, NoFallbackWithSmallState) {
 
 TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState) {
   CreateContext(kNonOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
   auto* surface_ptr = surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(std::move(surface));
@@ -816,7 +816,7 @@ TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText) {
   // does not support pixel geometry settings.
   // See: crbug.com/583809
   CreateContext(kOpaque);
-  auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+  auto surface = std::make_unique<RecordingImageBufferSurface>(
       IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback,
       CanvasColorParams(kSRGBCanvasColorSpace, kRGBA8CanvasPixelFormat,
                         kOpaque));
@@ -859,8 +859,8 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   CreateContext(kNonOpaque);
 
   std::unique_ptr<FakeAcceleratedImageBufferSurface> fake_accelerate_surface =
-      WTF::MakeUnique<FakeAcceleratedImageBufferSurface>(IntSize(10, 10),
-                                                         CanvasColorParams());
+      std::make_unique<FakeAcceleratedImageBufferSurface>(IntSize(10, 10),
+                                                          CanvasColorParams());
   FakeAcceleratedImageBufferSurface* fake_accelerate_surface_ptr =
       fake_accelerate_surface.get();
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(
@@ -887,8 +887,8 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
 
   // Creating a different accelerated image buffer
   auto fake_accelerate_surface2 =
-      WTF::MakeUnique<FakeAcceleratedImageBufferSurface>(IntSize(10, 5),
-                                                         CanvasColorParams());
+      std::make_unique<FakeAcceleratedImageBufferSurface>(IntSize(10, 5),
+                                                          CanvasColorParams());
   std::unique_ptr<ImageBuffer> image_buffer2 =
       ImageBuffer::Create(std::move(fake_accelerate_surface2));
   EXPECT_EQ(800, GetCurrentGPUMemoryUsage());
@@ -1035,8 +1035,8 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
   CreateContext(kNonOpaque);
 
   auto fake_accelerate_surface =
-      WTF::MakeUnique<FakeAcceleratedImageBufferSurface>(IntSize(10, 10),
-                                                         CanvasColorParams());
+      std::make_unique<FakeAcceleratedImageBufferSurface>(IntSize(10, 10),
+                                                          CanvasColorParams());
   CanvasElement().CreateImageBufferUsingSurfaceForTesting(
       std::move(fake_accelerate_surface));
   CanvasRenderingContext2D* context = Context2d();
@@ -1363,7 +1363,7 @@ class CanvasRenderingContext2DTestWithTestingPlatform
     : public CanvasRenderingContext2DTest {
  protected:
   void SetUp() override {
-    platform_ = WTF::MakeUnique<ScopedTestingPlatformSupport<
+    platform_ = std::make_unique<ScopedTestingPlatformSupport<
         TestingPlatformSupportWithMockScheduler>>();
     override_settings_function_ = &OverrideScriptEnabled;
     (*platform_)
