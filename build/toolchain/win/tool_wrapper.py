@@ -23,8 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 _LINK_EXE_OUT_ARG = re.compile('/OUT:(?P<out>.+)$', re.IGNORECASE)
 
 def main(args):
-  executor = WinTool()
-  exit_code = executor.Dispatch(args)
+  exit_code = WinTool().Dispatch(args)
   if exit_code is not None:
     sys.exit(exit_code)
 
