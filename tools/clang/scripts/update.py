@@ -35,7 +35,7 @@ if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
 # This is incremented when pushing a new build of Clang at the same revision.
-CLANG_SUB_REVISION=3
+CLANG_SUB_REVISION=4
 
 PACKAGE_VERSION = "%s-%s" % (CLANG_REVISION, CLANG_SUB_REVISION)
 
@@ -788,23 +788,25 @@ def UpdateClang(args):
           '--api=' + ('21' if target_arch == 'aarch64' else '19'),
           '--force',
           '--install-dir=%s' % toolchain_dir,
-          '--stl=stlport',
+          '--stl=libc++',
           '--arch=' + {
               'aarch64': 'arm64',
               'arm': 'arm',
               'i686': 'x86',
           }[target_arch]])
-      # Android NDK r9d copies a broken unwind.h into the toolchain, see
-      # http://crbug.com/357890
-      for f in glob.glob(os.path.join(toolchain_dir, 'include/c++/*/unwind.h')):
-        os.remove(f)
 
       # Build sanitizer runtimes for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
       if not os.path.exists(build_dir):
         os.mkdir(os.path.join(build_dir))
       os.chdir(build_dir)
-      cflags = ['--target=%s-linux-androideabi' % target_arch,
+      target_triple = target_arch
+      abi_libs = 'c++abi'
+      if target_arch == 'arm':
+        target_triple = 'armv7'
+        abi_libs += ';unwind'
+      target_triple += '-linux-androideabi'
+      cflags = ['--target=%s' % target_triple,
                 '--sysroot=%s/sysroot' % toolchain_dir,
                 '-B%s' % toolchain_dir]
       android_args = base_cmake_args + [
@@ -814,6 +816,9 @@ def UpdateClang(args):
         '-DLLVM_CONFIG_PATH=' + os.path.join(LLVM_BUILD_DIR, 'bin/llvm-config'),
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cflags),
+        '-DSANITIZER_CXX_ABI=none',
+        '-DSANITIZER_CXX_ABI_LIBRARY=' + abi_libs,
+        '-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-u__cxa_demangle',
         '-DANDROID=1']
       RmCmakeCache('.')
       RunCommand(['cmake'] + android_args + [COMPILER_RT_DIR])
