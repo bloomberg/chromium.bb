@@ -246,11 +246,14 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
       GetFrame()->GetNavigationScheduler().LocationChangePending();
 
   v8::HandleScope handle_scope(GetIsolate());
-  ScriptFetchOptions fetch_options;
-  // TODO(kouhei): set up |fetch_options| properly.
+
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#navigate
+  // Step 12.9 "Let script be result of creating a classic script given script
+  // source, settings, base URL, and the default classic script fetch options."
+  // [spec text]
   v8::Local<v8::Value> result = EvaluateScriptInMainWorld(
-      ScriptSourceCode(script_source), fetch_options, kNotSharableCrossOrigin,
-      kDoNotExecuteScriptWhenScriptsDisabled);
+      ScriptSourceCode(script_source), ScriptFetchOptions(),
+      kNotSharableCrossOrigin, kDoNotExecuteScriptWhenScriptsDisabled);
 
   // If executing script caused this frame to be removed from the page, we
   // don't want to try to replace its document!
