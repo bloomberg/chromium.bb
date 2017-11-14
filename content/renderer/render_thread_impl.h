@@ -729,9 +729,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // software-based.
   bool is_gpu_compositing_disabled_ = false;
 
-  // The channel from the renderer process to the GPU process.
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
-
   // The message loop of the renderer main thread.
   // This message loop should be destructed before the RenderThreadImpl
   // shuts down Blink.

@@ -262,12 +262,18 @@ gpu::GpuMemoryBufferManager* Gpu::GetGpuMemoryBufferManager() {
   return gpu_memory_buffer_manager_.get();
 }
 
-scoped_refptr<gpu::GpuChannelHost> Gpu::GetGpuChannel() {
+void Gpu::LoseChannel() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (gpu_channel_ && gpu_channel_->IsLost()) {
+  if (gpu_channel_) {
     gpu_channel_->DestroyChannel();
     gpu_channel_ = nullptr;
   }
+}
+
+scoped_refptr<gpu::GpuChannelHost> Gpu::GetGpuChannel() {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (gpu_channel_ && gpu_channel_->IsLost())
+    gpu_channel_ = nullptr;
   return gpu_channel_;
 }
 
