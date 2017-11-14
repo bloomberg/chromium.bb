@@ -10,4 +10,8 @@ FakeHostFrameSinkClient::FakeHostFrameSinkClient() = default;
 
 FakeHostFrameSinkClient::~FakeHostFrameSinkClient() = default;
 
+void FakeHostFrameSinkClient::OnFrameTokenChanged(uint32_t frame_token) {
+  last_frame_token_seen_ = frame_token;
+}
+
 }  // namespace viz

@@ -39,6 +39,7 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void OnBeginFrame() override;
   bool IsAutoResizeEnabled() const override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
 
   // CompositorResizeLockClient implementation.
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(

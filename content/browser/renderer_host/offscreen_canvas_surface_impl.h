@@ -54,6 +54,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
 
   // blink::mojom::OffscreenCanvasSurface implementation.
   void Require(const viz::SurfaceId& surface_id,

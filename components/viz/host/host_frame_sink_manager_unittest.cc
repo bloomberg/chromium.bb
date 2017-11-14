@@ -16,7 +16,9 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface_manager.h"
+#include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_host_frame_sink_client.h"
+#include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,6 +27,7 @@
 using testing::_;
 
 namespace viz {
+namespace test {
 namespace {
 
 constexpr FrameSinkId kFrameSinkParent1(1, 1);
@@ -236,6 +239,45 @@ TEST_F(HostFrameSinkManagerLocalTest, CreateMojomCompositorFrameSink) {
 
   // Data for |kFrameSinkChild1| should be deleted now.
   EXPECT_FALSE(FrameSinkDataExists(kFrameSinkChild1));
+}
+
+// Verify that frame_token is sent HostFrameSinkClient if and only if the frame
+// is active.
+TEST_F(HostFrameSinkManagerLocalTest, CommunicateFrameToken) {
+  FakeHostFrameSinkClient host_client_parent;
+  FakeHostFrameSinkClient host_client_child;
+  uint32_t frame_token1 = 10u;
+  FrameSinkId kParentFrameSink(3, 0);
+  FrameSinkId kChildFrameSink1(65563, 0);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  host().RegisterFrameSinkId(kParentFrameSink, &host_client_parent);
+  host().RegisterFrameSinkId(kChildFrameSink1, &host_client_child);
+  auto support =
+      CreateCompositorFrameSinkSupport(kParentFrameSink, true /* is_root */);
+
+  CompositorFrame compositor_frame(
+      test::MakeCompositorFrame({child_id1}, std::vector<SurfaceId>(),
+                                std::vector<TransferableResource>()));
+  compositor_frame.metadata.frame_token = frame_token1;
+  support->SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                 std::move(compositor_frame));
+
+  Surface* parent_surface = support->GetCurrentSurfaceForTesting();
+  EXPECT_TRUE(parent_surface->has_deadline());
+  EXPECT_FALSE(parent_surface->HasActiveFrame());
+  EXPECT_TRUE(parent_surface->HasPendingFrame());
+  // Since the frame is not activated, |frame_token| is not sent to
+  // HostFrameSinkClient.
+  EXPECT_EQ(0u, host_client_parent.last_frame_token_seen());
+
+  parent_surface->ActivatePendingFrameForDeadline();
+  EXPECT_FALSE(parent_surface->has_deadline());
+  EXPECT_TRUE(parent_surface->HasActiveFrame());
+  EXPECT_FALSE(parent_surface->HasPendingFrame());
+  // Since the frame is now activated, |frame_token| is sent to
+  // HostFrameSinkClient.
+  EXPECT_EQ(10u, host_client_parent.last_frame_token_seen());
 }
 
 // Verify that that creating two CompositorFrameSinkSupports works.
@@ -582,4 +624,5 @@ TEST_F(HostFrameSinkManagerRemoteTest, DeletedHitTestQuery) {
       kFrameSinkChild1, 1);
 }
 
+}  // namespace test
 }  // namespace viz

@@ -15,6 +15,9 @@ class HostFrameSinkClient {
   // time.
   virtual void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) = 0;
 
+  // Called when a CompositorFrame with a new frame token is provided.
+  virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+
  protected:
   virtual ~HostFrameSinkClient() {}
 };

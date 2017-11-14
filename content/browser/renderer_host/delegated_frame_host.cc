@@ -602,6 +602,10 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   UpdateGutters();
 }
 
+void DelegatedFrameHost::OnFrameTokenChanged(uint32_t frame_token) {
+  client_->OnFrameTokenChanged(frame_token);
+}
+
 void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args);
