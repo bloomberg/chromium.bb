@@ -521,8 +521,20 @@ bool HFSBTreeIterator::Next() {
     return false;
 
   GetLeafData<uint16_t>();  // keyLength
-  auto parent_id = OSSwapBigToHostInt32(*GetLeafData<uint32_t>());
-  auto key_string_length = OSSwapBigToHostInt16(*GetLeafData<uint16_t>());
+
+  uint32_t parent_id;
+  if (auto* parent_id_ptr = GetLeafData<uint32_t>()) {
+    parent_id = OSSwapBigToHostInt32(*parent_id_ptr);
+  } else {
+    return false;
+  }
+
+  uint16_t key_string_length;
+  if (auto* key_string_length_ptr = GetLeafData<uint16_t>()) {
+    key_string_length = OSSwapBigToHostInt16(*key_string_length_ptr);
+  } else {
+    return false;
+  }
 
   // Read and byte-swap the variable-length key string.
   base::string16 key(key_string_length, '\0');
