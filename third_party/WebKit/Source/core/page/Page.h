@@ -73,7 +73,6 @@ class ScrollbarTheme;
 class SmoothScrollSequencer;
 class Settings;
 class ConsoleMessageStorage;
-class SpellCheckerClient;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
 class VisualViewport;
@@ -105,7 +104,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     Member<ChromeClient> chrome_client;
     ContextMenuClient* context_menu_client;
     EditorClient* editor_client;
-    SpellCheckerClient* spell_checker_client;
   };
 
   static Page* Create(PageClients& page_clients) {
@@ -147,9 +145,14 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   static void ResetPluginData();
 
   EditorClient& GetEditorClient() const { return *editor_client_; }
-  SpellCheckerClient& GetSpellCheckerClient() const {
-    return *spell_checker_client_;
+
+  // This flag controls whether spell check for this page is manually
+  // turned on/off. The default setting is kAutomatic.
+  enum class SpellCheckStatus { kAutomatic, kForcedOn, kForcedOff };
+  void SetSpellCheckStatus(SpellCheckStatus status) {
+    spell_check_status_ = status;
   }
+  SpellCheckStatus GetSpellCheckStatus() { return spell_check_status_; }
 
   void SetMainFrame(Frame*);
   Frame* MainFrame() const { return main_frame_; }
@@ -361,7 +364,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<PluginData> plugin_data_;
 
   EditorClient* const editor_client_;
-  SpellCheckerClient* const spell_checker_client_;
+  SpellCheckStatus spell_check_status_ = SpellCheckStatus::kAutomatic;
   Member<ValidationMessageClient> validation_message_client_;
 
   UseCounter use_counter_;

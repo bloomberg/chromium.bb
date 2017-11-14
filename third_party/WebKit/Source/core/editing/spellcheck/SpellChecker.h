@@ -39,7 +39,6 @@ class Element;
 class IdleSpellCheckCallback;
 class LocalFrame;
 class HTMLElement;
-class SpellCheckerClient;
 class SpellCheckMarker;
 class SpellCheckRequest;
 class SpellCheckRequester;
@@ -55,7 +54,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
   void Trace(blink::Visitor*);
 
-  SpellCheckerClient& GetSpellCheckerClient() const;
   WebSpellCheckPanelHostClient& SpellCheckPanelHostClient() const;
   TextCheckerClient& TextChecker() const;
 
@@ -111,6 +109,15 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
     DCHECK(frame_);
     return *frame_;
   }
+
+  // Returns whether or not the focused control needs spell-checking.
+  // Currently, this function just retrieves the focused node and determines
+  // whether or not it is a <textarea> element or an element whose
+  // contenteditable attribute is true.
+  // FIXME: Bug 740540: This code just implements the default behavior
+  // proposed in this issue. We should also retrieve "spellcheck" attributes
+  // for text fields and create a flag to over-write the default behavior.
+  bool ShouldSpellcheckByDefault() const;
 
   // Helper functions for advanceToNextMisspelling()
   Vector<TextCheckingResult> FindMisspellings(const String&);

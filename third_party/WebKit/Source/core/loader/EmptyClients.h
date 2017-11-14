@@ -32,7 +32,6 @@
 #include <memory>
 
 #include "core/CoreExport.h"
-#include "core/editing/spellcheck/SpellCheckerClient.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
@@ -388,18 +387,6 @@ class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
   void CheckSpellingOfString(const String&, int*, int*) override {}
   void RequestCheckingOfString(TextCheckingRequest*) override;
   void CancelAllPendingRequests() override;
-};
-
-class EmptySpellCheckerClient : public SpellCheckerClient {
-  WTF_MAKE_NONCOPYABLE(EmptySpellCheckerClient);
-  USING_FAST_MALLOC(EmptySpellCheckerClient);
-
- public:
-  EmptySpellCheckerClient() {}
-  ~EmptySpellCheckerClient() override {}
-
-  bool IsSpellCheckingEnabled() override { return false; }
-  void ToggleSpellCheckingEnabled() override {}
 };
 
 class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {

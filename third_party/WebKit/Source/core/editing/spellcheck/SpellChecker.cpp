@@ -47,7 +47,6 @@
 #include "core/editing/markers/SpellCheckMarker.h"
 #include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
-#include "core/editing/spellcheck/SpellCheckerClient.h"
 #include "core/editing/spellcheck/TextCheckingParagraph.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -56,6 +55,7 @@
 #include "core/input_type_names.h"
 #include "core/layout/LayoutTextControl.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
@@ -78,17 +78,6 @@ static bool IsWhiteSpaceOrPunctuation(UChar c) {
 
 SpellChecker* SpellChecker::Create(LocalFrame& frame) {
   return new SpellChecker(frame);
-}
-
-static SpellCheckerClient& GetEmptySpellCheckerClient() {
-  DEFINE_STATIC_LOCAL(EmptySpellCheckerClient, client, ());
-  return client;
-}
-
-SpellCheckerClient& SpellChecker::GetSpellCheckerClient() const {
-  if (Page* page = GetFrame().GetPage())
-    return page->GetSpellCheckerClient();
-  return GetEmptySpellCheckerClient();
 }
 
 static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {
@@ -114,13 +103,31 @@ SpellChecker::SpellChecker(LocalFrame& frame)
       idle_spell_check_callback_(IdleSpellCheckCallback::Create(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
-  return GetSpellCheckerClient().IsSpellCheckingEnabled();
+  if (Page* page = GetFrame().GetPage()) {
+    if (page->GetSpellCheckStatus() == Page::SpellCheckStatus::kForcedOff)
+      return false;
+    if (page->GetSpellCheckStatus() == Page::SpellCheckStatus::kForcedOn)
+      return true;
+  }
+  return ShouldSpellcheckByDefault();
 }
 
 void SpellChecker::ToggleSpellCheckingEnabled() {
-  GetSpellCheckerClient().ToggleSpellCheckingEnabled();
-  if (IsSpellCheckingEnabled())
+  Page* page = GetFrame().GetPage();
+  if (!page)
     return;
+  if (IsSpellCheckingEnabled()) {
+    page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOff);
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (!frame->IsLocalFrame())
+        continue;
+      ToLocalFrame(frame)->GetDocument()->Markers().RemoveMarkersOfTypes(
+          DocumentMarker::MisspellingMarkers());
+    }
+  } else {
+    page->SetSpellCheckStatus(Page::SpellCheckStatus::kForcedOn);
+  }
 }
 
 void SpellChecker::IgnoreSpelling() {
@@ -657,6 +664,37 @@ void SpellChecker::Trace(blink::Visitor* visitor) {
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
   idle_spell_check_callback_->Deactivate();
+}
+
+bool SpellChecker::ShouldSpellcheckByDefault() const {
+  // Spellcheck should be enabled for all editable areas (such as textareas,
+  // contentEditable regions, designMode docs and inputs).
+  Page* page = GetFrame().GetPage();
+  if (!page)
+    return false;
+  Frame* focused_frame = page->GetFocusController().FocusedOrMainFrame();
+  if (!focused_frame->IsLocalFrame())
+    return false;
+  const LocalFrame* frame = ToLocalFrame(focused_frame);
+  if (frame->GetSpellChecker().IsSpellCheckingEnabledInFocusedNode())
+    return true;
+  const Document* document = frame->GetDocument();
+  if (!document)
+    return false;
+  const Element* element = document->FocusedElement();
+  // If |element| is null, we default to allowing spellchecking. This is done
+  // in order to mitigate the issue when the user clicks outside the textbox,
+  // as a result of which |element| becomes null, resulting in all the spell
+  // check markers being deleted. Also, the LocalFrame will decide not to do
+  // spellchecking if the user can't edit - so returning true here will not
+  // cause any problems to the LocalFrame's behavior.
+  if (!element)
+    return true;
+  const LayoutObject* layout_object = element->GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  return true;
 }
 
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
