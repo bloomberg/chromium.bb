@@ -1729,7 +1729,6 @@
           "os": {
             "type" : "chromeos"
           },
-          "vendor_id": "0x10de",
           "gl_vendor": "NVIDIA.*",
           "gl_type": "gles",
           "gl_version": {
