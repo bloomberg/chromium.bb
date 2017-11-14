@@ -1759,6 +1759,7 @@ enum WebFeature {
   kDocumentPageHideFired = 2227,
   kDocumentPageShowRegistered = 2228,
   kDocumentPageShowFired = 2229,
+  kReplaceCharsetInXHR = 2230,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

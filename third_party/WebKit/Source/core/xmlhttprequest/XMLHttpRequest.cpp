@@ -1558,8 +1558,12 @@ void XMLHttpRequest::UpdateContentTypeAndCharset(
     SetRequestHeaderInternal(HTTPNames::Content_Type, default_content_type);
     return;
   }
+  String original_content_type = content_type;
   ReplaceCharsetInMediaType(content_type, charset);
   request_headers_.Set(HTTPNames::Content_Type, AtomicString(content_type));
+
+  if (original_content_type != content_type)
+    UseCounter::Count(GetExecutionContext(), WebFeature::kReplaceCharsetInXHR);
 }
 
 bool XMLHttpRequest::ResponseIsXML() const {
