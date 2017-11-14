@@ -15,20 +15,20 @@ import org.chromium.chrome.browser.payments.PaymentAppFactory.PaymentAppFactoryA
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /** Builds instances of payment apps based on installed third party Android payment apps. */
 public class AndroidPaymentAppFactory implements PaymentAppFactoryAddition {
     @Override
-    public void create(
-            WebContents webContents, Set<String> methods, PaymentAppCreatedCallback callback) {
-        AndroidPaymentAppFinder.find(webContents, methods, new PaymentManifestWebDataService(),
-                new PaymentManifestDownloader(), new PaymentManifestParser(),
-                new PackageManagerDelegate(), callback);
+    public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
+            PaymentAppCreatedCallback callback) {
+        AndroidPaymentAppFinder.find(webContents, methodData.keySet(),
+                new PaymentManifestWebDataService(), new PaymentManifestDownloader(),
+                new PaymentManifestParser(), new PackageManagerDelegate(), callback);
     }
 
     /**
