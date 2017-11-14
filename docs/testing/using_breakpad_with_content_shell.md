@@ -32,7 +32,6 @@ Then, create a directory where the crash dumps will be stored:
 * Windows:
   ```bash
   mkdir %TEMP%\crashes
-  out\Default\content_shell_crash_service.exe --dumps-dir=%TEMP%\crashes
   ```
 
 ## Running content shell with breakpad
