@@ -164,11 +164,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
                         OnSetThreadPriority)
 #endif
-    IPC_MESSAGE_HANDLER(RenderProcessHostMsg_DidGenerateCacheableMetadata,
-                        OnCacheableMetadataAvailable)
-    IPC_MESSAGE_HANDLER(
-        RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage,
-        OnCacheableMetadataAvailableForCacheStorage)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -267,10 +262,10 @@ void RenderMessageFilter::OnSetThreadPriority(base::PlatformThreadId ns_tid,
 }
 #endif
 
-void RenderMessageFilter::OnCacheableMetadataAvailable(
+void RenderMessageFilter::DidGenerateCacheableMetadata(
     const GURL& url,
     base::Time expected_response_time,
-    const std::vector<char>& data) {
+    const std::vector<uint8_t>& data) {
   net::HttpCache* cache = request_context_->GetURLRequestContext()->
       http_transaction_factory()->GetCache();
   if (!cache)
@@ -289,10 +284,10 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
                        data.size());
 }
 
-void RenderMessageFilter::OnCacheableMetadataAvailableForCacheStorage(
+void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(
     const GURL& url,
     base::Time expected_response_time,
-    const std::vector<char>& data,
+    const std::vector<uint8_t>& data,
     const url::Origin& cache_storage_origin,
     const std::string& cache_storage_cache_name) {
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));

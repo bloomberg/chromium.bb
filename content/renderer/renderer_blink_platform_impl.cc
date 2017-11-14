@@ -32,6 +32,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/origin_trials/trial_policy_impl.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -495,10 +496,10 @@ void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
   // Let the browser know we generated cacheable metadata for this resource. The
   // browser may cache it and return it on subsequent responses to speed
   // the processing of this resource.
-  std::vector<char> copy(data, data + size);
-  RenderThread::Get()->Send(
-      new RenderProcessHostMsg_DidGenerateCacheableMetadata(url, response_time,
-                                                            copy));
+  std::vector<uint8_t> copy(data, data + size);
+  RenderThreadImpl::current()
+      ->render_message_filter()
+      ->DidGenerateCacheableMetadata(url, response_time, copy);
 }
 
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
@@ -511,11 +512,12 @@ void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
   // Let the browser know we generated cacheable metadata for this resource in
   // CacheStorage. The browser may cache it and return it on subsequent
   // responses to speed the processing of this resource.
-  std::vector<char> copy(data, data + size);
-  RenderThread::Get()->Send(
-      new RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage(
+  std::vector<uint8_t> copy(data, data + size);
+  RenderThreadImpl::current()
+      ->render_message_filter()
+      ->DidGenerateCacheableMetadataInCacheStorage(
           url, response_time, copy, cacheStorageOrigin,
-          cacheStorageCacheName.Utf8()));
+          cacheStorageCacheName.Utf8());
 }
 
 WebString RendererBlinkPlatformImpl::DefaultLocale() {
