@@ -732,9 +732,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   ASSERT_TRUE(IsUIShowingIssue());
 }
 
-// TODO(crbug.com/781307): Disabled until the MediaRouter bug is fixed.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
-                       DISABLED_MANUAL_SendAndOnMessage) {
+                       MANUAL_SendAndOnMessage) {
   RunSendMessageTest("foo");
 }
 
