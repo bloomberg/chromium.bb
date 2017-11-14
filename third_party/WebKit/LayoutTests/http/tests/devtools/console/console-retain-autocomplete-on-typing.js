@@ -1,13 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/console-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-window.foobar = "foobar";
-window.foobaz = "foobaz";
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verify that console does not hide autocomplete during typing.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('console');
+  await TestRunner.evaluateInPagePromise(`
+      window.foobar = "foobar";
+      window.foobaz = "foobaz";
+  `);
+
   ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(onConsoleEditorLoaded);
 
   var consoleEditor;
@@ -36,21 +40,20 @@ function test() {
           onCursorActivityHandled);
       SourcesTestRunner.typeIn(consoleEditor, 'o');
 
+      var activityHandled = false;
+
       function onSuggestionsHidden() {
+        if (activityHandled)
+          return;
         TestRunner.addResult('FAIL: suggestbox is hidden during typing.');
         TestRunner.completeTest();
       }
 
       function onCursorActivityHandled() {
         TestRunner.addResult('SUCCESS: suggestbox is not hidden during typing.');
+        activityHandled = true;
         next();
       }
     }
   ];
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that console does not hide autocomplete during typing.</p>
-</body>
-</html>
+})();

@@ -13,7 +13,7 @@ testOverriddenConstructorName()
 testThrowConstructorName()
 {}
 testOverriddenIsFinite()
-(2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
+Arguments(2) ["arg1", "arg2", callee: ƒ, Symbol(Symbol.iterator): ƒ]
 testOverriddenError()
 {result: "PASS"}
 restoreError()
@@ -39,7 +39,7 @@ testOverriddenToString({}, true)
 testOverriddenToString({}, false)
 {toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), true)
-Number {[[PrimitiveValue]]: 1, toString: ƒ, valueOf: ƒ}
+Number {1, toString: ƒ, valueOf: ƒ}
 testOverriddenToString(new Number(1), false)
-Number {[[PrimitiveValue]]: 1, toString: ƒ, valueOf: ƒ}
+Number {1, toString: ƒ, valueOf: ƒ}
 
