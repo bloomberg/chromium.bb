@@ -10,6 +10,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/platform_font.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/view.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -146,12 +147,15 @@ const gfx::FontList& HarmonyTypographyProvider::GetFont(int context,
       size_delta, gfx::Font::NORMAL, font_weight);
 }
 
-SkColor HarmonyTypographyProvider::GetColor(
-    int context,
-    int style,
-    const ui::NativeTheme& theme) const {
-  if (ShouldIgnoreHarmonySpec(theme))
-    return GetHarmonyTextColorForNonStandardNativeTheme(context, style, theme);
+SkColor HarmonyTypographyProvider::GetColor(const views::View& view,
+                                            int context,
+                                            int style) const {
+  const ui::NativeTheme* native_theme = view.GetNativeTheme();
+  DCHECK(native_theme);
+  if (ShouldIgnoreHarmonySpec(*native_theme)) {
+    return GetHarmonyTextColorForNonStandardNativeTheme(context, style,
+                                                        *native_theme);
+  }
 
   if (context == views::style::CONTEXT_BUTTON_MD) {
     switch (style) {

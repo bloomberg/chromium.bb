@@ -12,11 +12,10 @@ namespace gfx {
 class FontList;
 }
 
-namespace ui {
-class NativeTheme;
-}
-
 namespace views {
+
+class View;
+
 namespace style {
 
 // Where a piece of text appears in the UI. This influences size and weight, but
@@ -95,13 +94,11 @@ enum TextStyle {
 };
 
 // Helpers to obtain text properties from the TypographyProvider given by the
-// current LayoutProvider. |context| can be an enum value from TextContext, or a
-// value understood by the embedder's TypographyProvider. Similarly, |style|
-// corresponds to TextStyle.
+// current LayoutProvider. |view| is the View requesting the property. |context|
+// can be an enum value from TextContext, or a value understood by the
+// embedder's TypographyProvider. Similarly, |style| corresponds to TextStyle.
 VIEWS_EXPORT const gfx::FontList& GetFont(int context, int style);
-VIEWS_EXPORT SkColor GetColor(int context,
-                              int style,
-                              const ui::NativeTheme* theme);
+VIEWS_EXPORT SkColor GetColor(const views::View& view, int context, int style);
 VIEWS_EXPORT int GetLineHeight(int context, int style);
 
 }  // namespace style

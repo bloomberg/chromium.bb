@@ -97,10 +97,10 @@ bool UseMd() {
   return ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
-SkColor GetTextColorForEnableState(bool enabled, ui::NativeTheme* theme) {
-  return style::GetColor(style::CONTEXT_TEXTFIELD,
-                         enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED,
-                         theme);
+SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
+  return style::GetColor(
+      combobox, style::CONTEXT_TEXTFIELD,
+      enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED);
 }
 
 gfx::Rect PositionArrowWithinContainer(const gfx::Rect& container_bounds,
@@ -845,7 +845,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = GetTextColorForEnableState(enabled(), GetNativeTheme());
+  SkColor text_color = GetTextColorForEnableState(*this, enabled());
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());
   if (selected_index_ < 0 || selected_index_ > model()->GetItemCount())
@@ -888,7 +888,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
     path.rLineTo(height, -height);
     path.close();
     cc::PaintFlags flags;
-    SkColor arrow_color = GetTextColorForEnableState(true, GetNativeTheme());
+    SkColor arrow_color = GetTextColorForEnableState(*this, true);
     if (!enabled())
       arrow_color = SkColorSetA(arrow_color, gfx::kDisabledControlAlpha);
     flags.setColor(arrow_color);

@@ -820,7 +820,7 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
     }
     static_cast<views::Label*>(GetBubbleFrameView()->title())
         ->SetEnabledColor(views::style::GetColor(
-            views::style::CONTEXT_DIALOG_TITLE, text_style, GetNativeTheme()));
+            *this, views::style::CONTEXT_DIALOG_TITLE, text_style));
   }
 
   if (identity_info.certificate) {
