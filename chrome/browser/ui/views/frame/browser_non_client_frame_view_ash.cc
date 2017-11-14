@@ -184,7 +184,14 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
         !immersive_controller->IsRevealed()) {
       return (-1) * browser_view()->GetTabStripHeight();
     }
-    return 0;
+
+    // The header isn't painted for restored popup/app windows in overview mode,
+    // but the inset is still calculated below, so the overview code can align
+    // the window content with a fake header.
+    if (!in_overview_mode_ || frame()->IsFullscreen() ||
+        browser_view()->IsTabStripVisible()) {
+      return 0;
+    }
   }
 
   if (!browser_view()->IsTabStripVisible()) {
@@ -378,11 +385,11 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
   frame()->GetNativeWindow()->SetProperty(aura::client::kTopViewColor,
                                           GetFrameColor());
-  caption_button_container_->SetVisible(false);
+  OnOverviewModeChanged(true);
 }
 
 void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
-  caption_button_container_->SetVisible(true);
+  OnOverviewModeChanged(false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -504,5 +511,20 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   if (immersive_mode_controller->IsEnabled())
     return immersive_mode_controller->IsRevealed();
 
-  return !frame()->IsFullscreen();
+  if (frame()->IsFullscreen())
+    return false;
+
+  // Do not paint for V1 apps in overview mode.
+  return browser_view()->IsBrowserTypeNormal() || !in_overview_mode_;
+}
+
+void BrowserNonClientFrameViewAsh::OnOverviewModeChanged(bool in_overview) {
+  in_overview_mode_ = in_overview;
+  caption_button_container_->SetVisible(!in_overview);
+  if (window_icon_)
+    window_icon_->SetVisible(!in_overview);
+  if (back_button_)
+    back_button_->SetVisible(!in_overview);
+  // Schedule a paint to show or hide the header.
+  SchedulePaint();
 }

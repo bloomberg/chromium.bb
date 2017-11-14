@@ -26,6 +26,7 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -198,7 +199,6 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
     aura::Window* window)
     : selector_item_(selector_item),
       window_(window),
-      determined_original_window_shape_(false),
       ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->layer()->GetTargetTransform()),
@@ -208,7 +208,8 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
-  ShowHeader();
+  ::wm::SetShadowElevation(window_, original_shadow_elevation_);
+
   wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
   if (minimized_widget_) {
     // TODO(oshima): Use unminimize animation instead of hiding animation.
@@ -383,14 +384,6 @@ void ScopedTransformOverviewWindow::SetTransform(
     const gfx::Transform& transform) {
   DCHECK(overview_started_);
 
-  if (&transform != &original_transform_ &&
-      !determined_original_window_shape_) {
-    determined_original_window_shape_ = true;
-    const ShapeRects* window_shape = window()->layer()->alpha_shape();
-    if (!original_window_shape_ && window_shape)
-      original_window_shape_ = std::make_unique<ShapeRects>(*window_shape);
-  }
-
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
   for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     aura::Window* parent_window = window->parent();
@@ -407,39 +400,6 @@ void ScopedTransformOverviewWindow::SetTransform(
 void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
   for (auto* window : GetTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);
-}
-
-void ScopedTransformOverviewWindow::HideHeader() {
-  // Mirrored Window does not have a header.
-  if (minimized_widget_)
-    return;
-  gfx::Rect bounds(GetTargetBoundsInScreen().size());
-  const int inset = GetTopInset();
-  if (inset > 0) {
-    // Use alpha shape to hide the window header.
-    bounds.Inset(0, inset, 0, 0);
-    std::unique_ptr<ShapeRects> shape;
-    if (original_window_shape_) {
-      // When the |window| has a shape, use the new bounds to clip that shape.
-      shape = std::make_unique<ShapeRects>(*original_window_shape_);
-      for (auto& rect : *shape)
-        rect.Intersect(bounds);
-    } else {
-      shape = std::make_unique<ShapeRects>();
-      shape->push_back(bounds);
-    }
-    aura::Window* window = GetOverviewWindow();
-    window->layer()->SetAlphaShape(std::move(shape));
-    window->layer()->SetMasksToBounds(true);
-  }
-}
-
-void ScopedTransformOverviewWindow::ShowHeader() {
-  ui::Layer* layer = window()->layer();
-  layer->SetAlphaShape(original_window_shape_ ? std::make_unique<ShapeRects>(
-                                                    *original_window_shape_)
-                                              : nullptr);
-  layer->SetMasksToBounds(false);
 }
 
 void ScopedTransformOverviewWindow::UpdateMirrorWindowForMinimizedState() {
@@ -469,6 +429,9 @@ void ScopedTransformOverviewWindow::Close() {
 }
 
 void ScopedTransformOverviewWindow::PrepareForOverview() {
+  original_shadow_elevation_ = window_->GetProperty(::wm::kShadowElevationKey);
+  ::wm::SetShadowElevation(window_, ::wm::ShadowElevation::NONE);
+
   DCHECK(!overview_started_);
   overview_started_ = true;
   wm::GetWindowState(window_)->set_ignored_by_shelf(true);
