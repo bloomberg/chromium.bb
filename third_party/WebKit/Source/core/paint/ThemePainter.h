@@ -29,6 +29,7 @@
 namespace blink {
 
 class ComputedStyle;
+class Document;
 class IntRect;
 class LayoutObject;
 class Node;
@@ -50,6 +51,7 @@ class ThemePainter {
                        const PaintInfo&,
                        const IntRect&);
   bool PaintDecorations(const Node*,
+                        const Document&,
                         const ComputedStyle&,
                         const PaintInfo&,
                         const IntRect&);
@@ -63,18 +65,21 @@ class ThemePainter {
 
  protected:
   virtual bool PaintCheckbox(const Node*,
+                             const Document&,
                              const ComputedStyle&,
                              const PaintInfo&,
                              const IntRect&) {
     return true;
   }
   virtual bool PaintRadio(const Node*,
+                          const Document&,
                           const ComputedStyle&,
                           const PaintInfo&,
                           const IntRect&) {
     return true;
   }
   virtual bool PaintButton(const Node*,
+                           const Document&,
                            const ComputedStyle&,
                            const PaintInfo&,
                            const IntRect&) {
@@ -99,12 +104,14 @@ class ThemePainter {
     return true;
   }
   virtual bool PaintMenuList(const Node*,
+                             const Document&,
                              const ComputedStyle&,
                              const PaintInfo&,
                              const IntRect&) {
     return true;
   }
   virtual bool PaintMenuListButton(const Node* node,
+                                   const Document&,
                                    const ComputedStyle&,
                                    const PaintInfo&,
                                    const IntRect&) {

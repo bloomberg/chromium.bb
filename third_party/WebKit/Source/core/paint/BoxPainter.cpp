@@ -172,9 +172,11 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
                     box_decoration_data.background_color,
                     box_decoration_data.bleed_avoidance);
 
-    if (box_decoration_data.has_appearance)
-      theme_painter.PaintDecorations(layout_box_.GetNode(), style, paint_info,
-                                     snapped_paint_rect);
+    if (box_decoration_data.has_appearance) {
+      theme_painter.PaintDecorations(layout_box_.GetNode(),
+                                     layout_box_.GetDocument(), style,
+                                     paint_info, snapped_paint_rect);
+    }
   }
 
   if (!painting_overflow_contents) {

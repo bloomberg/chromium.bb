@@ -42,14 +42,17 @@ class ThemePainterDefault final : public ThemePainter {
 
  private:
   bool PaintCheckbox(const Node*,
+                     const Document&,
                      const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
   bool PaintRadio(const Node*,
+                  const Document&,
                   const ComputedStyle&,
                   const PaintInfo&,
                   const IntRect&) override;
   bool PaintButton(const Node*,
+                   const Document&,
                    const ComputedStyle&,
                    const PaintInfo&,
                    const IntRect&) override;
@@ -58,10 +61,12 @@ class ThemePainterDefault final : public ThemePainter {
                       const PaintInfo&,
                       const IntRect&) override;
   bool PaintMenuList(const Node*,
+                     const Document&,
                      const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
   bool PaintMenuListButton(const Node*,
+                           const Document&,
                            const ComputedStyle&,
                            const PaintInfo&,
                            const IntRect&) override;
@@ -91,7 +96,7 @@ class ThemePainterDefault final : public ThemePainter {
                                     const PaintInfo&,
                                     const IntRect&) override;
 
-  void SetupMenuListArrow(const Node*,
+  void SetupMenuListArrow(const Document&,
                           const ComputedStyle&,
                           const IntRect&,
                           WebThemeEngine::ExtraParams&);

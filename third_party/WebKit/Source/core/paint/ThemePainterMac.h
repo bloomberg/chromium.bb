@@ -36,10 +36,12 @@ class ThemePainterMac final : public ThemePainter {
 
  private:
   bool PaintButton(const Node*,
+                   const Document&,
                    const ComputedStyle&,
                    const PaintInfo&,
                    const IntRect&) override;
   bool PaintCheckbox(const Node*,
+                     const Document&,
                      const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
@@ -51,10 +53,12 @@ class ThemePainterMac final : public ThemePainter {
                             const PaintInfo&,
                             const IntRect&) override;
   bool PaintMenuList(const Node*,
+                     const Document&,
                      const ComputedStyle&,
                      const PaintInfo&,
                      const IntRect&) override;
   bool PaintMenuListButton(const Node*,
+                           const Document&,
                            const ComputedStyle&,
                            const PaintInfo&,
                            const IntRect&) override;
@@ -62,6 +66,7 @@ class ThemePainterMac final : public ThemePainter {
                         const PaintInfo&,
                         const IntRect&) override;
   bool PaintRadio(const Node*,
+                  const Document&,
                   const ComputedStyle&,
                   const PaintInfo&,
                   const IntRect&) override;
