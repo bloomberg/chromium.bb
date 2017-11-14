@@ -1986,13 +1986,7 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics(
 }
 
 void RenderThreadImpl::CompositingModeFallbackToSoftware() {
-  if (gpu_channel_) {
-    // TODO(danakj): Tell all clients of the compositor. We should send a more
-    // scoped message than this.
-    gpu_channel_->DestroyChannel();
-    gpu_channel_ = nullptr;
-  }
-
+  gpu_->LoseChannel();
   is_gpu_compositing_disabled_ = true;
 }
 
@@ -2000,21 +1994,11 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync(
     bool* connection_error) {
   TRACE_EVENT0("gpu", "RenderThreadImpl::EstablishGpuChannelSync");
 
-  if (gpu_channel_) {
-    // Do nothing if we already have a GPU channel or are already
-    // establishing one.
-    if (!gpu_channel_->IsLost())
-      return gpu_channel_;
-
-    // Recreate the channel if it has been lost.
-    gpu_channel_->DestroyChannel();
-    gpu_channel_ = nullptr;
-  }
-
-  gpu_channel_ = gpu_->EstablishGpuChannelSync(connection_error);
-  if (gpu_channel_)
-    GetContentClient()->SetGpuInfo(gpu_channel_->gpu_info());
-  return gpu_channel_;
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel =
+      gpu_->EstablishGpuChannelSync(connection_error);
+  if (gpu_channel)
+    GetContentClient()->SetGpuInfo(gpu_channel->gpu_info());
+  return gpu_channel;
 }
 
 void RenderThreadImpl::RequestNewLayerTreeFrameSink(
@@ -2234,11 +2218,7 @@ mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
 }
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
-  if (!gpu_channel_)
-    return nullptr;
-  if (gpu_channel_->IsLost())
-    return nullptr;
-  return gpu_channel_.get();
+  return gpu_->GetGpuChannel().get();
 }
 
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {

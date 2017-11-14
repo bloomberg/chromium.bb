@@ -53,6 +53,9 @@ class Gpu : public gpu::GpuChannelHostFactory,
       bool* connection_error) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
+  void LoseChannel();
+  scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
+
  private:
   friend class GpuTest;
 
@@ -61,8 +64,6 @@ class Gpu : public gpu::GpuChannelHostFactory,
 
   Gpu(GpuPtrFactory factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-
-  scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
 
   // Sends a request to establish a gpu channel. If a request is currently
   // pending this will do nothing.
