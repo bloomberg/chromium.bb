@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -30,7 +32,8 @@ namespace {
 
 // Forms of the dialog that can be invoked.
 constexpr const char kExpiryExpired[] = "expired";
-constexpr const char kExpiryValid[] = "valid";
+constexpr const char kExpiryValidTemporaryError[] = "valid_TemporaryError";
+constexpr const char kExpiryValidPermanentError[] = "valid_PermanentError";
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
@@ -38,7 +41,7 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
 
   virtual ~TestCardUnmaskDelegate() {}
 
-  // CardUnmaskDelegate implementation.
+  // CardUnmaskDelegate:
   void OnUnmaskResponse(const UnmaskResponse& response) override {
     response_ = response;
   }
@@ -69,18 +72,59 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
         runner_(runner),
         weak_factory_(this) {}
 
-  // CardUnmaskPromptControllerImpl implementation.
+  // CardUnmaskPromptControllerImpl:.
+  // When the confirm button is clicked.
+  void OnUnmaskResponse(const base::string16& cvc,
+                        const base::string16& exp_month,
+                        const base::string16& exp_year,
+                        bool should_store_pan) override {
+    // Call the original implementation.
+    CardUnmaskPromptControllerImpl::OnUnmaskResponse(cvc, exp_month, exp_year,
+                                                     should_store_pan);
+
+    // Wait some time and show verification result. An empty message means
+    // success is shown.
+    base::string16 verification_message;
+    if (expected_failure_temporary_) {
+      verification_message = base::ASCIIToUTF16("This is a temporary error.");
+    } else if (expected_failure_permanent_) {
+      verification_message = base::ASCIIToUTF16("This is a permanent error.");
+    }
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&TestCardUnmaskPromptController::ShowVerificationResult,
+                   weak_factory_.GetWeakPtr(), verification_message,
+                   /*allow_retry=*/expected_failure_temporary_),
+        GetSuccessMessageDuration());
+  }
+
   base::TimeDelta GetSuccessMessageDuration() const override {
+    // Change this to ~4000 if you're in --interactive mode and would like to
+    // see the progress/success overlay.
     return base::TimeDelta::FromMilliseconds(10);
   }
 
-  base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
+  void set_expected_verification_failure(bool allow_retry) {
+    if (allow_retry) {
+      expected_failure_temporary_ = true;
+    } else {
+      expected_failure_permanent_ = true;
+    }
   }
 
   using CardUnmaskPromptControllerImpl::view;
 
  private:
+  void ShowVerificationResult(const base::string16 verification_message,
+                              bool allow_retry) {
+    // It's possible the prompt has been closed.
+    if (!view())
+      return;
+    view()->GotVerificationResult(verification_message, allow_retry);
+  }
+
+  bool expected_failure_temporary_ = false;
+  bool expected_failure_permanent_ = false;
   scoped_refptr<content::MessageLoopRunner> runner_;
   base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
 
@@ -104,12 +148,21 @@ class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
   void ShowDialog(const std::string& name) override {
     CardUnmaskPromptView* dialog =
         CreateCardUnmaskPromptView(controller(), contents());
-    EXPECT_TRUE(name == kExpiryExpired || name == kExpiryValid);
-    CreditCard card = (name == kExpiryExpired)
-                          ? test::GetMaskedServerCard()
-                          : test::GetMaskedServerCardAmex();
+    CreditCard card = test::GetMaskedServerCard();
+    if (name == kExpiryExpired)
+      card.SetExpirationYear(2016);
+
     controller()->ShowPrompt(dialog, card, AutofillClient::UNMASK_FOR_AUTOFILL,
                              delegate()->GetWeakPtr());
+    // Setting error expectations and confirming the dialogs for some test
+    // cases.
+    if (name == kExpiryValidPermanentError ||
+        name == kExpiryValidTemporaryError) {
+      controller()->set_expected_verification_failure(
+          /*allow_retry*/ name == kExpiryValidTemporaryError);
+      CardUnmaskPromptViewTester::For(controller()->view())
+          ->EnterCVCAndAccept();
+    }
   }
 
   void FreeDelegate() { delegate_.reset(); }
@@ -138,12 +191,22 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_valid) {
   RunDialog();
 }
 
+// This dialog will show a temporary error when Confirm is clicked.
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
+                       InvokeDialog_valid_TemporaryError) {
+  RunDialog();
+}
+
+// This dialog will show a permanent error when Confirm is clicked.
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
+                       InvokeDialog_valid_PermanentError) {
+  RunDialog();
+}
+
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
   ShowDialog(kExpiryExpired);
 }
 
-// TODO(bondd): bring up on Mac.
-#if !defined(OS_MACOSX)
 // Makes sure the user can close the dialog while the verification success
 // message is showing.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
@@ -151,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
   ShowDialog(kExpiryExpired);
   controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
                                  base::ASCIIToUTF16("10"),
-                                 base::ASCIIToUTF16("19"), false);
+                                 base::ASCIIToUTF16("2020"), false);
   EXPECT_EQ(base::ASCIIToUTF16("123"), delegate()->response().cvc);
   controller()->OnVerificationResult(AutofillClient::SUCCESS);
 
@@ -165,7 +228,6 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
       2 * controller()->GetSuccessMessageDuration());
   runner_->Run();
 }
-#endif
 
 // Makes sure the tab can be closed while the dialog is showing.
 // https://crbug.com/484376

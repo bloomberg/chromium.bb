@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -38,16 +39,14 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
 namespace {
-
-// The number of pixels of blank space on the outer horizontal edges of the
-// dialog.
-const int kEdgePadding = 19;
 
 SkColor kGreyTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
 
@@ -57,26 +56,52 @@ SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 }  // namespace
 
+// A view that allows changing the opacity of its contents.
+class CardUnmaskPromptViews::FadeOutView : public View {
+ public:
+  FadeOutView() {}
+
+  void SetAlpha(SkAlpha alpha) {
+    alpha_ = alpha;
+    SchedulePaint();
+  }
+
+  void set_fade_everything(bool fade_everything) {
+    fade_everything_ = fade_everything;
+  }
+
+  // views::View
+  void PaintChildren(const views::PaintInfo& paint_info) override {
+    constexpr bool kLcdTextRequiresOpaqueLayer = true;
+    ui::CompositingRecorder recorder(paint_info.context(), alpha_,
+                                     kLcdTextRequiresOpaqueLayer);
+    View::PaintChildren(paint_info);
+  }
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    if (!fade_everything_ || alpha_ == SK_AlphaOPAQUE)
+      return View::OnPaint(canvas);
+
+    canvas->SaveLayerAlpha(alpha_);
+    View::OnPaint(canvas);
+    canvas->Restore();
+  }
+
+ private:
+  // Controls whether the background and border are faded out as well. Default
+  // is false, meaning only children are faded.
+  bool fade_everything_ = false;
+
+  SkAlpha alpha_ = SK_AlphaOPAQUE;
+
+  DISALLOW_COPY_AND_ASSIGN(FadeOutView);
+};
+
 CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents)
     : controller_(controller),
       web_contents_(web_contents),
-      main_contents_(nullptr),
-      instructions_(nullptr),
-      permanent_error_label_(nullptr),
-      input_row_(nullptr),
-      cvc_input_(nullptr),
-      month_input_(nullptr),
-      year_input_(nullptr),
-      new_card_link_(nullptr),
-      error_icon_(nullptr),
-      error_label_(nullptr),
-      storage_row_(nullptr),
-      storage_checkbox_(nullptr),
-      progress_overlay_(nullptr),
-      progress_throbber_(nullptr),
-      progress_label_(nullptr),
       overlay_animation_(this),
       weak_ptr_factory_(this) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
@@ -124,7 +149,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
     // quickly.
     overlay_animation_.Reset();
     if (storage_row_)
-      storage_row_->SetAlpha(255);
+      storage_row_->SetAlpha(SK_AlphaOPAQUE);
     progress_overlay_->SetVisible(false);
 
     if (allow_retry) {
@@ -171,15 +196,9 @@ void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
 
 void CardUnmaskPromptViews::SetRetriableErrorMessage(
     const base::string16& message) {
-  if (message.empty()) {
-    error_label_->SetMultiLine(false);
-    error_label_->SetText(base::ASCIIToUTF16(" "));
-    error_icon_->SetVisible(false);
-  } else {
-    error_label_->SetMultiLine(true);
-    error_label_->SetText(message);
-    error_icon_->SetVisible(true);
-  }
+  error_label_->SetMultiLine(!message.empty());
+  error_label_->SetText(message);
+  error_icon_->SetVisible(!message.empty());
 
   // Update the dialog's size.
   if (GetWidget() && web_contents_) {
@@ -224,8 +243,10 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
 
   // Local storage checkbox and (?) tooltip.
   storage_row_ = new FadeOutView();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   views::BoxLayout* storage_row_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, gfx::Insets(kEdgePadding));
+      views::BoxLayout::kHorizontal,
+      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION));
   storage_row_->SetLayoutManager(storage_row_layout);
   storage_row_->SetBorder(
       views::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
@@ -247,30 +268,9 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
-  // Must hardcode a width so the label knows where to wrap.
-  const int kWidth = 375;
-  return gfx::Size(kWidth, GetHeightForWidth(kWidth));
-}
-
-void CardUnmaskPromptViews::Layout() {
-  gfx::Rect contents_bounds = GetContentsBounds();
-  main_contents_->SetBoundsRect(contents_bounds);
-
-  // The progress overlay extends from the top of the input row
-  // to the bottom of the content area.
-  gfx::RectF input_rect = gfx::RectF(input_row_->GetContentsBounds());
-  View::ConvertRectToTarget(input_row_, this, &input_rect);
-  input_rect.set_height(contents_bounds.height());
-  contents_bounds.Intersect(gfx::ToNearestRect(input_rect));
-  progress_overlay_->SetBoundsRect(contents_bounds);
-}
-
-int CardUnmaskPromptViews::GetHeightForWidth(int width) const {
-  if (!has_children())
-    return 0;
-  const gfx::Insets insets = GetInsets();
-  return main_contents_->GetHeightForWidth(width - insets.width()) +
-         insets.height();
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_MODAL_DIALOG_WIDTH_CONTAINING_MULTILINE_TEXT);
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -369,68 +369,80 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
 
 void CardUnmaskPromptViews::AnimationProgressed(
     const gfx::Animation* animation) {
-  uint8_t alpha = static_cast<uint8_t>(animation->CurrentValueBetween(0, 255));
+  SkAlpha alpha = static_cast<SkAlpha>(
+      animation->CurrentValueBetween(SK_AlphaTRANSPARENT, SK_AlphaOPAQUE));
   progress_overlay_->SetAlpha(alpha);
   if (storage_row_)
-    storage_row_->SetAlpha(255 - alpha);
+    storage_row_->SetAlpha(SK_AlphaOPAQUE - alpha);
 }
 
 void CardUnmaskPromptViews::InitIfNecessary() {
   if (has_children())
     return;
-
-  main_contents_ = new views::View();
-  main_contents_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 12));
-  AddChildView(main_contents_);
-
-  permanent_error_label_ = new views::Label();
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  // The main content view is a box layout with two things in it: the permanent
+  // error label layout, and |main_contents|.
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets()));
+
+  // This is a big red-background section at the top of the dialog in case there
+  // is a permanent error. It is not in an inset layout because the red
+  // background needs the full width.
+  permanent_error_label_ = new views::Label();
   permanent_error_label_->SetFontList(
       rb.GetFontList(ui::ResourceBundle::BoldFont));
+  permanent_error_label_->SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
   permanent_error_label_->SetBackground(
       views::CreateSolidBackground(kWarningColor));
-  permanent_error_label_->SetBorder(
-      views::CreateEmptyBorder(12, kEdgePadding, 12, kEdgePadding));
   permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
   permanent_error_label_->SetAutoColorReadabilityEnabled(false);
   permanent_error_label_->SetVisible(false);
   permanent_error_label_->SetMultiLine(true);
   permanent_error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  main_contents_->AddChildView(permanent_error_label_);
+  AddChildView(permanent_error_label_);
+
+  // The |main_contents| layout is a FillLayout that will contain the progress
+  // overlay on top of the actual contents in |controls_container|
+  // (instructions, input fields).
+  views::View* main_contents = new views::View();
+  main_contents->SetLayoutManager(new views::FillLayout());
+  // Inset the whole main section.
+  main_contents->SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG)));
+  AddChildView(main_contents);
 
   views::View* controls_container = new views::View();
   controls_container->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, gfx::Insets(0, kEdgePadding)));
-  main_contents_->AddChildView(controls_container);
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  main_contents->AddChildView(controls_container);
 
+  // Instruction text of the dialog.
   instructions_ = new views::Label(controller_->GetInstructionsMessage());
   instructions_->SetEnabledColor(kGreyTextColor);
   instructions_->SetMultiLine(true);
   instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  instructions_->SetBorder(views::CreateEmptyBorder(0, 0, 16, 0));
   controls_container->AddChildView(instructions_);
 
+  // Input row, containing month/year dropdowns if needed and the CVC field.
   input_row_ = new views::View();
-  input_row_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 5));
-  controls_container->AddChildView(input_row_);
+  input_row_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
 
+  // Add the month and year comboboxes if the expiration date is needed.
   month_input_ = new views::Combobox(&month_combobox_model_);
   month_input_->set_listener(this);
   input_row_->AddChildView(month_input_);
-  views::Label* separator = new views::Label(l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_CARD_UNMASK_EXPIRATION_DATE_SEPARATOR));
-  separator->SetEnabledColor(kGreyTextColor);
-  input_row_->AddChildView(separator);
   year_input_ = new views::Combobox(&year_combobox_model_);
   year_input_->set_listener(this);
   input_row_->AddChildView(year_input_);
-  input_row_->AddChildView(new views::Label(base::ASCIIToUTF16("  ")));
-  // Hide all of the above as appropriate.
   if (!controller_->ShouldRequestExpirationDate()) {
-    for (int i = 0; i < input_row_->child_count(); ++i)
-      input_row_->child_at(i)->SetVisible(false);
+    month_input_->SetVisible(false);
+    year_input_->SetVisible(false);
   }
 
   cvc_input_ = CreateCvcTextfield();
@@ -439,16 +451,19 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   views::ImageView* cvc_image = new views::ImageView();
   cvc_image->SetImage(rb.GetImageSkiaNamed(controller_->GetCvcImageRid()));
+  cvc_image->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
   input_row_->AddChildView(cvc_image);
+  controls_container->AddChildView(input_row_);
 
+  // Temporary error view, just below the input field(s).
   views::View* temporary_error = new views::View();
-  views::BoxLayout* temporary_error_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 4);
+  views::BoxLayout* temporary_error_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   temporary_error->SetLayoutManager(temporary_error_layout);
   temporary_error_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  temporary_error->SetBorder(views::CreateEmptyBorder(8, 0, 0, 0));
-  controls_container->AddChildView(temporary_error);
 
   error_icon_ = new views::ImageView();
   error_icon_->SetVisible(false);
@@ -456,25 +471,25 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16, kWarningColor));
   temporary_error->AddChildView(error_icon_);
 
-  // Reserve vertical space for the error label, assuming it's one line.
-  error_label_ = new views::Label(base::ASCIIToUTF16(" "));
+  error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   error_label_->SetEnabledColor(kWarningColor);
   temporary_error->AddChildView(error_label_);
   temporary_error_layout->SetFlexForView(error_label_, 1);
+  controls_container->AddChildView(temporary_error);
 
+  // On top of the main contents, we add the progress overlay and hide it.
   progress_overlay_ = new FadeOutView();
   progress_overlay_->set_fade_everything(true);
-  views::BoxLayout* progress_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(), 5);
+  views::BoxLayout* progress_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   progress_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   progress_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   progress_overlay_->SetLayoutManager(progress_layout);
-
   progress_overlay_->SetVisible(false);
-  AddChildView(progress_overlay_);
 
   progress_throbber_ = new views::Throbber();
   progress_overlay_->AddChildView(progress_throbber_);
@@ -482,6 +497,7 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   progress_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS));
   progress_overlay_->AddChildView(progress_label_);
+  main_contents->AddChildView(progress_overlay_);
 }
 
 bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
@@ -495,34 +511,6 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
 
 void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
-}
-
-CardUnmaskPromptViews::FadeOutView::FadeOutView()
-    : fade_everything_(false), alpha_(255) {
-}
-CardUnmaskPromptViews::FadeOutView::~FadeOutView() {
-}
-
-void CardUnmaskPromptViews::FadeOutView::PaintChildren(
-    const views::PaintInfo& paint_info) {
-  const bool kLcdTextRequiresOpaqueLayer = true;
-  ui::CompositingRecorder recorder(paint_info.context(), alpha_,
-                                   kLcdTextRequiresOpaqueLayer);
-  views::View::PaintChildren(paint_info);
-}
-
-void CardUnmaskPromptViews::FadeOutView::OnPaint(gfx::Canvas* canvas) {
-  if (!fade_everything_ || alpha_ == 255)
-    return views::View::OnPaint(canvas);
-
-  canvas->SaveLayerAlpha(alpha_);
-  views::View::OnPaint(canvas);
-  canvas->Restore();
-}
-
-void CardUnmaskPromptViews::FadeOutView::SetAlpha(uint8_t alpha) {
-  alpha_ = alpha;
-  SchedulePaint();
 }
 
 }  // namespace autofill

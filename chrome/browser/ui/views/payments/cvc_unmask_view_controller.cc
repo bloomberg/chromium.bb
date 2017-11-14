@@ -221,6 +221,8 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
       credit_card_.network() == autofill::kAmericanExpressCard
           ? IDR_CREDIT_CARD_CVC_HINT_AMEX
           : IDR_CREDIT_CARD_CVC_HINT));
+  cvc_image->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
   layout->AddView(cvc_image.release());
 
   std::unique_ptr<views::Textfield> cvc_field =
