@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/linux/pangocairo/pangocairo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
@@ -13,7 +14,7 @@ import("//printing/features/features.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 
-source_set("browser") {
+jumbo_source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
   visibility = [
@@ -2079,6 +2080,27 @@ source_set("browser") {
       "web_contents/web_contents_view_android.h",
     ]
 
+    jumbo_excluded_sources = [
+      # Currently the Android JNI bindings generator is not compatible with
+      # Jumbo. It generates and assumes static Init() methods and those will
+      # clash in a jumbo build. Bug https://crbug.com/779013.
+      # Files with JNI Init() methods:
+      "accessibility/web_contents_accessibility_android.cc",
+      "android/content_view_core.cc",
+      "android/content_view_render_view.cc",
+      "android/dialog_overlay_impl.cc",
+      "android/ime_adapter_android.cc",
+      "android/interstitial_page_delegate_android.cc",
+      "android/popup_zoomer.cc",
+      "android/selection_popup_controller.cc",
+      "android/smart_selection_client.cc",
+      "android/text_suggestion_host_android.cc",
+      "android/tracing_controller_android.cc",
+      "android/web_contents_observer_proxy.cc",
+
+      "android/java/java_method.cc",  # kJavaLangClass and 2 others
+    ]
+
     set_sources_assignment_filter([])
     sources += [
       "memory/swap_metrics_driver_impl_linux.cc",
@@ -2237,6 +2259,16 @@ source_set("browser") {
       "renderer_host/delegated_frame_host.cc",
       "renderer_host/delegated_frame_host.h",
     ]
+    if (is_mac) {
+      jumbo_excluded_sources = [
+        # Both Mac SDK headers and third_party/khronos/GLES2/gl2ext.h
+        # declare macros GL_LINES_ADJACENCY_EXT, GL_LINE_STRIP_ADJACENCY_EXT,
+        # GL_TRIANGLES_ADJACENCY_EXT and GL_TRIANGLE_STRIP_ADJACENCY_EXT. They
+        # get the same values but with different formatting (0xD vs 0x000D).
+        # https://crbug.com/783666
+        "compositor/gpu_output_surface_mac.mm",
+      ]
+    }
     if (enable_vulkan) {
       sources += [
         "compositor/vulkan_browser_compositor_output_surface.cc",
