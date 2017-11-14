@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browseractions;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,8 +13,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.DrawableRes;
-import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
 
 import org.junit.Before;
@@ -30,9 +27,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.util.Feature;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Unit tests for BrowserActionsIntent.
  */
@@ -45,10 +39,6 @@ public class BrowserActionsIntentTest {
     private static final String CONTENT_SCHEME_TEST_URL = "content://example";
     private static final String SENDER_PACKAGE_NAME = "some.other.app.package.sender_name";
     private static final String RECEIVER_PACKAGE_NAME = "some.other.app.package.receiver_name";
-    private static final String CUSTOM_ITEM_WITHOUT_ICON_TITLE = "Custom item without icon";
-    private static final String CUSTOM_ITEM_WITH_ICON_TITLE = "Custom item with icon";
-    @DrawableRes
-    private static final int CUSTOM_ITEM_WITH_ICON_ICONID = 1;
 
     private Context mContext;
     @Mock
@@ -95,57 +85,18 @@ public class BrowserActionsIntentTest {
         mIntent = createBaseBrowserActionsIntent(HTTP_SCHEME_TEST_URL);
         mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         assertFalse(mActivity.isStartedUpCorrectly(mIntent));
-
-        mIntent = createBrowserActionsIntentWithCustomItems(
-                HTTP_SCHEME_TEST_URL, createCustomItems());
-        assertTrue(mActivity.isStartedUpCorrectly(mIntent));
-        testParseCustomItems(mActivity.mActions);
     }
 
     /**
-     * A convenient method to create a simple Intent for Browser Actions without custom item.
+     * Creates a simple Intent for Browser Actions which contains a url, the {@link
+     * BrowserActionsIntent.ACTION_BROWSER_ACTIONS_OPEN} action and source package name.
      * @param url The url for the data of the Intent.
      * @return The simple Intent for Browser Actions.
      */
     private Intent createBaseBrowserActionsIntent(String url) {
-        return createBrowserActionsIntentWithCustomItems(url, new ArrayList<>());
-    }
-
-    /**
-     * Creates an Intent for Browser Actions which contains a url and a list of custom items.
-     * @param url The url for the data of the Intent.
-     * @param items A List of custom items for Browser Actions menu.
-     * @return The Intent for Browser Actions.
-     */
-    private Intent createBrowserActionsIntentWithCustomItems(
-            String url, ArrayList<BrowserActionItem> items) {
         return new BrowserActionsIntent.Builder(mContext, Uri.parse(url))
-                .setCustomItems(items)
                 .build()
                 .getIntent()
                 .putExtra(BrowserActionsIntent.EXTRA_APP_ID, mPendingIntent);
-    }
-
-    private ArrayList<BrowserActionItem> createCustomItems() {
-        BrowserActionItem item1 =
-                new BrowserActionItem(CUSTOM_ITEM_WITHOUT_ICON_TITLE, mPendingIntent);
-        BrowserActionItem item2 = new BrowserActionItem(
-                CUSTOM_ITEM_WITH_ICON_TITLE, mPendingIntent, CUSTOM_ITEM_WITH_ICON_ICONID);
-        ArrayList<BrowserActionItem> items = new ArrayList<>();
-        items.add(item1);
-        items.add(item2);
-        return items;
-    }
-
-    private void testParseCustomItems(List<BrowserActionItem> items) {
-        assertEquals(2, mActivity.mActions.size());
-
-        assertEquals(CUSTOM_ITEM_WITHOUT_ICON_TITLE, mActivity.mActions.get(0).getTitle());
-        assertEquals(0, mActivity.mActions.get(0).getIconId());
-        assertEquals(mPendingIntent, mActivity.mActions.get(0).getAction());
-
-        assertEquals(CUSTOM_ITEM_WITH_ICON_TITLE, mActivity.mActions.get(1).getTitle());
-        assertEquals(CUSTOM_ITEM_WITH_ICON_ICONID, mActivity.mActions.get(1).getIconId());
-        assertEquals(mPendingIntent, mActivity.mActions.get(1).getAction());
     }
 }

@@ -731,7 +731,7 @@ by a child template that "extends" this file.
             android:exported="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
             <intent-filter>
-                <action android:name="androidx.browser.browseractions.browser_action_open" />
+                <action android:name="android.support.customtabs.browseractions.browser_action_open" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="http" />
                 <data android:scheme="https" />

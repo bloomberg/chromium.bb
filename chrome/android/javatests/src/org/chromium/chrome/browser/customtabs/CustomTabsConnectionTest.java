@@ -79,7 +79,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testNewSession() {
         Assert.assertEquals(false, mCustomTabsConnection.newSession(null));
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertEquals(true, mCustomTabsConnection.newSession(token));
         Assert.assertEquals(false, mCustomTabsConnection.newSession(token));
     }
@@ -90,9 +90,9 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     public void testSeveralSessions() {
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertEquals(true, mCustomTabsConnection.newSession(token));
-        CustomTabsSessionToken token2 = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token2 = CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertEquals(true, mCustomTabsConnection.newSession(token2));
     }
 
@@ -200,7 +200,7 @@ public class CustomTabsConnectionTest {
     public void testMayLaunchUrlKeepsSpareRendererWithoutPrerendering() {
         CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
 
         Bundle extras = new Bundle();
@@ -235,7 +235,7 @@ public class CustomTabsConnectionTest {
     @RetryOnFailure
     public void testOnlyOneHiddenTab() throws Exception {
         Assert.assertTrue("Failed warmup()", mCustomTabsConnection.warmup(0));
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue("Failed newSession()", mCustomTabsConnection.newSession(token));
         mCustomTabsConnection.setSpeculationModeForSession(
                 token, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
@@ -288,7 +288,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testUnderstandsLowConfidenceMayLaunchUrl() {
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         List<Bundle> urls = new ArrayList<>();
         Bundle urlBundle = new Bundle();
@@ -310,7 +310,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testLowConfidenceMayLaunchUrlOnlyAcceptUris() {
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         CustomTabsTestUtils.warmUpAndWait();
 
@@ -337,7 +337,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testLowConfidenceMayLaunchUrlDoesntCrash() {
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         CustomTabsTestUtils.warmUpAndWait();
 
@@ -364,7 +364,7 @@ public class CustomTabsConnectionTest {
     public void testStillHighConfidenceMayLaunchUrlWithSeveralUrls() {
         CustomTabsConnection.getInstance().setForcePrerender(true);
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         List<Bundle> urls = new ArrayList<>();
         Bundle urlBundle = new Bundle();
@@ -389,7 +389,7 @@ public class CustomTabsConnectionTest {
     public void testPrefetchOnlyNoPrerenderHasSpareWebContents() {
         CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
 
         Bundle extras = new Bundle();
@@ -446,7 +446,7 @@ public class CustomTabsConnectionTest {
             CustomTabsSessionToken token, String url, boolean shouldSucceed) {
         CustomTabsTestUtils.warmUpAndWait();
         if (token == null) {
-            token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+            token = CustomTabsSessionToken.createDummySessionTokenForTesting();
             mCustomTabsConnection.newSession(token);
         }
         Uri uri = url == null ? null : Uri.parse(url);
@@ -465,7 +465,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     public void testNoMayLaunchUrlWithInvalidSessionId() {
         assertWarmupAndMayLaunchUrl(
-                CustomTabsSessionToken.createMockSessionTokenForTesting(), URL, false);
+                CustomTabsSessionToken.createDummySessionTokenForTesting(), URL, false);
     }
 
     /**
@@ -621,7 +621,7 @@ public class CustomTabsConnectionTest {
     public void testBanningWorks() {
         mCustomTabsConnection.ban(Process.myUid());
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
 
         Assert.assertTrue(mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
@@ -641,7 +641,7 @@ public class CustomTabsConnectionTest {
     public void testBanningDisabledForCellular() {
         mCustomTabsConnection.ban(Process.myUid());
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
 
@@ -663,7 +663,7 @@ public class CustomTabsConnectionTest {
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testCellularPrerenderingDoesntOverrideSettings() throws Exception {
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
         CustomTabsTestUtils.warmUpAndWait();
@@ -703,7 +703,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testCellularPrerenderingDoesntKillSpareRenderer() throws Exception {
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
         CustomTabsTestUtils.warmUpAndWait();
@@ -729,7 +729,7 @@ public class CustomTabsConnectionTest {
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testUnmatchedCellularPrerenderingDoesntKillSpareRenderer() throws Exception {
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         Assert.assertTrue(mCustomTabsConnection.newSession(token));
         mCustomTabsConnection.setShouldPrerenderOnCellularForSession(token, true);
         CustomTabsTestUtils.warmUpAndWait();

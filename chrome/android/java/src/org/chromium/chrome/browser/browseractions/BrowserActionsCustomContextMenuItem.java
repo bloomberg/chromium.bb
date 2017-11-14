@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.browseractions;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IdRes;
 import android.support.customtabs.browseractions.BrowserActionItem;
@@ -18,18 +20,17 @@ public class BrowserActionsCustomContextMenuItem implements ContextMenuItem {
     @IdRes
     private final int mMenuId;
     private final String mTitle;
-    private final Drawable mIcon;
+    private final Bitmap mIcon;
 
     /**
      * Constructor to build a custom context menu item from {@link BrowserActionItem}.
      * @param id The {@link IdRes} of the custom context menu item.
-     * @param title The title of the custom context menu item.
-     * @param icon The icon of the custom context menu item.
+     * @param item The {@link BrowserActionItem} specifies the title and action of the menu item.
      */
-    BrowserActionsCustomContextMenuItem(@IdRes int id, String title, Drawable icon) {
+    BrowserActionsCustomContextMenuItem(@IdRes int id, BrowserActionItem item) {
         mMenuId = id;
-        mTitle = title;
-        mIcon = icon;
+        mTitle = item.getTitle();
+        mIcon = item.getIcon();
     }
 
     @Override
@@ -44,6 +45,6 @@ public class BrowserActionsCustomContextMenuItem implements ContextMenuItem {
 
     @Override
     public Drawable getDrawable(Context context) {
-        return mIcon;
+        return new BitmapDrawable(context.getResources(), mIcon);
     }
 }

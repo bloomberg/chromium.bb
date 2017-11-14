@@ -2197,7 +2197,7 @@ public class CustomTabActivityTest {
     public void testHiddenTabThirdPartyCookiesBlocked() throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         final CustomTabsSessionToken token =
-                CustomTabsSessionToken.createMockSessionTokenForTesting();
+                CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(
                 token, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
@@ -2228,7 +2228,7 @@ public class CustomTabActivityTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, requestedSpeculationMode);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
@@ -2268,7 +2268,7 @@ public class CustomTabActivityTest {
 
     private void testSpeculateInvalidUrl(int speculationMode) throws Exception {
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, speculationMode);
         Assert.assertFalse(
@@ -2287,7 +2287,7 @@ public class CustomTabActivityTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         try {
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
@@ -2316,7 +2316,7 @@ public class CustomTabActivityTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         final CustomTabsConnection connection = CustomTabsConnection.getInstance();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
 
         try {
@@ -2352,7 +2352,7 @@ public class CustomTabActivityTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         final CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         connection.setSpeculationModeForSession(token, speculationMode);
         Assert.assertTrue(connection.mayLaunchUrl(token, Uri.parse(mTestPage), null, null));
@@ -2808,7 +2808,7 @@ public class CustomTabActivityTest {
                                   .getTargetContext()
                                   .getApplicationContext();
         CustomTabsConnection connection = CustomTabsTestUtils.setUpConnection();
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         connection.newSession(token);
         Bundle extras = null;
         if (speculationMode == CustomTabsConnection.SpeculationParams.NO_SPECULATION) {

@@ -16,8 +16,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.DrawableRes;
-import android.support.customtabs.browseractions.BrowserActionItem;
 import android.support.customtabs.browseractions.BrowserActionsIntent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -78,16 +76,7 @@ public class BrowserActionActivityTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
     private static final String TEST_PAGE_3 = "/chrome/test/data/android/simple.html";
-    private static final String CUSTOM_ITEM_TITLE_1 = "Custom item with drawable icon";
-    private static final String CUSTOM_ITEM_TITLE_2 = "Custom item with vector drawable icon";
-    private static final String CUSTOM_ITEM_TITLE_3 = "Custom item wit invalid icon id";
-    private static final String CUSTOM_ITEM_TITLE_4 = "Custom item without icon";
-    @DrawableRes
-    private static final int CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID = R.drawable.star_green;
-    @DrawableRes
-    private static final int CUSTOM_ITEM_ICON_VECTOR_DRAWABLE_ID = R.drawable.ic_add;
-    @DrawableRes
-    private static final int CUSTOM_ITEM_ICON_INVALID_DRAWABLE_ID = -1;
+    private static final String CUSTOM_ITEM_TITLE = "Custom item";
 
     private final CallbackHelper mOnBrowserActionsMenuShownCallback = new CallbackHelper();
     private final CallbackHelper mOnFinishNativeInitializationCallback = new CallbackHelper();
@@ -105,6 +94,7 @@ public class BrowserActionActivityTest {
     private String mTestPage;
     private String mTestPage2;
     private String mTestPage3;
+    private PendingIntent mCustomPendingItent;
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
@@ -178,13 +168,8 @@ public class BrowserActionActivityTest {
 
     @Test
     @SmallTest
-    /**
-     * TODO(ltian): move this to a separate test class only for {@link
-     * BrowserActionsContextMenuHelper}.
-     */
     public void testMenuShownCorrectly() throws Exception {
-        List<BrowserActionItem> items = createCustomItems();
-        BrowserActionActivity activity = startBrowserActionActivity(mTestPage, items, 0);
+        startBrowserActionActivity(mTestPage);
 
         // Menu should be shown before native finish loading.
         mOnBrowserActionsMenuShownCallback.waitForCallback(0);
@@ -196,37 +181,19 @@ public class BrowserActionActivityTest {
         Assert.assertEquals(1, mOnBrowserActionsMenuShownCallback.getCallCount());
         Assert.assertEquals(1, mOnFinishNativeInitializationCallback.getCallCount());
 
-        Context context = InstrumentationRegistry.getTargetContext();
-        Assert.assertEquals(context.getPackageName(), activity.mCreatorPackageName);
-
         // Check menu populated correctly.
         List<Pair<Integer, List<ContextMenuItem>>> menus = mItems;
         Assert.assertEquals(1, menus.size());
-        List<ContextMenuItem> contextMenuItems = menus.get(0).second;
-        Assert.assertEquals(5 + items.size(), contextMenuItems.size());
+        List<ContextMenuItem> items = menus.get(0).second;
+        Assert.assertEquals(6, items.size());
         for (int i = 0; i < 4; i++) {
-            Assert.assertTrue(contextMenuItems.get(i) instanceof ChromeContextMenuItem);
+            Assert.assertTrue(items.get(i) instanceof ChromeContextMenuItem);
         }
-        Assert.assertTrue(contextMenuItems.get(4) instanceof ShareContextMenuItem);
-        Assert.assertTrue(contextMenuItems.get(5) instanceof BrowserActionsCustomContextMenuItem);
-        // Load custom items correctly.
-        for (int i = 0; i < items.size(); i++) {
-            Assert.assertEquals(
-                    items.get(i).getTitle(), contextMenuItems.get(5 + i).getTitle(context));
-            Assert.assertEquals(items.get(i).getAction(),
-                    mCustomActions.get(
-                            BrowserActionsContextMenuHelper.CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(
-                                    i)));
-        }
-        Assert.assertNotNull(contextMenuItems.get(5).getDrawable(context));
-        // Vector Drawable is not supported on pre-L so the icon will be null.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Assert.assertNotNull(contextMenuItems.get(6).getDrawable(context));
-        } else {
-            Assert.assertNull(contextMenuItems.get(6).getDrawable(context));
-        }
-        Assert.assertNull(contextMenuItems.get(7).getDrawable(context));
-        Assert.assertNull(contextMenuItems.get(8).getDrawable(context));
+        Assert.assertTrue(items.get(4) instanceof ShareContextMenuItem);
+        Assert.assertTrue(items.get(5) instanceof BrowserActionsCustomContextMenuItem);
+        Assert.assertEquals(mCustomPendingItent,
+                mCustomActions.get(
+                        BrowserActionsContextMenuHelper.CUSTOM_BROWSER_ACTIONS_ID_GROUP.get(0)));
     }
 
     @Test
@@ -606,12 +573,6 @@ public class BrowserActionActivityTest {
 
     private BrowserActionActivity startBrowserActionActivity(String url, int expectedCallCount)
             throws Exception {
-        Context context = InstrumentationRegistry.getTargetContext();
-        return startBrowserActionActivity(url, new ArrayList<>(), expectedCallCount);
-    }
-
-    private BrowserActionActivity startBrowserActionActivity(
-            String url, List<BrowserActionItem> items, int expectedCallCount) throws Exception {
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
         ActivityMonitor browserActionMonitor =
                 new ActivityMonitor(BrowserActionActivity.class.getName(), null, false);
@@ -624,7 +585,7 @@ public class BrowserActionActivityTest {
         Assert.assertEquals(expectedCallCount, mOnOpenTabInBackgroundStartCallback.getCallCount());
 
         // Fire an Intent to start the BrowserActionActivity.
-        sendBrowserActionIntent(url, items);
+        sendBrowserActionIntent(instrumentation, url);
 
         Activity activity = instrumentation.waitForMonitorWithTimeout(
                 browserActionMonitor, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
@@ -637,24 +598,23 @@ public class BrowserActionActivityTest {
         return (BrowserActionActivity) activity;
     }
 
-    private void sendBrowserActionIntent(String url, List<BrowserActionItem> items) {
-        Context context = InstrumentationRegistry.getTargetContext();
+    private void sendBrowserActionIntent(Instrumentation instrumentation, String url) {
+        Context context = instrumentation.getTargetContext();
         Intent intent = new Intent(BrowserActionsIntent.ACTION_BROWSER_ACTIONS_OPEN);
         intent.setData(Uri.parse(url));
         intent.putExtra(BrowserActionsIntent.EXTRA_TYPE, BrowserActionsIntent.URL_TYPE_NONE);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent(), 0);
         intent.putExtra(BrowserActionsIntent.EXTRA_APP_ID, pendingIntent);
 
-        ArrayList<Bundle> customItemBundles = new ArrayList<>();
-        for (BrowserActionItem item : items) {
-            Bundle customItemBundle = new Bundle();
-            customItemBundle.putString(BrowserActionsIntent.KEY_TITLE, item.getTitle());
-            customItemBundle.putInt(BrowserActionsIntent.KEY_ICON_ID, item.getIconId());
-            customItemBundle.putParcelable(BrowserActionsIntent.KEY_ACTION, item.getAction());
-            customItemBundles.add(customItemBundle);
-        }
-        intent.putParcelableArrayListExtra(
-                BrowserActionsIntent.EXTRA_MENU_ITEMS, customItemBundles);
+        // Add a custom item.
+        Intent customIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        mCustomPendingItent = PendingIntent.getActivity(context, 0, customIntent, 0);
+        Bundle item = new Bundle();
+        item.putString(BrowserActionsIntent.KEY_TITLE, CUSTOM_ITEM_TITLE);
+        item.putParcelable(BrowserActionsIntent.KEY_ACTION, mCustomPendingItent);
+        ArrayList<Bundle> items = new ArrayList<>();
+        items.add(item);
+        intent.putParcelableArrayListExtra(BrowserActionsIntent.EXTRA_MENU_ITEMS, items);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         intent.setClass(context, BrowserActionActivity.class);
@@ -662,31 +622,5 @@ public class BrowserActionActivityTest {
         // BrowserActionsIntent} policy. Add an extra to skip Intent.FLAG_ACTIVITY_NEW_TASK check
         // for test.
         IntentUtils.safeStartActivity(context, intent);
-    }
-
-    private PendingIntent createCustomItemAction(String url) {
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent customIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        return PendingIntent.getActivity(context, 0, customIntent, 0);
-    }
-
-    private List<BrowserActionItem> createCustomItems() {
-        List<BrowserActionItem> items = new ArrayList<>();
-        PendingIntent action1 = createCustomItemAction(mTestPage);
-        BrowserActionItem item1 = new BrowserActionItem(
-                CUSTOM_ITEM_TITLE_1, action1, CUSTOM_ITEM_ICON_BITMAP_DRAWABLE_ID);
-        PendingIntent action2 = createCustomItemAction(mTestPage);
-        BrowserActionItem item2 = new BrowserActionItem(
-                CUSTOM_ITEM_TITLE_2, action2, CUSTOM_ITEM_ICON_VECTOR_DRAWABLE_ID);
-        PendingIntent action3 = createCustomItemAction(mTestPage);
-        BrowserActionItem item3 = new BrowserActionItem(
-                CUSTOM_ITEM_TITLE_3, action3, CUSTOM_ITEM_ICON_INVALID_DRAWABLE_ID);
-        PendingIntent action4 = createCustomItemAction(mTestPage);
-        BrowserActionItem item4 = new BrowserActionItem(CUSTOM_ITEM_TITLE_4, action4);
-        items.add(item1);
-        items.add(item2);
-        items.add(item3);
-        items.add(item4);
-        return items;
     }
 }
