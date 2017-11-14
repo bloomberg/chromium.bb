@@ -77,9 +77,9 @@ void MusDemo::OnStart() {
   wm_state_ = base::MakeUnique<::wm::WMState>();
 
   window_tree_client_ = CreateWindowTreeClient();
-  OnStartImpl();
-
   env_->SetWindowTreeClient(window_tree_client_.get());
+
+  OnStartImpl();
 }
 
 void MusDemo::OnEmbed(
