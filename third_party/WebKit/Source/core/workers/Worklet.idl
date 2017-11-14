@@ -6,7 +6,8 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=Worklet
+    RuntimeEnabled=Worklet,
+    SecureContext
 ] interface Worklet {
     [CallWith=ScriptState] Promise<void> addModule(USVString moduleURL, optional WorkletOptions options);
 };
