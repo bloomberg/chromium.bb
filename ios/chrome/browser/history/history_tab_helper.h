@@ -52,9 +52,14 @@ class HistoryTabHelper : public history::Context,
   void DidFinishNavigation(web::WebState* web_state,
                            web::NavigationContext* navigation_context) override;
   void TitleWasSet(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Helper function to return the history service. May return null.
   history::HistoryService* GetHistoryService();
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   // Hold navigation entries that need to be added to the history database.
   // Pre-rendered WebStates do not write navigation data to the history DB

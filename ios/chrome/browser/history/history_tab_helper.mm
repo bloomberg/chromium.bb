@@ -24,7 +24,9 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(HistoryTabHelper);
 
-HistoryTabHelper::~HistoryTabHelper() {}
+HistoryTabHelper::~HistoryTabHelper() {
+  DCHECK(!web_state_);
+}
 
 void HistoryTabHelper::UpdateHistoryPageTitle(const web::NavigationItem& item) {
   DCHECK(!delay_notification_);
@@ -60,19 +62,22 @@ void HistoryTabHelper::SetDelayHistoryServiceNotification(
   std::swap(recorded_navigations_, empty_vector);
 
   web::NavigationItem* last_committed_item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
   if (last_committed_item) {
     UpdateHistoryPageTitle(*last_committed_item);
   }
 }
 
 HistoryTabHelper::HistoryTabHelper(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {}
+    : web_state_(web_state) {
+  web_state_->AddObserver(this);
+}
 
 void HistoryTabHelper::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  if (web_state->GetBrowserState()->IsOffTheRecord()) {
+  DCHECK_EQ(web_state_, web_state);
+  if (web_state_->GetBrowserState()->IsOffTheRecord()) {
     return;
   }
 
@@ -87,9 +92,9 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
-  DCHECK(web_state->GetNavigationManager()->GetVisibleItem());
+  DCHECK(web_state_->GetNavigationManager()->GetVisibleItem());
   web::NavigationItem* visible_item =
-      web_state->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetVisibleItem();
   DCHECK(!visible_item->GetTimestamp().is_null());
 
   // Do not update the history database for back/forward navigations.
@@ -152,21 +157,28 @@ void HistoryTabHelper::DidFinishNavigation(
 }
 
 void HistoryTabHelper::TitleWasSet(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   if (delay_notification_) {
     return;
   }
 
   web::NavigationItem* last_committed_item =
-      web_state->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
 
   if (last_committed_item) {
     UpdateHistoryPageTitle(*last_committed_item);
   }
 }
 
+void HistoryTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
+}
+
 history::HistoryService* HistoryTabHelper::GetHistoryService() {
   ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState());
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   if (browser_state->IsOffTheRecord())
     return nullptr;
 
