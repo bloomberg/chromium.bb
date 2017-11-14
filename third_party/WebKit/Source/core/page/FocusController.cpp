@@ -1136,6 +1136,10 @@ Element* FocusController::FindFocusableElement(WebFocusType type,
 
 Element* FocusController::NextFocusableElementInForm(Element* element,
                                                      WebFocusType focus_type) {
+  // TODO(ajith.v) Due to crbug.com/781026 when next/previous element is far
+  // from current element in terms of tabindex, then it's signalling CPU load.
+  // Will nvestigate further for a proper solution later.
+  static const int kFocusTraversalThreshold = 50;
   element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (!element->IsHTMLElement())
     return nullptr;
@@ -1153,12 +1157,13 @@ Element* FocusController::NextFocusableElementInForm(Element* element,
   if (!form_owner)
     return nullptr;
 
-  Element* next_element = element;
   OwnerMap owner_map;
-  for (next_element =
-           FindFocusableElement(focus_type, *next_element, owner_map);
-       next_element; next_element = FindFocusableElement(
-                         focus_type, *next_element, owner_map)) {
+  Element* next_element = FindFocusableElement(focus_type, *element, owner_map);
+  int traversal = 0;
+  for (; next_element && traversal < kFocusTraversalThreshold;
+       next_element =
+           FindFocusableElement(focus_type, *next_element, owner_map),
+       ++traversal) {
     if (!next_element->IsHTMLElement())
       continue;
     if (ToHTMLElement(next_element)->isContentEditableForBinding() &&
