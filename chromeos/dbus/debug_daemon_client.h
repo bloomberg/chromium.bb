@@ -32,10 +32,6 @@ class CHROMEOS_EXPORT DebugDaemonClient
  public:
   ~DebugDaemonClient() override;
 
-  // Called once GetDebugLogs() is complete. Takes one parameter:
-  // - succeeded: was the logs stored successfully.
-  typedef base::Callback<void(bool succeeded)> GetDebugLogsCallback;
-
   // Requests to store debug logs into |file_descriptor| and calls |callback|
   // when completed. Debug logs will be stored in the .tgz if
   // |is_compressed| is true, otherwise in logs will be stored in .tar format.
@@ -43,56 +39,34 @@ class CHROMEOS_EXPORT DebugDaemonClient
   // waiting for the result.
   virtual void DumpDebugLogs(bool is_compressed,
                              int file_descriptor,
-                             const GetDebugLogsCallback& callback) = 0;
-
-  // Called once SetDebugMode() is complete. Takes one parameter:
-  // - succeeded: debug mode was changed successfully.
-  typedef base::Callback<void(bool succeeded)> SetDebugModeCallback;
+                             VoidDBusMethodCallback callback) = 0;
 
   // Requests to change debug mode to given |subsystem| and calls
   // |callback| when completed. |subsystem| should be one of the
   // following: "wifi", "ethernet", "cellular" or "none".
   virtual void SetDebugMode(const std::string& subsystem,
-                            const SetDebugModeCallback& callback) = 0;
+                            VoidDBusMethodCallback callback) = 0;
 
-  // Called once GetRoutes() is complete.
-  typedef base::Callback<void(bool succeeded,
-                              const std::vector<std::string>& routes)>
-      GetRoutesCallback;
-  virtual void GetRoutes(bool numeric, bool ipv6,
-                         const GetRoutesCallback& callback) = 0;
-
-  // Called once GetNetworkStatus() is complete.
-  typedef base::Callback<void(bool succeeded, const std::string& status)>
-      GetNetworkStatusCallback;
+  // Gets information about routes.
+  virtual void GetRoutes(
+      bool numeric,
+      bool ipv6,
+      DBusMethodCallback<std::vector<std::string> /* routes */> callback) = 0;
 
   // Gets information about network status as json.
-  virtual void GetNetworkStatus(const GetNetworkStatusCallback& callback) = 0;
-
-  // Called once GetModemStatus() is complete.
-  typedef base::Callback<void(bool succeeded, const std::string& status)>
-      GetModemStatusCallback;
+  virtual void GetNetworkStatus(DBusMethodCallback<std::string> callback) = 0;
 
   // Gets information about modem status as json.
-  virtual void GetModemStatus(const GetModemStatusCallback& callback) = 0;
-
-  // Called once GetWiMaxStatus() is complete.
-  typedef base::Callback<void(bool succeeded, const std::string& status)>
-      GetWiMaxStatusCallback;
+  virtual void GetModemStatus(DBusMethodCallback<std::string> callback) = 0;
 
   // Gets information about WiMAX status as json.
-  virtual void GetWiMaxStatus(const GetWiMaxStatusCallback& callback) = 0;
-
-  // Called once GetNetworkInterfaces() is complete. Takes two parameters:
-  // - succeeded: information was obtained successfully.
-  // - status: network interfaces information in json. For details, please refer
-  //   to http://gerrit.chromium.org/gerrit/#/c/28045/5/src/helpers/netif.cc
-  typedef base::Callback<void(bool succeeded, const std::string& status)>
-      GetNetworkInterfacesCallback;
+  virtual void GetWiMaxStatus(DBusMethodCallback<std::string> callback) = 0;
 
   // Gets information about network interfaces as json.
+  // For details, please refer to
+  // http://gerrit.chromium.org/gerrit/#/c/28045/5/src/helpers/netif.cc
   virtual void GetNetworkInterfaces(
-      const GetNetworkInterfacesCallback& callback) = 0;
+      DBusMethodCallback<std::string> callback) = 0;
 
   // Runs perf (via quipper) with arguments for |duration| (converted to
   // seconds) and returns data collected over the passed |file_descriptor|.
@@ -111,9 +85,6 @@ class CHROMEOS_EXPORT DebugDaemonClient
   using GetLogsCallback =
       base::Callback<void(bool succeeded,
                           const std::map<std::string, std::string>& logs)>;
-  // Callback type for GetLog().
-  using GetLogCallback =
-      base::Callback<void(bool succeeded, const std::string& result)>;
 
   // Gets scrubbed logs from debugd.
   virtual void GetScrubbedLogs(const GetLogsCallback& callback) = 0;
@@ -131,7 +102,7 @@ class CHROMEOS_EXPORT DebugDaemonClient
 
   // Gets an individual log source provided by debugd.
   virtual void GetLog(const std::string& log_name,
-                      const GetLogCallback& callback) = 0;
+                      DBusMethodCallback<std::string> callback) = 0;
 
   virtual void SetStopAgentTracingTaskRunner(
       scoped_refptr<base::TaskRunner> task_runner) = 0;

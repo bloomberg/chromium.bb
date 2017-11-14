@@ -51,22 +51,21 @@ void SingleDebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
 
   client->GetLog(
       source_name(),
-      base::Bind(&SingleDebugDaemonLogSource::OnFetchComplete,
-                 weak_ptr_factory_.GetWeakPtr(), source_name(), callback));
+      base::BindOnce(&SingleDebugDaemonLogSource::OnFetchComplete,
+                     weak_ptr_factory_.GetWeakPtr(), source_name(), callback));
 }
 
 void SingleDebugDaemonLogSource::OnFetchComplete(
     const std::string& log_name,
     const SysLogsSourceCallback& callback,
-    bool success,
-    const std::string& result) const {
+    base::Optional<std::string> result) const {
   // |result| and |response| are the same type, but |result| is passed in from
   // DebugDaemonClient, which does not use the SystemLogsResponse alias.
   SystemLogsResponse response;
   // Return an empty result if the call to GetLog() failed.
-  std::string final_result;
-  if (success)
-    response.emplace(log_name, feedback::AnonymizerTool().Anonymize(result));
+  if (result.has_value())
+    response.emplace(log_name,
+                     feedback::AnonymizerTool().Anonymize(result.value()));
 
   callback.Run(&response);
 }
