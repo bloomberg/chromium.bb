@@ -21,7 +21,7 @@
 // Redefine |viewController| with a subclass.
 @property(nonatomic, strong) TabStripTabContainerViewController* viewController;
 // Defined in super class private category.
-@property(nonatomic, weak) ToolbarCoordinator* toolbarCoordinator;
+@property(nonatomic, weak) CleanToolbarCoordinator* toolbarCoordinator;
 @end
 
 @implementation TabStripTabCoordinator
@@ -63,7 +63,7 @@
 
 - (void)addChildCoordinator:(BrowserCoordinator*)childCoordinator {
   [super addChildCoordinator:childCoordinator];
-  if ([childCoordinator isKindOfClass:[ToolbarCoordinator class]]) {
+  if ([childCoordinator isKindOfClass:[CleanToolbarCoordinator class]]) {
     self.toolbarCoordinator.usesTabStrip = YES;
   }
 }

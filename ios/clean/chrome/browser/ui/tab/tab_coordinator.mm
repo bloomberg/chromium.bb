@@ -39,7 +39,7 @@
 @property(nonatomic, strong) TabContainerViewController* viewController;
 @property(nonatomic, weak) NTPCoordinator* ntpCoordinator;
 @property(nonatomic, weak) WebCoordinator* webCoordinator;
-@property(nonatomic, weak) ToolbarCoordinator* toolbarCoordinator;
+@property(nonatomic, weak) CleanToolbarCoordinator* toolbarCoordinator;
 @property(nonatomic, strong) TabNavigationController* navigationController;
 
 // Creates and returns a new view controller for use as a tab container.
@@ -103,7 +103,8 @@
   [webCoordinator start];
   self.webCoordinator = webCoordinator;
 
-  ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
+  CleanToolbarCoordinator* toolbarCoordinator =
+      [[CleanToolbarCoordinator alloc] init];
   self.toolbarCoordinator = toolbarCoordinator;
   toolbarCoordinator.webState = self.webState;
   [self addChildCoordinator:toolbarCoordinator];
@@ -138,7 +139,7 @@
 }
 
 - (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
-  if ([childCoordinator isKindOfClass:[ToolbarCoordinator class]]) {
+  if ([childCoordinator isKindOfClass:[CleanToolbarCoordinator class]]) {
     self.viewController.toolbarViewController = childCoordinator.viewController;
   } else if ([childCoordinator isKindOfClass:[WebCoordinator class]] ||
              [childCoordinator isKindOfClass:[NTPCoordinator class]]) {

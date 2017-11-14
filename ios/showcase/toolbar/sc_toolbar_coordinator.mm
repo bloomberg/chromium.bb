@@ -48,9 +48,11 @@ CGFloat kToolbarHeight = 50.0f;
   id dispatcher =
       static_cast<id<NavigationCommands, TabGridCommands, TabStripCommands,
                      ToolsMenuCommands>>(self.alerter);
-  ToolbarViewController* toolbarViewController = [[ToolbarViewController alloc]
-      initWithDispatcher:dispatcher
-           buttonFactory:[[ToolbarButtonFactory alloc] initWithStyle:NORMAL]];
+  CleanToolbarViewController* toolbarViewController =
+      [[CleanToolbarViewController alloc]
+          initWithDispatcher:dispatcher
+               buttonFactory:[[CleanToolbarButtonFactory alloc]
+                                 initWithStyle:NORMAL]];
   toolbarViewController.usesTabStrip = YES;
   [containerViewController addChildViewController:toolbarViewController];
   toolbarViewController.view.frame = containerView.frame;

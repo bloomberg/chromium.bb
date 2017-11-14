@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSUMER_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_
 
 #import <UIKit/UIKit.h>
 
-// CleanToolbarConsumer sets the current appearance of the Toolbar.
-@protocol CleanToolbarConsumer
+// ToolbarConsumer sets the current appearance of the Toolbar.
+@protocol ToolbarConsumer
 // Updates the toolbar with the current forward navigation state.
 - (void)setCanGoForward:(BOOL)canGoForward;
 // Updates the toolbar with the current back navigation state.
@@ -23,4 +23,4 @@
 - (void)setTabCount:(int)tabCount;
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_

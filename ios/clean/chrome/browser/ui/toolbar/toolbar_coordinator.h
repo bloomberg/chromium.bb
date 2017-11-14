@@ -12,8 +12,8 @@ class WebState;
 }
 
 // Coordinator to run a toolbar -- a UI element housing controls.
-@interface ToolbarCoordinator : BrowserCoordinator
-// The web state this ToolbarCoordinator is handling.
+@interface CleanToolbarCoordinator : BrowserCoordinator
+// The web state this CleanToolbarCoordinator is handling.
 @property(nonatomic, assign) web::WebState* webState;
 
 // By default, this component does not interact with the tab strip. Setting

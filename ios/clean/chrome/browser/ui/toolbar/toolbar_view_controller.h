@@ -17,8 +17,7 @@
 @protocol TabGridCommands;
 @protocol TabHistoryPopupCommands;
 @protocol TabStripCommands;
-@class ToolbarButtonFactory;
-@class ToolbarConfiguration;
+@class CleanToolbarButtonFactory;
 @protocol ToolsMenuCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
@@ -26,18 +25,18 @@
 // This view controller will fill its container; it is up to the containing
 // view controller or presentation controller to configure an appropriate
 // height for it.
-@interface ToolbarViewController : UIViewController<TabHistoryPositioner,
-                                                    TabHistoryPresentation,
-                                                    TabHistoryUIUpdater,
-                                                    ToolbarConsumer,
-                                                    ZoomTransitionDelegate>
+@interface CleanToolbarViewController : UIViewController<TabHistoryPositioner,
+                                                         TabHistoryPresentation,
+                                                         TabHistoryUIUpdater,
+                                                         CleanToolbarConsumer,
+                                                         ZoomTransitionDelegate>
 
 - (instancetype)initWithDispatcher:(id<NavigationCommands,
                                        TabGridCommands,
                                        TabHistoryPopupCommands,
                                        TabStripCommands,
                                        ToolsMenuCommands>)dispatcher
-                     buttonFactory:(ToolbarButtonFactory*)buttonFactory
+                     buttonFactory:(CleanToolbarButtonFactory*)buttonFactory
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

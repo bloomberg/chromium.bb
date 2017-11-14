@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 
 #include "base/memory/ptr_util.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -23,11 +23,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TestCleanToolbarMediator
-    : CleanToolbarMediator<CRWWebStateObserver, WebStateListObserving>
+@interface TestToolbarMediator
+    : ToolbarMediator<CRWWebStateObserver, WebStateListObserving>
 @end
 
-@implementation TestCleanToolbarMediator
+@implementation TestToolbarMediator
 @end
 
 namespace {
@@ -35,21 +35,21 @@ namespace {
 static const int kNumberOfWebStates = 3;
 static const char kTestUrl[] = "http://www.chromium.org";
 
-class CleanToolbarMediatorTest : public PlatformTest {
+class ToolbarMediatorTest : public PlatformTest {
  public:
-  CleanToolbarMediatorTest() {
+  ToolbarMediatorTest() {
     std::unique_ptr<ToolbarTestNavigationManager> navigation_manager =
         base::MakeUnique<ToolbarTestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     test_web_state_.SetNavigationManager(std::move(navigation_manager));
     test_web_state_.SetLoading(true);
-    mediator_ = [[TestCleanToolbarMediator alloc] init];
-    consumer_ = OCMProtocolMock(@protocol(CleanToolbarConsumer));
+    mediator_ = [[TestToolbarMediator alloc] init];
+    consumer_ = OCMProtocolMock(@protocol(ToolbarConsumer));
   }
 
   // Explicitly disconnect the mediator so there won't be any WebStateList
   // observers when web_state_list_ gets dealloc.
-  ~CleanToolbarMediatorTest() override { [mediator_ disconnect]; }
+  ~ToolbarMediatorTest() override { [mediator_ disconnect]; }
 
  protected:
   void SetUpWebStateList() {
@@ -68,7 +68,7 @@ class CleanToolbarMediatorTest : public PlatformTest {
                                     WebStateOpener());
   }
 
-  TestCleanToolbarMediator* mediator_;
+  TestToolbarMediator* mediator_;
   ToolbarTestWebState test_web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
   std::unique_ptr<WebStateList> web_state_list_;
@@ -77,7 +77,7 @@ class CleanToolbarMediatorTest : public PlatformTest {
 };
 
 // Test no setup is being done on the Toolbar if there's no Webstate.
-TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoWebstate) {
+TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstate) {
   mediator_.consumer = consumer_;
 
   [[consumer_ reject] setCanGoForward:NO];
@@ -86,7 +86,7 @@ TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoWebstate) {
 }
 
 // Test no setup is being done on the Toolbar if there's no consumer.
-TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoConsumer) {
+TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoConsumer) {
   mediator_.webState = &test_web_state_;
 
   [[consumer_ reject] setCanGoForward:NO];
@@ -96,7 +96,7 @@ TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoConsumer) {
 
 // Test no WebstateList related setup is being done on the Toolbar if there's no
 // WebstateList.
-TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
+TEST_F(ToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
   mediator_.consumer = consumer_;
   mediator_.webState = &test_web_state_;
 
@@ -105,7 +105,7 @@ TEST_F(CleanToolbarMediatorTest, TestToolbarSetupWithNoWebstateList) {
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set.
-TEST_F(CleanToolbarMediatorTest, TestToolbarSetup) {
+TEST_F(ToolbarMediatorTest, TestToolbarSetup) {
   mediator_.webState = &test_web_state_;
   mediator_.consumer = consumer_;
 
@@ -116,7 +116,7 @@ TEST_F(CleanToolbarMediatorTest, TestToolbarSetup) {
 
 // Test the Toolbar Setup gets called when the mediator's WebState and Consumer
 // have been set in reverse order.
-TEST_F(CleanToolbarMediatorTest, TestToolbarSetupReverse) {
+TEST_F(ToolbarMediatorTest, TestToolbarSetupReverse) {
   mediator_.consumer = consumer_;
   mediator_.webState = &test_web_state_;
 
@@ -127,7 +127,7 @@ TEST_F(CleanToolbarMediatorTest, TestToolbarSetupReverse) {
 
 // Test the WebstateList related setup gets called when the mediator's WebState
 // and Consumer have been set.
-TEST_F(CleanToolbarMediatorTest, TestWebstateListRelatedSetup) {
+TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetup) {
   SetUpWebStateList();
   mediator_.webStateList = web_state_list_.get();
   mediator_.consumer = consumer_;
@@ -137,7 +137,7 @@ TEST_F(CleanToolbarMediatorTest, TestWebstateListRelatedSetup) {
 
 // Test the WebstateList related setup gets called when the mediator's WebState
 // and Consumer have been set in reverse order.
-TEST_F(CleanToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
+TEST_F(ToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
   mediator_.consumer = consumer_;
   SetUpWebStateList();
   mediator_.webStateList = web_state_list_.get();
@@ -147,7 +147,7 @@ TEST_F(CleanToolbarMediatorTest, TestWebstateListRelatedSetupReverse) {
 
 // Test the Toolbar is updated when the Webstate observer method DidStartLoading
 // is triggered by SetLoading.
-TEST_F(CleanToolbarMediatorTest, TestDidStartLoading) {
+TEST_F(ToolbarMediatorTest, TestDidStartLoading) {
   // Change the default loading state to false to verify the Webstate
   // callback with true.
   test_web_state_.SetLoading(false);
@@ -160,7 +160,7 @@ TEST_F(CleanToolbarMediatorTest, TestDidStartLoading) {
 
 // Test the Toolbar is updated when the Webstate observer method DidStopLoading
 // is triggered by SetLoading.
-TEST_F(CleanToolbarMediatorTest, TestDidStopLoading) {
+TEST_F(ToolbarMediatorTest, TestDidStopLoading) {
   mediator_.webState = &test_web_state_;
   mediator_.consumer = consumer_;
 
@@ -170,7 +170,7 @@ TEST_F(CleanToolbarMediatorTest, TestDidStopLoading) {
 
 // Test the Toolbar is updated when the Webstate observer method
 // DidLoadPageWithSuccess is triggered by OnPageLoaded.
-TEST_F(CleanToolbarMediatorTest, TestDidLoadPageWithSucess) {
+TEST_F(ToolbarMediatorTest, TestDidLoadPageWithSucess) {
   mediator_.webState = &test_web_state_;
   mediator_.consumer = consumer_;
 
@@ -186,7 +186,7 @@ TEST_F(CleanToolbarMediatorTest, TestDidLoadPageWithSucess) {
 
 // Test the Toolbar is updated when the Webstate observer method
 // didChangeLoadingProgress is called.
-TEST_F(CleanToolbarMediatorTest, TestLoadingProgress) {
+TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   mediator_.webState = &test_web_state_;
   mediator_.consumer = consumer_;
 
@@ -196,7 +196,7 @@ TEST_F(CleanToolbarMediatorTest, TestLoadingProgress) {
 
 // Test that the mediator's observation of -broadcastTabStripVisible: triggers
 // the correct consumer calls.
-TEST_F(CleanToolbarMediatorTest, TestTabStripVisible) {
+TEST_F(ToolbarMediatorTest, TestTabStripVisible) {
   mediator_.consumer = consumer_;
 
   [mediator_ broadcastTabStripVisible:YES];
@@ -207,7 +207,7 @@ TEST_F(CleanToolbarMediatorTest, TestTabStripVisible) {
 
 // Test that increasing the number of Webstates will update the consumer with
 // the right value.
-TEST_F(CleanToolbarMediatorTest, TestIncreaseNumberOfWebstates) {
+TEST_F(ToolbarMediatorTest, TestIncreaseNumberOfWebstates) {
   SetUpWebStateList();
   mediator_.webStateList = web_state_list_.get();
   mediator_.consumer = consumer_;
@@ -218,7 +218,7 @@ TEST_F(CleanToolbarMediatorTest, TestIncreaseNumberOfWebstates) {
 
 // Test that decreasing the number of Webstates will update the consumer with
 // the right value.
-TEST_F(CleanToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
+TEST_F(ToolbarMediatorTest, TestDecreaseNumberOfWebstates) {
   SetUpWebStateList();
   mediator_.webStateList = web_state_list_.get();
   mediator_.consumer = consumer_;

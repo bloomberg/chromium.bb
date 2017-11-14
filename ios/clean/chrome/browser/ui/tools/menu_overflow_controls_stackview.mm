@@ -4,7 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,7 +17,7 @@ const CGFloat kStackSpacing = 15.0;
 
 @interface MenuOverflowControlsStackView ()
 // Factory creating buttons with the correct style.
-@property(nonatomic, strong) ToolbarButtonFactory* factory;
+@property(nonatomic, strong) CleanToolbarButtonFactory* factory;
 @end
 
 @implementation MenuOverflowControlsStackView
@@ -27,7 +27,7 @@ const CGFloat kStackSpacing = 15.0;
 @synthesize stopButton = _stopButton;
 @synthesize starButton = _starButton;
 
-- (instancetype)initWithFactory:(ToolbarButtonFactory*)buttonFactory {
+- (instancetype)initWithFactory:(CleanToolbarButtonFactory*)buttonFactory {
   if ((self = [super initWithFrame:CGRectZero])) {
     _factory = buttonFactory;
     [self setUpToolbarButtons];

@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_constants.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/history_popup/history_popup_coordinator.h"
@@ -21,7 +22,6 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_style.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
 #import "ios/web/public/navigation_manager.h"
@@ -31,7 +31,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinator ()<ToolsMenuCommands, TabHistoryPopupCommands>
+@interface CleanToolbarCoordinator ()<ToolsMenuCommands,
+                                      TabHistoryPopupCommands>
 // Location Bar contains the omnibox amongst other views.
 @property(nonatomic, weak) LocationBarCoordinator* locationBarCoordinator;
 // History Popup displays the forward or backward history in a popup menu.
@@ -39,12 +40,12 @@
 // Tools Menu coordinator.
 @property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
 // The View Controller managed by this coordinator.
-@property(nonatomic, strong) ToolbarViewController* viewController;
+@property(nonatomic, strong) CleanToolbarViewController* viewController;
 // The mediator owned by this coordinator.
-@property(nonatomic, strong) ToolbarMediator* mediator;
+@property(nonatomic, strong) CleanToolbarMediator* mediator;
 @end
 
-@implementation ToolbarCoordinator
+@implementation CleanToolbarCoordinator
 @synthesize locationBarCoordinator = _locationBarCoordinator;
 @synthesize historyPopupCoordinator = _historyPopupCoordinator;
 @synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
@@ -55,7 +56,7 @@
 
 - (instancetype)init {
   if ((self = [super init])) {
-    _mediator = [[ToolbarMediator alloc] init];
+    _mediator = [[CleanToolbarMediator alloc] init];
   }
   return self;
 }
@@ -78,12 +79,12 @@
 
   ToolbarStyle style =
       self.browser->browser_state()->IsOffTheRecord() ? INCOGNITO : NORMAL;
-  ToolbarButtonFactory* factory =
-      [[ToolbarButtonFactory alloc] initWithStyle:style];
+  CleanToolbarButtonFactory* factory =
+      [[CleanToolbarButtonFactory alloc] initWithStyle:style];
 
-  self.viewController =
-      [[ToolbarViewController alloc] initWithDispatcher:self.callableDispatcher
-                                          buttonFactory:factory];
+  self.viewController = [[CleanToolbarViewController alloc]
+      initWithDispatcher:self.callableDispatcher
+           buttonFactory:factory];
   self.viewController.usesTabStrip = self.usesTabStrip;
 
   [self.dispatcher startDispatchingToTarget:self
