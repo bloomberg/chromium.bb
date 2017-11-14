@@ -785,8 +785,14 @@ TEST_F(NavigationCallbacksTest, ForwardPostNavigation) {
   ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
 
   // Go Back.
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  } else {
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  }
+
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   if (@available(iOS 10, *)) {
     // Starting from iOS10, ShouldAllowResponse is not called when going back
@@ -803,8 +809,13 @@ TEST_F(NavigationCallbacksTest, ForwardPostNavigation) {
 
   // Go forward.
   NavigationContext* context = nullptr;
-  EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  } else {
+    EXPECT_CALL(observer_, DidStartLoading(web_state()));
+    EXPECT_CALL(*decider_, ShouldAllowRequest(_, _)).WillOnce(Return(true));
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifyPostStartedContext(web_state(), action, &context,
                                          /*renderer_initiated=*/false));
