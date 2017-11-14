@@ -41,8 +41,7 @@ void LabelButtonLabel::SetColorForEnableState() {
                                      : requested_disabled_color_);
   } else {
     int style = enabled() ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
-    Label::SetEnabledColor(
-        style::GetColor(text_context(), style, GetNativeTheme()));
+    Label::SetEnabledColor(style::GetColor(*this, text_context(), style));
   }
 }
 

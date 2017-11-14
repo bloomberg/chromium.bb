@@ -63,8 +63,8 @@ ChosenObjectRow::ChosenObjectRow(
     delete_button_ = views::CreateVectorImageButton(this);
     views::SetImageFromVectorIcon(
         delete_button_, vector_icons::kClose16Icon,
-        views::style::GetColor(CONTEXT_BODY_TEXT_LARGE,
-                               views::style::STYLE_PRIMARY, GetNativeTheme()));
+        views::style::GetColor(*this, CONTEXT_BODY_TEXT_LARGE,
+                               views::style::STYLE_PRIMARY));
 
   } else {
     delete_button_ = new views::ImageButton(this);

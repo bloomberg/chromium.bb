@@ -159,8 +159,8 @@ bool HoverButton::ShouldUseFloodFillInkDrop() const {
 }
 
 SkColor HoverButton::GetInkDropBaseColor() const {
-  return views::style::GetColor(views::style::CONTEXT_BUTTON,
-                                views::style::STYLE_PRIMARY, GetNativeTheme());
+  return views::style::GetColor(*this, views::style::CONTEXT_BUTTON,
+                                views::style::STYLE_PRIMARY);
 }
 
 std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()
