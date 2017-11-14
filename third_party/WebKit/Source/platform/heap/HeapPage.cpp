@@ -1266,7 +1266,8 @@ bool FreeList::TakeSnapshot(const String& dump_base_name) {
 }
 
 BasePage::BasePage(PageMemory* storage, BaseArena* arena)
-    : storage_(storage),
+    : magic_(GetMagic()),
+      storage_(storage),
       arena_(arena),
       next_(nullptr),
       swept_(true),
