@@ -59,7 +59,7 @@ bool TsSectionPsi::Parse(bool payload_unit_start_indicator,
 
     // Update the state.
     wait_for_pusi_ = false;
-    DCHECK_GE(size, 1);
+    RCHECK(size > 0);  // A payload unit must start immediately.
     int pointer_field = buf[0];
     leading_bytes_to_discard_ = pointer_field;
     buf++;
