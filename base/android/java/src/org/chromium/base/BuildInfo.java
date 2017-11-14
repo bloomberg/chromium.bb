@@ -4,7 +4,6 @@
 
 package org.chromium.base;
 
-import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -127,15 +126,11 @@ public class BuildInfo {
 
     /**
      * @return Whether the current device is running Android O release or newer.
+     *
+     * @deprecated Please inline this method where possible.
      */
+    @Deprecated
     public static boolean isAtLeastO() {
-        return Build.VERSION.SDK_INT >= 26;
-    }
-
-    /**
-     * @return Whether the current app targets the SDK for at least O
-     */
-    public static boolean targetsAtLeastO(Context appContext) {
-        return appContext.getApplicationInfo().targetSdkVersion >= 26;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 }

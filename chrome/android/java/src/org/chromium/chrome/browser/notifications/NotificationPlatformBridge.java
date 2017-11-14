@@ -20,7 +20,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.StyleSpan;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -669,7 +668,7 @@ public class NotificationPlatformBridge {
         // (It's okay to not set a channel on them because web apks don't target O yet.)
         // TODO(crbug.com/700377): Channel ID should be retrieved from cache in native and passed
         // through to here with other notification parameters.
-        String channelId = (forWebApk || !BuildInfo.isAtLeastO())
+        String channelId = (forWebApk || Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
                 ? null
                 : ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)
                         ? SiteChannelsManager.getInstance().getChannelIdForOrigin(origin)

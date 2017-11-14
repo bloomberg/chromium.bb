@@ -15,7 +15,6 @@ import android.security.KeyChain;
 import android.util.Log;
 import android.util.Pair;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -71,7 +70,7 @@ public class X509Util {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean shouldReloadTrustManager = false;
-            if (BuildInfo.isAtLeastO()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (ACTION_KEYCHAIN_CHANGED.equals(intent.getAction())
                         || ACTION_TRUST_STORE_CHANGED.equals(intent.getAction())) {
                     // TODO(davidben): ACTION_KEYCHAIN_CHANGED indicates client certificates
@@ -281,7 +280,7 @@ public class X509Util {
         if (!sDisableNativeCodeForTest && sTrustStorageListener == null) {
             sTrustStorageListener = new TrustStorageListener();
             IntentFilter filter = new IntentFilter();
-            if (BuildInfo.isAtLeastO()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 filter.addAction(ACTION_KEYCHAIN_CHANGED);
                 filter.addAction(ACTION_KEY_ACCESS_CHANGED);
                 filter.addAction(ACTION_TRUST_STORE_CHANGED);

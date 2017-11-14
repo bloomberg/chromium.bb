@@ -155,7 +155,7 @@ public class SysUtils {
         boolean isLowEnd = true;
         if (ramSizeKB <= 0) {
             isLowEnd = false;
-        } else if (BuildInfo.isAtLeastO()) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             isLowEnd = ramSizeKB / 1024 <= ANDROID_O_LOW_MEMORY_DEVICE_THRESHOLD_MB;
         } else {
             isLowEnd = ramSizeKB / 1024 <= ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB;

@@ -8,11 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -213,7 +213,7 @@ public class InstantAppsHandler {
     private boolean handleIncomingIntentInternal(
             Context context, Intent intent, boolean isCustomTabsIntent, long startTime,
             boolean isRedirect) {
-        if (!isRedirect && !isCustomTabsIntent && BuildInfo.isAtLeastO()) {
+        if (!isRedirect && !isCustomTabsIntent && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Log.i(TAG, "Package manager handles intents on O+, not handling in Chrome");
             return false;
         }
@@ -225,7 +225,8 @@ public class InstantAppsHandler {
         }
 
         if (IntentUtils.safeGetBooleanExtra(intent, DO_NOT_LAUNCH_EXTRA, false)
-                || (BuildInfo.isAtLeastO() && (intent.getFlags() & FLAG_DO_NOT_LAUNCH) != 0)) {
+                || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                           && (intent.getFlags() & FLAG_DO_NOT_LAUNCH) != 0)) {
             maybeRecordFallbackStats(intent);
             Log.i(TAG, "Not handling with Instant Apps (DO_NOT_LAUNCH_EXTRA)");
             return false;

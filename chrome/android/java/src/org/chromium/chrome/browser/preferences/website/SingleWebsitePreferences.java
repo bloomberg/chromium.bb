@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -22,7 +23,6 @@ import android.text.format.Formatter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -368,7 +368,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void setUpNotificationsPreference(Preference preference) {
-        if (BuildInfo.isAtLeastO()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.SITE_NOTIFICATION_CHANNELS)) {
             final ContentSetting value = mSite.getNotificationPermission();
             if (!(value == ContentSetting.ALLOW || value == ContentSetting.BLOCK)) {

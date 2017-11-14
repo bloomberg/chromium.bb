@@ -35,7 +35,6 @@ import android.util.Pair;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -152,7 +151,7 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     static boolean useForegroundService() {
-        return BuildInfo.isAtLeastO();
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**

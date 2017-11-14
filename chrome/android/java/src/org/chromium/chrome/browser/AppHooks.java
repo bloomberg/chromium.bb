@@ -6,11 +6,11 @@ package org.chromium.chrome.browser;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -297,7 +297,7 @@ public abstract class AppHooks {
      */
     @CalledByNative
     public boolean shouldDetectVideoFullscreen() {
-        return BuildInfo.isAtLeastO();
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**
