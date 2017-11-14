@@ -13,6 +13,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
+#include "media/base/test_data_util.h"
 #include "media/media_features.h"
 #include "media/mojo/features.h"
 
@@ -95,7 +96,7 @@ class EncryptedMediaTest : public MediaBrowserTest,
     RunEncryptedMediaTest("encrypted_frame_size_change.html",
                           "frame_size_change-av_enc-v.webm",
                           kWebMVorbisAudioVP8Video, CurrentKeySystem(),
-                          CurrentSourceType(), kEnded);
+                          CurrentSourceType(), media::kEnded);
   }
 
   void TestConfigChange(ConfigChangeType config_change_type) {
@@ -112,7 +113,8 @@ class EncryptedMediaTest : public MediaBrowserTest,
     query_params.emplace_back(
         "configChangeType",
         base::IntToString(static_cast<int>(config_change_type)));
-    RunMediaTestPage("mse_config_change.html", query_params, kEnded, true);
+    RunMediaTestPage("mse_config_change.html", query_params, media::kEnded,
+                     true);
   }
 
   void RunEncryptedMediaTest(const std::string& html_page,
@@ -134,12 +136,8 @@ class EncryptedMediaTest : public MediaBrowserTest,
                                    const std::string& media_type,
                                    const std::string& key_system,
                                    SrcType src_type) {
-    RunEncryptedMediaTest(kDefaultEmePlayer,
-                          media_file,
-                          media_type,
-                          key_system,
-                          src_type,
-                          kEnded);
+    RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
+                          src_type, media::kEnded);
   }
 
  protected:

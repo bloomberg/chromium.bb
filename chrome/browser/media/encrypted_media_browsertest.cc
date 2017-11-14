@@ -199,7 +199,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                                    const std::string& media_type,
                                    const std::string& key_system,
                                    SrcType src_type) {
-    std::string expected_title = kEnded;
+    std::string expected_title = media::kEnded;
     if (!IsPlayBackPossible(key_system)) {
       expected_title = kEmeUpdateFailed;
     }
@@ -425,7 +425,8 @@ class EncryptedMediaTest
     DCHECK(IsPlayBackPossible(CurrentKeySystem()));
     RunEncryptedMediaTest(kDefaultEmePlayer, encrypted_media, media_type,
                           CurrentKeySystem(), CurrentSourceType(),
-                          kNoSessionToLoad, false, PlayCount::TWICE, kEnded);
+                          kNoSessionToLoad, false, PlayCount::TWICE,
+                          media::kEnded);
   }
 
   void RunInvalidResponseTest() {
@@ -439,7 +440,7 @@ class EncryptedMediaTest
     RunEncryptedMediaTest(
         "encrypted_frame_size_change.html", "frame_size_change-av_enc-v.webm",
         kWebMVorbisAudioVP8Video, CurrentKeySystem(), CurrentSourceType(),
-        kNoSessionToLoad, false, PlayCount::ONCE, kEnded);
+        kNoSessionToLoad, false, PlayCount::ONCE, media::kEnded);
   }
 
   void TestConfigChange(ConfigChangeType config_change_type) {
@@ -461,7 +462,7 @@ class EncryptedMediaTest
         "configChangeType",
         base::IntToString(static_cast<int>(config_change_type)));
     RunEncryptedMediaTestPage("mse_config_change.html", CurrentKeySystem(),
-                              query_params, kEnded);
+                              query_params, media::kEnded);
   }
 
   void TestPolicyCheck() {
@@ -502,7 +503,7 @@ class EncryptedMediaTest
     query_params.push_back(
         std::make_pair("audioFormat", ConvertContainerFormat(audio_format)));
     RunEncryptedMediaTestPage("mse_different_containers.html",
-                              CurrentKeySystem(), query_params, kEnded);
+                              CurrentKeySystem(), query_params, media::kEnded);
   }
 
   void DisableEncryptedMedia() {
@@ -650,8 +651,9 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, EncryptedMediaDisabled) {
   DisableEncryptedMedia();
 
   // Clear Key key system is always supported.
-  std::string expected_title =
-      media::IsClearKey(CurrentKeySystem()) ? kEnded : kEmeNotSupportedError;
+  std::string expected_title = media::IsClearKey(CurrentKeySystem())
+                                   ? media::kEnded
+                                   : kEmeNotSupportedError;
 
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
                         kWebMVorbisAudioOnly, CurrentKeySystem(),
@@ -789,7 +791,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, PlatformVerificationTest) {
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
-  TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad, kEnded);
+  TestPlaybackCase(kExternalClearKeyRenewalKeySystem, kNoSessionToLoad,
+                   media::kEnded);
 
   // Check renewal message received.
   bool receivedRenewalMessage = false;
@@ -802,7 +805,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Renewal) {
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadLoadableSession) {
-  TestPlaybackCase(kExternalClearKeyKeySystem, kLoadableSession, kEnded);
+  TestPlaybackCase(kExternalClearKeyKeySystem, kLoadableSession, media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, LoadUnknownSession) {
@@ -846,7 +849,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
   }
 
   base::StringPairs empty_query_params;
-  RunMediaTestPage("multiple_cdm_types.html", empty_query_params, kEnded, true);
+  RunMediaTestPage("multiple_cdm_types.html", empty_query_params, media::kEnded,
+                   true);
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

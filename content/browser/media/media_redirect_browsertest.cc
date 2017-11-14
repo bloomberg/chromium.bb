@@ -34,7 +34,7 @@ class MediaRedirectTest : public MediaBrowserTest {
     http_test_server->StartAcceptingConnections();
 
     // Run the normal media playback test.
-    EXPECT_EQ(kEnded, RunTest(player_url, kEnded));
+    EXPECT_EQ(media::kEnded, RunTest(player_url, media::kEnded));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RedirectResponseHandler(

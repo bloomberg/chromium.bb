@@ -15,8 +15,8 @@ class MediaColorTest : public MediaBrowserTest {
   void RunColorTest(const std::string& video_file) {
     base::FilePath path = media::GetTestDataFilePath("blackwhite.html");
     std::string final_title =
-        RunTest(GetFileUrlWithQuery(path, video_file), kEnded);
-    EXPECT_EQ(kEnded, final_title);
+        RunTest(GetFileUrlWithQuery(path, video_file), media::kEnded);
+    EXPECT_EQ(media::kEnded, final_title);
   }
 };
 
