@@ -372,6 +372,13 @@ void InlineBox::SetLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {
     line_layout_item_.SetShouldDoFullPaintInvalidation();
 }
 
+bool CanUseInlineBox(const LayoutObject& node) {
+  DCHECK(node.IsText() || node.IsInline() || node.IsLayoutBlockFlow());
+  return !RuntimeEnabledFeatures::LayoutNGEnabled() ||
+         !RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() ||
+         !node.EnclosingNGBlockFlow();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG
