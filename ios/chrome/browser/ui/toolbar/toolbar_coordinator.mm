@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
+#import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
@@ -13,149 +13,145 @@
 #endif
 
 @interface LegacyToolbarCoordinator ()
-
-@property(nonatomic, strong) WebToolbarController* webToolbarController;
-
+@property(nonatomic, strong) id<Toolbar> toolbarController;
 @end
 
 @implementation LegacyToolbarCoordinator
 @synthesize tabModel = _tabModel;
 @synthesize toolbarViewController = _toolbarViewController;
-@synthesize webToolbarController = _webToolbarController;
+@synthesize toolbarController = _toolbarController;
 
 - (void)stop {
-  self.webToolbarController = nil;
+  self.toolbarController = nil;
 }
 
 - (UIViewController*)toolbarViewController {
-  _toolbarViewController =
-      static_cast<UIViewController*>(self.webToolbarController);
+  if (!_toolbarViewController)
+    _toolbarViewController =
+        static_cast<UIViewController*>(self.toolbarController);
   return _toolbarViewController;
 }
 
-- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
-  return self.webToolbarController;
-}
-
-- (id<ActivityServicePositioner>)activityServicePositioner {
-  return self.webToolbarController;
-}
-
-- (id<TabHistoryPositioner>)tabHistoryPositioner {
-  return self.webToolbarController;
-}
-
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
-  return self.webToolbarController;
-}
-
-- (id<QRScannerResultLoading>)QRScannerResultLoader {
-  return self.webToolbarController;
-}
-
-- (void)setWebToolbar:(WebToolbarController*)webToolbarController {
-  self.webToolbarController = webToolbarController;
+- (void)setToolbarController:(id<Toolbar>)toolbarController {
+  _toolbarController = toolbarController;
 }
 
 - (void)setToolbarDelegate:(id<WebToolbarDelegate>)delegate {
-  self.webToolbarController.delegate = delegate;
+  self.toolbarController.delegate = delegate;
 }
 
-#pragma mark - Public
+#pragma mark - Delegates
+
+- (id<VoiceSearchControllerDelegate>)voiceSearchDelegate {
+  return self.toolbarController;
+}
+
+- (id<ActivityServicePositioner>)activityServicePositioner {
+  return self.toolbarController;
+}
+
+- (id<TabHistoryPositioner>)tabHistoryPositioner {
+  return self.toolbarController;
+}
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+  return self.toolbarController;
+}
+
+- (id<QRScannerResultLoading>)QRScannerResultLoader {
+  return self.toolbarController;
+}
+
+#pragma mark - WebToolbarController public interface
 
 - (void)adjustToolbarHeight {
-  self.webToolbarController.heightConstraint.constant =
-      ToolbarHeightWithTopOfScreenOffset(
-          [self.webToolbarController statusBarOffset]);
-  self.webToolbarController.heightConstraint.active = YES;
+  [self.toolbarController adjustToolbarHeight];
 }
 
-#pragma mark - WebToolbarController interface
-
 - (void)selectedTabChanged {
-  [self.webToolbarController selectedTabChanged];
+  [self.toolbarController selectedTabChanged];
 }
 
 - (void)setTabCount:(NSInteger)tabCount {
-  [self.webToolbarController setTabCount:tabCount];
+  [self.toolbarController setTabCount:tabCount];
 }
 
 - (void)browserStateDestroyed {
-  [self.webToolbarController setBackgroundAlpha:1.0];
-  [self.webToolbarController browserStateDestroyed];
+  [self.toolbarController setBackgroundAlpha:1.0];
+  [self.toolbarController browserStateDestroyed];
 }
 
 - (void)updateToolbarState {
-  [self.webToolbarController updateToolbarState];
+  [self.toolbarController updateToolbarState];
 }
 
 - (void)setShareButtonEnabled:(BOOL)enabled {
-  [self.webToolbarController setShareButtonEnabled:enabled];
+  [self.toolbarController setShareButtonEnabled:enabled];
 }
 
 - (void)showPrerenderingAnimation {
-  [self.webToolbarController showPrerenderingAnimation];
+  [self.toolbarController showPrerenderingAnimation];
 }
 
 - (BOOL)isOmniboxFirstResponder {
-  return [self.webToolbarController isOmniboxFirstResponder];
+  return [self.toolbarController isOmniboxFirstResponder];
 }
 
 - (BOOL)showingOmniboxPopup {
-  return [self.webToolbarController showingOmniboxPopup];
+  return [self.toolbarController showingOmniboxPopup];
 }
 
 - (void)currentPageLoadStarted {
-  [self.webToolbarController currentPageLoadStarted];
+  [self.toolbarController currentPageLoadStarted];
 }
 
 - (void)showToolsMenuPopupWithConfiguration:
     (ToolsMenuConfiguration*)configuration {
-  [self.webToolbarController showToolsMenuPopupWithConfiguration:configuration];
+  [self.toolbarController showToolsMenuPopupWithConfiguration:configuration];
 }
 
 - (ToolsPopupController*)toolsPopupController {
-  return [self.webToolbarController toolsPopupController];
+  return [self.toolbarController toolsPopupController];
 }
 
 - (void)dismissToolsMenuPopup {
-  [self.webToolbarController dismissToolsMenuPopup];
+  [self.toolbarController dismissToolsMenuPopup];
 }
 
 - (CGRect)visibleOmniboxFrame {
-  return [self.webToolbarController visibleOmniboxFrame];
+  return [self.toolbarController visibleOmniboxFrame];
 }
 
 - (void)triggerToolsMenuButtonAnimation {
-  [self.webToolbarController triggerToolsMenuButtonAnimation];
+  [self.toolbarController triggerToolsMenuButtonAnimation];
 }
 
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmnibox {
-  [self.webToolbarController focusOmnibox];
+  [self.toolbarController focusOmnibox];
 }
 
 - (void)cancelOmniboxEdit {
-  [self.webToolbarController cancelOmniboxEdit];
+  [self.toolbarController cancelOmniboxEdit];
 }
 
 - (void)focusFakebox {
-  [self.webToolbarController focusFakebox];
+  [self.toolbarController focusFakebox];
 }
 
 - (void)onFakeboxBlur {
-  [self.webToolbarController onFakeboxBlur];
+  [self.toolbarController onFakeboxBlur];
 }
 
 - (void)onFakeboxAnimationComplete {
-  [self.webToolbarController onFakeboxAnimationComplete];
+  [self.toolbarController onFakeboxAnimationComplete];
 }
 
 #pragma mark - SideSwipeToolbarInteracting
 
 - (UIView*)toolbarView {
-  return self.webToolbarController.view;
+  return self.toolbarViewController.view;
 }
 
 - (BOOL)canBeginToolbarSwipe {
@@ -163,12 +159,12 @@
 }
 
 - (UIImage*)toolbarSideSwipeSnapshotForTab:(Tab*)tab {
-  [self.webToolbarController updateToolbarForSideSwipeSnapshot:tab];
+  [self.toolbarController updateToolbarForSideSwipeSnapshot:tab];
   UIImage* toolbarSnapshot = CaptureViewWithOption(
-      [self.webToolbarController view], [[UIScreen mainScreen] scale],
+      [self.toolbarViewController view], [[UIScreen mainScreen] scale],
       kClientSideRendering);
 
-  [self.webToolbarController resetToolbarAfterSideSwipeSnapshot];
+  [self.toolbarController resetToolbarAfterSideSwipeSnapshot];
   return toolbarSnapshot;
 }
 
@@ -176,15 +172,15 @@
 
 - (UIView*)snapshotForTabSwitcher {
   UIView* toolbarSnapshotView;
-  if ([self.webToolbarController.view window]) {
+  if ([self.toolbarViewController.view window]) {
     toolbarSnapshotView =
-        [self.webToolbarController.view snapshotViewAfterScreenUpdates:NO];
+        [self.toolbarViewController.view snapshotViewAfterScreenUpdates:NO];
   } else {
     toolbarSnapshotView =
-        [[UIView alloc] initWithFrame:self.webToolbarController.view.frame];
+        [[UIView alloc] initWithFrame:self.toolbarViewController.view.frame];
     [toolbarSnapshotView layer].contents =
-        static_cast<id>(CaptureViewWithOption(self.webToolbarController.view, 0,
-                                              kClientSideRendering)
+        static_cast<id>(CaptureViewWithOption(self.toolbarViewController.view,
+                                              0, kClientSideRendering)
                             .CGImage);
   }
   return toolbarSnapshotView;
@@ -192,28 +188,28 @@
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
                           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  CGRect oldFrame = self.webToolbarController.view.frame;
+  CGRect oldFrame = self.toolbarViewController.view.frame;
   CGRect newFrame = oldFrame;
   newFrame.size.width = width;
 
-  self.webToolbarController.view.frame = newFrame;
-  [self.webToolbarController activateFakeSafeAreaInsets:safeAreaInsets];
+  self.toolbarViewController.view.frame = newFrame;
+  [self.toolbarController activateFakeSafeAreaInsets:safeAreaInsets];
 
   UIView* toolbarSnapshotView = [self snapshotForTabSwitcher];
 
-  self.webToolbarController.view.frame = oldFrame;
-  [self.webToolbarController deactivateFakeSafeAreaInsets];
+  self.toolbarViewController.view.frame = oldFrame;
+  [self.toolbarController deactivateFakeSafeAreaInsets];
 
   return toolbarSnapshotView;
 }
 
 - (UIColor*)toolbarBackgroundColor {
   UIColor* toolbarBackgroundColor = nil;
-  if (self.webToolbarController.backgroundView.hidden ||
-      self.webToolbarController.backgroundView.alpha == 0) {
+  if (self.toolbarController.backgroundView.hidden ||
+      self.toolbarController.backgroundView.alpha == 0) {
     // If the background view isn't visible, use the base toolbar view's
     // background color.
-    toolbarBackgroundColor = self.webToolbarController.view.backgroundColor;
+    toolbarBackgroundColor = self.toolbarViewController.view.backgroundColor;
   }
   return toolbarBackgroundColor;
 }
@@ -221,16 +217,16 @@
 #pragma mark - IncognitoViewControllerDelegate
 
 - (void)setToolbarBackgroundAlpha:(CGFloat)alpha {
-  [self.webToolbarController setBackgroundAlpha:alpha];
+  [self.toolbarController setBackgroundAlpha:alpha];
 }
 
 #pragma mark - BubbleViewAnchorPointProvider methods.
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
-  return [self.webToolbarController anchorPointForTabSwitcherButton:direction];
+  return [self.toolbarController anchorPointForTabSwitcherButton:direction];
 }
 
 - (CGPoint)anchorPointForToolsMenuButton:(BubbleArrowDirection)direction {
-  return [self.webToolbarController anchorPointForToolsMenuButton:direction];
+  return [self.toolbarController anchorPointForToolsMenuButton:direction];
 }
 @end

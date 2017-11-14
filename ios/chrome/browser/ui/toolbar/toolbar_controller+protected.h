@@ -22,6 +22,10 @@
 @property(nonatomic, strong)
     UIViewPropertyAnimator* omniboxContractorAnimator API_AVAILABLE(ios(10.0));
 
+// The view containing all the content of the toolbar. It respects the trailing
+// and leading anchors of the safe area.
+@property(nonatomic, readonly, strong) UIView* contentView;
+
 // Update share button visibility and |standardButtons_| array.
 - (void)updateStandardButtons;
 
@@ -98,6 +102,24 @@
 
 // Animates out the standard Toolbar buttons when the Location bar is expanding.
 - (void)configureFadeOutAnimation API_AVAILABLE(ios(10.0));
+
+// Sets up |button| with images named by the given |imageEnum| and the current
+// toolbar style.  Sets images synchronously for |initialState|, and
+// asynchronously for the other states. Optionally sets the image for the
+// disabled state as well.  Meant to be called during initialization.
+// Note:  |withImageEnum| should be one of the ToolbarButtonName values, or an
+// extended value provided by a subclass.  It is an int to support
+// "subclassing" of the enum and overriding helper functions.
+- (void)setUpButton:(UIButton*)button
+       withImageEnum:(int)imageEnum
+     forInitialState:(UIControlState)initialState
+    hasDisabledImage:(BOOL)hasDisabledImage
+       synchronously:(BOOL)synchronously;
+
+// TRUE if |imageEnum| should be flipped when in RTL layout.
+// Currently none of this class' images have this property, but subclasses
+// can override this method if they need to flip some of their images.
+- (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum;
 
 @end
 

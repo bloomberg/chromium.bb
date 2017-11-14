@@ -13,7 +13,7 @@
 
 @class OmniboxTextFieldIOS;
 
-// Private methods for unit tests.
+// Private methods for tests.
 @interface WebToolbarController (Testing)
 - (BOOL)isForwardButtonEnabled;
 - (BOOL)isBackButtonEnabled;
@@ -23,6 +23,7 @@
 - (std::string)getLocationText;
 - (BOOL)isLoading;
 - (BOOL)isPrerenderAnimationRunning;
+@property(nonatomic, weak) id<UrlLoader> urlLoader;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_CONTROLLER_PRIVATE_H_

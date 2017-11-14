@@ -19,6 +19,7 @@
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 #include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view_controller.h"
 #include "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller_private.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"

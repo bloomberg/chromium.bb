@@ -5,6 +5,8 @@
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "abstract_toolbar.h",
+    "abstract_web_toolbar.h",
     "toolbar_controller_constants.h",
     "toolbar_controller_constants.mm",
     "toolbar_utils.h",
