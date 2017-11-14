@@ -53,6 +53,7 @@ component("chromeos") {
     "//ui/display",
     "//ui/events",
     "//ui/events:gesture_detection",
+    "//ui/events/devices:devices",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/message_center",
