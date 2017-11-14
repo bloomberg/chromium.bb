@@ -315,7 +315,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // Gets called by autoupdate timer to see if browser needs restart and can be
   // restarted, and if that's the case, restarts the browser.
   void OnAutoupdateTimer();
-  bool CanAutorestartForUpdate() const;
+  bool IsRunningInBackground() const;
+  void OnPendingRestartResult(bool is_update_pending_restart);
   void RestartBackgroundInstance();
 #endif  // defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
