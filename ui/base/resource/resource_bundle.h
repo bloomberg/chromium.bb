@@ -293,6 +293,11 @@ class UI_BASE_EXPORT ResourceBundle {
   // Returns true if |scale_factor| is supported by this platform.
   static bool IsScaleFactorSupported(ScaleFactor scale_factor);
 
+  // Sets whether this ResourceBundle should mangle localized strings or not.
+  void set_mangle_localized_strings_for_test(bool mangle) {
+    mangle_localized_strings_ = mangle;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetPathForLocalePack);
   FRIEND_TEST_ALL_PREFIXES(ResourceBundleTest, DelegateGetImageNamed);
