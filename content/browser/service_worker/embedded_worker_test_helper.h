@@ -27,6 +27,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/http/http_response_info.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -83,6 +84,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
         mojom::ControllerServiceWorkerRequest controller_request,
         mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+        blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
         mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
         mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
         blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
@@ -192,6 +194,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);
@@ -277,8 +280,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       mojom::ServiceWorkerEventDispatcher::DispatchPaymentRequestEventCallback
           callback);
 
-  // These functions simulate sending an EmbeddedHostMsg message through the
-  // legacy IPC system to the browser.
+  // These functions simulate making Mojo calls to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
   void SimulateWorkerScriptCached(int embedded_worker_id,
                                   base::OnceClosure callback);
@@ -302,6 +304,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);

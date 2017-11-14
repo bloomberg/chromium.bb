@@ -90,7 +90,7 @@ void ServiceWorkerScriptCacheMap::SetResources(
 
 void ServiceWorkerScriptCacheMap::WriteMetadata(
     const GURL& url,
-    const std::vector<char>& data,
+    const std::vector<uint8_t>& data,
     const net::CompletionCallback& callback) {
   ResourceMap::iterator found = resource_map_.find(url);
   if (found == resource_map_.end() ||
@@ -114,7 +114,7 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
 void ServiceWorkerScriptCacheMap::ClearMetadata(
     const GURL& url,
     const net::CompletionCallback& callback) {
-  WriteMetadata(url, std::vector<char>(), callback);
+  WriteMetadata(url, std::vector<uint8_t>(), callback);
 }
 
 void ServiceWorkerScriptCacheMap::OnMetadataWritten(

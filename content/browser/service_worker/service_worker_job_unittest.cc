@@ -38,6 +38,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -520,6 +521,7 @@ class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -982,6 +984,7 @@ class UpdateJobTestHelper
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -1043,8 +1046,8 @@ class UpdateJobTestHelper
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
         std::move(dispatcher_request), std::move(controller_request),
-        std::move(instance_host), std::move(provider_info),
-        std::move(installed_scripts_info));
+        std::move(service_worker_host), std::move(instance_host),
+        std::move(provider_info), std::move(installed_scripts_info));
   }
 
   void OnStopWorker(int embedded_worker_id) override {
@@ -1119,6 +1122,7 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -1137,8 +1141,8 @@ class EvictIncumbentVersionHelper : public UpdateJobTestHelper {
     UpdateJobTestHelper::OnStartWorker(
         embedded_worker_id, version_id, scope, script, pause_after_download,
         std::move(dispatcher_request), std::move(controller_request),
-        std::move(instance_host), std::move(provider_info),
-        std::move(installed_scripts_info));
+        std::move(service_worker_host), std::move(instance_host),
+        std::move(provider_info), std::move(installed_scripts_info));
   }
 
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override {
@@ -1819,6 +1823,7 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
@@ -1828,8 +1833,9 @@ class CheckPauseAfterDownloadEmbeddedWorkerInstanceClient
     num_of_startworker_++;
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
         params, std::move(dispatcher_request), std::move(controller_request),
-        std::move(scripts_info), std::move(instance_host),
-        std::move(provider_info), std::move(content_settings_proxy));
+        std::move(scripts_info), std::move(service_worker_host),
+        std::move(instance_host), std::move(provider_info),
+        std::move(content_settings_proxy));
   }
 
  private:

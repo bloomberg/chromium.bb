@@ -11,6 +11,7 @@ import "content/common/service_worker/service_worker_provider.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom";
 import "third_party/WebKit/public/web/console_message.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
 import "url/mojo/url.mojom";
@@ -43,6 +44,7 @@ interface EmbeddedWorkerInstanceClient {
               ServiceWorkerEventDispatcher& dispatcher_request,
               ControllerServiceWorker& controller_request,
               ServiceWorkerInstalledScriptsInfo? installed_scripts_info,
+              associated blink.mojom.ServiceWorkerHost service_worker_host,
               associated EmbeddedWorkerInstanceHost instance_host,
               ServiceWorkerProviderInfoForStartWorker provider_info,
               blink.mojom.WorkerContentSettingsProxy content_settings_proxy);

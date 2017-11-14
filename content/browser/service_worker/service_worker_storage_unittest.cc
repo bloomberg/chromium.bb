@@ -270,7 +270,7 @@ int WriteResponseMetadata(ServiceWorkerStorage* storage,
 int WriteMetadata(ServiceWorkerVersion* version,
                   const GURL& url,
                   const std::string& metadata) {
-  const std::vector<char> data(metadata.begin(), metadata.end());
+  const std::vector<uint8_t> data(metadata.begin(), metadata.end());
   EXPECT_TRUE(version);
   TestCompletionCallback cb;
   version->script_cache_map()->WriteMetadata(url, data, cb.callback());

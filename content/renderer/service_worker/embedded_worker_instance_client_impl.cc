@@ -60,6 +60,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
     mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy) {
@@ -73,8 +74,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       params.script_url,
       ServiceWorkerUtils::IsScriptStreamingEnabled() && installed_scripts_info,
       std::move(dispatcher_request), std::move(controller_request),
-      std::move(instance_host), std::move(provider_info),
-      std::move(temporal_self_));
+      std::move(service_worker_host), std::move(instance_host),
+      std::move(provider_info), std::move(temporal_self_));
   client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   wrapper_ = StartWorkerContext(
