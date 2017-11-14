@@ -1,7 +1,7 @@
 # Additional dependencies not in the rpm find-requires output.
 #
-# TODO(thestig): Use the liberation-fonts package once its available
-# on all distros.
+# TODO(thestig,bugzilla.redhat.com/show_bug.cgi?id=1482760): Use the
+# liberation-fonts package once it's available on all distros.
 #
 # /usr/bin/lsb_release: For lsb_release.
 # ca-certificates: Make sure users have SSL certificates.
