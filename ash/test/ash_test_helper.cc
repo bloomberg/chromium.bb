@@ -12,7 +12,7 @@
 #include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/mus/shell_port_mus.h"
 #include "ash/mus/window_manager.h"
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_service.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -116,7 +116,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     test_shell_delegate_ = new TestShellDelegate;
 
   if (config_ == Config::CLASSIC) {
-    // All of this initialization is done in WindowManagerApplication for mash.
+    // All of this initialization is done in WindowManagerService for mash.
 
     // Creates MessageCenter since g_browser_process is not created in
     // AshTestBase tests.
@@ -187,7 +187,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 }
 
 void AshTestHelper::TearDown() {
-  window_manager_app_.reset();
+  window_manager_service_.reset();
 
   // WindowManger owns the Shell in mash.
   if (config_ == Config::CLASSIC)
@@ -256,28 +256,28 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
 void AshTestHelper::CreateMashWindowManager() {
   CHECK(config_ != Config::CLASSIC);
   const bool show_primary_root_on_connect = false;
-  window_manager_app_ = std::make_unique<mus::WindowManagerApplication>(
-      show_primary_root_on_connect);
+  window_manager_service_ =
+      std::make_unique<mus::WindowManagerService>(show_primary_root_on_connect);
 
-  window_manager_app_->window_manager_.reset(
+  window_manager_service_->window_manager_.reset(
       new mus::WindowManager(nullptr, config_, show_primary_root_on_connect));
-  window_manager_app_->window_manager()->shell_delegate_.reset(
+  window_manager_service_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
 
   window_tree_client_setup_.InitForWindowManager(
-      window_manager_app_->window_manager_.get(),
-      window_manager_app_->window_manager_.get());
+      window_manager_service_->window_manager_.get(),
+      window_manager_service_->window_manager_.get());
   aura::test::EnvTestHelper().SetWindowTreeClient(
       window_tree_client_setup_.window_tree_client());
   // Classic ash does not start the NetworkHandler in tests, so don't start it
   // for mash either. The NetworkHandler may cause subtle side effects (such as
   // additional tray items) that can make for flaky tests.
   const bool init_network_handler = false;
-  window_manager_app_->InitWindowManager(
+  window_manager_service_->InitWindowManager(
       window_tree_client_setup_.OwnWindowTreeClient(), init_network_handler);
 
   aura::WindowTreeClient* window_tree_client =
-      window_manager_app_->window_manager()->window_tree_client();
+      window_manager_service_->window_manager()->window_tree_client();
   window_tree_client_private_ =
       std::make_unique<aura::WindowTreeClientPrivate>(window_tree_client);
   window_tree_client_private_->CallOnConnect();

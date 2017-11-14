@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "ash/mus/window_manager.h"
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_service.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
@@ -67,7 +67,7 @@ TEST_F(TopLevelWindowFactoryWmTest, IsWindowShownInCorrectDisplay) {
   EXPECT_NE(GetPrimaryDisplay().id(), GetSecondaryDisplay().id());
 
   mus::WindowManager* window_manager =
-      ash_test_helper()->window_manager_app()->window_manager();
+      ash_test_helper()->window_manager_service()->window_manager();
 
   std::unique_ptr<aura::Window> window_primary_display(
       CreateFullscreenTestWindow(window_manager, GetPrimaryDisplay().id()));
@@ -85,7 +85,7 @@ using TopLevelWindowFactoryAshTest = AshTestBase;
 TEST_F(TopLevelWindowFactoryAshTest, TopLevelNotShownOnCreate) {
   std::map<std::string, std::vector<uint8_t>> properties;
   std::unique_ptr<aura::Window> window(mus::CreateAndParentTopLevelWindow(
-      ash_test_helper()->window_manager_app()->window_manager(),
+      ash_test_helper()->window_manager_service()->window_manager(),
       ui::mojom::WindowType::WINDOW, &properties));
   ASSERT_TRUE(window);
   EXPECT_FALSE(window->IsVisible());
@@ -103,7 +103,7 @@ TEST_F(TopLevelWindowFactoryAshTest, CreateTopLevelWindow) {
               ui::mojom::kResizeBehaviorCanMaximize |
               ui::mojom::kResizeBehaviorCanMinimize));
   mus::WindowManager* window_manager =
-      ash_test_helper()->window_manager_app()->window_manager();
+      ash_test_helper()->window_manager_service()->window_manager();
   // |window| is owned by its parent.
   aura::Window* window = CreateAndParentTopLevelWindow(
       window_manager, ui::mojom::WindowType::WINDOW, &properties);

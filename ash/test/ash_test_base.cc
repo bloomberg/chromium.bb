@@ -14,7 +14,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_service.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -271,7 +271,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
   mus::WindowManager* window_manager =
-      ash_test_helper_->window_manager_app()->window_manager();
+      ash_test_helper_->window_manager_service()->window_manager();
   aura::Window* window = mus::CreateAndParentTopLevelWindow(
       window_manager, mus_window_type, &properties);
   window->set_id(shell_window_id);
