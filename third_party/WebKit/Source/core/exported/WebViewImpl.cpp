@@ -230,7 +230,7 @@ static Vector<std::unique_ptr<ScopedPagePauser>>& PagePauserStack() {
 }
 
 void WebView::WillEnterModalLoop() {
-  PagePauserStack().push_back(WTF::MakeUnique<ScopedPagePauser>());
+  PagePauserStack().push_back(std::make_unique<ScopedPagePauser>());
 }
 
 void WebView::DidExitModalLoop() {
@@ -3510,7 +3510,7 @@ void WebViewImpl::SetPageOverlayColor(WebColor color) {
     return;
 
   page_color_overlay_ = PageOverlay::Create(
-      MainFrameImpl(), WTF::MakeUnique<ColorOverlay>(color));
+      MainFrameImpl(), std::make_unique<ColorOverlay>(color));
 
   // Run compositing update before calling updatePageOverlays.
   MainFrameImpl()
@@ -3747,7 +3747,7 @@ void WebViewImpl::InitializeLayerTreeView() {
   if (client_) {
     layer_tree_view_ = client_->InitializeLayerTreeView();
     if (layer_tree_view_ && layer_tree_view_->CompositorAnimationHost()) {
-      animation_host_ = WTF::MakeUnique<CompositorAnimationHost>(
+      animation_host_ = std::make_unique<CompositorAnimationHost>(
           layer_tree_view_->CompositorAnimationHost());
     }
   }

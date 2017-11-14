@@ -3200,7 +3200,7 @@ TEST_P(ParameterizedWebFrameTest, updateOverlayScrollbarLayers)
 
   std::unique_ptr<FakeCompositingWebViewClient>
       fake_compositing_web_view_client =
-          WTF::MakeUnique<FakeCompositingWebViewClient>();
+          std::make_unique<FakeCompositingWebViewClient>();
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(nullptr, fake_compositing_web_view_client.get(),
                              nullptr, &ConfigureCompositingWebView);
@@ -4456,20 +4456,20 @@ class ContextLifetimeTestWebFrameClient
                                   const ParsedFeaturePolicy& container_policy,
                                   const WebFrameOwnerProperties&) override {
     return CreateLocalChild(*parent, scope,
-                            WTF::MakeUnique<ContextLifetimeTestWebFrameClient>(
+                            std::make_unique<ContextLifetimeTestWebFrameClient>(
                                 create_notifications_, release_notifications_));
   }
 
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int world_id) override {
     create_notifications_.push_back(
-        WTF::MakeUnique<Notification>(Frame(), context, world_id));
+        std::make_unique<Notification>(Frame(), context, world_id));
   }
 
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override {
     release_notifications_.push_back(
-        WTF::MakeUnique<Notification>(Frame(), context, world_id));
+        std::make_unique<Notification>(Frame(), context, world_id));
   }
 
  private:
@@ -5884,7 +5884,7 @@ class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
 
   // WebLayerTreeView:
   void RegisterSelection(const WebSelection& selection) override {
-    selection_ = WTF::MakeUnique<WebSelection>(selection);
+    selection_ = std::make_unique<WebSelection>(selection);
   }
   void ClearSelection() override {
     selection_cleared_ = true;
@@ -7467,7 +7467,7 @@ class TestCachePolicyWebFrameClient
       WebSandboxFlags,
       const ParsedFeaturePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties) override {
-    auto child = WTF::MakeUnique<TestCachePolicyWebFrameClient>();
+    auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
     child_clients_.push_back(std::move(child));
     return CreateLocalChild(*parent, scope, child_ptr);
@@ -7821,7 +7821,7 @@ TEST_P(ParameterizedWebFrameTest, overflowHiddenRewrite) {
   RegisterMockedHttpURLLoad("non-scrollable.html");
   std::unique_ptr<FakeCompositingWebViewClient>
       fake_compositing_web_view_client =
-          WTF::MakeUnique<FakeCompositingWebViewClient>();
+          std::make_unique<FakeCompositingWebViewClient>();
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(nullptr, fake_compositing_web_view_client.get(),
                              nullptr, &ConfigureCompositingWebView);
@@ -10944,7 +10944,7 @@ class TestResourcePriorityWebFrameClient
 
   void AddExpectedRequest(const KURL& url, WebURLRequest::Priority priority) {
     expected_requests_.insert(url,
-                              WTF::MakeUnique<ExpectedRequest>(url, priority));
+                              std::make_unique<ExpectedRequest>(url, priority));
   }
 
   void VerifyAllRequests() {
@@ -11886,7 +11886,7 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
                                   public WebFrameTest {
  public:
   void SetUp() override {
-    web_view_helper_ = WTF::MakeUnique<FrameTestHelpers::WebViewHelper>();
+    web_view_helper_ = std::make_unique<FrameTestHelpers::WebViewHelper>();
     web_view_helper_->Initialize(nullptr, &web_view_client_, nullptr,
                                  &ConfigureCompositingWebView);
     web_view_helper_->Resize(WebSize(200, 200));

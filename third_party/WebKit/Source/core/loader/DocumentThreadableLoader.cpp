@@ -103,7 +103,7 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
   };
 
   std::unique_ptr<Reader> ObtainReader(Client* client) override {
-    return WTF::MakeUnique<EmptyDataReader>(client);
+    return std::make_unique<EmptyDataReader>(client);
   }
   const char* DebugName() const override { return "EmptyDataHandle"; }
 };
@@ -637,7 +637,7 @@ bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
     // have to read the body. And also HTTPCache changes will be needed because
     // it doesn't store the body of redirect responses.
     ResponseReceived(resource, redirect_response,
-                     WTF::MakeUnique<EmptyDataHandle>());
+                     std::make_unique<EmptyDataHandle>());
 
     if (client_) {
       DCHECK(actual_request_.IsNull());

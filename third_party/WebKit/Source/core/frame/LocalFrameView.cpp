@@ -1024,7 +1024,7 @@ void LocalFrameView::PrepareLayoutAnalyzer() {
     return;
   }
   if (!analyzer_)
-    analyzer_ = WTF::MakeUnique<LayoutAnalyzer>();
+    analyzer_ = std::make_unique<LayoutAnalyzer>();
   analyzer_->Reset();
 }
 

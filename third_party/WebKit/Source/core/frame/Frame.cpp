@@ -30,6 +30,8 @@
 
 #include "core/frame/Frame.h"
 
+#include <memory>
+
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/UserGestureIndicator.h"
@@ -200,7 +202,7 @@ std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
     UserGestureToken::Status status) {
   if (frame)
     frame->NotifyUserActivation();
-  return WTF::MakeUnique<UserGestureIndicator>(status);
+  return std::make_unique<UserGestureIndicator>(status);
 }
 
 // static

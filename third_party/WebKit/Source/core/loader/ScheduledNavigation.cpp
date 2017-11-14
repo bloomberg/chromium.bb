@@ -4,6 +4,8 @@
 
 #include "core/loader/ScheduledNavigation.h"
 
+#include <memory>
+
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 
@@ -28,7 +30,7 @@ ScheduledNavigation::~ScheduledNavigation() {}
 
 std::unique_ptr<UserGestureIndicator>
 ScheduledNavigation::CreateUserGestureIndicator() {
-  return WTF::MakeUnique<UserGestureIndicator>(user_gesture_token_);
+  return std::make_unique<UserGestureIndicator>(user_gesture_token_);
 }
 
 }  // namespace blink

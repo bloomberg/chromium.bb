@@ -619,7 +619,7 @@ void FrameLoader::LoadInSameDocument(
   std::unique_ptr<HistoryItem::ViewState> view_state;
   if (history_item && history_item->GetViewState()) {
     view_state =
-        WTF::MakeUnique<HistoryItem::ViewState>(*history_item->GetViewState());
+        std::make_unique<HistoryItem::ViewState>(*history_item->GetViewState());
   }
 
   frame_->DomWindow()->StatePopped(state_object

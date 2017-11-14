@@ -29,6 +29,8 @@
 
 #include "core/exported/WebPagePopupImpl.h"
 
+#include <memory>
+
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/events/MessageEvent.h"
@@ -298,7 +300,7 @@ bool WebPagePopupImpl::InitializePage() {
   page_->GetSettings().SetPrimaryPointerType(
       main_settings.GetPrimaryPointerType());
 
-  ProvideContextFeaturesTo(*page_, WTF::MakeUnique<PagePopupFeaturesClient>());
+  ProvideContextFeaturesTo(*page_, std::make_unique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(LocalFrameClient, empty_local_frame_client,
                       (EmptyLocalFrameClient::Create()));
   LocalFrame* frame =
@@ -377,7 +379,7 @@ void WebPagePopupImpl::InitializeLayerTreeView() {
   layer_tree_view_ = widget_client_->InitializeLayerTreeView();
   if (layer_tree_view_) {
     layer_tree_view_->SetVisible(true);
-    animation_host_ = WTF::MakeUnique<CompositorAnimationHost>(
+    animation_host_ = std::make_unique<CompositorAnimationHost>(
         layer_tree_view_->CompositorAnimationHost());
     page_->LayerTreeViewInitialized(*layer_tree_view_, nullptr);
   } else {

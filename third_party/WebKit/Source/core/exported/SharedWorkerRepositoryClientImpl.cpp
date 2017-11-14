@@ -142,7 +142,7 @@ void SharedWorkerRepositoryClientImpl::Connect(SharedWorker* worker,
 
   bool is_secure_context = worker->GetExecutionContext()->IsSecureContext();
   std::unique_ptr<WebSharedWorkerConnectListener> listener =
-      WTF::MakeUnique<SharedWorkerConnectListener>(worker);
+      std::make_unique<SharedWorkerConnectListener>(worker);
   client_->Connect(
       url, name, GetId(document), header, header_type,
       worker->GetExecutionContext()->GetSecurityContext().AddressSpace(),

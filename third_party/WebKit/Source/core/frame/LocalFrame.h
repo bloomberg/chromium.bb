@@ -273,7 +273,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   static std::unique_ptr<UserGestureIndicator> CreateUserGesture(
       LocalFrame*,
       UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture) {
-    return WTF::MakeUnique<UserGestureIndicator>();
+    return std::make_unique<UserGestureIndicator>();
   }
 
   // Replaces the initial empty document with a Document suitable for

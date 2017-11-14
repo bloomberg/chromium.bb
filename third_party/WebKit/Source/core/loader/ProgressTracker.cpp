@@ -154,7 +154,7 @@ void ProgressTracker::WillStartLoading(unsigned long identifier,
           ProgressBarCompletion::kLoadEvent &&
       (HaveParsedAndPainted() || priority < kResourceLoadPriorityHigh))
     return;
-  progress_items_.Set(identifier, WTF::MakeUnique<ProgressItem>(
+  progress_items_.Set(identifier, std::make_unique<ProgressItem>(
                                       kProgressItemDefaultEstimatedLength));
 }
 

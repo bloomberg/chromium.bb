@@ -76,7 +76,7 @@ class CORE_EXPORT HistoryItem final
   void ClearViewState() { view_state_.reset(); }
   void CopyViewStateFrom(HistoryItem* other) {
     if (other->view_state_)
-      view_state_ = WTF::MakeUnique<ViewState>(*other->view_state_.get());
+      view_state_ = std::make_unique<ViewState>(*other->view_state_.get());
     else
       view_state_.reset();
   }
