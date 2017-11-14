@@ -161,7 +161,6 @@ ninja -C out/Release -j 1000 apks/ChromePublic.apk
 tools/binary_size/supersize archive chrome.size --apk-file out/Release/apks/ChromePublic.apk -v
 
 # Linux:
-LLVM_DOWNLOAD_GOLD_PLUGIN=1 gclient runhooks  # One-time download.
 ninja -C out/Release -j 1000 chrome
 tools/binary_size/supersize archive chrome.size --elf-file out/Release/chrome -v
 ```
