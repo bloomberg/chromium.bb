@@ -98,10 +98,6 @@ namespace policy {
 class PolicyService;
 }  // namespace policy
 
-namespace test {
-class IOThreadPeer;
-}  // namespace test
-
 // Contains state associated with, initialized and cleaned up on, and
 // primarily used on, the IO thread.
 //
@@ -233,8 +229,6 @@ class IOThread : public content::BrowserThreadDelegate {
   content::mojom::NetworkService* GetNetworkServiceOnUIThread();
 
  private:
-  friend class test::IOThreadPeer;
-
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
   // live on the IO thread.
