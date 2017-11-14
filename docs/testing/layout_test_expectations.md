@@ -16,11 +16,17 @@ several forms. The test may produce one or more of:
 * A screen capture of the rendered page as a PNG file.
 * WAV files of the audio output, for WebAudio tests.
 
-For any of these types of tests, there are files checked into the LayoutTests
-directory named `-expected.{txt,png,wav}`. Lastly, we also support the concept
-of "reference tests", which check that two pages are rendered identically
-(pixel-by-pixel). As long as the two tests' output match, the tests pass. For
-more on reference tests, see
+For any of these types of tests, baselines are checked into the LayoutTests
+directory. The filename of a baseline is the same as that of the corresponding
+test, but the extension is replaced with `-expected.{txt,png,wav}` (depending on
+the type of test output). Baselines usually live alongside tests, with the
+exception when baselines vary by platforms; read
+[Layout Test Baseline Fallback](layout_test_baseline_fallback.md) for more
+details.
+
+Lastly, we also support the concept of "reference tests", which check that two
+pages are rendered identically (pixel-by-pixel). As long as the two tests'
+output match, the tests pass. For more on reference tests, see
 [Writing ref tests](https://trac.webkit.org/wiki/Writing%20Reftests).
 
 ## Failing tests
