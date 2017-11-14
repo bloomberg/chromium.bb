@@ -445,9 +445,12 @@ void RenderWidgetHostViewEventHandler::OnScrollEvent(ui::ScrollEvent* event) {
     }
     if (event->type() == ui::ET_SCROLL_FLING_START) {
       RecordAction(base::UserMetricsAction("TrackpadScrollFling"));
-      // Ignore the pending wheel end event to avoid sending a wheel event with
-      // kPhaseEnded before a GFS.
-      mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
+      // The user has lifted their fingers.
+      mouse_wheel_phase_handler_.ResetScrollSequence();
+    } else if (event->type() == ui::ET_SCROLL_FLING_CANCEL) {
+      // The user has put their fingers down.
+      DCHECK_EQ(blink::kWebGestureDeviceTouchpad, gesture_event.source_device);
+      mouse_wheel_phase_handler_.ScrollingMayBegin();
     }
   }
 
@@ -546,11 +549,13 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // wheel based send a synthetic wheel event with kPhaseEnded to cancel
       // the current scroll.
       mouse_wheel_phase_handler_.DispatchPendingWheelEndEvent();
+      mouse_wheel_phase_handler_.SendWheelEndIfNeeded();
     } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
       // Make sure that the next wheel event will have phase = |kPhaseBegan|.
       // This is for maintaining the correct phase info when some of the wheel
       // events get ignored while a touchscreen scroll is going on.
       mouse_wheel_phase_handler_.IgnorePendingWheelEndEvent();
+      mouse_wheel_phase_handler_.ResetScrollSequence();
     } else if (event->type() == ui::ET_SCROLL_FLING_START) {
       RecordAction(base::UserMetricsAction("TouchscreenScrollFling"));
     }

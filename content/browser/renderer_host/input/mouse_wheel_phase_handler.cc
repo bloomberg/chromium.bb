@@ -13,11 +13,15 @@ namespace content {
 MouseWheelPhaseHandler::MouseWheelPhaseHandler(
     RenderWidgetHostImpl* const host,
     RenderWidgetHostViewBase* const host_view)
-    : host_(RenderWidgetHostImpl::From(host)), host_view_(host_view) {}
+    : host_(RenderWidgetHostImpl::From(host)),
+      host_view_(host_view),
+      scroll_phase_state_(SCROLL_STATE_UNKNOWN) {}
 
 void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
     blink::WebMouseWheelEvent& mouse_wheel_event,
     bool should_route_event) {
+  last_mouse_wheel_event_ = mouse_wheel_event;
+
   bool has_phase =
       mouse_wheel_event.phase != blink::WebMouseWheelEvent::kPhaseNone ||
       mouse_wheel_event.momentum_phase != blink::WebMouseWheelEvent::kPhaseNone;
@@ -25,7 +29,7 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
     if (mouse_wheel_event.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
       // Don't send the wheel end event immediately, start a timer instead to
       // see whether momentum phase of the scrolling starts or not.
-      ScheduleMouseWheelEndDispatching(mouse_wheel_event, should_route_event);
+      ScheduleMouseWheelEndDispatching(should_route_event);
     } else if (mouse_wheel_event.phase ==
                blink::WebMouseWheelEvent::kPhaseBegan) {
       // A new scrolling sequence has started, send the pending wheel end
@@ -39,16 +43,30 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
       IgnorePendingWheelEndEvent();
     }
   } else {  // !has_phase
-    if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
-      mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
-      ScheduleMouseWheelEndDispatching(mouse_wheel_event, should_route_event);
-    } else {  // mouse_wheel_end_dispatch_timer_.IsRunning()
-      bool non_zero_delta =
-          mouse_wheel_event.delta_x || mouse_wheel_event.delta_y;
-      mouse_wheel_event.phase =
-          non_zero_delta ? blink::WebMouseWheelEvent::kPhaseChanged
-                         : blink::WebMouseWheelEvent::kPhaseStationary;
-      mouse_wheel_end_dispatch_timer_.Reset();
+    switch (scroll_phase_state_) {
+      case SCROLL_STATE_UNKNOWN: {
+        if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
+          mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+          ScheduleMouseWheelEndDispatching(should_route_event);
+        } else {  // mouse_wheel_end_dispatch_timer_.IsRunning()
+          bool non_zero_delta =
+              mouse_wheel_event.delta_x || mouse_wheel_event.delta_y;
+          mouse_wheel_event.phase =
+              non_zero_delta ? blink::WebMouseWheelEvent::kPhaseChanged
+                             : blink::WebMouseWheelEvent::kPhaseStationary;
+          mouse_wheel_end_dispatch_timer_.Reset();
+        }
+        break;
+      }
+      case SCROLL_MAY_BEGIN:
+        mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+        scroll_phase_state_ = SCROLL_IN_PROGRESS;
+        break;
+      case SCROLL_IN_PROGRESS:
+        mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+        break;
+      default:
+        NOTREACHED();
     }
   }
 }
@@ -66,40 +84,56 @@ void MouseWheelPhaseHandler::IgnorePendingWheelEndEvent() {
   mouse_wheel_end_dispatch_timer_.Stop();
 }
 
+void MouseWheelPhaseHandler::ResetScrollSequence() {
+  scroll_phase_state_ = SCROLL_STATE_UNKNOWN;
+}
+
+void MouseWheelPhaseHandler::SendWheelEndIfNeeded() {
+  if (scroll_phase_state_ == SCROLL_IN_PROGRESS) {
+    DCHECK(host_);
+    bool should_route_event =
+        host_->delegate() && host_->delegate()->GetInputEventRouter();
+    SendSyntheticWheelEventWithPhaseEnded(should_route_event);
+  }
+
+  ResetScrollSequence();
+}
+
+void MouseWheelPhaseHandler::ScrollingMayBegin() {
+  scroll_phase_state_ = SCROLL_MAY_BEGIN;
+}
+
 void MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded(
-    blink::WebMouseWheelEvent last_mouse_wheel_event,
     bool should_route_event) {
   DCHECK(host_view_->wheel_scroll_latching_enabled());
-  blink::WebMouseWheelEvent mouse_wheel_event = last_mouse_wheel_event;
-  mouse_wheel_event.SetTimeStampSeconds(
+  last_mouse_wheel_event_.SetTimeStampSeconds(
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-  mouse_wheel_event.delta_x = 0;
-  mouse_wheel_event.delta_y = 0;
-  mouse_wheel_event.wheel_ticks_x = 0;
-  mouse_wheel_event.wheel_ticks_y = 0;
-  mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
-  mouse_wheel_event.dispatch_type =
+  last_mouse_wheel_event_.delta_x = 0;
+  last_mouse_wheel_event_.delta_y = 0;
+  last_mouse_wheel_event_.wheel_ticks_x = 0;
+  last_mouse_wheel_event_.wheel_ticks_y = 0;
+  last_mouse_wheel_event_.phase = blink::WebMouseWheelEvent::kPhaseEnded;
+  last_mouse_wheel_event_.dispatch_type =
       blink::WebInputEvent::DispatchType::kEventNonBlocking;
 
   if (should_route_event) {
     host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-        host_view_, &mouse_wheel_event,
+        host_view_, &last_mouse_wheel_event_,
         ui::LatencyInfo(ui::SourceEventType::WHEEL));
   } else {
     host_view_->ProcessMouseWheelEvent(
-        mouse_wheel_event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+        last_mouse_wheel_event_, ui::LatencyInfo(ui::SourceEventType::WHEEL));
   }
 }
 
 void MouseWheelPhaseHandler::ScheduleMouseWheelEndDispatching(
-    blink::WebMouseWheelEvent wheel_event,
     bool should_route_event) {
   mouse_wheel_end_dispatch_timer_.Start(
       FROM_HERE,
       base::TimeDelta::FromMilliseconds(
           kDefaultMouseWheelLatchingTransactionMs),
       base::Bind(&MouseWheelPhaseHandler::SendSyntheticWheelEventWithPhaseEnded,
-                 base::Unretained(this), wheel_event, should_route_event));
+                 base::Unretained(this), should_route_event));
 }
 
 }  // namespace content
