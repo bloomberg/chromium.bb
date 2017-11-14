@@ -201,8 +201,9 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
     }
   }
   if (!shared_worker_context_provider_ || shared_worker_context_provider_lost) {
+    constexpr bool support_locking = true;
     shared_worker_context_provider_ = InProcessContextProvider::CreateOffscreen(
-        &gpu_memory_buffer_manager_, &image_factory_, nullptr);
+        &gpu_memory_buffer_manager_, &image_factory_, nullptr, support_locking);
     auto result = shared_worker_context_provider_->BindToCurrentThread();
     if (result != gpu::ContextResult::kSuccess)
       shared_worker_context_provider_ = nullptr;
@@ -223,11 +224,12 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   if (!data)
     data = CreatePerCompositorData(compositor.get());
 
+  constexpr bool support_locking = false;
   scoped_refptr<InProcessContextProvider> context_provider =
       InProcessContextProvider::Create(
           attribs, shared_worker_context_provider_.get(),
           &gpu_memory_buffer_manager_, &image_factory_, data->surface_handle,
-          "UICompositor");
+          "UICompositor", support_locking);
 
   std::unique_ptr<viz::OutputSurface> display_output_surface;
   if (use_test_surface_) {
@@ -297,8 +299,9 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
           GL_NO_ERROR)
     return shared_main_thread_contexts_;
 
+  constexpr bool support_locking = false;
   shared_main_thread_contexts_ = InProcessContextProvider::CreateOffscreen(
-      &gpu_memory_buffer_manager_, &image_factory_, nullptr);
+      &gpu_memory_buffer_manager_, &image_factory_, nullptr, support_locking);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
     shared_main_thread_contexts_ = NULL;

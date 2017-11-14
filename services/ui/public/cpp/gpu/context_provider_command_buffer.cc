@@ -320,12 +320,16 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
                  // callback.
                  base::Unretained(this)));
 
+  // Grab the implementation directly instead of going through ContextGL()
+  // because the lock hasn't been acquired yet.
+  gpu::gles2::GLES2Interface* gl = gles2_impl_.get();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGpuClientTracing)) {
     // This wraps the real GLES2Implementation and we should always use this
     // instead when it's present.
     trace_impl_ = std::make_unique<gpu::gles2::GLES2TraceImplementation>(
         gles2_impl_.get());
+    gl = trace_impl_.get();
   }
 
   // Do this last once the context is set up.
@@ -333,7 +337,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       command_buffer_metrics::ContextTypeToString(context_type_);
   std::string unique_context_name =
       base::StringPrintf("%s-%p", type_name.c_str(), gles2_impl_.get());
-  ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
+  gl->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   // If support_locking_ is true, the context may be used from multiple
   // threads, and any async callstacks will need to hold the same lock, so
   // give it to the command buffer and cache controller.
@@ -348,14 +352,10 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
   return bind_result_;
 }
 
-void ContextProviderCommandBuffer::DetachFromThread() {
-  context_thread_checker_.DetachFromThread();
-}
-
 gpu::gles2::GLES2Interface* ContextProviderCommandBuffer::ContextGL() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   if (trace_impl_)
     return trace_impl_.get();
@@ -369,7 +369,7 @@ gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
 class GrContext* ContextProviderCommandBuffer::GrContext() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   if (gr_context_)
     return gr_context_->get();
@@ -387,7 +387,7 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 }
 
 viz::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
 }
 
@@ -395,7 +395,7 @@ void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
   if (gr_context_) {
     DCHECK(bind_tried_);
     DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-    DCHECK(context_thread_checker_.CalledOnValidThread());
+    CheckValidThreadOrLockAcquired();
     gr_context_->ResetContext(state);
   }
 }
@@ -415,7 +415,7 @@ const gpu::Capabilities& ContextProviderCommandBuffer::ContextCapabilities()
     const {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   // Skips past the trace_impl_ as it doesn't have capabilities.
   return gles2_impl_->capabilities();
 }
@@ -424,7 +424,7 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
     const {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   if (!command_buffer_ || !command_buffer_->channel()) {
     static const gpu::GpuFeatureInfo default_gpu_feature_info;
     return default_gpu_feature_info;
@@ -433,7 +433,7 @@ const gpu::GpuFeatureInfo& ContextProviderCommandBuffer::GetGpuFeatureInfo()
 }
 
 void ContextProviderCommandBuffer::OnLostContext() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   for (auto& observer : observers_)
     observer.OnContextLost();

@@ -69,7 +69,6 @@ class ContextProviderCommandBuffer
 
   // viz::ContextProvider implementation.
   gpu::ContextResult BindToCurrentThread() override;
-  void DetachFromThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -107,6 +106,15 @@ class ContextProviderCommandBuffer
     friend class base::RefCountedThreadSafe<SharedProviders>;
     ~SharedProviders();
   };
+  void CheckValidThreadOrLockAcquired() const {
+#if DCHECK_IS_ON()
+    if (support_locking_) {
+      context_lock_.AssertAcquired();
+    } else {
+      DCHECK(context_thread_checker_.CalledOnValidThread());
+    }
+#endif
+  }
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
