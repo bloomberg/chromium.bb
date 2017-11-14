@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "content/browser/media/media_browsertest.h"
 #include "media/base/media_switches.h"
+#include "media/base/test_data_util.h"
 #include "media/media_features.h"
 
 #if defined(OS_ANDROID)
@@ -56,11 +57,12 @@ class MediaSourceTest : public content::MediaBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoAudio_WebM) {
-  TestSimplePlayback("bear-320x240.webm", kWebMAudioVideo, kEnded);
+  TestSimplePlayback("bear-320x240.webm", kWebMAudioVideo, media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoOnly_WebM) {
-  TestSimplePlayback("bear-320x240-video-only.webm", kWebMVideoOnly, kEnded);
+  TestSimplePlayback("bear-320x240-video-only.webm", kWebMVideoOnly,
+                     media::kEnded);
 }
 
 // TODO(servolk): Android is supposed to support AAC in ADTS container with
@@ -68,30 +70,32 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_VideoOnly_WebM) {
 // some issue in OMX AAC decoder (crbug.com/528361)
 #if BUILDFLAG(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_AAC_ADTS) {
-  TestSimplePlayback("sfx.adts", kAAC_ADTS_AudioOnly, kEnded);
+  TestSimplePlayback("sfx.adts", kAAC_ADTS_AudioOnly, media::kEnded);
 }
 #endif
 
 // Opus is not supported in Android as of now.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_Opus_WebM) {
-  TestSimplePlayback("bear-opus.webm", kWebMOpusAudioOnly, kEnded);
+  TestSimplePlayback("bear-opus.webm", kWebMOpusAudioOnly, media::kEnded);
 }
 #endif
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioOnly_WebM) {
-  TestSimplePlayback("bear-320x240-audio-only.webm", kWebMAudioOnly, kEnded);
+  TestSimplePlayback("bear-320x240-audio-only.webm", kWebMAudioOnly,
+                     media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
   TestSimplePlayback("bear-320x240-video-only.webm", kWebMAudioOnly,
-                     kErrorEvent);
+                     media::kErrorEvent);
 }
 
 // Flaky test crbug.com/246308
 // Test changed to skip checks resulting in flakiness. Proper fix still needed.
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
-  RunMediaTestPage("mse_config_change.html", base::StringPairs(), kEnded, true);
+  RunMediaTestPage("mse_config_change.html", base::StringPairs(), media::kEnded,
+                   true);
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -102,7 +106,8 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   base::StringPairs query_params;
   query_params.push_back(std::make_pair("videoFormat", "CLEAR_MP4"));
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_WEBM"));
-  RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
+  RunMediaTestPage("mse_different_containers.html", query_params, media::kEnded,
+                   true);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -110,20 +115,21 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
   base::StringPairs query_params;
   query_params.push_back(std::make_pair("videoFormat", "CLEAR_WEBM"));
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_MP4"));
-  RunMediaTestPage("mse_different_containers.html", query_params, kEnded, true);
+  RunMediaTestPage("mse_different_containers.html", query_params, media::kEnded,
+                   true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest,
                        Playback_AudioOnly_FLAC_MP4_Unsupported) {
   // The feature is disabled by test setup, so verify playback failure.
-  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, kFailed);
+  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, media::kFailed);
 }
 #endif
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_AudioVideo_Mp2t) {
-  TestSimplePlayback("bear-1280x720.ts", kMp2tAudioVideo, kEnded);
+  TestSimplePlayback("bear-1280x720.ts", kMp2tAudioVideo, media::kEnded);
 }
 #endif
 #endif
@@ -142,7 +148,7 @@ class MediaSourceFlacInIsobmffTest : public content::MediaSourceTest {
 IN_PROC_BROWSER_TEST_F(MediaSourceFlacInIsobmffTest,
                        Playback_AudioOnly_FLAC_MP4_Supported) {
   // The feature is enabled by test setup, so verify playback success.
-  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, kEnded);
+  TestSimplePlayback("bear-flac_frag.mp4", kMp4FlacAudioOnly, media::kEnded);
 }
 #endif
 

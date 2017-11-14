@@ -17,12 +17,6 @@ class TitleWatcher;
 // A base class for media related browser tests.
 class MediaBrowserTest : public ContentBrowserTest {
  public:
-  // Common test results.
-  static const char kEnded[];
-  static const char kError[];
-  static const char kErrorEvent[];
-  static const char kFailed[];
-
   // ContentBrowserTest implementation.
   void SetUpCommandLine(base::CommandLine* command_line) override;
 

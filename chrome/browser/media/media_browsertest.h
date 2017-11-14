@@ -23,12 +23,6 @@ namespace chrome {
 class MediaBrowserTest : public InProcessBrowserTest,
                          public content::WebContentsObserver {
  protected:
-  // Common test results.
-  static const char kEnded[];
-  // TODO(xhwang): Report detailed errors, e.g. "ERROR-3".
-  static const char kError[];
-  static const char kFailed[];
-
   MediaBrowserTest();
   ~MediaBrowserTest() override;
 

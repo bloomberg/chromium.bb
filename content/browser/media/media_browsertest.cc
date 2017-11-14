@@ -21,19 +21,6 @@
 
 namespace content {
 
-// TODO(sandersd): Change the tests to use a more unique message.
-// See http://crbug.com/592067
-
-// Common test results.
-const char MediaBrowserTest::kFailed[] = "FAILED";
-
-// Upper case event name set by Utils.installTitleEventHandler().
-const char MediaBrowserTest::kEnded[] = "ENDED";
-const char MediaBrowserTest::kErrorEvent[] = "ERROR";
-
-// Lower case event name as set by Utils.failTest().
-const char MediaBrowserTest::kError[] = "error";
-
 #if defined(OS_ANDROID)
 // Title set by android cleaner page after short timeout.
 const char kClean[] = "CLEAN";
@@ -96,10 +83,10 @@ std::string MediaBrowserTest::EncodeErrorMessage(
 }
 
 void MediaBrowserTest::AddTitlesToAwait(content::TitleWatcher* title_watcher) {
-  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
-  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kError));
-  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kErrorEvent));
-  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kFailed));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kEnded));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kError));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kErrorEvent));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(media::kFailed));
 }
 
 // Tests playback and seeking of an audio or video file over file or http based
@@ -124,7 +111,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
                  bool http) {
     base::StringPairs query_params;
     query_params.emplace_back(tag, media_file);
-    RunMediaTestPage("player.html", query_params, kEnded, http);
+    RunMediaTestPage("player.html", query_params, media::kEnded, http);
   }
 
   void RunErrorMessageTest(const std::string& tag,
@@ -135,7 +122,7 @@ class MediaTest : public testing::WithParamInterface<bool>,
     query_params.emplace_back(tag, media_file);
     query_params.emplace_back("error_substr",
                               EncodeErrorMessage(expected_error_substring));
-    RunMediaTestPage("player.html", query_params, kErrorEvent, http);
+    RunMediaTestPage("player.html", query_params, media::kErrorEvent, http);
   }
 
   void RunVideoSizeTest(const char* media_file, int width, int height) {
@@ -247,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated270) {
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaTest, LoadManyVideos) {
   base::StringPairs query_params;
-  RunMediaTestPage("load_many_videos.html", query_params, kEnded, true);
+  RunMediaTestPage("load_many_videos.html", query_params, media::kEnded, true);
 }
 #endif  // !defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
