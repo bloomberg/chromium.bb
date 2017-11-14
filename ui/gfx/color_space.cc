@@ -209,6 +209,9 @@ bool ColorSpace::IsParametric() const {
 ColorSpace ColorSpace::GetParametricApproximation() const {
   ColorSpace result = *this;
 
+  // Parametric color spaces never have an ICC based SkColorSpace.
+  result.icc_profile_sk_color_space_ = nullptr;
+
   if (!IsValid())
     return result;
 
@@ -220,7 +223,6 @@ ColorSpace ColorSpace::GetParametricApproximation() const {
   // transfer function.
   result.transfer_ = TransferID::IEC61966_2_1;
   result.icc_profile_id_ = 0;
-  result.icc_profile_sk_color_space_ = nullptr;
   return result;
 }
 
