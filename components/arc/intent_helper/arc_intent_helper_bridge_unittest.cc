@@ -350,4 +350,18 @@ TEST_F(ArcIntentHelperTest, TestOnOpenChromeSettings) {
             test_open_url_delegate_->TakeLastOpenedUrl());
 }
 
+// Tests that AppendStringToIntentHelperPackageName works.
+TEST_F(ArcIntentHelperTest, TestAppendStringToIntentHelperPackageName) {
+  std::string fake_activity = "this_is_a_fake_activity";
+  EXPECT_EQ(
+      ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
+          fake_activity),
+      ArcIntentHelperBridge::kArcIntentHelperPackageName + "." + fake_activity);
+
+  std::string empty_string = "";
+  EXPECT_EQ(ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
+                empty_string),
+            ArcIntentHelperBridge::kArcIntentHelperPackageName + ".");
+}
+
 }  // namespace arc
