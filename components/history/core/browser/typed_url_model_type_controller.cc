@@ -5,6 +5,7 @@
 #include "components/history/core/browser/typed_url_model_type_controller.h"
 
 #include "base/bind.h"
+#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
@@ -24,14 +25,21 @@ namespace {
 // the tasks we want to run.
 class RunTaskOnHistoryThread : public HistoryDBTask {
  public:
-  explicit RunTaskOnHistoryThread(const base::Closure& task) : task_(task) {}
+  explicit RunTaskOnHistoryThread(const ModelTypeController::BridgeTask& task)
+      : task_(task) {}
 
   bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
     // Invoke the task, then free it immediately so we don't keep a reference
     // around all the way until DoneRunOnMainThread() is invoked back on the
     // main thread - we want to release references as soon as possible to avoid
     // keeping them around too long during shutdown.
-    task_.Run();
+    TypedURLSyncBridge* bridge = backend->GetTypedURLSyncBridge();
+    if (!bridge) {
+      NOTREACHED();
+      return true;
+    }
+
+    task_.Run(bridge);
     task_.Reset();
     return true;
   }
@@ -39,7 +47,7 @@ class RunTaskOnHistoryThread : public HistoryDBTask {
   void DoneRunOnMainThread() override {}
 
  protected:
-  base::Closure task_;
+  ModelTypeController::BridgeTask task_;
 };
 
 }  // namespace
@@ -73,8 +81,8 @@ void TypedURLModelTypeController::PostBridgeTask(const base::Location& location,
     return;
   }
 
-  TypedURLSyncBridge* bridge = history->GetTypedURLSyncBridge();
-  PostTaskOnHistoryThread(base::Bind(task, bridge));
+  history->ScheduleDBTask(std::make_unique<RunTaskOnHistoryThread>(task),
+                          &task_tracker_);
 }
 
 void TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged() {
@@ -88,19 +96,6 @@ void TypedURLModelTypeController::OnSavingBrowserHistoryDisabledChanged() {
           FROM_HERE, "History saving is now disabled by policy."));
     }
   }
-}
-
-void TypedURLModelTypeController::PostTaskOnHistoryThread(
-    const base::Closure& task) {
-  history::HistoryService* history = sync_client()->GetHistoryService();
-  if (!history) {
-    // History must be disabled - don't start.
-    LOG(WARNING) << "Cannot access history service.";
-    return;
-  }
-
-  history->ScheduleDBTask(std::make_unique<RunTaskOnHistoryThread>(task),
-                          &task_tracker_);
 }
 
 }  // namespace history

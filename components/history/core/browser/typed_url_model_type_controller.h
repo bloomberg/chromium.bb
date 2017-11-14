@@ -28,8 +28,6 @@ class TypedURLModelTypeController : public syncer::ModelTypeController {
 
   void OnSavingBrowserHistoryDisabledChanged();
 
-  void PostTaskOnHistoryThread(const base::Closure& task);
-
   // Name of the pref that indicates whether saving history is disabled.
   const char* history_disabled_pref_name_;
 
