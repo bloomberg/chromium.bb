@@ -16,7 +16,7 @@ CallbackInterfaceBase::CallbackInterfaceBase(
   v8::Isolate* isolate = callback_relevant_script_state_->GetIsolate();
 
   callback_object_.Set(isolate, callback_object);
-  callback_object_is_callable_ =
+  is_callback_object_callable_ =
       (single_op_or_not == kSingleOperation) && callback_object->IsCallable();
   incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
