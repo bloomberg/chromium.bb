@@ -13,11 +13,12 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/app_list/app_list_item_list_observer.h"
+#include "ui/app_list/app_list_view_state.h"
 #include "ui/app_list/search_result.h"
-#include "ui/app_list/views/app_list_view.h"
 #include "ui/base/models/list_model.h"
 
 namespace app_list {
@@ -68,10 +69,8 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   State state() const { return state_; }
 
   // The current state of the AppListView. Controlled by AppListView.
-  void SetStateFullscreen(AppListView::AppListState state);
-  AppListView::AppListState state_fullscreen() const {
-    return state_fullscreen_;
-  }
+  void SetStateFullscreen(AppListViewState state);
+  AppListViewState state_fullscreen() const { return state_fullscreen_; }
 
   // Whether tablet mode is active. Controlled by AppListView.
   void SetTabletMode(bool started);
@@ -239,7 +238,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   Status status_;
   State state_;
   // The AppListView state. Controlled by the AppListView.
-  AppListView::AppListState state_fullscreen_;
+  AppListViewState state_fullscreen_;
   base::ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
   bool custom_launcher_page_enabled_;

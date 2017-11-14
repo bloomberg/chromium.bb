@@ -784,7 +784,7 @@ void SearchBoxView::UpdateOpacity() {
   AppListView* app_list_view = contents_view->app_list_view();
   bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != AppListView::AppListState::CLOSED);
+      (app_list_view->app_list_state() != AppListViewState::CLOSED);
   // Restores the opacity of searchbox if the gesture dragging ends.
   this->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
   contents_view->search_results_page_view()->layer()->SetOpacity(

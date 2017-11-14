@@ -22,7 +22,7 @@ AppListModel::AppListModel()
       results_(new SearchResults),
       status_(STATUS_NORMAL),
       state_(INVALID_STATE),
-      state_fullscreen_(AppListView::CLOSED),
+      state_fullscreen_(AppListViewState::CLOSED),
       folders_enabled_(false),
       custom_launcher_page_enabled_(true),
       search_engine_is_google_(false),
@@ -63,7 +63,7 @@ void AppListModel::SetState(State state) {
     observer.OnAppListModelStateChanged(old_state, state_);
 }
 
-void AppListModel::SetStateFullscreen(AppListView::AppListState state) {
+void AppListModel::SetStateFullscreen(AppListViewState state) {
   state_fullscreen_ = state;
 }
 

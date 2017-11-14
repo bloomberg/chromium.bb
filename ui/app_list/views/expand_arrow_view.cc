@@ -267,7 +267,7 @@ void ExpandArrowView::TransitToFullscreenAllAppsState() {
   UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, kExpandArrow,
                             kMaxPeekingToFullscreen);
   contents_view_->SetActiveState(AppListModel::STATE_APPS);
-  app_list_view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+  app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
 }
 
 void ExpandArrowView::ScheduleHintingAnimation(bool is_first_time) {

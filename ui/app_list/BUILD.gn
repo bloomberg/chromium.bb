@@ -28,6 +28,7 @@ component("app_list") {
     "app_list_util.cc",
     "app_list_util.h",
     "app_list_view_delegate.h",
+    "app_list_view_state.h",
     "folder_image.cc",
     "folder_image.h",
     "pagination_controller.cc",

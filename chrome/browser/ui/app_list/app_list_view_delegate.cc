@@ -47,6 +47,7 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
+#include "ui/app_list/app_list_view_state.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_controller.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -72,15 +73,14 @@ enum ApplistSearchResultOpenedSource {
   kMaxApplistSearchResultOpenedSource = 3,
 };
 
-void RecordHistogram(bool is_tablet_mode,
-                     app_list::AppListView::AppListState state) {
+void RecordHistogram(bool is_tablet_mode, app_list::AppListViewState state) {
   ApplistSearchResultOpenedSource source;
 
   if (is_tablet_mode) {
     source = kFullscreenTablet;
   } else {
-    source = state == app_list::AppListView::HALF ? kHalfClamshell
-                                                  : kFullscreenClamshell;
+    source = state == app_list::AppListViewState::HALF ? kHalfClamshell
+                                                       : kFullscreenClamshell;
   }
   UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenSourceHistogram, source,
                             kMaxApplistSearchResultOpenedSource);
