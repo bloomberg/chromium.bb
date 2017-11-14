@@ -197,6 +197,7 @@ crbug.com/702006 virtual/spv175/paint/invalidation/compositing/scrolling-neg-z-i
 
 # Sheriff failures 2017-11-14
 crbug.com/784909  fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
+crbug.com/784956  fast/history/frameset-repeated-name.html [ Pass Failure ]
 
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
