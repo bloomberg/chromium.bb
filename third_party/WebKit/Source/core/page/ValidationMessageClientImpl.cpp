@@ -70,6 +70,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
     HideValidationMessageImmediately(*current_anchor_);
   current_anchor_ = &anchor;
   message_ = message;
+  web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
   const double kMinimumSecondToShowValidationMessage = 5.0;
   const double kSecondPerCharacter = 0.05;
   finish_time_ =
@@ -88,7 +89,6 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   overlay_ = PageOverlay::Create(target_frame, std::move(delegate));
   target_frame->GetFrameView()
       ->UpdateLifecycleToCompositingCleanPlusScrolling();
-  web_view_.GetChromeClient().RegisterPopupOpeningObserver(this);
   LayoutOverlay();
 }
 
