@@ -94,15 +94,11 @@ define('media_router_bindings', [
       'for_display': route.forDisplay,
       'is_incognito': route.offTheRecord,
       'is_local_presentation': route.isOffscreenPresentation,
+      'supports_media_route_controller': !!route.supportsMediaRouteController,
+      'controller_type': route.controllerType,
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
-      'supports_media_route_controller':
-          !!route.supportsMediaRouteController,  // M61
-      'controller_type':                         // M62
-          route.controllerType ||
-              (!!route.supportsMediaRouteController ?
-                  mediaRouterMojom.RouteControllerType.kGeneric :
-                  mediaRouterMojom.RouteControllerType.kNone)
+      'presentation_id': route.presentationId
     });
   }
 

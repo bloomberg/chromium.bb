@@ -86,6 +86,8 @@ enum RouteControllerType {
 struct MediaRoute {
   // The ID of this media route, e.g. "r_PR1O_blkC9dsKp-tb1ti8qurOo".
   string media_route_id;
+  // The ID of the presentation that this route is associated with.
+  string presentation_id;
   // The ID of the media source being sent through this media route.
   // May be missing if route is not local.
   string? media_source;

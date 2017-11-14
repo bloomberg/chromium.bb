@@ -36,6 +36,7 @@ const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
 MediaRoute CreateMediaRoute() {
   MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
                    std::string(), true);
+  route.set_presentation_id(kPresentationId);
   route.set_controller_type(RouteControllerType::kGeneric);
   return route;
 }

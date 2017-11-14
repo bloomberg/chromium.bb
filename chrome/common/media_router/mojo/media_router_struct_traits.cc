@@ -177,6 +177,12 @@ bool StructTraits<media_router::mojom::MediaRouteDataView,
 
   out->set_media_route_id(media_route_id);
 
+  std::string presentation_id;
+  if (!data.ReadPresentationId(&presentation_id))
+    return false;
+
+  out->set_presentation_id(presentation_id);
+
   base::Optional<media_router::MediaSource::Id> media_source_id;
   if (!data.ReadMediaSource(&media_source_id))
     return false;

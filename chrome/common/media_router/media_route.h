@@ -55,6 +55,11 @@ class MediaRoute {
   }
   const MediaRoute::Id& media_route_id() const { return media_route_id_; }
 
+  void set_presentation_id(const std::string& presentation_id) {
+    presentation_id_ = presentation_id;
+  }
+  const std::string& presentation_id() const { return presentation_id_; }
+
   void set_media_source(const MediaSource& media_source) {
     media_source_ = media_source;
   }
@@ -111,6 +116,9 @@ class MediaRoute {
  private:
   // The media route identifier.
   MediaRoute::Id media_route_id_;
+
+  // The ID of the presentation that this route is associated with.
+  std::string presentation_id_;
 
   // The media source being routed.
   MediaSource media_source_;

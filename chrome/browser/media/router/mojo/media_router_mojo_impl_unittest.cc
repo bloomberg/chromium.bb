@@ -90,6 +90,7 @@ IssueInfo CreateIssueInfo(const std::string& title) {
 MediaRoute CreateMediaRoute() {
   MediaRoute route(kRouteId, MediaSource(kSource), kSinkId, kDescription, true,
                    std::string(), true);
+  route.set_presentation_id(kPresentationId);
   route.set_controller_type(RouteControllerType::kGeneric);
   return route;
 }
@@ -98,6 +99,7 @@ MediaRoute CreateMediaRoute() {
 MediaRoute CreateMediaRoute2() {
   MediaRoute route(kRouteId2, MediaSource(kSource), kSinkId, kDescription, true,
                    std::string(), true);
+  route.set_presentation_id(kPresentationId);
   route.set_controller_type(RouteControllerType::kGeneric);
   return route;
 }
@@ -125,20 +127,6 @@ class RouteResponseCallbackHandler {
                     RouteRequestResult::ResultCode result_code));
 };
 
-class TestMediaRouterMojoImpl : public MediaRouterMojoImpl {
- public:
-  explicit TestMediaRouterMojoImpl(content::BrowserContext* context)
-      : MediaRouterMojoImpl(context) {}
-  ~TestMediaRouterMojoImpl() override {}
-
- protected:
-  mojom::MediaRouteProvider* GetProviderForPresentation(
-      const std::string& presentation_id) override {
-    return media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION]
-        .get();
-  }
-};
-
 class MediaRouterMojoImplTest : public MediaRouterMojoTest {
  public:
   MediaRouterMojoImplTest() {}
@@ -163,7 +151,7 @@ class MediaRouterMojoImplTest : public MediaRouterMojoTest {
  private:
   static std::unique_ptr<KeyedService> CreateMediaRouter(
       content::BrowserContext* context) {
-    return std::unique_ptr<KeyedService>(new TestMediaRouterMojoImpl(context));
+    return std::unique_ptr<KeyedService>(new MediaRouterMojoImpl(context));
   }
 
   base::HistogramTester histogram_tester_;
@@ -564,13 +552,13 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   EXPECT_CALL(mock_extension_provider_, StartObservingMediaSinks(kSource));
   EXPECT_CALL(mock_extension_provider_, StartObservingMediaSinks(kSource2));
 
-  auto sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  auto sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_TRUE(sinks_observer->Init());
-  auto extra_sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  auto extra_sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_TRUE(extra_sinks_observer->Init());
-  auto unrelated_sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  auto unrelated_sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), MediaSource(kSource2), url::Origin::Create(GURL(kOrigin)));
   EXPECT_TRUE(unrelated_sinks_observer->Init());
   base::RunLoop().RunUntilIdle();
@@ -599,14 +587,14 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   // Since the MediaRouterMojoImpl has already received results for
   // |media_source|, return cached results to observers that are subsequently
   // registered.
-  auto cached_sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  auto cached_sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_CALL(*cached_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_TRUE(cached_sinks_observer->Init());
 
   // Different origin from cached result. Empty list will be returned.
-  auto cached_sinks_observer2 = base::MakeUnique<MockMediaSinksObserver>(
+  auto cached_sinks_observer2 = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL("https://youtube.com")));
   EXPECT_CALL(*cached_sinks_observer2, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(cached_sinks_observer2->Init());
@@ -630,12 +618,12 @@ TEST_F(MediaRouterMojoImplTest,
       mojom::MediaRouteProvider::Id::EXTENSION,
       mojom::MediaRouter::SinkAvailability::UNAVAILABLE);
   MediaSource media_source(kSource);
-  auto sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
+  auto sinks_observer = std::make_unique<MockMediaSinksObserver>(
       router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_CALL(*sinks_observer, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer->Init());
   MediaSource media_source2(kSource2);
-  auto sinks_observer2 = base::MakeUnique<MockMediaSinksObserver>(
+  auto sinks_observer2 = std::make_unique<MockMediaSinksObserver>(
       router(), media_source2, url::Origin::Create(GURL(kOrigin)));
   EXPECT_CALL(*sinks_observer2, OnSinksReceived(IsEmpty()));
   EXPECT_TRUE(sinks_observer2->Init());
@@ -777,7 +765,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterMediaRoutesObserver_DedupingWithCache) {
               StartObservingMediaRoutes(media_source.id()))
       .Times(1);
   auto observer1 =
-      base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
+      std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
   base::RunLoop().RunUntilIdle();
   EXPECT_CALL(*observer1, OnRoutesUpdated(SequenceEquals(expected_routes),
                                           expected_joinable_route_ids))
@@ -790,9 +778,9 @@ TEST_F(MediaRouterMojoImplTest, RegisterMediaRoutesObserver_DedupingWithCache) {
   // Creating two more observers will not wake up the provider. Instead, the
   // cached route list will be returned.
   auto observer2 =
-      base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
+      std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
   auto observer3 =
-      base::MakeUnique<MockMediaRoutesObserver>(router(), media_source.id());
+      std::make_unique<MockMediaRoutesObserver>(router(), media_source.id());
   EXPECT_CALL(*observer2, OnRoutesUpdated(SequenceEquals(expected_routes),
                                           expected_joinable_route_ids))
       .Times(1);

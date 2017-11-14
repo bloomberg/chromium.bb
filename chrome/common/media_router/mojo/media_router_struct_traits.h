@@ -221,7 +221,7 @@ struct StructTraits<media_router::mojom::IssueDataView,
     return issue.is_blocking;
   }
 
-  static std::string title(const media_router::IssueInfo& issue) {
+  static const std::string& title(const media_router::IssueInfo& issue) {
     return issue.title;
   }
 
@@ -308,22 +308,22 @@ struct StructTraits<media_router::mojom::MediaSinkDataView,
   static bool Read(media_router::mojom::MediaSinkDataView data,
                    media_router::MediaSinkInternal* out);
 
-  static std::string sink_id(
+  static const std::string& sink_id(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().id();
   }
 
-  static std::string name(
+  static const std::string& name(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().name();
   }
 
-  static base::Optional<std::string> description(
+  static const base::Optional<std::string>& description(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().description();
   }
 
-  static base::Optional<std::string> domain(
+  static const base::Optional<std::string>& domain(
       const media_router::MediaSinkInternal& sink_internal) {
     return sink_internal.sink().domain();
   }
@@ -382,8 +382,14 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
   static bool Read(media_router::mojom::MediaRouteDataView data,
                    media_router::MediaRoute* out);
 
-  static std::string media_route_id(const media_router::MediaRoute& route) {
+  static const std::string& media_route_id(
+      const media_router::MediaRoute& route) {
     return route.media_route_id();
+  }
+
+  static const std::string& presentation_id(
+      const media_router::MediaRoute& route) {
+    return route.presentation_id();
   }
 
   static base::Optional<std::string> media_source(
@@ -397,11 +403,12 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
                : base::make_optional(route.media_source().id());
   }
 
-  static std::string media_sink_id(const media_router::MediaRoute& route) {
+  static const std::string& media_sink_id(
+      const media_router::MediaRoute& route) {
     return route.media_sink_id();
   }
 
-  static std::string description(const media_router::MediaRoute& route) {
+  static const std::string& description(const media_router::MediaRoute& route) {
     return route.description();
   }
 
