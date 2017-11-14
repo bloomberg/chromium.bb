@@ -115,11 +115,10 @@ DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
       frontend_frame_(frontend_frame),
       menu_provider_(nullptr) {}
 
-DevToolsHost::~DevToolsHost() {
-  DCHECK(!client_);
-}
+DevToolsHost::~DevToolsHost() {}
 
 void DevToolsHost::Trace(blink::Visitor* visitor) {
+  visitor->Trace(client_);
   visitor->Trace(frontend_frame_);
   visitor->Trace(menu_provider_);
   ScriptWrappable::Trace(visitor);

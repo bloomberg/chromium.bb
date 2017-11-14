@@ -17,6 +17,8 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
 
  protected:
   void InitLocalFrame(LocalFrame&) const override;
+  void OnClearWindowObjectInMainWorld(Document&,
+                                      const Settings&) const override;
 
  private:
   void InstallSupplements(LocalFrame&) const override;
@@ -31,8 +33,6 @@ class MODULES_EXPORT ModulesInitializer : public CoreInitializer {
                                  Page*) const override;
   LinkResource* CreateServiceWorkerLinkResource(
       HTMLLinkElement*) const override;
-  void OnClearWindowObjectInMainWorld(Document&,
-                                      const Settings&) const override;
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       WebFrameClient*,
       HTMLMediaElement&,

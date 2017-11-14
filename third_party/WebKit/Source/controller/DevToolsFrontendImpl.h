@@ -28,46 +28,67 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDevToolsFrontendImpl_h
-#define WebDevToolsFrontendImpl_h
+#ifndef DevToolsFrontendImpl_h
+#define DevToolsFrontendImpl_h
 
-#include "core/CoreExport.h"
+#include "controller/ControllerExport.h"
 #include "core/inspector/InspectorFrontendClient.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/web/WebDevToolsFrontend.h"
+#include "public/web/devtools_frontend.mojom-blink.h"
 
 namespace blink {
 
 class DevToolsHost;
-class WebLocalFrameImpl;
+class LocalFrame;
 
-class CORE_EXPORT WebDevToolsFrontendImpl final
-    : public WebDevToolsFrontend,
+// This class lives as long as a frame (being a supplement), or until
+// it's host (mojom.DevToolsFrontendHost) is destroyed.
+class CONTROLLER_EXPORT DevToolsFrontendImpl final
+    : public GarbageCollectedFinalized<DevToolsFrontendImpl>,
+      public Supplement<LocalFrame>,
+      public mojom::blink::DevToolsFrontend,
       public InspectorFrontendClient {
-  WTF_MAKE_NONCOPYABLE(WebDevToolsFrontendImpl);
+  WTF_MAKE_NONCOPYABLE(DevToolsFrontendImpl);
+  USING_GARBAGE_COLLECTED_MIXIN(DevToolsFrontendImpl);
 
  public:
-  WebDevToolsFrontendImpl(WebLocalFrameImpl*, WebDevToolsFrontendClient*);
-  ~WebDevToolsFrontendImpl() override;
+  static void BindMojoRequest(LocalFrame*,
+                              mojom::blink::DevToolsFrontendAssociatedRequest);
+  static DevToolsFrontendImpl* From(LocalFrame*);
 
-  void DidClearWindowObject(WebLocalFrameImpl*);
+  ~DevToolsFrontendImpl() override;
+  void DidClearWindowObject();
+  void Trace(blink::Visitor*);
 
-  void SendMessageToEmbedder(const WTF::String&) override;
+ private:
+  DevToolsFrontendImpl(LocalFrame&,
+                       mojom::blink::DevToolsFrontendAssociatedRequest);
+  static const char* SupplementName();
+  void DestroyOnHostGone();
 
+  // mojom::blink::DevToolsFrontend implementation.
+  void SetupDevToolsFrontend(
+      const String& api_script,
+      mojom::blink::DevToolsFrontendHostAssociatedPtrInfo) override;
+  void SetupDevToolsExtensionAPI(const String& extension_api) override;
+
+  // InspectorFrontendClient implementation.
+  void SendMessageToEmbedder(const String&) override;
   bool IsUnderTest() override;
-
   void ShowContextMenu(LocalFrame*,
                        float x,
                        float y,
                        ContextMenuProvider*) override;
 
- private:
-  Persistent<WebLocalFrameImpl> web_frame_;
-  WebDevToolsFrontendClient* client_;
-  Persistent<DevToolsHost> devtools_host_;
+  Member<DevToolsHost> devtools_host_;
+  String api_script_;
+  mojom::blink::DevToolsFrontendHostAssociatedPtr host_;
+  mojo::AssociatedBinding<mojom::blink::DevToolsFrontend> binding_;
 };
 
 }  // namespace blink
