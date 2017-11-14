@@ -76,11 +76,12 @@
             // Create input values between -1.1 and 1.1
             let buffer =
                 context.createBuffer(1, testFrames, context.sampleRate);
-            bufferData = buffer.getChannelData(0);
+            bufferData = new Float32Array(testFrames);
             let start = -1 - scale;
             for (let k = 0; k < testFrames; ++k) {
               bufferData[k] = k * scale + start;
             }
+            buffer.copyToChannel(bufferData, 0);
 
             let source = context.createBufferSource();
             source.buffer = buffer;
