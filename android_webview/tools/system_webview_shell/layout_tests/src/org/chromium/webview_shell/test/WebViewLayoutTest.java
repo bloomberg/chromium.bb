@@ -23,6 +23,7 @@ import org.chromium.base.Log;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.webview_shell.WebViewLayoutTestActivity;
 
@@ -271,6 +272,7 @@ public class WebViewLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add("use-fake-device-for-media-stream")
+    @DisabledTest(message = "crbug.com/784868")
     public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
                 "blink-apis/webrtc/mediastream-permission-denied-callbacks-expected.txt");
