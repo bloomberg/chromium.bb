@@ -89,7 +89,7 @@ void SetCallStack(TracedValue* value) {
   // So we collect the top frame with SourceLocation::capture() to get the
   // binding call site info.
   SourceLocation::Capture()->ToTracedValue(value, "stackTrace");
-  v8::Isolate::GetCurrent()->GetCpuProfiler()->CollectSample();
+  v8::CpuProfiler::CollectSample(v8::Isolate::GetCurrent());
 }
 
 void InspectorTraceEvents::Init(CoreProbeSink* instrumenting_agents,
