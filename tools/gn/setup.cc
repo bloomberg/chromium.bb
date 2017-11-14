@@ -371,13 +371,14 @@ bool Setup::RunPostMessageLoop() {
   }
 
   if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
-    // TODO(brettw) implement a system to have a different marker for
-    // warnings. Until we have a better system, print the error but don't
-    // return failure unless requested on the command line.
-    err.PrintToStdout();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kFailOnUnusedArgs))
+            switches::kFailOnUnusedArgs)) {
+      err.PrintToStdout();
       return false;
+    }
+    err.PrintNonfatalToStdout();
+    OutputString("\nThe build continued as if that argument was "
+                 "unspecified.\n\n");
     return true;
   }
 

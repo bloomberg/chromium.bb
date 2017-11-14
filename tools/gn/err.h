@@ -24,7 +24,7 @@ class Value;
 // below. They can provide additional context.
 class Err {
  public:
-  typedef std::vector<LocationRange> RangeList;
+  using RangeList = std::vector<LocationRange>;
 
   // Indicates no error.
   Err();
@@ -70,8 +70,20 @@ class Err {
 
   void PrintToStdout() const;
 
+  // Prints to standard out but uses a "WARNING" messaging instead of the
+  // normal "ERROR" messaging. This is a property of the printing system rather
+  // than of the Err class because there is no expectation that code calling a
+  // function that take an Err check that the error is nonfatal and continue.
+  // Generally all Err objects with has_error() set are fatal.
+  //
+  // In some very specific cases code will detect a condition and print a
+  // nonfatal error to the screen instead of returning it. In these cases, that
+  // code can decide at printing time whether it will continue (and use this
+  // method) or not (and use PrintToStdout()).
+  void PrintNonfatalToStdout() const;
+
  private:
-  void InternalPrintToStdout(bool is_sub_err) const;
+  void InternalPrintToStdout(bool is_sub_err, bool is_fatal) const;
 
   bool has_error_;
   Location location_;

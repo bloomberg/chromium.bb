@@ -248,7 +248,7 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
   std::string err_help(
       "The variable \"" + name + "\" was set as a build argument\n"
       "but never appeared in a declare_args() block in any buildfile.\n\n"
-      "To view all possible args, run \"gn args --list <builddir>\"");
+      "To view all possible args, run \"gn args --list <out_dir>\"");
 
   // Use all declare_args for a spelling suggestion.
   std::vector<base::StringPiece> candidates;
