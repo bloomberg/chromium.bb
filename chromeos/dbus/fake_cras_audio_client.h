@@ -29,8 +29,7 @@ class CHROMEOS_EXPORT FakeCrasAudioClient : public CrasAudioClient {
   void GetVolumeState(const GetVolumeStateCallback& callback) override;
   void GetDefaultOutputBufferSize(
       const GetDefaultOutputBufferSizeCallback& callback) override;
-  void GetNodes(const GetNodesCallback& callback,
-                const ErrorCallback& error_callback) override;
+  void GetNodes(DBusMethodCallback<AudioNodeList> callback) override;
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override;
   void SetOutputUserMute(bool mute_on) override;
   void SetInputNodeGain(uint64_t node_id, int32_t gain) override;

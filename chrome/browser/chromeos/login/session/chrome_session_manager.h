@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_CHROME_SESSION_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SESSION_CHROME_SESSION_MANAGER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/session_manager/core/session_manager.h"
 

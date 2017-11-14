@@ -647,10 +647,6 @@ void CrasAudioHandler::SetMuteForDevice(uint64_t device_id, bool mute_on) {
     audio_pref_handler_->SetMuteValue(*device, mute_on);
 }
 
-void CrasAudioHandler::LogErrors() {
-  log_errors_ = true;
-}
-
 // If the HDMI device is the active output device, when the device enters/exits
 // docking mode, or HDMI display changes resolution, or chromeos device
 // suspends/resumes, cras will lose the HDMI output node for a short period of
@@ -685,7 +681,6 @@ CrasAudioHandler::CrasAudioHandler(
       output_mute_locked_(false),
       output_channels_(2),
       output_mono_on_(false),
-      log_errors_(false),
       hdmi_rediscover_grace_period_duration_in_ms_(
           kHDMIRediscoverGracePeriodDurationInMs),
       hdmi_rediscovering_(false),
@@ -699,8 +694,6 @@ CrasAudioHandler::CrasAudioHandler(
     return;
   GetCrasAudioClient()->AddObserver(this);
   audio_pref_handler_->AddAudioPrefObserver(this);
-  if (DBusThreadManager::Get()->GetSessionManagerClient())
-    DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
   InitializeAudioState();
   // Unittest may not have the task runner for the current thread.
   if (base::ThreadTaskRunnerHandle::IsSet())
@@ -712,17 +705,12 @@ CrasAudioHandler::~CrasAudioHandler() {
   if (!HasCrasAudioClient())
     return;
   GetCrasAudioClient()->RemoveObserver(this);
-  if (DBusThreadManager::Get()->GetSessionManagerClient())
-    DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   if (audio_pref_handler_.get())
     audio_pref_handler_->RemoveAudioPrefObserver(this);
   audio_pref_handler_ = nullptr;
 }
 
 void CrasAudioHandler::AudioClientRestarted() {
-  // Make sure the logging is enabled in case cras server
-  // restarts after crashing.
-  LogErrors();
   InitializeAudioState();
 }
 
@@ -791,9 +779,8 @@ void CrasAudioHandler::ActiveOutputNodeChanged(uint64_t node_id) {
   // During system boot, cras may change active input to unknown device 0x1,
   // we don't need to log it, since it is not an valid device.
   if (GetDeviceFromId(node_id)) {
-    LOG_IF(WARNING, log_errors_)
-        << "Active output node changed unexpectedly by system node_id="
-        << "0x" << std::hex << node_id;
+    LOG(WARNING) << "Active output node changed unexpectedly by system node_id="
+                 << "0x" << std::hex << node_id;
   }
 }
 
@@ -805,9 +792,8 @@ void CrasAudioHandler::ActiveInputNodeChanged(uint64_t node_id) {
   // During system boot, cras may change active input to unknown device 0x2,
   // we don't need to log it, since it is not an valid device.
   if (GetDeviceFromId(node_id)) {
-    LOG_IF(WARNING, log_errors_)
-        << "Active input node changed unexpectedly by system node_id="
-        << "0x" << std::hex << node_id;
+    LOG(WARNING) << "Active input node changed unexpectedly by system node_id="
+                 << "0x" << std::hex << node_id;
   }
 }
 
@@ -818,12 +804,6 @@ void CrasAudioHandler::HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec) {
 
 void CrasAudioHandler::OnAudioPolicyPrefChanged() {
   ApplyAudioPolicy();
-}
-
-void CrasAudioHandler::EmitLoginPromptVisibleCalled() {
-  // Enable logging after cras server is started, which will be after
-  // EmitLoginPromptVisible.
-  LogErrors();
 }
 
 const AudioDevice* CrasAudioHandler::GetDeviceFromId(uint64_t device_id) const {
@@ -856,9 +836,8 @@ void CrasAudioHandler::SetupAudioInputState() {
   // Set the initial audio state to the ones read from audio prefs.
   const AudioDevice* device = GetDeviceFromId(active_input_node_id_);
   if (!device) {
-    LOG_IF(ERROR, log_errors_)
-        << "Can't set up audio state for unknown input device id ="
-        << "0x" << std::hex << active_input_node_id_;
+    LOG(ERROR) << "Can't set up audio state for unknown input device id ="
+               << "0x" << std::hex << active_input_node_id_;
     return;
   }
   input_gain_ = audio_pref_handler_->GetInputGainValue(device);
@@ -872,9 +851,8 @@ void CrasAudioHandler::SetupAudioInputState() {
 void CrasAudioHandler::SetupAudioOutputState() {
   const AudioDevice* device = GetDeviceFromId(active_output_node_id_);
   if (!device) {
-    LOG_IF(ERROR, log_errors_)
-        << "Can't set up audio state for unknown output device id ="
-        << "0x" << std::hex << active_output_node_id_;
+    LOG(ERROR) << "Can't set up audio state for unknown output device id ="
+               << "0x" << std::hex << active_output_node_id_;
     return;
   }
   DCHECK(!device->is_input);
@@ -1028,11 +1006,8 @@ void CrasAudioHandler::SetInputMuteInternal(bool mute_on) {
 }
 
 void CrasAudioHandler::GetNodes() {
-  GetCrasAudioClient()->GetNodes(
-      base::Bind(&CrasAudioHandler::HandleGetNodes,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&CrasAudioHandler::HandleGetNodesError,
-                 weak_ptr_factory_.GetWeakPtr()));
+  GetCrasAudioClient()->GetNodes(base::BindOnce(
+      &CrasAudioHandler::HandleGetNodes, weak_ptr_factory_.GetWeakPtr()));
 }
 
 bool CrasAudioHandler::ChangeActiveDevice(
@@ -1494,22 +1469,19 @@ void CrasAudioHandler::HandleAudioDeviceChange(
   }
 }
 
-void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,
-                                      bool success) {
-  if (!success) {
-    LOG_IF(ERROR, log_errors_) << "Failed to retrieve audio nodes data";
+void CrasAudioHandler::HandleGetNodes(
+    base::Optional<chromeos::AudioNodeList> node_list) {
+  if (!node_list.has_value()) {
+    LOG(ERROR) << "Failed to retrieve audio nodes data";
     return;
   }
 
-  UpdateDevicesAndSwitchActive(node_list);
+  if (node_list->empty())
+    return;
+
+  UpdateDevicesAndSwitchActive(node_list.value());
   for (auto& observer : observers_)
     observer.OnAudioNodesChanged();
-}
-
-void CrasAudioHandler::HandleGetNodesError(const std::string& error_name,
-                                           const std::string& error_msg) {
-  LOG_IF(ERROR, log_errors_) << "Failed to call GetNodes: "
-      << error_name  << ": " << error_msg;
 }
 
 void CrasAudioHandler::AddAdditionalActiveNode(uint64_t node_id, bool notify) {
@@ -1686,7 +1658,7 @@ void CrasAudioHandler::GetDefaultOutputBufferSizeInternal() {
 void CrasAudioHandler::HandleGetDefaultOutputBufferSize(int32_t buffer_size,
                                                         bool success) {
   if (!success) {
-    LOG_IF(ERROR, log_errors_) << "Failed to retrieve output buffer size";
+    LOG(ERROR) << "Failed to retrieve output buffer size";
     return;
   }
 
