@@ -74,6 +74,13 @@ class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
       const std::vector<std::unique_ptr<ResourceHandle>>& packs);
 #endif
 
+  // Return the size of the resource and alias tables. Should only be used for
+  // unit-testing (more specifically checking that alias table generation
+  // removes entries for the resources table), as this is an implementation
+  // detail.
+  size_t GetResourceTableSizeForTesting() const { return resource_count_; }
+  size_t GetAliasTableSizeForTesting() const { return alias_count_; }
+
  private:
   struct Entry;
   struct Alias;

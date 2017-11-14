@@ -5,6 +5,7 @@
 #include "ui/base/resource/data_pack.h"
 
 #include <errno.h>
+#include <algorithm>
 #include <set>
 #include <utility>
 
@@ -12,12 +13,15 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_byteorder.h"
+#include "build/build_config.h"
 
 // For details of the file layout, see
 // http://dev.chromium.org/developers/design-documents/linuxresourcesandlocalizedstrings
@@ -26,10 +30,10 @@ namespace {
 
 static const uint32_t kFileFormatV4 = 4;
 static const uint32_t kFileFormatV5 = 5;
-// int32(version), int32(resource_count), int8(encoding)
+// uint32(version), uint32(resource_count), uint8(encoding)
 static const size_t kHeaderLengthV4 = 2 * sizeof(uint32_t) + sizeof(uint8_t);
-// int32(version), int8(encoding), 3 bytes padding,
-// int16(resource_count), int16(alias_count)
+// uint32(version), uint8(encoding), 3 bytes padding,
+// uint16(resource_count), uint16(alias_count)
 static const size_t kHeaderLengthV5 =
     sizeof(uint32_t) + sizeof(uint8_t) * 4 + sizeof(uint16_t) * 2;
 
@@ -80,6 +84,76 @@ void MaybePrintResourceId(uint16_t resource_id) {
     resource_ids_logged->insert(resource_id);
   }
 }
+
+// Convenience class to write data to a file. Usage is the following:
+// 1) Create a new instance, passing a base::FilePath.
+// 2) Call Write() repeatedly to write all desired data to the file.
+// 3) Call valid() whenever you want to know if something failed.
+// 4) The file is closed automatically on destruction. Though it is possible
+//    to call the Close() method before that.
+//
+// If an I/O error happens, a PLOG(ERROR) message will be generated, and
+// a flag will be set in the writer, telling it to ignore future Write()
+// requests. This allows the caller to ignore error handling until the
+// very end, as in:
+//
+//   {
+//     base::ScopedFileWriter  writer(<some-path>);
+//     writer.Write(&foo, sizeof(foo));
+//     writer.Write(&bar, sizeof(bar));
+//     ....
+//     writer.Write(&zoo, sizeof(zoo));
+//     if (!writer.valid()) {
+//        // An error happened.
+//     }
+//   }   // closes the file.
+//
+class ScopedFileWriter {
+ public:
+  // Constructor takes a |path| parameter and tries to open the file.
+  // Call valid() to check if the operation was succesful.
+  explicit ScopedFileWriter(const base::FilePath& path)
+      : valid_(true), file_(base::OpenFile(path, "wb")) {
+    if (!file_) {
+      PLOG(ERROR) << "Could not open pak file for writing";
+      valid_ = false;
+    }
+  }
+
+  // Destructor.
+  ~ScopedFileWriter() { Close(); }
+
+  // Return true if the last i/o operation was succesful.
+  bool valid() const { return valid_; }
+
+  // Try to write |data_size| bytes from |data| into the file, if a previous
+  // operation didn't already failed.
+  void Write(const void* data, size_t data_size) {
+    if (valid_ && fwrite(data, data_size, 1, file_) != 1) {
+      PLOG(ERROR) << "Could not write to pak file";
+      valid_ = false;
+    }
+  }
+
+  // Close the file explicitly. Return true if all previous operations
+  // succeeded, including the close, or false otherwise.
+  bool Close() {
+    if (file_) {
+      valid_ = (fclose(file_) == 0);
+      file_ = nullptr;
+      if (!valid_) {
+        PLOG(ERROR) << "Could not close pak file";
+      }
+    }
+    return valid_;
+  }
+
+ private:
+  bool valid_ = false;
+  FILE* file_ = nullptr;  // base::ScopedFILE doesn't check errors on close.
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedFileWriter);
+};
 
 }  // namespace
 
@@ -311,13 +385,8 @@ bool DataPack::GetStringPiece(uint16_t resource_id,
                               base::StringPiece* data) const {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
-#if defined(__BYTE_ORDER)
-  // Linux check
-  static_assert(__BYTE_ORDER == __LITTLE_ENDIAN,
-                "datapack assumes little endian");
-#elif defined(__BIG_ENDIAN__)
-  // Mac check
-  #error DataPack assumes little endian
+#if !defined(ARCH_CPU_LITTLE_ENDIAN)
+#error "datapack assumes little endian"
 #endif
 
   const Entry* target = LookupEntryById(resource_id);
@@ -384,80 +453,93 @@ void DataPack::CheckForDuplicateResources(
 // static
 bool DataPack::WritePack(const base::FilePath& path,
                          const std::map<uint16_t, base::StringPiece>& resources,
-                         TextEncodingType textEncodingType) {
-  if (textEncodingType != UTF8 && textEncodingType != UTF16 &&
-      textEncodingType != BINARY) {
-    LOG(ERROR) << "Invalid text encoding type, got " << textEncodingType
+                         TextEncodingType text_encoding_type) {
+#if !defined(ARCH_CPU_LITTLE_ENDIAN)
+#error "datapack assumes little endian"
+#endif
+  if (text_encoding_type != UTF8 && text_encoding_type != UTF16 &&
+      text_encoding_type != BINARY) {
+    LOG(ERROR) << "Invalid text encoding type, got " << text_encoding_type
                << ", expected between " << BINARY << " and " << UTF16;
     return false;
   }
 
-  FILE* file = base::OpenFile(path, "wb");
-  if (!file)
-    return false;
-
-  uint32_t encoding = static_cast<uint32_t>(textEncodingType);
-  // Note: the python version of this function explicitly sorted keys, but
-  // std::map is a sorted associative container, we shouldn't have to do that.
-  uint16_t entry_count = resources.size();
-  // Don't bother computing aliases (revisit if it becomes worth it).
-  uint16_t alias_count = 0;
-
-  if (fwrite(&kFileFormatV5, sizeof(kFileFormatV5), 1, file) != 1 ||
-      fwrite(&encoding, sizeof(uint32_t), 1, file) != 1 ||
-      fwrite(&entry_count, sizeof(entry_count), 1, file) != 1 ||
-      fwrite(&alias_count, sizeof(alias_count), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write header";
-    base::CloseFile(file);
+  size_t resources_count = resources.size();
+  if (static_cast<uint16_t>(resources_count) != resources_count) {
+    LOG(ERROR) << "Too many resources (" << resources_count << ")";
     return false;
   }
 
+  ScopedFileWriter file(path);
+  if (!file.valid())
+    return false;
+
+  uint32_t encoding = static_cast<uint32_t>(text_encoding_type);
+
+  // Build a list of final resource aliases, and an alias map at the same time.
+  std::vector<uint16_t> resource_ids;
+  std::map<uint16_t, uint16_t> aliases;  // resource_id -> entry_index
+  if (resources_count > 0) {
+    // A reverse map from string pieces to the index of the corresponding
+    // original id in the final resource list.
+    std::map<base::StringPiece, uint16_t> rev_map;
+    for (const auto& entry : resources) {
+      auto it = rev_map.find(entry.second);
+      if (it != rev_map.end()) {
+        // Found an alias here!
+        aliases.insert(std::make_pair(entry.first, it->second));
+      } else {
+        // Found a final resource.
+        const auto entry_index = static_cast<uint16_t>(resource_ids.size());
+        rev_map.insert(std::make_pair(entry.second, entry_index));
+        resource_ids.push_back(entry.first);
+      }
+    }
+  }
+
+  DCHECK(std::is_sorted(resource_ids.begin(), resource_ids.end()));
+
+  // These values are guaranteed to fit in a uint16_t due to the earlier
+  // check of |resources_count|.
+  const uint16_t alias_count = static_cast<uint16_t>(aliases.size());
+  const uint16_t entry_count = static_cast<uint16_t>(resource_ids.size());
+  DCHECK_EQ(static_cast<size_t>(entry_count) + static_cast<size_t>(alias_count),
+            resources_count);
+
+  file.Write(&kFileFormatV5, sizeof(kFileFormatV5));
+  file.Write(&encoding, sizeof(uint32_t));
+  file.Write(&entry_count, sizeof(entry_count));
+  file.Write(&alias_count, sizeof(alias_count));
+
   // Each entry is a uint16_t + a uint32_t. We have an extra entry after the
   // last item so we can compute the size of the list item.
-  uint32_t index_length = (entry_count + 1) * sizeof(Entry);
-  uint32_t data_offset = kHeaderLengthV5 + index_length;
-  for (std::map<uint16_t, base::StringPiece>::const_iterator it =
-           resources.begin();
-       it != resources.end(); ++it) {
-    uint16_t resource_id = it->first;
-    if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1 ||
-        fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
-      LOG(ERROR) << "Failed to write entry for " << resource_id;
-      base::CloseFile(file);
-      return false;
-    }
-
-    data_offset += it->second.length();
+  const uint32_t index_length = (entry_count + 1) * sizeof(Entry);
+  const uint32_t alias_table_length = alias_count * sizeof(Alias);
+  uint32_t data_offset = kHeaderLengthV5 + index_length + alias_table_length;
+  for (const uint16_t resource_id : resource_ids) {
+    file.Write(&resource_id, sizeof(resource_id));
+    file.Write(&data_offset, sizeof(data_offset));
+    data_offset += resources.find(resource_id)->second.length();
   }
 
   // We place an extra entry after the last item that allows us to read the
   // size of the last item.
-  uint16_t resource_id = 0;
-  if (fwrite(&resource_id, sizeof(resource_id), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write extra resource id.";
-    base::CloseFile(file);
-    return false;
+  const uint16_t resource_id = 0;
+  file.Write(&resource_id, sizeof(resource_id));
+  file.Write(&data_offset, sizeof(data_offset));
+
+  // Write the aliases table, if any. Note: |aliases| is an std::map,
+  // ensuring values are written in increasing order.
+  for (const std::pair<uint16_t, uint16_t>& alias : aliases) {
+    file.Write(&alias, sizeof(alias));
   }
 
-  if (fwrite(&data_offset, sizeof(data_offset), 1, file) != 1) {
-    LOG(ERROR) << "Failed to write extra offset.";
-    base::CloseFile(file);
-    return false;
+  for (const auto& resource_id : resource_ids) {
+    const base::StringPiece data = resources.find(resource_id)->second;
+    file.Write(data.data(), data.length());
   }
 
-  for (std::map<uint16_t, base::StringPiece>::const_iterator it =
-           resources.begin();
-       it != resources.end(); ++it) {
-    if (fwrite(it->second.data(), it->second.length(), 1, file) != 1) {
-      LOG(ERROR) << "Failed to write data for " << it->first;
-      base::CloseFile(file);
-      return false;
-    }
-  }
-
-  base::CloseFile(file);
-
-  return true;
+  return file.Close();
 }
 
 }  // namespace ui

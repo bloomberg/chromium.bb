@@ -239,6 +239,64 @@ TEST_P(DataPackTest, Write) {
   EXPECT_EQ(four, data);
   ASSERT_TRUE(pack.GetStringPiece(15, &data));
   EXPECT_EQ(fifteen, data);
+
+  EXPECT_EQ(5U, pack.GetResourceTableSizeForTesting());
+  EXPECT_EQ(0U, pack.GetAliasTableSizeForTesting());
+}
+
+TEST_P(DataPackTest, WriteWithAliases) {
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath file = dir.GetPath().Append(FILE_PATH_LITERAL("data.pak"));
+
+  std::string one("one");
+  std::string two("two");
+  std::string three("three");
+  std::string four("four");
+  std::string fifteen("fifteen");
+
+  std::map<uint16_t, base::StringPiece> resources;
+  resources.insert(std::make_pair(1, base::StringPiece(one)));
+  resources.insert(std::make_pair(2, base::StringPiece(two)));
+  resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
+  resources.insert(std::make_pair(3, base::StringPiece(three)));
+  resources.insert(std::make_pair(4, base::StringPiece(four)));
+  resources.insert(std::make_pair(10, base::StringPiece(one)));
+  resources.insert(std::make_pair(11, base::StringPiece(three)));
+  ASSERT_TRUE(DataPack::WritePack(file, resources, GetParam()));
+
+  // Now try to read the data back in.
+  DataPack pack(SCALE_FACTOR_100P);
+  ASSERT_TRUE(pack.LoadFromPath(file));
+  EXPECT_EQ(pack.GetTextEncodingType(), GetParam());
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(one, data);
+  ASSERT_TRUE(pack.GetStringPiece(2, &data));
+  EXPECT_EQ(two, data);
+  ASSERT_TRUE(pack.GetStringPiece(3, &data));
+  EXPECT_EQ(three, data);
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ(four, data);
+  ASSERT_TRUE(pack.GetStringPiece(15, &data));
+  EXPECT_EQ(fifteen, data);
+  ASSERT_TRUE(pack.GetStringPiece(10, &data));
+  EXPECT_EQ(one, data);
+  ASSERT_TRUE(pack.GetStringPiece(11, &data));
+  EXPECT_EQ(three, data);
+
+  base::StringPiece data2;
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  ASSERT_TRUE(pack.GetStringPiece(10, &data2));
+  EXPECT_EQ(data.data(), data2.data());
+
+  ASSERT_TRUE(pack.GetStringPiece(3, &data));
+  ASSERT_TRUE(pack.GetStringPiece(11, &data2));
+  EXPECT_EQ(data.data(), data2.data());
+
+  EXPECT_EQ(5U, pack.GetResourceTableSizeForTesting());
+  EXPECT_EQ(2U, pack.GetAliasTableSizeForTesting());
 }
 
 #if defined(OS_POSIX)
