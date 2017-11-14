@@ -19,7 +19,9 @@
 #include "ui/views/widget/widget_observer.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"  // nogncheck
+#include "ash/public/cpp/config.h"
+#include "ash/shell.h"  // mash-ok
+#include "chrome/browser/chromeos/ash_config.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -121,17 +123,22 @@ void TestBrowserDialog::RunDialog() {
       views::test::WidgetTest::GetAllWidgets();
 #if defined(OS_CHROMEOS)
   // GetAllWidgets() uses AuraTestHelper to find the aura root window, but
-  // that's not used on browser_tests, so ask ash.
-  views::Widget::GetAllChildWidgets(ash::Shell::GetPrimaryRootWindow(),
-                                    &widgets_before);
+  // that's not used on browser_tests, so ask ash. Under mash the MusClient
+  // provides the list of root windows, so this isn't needed.
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+    views::Widget::GetAllChildWidgets(ash::Shell::GetPrimaryRootWindow(),
+                                      &widgets_before);
+  }
 #endif  // OS_CHROMEOS
 
   ShowDialog(NameFromTestCase());
   views::Widget::Widgets widgets_after =
       views::test::WidgetTest::GetAllWidgets();
 #if defined(OS_CHROMEOS)
-  views::Widget::GetAllChildWidgets(ash::Shell::GetPrimaryRootWindow(),
-                                    &widgets_after);
+  if (chromeos::GetAshConfig() != ash::Config::MASH) {
+    views::Widget::GetAllChildWidgets(ash::Shell::GetPrimaryRootWindow(),
+                                      &widgets_after);
+  }
 #endif  // OS_CHROMEOS
 
   auto added = base::STLSetDifference<std::vector<views::Widget*>>(
