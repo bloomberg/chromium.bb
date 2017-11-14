@@ -81,8 +81,6 @@ void CreateNewEntry(syncable::ModelNeutralWriteTransaction* trans,
 void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
                                    syncable::MutableEntry* entry);
 
-VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry);
-
 VerifyResult VerifyNewEntry(const sync_pb::SyncEntity& update,
                             syncable::Entry* target,
                             const bool deleted);

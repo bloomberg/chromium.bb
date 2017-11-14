@@ -122,8 +122,8 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // Caches EntityData from the |data_batch| in the entity trackers.
   void ConsumeDataBatch(std::unique_ptr<DataBatch> data_batch);
 
-  // Sends all commit requests that are due to be sent to the sync thread.
-  void FlushPendingCommitRequests();
+  // Nudges worker if there are any local entities to be committed.
+  void NudgeForCommitIfNeeded();
 
   // Computes the client tag hash for the given client |tag|.
   std::string GetHashForTag(const std::string& tag);
@@ -171,6 +171,11 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // |age_watermark_in_days| unless they are unsynced.
   void ExpireEntriesByAge(int32_t age_watermark_in_days,
                           MetadataChangeList* metadata_changes);
+
+  // Removes entity tracker and clears metadata for entity from
+  // MetadataChangeList.
+  void RemoveEntity(ProcessorEntityTracker* entity,
+                    MetadataChangeList* metadata_change_list);
 
   /////////////////////
   // Processor state //

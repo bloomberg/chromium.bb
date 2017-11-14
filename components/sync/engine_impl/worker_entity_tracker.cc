@@ -71,11 +71,9 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
   sequence_number_ = data.sequence_number;
   pending_commit_specifics_hash_ = data.specifics_hash;
 
-  // Don't commit deletions of server-unknown items.
-  if (data.entity->is_deleted() && !IsServerKnown()) {
-    ClearPendingCommit();
-    return;
-  }
+  // Deletions of server-unknown items should not be passed to worker, they
+  // should be blocked at the processor.
+  DCHECK(!data.entity->is_deleted() || IsServerKnown());
 
   // We intentionally don't update the id_ here. Good ID values come from the
   // server and always pass through the sync thread first. There's no way the

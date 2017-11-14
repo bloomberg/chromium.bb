@@ -23,7 +23,6 @@
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 #include "components/sync/engine_impl/worker_entity_tracker.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
-#include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
 
@@ -88,7 +87,9 @@ void ModelTypeWorker::UpdateCryptographer(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cryptographer);
   cryptographer_ = std::move(cryptographer);
-  OnCryptographerUpdated();
+  UpdateEncryptionKeyName();
+  DecryptStoredEntities();
+  NudgeIfReadyToCommit();
 }
 
 // UpdateHandler implementation.
@@ -147,7 +148,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     UpdateResponseData response_data;
     response_data.response_version = update_entity->version();
 
-    WorkerEntityTracker* entity = GetOrCreateEntityTracker(data);
+    WorkerEntityTracker* entity =
+        GetOrCreateEntityTracker(data.client_tag_hash);
 
     if (!entity->UpdateContainsNewVersion(response_data)) {
       status->increment_num_reflected_updates_downloaded_by(1);
@@ -179,6 +181,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         response_data.encryption_key_name = specifics.encrypted().key_name();
         entity->ReceiveUpdate(response_data);
         pending_updates_.push_back(response_data);
+      } else {
+        // Failed to decrypt the entity. Likely it is corrupt. Drop the entity
+        // and move on.
+        entities_.erase(client_tag_hash);
       }
     } else {
       // Can't decrypt right now. Ask the entity tracker to handle it.
@@ -220,58 +226,56 @@ void ModelTypeWorker::EncryptionAcceptedApplyUpdates() {
 }
 
 void ModelTypeWorker::ApplyPendingUpdates() {
-  if (!BlockForEncryption()) {
-    DVLOG(1) << ModelTypeToString(type_) << ": "
-             << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
-                                   pending_updates_.size());
+  if (BlockForEncryption())
+    return;
+  DVLOG(1) << ModelTypeToString(type_) << ": "
+           << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
+                                 pending_updates_.size());
 
-    // If there are still encrypted updates left at this point, they're about to
-    // to be potentially lost if the progress marker is saved to disk. Typically
-    // the nigori update should arrive simultaneously with the first of the
-    // encrypted data. It is possible that non-immediately consistent updates do
-    // not follow this pattern.
-    UMA_HISTOGRAM_BOOLEAN("Sync.WorkerApplyHasEncryptedUpdates",
-                          has_encrypted_updates_);
-    DCHECK(!has_encrypted_updates_);
+  // If there are still encrypted updates left at this point, they're about to
+  // to be potentially lost if the progress marker is saved to disk. Typically
+  // the nigori update should arrive simultaneously with the first of the
+  // encrypted data. It is possible that non-immediately consistent updates do
+  // not follow this pattern.
+  UMA_HISTOGRAM_BOOLEAN("Sync.WorkerApplyHasEncryptedUpdates",
+                        has_encrypted_updates_);
+  DCHECK(!has_encrypted_updates_);
 
-    model_type_processor_->OnUpdateReceived(model_type_state_,
-                                            pending_updates_);
+  model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
-    UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
-    counters->num_updates_applied += pending_updates_.size();
-    debug_info_emitter_->EmitUpdateCountersUpdate();
-    debug_info_emitter_->EmitStatusCountersUpdate();
+  UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
+  counters->num_updates_applied += pending_updates_.size();
+  debug_info_emitter_->EmitUpdateCountersUpdate();
+  debug_info_emitter_->EmitStatusCountersUpdate();
 
-    pending_updates_.clear();
-  }
-}
-
-void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(IsTypeInitialized())
-      << "Asked to commit items before type was initialized. "
-      << "ModelType is: " << ModelTypeToString(type_);
-
-  for (const CommitRequestData& commit : list) {
-    const EntityData& data = commit.entity.value();
-    if (!data.is_deleted()) {
-      DCHECK_EQ(type_, GetModelTypeFromSpecifics(data.specifics));
-    }
-    GetOrCreateEntityTracker(data)->RequestCommit(commit);
-  }
-
-  if (CanCommitItems())
-    nudge_handler_->NudgeForCommit(type_);
+  DCHECK_EQ(pending_updates_.size(), entities_.size());
+  pending_updates_.clear();
+  entities_.clear();
 }
 
 void ModelTypeWorker::NudgeForCommit() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  nudge_handler_->NudgeForCommit(GetModelType());
+  has_local_changes_ = true;
+  NudgeIfReadyToCommit();
+}
+
+void ModelTypeWorker::NudgeIfReadyToCommit() {
+  if (has_local_changes_ && CanCommitItems())
+    nudge_handler_->NudgeForCommit(GetModelType());
 }
 
 // CommitContributor implementation.
 std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(model_type_state_.initial_sync_done());
+  // Early return if type is not ready to commit (initial sync isn't done or
+  // cryptographer has pending keys).
+  if (!CanCommitItems())
+    return std::unique_ptr<CommitContribution>();
+  DCHECK(entities_.empty());
+
+  // Request model type for local changes.
   scoped_refptr<GetLocalChangesRequest> request =
       base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
   model_type_processor_->GetLocalChanges(
@@ -280,33 +284,29 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   CommitRequestDataList response;
   if (!request->WasCancelled())
     response = request->ExtractResponse();
-  // For now processor implementation doesn't return any local changes and this
-  // function is not ready to process them. Ensure that response is empty.
-  DCHECK(response.empty());
-
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  size_t space_remaining = max_entries;
-  google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
-
-  if (!CanCommitItems())
+  if (response.empty()) {
+    has_local_changes_ = false;
     return std::unique_ptr<CommitContribution>();
-
-  // TODO(rlarocque): Avoid iterating here.
-  for (EntityMap::const_iterator it = entities_.begin();
-       it != entities_.end() && space_remaining > 0; ++it) {
-    WorkerEntityTracker* entity = it->second.get();
-    if (entity->HasPendingCommit()) {
-      sync_pb::SyncEntity* commit_entity = commit_entities.Add();
-      entity->PopulateCommitProto(commit_entity);
-      AdjustCommitProto(commit_entity);
-      space_remaining--;
-    }
   }
 
-  if (commit_entities.size() == 0)
-    return std::unique_ptr<CommitContribution>();
+  // Add local changes to entity trackers and copy them into on-the-wire
+  // protobuf.
+  google::protobuf::RepeatedPtrField<sync_pb::SyncEntity> commit_entities;
+  for (const CommitRequestData& commit : response) {
+    const EntityData& data = commit.entity.value();
+    DCHECK(data.is_deleted() ||
+           (type_ == GetModelTypeFromSpecifics(data.specifics)))
+        << "Local change has wrong type: "
+        << ModelTypeToString(GetModelTypeFromSpecifics(data.specifics))
+        << ", expected: " << ModelTypeToString(type_);
+    WorkerEntityTracker* entity = CreateEntityTracker(data.client_tag_hash);
+    entity->RequestCommit(commit);
+    sync_pb::SyncEntity* commit_entity = commit_entities.Add();
+    entity->PopulateCommitProto(commit_entity);
+    AdjustCommitProto(commit_entity);
+  }
 
+  DCHECK((size_t)commit_entities.size() <= max_entries);
   return std::make_unique<NonBlockingTypeCommitContribution>(
       model_type_state_.type_context(), commit_entities, this,
       debug_info_emitter_, CommitOnlyTypes().Has(GetModelType()));
@@ -322,24 +322,21 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
       NOTREACHED() << "Received commit response for item unknown to us."
                    << " Model type: " << ModelTypeToString(type_)
                    << " ID: " << response.id;
-      continue;
     }
-
-    // Remember if entity was deleted. After ReceiveCommitResponse this flag
-    // will not be available.
-    bool is_deletion = entity->PendingCommitIsDeletion();
 
     entity->ReceiveCommitResponse(&response);
-
-    if (is_deletion || CommitOnlyTypes().Has(GetModelType())) {
-      entities_.erase(response.client_tag_hash);
-    }
   }
 
   // Send the responses back to the model thread. It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
   model_type_processor_->OnCommitCompleted(model_type_state_, *response_list);
+}
+
+void ModelTypeWorker::CleanupAfterCommit() {
+  // Clear all tracked entities. The ones that didn't get committed will be
+  // retried next time by the processor.
+  entities_.clear();
 }
 
 void ModelTypeWorker::AbortMigration() {
@@ -384,7 +381,7 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
 
   // Initial commits need our help to generate a client ID.
   if (sync_entity->version() == kUncommittedVersion) {
-    DCHECK(sync_entity->id_string().empty());
+    DCHECK(sync_entity->id_string().empty()) << sync_entity->id_string();
     // TODO(crbug.com/516866): This is incorrect for bookmarks for two reasons:
     // 1) Won't be able to match previously committed bookmarks to the ones
     //    with server ID.
@@ -432,12 +429,6 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
   }
 }
 
-void ModelTypeWorker::OnCryptographerUpdated() {
-  DCHECK(cryptographer_);
-  UpdateEncryptionKeyName();
-  DecryptedStoredEntities();
-}
-
 bool ModelTypeWorker::UpdateEncryptionKeyName() {
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
   const std::string& old_key_name = model_type_state_.encryption_key_name();
@@ -451,7 +442,7 @@ bool ModelTypeWorker::UpdateEncryptionKeyName() {
   return true;
 }
 
-void ModelTypeWorker::DecryptedStoredEntities() {
+void ModelTypeWorker::DecryptStoredEntities() {
   has_encrypted_updates_ = false;
   for (const auto& kv : entities_) {
     WorkerEntityTracker* entity = kv.second.get();
@@ -512,19 +503,19 @@ WorkerEntityTracker* ModelTypeWorker::GetEntityTracker(
 }
 
 WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
-    const EntityData& data) {
-  DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
+    const std::string& tag_hash) {
+  DCHECK(entities_.find(tag_hash) == entities_.end());
   std::unique_ptr<WorkerEntityTracker> entity =
-      std::make_unique<WorkerEntityTracker>(data.client_tag_hash);
+      std::make_unique<WorkerEntityTracker>(tag_hash);
   WorkerEntityTracker* entity_ptr = entity.get();
-  entities_[data.client_tag_hash] = std::move(entity);
+  entities_[tag_hash] = std::move(entity);
   return entity_ptr;
 }
 
 WorkerEntityTracker* ModelTypeWorker::GetOrCreateEntityTracker(
-    const EntityData& data) {
-  WorkerEntityTracker* entity = GetEntityTracker(data.client_tag_hash);
-  return entity ? entity : CreateEntityTracker(data);
+    const std::string& tag_hash) {
+  WorkerEntityTracker* entity = GetEntityTracker(tag_hash);
+  return entity ? entity : CreateEntityTracker(tag_hash);
 }
 
 GetLocalChangesRequest::GetLocalChangesRequest(
