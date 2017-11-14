@@ -273,8 +273,6 @@ UIColor* BackgroundColorIncognito() {
     frame.origin.y = kTextCellTopPadding;
     textLabel.frame = frame;
   }
-  textLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-  [textLabel setNeedsDisplay];
 
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
   // iPad.
@@ -318,6 +316,8 @@ UIColor* BackgroundColorIncognito() {
     frame.origin.x = kLTRTextInRTLLayoutLeftPadding;
     detailTextLabel.frame = frame;
   }
+
+  [textLabel setNeedsDisplay];
 }
 
 - (void)layoutRows {
