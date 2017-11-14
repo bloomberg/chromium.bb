@@ -390,7 +390,6 @@ class PrintPreviewHandler::AccessTokenService
 PrintPreviewHandler::PrintPreviewHandler()
     : regenerate_preview_request_count_(0),
       manage_printers_dialog_request_count_(0),
-      manage_cloud_printers_dialog_request_count_(0),
       reported_failed_preview_(false),
       has_logged_printers_count_(false),
       gaia_cookie_manager_service_(nullptr),
@@ -884,7 +883,6 @@ void PrintPreviewHandler::HandleGetAccessToken(const base::ListValue* args) {
 
 void PrintPreviewHandler::HandleManageCloudPrint(
     const base::ListValue* args) {
-  ++manage_cloud_printers_dialog_request_count_;
   GURL manage_url(cloud_devices::GetCloudPrintRelativeURL("manage.html"));
   std::string user;
   if (!args->GetString(0, &user))
@@ -945,8 +943,6 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 void PrintPreviewHandler::ReportStats() {
   UMA_HISTOGRAM_COUNTS("PrintPreview.ManagePrinters",
                        manage_printers_dialog_request_count_);
-  UMA_HISTOGRAM_COUNTS("PrintPreview.ManageCloudPrinters",
-                       manage_cloud_printers_dialog_request_count_);
 }
 
 void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
