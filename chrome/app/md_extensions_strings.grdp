@@ -196,6 +196,9 @@
   <message name="IDS_MD_EXTENSIONS_TOOLBAR_UPDATE_NOW" desc="The text displayed in the toolbar to update existing extensions now.">
     Update
   </message>
+  <message name="IDS_MD_EXTENSIONS_TOOLBAR_UPDATE_NOW_TOOLTIP" desc="Text displayed over the 'update' menu that provides more context as a tooltip.">
+    Update extensions now
+  </message>
   <message name="IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT" desc="The prompt to the user to enter a keyboard shortcut in order to assign it to an extension.">
     Type a shortcut
   </message>
