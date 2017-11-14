@@ -13,7 +13,7 @@
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -67,7 +67,8 @@ class ActiveHostTest : public testing::Test {
   void SetUp() override {
     get_active_host_results_.clear();
 
-    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    test_pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
     fake_tether_host_fetcher_ = base::MakeUnique<FakeTetherHostFetcher>(
         test_devices_, false /* synchronously_reply_with_results */);
 
@@ -106,7 +107,8 @@ class ActiveHostTest : public testing::Test {
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<TestObserver> test_observer_;
 
@@ -258,4 +260,4 @@ TEST_F(ActiveHostTest, TestObserverCalls) {
 
 }  // namespace tether
 
-}  // namespace cryptauth
+}  // namespace chromeos

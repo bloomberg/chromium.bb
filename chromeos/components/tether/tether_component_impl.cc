@@ -14,6 +14,7 @@
 #include "chromeos/components/tether/tether_disconnector.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
@@ -58,7 +59,8 @@ void TetherComponentImpl::Factory::SetInstanceForTesting(Factory* factory) {
 }
 
 // static
-void TetherComponentImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void TetherComponentImpl::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   ActiveHost::RegisterPrefs(registry);
   PersistentHostScanCacheImpl::RegisterPrefs(registry);
   TetherHostResponseRecorder::RegisterPrefs(registry);

@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/tether/fake_host_scan_cache.h"
 #include "chromeos/components/tether/host_scan_test_util.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -23,7 +23,8 @@ class PersistentHostScanCacheImplTest : public testing::Test {
       : test_entries_(host_scan_test_util::CreateTestEntries()) {}
 
   void SetUp() override {
-    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    test_pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
     PersistentHostScanCacheImpl::RegisterPrefs(test_pref_service_->registry());
 
     host_scan_cache_ =
@@ -57,7 +58,8 @@ class PersistentHostScanCacheImplTest : public testing::Test {
 
   const std::unordered_map<std::string, HostScanCacheEntry> test_entries_;
 
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
   std::unique_ptr<FakeHostScanCache> expected_cache_;
 
   std::unique_ptr<PersistentHostScanCacheImpl> host_scan_cache_;

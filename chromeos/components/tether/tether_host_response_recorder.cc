@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/components/tether/pref_names.h"
-#include "components/prefs/pref_registry_simple.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
 namespace chromeos {
@@ -15,9 +15,17 @@ namespace chromeos {
 namespace tether {
 
 // static
-void TetherHostResponseRecorder::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kMostRecentTetherAvailablilityResponderIds);
-  registry->RegisterListPref(prefs::kMostRecentConnectTetheringResponderIds);
+void TetherHostResponseRecorder::RegisterPrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  // Make both of these preferences synced between devices. This ensures that
+  // if users utilize Tether networks on multiple Chromebooks, they will use the
+  // same prioritization criteria.
+  registry->RegisterListPref(
+      prefs::kMostRecentTetherAvailablilityResponderIds,
+      user_prefs::PrefRegistrySyncable::PrefRegistrationFlags::SYNCABLE_PREF);
+  registry->RegisterListPref(
+      prefs::kMostRecentConnectTetheringResponderIds,
+      user_prefs::PrefRegistrySyncable::PrefRegistrationFlags::SYNCABLE_PREF);
 }
 
 TetherHostResponseRecorder::TetherHostResponseRecorder(

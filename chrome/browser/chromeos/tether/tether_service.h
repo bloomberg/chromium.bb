@@ -20,6 +20,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+class Profile;
+
 namespace chromeos {
 class NetworkStateHandler;
 namespace tether {
@@ -31,8 +33,9 @@ namespace cryptauth {
 class CryptAuthService;
 }  // namespace cryptauth
 
-class PrefRegistrySimple;
-class Profile;
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 class TetherService : public KeyedService,
                       public chromeos::PowerManagerClient::Observer,
@@ -50,7 +53,7 @@ class TetherService : public KeyedService,
   // Gets TetherService instance.
   static TetherService* Get(Profile* profile);
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Whether the Tether feature has been enabled via a chrome://about or
   // command line flag.

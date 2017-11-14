@@ -20,6 +20,10 @@ namespace cryptauth {
 class CryptAuthService;
 }  // namespace cryptauth
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace chromeos {
 
 class ManagedNetworkConfigurationHandler;
@@ -37,7 +41,7 @@ class SynchronousShutdownObjectContainer;
 // Initializes the Tether component.
 class TetherComponentImpl : public TetherComponent {
  public:
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   class Factory {
    public:

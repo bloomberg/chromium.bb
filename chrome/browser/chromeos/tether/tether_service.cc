@@ -21,7 +21,7 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "components/cryptauth/cryptauth_service.h"
-#include "components/prefs/pref_registry_simple.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -45,7 +45,8 @@ TetherService* TetherService::Get(Profile* profile) {
 }
 
 // static
-void TetherService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void TetherService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kInstantTetheringAllowed, true);
   registry->RegisterBooleanPref(prefs::kInstantTetheringEnabled, true);
 

@@ -6,6 +6,7 @@
 
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,7 +37,8 @@ class TetherHostResponseRecorderTest : public testing::Test {
       : test_devices_(cryptauth::GenerateTestRemoteDevices(10)) {}
 
   void SetUp() override {
-    pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
     TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
 
     recorder_ =
@@ -48,7 +50,7 @@ class TetherHostResponseRecorderTest : public testing::Test {
 
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TestObserver> test_observer_;
 
   std::unique_ptr<TetherHostResponseRecorder> recorder_;
