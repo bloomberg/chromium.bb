@@ -50,9 +50,8 @@ class IOSTranslateDriver : public TranslateDriver,
   CreateLanguageDetectionCallback();
 
   // web::WebStateObserver methods.
-  void NavigationItemCommitted(
-      web::WebState* web_state,
-      const web::LoadCommittedDetails& load_details) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // TranslateDriver methods.
