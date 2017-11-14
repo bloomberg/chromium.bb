@@ -20,9 +20,9 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification.h"
-#include "ui/message_center/ui_delegate.h"
 
 class Profile;
 class ProfileNotification;
@@ -35,7 +35,7 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 
 #if !defined(OS_CHROMEOS)
 // Implementations are platform specific.
-message_center::UiDelegate* CreateUiDelegate();
+message_center::MessageCenterTrayDelegate* CreateMessageCenterTrayDelegate();
 #endif
 
 // This class extends NotificationUIManagerImpl and delegates actual display
@@ -69,7 +69,8 @@ class MessageCenterNotificationManager
                              bool by_user) override;
 
   // Takes ownership of |delegate|.
-  void SetUiDelegateForTest(message_center::UiDelegate* delegate);
+  void SetMessageCenterTrayDelegateForTest(
+      message_center::MessageCenterTrayDelegate* delegate);
 
   // Returns the notification id which this manager will use to add to message
   // center, for this combination of delegate id and profile.
@@ -80,7 +81,7 @@ class MessageCenterNotificationManager
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
                            ManuallyCloseMessageCenter);
 
-  std::unique_ptr<message_center::UiDelegate> tray_;
+  std::unique_ptr<message_center::MessageCenterTrayDelegate> tray_;
   message_center::MessageCenter* message_center_;  // Weak, global.
 
   // Use a map by notification_id since this mapping is the most often used.

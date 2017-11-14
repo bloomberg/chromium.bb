@@ -18,7 +18,7 @@ class TrayBubbleView;
 
 namespace message_center {
 class MessageCenter;
-class UiController;
+class MessageCenterTray;
 }  // namespace message_center
 
 namespace ash {
@@ -30,7 +30,7 @@ class MessageCenterBubble : public views::WidgetObserver,
                             public base::SupportsWeakPtr<MessageCenterBubble> {
  public:
   MessageCenterBubble(message_center::MessageCenter* message_center,
-                      message_center::UiController* ui_controller);
+                      message_center::MessageCenterTray* tray);
   ~MessageCenterBubble() override;
 
   // Gets called when the bubble view associated with this bubble is
@@ -62,7 +62,7 @@ class MessageCenterBubble : public views::WidgetObserver,
   void UpdateBubbleView();
 
   message_center::MessageCenter* message_center_;
-  message_center::UiController* ui_controller_;
+  message_center::MessageCenterTray* tray_;
   views::TrayBubbleView* bubble_view_ = nullptr;
   MessageCenterView* message_center_view_ = nullptr;
 

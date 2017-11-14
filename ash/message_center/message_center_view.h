@@ -26,7 +26,7 @@ class SlideAnimation;
 namespace message_center {
 
 class MessageCenter;
-class UiController;
+class MessageCenterTray;
 class MessageView;
 
 }  // namespace message_center
@@ -50,7 +50,7 @@ class ASH_EXPORT MessageCenterView
       public views::FocusChangeListener {
  public:
   MessageCenterView(message_center::MessageCenter* message_center,
-                    message_center::UiController* ui_controller,
+                    message_center::MessageCenterTray* tray,
                     int max_height,
                     bool initially_settings_visible);
   ~MessageCenterView() override;
@@ -67,7 +67,7 @@ class ASH_EXPORT MessageCenterView
   void SetSettingsVisible(bool visible);
   void OnSettingsChanged();
   bool settings_visible() const { return settings_visible_; }
-  message_center::UiController* ui_controller() { return ui_controller_; }
+  message_center::MessageCenterTray* tray() { return tray_; }
 
   void SetIsClosing(bool is_closing);
 
@@ -152,7 +152,7 @@ class ASH_EXPORT MessageCenterView
   int GetContentHeightDuringAnimation(int width) const;
 
   message_center::MessageCenter* message_center_;
-  message_center::UiController* ui_controller_;
+  message_center::MessageCenterTray* tray_;
 
   // Child views.
   views::ScrollView* scroller_ = nullptr;

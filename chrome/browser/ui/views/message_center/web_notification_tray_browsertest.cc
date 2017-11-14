@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/message_center/popups_only_ui_delegate.h"
+#include "chrome/browser/ui/views/message_center/web_notification_tray.h"
 
 #include <stddef.h>
 
 #include <set>
 
 #include "ash/root_window_controller.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray_item.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,12 +21,12 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/ui_controller.h"
 #include "ui/message_center/views/message_popup_collection.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -44,10 +46,10 @@ Notification MakeNotification(const std::string& id) {
                       RichNotificationData(), new NotificationDelegate());
 }
 
-class PopupsOnlyUiDelegateTest : public InProcessBrowserTest {
+class WebNotificationTrayTest : public InProcessBrowserTest {
  public:
-  PopupsOnlyUiDelegateTest() {}
-  ~PopupsOnlyUiDelegateTest() override {}
+  WebNotificationTrayTest() {}
+  ~WebNotificationTrayTest() override {}
 
   void TearDownOnMainThread() override {
     MessageCenter::Get()->RemoveAllNotifications(
@@ -84,11 +86,11 @@ class PopupsOnlyUiDelegateTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PopupsOnlyUiDelegateTest);
+  DISALLOW_COPY_AND_ASSIGN(WebNotificationTrayTest);
 };
 
 // TODO(dewittj): More exhaustive testing.
-IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, WebNotifications) {
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotifications) {
   MessageCenter* message_center = MessageCenter::Get();
 
   // Add a notification.
@@ -105,8 +107,7 @@ IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, WebNotifications) {
   UpdateNotification("id2");
   EXPECT_EQ(2u, message_center->NotificationCount());
 
-  // Ensure that removing the first notification removes it from the
-  // MessageCenter.
+  // Ensure that Removing the first notification removes it from the tray.
   RemoveNotification("id1");
   EXPECT_FALSE(HasNotification("id1"));
   EXPECT_EQ(1u, message_center->NotificationCount());
@@ -117,29 +118,29 @@ IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, WebNotifications) {
   EXPECT_FALSE(HasNotification("id2"));
 }
 
-IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, WebNotificationPopupBubble) {
-  auto delegate = std::make_unique<PopupsOnlyUiDelegate>();
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
+  std::unique_ptr<WebNotificationTray> tray(new WebNotificationTray());
 
   // Adding a notification should show the popup bubble.
   AddNotification("id1");
-  EXPECT_TRUE(delegate->GetUiControllerForTesting()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Updating a notification should not hide the popup bubble.
   AddNotification("id2");
   UpdateNotification("id2");
-  EXPECT_TRUE(delegate->GetUiControllerForTesting()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Removing the first notification should not hide the popup bubble.
   RemoveNotification("id1");
-  EXPECT_TRUE(delegate->GetUiControllerForTesting()->popups_visible());
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 
   // Removing the visible notification should hide the popup bubble.
   RemoveNotification("id2");
-  EXPECT_FALSE(delegate->GetUiControllerForTesting()->popups_visible());
+  EXPECT_FALSE(tray->GetMessageCenterTrayForTesting()->popups_visible());
 }
 
-IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, ManyPopupNotifications) {
-  auto delegate = std::make_unique<PopupsOnlyUiDelegate>();
+IN_PROC_BROWSER_TEST_F(WebNotificationTrayTest, ManyPopupNotifications) {
+  std::unique_ptr<WebNotificationTray> tray(new WebNotificationTray());
 
   // Add the max visible popup notifications +1, ensure the correct num visible.
   size_t notifications_to_add = kMaxVisiblePopupNotifications + 1;
@@ -147,8 +148,8 @@ IN_PROC_BROWSER_TEST_F(PopupsOnlyUiDelegateTest, ManyPopupNotifications) {
     std::string id = base::StringPrintf("id%d", static_cast<int>(i));
     AddNotification(id);
   }
-  EXPECT_TRUE(delegate->GetUiControllerForTesting()->popups_visible());
-  MessageCenter* message_center = delegate->message_center();
+  EXPECT_TRUE(tray->GetMessageCenterTrayForTesting()->popups_visible());
+  MessageCenter* message_center = tray->message_center();
   EXPECT_EQ(notifications_to_add, message_center->NotificationCount());
   NotificationList::PopupNotifications popups =
       message_center->GetPopupNotifications();
