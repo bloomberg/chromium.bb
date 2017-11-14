@@ -6878,6 +6878,67 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
   ASSERT_EQ(controller.GetPendingEntry(), nullptr);
 }
 
+// Tests that reloading a page that has no title doesn't inherit the title from
+// the previous version of the page.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadDoesntKeepTitle) {
+  NavigationController& controller = shell()->web_contents()->GetController();
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  GURL intermediate_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html"));
+  base::string16 title = base::UTF8ToUTF16("title");
+
+  // Reload from the browser side.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry->GetTitle().empty());
+    entry->SetTitle(title);
+
+    controller.Reload(ReloadType::NORMAL, false);
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+    EXPECT_TRUE(entry->GetTitle().empty());
+  }
+
+  // Load an unrelated page; this disconnects these two tests.
+  EXPECT_TRUE(NavigateToURL(shell(), intermediate_url));
+
+  // Reload from the renderer side.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+    NavigationEntry* entry = controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry->GetTitle().empty());
+    entry->SetTitle(title);
+
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload()"));
+    reload_observer.Wait();
+
+    EXPECT_TRUE(entry->GetTitle().empty());
+  }
+
+  // Load an unrelated page; this disconnects these two tests.
+  EXPECT_TRUE(NavigateToURL(shell(), intermediate_url));
+
+  // "Reload" by loading the same page again.
+  {
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+    NavigationEntry* entry1 = controller.GetLastCommittedEntry();
+    EXPECT_TRUE(entry1->GetTitle().empty());
+    entry1->SetTitle(title);
+
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+    NavigationEntry* entry2 = controller.GetLastCommittedEntry();
+
+    EXPECT_EQ(entry1, entry2);
+    EXPECT_TRUE(entry1->GetTitle().empty());
+  }
+}
+
 // Verify that session history navigations (back/forward) correctly hit the
 // cache instead of going to the server. The test loads a page with no-cache
 // header, stops the server, and goes back expecting successful navigation.

@@ -1,6 +1,9 @@
+frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
+main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
