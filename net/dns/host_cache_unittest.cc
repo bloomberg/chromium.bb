@@ -54,7 +54,8 @@ TEST(HostCacheTest, Basic) {
 
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0U, cache.size());
 
@@ -118,7 +119,8 @@ TEST(HostCacheTest, NoCacheZeroTTL) {
 
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_FALSE(cache.Lookup(key1, now));
   cache.Set(key1, entry, now, kFailureEntryTTL);
@@ -146,7 +148,8 @@ TEST(HostCacheTest, CacheNegativeEntry) {
 
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0U, cache.size());
 
@@ -207,7 +210,8 @@ TEST(HostCacheTest, AddressFamilyIsPartOfKey) {
 
   HostCache::Key key1("foobar.com", ADDRESS_FAMILY_UNSPECIFIED, 0);
   HostCache::Key key2("foobar.com", ADDRESS_FAMILY_IPV4, 0);
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0U, cache.size());
 
@@ -243,7 +247,8 @@ TEST(HostCacheTest, HostResolverFlagsArePartOfKey) {
                       HOST_RESOLVER_CANONNAME);
   HostCache::Key key3("foobar.com", ADDRESS_FAMILY_IPV4,
                       HOST_RESOLVER_LOOPBACK_ONLY);
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0U, cache.size());
 
@@ -282,7 +287,8 @@ TEST(HostCacheTest, NoCache) {
   // Set t=0.
   base::TimeTicks now;
 
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   // Lookup and Set should have no effect.
   EXPECT_FALSE(cache.Lookup(Key("foobar.com"), now));
@@ -300,7 +306,8 @@ TEST(HostCacheTest, Clear) {
   // Set t=0.
   base::TimeTicks now;
 
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
 
@@ -324,7 +331,8 @@ TEST(HostCacheTest, ClearForHosts) {
   // Set t=0.
   base::TimeTicks now;
 
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
 
@@ -360,7 +368,8 @@ TEST(HostCacheTest, Evict) {
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
   HostCache::Key key3 = Key("foobar3.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
   EXPECT_FALSE(cache.Lookup(key1, now));
@@ -406,7 +415,8 @@ TEST(HostCacheTest, EvictWithCallback) {
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
   HostCache::Key key3 = Key("foobar3.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
   EXPECT_FALSE(cache.Lookup(key1, now));
@@ -446,7 +456,8 @@ TEST(HostCacheTest, Stale) {
   HostCache::EntryStaleness stale;
 
   HostCache::Key key = Key("foobar.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0U, cache.size());
 
@@ -509,7 +520,8 @@ TEST(HostCacheTest, EvictStale) {
   HostCache::Key key1 = Key("foobar.com");
   HostCache::Key key2 = Key("foobar2.com");
   HostCache::Key key3 = Key("foobar3.com");
-  HostCache::Entry entry = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
   EXPECT_FALSE(cache.Lookup(key1, now));
@@ -670,12 +682,16 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   IPEndPoint endpoint_ipv4(address_ipv4, 0);
   IPEndPoint endpoint_ipv6(address_ipv6, 0);
 
-  HostCache::Entry entry1 = HostCache::Entry(OK, AddressList(endpoint_ipv4));
+  HostCache::Entry entry1 = HostCache::Entry(OK, AddressList(endpoint_ipv4),
+                                             HostCache::Entry::SOURCE_UNKNOWN);
   AddressList addresses2 = AddressList(endpoint_ipv6);
   addresses2.push_back(endpoint_ipv4);
-  HostCache::Entry entry2 = HostCache::Entry(OK, addresses2);
-  HostCache::Entry entry3 = HostCache::Entry(OK, AddressList(endpoint_ipv6));
-  HostCache::Entry entry4 = HostCache::Entry(OK, AddressList(endpoint_ipv4));
+  HostCache::Entry entry2 =
+      HostCache::Entry(OK, addresses2, HostCache::Entry::SOURCE_UNKNOWN);
+  HostCache::Entry entry3 = HostCache::Entry(OK, AddressList(endpoint_ipv6),
+                                             HostCache::Entry::SOURCE_UNKNOWN);
+  HostCache::Entry entry4 = HostCache::Entry(OK, AddressList(endpoint_ipv4),
+                                             HostCache::Entry::SOURCE_UNKNOWN);
 
   EXPECT_EQ(0u, cache.size());
 
@@ -783,13 +799,16 @@ TEST(HostCacheTest, PersistenceDelegate) {
   IPEndPoint endpoint_ipv4(address_ipv4, 0);
   IPEndPoint endpoint_ipv6(address_ipv6, 0);
 
-  HostCache::Entry entry1 = HostCache::Entry(OK, AddressList(endpoint_ipv4));
+  HostCache::Entry entry1 = HostCache::Entry(OK, AddressList(endpoint_ipv4),
+                                             HostCache::Entry::SOURCE_UNKNOWN);
   AddressList addresses2 = AddressList(endpoint_ipv6);
   addresses2.push_back(endpoint_ipv4);
-  HostCache::Entry entry2 = HostCache::Entry(OK, addresses2);
-  HostCache::Entry entry3 =
-      HostCache::Entry(ERR_NAME_NOT_RESOLVED, AddressList());
-  HostCache::Entry entry4 = HostCache::Entry(OK, AddressList());
+  HostCache::Entry entry2 =
+      HostCache::Entry(OK, addresses2, HostCache::Entry::SOURCE_UNKNOWN);
+  HostCache::Entry entry3 = HostCache::Entry(
+      ERR_NAME_NOT_RESOLVED, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
+  HostCache::Entry entry4 =
+      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
 
   // Start at t=0.
   base::TimeTicks now;

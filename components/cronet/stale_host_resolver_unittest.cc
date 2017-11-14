@@ -160,7 +160,7 @@ class StaleHostResolverTest : public testing::Test {
     net::HostCache::Entry entry(
         error,
         error == net::OK ? MakeAddressList(kCacheAddress) : net::AddressList(),
-        ttl);
+        net::HostCache::Entry::SOURCE_UNKNOWN, ttl);
     base::TimeDelta age = base::TimeDelta::FromSeconds(age_sec);
     base::TimeTicks then = base::TimeTicks::Now() - age;
     resolver_->GetHostCache()->Set(key, entry, then, ttl);
