@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 86 tests; 71 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 87 tests; 72 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Navigator interface: attribute mediaDevices
 PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
@@ -80,6 +80,7 @@ PASS MediaDeviceInfo interface: attribute deviceId
 PASS MediaDeviceInfo interface: attribute kind
 PASS MediaDeviceInfo interface: attribute label
 PASS MediaDeviceInfo interface: attribute groupId
+PASS MediaDeviceInfo interface: operation toJSON()
 FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
