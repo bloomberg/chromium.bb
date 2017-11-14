@@ -7,6 +7,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/events/devices/input_device_manager.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
@@ -45,20 +47,34 @@ UserActivityPowerManagerNotifier::UserActivityPowerManagerNotifier(
     UserActivityDetector* detector)
     : detector_(detector) {
   detector_->AddObserver(this);
+  ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 UserActivityPowerManagerNotifier::~UserActivityPowerManagerNotifier() {
+  ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   detector_->RemoveObserver(this);
 }
 
+void UserActivityPowerManagerNotifier::OnStylusStateChanged(
+    ui::StylusState state) {
+  if (state == StylusState::REMOVED)
+    MaybeNotifyUserActivity(power_manager::USER_ACTIVITY_OTHER);
+}
+
 void UserActivityPowerManagerNotifier::OnUserActivity(const Event* event) {
+  MaybeNotifyUserActivity(GetUserActivityTypeForEvent(event));
+}
+
+void UserActivityPowerManagerNotifier::MaybeNotifyUserActivity(
+    power_manager::UserActivityType user_activity_type) {
   base::TimeTicks now = base::TimeTicks::Now();
   // InSeconds() truncates rather than rounding, so it's fine for this
   // comparison.
   if (last_notify_time_.is_null() ||
       (now - last_notify_time_).InSeconds() >= kNotifyIntervalSec) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
-        NotifyUserActivity(GetUserActivityTypeForEvent(event));
+    chromeos::DBusThreadManager::Get()
+        ->GetPowerManagerClient()
+        ->NotifyUserActivity(user_activity_type);
     last_notify_time_ = now;
   }
 }
