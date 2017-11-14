@@ -455,7 +455,8 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableStory('select-long-word.html',
+            [story.expectations.ALL], 'crbug.com/783345')
     return StoryExpectations()
 
 
