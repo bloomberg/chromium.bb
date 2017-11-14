@@ -112,7 +112,11 @@ static uint8_t add_ref_mv_candidate(
               ROUND_POWER_OF_TWO_SIGNED(out[0] + out[2], SCALING_FCT + 1);
           this_refmv.as_mv.row =
               ROUND_POWER_OF_TWO_SIGNED(out[1] + out[3], SCALING_FCT + 1);
+#if CONFIG_AMVR
+          lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
+#else
           lower_mv_precision(&this_refmv.as_mv, use_hp);
+#endif
         } else {
 #endif  // CONFIG_EXT_WARPED_MOTION
 #if USE_CUR_GM_REFMV
@@ -474,7 +478,12 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
       if (prev_frame_mvs->mfmv[ref_frame - LAST_FRAME][i].as_int !=
           INVALID_MV) {
         int_mv this_refmv = prev_frame_mvs->mfmv[ref_frame - LAST_FRAME][i];
+#if CONFIG_AMVR
+        lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
+                           cm->cur_frame_force_integer_mv);
+#else
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
+#endif
 
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row) >= 16 ||
@@ -509,9 +518,15 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
           prev_frame_mvs->mfmv[rf[1] - LAST_FRAME][i].as_int != INVALID_MV) {
         int_mv this_refmv = prev_frame_mvs->mfmv[rf[0] - LAST_FRAME][i];
         int_mv comp_refmv = prev_frame_mvs->mfmv[rf[1] - LAST_FRAME][i];
+#if CONFIG_AMVR
+        lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv,
+                           cm->cur_frame_force_integer_mv);
+        lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv,
+                           cm->cur_frame_force_integer_mv);
+#else
         lower_mv_precision(&this_refmv.as_mv, cm->allow_high_precision_mv);
         lower_mv_precision(&comp_refmv.as_mv, cm->allow_high_precision_mv);
-
+#endif
         if (blk_row == 0 && blk_col == 0)
           if (abs(this_refmv.as_mv.row) >= 16 ||
               abs(this_refmv.as_mv.col) >= 16 ||

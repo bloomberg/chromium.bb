@@ -1880,7 +1880,12 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       assert(!is_compound);
       mv[0].as_int = gm_get_motion_vector(&cm->global_motion[ref_frame[0]],
                                           cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, block)
+                                          mi_col, mi_row, block
+#if CONFIG_AMVR
+                                          ,
+                                          cm->cur_frame_force_integer_mv
+#endif
+                                          )
                          .as_int;
 
       FRAME_COUNTS *counts = xd->counts;
@@ -2360,7 +2365,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         if (compound_ref0_mode(mbmi->mode) == NEARMV ||
             compound_ref1_mode(mbmi->mode) == NEARMV) {
           nearmv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
+#if CONFIG_AMVR
+          lower_mv_precision(&nearmv[0].as_mv, allow_hp,
+                             cm->cur_frame_force_integer_mv);
+#else
           lower_mv_precision(&nearmv[0].as_mv, allow_hp);
+#endif
         }
       }
 #endif  // CONFIG_COMPOUND_SINGLEREF
