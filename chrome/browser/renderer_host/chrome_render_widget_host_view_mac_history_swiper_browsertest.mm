@@ -73,40 +73,6 @@ enum Deployment {
 }
 @end
 
-class WheelEndAckWaiter : public content::RenderWidgetHost::InputEventObserver {
- public:
-  WheelEndAckWaiter()
-      : message_loop_runner_(new content::MessageLoopRunner),
-        wheel_end_ack_received_(false) {}
-  ~WheelEndAckWaiter() override {}
-
-  void OnInputEventAck(content::InputEventAckSource source,
-                       content::InputEventAckState state,
-                       const blink::WebInputEvent& event) override {
-    if (event.GetType() == blink::WebInputEvent::kMouseWheel) {
-      blink::WebMouseWheelEvent received_wheel =
-          *static_cast<const blink::WebMouseWheelEvent*>(&event);
-      if (received_wheel.phase == blink::WebMouseWheelEvent::kPhaseEnded) {
-        wheel_end_ack_received_ = true;
-        if (message_loop_runner_->loop_running())
-          message_loop_runner_->Quit();
-      }
-    }
-  }
-
-  void Wait() {
-    if (!wheel_end_ack_received_) {
-      message_loop_runner_->Run();
-    }
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  bool wheel_end_ack_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(WheelEndAckWaiter);
-};
-
 class ChromeRenderWidgetHostViewMacHistorySwiperTest
     : public InProcessBrowserTest {
  public:
@@ -770,9 +736,15 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacHistorySwiperTest,
   if (!IsHistorySwipingSupported())
     return;
 
-  WheelEndAckWaiter wheel_end_ack_waiter;
-  GetWebContents()->GetRenderViewHost()->GetWidget()->AddInputEventObserver(
-      &wheel_end_ack_waiter);
+  content::InputEventAckWaiter wheel_end_ack_waiter(
+      GetWebContents()->GetRenderViewHost()->GetWidget(),
+      base::BindRepeating([](content::InputEventAckSource,
+                             content::InputEventAckState,
+                             const blink::WebInputEvent& event) {
+        return event.GetType() == blink::WebInputEvent::kMouseWheel &&
+               static_cast<const blink::WebMouseWheelEvent&>(event).phase ==
+                   blink::WebMouseWheelEvent::kPhaseEnded;
+      }));
 
   ui_test_utils::NavigateToURL(browser(), url_iframe_);
   ASSERT_EQ(url_iframe_, GetWebContents()->GetURL());

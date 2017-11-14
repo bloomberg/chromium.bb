@@ -3973,53 +3973,6 @@ class WebViewGuestScrollLatchingTest : public WebViewTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollLatchingTest);
 };
 
-namespace {
-
-class InputEventAckWaiter
-    : public content::RenderWidgetHost::InputEventObserver {
- public:
-  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for,
-                      bool expected_consumed)
-      : message_loop_runner_(new content::MessageLoopRunner),
-        ack_type_waiting_for_(ack_type_waiting_for),
-        expected_consumed_(expected_consumed),
-        desired_ack_type_received_(false) {}
-  ~InputEventAckWaiter() override {}
-
-  void OnInputEventAck(content::InputEventAckSource,
-                       content::InputEventAckState state,
-                       const blink::WebInputEvent& event) override {
-    const bool consumed = (content::INPUT_EVENT_ACK_STATE_CONSUMED == state);
-    if (event.GetType() == ack_type_waiting_for_ &&
-        consumed == expected_consumed_) {
-      desired_ack_type_received_ = true;
-      if (message_loop_runner_->loop_running())
-        message_loop_runner_->Quit();
-    }
-  }
-
-  void Wait() {
-    if (!desired_ack_type_received_) {
-      message_loop_runner_->Run();
-    }
-  }
-
-  void Reset() {
-    desired_ack_type_received_ = false;
-    message_loop_runner_ = new content::MessageLoopRunner;
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  blink::WebInputEvent::Type ack_type_waiting_for_;
-  bool expected_consumed_;
-  bool desired_ack_type_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
-};
-
-}  // namespace
-
 // Test that when we bubble scroll from a guest, the guest does not also
 // consume the scroll.
 IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
@@ -4062,10 +4015,16 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   content::SimulateGestureEvent(guest_contents, scroll_begin,
                                 ui::LatencyInfo(ui::SourceEventType::WHEEL));
 
-  InputEventAckWaiter update_waiter(
-      blink::WebGestureEvent::kGestureScrollUpdate, false);
-  guest_contents->GetRenderViewHost()->GetWidget()->AddInputEventObserver(
-      &update_waiter);
+  content::InputEventAckWaiter update_waiter(
+      guest_contents->GetRenderViewHost()->GetWidget(),
+      base::BindRepeating([](content::InputEventAckSource,
+                             content::InputEventAckState state,
+                             const blink::WebInputEvent& event) {
+        return event.GetType() ==
+                   blink::WebGestureEvent::kGestureScrollUpdate &&
+               state != content::INPUT_EVENT_ACK_STATE_CONSUMED;
+      }));
+
   blink::WebGestureEvent scroll_update(
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
@@ -4094,9 +4053,6 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   update_waiter.Wait();
 
   EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
-
-  guest_contents->GetRenderViewHost()->GetWidget()->RemoveInputEventObserver(
-      &update_waiter);
 }
 
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
