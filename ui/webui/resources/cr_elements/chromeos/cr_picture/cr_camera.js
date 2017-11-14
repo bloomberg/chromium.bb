@@ -84,6 +84,12 @@ Polymer({
     this.stopCamera();
   },
 
+  /** Only focuses the button if it's not disabled. */
+  focusTakePhotoButton: function() {
+    if (this.cameraOnline_)
+      this.$.takePhoto.focus();
+  },
+
   /**
    * Performs photo capture from the live camera stream. A 'photo-taken' event
    * will be fired as soon as captured photo is available, with the
