@@ -1200,6 +1200,7 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
     params.type = new_type;
     params.mode = new_mode;
     params.flags = new_info.flags;
+#if defined(OS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
       // Due to a focus change, values will be reset by the frame.
       // That case we only need fresh NEXT/PREVIOUS information.
@@ -1214,6 +1215,9 @@ void RenderWidget::UpdateTextInputStateInternal(bool show_virtual_keyboard,
         next_previous_flags_ = 0;
       }
     }
+#else
+    next_previous_flags_ = 0;
+#endif
     params.flags |= next_previous_flags_;
     params.value = new_info.value.Utf8();
     params.selection_start = new_info.selection_start;
