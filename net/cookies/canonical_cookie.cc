@@ -448,6 +448,23 @@ bool CanonicalCookie::IsCanonical() const {
 }
 
 // static
+std::string CanonicalCookie::BuildCookieLine(
+    const std::vector<CanonicalCookie>& cookies) {
+  std::string cookie_line;
+  for (const auto& cookie : cookies) {
+    if (!cookie_line.empty())
+      cookie_line += "; ";
+    // In Mozilla, if you set a cookie like "AAA", it will have an empty token
+    // and a value of "AAA". When it sends the cookie back, it will send "AAA",
+    // so we need to avoid sending "=AAA" for a blank token value.
+    if (!cookie.Name().empty())
+      cookie_line += cookie.Name() + "=";
+    cookie_line += cookie.Value();
+  }
+  return cookie_line;
+}
+
+// static
 CanonicalCookie::CookiePrefix CanonicalCookie::GetCookiePrefix(
     const std::string& name) {
   const char kSecurePrefix[] = "__Secure-";

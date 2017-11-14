@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -117,7 +118,7 @@ void GenericURLRequestJob::OnCookiesAvailable(
   DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   // TODO(alexclarke): Set user agent.
   // Pass cookies, the referrer and any extra headers into the fetch request.
-  std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
+  std::string cookie = net::CanonicalCookie::BuildCookieLine(cookie_list);
   if (!cookie.empty())
     extra_request_headers_.SetHeader(net::HttpRequestHeaders::kCookie, cookie);
 

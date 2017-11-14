@@ -90,10 +90,10 @@ class NET_EXPORT CookieStore {
   // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
   // by |cookies|. The string is built in the same order as the given list.
   //
-  // TODO(mkwst): We really should standardize on either
-  // 'std::vector<CanonicalCookie>' or 'std::vector<CanonicalCookie*>'.
-  static std::string BuildCookieLine(
-      const std::vector<CanonicalCookie>& cookies);
+  // Deprecated; use CanonicalCookie::BuildCookieLine(
+  //     const std::vector<CanonicalCookie>& cookies) instead.
+  // TODO(http://crbug.com/588081#c3): Believed to only be used (directly
+  // and indirectly) by tests; should be removed.
   static std::string BuildCookieLine(
       const std::vector<CanonicalCookie*>& cookies);
 

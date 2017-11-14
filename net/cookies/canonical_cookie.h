@@ -160,6 +160,10 @@ class NET_EXPORT CanonicalCookie {
   // greater than the last access time.
   bool IsCanonical() const;
 
+  // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
+  // by |cookies|. The string is built in the same order as the given list.
+  static std::string BuildCookieLine(
+      const std::vector<CanonicalCookie>& cookies);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CanonicalCookieTest, TestPrefixHistograms);
