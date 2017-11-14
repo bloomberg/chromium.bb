@@ -580,4 +580,7 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
       def SetExpectations(self):
         self.DisableBenchmark([story.expectations.ANDROID_NEXUS5X],
                               'crbug.com/702319')
+        self.DisableStory('v0-distribution-with-multiple-shadow-roots.html',
+                          [story.expectations.ALL],
+                          'crbug.com/780506')
     return StoryExpectations()
