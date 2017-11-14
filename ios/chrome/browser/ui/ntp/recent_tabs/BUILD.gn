@@ -84,8 +84,10 @@ source_set("eg_tests") {
     "recent_tabs_table_egtest.mm",
   ]
   deps = [
+    "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/test/app:test_support",
