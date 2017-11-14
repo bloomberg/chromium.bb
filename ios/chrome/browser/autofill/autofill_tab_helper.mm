@@ -36,16 +36,16 @@ id<FormSuggestionProvider> AutofillTabHelper::GetSuggestionProvider() {
 AutofillTabHelper::AutofillTabHelper(
     web::WebState* web_state,
     password_manager::PasswordGenerationManager* password_generation_manager)
-    : web::WebStateObserver(web_state),
-      controller_([[AutofillController alloc]
+    : controller_([[AutofillController alloc]
                initWithBrowserState:ios::ChromeBrowserState::FromBrowserState(
                                         web_state->GetBrowserState())
           passwordGenerationManager:password_generation_manager
                            webState:web_state]) {
-  DCHECK(web::WebStateObserver::web_state());
+  web_state->AddObserver(this);
 }
 
 void AutofillTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
+  web_state->RemoveObserver(this);
   controller_ = nil;
 }
