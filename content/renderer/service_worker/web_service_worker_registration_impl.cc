@@ -225,6 +225,14 @@ void WebServiceWorkerRegistrationImpl::BindRequest(
 
 void WebServiceWorkerRegistrationImpl::OnConnectionError() {
   if (!creation_task_runner_->RunsTasksInCurrentSequence()) {
+    // If this registration impl is for a service worker execution context,
+    // |this| lives on the worker thread but |binding_| is bound on the IO
+    // thread due to limitations of channel-associated interfaces. Close
+    // |binding_| here since this is the thread it was bound on, then hop to the
+    // worker thread to handle lifetime of |this|. In the case of a service
+    // worker client, both |this| and |binding_| live on the main thread, so the
+    // binding can be closed normally during destruction.
+    binding_.Close();
     creation_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WebServiceWorkerRegistrationImpl::OnConnectionError,
