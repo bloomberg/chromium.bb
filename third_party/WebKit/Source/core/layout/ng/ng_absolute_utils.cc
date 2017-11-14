@@ -34,15 +34,17 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
 // vlr rtl => bottom left
 // vrl ltr => top right
 // vrl rtl => bottom right
-bool IsLeftDominant(const NGConstraintSpace& space) {
-  return (space.WritingMode() != kVerticalRightLeft) &&
-         !(space.WritingMode() == kHorizontalTopBottom &&
-           space.Direction() == TextDirection::kRtl);
+bool IsLeftDominant(const NGWritingMode container_writing_mode,
+                    const TextDirection container_direction) {
+  return (container_writing_mode != kVerticalRightLeft) &&
+         !(container_writing_mode == kHorizontalTopBottom &&
+           container_direction == TextDirection::kRtl);
 }
 
-bool IsTopDominant(const NGConstraintSpace& space) {
-  return (space.WritingMode() == kHorizontalTopBottom) ||
-         (space.Direction() != TextDirection::kRtl);
+bool IsTopDominant(const NGWritingMode container_writing_mode,
+                   const TextDirection container_direction) {
+  return (container_writing_mode == kHorizontalTopBottom) ||
+         (container_direction != TextDirection::kRtl);
 }
 
 LayoutUnit ResolveWidth(const Length& width,
@@ -97,6 +99,8 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const Optional<LayoutUnit>& incoming_width,
                                const NGStaticPosition& static_position,
                                const Optional<MinMaxSize>& child_minmax,
+                               const NGWritingMode container_writing_mode,
+                               const TextDirection container_direction,
                                NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
@@ -131,7 +135,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       margin_right = LayoutUnit();
     DCHECK(child_minmax.has_value());
     width = child_minmax->ShrinkToFit(container_size.width) + border_padding;
-    if (IsLeftDominant(space)) {
+    if (IsLeftDominant(container_writing_mode, container_direction)) {
       left = static_position.LeftInset(container_size.width, *width,
                                        *margin_left, *margin_right);
     } else {
@@ -149,7 +153,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
         margin_right = margin_space / 2;
       } else {
         // Margins are negative.
-        if (IsLeftDominant(space)) {
+        if (IsLeftDominant(container_writing_mode, container_direction)) {
           margin_left = LayoutUnit();
           margin_right = margin_space;
         } else {
@@ -166,7 +170,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       LayoutUnit margin_extra = margin_space - *margin_left - *margin_right;
       if (margin_extra) {
         // Relax the end.
-        if (IsLeftDominant(space))
+        if (IsLeftDominant(container_writing_mode, container_direction))
           right = *right + margin_extra;
         else
           left = *left + margin_extra;
@@ -189,7 +193,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   } else if (!left && !right) {
     // Rule 2.
     DCHECK(width.has_value());
-    if (IsLeftDominant(space))
+    if (IsLeftDominant(container_writing_mode, container_direction))
       left = static_position.LeftInset(container_size.width, *width,
                                        *margin_left, *margin_right);
     else
@@ -231,7 +235,8 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
     ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, position);
+                              child_minmax, container_writing_mode,
+                              container_direction, position);
     return;
   }
 
@@ -250,6 +255,8 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const Optional<LayoutUnit>& incoming_height,
                              const NGStaticPosition& static_position,
                              const Optional<MinMaxSize>& child_minmax,
+                             const NGWritingMode container_writing_mode,
+                             const TextDirection container_direction,
                              NGAbsolutePhysicalPosition* position) {
   NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
@@ -287,7 +294,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
       margin_bottom = LayoutUnit();
     DCHECK(child_minmax.has_value());
     height = child_minmax->ShrinkToFit(container_size.height) + border_padding;
-    if (IsTopDominant(space)) {
+    if (IsTopDominant(container_writing_mode, container_direction)) {
       top = static_position.TopInset(container_size.height, *height,
                                      *margin_top, *margin_bottom);
     } else {
@@ -305,7 +312,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
         margin_bottom = margin_space / 2;
       } else {
         // Margin space is over-constrained.
-        if (IsTopDominant(space)) {
+        if (IsTopDominant(container_writing_mode, container_direction)) {
           margin_top = LayoutUnit();
           margin_bottom = margin_space;
         } else {
@@ -320,7 +327,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     } else {
       LayoutUnit margin_extra = margin_space - *margin_top - *margin_bottom;
       if (margin_extra) {
-        if (IsTopDominant(space))
+        if (IsTopDominant(container_writing_mode, container_direction))
           bottom = *bottom + margin_extra;
         else
           top = *top + margin_extra;
@@ -343,7 +350,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   } else if (!top && !bottom) {
     // Rule 2.
     DCHECK(height.has_value());
-    if (IsTopDominant(space)) {
+    if (IsTopDominant(container_writing_mode, container_direction)) {
       top = static_position.TopInset(container_size.height, *height,
                                      *margin_top, *margin_bottom);
     } else {
@@ -386,6 +393,7 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
     ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
+                            container_writing_mode, container_direction,
                             position);
     return;
   }
@@ -425,7 +433,9 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const ComputedStyle& style,
     const NGStaticPosition& static_position,
     const Optional<MinMaxSize>& child_minmax,
-    const Optional<NGLogicalSize>& replaced_size) {
+    const Optional<NGLogicalSize>& replaced_size,
+    const NGWritingMode container_writing_mode,
+    const TextDirection container_direction) {
   NGAbsolutePhysicalPosition position;
   if (style.IsHorizontalWritingMode()) {
     Optional<LayoutUnit> width;
@@ -436,7 +446,8 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
       width = replaced_size.value().inline_size;
     }
     ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, &position);
+                              child_minmax, container_writing_mode,
+                              container_direction, &position);
   } else {
     Optional<LayoutUnit> height;
     if (!style.Height().IsAuto()) {
@@ -446,6 +457,7 @@ NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
       height = replaced_size.value().inline_size;
     }
     ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
+                            container_writing_mode, container_direction,
                             &position);
   }
   return position;
@@ -457,6 +469,8 @@ void ComputeFullAbsoluteWithChildBlockSize(
     const NGStaticPosition& static_position,
     const Optional<LayoutUnit>& child_block_size,
     const Optional<NGLogicalSize>& replaced_size,
+    const NGWritingMode container_writing_mode,
+    const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position) {
   // After partial size has been computed, child block size is either
   // unknown, or fully computed, there is no minmax.
@@ -480,6 +494,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
       height = replaced_size.value().block_size;
     }
     ComputeAbsoluteVertical(space, style, height, static_position, child_minmax,
+                            container_writing_mode, container_direction,
                             position);
   } else {
     if (child_minmax) {
@@ -495,7 +510,8 @@ void ComputeFullAbsoluteWithChildBlockSize(
       width = replaced_size.value().block_size;
     }
     ComputeAbsoluteHorizontal(space, style, width, static_position,
-                              child_minmax, position);
+                              child_minmax, container_writing_mode,
+                              container_direction, position);
   }
 }
 
