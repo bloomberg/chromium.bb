@@ -75,8 +75,10 @@ window.Audit = (function() {
               String(target) :
               String(target.slice(0, options.numberOfArrayElements)) + '...';
           targetString = '[' + arrayElements + ']';
+        } else if (target === null) {
+          targetString = String(target);
         } else {
-          targetString = '' + String(targetString).split(/[\s\]]/)[1];
+          targetString = '' + String(target).split(/[\s\]]/)[1];
         }
         break;
       default:
@@ -175,10 +177,8 @@ window.Audit = (function() {
 
       // If there is a second operand (i.e. expected value), we have to build
       // the string for it as well.
-      if (this._expected !== null) {
-        this._detail =
-            this._detail.replace(/\$\{expected\}/g, this._expectedDescription);
-      }
+      this._detail =
+          this._detail.replace(/\$\{expected\}/g, this._expectedDescription);
 
       // If there is any property in |_options|, replace the property name
       // with the value.
