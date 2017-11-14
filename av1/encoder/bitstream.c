@@ -4057,6 +4057,9 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         segment_quantizer_active = 1;
       }
     }
+#if CONFIG_Q_SEGMENTATION
+    segment_quantizer_active |= !!seg->q_lvls;
+#endif
     delta_q_allowed = !segment_quantizer_active;
 #endif
 
@@ -4417,6 +4420,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         segment_quantizer_active = 1;
       }
     }
+#if CONFIG_Q_SEGMENTATION
+    segment_quantizer_active |= !!seg->q_lvls;
+#endif
     delta_q_allowed = !segment_quantizer_active;
 #endif
 
