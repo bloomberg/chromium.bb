@@ -286,9 +286,9 @@ DECLARE_ALIGNED(256, static const InterpKernel,
 
 static const InterpFilterParams av1_interp_4tap[2] = {
   { (const int16_t *)sub_pel_filters_4, SUBPEL_TAPS, SUBPEL_SHIFTS,
-    FOURTAP_REGULAR },
+    EIGHTTAP_REGULAR },
   { (const int16_t *)sub_pel_filters_4smooth, SUBPEL_TAPS, SUBPEL_SHIFTS,
-    FOURTAP_SMOOTH },
+    EIGHTTAP_SMOOTH },
 };
 #endif
 

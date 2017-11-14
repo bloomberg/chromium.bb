@@ -270,8 +270,15 @@ INSTANTIATE_TEST_CASE_P(
 TEST(AV1ConvolveTest, av1_highbd_convolve) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   InterpFilters interp_filters = av1_broadcast_interp_filter(EIGHTTAP_REGULAR);
+  int w = 1;
+  int h = 1;
+#if CONFIG_SHORT_FILTER
+  InterpFilterParams filter_params =
+      av1_get_interp_filter_params_with_block_size(EIGHTTAP_REGULAR, w);
+#else
   InterpFilterParams filter_params =
       av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+#endif
   int filter_size = filter_params.taps;
   int filter_center = filter_size / 2 - 1;
   uint16_t src[12 * 12];
@@ -282,8 +289,6 @@ TEST(AV1ConvolveTest, av1_highbd_convolve) {
   int y_step_q4 = 16;
   int avg = 0;
   int bd = 10;
-  int w = 1;
-  int h = 1;
 
   int subpel_x_q4;
   int subpel_y_q4;
