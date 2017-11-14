@@ -774,7 +774,7 @@ hooks = [
     'pattern': 'src/third_party/binutils',
     'condition': 'host_os == "linux"',
     'action': [
-        'vpython',
+        'python',
         'src/third_party/binutils/download.py',
     ],
   },
