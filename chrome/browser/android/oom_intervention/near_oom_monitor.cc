@@ -9,10 +9,12 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_features.h"
+#include "jni/NearOomMonitor_jni.h"
 
 namespace {
 
 const char kSwapFreeThresholdRatioParamName[] = "swap_free_threshold_ratio";
+const char kUseComponentCallbacks[] = "use_component_callbacks";
 
 // Default SwapFree/SwapTotal ratio for detecting near-OOM situation.
 // TODO(bashi): Confirm that this is appropriate.
@@ -67,21 +69,40 @@ NearOomMonitor::NearOomMonitor(
           base::Bind(&NearOomMonitor::Check, base::Unretained(this))),
       monitoring_interval_(kDefaultMonitoringDelta),
       cooldown_interval_(kDefaultCooldownDelta),
-      swapfree_threshold_(swapfree_threshold) {}
+      swapfree_threshold_(swapfree_threshold),
+      component_callback_is_enabled_(
+          base::GetFieldTrialParamByFeatureAsBool(features::kOomIntervention,
+                                                  kUseComponentCallbacks,
+                                                  true)) {
+  if (ComponentCallbackIsEnabled()) {
+    j_object_.Reset(Java_NearOomMonitor_create(
+        base::android::AttachCurrentThread(), reinterpret_cast<jlong>(this)));
+  }
+}
 
 NearOomMonitor::~NearOomMonitor() = default;
 
 std::unique_ptr<NearOomMonitor::Subscription> NearOomMonitor::RegisterCallback(
     base::Closure callback) {
-  if (callbacks_.empty())
+  if (callbacks_.empty() && !ComponentCallbackIsEnabled())
     ScheduleCheck();
   return callbacks_.Add(std::move(callback));
+}
+
+void NearOomMonitor::OnLowMemory(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  callbacks_.Notify();
 }
 
 bool NearOomMonitor::GetSystemMemoryInfo(
     base::SystemMemoryInfoKB* memory_info) {
   DCHECK(memory_info);
   return base::GetSystemMemoryInfo(memory_info);
+}
+
+bool NearOomMonitor::ComponentCallbackIsEnabled() {
+  return component_callback_is_enabled_;
 }
 
 void NearOomMonitor::Check() {
@@ -103,6 +124,8 @@ void NearOomMonitor::Check() {
 }
 
 void NearOomMonitor::ScheduleCheck() {
+  DCHECK(!ComponentCallbackIsEnabled());
+
   if (next_check_time_.is_null()) {
     task_runner_->PostTask(FROM_HERE, check_callback_);
   } else {

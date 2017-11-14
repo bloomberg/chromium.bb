@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ANDROID_OOM_INTERVENTION_NEAR_OOM_MONITOR_H_
 #define CHROME_BROWSER_ANDROID_OOM_INTERVENTION_NEAR_OOM_MONITOR_H_
 
+#include "base/android/jni_android.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/process/process_metrics.h"
@@ -34,6 +35,9 @@ class NearOomMonitor {
   // monitor is running. Destroy the returned Subscription to unregister.
   std::unique_ptr<Subscription> RegisterCallback(base::Closure callback);
 
+  void OnLowMemory(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& jcaller);
+
  protected:
   static NearOomMonitor* Create();
 
@@ -43,6 +47,10 @@ class NearOomMonitor {
   // Gets system memory info. This is a virtual method so that we can override
   // this for testing.
   virtual bool GetSystemMemoryInfo(base::SystemMemoryInfoKB* memory_info);
+
+  // Returns true when the monitor uses Android's memory pressure signals.
+  // This is a virtual method so that we can override this for testing.
+  virtual bool ComponentCallbackIsEnabled();
 
  private:
   // Checks whether we are in near-OOM situation.
@@ -65,6 +73,9 @@ class NearOomMonitor {
   int64_t swapfree_threshold_;
 
   CallbackList callbacks_;
+
+  bool component_callback_is_enabled_;
+  base::android::ScopedJavaGlobalRef<jobject> j_object_;
 
   DISALLOW_COPY_AND_ASSIGN(NearOomMonitor);
 };
