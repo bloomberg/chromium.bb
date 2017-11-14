@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/payment_app_provider.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 template <class T>
 class scoped_refptr;
@@ -35,12 +34,12 @@ class ServiceWorkerPaymentAppFactory {
   ServiceWorkerPaymentAppFactory();
   ~ServiceWorkerPaymentAppFactory();
 
-  // Retrieves all service worker payment apps that can handle payments for
-  // |requested_method_data|, verifies these apps are allowed to handle these
-  // payment methods, and filters them by their capabilities and
-  // CanMakePaymentEvent responses.
+  // Retrieves all service worker payment apps that can handle the payment
+  // method identifiers in |payment_method_identifiers_set|, verifies these apps
+  // are allowed to handle these payment methods, and filters them by their
+  // capabilities and CanMakePaymentEvent responses.
   //
-  // This method takes ownership of |downloader|. (Passing the |downloader| into
+  // This method takes ownership if |downloader|. (Passing the |downloader| into
   // this method is useful for testing.)
   //
   // The payment apps will be returned through |callback|. After |callback| has
@@ -58,25 +57,29 @@ class ServiceWorkerPaymentAppFactory {
       content::BrowserContext* browser_context,
       std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
       scoped_refptr<PaymentManifestWebDataService> cache,
-      const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+      const std::set<std::string>& payment_method_identifiers_set,
       content::PaymentAppProvider::GetAllPaymentAppsCallback callback,
       base::OnceClosure finished_using_resources_callback);
 
  private:
   friend class ServiceWorkerPaymentAppFactoryBrowserTest;
-  friend class ServiceWorkerPaymentAppFactoryTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerPaymentAppFactoryTest,
+                           RemoveAppsWithoutMatchingMethods_NoApps);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerPaymentAppFactoryTest,
+                           RemoveAppsWithoutMatchingMethods_NoMethods);
+  FRIEND_TEST_ALL_PREFIXES(
+      ServiceWorkerPaymentAppFactoryTest,
+      RemoveAppsWithoutMatchingMethods_IntersectionOfMethods);
 
-  // Removes |apps| that don't match any of the |requested_method_data| based on
-  // the method names and method-specific capabilities.
-  static void RemoveAppsWithoutMatchingMethodData(
-      const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+  static void RemoveAppsWithoutMatchingMethods(
+      const std::set<std::string>& requested_methods,
       content::PaymentAppProvider::PaymentApps* apps);
 
   // Should be used only in tests.
   void IgnorePortInAppScopeForTesting();
 
   void OnGotAllPaymentApps(
-      const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
+      const std::set<std::string>& payment_method_identifiers_set,
       content::PaymentAppProvider::GetAllPaymentAppsCallback callback,
       base::OnceClosure finished_using_resources_callback,
       content::PaymentAppProvider::PaymentApps apps);

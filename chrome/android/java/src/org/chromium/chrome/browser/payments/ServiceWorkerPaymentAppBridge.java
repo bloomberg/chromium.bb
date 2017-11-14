@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
@@ -19,7 +20,6 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -27,6 +27,10 @@ import javax.annotation.Nullable;
 /**
  * Native bridge for interacting with service worker based payment apps.
  */
+// TODO(tommyt): crbug.com/669876. Remove these suppressions when we actually
+// start using all of the functionality in this class.
+@SuppressFBWarnings({"UWF_NULL_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
+        "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
     private static final String TAG = "SWPaymentApp";
     private static boolean sCanMakePaymentForTesting;
@@ -44,10 +48,10 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @Override
-    public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
+    public void create(WebContents webContents, Set<String> methodNames,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
-        nativeGetAllPaymentApps(webContents,
-                methodData.values().toArray(new PaymentMethodData[methodData.size()]), callback);
+        nativeGetAllPaymentApps(
+                webContents, methodNames.toArray(new String[methodNames.size()]), callback);
     }
 
     /**
@@ -129,16 +133,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     @CalledByNative
     private static String getStringifiedDataFromMethodData(PaymentMethodData data) {
         return data.stringifiedData;
-    }
-
-    @CalledByNative
-    private static int[] getSupportedNetworksFromMethodData(PaymentMethodData data) {
-        return data.supportedNetworks;
-    }
-
-    @CalledByNative
-    private static int[] getSupportedTypesFromMethodData(PaymentMethodData data) {
-        return data.supportedTypes;
     }
 
     @CalledByNative
@@ -237,7 +231,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * has been resolved.
      */
     private static native void nativeGetAllPaymentApps(
-            WebContents webContents, PaymentMethodData[] methodData, Object callback);
+            WebContents webContents, String[] pmis, Object callback);
 
     /*
      * TODO(tommyt): crbug.com/505554. Change the |callback| parameter below to

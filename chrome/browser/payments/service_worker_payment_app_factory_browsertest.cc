@@ -95,7 +95,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
   // |payment_method_identifiers_set|. Blocks until the factory has finished
   // using all resources.
   void GetAllPaymentAppsForMethods(
-      const std::vector<std::string>& payment_method_identifiers) {
+      const std::set<std::string>& payment_method_identifiers_set) {
     content::BrowserContext* context = browser()
                                            ->tab_strip_model()
                                            ->GetActiveWebContents()
@@ -114,17 +114,13 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     ServiceWorkerPaymentAppFactory factory;
     factory.IgnorePortInAppScopeForTesting();
 
-    std::vector<mojom::PaymentMethodDataPtr> method_data;
-    method_data.emplace_back(mojom::PaymentMethodData::New());
-    method_data.back()->supported_methods = payment_method_identifiers;
-
     base::RunLoop run_loop;
     factory.GetAllPaymentApps(
         context, std::move(downloader),
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),
-        method_data,
+        payment_method_identifiers_set,
         base::BindOnce(
             &ServiceWorkerPaymentAppFactoryBrowserTest::OnGotAllPaymentApps,
             base::Unretained(this)),
