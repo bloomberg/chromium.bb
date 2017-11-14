@@ -34,7 +34,9 @@ class DownloadControllerDelegate {
                                  std::unique_ptr<DownloadTask> task) {}
 
   // Called when DownloadController is about to be destroyed. Delegate should
-  // be set to null inside this method.
+  // be set to null inside this method. All started DownloadTasks will stop the
+  // download. Clients should not call DownloadTask::Start() on the remaining
+  // alive tasks.
   virtual void OnDownloadControllerDestroyed(
       DownloadController* download_controller) {}
 
