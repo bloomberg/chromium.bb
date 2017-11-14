@@ -746,7 +746,7 @@ bool ImageData::ImageDataInCanvasColorSettings(
     CanvasPixelFormat canvas_pixel_format,
     std::unique_ptr<uint8_t[]>& converted_pixels,
     DataU8ColorType u8_color_type,
-    const IntRect* crop_rect) {
+    const IntRect* src_rect) {
   if (!data_ && !data_u16_ && !data_f32_)
     return false;
 
@@ -758,6 +758,9 @@ bool ImageData::ImageDataInCanvasColorSettings(
       GetCanvasColorParams().GetSkColorSpaceForSkSurfaces();
   sk_sp<SkColorSpace> dst_color_space =
       dst_color_params.GetSkColorSpaceForSkSurfaces();
+  const IntRect* crop_rect = nullptr;
+  if (src_rect && *src_rect != IntRect(IntPoint(), Size()))
+    crop_rect = src_rect;
 
   // if color conversion is not needed, copy data into pixel buffer.
   if (!src_color_space.get() && !dst_color_space.get() && data_) {
