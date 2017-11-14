@@ -88,6 +88,8 @@
 #include "net/base/escape.h"
 #include "printing/features/features.h"
 #include "rlz/features/features.h"
+#include "ui/base/clipboard/clipboard_types.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
 
@@ -1190,6 +1192,30 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser) {
       content::DevToolsAgentHost::IsDebuggerAttached(contents) : false;
 }
 
+void CopyURL(Browser* browser) {
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  scw.WriteText(base::UTF8ToUTF16(browser->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetVisibleURL()
+                                      .spec()));
+}
+
+void OpenInChrome(Browser* browser) {
+  // Find a non-incognito browser.
+  Browser* target_browser =
+      chrome::FindTabbedBrowser(browser->profile(), false);
+
+  if (!target_browser) {
+    target_browser =
+        new Browser(Browser::CreateParams(browser->profile(), true));
+  }
+
+  TabStripModel* source_tabstrip = browser->tab_strip_model();
+  target_browser->tab_strip_model()->AppendWebContents(
+      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
+      true);
+  target_browser->window()->Show();
+}
 bool CanViewSource(const Browser* browser) {
   return !browser->is_devtools() &&
       browser->tab_strip_model()->GetActiveWebContents()->GetController().

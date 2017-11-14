@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -315,6 +317,34 @@ void ShowContentSettingsExceptionsForProfile(
     ContentSettingsType content_settings_type) {
   ShowSettingsSubPageForProfile(
       profile, GenerateContentSettingsExceptionsSubPage(content_settings_type));
+}
+
+void ShowSiteSettings(Browser* browser, const GURL& url) {
+  // By default, this opens the general Content Settings pane. If the
+  // |kSiteSettings| and/or |kSiteDetails| flags are enabled this opens a
+  // settings page specific to the current origin of the page. crbug.com/655876
+  url::Origin site_origin = url::Origin::Create(url);
+  std::string link_destination(chrome::kChromeUIContentSettingsURL);
+  // TODO(https://crbug.com/444047): Site Details should work with file:// urls
+  // when this bug is fixed, so add it to the whitelist when that happens.
+  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableSiteSettings) ||
+       base::FeatureList::IsEnabled(features::kSiteDetails)) &&
+      !site_origin.unique() &&
+      (url.SchemeIsHTTPOrHTTPS() ||
+       url.SchemeIs(extensions::kExtensionScheme))) {
+    std::string origin_string = site_origin.Serialize();
+    url::RawCanonOutputT<char> percent_encoded_origin;
+    url::EncodeURIComponent(origin_string.c_str(), origin_string.length(),
+                            &percent_encoded_origin);
+    link_destination = chrome::kChromeUISiteDetailsPrefixURL +
+                       std::string(percent_encoded_origin.data(),
+                                   percent_encoded_origin.length());
+  }
+  browser->OpenURL(
+      content::OpenURLParams(GURL(link_destination), content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_TYPED, false));
 }
 
 void ShowContentSettings(Browser* browser,

@@ -149,6 +149,8 @@ void ToggleRequestTabletSite(Browser* browser);
 void ToggleFullscreenMode(Browser* browser);
 void ClearCache(Browser* browser);
 bool IsDebuggerAttachedToCurrentTab(Browser* browser);
+void CopyURL(Browser* browser);
+void OpenInChrome(Browser* browser);
 #if defined(OS_CHROMEOS)
 void QueryAndDisplayArcApps(
     const Browser* browser,
