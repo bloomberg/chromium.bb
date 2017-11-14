@@ -6,4 +6,4 @@
 
 // Feature flag for the new bookmark UI
 const base::Feature kBookmarkNewGeneration{"BookmarkNewGeneration",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
