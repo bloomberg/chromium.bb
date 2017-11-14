@@ -197,11 +197,13 @@ class BootfsData(object):
   bootfs: Local path to .bootfs image file.
   symbols_mapping: A dict mapping executables to their unstripped originals.
   target_cpu: GN's target_cpu setting for the image.
+  has_autorun: Whether an autorun file was written for /system/cr_autorun.
   """
-  def __init__(self, bootfs_name, symbols_mapping, target_cpu):
+  def __init__(self, bootfs_name, symbols_mapping, target_cpu, has_autorun):
     self.bootfs = bootfs_name
     self.symbols_mapping = symbols_mapping
     self.target_cpu = target_cpu
+    self.has_autorun = has_autorun
 
 
 def WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
@@ -259,10 +261,10 @@ def WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
 
   autorun_file.flush()
   os.chmod(autorun_file.name, 0750)
-  _DumpFile(dry_run, autorun_file.name, 'autorun')
+  _DumpFile(dry_run, autorun_file.name, 'cr_autorun')
 
   # Add the autorun file, logger file, and target binary to |file_mapping|.
-  file_mapping['autorun'] = autorun_file.name
+  file_mapping['cr_autorun'] = autorun_file.name
   file_mapping[os.path.basename(bin_name)] = bin_name
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
@@ -273,8 +275,8 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   file_mapping = dict(runtime_deps)
 
   if use_autorun:
-      WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
-                   wait_for_network, dry_run, use_device, file_mapping)
+    WriteAutorun(bin_name, child_args, summary_output, shutdown_machine,
+                 wait_for_network, dry_run, use_device, file_mapping)
 
   # Find the full list of files to add to the bootfs.
   file_mapping = _ExpandDirectories(
@@ -301,7 +303,7 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   if _RunAndCheck(dry_run, args) != 0:
     return None
 
-  return BootfsData(bootfs_name, symbols_mapping, target_cpu)
+  return BootfsData(bootfs_name, symbols_mapping, target_cpu, use_autorun)
 
 
 def _SymbolizeEntries(entries):
@@ -493,13 +495,18 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
                                'zircon.bin')
 
+  kernel_args = ['devmgr.epoch=%d' % time.time(),
+                 'kernel.halt_on_panic=true',
+                 'zircon.nodename=' + INSTANCE_ID]
+  if bootfs_data.has_autorun:
+    # See https://fuchsia.googlesource.com/zircon/+/master/docs/kernel_cmdline.md#zircon_autorun_system_command.
+    kernel_args.append('zircon.autorun.system=/boot/bin/sh+/system/cr_autorun')
+
   if use_device:
     # Deploy the boot image to the device.
     bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
     bootserver_command = [bootserver_path, '-1', kernel_path,
-                          bootfs_data.bootfs, '--',
-                          '-o', 'zircon.nodename=%s' % INSTANCE_ID,
-                          '-o', 'devmgr.epoch=%d' % time.time()]
+                          bootfs_data.bootfs, '--'] + kernel_args
     _RunAndCheck(dry_run, bootserver_command)
 
     # Start listening for logging lines.
@@ -529,7 +536,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
 
         # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
         # noisy ANSI spew from the user's terminal emulator.
-        '-append', 'TERM=dumb kernel.halt_on_panic=true',
+        '-append', 'TERM=dumb ' + ' '.join(kernel_args)
       ]
 
     # Configure the machine & CPU to emulate, based on the target architecture.
