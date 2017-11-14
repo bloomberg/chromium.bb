@@ -51,8 +51,6 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
     private static final int DURATION_HISTOGRAM_MAX = 48 * 60;
     private static final int DURATION_HISTOGRAM_BUCKET_COUNT = 50;
 
-    @MainIntentActionType
-    private static Integer sLastMainIntentBehavior;
     private static long sTimeoutDurationMs = TIMEOUT_DURATION_MS;
 
     private final ChromeActivity mActivity;
@@ -63,6 +61,9 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
     private long mBackgroundDurationMs;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private boolean mIgnoreEvents;
+
+    @MainIntentActionType
+    private Integer mLastMainIntentBehavior;
 
     /**
      * Constructs a metrics handler for ACTION_MAIN intents received for the specified activity.
@@ -85,7 +86,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
      */
     @SuppressFBWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public void onMainIntentWithNative(long backgroundDurationMs) {
-        sLastMainIntentBehavior = null;
+        mLastMainIntentBehavior = null;
 
         RecordUserAction.record("MobileStartup.MainIntentReceived");
 
@@ -150,8 +151,8 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
      *         received or if the event has not yet occurred.
      */
     @MainIntentActionType
-    public static Integer getLastMainIntentBehaviorForTesting() {
-        return sLastMainIntentBehavior;
+    public Integer getLastMainIntentBehaviorForTesting() {
+        return mLastMainIntentBehavior;
     }
 
     /**
@@ -189,7 +190,7 @@ public class MainIntentBehaviorMetrics implements ApplicationStatus.ActivityStat
         if (!mPendingActionRecordForMainIntent || mIgnoreEvents) return;
         mPendingActionRecordForMainIntent = false;
 
-        sLastMainIntentBehavior = behavior;
+        mLastMainIntentBehavior = behavior;
         String histogramName = getHistogramNameForBehavior(behavior);
         if (histogramName != null) {
             RecordHistogram.recordCustomCountHistogram(

@@ -126,7 +126,7 @@ public class MainIntentBehaviorMetricsIntegrationTest {
 
     @MediumTest
     @Test
-    public void testMainIntentWithLauncherCategory() throws InterruptedException {
+    public void testMainIntentWithoutLauncherCategory() throws InterruptedException {
         mActivityTestRule.startMainActivityFromIntent(new Intent(Intent.ACTION_MAIN), null);
         assertMainIntentBehavior(null);
         Assert.assertFalse(mActivityTestRule.getActivity().getMainIntentBehaviorMetricsForTesting()
@@ -137,7 +137,9 @@ public class MainIntentBehaviorMetricsIntegrationTest {
         CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-                return MainIntentBehaviorMetrics.getLastMainIntentBehaviorForTesting();
+                return mActivityTestRule.getActivity()
+                        .getMainIntentBehaviorMetricsForTesting()
+                        .getLastMainIntentBehaviorForTesting();
             }
         }));
     }
