@@ -86,7 +86,8 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
   void FlushForTesting();
 
   // Enable or disable authentication for the debug overlay.
-  void set_force_fail_auth_for_debug_overlay(bool force_fail) {
+  enum class ForceFailAuth { kOff, kImmediate, kDelayed };
+  void set_force_fail_auth_for_debug_overlay(ForceFailAuth force_fail) {
     force_fail_auth_for_debug_overlay_ = force_fail;
   }
 
@@ -119,7 +120,7 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
       lock_screen_apps_focus_observers_;
 
   // If set to false, all auth requests will forcibly fail.
-  bool force_fail_auth_for_debug_overlay_ = false;
+  ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenController);
 };

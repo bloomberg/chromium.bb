@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/login/lock_screen_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -66,7 +67,8 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // Debug dispatcher and cached data for the UI.
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
   size_t num_users_ = 1u;
-  bool force_fail_auth_ = false;
+  LockScreenController::ForceFailAuth force_fail_auth_ =
+      LockScreenController::ForceFailAuth::kOff;
 
   DISALLOW_COPY_AND_ASSIGN(LockDebugView);
 };
