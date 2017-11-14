@@ -4469,6 +4469,7 @@ interface RemotePlayback : EventTarget
 interface Request
     attribute @@toStringTag
     getter bodyUsed
+    getter cache
     getter credentials
     getter headers
     getter integrity
