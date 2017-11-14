@@ -52,13 +52,11 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
 
   // TODO(layout-dev): Implement when we have oveflow support.
   // TODO(eae): Switch to using NG geometry types.
-  bool HasOverflowClip() const { return false; }
-  bool ShouldClipOverflow() const { return false; }
+  bool HasOverflowClip() const;
+  bool ShouldClipOverflow() const;
   bool HasSelfPaintingLayer() const { return false; }
   LayoutRect VisualRect() const override { return visual_rect_; }
-  LayoutRect VisualOverflowRect() const {
-    return {LayoutPoint(), VisualRect().Size()};
-  }
+  LayoutRect VisualOverflowRect() const;
   LayoutRect OverflowClipRect(const LayoutPoint& location,
                               OverlayScrollbarClipBehavior) const {
     return {location, VisualRect().Size()};

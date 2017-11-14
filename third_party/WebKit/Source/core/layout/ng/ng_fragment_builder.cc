@@ -195,8 +195,8 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   scoped_refptr<NGPhysicalBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), physical_size, contents_visual_rect,
-          children_, baselines_, BoxType(),
+          layout_object_, Style(), physical_size, children_,
+          contents_visual_rect, baselines_, BoxType(),
           border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;

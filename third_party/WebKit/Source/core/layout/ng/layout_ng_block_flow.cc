@@ -223,7 +223,7 @@ bool LayoutNGBlockFlow::LocalVisualRectFor(const LayoutObject* layout_object,
     return false;
   NGInlineFragmentIterator children(*box_fragment, layout_object);
   for (const auto& child : children) {
-    NGPhysicalOffsetRect child_visual_rect = child.fragment->LocalVisualRect();
+    NGPhysicalOffsetRect child_visual_rect = child.fragment->SelfVisualRect();
     visual_rect->Unite(child_visual_rect + child.offset_to_container_box);
   }
   return true;

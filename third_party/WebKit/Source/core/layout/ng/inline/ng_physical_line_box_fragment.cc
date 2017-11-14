@@ -10,6 +10,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     const ComputedStyle& style,
     NGPhysicalSize size,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    const NGPhysicalOffsetRect& contents_visual_rect,
     const NGLineHeightMetrics& metrics,
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(nullptr,
@@ -17,6 +18,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   size,
                                   kFragmentLineBox,
                                   children,
+                                  contents_visual_rect,
                                   std::move(break_token)),
       metrics_(metrics) {}
 
@@ -25,6 +27,10 @@ LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
   // implemented yet.
   // TODO(kojii): We might need locale/script to look up OpenType BASE table.
   return metrics_.ascent;
+}
+
+NGPhysicalOffsetRect NGPhysicalLineBoxFragment::VisualRectWithContents() const {
+  return ContentsVisualRect();
 }
 
 }  // namespace blink

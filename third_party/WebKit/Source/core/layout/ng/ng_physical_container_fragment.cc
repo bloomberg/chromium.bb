@@ -12,13 +12,15 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     NGPhysicalSize size,
     NGFragmentType type,
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    const NGPhysicalOffsetRect& contents_visual_rect,
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          style,
                          size,
                          type,
                          std::move(break_token)),
-      children_(std::move(children)) {
+      children_(std::move(children)),
+      contents_visual_rect_(contents_visual_rect) {
   DCHECK(children.IsEmpty());  // Ensure move semantics is used.
 }
 
