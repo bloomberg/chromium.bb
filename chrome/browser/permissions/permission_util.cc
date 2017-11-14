@@ -15,9 +15,8 @@
 
 using content::PermissionType;
 
-// The returned strings must match the RAPPOR metrics in rappor.xml,
-// and any Field Trial configs for the Permissions kill switch e.g.
-// Permissions.Action.Geolocation etc..
+// The returned strings must match any Field Trial configs for the Permissions
+// kill switch e.g. Permissions.Action.Geolocation etc..
 std::string PermissionUtil::GetPermissionString(
     ContentSettingsType content_type) {
   switch (content_type) {

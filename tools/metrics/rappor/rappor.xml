@@ -362,6 +362,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_AudioCapture.Denied.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -387,6 +390,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_AudioCapture.Dismissed.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -412,6 +418,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_AudioCapture.Granted.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -437,6 +446,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_AudioCapture.Ignored.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -461,6 +473,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_AudioCapture.Revoked.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
@@ -480,6 +495,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionActions_Flash.Denied.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     The domain for which a Flash permission prompt was Denied.
@@ -488,6 +506,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionActions_Flash.Dismissed.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     The domain for which a Flash permission prompt was Dismissed.
@@ -496,6 +517,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionActions_Flash.Granted.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     The domain for which a Flash permission prompt was Granted.
@@ -504,6 +528,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionActions_Flash.Ignored.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <summary>
     The domain for which a Flash permission prompt was Ignored.
@@ -522,6 +549,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionActions_Geolocation.Denied.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -543,6 +573,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Geolocation.Dismissed.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -563,6 +596,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Geolocation.Granted.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -583,6 +619,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Geolocation.Ignored.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -604,6 +643,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Geolocation.Revoked.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>jialiul@chromium.org</owner>
   <summary>
@@ -635,6 +677,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Denied.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>jialiul@chromium.org</owner>
   <summary>
@@ -656,6 +701,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Dismissed.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>jialiul@chromium.org</owner>
   <summary>
@@ -677,6 +725,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Granted.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -698,6 +749,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Ignored.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -720,6 +774,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_Notifications.Revoked.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>jialiul@chromium.org</owner>
   <summary>
@@ -742,6 +799,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_VideoCapture.Denied.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -767,6 +827,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_VideoCapture.Dismissed.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -792,6 +855,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_VideoCapture.Granted.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -817,6 +883,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_VideoCapture.Ignored.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
@@ -841,6 +910,9 @@ components/rappor/rappor_parameters.h.
 <rappor-metric
     name="ContentSettings.PermissionActions_VideoCapture.Revoked.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>tsergeant@chromium.org</owner>
   <summary>
@@ -860,6 +932,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionRequested.Geolocation.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -878,6 +953,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionRequested.Midi.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>toyoshim@chromium.org</owner>
   <summary>
     The domain that requests using MIDI devices.
@@ -896,6 +974,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionRequested.Notifications.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>dominickn@chromium.org</owner>
   <owner>miguelg@chromium.org</owner>
   <summary>
@@ -905,6 +986,9 @@ components/rappor/rappor_parameters.h.
 
 <rappor-metric name="ContentSettings.PermissionRequested.ProtectedMedia.Url2"
     type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <obsolete>
+    Removed in M64, see UMA or Permission Action Reporting data.
+  </obsolete>
   <owner>xhwang@chromium.org</owner>
   <summary>
     The domain that issues a Protected Media Identifier permission prompt.
