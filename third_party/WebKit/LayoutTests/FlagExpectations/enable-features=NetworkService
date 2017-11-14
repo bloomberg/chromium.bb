@@ -121,7 +121,7 @@ crbug.com/721408 http/tests/inspector-protocol/network/request-interception-patt
 crbug.com/721408 http/tests/inspector-protocol/network/request-interception-resource-types.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception.js [ Timeout ]
-crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.html [ Failure ]
+crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sdk/network-interception-wildcard-pattern-matching.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs.js [ Failure Timeout ]
 Bug(none) http/tests/loading/307-after-303-after-post.html [ Failure ]
