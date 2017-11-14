@@ -122,7 +122,7 @@ find_matching_rules(widechar *text, int text_len, widechar *braille, int braille
 #if DEBUG
 	static int initial_text_len = 0;
 	int debug_indent = 0;
-	if (initial_text_len == 0) {
+	if (data[-1] == '^') {
 		initial_text_len = text_len;
 		for (k = 0; k < text_len; k++) printf("%c", text[k]);
 		printf(" <=> ");

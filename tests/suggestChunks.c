@@ -22,57 +22,44 @@ static int test_toLowercase() {
 	return lower != toLowercase(upper);
 }
 
-static int test_suggestChunks() {
-	widechar text[] = {'f', 'o', 'o', 'b', 'a', 'r', '\0'};
-	widechar braille[] = {'f', 'u', 'b', 'r', '\0'};
-	char hyphen_string[8];
-	if (!suggestChunks(text, braille, hyphen_string))
-		return 1;
-	return strcmp("^00x00$", hyphen_string);
-}
-
-static int test_suggestChunks_longWord() {
-	char* tableList =							\
-		"sbs-table-dev/sbs.dis,"				\
-		"sbs-table-dev/sbs-de-core6.cti,"		\
-		"sbs-table-dev/sbs-apos.cti,"			\
-		"sbs-table-dev/sbs-de-accents.cti,"	\
-		"sbs-table-dev/sbs-contractions.ctb";
-
-	char *text    = "achtunddreißigtausenddreihundertsiebzehn";
-	char *braille = "A4TUNDDR3^IGT1SENDDR3HUNDERTS0BZEHN";
-
+static int check_suggestion(const char* text, const char* braille, const char* expected_hyphen_string) {
 	int in_len = strlen(text);
 	int out_len = in_len;
-	
 	widechar *inbuf = malloc(sizeof(widechar) * (in_len + 1));
 	widechar *outbuf = malloc(sizeof(widechar) * (out_len + 1));
-
 	in_len = _lou_extParseChars(text, inbuf);
 	out_len = _lou_extParseChars(braille, outbuf);
 	inbuf[in_len] = '\0';
 	outbuf[out_len] = '\0';
-
-	in_len = _lou_extParseChars(text, inbuf);
-	out_len = _lou_extParseChars(braille, outbuf);
-	
-	loadTable(tableList);
-	
 	char *hyphen_string = malloc(sizeof(char) * (in_len + 2));
-	
-	if (!suggestChunks(inbuf, outbuf, hyphen_string))
+	if (!suggestChunks(inbuf, outbuf, hyphen_string)) {
+		printf("Could not find a solution for %s => %s\n", text, braille);
 		return 1;
-	
-	return strcmp("^x0xxxxxxx0xxxxx0xxxxxxx0xxxxxxxxx0xxxxx$", hyphen_string);
+	} else if (strcmp(expected_hyphen_string, hyphen_string) != 0) {
+		printf("Expected %s but got %s\n", expected_hyphen_string, hyphen_string);
+		return 1;
+	} else
+		return 0;
 }
 
 int main(int argc, char **argv) {
+	int result = 0;
+	
 	loadTable("tests/tables/suggestChunks.ctb");
-	if (test_toLowercase())
-		return 1;
-	if (test_suggestChunks())
-		return 1;
-	if (test_suggestChunks_longWord())
-		return 1;
-	return 0;
+	
+	result |= test_toLowercase();
+	
+	result |= check_suggestion("foobar", "FUBR", "^00x00$");
+	
+	// check that this long word does not take ages
+	result |= check_suggestion("achtunddreißigtausenddreihundertsiebzehn",
+	                           "A4TUNDDR3^IGT1SENDDR3HUNDERTS0BZEHN",
+	                           "^x0xxxxxxx0xxxxx0xxxxxxx0xxxxxxxxx0xxxxx$");
+	
+	// n(or)m|(al)|(lich)tque|(ll)e
+	result |= check_suggestion("normallichtquelle",
+	                           "N?M:_T'QUEQE",
+	                           "^x0x101000xxxx10x$");
+	
+	return result;
 }
