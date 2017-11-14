@@ -3816,8 +3816,6 @@ crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause
 crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_jis/sjis-encode-form-errors-han.html [ Pass Timeout ]
-crbug.com/778271 [ Win Debug ] http/tests/devtools/tracing/frame-model-instrumentation.html [ Pass Failure ]
-crbug.com/778271 [ Win Debug ] virtual/mojo-loading/http/tests/devtools/tracing/frame-model-instrumentation.html [ Pass Failure ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Pass Failure Timeout ]
