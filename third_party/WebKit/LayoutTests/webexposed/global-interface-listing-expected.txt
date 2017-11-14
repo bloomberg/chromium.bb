@@ -646,10 +646,14 @@ interface CSSMathInvert : CSSMathValue
     setter value
 interface CSSMathMax : CSSMathValue
     attribute @@toStringTag
+    getter values
     method constructor
+    setter values
 interface CSSMathMin : CSSMathValue
     attribute @@toStringTag
+    getter values
     method constructor
+    setter values
 interface CSSMathNegate : CSSMathValue
     attribute @@toStringTag
     getter value
@@ -657,10 +661,14 @@ interface CSSMathNegate : CSSMathValue
     setter value
 interface CSSMathProduct : CSSMathValue
     attribute @@toStringTag
+    getter values
     method constructor
+    setter values
 interface CSSMathSum : CSSMathValue
     attribute @@toStringTag
+    getter values
     method constructor
+    setter values
 interface CSSMathValue : CSSNumericValue
     attribute @@toStringTag
     getter operator
@@ -678,6 +686,11 @@ interface CSSNamespaceRule : CSSRule
     attribute @@toStringTag
     getter namespaceURI
     getter prefix
+    method constructor
+interface CSSNumericArray
+    attribute @@toStringTag
+    getter length
+    method @@iterator
     method constructor
 interface CSSNumericValue : CSSStyleValue
     attribute @@toStringTag

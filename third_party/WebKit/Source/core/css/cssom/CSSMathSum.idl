@@ -10,4 +10,5 @@
   RaisesException=Constructor,
   RuntimeEnabled=CSSTypedOM
 ] interface CSSMathSum : CSSMathValue {
+  attribute CSSNumericArray values;
 };

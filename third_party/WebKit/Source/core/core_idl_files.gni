@@ -81,6 +81,7 @@ core_idl_files =
                     "css/cssom/CSSMathSum.idl",
                     "css/cssom/CSSMathProduct.idl",
                     "css/cssom/CSSMathValue.idl",
+                    "css/cssom/CSSNumericArray.idl",
                     "css/cssom/CSSNumericValue.idl",
                     "css/cssom/CSSPerspective.idl",
                     "css/cssom/CSSPositionValue.idl",

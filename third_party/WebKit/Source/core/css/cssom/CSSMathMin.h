@@ -5,13 +5,13 @@
 #ifndef CSSMathMin_h
 #define CSSMathMin_h
 
-#include "core/css/cssom/CSSMathValue.h"
+#include "core/css/cssom/CSSMathVariadic.h"
 
 namespace blink {
 
 // Represents the minimum of one or more CSSNumericValues.
 // See CSSMathMin.idl for more information about this class.
-class CORE_EXPORT CSSMathMin : public CSSMathValue {
+class CORE_EXPORT CSSMathMin final : public CSSMathVariadic {
   WTF_MAKE_NONCOPYABLE(CSSMathMin);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -27,7 +27,7 @@ class CORE_EXPORT CSSMathMin : public CSSMathValue {
 
     // TODO(crbug.com/776173): Implement add typing.
     CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
-    return new CSSMathMin(args, type);
+    return new CSSMathMin(CSSNumericArray::FromNumberishes(args), type);
   }
 
   String getOperator() const final { return "min"; }
@@ -36,8 +36,8 @@ class CORE_EXPORT CSSMathMin : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kMinType; }
 
  private:
-  CSSMathMin(const HeapVector<CSSNumberish>&, const CSSNumericValueType& type)
-      : CSSMathValue(type) {}
+  CSSMathMin(CSSNumericArray* values, const CSSNumericValueType& type)
+      : CSSMathVariadic(values, type) {}
 };
 
 }  // namespace blink

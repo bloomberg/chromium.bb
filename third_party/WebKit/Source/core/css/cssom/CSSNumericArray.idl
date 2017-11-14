@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Represents the maximum of one or more CSSNumericValues.
+// Represents the sum of one or more CSSNumericValues.
 // https://drafts.css-houdini.org/css-typed-om-1/#cssmathsum
 [
-  Constructor(CSSNumberish... args),
   Exposed=(Window,PaintWorklet),
   RaisesException=Constructor,
   RuntimeEnabled=CSSTypedOM
-] interface CSSMathMax : CSSMathValue {
-  attribute CSSNumericArray values;
+] interface CSSNumericArray {
+  readonly attribute unsigned long length;
+  getter CSSNumericValue(unsigned long index);
 };
