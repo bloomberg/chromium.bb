@@ -5,13 +5,13 @@
 #ifndef MediaDevices_h
 #define MediaDevices_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 
 namespace blink {
 

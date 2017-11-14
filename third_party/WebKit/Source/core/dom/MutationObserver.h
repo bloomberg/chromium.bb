@@ -32,6 +32,7 @@
 #define MutationObserver_h
 
 #include "base/gtest_prod_util.h"
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"

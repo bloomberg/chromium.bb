@@ -5,9 +5,9 @@
 #ifndef NetworkInformation_h
 #define NetworkInformation_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventTarget.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/Time.h"

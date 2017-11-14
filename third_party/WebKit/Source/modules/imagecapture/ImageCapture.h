@@ -6,6 +6,7 @@
 #define ImageCapture_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventTarget.h"
@@ -17,7 +18,6 @@
 #include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "modules/mediastream/MediaTrackSettings.h"
 #include "platform/AsyncMethodRunner.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 
 namespace blink {
 

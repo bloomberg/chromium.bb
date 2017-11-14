@@ -26,6 +26,7 @@ bindings_core_v8_files =
                     "core/v8/custom/V8ShadowRootCustom.cpp",
                     "core/v8/custom/V8WindowCustom.cpp",
                     "core/v8/custom/V8XMLHttpRequestCustom.cpp",
+                    "core/v8/ActiveScriptWrappable.h",
                     "core/v8/ArrayValue.cpp",
                     "core/v8/ArrayValue.h",
                     "core/v8/BindingSecurity.cpp",

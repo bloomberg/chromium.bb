@@ -24,6 +24,7 @@
 #define XMLHttpRequest_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptString.h"
 #include "core/dom/DocumentParserClient.h"
 #include "core/dom/ExceptionCode.h"
@@ -31,7 +32,6 @@
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"

@@ -29,8 +29,8 @@
 #ifndef AudioScheduledSourceNode_h
 #define AudioScheduledSourceNode_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "modules/webaudio/AudioNode.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 
 namespace blink {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ActiveScriptWrappableBase.h"
 
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/ScriptWrappable.h"

@@ -5,10 +5,10 @@
 #ifndef PermissionStatus_h
 #define PermissionStatus_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/PausableObject.h"
 #include "core/dom/events/EventTarget.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/WTFString.h"

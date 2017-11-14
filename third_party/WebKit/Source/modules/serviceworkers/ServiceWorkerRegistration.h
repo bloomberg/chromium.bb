@@ -6,6 +6,7 @@
 #define ServiceWorkerRegistration_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventTarget.h"
@@ -13,7 +14,6 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/Supplementable.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"

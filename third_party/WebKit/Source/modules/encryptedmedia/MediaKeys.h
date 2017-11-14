@@ -27,11 +27,11 @@
 #define MediaKeys_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/typed_arrays/DOMArrayPiece.h"
 #include "platform/Timer.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/WTFString.h"
