@@ -865,6 +865,21 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
+// The signin flow is simply not used on ChromeOS.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveNotSignedInShowSigninOnlyOnce) {
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_login_ui_result(false);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+  EXPECT_TRUE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+#endif
+
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NonInteractiveMintFailure) {
   SignIn("primary@example.com");
@@ -939,6 +954,45 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveMintServiceErrorAccountValid) {
+  SignIn("primary@example.com");
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_mint_token_result(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SERVICE_ERROR);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+
+  // The login UI should not have been shown, as the user's primary account is
+  // in a valid state.
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+
+// The signin flow is simply not used on ChromeOS.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveMintServiceErrorShowSigninOnlyOnce) {
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_login_ui_result(true);
+  func->set_mint_token_result(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_SERVICE_ERROR);
+
+  // The function should complete with an error, showing the signin UI only
+  // once for the initial signin.
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_TRUE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        NoOptionsSuccess) {
   SignIn("primary@example.com");
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
@@ -990,21 +1044,18 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveLoginCanceled) {
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
-                       InteractiveMintBadCredentialsLoginCanceled) {
+                       InteractiveMintBadCredentialsAccountValid) {
   SignIn("primary@example.com");
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_mint_token_result(
       TestOAuth2MintTokenFlow::MINT_TOKEN_BAD_CREDENTIALS);
-  func->set_login_ui_result(false);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
-  EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
-// ChromeOS does not support the interactive login flow, so the login UI will
-// never be shown on that platform.
-#if !defined(OS_CHROMEOS)
-  EXPECT_TRUE(func->login_ui_shown());
-#endif
+  // The login UI should not be shown as the account is in a valid state.
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
@@ -1018,6 +1069,21 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_login_ui_result(true);
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE);
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+  EXPECT_TRUE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveLoginSuccessMintBadCredentials) {
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_login_ui_result(true);
+  func->set_mint_token_result(
+      TestOAuth2MintTokenFlow::MINT_TOKEN_BAD_CREDENTIALS);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(), "[{\"interactive\": true}]", browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
@@ -1146,6 +1212,47 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
 }
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveApprovalServiceErrorAccountValid) {
+  SignIn("primary@example.com");
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+  func->set_scope_ui_service_error(
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+
+  // The login UI should not be shown as the account is in a valid state.
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
+}
+
+// The signin flow is simply not used on ChromeOS.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
+                       InteractiveApprovalServiceErrorShowSigninUIOnlyOnce) {
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_login_ui_result(true);
+  func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS);
+  func->set_scope_ui_service_error(
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
+
+  // The function should complete with an error, showing the signin UI only
+  // once for the initial signin.
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[{\"interactive\": true}]", browser());
+  EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
+                               base::CompareCase::INSENSITIVE_ASCII));
+
+  EXPECT_TRUE(func->login_ui_shown());
+  EXPECT_TRUE(func->scope_ui_shown());
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveApprovalOAuthErrors) {
