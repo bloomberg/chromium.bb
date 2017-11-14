@@ -441,6 +441,19 @@ Polymer({
     this.activeDialogAnchor_ = target;
   },
 
+  /**
+   * Opens the export/import action menu.
+   * @private
+   */
+  onImportExportMenuTap_: function() {
+    var menu = /** @type {!CrActionMenuElement} */ (this.$.exportImportMenu);
+    var target =
+        /** @type {!HTMLElement} */ (this.$$('#exportImportMenuButton'));
+
+    menu.showAt(target);
+    this.activeDialogAnchor_ = target;
+  },
+
   undoRemoveSavedPasswordOrException_: function(event) {
     this.passwordManager_.undoRemoveSavedPasswordOrException();
   },
