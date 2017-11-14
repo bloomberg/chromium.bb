@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_H_
-#define IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_H_
+#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
+#define IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
 
 #include <memory>
 #include <string>
@@ -26,10 +26,10 @@ namespace ios_web_view {
 // A test fixture for testing CWVWebView. A test server is also created to
 // support loading content. The server supports the urls returned by the GetUrl*
 // methods below.
-class WebViewTest : public PlatformTest {
+class WebViewIntTest : public PlatformTest {
  protected:
-  WebViewTest();
-  ~WebViewTest() override;
+  WebViewIntTest();
+  ~WebViewIntTest() override;
 
   // Returns URL to an html page with title set to |title|.
   GURL GetUrlForPageWithTitle(const std::string& title);
@@ -56,4 +56,4 @@ class WebViewTest : public PlatformTest {
 
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_H_
+#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INT_TEST_H_
