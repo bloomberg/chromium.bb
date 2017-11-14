@@ -14,21 +14,12 @@ namespace metrics {
 
 namespace {
 
-enum IntervalType {
-  FIRST_RUN,
-  DAY_ELAPSED,
-  CLOCK_CHANGED,
-  NUM_INTERVAL_TYPES
-};
-
 void RecordIntervalTypeHistogram(const std::string& histogram_name,
-                                 IntervalType type) {
-  base::Histogram::FactoryGet(
-      histogram_name,
-      1,
-      NUM_INTERVAL_TYPES,
-      NUM_INTERVAL_TYPES + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag)->Add(type);
+                                 DailyEvent::IntervalType type) {
+  const int num_types = static_cast<int>(DailyEvent::IntervalType::NUM_TYPES);
+  base::Histogram::FactoryGet(histogram_name, 1, num_types, num_types + 1,
+                              base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(static_cast<int>(type));
 }
 
 }  // namespace
@@ -72,34 +63,33 @@ void DailyEvent::CheckInterval() {
     DVLOG(1) << "DailyEvent time loaded: " << last_fired_;
     if (last_fired_.is_null()) {
       DVLOG(1) << "DailyEvent first run.";
-      RecordIntervalTypeHistogram(histogram_name_, FIRST_RUN);
-      OnInterval(now);
+      RecordIntervalTypeHistogram(histogram_name_, IntervalType::FIRST_RUN);
+      OnInterval(now, IntervalType::FIRST_RUN);
       return;
     }
   }
   int days_elapsed = (now - last_fired_).InDays();
   if (days_elapsed >= 1) {
     DVLOG(1) << "DailyEvent day elapsed.";
-    RecordIntervalTypeHistogram(histogram_name_, DAY_ELAPSED);
-    OnInterval(now);
+    RecordIntervalTypeHistogram(histogram_name_, IntervalType::DAY_ELAPSED);
+    OnInterval(now, IntervalType::DAY_ELAPSED);
   } else if (days_elapsed <= -1) {
     // The "last fired" time is more than a day in the future, so the clock
     // must have been changed.
     DVLOG(1) << "DailyEvent clock change detected.";
-    RecordIntervalTypeHistogram(histogram_name_, CLOCK_CHANGED);
-    OnInterval(now);
+    RecordIntervalTypeHistogram(histogram_name_, IntervalType::CLOCK_CHANGED);
+    OnInterval(now, IntervalType::CLOCK_CHANGED);
   }
 }
 
-void DailyEvent::OnInterval(base::Time now) {
+void DailyEvent::OnInterval(base::Time now, IntervalType type) {
   DCHECK(!now.is_null());
   last_fired_ = now;
   pref_service_->SetInt64(pref_name_,
                           last_fired_.since_origin().InMicroseconds());
 
-  // Notify all observers
   for (auto it = observers_.begin(); it != observers_.end(); ++it) {
-    (*it)->OnDailyEvent();
+    (*it)->OnDailyEvent(type);
   }
 }
 

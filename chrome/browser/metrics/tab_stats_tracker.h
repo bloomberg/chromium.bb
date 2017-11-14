@@ -63,7 +63,7 @@ class TabStatsTracker : public TabStripModelObserver,
     ~TabStatsDailyObserver() override {}
 
     // Callback called when the daily event happen.
-    void OnDailyEvent() override;
+    void OnDailyEvent(DailyEvent::IntervalType type) override;
 
    private:
     // The delegate used to report the metrics.
