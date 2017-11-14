@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
@@ -1083,6 +1084,7 @@ class HeadlessWebContentsBeginFrameControlTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HeadlessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(cc::switches::kRunAllCompositorStagesBeforeDraw);
+    command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
   }
 
   void OnCreateTargetResult(
@@ -1231,9 +1233,8 @@ class HeadlessWebContentsBeginFrameControlBasicTest
   void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
                            result) override {
     if (!sent_screenshot_request_) {
-      // Once no more BeginFrames are needed and the main frame is ready,
-      // capture a screenshot.
-      sent_screenshot_request_ = !needs_begin_frames_ && main_frame_ready_;
+      // Once the main frame is ready, capture a screenshot.
+      sent_screenshot_request_ = main_frame_ready_;
       BeginFrame(sent_screenshot_request_);
     } else {
       EXPECT_TRUE(result->GetHasDamage());
@@ -1262,7 +1263,6 @@ class HeadlessWebContentsBeginFrameControlBasicTest
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsBeginFrameControlBasicTest);
 
-// TODO(eseckler).
 class HeadlessWebContentsBeginFrameControlViewportTest
     : public HeadlessWebContentsBeginFrameControlTest {
  public:
@@ -1279,16 +1279,10 @@ class HeadlessWebContentsBeginFrameControlViewportTest
   void OnFrameFinished(std::unique_ptr<headless_experimental::BeginFrameResult>
                            result) override {
     if (!sent_screenshot_request_) {
-      // Once no more BeginFrames are needed and the main frame is ready,
-      // set the view size and position and then capture a screenshot.
-      if (!needs_begin_frames_ && main_frame_ready_) {
-        if (did_set_up_viewport_) {
-          // Finally, capture a screenshot.
-          sent_screenshot_request_ = true;
-          BeginFrame(true);
-        } else {
-          SetUpViewport();
-        }
+      // Once the main frame is ready, set the view size and position and then
+      // capture a screenshot.
+      if (main_frame_ready_) {
+        SetUpViewport();
         return;
       }
 
@@ -1325,8 +1319,6 @@ class HeadlessWebContentsBeginFrameControlViewportTest
   }
 
   void SetUpViewport() {
-    did_set_up_viewport_ = 1;
-    // We should be needing BeginFrames again because of the viewport change.
     devtools_client_->GetEmulation()
         ->GetExperimental()
         ->SetDeviceMetricsOverride(
@@ -1343,10 +1335,25 @@ class HeadlessWebContentsBeginFrameControlViewportTest
                                  .SetScale(2)
                                  .Build())
                 .Build());
+    // Round-trip through main thread to ensure that viewport update has reached
+    // it.
+    // TODO(eseckler): Add an acknowledgment to SetDeviceMetricsOverride that is
+    // sent after renderer applied new emulation params.
+    devtools_client_->GetRuntime()->Evaluate(
+        "", base::Bind(&HeadlessWebContentsBeginFrameControlViewportTest::
+                           MainThreadRoundTripComplete,
+                       base::Unretained(this)));
+  }
+
+  void MainThreadRoundTripComplete(
+      std::unique_ptr<runtime::EvaluateResult> result) {
+    EXPECT_TRUE(result);
+    // Take a screenshot.
+    sent_screenshot_request_ = true;
+    BeginFrame(true);
   }
 
   bool sent_screenshot_request_ = false;
-  bool did_set_up_viewport_ = false;
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(

@@ -233,6 +233,17 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   }
 
   bool needs_begin_frames = state_machine_.BeginFrameNeeded();
+
+  // The propagation of the needsBeginFrame signal to viz is inherently racy
+  // with issuing the next BeginFrame. In full-pipe mode, it is important we
+  // don't miss a BeginFrame because our needsBeginFrames signal propagated to
+  // viz too slowly. To avoid the race, we simply always request BeginFrames
+  // from viz.
+  if (settings_.wait_for_all_pipeline_stages_before_draw &&
+      state_machine_.HasInitializedLayerTreeFrameSink()) {
+    needs_begin_frames = true;
+  }
+
   if (needs_begin_frames && !observing_begin_frame_source_) {
     observing_begin_frame_source_ = true;
     if (begin_frame_source_)
@@ -330,9 +341,11 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
 
   base::TimeTicks now = Now();
 
-  // Discard missed begin frames if they are too late.
+  // Discard missed begin frames if they are too late. In full-pipe mode, we
+  // ignore BeginFrame deadlines.
   if (adjusted_args.type == viz::BeginFrameArgs::MISSED &&
-      now > adjusted_args.deadline) {
+      now > adjusted_args.deadline &&
+      !settings_.wait_for_all_pipeline_stages_before_draw) {
     skipped_last_frame_missed_exceeded_deadline_ = true;
     SendBeginFrameAck(adjusted_args, kBeginFrameSkipped);
     return;
@@ -776,8 +789,14 @@ bool Scheduler::ShouldDropBeginFrame(const viz::BeginFrameArgs& args) const {
   // Also ignore MISSED args in full-pipe mode, because a missed BeginFrame may
   // have already been completed by the DisplayScheduler. In such a case,
   // handling it now would be likely to mess up future full-pipe BeginFrames.
+  // The only situation in which we can reasonably receive MISSED args is when
+  // our frame sink hierarchy changes, since we always request BeginFrames in
+  // full-pipe mode. If surface synchronization is also enabled, we can and
+  // should use the MISSED args safely because the parent's latest
+  // CompositorFrame will block its activation until we submit a new frame.
   if (args.type == viz::BeginFrameArgs::MISSED &&
-      settings_.wait_for_all_pipeline_stages_before_draw) {
+      settings_.wait_for_all_pipeline_stages_before_draw &&
+      !settings_.enable_surface_synchronization) {
     return true;
   }
 

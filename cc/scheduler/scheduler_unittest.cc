@@ -296,8 +296,8 @@ class SchedulerTest : public testing::Test {
     scheduler_.reset(new TestScheduler(
         now_src_.get(), client_.get(), scheduler_settings_, 0,
         task_runner_.get(), std::move(fake_compositor_timing_history)));
-    scheduler_->SetBeginFrameSource(frame_source);
     client_->set_scheduler(scheduler_.get());
+    scheduler_->SetBeginFrameSource(frame_source);
 
     // Use large estimates by default to avoid latency recovery in most tests.
     fake_compositor_timing_history_->SetAllEstimatesTo(kSlowDuration);
@@ -3623,9 +3623,20 @@ TEST_F(SchedulerTest, CriticalBeginMainFrameToActivateIsFast) {
 
 TEST_F(SchedulerTest, WaitForAllPipelineStagesSkipsMissedBeginFrames) {
   scheduler_settings_.wait_for_all_pipeline_stages_before_draw = true;
-  SetUpScheduler(EXTERNAL_BFS);
+  client_ = std::make_unique<FakeSchedulerClient>();
+  CreateScheduler(EXTERNAL_BFS);
 
-  scheduler_->SetNeedsRedraw();
+  // Initialize frame sink so that state machine Scheduler and state machine
+  // need BeginFrames.
+  scheduler_->SetVisible(true);
+  scheduler_->SetCanDraw(true);
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
+  client_->Reset();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+  client_->Reset();
 
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
   now_src_->Advance(interval);
@@ -3634,6 +3645,61 @@ TEST_F(SchedulerTest, WaitForAllPipelineStagesSkipsMissedBeginFrames) {
       now_src_->NowTicks() + interval, interval, viz::BeginFrameArgs::MISSED);
   fake_external_begin_frame_source_->TestOnBeginFrame(args);
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+}
+
+TEST_F(
+    SchedulerTest,
+    WaitForAllPipelineStagesUsesMissedBeginFramesWithSurfaceSynchronization) {
+  scheduler_settings_.wait_for_all_pipeline_stages_before_draw = true;
+  scheduler_settings_.enable_surface_synchronization = true;
+  client_ = std::make_unique<FakeSchedulerClient>();
+  CreateScheduler(EXTERNAL_BFS);
+
+  // Initialize frame sink so that Scheduler and state machine need BeginFrames.
+  scheduler_->SetVisible(true);
+  scheduler_->SetCanDraw(true);
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
+  client_->Reset();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+  client_->Reset();
+
+  // Uses MISSED BeginFrames even after the deadline has passed.
+  base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+  now_src_->Advance(interval);
+  base::TimeTicks timestamp = now_src_->NowTicks();
+  // Deadline should have passed after this.
+  now_src_->Advance(interval * 2);
+  viz::BeginFrameArgs args = viz::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, 0u, 1u, timestamp, timestamp + interval, interval,
+      viz::BeginFrameArgs::MISSED);
+  fake_external_begin_frame_source_->TestOnBeginFrame(args);
+  EXPECT_TRUE(client_->IsInsideBeginImplFrame());
+}
+
+TEST_F(SchedulerTest, WaitForAllPipelineStagesAlwaysObservesBeginFrames) {
+  scheduler_settings_.wait_for_all_pipeline_stages_before_draw = true;
+  scheduler_settings_.enable_surface_synchronization = true;
+  client_ = std::make_unique<FakeSchedulerClient>();
+  CreateScheduler(EXTERNAL_BFS);
+
+  // Initialize frame sink, but don't request a main frame, so that state
+  // machine doesn't need BeginFrames, but Scheduler still observes.
+  scheduler_->SetVisible(true);
+  scheduler_->SetCanDraw(true);
+  EXPECT_ACTIONS("ScheduledActionBeginLayerTreeFrameSinkCreation");
+  client_->Reset();
+  scheduler_->DidCreateAndInitializeLayerTreeFrameSink();
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  EXPECT_FALSE(client_->IsInsideBeginImplFrame());
+  client_->Reset();
+
+  // In full-pipe mode, the Scheduler always observes BeginFrames, even if the
+  // state machine doesn't need any.
+  EXPECT_TRUE(scheduler_->begin_frames_expected());
+  EXPECT_FALSE(scheduler_->BeginFrameNeeded());
 }
 
 }  // namespace
