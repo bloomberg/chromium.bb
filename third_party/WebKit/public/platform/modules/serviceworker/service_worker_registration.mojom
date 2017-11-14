@@ -12,6 +12,14 @@ import "url/mojo/url.mojom";
 const int32 kInvalidServiceWorkerRegistrationHandleId = -1;
 const int64 kInvalidServiceWorkerRegistrationId = -1;
 
+// Represents ServiceWorkerUpdateViaCache enum for ServiceWorkerRegistrationOptions:
+// https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache
+enum ServiceWorkerUpdateViaCache {
+  kImports,
+  kAll,
+  kNone,
+};
+
 // Represents options for register():
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 struct ServiceWorkerRegistrationOptions {

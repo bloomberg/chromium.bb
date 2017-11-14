@@ -67,6 +67,17 @@ namespace blink {
 
 namespace {
 
+mojom::ServiceWorkerUpdateViaCache ParseUpdateViaCache(const String& value) {
+  if (value == "imports")
+    return mojom::ServiceWorkerUpdateViaCache::kImports;
+  if (value == "all")
+    return mojom::ServiceWorkerUpdateViaCache::kAll;
+  if (value == "none")
+    return mojom::ServiceWorkerUpdateViaCache::kNone;
+  // Default value.
+  return mojom::ServiceWorkerUpdateViaCache::kImports;
+}
+
 class GetRegistrationCallback : public WebServiceWorkerProvider::
                                     WebServiceWorkerGetRegistrationCallbacks {
  public:
@@ -157,6 +168,7 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
     ExecutionContext* execution_context,
     const KURL& raw_script_url,
     const KURL& scope,
+    mojom::ServiceWorkerUpdateViaCache update_via_cache,
     std::unique_ptr<RegistrationCallbacks> callbacks) {
   if (!provider_) {
     callbacks->OnError(
@@ -297,8 +309,11 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   else
     pattern_url = execution_context->CompleteURL(options.scope());
 
+  mojom::ServiceWorkerUpdateViaCache update_via_cache =
+      ParseUpdateViaCache(options.updateViaCache());
+
   RegisterServiceWorkerImpl(
-      execution_context, script_url, pattern_url,
+      execution_context, script_url, pattern_url, update_via_cache,
       std::make_unique<CallbackPromiseAdapter<ServiceWorkerRegistration,
                                               ServiceWorkerErrorForUpdate>>(
           resolver));

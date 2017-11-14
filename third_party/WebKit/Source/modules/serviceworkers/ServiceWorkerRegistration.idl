@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache
+[
+    RuntimeEnabled=ServiceWorkerUpdateViaCache
+] enum ServiceWorkerUpdateViaCache {
+    "imports",
+    "all",
+    "none"
+};
+
 // https://w3c.github.io/ServiceWorker/#serviceworkerregistration-interface
 [
     ActiveScriptWrappable,
@@ -14,6 +23,7 @@
     readonly attribute NavigationPreloadManager navigationPreload;
 
     readonly attribute USVString scope;
+    [RuntimeEnabled=ServiceWorkerUpdateViaCache] readonly attribute ServiceWorkerUpdateViaCache updateViaCache;
 
     [CallWith=ScriptState] Promise<void> update();
     [CallWith=ScriptState] Promise<boolean> unregister();

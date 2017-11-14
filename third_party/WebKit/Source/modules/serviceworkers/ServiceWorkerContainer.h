@@ -45,6 +45,7 @@
 #include "platform/wtf/Forward.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "public/platform/modules/serviceworker/service_worker_registration.mojom-blink.h"
 
 namespace blink {
 
@@ -77,6 +78,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   void RegisterServiceWorkerImpl(ExecutionContext*,
                                  const KURL& script_url,
                                  const KURL& scope,
+                                 mojom::ServiceWorkerUpdateViaCache,
                                  std::unique_ptr<RegistrationCallbacks>);
 
   ScriptPromise registerServiceWorker(ScriptState*,
