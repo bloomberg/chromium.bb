@@ -756,6 +756,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
   base::FilePath reference_file =
       test::GetReferenceFilesDir().Append(kReferenceFile);
   ComputeAndPrintPesqResults(reference_file, recording, "_webaudio");
+
+  DeleteFileUnlessTestFailed(recording, false);
 }
 
 /**
