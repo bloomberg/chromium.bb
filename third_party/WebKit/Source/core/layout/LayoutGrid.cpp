@@ -1783,7 +1783,7 @@ void LayoutGrid::UpdateBaselineAlignmentContextIfNeeded(
       SelfAlignmentForChild(baseline_axis, child).GetPosition();
   if (add_result.is_new_entry) {
     add_result.stored_value->value =
-        WTF::MakeUnique<BaselineContext>(child, align, ascent, descent);
+        std::make_unique<BaselineContext>(child, align, ascent, descent);
   } else {
     auto* context = add_result.stored_value->value.get();
     context->UpdateSharedGroup(child, align, ascent, descent);

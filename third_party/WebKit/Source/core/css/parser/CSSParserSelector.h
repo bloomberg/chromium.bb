@@ -44,7 +44,7 @@ class CORE_EXPORT CSSParserSelector {
   }
   static std::unique_ptr<CSSParserSelector> Create(const QualifiedName& name,
                                                    bool is_implicit = false) {
-    return WTF::MakeUnique<CSSParserSelector>(name, is_implicit);
+    return std::make_unique<CSSParserSelector>(name, is_implicit);
   }
 
   ~CSSParserSelector();

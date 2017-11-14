@@ -4,6 +4,11 @@
 
 #include "core/layout/ng/inline/ng_inline_layout_algorithm.h"
 
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <utility>
+
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"
@@ -518,7 +523,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 
 scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   std::unique_ptr<NGExclusionSpace> initial_exclusion_space(
-      WTF::MakeUnique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
+      std::make_unique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
 
   bool is_empty_inline = Node().IsEmptyInline();
 
@@ -570,16 +575,16 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // Copy the state stack from the unfinished break token if provided. This
     // enforces the layout inputs immutability constraint. If we weren't
     // provided with a break token we just create an empty state stack.
-    box_states_ = break_token ? WTF::MakeUnique<NGInlineLayoutStateStack>(
+    box_states_ = break_token ? std::make_unique<NGInlineLayoutStateStack>(
                                     break_token->StateStack())
-                              : WTF::MakeUnique<NGInlineLayoutStateStack>();
+                              : std::make_unique<NGInlineLayoutStateStack>();
 
     // Reset any state that may have been modified in a previous pass.
     positioned_floats.clear();
     unpositioned_floats_.clear();
     container_builder_.Reset();
     exclusion_space =
-        WTF::MakeUnique<NGExclusionSpace>(*initial_exclusion_space);
+        std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
 
     NGLineInfo line_info;
     NGLineBreaker line_breaker(Node(), constraint_space_, &positioned_floats,

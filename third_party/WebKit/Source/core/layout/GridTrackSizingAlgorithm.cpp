@@ -1254,9 +1254,10 @@ double GridTrackSizingAlgorithm::ComputeFlexFactorUnitSize(
     if (base_size > hypothetical_factor_unit_size * flex_factor) {
       left_over_space -= base_size;
       flex_factor_sum -= flex_factor;
-      if (!additional_tracks_to_treat_as_inflexible)
+      if (!additional_tracks_to_treat_as_inflexible) {
         additional_tracks_to_treat_as_inflexible =
-            WTF::MakeUnique<TrackIndexSet>();
+            std::make_unique<TrackIndexSet>();
+      }
       additional_tracks_to_treat_as_inflexible->insert(index);
       valid_flex_factor_unit = false;
     }
@@ -1384,9 +1385,9 @@ void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
                                  : available_space);
 
   if (available_space) {
-    strategy_ = WTF::MakeUnique<DefiniteSizeStrategy>(*this);
+    strategy_ = std::make_unique<DefiniteSizeStrategy>(*this);
   } else {
-    strategy_ = WTF::MakeUnique<IndefiniteSizeStrategy>(*this);
+    strategy_ = std::make_unique<IndefiniteSizeStrategy>(*this);
     is_in_perform_layout_ =
         layout_grid_->GetDocument().View()->IsInPerformLayout();
   }

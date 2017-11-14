@@ -1582,7 +1582,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutBoxRareData& EnsureRareData() {
     if (!rare_data_)
-      rare_data_ = WTF::MakeUnique<LayoutBoxRareData>();
+      rare_data_ = std::make_unique<LayoutBoxRareData>();
     return *rare_data_.get();
   }
 

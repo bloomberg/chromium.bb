@@ -4,6 +4,10 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
@@ -810,7 +814,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   if (layout_result->Status() == NGLayoutResult::kSuccess) {
     DCHECK(layout_result->ExclusionSpace());
     exclusion_space_ =
-        WTF::MakeUnique<NGExclusionSpace>(*layout_result->ExclusionSpace());
+        std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
   }
 
   // A line-box may have a list of floats which we add as children.
@@ -884,7 +888,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
 
     DCHECK(layout_result->ExclusionSpace());
     exclusion_space_ =
-        WTF::MakeUnique<NGExclusionSpace>(*layout_result->ExclusionSpace());
+        std::make_unique<NGExclusionSpace>(*layout_result->ExclusionSpace());
   }
 
   // We must have an actual fragment at this stage.

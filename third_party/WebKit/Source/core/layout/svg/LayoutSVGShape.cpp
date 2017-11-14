@@ -60,7 +60,7 @@ LayoutSVGShape::~LayoutSVGShape() {}
 
 void LayoutSVGShape::CreatePath() {
   if (!path_)
-    path_ = WTF::MakeUnique<Path>();
+    path_ = std::make_unique<Path>();
   *path_ = ToSVGGeometryElement(GetElement())->AsPath();
   if (rare_data_.get())
     rare_data_->cached_non_scaling_stroke_path_.Clear();
@@ -331,7 +331,7 @@ float LayoutSVGShape::StrokeWidth() const {
 
 LayoutSVGShapeRareData& LayoutSVGShape::EnsureRareData() const {
   if (!rare_data_)
-    rare_data_ = WTF::MakeUnique<LayoutSVGShapeRareData>();
+    rare_data_ = std::make_unique<LayoutSVGShapeRareData>();
   return *rare_data_.get();
 }
 
