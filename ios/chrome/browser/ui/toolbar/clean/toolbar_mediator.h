@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MEDIATOR_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MEDIATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_MEDIATOR_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_MEDIATOR_H_
 
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/broadcaster/chrome_broadcast_observer.h"
 
-@protocol CleanToolbarConsumer;
+@protocol ToolbarConsumer;
 
 namespace web {
 class WebState;
@@ -18,7 +18,7 @@ class WebStateList;
 
 // A mediator object that provides the relevant properties of a web state
 // to a consumer.
-@interface CleanToolbarMediator : NSObject<ChromeBroadcastObserver>
+@interface ToolbarMediator : NSObject<ChromeBroadcastObserver>
 
 // The WebState whose properties this object mediates. This can change during
 // the lifetime of this object and may be null.
@@ -30,11 +30,11 @@ class WebStateList;
 
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
-@property(nonatomic, strong) id<CleanToolbarConsumer> consumer;
+@property(nonatomic, strong) id<ToolbarConsumer> consumer;
 
 // Stops observing all objects.
 - (void)disconnect;
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MEDIATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_MEDIATOR_H_

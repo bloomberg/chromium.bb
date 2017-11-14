@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_BUTTON_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_BUTTON_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_H_
 
 #import <UIKit/UIKit.h>
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_component_options.h"
 
 // UIButton subclass used as a Toolbar component.
 @interface ToolbarButton : UIButton
@@ -33,4 +33,4 @@
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_BUTTON_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_BUTTON_H_

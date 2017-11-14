@@ -2,30 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_component_options.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CleanToolbarViewController ()
-@property(nonatomic, strong) CleanToolbarButtonFactory* buttonFactory;
+@interface ToolbarViewController ()
+@property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
 @property(nonatomic, strong) UIView* locationBarContainer;
 @property(nonatomic, strong) UIStackView* stackView;
 @property(nonatomic, strong) ToolbarButton* backButton;
@@ -39,7 +37,7 @@
 @property(nonatomic, strong) MDCProgressView* progressBar;
 @end
 
-@implementation CleanToolbarViewController
+@implementation ToolbarViewController
 @synthesize buttonFactory = _buttonFactory;
 @synthesize dispatcher = _dispatcher;
 @synthesize locationBarViewController = _locationBarViewController;
@@ -54,14 +52,10 @@
 @synthesize reloadButton = _reloadButton;
 @synthesize stopButton = _stopButton;
 @synthesize progressBar = _progressBar;
-@synthesize usesTabStrip = _usesTabStrip;
 
-- (instancetype)initWithDispatcher:(id<NavigationCommands,
-                                       TabGridCommands,
-                                       TabHistoryPopupCommands,
-                                       TabStripCommands,
-                                       ToolsMenuCommands>)dispatcher
-                     buttonFactory:(CleanToolbarButtonFactory*)buttonFactory {
+- (instancetype)initWithDispatcher:
+                    (id<ApplicationCommands, BrowserCommands>)dispatcher
+                     buttonFactory:(ToolbarButtonFactory*)buttonFactory {
   _dispatcher = dispatcher;
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
@@ -138,14 +132,6 @@
                withPriority:UILayoutPriorityDefaultHigh];
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  // We need to dismiss the ToolsMenu every time the Toolbar frame changes
-  // (e.g. Size changes, rotation changes, etc.)
-  [self.dispatcher closeToolsMenu];
-}
-
 #pragma mark - Components Setup
 
 - (void)setUpToolbarButtons {
@@ -193,8 +179,8 @@
   [buttonConstraints
       addObject:[self.tabSwitchStripButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
-  [self.tabSwitchStripButton addTarget:self
-                                action:@selector(tabSwitcherButtonTapped:)
+  [self.tabSwitchStripButton addTarget:self.dispatcher
+                                action:@selector(displayTabSwitcher)
                       forControlEvents:UIControlEventTouchUpInside];
 
   // Tab switcher Grid button.
@@ -206,7 +192,7 @@
       addObject:[self.tabSwitchGridButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
   [self.tabSwitchGridButton addTarget:self.dispatcher
-                               action:@selector(showTabGrid)
+                               action:@selector(displayTabSwitcher)
                      forControlEvents:UIControlEventTouchUpInside];
   self.tabSwitchGridButton.hiddenInCurrentState = YES;
 
@@ -240,7 +226,7 @@
       addObject:[self.reloadButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
   [self.reloadButton addTarget:self.dispatcher
-                        action:@selector(reloadPage)
+                        action:@selector(reload)
               forControlEvents:UIControlEventTouchUpInside];
 
   // Stop button.
@@ -250,7 +236,7 @@
       addObject:[self.stopButton.widthAnchor
                     constraintEqualToConstant:kToolbarButtonWidth]];
   [self.stopButton addTarget:self.dispatcher
-                      action:@selector(stopLoadingPage)
+                      action:@selector(stopLoading)
             forControlEvents:UIControlEventTouchUpInside];
 
   // Set the button constraint priority to UILayoutPriorityDefaultHigh so
@@ -447,12 +433,6 @@
   self.forwardButton.selected = NO;
 }
 
-#pragma mark - TabHistoryPresentation
-
-- (UIView*)viewForTabHistoryPresentation {
-  return self.parentViewController.view;
-}
-
 #pragma mark - Helper Methods
 
 // Updates all Buttons visibility to match any recent WebState change.
@@ -488,15 +468,6 @@
   [self.parentViewController presentViewController:alertController
                                           animated:YES
                                         completion:nil];
-}
-
-#pragma mark - Button actions
-
-// The action performed depends on the experimental setting of using the tab
-// strip.
-- (void)tabSwitcherButtonTapped:(id)sender {
-  self.usesTabStrip ? [self.dispatcher showTabStrip]
-                    : [self.dispatcher showTabGrid];
 }
 
 @end

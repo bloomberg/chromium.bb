@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -11,7 +11,7 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation CleanToolbarConfiguration
+@implementation ToolbarConfiguration
 
 @synthesize style = _style;
 

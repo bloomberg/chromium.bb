@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONFIGURATION_H_
-#define IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONFIGURATION_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONFIGURATION_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONFIGURATION_H_
 
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_style.h"
 
 // Toolbar configuration object giving access to styling elements.
-@interface CleanToolbarConfiguration : NSObject
+@interface ToolbarConfiguration : NSObject
 
 // Init the toolbar configuration with the desired |style|.
 - (instancetype)initWithStyle:(ToolbarStyle)style NS_DESIGNATED_INITIALIZER;
@@ -36,4 +36,4 @@
 
 @end
 
-#endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONFIGURATION_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONFIGURATION_H_

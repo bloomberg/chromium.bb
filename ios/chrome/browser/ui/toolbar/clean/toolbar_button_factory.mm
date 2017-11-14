@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_button_factory.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_button_factory.h"
 
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_button.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_constants.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_configuration.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,7 +32,7 @@ typedef NS_ENUM(NSInteger, ToolbarButtonState) {
 const int styleCount = 2;
 }  // namespace
 
-@implementation CleanToolbarButtonFactory
+@implementation ToolbarButtonFactory
 
 @synthesize toolbarConfiguration = _toolbarConfiguration;
 @synthesize style = _style;
@@ -41,8 +41,7 @@ const int styleCount = 2;
   self = [super init];
   if (self) {
     _style = style;
-    _toolbarConfiguration =
-        [[CleanToolbarConfiguration alloc] initWithStyle:style];
+    _toolbarConfiguration = [[ToolbarConfiguration alloc] initWithStyle:style];
   }
   return self;
 }

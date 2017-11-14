@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -26,15 +26,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/tools_menu:configuration",
     "//ios/chrome/browser/web_state_list",
-    "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/history_popup",
-    "//ios/clean/chrome/browser/ui/omnibox",
-    "//ios/clean/chrome/browser/ui/overlays",
-    "//ios/clean/chrome/browser/ui/tools",
     "//ios/web",
-  ]
-  public_deps = [
-    "//ios/chrome/browser/ui/toolbar/clean:toolbar",
   ]
 }
 
@@ -51,24 +43,24 @@ source_set("toolbar_ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/history_popup/requirements",
     "//ios/chrome/browser/ui/toolbar/public",
-    "//ios/clean/chrome/browser/ui/commands",
-    "//ios/clean/chrome/browser/ui/tools",
-    "//ios/clean/chrome/browser/ui/transitions/animators",
     "//ios/third_party/material_components_ios",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  public_deps = [
-    "//ios/chrome/browser/ui/toolbar/clean:toolbar_ui",
-  ]
 }
 
 source_set("toolbar_components_ui") {
   sources = [
+    "toolbar_button.h",
+    "toolbar_button.mm",
     "toolbar_button_factory.h",
     "toolbar_button_factory.mm",
+    "toolbar_component_options.h",
     "toolbar_configuration.h",
     "toolbar_configuration.mm",
+    "toolbar_constants.h",
+    "toolbar_constants.mm",
+    "toolbar_style.h",
   ]
   deps = [
     "//base",
@@ -81,9 +73,6 @@ source_set("toolbar_components_ui") {
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  public_deps = [
-    "//ios/chrome/browser/ui/toolbar/clean:toolbar_components_ui",
-  ]
 }
 
 source_set("unit_tests") {

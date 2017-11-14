@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_mediator.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/ui/toolbar/clean/toolbar_consumer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -18,10 +18,10 @@
 #error "This file requires ARC support."
 #endif
 
-@interface CleanToolbarMediator ()<CRWWebStateObserver, WebStateListObserving>
+@interface ToolbarMediator ()<CRWWebStateObserver, WebStateListObserving>
 @end
 
-@implementation CleanToolbarMediator {
+@implementation ToolbarMediator {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   std::unique_ptr<ScopedObserver<WebStateList, WebStateListObserverBridge>>
@@ -104,7 +104,7 @@
   }
 }
 
-- (void)setConsumer:(id<CleanToolbarConsumer>)consumer {
+- (void)setConsumer:(id<ToolbarConsumer>)consumer {
   _consumer = consumer;
   if (self.webState) {
     [self updateConsumer];
