@@ -70,6 +70,7 @@ class LayerTreeFrameSinkLocal : public cc::LayerTreeFrameSink,
  private:
   // public viz::HostFrameSinkClient:
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
 
   const viz::FrameSinkId frame_sink_id_;
   viz::HostFrameSinkManager* const host_frame_sink_manager_;

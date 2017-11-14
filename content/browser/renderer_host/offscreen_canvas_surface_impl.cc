@@ -71,6 +71,11 @@ void OffscreenCanvasSurfaceImpl::OnFirstSurfaceActivation(
     client_->OnFirstSurfaceActivation(surface_info);
 }
 
+void OffscreenCanvasSurfaceImpl::OnFrameTokenChanged(uint32_t frame_token) {
+  // TODO(yiyix, fsamuel): To complete plumbing of frame tokens for offscreen
+  // canvas
+}
+
 void OffscreenCanvasSurfaceImpl::Require(const viz::SurfaceId& surface_id,
                                          const viz::SurfaceSequence& sequence) {
   auto* surface_manager = GetFrameSinkManager()->surface_manager();

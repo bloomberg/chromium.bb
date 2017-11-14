@@ -2900,6 +2900,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_EQ(0u, host_->queued_messages_.size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
+  host_->SetView(view_.get());
   host_->Init();
 
   host_->OnMessageReceived(

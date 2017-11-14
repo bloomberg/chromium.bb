@@ -1222,6 +1222,10 @@ void RenderWidgetHostViewAndroid::ReclaimResources(
     SendReclaimCompositorResources(false /* is_swap_ack */);
 }
 
+void RenderWidgetHostViewAndroid::OnFrameTokenChanged(uint32_t frame_token) {
+  OnFrameTokenChangedForView(frame_token);
+}
+
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
     viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink) {
   if (!delegated_frame_host_) {

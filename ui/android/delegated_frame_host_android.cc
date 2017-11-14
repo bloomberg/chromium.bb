@@ -218,6 +218,10 @@ void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
   // surface should be set here.
 }
 
+void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
+  client_->OnFrameTokenChanged(frame_token);
+}
+
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;

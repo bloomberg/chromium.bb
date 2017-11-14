@@ -73,6 +73,7 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
 
   virtual void OnBeginFrame() = 0;
   virtual bool IsAutoResizeEnabled() const = 0;
+  virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
 };
 
 // The DelegatedFrameHost is used to host all of the RenderWidgetHostView state
@@ -128,6 +129,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnFrameTokenChanged(uint32_t frame_token) override;
 
   // Public interface exposed to RenderWidgetHostView.
 

@@ -210,6 +210,9 @@ void TestRenderWidgetHostView::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   did_swap_compositor_frame_ = true;
+  uint32_t frame_token = frame.metadata.frame_token;
+  if (frame_token)
+    OnFrameTokenChanged(frame_token);
 }
 
 bool TestRenderWidgetHostView::LockMouse() {
@@ -227,6 +230,10 @@ void TestRenderWidgetHostView::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   // TODO(fsamuel): Once surface synchronization is turned on, the fallback
   // surface should be set here.
+}
+
+void TestRenderWidgetHostView::OnFrameTokenChanged(uint32_t frame_token) {
+  OnFrameTokenChangedForView(frame_token);
 }
 
 TestRenderViewHost::TestRenderViewHost(

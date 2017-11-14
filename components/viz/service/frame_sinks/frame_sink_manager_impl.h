@@ -164,6 +164,10 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl : public SurfaceObserver,
       std::unique_ptr<base::TickClock> tick_clock,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
+  // Called when |frame_token| is changed on a submitted CompositorFrame.
+  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
+                           uint32_t frame_token);
+
  private:
   friend class cc::test::SurfaceSynchronizationTest;
 

@@ -2709,7 +2709,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
   last_surface_properties_ = new_surface_properties;
 
   last_received_content_source_id_ = frame.metadata.content_source_id;
-  uint32_t frame_token = frame.metadata.frame_token;
 
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
@@ -2753,9 +2752,6 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   if (delegate_)
     delegate_->DidReceiveCompositorFrame();
-
-  if (frame_token)
-    DidProcessFrame(frame_token);
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {

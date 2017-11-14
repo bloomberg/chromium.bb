@@ -89,6 +89,8 @@ class FakeFrameSinkManagerClient : public mojom::FrameSinkManagerClient {
   void SwitchActiveAggregatedHitTestRegionList(
       const FrameSinkId& frame_sink_id,
       uint8_t active_handle_index) override {}
+  void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
+                           uint32_t frame_token) override {}
 
  private:
   mojom::FrameSinkManager* const manager_;
