@@ -48,7 +48,6 @@ source_set("earl_grey_test_support") {
   public_deps = [
     "//build/config/ios:xctest",
     "//ios/third_party/earl_grey:earl_grey+link",
-    "//ios/web_view:web_view+link",
   ]
 
   libs = [
