@@ -597,7 +597,7 @@ TEST_P(FrameProcessorTest, AudioVideo_SequentialProcessFrames) {
 }
 
 TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
-  // Tests AV: P(A0,A10,A30,A40,A50;V0k,V10,V40,V50key) ->
+  // Tests AV: P(A0,A10,A30,A40,A50;V0key,V10,V40,V50key) ->
   //   if sequence mode: TSO==10,(a0,a10,a30,a40,a50@60);(v0,v10,v50@60)
   //   if segments mode: TSO==0,(a0,a10,a30,a40,a50);(v0,v10,v50)
   // This assumes A40K is processed before V40, which depends currently on
@@ -620,9 +620,11 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
   if (use_sequence_mode_) {
     EXPECT_EQ(Milliseconds(10), timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,70) }");
-    CheckExpectedRangesByTimestamp(video_.get(), "{ [0,70) }");
+    CheckExpectedRangesByTimestamp(video_.get(), "{ [0,20) [60,70) }");
     CheckReadsThenReadStalls(audio_.get(), "0 10 30 40 60:50");
-    CheckReadsThenReadStalls(video_.get(), "0 10 60:50");
+    CheckReadsThenReadStalls(video_.get(), "0 10");
+    SeekStream(video_.get(), Milliseconds(60));
+    CheckReadsThenReadStalls(video_.get(), "60:50");
   } else {
     EXPECT_EQ(Milliseconds(0), timestamp_offset_);
     CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,60) }");
@@ -635,11 +637,6 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity) {
 }
 
 TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
-  // If in 'sequence' mode, a new coded frame group is *only* started if the
-  // processed frame sequence outputs something that goes backwards in DTS
-  // order. This helps retain the intent of 'sequence' mode: it both collapses
-  // gaps as well as allows app to override the timeline placement and so needs
-  // to handle overlap-appends, too.
   InSequence s;
   AddTestTracks(HAS_AUDIO | HAS_VIDEO);
   frame_processor_->SetSequenceMode(use_sequence_mode_);
@@ -659,25 +656,19 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) }");
   CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) }");
 
-  // Test the differentiation between 'sequence' and 'segments' mode results if
-  // the coded frame sequence jumps forward beyond the normal discontinuity
-  // threshold.
+  // Test the behavior of both 'sequence' and 'segments' mode if the coded frame
+  // sequence jumps forward beyond the normal discontinuity threshold.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(240)));
   SetTimestampOffset(Milliseconds(200));
   EXPECT_TRUE(ProcessFrames("0K 10K 20K", "10K 20K 30K"));
   EXPECT_EQ(Milliseconds(200), timestamp_offset_);
   EXPECT_TRUE(in_coded_frame_group());
-  if (use_sequence_mode_) {
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,230) }");
-    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,240) }");
-  } else {
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) [200,230) }");
-    CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [200,240) }");
-  }
+  CheckExpectedRangesByTimestamp(audio_.get(), "{ [100,130) [200,230) }");
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [100,140) [200,240) }");
 
   // Test the behavior when timestampOffset adjustment causes next frames to be
   // in the past relative to the previously processed frame and triggers a new
-  // coded frame group, even in 'sequence' mode.
+  // coded frame group.
   EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(95)));
   SetTimestampOffset(Milliseconds(55));
   EXPECT_TRUE(ProcessFrames("0K 10K 20K", "10K 20K 30K"));
@@ -686,59 +677,31 @@ TEST_P(FrameProcessorTest, AudioVideo_Discontinuity_TimestampOffset) {
   // The new audio range is not within SourceBufferStream's coalescing threshold
   // relative to the next range, but the new video range is within the
   // threshold.
-  if (use_sequence_mode_) {
-    // TODO(wolenetz/chcunningham): The large explicit-timestampOffset-induced
-    // jump forward (from timestamp 130 to 200) while in a sequence mode coded
-    // frame group makes our adjacency threshold in SourceBuffer, based on
-    // max-interbuffer-distance-within-coded-frame-group, very lenient.
-    // This causes [55,85) to merge with [100,230) here for audio, and similar
-    // for video. See also https://crbug.com/620523.
-    CheckExpectedRangesByTimestamp(audio_.get(), "{ [55,230) }");
-    // Note that 'sequence' mode group start signalling (if the decode time goes
-    // into the past) is per-track after the first frame has been processed.
-    // Hence 65, not 55 here. Similarly, 'segments' mode muxed tracks where
-    // discontinuity is followed by tracks whose first frames decrease in DTS
-    // relative to each other (allowed since media segments are not required to
-    // contain frames for every track) could result in decreasing range start
-    // times for those later tracks. See
-    // AudioVideo_OutOfSequence_After_Discontinuity for deeper verification.
-    CheckExpectedRangesByTimestamp(video_.get(), "{ [65,240) }");
-  } else {
-    CheckExpectedRangesByTimestamp(audio_.get(),
-                                   "{ [55,85) [100,130) [200,230) }");
-    // Note that the range adjacency logic used in this case is doesn't consider
-    // DTS 85 to be close enough to [100,140), since the first DTS in video
-    // range [100,140) is actually 110. The muxed data started a coded frame
-    // group at time 100, but actual DTS is used for adjacency checks while
-    // appending.
-    CheckExpectedRangesByTimestamp(video_.get(),
-                                   "{ [55,95) [100,140) [200,240) }");
-  }
+  CheckExpectedRangesByTimestamp(audio_.get(),
+                                 "{ [55,85) [100,130) [200,230) }");
+  // Note that the range adjacency logic used in this case is doesn't consider
+  // DTS 85 to be close enough to [100,140), since the first DTS in video
+  // range [100,140) is actually 110. The muxed data started a coded frame
+  // group at time 100, but actual DTS is used for adjacency checks while
+  // appending.
+  CheckExpectedRangesByTimestamp(video_.get(),
+                                 "{ [55,95) [100,140) [200,240) }");
 
   // Verify the buffers.
   // Re-seek now that we've appended data earlier than what already satisfied
   // our initial seek to start.
   SeekStream(audio_.get(), Milliseconds(55));
   SeekStream(video_.get(), Milliseconds(55));
-  if (use_sequence_mode_) {
-    CheckReadsThenReadStalls(
-        audio_.get(),
-        "55:0 65:10 75:20 100:0 110:10 120:20 200:0 210:10 220:20");
-    CheckReadsThenReadStalls(
-        video_.get(),
-        "65:10 75:20 85:30 110:10 120:20 130:30 210:10 220:20 230:30");
-  } else {
-    CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
-    CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
-    SeekStream(audio_.get(), Milliseconds(100));
-    SeekStream(video_.get(), Milliseconds(100));
-    CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
-    CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
-    SeekStream(audio_.get(), Milliseconds(200));
-    SeekStream(video_.get(), Milliseconds(200));
-    CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
-    CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
-  }
+  CheckReadsThenReadStalls(audio_.get(), "55:0 65:10 75:20");
+  CheckReadsThenReadStalls(video_.get(), "65:10 75:20 85:30");
+  SeekStream(audio_.get(), Milliseconds(100));
+  SeekStream(video_.get(), Milliseconds(100));
+  CheckReadsThenReadStalls(audio_.get(), "100:0 110:10 120:20");
+  CheckReadsThenReadStalls(video_.get(), "110:10 120:20 130:30");
+  SeekStream(audio_.get(), Milliseconds(200));
+  SeekStream(video_.get(), Milliseconds(200));
+  CheckReadsThenReadStalls(audio_.get(), "200:0 210:10 220:20");
+  CheckReadsThenReadStalls(video_.get(), "210:10 220:20 230:30");
 }
 
 TEST_P(FrameProcessorTest, AudioVideo_OutOfSequence_After_Discontinuity) {
@@ -1201,6 +1164,63 @@ TEST_P(FrameProcessorTest, TimestampOffsetNegativeDts) {
     CheckExpectedRangesByTimestamp(video_.get(), "{ [0,40) }");
     SeekStream(video_.get(), Milliseconds(0));
     CheckReadsThenReadStalls(video_.get(), "0:100 30:130");
+  }
+}
+
+TEST_P(FrameProcessorTest, LargeTimestampOffsetJumpForward) {
+  // Verifies that jumps forward in buffers emitted from the coded frame
+  // processing algorithm can create discontinuous buffered ranges if those
+  // jumps are large enough, in both kinds of AppendMode, and in both kinds of
+  // RangeApi.
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(10)));
+  EXPECT_TRUE(ProcessFrames("0K", ""));
+
+  SetTimestampOffset(Milliseconds(5000));
+
+  // Along with the new timestampOffset set above, this should cause a large
+  // jump forward in both PTS and DTS for both sequence and segments append
+  // modes.
+  if (use_sequence_mode_) {
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(5010)));
+  } else {
+    EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(10010)));
+  }
+  EXPECT_TRUE(ProcessFrames("5000|100K", ""));
+  if (use_sequence_mode_) {
+    EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+  } else {
+    EXPECT_EQ(Milliseconds(5000), timestamp_offset_);
+  }
+
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    if (use_sequence_mode_) {
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,10) [100,110) }");
+      CheckReadsThenReadStalls(audio_.get(), "0");
+      SeekStream(audio_.get(), Milliseconds(100));
+      CheckReadsThenReadStalls(audio_.get(), "5000");  // Util verifies PTS.
+    } else {
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,10) [5100,5110) }");
+      CheckReadsThenReadStalls(audio_.get(), "0");
+      SeekStream(audio_.get(), Milliseconds(5100));
+      CheckReadsThenReadStalls(audio_.get(),
+                               "10000:5000");  // Util verifies PTS.
+    }
+  } else {
+    if (use_sequence_mode_) {
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,10) [5000,5010) }");
+      CheckReadsThenReadStalls(audio_.get(), "0");
+      SeekStream(audio_.get(), Milliseconds(5000));
+      CheckReadsThenReadStalls(audio_.get(), "5000");
+    } else {
+      CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,10) [10000,10010) }");
+      CheckReadsThenReadStalls(audio_.get(), "0");
+      SeekStream(audio_.get(), Milliseconds(10000));
+      CheckReadsThenReadStalls(audio_.get(), "10000:5000");
+    }
   }
 }
 
