@@ -4,11 +4,14 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/arc_app_info_links_panel.h"
 
+#include <memory>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -17,10 +20,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-constexpr char kArcChromePackageName[] = "org.chromium.arc.intent_helper";
-}
 
 ArcAppInfoLinksPanel::ArcAppInfoLinksPanel(Profile* profile,
                                            const extensions::Extension* app)
@@ -55,9 +54,9 @@ void ArcAppInfoLinksPanel::LinkClicked(views::Link* source, int event_flags) {
       display::Screen::GetScreen()
           ->GetDisplayNearestView(source->GetWidget()->GetNativeView())
           .id();
-  if (arc::ShowPackageInfo(kArcChromePackageName,
-                           arc::mojom::ShowPackageInfoPage::MANAGE_LINKS,
-                           display_id)) {
+  if (arc::ShowPackageInfo(
+          arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
+          arc::mojom::ShowPackageInfoPage::MANAGE_LINKS, display_id)) {
     Close();
   }
 }

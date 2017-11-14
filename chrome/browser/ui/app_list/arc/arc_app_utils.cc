@@ -27,6 +27,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/crx_file/id_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -55,10 +56,11 @@ namespace arc {
 
 namespace {
 
+// TODO(djacobo): Evaluate to build these strings by using
+// ArcIntentHelperBridge::AppendStringToIntentHelperPackageName.
 // Intent helper strings.
 constexpr char kIntentHelperClassName[] =
     "org.chromium.arc.intent_helper.SettingsReceiver";
-constexpr char kIntentHelperPackageName[] = "org.chromium.arc.intent_helper";
 constexpr char kSetInTouchModeIntent[] =
     "org.chromium.arc.intent_helper.SET_IN_TOUCH_MODE";
 constexpr char kShowTalkbackSettingsIntent[] =
@@ -118,8 +120,9 @@ bool Launch(content::BrowserContext* context,
     std::string extras_string;
     base::JSONWriter::Write(extras, &extras_string);
     intent_helper_instance->SendBroadcast(
-        kSetInTouchModeIntent, kIntentHelperPackageName, kIntentHelperClassName,
-        extras_string);
+        kSetInTouchModeIntent,
+        ArcIntentHelperBridge::kArcIntentHelperPackageName,
+        kIntentHelperClassName, extras_string);
   }
 
   if (app_info->shortcut || intent.has_value()) {
@@ -303,9 +306,10 @@ void ShowTalkBackSettings() {
   if (!intent_helper_instance)
     return;
 
-  intent_helper_instance->SendBroadcast(kShowTalkbackSettingsIntent,
-                                        kIntentHelperPackageName,
-                                        kIntentHelperClassName, "{}");
+  intent_helper_instance->SendBroadcast(
+      kShowTalkbackSettingsIntent,
+      ArcIntentHelperBridge::kArcIntentHelperPackageName,
+      kIntentHelperClassName, "{}");
 }
 
 void StartPaiFlow() {

@@ -31,6 +31,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/bluetooth/bluetooth_type_converters.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -1494,9 +1495,12 @@ void ArcBluetoothBridge::SendBluetoothPoweredStateBroadcast(
   DCHECK(write_success);
 
   intent_instance->SendBroadcast(
-      "org.chromium.arc.intent_helper.SET_BLUETOOTH_STATE",
-      "org.chromium.arc.intent_helper",
-      "org.chromium.arc.intent_helper.SettingsReceiver", extras_json);
+      ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
+          "SET_BLUETOOTH_STATE"),
+      ArcIntentHelperBridge::kArcIntentHelperPackageName,
+      ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
+          "SettingsReceiver"),
+      extras_json);
 }
 
 void ArcBluetoothBridge::ReadGattCharacteristic(
