@@ -39,11 +39,11 @@ void XDGSurfaceWrapperV5::UnSetMaximized() {
   xdg_surface_unset_maximized(xdg_surface_.get());
 }
 
-void XDGSurfaceWrapperV5::SetFullScreen() {
+void XDGSurfaceWrapperV5::SetFullscreen() {
   xdg_surface_set_fullscreen(xdg_surface_.get(), nullptr);
 }
 
-void XDGSurfaceWrapperV5::UnSetFullScreen() {
+void XDGSurfaceWrapperV5::UnSetFullscreen() {
   xdg_surface_unset_fullscreen(xdg_surface_.get());
 }
 

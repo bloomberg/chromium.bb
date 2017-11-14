@@ -57,12 +57,12 @@ void XDGSurfaceWrapperV6::UnSetMaximized() {
   zxdg_toplevel_v6_unset_maximized(zxdg_toplevel_v6_.get());
 }
 
-void XDGSurfaceWrapperV6::SetFullScreen() {
+void XDGSurfaceWrapperV6::SetFullscreen() {
   DCHECK(zxdg_toplevel_v6_);
   zxdg_toplevel_v6_set_fullscreen(zxdg_toplevel_v6_.get(), nullptr);
 }
 
-void XDGSurfaceWrapperV6::UnSetFullScreen() {
+void XDGSurfaceWrapperV6::UnSetFullscreen() {
   DCHECK(zxdg_toplevel_v6_);
   zxdg_toplevel_v6_unset_fullscreen(zxdg_toplevel_v6_.get());
 }
