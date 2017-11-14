@@ -137,7 +137,7 @@ class ThreadedWorkletMessagingProxyForTest
   ThreadedWorkletMessagingProxyForTest(ExecutionContext* execution_context,
                                        WorkerClients* worker_clients)
       : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {
-    worklet_object_proxy_ = WTF::MakeUnique<ThreadedWorkletObjectProxyForTest>(
+    worklet_object_proxy_ = std::make_unique<ThreadedWorkletObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }
 
@@ -164,7 +164,7 @@ class ThreadedWorkletMessagingProxyForTest
   friend class ThreadedWorkletTest;
 
   std::unique_ptr<WorkerThread> CreateWorkerThread() final {
-    return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
+    return std::make_unique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
 };
 

@@ -15,7 +15,7 @@ FragmentData& FragmentData::EnsureNextFragment() {
 
 RarePaintData& FragmentData::EnsureRarePaintData() {
   if (!rare_paint_data_)
-    rare_paint_data_ = WTF::MakeUnique<RarePaintData>(visual_rect_.Location());
+    rare_paint_data_ = std::make_unique<RarePaintData>(visual_rect_.Location());
   return *rare_paint_data_.get();
 }
 

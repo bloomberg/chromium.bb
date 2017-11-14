@@ -37,7 +37,7 @@ void NGPaintFragment::PopulateDescendants(bool stop_at_block_layout_root) {
     children_.ReserveCapacity(container.Children().size());
     for (const auto& child_fragment : container.Children()) {
       children_.push_back(
-          WTF::MakeUnique<NGPaintFragment>(child_fragment, true));
+          std::make_unique<NGPaintFragment>(child_fragment, true));
     }
   }
 }

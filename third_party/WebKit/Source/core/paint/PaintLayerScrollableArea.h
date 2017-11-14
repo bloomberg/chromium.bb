@@ -549,7 +549,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayerScrollableAreaRareData& EnsureRareData() {
     if (!rare_data_)
-      rare_data_ = WTF::MakeUnique<PaintLayerScrollableAreaRareData>();
+      rare_data_ = std::make_unique<PaintLayerScrollableAreaRareData>();
     return *rare_data_.get();
   }
 

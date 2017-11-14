@@ -989,7 +989,7 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface() {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface =
-      WTF::MakeUnique<AcceleratedImageBufferSurface>(Size(), ColorParams());
+      std::make_unique<AcceleratedImageBufferSurface>(Size(), ColorParams());
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -1002,7 +1002,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(int* msaa_sample_count) {
         GetDocument().GetSettings()->GetAccelerated2dCanvasMSAASampleCount();
   }
 
-  auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
+  auto surface = std::make_unique<Canvas2DLayerBridge>(
       Size(), *msaa_sample_count, Canvas2DLayerBridge::kEnableAcceleration,
       ColorParams());
   if (!surface->IsValid()) {
@@ -1022,7 +1022,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(int* msaa_sample_count) {
 std::unique_ptr<ImageBufferSurface>
 HTMLCanvasElement::CreateUnacceleratedImageBufferSurface() {
   if (ShouldUseDisplayList()) {
-    auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
+    auto surface = std::make_unique<RecordingImageBufferSurface>(
         Size(), RecordingImageBufferSurface::kAllowFallback, ColorParams());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
@@ -1033,7 +1033,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface() {
     // here.
   }
 
-  auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
+  auto surface = std::make_unique<Canvas2DLayerBridge>(
       Size(), 0, Canvas2DLayerBridge::kDisableAcceleration, ColorParams());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
@@ -1516,7 +1516,7 @@ void HTMLCanvasElement::CreateLayer() {
     layer_tree_view =
         frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
     surface_layer_bridge_ =
-        WTF::MakeUnique<::blink::SurfaceLayerBridge>(layer_tree_view, this);
+        std::make_unique<::blink::SurfaceLayerBridge>(layer_tree_view, this);
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
   }

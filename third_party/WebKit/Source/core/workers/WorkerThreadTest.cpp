@@ -70,7 +70,7 @@ class WorkerThreadTest : public ::testing::Test {
   WorkerThreadTest() {}
 
   void SetUp() override {
-    reporting_proxy_ = WTF::MakeUnique<MockWorkerReportingProxy>();
+    reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
     security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
     worker_thread_ =
         WTF::WrapUnique(new WorkerThreadForTest(nullptr, *reporting_proxy_));

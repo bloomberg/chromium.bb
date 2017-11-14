@@ -53,7 +53,7 @@ class VideoStubLocalFrameClient : public EmptyLocalFrameClient {
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client,
       WebLayerTreeView* view) override {
-    return WTF::MakeUnique<StubWebMediaPlayer>(client);
+    return std::make_unique<StubWebMediaPlayer>(client);
   }
 };
 

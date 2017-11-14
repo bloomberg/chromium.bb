@@ -189,7 +189,7 @@ void WorkerScriptLoader::DidReceiveData(const char* data, unsigned len) {
 }
 
 void WorkerScriptLoader::DidReceiveCachedMetadata(const char* data, int size) {
-  cached_metadata_ = WTF::MakeUnique<Vector<char>>(size);
+  cached_metadata_ = std::make_unique<Vector<char>>(size);
   memcpy(cached_metadata_->data(), data, size);
 }
 

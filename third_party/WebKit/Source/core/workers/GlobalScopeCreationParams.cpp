@@ -37,7 +37,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
       v8_cache_options(v8_cache_options),
       interface_provider(std::move(interface_provider_info)) {
   this->content_security_policy_parsed_headers =
-      WTF::MakeUnique<Vector<CSPHeaderAndType>>();
+      std::make_unique<Vector<CSPHeaderAndType>>();
   if (content_security_policy_parsed_headers) {
     for (const auto& header : *content_security_policy_parsed_headers) {
       CSPHeaderAndType copied_header(header.first.IsolatedCopy(),
@@ -46,7 +46,7 @@ GlobalScopeCreationParams::GlobalScopeCreationParams(
     }
   }
 
-  this->origin_trial_tokens = WTF::MakeUnique<Vector<String>>();
+  this->origin_trial_tokens = std::make_unique<Vector<String>>();
   if (origin_trial_tokens) {
     for (const String& token : *origin_trial_tokens)
       this->origin_trial_tokens->push_back(token.IsolatedCopy());

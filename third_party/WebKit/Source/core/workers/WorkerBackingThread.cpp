@@ -98,7 +98,7 @@ void WorkerBackingThread::InitializeOnBackingThread(
     Platform::Current()->DidStartWorkerThread();
 
   V8PerIsolateData::From(isolate_)->SetThreadDebugger(
-      WTF::MakeUnique<WorkerThreadDebugger>(isolate_));
+      std::make_unique<WorkerThreadDebugger>(isolate_));
 
   // Optimize for memory usage instead of latency for the worker isolate.
   isolate_->IsolateInBackgroundNotification();
