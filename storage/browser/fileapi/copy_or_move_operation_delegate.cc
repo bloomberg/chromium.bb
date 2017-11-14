@@ -522,6 +522,12 @@ class StreamCopyOrMoveImpl
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       const base::Time& last_modified,
       base::File::Error error) {
+    // Destruct StreamCopyHelper to close the destination file.
+    // This is important because some file system implementations update
+    // timestamps on file close and thus it should happen before we call
+    // TouchFile().
+    copy_helper_.reset();
+
     NotifyOnModifyFile(dest_url_);
     NotifyOnEndUpdate(dest_url_);
     if (cancel_requested_)
