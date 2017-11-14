@@ -508,10 +508,10 @@ void DownloadManagerImpl::StartDownloadWithId(
 
   base::FilePath default_download_directory;
 #if defined(USE_X11)
-  // TODO(thomasanderson): Remove this when all Linux distros with
-  // versions of GTK lower than 3.14.7 are no longer supported.  This
-  // should happen when support for Ubuntu Trusty and Debian Jessie
-  // are removed.
+  // TODO(thomasanderson,crbug.com/784010): Remove this when all Linux
+  // distros with versions of GTK lower than 3.14.7 are no longer
+  // supported.  This should happen when support for Ubuntu Trusty and
+  // Debian Jessie are removed.
   default_download_directory = GetTemporaryDownloadDirectory();
 #else
   if (delegate_) {
