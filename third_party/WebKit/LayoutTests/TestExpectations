@@ -1870,9 +1870,6 @@ crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 virtual/threaded/http/tests/devtools/tracing/timeline-paint/layer-tree.html [ Skip ]
 
-crbug.com/635909 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
-
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 http/tests/devtools/editor/text-editor-search-switch-editor.js [ Skip ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/editor/text-editor-search-switch-editor.js [ Skip ]
