@@ -1110,7 +1110,10 @@ static void setup_q_segmentation(AV1_COMMON *const cm,
     }
   }
 
-  if (!aom_rb_read_bit(rb)) return;
+  if (!aom_rb_read_bit(rb)) {
+    seg->q_lvls = 0;
+    return;
+  }
 
   seg->q_lvls = decode_unsigned_max(rb, MAX_SEGMENTS);
 
