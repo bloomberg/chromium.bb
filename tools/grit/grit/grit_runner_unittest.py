@@ -28,9 +28,8 @@ class OptionArgsUnittest(unittest.TestCase):
   def testSimple(self):
     grit.grit_runner.Main(['-i',
                            util.PathFromRoot('grit/testdata/simple-input.xml'),
-                           '-d', 'test', 'bla', 'voff', 'ga'])
+                           'test', 'bla', 'voff', 'ga'])
     output = self.buf.getvalue()
-    self.failUnless(output.count('disconnected'))
     self.failUnless(output.count("'test'") == 0)  # tool name doesn't occur
     self.failUnless(output.count('bla'))
     self.failUnless(output.count('simple-input.xml'))

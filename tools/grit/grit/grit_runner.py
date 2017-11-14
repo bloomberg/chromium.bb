@@ -111,12 +111,6 @@ def PrintUsage():
     if not _HIDDEN in info.keys():
       tool_list += '    %-12s %s\n' % (tool, info[_FACTORY]().ShortDescription())
 
-  # TODO(joi) Put these back into the usage when appropriate:
-  #
-  #  -d    Work disconnected.  This causes GRIT not to attempt connections with
-  #        e.g. Perforce.
-  #
-  #  -c    Use the specified Perforce CLIENT when talking to Perforce.
   print """GRIT - the Google Resource and Internationalization Tool
 
 Usage: grit [GLOBALOPTIONS] TOOL [args to tool]
@@ -152,23 +146,18 @@ class Options(object):
   """Option storage and parsing."""
 
   def __init__(self):
-    self.disconnected = False
-    self.client = ''
     self.hash = None
     self.input = None
     self.verbose = False
     self.extra_verbose = False
     self.output_stream = sys.stdout
     self.profile_dest = None
-    self.psyco = False
 
   def ReadOptions(self, args):
     """Reads options from the start of args and returns the remainder."""
-    (opts, args) = getopt.getopt(args, 'g:qdvxc:i:p:h:', ('psyco',))
+    (opts, args) = getopt.getopt(args, 'vxi:p:h:')
     for (key, val) in opts:
-      if key == '-d': self.disconnected = True
-      elif key == '-c': self.client = val
-      elif key == '-h': self.hash = val
+      if key == '-h': self.hash = val
       elif key == '-i': self.input = val
       elif key == '-v':
         self.verbose = True
@@ -179,7 +168,6 @@ class Options(object):
         self.extra_verbose = True
         util.extra_verbose = True
       elif key == '-p': self.profile_dest = val
-      elif key == '--psyco': self.psyco = True
 
     if not self.input:
       if 'GRIT_INPUT' in os.environ:
@@ -190,8 +178,8 @@ class Options(object):
     return args
 
   def __repr__(self):
-    return '(disconnected: %d, verbose: %d, client: %s, input: %s)' % (
-        self.disconnected, self.verbose, self.client, self.input)
+    return '(verbose: %d, input: %s)' % (
+        self.verbose, self.input)
 
 
 def _GetToolInfo(tool):
@@ -248,13 +236,6 @@ def Main(args):
              "'resource.grd'\n"
              '     from the current directory.' % options.input)
       return 2
-
-    if options.psyco:
-      # Psyco is a specializing JIT for Python.  Early tests indicate that it
-      # could speed up GRIT (at the expense of more memory) for large GRIT
-      # compilations.  See http://psyco.sourceforge.net/
-      import psyco
-      psyco.profile()
 
     if options.hash:
       grit.extern.FP.UseUnsignedFingerPrintFromModule(options.hash)

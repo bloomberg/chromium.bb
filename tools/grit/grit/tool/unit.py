@@ -14,8 +14,7 @@ from grit.tool import interface
 
 class UnitTestTool(interface.Tool):
   '''By using this tool (e.g. 'grit unit') you run all the unit tests for GRIT.
-This happens in the environment that is set up by the basic GRIT runner, i.e.
-whether to run disconnected has been specified, etc.'''
+This happens in the environment that is set up by the basic GRIT runner.'''
 
   def ShortDescription(self):
     return 'Use this tool to run all the unit tests for GRIT.'
@@ -23,4 +22,3 @@ whether to run disconnected has been specified, etc.'''
   def Run(self, opts, args):
     return unittest.TextTestRunner(verbosity=2).run(
       grit.test_suite_all.TestSuiteAll())
-
