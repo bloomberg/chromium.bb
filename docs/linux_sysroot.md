@@ -30,13 +30,13 @@ new packages, skip to `Using build_and_upload.py`.
 
 To add a new package, edit the `sysroot-creator-*.sh` scripts and modify the
 `DEBIAN_PACKAGES` list, then run the update step (`UpdatePackageListsAll`).  The
-steps below will use `sysroot-creator-jessie.sh` as an example.
+steps below will use `sysroot-creator-stretch.sh` as an example.
 
 ### Updating existing package list
 
 To update packages to the latest versions run:
 
-    $ ./sysroot-creator-jessie.sh UpdatePackageListsAll
+    $ ./sysroot-creator-stretch.sh UpdatePackageListsAll
 
 This command will update the package lists that are stored alongside the script.
 If no packages have changed then this script will have no effect.
@@ -46,13 +46,13 @@ If no packages have changed then this script will have no effect.
 To rebuild the images (without any changes) run the following commands:
 
     $ cd build/linux/sysroot_scripts
-    $ ./sysroot-creator-jessie.sh BuildSysrootAll
+    $ ./sysroot-creator-stretch.sh BuildSysrootAll
 
 The above command will rebuild the sysroot for all architectures. To build
 just one architecture use `BuildSysroot<arch>`.  Run the script with no
 arguments for a list of possible architectures.  For example:
 
-    $ ./sysroot-creator-jessie.sh BuildSysrootAmd64
+    $ ./sysroot-creator-stretch.sh BuildSysrootAmd64
 
 This command on its own should be a no-op and produce an image identical to
 the one on Google Cloud Storage.
@@ -61,7 +61,7 @@ the one on Google Cloud Storage.
 
 To upload images to Google Cloud Storage run the following command:
 
-    $ ./sysroot-creator-jessie.sh UploadSysrootAll <SHA1>
+    $ ./sysroot-creator-stretch.sh UploadSysrootAll <SHA1>
 
 Here you should use the SHA1 of the git revision at which the images were
 created.

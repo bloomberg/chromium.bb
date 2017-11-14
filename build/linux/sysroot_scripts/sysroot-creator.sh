@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 #
 # This script should not be run directly but sourced by the other
-# scripts (e.g. sysroot-creator-jessie.sh).  Its up to the parent scripts
+# scripts (e.g. sysroot-creator-stretch.sh).  Its up to the parent scripts
 # to define certain environment variables: e.g.
-#  DISTRO=ubuntu
-#  DIST=jessie
+#  DISTRO=debian
+#  DIST=stretch
 #  # Similar in syntax to /etc/apt/sources.list
-#  APT_SOURCES_LIST="http://ftp.us.debian.org/debian/ jessie main"
-#  KEYRING_FILE=debian-archive-jessie-stable.gpg
+#  APT_SOURCES_LIST="http://ftp.us.debian.org/debian/ stretch main"
+#  KEYRING_FILE=debian-archive-stretch-stable.gpg
 #  DEBIAN_PACKAGES="gcc libz libssl"
 
 #@ This script builds Debian/Ubuntu sysroot images for building Google Chrome.
