@@ -1,0 +1,121 @@
+# TODO: reevaluate these once --mus no longer implies Viz. All of these
+# failures appear to be code relying on in process access to parts of Viz.
+# This is covered by http://crbug.com/775030. There are also a couple that rely
+# on capture, which again should work fine once --mus no longer implies Viz.
+
+# TODO: reenable, these use
+# BrowserMainLoop::GetInstance()->gpu_channel_establish_factory().
+# http://crbug.com/775030.
+-BrowserGpuChannelHostFactoryTest.GrContextKeepsGpuChannelAlive
+-GpuProcessHostBrowserTest.Shutdown
+-SignalTest.BasicSignalQueryTest
+-SignalTest.BasicSignalSyncTokenTest
+-SignalTest.EmptySignalSyncTokenTest
+-SignalTest.InvalidSignalQueryUnboundTest
+-SignalTest.InvalidSignalSyncTokenTest
+-SignalTest.SignalQueryUnboundTest
+
+# TODO: reenable, uses ImageTransportFactory, which is not created in mus (viz
+# actually). http://crbug.com/775030.
+-ImageTransportFactoryTearDownBrowserTest.LoseOnTearDown
+
+# Uses MainThreadFrameObserver, http://crbug.com/775030.
+-SitePerProcessMouseWheelBrowserTest.MainframeWheelEventsOnMainThread
+-SitePerProcessMouseWheelBrowserTest.InputEventRouterWheelTargetTest
+-SitePerProcessMouseWheelBrowserTest.SubframeWheelEventsOnMainThread
+-SitePerProcessBrowserTest.CrossSiteIframeDisplayNone
+-SitePerProcessBrowserTest.MainframeTouchEventRouting
+-MainThreadEventQueueBrowserTest.MouseMove
+-MainThreadEventQueueBrowserTest.TouchMove
+-NonBlockingEventBrowserTest.MouseWheel
+-NonBlockingEventBrowserTest.PassiveTouchStartBlockingTouchEnd
+-NonBlockingEventBrowserTest.TouchStart
+-PointerLockBrowserTest.PointerLockEventRouting
+-PointerLockBrowserTest.PointerLockWheelEventRouting
+-ScreenOrientationOOPIFBrowserTest.ScreenOrientation
+
+# TODO: reenable, uses WaitForChildFrameSurfaceReady(), http://crbug.com/775030.
+-SitePerProcessBrowserTest.CancelWheelScrollBubblingOnWheelTargetDeletion
+-SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest
+-SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
+-SitePerProcessBrowserTest.GestureFlingStartEventsBubble
+-SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
+-SitePerProcessBrowserTest.RootConsumesScrollDuringOverscrollGesture
+-SitePerProcessBrowserTest.ScrollEventToOOPIF
+-SitePerProcessBrowserTest.NestedSurfaceHitTestTest
+-SitePerProcessBrowserTest.SurfaceHitTestPointerEventsNone
+-SitePerProcessBrowserTest.CrossProcessMouseEnterAndLeaveTest
+-SitePerProcessBrowserTest.CrossProcessMouseCapture
+-SitePerProcessBrowserTest.CursorUpdateReceivedCrossSiteIframe
+-SitePerProcessBrowserTest.SubframeTouchEventRouting
+-SitePerProcessBrowserTest.InputEventRouterGestureTargetMapTest
+-SitePerProcessBrowserTest.InputEventRouterGesturePreventDefaultTargetMapTest
+-SitePerProcessBrowserTest.InputEventRouterTouchpadGestureTargetTest
+-SitePerProcessBrowserTest.PopupMenuTest
+-SitePerProcessGestureBrowserTest.MainframeGesturePinchGoesToMainFrame
+-SitePerProcessGestureBrowserTest.SubframeGesturePinchGoesToMainFrame
+-SitePerProcessBrowserTest.NavigateCrashedSubframeToSameSite
+-SitePerProcessBrowserTest.SurfaceHitTestTest
+-SitePerProcessHighDPIBrowserTest.SurfaceHitTestTest
+
+# TODO: reenable, uses RendererFrameNumber(), http://crbug.com/775030.
+-SitePerProcessBrowserTest.CompositorFrameSwapped
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedIframe/1
+
+# TODO: reenable, uses SurfaceHitTestReadyNotifier::WaitForSurfaceReady(),
+# http://crbug.com/775030.
+-SitePerProcessBrowserTest.CreateContextMenuTest
+-SitePerProcessHighDPIBrowserTest.HighDPICreateContextMenuTest
+
+# TODO: reenable, uses
+# RenderWidgetHostViewChildFrame::RegisterFrameSwappedCallback(),
+# http://crbug.com/775030.
+-SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFrames
+-SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
+
+# TODO: reenable, uses FrameWatcher, http://crbug.com/775030.
+-CompositedScrollingBrowserTest.Scroll3DTransformedScroller
+-RenderWidgetHostViewBrowserTestBase.CompositorWorksWhenReusingRenderer
+-ScrollLatencyBrowserTest.SmoothWheelScroll
+-TouchActionBrowserTest.TouchActionNone
+-WheelScrollLatchingBrowserTest.WheelEventTarget
+-WheelScrollLatchingDisabledBrowserTest.WheelEventTarget
+
+# Stuck in DevToolsProtocolTest::WaitForResponse().
+-CaptureScreenshotTest.CaptureScreenshot
+-CaptureScreenshotTest.CaptureScreenshotJpeg
+
+# These get stuck waiting for an event, InputMsgWatcher::WaitForAck().
+-MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
+-MouseLatencyBrowserTest.MouseDownAndUpRecordedWithoutSwap
+
+# These wait for mojom::kGpuServiceName to connect to browser, but that won't
+# happen with mus.
+-PowerMonitorTest.TestGpuProcess
+
+# These all timeout, investigate why.
+-GLAndSoftwareCompositing*
+
+# TODO: these hit a DCHECK on the waterfall. They hit DCHECK:
+# PaintLayerCompositor.cpp(94)] Check failed:
+# layout_view_.Layer()->IsAllowedToQueryCompositingState()
+-SitePerProcessBrowserTest.ScrollElementIntoView
+-FindRequestManagerTests/FindRequestManagerTest.NavigateFrame/1
+
+# TODO: these all need capture. http://crbug.com/754872
+-SnapshotBrowserTest.AsyncMultiWindowTest
+-SnapshotBrowserTest.SingleWindowTest
+-SnapshotBrowserTest.SyncMultiWindowTest
+
+# TODO: these all rely on RenderWidgetHostImpl::SubmitCompositorFrame(), which
+# isn't hit for mus.
+-TouchSelectionControllerClientAuraScaleFactorTest.InsertionHandleCoordinates
+-TouchSelectionControllerClientAuraScaleFactorTest.SelectionHandleCoordinates
+-TouchSelectionControllerClientAuraTest.BasicInsertionFollowedByTapsOnHandle
+-TouchSelectionControllerClientAuraTest.BasicSelection
+-TouchSelectionControllerClientAuraTest.HiddenAfterOverscroll
+-TouchSelectionControllerClientAuraTest.HiddenOnScroll
+-TouchSelectionControllerClientAuraTest.QuickMenuHiddenOnTouch
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/0
+-TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.BasicSelectionIsolatedScrollMainframe/1
