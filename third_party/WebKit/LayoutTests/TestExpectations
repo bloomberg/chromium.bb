@@ -3964,7 +3964,6 @@ crbug.com/776201 [ Win7 Debug ] virtual/longtask-v2/http/tests/performance-timin
 # Sheriff failures 2017-10-23
 crbug.com/772411 http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
 crbug.com/777466 virtual/mojo-loading/http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
-crbug.com/777423 http/tests/devtools/sources/debugger-ui/function-details.js [ Timeout Failure Pass ]
 crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
 crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Failure Timeout ]
