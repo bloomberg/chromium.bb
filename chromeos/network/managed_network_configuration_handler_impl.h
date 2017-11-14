@@ -116,6 +116,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   friend class AutoConnectHandlerTest;
   friend class ClientCertResolverTest;
   friend class ManagedNetworkConfigurationHandlerTest;
+  friend class ManagedNetworkConfigurationHandlerMockTest;
   friend class NetworkConnectionHandlerImplTest;
   friend class NetworkHandler;
   friend class ProhibitedTechnologiesHandlerTest;
