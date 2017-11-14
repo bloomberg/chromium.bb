@@ -43,12 +43,12 @@ id<PasswordFormFiller> PasswordTabHelper::GetPasswordFormFiller() {
 }
 
 PasswordTabHelper::PasswordTabHelper(web::WebState* web_state)
-    : web::WebStateObserver(web_state),
-      controller_([[PasswordController alloc] initWithWebState:web_state]) {
-  DCHECK(web::WebStateObserver::web_state());
+    : controller_([[PasswordController alloc] initWithWebState:web_state]) {
+  web_state->AddObserver(this);
 }
 
 void PasswordTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  web_state->RemoveObserver(this);
   [controller_ detach];
   controller_ = nil;
 }
