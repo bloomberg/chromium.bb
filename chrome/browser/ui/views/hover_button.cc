@@ -44,6 +44,9 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   // Turn on highlighting when the button is hovered or focused.
   SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
   GetInkDrop()->SetShowHighlightOnFocus(true);
+  // Don't show the ripple on non-MD.
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+    set_ink_drop_visible_opacity(0);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
@@ -158,13 +161,6 @@ bool HoverButton::ShouldUseFloodFillInkDrop() const {
 SkColor HoverButton::GetInkDropBaseColor() const {
   return views::style::GetColor(views::style::CONTEXT_BUTTON,
                                 views::style::STYLE_PRIMARY, GetNativeTheme());
-}
-
-std::unique_ptr<views::InkDropRipple> HoverButton::CreateInkDropRipple() const {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return LabelButton::CreateInkDropRipple();
-  // Don't show the ripple on non-MD.
-  return nullptr;
 }
 
 std::unique_ptr<views::InkDropHighlight> HoverButton::CreateInkDropHighlight()
