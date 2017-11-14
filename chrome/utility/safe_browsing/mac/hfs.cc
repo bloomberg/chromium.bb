@@ -519,26 +519,25 @@ bool HFSBTreeIterator::Next() {
   auto parent_id = OSSwapBigToHostInt32(*GetLeafData<uint32_t>());
   auto key_string_length = OSSwapBigToHostInt16(*GetLeafData<uint16_t>());
 
-  size_t key_string_end_offset = 0;
-  if (!base::CheckAdd(current_leaf_offset_, key_string_length)
-           .AssignIfValid(&key_string_end_offset) ||
-      key_string_end_offset > leaf_data_.size()) {
-    DLOG(ERROR) << "Key string length larger than leaf data";
-    return false;
+  // Read and byte-swap the variable-length key string.
+  base::string16 key(key_string_length, '\0');
+  for (uint16_t i = 0; i < key_string_length; ++i) {
+    auto* character = GetLeafData<uint16_t>();
+    if (!character) {
+      DLOG(ERROR) << "Key string length points past leaf data";
+      return false;
+    }
+    key[i] = OSSwapBigToHostInt16(*character);
   }
-
-  auto* key_string =
-      reinterpret_cast<uint16_t*>(&leaf_data_[current_leaf_offset_]);
-  for (uint16_t i = 0;
-       i < key_string_length;
-       ++i, current_leaf_offset_ += sizeof(uint16_t)) {
-    key_string[i] = OSSwapBigToHostInt16(key_string[i]);
-  }
-  base::string16 key(key_string, key_string_length);
 
   // Read the record type and then rewind as the field is part of the catalog
   // structure that is read next.
-  current_record_.record_type = OSSwapBigToHostInt16(*GetLeafData<int16_t>());
+  auto* record_type = GetLeafData<int16_t>();
+  if (!record_type) {
+    DLOG(ERROR) << "Failed to read record type";
+    return false;
+  }
+  current_record_.record_type = OSSwapBigToHostInt16(*record_type);
   current_record_.unexported = false;
   current_leaf_offset_ -= sizeof(int16_t);
   switch (current_record_.record_type) {
