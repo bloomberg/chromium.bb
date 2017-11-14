@@ -99,7 +99,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h",
   "+third_party/WebKit/public/public_features.h",
-  "+third_party/WebKit/public/web/devtools_frontend.mojom.h",
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebConsoleMessage.h",
   "+third_party/WebKit/public/web/WebContextMenuData.h",

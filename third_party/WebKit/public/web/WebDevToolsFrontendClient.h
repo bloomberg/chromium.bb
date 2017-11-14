@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorFrontendClient_h
-#define InspectorFrontendClient_h
-
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#ifndef WebDevToolsFrontendClient_h
+#define WebDevToolsFrontendClient_h
 
 namespace blink {
 
-class ContextMenuProvider;
-class LocalFrame;
+class WebString;
 
-class InspectorFrontendClient {
+class WebDevToolsFrontendClient {
  public:
-  virtual ~InspectorFrontendClient() {}
+  WebDevToolsFrontendClient() {}
 
-  virtual void SendMessageToEmbedder(const String&) = 0;
+  virtual void SendMessageToEmbedder(const WebString&) {}
 
-  virtual bool IsUnderTest() = 0;
+  virtual bool IsUnderTest() { return false; }
 
-  virtual void ShowContextMenu(LocalFrame* target_frame,
-                               float x,
-                               float y,
-                               ContextMenuProvider*) = 0;
+ protected:
+  virtual ~WebDevToolsFrontendClient() {}
 };
 
 }  // namespace blink

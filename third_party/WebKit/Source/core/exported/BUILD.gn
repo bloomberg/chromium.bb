@@ -25,6 +25,8 @@ blink_core_sources("exported") {
     "WebDateTimeSuggestion.cpp",
     "WebDevToolsAgentImpl.cpp",
     "WebDevToolsAgentImpl.h",
+    "WebDevToolsFrontendImpl.cpp",
+    "WebDevToolsFrontendImpl.h",
     "WebDocument.cpp",
     "WebDocumentLoaderImpl.cpp",
     "WebDocumentLoaderImpl.h",

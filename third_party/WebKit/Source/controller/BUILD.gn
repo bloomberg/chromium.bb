@@ -37,8 +37,6 @@ component("controller") {
     "BlinkInitializer.cpp",
     "BlinkInitializer.h",
     "ControllerExport.h",
-    "DevToolsFrontendImpl.cpp",
-    "DevToolsFrontendImpl.h",
     "OomInterventionImpl.cpp",
     "OomInterventionImpl.h",
   ]
