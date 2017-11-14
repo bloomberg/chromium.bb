@@ -1200,7 +1200,6 @@ void WebLocalFrameImpl::SelectRange(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(range)
           .SetAffinity(TextAffinity::kDefault)
-          .SetIsDirectional(false)
           .Build(),
       SetSelectionOptions::Builder()
           .SetShouldShowHandle(show_handles)
