@@ -154,6 +154,11 @@ const base::Feature kContentFullscreen{"ContentFullscreen",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+// Enables a site-wide permission in the UI which controls access to the
+// asynchronous Clipboard web API.
+const base::Feature kClipboardContentSetting{"ClipboardContentSetting",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Experiment to extract structured metadata for app indexing.
 const base::Feature kCopylessPaste{"CopylessPaste",

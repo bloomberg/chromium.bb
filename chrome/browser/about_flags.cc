@@ -3569,6 +3569,11 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableLoginDimAndBlur)},
 #endif  // OS_CHROMEOS
 
+    {"clipboard-content-setting",
+     flag_descriptions::kClipboardContentSettingName,
+     flag_descriptions::kClipboardContentSettingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kClipboardContentSetting)},
+
 #if defined(OS_CHROMEOS)
     {"native-samba", flag_descriptions::kNativeSambaName,
      flag_descriptions::kNativeSambaDescription, kOsCrOS,

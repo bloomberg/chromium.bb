@@ -77,6 +77,8 @@ extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
 extern const base::Feature kClickToOpenPDFPlaceholder;
 
+extern const base::Feature kClipboardContentSetting;
+
 #if defined(OS_MACOSX)
 extern const base::Feature kContentFullscreen;
 #endif
