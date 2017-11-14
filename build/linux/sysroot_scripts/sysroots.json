@@ -1,34 +1,4 @@
 {
-    "jessie_amd64": {
-        "Revision": "1126d9b629c97385a503debac7a1b59e60a3ab1b",
-        "Sha1Sum": "3f608208f525d85a934e5d74ca0a76f8f234aea5",
-        "SysrootDir": "debian_jessie_amd64-sysroot",
-        "Tarball": "debian_jessie_amd64_sysroot.tar.xz"
-    },
-    "jessie_arm": {
-        "Revision": "1126d9b629c97385a503debac7a1b59e60a3ab1b",
-        "Sha1Sum": "5565736d389d834938b238bf6391a7facef1c26f",
-        "SysrootDir": "debian_jessie_arm-sysroot",
-        "Tarball": "debian_jessie_arm_sysroot.tar.xz"
-    },
-    "jessie_arm64": {
-        "Revision": "1126d9b629c97385a503debac7a1b59e60a3ab1b",
-        "Sha1Sum": "6281c416ea24fdb4d1e5c411feb7cc88eb87aecd",
-        "SysrootDir": "debian_jessie_arm64-sysroot",
-        "Tarball": "debian_jessie_arm64_sysroot.tar.xz"
-    },
-    "jessie_i386": {
-        "Revision": "1126d9b629c97385a503debac7a1b59e60a3ab1b",
-        "Sha1Sum": "0315e93779f58164ff307f89c11756aa9377dfac",
-        "SysrootDir": "debian_jessie_i386-sysroot",
-        "Tarball": "debian_jessie_i386_sysroot.tar.xz"
-    },
-    "jessie_mips": {
-        "Revision": "1126d9b629c97385a503debac7a1b59e60a3ab1b",
-        "Sha1Sum": "3e2487e2048c0d468685068dbd96950af50a4165",
-        "SysrootDir": "debian_jessie_mips-sysroot",
-        "Tarball": "debian_jessie_mips_sysroot.tar.xz"
-    },
     "stretch_amd64": {
         "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
         "Sha1Sum": "ee33ea4e4de55a2d24c4d28aea83cfcf3eecad4e",
