@@ -15,8 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/animation/animation_container.h"
-#include "ui/message_center/message_center_tray.h"
-#include "ui/message_center/message_center_tray_delegate.h"
+#include "ui/message_center/ui_delegate.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace aura {
@@ -26,6 +25,7 @@ class Window;
 namespace message_center {
 class MessageCenter;
 class MessagePopupCollection;
+class UiController;
 }
 
 namespace ash {
@@ -45,7 +45,7 @@ class WebNotificationLabel;
 // is controlled by StatusAreaWidget.
 class ASH_EXPORT WebNotificationTray
     : public TrayBackgroundView,
-      public message_center::MessageCenterTrayDelegate,
+      public message_center::UiDelegate,
       public base::SupportsWeakPtr<WebNotificationTray>,
       public ui::SimpleMenuModel::Delegate {
  public:
@@ -89,8 +89,8 @@ class ASH_EXPORT WebNotificationTray
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void HideBubble(const views::TrayBubbleView* bubble_view) override;
 
-  // Overridden from MessageCenterTrayDelegate.
-  void OnMessageCenterTrayChanged() override;
+  // Overridden from message_center::UiDelegate.
+  void OnMessageCenterContentsChanged() override;
   bool ShowMessageCenter(bool show_by_click) override;
   void HideMessageCenter() override;
   bool ShowPopups() override;
@@ -149,7 +149,7 @@ class ASH_EXPORT WebNotificationTray
 
   aura::Window* status_area_window_;
   SystemTray* system_tray_;
-  std::unique_ptr<message_center::MessageCenterTray> message_center_tray_;
+  std::unique_ptr<message_center::UiController> message_center_ui_controller_;
   std::unique_ptr<WebNotificationBubbleWrapper> message_center_bubble_;
   std::unique_ptr<message_center::MessagePopupCollection> popup_collection_;
   std::unique_ptr<WebNotificationImage> bell_icon_;

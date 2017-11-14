@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
-#define UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
+#ifndef UI_MESSAGE_CENTER_UI_CONTROLLER_H_
+#define UI_MESSAGE_CENTER_UI_CONTROLLER_H_
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -11,8 +11,8 @@
 #include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
-#include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/notifier_id.h"
+#include "ui/message_center/ui_delegate.h"
 
 namespace ui {
 class MenuModel;
@@ -23,14 +23,14 @@ namespace message_center {
 class MessageCenter;
 class Notification;
 
-// Class that observes a MessageCenter. Manages the popup and message center
-// bubbles. Tells the MessageCenterTrayHost when the tray is changed, as well
-// as when bubbles are shown and hidden.
-class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
+// Class that observes a MessageCenter and reacts to changes in the list of
+// notifications. Manages the popup and message center bubbles. Tells the
+// UiDelegate when the tray is changed, as well as when bubbles are shown and
+// hidden.
+class MESSAGE_CENTER_EXPORT UiController : public MessageCenterObserver {
  public:
-  MessageCenterTray(MessageCenterTrayDelegate* delegate,
-                    message_center::MessageCenter* message_center);
-  ~MessageCenterTray() override;
+  explicit UiController(UiDelegate* delegate);
+  ~UiController() override;
 
   // Shows or updates the message center bubble and hides the popup bubble. Set
   // |show_by_click| to true if bubble is shown by mouse or gesture click.
@@ -61,7 +61,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
 
   bool message_center_visible() { return message_center_visible_; }
   bool popups_visible() { return popups_visible_; }
-  MessageCenterTrayDelegate* delegate() { return delegate_; }
+  UiDelegate* delegate() { return delegate_; }
   const message_center::MessageCenter* message_center() const {
     return message_center_;
   }
@@ -83,25 +83,21 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
 
  private:
   void OnMessageCenterChanged();
-  void NotifyMessageCenterTrayChanged();
+  void NotifyUiControllerChanged();
   void HidePopupBubbleInternal();
 
-  // |message_center_| is a weak pointer that must live longer than
-  // MessageCenterTray.
   message_center::MessageCenter* message_center_;
-  bool message_center_visible_;
-  bool popups_visible_;
+  bool message_center_visible_ = false;
+  bool popups_visible_ = false;
+  UiDelegate* delegate_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<base::CancelableClosure> hide_empty_message_center_callback_;
 #endif
 
-  // |delegate_| is a weak pointer that must live longer than MessageCenterTray.
-  MessageCenterTrayDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterTray);
+  DISALLOW_COPY_AND_ASSIGN(UiController);
 };
 
 }  // namespace message_center
 
-#endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_TRAY_H_
+#endif  // UI_MESSAGE_CENTER_UI_CONTROLLER_H_

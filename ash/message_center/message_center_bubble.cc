@@ -13,7 +13,6 @@
 #include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
-using message_center::MessageCenterTray;
 
 namespace ash {
 
@@ -65,10 +64,11 @@ void ContentsView::ChildPreferredSizeChanged(View* child) {
 
 // MessageCenterBubble /////////////////////////////////////////////////////////
 
-MessageCenterBubble::MessageCenterBubble(MessageCenter* message_center,
-                                         MessageCenterTray* tray)
+MessageCenterBubble::MessageCenterBubble(
+    MessageCenter* message_center,
+    message_center::UiController* ui_controller)
     : message_center_(message_center),
-      tray_(tray),
+      ui_controller_(ui_controller),
       max_height_(kDefaultMaxHeight) {}
 
 MessageCenterBubble::~MessageCenterBubble() {
@@ -108,8 +108,9 @@ void MessageCenterBubble::InitializeContents(
     views::TrayBubbleView* new_bubble_view) {
   bubble_view_ = new_bubble_view;
   bubble_view_->GetWidget()->AddObserver(this);
-  message_center_view_ = new MessageCenterView(
-      message_center_, tray_, max_height_, initially_settings_visible_);
+  message_center_view_ =
+      new MessageCenterView(message_center_, ui_controller_, max_height_,
+                            initially_settings_visible_);
   bubble_view_->AddChildView(new ContentsView(this, message_center_view_));
   message_center_view_->Init();
   // Resize the content of the bubble view to the given bubble size. This is
