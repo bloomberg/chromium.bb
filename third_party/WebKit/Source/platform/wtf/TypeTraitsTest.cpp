@@ -33,17 +33,17 @@ namespace {
 struct VirtualClass {
   virtual void A() {}
 };
-static_assert(!IsTriviallyMoveAssignable<VirtualClass>::value,
+static_assert(!std::is_trivially_move_assignable<VirtualClass>::value,
               "VirtualClass should not be trivially move assignable");
 
 struct DestructorClass {
   ~DestructorClass() {}
 };
-static_assert(IsTriviallyMoveAssignable<DestructorClass>::value,
+static_assert(std::is_trivially_move_assignable<DestructorClass>::value,
               "DestructorClass should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<DestructorClass>::value,
+static_assert(std::is_trivially_copy_assignable<DestructorClass>::value,
               "DestructorClass should be trivially copy assignable");
-static_assert(IsDefaultConstructible<DestructorClass>::value,
+static_assert(std::is_default_constructible<DestructorClass>::value,
               "DestructorClass should be default constructible");
 
 struct MixedPrivate {
@@ -53,11 +53,11 @@ struct MixedPrivate {
  private:
   int m2;
 };
-static_assert(IsTriviallyMoveAssignable<MixedPrivate>::value,
+static_assert(std::is_trivially_move_assignable<MixedPrivate>::value,
               "MixedPrivate should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<MixedPrivate>::value,
+static_assert(std::is_trivially_copy_assignable<MixedPrivate>::value,
               "MixedPrivate should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<MixedPrivate>::value,
+static_assert(std::is_trivially_default_constructible<MixedPrivate>::value,
               "MixedPrivate should have a trivial default constructor");
 struct JustPrivate {
   int M2() { return m2; }
@@ -65,29 +65,29 @@ struct JustPrivate {
  private:
   int m2;
 };
-static_assert(IsTriviallyMoveAssignable<JustPrivate>::value,
+static_assert(std::is_trivially_move_assignable<JustPrivate>::value,
               "JustPrivate should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<JustPrivate>::value,
+static_assert(std::is_trivially_copy_assignable<JustPrivate>::value,
               "JustPrivate should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<JustPrivate>::value,
+static_assert(std::is_trivially_default_constructible<JustPrivate>::value,
               "JustPrivate should have a trivial default constructor");
 struct JustPublic {
   int m2;
 };
-static_assert(IsTriviallyMoveAssignable<JustPublic>::value,
+static_assert(std::is_trivially_move_assignable<JustPublic>::value,
               "JustPublic should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<JustPublic>::value,
+static_assert(std::is_trivially_copy_assignable<JustPublic>::value,
               "JustPublic should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<JustPublic>::value,
+static_assert(std::is_trivially_default_constructible<JustPublic>::value,
               "JustPublic should have a trivial default constructor");
 struct NestedInherited : public JustPublic, JustPrivate {
   float m3;
 };
-static_assert(IsTriviallyMoveAssignable<NestedInherited>::value,
+static_assert(std::is_trivially_move_assignable<NestedInherited>::value,
               "NestedInherited should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<NestedInherited>::value,
+static_assert(std::is_trivially_copy_assignable<NestedInherited>::value,
               "NestedInherited should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<NestedInherited>::value,
+static_assert(std::is_trivially_default_constructible<NestedInherited>::value,
               "NestedInherited should have a trivial default constructor");
 struct NestedOwned {
   JustPublic m1;
@@ -95,11 +95,11 @@ struct NestedOwned {
   float m3;
 };
 
-static_assert(IsTriviallyMoveAssignable<NestedOwned>::value,
+static_assert(std::is_trivially_move_assignable<NestedOwned>::value,
               "NestedOwned should be trivially move assignable");
-static_assert(IsTriviallyCopyAssignable<NestedOwned>::value,
+static_assert(std::is_trivially_copy_assignable<NestedOwned>::value,
               "NestedOwned should be trivially copy assignable");
-static_assert(IsTriviallyDefaultConstructible<NestedOwned>::value,
+static_assert(std::is_trivially_default_constructible<NestedOwned>::value,
               "NestedOwned should have a trivial default constructor");
 
 class NonCopyableClass {
@@ -133,9 +133,9 @@ class AssignmentDeleted final {
   AssignmentDeleted& operator=(const AssignmentDeleted&) = delete;
 };
 
-static_assert(!IsCopyAssignable<AssignmentDeleted>::value,
+static_assert(!std::is_copy_assignable<AssignmentDeleted>::value,
               "AssignmentDeleted isn't copy assignable.");
-static_assert(!IsMoveAssignable<AssignmentDeleted>::value,
+static_assert(!std::is_move_assignable<AssignmentDeleted>::value,
               "AssignmentDeleted isn't move assignable.");
 
 class AssignmentPrivate final {
@@ -143,9 +143,9 @@ class AssignmentPrivate final {
   AssignmentPrivate& operator=(const AssignmentPrivate&);
 };
 
-static_assert(!IsCopyAssignable<AssignmentPrivate>::value,
+static_assert(!std::is_copy_assignable<AssignmentPrivate>::value,
               "AssignmentPrivate isn't copy assignable.");
-static_assert(!IsMoveAssignable<AssignmentPrivate>::value,
+static_assert(!std::is_move_assignable<AssignmentPrivate>::value,
               "AssignmentPrivate isn't move assignable.");
 
 class CopyAssignmentDeleted final {
@@ -156,9 +156,9 @@ class CopyAssignmentDeleted final {
   CopyAssignmentDeleted& operator=(const CopyAssignmentDeleted&) = delete;
 };
 
-static_assert(!IsCopyAssignable<CopyAssignmentDeleted>::value,
+static_assert(!std::is_copy_assignable<CopyAssignmentDeleted>::value,
               "CopyAssignmentDeleted isn't copy assignable.");
-static_assert(IsMoveAssignable<CopyAssignmentDeleted>::value,
+static_assert(std::is_move_assignable<CopyAssignmentDeleted>::value,
               "CopyAssignmentDeleted is move assignable.");
 
 class CopyAssignmentPrivate final {
@@ -169,9 +169,9 @@ class CopyAssignmentPrivate final {
   CopyAssignmentPrivate& operator=(const CopyAssignmentPrivate&);
 };
 
-static_assert(!IsCopyAssignable<CopyAssignmentPrivate>::value,
+static_assert(!std::is_copy_assignable<CopyAssignmentPrivate>::value,
               "CopyAssignmentPrivate isn't copy assignable.");
-static_assert(IsMoveAssignable<CopyAssignmentPrivate>::value,
+static_assert(std::is_move_assignable<CopyAssignmentPrivate>::value,
               "CopyAssignmentPrivate is move assignable.");
 
 class CopyAssignmentUndeclared final {
@@ -179,9 +179,9 @@ class CopyAssignmentUndeclared final {
   CopyAssignmentUndeclared& operator=(CopyAssignmentUndeclared&&);
 };
 
-static_assert(!IsCopyAssignable<CopyAssignmentUndeclared>::value,
+static_assert(!std::is_copy_assignable<CopyAssignmentUndeclared>::value,
               "CopyAssignmentUndeclared isn't copy assignable.");
-static_assert(IsMoveAssignable<CopyAssignmentUndeclared>::value,
+static_assert(std::is_move_assignable<CopyAssignmentUndeclared>::value,
               "CopyAssignmentUndeclared is move assignable.");
 
 class Assignable final {
@@ -189,16 +189,16 @@ class Assignable final {
   Assignable& operator=(const Assignable&);
 };
 
-static_assert(IsCopyAssignable<Assignable>::value,
+static_assert(std::is_copy_assignable<Assignable>::value,
               "Assignable is copy assignable.");
-static_assert(IsMoveAssignable<Assignable>::value,
+static_assert(std::is_move_assignable<Assignable>::value,
               "Assignable is move assignable.");
 
 class AssignableImplicit final {};
 
-static_assert(IsCopyAssignable<AssignableImplicit>::value,
+static_assert(std::is_copy_assignable<AssignableImplicit>::value,
               "AssignableImplicit is copy assignable.");
-static_assert(IsMoveAssignable<AssignableImplicit>::value,
+static_assert(std::is_move_assignable<AssignableImplicit>::value,
               "AssignableImplicit is move assignable.");
 
 #endif  // !defined(COMPILER_MSVC) || defined(__clang__)
@@ -214,7 +214,7 @@ class DestructorDeleted final {
 };
 
 static_assert(
-    !IsTriviallyDefaultConstructible<DefaultConstructorDeleted>::value,
+    !std::is_trivially_default_constructible<DefaultConstructorDeleted>::value,
     "DefaultConstructorDeleted must not be trivially default constructible.");
 
 static_assert(!IsTriviallyDestructible<DestructorDeleted>::value,

@@ -47,47 +47,11 @@ enum WeakHandlingFlag {
 };
 
 template <typename T>
-struct IsCopyAssignable {
-  static constexpr bool value = std::is_copy_assignable<T>::value;
-};
-
-template <typename T>
-struct IsMoveAssignable {
-  static constexpr bool value = std::is_move_assignable<T>::value;
-};
-
-template <typename T>
-struct IsTriviallyCopyAssignable {
-  static constexpr bool value = std::is_trivially_copy_assignable<T>::value;
-};
-
-template <typename T>
-struct IsTriviallyMoveAssignable {
-  static constexpr bool value = std::is_trivially_move_assignable<T>::value;
-};
-
-template <typename T>
-struct IsDestructible {
-  static constexpr bool value = std::is_destructible<T>::value;
-};
-
-template <typename T>
-struct IsDefaultConstructible {
-  static constexpr bool value = std::is_default_constructible<T>::value;
-};
-
-template <typename T>
-struct IsTriviallyDefaultConstructible {
-  static constexpr bool value =
-      std::is_trivially_default_constructible<T>::value;
-};
-
-template <typename T>
 struct IsTriviallyDestructible {
   // TODO(slangley): crbug.com/783060 - std::is_trivially_destructible behaves
   // differently on across platforms.
   static constexpr bool value =
-      __has_trivial_destructor(T) && IsDestructible<T>::value;
+      __has_trivial_destructor(T) && std::is_destructible<T>::value;
 };
 
 template <typename T, typename U>

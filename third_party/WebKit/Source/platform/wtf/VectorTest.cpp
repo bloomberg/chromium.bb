@@ -401,7 +401,7 @@ TEST(VectorTest, AppendFirst) {
 // https://bugs.chromium.org/p/chromium/issues/detail?id=592767
 //
 // where deleted copy assignment operator made canMoveWithMemcpy true because
-// of the implementation of IsTriviallyMoveAssignable<T>.
+// of the implementation of std::is_trivially_move_assignable<T>.
 
 class MojoMoveOnlyType final {
  public:
@@ -415,9 +415,9 @@ class MojoMoveOnlyType final {
   void operator=(const MojoMoveOnlyType&) = delete;
 };
 
-static_assert(!IsTriviallyMoveAssignable<MojoMoveOnlyType>::value,
+static_assert(!std::is_trivially_move_assignable<MojoMoveOnlyType>::value,
               "MojoMoveOnlyType isn't trivially move assignable.");
-static_assert(!IsTriviallyCopyAssignable<MojoMoveOnlyType>::value,
+static_assert(!std::is_trivially_copy_assignable<MojoMoveOnlyType>::value,
               "MojoMoveOnlyType isn't trivially copy assignable.");
 
 static_assert(!VectorTraits<MojoMoveOnlyType>::kCanMoveWithMemcpy,
