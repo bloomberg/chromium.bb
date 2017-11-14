@@ -179,6 +179,18 @@ def parse_common_test_results(json_results, test_separator='/'):
   return results
 
 
+def load_filter_list(filter_file):
+  """Helper for isolated script test wrappers."""
+  lines = []
+  with open(filter_file, 'r') as f:
+    for line in f:
+      # Eliminate completely empty lines for robustness.
+      stripped = line.strip()
+      if stripped:
+        lines.append(stripped)
+  return lines
+
+
 def run_integration_test(script_to_run, extra_args, log_file, output):
   integration_test_res = subprocess.call(
       [sys.executable, script_to_run] + extra_args)

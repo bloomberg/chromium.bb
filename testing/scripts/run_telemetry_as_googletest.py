@@ -14,6 +14,14 @@ argument:
 json is written to that file in the format produced by
 common.parse_common_test_results.
 
+Optional argument:
+
+  --isolated-script-test-filter-file=[FILENAME]
+
+points to a file containing newline-separated test names, to run just
+that subset of tests. This is remapped to multiple arguments passed to
+the target script.
+
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
@@ -23,7 +31,6 @@ import argparse
 import json
 import os
 import sys
-
 
 import common
 
@@ -37,6 +44,9 @@ def main():
   parser.add_argument(
       '--isolated-script-test-output', type=str,
       required=True)
+  parser.add_argument(
+      '--isolated-script-test-filter-file', type=str,
+      required=False)
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   args, rest_args = parser.parse_known_args()
   # Remove the chartjson extra arg until this script cares about chartjson
@@ -48,6 +58,14 @@ def main():
       rest_args.pop(index)
       break
     index += 1
+  if args.isolated_script_test_filter_file:
+    # This test harness doesn't yet support reading the test list from
+    # a file.
+    filter_list = common.load_filter_list(args.isolated_script_test_filter_file)
+    # This harness takes the test names to run as the first arguments.
+    # The first argument of rest_args is the script to run, so insert
+    # the test names after that.
+    rest_args = [rest_args[0]] + filter_list + rest_args[1:]
 
   # Compatibility with gtest-based sharding.
   total_shards = None
