@@ -1258,6 +1258,7 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
                               texture_target_, texture_id, 0);
     gl_->ClearColor(0, 0, 0, 1);
     gl_->ColorMask(false, false, false, true);
+    gl_->Disable(GL_SCISSOR_TEST);
     gl_->Clear(GL_COLOR_BUFFER_BIT);
     gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               texture_target_, 0, 0);
