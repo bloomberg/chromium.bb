@@ -121,7 +121,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // DebugDaemonClient override.
   void DumpDebugLogs(bool is_compressed,
                      int file_descriptor,
-                     const GetDebugLogsCallback& callback) override {
+                     VoidDBusMethodCallback callback) override {
     // Issue the dbus request to get debug logs.
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kDumpDebugLogs);
@@ -130,25 +130,26 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     writer.AppendFileDescriptor(file_descriptor);
     debugdaemon_proxy_->CallMethod(
         &method_call, kBigLogsDBusTimeoutMS,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetDebugLogs,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void SetDebugMode(const std::string& subsystem,
-                    const SetDebugModeCallback& callback) override {
+                    VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kSetDebugMode);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(subsystem);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnSetDebugMode,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetRoutes(bool numeric,
-                 bool ipv6,
-                 const GetRoutesCallback& callback) override {
+  void GetRoutes(
+      bool numeric,
+      bool ipv6,
+      DBusMethodCallback<std::vector<std::string>> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetRoutes);
     dbus::MessageWriter writer(&method_call);
@@ -167,44 +168,43 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetRoutes,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetNetworkStatus(const GetNetworkStatusCallback& callback) override {
+  void GetNetworkStatus(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetNetworkStatus);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetNetworkStatus,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetModemStatus(const GetModemStatusCallback& callback) override {
+  void GetModemStatus(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetModemStatus);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetModemStatus,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetWiMaxStatus(const GetWiMaxStatusCallback& callback) override {
+  void GetWiMaxStatus(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetWiMaxStatus);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetWiMaxStatus,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetNetworkInterfaces(
-      const GetNetworkInterfacesCallback& callback) override {
+  void GetNetworkInterfaces(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetInterfaces);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetNetworkInterfaces,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetPerfOutput(base::TimeDelta duration,
@@ -275,13 +275,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
   void GetLog(const std::string& log_name,
-              const GetLogCallback& callback) override {
+              DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface, debugd::kGetLog);
     dbus::MessageWriter(&method_call).AppendString(log_name);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnGetLog,
-                       weak_ptr_factory_.GetWeakPtr(), log_name, callback));
+        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   // base::trace_event::TracingAgent implementation.
@@ -515,78 +515,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   }
 
  private:
-  // Called when a response for GetDebugLogs() is received.
-  void OnGetDebugLogs(const GetDebugLogsCallback& callback,
-                      dbus::Response* response) {
+  void OnGetRoutes(DBusMethodCallback<std::vector<std::string>> callback,
+                   dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Failed to get debug logs";
-      callback.Run(false);
+      std::move(callback).Run(base::nullopt);
       return;
     }
-    callback.Run(true);
-  }
 
-  // Called when a response for SetDebugMode() is received.
-  void OnSetDebugMode(const SetDebugModeCallback& callback,
-                      dbus::Response* response) {
-    if (!response) {
-      LOG(ERROR) << "Failed to change debug mode";
-      callback.Run(false);
-    } else {
-      callback.Run(true);
-    }
-  }
-
-  void OnGetRoutes(const GetRoutesCallback& callback,
-                   dbus::Response* response) {
     std::vector<std::string> routes;
-    if (response) {
-      dbus::MessageReader reader(response);
-      if (reader.PopArrayOfStrings(&routes)) {
-        callback.Run(true, routes);
-      } else {
-        LOG(ERROR) << "Got non-array response from GetRoutes";
-        callback.Run(false, routes);
-      }
-    } else {
-      callback.Run(false, routes);
+    dbus::MessageReader reader(response);
+    if (!reader.PopArrayOfStrings(&routes)) {
+      LOG(ERROR) << "Got non-array response from GetRoutes";
+      std::move(callback).Run(base::nullopt);
+      return;
     }
-  }
 
-  void OnGetNetworkStatus(const GetNetworkStatusCallback& callback,
-                          dbus::Response* response) {
-    std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
-  }
-
-  void OnGetModemStatus(const GetModemStatusCallback& callback,
-                        dbus::Response* response) {
-    std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
-  }
-
-  void OnGetWiMaxStatus(const GetWiMaxStatusCallback& callback,
-                        dbus::Response* response) {
-    std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
-  }
-
-  void OnGetNetworkInterfaces(const GetNetworkInterfacesCallback& callback,
-                              dbus::Response* response) {
-    std::string status;
-    if (response && dbus::MessageReader(response).PopString(&status))
-      callback.Run(true, status);
-    else
-      callback.Run(false, "");
+    std::move(callback).Run(std::move(routes));
   }
 
   void OnGetAllLogs(const GetLogsCallback& callback,
@@ -617,17 +561,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     return OnGetAllLogs(callback, response);
   }
 
-  void OnGetLog(const std::string& log_name,
-                const GetLogCallback& callback,
-                dbus::Response* response) {
-    std::string result;
-    if (!response || !dbus::MessageReader(response).PopString(&result)) {
-      callback.Run(false, result);
-      return;
-    }
-    callback.Run(true, result);
-  }
-
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,
                                  dbus::Response* response) {
     if (!response && pipe_reader.get()) {
@@ -649,6 +582,25 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   // completed or on its error.
   void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
     std::move(callback).Run(response);
+  }
+
+  // Called when D-Bus method call which returns a string is completed or on
+  // its error.
+  void OnStringMethod(DBusMethodCallback<std::string> callback,
+                      dbus::Response* response) {
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    std::string result;
+    if (!reader.PopString(&result)) {
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(std::move(result));
   }
 
   void OnEnableDebuggingFeatures(

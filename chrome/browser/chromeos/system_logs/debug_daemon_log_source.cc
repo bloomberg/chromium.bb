@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -76,44 +76,38 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
   ++num_pending_requests_;
 }
 
-void DebugDaemonLogSource::OnGetRoutes(bool succeeded,
-                                       const std::vector<std::string>& routes) {
+void DebugDaemonLogSource::OnGetRoutes(
+    base::Optional<std::vector<std::string>> routes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (succeeded)
-    (*response_)[kRoutesKeyName] = base::JoinString(routes, "\n");
-  else
-    (*response_)[kRoutesKeyName] = kNotAvailable;
+  (*response_)[kRoutesKeyName] = routes.has_value()
+                                     ? base::JoinString(routes.value(), "\n")
+                                     : kNotAvailable;
   RequestCompleted();
 }
 
-void DebugDaemonLogSource::OnGetNetworkStatus(bool succeeded,
-                                              const std::string& status) {
+void DebugDaemonLogSource::OnGetNetworkStatus(
+    base::Optional<std::string> status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (succeeded)
-    (*response_)[kNetworkStatusKeyName] = status;
-  else
-    (*response_)[kNetworkStatusKeyName] = kNotAvailable;
+  (*response_)[kNetworkStatusKeyName] =
+      std::move(status).value_or(kNotAvailable);
   RequestCompleted();
 }
 
-void DebugDaemonLogSource::OnGetModemStatus(bool succeeded,
-                                            const std::string& status) {
+void DebugDaemonLogSource::OnGetModemStatus(
+    base::Optional<std::string> status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (succeeded)
-    (*response_)[kModemStatusKeyName] = status;
-  else
-    (*response_)[kModemStatusKeyName] = kNotAvailable;
+  (*response_)[kModemStatusKeyName] = std::move(status).value_or(kNotAvailable);
   RequestCompleted();
 }
 
-void DebugDaemonLogSource::OnGetWiMaxStatus(bool succeeded,
-                                            const std::string& status) {
+void DebugDaemonLogSource::OnGetWiMaxStatus(
+    base::Optional<std::string> status) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  (*response_)[kWiMaxStatusKeyName] = succeeded ? status : kNotAvailable;
+  (*response_)[kWiMaxStatusKeyName] = std::move(status).value_or(kNotAvailable);
   RequestCompleted();
 }
 
