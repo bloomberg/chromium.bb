@@ -43,11 +43,11 @@ TEST(MobileEmulationOverrideManager, SendsCommandWithTouchOnConnect) {
   ASSERT_EQ(0u, client.commands_.size());
   ASSERT_EQ(kOk, manager.OnConnected(&client).code());
 
-  ASSERT_EQ(2u, client.commands_.size());
+  ASSERT_EQ(3u, client.commands_.size());
   ASSERT_EQ(kOk, manager.OnConnected(&client).code());
-  ASSERT_EQ(4u, client.commands_.size());
+  ASSERT_EQ(6u, client.commands_.size());
   ASSERT_NO_FATAL_FAILURE(
-      AssertDeviceMetricsCommand(client.commands_[2], device_metrics));
+      AssertDeviceMetricsCommand(client.commands_[3], device_metrics));
 }
 
 TEST(MobileEmulationOverrideManager, SendsCommandWithoutTouchOnConnect) {
@@ -72,18 +72,18 @@ TEST(MobileEmulationOverrideManager, SendsCommandOnNavigation) {
   ASSERT_EQ(kOk,
             manager.OnEvent(&client, "Page.frameNavigated", main_frame_params)
                 .code());
-  ASSERT_EQ(2u, client.commands_.size());
+  ASSERT_EQ(3u, client.commands_.size());
   ASSERT_EQ(kOk,
             manager.OnEvent(&client, "Page.frameNavigated", main_frame_params)
                 .code());
-  ASSERT_EQ(4u, client.commands_.size());
+  ASSERT_EQ(6u, client.commands_.size());
   ASSERT_NO_FATAL_FAILURE(
-      AssertDeviceMetricsCommand(client.commands_[2], device_metrics));
+      AssertDeviceMetricsCommand(client.commands_[3], device_metrics));
 
   base::DictionaryValue sub_frame_params;
   sub_frame_params.SetString("frame.parentId", "id");
   ASSERT_EQ(
       kOk,
       manager.OnEvent(&client, "Page.frameNavigated", sub_frame_params).code());
-  ASSERT_EQ(4u, client.commands_.size());
+  ASSERT_EQ(6u, client.commands_.size());
 }
