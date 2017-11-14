@@ -70,11 +70,6 @@ struct seg_counts {
 typedef struct frame_contexts {
   aom_prob y_mode_prob[BLOCK_SIZE_GROUPS][INTRA_MODES - 1];
   aom_prob uv_mode_prob[INTRA_MODES][UV_INTRA_MODES - 1];
-#if CONFIG_EXT_PARTITION_TYPES
-  aom_prob partition_prob[PARTITION_CONTEXTS][EXT_PARTITION_TYPES - 1];
-#else
-  aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
-#endif
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
 #if CONFIG_ADAPT_SCAN
@@ -548,11 +543,6 @@ extern const aom_tree_index
 extern const aom_tree_index
     av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
 extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
-extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
-#if CONFIG_EXT_PARTITION_TYPES
-extern const aom_tree_index
-    av1_ext_partition_tree[TREE_SIZE(EXT_PARTITION_TYPES)];
-#endif
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
 extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]

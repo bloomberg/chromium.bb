@@ -616,8 +616,6 @@ typedef struct macroblockd {
   int chroma_up_available;
   int chroma_left_available;
 
-  const aom_prob (*partition_probs)[PARTITION_TYPES - 1];
-
   /* Distance of MB away from frame edges in subpixels (1/8th pixel)  */
   int mb_to_left_edge;
   int mb_to_right_edge;

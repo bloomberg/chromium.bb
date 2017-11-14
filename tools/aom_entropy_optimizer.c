@@ -363,21 +363,12 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = PARTITION_CONTEXTS;
 #if CONFIG_EXT_PARTITION_TYPES
   cts_each_dim[1] = EXT_PARTITION_TYPES;
-  // TODO(yuec): Wrong prob for context = 0, because the old tree is used
-  optimize_entropy_table(&fc.partition[0][0], probsfile, 2, cts_each_dim,
-                         av1_ext_partition_tree, 0,
-                         "static const aom_prob default_partition_probs"
-                         "[PARTITION_CONTEXTS][EXT_PARTITION_TYPES - 1]");
   optimize_cdf_table(&fc.partition[0][0], probsfile, 2, cts_each_dim,
                      "static const aom_cdf_prob\n"
                      "default_partition_cdf[PARTITION_CONTEXTS][CDF_SIZE(EXT_"
                      "PARTITION_TYPES)]");
 #else
   cts_each_dim[1] = PARTITION_TYPES;
-  optimize_entropy_table(&fc.partition[0][0], probsfile, 2, cts_each_dim,
-                         av1_partition_tree, 0,
-                         "static const aom_prob default_partition_probs"
-                         "[PARTITION_CONTEXTS][PARTITION_TYPES - 1]");
   optimize_cdf_table(
       &fc.partition[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"

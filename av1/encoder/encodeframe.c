@@ -2539,24 +2539,26 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   (void)*tp_orig;
 
+  // Override partition costs at the edges of the frame in the same
+  // way as in read_partition (see decodeframe.c)
   if (!(has_rows && has_cols)) {
-    tmp_partition_cost[PARTITION_NONE] = INT_MAX;
-
+    assert(bsize_at_least_8x8 && pl >= 0);
+    const aom_cdf_prob *partition_cdf = cm->fc->partition_cdf[pl];
+    for (int i = 0; i < PARTITION_TYPES; ++i) tmp_partition_cost[i] = INT_MAX;
     if (has_cols) {
-      tmp_partition_cost[PARTITION_VERT] = INT_MAX;
-      tmp_partition_cost[PARTITION_HORZ] =
-          av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_HORZ], 0);
-      tmp_partition_cost[PARTITION_SPLIT] =
-          av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_HORZ], 1);
+      // At the bottom, the two possibilities are HORZ and SPLIT
+      aom_cdf_prob bot_cdf[2];
+      partition_gather_vert_alike(bot_cdf, partition_cdf);
+      static const int bot_inv_map[2] = { PARTITION_HORZ, PARTITION_SPLIT };
+      av1_cost_tokens_from_cdf(tmp_partition_cost, bot_cdf, bot_inv_map);
     } else if (has_rows) {
-      tmp_partition_cost[PARTITION_HORZ] = INT_MAX;
-      tmp_partition_cost[PARTITION_VERT] =
-          av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_VERT], 0);
-      tmp_partition_cost[PARTITION_SPLIT] =
-          av1_cost_bit(cm->fc->partition_prob[pl][PARTITION_VERT], 1);
+      // At the right, the two possibilities are VERT and SPLIT
+      aom_cdf_prob rhs_cdf[2];
+      partition_gather_horz_alike(rhs_cdf, partition_cdf);
+      static const int rhs_inv_map[2] = { PARTITION_VERT, PARTITION_SPLIT };
+      av1_cost_tokens_from_cdf(tmp_partition_cost, rhs_cdf, rhs_inv_map);
     } else {
-      tmp_partition_cost[PARTITION_HORZ] = INT_MAX;
-      tmp_partition_cost[PARTITION_VERT] = INT_MAX;
+      // At the bottom right, we always split
       tmp_partition_cost[PARTITION_SPLIT] = 0;
     }
 

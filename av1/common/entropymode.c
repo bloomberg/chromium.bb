@@ -690,70 +690,6 @@ static const aom_prob
 #endif  // CONFIG_CTX1D
 #endif  // CONFIG_LV_MAP
 
-#if CONFIG_EXT_PARTITION_TYPES
-static const aom_prob
-    default_partition_probs[PARTITION_CONTEXTS][EXT_PARTITION_TYPES - 1] = {
-      // 8x8 -> 4x4
-      { 199, 122, 141, 128, 128, 128, 255, 128, 255 },  // a/l both not split
-      { 147, 63, 159, 128, 128, 128, 255, 128, 255 },   // a split, l not split
-      { 148, 133, 118, 128, 128, 128, 255, 128, 255 },  // l split, a not split
-      { 121, 104, 114, 128, 128, 128, 255, 128, 255 },  // a/l both split
-      // 16x16 -> 8x8
-      { 174, 73, 87, 128, 128, 128, 255, 128, 255 },  // a/l both not split
-      { 92, 41, 83, 128, 128, 128, 255, 128, 255 },   // a split, l not split
-      { 82, 99, 50, 128, 128, 128, 255, 128, 255 },   // l split, a not split
-      { 53, 39, 39, 128, 128, 128, 255, 128, 255 },   // a/l both split
-      // 32x32 -> 16x16
-      { 177, 58, 59, 128, 128, 85, 128, 85, 128 },  // a/l both not split
-      { 68, 26, 63, 128, 128, 85, 128, 85, 128 },   // a split, l not split
-      { 52, 79, 25, 128, 128, 85, 128, 85, 128 },   // l split, a not split
-      { 17, 14, 12, 128, 128, 85, 128, 85, 128 },   // a/l both split
-      // 64x64 -> 32x32
-      { 222, 34, 30, 128, 128, 85, 128, 85, 128 },  // a/l both not split
-      { 72, 16, 44, 128, 128, 85, 128, 85, 128 },   // a split, l not split
-      { 58, 32, 12, 128, 128, 85, 128, 85, 128 },   // l split, a not split
-      { 10, 7, 6, 128, 128, 85, 128, 85, 128 },     // a/l both split
-#if CONFIG_EXT_PARTITION
-      // 128x128 -> 64x64
-      { 222, 34, 30, 128, 128, 128, 255, 128, 255 },  // a/l both not split
-      { 72, 16, 44, 128, 128, 128, 255, 128, 255 },   // a split, l not split
-      { 58, 32, 12, 128, 128, 128, 255, 128, 255 },   // l split, a not split
-      { 10, 7, 6, 128, 128, 128, 255, 128, 255 },     // a/l both split
-#endif                                                // CONFIG_EXT_PARTITION
-    };
-#else
-static const aom_prob
-    default_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
-      // 8x8 -> 4x4
-      { 199, 122, 141 },  // a/l both not split
-      { 147, 63, 159 },   // a split, l not split
-      { 148, 133, 118 },  // l split, a not split
-      { 121, 104, 114 },  // a/l both split
-      // 16x16 -> 8x8
-      { 174, 73, 87 },  // a/l both not split
-      { 92, 41, 83 },   // a split, l not split
-      { 82, 99, 50 },   // l split, a not split
-      { 53, 39, 39 },   // a/l both split
-      // 32x32 -> 16x16
-      { 177, 58, 59 },  // a/l both not split
-      { 68, 26, 63 },   // a split, l not split
-      { 52, 79, 25 },   // l split, a not split
-      { 17, 14, 12 },   // a/l both split
-      // 64x64 -> 32x32
-      { 222, 34, 30 },  // a/l both not split
-      { 72, 16, 44 },   // a split, l not split
-      { 58, 32, 12 },   // l split, a not split
-      { 10, 7, 6 },     // a/l both split
-#if CONFIG_EXT_PARTITION
-      // 128x128 -> 64x64
-      { 222, 34, 30 },  // a/l both not split
-      { 72, 16, 44 },   // a split, l not split
-      { 58, 32, 12 },   // l split, a not split
-      { 10, 7, 6 },     // a/l both split
-#endif  // CONFIG_EXT_PARTITION
-    };
-#endif  // CONFIG_EXT_PARTITION_TYPES
-
 static const aom_prob default_newmv_prob[NEWMV_MODE_CONTEXTS] = {
   155, 116, 94, 32, 96, 56, 30,
 };
@@ -1028,28 +964,6 @@ const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)] = {
   -COMPOUND_AVERAGE, 2, -COMPOUND_WEDGE, -COMPOUND_SEG
 };
 /* clang-format on */
-
-const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
-  -PARTITION_NONE, 2, -PARTITION_HORZ, 4, -PARTITION_VERT, -PARTITION_SPLIT
-};
-
-#if CONFIG_EXT_PARTITION_TYPES
-/* clang-format off */
-const aom_tree_index av1_ext_partition_tree[TREE_SIZE(EXT_PARTITION_TYPES)] = {
-  -PARTITION_NONE, 2,
-  6, 4,
-  8, -PARTITION_SPLIT,
-  -PARTITION_HORZ, 10,
-  -PARTITION_VERT, 14,
-
-  -PARTITION_HORZ_A, 12,
-  -PARTITION_HORZ_B, -PARTITION_HORZ_4,
-
-  -PARTITION_VERT_A, 16,
-  -PARTITION_VERT_B, -PARTITION_VERT_4
-};
-/* clang-format on */
-#endif  // CONFIG_EXT_PARTITION_TYPES
 
 static const aom_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
   6, 97, 151, 205,
@@ -3119,7 +3033,6 @@ static const aom_cdf_prob default_angle_delta_cdf[DIRECTIONAL_MODES][CDF_SIZE(
 #endif  // CONFIG_EXT_INTRA_MOD
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {
-  av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
   av1_copy(fc->comp_inter_prob, default_comp_inter_p);
   av1_copy(fc->palette_y_size_cdf, default_palette_y_size_cdf);
@@ -3414,19 +3327,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
-#if CONFIG_EXT_PARTITION_TYPES
-  for (i = 0; i < PARTITION_PLOFFSET; ++i)
-    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
-                         counts->partition[i], fc->partition_prob[i]);
-  for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-    aom_tree_merge_probs(av1_ext_partition_tree, pre_fc->partition_prob[i],
-                         counts->partition[i], fc->partition_prob[i]);
-#else
-  for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i) {
-    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
-                         counts->partition[i], fc->partition_prob[i]);
-  }
-#endif  // CONFIG_EXT_PARTITION_TYPES
   for (i = 0; i < DELTA_Q_PROBS; ++i)
     fc->delta_q_prob[i] =
         mode_mv_merge_probs(pre_fc->delta_q_prob[i], counts->delta_q[i]);
