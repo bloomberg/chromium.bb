@@ -242,7 +242,7 @@ float UiElement::computed_opacity() const {
   return computed_opacity_;
 }
 
-bool UiElement::HitTest(const gfx::PointF& point) const {
+bool UiElement::LocalHitTest(const gfx::PointF& point) const {
   if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
       point.y() > 1.0f) {
     return false;
@@ -265,6 +265,33 @@ bool UiElement::HitTest(const gfx::PointF& point) const {
       SkRect::MakeLTRB(left, top, left + kHitTestResolutionInMeter,
                        top + kHitTestResolutionInMeter);
   return rrect.contains(point_rect);
+}
+
+void UiElement::HitTest(const HitTestRequest& request,
+                        HitTestResult* result) const {
+  gfx::Vector3dF ray_vector = request.ray_target - request.ray_origin;
+  ray_vector.GetNormalized(&ray_vector);
+  result->type = HitTestResult::Type::kNone;
+  float distance_to_plane;
+  if (!GetRayDistance(request.ray_origin, ray_vector, &distance_to_plane)) {
+    return;
+  }
+
+  if (distance_to_plane < 0 ||
+      distance_to_plane > request.max_distance_to_plane) {
+    return;
+  }
+
+  result->type = HitTestResult::Type::kHitsPlane;
+  result->distance_to_plane = distance_to_plane;
+  result->hit_point =
+      request.ray_origin + gfx::ScaleVector3d(ray_vector, distance_to_plane);
+  gfx::PointF unit_xy_point = GetUnitRectangleCoordinates(result->hit_point);
+  result->local_hit_point.set_x(0.5f + unit_xy_point.x());
+  result->local_hit_point.set_y(0.5f - unit_xy_point.y());
+  if (LocalHitTest(result->local_hit_point)) {
+    result->type = HitTestResult::Type::kHits;
+  }
 }
 
 void UiElement::SetMode(ColorScheme::Mode mode) {

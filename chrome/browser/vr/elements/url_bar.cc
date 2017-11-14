@@ -55,7 +55,7 @@ void UrlBar::OnButtonUp(const gfx::PointF& position) {
   security_region_down_ = false;
 }
 
-bool UrlBar::HitTest(const gfx::PointF& position) const {
+bool UrlBar::LocalHitTest(const gfx::PointF& position) const {
   return texture_->HitsUrlBar(position) || texture_->HitsBackButton(position);
 }
 

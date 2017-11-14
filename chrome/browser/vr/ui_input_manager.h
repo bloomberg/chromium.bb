@@ -68,8 +68,7 @@ class UiInputManager {
                     const gfx::PointF& target_point,
                     ButtonState button_state);
   void GetVisualTargetElement(const ControllerModel& controller_model,
-                              ReticleModel* reticle_model,
-                              gfx::Vector3dF* out_eye_to_target) const;
+                              ReticleModel* reticle_model) const;
   void UpdateQuiescenceState(base::TimeTicks current_time,
                              const ControllerModel& controller_model);
 

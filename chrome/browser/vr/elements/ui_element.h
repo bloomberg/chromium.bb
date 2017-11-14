@@ -60,6 +60,34 @@ struct EventHandlers {
   base::Callback<void()> button_up;
 };
 
+struct HitTestRequest {
+  gfx::Point3F ray_origin;
+  gfx::Point3F ray_target;
+  float max_distance_to_plane;
+};
+
+// The result of performing a hit test.
+struct HitTestResult {
+  enum Type {
+    // The given ray does not pass through the element.
+    kNone = 0,
+    // The given ray does not pass through the element, but passes through the
+    // element's plane.
+    kHitsPlane,
+    // The given ray passes through the element.
+    kHits,
+  };
+
+  Type type;
+  // The fields below are not set if the result Type is kNone.
+  // The hit position in the element's local coordinate space.
+  gfx::PointF local_hit_point;
+  // The hit position relative to the world.
+  gfx::Point3F hit_point;
+  // The distance from the ray origin to the hit position.
+  float distance_to_plane;
+};
+
 class UiElement : public cc::AnimationTarget {
  public:
   UiElement();
@@ -121,7 +149,11 @@ class UiElement : public cc::AnimationTarget {
   // though will extend outside this range when outside of the element:
   // [(0.0, 0.0), (1.0, 0.0)
   //  (1.0, 0.0), (1.0, 1.0)]
-  virtual bool HitTest(const gfx::PointF& point) const;
+  virtual bool LocalHitTest(const gfx::PointF& point) const;
+
+  // Performs a hit test for the ray supplied in the request and populates the
+  // result. The ray is in the world coordinate space.
+  void HitTest(const HitTestRequest& request, HitTestResult* result) const;
 
   int id() const { return id_; }
 
