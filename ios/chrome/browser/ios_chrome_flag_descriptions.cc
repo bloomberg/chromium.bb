@@ -116,11 +116,6 @@ const char kTabSwitcherPresentsBVCDescription[] =
     "BVC is visible, the tab switcher will remain in the VC hierarchy "
     "underneath it.";
 
-const char kToolbarSnapshotAnimationName[] = "Animate a toolbar's snapshot";
-const char kToolbarSnapshotAnimationDescription[] =
-    "When entering/leaving the stack view, a snapshot of the toolbar is "
-    "animated instead of the real toolbar.";
-
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";

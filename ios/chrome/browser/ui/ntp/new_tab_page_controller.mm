@@ -785,14 +785,6 @@ enum {
 #pragma mark -
 #pragma mark ToolbarOwner
 
-- (ToolbarController*)relinquishedToolbarController {
-  return [self.headerController relinquishedToolbarController];
-}
-
-- (void)reparentToolbarController {
-  [self.headerController reparentToolbarController];
-}
-
 - (CGRect)toolbarFrame {
   return [self.headerController toolbarFrame];
 }

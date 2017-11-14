@@ -439,16 +439,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // management off of the BVC.
   KeyCommandsProvider* _keyCommandsProvider;
 
-  // Calls to |-relinquishedToolbarController| will set this to yes, and calls
-  // to |-reparentToolbarController| will reset it to NO.
-  BOOL _isToolbarControllerRelinquished;
-
-  // The controller that owns the currently relinquished toolbar controller.
-  // The reference is weak because it's possible for the toolbar owner to be
-  // deallocated mid-animation due to memory pressure or a tab being closed
-  // before the animation is finished.
-  __weak id _relinquishedToolbarOwner;
-
   // Used to inject Javascript implementing the PaymentRequest API and to
   // display the UI.
   PaymentRequestManager* _paymentRequestManager;
@@ -1357,18 +1347,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-
-  // Reparent the toolbar if it's been relinquished.  If the tab switcher
-  // presentation experiment is enabled, only do this if the parent VC is not
-  // currently being presented.  Otherwise, reparenting here would remove the
-  // toolbar from the tab switcher while the switcher is in the process of
-  // animating.
-  if (_isToolbarControllerRelinquished) {
-    if (!TabSwitcherPresentsBVCEnabled() ||
-        (!self.beingPresented && !self.parentViewController.beingPresented)) {
-      [self reparentToolbarController];
-    }
-  }
 
   self.visible = YES;
 
@@ -4813,57 +4791,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 #pragma mark - ToolbarOwner
-
-- (ToolbarController*)relinquishedToolbarController {
-  if (_isToolbarControllerRelinquished)
-    return nil;
-
-  ToolbarController* relinquishedToolbarController = nil;
-  if (_toolbarCoordinator.toolbarViewController.view.hidden) {
-    Tab* currentTab = [_model currentTab];
-    if (currentTab.webState &&
-        UrlHasChromeScheme(currentTab.webState->GetLastCommittedURL())) {
-      // Use the native content controller's toolbar when the BVC's is hidden.
-      id nativeController = [self nativeControllerForTab:currentTab];
-      if ([nativeController conformsToProtocol:@protocol(ToolbarOwner)]) {
-        relinquishedToolbarController =
-            [nativeController relinquishedToolbarController];
-        _relinquishedToolbarOwner = nativeController;
-      }
-    }
-  } else {
-    relinquishedToolbarController = _toolbarCoordinator.webToolbarController;
-    [_toolbarCoordinator.toolbarViewController
-        willMoveToParentViewController:nil];
-    [_toolbarCoordinator.toolbarViewController.view removeFromSuperview];
-    [_toolbarCoordinator.toolbarViewController removeFromParentViewController];
-  }
-  _isToolbarControllerRelinquished = (relinquishedToolbarController != nil);
-  return relinquishedToolbarController;
-}
-
-- (void)reparentToolbarController {
-  if (_isToolbarControllerRelinquished) {
-    if ([_toolbarCoordinator.toolbarViewController.view
-            isDescendantOfView:self.view]) {
-      // A native content controller's toolbar has been relinquished.
-      [_relinquishedToolbarOwner reparentToolbarController];
-      _relinquishedToolbarOwner = nil;
-    } else if ([_findBarController isFindInPageShown]) {
-      [self.view insertSubview:_toolbarCoordinator.toolbarViewController.view
-                  belowSubview:[_findBarController view]];
-      if (IsSafeAreaCompatibleToolbarEnabled()) {
-        [self addConstraintsToToolbar];
-      }
-    } else {
-      [self.view addSubview:_toolbarCoordinator.toolbarViewController.view];
-      if (IsSafeAreaCompatibleToolbarEnabled()) {
-        [self addConstraintsToToolbar];
-      }
-    }
-    _isToolbarControllerRelinquished = NO;
-  }
-}
 
 - (CGRect)toolbarFrame {
   return _toolbarCoordinator.toolbarViewController.view.frame;

@@ -33,9 +33,6 @@ extern NSString* const kToolbarShareButtonIdentifier;
 // The maximum number to display in the tab switcher button.
 extern NSInteger const kStackButtonMaxTabCount;
 
-// Animation key used for stack view transition animations
-extern NSString* const kToolbarTransitionAnimationKey;
-
 // Font sizes for the button containing the tab count
 extern const NSInteger kFontSizeFewerThanTenTabs;
 extern const NSInteger kFontSizeTenTabsOrMore;

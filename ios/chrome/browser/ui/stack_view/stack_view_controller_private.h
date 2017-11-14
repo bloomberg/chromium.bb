@@ -82,17 +82,11 @@ typedef enum {
 // The owner of |transitionToolbarController|.
 @property(nonatomic, strong) id<ToolbarOwner> transitionToolbarOwner;
 
-// The toolbar controller used in transition animations.
-@property(nonatomic, strong) ToolbarController* transitionToolbarController;
-
 // Snapshot of the toolbar, used in transition.
 @property(nonatomic, strong) UIView* transitionToolbarSnapshot;
 
 // The dummy view used in the transition animation.
 @property(nonatomic, strong) UIView* dummyToolbarBackgroundView;
-
-// The cached frame of the transition toolbar's frame.
-@property(nonatomic, assign) CGRect transitionToolbarFrame;
 
 // Records which card was tapped mid-presentation animation, if any.
 // TODO(crbug.com/546209): Implement reversed animations for dismissing with a

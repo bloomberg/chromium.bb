@@ -105,11 +105,6 @@ extern const char kNewFileDownloadDescription[];
 extern const char kTabSwitcherPresentsBVCName[];
 extern const char kTabSwitcherPresentsBVCDescription[];
 
-// Title and description for the flag to enable the snapshot-based animation of
-// the toolbar when entering/leaving the stack view.
-extern const char kToolbarSnapshotAnimationName[];
-extern const char kToolbarSnapshotAnimationDescription[];
-
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
