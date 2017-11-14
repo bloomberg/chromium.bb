@@ -28,6 +28,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -1406,12 +1407,10 @@ void BrowserProcessImpl::Unpin() {
 // Mac is currently not supported.
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 
-bool BrowserProcessImpl::CanAutorestartForUpdate() const {
-  // Check if browser is in the background and if it needs to be restarted to
-  // apply a pending update.
+bool BrowserProcessImpl::IsRunningInBackground() const {
+  // Check if browser is in the background.
   return chrome::GetTotalBrowserCount() == 0 &&
-         KeepAliveRegistry::GetInstance()->IsKeepingAlive() &&
-         upgrade_util::IsUpdatePendingRestart();
+         KeepAliveRegistry::GetInstance()->IsKeepingAlive();
 }
 
 // Switches to add when auto-restarting Chrome.
@@ -1454,7 +1453,24 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
 }
 
 void BrowserProcessImpl::OnAutoupdateTimer() {
-  if (CanAutorestartForUpdate()) {
+  if (IsRunningInBackground()) {
+    // upgrade_util::IsUpdatePendingRestart touches the disk, so do it on a
+    // suitable thread.
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE,
+        {base::TaskPriority::BACKGROUND,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+        base::BindOnce(&upgrade_util::IsUpdatePendingRestart),
+        base::BindOnce(&BrowserProcessImpl::OnPendingRestartResult,
+                       base::Unretained(this)));
+  }
+}
+
+void BrowserProcessImpl::OnPendingRestartResult(
+    bool is_update_pending_restart) {
+  // Make sure that the browser is still in the background after returning from
+  // the check.
+  if (is_update_pending_restart && IsRunningInBackground()) {
     DLOG(WARNING) << "Detected update.  Restarting browser.";
     RestartBackgroundInstance();
   }
