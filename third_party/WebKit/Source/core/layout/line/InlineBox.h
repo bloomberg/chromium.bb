@@ -539,6 +539,10 @@ inline void InlineBox::SetHasBadParent() {
 // interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(InlineBox)
 
+// TODO(layout-dev): Once LayoutNG supports inline layout, we should remove
+// |CanUseInlineBox()|.
+bool CanUseInlineBox(const LayoutObject&);
+
 }  // namespace blink
 
 #ifndef NDEBUG
