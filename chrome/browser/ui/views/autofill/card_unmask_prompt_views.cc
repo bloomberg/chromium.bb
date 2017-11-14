@@ -42,7 +42,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -127,7 +126,7 @@ void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   progress_overlay_->SetVisible(true);
   progress_throbber_->Start();
   overlay_animation_.Show();
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
   Layout();
 }
 
@@ -172,7 +171,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       permanent_error_label_->SetVisible(true);
       SetRetriableErrorMessage(base::string16());
     }
-    GetDialogClientView()->UpdateDialogButtons();
+    DialogModelChanged();
   }
 
   Layout();
@@ -188,7 +187,7 @@ void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
   input_row_->InvalidateLayout();
   cvc_input_->SetInvalid(false);
   cvc_input_->SetText(base::string16());
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   instructions_->SetText(controller_->GetInstructionsMessage());
   SetRetriableErrorMessage(base::string16());
@@ -344,7 +343,7 @@ void CardUnmaskPromptViews::ContentsChanged(
   if (controller_->InputCvcIsValid(new_contents))
     cvc_input_->SetInvalid(false);
 
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
@@ -364,7 +363,7 @@ void CardUnmaskPromptViews::OnPerformAction(views::Combobox* combobox) {
         IDS_AUTOFILL_CARD_UNMASK_INVALID_EXPIRATION_DATE));
   }
 
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void CardUnmaskPromptViews::AnimationProgressed(

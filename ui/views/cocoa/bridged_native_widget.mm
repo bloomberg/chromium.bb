@@ -39,6 +39,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/dialog_delegate.h"
 
 extern "C" {
 
@@ -532,6 +533,13 @@ void BridgedNativeWidget::Init(base::scoped_nsobject<NSWindow> window,
   tooltip_manager_.reset(new TooltipManagerMac(this));
 }
 
+void BridgedNativeWidget::OnWidgetInitDone() {
+  DialogDelegate* dialog =
+      native_widget_mac_->GetWidget()->widget_delegate()->AsDialogDelegate();
+  if (dialog)
+    dialog->AddObserver(this);
+}
+
 void BridgedNativeWidget::SetFocusManager(FocusManager* focus_manager) {
   if (focus_manager_ == focus_manager)
     return;
@@ -770,7 +778,10 @@ void BridgedNativeWidget::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidget::OnWindowWillClose() {
-  native_widget_mac_->GetWidget()->OnNativeWidgetDestroying();
+  Widget* widget = native_widget_mac_->GetWidget();
+  if (DialogDelegate* dialog = widget->widget_delegate()->AsDialogDelegate())
+    dialog->RemoveObserver(this);
+  widget->OnNativeWidgetDestroying();
 
   // Ensure BridgedNativeWidget does not have capture, otherwise
   // OnMouseCaptureLost() may reference a deleted |native_widget_mac_| when
@@ -1296,6 +1307,18 @@ void BridgedNativeWidget::RemoveChildWindow(BridgedNativeWidget* child) {
   // version, and possibly some unpredictable reference counting. Removing it
   // here should be safe regardless.
   [window_ removeChildWindow:child->window_];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// BridgedNativeWidget, DialogObserver:
+
+void BridgedNativeWidget::OnDialogModelChanged() {
+  // Note it's only necessary to clear the TouchBar. If the OS needs it again,
+  // a new one will be created.
+  if (@available(macOS 10.12.2, *)) {
+    if ([bridged_view_ respondsToSelector:@selector(setTouchBar:)])
+      [bridged_view_ setTouchBar:nil];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

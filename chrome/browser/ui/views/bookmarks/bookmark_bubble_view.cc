@@ -31,7 +31,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
@@ -386,7 +385,7 @@ void BookmarkBubbleView::ShowIOSPromotion(
   AddChildView(ios_promo_view_);
   GetWidget()->UpdateWindowIcon();
   GetWidget()->UpdateWindowTitle();
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
   SizeToContents();
 }
 #endif

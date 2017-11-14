@@ -30,8 +30,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -185,7 +183,7 @@ void MediaGalleriesDialogViews::UpdateGalleries() {
   contents_->Layout();
 
   if (ControllerHasWebContents())
-    GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
+    DialogModelChanged();
 }
 
 bool MediaGalleriesDialogViews::AddOrUpdateGallery(
@@ -273,7 +271,7 @@ void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
   confirm_available_ = true;
 
   if (ControllerHasWebContents())
-    GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
+    DialogModelChanged();
 
   if (sender == auxiliary_button_) {
     controller_->DidClickAuxiliaryButton();

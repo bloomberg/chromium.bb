@@ -244,7 +244,7 @@ DesktopMediaPickerDialogView::~DesktopMediaPickerDialogView() {}
 void DesktopMediaPickerDialogView::TabSelectedAt(int index) {
   OnSourceTypeSwitched(index);
   list_views_[index]->RequestFocus();
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void DesktopMediaPickerDialogView::OnSourceTypeSwitched(int index) {
@@ -358,7 +358,7 @@ void DesktopMediaPickerDialogView::DeleteDelegate() {
 }
 
 void DesktopMediaPickerDialogView::OnSelectionChanged() {
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void DesktopMediaPickerDialogView::OnDoubleClick() {

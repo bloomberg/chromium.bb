@@ -1029,7 +1029,7 @@ void VPNConfigView::UpdateErrorLabel() {
 }
 
 void VPNConfigView::UpdateCanLogin() {
-  parent_->GetDialogClientView()->UpdateDialogButtons();
+  parent_->DialogModelChanged();
 }
 
 bool VPNConfigView::HaveUserCerts() const {

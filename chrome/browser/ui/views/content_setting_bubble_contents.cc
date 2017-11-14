@@ -612,7 +612,7 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
         manage_checkbox_->checked());
 
     // Toggling the check state may change the dialog button text.
-    GetDialogClientView()->UpdateDialogButtons();
+    DialogModelChanged();
     GetDialogClientView()->Layout();
   } else if (sender == learn_more_button_) {
     GetWidget()->Close();

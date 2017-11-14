@@ -19,7 +19,6 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
 #include "base/win/shortcut.h"
@@ -234,7 +233,7 @@ void CreateChromeApplicationShortcutView::ButtonPressed(
   }
 
   // When no checkbox is checked we should not have the action button enabled.
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 views::Checkbox* CreateChromeApplicationShortcutView::AddCheckbox(

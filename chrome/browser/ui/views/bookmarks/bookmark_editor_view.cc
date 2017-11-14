@@ -38,7 +38,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
 using bookmarks::BookmarkExpandedStateTracker;
@@ -452,7 +451,7 @@ void BookmarkEditorView::UserInputChanged() {
     else
       url_tf_->UseDefaultBackgroundColor();
   }
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void BookmarkEditorView::NewFolder() {

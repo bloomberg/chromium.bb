@@ -19,7 +19,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace views {
 
@@ -411,11 +410,9 @@ TEST_F(BubbleDialogDelegateTest, CustomTitle) {
 
   // To perform checks on the precise size, first hide the dialog buttons so the
   // calculations are simpler (e.g. platform font discrepancies can be ignored).
-  DialogClientView* client_view =
-      static_cast<DialogClientView*>(bubble_widget->client_view());
   bubble_delegate->hide_buttons();
   bubble_frame->ResetWindowControls();
-  client_view->UpdateDialogButtons();
+  bubble_delegate->DialogModelChanged();
   bubble_delegate->SizeToContents();
 
   // Use GetContentsBounds() to exclude the bubble border, which can change per

@@ -102,7 +102,7 @@ class DialogClientViewTest : public test::WidgetTest,
   // Sets the buttons to show in the dialog and refreshes the dialog.
   void SetDialogButtons(int dialog_buttons) {
     dialog_buttons_ = dialog_buttons;
-    client_view_->UpdateDialogButtons();
+    DialogModelChanged();
   }
 
   // Sets the view to provide to CreateExtraView() and updates the dialog. This
@@ -111,7 +111,7 @@ class DialogClientViewTest : public test::WidgetTest,
   void SetExtraView(View* view) {
     EXPECT_FALSE(next_extra_view_);
     next_extra_view_ = base::WrapUnique(view);
-    client_view_->UpdateDialogButtons();
+    DialogModelChanged();
     EXPECT_FALSE(next_extra_view_);
   }
 
@@ -119,7 +119,7 @@ class DialogClientViewTest : public test::WidgetTest,
   void SetExtraViewPadding(int padding) {
     DCHECK(!extra_view_padding_);
     extra_view_padding_.reset(new int(padding));
-    client_view_->UpdateDialogButtons();
+    DialogModelChanged();
   }
 
   void SetSizeConstraints(const gfx::Size& min_size,
@@ -407,7 +407,7 @@ TEST_F(DialogClientViewTest, LinkedWidths) {
   layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 100);
   EXPECT_GT(cancel_button_width, 100);
 
-  client_view()->UpdateDialogButtons();
+  DialogModelChanged();
   CheckContentsIsSetToPreferredSize();
   EXPECT_EQ(ok_button_only_width, client_view()->ok_button()->width());
   layout_provider.SetDistanceMetric(DISTANCE_BUTTON_MAX_LINKABLE_WIDTH, 200);
@@ -472,7 +472,7 @@ TEST_F(DialogClientViewTest, FocusUpdate) {
   EXPECT_FALSE(client_view()->ok_button()->HasFocus());
   client_view()->ok_button()->RequestFocus();  // Set focus.
   EXPECT_TRUE(client_view()->ok_button()->HasFocus());
-  client_view()->UpdateDialogButtons();
+  DialogModelChanged();
   EXPECT_TRUE(client_view()->ok_button()->HasFocus());
 }
 
@@ -487,7 +487,7 @@ TEST_F(DialogClientViewTest, FocusMultipleButtons) {
   client_view()->cancel_button()->RequestFocus();  // Set focus.
   EXPECT_FALSE(client_view()->ok_button()->HasFocus());
   EXPECT_TRUE(client_view()->cancel_button()->HasFocus());
-  client_view()->UpdateDialogButtons();
+  DialogModelChanged();
   EXPECT_TRUE(client_view()->cancel_button()->HasFocus());
 }
 

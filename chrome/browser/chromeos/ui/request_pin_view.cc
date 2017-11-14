@@ -21,7 +21,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace chromeos {
 
@@ -54,7 +53,7 @@ RequestPinView::~RequestPinView() {
 
 void RequestPinView::ContentsChanged(views::Textfield* sender,
                                      const base::string16& new_contents) {
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 bool RequestPinView::Cancel() {
@@ -80,7 +79,7 @@ bool RequestPinView::Accept() {
   // close the dialog.
   SetAcceptInput(false);
   base::ResetAndReturn(&callback_).Run(textfield_->text());
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
   delegate_->OnPinDialogInput();
 
   return false;

@@ -92,7 +92,7 @@ bool WimaxConfigView::CanLogin() {
 }
 
 void WimaxConfigView::UpdateDialogButtons() {
-  parent_->GetDialogClientView()->UpdateDialogButtons();
+  parent_->DialogModelChanged();
 }
 
 void WimaxConfigView::UpdateErrorLabel() {

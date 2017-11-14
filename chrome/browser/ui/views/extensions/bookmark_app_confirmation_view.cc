@@ -28,7 +28,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -173,7 +172,7 @@ void BookmarkAppConfirmationView::ContentsChanged(
     views::Textfield* sender,
     const base::string16& new_contents) {
   DCHECK_EQ(title_tf_, sender);
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 base::string16 BookmarkAppConfirmationView::GetTrimmedTitle() const {

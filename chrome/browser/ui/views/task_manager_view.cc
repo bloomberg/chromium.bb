@@ -251,7 +251,7 @@ void TaskManagerView::GetGroupRange(int model_index, views::GroupRange* range) {
 }
 
 void TaskManagerView::OnSelectionChanged() {
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void TaskManagerView::OnDoubleClick() {
