@@ -239,6 +239,9 @@ var SelectToSpeak = function() {
   /** @const {string} */
   this.color_ = '#f73a98';
 
+  /** @const {string} */
+  this.highlightColor_ = '#5e9bff';
+
   /** @private {?NodeGroupItem} */
   this.currentNode_ = null;
 
@@ -457,6 +460,7 @@ SelectToSpeak.prototype = {
    */
   clearFocusRing_: function() {
     chrome.accessibilityPrivate.setFocusRing([]);
+    chrome.accessibilityPrivate.setHighlights([], this.highlightColor_);
   },
 
   /**
@@ -711,15 +715,26 @@ SelectToSpeak.prototype = {
       default:
         if (inForeground) {
           if (this.wordHighlight_ && this.currentNodeWord_ != null) {
-            // TODO: Implement a method to set a highlight or different type of
-            // focus ring around an individual word. Then consider showing the
-            // focus ring on the node at the same time as the highlight on the
-            // word if this.wordHighlight_ is set.
+            // Only show the highlight if this is an inline text box or
+            // static text. Otherwise we'd be highlighting entire nodes,
+            // like images. Highlight should be only for text.
+            if (node.role == RoleType.INLINE_TEXT_BOX ||
+                node.role == RoleType.STATIC_TEXT) {
+              chrome.accessibilityPrivate.setHighlights(
+                  [node.boundsForRange(
+                      this.currentNodeWord_.start, this.currentNodeWord_.end)],
+                  this.highlightColor_);
+            } else {
+              chrome.accessibilityPrivate.setHighlights(
+                  [], this.highlightColor_);
+            }
+            // TODO: If highlight is shown, set the focus ring to be the
+            // full paragraph box. Highlighting the node is not super useful.
             chrome.accessibilityPrivate.setFocusRing(
-                [node.boundsForRange(
-                    this.currentNodeWord_.start, this.currentNodeWord_.end)],
-                this.color_);
+                [node.location], this.color_);
           } else {
+            // TODO: Probably still want to highlight the full paragraph box
+            // rather than the individual node, if the node is in a paragraph.
             chrome.accessibilityPrivate.setFocusRing(
                 [node.location], this.color_);
           }

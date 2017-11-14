@@ -55,7 +55,7 @@
       {
         "name": "setFocusRing",
         "type": "function",
-        "description": "Set the bounds of the accessibility focus ring.",
+        "description": "Sets the bounds of the accessibility focus ring.",
         "parameters": [
           {
             "name": "rects",
@@ -68,6 +68,24 @@
             "type": "string",
             "description": "CSS-style hex color string beginning with # like #FF9982 or #EEE.",
             "optional": true
+          }
+        ]
+      },
+      {
+        "name": "setHighlights",
+        "type": "function",
+        "description": "Sets the bounds of the accessibility highlight.",
+        "parameters": [
+          {
+            "name": "rects",
+            "type": "array",
+            "items": { "$ref": "ScreenRect" },
+            "description": "Array of rectangles to draw the highlight around."
+          },
+          {
+            "name": "color",
+            "type": "string",
+            "description": "CSS-style hex color string beginning with # like #FF9982 or #EEE."
           }
         ]
       },

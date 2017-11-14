@@ -14008,6 +14008,7 @@ Called by update_net_error_codes.py.-->
       label="LANGUAGESETTINGSPRIVATE_SETENABLETRANSLATIONFORLANGUAGE"/>
   <int value="1199" label="LANGUAGESETTINGSPRIVATE_MOVELANGUAGE"/>
   <int value="1200" label="MEDIAPERCEPTIONPRIVATE_SETANALYTICSCOMPONENT"/>
+  <int value="1201" label="ACCESSIBILITY_PRIVATE_SETHIGHLIGHTS"/>
 </enum>
 
 <enum name="ExtensionIconState">

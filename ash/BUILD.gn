@@ -53,6 +53,8 @@ component("ash") {
     "accessibility/accessibility_focus_ring_controller.h",
     "accessibility/accessibility_focus_ring_layer.cc",
     "accessibility/accessibility_focus_ring_layer.h",
+    "accessibility/accessibility_highlight_layer.cc",
+    "accessibility/accessibility_highlight_layer.h",
     "accessibility/accessibility_layer.cc",
     "accessibility/accessibility_layer.h",
     "accessibility/default_accessibility_delegate.cc",

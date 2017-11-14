@@ -32,6 +32,15 @@ class AccessibilityPrivateSetFocusRingFunction
                              ACCESSIBILITY_PRIVATE_SETFOCUSRING)
 };
 
+// API function that sets the location of the accessibility highlights.
+class AccessibilityPrivateSetHighlightsFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateSetHighlightsFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setHighlights",
+                             ACCESSIBILITY_PRIVATE_SETHIGHLIGHTS)
+};
+
 // API function that sets keyboard capture mode.
 class AccessibilityPrivateSetKeyboardListenerFunction
     : public UIThreadExtensionFunction {

@@ -47,7 +47,7 @@ bool FocusRingLayer::CanAnimate() const {
   return compositor_ && compositor_->HasAnimationObserver(this);
 }
 
-int FocusRingLayer::GetInset() {
+int FocusRingLayer::GetInset() const {
   return kShadowRadius + 2;
 }
 
