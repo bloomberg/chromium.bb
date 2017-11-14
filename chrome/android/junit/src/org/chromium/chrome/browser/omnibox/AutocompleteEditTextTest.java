@@ -1170,11 +1170,7 @@ public class AutocompleteEditTextTest {
 
         assertTrue(mAutocomplete.requestFocus());
 
-        if (isUsingSpannableModel()) {
-            verifyOnPopulateAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED,
-                    url, "", 18, 18, 18, -1, -1);
-        }
-        mInOrder.verify(mVerifier).onUpdateSelection(len, len);
+        if (!isUsingSpannableModel()) mInOrder.verify(mVerifier).onUpdateSelection(len, len);
         verifyOnPopulateAccessibilityEvent(
                 AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED, url, "", 18, 18, 18, -1, -1);
         mInOrder.verify(mVerifier).onUpdateSelection(0, len);
@@ -1184,7 +1180,7 @@ public class AutocompleteEditTextTest {
                 AccessibilityEvent.TYPE_VIEW_FOCUSED, url, "", 2, -1, -1, -1, -1);
 
         if (isUsingSpannableModel()) {
-            assertVerifierCallCounts(2, 4);
+            assertVerifierCallCounts(1, 3);
         } else {
             assertVerifierCallCounts(2, 3);
         }
@@ -1244,4 +1240,24 @@ public class AutocompleteEditTextTest {
         assertFalse(mAutocomplete.shouldAutocomplete());
     }
 
+    // crbug.com/783165
+    @Test
+    @EnableFeatures(ChromeFeatureList.SPANNABLE_INLINE_AUTOCOMPLETE)
+    public void testSetTextAndSelect() {
+        // User types "h".
+        assertTrue(mInputConnection.commitText("h", 1));
+        assertTrue(mAutocomplete.shouldAutocomplete());
+        mAutocomplete.setAutocompleteText("h", "ello world");
+        mAutocomplete.setIgnoreTextChangesForAutocomplete(true);
+        mAutocomplete.setText("abcde");
+        mAutocomplete.setIgnoreTextChangesForAutocomplete(false);
+        assertEquals("abcde", mAutocomplete.getText().toString());
+
+        mAutocomplete.setSelection(0);
+
+        // Check the internal states are correct.
+        assertEquals("abcde", mAutocomplete.getText().toString());
+        assertEquals("abcde", mAutocomplete.getTextWithAutocomplete());
+        assertEquals("abcde", mAutocomplete.getTextWithoutAutocomplete());
+    }
 }
