@@ -9,7 +9,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web_view/test/observer.h"
-#import "ios/web_view/test/web_view_test.h"
+#import "ios/web_view/test/web_view_int_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
@@ -23,7 +23,7 @@ namespace ios_web_view {
 
 // Tests that the KVO compliant properties of CWVWebView correctly report
 // changes.
-typedef ios_web_view::WebViewTest WebViewKvoTest;
+typedef ios_web_view::WebViewIntTest WebViewKvoTest;
 
 // Tests that CWVWebView correctly reports |canGoBack| and |canGoForward| state.
 TEST_F(WebViewKvoTest, CanGoBackForward) {
