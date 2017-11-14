@@ -156,10 +156,10 @@ class MEDIA_EXPORT FrameProcessor {
   // Tracks whether or not we need to notify all track buffers of a new coded
   // frame group (see https://w3c.github.io/media-source/#coded-frame-group)
   // upon the next successfully processed frame.  Set true initially and upon
-  // detection of 'segments' mode discontinuity, parser reset during 'segments'
-  // mode, or switching from 'sequence' to 'segments' mode.  Individual track
-  // buffers can also be notified of an updated coded frame group start in edge
-  // cases. See further comments in ProcessFrame().
+  // detection of DTS discontinuity, parser reset during 'segments' mode, or
+  // switching from 'sequence' to 'segments' mode.  Individual track buffers can
+  // also be notified of an updated coded frame group start in edge cases. See
+  // further comments in ProcessFrame().
   bool pending_notify_all_group_start_ = true;
 
   // Tracks the MSE coded frame processing variable of same name.

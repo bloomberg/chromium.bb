@@ -717,6 +717,10 @@ bool FrameProcessor::ProcessFrame(
       //      true.
       SetAllTrackBuffersNeedRandomAccessPoint();
 
+      // Remember to signal a new coded frame group. Note, this may introduce
+      // gaps on large jumps forwards in sequence mode.
+      pending_notify_all_group_start_ = true;
+
       // 3.4. Unset group start timestamp.
       group_start_timestamp_ = kNoTimestamp;
     }
@@ -764,7 +768,6 @@ bool FrameProcessor::ProcessFrame(
           decode_timestamp - track_last_decode_timestamp;
       if (track_dts_delta < base::TimeDelta() ||
           track_dts_delta > 2 * track_buffer->last_frame_duration()) {
-        DCHECK(!pending_notify_all_group_start_);
         // 6.1. If mode equals "segments": Set group end timestamp to
         //      presentation timestamp.
         //      If mode equals "sequence": Set group start timestamp equal to
