@@ -2909,10 +2909,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (lastCommittedItem)
     lastCommittedItem->GetSSL() = web::SSLStatus();
 
-  NSURL* errorURL =
-      [NSURL URLWithString:error.userInfo[NSURLErrorFailingURLStringErrorKey]];
-  const GURL errorGURL = net::GURLWithNSURL(errorURL);
-
   web::NavigationContextImpl* navigationContext =
       [_navigationStates contextForNavigation:navigation];
   navigationContext->SetError(error);
@@ -2920,6 +2916,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   // Handles Frame Load Interrupted errors from WebView.
   if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
       error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
+    NSString* errorURLSpec = error.userInfo[NSURLErrorFailingURLStringErrorKey];
+    NSURL* errorURL = [NSURL URLWithString:errorURLSpec];
+    const GURL errorGURL = net::GURLWithNSURL(errorURL);
+
     // See if the delegate wants to handle this case.
     if (errorGURL.is_valid() &&
         [_delegate
@@ -2944,13 +2944,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
     // The wrapper error uses the URL of the error and not the requested URL
     // (which can be different in case of a redirect) to match desktop Chrome
     // behavior.
-    error = [NSError
-        errorWithDomain:error.domain
-                   code:error.code
-               userInfo:@{
-                 NSURLErrorFailingURLStringErrorKey : errorURL.absoluteString,
-                 NSUnderlyingErrorKey : error,
-               }];
+    error = [NSError errorWithDomain:error.domain
+                                code:error.code
+                            userInfo:@{
+                              NSURLErrorFailingURLStringErrorKey : errorURLSpec,
+                              NSUnderlyingErrorKey : error,
+                            }];
   }
 
   [self loadCompleteWithSuccess:NO forNavigation:navigation];
