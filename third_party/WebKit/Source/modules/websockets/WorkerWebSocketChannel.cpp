@@ -456,7 +456,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
   // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied
   // into Vector<char>.
   std::unique_ptr<Vector<char>> data =
-      WTF::MakeUnique<Vector<char>>(byte_length);
+      std::make_unique<Vector<char>>(byte_length);
   if (binary_data.ByteLength())
     memcpy(data->data(),
            static_cast<const char*>(binary_data.Data()) + byte_offset,

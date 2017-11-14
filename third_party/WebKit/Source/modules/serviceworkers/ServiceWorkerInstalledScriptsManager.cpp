@@ -4,6 +4,9 @@
 
 #include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
 
+#include <memory>
+#include <utility>
+
 #include "core/html/parser/TextResourceDecoder.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -55,7 +58,7 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(
     size_t total_metadata_size = 0;
     for (const auto& chunk : raw_script_data->MetaDataChunks())
       total_metadata_size += chunk.size();
-    meta_data = WTF::MakeUnique<Vector<char>>();
+    meta_data = std::make_unique<Vector<char>>();
     meta_data->ReserveInitialCapacity(total_metadata_size);
     for (const auto& chunk : raw_script_data->MetaDataChunks())
       meta_data->Append(chunk.Data(), chunk.size());

@@ -4,6 +4,8 @@
 
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
@@ -89,7 +91,7 @@ void ServiceWorkerLinkResource::Process() {
         kJSMessageSource, kErrorMessageLevel,
         "Cannot register service worker with <link> element. " +
             error_message));
-    WTF::MakeUnique<RegistrationCallback>(owner_)->OnError(
+    std::make_unique<RegistrationCallback>(owner_)->OnError(
         WebServiceWorkerError(mojom::blink::ServiceWorkerErrorType::kSecurity,
                               error_message));
     return;
@@ -97,7 +99,7 @@ void ServiceWorkerLinkResource::Process() {
 
   container->RegisterServiceWorkerImpl(
       &document, script_url, scope_url,
-      WTF::MakeUnique<RegistrationCallback>(owner_));
+      std::make_unique<RegistrationCallback>(owner_));
 }
 
 bool ServiceWorkerLinkResource::HasLoaded() const {

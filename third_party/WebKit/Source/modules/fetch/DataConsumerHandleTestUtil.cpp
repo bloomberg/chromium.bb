@@ -42,7 +42,7 @@ DataConsumerHandleTestUtil::Thread::Thread(
     InitializationPolicy initialization_policy)
     : thread_(WebThreadSupportingGC::Create(name)),
       initialization_policy_(initialization_policy),
-      waitable_event_(WTF::MakeUnique<WaitableEvent>()) {
+      waitable_event_(std::make_unique<WaitableEvent>()) {
   thread_->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&Thread::Initialize, CrossThreadUnretained(this)));
@@ -60,11 +60,11 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
   DCHECK(thread_->IsCurrentThread());
   if (initialization_policy_ >= kScriptExecution) {
     isolate_holder_ =
-        WTF::MakeUnique<gin::IsolateHolder>(Platform::Current()
-                                                ->CurrentThread()
-                                                ->Scheduler()
-                                                ->LoadingTaskRunner()
-                                                ->ToSingleThreadTaskRunner());
+        std::make_unique<gin::IsolateHolder>(Platform::Current()
+                                                 ->CurrentThread()
+                                                 ->Scheduler()
+                                                 ->LoadingTaskRunner()
+                                                 ->ToSingleThreadTaskRunner());
     GetIsolate()->Enter();
   }
   thread_->InitializeOnThread();
@@ -206,7 +206,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
       client_(nullptr),
       result_(kShouldWait),
       is_handle_attached_(true),
-      detached_(WTF::MakeUnique<WaitableEvent>()) {}
+      detached_(std::make_unique<WaitableEvent>()) {}
 
 const DataConsumerHandleTestUtil::Command&
 DataConsumerHandleTestUtil::ReplayingHandle::Context::Top() {
@@ -257,7 +257,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle() {
 
 std::unique_ptr<WebDataConsumerHandle::Reader>
 DataConsumerHandleTestUtil::ReplayingHandle::ObtainReader(Client* client) {
-  return WTF::MakeUnique<ReaderImpl>(context_, client);
+  return std::make_unique<ReaderImpl>(context_, client);
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Add(const Command& command) {

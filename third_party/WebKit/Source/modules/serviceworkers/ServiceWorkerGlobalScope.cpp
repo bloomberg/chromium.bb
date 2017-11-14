@@ -227,7 +227,7 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* script_state) {
 
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->SkipWaiting(
-          WTF::MakeUnique<CallbackPromiseAdapter<void, void>>(resolver));
+          std::make_unique<CallbackPromiseAdapter<void, void>>(resolver));
   return promise;
 }
 
