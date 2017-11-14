@@ -64,8 +64,6 @@ DummyPageHolder::DummyPageHolder(
     page_clients.context_menu_client =
         page_clients_argument->context_menu_client;
     page_clients.editor_client = page_clients_argument->editor_client;
-    page_clients.spell_checker_client =
-        page_clients_argument->spell_checker_client;
   }
   page_ = Page::Create(page_clients);
   Settings& settings = page_->GetSettings();

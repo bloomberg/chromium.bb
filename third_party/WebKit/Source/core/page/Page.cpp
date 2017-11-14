@@ -130,7 +130,6 @@ Page::Page(PageClients& page_clients)
       main_frame_(nullptr),
       plugin_data_(nullptr),
       editor_client_(page_clients.editor_client),
-      spell_checker_client_(page_clients.spell_checker_client),
       use_counter_(page_clients.chrome_client &&
                            page_clients.chrome_client->IsSVGImageChromeClient()
                        ? UseCounter::kSVGImageContext
@@ -730,8 +729,7 @@ ScrollbarTheme& Page::GetScrollbarTheme() const {
 Page::PageClients::PageClients()
     : chrome_client(nullptr),
       context_menu_client(nullptr),
-      editor_client(nullptr),
-      spell_checker_client(nullptr) {}
+      editor_client(nullptr) {}
 
 Page::PageClients::~PageClients() {}
 

@@ -35,7 +35,6 @@
 
 #include "build/build_config.h"
 #include "core/CoreExport.h"
-#include "core/editing/spellcheck/SpellCheckerClientImpl.h"
 #include "core/exported/WebPagePopupImpl.h"
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
@@ -574,7 +573,6 @@ class CORE_EXPORT WebViewImpl final
   Persistent<ChromeClient> chrome_client_;
   ContextMenuClient context_menu_client_;
   EditorClient editor_client_;
-  SpellCheckerClientImpl spell_checker_client_impl_;
 
   WebSize size_;
   // If true, automatically resize the layout view around its content.

@@ -335,7 +335,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       chrome_client_(ChromeClientImpl::Create(this)),
       context_menu_client_(*this),
       editor_client_(*this),
-      spell_checker_client_impl_(this),
       should_auto_resize_(false),
       zoom_level_(0),
       minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
@@ -380,7 +379,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   page_clients.chrome_client = chrome_client_.Get();
   page_clients.context_menu_client = &context_menu_client_;
   page_clients.editor_client = &editor_client_;
-  page_clients.spell_checker_client = &spell_checker_client_impl_;
 
   page_ = Page::CreateOrdinary(page_clients);
   CoreInitializer::GetInstance().ProvideModulesToPage(*page_, client_);

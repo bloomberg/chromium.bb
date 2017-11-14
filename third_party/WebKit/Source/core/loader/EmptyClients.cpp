@@ -55,9 +55,6 @@ void FillWithEmptyClients(Page::PageClients& page_clients) {
 
   DEFINE_STATIC_LOCAL(EmptyEditorClient, dummy_editor_client, ());
   page_clients.editor_client = &dummy_editor_client;
-
-  DEFINE_STATIC_LOCAL(EmptySpellCheckerClient, dummy_spell_checker_client, ());
-  page_clients.spell_checker_client = &dummy_spell_checker_client;
 }
 
 class EmptyPopupMenu : public PopupMenu {
