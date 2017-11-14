@@ -22,14 +22,8 @@ namespace {
 
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
-#if defined(GOOGLE_CHROME_BUILD)
 const char kSbDiagnosticUrl[] =
-    "https://www.google.com/safebrowsing/"
-    "diagnostic?site=%s&client=googlechrome";
-#else
-const char kSbDiagnosticUrl[] =
-    "https://www.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
-#endif
+    "https://transparencyreport.google.com/safe-browsing/search?url=%s";
 
 // Constants for the V4 phishing string upgrades.
 const char kReportPhishingErrorUrl[] =
