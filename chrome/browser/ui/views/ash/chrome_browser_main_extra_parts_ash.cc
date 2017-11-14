@@ -122,6 +122,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   // Must be available at login screen, so initialize before profile.
   accessibility_controller_client_ =
       std::make_unique<AccessibilityControllerClient>();
+  accessibility_controller_client_->Init();
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
   ime_controller_client_ = base::MakeUnique<ImeControllerClient>(
       chromeos::input_method::InputMethodManager::Get());
