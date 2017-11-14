@@ -18,18 +18,18 @@ namespace viz {
 // Functions for quickly creating BeginFrameArgs
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number);
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     base::TimeTicks frame_time);
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
@@ -37,7 +37,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     int64_t frame_time,
     int64_t deadline,
@@ -48,7 +48,7 @@ BeginFrameArgs CreateBeginFrameArgsForTesting(
 // OrderSimpleTaskRunner.
 BeginFrameArgs CreateBeginFrameArgsForTesting(
     BeginFrameArgs::CreationLocation location,
-    uint32_t source_id,
+    uint64_t source_id,
     uint64_t sequence_number,
     base::SimpleTestTickClock* now_src);
 

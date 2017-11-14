@@ -172,7 +172,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
                                     const SkBitmap& bitmap,
                                     content::ReadbackResponse response);
 
-  uint32_t begin_frame_source_id_ = viz::BeginFrameArgs::kManualSourceId;
+  uint64_t begin_frame_source_id_ = viz::BeginFrameArgs::kManualSourceId;
   uint64_t begin_frame_sequence_number_ =
       viz::BeginFrameArgs::kStartingFrameNumber;
   bool begin_frame_control_enabled_ = false;

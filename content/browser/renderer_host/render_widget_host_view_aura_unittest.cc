@@ -3685,7 +3685,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   surface_manager->AddObserver(&observer);
 
   view_->SetNeedsBeginFrames(true);
-  uint32_t source_id = 10;
+  constexpr uint64_t source_id = 10;
 
   {
     // Ack from CompositorFrame is forwarded.

@@ -901,7 +901,7 @@ void ParamTraits<viz::YUVVideoDrawQuad>::Log(const param_type& p,
 void ParamTraits<viz::BeginFrameAck>::Write(base::Pickle* m,
                                             const param_type& p) {
   m->WriteUInt64(p.sequence_number);
-  m->WriteUInt32(p.source_id);
+  m->WriteUInt64(p.source_id);
   // |has_damage| is implicit through IPC message name, so not transmitted.
 }
 
@@ -910,7 +910,7 @@ bool ParamTraits<viz::BeginFrameAck>::Read(const base::Pickle* m,
                                            param_type* p) {
   return iter->ReadUInt64(&p->sequence_number) &&
          p->sequence_number >= viz::BeginFrameArgs::kStartingFrameNumber &&
-         iter->ReadUInt32(&p->source_id);
+         iter->ReadUInt64(&p->source_id);
 }
 
 void ParamTraits<viz::BeginFrameAck>::Log(const param_type& p, std::string* l) {

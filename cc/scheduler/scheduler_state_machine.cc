@@ -1003,7 +1003,7 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   return false;
 }
 
-void SchedulerStateMachine::OnBeginImplFrame(uint32_t source_id,
+void SchedulerStateMachine::OnBeginImplFrame(uint64_t source_id,
                                              uint64_t sequence_number) {
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME;
   current_frame_number_++;
