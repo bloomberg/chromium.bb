@@ -5,6 +5,8 @@
 package org.chromium.native_test;
 
 import android.app.Activity;
+import android.os.Build;
+import android.system.Os;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -30,6 +32,21 @@ public class NativeUnitTest extends NativeTest {
 
         // Needed by system_monitor_unittest.cc
         PowerMonitor.createForTests();
+
+        // Configure ubsan to print stack traces in the format understood by "stack" so that they
+        // will be symbolized. This needs to happen here because ubsan reads its configuration from
+        // $UBSAN_OPTIONS when the native library is loaded.
+        //
+        // The setenv API was added in L. On older versions of Android, we should still see ubsan
+        // reports, but they will not have stack traces.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                Os.setenv("UBSAN_OPTIONS", "print_stacktrace=1:stack_trace_format='#%n pc %o %m'",
+                        true);
+            } catch (Exception e) {
+                Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
+            }
+        }
 
         // For NativeActivity based tests,
         // dependency libraries must be loaded before NativeActivity::OnCreate,
