@@ -311,6 +311,11 @@ QuicPacketGenerator::SerializeVersionNegotiationPacket(
   return packet_creator_.SerializeVersionNegotiationPacket(supported_versions);
 }
 
+std::unique_ptr<QuicEncryptedPacket>
+QuicPacketGenerator::SerializeConnectivityProbingPacket() {
+  return packet_creator_.SerializeConnectivityProbingPacket();
+}
+
 void QuicPacketGenerator::ReserializeAllFrames(
     const QuicPendingRetransmission& retransmission,
     char* buffer,

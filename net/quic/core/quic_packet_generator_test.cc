@@ -938,6 +938,20 @@ TEST_F(QuicPacketGeneratorTest, SetMaxPacketLength_MidpacketFlush) {
   CheckAllPacketsHaveSingleStreamFrame();
 }
 
+// Test sending a connectivity probing packet.
+TEST_F(QuicPacketGeneratorTest, GenerateConnectivityProbingPacket) {
+  delegate_.SetCanWriteAnything();
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      generator_.SerializeConnectivityProbingPacket());
+
+  ASSERT_TRUE(simple_framer_.ProcessPacket(*probing_packet));
+
+  EXPECT_EQ(2u, simple_framer_.num_frames());
+  EXPECT_EQ(1u, simple_framer_.ping_frames().size());
+  EXPECT_EQ(1u, simple_framer_.padding_frames().size());
+}
+
 // Test sending an MTU probe, without any surrounding data.
 TEST_F(QuicPacketGeneratorTest, GenerateMtuDiscoveryPacket_Simple) {
   delegate_.SetCanWriteAnything();

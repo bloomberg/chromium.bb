@@ -66,7 +66,7 @@ class QUIC_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // Called if an error is detected in the QUIC protocol.
   virtual void OnError(QuicFramer* framer) = 0;
 
-  // Called only when |perspective_| is IS_SERVER and the the framer gets a
+  // Called only when |perspective_| is IS_SERVER and the framer gets a
   // packet with version flag true and the version on the packet doesn't match
   // |quic_version_|. The visitor should return true after it updates the
   // version of the |framer_| to |received_version| or false to stop processing
@@ -247,6 +247,12 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                          const QuicFrames& frames,
                          char* buffer,
                          size_t packet_length);
+
+  // Serializes a probing packet, which is a padded PING packet. Returns the
+  // length of the packet. Returns 0 if it fails to serialize.
+  size_t BuildConnectivityProbingPacket(const QuicPacketHeader& header,
+                                        char* buffer,
+                                        size_t packet_length);
 
   // Returns a new public reset packet.
   static std::unique_ptr<QuicEncryptedPacket> BuildPublicResetPacket(

@@ -678,6 +678,30 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   client_framer_.ProcessPacket(*encrypted);
 }
 
+TEST_P(QuicPacketCreatorTest, SerializeConnectivityProbingPacket) {
+  for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; ++i) {
+    EncryptionLevel level = static_cast<EncryptionLevel>(i);
+
+    creator_.set_encryption_level(level);
+
+    std::unique_ptr<QuicEncryptedPacket> encrypted(
+        creator_.SerializeConnectivityProbingPacket());
+    {
+      InSequence s;
+      EXPECT_CALL(framer_visitor_, OnPacket());
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
+      EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
+      EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
+      EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
+      EXPECT_CALL(framer_visitor_, OnPingFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPaddingFrame(_));
+      EXPECT_CALL(framer_visitor_, OnPacketComplete());
+    }
+    // QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
+    server_framer_.ProcessPacket(*encrypted);
+  }
+}
+
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   EXPECT_EQ(PACKET_1BYTE_PACKET_NUMBER,
             QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
