@@ -107,6 +107,8 @@
          dont_initialize_uninitialized_locals)               \
   GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
          dont_remove_invariant_for_fragment_input)           \
+  GPU_OP(DONT_USE_LOOPS_TO_INITIALIZE_VARIABLES,             \
+         dont_use_loops_to_initialize_variables)             \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EMULATE_ABS_INT_FUNCTION,                           \
