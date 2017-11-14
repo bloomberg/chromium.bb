@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
@@ -40,6 +42,7 @@
 #include "extensions/common/extension_set.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/chrome_features.h"
@@ -50,6 +53,7 @@ using extensions::Extension;
 
 namespace {
 
+constexpr const char kExampleURL[] = "http://example.org/";
 constexpr const char kAppDotComManifest[] = R"( { "name": "Hosted App",
   "version": "1",
   "manifest_version": 2,
@@ -343,8 +347,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
 IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
   {
     WebApplicationInfo web_app_info;
-    web_app_info.app_url = GURL("http://example.org/");
-    web_app_info.scope = GURL("http://example.org/");
+    web_app_info.app_url = GURL(kExampleURL);
+    web_app_info.scope = GURL(kExampleURL);
     web_app_info.theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
     const extensions::Extension* app = InstallBookmarkApp(web_app_info);
     Browser* app_browser = LaunchAppBrowser(app);
@@ -369,6 +373,55 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, BookmarkAppThemeColor) {
     EXPECT_FALSE(
         app_browser->hosted_app_controller()->GetThemeColor().has_value());
   }
+}
+
+using HostedAppPWAOnlyTest = HostedAppTest;
+
+// Check the 'Copy URL' menu button for Hosted App windows.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CopyURL) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kExampleURL);
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+  Browser* app_browser = LaunchAppBrowser(app);
+
+  content::BrowserTestClipboardScope test_clipboard_scope;
+  chrome::ExecuteCommand(app_browser, IDC_COPY_URL);
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  base::string16 result;
+  clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
+  EXPECT_EQ(result, base::UTF8ToUTF16(kExampleURL));
+}
+
+// Check the 'Open in Chrome' menu button for Hosted App windows.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OpenInChrome) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kExampleURL);
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+  {
+    Browser* app_browser = LaunchAppBrowser(app);
+
+    EXPECT_EQ(1, app_browser->tab_strip_model()->count());
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
+    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+
+    chrome::ExecuteCommand(app_browser, IDC_OPEN_IN_CHROME);
+
+    // The browser frame is closed next event loop so it's still safe to access
+    // here.
+    EXPECT_EQ(0, app_browser->tab_strip_model()->count());
+
+    EXPECT_EQ(2, browser()->tab_strip_model()->count());
+    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+    EXPECT_EQ(
+        GURL(kExampleURL),
+        browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
+  }
+
+  // Wait until the browser actually gets closed. This invalidates
+  // |app_browser|.
+  content::RunAllPendingInMessageLoop();
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 }
 
 class HostedAppVsTdiTest : public HostedAppTest {
@@ -599,6 +652,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppWithIsolatedOriginsTest,
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */, HostedAppTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        HostedAppPWAOnlyTest,
+                        ::testing::Values(true));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         HostedAppWithIsolatedOriginsTest,
                         ::testing::Bool());
