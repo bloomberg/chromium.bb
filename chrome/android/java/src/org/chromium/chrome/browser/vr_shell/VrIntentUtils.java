@@ -92,17 +92,16 @@ public class VrIntentUtils {
      * @return Whether or not the given intent is a VR-specific intent.
      */
     public static boolean isVrIntent(Intent intent) {
-        if (intent == null) return false;
         // For simplicity, we only return true here if VR is enabled on the platform and this intent
         // is not fired from a recent apps page. The latter is there so that we don't enter VR mode
         // when we're being resumed from the recent apps in 2D mode.
         // Note that Daydream removes the Daydream category for deep-links (for no real reason). In
         // addition to the category, DAYDREAM_VR_EXTRA tells us that this intent is coming directly
         // from VR.
-        boolean canHandleIntent = VrShellDelegate.isVrEnabled() && !launchedFromRecentApps(intent);
-        return (intent.hasCategory(DAYDREAM_CATEGORY)
-                       || IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false))
-                && canHandleIntent;
+        return intent != null
+                && (intent.hasCategory(DAYDREAM_CATEGORY)
+                           || IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false))
+                && !launchedFromRecentApps(intent) && VrShellDelegate.isVrEnabled();
     }
 
     /**
