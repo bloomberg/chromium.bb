@@ -166,6 +166,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=709874)
     self.Flaky('conformance2/rendering/attrib-type-match.html',
         ['win', 'nvidia', 'opengl'], bug=782254)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rg16f-rg-float.html',
+        ['win', 'nvidia', 'opengl'], bug=784849)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
