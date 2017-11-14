@@ -173,3 +173,6 @@ crbug.com/417782 virtual/mouseevent_fractional/fast/events/touch/touch-fractiona
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/touch/touch-inside-iframe-scrolled.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-frame-scrolled.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-tap-scrolled.html [ Failure ]
+
+# Virtual test suites to skip.
+crbug.com/417782 virtual/spv175 [ Skip ]
