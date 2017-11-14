@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_constants.h"
@@ -448,7 +449,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<AppsGridViewTestApi> test_api_;
-
+  // Restores the locale to default when destructor is called.
+  base::test::ScopedRestoreICUDefaultLocale restore_locale_;
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 
