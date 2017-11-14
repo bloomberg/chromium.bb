@@ -188,7 +188,7 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
       if (bounds.width() > 0 && bounds.height() > 0) {
         // If all the children are offscreen, the node itself is offscreen.
         if (offscreen != nullptr && all_children_offscreen)
-          *offscreen = true;
+          *offscreen |= true;
         return bounds;
       }
     }
@@ -236,15 +236,24 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
       bounds.Offset(-scroll_x, -scroll_y);
     }
 
+    gfx::RectF clipped = bounds;
+    clipped.Intersect(container_bounds);
+    if (container->data().role != ui::AX_ROLE_DESKTOP && clipped.IsEmpty()) {
+      // If it is offscreen with respect to its parent, label it offscreen.
+      // Here we are extending the definition of offscreen to include elements
+      // that are clipped by their parents in addition to those clipped by
+      // the rootWebArea.
+      // No need to update |offscreen| if |clipped| is not empty, because it
+      // should be false by default.
+      if (offscreen != nullptr)
+        *offscreen |= true;
+    }
+
     // If this is the root web area, make sure we clip the node to fit.
     if (container->data().role == ui::AX_ROLE_ROOT_WEB_AREA) {
-      gfx::RectF clipped = bounds;
-      clipped.Intersect(container_bounds);
       if (!clipped.IsEmpty()) {
         // We can simply clip it to the container.
         bounds = clipped;
-        // No need to update |offscreen| if it is set, because it should be
-        // false by default.
       } else {
         // Totally offscreen. Find the nearest edge or corner.
         // Make the minimum dimension 1 instead of 0.
@@ -262,8 +271,6 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
           bounds.set_y(0);
           bounds.set_height(1);
         }
-        if (offscreen != nullptr)
-          *offscreen |= true;
       }
     }
 
