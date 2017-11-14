@@ -160,6 +160,11 @@ int suite_deadlock_tests_init();
 int suite_deadlock_tests_clean();
 
 /**
+ * Decide if the suite is enabled by default or not.
+ */
+CU_BOOL suite_deadlock_tests_enable(void);
+
+/**
  * Tests in uvd enc test suite
  */
 extern CU_TestInfo deadlock_tests[];

@@ -162,7 +162,7 @@ static Suites_Active_Status suites_active_stat[] = {
 		},
 		{
 			.pName = DEADLOCK_TESTS_STR,
-			.pActive = always_active,
+			.pActive = suite_deadlock_tests_enable,
 		},
 		{
 			.pName = VM_TESTS_STR,
