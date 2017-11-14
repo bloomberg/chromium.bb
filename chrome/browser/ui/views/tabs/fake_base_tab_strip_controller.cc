@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_impl.h"
 
@@ -23,7 +25,7 @@ void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
   TabRendererData data;
   data.pinned = true;
   num_tabs_++;
-  tab_strip_->AddTabAt(index, data, is_active);
+  tab_strip_->AddTabAt(index, std::move(data), is_active);
   if (is_active)
     active_index_ = index;
 }

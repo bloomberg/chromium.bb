@@ -111,23 +111,19 @@ class BrowserTabStripController : public TabStripController,
 
   const Browser* browser() const { return browser_view_->browser(); }
 
- protected:
-  // The context in which SetTabRendererDataFromModel is being called.
+ private:
+  class TabContextMenuContents;
+
+  // The context in which TabRendererDataFromModel is being called.
   enum TabStatus {
     NEW_TAB,
     EXISTING_TAB
   };
 
-  // Sets the TabRendererData from the TabStripModel.
-  virtual void SetTabRendererDataFromModel(content::WebContents* contents,
+  // Returns the TabRendererData for the specified tab.
+  TabRendererData TabRendererDataFromModel(content::WebContents* contents,
                                            int model_index,
-                                           TabRendererData* data,
                                            TabStatus tab_status);
-
-  const TabStripImpl* tabstrip() const { return tabstrip_; }
-
- private:
-  class TabContextMenuContents;
 
   // Invokes tabstrip_->SetTabData.
   void SetTabDataAt(content::WebContents* web_contents, int model_index);
