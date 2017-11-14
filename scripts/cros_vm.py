@@ -43,6 +43,7 @@ class VM(object):
     opts.Freeze()
 
     self.qemu_path = opts.qemu_path
+    self.qemu_bios_path = opts.qemu_bios_path
     self.enable_kvm = opts.enable_kvm
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
@@ -147,8 +148,12 @@ class VM(object):
     if not self.qemu_path:
       self.qemu_path = osutils.Which('qemu-system-x86_64')
     if not self.qemu_path:
-      raise VMError('qemu not found. Try: sudo apt-get install qemu')
+      raise VMError('qemu not found.')
     logging.debug('qemu path=%s', self.qemu_path)
+    qemu_args = [self.qemu_path]
+
+    if self.qemu_bios_path and os.path.isdir(self.qemu_bios_path):
+      qemu_args += ['-L', self.qemu_bios_path]
 
     if not self.image_path:
       self.image_path = os.environ.get('VM_IMAGE_PATH', '')
@@ -166,30 +171,31 @@ class VM(object):
 
     self._CheckQemuMinVersion()
 
-    args = [self.qemu_path, '-m', '2G', '-smp', '4', '-vga', 'virtio',
-            '-daemonize',
-            '-pidfile', self.pidfile,
-            '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
-            '-serial', 'file:%s' % self.kvm_serial,
-            '-mon', 'chardev=control_pipe',
-            # Qemu-vlans are used by qemu to separate out network traffic on the
-            # slirp network bridge. qemu forwards traffic on a slirp vlan to all
-            # ports conected on that vlan. By default, slirp ports are on vlan
-            # 0. We explicitly set a vlan here so that another qemu VM using
-            # slirp doesn't conflict with our network traffic.
-            '-net', 'nic,model=virtio,vlan=%d' % self.ssh_port,
-            '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22,vlan=%d'
-            % (self.ssh_port, self.ssh_port),
-            '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=raw'
-            % self.image_path]
+    qemu_args += [
+        '-m', '2G', '-smp', '4', '-vga', 'virtio', '-daemonize',
+        '-pidfile', self.pidfile,
+        '-chardev', 'pipe,id=control_pipe,path=%s' % self.kvm_monitor,
+        '-serial', 'file:%s' % self.kvm_serial,
+        '-mon', 'chardev=control_pipe',
+        # Qemu-vlans are used by qemu to separate out network traffic on the
+        # slirp network bridge. qemu forwards traffic on a slirp vlan to all
+        # ports conected on that vlan. By default, slirp ports are on vlan
+        # 0. We explicitly set a vlan here so that another qemu VM using
+        # slirp doesn't conflict with our network traffic.
+        '-net', 'nic,model=virtio,vlan=%d' % self.ssh_port,
+        '-net', 'user,hostfwd=tcp:127.0.0.1:%d-:22,vlan=%d'
+        % (self.ssh_port, self.ssh_port),
+        '-drive', 'file=%s,index=0,media=disk,cache=unsafe,format=raw'
+        % self.image_path,
+    ]
     if self.enable_kvm:
-      args.append('-enable-kvm')
+      qemu_args.append('-enable-kvm')
     if not self.display:
-      args.extend(['-display', 'none'])
-    logging.info(cros_build_lib.CmdToStr(args))
+      qemu_args.extend(['-display', 'none'])
+    logging.info(cros_build_lib.CmdToStr(qemu_args))
     logging.info('Pid file: %s', self.pidfile)
     if not self.dry_run:
-      self._RunCommand(args)
+      self._RunCommand(qemu_args)
 
   def _GetVMPid(self):
     """Get the pid of the VM.
@@ -324,6 +330,8 @@ class VM(object):
                         help='Path to VM image to launch with --start.')
     parser.add_argument('--qemu-path', type='path',
                         help='Path of qemu binary to launch with --start.')
+    parser.add_argument('--qemu-bios-path', type='path',
+                        help='Path of directory with qemu bios files.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
                         action='store_false', default=True,
                         help='Disable KVM, use software emulation.')
