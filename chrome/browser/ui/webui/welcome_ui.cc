@@ -13,6 +13,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,12 +61,19 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
   html_source->AddLocalizedString("declineText", IDS_WELCOME_DECLINE_BUTTON);
 
-  html_source->AddResourcePath("welcome.js", IDR_WELCOME_JS);
-  html_source->AddResourcePath("welcome.css", IDR_WELCOME_CSS);
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
   html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
   html_source->AddResourcePath("watermark.svg", IDR_WEBUI_IMAGES_GOOGLE_LOGO);
-  html_source->SetDefaultResource(IDR_WELCOME_HTML);
+
+  if (signin::IsDiceEnabledForProfile(profile->GetPrefs())) {
+    html_source->AddResourcePath("welcome.js", IDR_DICE_WELCOME_JS);
+    html_source->AddResourcePath("welcome.css", IDR_DICE_WELCOME_CSS);
+    html_source->SetDefaultResource(IDR_DICE_WELCOME_HTML);
+  } else {
+    html_source->AddResourcePath("welcome.js", IDR_WELCOME_JS);
+    html_source->AddResourcePath("welcome.css", IDR_WELCOME_CSS);
+    html_source->SetDefaultResource(IDR_WELCOME_HTML);
+  }
 
   content::WebUIDataSource::Add(profile, html_source);
 }
