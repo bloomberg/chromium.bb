@@ -69,7 +69,7 @@ version_info::Channel GetChannelFromPackageName() {
 
 // WebView Metrics are sampled based on GUID value.
 // TODO(paulmiller) Sample with Finch, once we have Finch.
-bool CheckInSample(const std::string& client_id) {
+bool IsInSample(const std::string& client_id) {
   // client_id comes from base::GenerateGUID(), so its value is random/uniform,
   // except for a few bit positions with fixed values, and some hyphens. Rather
   // than separating the random payload from the fixed bits, just hash the whole
@@ -77,8 +77,8 @@ bool CheckInSample(const std::string& client_id) {
   uint32_t hash = base::PersistentHash(client_id);
 
   // Since hashing is ~uniform, the chance that the value falls in the bottom
-  // 10% of possible values is 10%.
-  return hash < UINT32_MAX / 10u;
+  // 2% (1/50th) of possible values is 2%.
+  return hash < UINT32_MAX / 50u;
 }
 
 }  // namespace
@@ -87,12 +87,6 @@ bool CheckInSample(const std::string& client_id) {
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_lazy_instance_.Pointer();
-}
-
-bool AwMetricsServiceClient::CheckSDKVersionForMetrics() {
-  // For now, UMA is only enabled on Android N+.
-  return base::android::BuildInfo::GetInstance()->sdk_int() >=
-         base::android::SDK_VERSION_NOUGAT;
 }
 
 void AwMetricsServiceClient::LoadOrCreateClientId() {
@@ -171,7 +165,7 @@ void AwMetricsServiceClient::InitializeWithClientId() {
   DCHECK_EQ(g_client_id.Get().length(), GUID_SIZE);
   pref_service_->SetString(metrics::prefs::kMetricsClientID, g_client_id.Get());
 
-  in_sample_ = CheckInSample(g_client_id.Get());
+  in_sample_ = IsInSample(g_client_id.Get());
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
       pref_service_, this, base::string16(), base::Bind(&StoreClientInfo),
@@ -208,7 +202,7 @@ bool AwMetricsServiceClient::IsConsentGiven() {
 }
 
 bool AwMetricsServiceClient::IsReportingEnabled() {
-  return consent_ && in_sample_ && CheckSDKVersionForMetrics();
+  return consent_ && in_sample_;
 }
 
 void AwMetricsServiceClient::SetHaveMetricsConsent(bool consent) {
