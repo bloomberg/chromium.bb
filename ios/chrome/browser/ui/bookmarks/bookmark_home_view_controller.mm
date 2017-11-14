@@ -466,7 +466,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (nodes.size() == 0) {
     // if nothing to select, exit edit mode.
     if (![self.bookmarksTableView hasBookmarksOrFolders]) {
-      [self setContextBarState:BookmarksContextBarDefault];
+      [self setTableViewEditing:NO];
       return;
     }
     [self setContextBarState:BookmarksContextBarBeginSelection];

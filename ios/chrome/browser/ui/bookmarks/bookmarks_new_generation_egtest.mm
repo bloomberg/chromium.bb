@@ -1222,8 +1222,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single folder.
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"New Folder Title")]
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(newFolderTitle)]
       performAction:grey_tap()];
 
   // Move the "New Folder Title" to "Folder 1.1".
@@ -1243,7 +1243,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey
       selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"New Folder Title")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // 3. Test the cancel button at edit page.
@@ -1254,7 +1254,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Select single folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"New Folder Title")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
       performAction:grey_tap()];
 
   // Tap cancel after modifying the title.
@@ -1266,11 +1266,53 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                  dismissWith:@"Cancel"];
 
   // Verify that the bookmark was not updated.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"New Folder Title")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify edit mode is stayed.
   [self verifyContextBarInEditMode];
+
+  // 4. Test the delete button at edit page.
+
+  // Tap context menu.
+  [[EarlGrey selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                          [BookmarksNewGenTestCase
+                                              contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify that the editor is present.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder Editor")]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_GROUP_DELETE)]
+      performAction:grey_tap()];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksNewGenTestCase waitForUndoToastToGoAway];
+
+  // Verify that the folder is deleted.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_notVisible()];
+
+  // 5. Verify that when adding a new folder, edit mode will not mistakenly come
+  // back (crbug.com/781783).
+
+  // Create a new folder.
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:YES];
+
+  // Tap on the new folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      performAction:grey_tap()];
+
+  // Verify we enter the new folder. (instead of selecting it in edit mode).
+  [self verifyEmptyBackgroundAppears];
 }
 
 // Verify Move functionality on single folder through long press.
