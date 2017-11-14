@@ -14,6 +14,10 @@ import subprocess
 import sys
 
 
+# If this test starts failing, please set TEST_IS_ENABLED to "False" and file a
+# bug to get this reenabled, and cc the people listed in
+# //tools/traffic_annotation/OWNERS.
+TEST_IS_ENABLED = True
 
 
 class NetworkTrafficAnnotationChecker():
@@ -44,7 +48,7 @@ class NetworkTrafficAnnotationChecker():
       'darwin': 'mac',
       'win32': 'win32',
     }[sys.platform]
-    path = os.path.join(self.this_dir, 'bin', platform,
+    path = os.path.join(self.this_dir, '..', 'bin', platform,
                         'traffic_annotation_auditor')
     if sys.platform == 'win32':
       path += '.exe'
@@ -88,18 +92,11 @@ class NetworkTrafficAnnotationChecker():
           use 0 for unlimited.
 
     Returns:
-      warnings: list of str List of all issued warnings.
-      errors: list of str List of all issued errors.
+      int Exit code of the network traffic annotation auditor.
     """
 
-    # If for some reason the network traffic annotations become incompatible
-    # with the current version of clang, and this test starts failing,
-    # please set test_is_enabled to "False" and file a bug to get this
-    # reenabled, and cc the people listed in //tools/traffic_annotation/OWNERS.
-    # TODO(rhalavati): Actually enable the check.
-    test_is_enabled = False
-    if not test_is_enabled:
-      return [], []
+    if not TEST_IS_ENABLED:
+      return 0
 
     if not self.build_path:
       return [self.COULD_NOT_RUN_MESSAGE], []
@@ -110,11 +107,12 @@ class NetworkTrafficAnnotationChecker():
               file_path)]
 
       if not file_paths:
-        return [], []
+        return 0
     else:
       file_paths = []
 
-    args = [self.auditor_path, "-build-path=" + self.build_path] + file_paths
+    args = [self.auditor_path, "--test-only", "--limit=%i" % limit,
+            "--build-path=" + self.build_path ] + file_paths
 
     if sys.platform.startswith("win"):
       args.insert(0, sys.executable)
@@ -123,25 +121,15 @@ class NetworkTrafficAnnotationChecker():
                                stderr=subprocess.PIPE)
     stdout_text, stderr_text = command.communicate()
 
-    errors = []
-    warnings = []
-
     if stderr_text:
-      warnings.append(
-        "Could not run network traffic annotation presubmit check. Returned "
-        "error from traffic_annotation_auditor: %s" % stderr_text)
-
-    for line in stdout_text.splitlines():
-      if line.startswith('Error: '):
-        errors.append(line[7:])
-      elif line.startswith('Warning: '):
-        warnings.append(line[9:])
-    if limit:
-      if len(errors) > limit:
-        errors = errors[:limit]
-      if len(warnings) + len(errors) > limit:
-        warnings = warnings[:limit-len(errors)]
-    return warnings, errors
+      print("Could not run network traffic annotation presubmit check. "
+            "Returned error from traffic_annotation_auditor is: %s"
+            % stderr_text)
+      print("Exit code is: %i" % command.returncode)
+      return 1
+    if stdout_text:
+      print(stdout_text)
+    return command.returncode
 
 
 def main():
@@ -156,17 +144,11 @@ def main():
       '--limit', default=5,
       help='Limit for the maximum number of returned errors and warnings. '
            'Default value is 5, use 0 for unlimited.')
+
   args = parser.parse_args()
 
   checker = NetworkTrafficAnnotationChecker(args.build_path)
-
-  warnings, errors = checker.CheckFiles(limit=args.limit)
-  if warnings:
-    print("Warnings:\n\t%s" % "\n\t".join(warnings))
-  if errors:
-    print("Errors:\n\t%s" % "\n\t".join(errors))
-
-  return 0
+  return checker.CheckFiles(limit=args.limit)
 
 
 if '__main__' == __name__:
