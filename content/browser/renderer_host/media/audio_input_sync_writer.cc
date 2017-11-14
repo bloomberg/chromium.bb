@@ -268,7 +268,7 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
     // We use |write_error_count_| for capping number of log messages.
     // |write_error_count_| also includes socket Send() errors, but those should
     // be rare.
-    if (write_error_count_ <= 50) {
+    if (write_error_count_ <= 50 && write_error_count_ % 10 == 0) {
       const std::string error_message = "AISW: No room in fifo.";
       LOG(WARNING) << error_message;
       AddToNativeLog(error_message);
