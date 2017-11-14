@@ -735,7 +735,7 @@ hooks = [
     'pattern': '.',
     'condition': 'checkout_nacl',
     'action': [
-        'python',
+        'vpython',
         'src/build/download_nacl_toolchains.py',
         '--mode', 'nacl_core_sdk',
         'sync', '--extract',
@@ -764,7 +764,7 @@ hooks = [
     'name': 'mac_toolchain',
     'pattern': '.',
     'condition': 'checkout_ios or checkout_mac',
-    'action': ['vpython', 'src/build/mac_toolchain.py'],
+    'action': ['python', 'src/build/mac_toolchain.py'],
   },
   # Pull binutils for linux, enabled debug fission for faster linking /
   # debugging when used with clang on Ubuntu Precise.
