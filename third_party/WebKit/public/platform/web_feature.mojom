@@ -892,8 +892,6 @@ enum WebFeature {
   kFormValidationStarted = 1292,
   kFormValidationAbortedSubmission = 1293,
   kFormValidationShowedMessage = 1294,
-  kWebAnimationsEasingAsFunctionLinear = 1295,
-  kWebAnimationsEasingAsFunctionOther = 1296,
   // The above items are available in M51 branch
 
   kV8Document_Images_AttributeGetter = 1297,

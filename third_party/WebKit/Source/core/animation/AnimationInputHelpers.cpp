@@ -224,27 +224,6 @@ scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
       CSSParser::ParseSingleValue(CSSPropertyTransitionTimingFunction, string);
   if (!value || !value->IsValueList()) {
     DCHECK(!value || value->IsCSSWideKeyword());
-    if (document) {
-      if (string.StartsWith("function")) {
-        // Due to a bug in old versions of the web-animations-next
-        // polyfill, in some circumstances the string passed in here
-        // may be a Javascript function instead of the allowed values
-        // from the spec
-        // (http://w3c.github.io/web-animations/#dom-animationeffecttimingreadonly-easing)
-        // This bug was fixed in
-        // https://github.com/web-animations/web-animations-next/pull/423
-        // and we want to track how often it is still being hit. The
-        // linear case is special because 'linear' is the default value
-        // for easing. See http://crbug.com/601672
-        if (string == "function (a){return a}") {
-          UseCounter::Count(*document,
-                            WebFeature::kWebAnimationsEasingAsFunctionLinear);
-        } else {
-          UseCounter::Count(*document,
-                            WebFeature::kWebAnimationsEasingAsFunctionOther);
-        }
-      }
-    }
     exception_state.ThrowTypeError("'" + string +
                                    "' is not a valid value for easing");
     return nullptr;
