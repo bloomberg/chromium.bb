@@ -37,11 +37,6 @@ IPC_STRUCT_TRAITS_END()
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the render process to the browser.
 
-// Notify the browser that this render process can or can't be suddenly
-// terminated.
-IPC_MESSAGE_CONTROL1(RenderProcessHostMsg_SuddenTerminationChanged,
-                     bool /* enabled */)
-
 #if defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.
 IPC_SYNC_MESSAGE_CONTROL1_3(RenderProcessHostMsg_LoadFont,

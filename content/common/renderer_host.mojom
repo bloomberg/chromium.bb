@@ -17,4 +17,8 @@ interface RendererHost {
   // switches::kDomAutomationController.
   [Sync]
   GetBrowserHistogram(string name) => (string histogram_json);
+
+  // Notify the browser that this render process can or can't be suddenly
+  // terminated.
+  SuddenTerminationChanged(bool enabled);
 };
