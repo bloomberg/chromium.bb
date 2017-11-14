@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 677 tests; 662 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 677 tests; 663 PASS, 14 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS background-attachment: scroll
 PASS background-attachment: fixed
 PASS background-attachment: inherit
@@ -306,7 +306,7 @@ PASS clear: left
 PASS clear: right
 PASS clear: both
 PASS clear: inherit
-FAIL clip: rect(1em, auto, 0.5px, 2000em) assert_equals: clip raw inline style declaration expected "rect(1em, auto, 0.5px, 2000em)" but got "rect(1em auto 0.5px 2000em)"
+PASS clip: rect(1em, auto, 0.5px, 2000em)
 PASS clip: auto
 PASS clip: inherit
 PASS color: black

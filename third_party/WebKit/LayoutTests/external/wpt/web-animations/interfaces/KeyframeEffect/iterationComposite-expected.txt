@@ -5,7 +5,7 @@ FAIL iterationComposite of <percentage> type animation assert_equals: Animated w
 FAIL iterationComposite of <color> type animation assert_equals: Animated color style at 0s of the third iteration expected "rgb(240, 240, 240)" but got "rgb(0, 0, 0)"
 FAIL iterationComposite of <color> type animation that green component is decreasing assert_equals: Animated color style at 0s of the third iteration expected "rgb(120, 240, 120)" but got "rgb(0, 120, 0)"
 FAIL iterationComposite of <number> type animation assert_equals: Animated flex-grow style at 0s of the third iteration expected "20" but got "0"
-FAIL iterationComposite of <shape> type animation assert_equals: Animated clip style at 50s of the first iteration expected "rect(5px, 5px, 5px, 5px)" but got "rect(5px 5px 5px 5px)"
+FAIL iterationComposite of <shape> type animation assert_equals: Animated clip style at 0s of the third iteration expected "rect(20px, 20px, 20px, 20px)" but got "rect(0px, 0px, 0px, 0px)"
 FAIL iterationComposite of <calc()> value animation assert_equals: Animated calc width style at 0s of the third iteration expected "20px" but got "0px"
 FAIL iterationComposite of <calc()> value animation that the values can'tbe reduced assert_equals: Animated calc width style at 0s of the third iteration expected "40px" but got "0px"
 FAIL iterationComposite of opacity animation assert_equals: Animated opacity style at 0s of the third iteration expected "0.8" but got "0"

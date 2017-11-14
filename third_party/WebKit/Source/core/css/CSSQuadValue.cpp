@@ -15,7 +15,7 @@ String CSSQuadValue::CustomCSSText() const {
   String left = left_->CssText();
 
   if (serialization_type_ == TypeForSerialization::kSerializeAsRect)
-    return "rect(" + top + ' ' + right + ' ' + bottom + ' ' + left + ')';
+    return "rect(" + top + ", " + right + ", " + bottom + ", " + left + ')';
 
   StringBuilder result;
   // reserve space for the four strings, plus three space separator characters.

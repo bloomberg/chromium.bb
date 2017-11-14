@@ -78,7 +78,7 @@ test(function(){
     assert_equals(sheet.cssRules[5].style.bottom, "1px");
 }, "Unitless length quirk for bottom property");
 test(function(){
-    assert_equals(sheet.cssRules[6].style.clip, "rect(1px 1px 1px 1px)");
+    assert_equals(sheet.cssRules[6].style.clip, "rect(1px, 1px, 1px, 1px)");
 }, "Unitless length quirk for clip property");
 test(function(){
     assert_equals(sheet.cssRules[7].style.fontSize, "1px");
