@@ -9,10 +9,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <queue>
 #include <string>
 
+#include "base/callback.h"
 #include "base/command_line.h"
-#include "base/containers/circular_deque.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -66,12 +67,11 @@ struct SwReporterInvocation {
   bool BehaviourIsSupported(Behaviours intended_behaviour) const;
 };
 
-using SwReporterQueue = base::circular_deque<SwReporterInvocation>;
+using SwReporterQueue = std::queue<SwReporterInvocation>;
 
-// Tries to run the sw_reporter component, and then schedule the next try. If
-// called multiple times, then multiple sequences of trying to run will happen,
-// yet only one SwReporterQueue will actually run in the period of
-// |kDaysBetweenSuccessfulSwReporterRuns| days.
+// Tries to run the sw_reporter component. If this runs successfully, than any
+// calls made in the next |kDaysBetweenSuccessfulSwReporterRuns| days will be
+// ignored.
 //
 // Each "run" of the sw_reporter component may aggregate the results of several
 // executions of the tool with different command lines. |invocations| is the
@@ -79,6 +79,13 @@ using SwReporterQueue = base::circular_deque<SwReporterInvocation>;
 // scheduled the entire queue is executed.
 //
 // |version| is the version of the tool that will run.
+//
+// When finished, will call |on_sequence_done|.
+void RunSwReportersWithCallback(const SwReporterQueue& invocations,
+                                const base::Version& version,
+                                base::OnceClosure on_sequence_done);
+
+// Same as RunSwReportersWithCallback, with a default no-op callback.
 void RunSwReporters(const SwReporterQueue& invocations,
                     const base::Version& version);
 
