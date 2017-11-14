@@ -99,8 +99,6 @@ target(link_target_type, "renderer") {
     "devtools/devtools_agent_filter.h",
     "devtools/devtools_cpu_throttler.cc",
     "devtools/devtools_cpu_throttler.h",
-    "devtools/devtools_frontend_impl.cc",
-    "devtools/devtools_frontend_impl.h",
     "devtools/render_widget_screen_metrics_emulator.cc",
     "devtools/render_widget_screen_metrics_emulator.h",
     "devtools/render_widget_screen_metrics_emulator_delegate.h",

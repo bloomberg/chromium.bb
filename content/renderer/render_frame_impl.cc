@@ -96,7 +96,6 @@
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/devtools/devtools_agent.h"
-#include "content/renderer/devtools/devtools_frontend_impl.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/effective_connection_type_helper.h"
 #include "content/renderer/external_popup_menu.h"
@@ -7022,9 +7021,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
   registry_.AddInterface(
       base::Bind(&RenderFrameImpl::BindWidget, weak_factory_.GetWeakPtr()));
-
-  GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-      &DevToolsFrontendImpl::CreateMojoService, base::Unretained(this)));
 
   if (!frame_->Parent()) {
     // Only main frame have ImageDownloader service.

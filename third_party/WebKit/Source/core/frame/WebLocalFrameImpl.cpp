@@ -1646,7 +1646,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       autofill_client_(nullptr),
       input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
-      web_dev_tools_frontend_(nullptr),
       input_method_controller_(*this),
       text_checker_client_(new TextCheckerClientImpl(this)),
       spell_check_panel_host_client_(nullptr),

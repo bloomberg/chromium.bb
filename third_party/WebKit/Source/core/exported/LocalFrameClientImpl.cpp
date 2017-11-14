@@ -42,7 +42,6 @@
 #include "core/events/UIEventWithKeyState.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebDevToolsAgentImpl.h"
-#include "core/exported/WebDevToolsFrontendImpl.h"
 #include "core/exported/WebDocumentLoaderImpl.h"
 #include "core/exported/WebPluginContainerImpl.h"
 #include "core/exported/WebViewImpl.h"
@@ -175,13 +174,6 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld() {
                                                                     *settings);
     }
   }
-  // FIXME: when extensions go out of process, this whole concept stops working.
-  WebDevToolsFrontendImpl* dev_tools_frontend =
-      web_frame_->Top()->IsWebLocalFrame()
-          ? ToWebLocalFrameImpl(web_frame_->Top())->DevToolsFrontend()
-          : nullptr;
-  if (dev_tools_frontend)
-    dev_tools_frontend->DidClearWindowObject(web_frame_);
 }
 
 void LocalFrameClientImpl::DocumentElementAvailable() {
