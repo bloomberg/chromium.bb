@@ -67,7 +67,7 @@ PaymentRequestState::PaymentRequestState(
             content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLRequestContext()),
         payment_request_delegate_->GetPaymentManifestWebDataService(),
-        spec_->method_data(),
+        spec_->payment_method_identifiers_set(),
         base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
                        weak_ptr_factory_.GetWeakPtr(), context,
                        top_level_origin, frame_origin),

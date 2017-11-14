@@ -7,12 +7,10 @@ package org.chromium.chrome.browser.payments;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,12 +49,11 @@ public class PaymentAppFactory {
          * Builds instances of payment apps.
          *
          * @param webContents The web contents that invoked PaymentRequest.
-         * @param methodData  The methods that the merchant supports, along with the method specific
-         *                    data.
+         * @param methods     The methods that the merchant supports.
          * @param callback    The callback to invoke when apps are created.
          */
-        void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
-                PaymentAppCreatedCallback callback);
+        void create(
+                WebContents webContents, Set<String> methods, PaymentAppCreatedCallback callback);
     }
 
     private PaymentAppFactory() {
@@ -93,11 +90,10 @@ public class PaymentAppFactory {
      * Builds instances of payment apps.
      *
      * @param webContents The web contents where PaymentRequest was invoked.
-     * @param methodData  The methods that the merchant supports, along with the method specific
-     *                    data.
+     * @param methods     The methods that the merchant supports.
      * @param callback    The callback to invoke when apps are created.
      */
-    public void create(WebContents webContents, Map<String, PaymentMethodData> methodData,
+    public void create(WebContents webContents, Set<String> methods,
             final PaymentAppCreatedCallback callback) {
         callback.onPaymentAppCreated(new AutofillPaymentApp(webContents));
 
@@ -106,7 +102,8 @@ public class PaymentAppFactory {
             return;
         }
 
-        final Set<PaymentAppFactoryAddition> mPendingTasks = new HashSet<>(mAdditionalFactories);
+        final Set<PaymentAppFactoryAddition> mPendingTasks =
+                new HashSet<PaymentAppFactoryAddition>(mAdditionalFactories);
 
         for (int i = 0; i < mAdditionalFactories.size(); i++) {
             final PaymentAppFactoryAddition additionalFactory = mAdditionalFactories.get(i);
@@ -122,7 +119,7 @@ public class PaymentAppFactory {
                     if (mPendingTasks.isEmpty()) callback.onAllPaymentAppsCreated();
                 }
             };
-            additionalFactory.create(webContents, methodData, cb);
+            additionalFactory.create(webContents, methods, cb);
         }
     }
 }

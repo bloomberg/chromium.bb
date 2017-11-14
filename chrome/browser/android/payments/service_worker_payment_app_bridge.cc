@@ -38,8 +38,6 @@ using ::base::android::ScopedJavaGlobalRef;
 using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
 using ::base::android::ToJavaIntArray;
-using ::payments::mojom::BasicCardNetwork;
-using ::payments::mojom::BasicCardType;
 using ::payments::mojom::CanMakePaymentEventData;
 using ::payments::mojom::CanMakePaymentEventDataPtr;
 using ::payments::mojom::PaymentCurrencyAmount;
@@ -59,7 +57,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
 
   void GetAllPaymentApps(
       content::WebContents* web_contents,
-      const std::vector<PaymentMethodDataPtr>& payment_method_data,
+      const std::set<std::string>& payment_method_identifiers_set,
       content::PaymentAppProvider::GetAllPaymentAppsCallback callback) {
     impl_.GetAllPaymentApps(
         web_contents->GetBrowserContext(),
@@ -70,7 +68,7 @@ class SelfDeletingServiceWorkerPaymentAppFactory {
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(web_contents->GetBrowserContext()),
             ServiceAccessType::EXPLICIT_ACCESS),
-        payment_method_data, std::move(callback),
+        payment_method_identifiers_set, std::move(callback),
         base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFactory::
                            OnFinishedUsingResources,
                        base::Owned(this)));
@@ -173,74 +171,24 @@ void OnPaymentAppAborted(const JavaRef<jobject>& jweb_contents,
                                                          result);
 }
 
-template <typename T>
-void ConvertIntsToEnums(const std::vector<int> ints, std::vector<T>* enums) {
-  enums->resize(ints.size());
-  for (size_t i = 0; i < ints.size(); ++i) {
-    enums->at(i) = static_cast<T>(ints.at(i));
-  }
-}
-
-std::vector<PaymentMethodDataPtr> ConvertPaymentMethodDataFromJavaToNative(
-    JNIEnv* env,
-    const JavaParamRef<jobjectArray>& jmethod_data) {
-  std::vector<PaymentMethodDataPtr> result;
-  for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
-    ScopedJavaLocalRef<jobject> element(
-        env, env->GetObjectArrayElement(jmethod_data, i));
-    PaymentMethodDataPtr method_data_item = PaymentMethodData::New();
-    base::android::AppendJavaStringArrayToStringVector(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getSupportedMethodsFromMethodData(
-            env, element)
-            .obj(),
-        &method_data_item->supported_methods);
-
-    std::vector<int> supported_network_ints;
-    base::android::JavaIntArrayToIntVector(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getSupportedNetworksFromMethodData(
-            env, element)
-            .obj(),
-        &supported_network_ints);
-    ConvertIntsToEnums<BasicCardNetwork>(supported_network_ints,
-                                         &method_data_item->supported_networks);
-
-    std::vector<int> supported_type_ints;
-    base::android::JavaIntArrayToIntVector(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getSupportedTypesFromMethodData(
-            env, element)
-            .obj(),
-        &supported_type_ints);
-    ConvertIntsToEnums<BasicCardType>(supported_type_ints,
-                                      &method_data_item->supported_types);
-
-    method_data_item->stringified_data = ConvertJavaStringToUTF8(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
-            env, element));
-    result.push_back(std::move(method_data_item));
-  }
-  return result;
-}
-
 }  // namespace
 
 static void GetAllPaymentApps(JNIEnv* env,
                               const JavaParamRef<jclass>& jcaller,
                               const JavaParamRef<jobject>& jweb_contents,
-                              const JavaParamRef<jobjectArray>& jmethod_data,
+                              const JavaParamRef<jobjectArray>& jpmis,
                               const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
+  std::vector<std::string> pmis;
+  AppendJavaStringArrayToStringVector(env, jpmis.obj(), &pmis);
+
   (new SelfDeletingServiceWorkerPaymentAppFactory())
       ->GetAllPaymentApps(
-          web_contents,
-          ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data),
+          web_contents, std::set<std::string>(pmis.begin(), pmis.end()),
           base::BindOnce(&OnGotAllPaymentApps,
                          ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                          ScopedJavaGlobalRef<jobject>(env, jcallback)));
@@ -264,8 +212,23 @@ static void CanMakePayment(JNIEnv* env,
       GURL(ConvertJavaStringToUTF8(env, jtop_level_origin));
   event_data->payment_request_origin =
       GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
-  event_data->method_data =
-      ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data);
+
+  for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
+    ScopedJavaLocalRef<jobject> element(
+        env, env->GetObjectArrayElement(jmethod_data, i));
+    PaymentMethodDataPtr methodData = PaymentMethodData::New();
+    base::android::AppendJavaStringArrayToStringVector(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getSupportedMethodsFromMethodData(
+            env, element)
+            .obj(),
+        &methodData->supported_methods);
+    methodData->stringified_data = ConvertJavaStringToUTF8(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
+            env, element));
+    event_data->method_data.push_back(std::move(methodData));
+  }
 
   for (jsize i = 0; i < env->GetArrayLength(jmodifiers); i++) {
     ScopedJavaLocalRef<jobject> jmodifier(
@@ -338,8 +301,23 @@ static void InvokePaymentApp(
       GURL(ConvertJavaStringToUTF8(env, jpayment_request_origin));
   event_data->payment_request_id =
       ConvertJavaStringToUTF8(env, jpayment_request_id);
-  event_data->method_data =
-      ConvertPaymentMethodDataFromJavaToNative(env, jmethod_data);
+
+  for (jsize i = 0; i < env->GetArrayLength(jmethod_data); i++) {
+    ScopedJavaLocalRef<jobject> element(
+        env, env->GetObjectArrayElement(jmethod_data, i));
+    PaymentMethodDataPtr methodData = PaymentMethodData::New();
+    base::android::AppendJavaStringArrayToStringVector(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getSupportedMethodsFromMethodData(
+            env, element)
+            .obj(),
+        &methodData->supported_methods);
+    methodData->stringified_data = ConvertJavaStringToUTF8(
+        env,
+        Java_ServiceWorkerPaymentAppBridge_getStringifiedDataFromMethodData(
+            env, element));
+    event_data->method_data.push_back(std::move(methodData));
+  }
 
   event_data->total = PaymentCurrencyAmount::New();
   event_data->total->currency = ConvertJavaStringToUTF8(
