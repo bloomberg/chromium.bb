@@ -111,7 +111,7 @@ class TestPreviewsDecider : public previews::PreviewsDecider {
 
 class DataReductionProxyConfigTest : public testing::Test {
  public:
-  DataReductionProxyConfigTest() {}
+  DataReductionProxyConfigTest() : mock_config_used_(false) {}
   ~DataReductionProxyConfigTest() override {}
 
   void SetUp() override {
@@ -129,6 +129,7 @@ class DataReductionProxyConfigTest : public testing::Test {
   }
 
   void RecreateContextWithMockConfig() {
+    mock_config_used_ = true;
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithMockConfig()
                         .WithMockDataReductionProxyService()
@@ -139,7 +140,12 @@ class DataReductionProxyConfigTest : public testing::Test {
     expected_params_.reset(new TestDataReductionProxyParams());
   }
 
-  void ResetSettings() { config()->ResetParamFlagsForTest(); }
+  void ResetSettings() {
+    if (mock_config_used_)
+      mock_config()->ResetParamFlagsForTest();
+    else
+      test_config()->ResetParamFlagsForTest();
+  }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
     return message_loop_.task_runner();
@@ -169,11 +175,11 @@ class DataReductionProxyConfigTest : public testing::Test {
     responder.response = response;
     responder.status = status;
     responder.http_response_code = response_code;
-    EXPECT_CALL(*config(), SecureProxyCheck(_))
+    EXPECT_CALL(*mock_config(), SecureProxyCheck(_))
         .Times(1)
         .WillRepeatedly(testing::WithArgs<0>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
-    config()->SetIsCaptivePortal(is_captive_portal);
+    mock_config()->SetIsCaptivePortal(is_captive_portal);
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
@@ -206,8 +212,14 @@ class DataReductionProxyConfigTest : public testing::Test {
         test_context_->configurator(), test_context_->event_creator());
   }
 
-  MockDataReductionProxyConfig* config() {
+  MockDataReductionProxyConfig* mock_config() {
+    DCHECK(mock_config_used_);
     return test_context_->mock_config();
+  }
+
+  TestDataReductionProxyConfig* test_config() {
+    DCHECK(!mock_config_used_);
+    return test_context_->config();
   }
 
   DataReductionProxyConfigurator* configurator() const {
@@ -230,6 +242,7 @@ class DataReductionProxyConfigTest : public testing::Test {
 
  private:
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  bool mock_config_used_;
 
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
@@ -249,8 +262,8 @@ TEST_F(DataReductionProxyConfigTest, TestReloadConfigHoldback) {
 
   ResetSettings();
 
-  config()->UpdateConfigForTesting(true, false, true);
-  config()->OnNewClientConfigFetched();
+  test_config()->UpdateConfigForTesting(true, false, true);
+  test_config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
@@ -266,39 +279,39 @@ TEST_F(DataReductionProxyConfigTest,
 
   ResetSettings();
 
-  config()->UpdateConfigForTesting(true /* enabled */,
-                                   false /* secure_proxies_allowed */,
-                                   true /* insecure_proxies_allowed */);
-  config()->OnNewClientConfigFetched();
+  test_config()->UpdateConfigForTesting(true /* enabled */,
+                                        false /* secure_proxies_allowed */,
+                                        true /* insecure_proxies_allowed */);
+  test_config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
-  config()->UpdateConfigForTesting(true, true, false);
-  config()->OnNewClientConfigFetched();
+  test_config()->UpdateConfigForTesting(true, true, false);
+  test_config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
             GetConfiguredProxiesForHttp());
 
-  config()->UpdateConfigForTesting(true, false, false);
-  config()->OnNewClientConfigFetched();
+  test_config()->UpdateConfigForTesting(true, false, false);
+  test_config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
-  config()->UpdateConfigForTesting(true, true, true);
-  config()->OnNewClientConfigFetched();
+  test_config()->UpdateConfigForTesting(true, true, true);
+  test_config()->OnNewClientConfigFetched();
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 
   // Calling OnInsecureProxyWarmupURLProbeStatusChange should reload the config.
-  config()->OnInsecureProxyWarmupURLProbeStatusChange(false);
+  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(false);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
             GetConfiguredProxiesForHttp());
 
   // Calling OnInsecureProxyWarmupURLProbeStatusChange again with the same
   // status has no effect.
-  config()->OnInsecureProxyWarmupURLProbeStatusChange(false);
+  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(false);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy}),
             GetConfiguredProxiesForHttp());
 
-  config()->OnInsecureProxyWarmupURLProbeStatusChange(true);
+  test_config()->OnInsecureProxyWarmupURLProbeStatusChange(true);
   EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
             GetConfiguredProxiesForHttp());
 }
@@ -315,8 +328,8 @@ TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
   ResetSettings();
 
   // The proxy is enabled initially.
-  config()->UpdateConfigForTesting(true, true, true);
-  config()->OnNewClientConfigFetched();
+  mock_config()->UpdateConfigForTesting(true, true, true);
+  mock_config()->OnNewClientConfigFetched();
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
@@ -937,11 +950,11 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLoFi) {
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       base::MakeUnique<TestPreviewsDecider>(true);
   EXPECT_TRUE(
-      config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
+      test_config()->ShouldEnableLoFi(*request.get(), *previews_decider.get()));
 
   previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(
-      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldEnableLitePages(*request.get(),
+                                                    *previews_decider.get()));
 }
 
 TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePages) {
@@ -957,12 +970,12 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePages) {
                         net::LOAD_MAIN_FRAME_DEPRECATED);
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       base::MakeUnique<TestPreviewsDecider>(true);
-  EXPECT_TRUE(
-      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldEnableLitePages(*request.get(),
+                                                   *previews_decider.get()));
 
   previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(
-      config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldEnableLitePages(*request.get(),
+                                                    *previews_decider.get()));
 }
 
 TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
@@ -985,16 +998,16 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
       base::MakeUnique<TestPreviewsDecider>(true);
 
   // Verify true for no flags.
-  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                  *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
 
   // Verify false for kill switch.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueDisabled);
-  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                   *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.Protocol.NotAcceptingTransform",
       0 /* NOT_ACCEPTING_TRANSFORM_DISABLED */, 1);
@@ -1004,32 +1017,32 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                  *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
 
   // Verify false for Cellular Only flag and WIFI connection.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, nullptr);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueCellularOnly);
-  config()->SetConnectionTypeForTesting(
+  test_config()->SetConnectionTypeForTesting(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                   *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.Protocol.NotAcceptingTransform",
       2 /* NOT_ACCEPTING_TRANSFORM_CELLULAR_ONLY */, 1);
 
   // Verify true for Cellular Only flag and 3G connection.
-  config()->SetConnectionTypeForTesting(
+  test_config()->SetConnectionTypeForTesting(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
-  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                  *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
 
   // Verify PreviewsDecider check.
   previews_decider = base::MakeUnique<TestPreviewsDecider>(false);
-  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                   *previews_decider.get()));
+  EXPECT_FALSE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
   histogram_tester.ExpectBucketCount(
       "DataReductionProxy.Protocol.NotAcceptingTransform",
       1 /* NOT_ACCEPTING_TRANSFORM_BLACKLISTED */, 1);
@@ -1040,8 +1053,8 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueAlwaysOn);
-  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
-                                                  *previews_decider.get()));
+  EXPECT_TRUE(test_config()->ShouldAcceptServerPreview(
+      *request.get(), *previews_decider.get()));
 }
 
 }  // namespace data_reduction_proxy
