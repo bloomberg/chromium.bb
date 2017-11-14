@@ -299,8 +299,7 @@ void PluginInfoHostImpl::IsInternalPluginAvailableForMimeType(
           is_plugin_disabled = true;
           break;
         }
-        std::vector<chrome::mojom::PluginParamPtr> params(
-            mime_types[j].additional_params.size());
+        std::vector<chrome::mojom::PluginParamPtr> params;
         for (const auto& p : mime_types[j].additional_params) {
           params.emplace_back(chrome::mojom::PluginParam::New(p.name, p.value));
         }
