@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
-<script src="../tracing-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Test the frames are correctly built based on trace events\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
   var sessionId = '4.20';
   var mainThread = 1;
   var implThread = 2;
@@ -1849,15 +1851,4 @@ function test() {
     }
   }
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test the frames are correctly built based on trace events
-</p>
-
-</body>
-</html>
+})();

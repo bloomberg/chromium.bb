@@ -1,15 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
-  InspectorTest.TestTimelineLoaderClient = function() {
+(async function() {
+  TestRunner.addResult(`Tests tracing based Timeline save/load functionality.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+
+  TestRunner.TestTimelineLoaderClient = function() {
     this._completePromise = new Promise(resolve => this._resolve = resolve);
   };
 
-  InspectorTest.TestTimelineLoaderClient.prototype = {
+  TestRunner.TestTimelineLoaderClient.prototype = {
     loadingStarted: function() {
       TestRunner.addResult('TimelineLoaderClient.loadingStarted()');
     },
@@ -38,7 +40,7 @@ function test() {
       callback();
     }
 
-    var client = new InspectorTest.TestTimelineLoaderClient();
+    var client = new TestRunner.TestTimelineLoaderClient();
     var blob = new Blob([input], {type: 'text/pain'});
     var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
     var stream = new TestRunner.StringOutputStream(TestRunner.safeWrap(checkSaveData));
@@ -49,7 +51,7 @@ function test() {
   }
 
   async function runTestOnMalformedInput(input, callback) {
-    var client = new InspectorTest.TestTimelineLoaderClient();
+    var client = new TestRunner.TestTimelineLoaderClient();
     var blob = new Blob([input], {type: 'text/pain'});
     var loader = Timeline.TimelineLoader.loadFromFile(blob, client);
     var model = await client.modelPromise();
@@ -495,14 +497,4 @@ function test() {
       runTestOnMalformedInput(']', next);
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests tracing based Timeline save/load functionality.
-</p>
-</body>
-</html>
+})();
