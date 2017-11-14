@@ -9,7 +9,6 @@
 #include "core/dom/SandboxFlags.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "public/platform/WebVector.h"
 #include "third_party/WebKit/common/feature_policy/feature_policy.h"
 
 namespace blink {
