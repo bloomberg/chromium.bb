@@ -271,7 +271,7 @@ RemoteMediaPlayerBridge* RemoteMediaPlayerManager::GetRemotePlayer(
 
 MediaPlayerAndroid* RemoteMediaPlayerManager::GetLocalPlayer(int player_id) {
   if (!IsPlayingRemotely(player_id))
-    return static_cast<RemoteMediaPlayerBridge*>(GetPlayer(player_id));
+    return GetPlayer(player_id);
   auto it = GetAlternativePlayer(player_id);
   if (it == alternative_players_.end())
     return nullptr;
