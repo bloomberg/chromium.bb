@@ -318,7 +318,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
                                       : CastDeviceCapability::NONE);
 
   cast_socket_service_->OpenSocket(
-      open_params, base::Bind(&CastChannelOpenFunction::OnOpen, this));
+      open_params, base::BindOnce(&CastChannelOpenFunction::OnOpen, this));
 }
 
 void CastChannelOpenFunction::OnOpen(CastSocket* socket) {
