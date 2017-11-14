@@ -1152,10 +1152,11 @@ AXObject* AXLayoutObject::NextOnLine() const {
     result = next_sibling->Children()[0].Get();
   } else {
     InlineBox* inline_box = nullptr;
-    if (GetLayoutObject()->IsLayoutInline())
+    if (GetLayoutObject()->IsLayoutInline()) {
       inline_box = ToLayoutInline(GetLayoutObject())->LastLineBox();
-    else if (GetLayoutObject()->IsText())
+    } else if (GetLayoutObject()->IsText()) {
       inline_box = ToLayoutText(GetLayoutObject())->LastTextBox();
+    }
 
     if (!inline_box)
       return nullptr;
@@ -1168,12 +1169,14 @@ AXObject* AXLayoutObject::NextOnLine() const {
       if (result)
         break;
     }
+
+    if (!result && ParentObject())
+      result = ParentObject()->NextOnLine();
   }
 
-  // A static text node might span multiple lines. Try to return the first
-  // inline text box within that static text if possible.
-  if (result && result->RoleValue() == kStaticTextRole &&
-      result->Children().size())
+  // For consistency between the forward and backward directions, try to always
+  // return leaf nodes.
+  while (result && result->Children().size())
     result = result->Children()[0].Get();
 
   return result;
@@ -1184,10 +1187,11 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     return nullptr;
 
   InlineBox* inline_box = nullptr;
-  if (GetLayoutObject()->IsLayoutInline())
+  if (GetLayoutObject()->IsLayoutInline()) {
     inline_box = ToLayoutInline(GetLayoutObject())->FirstLineBox();
-  else if (GetLayoutObject()->IsText())
+  } else if (GetLayoutObject()->IsText()) {
     inline_box = ToLayoutText(GetLayoutObject())->FirstTextBox();
+  }
 
   if (!inline_box)
     return nullptr;
@@ -1202,10 +1206,12 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
       break;
   }
 
-  // A static text node might span multiple lines. Try to return the last inline
-  // text box within that static text if possible.
-  if (result && result->RoleValue() == kStaticTextRole &&
-      result->Children().size())
+  if (!result && ParentObject())
+    result = ParentObject()->PreviousOnLine();
+
+  // For consistency between the forward and backward directions, try to always
+  // return leaf nodes.
+  while (result && result->Children().size())
     result = result->Children()[result->Children().size() - 1].Get();
 
   return result;
