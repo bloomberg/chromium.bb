@@ -20,7 +20,8 @@
 namespace reading_list {
 
 // Test class.
-class FaviconWebStateDispatcherTest : public PlatformTest {
+class FaviconWebStateDispatcherTest : public PlatformTest,
+                                      public web::WebStateObserver {
  public:
   FaviconWebStateDispatcherTest() : web_state_destroyed_(false) {
     TestChromeBrowserState::Builder builder;
@@ -30,28 +31,17 @@ class FaviconWebStateDispatcherTest : public PlatformTest {
   web::BrowserState* GetBrowserState() { return browser_state_.get(); }
 
   bool IsWebStateDestroyed() { return web_state_destroyed_; }
-  void WebStateDestroyed() { web_state_destroyed_ = true; }
+
+  // web::WebStateObserver implementation.
+  void WebStateDestroyed(web::WebState* web_state) override {
+    web_state->RemoveObserver(this);
+    web_state_destroyed_ = true;
+  }
 
  private:
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   bool web_state_destroyed_;
-};
-
-// Observer for the test.
-class TestFaviconWebStateDispatcherObserver : public web::WebStateObserver {
- public:
-  TestFaviconWebStateDispatcherObserver(web::WebState* web_state,
-                                        FaviconWebStateDispatcherTest* owner)
-      : web::WebStateObserver(web_state), owner_(owner) {}
-
-  // WebStateObserver implementation:
-  void WebStateDestroyed(web::WebState* web_state) override {
-    owner_->WebStateDestroyed();
-  };
-
- private:
-  FaviconWebStateDispatcherTest* owner_;  // weak, owns this object.
 };
 
 // Tests that RequestWebState returns a WebState with a FaviconDriver attached.
@@ -68,8 +58,7 @@ TEST_F(FaviconWebStateDispatcherTest, RequestWebState) {
 TEST_F(FaviconWebStateDispatcherTest, ReturnWebState) {
   FaviconWebStateDispatcherImpl dispatcher(GetBrowserState(), 0);
   std::unique_ptr<web::WebState> web_state = dispatcher.RequestWebState();
-
-  TestFaviconWebStateDispatcherObserver observer(web_state.get(), this);
+  web_state->AddObserver(this);
 
   ConditionBlock condition = ^{
     return IsWebStateDestroyed();
