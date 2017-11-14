@@ -11,11 +11,11 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_crypto.h"
-#include "chrome/common/extensions/wifi_credentials_getter.mojom.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/services/wifi_util_win/public/interfaces/constants.mojom.h"
+#include "chrome/services/wifi_util_win/public/interfaces/wifi_credentials_getter.mojom.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_mojo_client.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -29,7 +29,8 @@ class CredentialsGetterHostClient {
 
   void GetWiFiCredentialsOnIOThread(
       const std::string& network_guid,
-      const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback);
+      const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback,
+      std::unique_ptr<service_manager::Connector> connector);
 
  private:
   explicit CredentialsGetterHostClient(const std::string& public_key)
@@ -50,9 +51,7 @@ class CredentialsGetterHostClient {
   NetworkingPrivateCredentialsGetter::CredentialsCallback callback_;
 
   // Utility process used to get the credentials.
-  std::unique_ptr<content::UtilityProcessMojoClient<
-      extensions::mojom::WiFiCredentialsGetter>>
-      utility_process_mojo_client_;
+  chrome::mojom::WiFiCredentialsGetterPtr wifi_credentials_getter_;
 
   // WiFi network to get the credentials from.
   std::string wifi_network_;
@@ -62,29 +61,22 @@ class CredentialsGetterHostClient {
 
 void CredentialsGetterHostClient::GetWiFiCredentialsOnIOThread(
     const std::string& network_guid,
-    const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback) {
+    const NetworkingPrivateCredentialsGetter::CredentialsCallback& callback,
+    std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(!utility_process_mojo_client_);
+  DCHECK(!wifi_credentials_getter_);
   DCHECK(!callback.is_null());
 
   wifi_network_ = network_guid;
   callback_ = callback;
 
-  const base::string16 utility_process_name = l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME);
+  connector->BindInterface(chrome::mojom::kWifiUtilWinServiceName,
+                           &wifi_credentials_getter_);
 
-  utility_process_mojo_client_.reset(
-      new content::UtilityProcessMojoClient<
-          extensions::mojom::WiFiCredentialsGetter>(utility_process_name));
-  utility_process_mojo_client_->set_error_callback(
+  wifi_credentials_getter_.set_connection_error_handler(
       base::Bind(&CredentialsGetterHostClient::GetWiFiCredentialsDone,
                  base::Unretained(this), false, std::string()));
-
-  utility_process_mojo_client_->set_run_elevated();
-
-  utility_process_mojo_client_->Start();  // Start the utility process.
-
-  utility_process_mojo_client_->service()->GetWiFiCredentials(
+  wifi_credentials_getter_->GetWiFiCredentials(
       wifi_network_,
       base::Bind(&CredentialsGetterHostClient::GetWiFiCredentialsDone,
                  base::Unretained(this)));
@@ -95,7 +87,7 @@ void CredentialsGetterHostClient::GetWiFiCredentialsDone(
     const std::string& key_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  utility_process_mojo_client_.reset();  // Terminate the utility process.
+  wifi_credentials_getter_.reset();
   ReportResult(success, key_data);
   delete this;
 }
@@ -107,8 +99,7 @@ void CredentialsGetterHostClient::ReportResult(bool success,
     return;
   }
 
-  if (wifi_network_ ==
-      extensions::mojom::WiFiCredentialsGetter::kWiFiTestNetwork) {
+  if (wifi_network_ == chrome::mojom::WiFiCredentialsGetter::kWiFiTestNetwork) {
     DCHECK_EQ(wifi_network_, key_data);
     callback_.Run(key_data, std::string());
     return;
@@ -141,25 +132,44 @@ class NetworkingPrivateCredentialsGetterWin
   void Start(const std::string& network_guid,
              const std::string& public_key,
              const CredentialsCallback& callback) override {
+    // Bounce to the UI thread to retrieve a service_manager::Connector.
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &NetworkingPrivateCredentialsGetterWin::GetCredentialsOnIOThread,
-            network_guid, public_key, callback));
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&NetworkingPrivateCredentialsGetterWin::StartOnUIThread,
+                   network_guid, public_key, callback));
   }
 
  private:
   ~NetworkingPrivateCredentialsGetterWin() override = default;
 
-  static void GetCredentialsOnIOThread(const std::string& network_guid,
-                                       const std::string& public_key,
-                                       const CredentialsCallback& callback) {
+  static void StartOnUIThread(const std::string& network_guid,
+                              const std::string& public_key,
+                              const CredentialsCallback& callback) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    std::unique_ptr<service_manager::Connector> connector =
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &NetworkingPrivateCredentialsGetterWin::GetCredentialsOnIOThread,
+            network_guid, public_key, callback, std::move(connector)));
+  }
+
+  static void GetCredentialsOnIOThread(
+      const std::string& network_guid,
+      const std::string& public_key,
+      const CredentialsCallback& callback,
+      std::unique_ptr<service_manager::Connector> connector) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
     // CredentialsGetterHostClient is self deleting.
     CredentialsGetterHostClient* client =
         CredentialsGetterHostClient::Create(public_key);
-    client->GetWiFiCredentialsOnIOThread(network_guid, callback);
+    client->GetWiFiCredentialsOnIOThread(network_guid, callback,
+                                         std::move(connector));
   }
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCredentialsGetterWin);

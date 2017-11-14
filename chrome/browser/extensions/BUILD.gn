@@ -1076,6 +1076,7 @@ static_library("extensions") {
 
   if (is_win) {
     deps += [
+      "//chrome/services/wifi_util_win/public/interfaces",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]

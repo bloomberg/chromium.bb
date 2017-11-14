@@ -8,7 +8,7 @@
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
-#include "chrome/common/extensions/wifi_credentials_getter.mojom.h"
+#include "chrome/services/wifi_util_win/public/interfaces/wifi_credentials_getter.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -25,7 +25,7 @@ class NetworkingPrivateCredentialsGetterTest : public InProcessBrowserTest {
     quit_closure_ = run_loop.QuitClosure();
 
     if (use_test_network)
-      network_ = extensions::mojom::WiFiCredentialsGetter::kWiFiTestNetwork;
+      network_ = chrome::mojom::WiFiCredentialsGetter::kWiFiTestNetwork;
 
     done_called_ = false;
     base::PostTaskWithTraits(

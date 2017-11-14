@@ -250,6 +250,7 @@
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 #include "chrome/services/util_win/public/interfaces/constants.mojom.h"
+#include "chrome/services/wifi_util_win/public/interfaces/constants.mojom.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -3132,17 +3133,23 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_GALLERY_UTILITY_NAME);
 #endif
 
+#if defined(OS_WIN)
+  (*services)[chrome::mojom::kUtilWinServiceName] =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_UTILITY_WIN_NAME);
+#endif
+
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
+  (*services)[chrome::mojom::kWifiUtilWinServiceName] =
+      l10n_util::GetStringUTF16(
+          IDS_UTILITY_PROCESS_WIFI_CREDENTIALS_GETTER_NAME);
+#endif
+
 #if !defined(OS_ANDROID)
   (*services)[chrome::mojom::kProfileImportServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
 
   (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
-#endif
-
-#if defined(OS_WIN)
-  (*services)[chrome::mojom::kUtilWinServiceName] =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_UTILITY_WIN_NAME);
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
