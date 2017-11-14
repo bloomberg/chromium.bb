@@ -137,8 +137,16 @@ bool Process::Terminate(int exit_code, bool wait) const {
     if (wait && ::WaitForSingleObject(Handle(), 60 * 1000) != WAIT_OBJECT_0)
       DPLOG(ERROR) << "Error waiting for process exit";
     Exited(exit_code);
-  } else if (!result) {
+  } else {
+    // The process can't be terminated, perhaps because it has already
+    // exited.
     DPLOG(ERROR) << "Unable to terminate process";
+    if (::WaitForSingleObject(Handle(), 0) == WAIT_OBJECT_0) {
+      DWORD actual_exit;
+      Exited(::GetExitCodeProcess(Handle(), &actual_exit) ? actual_exit
+                                                          : exit_code);
+      result = true;
+    }
   }
   return result;
 }
