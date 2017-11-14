@@ -56,7 +56,7 @@ void InstalledAppController::GetInstalledRelatedApps(
   // TODO(mgiuca): This roundtrip to content could be eliminated if the Manifest
   // class was moved from content into Blink.
   related_apps_fetcher_->GetManifestRelatedApplications(
-      WTF::MakeUnique<GetRelatedAppsCallbacks>(this, std::move(callbacks)));
+      std::make_unique<GetRelatedAppsCallbacks>(this, std::move(callbacks)));
 }
 
 void InstalledAppController::ProvideTo(

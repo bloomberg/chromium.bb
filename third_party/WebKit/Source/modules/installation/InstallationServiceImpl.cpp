@@ -4,7 +4,9 @@
 
 #include "modules/installation/InstallationServiceImpl.h"
 
+#include <memory>
 #include <utility>
+
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -20,7 +22,7 @@ InstallationServiceImpl::InstallationServiceImpl(LocalFrame& frame)
 void InstallationServiceImpl::Create(
     LocalFrame* frame,
     mojom::blink::InstallationServiceRequest request) {
-  mojo::MakeStrongBinding(WTF::MakeUnique<InstallationServiceImpl>(*frame),
+  mojo::MakeStrongBinding(std::make_unique<InstallationServiceImpl>(*frame),
                           std::move(request));
 }
 

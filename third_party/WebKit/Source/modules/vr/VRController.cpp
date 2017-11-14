@@ -46,7 +46,7 @@ void VRController::GetDisplays(ScriptPromiseResolver* resolver) {
   // Otherwise we're still waiting for the full list of displays to be populated
   // so queue up the promise for resolution when onDisplaysSynced is called.
   pending_get_devices_callbacks_.push_back(
-      WTF::MakeUnique<VRGetDevicesCallback>(resolver));
+      std::make_unique<VRGetDevicesCallback>(resolver));
 }
 
 void VRController::SetListeningForActivate(bool listening) {

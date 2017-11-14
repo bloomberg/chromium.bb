@@ -4,6 +4,9 @@
 
 #include "modules/document_metadata/CopylessPasteServer.h"
 
+#include <memory>
+#include <utility>
+
 #include "core/frame/LocalFrame.h"
 #include "modules/document_metadata/CopylessPasteExtractor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -19,7 +22,7 @@ void CopylessPasteServer::BindMojoRequest(
 
   // TODO(wychen): remove bindMojoRequest pattern, and make this a service
   // associated with frame lifetime.
-  mojo::MakeStrongBinding(WTF::MakeUnique<CopylessPasteServer>(*frame),
+  mojo::MakeStrongBinding(std::make_unique<CopylessPasteServer>(*frame),
                           std::move(request));
 }
 

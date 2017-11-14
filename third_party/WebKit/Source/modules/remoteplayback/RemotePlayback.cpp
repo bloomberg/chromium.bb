@@ -237,7 +237,7 @@ void RemotePlayback::PromptInternal() {
     if (client && !availability_urls_.IsEmpty()) {
       client->StartPresentation(
           availability_urls_,
-          WTF::MakeUnique<RemotePlaybackConnectionCallbacks>(this));
+          std::make_unique<RemotePlaybackConnectionCallbacks>(this));
     } else {
       // TODO(yuryu): Wrapping PromptCancelled with WTF::Closure as
       // InspectorInstrumentation requires a globally unique pointer to track
@@ -245,7 +245,7 @@ void RemotePlayback::PromptInternal() {
       // task id.
       WTF::Closure task =
           WTF::Bind(&RemotePlayback::PromptCancelled, WrapPersistent(this));
-      std::unique_ptr<int> task_id = WTF::MakeUnique<int>(0);
+      std::unique_ptr<int> task_id = std::make_unique<int>(0);
       probe::AsyncTaskScheduled(GetExecutionContext(), "promptCancelled",
                                 task_id.get());
       GetExecutionContext()
@@ -283,7 +283,7 @@ int RemotePlayback::WatchAvailabilityInternal(
   // We can remove the wrapper if InspectorInstrumentation returns a task id.
   WTF::Closure task = WTF::Bind(&RemotePlayback::NotifyInitialAvailability,
                                 WrapPersistent(this), id);
-  std::unique_ptr<int> task_id = WTF::MakeUnique<int>(0);
+  std::unique_ptr<int> task_id = std::make_unique<int>(0);
   probe::AsyncTaskScheduled(GetExecutionContext(), "watchAvailabilityCallback",
                             task_id.get());
   GetExecutionContext()

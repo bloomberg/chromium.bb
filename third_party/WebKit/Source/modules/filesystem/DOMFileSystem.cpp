@@ -210,7 +210,7 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
                                      WTF::Closure task) {
   DCHECK(execution_context->IsContextThread());
 
-  std::unique_ptr<int> identifier = WTF::MakeUnique<int>(0);
+  std::unique_ptr<int> identifier = std::make_unique<int>(0);
   probe::AsyncTaskScheduled(execution_context, TaskNameForInstrumentation(),
                             identifier.get());
   execution_context->GetTaskRunner(TaskType::kFileReading)

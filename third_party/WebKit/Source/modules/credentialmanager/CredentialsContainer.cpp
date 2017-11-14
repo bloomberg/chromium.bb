@@ -389,8 +389,9 @@ ScriptPromise CredentialsContainer::create(
     LocalFrame* frame =
         ToDocument(ExecutionContext::From(script_state))->GetFrame();
     CredentialManagerClient::From(ExecutionContext::From(script_state))
-        ->DispatchMakeCredential(*frame, options.publicKey(),
-                                 WTF::MakeUnique<PublicKeyCallbacks>(resolver));
+        ->DispatchMakeCredential(
+            *frame, options.publicKey(),
+            std::make_unique<PublicKeyCallbacks>(resolver));
   }
   return promise;
 }

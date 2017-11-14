@@ -119,21 +119,21 @@ void ModulesInitializer::Initialize() {
 
   // Canvas context types must be registered with the HTMLCanvasElement.
   HTMLCanvasElement::RegisterRenderingContextFactory(
-      WTF::MakeUnique<CanvasRenderingContext2D::Factory>());
+      std::make_unique<CanvasRenderingContext2D::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
-      WTF::MakeUnique<WebGLRenderingContext::Factory>());
+      std::make_unique<WebGLRenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
-      WTF::MakeUnique<WebGL2RenderingContext::Factory>());
+      std::make_unique<WebGL2RenderingContext::Factory>());
   HTMLCanvasElement::RegisterRenderingContextFactory(
-      WTF::MakeUnique<ImageBitmapRenderingContext::Factory>());
+      std::make_unique<ImageBitmapRenderingContext::Factory>());
 
   // OffscreenCanvas context types must be registered with the OffscreenCanvas.
   OffscreenCanvas::RegisterRenderingContextFactory(
-      WTF::MakeUnique<OffscreenCanvasRenderingContext2D::Factory>());
+      std::make_unique<OffscreenCanvasRenderingContext2D::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
-      WTF::MakeUnique<WebGLRenderingContext::Factory>());
+      std::make_unique<WebGLRenderingContext::Factory>());
   OffscreenCanvas::RegisterRenderingContextFactory(
-      WTF::MakeUnique<WebGL2RenderingContext::Factory>());
+      std::make_unique<WebGL2RenderingContext::Factory>());
 }
 
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {

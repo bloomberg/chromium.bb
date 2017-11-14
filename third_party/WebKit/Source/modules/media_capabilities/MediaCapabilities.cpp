@@ -4,6 +4,8 @@
 
 #include "modules/media_capabilities/MediaCapabilities.h"
 
+#include <memory>
+
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -219,7 +221,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 
   Platform::Current()->MediaCapabilitiesClient()->DecodingInfo(
       ToWebMediaConfiguration(configuration),
-      WTF::MakeUnique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
+      std::make_unique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
           resolver));
 
   return promise;
@@ -266,7 +268,7 @@ ScriptPromise MediaCapabilities::encodingInfo(
 
   handler->EncodingInfo(
       ToWebMediaConfiguration(configuration),
-      WTF::MakeUnique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
+      std::make_unique<CallbackPromiseAdapter<MediaCapabilitiesInfo, void>>(
           resolver));
   return promise;
 }

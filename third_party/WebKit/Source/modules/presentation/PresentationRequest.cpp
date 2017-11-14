@@ -4,6 +4,8 @@
 
 #include "modules/presentation/PresentationRequest.h"
 
+#include <memory>
+
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -162,7 +164,7 @@ ScriptPromise PresentationRequest::start(ScriptState* script_state) {
   RecordStartOriginTypeAccess(*execution_context);
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   client->StartPresentation(
-      urls_, WTF::MakeUnique<PresentationConnectionCallbacks>(resolver, this));
+      urls_, std::make_unique<PresentationConnectionCallbacks>(resolver, this));
   return resolver->Promise();
 }
 
@@ -188,12 +190,12 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
   if (existing_connection) {
     client->ReconnectPresentation(
         urls_, id,
-        WTF::MakeUnique<PresentationConnectionCallbacks>(resolver,
-                                                         existing_connection));
+        std::make_unique<PresentationConnectionCallbacks>(resolver,
+                                                          existing_connection));
   } else {
     client->ReconnectPresentation(
         urls_, id,
-        WTF::MakeUnique<PresentationConnectionCallbacks>(resolver, this));
+        std::make_unique<PresentationConnectionCallbacks>(resolver, this));
   }
   return resolver->Promise();
 }
@@ -214,7 +216,7 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* script_state) {
         PresentationAvailabilityProperty::kReady);
 
     client->GetAvailability(urls_,
-                            WTF::MakeUnique<PresentationAvailabilityCallbacks>(
+                            std::make_unique<PresentationAvailabilityCallbacks>(
                                 availability_property_, urls_));
   }
   return availability_property_->Promise(script_state->World());
