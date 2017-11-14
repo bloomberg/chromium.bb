@@ -1374,7 +1374,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                   requests_.front()->info(),
                                   &addr_list)) {
       // This will destroy the Job.
-      CompleteRequests(MakeCacheEntry(OK, addr_list), base::TimeDelta());
+      CompleteRequests(
+          MakeCacheEntry(OK, addr_list, HostCache::Entry::SOURCE_HOSTS),
+          base::TimeDelta());
       return true;
     }
     return false;
@@ -1418,19 +1420,22 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
   // HostCache::Entry(). The address list is omited from the cache entry
   // for errors.
   HostCache::Entry MakeCacheEntry(int net_error,
-                                  const AddressList& addr_list) const {
+                                  const AddressList& addr_list,
+                                  HostCache::Entry::Source source) const {
     return HostCache::Entry(
         net_error,
-        net_error == OK ? MakeAddressListForRequest(addr_list) : AddressList());
+        net_error == OK ? MakeAddressListForRequest(addr_list) : AddressList(),
+        source);
   }
 
   HostCache::Entry MakeCacheEntryWithTTL(int net_error,
                                          const AddressList& addr_list,
+                                         HostCache::Entry::Source source,
                                          base::TimeDelta ttl) const {
     return HostCache::Entry(
         net_error,
         net_error == OK ? MakeAddressListForRequest(addr_list) : AddressList(),
-        ttl);
+        source, ttl);
   }
 
   AddressList MakeAddressListForRequest(const AddressList& list) const {
@@ -1536,8 +1541,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (net_error == OK)
       ttl = base::TimeDelta::FromSeconds(kCacheEntryTTLSeconds);
 
+    // Source unknown because the system resolver could have gotten it from a
+    // hosts file, its own cache, a DNS lookup or somewhere else.
     // Don't store the |ttl| in cache since it's not obtained from the server.
-    CompleteRequests(MakeCacheEntry(net_error, addr_list), ttl);
+    CompleteRequests(
+        MakeCacheEntry(net_error, addr_list, HostCache::Entry::SOURCE_UNKNOWN),
+        ttl);
   }
 
   void StartDnsTask() {
@@ -1611,7 +1620,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     if (ContainsIcannNameCollisionIp(addr_list)) {
       CompleteRequestsWithError(ERR_ICANN_NAME_COLLISION);
     } else {
-      CompleteRequests(MakeCacheEntryWithTTL(net_error, addr_list, ttl),
+      CompleteRequests(MakeCacheEntryWithTTL(net_error, addr_list,
+                                             HostCache::Entry::SOURCE_DNS, ttl),
                        bounded_ttl);
     }
   }
@@ -1772,7 +1782,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   // Convenience wrapper for CompleteRequests in case of failure.
   void CompleteRequestsWithError(int net_error) {
-    CompleteRequests(HostCache::Entry(net_error, AddressList()),
+    CompleteRequests(HostCache::Entry(net_error, AddressList(),
+                                      HostCache::Entry::SOURCE_UNKNOWN),
                      base::TimeDelta());
   }
 

@@ -98,9 +98,9 @@ void AddCacheEntryOnIOThread(net::URLRequestContextGetter* context_getter,
 
   // Add entry to the cache.
   cache->Set(net::HostCache::Key(hostname, net::ADDRESS_FAMILY_UNSPECIFIED, 0),
-             net::HostCache::Entry(net_error, address_list),
-             base::TimeTicks::Now(),
-             ttl);
+             net::HostCache::Entry(net_error, address_list,
+                                   net::HostCache::Entry::SOURCE_UNKNOWN),
+             base::TimeTicks::Now(), ttl);
 }
 
 struct WriteNetLogState {

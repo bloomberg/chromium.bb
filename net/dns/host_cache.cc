@@ -84,17 +84,21 @@ enum HostCache::EraseReason : int {
 
 HostCache::Entry::Entry(int error,
                         const AddressList& addresses,
+                        Source source,
                         base::TimeDelta ttl)
-    : error_(error), addresses_(addresses), ttl_(ttl) {
+    : error_(error), addresses_(addresses), source_(source), ttl_(ttl) {
   DCHECK(ttl >= base::TimeDelta());
 }
 
-HostCache::Entry::Entry(int error, const AddressList& addresses)
+HostCache::Entry::Entry(int error, const AddressList& addresses, Source source)
     : error_(error),
       addresses_(addresses),
+      source_(source),
       ttl_(base::TimeDelta::FromSeconds(-1)) {}
 
 HostCache::Entry::~Entry() {}
+
+HostCache::Entry::Entry(HostCache::Entry&& entry) = default;
 
 HostCache::Entry::Entry(const HostCache::Entry& entry,
                         base::TimeTicks now,
@@ -102,6 +106,7 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
                         int network_changes)
     : error_(entry.error()),
       addresses_(entry.addresses()),
+      source_(entry.source()),
       ttl_(entry.ttl()),
       expires_(now + ttl),
       network_changes_(network_changes),
@@ -110,10 +115,12 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
 
 HostCache::Entry::Entry(int error,
                         const AddressList& addresses,
+                        Source source,
                         base::TimeTicks expires,
                         int network_changes)
     : error_(error),
       addresses_(addresses),
+      source_(source),
       ttl_(base::TimeDelta::FromSeconds(-1)),
       expires_(expires),
       network_changes_(network_changes),
@@ -239,10 +246,10 @@ void HostCache::Set(const Key& key,
     delegate_->ScheduleWrite();
 }
 
-void HostCache::AddEntry(const Key& key, const Entry& entry) {
+void HostCache::AddEntry(const Key& key, Entry&& entry) {
   DCHECK_GT(max_entries_, size());
   DCHECK_EQ(0u, entries_.count(key));
-  entries_.insert(std::make_pair(key, entry));
+  entries_.emplace(key, std::move(entry));
   DCHECK_GE(max_entries_, size());
 }
 
@@ -391,8 +398,8 @@ bool HostCache::RestoreFromListValue(const base::ListValue& old_cache) {
     // prioritizing what to evict, just stop restoring.
     auto found = entries_.find(key);
     if (found == entries_.end() && size() < max_entries_) {
-      AddEntry(key, Entry(error, address_list, expiration_time,
-                          network_changes_ - 1));
+      AddEntry(key, Entry(error, address_list, Entry::SOURCE_UNKNOWN,
+                          expiration_time, network_changes_ - 1));
     }
   }
   restore_size_ = old_cache.GetSize();

@@ -34,7 +34,8 @@ class HostCachePersistenceManagerTest : public testing::Test {
   // assumed to work (it's tested in net/dns/host_cache_unittest.cc).
   void WriteToCache(const std::string& host) {
     net::HostCache::Key key(host, net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-    net::HostCache::Entry entry(net::OK, net::AddressList());
+    net::HostCache::Entry entry(net::OK, net::AddressList(),
+                                net::HostCache::Entry::SOURCE_UNKNOWN);
     cache_->Set(key, entry, base::TimeTicks::Now(),
                 base::TimeDelta::FromSeconds(1));
   }
@@ -62,7 +63,8 @@ class HostCachePersistenceManagerTest : public testing::Test {
     net::HostCache::Key key1("1", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
     net::HostCache::Key key2("2", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
     net::HostCache::Key key3("3", net::ADDRESS_FAMILY_UNSPECIFIED, 0);
-    net::HostCache::Entry entry(net::OK, net::AddressList());
+    net::HostCache::Entry entry(net::OK, net::AddressList(),
+                                net::HostCache::Entry::SOURCE_UNKNOWN);
 
     temp_cache.Set(key1, entry, base::TimeTicks::Now(),
                    base::TimeDelta::FromSeconds(1));
