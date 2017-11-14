@@ -1947,11 +1947,16 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, gesture_event->GetType());
 }
 
-// Tests that a gesture fling start with touchpad source stops the
-// RenderWidgetHostViewEventHandler::mouse_wheel_phase_timer_ and no synthetic
-// wheel event will be sent.
+// Tests that a gesture fling start with touchpad source resets wheel phase
+// state.
 TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
-       TouchpadFlingStartStopsWheelPhaseTimer) {
+       TouchpadFlingStartResetsWheelPhaseState) {
+  // When the user puts their fingers down a GFC is receieved.
+  ui::ScrollEvent fling_cancel(ui::ET_SCROLL_FLING_CANCEL, gfx::Point(2, 2),
+                               ui::EventTimeForNow(), 0, 0, 0, 0, 0, 2);
+  view_->OnScrollEvent(&fling_cancel);
+
+  // Scrolling starts.
   ui::ScrollEvent scroll0(ui::ET_SCROLL, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 5, 0, 5, 2);
   view_->OnScrollEvent(&scroll0);
@@ -1980,6 +1985,36 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   EXPECT_EQ(5U, gesture_event->data.scroll_update.delta_y);
   events[1]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
 
+  // Wait for some time and resume scrolling. The second scroll will latch since
+  // the user hasn't lifted their fingers, yet.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(
+          2 * kDefaultMouseWheelLatchingTransactionMs));
+  run_loop.Run();
+  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(2, 2),
+                          ui::EventTimeForNow(), 0, 0, 15, 0, 15, 2);
+  view_->OnScrollEvent(&scroll1);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ(1U, events.size());
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("GestureScrollUpdate", GetMessageNames(events));
+  gesture_event = static_cast<const WebGestureEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebInputEvent::kGestureScrollUpdate, gesture_event->GetType());
+  EXPECT_EQ(0U, gesture_event->data.scroll_update.delta_x);
+  EXPECT_EQ(15U, gesture_event->data.scroll_update.delta_y);
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
+
+  // A GFS is received showing that the user has lifted their fingers. This will
+  // reset the scroll state of the wheel phase handler.
   ui::ScrollEvent fling_start(ui::ET_SCROLL_FLING_START, gfx::Point(2, 2),
                               ui::EventTimeForNow(), 0, 0, 10, 0, 10, 2);
   view_->OnScrollEvent(&fling_start);
@@ -1993,22 +2028,11 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
   events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_CONSUMED);
   SendNotConsumedAcks(events);
 
-  // Let the MouseWheelPhaseHandler::mouse_wheel_end_dispatch_timer_ fire. No
-  // synthetic wheel event will be sent since the timer has stopped.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(
-          kDefaultMouseWheelLatchingTransactionMs));
-  base::RunLoop().Run();
-
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-
   // Handling the next ui::ET_SCROLL event will send a fling cancellation and a
   // mouse wheel with kPhaseBegan.
-  ui::ScrollEvent scroll1(ui::ET_SCROLL, gfx::Point(2, 2),
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(2, 2),
                           ui::EventTimeForNow(), 0, 0, 15, 0, 15, 2);
-  view_->OnScrollEvent(&scroll1);
+  view_->OnScrollEvent(&scroll2);
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(2U, events.size());
