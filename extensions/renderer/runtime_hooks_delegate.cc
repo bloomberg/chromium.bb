@@ -24,94 +24,6 @@ namespace extensions {
 namespace {
 using RequestResult = APIBindingHooks::RequestResult;
 
-constexpr char kExtensionIdRequiredErrorTemplate[] =
-    "chrome.runtime.%s() called from a webpage must "
-    "specify an Extension ID (string) for its first argument.";
-
-// Parses the target from |v8_target_id|, or uses the extension associated with
-// the |script_context| as a default. Returns true on success, and false on
-// failure.
-bool GetTarget(ScriptContext* script_context,
-               v8::Local<v8::Value> v8_target_id,
-               std::string* target_out) {
-  DCHECK(!v8_target_id.IsEmpty());
-
-  std::string target_id;
-  if (v8_target_id->IsNull()) {
-    if (!script_context->extension())
-      return false;
-
-    *target_out = script_context->extension()->id();
-  } else {
-    DCHECK(v8_target_id->IsString());
-    *target_out = gin::V8ToString(v8_target_id);
-  }
-
-  return true;
-}
-
-// Massages the sendMessage() arguments into the expected schema. These
-// arguments are ambiguous (could match multiple signatures), so we can't just
-// rely on the normal signature parsing. Sets |arguments| to the result if
-// successful; otherwise leaves |arguments| untouched. (If the massage is
-// unsuccessful, our normal argument parsing code should throw a reasonable
-// error.
-void MassageSendMessageArguments(
-    v8::Isolate* isolate,
-    std::vector<v8::Local<v8::Value>>* arguments_out) {
-  base::span<const v8::Local<v8::Value>> arguments = *arguments_out;
-  if (arguments.empty() || arguments.size() > 4u)
-    return;
-
-  v8::Local<v8::Value> target_id = v8::Null(isolate);
-  v8::Local<v8::Value> message = v8::Null(isolate);
-  v8::Local<v8::Value> options = v8::Null(isolate);
-  v8::Local<v8::Value> response_callback = v8::Null(isolate);
-
-  // If the last argument is a function, it is the response callback.
-  // Ignore it for the purposes of further argument parsing.
-  if ((*arguments.rbegin())->IsFunction()) {
-    response_callback = *arguments.rbegin();
-    arguments = arguments.first(arguments.size() - 1);
-  }
-
-  switch (arguments.size()) {
-    case 0:
-      // Required argument (message) is missing.
-      // Early-out and rely on normal signature parsing to report this error.
-      return;
-    case 1:
-      // Argument must be the message.
-      message = arguments[0];
-      break;
-    case 2:
-      // Assume the meaning is (id, message) if id would be a string.
-      // Otherwise the meaning is (message, options).
-      if (arguments[0]->IsString()) {
-        target_id = arguments[0];
-        message = arguments[1];
-      } else {
-        message = arguments[0];
-        options = arguments[1];
-      }
-      break;
-    case 3:
-      // The meaning in this case is unambiguous.
-      target_id = arguments[0];
-      message = arguments[1];
-      options = arguments[2];
-      break;
-    case 4:
-      // Too many arguments. Early-out and rely on normal signature parsing to
-      // report this error.
-      return;
-    default:
-      NOTREACHED();
-  }
-
-  *arguments_out = {target_id, message, options, response_callback};
-}
-
 // Handler for the extensionId property on chrome.runtime.
 void GetExtensionId(v8::Local<v8::Name> property_name,
                     const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -179,8 +91,10 @@ RequestResult RuntimeHooksDelegate::HandleRequest(
   if (!handler)
     return RequestResult(RequestResult::NOT_HANDLED);
 
-  if (method_name == kSendMessage)
-    MassageSendMessageArguments(context->GetIsolate(), arguments);
+  if (method_name == kSendMessage) {
+    messaging_util::MassageSendMessageArguments(context->GetIsolate(), true,
+                                                arguments);
+  }
 
   std::string error;
   std::vector<v8::Local<v8::Value>> parsed_arguments;
@@ -239,10 +153,12 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
   DCHECK_EQ(4u, arguments.size());
 
   std::string target_id;
-  if (!GetTarget(script_context, arguments[0], &target_id)) {
+  std::string error;
+  if (!messaging_util::GetTargetExtensionId(script_context, arguments[0],
+                                            "runtime.sendMessage", &target_id,
+                                            &error)) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error =
-        base::StringPrintf(kExtensionIdRequiredErrorTemplate, "sendMessage");
+    result.error = std::move(error);
     return result;
   }
 
@@ -323,10 +239,12 @@ RequestResult RuntimeHooksDelegate::HandleConnect(
   DCHECK_EQ(2u, arguments.size());
 
   std::string target_id;
-  if (!GetTarget(script_context, arguments[0], &target_id)) {
+  std::string error;
+  if (!messaging_util::GetTargetExtensionId(script_context, arguments[0],
+                                            "runtime.connect", &target_id,
+                                            &error)) {
     RequestResult result(RequestResult::INVALID_INVOCATION);
-    result.error =
-        base::StringPrintf(kExtensionIdRequiredErrorTemplate, "connect");
+    result.error = std::move(error);
     return result;
   }
 
