@@ -355,6 +355,9 @@ if (!is_android) {
   }
 
   if (is_chromeos) {
+    assert(enable_app_list)
+    assert(enable_extensions)
+
     # These tests are only meant to run on an FYI bot because they
     # test against live sites, as a way to catch potential regressions.
     test("accessibility_live_site_tests") {
@@ -392,6 +395,7 @@ if (!is_android) {
         "//content/test:test_support",
         "//crypto:platform",
         "//crypto:test_support",
+        "//extensions/features",
         "//google_apis:test_support",
         "//net",
         "//net:net_resources",
@@ -407,9 +411,20 @@ if (!is_android) {
         "//ui/resources:ui_test_pak",
         "//ui/web_dialogs:test_support",
       ]
-      if (enable_extensions) {
-        deps += [ "//extensions/features" ]
-      }
+    }
+
+    static_library("test_support_applist_chromeos") {
+      defines = []
+      testonly = true
+
+      sources = [
+        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.cc",
+        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.h",
+      ]
+      deps = [
+        "//chrome/browser/ui",
+        "//ui/app_list/presenter:test_support",
+      ]
     }
   }
 
@@ -656,19 +671,17 @@ if (!is_android) {
           "base/interactive_test_utils_views.cc",
         ]
       }
-      if (is_linux) {
-        if (!is_chromeos) {
-          # Desktop linux.
-          sources -= [
-            # TODO(port): This times out. Attempts have been made to fix the
-            # individual failures, but each time I disable a test from these
-            # suites, it seems like one or another starts timing out too.
-            "../browser/ui/views/keyboard_access_browsertest.cc",
-          ]
-          if (!use_ozone) {
-            sources += [ "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc" ]
-            deps += [ "//build/config/linux/gtk" ]
-          }
+      if (is_linux && !is_chromeos) {
+        # Desktop linux.
+        sources -= [
+          # TODO(port): This times out. Attempts have been made to fix the
+          # individual failures, but each time I disable a test from these
+          # suites, it seems like one or another starts timing out too.
+          "../browser/ui/views/keyboard_access_browsertest.cc",
+        ]
+        if (!use_ozone) {
+          sources += [ "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc" ]
+          deps += [ "//build/config/linux/gtk" ]
         }
       }
       if (use_aura || is_mac) {
@@ -852,216 +865,6 @@ if (!is_android) {
         "../browser/notifications/platform_notification_service_interactive_uitest.cc",
       ]
     }
-  }
-
-  # TODO(jamescook): is_chromeos implies enable_app_list, so collapse them.
-  if (enable_app_list && is_chromeos) {
-    static_library("test_support_applist_chromeos") {
-      defines = []
-      testonly = true
-
-      sources = [
-        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.cc",
-        "../browser/ui/ash/app_list/test/app_list_service_ash_test_api.h",
-      ]
-      deps = [
-        "//chrome/browser/ui",
-        "//ui/app_list/presenter:test_support",
-      ]
-    }
-  }
-}
-
-if (!is_android && !is_fuchsia) {
-  static_library("sync_integration_test_support") {
-    testonly = true
-    sources = [
-      "../browser/sync/test/integration/apps_helper.cc",
-      "../browser/sync/test/integration/apps_helper.h",
-      "../browser/sync/test/integration/autofill_helper.cc",
-      "../browser/sync/test/integration/autofill_helper.h",
-      "../browser/sync/test/integration/await_match_status_change_checker.cc",
-      "../browser/sync/test/integration/await_match_status_change_checker.h",
-      "../browser/sync/test/integration/bookmarks_helper.cc",
-      "../browser/sync/test/integration/bookmarks_helper.h",
-      "../browser/sync/test/integration/dictionary_helper.cc",
-      "../browser/sync/test/integration/dictionary_helper.h",
-      "../browser/sync/test/integration/dictionary_load_observer.cc",
-      "../browser/sync/test/integration/dictionary_load_observer.h",
-      "../browser/sync/test/integration/extension_settings_helper.cc",
-      "../browser/sync/test/integration/extension_settings_helper.h",
-      "../browser/sync/test/integration/extensions_helper.cc",
-      "../browser/sync/test/integration/extensions_helper.h",
-      "../browser/sync/test/integration/fake_server_invalidation_service.cc",
-      "../browser/sync/test/integration/fake_server_invalidation_service.h",
-      "../browser/sync/test/integration/fake_server_match_status_checker.cc",
-      "../browser/sync/test/integration/fake_server_match_status_checker.h",
-      "../browser/sync/test/integration/migration_waiter.cc",
-      "../browser/sync/test/integration/migration_waiter.h",
-      "../browser/sync/test/integration/migration_watcher.cc",
-      "../browser/sync/test/integration/migration_watcher.h",
-      "../browser/sync/test/integration/multi_client_status_change_checker.cc",
-      "../browser/sync/test/integration/multi_client_status_change_checker.h",
-      "../browser/sync/test/integration/p2p_invalidation_forwarder.cc",
-      "../browser/sync/test/integration/p2p_invalidation_forwarder.h",
-      "../browser/sync/test/integration/p2p_sync_refresher.cc",
-      "../browser/sync/test/integration/p2p_sync_refresher.h",
-      "../browser/sync/test/integration/passwords_helper.cc",
-      "../browser/sync/test/integration/passwords_helper.h",
-      "../browser/sync/test/integration/preferences_helper.cc",
-      "../browser/sync/test/integration/preferences_helper.h",
-      "../browser/sync/test/integration/printers_helper.cc",
-      "../browser/sync/test/integration/printers_helper.h",
-      "../browser/sync/test/integration/profile_sync_service_harness.cc",
-      "../browser/sync/test/integration/profile_sync_service_harness.h",
-      "../browser/sync/test/integration/quiesce_status_change_checker.cc",
-      "../browser/sync/test/integration/quiesce_status_change_checker.h",
-      "../browser/sync/test/integration/retry_verifier.cc",
-      "../browser/sync/test/integration/retry_verifier.h",
-      "../browser/sync/test/integration/search_engines_helper.cc",
-      "../browser/sync/test/integration/search_engines_helper.h",
-      "../browser/sync/test/integration/session_hierarchy_match_checker.cc",
-      "../browser/sync/test/integration/session_hierarchy_match_checker.h",
-      "../browser/sync/test/integration/sessions_helper.cc",
-      "../browser/sync/test/integration/sessions_helper.h",
-      "../browser/sync/test/integration/single_client_status_change_checker.cc",
-      "../browser/sync/test/integration/single_client_status_change_checker.h",
-      "../browser/sync/test/integration/status_change_checker.cc",
-      "../browser/sync/test/integration/status_change_checker.h",
-      "../browser/sync/test/integration/sync_app_helper.cc",
-      "../browser/sync/test/integration/sync_app_helper.h",
-      "../browser/sync/test/integration/sync_app_list_helper.cc",
-      "../browser/sync/test/integration/sync_app_list_helper.h",
-      "../browser/sync/test/integration/sync_arc_package_helper.cc",
-      "../browser/sync/test/integration/sync_arc_package_helper.h",
-      "../browser/sync/test/integration/sync_datatype_helper.cc",
-      "../browser/sync/test/integration/sync_datatype_helper.h",
-      "../browser/sync/test/integration/sync_extension_helper.cc",
-      "../browser/sync/test/integration/sync_extension_helper.h",
-      "../browser/sync/test/integration/sync_extension_installer.cc",
-      "../browser/sync/test/integration/sync_extension_installer.h",
-      "../browser/sync/test/integration/sync_integration_test_util.cc",
-      "../browser/sync/test/integration/sync_integration_test_util.h",
-      "../browser/sync/test/integration/sync_test.cc",
-      "../browser/sync/test/integration/sync_test.h",
-      "../browser/sync/test/integration/themes_helper.cc",
-      "../browser/sync/test/integration/themes_helper.h",
-      "../browser/sync/test/integration/typed_urls_helper.cc",
-      "../browser/sync/test/integration/typed_urls_helper.h",
-      "../browser/sync/test/integration/updated_progress_marker_checker.cc",
-      "../browser/sync/test/integration/updated_progress_marker_checker.h",
-      "../browser/sync/test/integration/wifi_credentials_helper.cc",
-      "../browser/sync/test/integration/wifi_credentials_helper.h",
-      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.cc",
-      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.h",
-    ]
-    public_deps = [
-      "//chrome/browser",
-    ]
-    deps = [
-      ":test_support",
-      "//base",
-      "//components/invalidation/impl",
-      "//components/invalidation/impl:test_support",
-      "//components/sync",
-      "//components/sync:test_support_fake_server",
-      "//components/sync:test_support_model",
-      "//components/sync:test_support_testserver",
-      "//content/test:test_support",
-      "//net",
-      "//skia",
-    ]
-
-    if (is_mac) {
-      sources -= [
-        "../browser/sync/test/integration/dictionary_helper.cc",
-        "../browser/sync/test/integration/dictionary_helper.h",
-        "../browser/sync/test/integration/dictionary_load_observer.cc",
-        "../browser/sync/test/integration/dictionary_load_observer.h",
-      ]
-    }
-    if (enable_app_list) {
-      deps += [ "//ui/app_list:test_support" ]
-    } else {
-      sources -= [
-        "../browser/sync/test/integration/sync_app_list_helper.cc",
-        "../browser/sync/test/integration/sync_app_list_helper.h",
-      ]
-    }
-    if (!is_chromeos) {
-      sources -= [
-        "../browser/sync/test/integration/printers_helper.cc",
-        "../browser/sync/test/integration/printers_helper.h",
-        "../browser/sync/test/integration/sync_arc_package_helper.cc",
-        "../browser/sync/test/integration/sync_arc_package_helper.h",
-        "../browser/sync/test/integration/wifi_credentials_helper.cc",
-        "../browser/sync/test/integration/wifi_credentials_helper.h",
-      ]
-    }
-    if (is_chromeos) {
-      deps += [
-        "//components/arc:arc_test_support",
-        "//components/user_manager:test_support",
-      ]
-    }
-  }
-
-  group("telemetry_unittests") {
-    testonly = true
-    deps = [
-      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
-    ]
-
-    data = [
-      "//tools/perf/run_telemetry_tests",
-
-      # For isolate contract.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_as_googletest.py",
-    ]
-
-    if (enable_mus) {
-      deps += [ "//chrome:chrome_test" ]
-      data_deps = [
-        "//chrome:chrome_test",
-      ]
-    }
-  }
-
-  group("telemetry_gpu_unittests_run") {
-    testonly = true
-    deps = [
-      ":telemetry_gpu_unittests",
-    ]
-  }
-
-  group("telemetry_gpu_unittests") {
-    deps = [
-      "//third_party/catapult/telemetry:telemetry_test_support",
-    ]
-    data = [
-      # TODO(kbr): refactor the telemetry dependencies more cleanly.
-      "//content/test/gpu/",
-      "//content/test/data/gpu/",
-
-      # For GpuProcess.video
-      "//content/test/data/media/bear.ogv",
-
-      # For webgl_conformance_expectations_unittest
-      "//third_party/webgl/src/sdk/tests/",
-
-      # For resolve the imports in content/test/gpu/run_gpu_test.py
-      "//tools/perf/core/",
-      "//tools/perf/chrome_telemetry_build/",
-
-      # From telemetry_gpu_unittests.isolate
-      "//third_party/pylint/",
-      "//third_party/logilab/",
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_as_googletest.py",
-    ]
   }
 }
 
@@ -2153,6 +1956,7 @@ test("browser_tests") {
     }
 
     if (is_chromeos) {
+      assert(enable_app_list)
       sources += [
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
         "../browser/chromeos/accessibility/magnification_manager_browsertest.cc",
@@ -2360,6 +2164,7 @@ test("browser_tests") {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       ]
       deps += [
+        ":test_support_applist_chromeos",
         "//ash:test_support_with_content",
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
@@ -2375,9 +2180,6 @@ test("browser_tests") {
         "//ui/login:resources",
         "//url",
       ]
-      if (enable_app_list) {
-        deps += [ ":test_support_applist_chromeos" ]
-      }
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
       }
@@ -2714,6 +2516,138 @@ test("browser_tests") {
 }
 
 if (!is_android && !is_fuchsia) {
+  static_library("sync_integration_test_support") {
+    testonly = true
+    sources = [
+      "../browser/sync/test/integration/apps_helper.cc",
+      "../browser/sync/test/integration/apps_helper.h",
+      "../browser/sync/test/integration/autofill_helper.cc",
+      "../browser/sync/test/integration/autofill_helper.h",
+      "../browser/sync/test/integration/await_match_status_change_checker.cc",
+      "../browser/sync/test/integration/await_match_status_change_checker.h",
+      "../browser/sync/test/integration/bookmarks_helper.cc",
+      "../browser/sync/test/integration/bookmarks_helper.h",
+      "../browser/sync/test/integration/dictionary_helper.cc",
+      "../browser/sync/test/integration/dictionary_helper.h",
+      "../browser/sync/test/integration/dictionary_load_observer.cc",
+      "../browser/sync/test/integration/dictionary_load_observer.h",
+      "../browser/sync/test/integration/extension_settings_helper.cc",
+      "../browser/sync/test/integration/extension_settings_helper.h",
+      "../browser/sync/test/integration/extensions_helper.cc",
+      "../browser/sync/test/integration/extensions_helper.h",
+      "../browser/sync/test/integration/fake_server_invalidation_service.cc",
+      "../browser/sync/test/integration/fake_server_invalidation_service.h",
+      "../browser/sync/test/integration/fake_server_match_status_checker.cc",
+      "../browser/sync/test/integration/fake_server_match_status_checker.h",
+      "../browser/sync/test/integration/migration_waiter.cc",
+      "../browser/sync/test/integration/migration_waiter.h",
+      "../browser/sync/test/integration/migration_watcher.cc",
+      "../browser/sync/test/integration/migration_watcher.h",
+      "../browser/sync/test/integration/multi_client_status_change_checker.cc",
+      "../browser/sync/test/integration/multi_client_status_change_checker.h",
+      "../browser/sync/test/integration/p2p_invalidation_forwarder.cc",
+      "../browser/sync/test/integration/p2p_invalidation_forwarder.h",
+      "../browser/sync/test/integration/p2p_sync_refresher.cc",
+      "../browser/sync/test/integration/p2p_sync_refresher.h",
+      "../browser/sync/test/integration/passwords_helper.cc",
+      "../browser/sync/test/integration/passwords_helper.h",
+      "../browser/sync/test/integration/preferences_helper.cc",
+      "../browser/sync/test/integration/preferences_helper.h",
+      "../browser/sync/test/integration/printers_helper.cc",
+      "../browser/sync/test/integration/printers_helper.h",
+      "../browser/sync/test/integration/profile_sync_service_harness.cc",
+      "../browser/sync/test/integration/profile_sync_service_harness.h",
+      "../browser/sync/test/integration/quiesce_status_change_checker.cc",
+      "../browser/sync/test/integration/quiesce_status_change_checker.h",
+      "../browser/sync/test/integration/retry_verifier.cc",
+      "../browser/sync/test/integration/retry_verifier.h",
+      "../browser/sync/test/integration/search_engines_helper.cc",
+      "../browser/sync/test/integration/search_engines_helper.h",
+      "../browser/sync/test/integration/session_hierarchy_match_checker.cc",
+      "../browser/sync/test/integration/session_hierarchy_match_checker.h",
+      "../browser/sync/test/integration/sessions_helper.cc",
+      "../browser/sync/test/integration/sessions_helper.h",
+      "../browser/sync/test/integration/single_client_status_change_checker.cc",
+      "../browser/sync/test/integration/single_client_status_change_checker.h",
+      "../browser/sync/test/integration/status_change_checker.cc",
+      "../browser/sync/test/integration/status_change_checker.h",
+      "../browser/sync/test/integration/sync_app_helper.cc",
+      "../browser/sync/test/integration/sync_app_helper.h",
+      "../browser/sync/test/integration/sync_app_list_helper.cc",
+      "../browser/sync/test/integration/sync_app_list_helper.h",
+      "../browser/sync/test/integration/sync_arc_package_helper.cc",
+      "../browser/sync/test/integration/sync_arc_package_helper.h",
+      "../browser/sync/test/integration/sync_datatype_helper.cc",
+      "../browser/sync/test/integration/sync_datatype_helper.h",
+      "../browser/sync/test/integration/sync_extension_helper.cc",
+      "../browser/sync/test/integration/sync_extension_helper.h",
+      "../browser/sync/test/integration/sync_extension_installer.cc",
+      "../browser/sync/test/integration/sync_extension_installer.h",
+      "../browser/sync/test/integration/sync_integration_test_util.cc",
+      "../browser/sync/test/integration/sync_integration_test_util.h",
+      "../browser/sync/test/integration/sync_test.cc",
+      "../browser/sync/test/integration/sync_test.h",
+      "../browser/sync/test/integration/themes_helper.cc",
+      "../browser/sync/test/integration/themes_helper.h",
+      "../browser/sync/test/integration/typed_urls_helper.cc",
+      "../browser/sync/test/integration/typed_urls_helper.h",
+      "../browser/sync/test/integration/updated_progress_marker_checker.cc",
+      "../browser/sync/test/integration/updated_progress_marker_checker.h",
+      "../browser/sync/test/integration/wifi_credentials_helper.cc",
+      "../browser/sync/test/integration/wifi_credentials_helper.h",
+      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.cc",
+      "../browser/sync/test/integration/wifi_credentials_helper_chromeos.h",
+    ]
+    public_deps = [
+      "//chrome/browser",
+    ]
+    deps = [
+      ":test_support",
+      "//base",
+      "//components/invalidation/impl",
+      "//components/invalidation/impl:test_support",
+      "//components/sync",
+      "//components/sync:test_support_fake_server",
+      "//components/sync:test_support_model",
+      "//components/sync:test_support_testserver",
+      "//content/test:test_support",
+      "//net",
+      "//skia",
+    ]
+
+    if (is_mac) {
+      sources -= [
+        "../browser/sync/test/integration/dictionary_helper.cc",
+        "../browser/sync/test/integration/dictionary_helper.h",
+        "../browser/sync/test/integration/dictionary_load_observer.cc",
+        "../browser/sync/test/integration/dictionary_load_observer.h",
+      ]
+    }
+    if (enable_app_list) {
+      deps += [ "//ui/app_list:test_support" ]
+    } else {
+      sources -= [
+        "../browser/sync/test/integration/sync_app_list_helper.cc",
+        "../browser/sync/test/integration/sync_app_list_helper.h",
+      ]
+    }
+    if (is_chromeos) {
+      deps += [
+        "//components/arc:arc_test_support",
+        "//components/user_manager:test_support",
+      ]
+    } else {
+      sources -= [
+        "../browser/sync/test/integration/printers_helper.cc",
+        "../browser/sync/test/integration/printers_helper.h",
+        "../browser/sync/test/integration/sync_arc_package_helper.cc",
+        "../browser/sync/test/integration/sync_arc_package_helper.h",
+        "../browser/sync/test/integration/wifi_credentials_helper.cc",
+        "../browser/sync/test/integration/wifi_credentials_helper.h",
+      ]
+    }
+  }
+
   test("sync_integration_tests") {
     sources = [
       "../app/chrome_version.rc.version",
@@ -2957,6 +2891,64 @@ if (!is_android && !is_fuchsia) {
 
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
+  }
+
+  group("telemetry_unittests") {
+    testonly = true
+    deps = [
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+    ]
+
+    data = [
+      "//tools/perf/run_telemetry_tests",
+
+      # For isolate contract.
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
+
+    if (enable_mus) {
+      deps += [ "//chrome:chrome_test" ]
+      data_deps = [
+        "//chrome:chrome_test",
+      ]
+    }
+  }
+
+  group("telemetry_gpu_unittests_run") {
+    testonly = true
+    deps = [
+      ":telemetry_gpu_unittests",
+    ]
+  }
+
+  group("telemetry_gpu_unittests") {
+    deps = [
+      "//third_party/catapult/telemetry:telemetry_test_support",
+    ]
+    data = [
+      # TODO(kbr): refactor the telemetry dependencies more cleanly.
+      "//content/test/gpu/",
+      "//content/test/data/gpu/",
+
+      # For GpuProcess.video
+      "//content/test/data/media/bear.ogv",
+
+      # For webgl_conformance_expectations_unittest
+      "//third_party/webgl/src/sdk/tests/",
+
+      # For resolve the imports in content/test/gpu/run_gpu_test.py
+      "//tools/perf/core/",
+      "//tools/perf/chrome_telemetry_build/",
+
+      # From telemetry_gpu_unittests.isolate
+      "//third_party/pylint/",
+      "//third_party/logilab/",
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_telemetry_as_googletest.py",
+    ]
   }
 }
 
