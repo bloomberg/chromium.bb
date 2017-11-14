@@ -17,71 +17,36 @@
 
 namespace gin {
 
-namespace {
-
-// Base template - used only for non-member function pointers. Other types
-// either go to one of the below specializations, or go here and fail to compile
-// because of base::Bind().
-template<typename T, typename Enable = void>
-struct CallbackTraits {
-  static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
-                                                         T callback) {
-    return CreateFunctionTemplate(isolate, base::Bind(callback));
-  }
-  static void SetAsFunctionHandler(v8::Isolate* isolate,
-                                   v8::Local<v8::ObjectTemplate> tmpl,
-                                   T callback) {
-    CreateFunctionHandler(isolate, tmpl, base::Bind(callback));
-  }
-};
-
-// Specialization for base::Callback.
-template<typename T>
-struct CallbackTraits<base::Callback<T> > {
-  static v8::Local<v8::FunctionTemplate> CreateTemplate(
-      v8::Isolate* isolate, const base::Callback<T>& callback) {
-    return CreateFunctionTemplate(isolate, callback);
-  }
-  static void SetAsFunctionHandler(v8::Isolate* isolate,
-                                   v8::Local<v8::ObjectTemplate> tmpl,
-                                   const base::Callback<T>& callback) {
-    CreateFunctionHandler(isolate, tmpl, callback);
-  }
-};
-
-// Specialization for member function pointers. We need to handle this case
-// specially because the first parameter for callbacks to MFP should typically
-// come from the the JavaScript "this" object the function was called on, not
-// from the first normal parameter.
 template <typename T>
-struct CallbackTraits<
-    T,
-    typename std::enable_if<std::is_member_function_pointer<T>::value>::type> {
-  static v8::Local<v8::FunctionTemplate> CreateTemplate(v8::Isolate* isolate,
-                                                         T callback) {
-    return CreateFunctionTemplate(isolate, base::Bind(callback),
-                                  HolderIsFirstArgument);
-  }
-  static void SetAsFunctionHandler(v8::Isolate* isolate,
-                                   v8::Local<v8::ObjectTemplate> tmpl,
-                                   T callback) {
-    CreateFunctionHandler(
-        isolate, tmpl, base::Bind(callback), HolderIsFirstArgument);
-  }
-};
+v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(v8::Isolate* isolate,
+                                                       T callback) {
+  // We need to handle member function pointers case specially because the first
+  // parameter for callbacks to MFP should typically come from the the
+  // JavaScript "this" object the function was called on, not from the first
+  // normal parameter.
+  int callback_flags = 0;
+  if (std::is_member_function_pointer<T>::value)
+    callback_flags = HolderIsFirstArgument;
 
-// This specialization allows people to construct function templates directly if
-// they need to do fancier stuff.
-template<>
-struct CallbackTraits<v8::Local<v8::FunctionTemplate> > {
-  static v8::Local<v8::FunctionTemplate> CreateTemplate(
-      v8::Local<v8::FunctionTemplate> templ) {
-    return templ;
-  }
-};
+  return CreateFunctionTemplate(
+      isolate, base::BindRepeating(std::move(callback)), callback_flags);
+}
 
-}  // namespace
+template <typename T>
+void SetAsFunctionHandler(v8::Isolate* isolate,
+                          v8::Local<v8::ObjectTemplate> tmpl,
+                          T callback) {
+  // We need to handle member function pointers case specially because the first
+  // parameter for callbacks to MFP should typically come from the the
+  // JavaScript "this" object the function was called on, not from the first
+  // normal parameter.
+  int callback_flags = 0;
+  if (std::is_member_function_pointer<T>::value)
+    callback_flags = HolderIsFirstArgument;
 
+  CreateFunctionHandler(isolate, tmpl, base::BindRepeating(std::move(callback)),
+                        callback_flags);
+}
 
 // ObjectTemplateBuilder provides a handy interface to creating
 // v8::ObjectTemplate instances with various sorts of properties.
@@ -106,25 +71,23 @@ class GIN_EXPORT ObjectTemplateBuilder {
   template<typename T>
   ObjectTemplateBuilder& SetMethod(const base::StringPiece& name,
                                    const T& callback) {
-    return SetImpl(name, CallbackTraits<T>::CreateTemplate(isolate_, callback));
+    return SetImpl(name, CreateFunctionTemplate(isolate_, callback));
   }
   template<typename T>
   ObjectTemplateBuilder& SetProperty(const base::StringPiece& name,
                                      const T& getter) {
-    return SetPropertyImpl(name,
-                           CallbackTraits<T>::CreateTemplate(isolate_, getter),
+    return SetPropertyImpl(name, CreateFunctionTemplate(isolate_, getter),
                            v8::Local<v8::FunctionTemplate>());
   }
   template<typename T, typename U>
   ObjectTemplateBuilder& SetProperty(const base::StringPiece& name,
                                      const T& getter, const U& setter) {
-    return SetPropertyImpl(name,
-                           CallbackTraits<T>::CreateTemplate(isolate_, getter),
-                           CallbackTraits<U>::CreateTemplate(isolate_, setter));
+    return SetPropertyImpl(name, CreateFunctionTemplate(isolate_, getter),
+                           CreateFunctionTemplate(isolate_, setter));
   }
   template<typename T>
   ObjectTemplateBuilder& SetCallAsFunctionHandler(const T& callback) {
-    CallbackTraits<T>::SetAsFunctionHandler(isolate_, template_, callback);
+    SetAsFunctionHandler(isolate_, template_, callback);
     return *this;
   }
   ObjectTemplateBuilder& AddNamedPropertyInterceptor();
