@@ -128,10 +128,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Delegate used to show HTTP Authentication dialogs.
 @property(nonatomic, weak) id<TabDialogDelegate> dialogDelegate;
 
-// TODO(crbug.com/661663): Should this property abstract away the concept of
-// prerendering?  Maybe this can move to the TabDelegate interface.
-@property(nonatomic, assign) BOOL isPrerenderTab;
-
 // Whether this tab is displaying a voice search result.
 @property(nonatomic, readonly) BOOL isVoiceSearchResultsTab;
 
@@ -241,10 +237,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;
-
-// Cancels prerendering. It is an error to call this on anything except a
-// prerender tab (where |isPrerenderTab| is set to YES).
-- (void)discardPrerender;
 
 @end
 
