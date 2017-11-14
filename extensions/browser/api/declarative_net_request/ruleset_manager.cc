@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 
+#include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/logging.h"
@@ -117,9 +119,12 @@ void RulesetManager::AddRuleset(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
 
-  DCHECK(!base::ContainsKey(rules_map_, extension_id))
-      << "AddRuleset called twice in succession for " << extension_id;
-  rules_map_[extension_id] = std::move(ruleset_matcher);
+  bool inserted;
+  std::tie(std::ignore, inserted) =
+      rulesets_.emplace(extension_id, info_map_->GetInstallTime(extension_id),
+                        std::move(ruleset_matcher));
+  DCHECK(inserted) << "AddRuleset called twice in succession for "
+                   << extension_id;
 
   // Clear the renderers' cache so that they take the new rules into account.
   ClearRendererCacheOnNavigation();
@@ -129,10 +134,17 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsAPIAvailable());
 
-  DCHECK(base::ContainsKey(rules_map_, extension_id))
+  auto compare_by_id =
+      [&extension_id](const ExtensionRulesetData& ruleset_data) {
+        return ruleset_data.extension_id == extension_id;
+      };
+
+  DCHECK(std::find_if(rulesets_.begin(), rulesets_.end(), compare_by_id) !=
+         rulesets_.end())
       << "RemoveRuleset called without a corresponding AddRuleset for "
       << extension_id;
-  rules_map_.erase(extension_id);
+
+  base::EraseIf(rulesets_, compare_by_id);
 
   // Clear the renderers' cache so that they take the removed rules into
   // account.
@@ -159,14 +171,15 @@ bool RulesetManager::ShouldBlockRequest(const net::URLRequest& request,
   const flat_rule::ElementType element_type = GetElementType(request);
   const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
 
-  for (const auto& pair : rules_map_) {
+  for (const auto& ruleset_data : rulesets_) {
     const bool evaluate_ruleset =
-        !is_incognito_context || info_map_->IsIncognitoEnabled(pair.first);
+        !is_incognito_context ||
+        info_map_->IsIncognitoEnabled(ruleset_data.extension_id);
 
     // TODO(crbug.com/777714): Check host permissions etc.
     if (evaluate_ruleset &&
-        pair.second->ShouldBlockRequest(url, first_party_origin, element_type,
-                                        is_third_party)) {
+        ruleset_data.matcher->ShouldBlockRequest(
+            url, first_party_origin, element_type, is_third_party)) {
       return true;
     }
   }
@@ -195,38 +208,52 @@ bool RulesetManager::ShouldRedirectRequest(const net::URLRequest& request,
   const GURL& url = request.url();
   const url::Origin first_party_origin =
       request.initiator().value_or(url::Origin());
-
   const bool is_third_party = IsThirdPartyRequest(url, first_party_origin);
 
-  bool redirect = false;
-  base::Time winning_extension_install_time = base::Time::Min();
-
-  // TODO(crbug.com/696822): Change |rules_map_| to be a list, sorted by
-  // decreasing installation time. This will help prevent redundant evaluation
-  // of rulesets.
-  for (const auto& pair : rules_map_) {
-    base::Time extension_install_time = info_map_->GetInstallTime(pair.first);
-
-    // Give priority to more recently installed extension.
+  // This iterates in decreasing order of extension installation time. Hence
+  // more recently installed extensions get higher priority in choosing the
+  // redirect url.
+  for (const auto& ruleset_data : rulesets_) {
     const bool evaluate_ruleset =
-        extension_install_time > winning_extension_install_time &&
-        (!is_incognito_context || info_map_->IsIncognitoEnabled(pair.first));
+        (!is_incognito_context ||
+         info_map_->IsIncognitoEnabled(ruleset_data.extension_id));
 
     // TODO(crbug.com/777714): Check host permissions etc.
-    if (evaluate_ruleset && pair.second->ShouldRedirectRequest(
+    if (evaluate_ruleset && ruleset_data.matcher->ShouldRedirectRequest(
                                 url, first_party_origin, element_type,
                                 is_third_party, redirect_url)) {
-      winning_extension_install_time = extension_install_time;
-      redirect = true;
+      return true;
     }
   }
 
-  return redirect;
+  return false;
 }
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   test_observer_ = observer;
+}
+
+RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
+    const ExtensionId& extension_id,
+    const base::Time& extension_install_time,
+    std::unique_ptr<RulesetMatcher> matcher)
+    : extension_id(extension_id),
+      extension_install_time(extension_install_time),
+      matcher(std::move(matcher)) {}
+RulesetManager::ExtensionRulesetData::~ExtensionRulesetData() = default;
+RulesetManager::ExtensionRulesetData::ExtensionRulesetData(
+    ExtensionRulesetData&& other) = default;
+RulesetManager::ExtensionRulesetData& RulesetManager::ExtensionRulesetData::
+operator=(ExtensionRulesetData&& other) = default;
+
+bool RulesetManager::ExtensionRulesetData::operator<(
+    const ExtensionRulesetData& other) const {
+  // Sort based on descending installation time, using extension id to break
+  // ties.
+  return (extension_install_time != other.extension_install_time)
+             ? (extension_install_time > other.extension_install_time)
+             : (extension_id < other.extension_id);
 }
 
 }  // namespace declarative_net_request
