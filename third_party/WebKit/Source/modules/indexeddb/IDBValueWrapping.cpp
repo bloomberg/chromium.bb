@@ -85,8 +85,13 @@ void IDBValueWrapper::Clone(ScriptState* script_state, ScriptValue* clone) {
                           << " called on wrapper with serialization exception";
   DCHECK(!wrap_called_) << "Clone() called after WrapIfBiggerThan()";
 #endif  // DCHECK_IS_ON()
+
+  bool read_wasm_from_stream = true;
+  // It is safe to unconditionally enable WASM module decoding because the
+  // relevant checks were already performed in SerializedScriptValue::Serialize,
+  // called by the IDBValueWrapper constructor.
   *clone = DeserializeScriptValue(script_state, serialized_value_.get(),
-                                  &blob_info_);
+                                  &blob_info_, read_wasm_from_stream);
 }
 
 void IDBValueWrapper::WriteVarint(unsigned value, Vector<char>& output) {
