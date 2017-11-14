@@ -73,35 +73,17 @@ class AutoRemoveKeyFromTaskMap {
   const SoftwareImageDecodeCache::ImageKey& key_;
 };
 
-class AutoDrawWithImageFinished {
- public:
-  AutoDrawWithImageFinished(SoftwareImageDecodeCache* cache,
-                            const DrawImage& draw_image,
-                            const DecodedDrawImage& decoded_draw_image)
-      : cache_(cache),
-        draw_image_(draw_image),
-        decoded_draw_image_(decoded_draw_image) {}
-  ~AutoDrawWithImageFinished() {
-    cache_->DrawWithImageFinished(draw_image_, decoded_draw_image_);
-  }
-
- private:
-  SoftwareImageDecodeCache* cache_;
-  const DrawImage& draw_image_;
-  const DecodedDrawImage& decoded_draw_image_;
-};
-
 class ImageDecodeTaskImpl : public TileTask {
  public:
   ImageDecodeTaskImpl(SoftwareImageDecodeCache* cache,
                       const SoftwareImageDecodeCache::ImageKey& image_key,
-                      const DrawImage& image,
+                      const PaintImage& paint_image,
                       SoftwareImageDecodeCache::DecodeTaskType task_type,
                       const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(true),
         cache_(cache),
         image_key_(image_key),
-        image_(image),
+        paint_image_(paint_image),
         task_type_(task_type),
         tracing_info_(tracing_info) {}
 
@@ -111,10 +93,10 @@ class ImageDecodeTaskImpl : public TileTask {
                  "software", "source_prepare_tiles_id",
                  tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        image_.paint_image().GetSkImage().get(),
+        paint_image_.GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
-    cache_->DecodeImageInTask(image_key_, image_, task_type_);
+    cache_->DecodeImageInTask(image_key_, paint_image_, task_type_);
   }
 
   // Overridden from TileTask:
@@ -128,7 +110,7 @@ class ImageDecodeTaskImpl : public TileTask {
  private:
   SoftwareImageDecodeCache* cache_;
   SoftwareImageDecodeCache::ImageKey image_key_;
-  DrawImage image_;
+  PaintImage paint_image_;
   SoftwareImageDecodeCache::DecodeTaskType task_type_;
   const ImageDecodeCache::TracingInfo tracing_info_;
 
@@ -310,8 +292,8 @@ SoftwareImageDecodeCache::GetTaskForImageAndRefInternal(
   if (!task) {
     // Ref image once for the task.
     ++cache_entry->ref_count;
-    task = base::MakeRefCounted<ImageDecodeTaskImpl>(this, key, image,
-                                                     task_type, tracing_info);
+    task = base::MakeRefCounted<ImageDecodeTaskImpl>(
+        this, key, image.paint_image(), task_type, tracing_info);
   }
   return TaskResult(task);
 }
@@ -365,7 +347,7 @@ void SoftwareImageDecodeCache::UnrefImage(const ImageKey& key) {
 }
 
 void SoftwareImageDecodeCache::DecodeImageInTask(const ImageKey& key,
-                                                 const DrawImage& image,
+                                                 const PaintImage& paint_image,
                                                  DecodeTaskType task_type) {
   TRACE_EVENT1("cc", "SoftwareImageDecodeCache::DecodeImageInTask", "key",
                key.ToString());
@@ -380,7 +362,7 @@ void SoftwareImageDecodeCache::DecodeImageInTask(const ImageKey& key,
   DCHECK_GT(cache_entry->ref_count, 0);
   DCHECK(cache_entry->is_budgeted);
 
-  DecodeImageIfNecessary(key, image, cache_entry);
+  DecodeImageIfNecessary(key, paint_image, cache_entry);
   DCHECK(cache_entry->decode_failed || cache_entry->is_locked);
   RecordImageMipLevelUMA(
       MipMapUtil::GetLevelForSize(key.src_rect().size(), key.target_size()));
@@ -388,7 +370,7 @@ void SoftwareImageDecodeCache::DecodeImageInTask(const ImageKey& key,
 
 void SoftwareImageDecodeCache::DecodeImageIfNecessary(
     const ImageKey& key,
-    const DrawImage& draw_image,
+    const PaintImage& paint_image,
     CacheEntry* entry) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DecodeImageIfNecessary", "key",
@@ -396,7 +378,6 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
   lock_.AssertAcquired();
   DCHECK_GT(entry->ref_count, 0);
 
-  const PaintImage& paint_image = draw_image.paint_image();
   if (key.target_size().IsEmpty())
     entry->decode_failed = true;
 
@@ -422,36 +403,72 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
       (gfx::RectToSkIRect(key.src_rect()) != full_size_rect);
   const SkIRect target_size_rect =
       SkIRect::MakeWH(key.target_size().width(), key.target_size().height());
+
   std::unique_ptr<CacheEntry> local_cache_entry;
-  {
-    // Note that this block runs without the lock held so it's important not to
-    // access |entry| here since it's coming from a map that can be accessed by
-    // other threads.
+  // If this is a full size, unsubrected image, we will definitely need to do
+  // a decode.
+  if (!need_subset && target_size_rect == full_size_rect) {
     base::AutoUnlock release(lock_);
+    local_cache_entry = DoDecodeImage(key, paint_image);
+  } else {
+    // Use the full image decode to generate a scaled/subrected decode.
+    // TODO(vmpstr): Change this part to find a good candidate first other
+    // than the full decode. Also this part needs to handle decode to scale.
+    base::Optional<ImageKey> candidate_key;
+    auto image_keys_it = frame_key_to_image_keys_.find(key.frame_key());
+    // We know that we must have at least our own |entry| in this list, so it
+    // won't be empty.
+    DCHECK(image_keys_it != frame_key_to_image_keys_.end());
 
-    // If this is a full size, unsubrected image, we will definitely need to do
-    // a decode.
-    if (!need_subset && target_size_rect == full_size_rect) {
-      local_cache_entry = DoDecodeImage(key, paint_image);
-    } else {
-      // Use the full image decode to generate a scaled/subrected decode.
-      // TODO(vmpstr): Change this part to find a good candidate first other
-      // than the full decode. Also this part needs to handle decode to scale.
-      DrawImage full_size_draw_image(
-          paint_image, full_size_rect, kNone_SkFilterQuality, SkMatrix::I(),
-          key.frame_key().frame_index(), key.target_color_space());
-      auto decoded_draw_image = GetDecodedImageForDraw(full_size_draw_image);
+    auto& available_keys = image_keys_it->second;
+    std::sort(available_keys.begin(), available_keys.end(),
+              [](const ImageKey& one, const ImageKey& two) {
+                // Return true if |one| scale is less than |two| scale.
+                return one.target_size().width() < two.target_size().width() &&
+                       one.target_size().height() < two.target_size().height();
+              });
+    for (auto& available_key : available_keys) {
+      // Only consider keys coming from the same src rect, since otherwise the
+      // resulting image was extracted using a different src. Only consider keys
+      if (available_key.src_rect() != key.src_rect())
+        continue;
 
-      AutoDrawWithImageFinished auto_finish_draw(this, full_size_draw_image,
-                                                 decoded_draw_image);
-      if (!decoded_draw_image.image()) {
-        local_cache_entry = nullptr;
-      } else {
-        local_cache_entry =
-            GenerateCacheEntryFromCandidate(key, decoded_draw_image);
+      // that are at least as big as the required |key|.
+      if (available_key.target_size().width() < key.target_size().width() ||
+          available_key.target_size().height() < key.target_size().height()) {
+        continue;
+      }
+      auto image_it = decoded_images_.Peek(available_key);
+      DCHECK(image_it != decoded_images_.end());
+      auto* available_entry = image_it->second.get();
+      if (available_entry->is_locked || available_entry->Lock()) {
+        candidate_key.emplace(available_key);
+        break;
       }
     }
-  }  // End of the unlock block.
+
+    if (!candidate_key) {
+      DrawImage candidate_draw_image(
+          paint_image, full_size_rect, kNone_SkFilterQuality, SkMatrix::I(),
+          key.frame_key().frame_index(), key.target_color_space());
+      candidate_key.emplace(
+          ImageKey::FromDrawImage(candidate_draw_image, color_type_));
+    }
+
+    auto decoded_draw_image =
+        GetDecodedImageForDrawInternal(*candidate_key, paint_image);
+
+    if (!decoded_draw_image.image()) {
+      local_cache_entry = nullptr;
+    } else {
+      base::AutoUnlock release(lock_);
+      local_cache_entry =
+          GenerateCacheEntryFromCandidate(key, decoded_draw_image);
+    }
+
+    // Unref to balance the GetDecodedImageForDrawInternal() call.
+    UnrefImage(*candidate_key);
+  }
 
   if (!local_cache_entry) {
     entry->decode_failed = true;
@@ -552,12 +569,13 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   base::AutoLock hold(lock_);
   return GetDecodedImageForDrawInternal(
-      ImageKey::FromDrawImage(draw_image, color_type_), draw_image);
+      ImageKey::FromDrawImage(draw_image, color_type_),
+      draw_image.paint_image());
 }
 
 DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
     const ImageKey& key,
-    const DrawImage& draw_image) {
+    const PaintImage& paint_image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::GetDecodedImageForDrawInternal",
                "key", key.ToString());
@@ -574,7 +592,7 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   ++cache_entry->ref_count;
   cache_entry->mark_used();
 
-  DecodeImageIfNecessary(key, draw_image, cache_entry);
+  DecodeImageIfNecessary(key, paint_image, cache_entry);
   auto decoded_draw_image =
       DecodedDrawImage(cache_entry->image(), cache_entry->src_rect_offset(),
                        GetScaleAdjustment(key), GetDecodedFilterQuality(key));
