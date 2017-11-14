@@ -305,10 +305,8 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
   }
 
   copy("ios_web_view_package_copy") {
-    _web_view_framework_gen_dir = get_label_info(":web_view", "target_gen_dir")
-
     sources = [
-      "$_web_view_framework_gen_dir/$ios_web_view_output_name.framework",
+      "$root_out_dir/$ios_web_view_output_name.framework",
       "//AUTHORS",
       "//chrome/VERSION",
     ]

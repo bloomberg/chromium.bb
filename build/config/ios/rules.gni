@@ -1172,8 +1172,10 @@ template("ios_framework_bundle") {
   # toolchains when performing a fat build. Use "get_label_info" to construct
   # the path since they need to be relative to the default_toolchain.
 
+  _default_toolchain_root_out_dir =
+      get_label_info("$_target_name($default_toolchain)", "root_out_dir")
   _default_toolchain_target_gen_dir =
-      get_label_info(":$_target_name($default_toolchain)", "target_gen_dir")
+      get_label_info("$_target_name($default_toolchain)", "target_gen_dir")
 
   if (_has_public_headers) {
     _framework_headers_target = _target_name + "_framework_headers"
@@ -1182,7 +1184,7 @@ template("ios_framework_bundle") {
       # The link settings are inherited from the framework_bundle config.
       cflags = [
         "-F",
-        rebase_path("$_default_toolchain_target_gen_dir/.", root_build_dir),
+        rebase_path("$_default_toolchain_root_out_dir/.", root_build_dir),
       ]
     }
 
@@ -1207,7 +1209,7 @@ template("ios_framework_bundle") {
     visibility = [ ":$_target_name" ]
     ldflags = [
       "-F",
-      rebase_path("$_default_toolchain_target_gen_dir/.", root_build_dir),
+      rebase_path("$_default_toolchain_root_out_dir/.", root_build_dir),
     ]
     lib_dirs = [ root_out_dir ]
     libs = [ "$_output_name.framework" ]
@@ -1334,8 +1336,7 @@ template("ios_framework_bundle") {
   } else {
     if (_has_public_headers) {
       _public_headers = invoker.public_headers
-      _framework_root =
-          "$_default_toolchain_target_gen_dir/$_output_name.framework"
+      _framework_root = "$root_out_dir/$_output_name.framework"
 
       _compile_headers_map_target = _target_name + "_compile_headers_map"
       action(_compile_headers_map_target) {
@@ -1438,7 +1439,6 @@ template("ios_framework_bundle") {
       ]
     }
 
-    _bundle_data_target_name = _target_name + "+bundle"
     create_signed_bundle(_target_name) {
       forward_variables_from(invoker,
                              [
@@ -1459,7 +1459,6 @@ template("ios_framework_bundle") {
       output_name = _output_name
       bundle_binary_target = ":$_lipo_shared_library_target"
       bundle_binary_output = _output_name
-      bundle_gen_dir = _default_toolchain_target_gen_dir
 
       # Framework do not have entitlements nor mobileprovision because they use
       # the one from the bundle using them (.app or .appex) as they are just
@@ -1498,7 +1497,7 @@ template("ios_framework_bundle") {
       all_dependent_configs += [ ":$_framework_public_config" ]
     }
 
-    bundle_data(_bundle_data_target_name) {
+    bundle_data(_target_name + "+bundle") {
       forward_variables_from(invoker,
                              [
                                "testonly",
@@ -1508,7 +1507,7 @@ template("ios_framework_bundle") {
         ":$_target_name",
       ]
       sources = [
-        "$_default_toolchain_target_gen_dir/$_output_name.framework",
+        "$root_out_dir/$_output_name.framework",
       ]
       outputs = [
         "{{bundle_resources_dir}}/Frameworks/$_output_name.framework",
@@ -1678,7 +1677,6 @@ template("ios_xctest_bundle") {
       output_name = _output_name
       bundle_binary_target = ":$_lipo_loadable_module_target"
       bundle_binary_output = _output_name
-      bundle_gen_dir = target_gen_dir
 
       # Test files need to be known to Xcode for proper indexing and discovery
       # of tests function for XCTest, but the compilation is done via ninja and
@@ -1710,7 +1708,7 @@ template("ios_xctest_bundle") {
         ":$_target_name",
       ]
       sources = [
-        "$target_gen_dir/$_output_name.xctest",
+        "$root_out_dir/$_output_name.xctest",
       ]
       outputs = [
         "{{bundle_plugins_dir}}/$_output_name.xctest",
