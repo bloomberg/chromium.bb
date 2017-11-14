@@ -612,7 +612,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6573431926118603307">Faner du har åpnet i Chrome på de andre enhetene dine, vises her.</translation>
 <translation id="6575643671698722332">Tilbakestillingen var mislykket. Sjekk at enheten din har Internett-tilkobling og prøv på nytt.</translation>
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
-<translation id="6593061639179217415">Nettsted for datamaskiner</translation>
+<translation id="6593061639179217415">Side for datamaskiner</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
@@ -726,7 +726,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7607552448134703340">Skriv inn hva du ser etter</translation>
 <translation id="7612619742409846846">Logget på Google som</translation>
 <translation id="7619072057915878432">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av nettverksproblemer.</translation>
-<translation id="7620146066550602128">Prøv en <ph name="BEGIN_LINK" />enklere måte å surfe nettet på<ph name="END_LINK" /></translation>
+<translation id="7620146066550602128">Prøv en <ph name="BEGIN_LINK" />enklere måte å se nettsider på<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjelp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />skann på nytt<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
 <translation id="7638584964844754484">Feil passordfrase</translation>
@@ -751,7 +751,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7846076177841592234">Opphev valget</translation>
 <translation id="784934925303690534">Tidsperiode</translation>
 <translation id="7851858861565204677">Andre enheter</translation>
-<translation id="785312750761189439">Sveip opp fra bunnen av skjermen eller trykk på knappen for å vise mer for å få enkel tilgang til populære nettsteder og artikler, nedlastinger med mer</translation>
+<translation id="785312750761189439">Sveip opp fra bunnen av skjermen, eller trykk på knappen for å vise mer. Da får du enkel tilgang til populære nettsteder og artikler, nedlastinger med mer</translation>
 <translation id="7875915731392087153">Opprett e-post</translation>
 <translation id="7876243839304621966">Fjern alle</translation>
 <translation id="7882131421121961860">Fant ingen logg</translation>

@@ -2252,7 +2252,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="847472800012384958">Niet toestaan dat sites pop-ups weergeven</translation>
 <translation id="8476127435468057643">Controleert of NTLMv2 is ingeschakeld.
 
-Alle recente versies van Samba en Windows servers ondersteunen NTLMv2. Dit moet alleen worden uitgeschakeld voor achterwaartse compatibiliteit en vermindert de beveiliging van verificatie.
+Alle recente versies van Samba en Windows-servers ondersteunen NTLMv2. Dit moet alleen worden uitgeschakeld voor achterwaartse compatibiliteit en vermindert de beveiliging van verificatie.
 
 Als dit beleid niet is gedefinieerd, is de standaardwaarde momenteel 'false' (onwaar) voor achterwaartse compatibiliteit. In de toekomst wordt dit gewijzigd in 'true' (waar).</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

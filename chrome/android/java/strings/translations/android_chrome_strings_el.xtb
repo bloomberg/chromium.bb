@@ -262,7 +262,7 @@
 <translation id="3443221991560634068">Επαναφόρτωση της τρέχουσας σελίδας</translation>
 <translation id="3452612588551937789">Συνδεθείτε στον Λογαριασμό σας Google για να λάβετε τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης, και άλλες ρυθμίσεις σε όλες τις συσκευές σας</translation>
 <translation id="3487093336331957349">Προτάσεις αναζήτησης και ιστοτόπων</translation>
-<translation id="3492207499832628349">Νέα καρτέλα αν. περιήγησης</translation>
+<translation id="3492207499832628349">Νέα καρτέλα ανωνυμ. περιήγ.</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /> σχετικά με το προτεινόμενο περιεχόμενο</translation>
 <translation id="3518985090088779359">Αποδοχή και συνέχεια</translation>
 <translation id="3522247891732774234">Διατίθεται μια ενημέρωση. Περισσότερες επιλογές</translation>
@@ -523,7 +523,7 @@
 <translation id="5817918615728894473">Σύζευξη</translation>
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5832934273103296195">Αναπτυγμένη - Κάντε κλικ για σύμπτυξη</translation>
-<translation id="5833984609253377421">Κοινή χρήση συνδέσμου</translation>
+<translation id="5833984609253377421">Κοινοποίηση συνδέσμου</translation>
 <translation id="583891442612896534">Το Chrome δεν είναι δυνατό να επικοινωνήσει με τους διακομιστές της Google για συμπίεση δεδομένων. Η εξοικονόμηση δεδομένων πιθανώς να είναι περιορισμένη.</translation>
 <translation id="584615158992327102">πρόσβαση σε λήψεις, σελιδοδείκτες και ιστορικό.</translation>
 <translation id="5858741533101922242">Το Chrome δεν είναι δυνατό να ενεργοποιήσει τον προσαρμογέα Bluetooth</translation>
@@ -535,7 +535,7 @@
 <translation id="5911030830365207728">Μετάφραση Google</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5919204609460789179">Ενημερώστε το <ph name="PRODUCT_NAME" /> για να ξεκινήσει ο συγχρονισμός</translation>
-<translation id="5923939907038835197">Μάθετε ειδήσεις, συνταγές, τον καιρό…</translation>
+<translation id="5923939907038835197">Ειδήσεις, συνταγές, καιρός…</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5942872142862698679">Χρήση του Google για αναζήτηση</translation>
 <translation id="5956665950594638604">Άνοιγμα Κέντρου βοήθειας Chrome σε νέα καρτέλα</translation>
@@ -599,7 +599,7 @@
 <translation id="6482749332252372425">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω έλλειψης αποθηκευτικού χώρου.</translation>
 <translation id="6496823230996795692">Για να χρησιμοποιήσετε την εφαρμογή <ph name="APP_NAME" /> για πρώτη φορά, συνδεθείτε στο διαδίκτυο.</translation>
 <translation id="6508332297647760142">Κοινοποίηση στο Φυσικό δίκτυο</translation>
-<translation id="6527303717912515753">Κοινή χρήση</translation>
+<translation id="6527303717912515753">Κοινοποίηση</translation>
 <translation id="6534565668554028783">Η απάντηση από το Google καθυστέρησε υπερβολικά</translation>
 <translation id="6538442820324228105">Έγινε λήψη <ph name="GBS" /> GB</translation>
 <translation id="654446541061731451">Επιλέξτε μια καρτέλα για ζεύξη</translation>
@@ -612,7 +612,7 @@
 <translation id="6573431926118603307">Οι καρτέλες που έχετε ανοίξει στο Chrome στις άλλες συσκευές σας θα εμφανίζονται εδώ.</translation>
 <translation id="6575643671698722332">Αποτυχία επαναφοράς. Επιβεβαιώστε τη σύνδεση της συσκευής σας και δοκιμάστε ξανά.</translation>
 <translation id="6583199322650523874">Προσθήκη σελιδοδείκτη στην τρέχουσα σελίδα</translation>
-<translation id="6593061639179217415">Ιστότοπος για υπολογιστή</translation>
+<translation id="6593061639179217415">Για υπολογιστή</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
 <translation id="6612358246767739896">Προστατευμένο περιεχόμενο</translation>
 <translation id="6627583120233659107">Επεξεργασία φακέλου</translation>
@@ -679,7 +679,7 @@
 <translation id="7177466738963138057">Μπορείτε να αλλάξετε αργότερα αυτήν την επιλογή στην περιοχή "Ρυθμίσεις"</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
-<translation id="7189598951263744875">Κοινή χρήση…</translation>
+<translation id="7189598951263744875">Μοιραστείτε…</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>
 <translation id="723171743924126238">Επιλέξτε εικόνες</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
@@ -854,7 +854,7 @@
 <translation id="8853345339104747198">Καρτέλα <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Αποθήκευση</translation>
 <translation id="8901170036886848654">Δεν βρέθηκαν σελιδοδείκτες</translation>
-<translation id="8909135823018751308">Κοινή χρήση…</translation>
+<translation id="8909135823018751308">Μοιραστείτε…</translation>
 <translation id="8912362522468806198">Λογαριασμός Google</translation>
 <translation id="8920114477895755567">Αναμονή για λεπτομέρειες γονέων.</translation>
 <translation id="8922289737868596582">Κατεβάστε σελίδες από το κουμπί "Περισσότερες επιλογές" για να τις χρησιμοποιήσετε εκτός σύνδεσης</translation>

@@ -99,6 +99,7 @@
 <translation id="114140604515785785">এক্সটেনশন রুট ডিরেক্টরি:</translation>
 <translation id="1143142264369994168">শংসাপত্র স্বাক্ষরকারী</translation>
 <translation id="1145292499998999162">প্লাগ ইন অবরুদ্ধ রয়েছে</translation>
+<translation id="1145532888383813076">আপনার ডিভাইস, অ্যাপ এবং ওয়েব সার্চ করুন</translation>
 <translation id="1146204723345436916">HTML ফাইল থেকে বুকমার্কগুলি আমদানি করুন...</translation>
 <translation id="1149401351239820326">মেয়াদ শেষের মাস</translation>
 <translation id="1153356358378277386">যুক্ত করা ডিভাইসগুলি</translation>
@@ -243,6 +244,7 @@
 <translation id="1368832886055348810">বাঁ থেকে ডান</translation>
 <translation id="1370646789215800222">ব্যক্তিকে সরাবেন?</translation>
 <translation id="1374844444528092021">নেটওয়ার্কের প্রয়োজনীয় শংসাপত্র "<ph name="NETWORK_NAME" />" হয় ইনস্টল করা নেই অথবা তা আর বৈধ নয়৷ অনুগ্রহ করে একটি নতুন শংসাপত্র আনুন আর সংযোগ করতে পুনরায় চেষ্টা করুন৷</translation>
+<translation id="1374962581120570592">কুকিজ সেট করা হয়েছে</translation>
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
 <translation id="137651782282853227">সংরক্ষিত ঠিকানাগুলি এখানে দেখা যাবে</translation>
 <translation id="1377600615067678409">এখন ছেড়ে যান</translation>
@@ -532,12 +534,14 @@
 <translation id="1794791083288629568">এই সমস্যা ঠিক করতে আমাদের সহায়তা করতে প্রতিক্রিয়া পাঠান।</translation>
 <translation id="1795214765651529549">ক্লাসিক ব্যবহার করুন</translation>
 <translation id="179767530217573436">বিগত 4 সপ্তাহ</translation>
+<translation id="1798688944196431257">কুকিজ ব্লক করা হয়েছে</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" এক্সটেনশানটি স্বয়ংক্রিয়ভাবে অক্ষম করা হয়েছে।</translation>
 <translation id="180035236176489073">আপনার এই ফাইলগুলিতে অ্যাক্সেস পেতে অনলাইন হওয়া আবশ্যক৷</translation>
 <translation id="1801298019027379214">ভুল পিন, দয়া করে আবার চেষ্টা করুন৷ চেষ্টা বাকি আছে: <ph name="TRIES_COUNT" />টি</translation>
 <translation id="1801827354178857021">পূর্ণচ্ছেদ</translation>
 <translation id="1802931390041703523">এই পৃষ্ঠাতে ফ্ল্যাশ ব্লক করা হয়েছে</translation>
 <translation id="1803545009660609783">আবার শেখান</translation>
+<translation id="1805822111539868586">দৃশ্যগুলি দেখুন</translation>
 <translation id="1807938677607439181">সবকটি ফাইল</translation>
 <translation id="1809734401532861917"><ph name="USER_EMAIL_ADDRESS" /> এ আমার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস যোগ করুন</translation>
 <translation id="1810107444790159527">তালিকা  বাক্স</translation>
@@ -605,6 +609,7 @@
 <translation id="1916502483199172559">ডিফল্ট লাল রঙের অবতার</translation>
 <translation id="1918141783557917887">&amp;ক্ষুদ্রতর</translation>
 <translation id="1919345977826869612">বিজ্ঞাপন</translation>
+<translation id="1919814239594435008">আনস্যান্ডবক্সড প্লাগ-ইন অনুমোদিত</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">এটা দিয়ে খুলুন</translation>
 <translation id="1925021887439448749">কাস্টম ওয়েব ঠিকানা লিখুন</translation>
@@ -636,6 +641,7 @@
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
 <translation id="1975841812214822307">সরান...</translation>
 <translation id="1976150099241323601">সুরক্ষা ডিভাইসে সাইন করুন</translation>
+<translation id="1976315108329706992">আপনি এখন Android অ্যাপ ব্যবহার করতে পারেন।</translation>
 <translation id="1976323404609382849">একাধিক সাইট থেকে কুকিজ অবরুদ্ধ৷</translation>
 <translation id="1977965994116744507">আপনার <ph name="DEVICE_TYPE" /> আনলক করতে আপনার ফোন কাছাকাছি আনুন।</translation>
 <translation id="1979280758666859181"><ph name="PRODUCT_NAME" /> এর পুরানো সংস্করণ দিয়ে একটি চ্যানেলে পরিবর্তন করছেন৷ যখন আপনার ডিভাইসে বর্তমানে ইনস্টল করা সংস্করণের সঙ্গে চ্যানেলের সংস্করণটি মিলে যাবে তখনই চ্যানেল পরিবর্তন প্রযুক্ত হবে৷</translation>
@@ -1063,6 +1069,7 @@
 <translation id="2638286699381354126">আপডেট...</translation>
 <translation id="2638942478653899953">Google ড্রাইভে পৌঁছানো যাবে না৷ দয়া করে <ph name="BEGIN_LINK" />লগ আউট<ph name="END_LINK" /> হোন এবং আবার লগ ইন করুন৷</translation>
 <translation id="2642111877055905627">ফুটবল</translation>
+<translation id="2643569582440544295">লক স্ক্রিন নোটগুলি লক স্ক্রিন থেকে অ্যাক্সেস করা যাবে এবং নিজে থেকেই <ph name="LOCK_SCREEN_APP_NAME" /> এ সেভ হয়ে যায়।</translation>
 <translation id="2643698698624765890">উইন্ডো মেনুতে এক্সটেনশান ক্লিক করে আপনার এক্সটেনশানগুলি পরিচালনা করুন৷</translation>
 <translation id="2647142853114880570">আবার লোড করুন</translation>
 <translation id="2647269890314209800">কুকিগুলি ব্যবহার করা হচ্ছে</translation>
@@ -1100,6 +1107,7 @@
 <translation id="2686759344028411998">যে কোনও মডিউল লোড হওয়া সনাক্ত করতে অক্ষম৷</translation>
 <translation id="2688196195245426394">ডিভাইসটি সার্ভারে নথিভুক্ত করার সময়ে ত্রুটি: <ph name="CLIENT_ERROR" />৷</translation>
 <translation id="2690024944919328218">ভাষা বিকল্পগুলি দেখান</translation>
+<translation id="2690405692940015382">চিত্রগুলি ব্লক করা হয়েছে</translation>
 <translation id="2691385045260836588">মডেল</translation>
 <translation id="2693176596243495071">একটি অজানা সমস্যা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন বা সমস্যাটি হতে থাকলে আপনার প্রশাসককে জানান।</translation>
 <translation id="2694026874607847549">1টি কুকি</translation>
@@ -1553,6 +1561,7 @@
 <translation id="3348038390189153836">সরানোযোগ্য ডিভাইস সনাক্ত করা হয়েছে</translation>
 <translation id="3348459612390503954">অভিনন্দন</translation>
 <translation id="3348643303702027858">OS পুনরুদ্ধার মিডিয়া নির্মাণ বাতিল হয়েছে৷</translation>
+<translation id="3349933790966648062">মেমরি ফুটপ্রিন্ট</translation>
 <translation id="3353984535370177728">আপলোড করতে একটি ফোল্ডার বেছে নিন</translation>
 <translation id="335581015389089642">স্পিচ</translation>
 <translation id="3355936511340229503">সংযোগ ত্রুটি</translation>
@@ -1709,6 +1718,7 @@
 <translation id="3584169441612580296">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়া পডুন এবং পরিবর্তন করুন</translation>
 <translation id="3587482841069643663">সকল</translation>
 <translation id="358796204584394954">যুক্ত করতে "<ph name="DEVICE_NAME" />" এ এই কোডটি লিখুন:</translation>
+<translation id="3589766037099229847">নিরাপত্তাহীন কন্টেন্ট ব্লক করা হয়েছে</translation>
 <translation id="3590194807845837023">প্রোফাইল আনলক করুন এবং পুনরায় লঞ্চ করুন</translation>
 <translation id="3592260987370335752">এবং আরও জানুন</translation>
 <translation id="359283478042092570">Enter</translation>
@@ -1788,6 +1798,7 @@
 <translation id="3697100740575341996">আপনার IT প্রশাসক আপনার ডিভাইসের জন্য Chrome গুডিজগুলিকে অক্ষম করেছে৷ <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ইমেল ঠিকানা</translation>
 <translation id="3702500414347826004"><ph name="URL" /> অন্তর্ভুক্ত করতে আপনার শুরুর পৃষ্ঠাগুলি পরিবর্তন করা হয়েছে।</translation>
+<translation id="370415077757856453">জাভাস্ক্রিপ্ট ব্লক করা হয়েছে</translation>
 <translation id="3704331259350077894">ক্রিয়াকলাপের বিরতি</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">লোড হচ্ছে...</translation>
@@ -1822,6 +1833,7 @@
 <translation id="3755411799582650620">এছাড়াও আপনার <ph name="PHONE_NAME" /> এখন এই <ph name="DEVICE_TYPE" /> আনলক করতে পারে৷</translation>
 <translation id="3758201569871381925">দয়া করে নিশ্চিত করুন যে আপনার Hotrod ডিভাইস চালু রয়েছে এবং একটি TV তে সংযুক্ত রয়েছে৷</translation>
 <translation id="375841316537350618">প্রক্সী স্ক্রিপ্ট ডাউনলোড হচ্ছে...</translation>
+<translation id="3758842566811519622">কুকিজ সেট করা হয়েছে</translation>
 <translation id="3759371141211657149">হ্যান্ডেলার সেটিংস পরিচালনা করুন...</translation>
 <translation id="3759933321830434300">ওয়েব পৃষ্ঠাগুলির অংশগুলি অবরুদ্ধ করুন</translation>
 <translation id="3760460896538743390">&amp;পশ্চাদপট পৃষ্ঠা পরিদর্শন করুন</translation>
@@ -1915,6 +1927,7 @@
 <translation id="3878840326289104869">তত্ত্বাবধানে থাকা ব্যবহারকারী তৈরি করা হচ্ছে</translation>
 <translation id="3879748587602334249">ডাউনলোড ম্যানেজার</translation>
 <translation id="388485010393668001">সম্পূর্ণতা উপলব্ধ: <ph name="COMPLETION_TEXT" /></translation>
+<translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ব্যবহার করে নোট নেওয়া হচ্ছে</translation>
 <translation id="3892414795099177503">উম্মুক্ত VPN/L2TP যোগ করুন...</translation>
 <translation id="3893536212201235195">আপনার অ্যাক্সেসিবিলিটি সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
@@ -2313,6 +2326,7 @@
 <translation id="4590324241397107707">ডেটাবেস সঞ্চয়স্থান</translation>
 <translation id="4593021220803146968">&amp;এখানে যান <ph name="URL" /></translation>
 <translation id="4595560905247879544">অ্যাপ্লিকেশান এবং এক্সটেনশানগুলি শুধুমাত্র পরিচালক (<ph name="CUSTODIAN_NAME" />) দ্বারা পরিবর্তন করা যাবে।</translation>
+<translation id="4595989643015195102">আনস্যান্ডবক্সড প্লাগ-ইন ব্লক করা হয়েছে</translation>
 <translation id="4596295440756783523">আপনার ফাইলে এমন শংসাপত্রগুলি রয়েছে যা এই সার্ভারগুলিকে শনাক্ত করে</translation>
 <translation id="4598556348158889687">সঞ্চয়স্থান ব্যবস্থাপনা</translation>
 <translation id="4598776695426288251">একাধিক ডিভাইস থেকে ওয়াই ফাই পাওয়া যাচ্ছে</translation>
@@ -2330,6 +2344,7 @@
 <translation id="4620809267248568679">একটি এক্সটেনশন দ্বারা এই সেটিংটি প্রয়োগ করা হয়৷</translation>
 <translation id="4624768044135598934">সফল!</translation>
 <translation id="4625078469366263107">অ্যাপ্লিকেশান সক্ষম করুন</translation>
+<translation id="4627427111733173920">কুকিজ ব্লক করা হয়েছে</translation>
 <translation id="4627442949885028695">অন্য ডিভাইস থেকে চালিয়ে যান</translation>
 <translation id="4628314759732363424">পরিবর্তন করুন...</translation>
 <translation id="4628757576491864469">ডিভাইস</translation>
@@ -2874,6 +2889,7 @@
 <translation id="5457113250005438886">অবৈধ</translation>
 <translation id="5457459357461771897">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্যান্য মিডিয়া পড়ুন এবং মুছুন</translation>
 <translation id="5457599981699367932">অতিথি হিসাবে ব্রাউজ করুন</translation>
+<translation id="5457950659230097883">জাভাস্ক্রিপ্ট ব্লক করা হয়েছে</translation>
 <translation id="5458998536542739734">লক স্ক্রিন নোট</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" />-এর সূচী</translation>
 <translation id="5463856536939868464">গোপন বুকমার্কগুলি সমন্বিত মেনু</translation>
@@ -2914,6 +2930,7 @@
 <translation id="5513242761114685513">প্রসঙ্গ মেনু</translation>
 <translation id="5516183516694518900">আপনার সমস্ত ডিভাইসে আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পেতে আপনার Google অ্যাকাউন্টের মাধ্যমে Chrome এ সাইন ইন করুন।</translation>
 <translation id="551752069230578406">আপনার অ্যাকাউন্টে মুদ্রক যোগ করার হচ্ছে - এই কিছু সময় নিতে পারে...</translation>
+<translation id="5517535964909391608">নিরাপত্তাহীন কন্টেন্ট ব্লক করা হয়েছে</translation>
 <translation id="5518584115117143805">ইমেল এনক্রিপশান শংসাপত্র</translation>
 <translation id="5521078259930077036">আপনি কি এই পৃষ্ঠাটিকে হোম পৃষ্টা হিসেবে আশা করছিলেন?</translation>
 <translation id="5521348028713515143">ডেস্কটপ শর্টকাট জুড়ুন</translation>
@@ -2980,6 +2997,7 @@
 <translation id="5612734644261457353">দুঃখিত, আপনার পাসওয়ার্ড এখনো পর্যন্ত যাচাই করা যায়নি৷ দ্রষ্টব্য: আপনি যদি সম্প্রতি আপনার পাসওয়ার্ড পরিবর্তন করে থাকেন, তাহলে আপনি প্রস্থান করার পর আপনার নতুন পাসওয়ার্ড প্রয়োগ করা হবে, দয়া করে এখানে পুরানো পাসওয়ার্ড ব্যবহার করুন৷</translation>
 <translation id="5613695965848159202">নামহীন পরিচয়:</translation>
 <translation id="5614190747811328134">ব্যবহারকারী বিঞ্জপ্তি</translation>
+<translation id="561698261642843490">Firefox বন্ধ করুন</translation>
 <translation id="5618075537869101857">ধ্যাত, kiosk অ্যাপ্লিকেশানটিকে লঞ্চ করা যায়নি৷</translation>
 <translation id="5618333180342767515">(এটি কয়েক মিনিট সময় নিতে পারে)</translation>
 <translation id="5618972959246891967">সিস্টেমের তারিখ</translation>
@@ -3011,6 +3029,7 @@
 <translation id="5662477687021125631">চিরস্থায়ী</translation>
 <translation id="5669267381087807207">সক্রিয় করা হচ্ছে</translation>
 <translation id="5669691691057771421">নতুন পিন লিখুন</translation>
+<translation id="5671641761787789573">চিত্রগুলি ব্লক করা হয়েছে</translation>
 <translation id="5677503058916217575">পৃষ্ঠার ভাষা:</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />-এর পড়া এবং লেখার অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
@@ -3232,6 +3251,7 @@
 <translation id="6025215716629925253">ট্রেস স্ট্যাক</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB ডিভাইস সংযুক্ত হয়েছে</translation>
 <translation id="6032912588568283682">ফাইল সিস্টেম</translation>
+<translation id="6034662038931255275">OS আপডেট সফল হয়েছে</translation>
 <translation id="6039651071822577588">নেটওয়ার্ক সম্পত্তি অভিধান বিকৃত</translation>
 <translation id="604001903249547235">ক্লাউড ব্যাকআপ</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -3301,7 +3321,7 @@
 <translation id="6138680304137685902">SHA-384 সহ X9.62 ECDSA স্বাক্ষর</translation>
 <translation id="6143186082490678276">সহায়তা পান</translation>
 <translation id="6144938890088808325">আমাদের Chromebooks উন্নত করতে সাহায্য করুন</translation>
-<translation id="6146563240635539929">ভিডিওগুলি</translation>
+<translation id="6146563240635539929">ভিডিও</translation>
 <translation id="6147020289383635445">প্রিন্ট পূর্বরূপ ব্যর্থ হয়েছে৷</translation>
 <translation id="6150853954427645995">অফলাইনে ব্যবহারের জন্য এই ফাইলটি সেভ করুন, অনলাইন ফিরে পেতে, ফাইলের ডানদিকে ক্লিক করুন, এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্প নির্বাচন করুন৷</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> অনুসন্ধানের জন্য <ph name="SEARCH_KEY" /> টিপুন</translation>
@@ -3732,6 +3752,7 @@
 <translation id="6798954102094737107">প্ল্যাগ ইন: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">টাচস্ক্রীন ক্রমাঙ্কন করুন</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
+<translation id="6804124853318036372">লোড হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...</translation>
 <translation id="6804671422566312077">নতুন উইন্ডোতে স&amp;কল বুকমার্ক খুলুন</translation>
 <translation id="6805038906417219576">ঠিক আছে</translation>
 <translation id="6805647936811177813"><ph name="HOST_NAME" /> থেকে ক্লায়েন্ট শংসাপত্র আমদানি করতে দয়া করে <ph name="TOKEN_NAME" />-এ প্রবেশ করুন৷</translation>
@@ -3798,6 +3819,7 @@
 <translation id="6910211073230771657">মোছা হয়েছে</translation>
 <translation id="691024665142758461">একাধিক ফাইল ডাউনলোড করুন</translation>
 <translation id="6911324888870229398">নেটওয়ার্ক সংযোগ কেটে গেছে। অনুগ্রহ করে আপনার সংযোগ যাচাই করুন অথবা অন্য ওয়াই-ফাই নেটওয়ার্ক ব্যবহার করে দেখুন।</translation>
+<translation id="6911734910326569517">মেমরি ফুটপ্রিন্ট</translation>
 <translation id="6915804003454593391">ব্যবহারকারী:</translation>
 <translation id="6916590542764765824">এক্সটেনশানগুলি পরিচালনা করুন</translation>
 <translation id="6920989436227028121">নিয়মিত ট্যাব রূপে খুলুন</translation>
@@ -3911,6 +3933,7 @@
 <translation id="7077829361966535409">সাইন-ইন পৃষ্ঠাটি বর্তমান প্রক্সি সেটিংস ব্যবহার করে লোড হতে ব্যর্থ হয়েছে৷ দয়া করে <ph name="GAIA_RELOAD_LINK_START" />আবার প্রবেশ করার চেষ্টা করুন<ph name="GAIA_RELOAD_LINK_END" />, অথবা পৃথক <ph name="PROXY_SETTINGS_LINK_START" />প্রক্সি সেটিংস<ph name="PROXY_SETTINGS_LINK_END" /> ব্যবহার করুন৷</translation>
 <translation id="7078120482318506217">সকল নেটওয়ার্কগুলি</translation>
 <translation id="708060913198414444">অ&amp;ডিও ঠিকানা কপি করুন</translation>
+<translation id="708278670402572152">স্ক্যানিং সক্রিয় করতে সংযোগ বিচ্ছিন্ন করুন</translation>
 <translation id="7084192839369222683">শুধুমাত্র গুরুত্বপূর্ণ সামগ্রী চালান</translation>
 <translation id="7088434364990739311">আপডেট যাচাই সূচনা হতে ব্যর্থ হয়েছে (ত্রুটি কোড <ph name="ERROR" />)৷</translation>
 <translation id="7088561041432335295">জিপ আর্কাইভার - Files অ্যাপে জিপ ফাইলগুলি খুলুন ও প্যাক করুন</translation>
@@ -4104,7 +4127,7 @@
 <translation id="7410344089573941623"><ph name="HOST" /> আপনার ক্যামেরা এবং মাইক্রোফোন অ্যাক্সেস  করতে চায় কিনা জিজ্ঞাসা করুন</translation>
 <translation id="7412226954991670867">GPU মেমোরি</translation>
 <translation id="7416362041876611053">অজানা নেটওয়ার্ক ত্রুটি৷</translation>
-<translation id="7417705661718309329">Google মানচিত্র</translation>
+<translation id="7417705661718309329">Google ম্যাপ</translation>
 <translation id="741906494724992817">এই অ্যাপ্লিকেশানটির জন্য কোনো বিশেষ অনুমতির প্রয়োজন নেই।</translation>
 <translation id="7421925624202799674">পৃষ্ঠা উৎস &amp;দেখুন</translation>
 <translation id="7422192691352527311">অভিরুচিসমূহ...</translation>
@@ -4122,6 +4145,7 @@
 <translation id="744341768939279100">একটি নতুন প্রোফাইল তৈরি করুন</translation>
 <translation id="7444726222535375658">Hangouts Meet চালিয়ে যেতে</translation>
 <translation id="7444983668544353857">অক্ষম <ph name="NETWORKDEVICE" /></translation>
+<translation id="7445682342344043969">পপ-আপগুলি ব্লক করা হয়েছে</translation>
 <translation id="744859430125590922"><ph name="CUSTODIAN_EMAIL" /> থেকে এই ব্যক্তির পরিদর্শিত ওয়েবসাইগুলি নিয়ন্ত্রণ করুন এবং দেখুন৷</translation>
 <translation id="7453008956351770337">এই প্রিন্টারটি নির্বাচন করে, আপনি নিম্নল্লিখিত এক্সটেনশানটিকে আপনার প্রিন্টারে অ্যাক্সেস করার অনুমতি দিচ্ছেন:</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4240,6 +4264,7 @@
 <translation id="7632948528260659758">নিম্নলিখিত kiosk অ্যাপ্লিকেশানগুলি আপডেট হতে ব্যর্থ হয়েছে:</translation>
 <translation id="7634566076839829401">কিছু গন্ডগোল হয়েছে৷ দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="7639178625568735185">বুঝেছি!</translation>
+<translation id="763959977925219242">পপ-আপগুলি ব্লক করা হয়েছে</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> স্বয়ংক্রিয়ভাবে আপনার সংরক্ষণ করা পাসওয়ার্ড দিয়ে উপযুক্ত সাইটগুলিতে আপনাকে প্রবেশ করায়।</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (মালিক)</translation>
 <translation id="7648992873808071793">এই ডিভাইসে ফাইলগুলি জমা করুন</translation>
@@ -4319,6 +4344,7 @@
 <translation id="7784067724422331729">আপনার কম্পিউটারের সুরক্ষা সেটিংস এই ফাইলটি অবরুদ্ধ করেছে৷</translation>
 <translation id="7786207843293321886">অতিথি থেকে প্রস্থান করুন</translation>
 <translation id="7786889348652477777">&amp;অ্যাপ্লিকেশান আবার লোড করুন</translation>
+<translation id="7787052136533704473">আনস্যান্ডবক্সড প্লাগ-ইন অনুমোদিত</translation>
 <translation id="7787129790495067395">আপনি বর্তমানে একটি পাসফ্রেজ ব্যবহার করছেন৷  যদি আপনি নিজের পাসফ্রেজ ভুলে গিয়ে থাকেন তবে আপনি Google ড্যাশবোর্ড ব্যবহার করে Google-এর সার্ভারগুলি থেকে আপনার ডেটা সাফ করতে সিঙ্ক আবার সেট করতে পারেন৷</translation>
 <translation id="7787308148023287649">অন্য স্ক্রীনে প্রদর্শন করুন</translation>
 <translation id="7788080748068240085">এই <ph name="FILE_NAME" /> অফলাইনে সংরক্ষণ করতে হলে আপনাকে অবশ্যই অতিরিক্ত <ph name="TOTAL_FILE_SIZE" />স্থান খালি করতে হবে:<ph name="MARKUP_1" />
@@ -4822,6 +4848,7 @@
 <translation id="8596540852772265699">নিজের পছন্দমত ফাইলগুলি</translation>
 <translation id="8596785155158796745">মাইক্রোফোন বর্তমানে অনুপলব্ধ৷ <ph name="BEGIN_LINK" />মাইক্রোফোন পরিচালনা করুন<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">প্রপার্টি ফর্ম্যাট:</translation>
+<translation id="8598453409908276158">আনস্যান্ডবক্সড প্লাগ-ইন ব্লক করা হয়েছে</translation>
 <translation id="8598687241883907630">আপনার Google অ্যাকাউন্ট সংযোগ বিচ্ছিন্ন করুন...</translation>
 <translation id="8601206103050338563">TLS WWW ক্লায়েন্ট  প্রমাণীকরণ</translation>
 <translation id="8602851771975208551">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি অ্যাপ্লিকেশন জুড়েছে যা Chrome এর কাজ করার পদ্ধতিকে পাল্টে দিতে পারে৷</translation>

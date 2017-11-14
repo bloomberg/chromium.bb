@@ -93,7 +93,7 @@
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Semua Aplikasi</translation>
 <translation id="6012623610530968780">Halaman <ph name="SELECTED_PAGE" /> dari <ph name="TOTAL_PAGE_NUM" /></translation>
-<translation id="6022924867608035986">Hapus teks dari kotak pencarian</translation>
+<translation id="6022924867608035986">Hapus teks dari kotak penelusuran</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6119846243427417423">aktifkan</translation>
 <translation id="6129953537138746214">Spasi</translation>
@@ -115,7 +115,7 @@
 <translation id="6845383723252244143">Pilih Folder</translation>
 <translation id="6845533974506654842">tekan</translation>
 <translation id="6863590663815976734">{HOURS,plural, =1{1 jam lagi}other{# jam lagi}}</translation>
-<translation id="688711909580084195">Laman Web Tanpa Judul</translation>
+<translation id="688711909580084195">Halaman Web Tanpa Judul</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/dtk</translation>
 <translation id="6917971086528278418">{YEARS,plural, =1{1 tahun lagi}other{# tahun lagi}}</translation>
 <translation id="6945221475159498467">Pilih</translation>

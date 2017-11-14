@@ -2145,7 +2145,7 @@
 <translation id="847472800012384958">不允許任何網站顯示彈出式視窗</translation>
 <translation id="8476127435468057643">控制是否啟用 NTLMv2。
 
-          近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用 NTLMv2 (驗證功能的安全性會因此下降)。
+          近期的所有 Samba 和 Windows 伺服器版本均支援 NTLMv2。除非是為了回溯相容性的緣故，否則請勿停用這項功能 (驗證功能的安全性會因此下降)。
 
           未定義這項政策時，預設值目前為 false (因應回溯相容性需求)，但日後將變更為 true。</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

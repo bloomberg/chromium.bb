@@ -99,7 +99,7 @@
 <translation id="114140604515785785">الدليل الجذر للإضافة:</translation>
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
 <translation id="1145292499998999162">تم حظر المكوّن الإضافي</translation>
-<translation id="1145532888383813076">البحث عن جهازك، والتطبيقات، والويب.</translation>
+<translation id="1145532888383813076">البحث في جهازك والتطبيقات والويب.</translation>
 <translation id="1146204723345436916">‏استيراد الإشارات المرجعية من ملف HTML...</translation>
 <translation id="1149401351239820326">شهر انتهاء الصلاحية</translation>
 <translation id="1153356358378277386">الأجهزة المقترنة</translation>
@@ -244,7 +244,7 @@
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="1370646789215800222">هل تريد إزالة شخص؟</translation>
 <translation id="1374844444528092021">الشهادة المطلوبة من الشبكة "<ph name="NETWORK_NAME" />" لم يتم تثبيتها أو لم تعد صالحة.  يُرجى الحصول على شهادة جديدة وإعادة الاتصال من جديد.</translation>
-<translation id="1374962581120570592">تعيين ملفات تعريف الارتباط</translation>
+<translation id="1374962581120570592">تمّ تعيين ملفات تعريف الارتباط</translation>
 <translation id="1375321115329958930">كلمات المرور المحفوظة</translation>
 <translation id="137651782282853227">ستظهر هنا العناوين المحفوظة</translation>
 <translation id="1377600615067678409">التخطي الآن</translation>
@@ -542,7 +542,7 @@
 <translation id="1801827354178857021">الفترة</translation>
 <translation id="1802931390041703523">‏تم حظر تشغيل Flash في هذه الصفحة</translation>
 <translation id="1803545009660609783">إعادة التشكيل</translation>
-<translation id="1805822111539868586">فحص العروض</translation>
+<translation id="1805822111539868586">فحص القراءات</translation>
 <translation id="1807938677607439181">كل الملفات</translation>
 <translation id="1809734401532861917">إضافة الإشارات المرجعية، والسّجل، وكلمات المرور، والإعدادات الأخرى إلى <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810107444790159527">مربع قائمة</translation>
@@ -1562,7 +1562,7 @@
 <translation id="3348038390189153836">تم اكتشاف جهاز قابل للإزالة</translation>
 <translation id="3348459612390503954">تهانينا</translation>
 <translation id="3348643303702027858">تم إلغاء إنشاء وسائط استعادة نظام التشغيل.</translation>
-<translation id="3349933790966648062">بصمة الذاكرة</translation>
+<translation id="3349933790966648062">الذاكرة المستخدَمة</translation>
 <translation id="3353984535370177728">حدد مجلدًا لتحميله</translation>
 <translation id="335581015389089642">الحديث</translation>
 <translation id="3355936511340229503">خطأ الاتصال</translation>
@@ -1834,7 +1834,7 @@
 <translation id="3755411799582650620">بإمكان هاتفك <ph name="PHONE_NAME" /> أن يلغي قفل جهاز<ph name="DEVICE_TYPE" /> أيضًا.</translation>
 <translation id="3758201569871381925">‏يُرجى التأكد من أن جهاز Hotrod يعمل ومتصل بجهاز تلفزيون.</translation>
 <translation id="375841316537350618">جارٍ تنزيل النص البرمجي للخادم الوكيل...</translation>
-<translation id="3758842566811519622">تعيين ملفات تعريف الارتباط</translation>
+<translation id="3758842566811519622">تمّ تعيين ملفات تعريف الارتباط</translation>
 <translation id="3759371141211657149">إدارة إعدادات المعالج...</translation>
 <translation id="3759933321830434300">الأجزاء المقيدة من صفحات الويب</translation>
 <translation id="3760460896538743390">فحص &amp;صفحة الخلفية</translation>
@@ -3821,7 +3821,7 @@
 <translation id="6910211073230771657">تم الحذف</translation>
 <translation id="691024665142758461">تنزيل ملفات متعددة</translation>
 <translation id="6911324888870229398">‏تم فقد اتصال الشبكة. يُرجى التحقق من اتصالك أو تجربة شبكة Wi-Fi أخرى.</translation>
-<translation id="6911734910326569517">بصمة الذاكرة</translation>
+<translation id="6911734910326569517">الذاكرة المستخدَمة</translation>
 <translation id="6915804003454593391">المستخدم:</translation>
 <translation id="6916590542764765824">إدارة الإضافات</translation>
 <translation id="6920989436227028121">فتح كعلامة تبويب عادية</translation>
@@ -4758,7 +4758,7 @@
 <translation id="8425755597197517046">ل&amp;صق وبحث</translation>
 <translation id="8426713856918551002">جارٍ التمكين</translation>
 <translation id="8427292751741042100">مضمن في أي مضيف</translation>
-<translation id="8428213095426709021">إعدادات</translation>
+<translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8431909052837336408">‏تغيير رمز PIN لشريحة SIM</translation>
 <translation id="8434480141477525001">‏منفذ تصحيح أخطاء NaCl</translation>
 <translation id="8437331208797669910">الوصول إلى الصفحة</translation>
@@ -5224,7 +5224,7 @@
 <translation id="9157697743260533322">فشل في إعداد التحديثات التلقائية لجميع المستخدمين (خطأ إطلاق الاختبار المبدئي: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">عفوًا!  حدثت مشكلة في الاتصال بالشبكة أثناء المصادقة. يرجى التحقق من الاتصال بالشبكة وإعادة المحاولة.</translation>
 <translation id="9161070040817969420">الإطارات الفرعية لـ: <ph name="PARENT_SITE" /></translation>
-<translation id="916607977885256133">شاشة داخل الشاشة</translation>
+<translation id="916607977885256133">نافذة ضمن النافذة</translation>
 <translation id="9169496697824289689">عرض اختصارات لوحة المفاتيح</translation>
 <translation id="9170397650136757332">حرِّك الآن إصبعك قليلاً لالتقاط جميع الأجزاء المختلفة لبصمة إصبعك</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>

@@ -93,7 +93,7 @@
 <translation id="1128591060186966949">Editar mecanismo de pesquisa</translation>
 <translation id="1128987120443782698">O dispositivo de armazenamento tem capacidade de <ph name="DEVICE_CAPACITY" />. Insira um cartão SD ou um cartão de memória USB com pelo menos 4 GB de capacidade.</translation>
 <translation id="1131167343343087859">Cartões de crédito e endereços que usam o Google Payments.</translation>
-<translation id="1134009406053225289">Abrir em uma janela anônima</translation>
+<translation id="1134009406053225289">Abrir em uma janela sem rastros</translation>
 <translation id="1137673463384776352">Abrir link no <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acessar seus dispositivos de série e Bluetooth</translation>
 <translation id="114140604515785785">Diretório raiz da extensão:</translation>
@@ -766,7 +766,7 @@
 <translation id="2173801458090845390">Adicionar código de requisição para este dispositivo</translation>
 <translation id="2175042898143291048">Sempre fazer isso</translation>
 <translation id="2175607476662778685">Barra de inicialização rápida</translation>
-<translation id="2177950615300672361">Guia anônima: <ph name="TAB_NAME" /></translation>
+<translation id="2177950615300672361">Guia sem rastros: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Compromisso da autoridade de certificação</translation>
 <translation id="218070003709087997">Use um número para indicar o número de cópias a serem impressas (1 a 999).</translation>
 <translation id="2187895286714876935">Erro de importação do certificado de servidor</translation>
@@ -4282,7 +4282,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7652808307838961528">Editar pessoa, <ph name="PROFILE_NAME" /></translation>
 <translation id="7654941827281939388">Esta conta já está sendo utilizada neste computador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
-<translation id="7659584679870740384">Você tem autorização para usar este dispositivo. Para permissão de login, entre em contato com o administrador.</translation>
+<translation id="7659584679870740384">Você não tem autorização para usar este dispositivo. Para permissão de login, entre em contato com o administrador.</translation>
 <translation id="7661259717474717992">Permitir que os sites salvem e leiam os dados de arquivos "cookies" - que armazenam temporariamente o que você visitou na rede.</translation>
 <translation id="7661451191293163002">Não foi possível adquirir um certificado de registro.</translation>
 <translation id="7662283695561029522">Toque para configurar</translation>

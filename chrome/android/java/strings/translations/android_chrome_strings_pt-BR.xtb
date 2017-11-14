@@ -94,7 +94,7 @@
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1829244130665387512">Encontrar na página</translation>
 <translation id="1832521218263067499">Incidentes de segurança</translation>
-<translation id="1853692000353488670">Nova guia anônima</translation>
+<translation id="1853692000353488670">Nova guia sem rastros</translation>
 <translation id="1880072593381090678">Páginas conhecidas do Chrome</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="1897409700584096124">O website está transmitindo</translation>
@@ -135,7 +135,7 @@
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Conte para nós por que você desativou o novo Chrome</translation>
+<translation id="2172731970979873816">Conte-nos por que você desativou o novo Chrome</translation>
 <translation id="2185784955520093231">Você está usando o novo Chrome</translation>
 <translation id="219985413780390209">Proteger você e seu dispositivo de sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicativo da Web. <ph name="APP_URL" /></translation>
@@ -168,7 +168,7 @@
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2490674006498621843">Puxe a barra de ferramentas para cima para localizar seus arquivos e páginas nos downloads</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
-<translation id="2498359688066513246">Central de ajuda e feedback</translation>
+<translation id="2498359688066513246">Ajuda e feedback</translation>
 <translation id="2501278716633472235">Voltar</translation>
 <translation id="2503472621226270518">Expandir o painel de navegação</translation>
 <translation id="2512222046227390255">Preenchimento automático de formulários</translation>
@@ -214,7 +214,7 @@
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2962095958535813455">Alternada para guias anônimas</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
-<translation id="2979025552038692506">Guia anônima selecionada</translation>
+<translation id="2979025552038692506">Guia sem rastros selecionada</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
 <translation id="2996291259634659425">Criar senha longa</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
@@ -223,10 +223,10 @@
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="307908932405420782">Mais artigos serão exibidos em breve. Aproveite a manhã.</translation>
-<translation id="3089395242580810162">Abrir em guia anônima</translation>
+<translation id="3089395242580810162">Abrir em guia sem rastros</translation>
 <translation id="311456632243022227">Vários links abertos no Chrome</translation>
 <translation id="3115898365077584848">Mostrar informações</translation>
-<translation id="3135915540460564231">Onde estão os downloads, favoritos e o histórico?</translation>
+<translation id="3135915540460564231">Onde estão os downloads, favoritos e histórico?</translation>
 <translation id="3137521801621304719">Sair do modo sem rastros</translation>
 <translation id="3148434565183091099">Para ter seus favoritos em todos os seus dispositivos, faça login no Chrome.</translation>
 <translation id="3157842584138209013">Veja a quantidade de dados que você salvou no botão Mais opções</translation>
@@ -262,7 +262,7 @@
 <translation id="3443221991560634068">Atualizar a página atual</translation>
 <translation id="3452612588551937789">Faça login com sua Conta do Google para ter seus favoritos, histórico, senhas e outras configurações em todos os seus dispositivos.</translation>
 <translation id="3487093336331957349">Sugestões de pesquisa e sites</translation>
-<translation id="3492207499832628349">Navegar sem deixar rastros</translation>
+<translation id="3492207499832628349">Nova guia sem rastros</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre o conteúdo sugerido</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3522247891732774234">Atualização disponível. Mais opções</translation>
@@ -459,7 +459,7 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5308603654685598744">Quando este recurso está ativado, o Google Chrome oferece a tradução de páginas escritas em outros idiomas usando o Google Tradutor.</translation>
 <translation id="5313967007315987356">Adicionar site</translation>
 <translation id="5317780077021120954">Salvar</translation>
-<translation id="5324858694974489420">Configurações do responsável</translation>
+<translation id="5324858694974489420">Configurações dos pais</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
@@ -749,7 +749,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="784934925303690534">Intervalo de tempo</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
-<translation id="785312750761189439">Deslize de baixo para cima na tela ou toque no botão "expandir" para ter acesso fácil a sites e artigos conhecidos, downloads e muito mais.</translation>
+<translation id="785312750761189439">Deslize de baixo para cima na tela ou toque no botão "Expandir" para ter acesso fácil a sites e artigos muito visitados, downloads e muito mais.</translation>
 <translation id="7875915731392087153">Criar e-mail</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7882131421121961860">Nenhum histórico encontrado</translation>
@@ -782,7 +782,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8084114998886531721">Senha salva</translation>
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
 <translation id="8100932616285851614">Painel de navegação fechado</translation>
-<translation id="8103578431304235997">Guia anônima</translation>
+<translation id="8103578431304235997">Guia sem rastros</translation>
 <translation id="8116925261070264013">Com som desativado</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
@@ -855,7 +855,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8912362522468806198">Conta do Google</translation>
 <translation id="8920114477895755567">Aguardando detalhes dos pais.</translation>
 <translation id="8922289737868596582">Use o botão Mais opções para fazer o download de páginas e usá-las off-line</translation>
-<translation id="8936297887573571433">Toque para ver favoritos, downloads e histórico</translation>
+<translation id="8936297887573571433">Toque para ver downloads, favoritos e histórico</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir em outra janela</translation>
 <translation id="8951232171465285730">O Chrome economizou <ph name="MEGABYTES" /> MB</translation>

@@ -244,7 +244,7 @@
 <translation id="1368832886055348810">D'esquerra a dreta</translation>
 <translation id="1370646789215800222">Voleu suprimir la persona?</translation>
 <translation id="1374844444528092021">El certificat necessari per a la xarxa "<ph name="NETWORK_NAME" />" no està instal·lat o ja no és vàlid. Obtingueu un certificat nou i proveu de tornar-vos a connectar.</translation>
-<translation id="1374962581120570592">Conjunt de galetes</translation>
+<translation id="1374962581120570592">S'han establert les galetes</translation>
 <translation id="1375321115329958930">Contrasenyes desades</translation>
 <translation id="137651782282853227">Les adreces desades es mostraran aquí</translation>
 <translation id="1377600615067678409">Omet per ara</translation>
@@ -1834,7 +1834,7 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3755411799582650620">També podeu desbloquejar aquest <ph name="DEVICE_TYPE" /> mitjançant <ph name="PHONE_NAME" />.</translation>
 <translation id="3758201569871381925">Comproveu que el dispositiu Hotrod estigui encès i connectat a un televisor.</translation>
 <translation id="375841316537350618">S'està baixant l'script de servidor intermediari...</translation>
-<translation id="3758842566811519622">S'han permès les galetes</translation>
+<translation id="3758842566811519622">S'han establert les galetes</translation>
 <translation id="3759371141211657149">Gestiona la configuració de gestors...</translation>
 <translation id="3759933321830434300">Bloqueig d'elements de pàgines web</translation>
 <translation id="3760460896538743390">Inspecciona la &amp;pàgina de fons</translation>
@@ -2581,7 +2581,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4974733135013075877">Surt i estableix el bloqueig infantil</translation>
 <translation id="4977942889532008999">Confirmació de l'accés</translation>
 <translation id="4980805016576257426">Aquesta extensió conté programari maliciós.</translation>
-<translation id="498294082491145744">Modifiqueu la configuració que controla l'accés dels llocs web a elements com les galetes, JavaScript, els connectors, la ubicació geogràfica, el micròfon, la càmera, etc.</translation>
+<translation id="498294082491145744">Modifiqueu la configuració que controla l'accés dels llocs web a elements com les galetes, JavaScript, els connectors, la ubicació, el micròfon, la càmera, etc.</translation>
 <translation id="4988526792673242964">Pàgines</translation>
 <translation id="4988792151665380515">No s'ha pogut exportar la clau pública.</translation>
 <translation id="49896407730300355">Gira en el sentit con&amp;trari a les agulles del rellotge</translation>

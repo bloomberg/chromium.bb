@@ -9,7 +9,7 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="1398853756734560583">Развернуть</translation>
-<translation id="1413622004203049571">Отключить оповещения от <ph name="NOTIFIER_NAME" /></translation>
+<translation id="1413622004203049571">Отключить уведомления от <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 минута }one{# минута }few{# минуты }many{# минут }other{# минуты }}</translation>
 <translation id="1643823602425662293">Уведомление</translation>
 <translation id="1710340000377843106">сейчас</translation>

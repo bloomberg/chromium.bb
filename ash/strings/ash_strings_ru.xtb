@@ -64,7 +64,7 @@
 <translation id="2365393535144473978">Вместе с мобильным Интернетом включится Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Проверьте, отображается ли на нем код: <ph name="PASSKEY" />.</translation>
-<translation id="2482878487686419369">Оповещения</translation>
+<translation id="2482878487686419369">Уведомления</translation>
 <translation id="2501920221385095727">Залипание клавиш</translation>
 <translation id="2509468283778169019">Включен режим CAPS LOCK</translation>
 <translation id="2532589005999780174">Режим высокой контрастности</translation>
@@ -101,7 +101,7 @@
 <translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
 <translation id="3294437725009624529">Гость</translation>
-<translation id="332587331255250389">Замените батарею в стилусе</translation>
+<translation id="332587331255250389">Замените батарею в стилусе.</translation>
 <translation id="3364721542077212959">Инструменты стилуса</translation>
 <translation id="3368922792935385530">Подключено</translation>
 <translation id="3371140690572404006">Устройство USB-C (ближний порт справа)</translation>
@@ -299,7 +299,7 @@
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">При переносе окон на другой рабочий стол иногда возникают ошибки.
 
-Оповещения и диалоговые окна могут появляться на разных рабочих столах.</translation>
+Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="8825534185036233643">Зеркалирование более двух дисплеев не поддерживается.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Клавиша поиска + Esc</translation>

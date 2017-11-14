@@ -193,7 +193,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="2944762337049891859">Baca halaman secara otomatis setelah selesai dimuat.</translation>
 <translation id="2964026537669811554">Grup judul</translation>
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tab}}</translation>
-<translation id="2972078295414139404">Tidak ada tautan yang dikunjungi sebelumnya.</translation>
+<translation id="2972078295414139404">Tidak ada link yang dikunjungi sebelumnya.</translation>
 <translation id="2972205263822847197">Kiat alat</translation>
 <translation id="2998131015536248178">Karakter Sebelumnya</translation>
 <translation id="2999559350546931576">Menurunkan tinggi nada</translation>
@@ -236,10 +236,10 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3241052487511142956">Tautan yang dikunjungi sebelumnya</translation>
 <translation id="3241638166094654466">Sel di tiap baris:</translation>
 <translation id="3286390186030710347">Penggeser</translation>
-<translation id="3299925995433437805">Tidak ada tautan yang dikunjungi selanjutnya.</translation>
+<translation id="3299925995433437805">Tidak ada link yang dikunjungi selanjutnya.</translation>
 <translation id="3300348286427369683">Dukungan teks kaya. Kini, ChromeVox mendukung kolom teks kaya, termasuk perintah lewati, perutean kursor braille, pilihan, dan masih banyak lagi.</translation>
 <translation id="3307886118343381874">Berpindah ke akhir tabel</translation>
-<translation id="3311969765485641742">Tekan Alt+Shift+A untuk memeriksa lansiran</translation>
+<translation id="3311969765485641742">Tekan Alt+Shift+A untuk memeriksa notifikasi</translation>
 <translation id="3312997241656799641">Tautan yang dikunjungi selanjutnya</translation>
 <translation id="3313245066383501820">Tombol pengubah ChromeVox</translation>
 <translation id="3317212938060708859">Penggeser</translation>
@@ -384,19 +384,19 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4271521365602459209">Tidak ada hasil lainnya.</translation>
 <translation id="4287520460805643128">Tidak ada artikel berikutnya.</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
-<translation id="4300318234632215983">Mengumumkan URL di belakang tautan</translation>
+<translation id="4300318234632215983">Mengumumkan URL di belakang link</translation>
 <translation id="4301352596632316575">memiliki submenu</translation>
 <translation id="4342180618051828363">{COUNT,plural, =1{titik}=3{tiga titik}other{# titik}}</translation>
 <translation id="4347461890115250064">Tidak ada daftar berikutnya.</translation>
 <translation id="4367650418938037324">Daun Math ML</translation>
 <translation id="4372435075475052704">min:<ph name="X" /></translation>
 <translation id="4372705107434148843">Hentikan ucapan</translation>
-<translation id="4373197658375206385">Tidak ada item sebelumnya yang bukan tautan.</translation>
+<translation id="4373197658375206385">Tidak ada item sebelumnya yang bukan link.</translation>
 <translation id="4376316291247992553">Melihat Grafik Sebagai Braille</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">setel ulang</translation>
 <translation id="4457472090507035117">Pilih suara saat ini:</translation>
-<translation id="4471074325120394300">Tidak ada tautan.</translation>
+<translation id="4471074325120394300">Tidak ada link.</translation>
 <translation id="4476183483923481720">baris baru</translation>
 <translation id="4482330759234983253">Tabel sebelumnya</translation>
 <translation id="4491109536499578614">Gambar</translation>
@@ -457,7 +457,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4993152509206108683">Tingkat kecepatan <ph name="PERCENT" /> persen</translation>
 <translation id="4996716799442435517">Visual</translation>
 <translation id="4997282455736854877"><ph name="NAME" />, tombol radio dipilih</translation>
-<translation id="4997475792277222884">Tidak ada item berikutnya yang bukan tautan.</translation>
+<translation id="4997475792277222884">Tidak ada item berikutnya yang bukan link.</translation>
 <translation id="5000760171916499057">Tidak ada formulir.</translation>
 <translation id="5005670136041063723">Tidak ada elemen serupa lainnya.</translation>
 <translation id="501473567976723023">Januari</translation>
@@ -475,7 +475,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5106547198195128110">Kami memiliki beberapa perubahan menarik dalam rilis baru ini; berikut adalah perubahan yang baru:</translation>
 <translation id="5110983769041734144">Tidak ada bidang formulir sebelumnya.</translation>
 <translation id="5111640677200759579">Judul kolom</translation>
-<translation id="5136967254288895616">Tidak ada tautan sebelumnya.</translation>
+<translation id="5136967254288895616">Tidak ada link sebelumnya.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, tidak dipilih</translation>
 <translation id="5183440668879371625">Baris Braille sebelumnya</translation>
@@ -492,7 +492,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5320727453979144100">Mode lekat diaktifkan</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{koma}other{# koma}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, kotak teks</translation>
-<translation id="5330443287809544590"><ph name="NAME" />, tautan</translation>
+<translation id="5330443287809544590"><ph name="NAME" />, link</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">Lompat ke belakang selama proses membaca berlangsung</translation>
 <translation id="5368000168321181111">Earcons tidak aktif</translation>
@@ -542,7 +542,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5683155931978483559">Kotak centang sebelumnya</translation>
 <translation id="5684277895745049190">Daftar</translation>
 <translation id="5695831708991916435">Beberapa pintasan berikutnya bukanlah perintah ChromeVox, namun tetap berguna untuk mengoptimalkan Chrome.
-Untuk menavigasi maju melalui item yang dapat ditindaklanjuti seperti tombol dan tautan, tekan tombol Tab. Untuk menavigasi ke belakang, tekan Shift+Tab. 
+Untuk menavigasi maju melalui item yang dapat ditindaklanjuti seperti tombol dan link, tekan tombol Tab. Untuk menavigasi ke belakang, tekan Shift+Tab. 
 Untuk memasukkan kotak alamat browser Chrome, yang juga disebut omnibox, tekan Control + L. 
 Untuk membuka dan menuju tab secara otomatis, tekan Control+T. Kursor akan berada dalam omnibox. 
 Untuk menutup tab, tekan Control+W. 
@@ -624,7 +624,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="6414968628640960377">Elemen berbeda sebelumnya.</translation>
 <translation id="641759969622533235">{COUNT,plural, =1{titik dua}other{# titik dua}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
-<translation id="6444046323172968959">Dialog lansiran</translation>
+<translation id="6444046323172968959">Dialog notifikasi</translation>
 <translation id="6459511626086141404">Peta tombol datar</translation>
 <translation id="6468049171101508116">Tombol berikutnya</translation>
 <translation id="6493991254603208962">mengurangi Kecerahan</translation>
@@ -824,14 +824,14 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8638532244051952400">Mengumumkan koordinat sel saat ini</translation>
 <translation id="8650576015643545550">Tidak ada daftar sebelumnya.</translation>
 <translation id="8651481478098336970">membisukan volume</translation>
-<translation id="8653646212587894517">Menampilkan daftar tautan</translation>
+<translation id="8653646212587894517">Menampilkan daftar link</translation>
 <translation id="8664519043722036194">detik</translation>
 <translation id="867187640362843212">Judul 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipa}other{# pipa vertikal}}</translation>
 <translation id="8735450637152821465">Mulai pilihan</translation>
 <translation id="8743786158317878347">memasuki konten terstruktur, misalnya tabel</translation>
 <translation id="8747966237988593539">Daftar Berurutan</translation>
-<translation id="8759334257841767240">Tidak ada tautan berikutnya.</translation>
+<translation id="8759334257841767240">Tidak ada link berikutnya.</translation>
 <translation id="8767968232364267681">Judul tingkat 4 berikutnya</translation>
 <translation id="8770473310765924354">keluar dari konten terstruktur, misalnya tabel</translation>
 <translation id="8791025954632646584">Semantik aktif</translation>

@@ -863,22 +863,22 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4027608872760987929">Attiva il provider di ricerca predefinito</translation>
 <translation id="4039085364173654945">Consente di stabilire se per i contenuti secondari di terze parti presenti in una pagina è consentita la visualizzazione di una finestra di dialogo Autorizzazione di base HTTP. Generalmente questa norma non è attiva per tutela dal phishing. Se questa norma non viene impostata, l'impostazione verrà disattivata e per i contenuti secondari di terze parti non potrà essere visualizzata una finestra di dialogo Autorizzazione di base HTTP.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
-<translation id="4077363032873906037">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> su Google Apps e di impedire agli utenti di modificare questa impostazione.
+<translation id="4077363032873906037">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> su G Suite e di impedire agli utenti di modificare questa impostazione.
 
-      Se l'impostazione viene definita, l'utente potrà accedere a Google
-      Apps oltanto tramite account dei domini specificati (tieni presente che ciò
+      Se l'impostazione viene definita, l'utente potrà accedere a G Suite
+      soltanto tramite gli account dei domini specificati (tieni presente che ciò
       non funziona con gmail.com/googlemail.com).
 
       L'impostazione NON impedirà all'utente di accedere su un dispositivo gestito
       che richiede l'autenticazione di Google. L'utente potrà comunque accedere
-      ad account di altri domini,  ma nel caso provi a utilizzare Google Apps
+      ad account di altri domini, ma nel caso provi a utilizzare G Suite
       con tali account verrà visualizzato un messaggio di errore.
 
       Se l'impostazione viene lasciata vuota/non configurata, l'utente potrà
-      accedere a Google Apps con qualsiasi account.
+      accedere a G Suite con qualsiasi account.
 
-      Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains a
-      tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com,
+      Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains
+      a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com,
       come descritto alla pagina https://support.google.com/a/answer/1668854.
 
       L'utente non può modificare o ignorare questa impostazione.</translation>
@@ -1095,21 +1095,21 @@ Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente pot
           app/estensioni vengono concesse implicitamente, senza interazione dell'utente,
           comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle
           app/estensioni. Inoltre, le autorizzazioni sono concesse per le
-          API delle estensioni enterprise.deviceAttributes e enterprise.platformKeys.
+          API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys.
           (Queste due API non sono disponibili per le app/estensioni
-          prive di installazione imposta.)
+          prive di installazione forzata).
 
-          Questa norma ha precedenza su una norma ExtensionsInstallBlacklist potenzialmente <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> in conflitto. Se un'app o un'estensione con installazione imposta viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+          Questa norma ha precedenza su una norma <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> potenzialmente in conflitto. Se un'app o un'estensione con installazione forzata viene rimossa da questo elenco, tale app o estensione viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
 
           Per le istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />, l'installazione forzata è limitata alle app e alle estensioni elencate nel Chrome Web Store.
 
-          Tieni presente che il codice sorgente delle estensioni potrebbe essere stato modificato dagli utenti tramite gli strumenti per sviluppatori (rendendo potenzialmente problematico il rendering dell'estensione). Se rappresenta un problema, deve essere impostata la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
+          Tieni presente che il codice sorgente delle estensioni potrebbe essere modificato dagli utenti tramite gli strumenti per sviluppatori (causando potenzialmente il malfunzionamento dell'estensione). Per evitare un problema di questo tipo, è consigliabile impostare la norma <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> in modalità sviluppatore. L'URL di "aggiornamento" deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
+          Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> quando è attivata la modalità sviluppatore. L'URL di "aggiornamento" deve indirizzare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di "aggiornamento" impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
 
-          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Ulteriori informazioni sulle estensioni in hosting sono disponibili all'indirizzo <ph name="LINK_TO_EXTENSION_DOC2" />.
 
-          Se questa norma non è impostata, nessuna app e nessuna estensione vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
+          Se questa norma non è impostata, le app e le estensioni non vengono installate automaticamente e l'utente può disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Definisci i domini autorizzati ad accedere a Google Apps</translation>
 <translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
 
@@ -2097,9 +2097,9 @@ Se la norma viene impostata su false o non viene configurata, l'utente può util
 <translation id="847472800012384958">Non consentire la visualizzazione di popup nei siti</translation>
 <translation id="8476127435468057643">Consente di verificare se l'autenticazione NTLMv2 è attiva.
 
-          Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo in caso di compatibilità precedenti, in quanto la disattivazione riduce la sicurezza dell'autenticazione.
+          Tutte le versioni recenti dei server Samba e Windows supportano l'autenticazione NTLMv2, che deve essere disattivata solo per garantire la compatibilità con le versioni precedenti, in quanto riduce la sicurezza dell'autenticazione.
 
-          Il valore predefinito quando questa norma non è definita è attualmente false per le compatibilità precedenti, ma in futuro diventerà true.</translation>
+          Il valore predefinito quando questa norma non è definita è attualmente false per garantire la compatibilità con le versioni precedenti, ma in futuro diventerà true.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
 <translation id="8484458986062090479">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito dal browser host.
 

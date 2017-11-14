@@ -3941,7 +3941,7 @@
 <translation id="7077829361966535409">현재 프록시 설정을 사용하여 로그인 페이지를 로드하지 못했습니다. <ph name="GAIA_RELOAD_LINK_START" />다시 로그인<ph name="GAIA_RELOAD_LINK_END" />하거나 다른 <ph name="PROXY_SETTINGS_LINK_START" />프록시 설정<ph name="PROXY_SETTINGS_LINK_END" />을 사용합니다.</translation>
 <translation id="7078120482318506217">모든 네트워크</translation>
 <translation id="708060913198414444">오디오 주소 복사(&amp;O)</translation>
-<translation id="708278670402572152">검색을 사용하려면 연결 해제하세요</translation>
+<translation id="708278670402572152">검색하려면 연결 해제하세요</translation>
 <translation id="7084192839369222683">중요한 콘텐츠만 실행</translation>
 <translation id="7088434364990739311">업데이트 확인을 시작하지 못했습니다(오류 코드: <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver - 파일 앱에서 ZIP 파일을 열고 압축합니다.</translation>

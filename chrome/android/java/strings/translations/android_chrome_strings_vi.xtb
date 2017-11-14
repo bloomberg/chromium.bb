@@ -37,7 +37,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1291207594882862231">Xóa lịch sử, cookie, dữ liệu trang web, bộ nhớ cache…</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="1303671224831497365">Không tìm thấy thiết bị Bluetooth nào</translation>
-<translation id="1320663236730331991">Hãy vuốt lên để dễ dàng truy cập vào các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
+<translation id="1320663236730331991">Vuốt lên để dễ dàng truy cập vào các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
 <translation id="1326317727527857210">Để có các tab từ các thiết bị khác của bạn, hãy đăng nhập vào Chrome.</translation>
 <translation id="1332501820983677155">Phím tắt cho các tính năng của Google Chrome</translation>
 <translation id="1369915414381695676">Đã thêm trang web <ph name="SITE_NAME" /></translation>
@@ -751,7 +751,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7846076177841592234">Hủy chọn</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
-<translation id="785312750761189439">Hãy vuốt lên từ cuối màn hình hoặc nhấn vào nút mở rộng để dễ dàng truy cập các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
+<translation id="785312750761189439">Vuốt lên từ cuối màn hình hoặc nhấn vào nút mở rộng để dễ dàng truy cập các trang web và bài viết phổ biến, tài nguyên đã tải xuống, v.v</translation>
 <translation id="7875915731392087153">Tạo email</translation>
 <translation id="7876243839304621966">Xóa tất cả</translation>
 <translation id="7882131421121961860">Không tìm thấy lịch sử nào</translation>
@@ -858,7 +858,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
-<translation id="8936297887573571433">Hãy nhấn để xem tài nguyên đã tải xuống, dấu trang và lịch sử</translation>
+<translation id="8936297887573571433">Nhấn để xem tài nguyên đã tải xuống, dấu trang và lịch sử</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>
 <translation id="8951232171465285730">Chrome đã tiết kiệm <ph name="MEGABYTES" /> MB cho bạn</translation>

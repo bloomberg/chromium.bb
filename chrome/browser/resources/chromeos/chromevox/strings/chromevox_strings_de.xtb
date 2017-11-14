@@ -310,7 +310,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3497063866483065785">{COUNT,plural, =1{Fragezeichen}other{# Fragezeichen}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{Caret-Zeichen}other{# Caret-Zeichen}}</translation>
 <translation id="352577523970648069">Ein bearbeitbares Textfeld</translation>
-<translation id="3568702578574425662">Kästchen "<ph name="NAME" />" ist nicht aktiviert.</translation>
+<translation id="3568702578574425662">Das Kästchen "<ph name="NAME" />" ist nicht angeklickt.</translation>
 <translation id="3599054940393788245">Nicht in Mathematik</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{Backtick}other{# Backticks}}</translation>
@@ -816,7 +816,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8571096049907249734">div</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Nächstes Listenelement</translation>
-<translation id="860150890330522909">Kästchen "<ph name="NAME" />" aktiviert</translation>
+<translation id="860150890330522909">Das Kästchen "<ph name="NAME" />" ist angeklickt</translation>
 <translation id="8603071050456974042">ChromeVox-Steuerfeld</translation>
 <translation id="8606621670302093223">Steuerung für Datum</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> Elemente ausgewählt</translation>

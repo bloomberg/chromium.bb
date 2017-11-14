@@ -933,7 +933,7 @@
       Tetapan ini TIDAK akan menghalang pengguna daripada log masuk pada peranti
       terurus yang memerlukan pengesahan Google. Pengguna masih akan dibenarkan
       log masuk ke akaun daripada domain lain tetapi mereka akan menerima ralat
-      semasa cuba menggunakan Google Apps dengan akaun itu
+      semasa cuba menggunakan Google Apps dengan akaun itu.
       
       Jika anda membiarkan tetapan ini kosong/tidak dikonfigurasi, pengguna
       akan dapat mengakses Google Apps dengan mana-mana akaun.

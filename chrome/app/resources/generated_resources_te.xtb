@@ -99,6 +99,7 @@
 <translation id="114140604515785785">పొడిగింపు మూలం డైరెక్టరీ:</translation>
 <translation id="1143142264369994168">సర్టిఫికెట్ సంతకందారు</translation>
 <translation id="1145292499998999162">ప్లగిన్ బ్లాక్ చేయబడింది</translation>
+<translation id="1145532888383813076">మీ పరికరం, యాప్‌లు మరియు వెబ్‌ని శోధించండి.</translation>
 <translation id="1146204723345436916">HTML ఫైల్ నుండి బుక్‌మార్క్‌లను దిగుమతి చేయి...</translation>
 <translation id="1149401351239820326">గడువు ముగింపు నెల</translation>
 <translation id="1153356358378277386">జత చేసిన పరికరాలు</translation>
@@ -243,6 +244,7 @@
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="1370646789215800222">వ్యక్తిని తీసివేయాలా?</translation>
 <translation id="1374844444528092021">"<ph name="NETWORK_NAME" />" నెట్‌వర్క్‌కు అవసరమైన ప్రమాణపత్రం ఇన్‌స్టాల్ చేయబడలేదు లేదా చెల్లదు. దయచేసి క్రొత్త ప్రమాణపత్రాన్ని పొందండి మరియు మళ్లీ కనెక్ట్ చేయడాన్ని ప్రయత్నించండి.</translation>
+<translation id="1374962581120570592">కుక్కీలు సెట్ చేయబడ్డాయి</translation>
 <translation id="1375321115329958930">సేవ్ చెయ్యబడిన పాస్‌వర్డ్‌లు</translation>
 <translation id="137651782282853227">సేవ్ చేసిన చిరునామాలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="1377600615067678409">ప్రస్తుతానికి దాటవేయి</translation>
@@ -532,12 +534,14 @@
 <translation id="1794791083288629568">ఈ సమస్యను పరిష్కరించడంలో మాకు సహాయం చేయడానికి అభిప్రాయాన్ని పంపుతుంది.</translation>
 <translation id="1795214765651529549">క్లాసిక్‌ను ఉపయోగించు</translation>
 <translation id="179767530217573436">గత 4 వారాలు</translation>
+<translation id="1798688944196431257">కుక్కీలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" పొడిగింపు స్వయంచాలకంగా నిలిపివేయబడింది.</translation>
 <translation id="180035236176489073">ఈ ఫైల్‌లను ప్రాప్యత చేయడానికి మీరు తప్పనిసరిగా ఆన్‌లైన్‌లో ఉండాలి.</translation>
 <translation id="1801298019027379214">సరి కానటువంటి PIN, దయచేసి మళ్ళీ ప్రయత్నించండి. మిగిలిన ప్రయత్నాలు: <ph name="TRIES_COUNT" /></translation>
 <translation id="1801827354178857021">వ్యవధి</translation>
 <translation id="1802931390041703523">ఈ పేజీలో ఫ్లాష్ బ్లాక్ చేయబడింది</translation>
 <translation id="1803545009660609783">మళ్లీ శిక్షణ ఇవ్వండి</translation>
+<translation id="1805822111539868586">వీక్షణలను పరిశీలించండి</translation>
 <translation id="1807938677607439181">అన్ని ఫైల్‌లు</translation>
 <translation id="1809734401532861917">నా బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌లను <ph name="USER_EMAIL_ADDRESS" />కి జోడించు</translation>
 <translation id="1810107444790159527">జాబితా పెట్టె</translation>
@@ -605,6 +609,7 @@
 <translation id="1916502483199172559">డిఫాల్ట్ ఎరుపు రంగు అవతార్</translation>
 <translation id="1918141783557917887">&amp;చిన్నగా</translation>
 <translation id="1919345977826869612">ప్రకటనలు</translation>
+<translation id="1919814239594435008">శాండ్‌బాక్స్ చేయని ప్లగిన్ అనుమతించబడింది</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> dpi</translation>
 <translation id="192494336144674234">దీనితో తెరువు</translation>
 <translation id="1925021887439448749">అనుకూల వెబ్ చిరునామాను నమోదు చేయండి</translation>
@@ -636,6 +641,7 @@
 <translation id="197560921582345123">సవరించగలరు</translation>
 <translation id="1975841812214822307">తీసివేయి...</translation>
 <translation id="1976150099241323601">భద్రతా పరికరానికి సైన్ ఇన్ చెయ్యండి</translation>
+<translation id="1976315108329706992">ఇప్పుడు మీరు Android యాప్‌లను ఉపయోగించవచ్చు.</translation>
 <translation id="1976323404609382849">బహుళ సైట్‌ల నుండి కుకీలు బ్లాక్ చేయబడ్డాయి.</translation>
 <translation id="1977965994116744507">మీ <ph name="DEVICE_TYPE" />ని అన్‌లాక్ చేయడానికి మీ ఫోన్‌ని సమీపంలోకి తీసుకురండి.</translation>
 <translation id="1979280758666859181">మీరు <ph name="PRODUCT_NAME" /> యొక్క పాత సంస్కరణను కలిగి ఉన్న ఛానెల్‌కు మారుతున్నారు. ఛానెల్ సంస్కరణ మీ పరికరంలో ప్రస్తుతం ఇన్‌స్టాల్ చేయబడిన సంస్కరణకు సరిపోలినప్పుడు ఛానెల్ మార్పు వర్తిస్తుంది.</translation>
@@ -1062,6 +1068,7 @@
 <translation id="2638286699381354126">నవీకరణ...</translation>
 <translation id="2638942478653899953">Google డిస్క్‌ను చేరుకోవడం సాధ్యపడలేదు. దయచేసి <ph name="BEGIN_LINK" />లాగ్ అవుట్<ph name="END_LINK" /> చేసి, తిరిగి లాగిన్ చేయండి.</translation>
 <translation id="2642111877055905627">సాకర్ బంతి</translation>
+<translation id="2643569582440544295">లాక్ స్క్రీన్ గమనికలను లాక్ స్క్రీన్ నుండి యాక్సెస్ చేయవచ్చు మరియు స్వయంచాలకంగా అవి <ph name="LOCK_SCREEN_APP_NAME" />కు సేవ్ చేయబడతాయి.</translation>
 <translation id="2643698698624765890">విండో మెనులోని పొడిగింపులను క్లిక్ చేయడం ద్వారా మీ పొడిగింపులను నిర్వహించండి.</translation>
 <translation id="2647142853114880570">మళ్లీ లోడ్ చేయి</translation>
 <translation id="2647269890314209800">ఉపయోగిస్తున్న కుక్కీలు</translation>
@@ -1099,6 +1106,7 @@
 <translation id="2686759344028411998">లోడ్ చెయ్యబడిన ఏ మాడ్యూళ్ళను కనుగొనడం సాధ్యం కాలేదు.</translation>
 <translation id="2688196195245426394">పరికరం సర్వర్‌తో నమోదు అవుతున్నప్పుడు లోపం: <ph name="CLIENT_ERROR" />.</translation>
 <translation id="2690024944919328218">భాష ఎంపికలను చూపు</translation>
+<translation id="2690405692940015382">చిత్రాలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="2691385045260836588">మోడల్</translation>
 <translation id="2693176596243495071">అయ్యో! తెలియని ఎర్రర్ ఏర్పడింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి లేదా సమస్య కొనసాగినట్లయితే మీ నిర్వాహకులను సంప్రదించండి.</translation>
 <translation id="2694026874607847549">1 కుక్కీ</translation>
@@ -1556,6 +1564,7 @@
 <translation id="3348038390189153836">తొలగించగల పరికరం కనుగొనబడింది</translation>
 <translation id="3348459612390503954">అభినందనలు</translation>
 <translation id="3348643303702027858">OS రికవరీ మీడియా సృష్టి రద్దు చెయ్యబడింది.</translation>
+<translation id="3349933790966648062">మెమరీ ఫుట్‌ప్రింట్</translation>
 <translation id="3353984535370177728">అప్‌లోడ్ చేయడానికి ఫోల్టర్‌ను ఎంచుకోండి</translation>
 <translation id="335581015389089642">ప్రసంగం</translation>
 <translation id="3355936511340229503">కనెక్షన్ లోపం</translation>
@@ -1712,6 +1721,7 @@
 <translation id="3584169441612580296">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు మార్చడం</translation>
 <translation id="3587482841069643663">మొత్తం</translation>
 <translation id="358796204584394954">జత చేయడానికి "<ph name="DEVICE_NAME" />"లో ఈ కోడ్‌ను టైప్ చేయండి:</translation>
+<translation id="3589766037099229847">అసురక్షిత కంటెంట్ బ్లాక్ చేయబడింది</translation>
 <translation id="3590194807845837023">ప్రొఫైల్‌ని అన్‌లాక్ చేసి, మళ్లీ లాంచ్ చేయి</translation>
 <translation id="3592260987370335752">&amp;మరింత తెలుసుకోండి</translation>
 <translation id="359283478042092570">నమోదు చేయి</translation>
@@ -1791,6 +1801,7 @@
 <translation id="3697100740575341996">మీ పరికరం కోసం మీ IT నిర్వాహకుడు Chrome కానుకలను నిలిపివేసారు. <ph name="MORE_INFO_LINK" /></translation>
 <translation id="3699624789011381381">ఇమెయిల్ చిరునామా</translation>
 <translation id="3702500414347826004">మీ ప్రారంభ పేజీలు <ph name="URL" />ని చేర్చేలా మార్చబడ్డాయి.</translation>
+<translation id="370415077757856453">JavaScript బ్లాక్ చేయబడింది</translation>
 <translation id="3704331259350077894">ఆపరేషన్ రద్దు</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
@@ -1825,6 +1836,7 @@
 <translation id="3755411799582650620">మీ <ph name="PHONE_NAME" /> ఇప్పుడు ఈ <ph name="DEVICE_TYPE" />ని కూడా అన్‌లాక్ చేయగలదు.</translation>
 <translation id="3758201569871381925">దయచేసి మీ Hotrod పరికరం ఆన్ చేయబడిందని మరియు టీవీకి కనెక్ట్ చేయబడిందని నిర్ధారించుకోండి.</translation>
 <translation id="375841316537350618">ప్రాక్సీ స్క్రిప్ట్‌ను డౌన్‌లోడ్ చేస్తోంది...</translation>
+<translation id="3758842566811519622">కుక్కీలు సెట్ చేయబడ్డాయి</translation>
 <translation id="3759371141211657149">హ్యాండ్లర్ సెట్టింగ్‌లను నిర్వహించండి...</translation>
 <translation id="3759933321830434300">వెబ్ పేజీల్లో భాగాలను బ్లాక్ చేయండి</translation>
 <translation id="3760460896538743390">&amp;నేపథ్య పేజీని పర్యవేక్షించండి</translation>
@@ -1918,6 +1930,7 @@
 <translation id="3878840326289104869">పర్యవేక్షించబడే వినియోగదారుని సృష్టిస్తోంది</translation>
 <translation id="3879748587602334249">డౌన్‌లోడ్ నిర్వాహికి</translation>
 <translation id="388485010393668001">సంపూర్ణమైనది అందుబాటులో ఉంది: <ph name="COMPLETION_TEXT" /></translation>
+<translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />తో గమనికలు రూపొందిస్తున్నారు</translation>
 <translation id="3892414795099177503">OpenVPN / L2TPని జోడించు...</translation>
 <translation id="3893536212201235195">మీ ప్రాప్యత సౌలభ్య సెట్టింగ్‌లను చదవడానికి మరియు మార్చడానికి అనుమతి</translation>
 <translation id="3893630138897523026">ChromeVox (చదవబడే అభిప్రాయం)</translation>
@@ -2318,6 +2331,7 @@
 <translation id="4590324241397107707">డేటాబేస్ నిల్వ</translation>
 <translation id="4593021220803146968"><ph name="URL" />కు &amp;వెళ్ళండి</translation>
 <translation id="4595560905247879544">అనువర్తనాలు మరియు పొడిగింపులను నిర్వాహకుడు (<ph name="CUSTODIAN_NAME" />) మాత్రమే సవరించగలరు.</translation>
+<translation id="4595989643015195102">శాండ్‌బాక్స్ చేయని ప్లగిన్ బ్లాక్ చేయబడింది</translation>
 <translation id="4596295440756783523">మీకు ఫైల్‌లో ఈ సర్వర్‌లను గుర్తించే ప్రమాణపత్రాలు ఉన్నాయి</translation>
 <translation id="4598556348158889687">నిల్వ నిర్వహణ</translation>
 <translation id="4598776695426288251">బహుళ డివైజ్‌ల ద్వారా Wi-Fi అందుబాటులో ఉంది</translation>
@@ -2335,6 +2349,7 @@
 <translation id="4620809267248568679">ఈ సెట్టింగ్ పొడిగింపు ద్వారా అమలు చేయబడింది.</translation>
 <translation id="4624768044135598934">విజయవంతం!</translation>
 <translation id="4625078469366263107">అనువర్తనాన్ని ప్రారంభించు</translation>
+<translation id="4627427111733173920">కుక్కీలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="4627442949885028695">మరో పరికరం నుండి కొనసాగించండి</translation>
 <translation id="4628314759732363424">మార్చు...</translation>
 <translation id="4628757576491864469">పరికరాలు</translation>
@@ -2882,6 +2897,7 @@
 <translation id="5457113250005438886">చెల్లదు</translation>
 <translation id="5457459357461771897">మీ కంప్యూటర్‌లోని ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను చదవడం మరియు తొలగించడం</translation>
 <translation id="5457599981699367932">అతిథి వలె బ్రౌజ్ చెయ్యండి</translation>
+<translation id="5457950659230097883">JavaScript బ్లాక్ చేయబడింది</translation>
 <translation id="5458998536542739734">లాక్ స్క్రీన్ గమనికలు</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> యొక్క స్థానం</translation>
 <translation id="5463856536939868464">దాచిపెట్టిన బుక్‌మార్క్‌లు ఉన్న మెను</translation>
@@ -2922,6 +2938,7 @@
 <translation id="5513242761114685513">సందర్భ మెను</translation>
 <translation id="5516183516694518900">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు మరియు ఇతర సెట్టింగ్‌లను మీ అన్ని పరికరాల్లో పొందడానికి మీ Google ఖాతాతో Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="551752069230578406">మీ ఖాతాకు ప్రింటర్‌ను జోడిస్తోంది - దీనికి కొంత సమయం పట్టవచ్చు...</translation>
+<translation id="5517535964909391608">అసురక్షిత కంటెంట్ బ్లాక్ చేయబడింది</translation>
 <translation id="5518584115117143805">ఇమెయిల్ గుప్తీకరణ సర్టిఫికెట్</translation>
 <translation id="5521078259930077036">మీరు ఆశిస్తున్న హోమ్ పేజీ ఇదేనా?</translation>
 <translation id="5521348028713515143">డెస్క్‌టాప్ సత్వరమార్గాన్ని జోడించు</translation>
@@ -2988,6 +3005,7 @@
 <translation id="5612734644261457353">క్షమించండి, మీ పాస్‌వర్డ్ ఇప్పటికీ ధృవీకరించబడలేదు. గమనిక: మీరు మీ పాస్‌వర్డ్‌ను ఇటీవల మార్చి ఉంటే, మీరు సైన్ అవుట్ చేసిన తర్వాత మీ క్రొత్త పాస్‌వర్డ్ వర్తించబడుతుంది, దయచేసి ఇక్కడ పాత పాస్‌వర్డ్‌ను ఉపయోగించండి.</translation>
 <translation id="5613695965848159202">అజ్ఞాత గుర్తింపు:</translation>
 <translation id="5614190747811328134">వినియోగదారు నోటీస్</translation>
+<translation id="561698261642843490">Firefoxని మూసివేయండి</translation>
 <translation id="5618075537869101857">అయ్యో, కియోస్క్ అనువర్తనాన్ని ప్రారంభించడం సాధ్యపడలేదు.</translation>
 <translation id="5618333180342767515">(దీనికి కొన్ని నిమిషాల సమయం పట్టవచ్చు)</translation>
 <translation id="5618972959246891967">సిస్టమ్ తేదీ</translation>
@@ -3018,6 +3036,7 @@
 <translation id="5662477687021125631">శాశ్వతం</translation>
 <translation id="5669267381087807207">సక్రియం చేస్తోంది</translation>
 <translation id="5669691691057771421">కొత్త PINని నమోదు చేయండి</translation>
+<translation id="5671641761787789573">చిత్రాలు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="5677503058916217575">పేజీ భాష:</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />కి చదవడానికి మరియు వ్రాయడానికి ప్రాప్యత మంజూరు చేయబడింది.</translation>
@@ -3239,6 +3258,7 @@
 <translation id="6025215716629925253">స్టాక్ ఆచూకీ</translation>
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> - USB పరికరం కనెక్ట్ చేయబడింది</translation>
 <translation id="6032912588568283682">ఫైల్ సిస్టమ్</translation>
+<translation id="6034662038931255275">OS అప్‌డేట్ విజయవంతమైంది</translation>
 <translation id="6039651071822577588">నెట్‌వర్క్ లక్షణం నిఘంటువు తప్పుడు ఆకృతి చేయబడింది</translation>
 <translation id="604001903249547235">Cloud బ్యాకప్</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
@@ -3739,6 +3759,7 @@
 <translation id="6798954102094737107">ప్లగిన్: <ph name="PLUGIN_NAME" /></translation>
 <translation id="6801435275744557998">టచ్‌స్క్రీన్‌ను క్రమాంకనం చేయి</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
+<translation id="6804124853318036372">లోడ్ చేస్తోంది, దయచేసి వేచి ఉండండి...</translation>
 <translation id="6804671422566312077">అన్ని బుక్‌మార్క్‌లను &amp;క్రొత్త విండోలో తెరువు</translation>
 <translation id="6805038906417219576">సరే</translation>
 <translation id="6805647936811177813">దయచేసి <ph name="HOST_NAME" /> నుండి క్లయింట్ ప్రమాణపత్రాన్ని దిగుమతి చెయ్యడానికి <ph name="TOKEN_NAME" />కి సైన్ ఇన్ చెయ్యండి.</translation>
@@ -3805,6 +3826,7 @@
 <translation id="6910211073230771657">తొలగించబడింది</translation>
 <translation id="691024665142758461">బహుళ ఫైల్‌లను డౌన్‌లోడ్ చేయాలనుకుంటోంది</translation>
 <translation id="6911324888870229398">నెట్‌వర్క్ కనెక్షన్ పోయింది. దయచేసి మీ కనెక్షన్‌ని తనిఖీ చేయండి లేదా మరో Wi-Fi నెట్‌వర్క్‌తో ప్రయత్నించండి.</translation>
+<translation id="6911734910326569517">మెమరీ ఫుట్‌ప్రింట్</translation>
 <translation id="6915804003454593391">వినియోగదారు:</translation>
 <translation id="6916590542764765824">పొడిగింపులను నిర్వహించండి</translation>
 <translation id="6920989436227028121">సాధారణ టాబ్‌ వలె తెరువు</translation>
@@ -3918,6 +3940,7 @@
 <translation id="7077829361966535409">సైన్ ఇన్ పేజీ ప్రస్తుత ప్రాక్సీ సెట్టింగ్‌లను ఉపయోగించి లోడ్ కావడంలో విఫలమైంది. దయచేసి <ph name="GAIA_RELOAD_LINK_START" />మళ్లీ సైన్ ఇన్ చేయడానికి ప్రయత్నించండి<ph name="GAIA_RELOAD_LINK_END" /> లేదా విభిన్న <ph name="PROXY_SETTINGS_LINK_START" />ప్రాక్సీ సెట్టింగ్‌ల<ph name="PROXY_SETTINGS_LINK_END" />ను ఉపయోగించండి.</translation>
 <translation id="7078120482318506217">అన్ని నెట్‌వర్క్‌లు</translation>
 <translation id="708060913198414444">ఆడియో చిరునామాను కా&amp;పీ చేయి</translation>
+<translation id="708278670402572152">స్కానింగ్‌ని ప్రారంభించడం కోసం డిస్‌కనెక్ట్ చేయండి</translation>
 <translation id="7084192839369222683">కేవలం ముఖ్యమైన కంటెంట్‌ను అమలు చేయి</translation>
 <translation id="7088434364990739311">నవీకరణ తనిఖీ ప్రారంభం విఫలమైంది (లోపం కోడ్ <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">జిప్ ఆర్కైవర్ - ఫైల్‌లు యాప్‌లో జిప్ ఫైల్‌లను తెరవండి మరియు ప్యాక్ చేయండి.</translation>
@@ -4130,6 +4153,7 @@
 <translation id="744341768939279100">కొత్త ప్రొఫైల్‌ని సృష్టించు...</translation>
 <translation id="7444726222535375658">Hangouts సమావేశానికి కొనసాగండి</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" />ను ఆపివెయ్యి</translation>
+<translation id="7445682342344043969">పాప్-అప్‌లు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="744859430125590922">ఈ వ్యక్తి <ph name="CUSTODIAN_EMAIL" /> నుండి సందర్శించే వెబ్‌సైట్‌లను నియంత్రించండి మరియు వీక్షించండి.</translation>
 <translation id="7453008956351770337">ఈ ప్రింటర్‌ను ఎంచుకోవడం ద్వారా, మీరు మీ ప్రింటర్‌ని ప్రాప్యత చేయడానికి క్రింది పొడిగింపుకు అనుమతి ఇస్తున్నారు:</translation>
 <translation id="7456142309650173560">డెవలపర్</translation>
@@ -4248,6 +4272,7 @@
 <translation id="7632948528260659758">క్రింది కియోస్క్ అనువర్తనాల నవీకరణ విఫలమైంది:</translation>
 <translation id="7634566076839829401">ఏదో తప్పు జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="7639178625568735185">అర్థమైంది!</translation>
+<translation id="763959977925219242">పాప్-అప్‌లు బ్లాక్ చేయబడ్డాయి</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> మీరు సేవ్ చేసిన పాస్‌వర్డ్‌లతో అర్హత ఉన్న సైట్‌లకు మిమ్మల్ని స్వయంచాలకంగా సైన్ ఇన్ చేస్తుంది.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (యజమాని)</translation>
 <translation id="7648992873808071793">ఈ పరికరంలో ఫైల్‌లను నిల్వ చేయాలనుకుంటోంది</translation>
@@ -4327,6 +4352,7 @@
 <translation id="7784067724422331729">మీ కంప్యూటర్‌లోని భద్రతా సెట్టింగ్‌లు ఈ ఫైల్‌ను బ్లాక్ చేసాయి.</translation>
 <translation id="7786207843293321886">అతిథిగా నిష్క్రమించు</translation>
 <translation id="7786889348652477777">అనువర్తనాన్ని &amp;మళ్లీ లోడ్ చేయి</translation>
+<translation id="7787052136533704473">శాండ్‌బాక్స్ చేయని ప్లగిన్ అనుమతించబడింది</translation>
 <translation id="7787129790495067395">మీరు ప్రస్తుతం పాస్‌ఫ్రేజ్‌ని ఉపయోగిస్తున్నారు.  మీరు మీ పాస్‌ఫ్రేజ్‌ని మర్చిపోతే, మీరు Google డాష్‌బోర్డ్‌ని ఉపయోగించి Google యొక్క సర్వర్‌ల నుండి మీ డేటాను క్లియర్ చెయ్యడానికి సమకాలీకరణను రీసెట్ చెయ్యవచ్చు.</translation>
 <translation id="7787308148023287649">మరొక స్క్రీన్‌లో ప్రదర్శించు</translation>
 <translation id="7788080748068240085">ఆఫ్‌లైన్‌లో "<ph name="FILE_NAME" />"ని సేవ్ చేయడానికి మీరు అదనంగా <ph name="TOTAL_FILE_SIZE" /> ఖాళీ స్థలాన్ని తప్పనిసరిగా కలిగి ఉండాలి:<ph name="MARKUP_1" />
@@ -4825,6 +4851,7 @@
 <translation id="8596540852772265699">అనుకూలీకరించిన ఫైళ్ళు</translation>
 <translation id="8596785155158796745">మైక్రోఫోన్ ప్రస్తుతం అందుబాటులో లేదు. <ph name="BEGIN_LINK" />మైక్రోఫోన్‌ను నిర్వహించండి<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">లక్షణ ఆకృతి:</translation>
+<translation id="8598453409908276158">శాండ్‌బాక్స్ చేయని ప్లగిన్ బ్లాక్ చేయబడింది</translation>
 <translation id="8598687241883907630">మీ Google ఖాతాను డిస్‌కనెక్ట్ చేయండి...</translation>
 <translation id="8601206103050338563">TLS WWW క్లయింట్ ప్రామాణీకరణ</translation>
 <translation id="8602851771975208551">మీ కంప్యూటర్‌లోని మరో ప్రోగ్రామ్ జోడించిన అనువర్తనం కారణంగా Chrome పని చేసే విధానం మారవచ్చు.</translation>

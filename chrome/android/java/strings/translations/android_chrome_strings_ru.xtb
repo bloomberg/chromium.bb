@@ -135,7 +135,7 @@
 <translation id="2154484045852737596">Изменение данных карты</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
 <translation id="2156074688469523661">Прочие сайты (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Расскажите нам, почему вы вернулись к старой версии Chrome</translation>
+<translation id="2172731970979873816">Расскажите нам, почему вы вернулись к старой версии Chrome.</translation>
 <translation id="2185784955520093231">Вы используете новую версию Chrome</translation>
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
@@ -165,7 +165,7 @@
 <translation id="2440823041667407902">Данные о местоположении</translation>
 <translation id="2450083983707403292">Начать скачивание <ph name="FILE_NAME" /> ещё раз?</translation>
 <translation id="2476578072172137802">Настройки сайта</translation>
-<translation id="2482878487686419369">Оповещения</translation>
+<translation id="2482878487686419369">Уведомления</translation>
 <translation id="2490674006498621843">Чтобы найти скачанные файлы и веб-страницы, потяните вверх панель инструментов</translation>
 <translation id="2496180316473517155">История просмотров</translation>
 <translation id="2498359688066513246">Справка/отзыв</translation>
@@ -226,7 +226,7 @@
 <translation id="3089395242580810162">Открыть в режиме инкогнито</translation>
 <translation id="311456632243022227">Ссылки открыты в Chrome</translation>
 <translation id="3115898365077584848">Показать информацию</translation>
-<translation id="3135915540460564231">Где загрузки, закладки и история?</translation>
+<translation id="3135915540460564231">Где найти загрузки, закладки и историю?</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
 <translation id="3148434565183091099">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в Chrome.</translation>
 <translation id="3157842584138209013">Чтобы узнать, сколько трафика вы сэкономили, нажмите кнопку "Ещё"</translation>
@@ -292,7 +292,7 @@
 <translation id="3706423975342040244">Развлечения</translation>
 <translation id="3712575778697986964">Сбросить статистику?</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
-<translation id="3734660163659757482">Потяните вверх, чтобы увидеть закладки и другую информацию</translation>
+<translation id="3734660163659757482">Потяните вверх, чтобы увидеть закладки и другие данные</translation>
 <translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111309925758534">Другие приложения: <ph name="MEGABYTES" /> МБ</translation>
@@ -614,7 +614,7 @@
 <translation id="6583199322650523874">Добавить страницу в закладки</translation>
 <translation id="6593061639179217415">Полная версия</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
-<translation id="6612358246767739896">Защищенное содержание</translation>
+<translation id="6612358246767739896">Защищенный контент</translation>
 <translation id="6627583120233659107">Изменить папку</translation>
 <translation id="6643016212128521049">Очистить</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактное лицо}one{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактное лицо}few{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактных лица}many{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактных лиц}other{<ph name="CONTACT_PREVIEW" /> и ещё <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> контактного лица}}</translation>
@@ -751,7 +751,7 @@
 <translation id="7846076177841592234">Отменить выбор</translation>
 <translation id="784934925303690534">Временной диапазон</translation>
 <translation id="7851858861565204677">Другие устройства</translation>
-<translation id="785312750761189439">Проведите по экрану сверху вниз или нажмите кнопку "Развернуть", чтобы получить доступ к популярным сайтам и статьям, а также к загрузкам и т. д.</translation>
+<translation id="785312750761189439">Проведите по экрану сверху вниз или нажмите кнопку "Развернуть", чтобы получить доступ к популярным сайтам и статьям, а также к загрузкам и не только.</translation>
 <translation id="7875915731392087153">Написать письмо</translation>
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7882131421121961860">История не найдена</translation>
@@ -766,7 +766,7 @@
 <translation id="7999064672810608036">Вы уверены, что хотите удалить все данные этого веб-сайта, включая файлы cookie, и сбросить заданные разрешения?</translation>
 <translation id="8004582292198964060">Браузер</translation>
 <translation id="8007176423574883786">Отключено для этого устройства</translation>
-<translation id="8008818777654712271">Автоматически отправлять системную информацию и контент страниц в Google, чтобы помочь улучшить распознавание опасных приложений и сайтов.</translation>
+<translation id="8008818777654712271">Автоматически отправлять системную информацию и содержимое страниц в Google, чтобы помочь улучшить распознавание опасных приложений и сайтов</translation>
 <translation id="8015452622527143194">Восстановить масштаб страницы по умолчанию</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8026334261755873520">Очистить историю</translation>

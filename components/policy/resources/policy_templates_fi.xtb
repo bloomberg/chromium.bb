@@ -371,11 +371,11 @@
 <translation id="2303795211377219696">Salli luottokorttitietojen automaattinen täyttö</translation>
 <translation id="2309390639296060546">Maantieteellisen sijainnin oletusasetus</translation>
 <translation id="2312134445771258233">Voit määrittää käynnistettäessä avattavat sivut. Käynnistettäessä avattavat sivut -luettelo ohitetaan, jos et valitse Toiminto käynnistettäessä -asetukseksi vaihtoehtoa Avaa seuraavat sivut:.</translation>
-<translation id="2334591568684482454">Määrittää <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminnon saatavuuden ja toiminnan.
+<translation id="2334591568684482454">Määrittää <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminnon saatavuuden ja toiminnan
 
       Tarkemmat asetukset voidaan määrittää JSON-arvoissa:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jos tämän arvo on <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, käyttäjä voi käynnistää powerwash-toiminnon, joka asentaa <ph name="TPM_FIRMWARE_UPDATE_TPM" />:nlaiteohjelmistopäivityksen.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Jos tämän arvo on <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, käyttäjä voi käynnistää powerwash-toiminnon, joka asentaa <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivityksen.
 
       Jos käytäntöä ei määritetä, <ph name="TPM_FIRMWARE_UPDATE_TPM" />-laiteohjelmiston päivitystoiminto ei ole saatavilla.</translation>
 <translation id="2337466621458842053">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat näyttää kuvia. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultImagesSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
@@ -885,7 +885,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="4027608872760987929">Ota oletushakupalvelu käyttöön</translation>
 <translation id="4039085364173654945">Määrittää, saako sivulla oleva kolmannen osapuolen alasisältö näyttää HTTP Basic Auth -valintaikkunan. Asetus on yleensä poistettu käytöstä tietojenkalastelun estotoimenpiteenä. Jos käytäntöä ei ole määritetty, asetus ei ole käytössä eikä kolmannen osapuolen alasisältö saa näyttää HTTP Basic Auth -valintaikkunaa.</translation>
 <translation id="4056910949759281379">Poista SPDY-protokolla käytöstä</translation>
-<translation id="4077363032873906037">Sallii kohteen <ph name="PRODUCT_NAME" /> rajoitetun Google Apps ‑kirjautumistoiminnon ja estää käyttäjiä muuttamasta tätä asetusta.
+<translation id="4077363032873906037">Sallii kohteen <ph name="PRODUCT_NAME" /> rajoitetun Google Apps ‑kirjautumistoiminnon ja estää käyttäjiä muuttamasta tätä asetusta
 
       Jos määrität tämän asetuksen, käyttäjä pääsee Google
       Apps ‑sovelluksiin vain määrättyjen verkkotunnusten tileiltä (huomaa, että tämä ei

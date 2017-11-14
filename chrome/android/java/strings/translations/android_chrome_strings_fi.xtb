@@ -37,7 +37,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1291207594882862231">Tyhjennä historia, evästeet, sivustojen tiedot, välimuisti ja niin edelleen.</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
 <translation id="1303671224831497365">Bluetooth-laitteita ei löytynyt</translation>
-<translation id="1320663236730331991">Pyyhkäise ylös, niin voit käyttää nopeasti suosittuja sivustoja ja artikkeleita sekä latauksia ja muuta sisältöä.</translation>
+<translation id="1320663236730331991">Pyyhkäise ylös, niin pääset nopeasti suosituille sivustoille, artikkeleihin, latauksiin ja muuhun sisältöön</translation>
 <translation id="1326317727527857210">Käytä välilehtiä muilta laitteiltasi kirjautumalla Chromeen.</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
 <translation id="1369915414381695676">Sivusto <ph name="SITE_NAME" /> lisättiin.</translation>
@@ -292,7 +292,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3706423975342040244">Viihde</translation>
 <translation id="3712575778697986964">Nollataanko Data Saver?</translation>
 <translation id="3714981814255182093">Avaa hakupalkki</translation>
-<translation id="3734660163659757482">Vedä ylös, niin näet esimerkiksi kirjanmerkit.</translation>
+<translation id="3734660163659757482">Vedä ylös, niin näet esimerkiksi kirjanmerkit</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3739899004075612870">Lisätty kirjanmerkkeihin: <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mt muita sovelluksia</translation>
@@ -726,7 +726,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7607552448134703340">Kirjoita, mitä etsit</translation>
 <translation id="7612619742409846846">Olet kirjautunut Googleen käyttäjänä</translation>
 <translation id="7619072057915878432">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui verkkovirheen vuoksi.</translation>
-<translation id="7620146066550602128">Kokeile <ph name="BEGIN_LINK" />helpompaa selaamista<ph name="END_LINK" />.</translation>
+<translation id="7620146066550602128">Kokeile <ph name="BEGIN_LINK" />helpompaa selaamista<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Lue ohjeita<ph name="END_LINK1" /> tai <ph name="BEGIN_LINK2" />hae uudelleen<ph name="END_LINK2" />.</translation>
 <translation id="7626032353295482388">Tervetuloa Chromeen</translation>
 <translation id="7638584964844754484">Väärä tunnuslause.</translation>
@@ -751,7 +751,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7846076177841592234">Peruuta valinta</translation>
 <translation id="784934925303690534">Aikaväli</translation>
 <translation id="7851858861565204677">Muut laitteet</translation>
-<translation id="785312750761189439">Pyyhkäise ylös näytön alalaidasta tai kosketa laajennuspainiketta, niin voit käyttää suosittuja sivustoja ja artikkeleita, latauksia ja muuta sisältöä nopeasti.</translation>
+<translation id="785312750761189439">Pyyhkäise ylös näytön alalaidasta tai kosketa laajennuspainiketta, niin pääset nopeasti suosituille sivustoille, artikkeleihin, latauksiin ja muuhun sisältöön.</translation>
 <translation id="7875915731392087153">Luo sähköposti</translation>
 <translation id="7876243839304621966">Poista kaikki</translation>
 <translation id="7882131421121961860">Historiaa ei löytynyt.</translation>
@@ -858,7 +858,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="8920114477895755567">Odotetaan vanhempien tietoja.</translation>
 <translation id="8922289737868596582">Lataa sivuja lisäasetuksien kautta, niin voit käyttää niitä offline-tilassa.</translation>
-<translation id="8936297887573571433">Katsele latauksia, kirjanmerkkejä ja historiaa napauttamalla</translation>
+<translation id="8936297887573571433">Napauta nähdäksesi lataukset, kirjanmerkit ja historian</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Avaa uudessa ikkunassa</translation>
 <translation id="8951232171465285730">Chrome on säästänyt <ph name="MEGABYTES" /> Mt tilaa</translation>

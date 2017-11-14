@@ -1192,9 +1192,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Cette règle prévaut lors d'un conflit avec la règle <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Si une application ou une extension dont l'installation a été forcée est supprimée de la liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
 
-          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation forcée s'applique seulement aux applications et aux extensions répertoriées sur le Chrome Web Store.
+          Pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />, l'installation forcée est limitée aux applications et aux extensions répertoriées sur le Chrome Web Store.
 
-          Notez que le code source de toute extension peut être altéré (cela pouvant entraîner son dysfonctionnement) suite à l'utilisation des outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
+          Notez que le code source de toute extension peut être modifié par les utilisateurs (cela pouvant entraîner son dysfonctionnement) via les outils pour les développeurs. Si cela pose problème, la règle <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> doit être définie.
 
           Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et d'une URL de mise à jour séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Notez que l'URL de mise à jour spécifiée dans cette règle n'est utilisée que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL indiquée dans le fichier manifeste de l'extension.
 

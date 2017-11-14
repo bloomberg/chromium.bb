@@ -99,7 +99,7 @@
 <translation id="114140604515785785">Directorio raíz:</translation>
 <translation id="1143142264369994168">Titular del certificado</translation>
 <translation id="1145292499998999162">Complemento bloqueado</translation>
-<translation id="1145532888383813076">Busca en tu dispositivo, en las aplicaciones y en la Web.</translation>
+<translation id="1145532888383813076">Busca en el dispositivo, las aplicaciones y la Web.</translation>
 <translation id="1146204723345436916">Importar marcadores desde archivo HTML...</translation>
 <translation id="1149401351239820326">Mes de caducidad</translation>
 <translation id="1153356358378277386">Dispositivos vinculados</translation>
@@ -349,7 +349,7 @@
 <translation id="1511388193702657997">Preguntar si quieres guardar tus contraseñas web</translation>
 <translation id="1512210426710821809">La única forma de deshacer esta acción es volver a instalar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="1514215615641002767">Añadir al escritorio</translation>
-<translation id="151501797353681931">Importados de Safari</translation>
+<translation id="151501797353681931">Importado desde Safari</translation>
 <translation id="1515163294334130951">Iniciar</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
 <translation id="152234381334907219">Contraseñas que nunca se guardan</translation>
@@ -363,7 +363,7 @@
 <translation id="1531004739673299060">Ventana de la aplicación</translation>
 <translation id="1533897085022183721">Menos de <ph name="MINUTES" /></translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
-<translation id="1543284117603151572">Importados desde Edge</translation>
+<translation id="1543284117603151572">Importado desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
 <translation id="1545786162090505744">URL con %s en el lugar de la consulta</translation>
 <translation id="1546280085599573572">Esta extensión ha cambiado la página que se muestra al hacer clic en el botón Página de inicio.</translation>
@@ -609,7 +609,7 @@
 <translation id="1916502483199172559">Avatar rojo predeterminado</translation>
 <translation id="1918141783557917887">Meno&amp;r</translation>
 <translation id="1919345977826869612">Anuncios</translation>
-<translation id="1919814239594435008">Complemento permitido sin pasar por la zona de pruebas</translation>
+<translation id="1919814239594435008">Complemento no incluido en la zona de pruebas permitido</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> PPP</translation>
 <translation id="192494336144674234">Abrir con</translation>
 <translation id="1925021887439448749">Introduce una dirección web personalizada</translation>
@@ -1014,7 +1014,7 @@ No creo que este sitio deba bloquearse</translation>
 <translation id="2562685439590298522">Docs</translation>
 <translation id="2562743677925229011">No has iniciado sesión en <ph name="SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME" /> se ha activado y está listo para que lo uses.</translation>
-<translation id="2566124945717127842">Haz un Powerwash y restablece los datos de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
+<translation id="2566124945717127842">Haz un Powerwash y restablece el estado de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de barra de información</translation>
 <translation id="2570000010887652771">Consumo de datos reducido.</translation>
 <translation id="2570648609346224037">Se ha producido un error durante la descarga de la imagen de recuperación.</translation>
@@ -1069,7 +1069,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2638286699381354126">Actualizar...</translation>
 <translation id="2638942478653899953">No se ha podido acceder a Google Drive. <ph name="BEGIN_LINK" />Cierra la sesión<ph name="END_LINK" /> y vuelve a iniciarla.</translation>
 <translation id="2642111877055905627">Balón de fútbol</translation>
-<translation id="2643569582440544295">Las notas que tomes en la pantalla de bloqueo puedes consultar en esa pantalla y se guardarán automáticamente en <ph name="LOCK_SCREEN_APP_NAME" />.</translation>
+<translation id="2643569582440544295">Las notas tomadas en la pantalla de bloqueo se pueden consultar en esa pantalla y se guardarán automáticamente en <ph name="LOCK_SCREEN_APP_NAME" />.</translation>
 <translation id="2643698698624765890">Para administrar tus extensiones, haz clic en la opción Extensiones del menú Ventana.</translation>
 <translation id="2647142853114880570">volver a cargar</translation>
 <translation id="2647269890314209800">Cookies en uso</translation>
@@ -1976,7 +1976,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3948116654032448504">&amp;Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">¡Te damos la bienvenida a Hangouts Meet!</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
-<translation id="394984172568887996">Importado de Internet Explorer</translation>
+<translation id="394984172568887996">Importado desde Internet Explorer</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="3954354850384043518">En curso</translation>
 <translation id="3955193568934677022">Permitir que los sitios web reproduzcan contenido protegido (recomendado)</translation>
@@ -2331,7 +2331,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4590324241397107707">Almacenamiento en bases de datos</translation>
 <translation id="4593021220803146968">&amp;Ir a <ph name="URL" /></translation>
 <translation id="4595560905247879544">Únicamente el administrador (<ph name="CUSTODIAN_NAME" />) puede modificar las aplicaciones y las extensiones.</translation>
-<translation id="4595989643015195102">Complemento bloqueado sin pasar por la zona de pruebas</translation>
+<translation id="4595989643015195102">Complemento no incluido en la zona de pruebas bloqueado</translation>
 <translation id="4596295440756783523">Tienes certificados registrados que identifican a estos servidores</translation>
 <translation id="4598556348158889687">Administración del almacenamiento</translation>
 <translation id="4598776695426288251">Wi-Fi disponible a través de varios dispositivos</translation>
@@ -3733,7 +3733,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (incógnito)</translation>
 <translation id="6757101664402245801">URL copiada</translation>
 <translation id="6758056191028427665">Envíanos tu opinión sobre nuestro servicio.</translation>
-<translation id="6759193508432371551">Restablecer datos de fábrica</translation>
+<translation id="6759193508432371551">Restablecer estado de fábrica</translation>
 <translation id="6766101255664245434">Haz una foto o selecciona una foto o un icono que ya tengas.
           <ph name="LINE_BREAK" />
           Esta imagen se mostrará en la pantalla de bloqueo y en la de inicio de sesión del Chromebook.</translation>
@@ -4349,7 +4349,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7784067724422331729">La configuración de seguridad de tu ordenador ha bloqueado este archivo.</translation>
 <translation id="7786207843293321886">Salir de la sesión de invitado</translation>
 <translation id="7786889348652477777">&amp;Volver a cargar aplicación</translation>
-<translation id="7787052136533704473">Complemento permitido sin pasar por la zona de pruebas</translation>
+<translation id="7787052136533704473">Complemento no incluido en la zona de pruebas permitido</translation>
 <translation id="7787129790495067395">Actualmente estás utilizando una frase de contraseña. Si la has olvidado, puedes restablecer la sincronización para borrar los datos de los servidores de Google a través del panel de control de Google.</translation>
 <translation id="7787308148023287649">Mostrar en otra pantalla</translation>
 <translation id="7788080748068240085">Para guardar "<ph name="FILE_NAME" />" sin conexión, debes liberar <ph name="TOTAL_FILE_SIZE" /> de espacio adicional:<ph name="MARKUP_1" />
@@ -4853,7 +4853,7 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8596540852772265699">Archivos personalizados</translation>
 <translation id="8596785155158796745">El micrófono no está disponible en este momento. <ph name="BEGIN_LINK" />Administrar micrófono<ph name="END_LINK" /></translation>
 <translation id="8597845839771543242">Formato de propiedad:</translation>
-<translation id="8598453409908276158">Complemento bloqueado sin pasar por la zona de pruebas</translation>
+<translation id="8598453409908276158">Complemento no incluido en la zona de pruebas bloqueado</translation>
 <translation id="8598687241883907630">Desvincular tu cuenta de Google...</translation>
 <translation id="8601206103050338563">Autenticación de cliente WWW TLS</translation>
 <translation id="8602851771975208551">Otro programa de tu ordenador ha añadido una aplicación que puede cambiar el funcionamiento de Chrome.</translation>

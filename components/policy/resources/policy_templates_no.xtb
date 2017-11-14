@@ -899,17 +899,23 @@
 
           Dette deaktiveres vanligvis for å beskytte seg mot nettfisking. Hvis denne retningslinjen ikke er angitt, er den deaktivert, og tredjeparts underinnhold kan ikke åpne en HTTP Basic Auth-dialogrute som forgrunnsvindu.</translation>
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
-<translation id="4077363032873906037">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i Google Apps og hindrer brukere fra å endre denne regelen.
+<translation id="4077363032873906037">Aktiverer begrenset pålogging for <ph name="PRODUCT_NAME" /> i Google-apper og hindrer brukere fra å endre denne innstillingen.
 
-      Hvis du definerer denne innstillingen, har brukerne bare tilgang til Google Apps via kontoer fra de spesifiserte domenene (merk at dette ikke fungerer for gmail.com/googlemail.com).
+      Hvis du definerer denne innstillingen, har brukerne bare tilgang til 
+      Google-apper via kontoer fra de spesifiserte domenene (merk at dette 
+      ikke fungerer for gmail.com/googlemail.com).
 
-      Denne innstillingen hindrer IKKE brukerne fra å logge på administrerte enheter som krever Google-autentisering. Brukerne kan fremdeles logge på kontoene sine fra andre domener, men de får opp en feil når de prøver å bruke Google Apps med disse kontoene.
+      Denne innstillingen hindrer IKKE brukerne fra å logge på administrerte
+      enheter som krever Google-autentisering. Brukerne kan fremdeles logge
+      på kontoene sine fra andre domener, men de får opp en feil når de prøver
+      å bruke Google-apper med disse kontoene.
 
-      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har brukerne tilgang til Google Apps med hvilken som helst konto.
+      Hvis du lar denne innstillingen stå tom / ikke konfigurerer den, har
+      brukerne tilgang til Google-apper med hvilken som helst konto.
 
-      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt til i
-      alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som beskrevet i
-      https://support.google.com/a/answer/1668854.
+      Denne regelen gjør at hodeelementet X-GoogApps-Allowed-Domains blir lagt 
+      til i alle HTTP- og HTTPS-forespørsler til alle google.com-domener, som 
+      beskrevet i https://support.google.com/a/answer/1668854.
 
       Brukere kan ikke endre eller overstyre denne innstillingen.</translation>
 <translation id="408029843066770167">Tillat forespørsler til en Google-tjeneste for klokkeslett</translation>
@@ -1134,7 +1140,7 @@
 
           Hvis denne regelen har verdien «false», ignoreres forespørsler om låsing av skjermaktivering.</translation>
 <translation id="4876805738539874299">Høyeste SSL-versjon er slått på</translation>
-<translation id="4881315447528084360">Spesifiserer en liste over apper og utvidelser som installeres stille, uten brukerinteraksjon, og som ikke kan avinstalleres eller deaktiveres av brukeren. Alle tillatelser som blir bedt om av appene/utvidelsene, gis implisitt, uten brukerinteraksjon, inkludert eventuelle ekstra tillatelser som fremtidige versjoner av appen/utvidelsen ber om. I tillegg gis tillatelser for utvidelses-API-ene enterprise.deviceAttributes og enterprise.platformKeys. (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som ikke tvangsinstalleres.)
+<translation id="4881315447528084360">Spesifiserer en liste over apper og utvidelser som installeres stille, uten brukerinteraksjon, og som ikke kan avinstalleres eller deaktiveres av brukeren. Alle tillatelser som appene/utvidelsene ber om, blir gitt implisitt, uten brukerinteraksjon, inkludert eventuelle ekstra tillatelser som fremtidige versjoner av appen/utvidelsen ber om. I tillegg gis tillatelser for utvidelses-API-ene enterprise.deviceAttributes og enterprise.platformKeys. (Disse to API-ene er ikke tilgjengelige for apper/utvidelser som ikke tvangsinstalleres.)
 
           Denne regelen kommer foran en <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />-regel som kan være i konflikt med den. Hvis en app eller utvidelse som tidligere ble tvangsinstallert, fjernes fra denne listen, avinstalleres den automatisk av <ph name="PRODUCT_NAME" />.
 
@@ -1142,9 +1148,9 @@
 
           Merk at kildekoden for alle utvidelser kan endres av brukere via utviklerverktøyene (noe som potensielt kan ødelegge funksjonaliteten for utvidelsen). Hvis dette er noe som skaper bekymring, er det best å angi <ph name="DEVELOPER_TOOLS_POLICY_NAME" />-regelen.
 
-          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn man for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når man er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering oppgitt i utvidelsens manifest.
+          Listeelementene i regelen er strenger som inneholder en utvidelses-ID og en nettadresse for oppdatering atskilt med semikolon (<ph name="SEMICOLON" />). Utvidelses-ID-en er strengen på 32 tegn man for eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når man er i utviklermodus. Nettadressen for oppdatering skal peke til oppdateringsmanifestet i XML-format som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Merk at nettadressen for oppdatering som er angitt i denne regelen, bare brukes for første installasjon – senere oppdateringer av utvidelsen bruker nettadressen for oppdatering som er oppgitt i utvidelsens manifest.
 
-          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om vertsutvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />
+          <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra standardnettadressen for oppdatering for Chrome Nettmarked. Hvis du vil ha mer informasjon om verter for utvidelser, kan du se: <ph name="LINK_TO_EXTENSION_DOC2" />
 
           Hvis denne regelen ikke angis, installeres ingen apper eller utvidelser automatisk, og brukeren kan avinstallere hvilken som helst app eller utvidelse i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Spesifiser hvilke domener som har tilgang til Google-apper</translation>

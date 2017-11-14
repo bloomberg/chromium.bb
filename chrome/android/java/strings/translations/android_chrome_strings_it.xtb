@@ -37,7 +37,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1291207594882862231">Cancella la cronologia, i cookie, i dati dei siti, la cache…</translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="1303671224831497365">Nessun dispositivo Bluetooth trovato</translation>
-<translation id="1320663236730331991">Scorri per l'alto per accedere facilmente a siti e articoli più letti, download e altro ancora</translation>
+<translation id="1320663236730331991">Scorri verso l'alto per accedere facilmente a siti e articoli più letti, download e altro ancora</translation>
 <translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
 <translation id="1332501820983677155">Scorciatoie delle funzioni di Google Chrome</translation>
 <translation id="1369915414381695676">Sito <ph name="SITE_NAME" /> aggiunto</translation>
@@ -118,7 +118,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB per altre app</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="2082238445998314030">Risultato <ph name="RESULT_NUMBER" /> di <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">Presentazione del nuovo Chrome</translation>
+<translation id="2086116129690175316">Ecco il nuovo Chrome</translation>
 <translation id="2086652334978798447">Per ricevere contenuti suggeriti appositamente per te da Google, accedi a Chrome.</translation>
 <translation id="2091887806945687916">Audio</translation>
 <translation id="2095887075102408547">Quando questa funzione è attiva, Chrome utilizza i server di Google per comprimere le pagine che visiti prima di scaricarle. Le pagine visitate utilizzando connessioni private (HTTPS) o in schede di navigazione in incognito non vengono ottimizzate o viste da Google.</translation>
@@ -136,7 +136,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="2156074688469523661">Siti rimanenti (<ph name="NUMBER_OF_SITES" />)</translation>
 <translation id="2172731970979873816">Dicci perché hai disattivato il nuovo Chrome</translation>
-<translation id="2185784955520093231">Stai utilizzando il nuovo Chrome</translation>
+<translation id="2185784955520093231">Stai usando il nuovo Chrome</translation>
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continua come <ph name="USER_FULL_NAME" /></translation>
@@ -174,7 +174,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2512222046227390255">Compilazione automatica dei moduli</translation>
 <translation id="2526148617758225454">La funzione Risparmio dati è attiva. Gestiscila nelle Impostazioni.</translation>
 <translation id="2532336938189706096">Visualizzazione web</translation>
-<translation id="2533871075713227669">Utilizza il nuovo Chrome</translation>
+<translation id="2533871075713227669">Usa il nuovo Chrome</translation>
 <translation id="2536728043171574184">È visualizzata una copia offline della pagina</translation>
 <translation id="2546283357679194313">Cookie e dati dei siti</translation>
 <translation id="2567385386134582609">IMMAGINE</translation>

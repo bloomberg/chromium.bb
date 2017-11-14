@@ -5,5 +5,5 @@
 <translation id="6312113039770857350">वेबपेज उपलब्ध नहीं है</translation>
 <translation id="8681531050781943054"><ph name="PAGE" /> पर वेबपेज को लोड नहीं किया जा सका क्योंकि:</translation>
 <translation id="8882178685025065378">ओह! आपको अपने अभिभावक से पूछना होगा कि क्या <ph name="PAGE" /> पर जाना ठीक है.</translation>
-<translation id="8963213021028234748"><ph name="MARKUP_1" />सुझाव:<ph name="MARKUP_2" />सुनिश्चित करें कि आपके पास डेटा कनेक्शन है<ph name="MARKUP_3" />इस वेबपेज को बाद में पुन: लोड करें<ph name="MARKUP_4" />आपके द्वारा डाले गए पते की जांच करें<ph name="MARKUP_5" /></translation>
+<translation id="8963213021028234748"><ph name="MARKUP_1" />सुझाव:<ph name="MARKUP_2" />सुनिश्चित करें कि आपके पास डेटा कनेक्शन है<ph name="MARKUP_3" />इस वेबपेज को बाद में पुन: लोड करें<ph name="MARKUP_4" />आपके द्वारा डाले गए पते की जाँच करें<ph name="MARKUP_5" /></translation>
 </translationbundle>

@@ -50,7 +50,7 @@
 <translation id="1385214448885562192">स्‍वीकार करण्‍यासाठी enter किंवा रद्द करण्‍यासाठी escape, पुढीलसाठी down आणि मागीलसाठी up दाबा.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
-<translation id="1452236308086741652"><ph name="VALUE" />, संकेतशब्द मजकूर बॉक्स</translation>
+<translation id="1452236308086741652"><ph name="VALUE" />, पासवर्ड मजकूर बॉक्स</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1474557363159888097">मागील अँकर नाही.</translation>
 <translation id="1487494366197411587">Chromebook वर, शोध की डाव्या Shift की वर असते.</translation>
@@ -83,7 +83,7 @@
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">पुढील ग्राफिक</translation>
 <translation id="1781173782405573156">की द्वारे पास करा</translation>
-<translation id="1787176709638001873">संकेतशब्द संपादन मजकूर</translation>
+<translation id="1787176709638001873">पासवर्ड संपादन मजकूर</translation>
 <translation id="1802710350767629429">अपडेट टिपा दर्शवा</translation>
 <translation id="1810107444790159527">सूची बॉक्स</translation>
 <translation id="1828385960365606039">मे</translation>
@@ -167,7 +167,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">चेक केलेले</translation>
 <translation id="27527859628328957">पुढील फोकस करण्यायोग्य आयटमवर जंप करा</translation>
-<translation id="2770781857296573485">गट अन्वेषण प्रविष्ट करा</translation>
+<translation id="2770781857296573485">गट अन्वेषण एंटर करा</translation>
 <translation id="2777845298774924149">निर्गमन केले</translation>
 <translation id="2781264313200109999">लिंकची सुरुवात</translation>
 <translation id="2784959586797362050">नेहमीप्रमाणे, शोध+a आणि नंतर i दाबून तुम्ही आम्हाला थेट फीडबॅक पाठवू शकता. आम्ही तुमचे मत जाणून घेण्यास उत्सुक आहोत.</translation>
@@ -227,7 +227,7 @@
 <translation id="3163593631834463955">रिक्त स्‍तंभ शीर्षलेख</translation>
 <translation id="316542773973815724">नेव्हिगेशन</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{जागा}one{# जागा}other{# जागा}}</translation>
-<translation id="320961988183078793"><ph name="TYPE" /> प्रविष्ट केला</translation>
+<translation id="320961988183078793"><ph name="TYPE" /> एंटर केला</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, टॅब</translation>
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">भेट दिलेला दुवा</translation>
@@ -439,7 +439,7 @@
 <translation id="4850023505158945298">मागील समान घटक.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करा</translation>
-<translation id="4877261390094455813">एक शोध क्वेरी प्रविष्ट करा.</translation>
+<translation id="4877261390094455813">एक शोध क्वेरी एंटर करा.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="489907760999452556">अंतर्गत दुवा</translation>
 <translation id="495170559598752135">क्रिया</translation>
@@ -543,8 +543,8 @@
 <translation id="5695831708991916435">पुढील काही शॉर्टकट हे ChromeVox आदेश नाहीत परंतु तरीही Chrome मधून सर्वोत्कृष्ट मिळविण्यासाठी ते खूप उपयुक्त आहेत.
 बटणे आणि दुवे यासारख्या क्रिया करण्यायोग्य आयटम मधून पुढे नेव्हिगेट करण्यासाठी, टॅब की दाबा.
 मागे नेव्हिगेट करण्यासाठी,  Shift+टॅब दाबा. 
-Chrome ब्राउझरच्या विविधोपयोगी क्षेत्र देखील म्हणविल्या जाणार्‍या, अॅड्रेस बॉक्समध्ये प्रवेश करण्यासाठी Control + L दाबा. 
-नवीन टॅब उघडण्यासाठी आणि त्यामध्ये स्वयंचलितपणे जाण्यासाठी, Control+T दाबा. आपला कर्सर विविधोपयोगी क्षेत्र मध्ये असेल. 
+Chrome ब्राउझरच्या ओम्निबॉक्स देखील म्हणविल्या जाणार्‍या, अॅड्रेस बॉक्समध्ये प्रवेश करण्यासाठी Control + L दाबा. 
+नवीन टॅब उघडण्यासाठी आणि त्यामध्ये स्वयंचलितपणे जाण्यासाठी, Control+T दाबा. आपला कर्सर ओम्निबॉक्स मध्ये असेल. 
 टॅब बंद करण्यासाठी, Control+W दाबा. 
 खुल्या टॅबमध्ये पुढे जाण्यासाठी, Control+टॅब वापरा.
 Chrome ब्राउझर मेनू उघडण्यासाठी, Alt+F दाबा.</translation>
@@ -720,7 +720,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7439060726180460871">निर्देशिका</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">टॅब</translation>
-<translation id="7492049978501397201">संवाद प्रविष्ट केला</translation>
+<translation id="7492049978501397201">संवाद एंटर केला</translation>
 <translation id="7518543783849163354">तात्पुरते ChromeVox चे बोलणे थांबविण्यासाठी, Control की दाबा.</translation>
 <translation id="7532613204005497612">जून</translation>
 <translation id="7552432549459840808">उपयोगी Chrome शॉर्टकट</translation>
@@ -743,7 +743,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7693840228159394336">मागील रेडिओ बटण</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7712273827621319827">अधोरेखित सुरू झाले</translation>
-<translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, संकेतशब्द मजकूर बॉक्स</translation>
+<translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, पासवर्ड मजकूर बॉक्स</translation>
 <translation id="7773125101284285285">अधोरेखित संपले</translation>
 <translation id="7776293189010177726">ChromeVox मेनू उघडा</translation>
 <translation id="7805247615045262757">डीफॉल्ट नेव्हिगेशन</translation>
@@ -829,7 +829,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="867187640362843212">मथळा 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# अनुलंब पाइप}other{# अनुलंब पाइप}}</translation>
 <translation id="8735450637152821465">निवड प्रारंभ करा</translation>
-<translation id="8743786158317878347">संरचित सामग्री प्रविष्ट करा, जसे की सारण्या</translation>
+<translation id="8743786158317878347">संरचित सामग्री एंटर करा, जसे की सारण्या</translation>
 <translation id="8747966237988593539">क्रमांकित सूची</translation>
 <translation id="8759334257841767240">पुढील दुवा नाही.</translation>
 <translation id="8767968232364267681">पुढील स्तर 4 शीर्षक</translation>
@@ -839,7 +839,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8808582214901541005">मार्च</translation>
 <translation id="8825828890761629845">bnr</translation>
 <translation id="8851136666856101339">मुख्य</translation>
-<translation id="8856538297388979332">आदेशाचे पुनरावलोकन करण्यासाठी वर किंवा खाली दाबा, सक्रिय करण्यासाठी प्रविष्ट करा दाबा</translation>
+<translation id="8856538297388979332">आदेशाचे पुनरावलोकन करण्यासाठी वर किंवा खाली दाबा, सक्रिय करण्यासाठी एंटर करा दाबा</translation>
 <translation id="8864099967139188018">पुढील स्‍तर 6 मथळा नाही.</translation>
 <translation id="8882002077197914455">पंक्ती शीर्षलेख</translation>
 <translation id="8883850400338911892">8 बिंदूचा url बनवला</translation>
