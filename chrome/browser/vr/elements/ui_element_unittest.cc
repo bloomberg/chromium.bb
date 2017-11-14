@@ -160,11 +160,11 @@ TEST(UiElements, HitTest) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SCOPED_TRACE(i);
     EXPECT_EQ(test_cases[i].expected_rect,
-              rect.HitTest(test_cases[i].location));
+              rect.LocalHitTest(test_cases[i].location));
     EXPECT_EQ(test_cases[i].expected_circle,
-              circle.HitTest(test_cases[i].location));
+              circle.LocalHitTest(test_cases[i].location));
     EXPECT_EQ(test_cases[i].expected_rounded_rect,
-              rounded_rect.HitTest(test_cases[i].location));
+              rounded_rect.LocalHitTest(test_cases[i].location));
   }
 }
 

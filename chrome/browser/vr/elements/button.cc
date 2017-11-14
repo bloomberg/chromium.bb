@@ -98,7 +98,7 @@ void Button::HandleHoverEnter() {
 }
 
 void Button::HandleHoverMove(const gfx::PointF& position) {
-  hovered_ = hit_plane_->HitTest(position);
+  hovered_ = hit_plane_->LocalHitTest(position);
   OnStateUpdated();
 }
 

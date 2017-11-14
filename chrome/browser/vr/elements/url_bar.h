@@ -33,7 +33,7 @@ class UrlBar : public TexturedElement {
   void OnMove(const gfx::PointF& position) override;
   void OnButtonDown(const gfx::PointF& position) override;
   void OnButtonUp(const gfx::PointF& position) override;
-  bool HitTest(const gfx::PointF& point) const override;
+  bool LocalHitTest(const gfx::PointF& point) const override;
 
   void SetHistoryButtonsEnabled(bool can_go_back);
   void SetToolbarState(const ToolbarState& state);
