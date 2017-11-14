@@ -1,10 +1,11 @@
-Tests that sampling heap profiling works. Bug 52634.
+Tests that sampling heap profiling works.
 
 Profiler was enabled.
+Detailed heap profiles were enabled.
 
 Running: testProfiling
-found pageFunction heap-profiler-profiling.html:7
-found (anonymous) heap-profiler-profiling.html:8
+found pageFunction heap-profiler-profiling.js:14
+found (anonymous) heap-profiler-profiling.js:15
 
 Profiler was disabled.
 
