@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -25,6 +26,9 @@
 namespace content {
 
 namespace {
+
+using ::testing::ElementsAreArray;
+using ::testing::IsEmpty;
 
 typedef ServiceWorkerDatabase::RegistrationData RegistrationData;
 typedef ServiceWorkerDatabase::ResourceRecord Resource;
@@ -1181,6 +1185,102 @@ TEST(ServiceWorkerDatabaseTest,
   EXPECT_EQ("value2", user_data_list[3].second);
   EXPECT_EQ(data1.registration_id, user_data_list[4].first);
   EXPECT_EQ("value3", user_data_list[4].second);
+}
+
+TEST(ServiceWorkerDatabaseTest, ReadUserDataByKeyPrefix) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  const GURL kOrigin("http://example.com");
+
+  // Add a registration.
+  RegistrationData data;
+  data.registration_id = 100;
+  data.scope = URL(kOrigin, "/foo");
+  data.script = URL(kOrigin, "/script.js");
+  data.version_id = 200;
+  data.resources_total_size_bytes = 100;
+  std::vector<Resource> resources;
+  resources.push_back(CreateResource(1, data.script, 100));
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Write user data associated with the registration.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    {{"key_prefix:key1", "value_c1"},
+                                     {"key_prefix:key2", "value_c2"},
+                                     {"other_key_prefix:k1", "value_d1"},
+                                     {"other_key_prefix:k2", "value_d2"}}));
+
+  std::vector<std::string> user_data;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataByKeyPrefix(data.registration_id,
+                                              "bogus_prefix:", &user_data));
+  EXPECT_THAT(user_data, IsEmpty());
+
+  user_data.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataByKeyPrefix(data.registration_id,
+                                              "key_prefix:", &user_data));
+  EXPECT_THAT(user_data, ElementsAreArray({"value_c1", "value_c2"}));
+
+  user_data.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserDataByKeyPrefix(data.registration_id,
+                                              "other_key_prefix:", &user_data));
+  EXPECT_THAT(user_data, ElementsAreArray({"value_d1", "value_d2"}));
+}
+
+TEST(ServiceWorkerDatabaseTest, ReadUserKeysAndDataByKeyPrefix) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  const GURL kOrigin("http://example.com");
+
+  // Add a registration.
+  RegistrationData data;
+  data.registration_id = 100;
+  data.scope = URL(kOrigin, "/foo");
+  data.script = URL(kOrigin, "/script.js");
+  data.version_id = 200;
+  data.resources_total_size_bytes = 100;
+  std::vector<Resource> resources;
+  resources.push_back(CreateResource(1, data.script, 100));
+  ServiceWorkerDatabase::RegistrationData deleted_version;
+  std::vector<int64_t> newly_purgeable_resources;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteRegistration(data, resources, &deleted_version,
+                                        &newly_purgeable_resources));
+
+  // Write user data associated with the registration.
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUserData(data.registration_id, kOrigin,
+                                    {{"key_prefix:key1", "value_c1"},
+                                     {"key_prefix:key2", "value_c2"},
+                                     {"other_key_prefix:k1", "value_d1"},
+                                     {"other_key_prefix:k2", "value_d2"}}));
+
+  base::flat_map<std::string, std::string> user_data_map;
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserKeysAndDataByKeyPrefix(
+                data.registration_id, "bogus_prefix:", &user_data_map));
+  EXPECT_THAT(user_data_map, IsEmpty());
+
+  user_data_map.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserKeysAndDataByKeyPrefix(
+                data.registration_id, "key_prefix:", &user_data_map));
+  EXPECT_THAT(user_data_map,
+              ElementsAreArray(std::vector<std::pair<std::string, std::string>>{
+                  {"key1", "value_c1"}, {"key2", "value_c2"}}));
+
+  user_data_map.clear();
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ReadUserKeysAndDataByKeyPrefix(
+                data.registration_id, "other_key_prefix:", &user_data_map));
+  EXPECT_THAT(user_data_map,
+              ElementsAreArray(std::vector<std::pair<std::string, std::string>>{
+                  {"k1", "value_d1"}, {"k2", "value_d2"}}));
 }
 
 TEST(ServiceWorkerDatabaseTest, UserData_DeleteUserDataByKeyPrefixes) {

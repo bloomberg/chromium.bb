@@ -417,6 +417,8 @@ source_set("browser") {
     "background_fetch/storage/database_task.h",
     "background_fetch/storage/delete_registration_task.cc",
     "background_fetch/storage/delete_registration_task.h",
+    "background_fetch/storage/get_developer_ids_task.cc",
+    "background_fetch/storage/get_developer_ids_task.h",
     "background_fetch/storage/get_registration_task.cc",
     "background_fetch/storage/get_registration_task.h",
     "background_fetch/storage/mark_registration_for_deletion_task.cc",

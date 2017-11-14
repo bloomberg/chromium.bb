@@ -17,6 +17,7 @@
 #include "content/browser/background_fetch/storage/create_registration_task.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
+#include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_registration_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -506,6 +507,13 @@ void BackgroundFetchDataManager::GetDeveloperIdsForServiceWorker(
     const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(std::make_unique<background_fetch::GetDeveloperIdsTask>(
+        this, service_worker_registration_id, origin, std::move(callback)));
+    return;
+  }
 
   std::vector<std::string> developer_ids;
   for (const auto& entry : active_registration_unique_ids_) {

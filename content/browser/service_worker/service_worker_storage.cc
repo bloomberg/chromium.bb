@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
-#include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -705,6 +704,40 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefix(
                                 weak_factory_.GetWeakPtr(), callback)));
 }
 
+void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix(
+    int64_t registration_id,
+    const std::string& key_prefix,
+    const GetUserKeysAndDataCallback& callback) {
+  if (!LazyInitialize(base::BindOnce(
+          &ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix,
+          weak_factory_.GetWeakPtr(), registration_id, key_prefix, callback))) {
+    if (state_ != INITIALIZING) {
+      RunSoon(
+          FROM_HERE,
+          base::BindOnce(callback, base::flat_map<std::string, std::string>(),
+                         SERVICE_WORKER_ERROR_ABORT));
+    }
+    return;
+  }
+  DCHECK_EQ(INITIALIZED, state_);
+
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
+      key_prefix.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(callback, base::flat_map<std::string, std::string>(),
+                           SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
+
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefixInDB,
+                     database_.get(), base::ThreadTaskRunnerHandle::Get(),
+                     registration_id, key_prefix,
+                     base::Bind(&ServiceWorkerStorage::DidGetUserKeysAndData,
+                                weak_factory_.GetWeakPtr(), callback)));
+}
+
 void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                                          const std::vector<std::string>& keys,
                                          const StatusCallback& callback) {
@@ -1376,6 +1409,17 @@ void ServiceWorkerStorage::DidGetUserData(
   callback.Run(data, DatabaseStatusToStatusCode(status));
 }
 
+void ServiceWorkerStorage::DidGetUserKeysAndData(
+    const GetUserKeysAndDataCallback& callback,
+    const base::flat_map<std::string, std::string>& data_map,
+    ServiceWorkerDatabase::Status status) {
+  if (status != ServiceWorkerDatabase::STATUS_OK &&
+      status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
+    ScheduleDeleteAndStartOver();
+  }
+  callback.Run(data_map, DatabaseStatusToStatusCode(status));
+}
+
 void ServiceWorkerStorage::DidDeleteUserData(
     const StatusCallback& callback,
     ServiceWorkerDatabase::Status status) {
@@ -1888,6 +1932,20 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefixInDB(
       database->ReadUserDataByKeyPrefix(registration_id, key_prefix, &values);
   original_task_runner->PostTask(FROM_HERE,
                                  base::BindOnce(callback, values, status));
+}
+
+void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefixInDB(
+    ServiceWorkerDatabase* database,
+    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+    int64_t registration_id,
+    const std::string& key_prefix,
+    const GetUserKeysAndDataInDBCallback& callback) {
+  base::flat_map<std::string, std::string> data_map;
+  ServiceWorkerDatabase::Status status =
+      database->ReadUserKeysAndDataByKeyPrefix(registration_id, key_prefix,
+                                               &data_map);
+  original_task_runner->PostTask(FROM_HERE,
+                                 base::BindOnce(callback, data_map, status));
 }
 
 void ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB(
