@@ -2299,7 +2299,7 @@ void LayoutBlockFlow::SetMustDiscardMarginBefore(bool value) {
     return;
 
   if (!rare_data_)
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
 
   rare_data_->discard_margin_before_ = value;
 }
@@ -2314,7 +2314,7 @@ void LayoutBlockFlow::SetMustDiscardMarginAfter(bool value) {
     return;
 
   if (!rare_data_)
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
 
   rare_data_->discard_margin_after_ = value;
 }
@@ -2377,7 +2377,7 @@ void LayoutBlockFlow::SetMaxMarginBeforeValues(LayoutUnit pos, LayoutUnit neg) {
     if (pos == LayoutBlockFlowRareData::PositiveMarginBeforeDefault(this) &&
         neg == LayoutBlockFlowRareData::NegativeMarginBeforeDefault(this))
       return;
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
   }
   rare_data_->margins_.SetPositiveMarginBefore(pos);
   rare_data_->margins_.SetNegativeMarginBefore(neg);
@@ -2388,7 +2388,7 @@ void LayoutBlockFlow::SetMaxMarginAfterValues(LayoutUnit pos, LayoutUnit neg) {
     if (pos == LayoutBlockFlowRareData::PositiveMarginAfterDefault(this) &&
         neg == LayoutBlockFlowRareData::NegativeMarginAfterDefault(this))
       return;
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
   }
   rare_data_->margins_.SetPositiveMarginAfter(pos);
   rare_data_->margins_.SetNegativeMarginAfter(neg);
@@ -4288,7 +4288,7 @@ void LayoutBlockFlow::SetPaginationStrutPropagatedFromChild(LayoutUnit strut) {
   if (!rare_data_) {
     if (!strut)
       return;
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
   }
   rare_data_->pagination_strut_propagated_from_child_ = strut;
 }
@@ -4297,7 +4297,7 @@ void LayoutBlockFlow::SetFirstForcedBreakOffset(LayoutUnit block_offset) {
   if (!rare_data_) {
     if (!block_offset)
       return;
-    rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+    rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
   }
   rare_data_->first_forced_break_offset_ = block_offset;
 }
@@ -4509,7 +4509,7 @@ LayoutBlockFlow::LayoutBlockFlowRareData& LayoutBlockFlow::EnsureRareData() {
   if (rare_data_)
     return *rare_data_;
 
-  rare_data_ = WTF::MakeUnique<LayoutBlockFlowRareData>(this);
+  rare_data_ = std::make_unique<LayoutBlockFlowRareData>(this);
   return *rare_data_;
 }
 

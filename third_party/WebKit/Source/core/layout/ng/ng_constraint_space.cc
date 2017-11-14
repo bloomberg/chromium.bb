@@ -4,6 +4,9 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
@@ -73,7 +76,7 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       floats_bfc_offset_(floats_bfc_offset),
-      exclusion_space_(WTF::MakeUnique<NGExclusionSpace>(exclusion_space)),
+      exclusion_space_(std::make_unique<NGExclusionSpace>(exclusion_space)),
       clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
   baseline_requests_.swap(baseline_requests);

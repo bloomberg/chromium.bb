@@ -103,9 +103,9 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
     // explicit width is specified on the table. Auto width implies auto table
     // layout.
     if (Style()->IsFixedTableLayout())
-      table_layout_ = WTF::MakeUnique<TableLayoutAlgorithmFixed>(this);
+      table_layout_ = std::make_unique<TableLayoutAlgorithmFixed>(this);
     else
-      table_layout_ = WTF::MakeUnique<TableLayoutAlgorithmAuto>(this);
+      table_layout_ = std::make_unique<TableLayoutAlgorithmAuto>(this);
   }
 
   if (!old_style)

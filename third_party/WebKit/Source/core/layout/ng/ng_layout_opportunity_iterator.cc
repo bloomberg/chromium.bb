@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
+
+#include <algorithm>
+#include <memory>
+
 #include "core/layout/ng/ng_exclusion.h"
 #include "core/layout/ng/ng_exclusion_space.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -208,7 +212,7 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
       opportunities.push_back(top_layout_opp);
 
     node->exclusions.push_back(exclusion);
-    node->combined_exclusion = WTF::MakeUnique<NGExclusion>(*exclusion);
+    node->combined_exclusion = std::make_unique<NGExclusion>(*exclusion);
     return;
   }
 

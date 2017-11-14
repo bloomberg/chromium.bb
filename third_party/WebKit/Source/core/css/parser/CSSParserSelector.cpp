@@ -27,11 +27,11 @@
 namespace blink {
 
 CSSParserSelector::CSSParserSelector()
-    : selector_(WTF::MakeUnique<CSSSelector>()) {}
+    : selector_(std::make_unique<CSSSelector>()) {}
 
 CSSParserSelector::CSSParserSelector(const QualifiedName& tag_q_name,
                                      bool is_implicit)
-    : selector_(WTF::MakeUnique<CSSSelector>(tag_q_name, is_implicit)) {}
+    : selector_(std::make_unique<CSSSelector>(tag_q_name, is_implicit)) {}
 
 CSSParserSelector::~CSSParserSelector() {
   if (!tag_history_)
@@ -101,7 +101,7 @@ void CSSParserSelector::PrependTagSelector(const QualifiedName& tag_q_name,
   second->selector_ = std::move(selector_);
   second->tag_history_ = std::move(tag_history_);
   tag_history_ = std::move(second);
-  selector_ = WTF::MakeUnique<CSSSelector>(tag_q_name, is_implicit);
+  selector_ = std::make_unique<CSSSelector>(tag_q_name, is_implicit);
 }
 
 bool CSSParserSelector::IsHostPseudoSelector() const {

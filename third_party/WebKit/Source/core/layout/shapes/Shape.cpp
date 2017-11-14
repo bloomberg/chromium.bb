@@ -54,7 +54,7 @@ namespace blink {
 static std::unique_ptr<Shape> CreateInsetShape(const FloatRoundedRect& bounds) {
   DCHECK_GE(bounds.Rect().Width(), 0);
   DCHECK_GE(bounds.Rect().Height(), 0);
-  return WTF::MakeUnique<BoxShape>(bounds);
+  return std::make_unique<BoxShape>(bounds);
 }
 
 static std::unique_ptr<Shape> CreateCircleShape(const FloatPoint& center,
@@ -221,7 +221,7 @@ std::unique_ptr<Shape> Shape::CreateShape(const BasicShape* basic_shape,
 std::unique_ptr<Shape> Shape::CreateEmptyRasterShape(WritingMode writing_mode,
                                                      float margin) {
   std::unique_ptr<RasterShapeIntervals> intervals =
-      WTF::MakeUnique<RasterShapeIntervals>(0, 0);
+      std::make_unique<RasterShapeIntervals>(0, 0);
   std::unique_ptr<RasterShape> raster_shape =
       WTF::WrapUnique(new RasterShape(std::move(intervals), IntSize()));
   raster_shape->writing_mode_ = writing_mode;

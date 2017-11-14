@@ -29,7 +29,9 @@
 #ifndef MediaQuery_h
 #define MediaQuery_h
 
+#include <memory>
 #include <utility>
+
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Vector.h"
@@ -61,7 +63,7 @@ class CORE_EXPORT MediaQuery {
   String CssText() const;
 
   std::unique_ptr<MediaQuery> Copy() const {
-    return WTF::MakeUnique<MediaQuery>(*this);
+    return std::make_unique<MediaQuery>(*this);
   }
 
  private:

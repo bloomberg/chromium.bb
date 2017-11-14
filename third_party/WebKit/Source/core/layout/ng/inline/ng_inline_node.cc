@@ -4,6 +4,11 @@
 
 #include "core/layout/ng/inline/ng_inline_node.h"
 
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <utility>
+
 #include "core/layout/BidiRun.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutObject.h"
@@ -444,7 +449,7 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
     mapping_builder.SetDestinationString(Text());
     MutableData()->offset_mapping_ =
-        WTF::MakeUnique<NGOffsetMapping>(mapping_builder.Build());
+        std::make_unique<NGOffsetMapping>(mapping_builder.Build());
   }
 
   return Data().offset_mapping_.get();
@@ -553,7 +558,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
   if (block_style == first_line_style)
     return;
 
-  auto first_line_items = WTF::MakeUnique<Vector<NGInlineItem>>();
+  auto first_line_items = std::make_unique<Vector<NGInlineItem>>();
   first_line_items->AppendVector(data->items_);
   for (auto& item : *first_line_items) {
     if (item.style_) {

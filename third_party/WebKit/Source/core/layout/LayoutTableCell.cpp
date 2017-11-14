@@ -1059,7 +1059,7 @@ void LayoutTableCell::UpdateCollapsedBorderValues() const {
 
     collapsed_border_values_valid_ = true;
 
-    auto new_values = WTF::MakeUnique<CollapsedBorderValues>(
+    auto new_values = std::make_unique<CollapsedBorderValues>(
         ComputeCollapsedStartBorder(), ComputeCollapsedEndBorder(),
         ComputeCollapsedBeforeBorder(), ComputeCollapsedAfterBorder());
 

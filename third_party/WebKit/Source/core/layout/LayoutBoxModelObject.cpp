@@ -488,7 +488,7 @@ void LayoutBoxModelObject::InvalidateStickyConstraints() {
 void LayoutBoxModelObject::CreateLayerAfterStyleChange() {
   DCHECK(!HasLayer() && !Layer());
   GetMutableForPainting().FirstFragment().EnsureRarePaintData().SetLayer(
-      WTF::MakeUnique<PaintLayer>(*this));
+      std::make_unique<PaintLayer>(*this));
   SetHasLayer(true);
   Layer()->InsertOnlyThisLayerAfterStyleChange();
 }

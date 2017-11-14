@@ -167,7 +167,7 @@ PendingInvalidations& StyleInvalidator::EnsurePendingInvalidations(
   PendingInvalidationMap::AddResult add_result =
       pending_invalidation_map_.insert(&node, nullptr);
   if (add_result.is_new_entry)
-    add_result.stored_value->value = WTF::MakeUnique<PendingInvalidations>();
+    add_result.stored_value->value = std::make_unique<PendingInvalidations>();
   return *add_result.stored_value->value;
 }
 
