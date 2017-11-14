@@ -1,0 +1,32 @@
+Layer tree:
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1200, 900],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [1200, 900]
+    }
+  ]
+}
+
+Layer list
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1200, 900],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [1200, 900]
+    }
+  ]
+}
+

@@ -52,6 +52,8 @@ enum GraphicsLayerPaintingPhaseFlags {
 };
 typedef unsigned GraphicsLayerPaintingPhase;
 
+// These values need to be kept consistent with the layer tree flags in
+// core/testing/Internals.idl.
 enum {
   kLayerTreeNormal = 0,
   // Dump extra debugging info like layer addresses.
@@ -61,9 +63,10 @@ enum {
   kLayerTreeIncludesRootLayer = 1 << 3,
   kLayerTreeIncludesClipAndScrollParents = 1 << 4,
   kLayerTreeIncludesCompositingReasons = 1 << 5,
+  kLayerTreeIncludesPaintRecords = 1 << 6,
   // Outputs all layers as a layer tree. The default is output children
   // (excluding the root) as a layer list, in paint (preorder) order.
-  kOutputAsLayerTree = 1 << 6,
+  kOutputAsLayerTree = 0x4000,
 };
 typedef unsigned LayerTreeFlags;
 

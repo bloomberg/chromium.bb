@@ -7,6 +7,7 @@
 #include <memory>
 #include "cc/paint/paint_op_buffer.h"
 #include "platform/geometry/GeometryAsJSON.h"
+#include "platform/graphics/LoggingCanvas.h"
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -113,6 +114,14 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
   if (int transform_id = GetTransformId(
           raster_invalidator_.GetLayerState().Transform(), context))
     json->SetInteger("transform", transform_id);
+
+#ifndef NDEBUG
+  if (context.flags & kLayerTreeIncludesPaintRecords) {
+    LoggingCanvas canvas;
+    cc_display_item_list_->Raster(&canvas);
+    json->SetValue("paintRecord", canvas.Log());
+  }
+#endif
 
   return json;
 }
