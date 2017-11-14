@@ -9363,7 +9363,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Chromoting.Connections" enum="State">
-  <owner>anandc@chromium.com</owner>
+  <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>
   <summary>
     Recorded every time a Chromoting connection enters a new state.
@@ -24914,7 +24914,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="FileBrowser.ChangeDirectory.RootType"
     enum="FileManagerRootType">
-  <owner>yamaguchi@chromium.com</owner>
+  <owner>yamaguchi@chromium.org</owner>
   <summary>
     Chrome OS File Browser: Counts the number of directory-changed events,
     bucketed by the RootType of the directory newly displayed.
@@ -25038,7 +25038,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType">
-  <owner>fukino@chromium.com</owner>
+  <owner>fukino@chromium.org</owner>
   <summary>
     Chrome OS File Browser: The locations (root types) of files which are opened
     by the file picker.
@@ -29596,7 +29596,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.BluetoothAdvertisementRegistrationResult"
     enum="InstantTethering_BluetoothAdvertisementResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth advertisement
     registration result occurs.
@@ -29609,7 +29609,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.BluetoothAdvertisementUnregistrationResult"
     enum="InstantTethering_BluetoothAdvertisementResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth advertisement
     unregistration result occurs.
@@ -29622,7 +29622,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.BluetoothDiscoverySessionStarted"
     enum="BooleanSuccess">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides the success rate of starting a Bluetooth discovery session.
   </summary>
@@ -29630,7 +29630,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.BluetoothDiscoverySessionStopped"
     enum="BooleanSuccess">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides the success rate of stopping a Bluetooth discovery session.
   </summary>
@@ -29638,7 +29638,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.ConnectionToHostResult.Failure"
     enum="InstantTethering_ConnectionToHostResult_Failure">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a top-level breakdown of the times a connection to a host has
     failed.
@@ -29655,7 +29655,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="InstantTethering.ConnectionToHostResult.Failure.ClientConnection"
     enum="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Breaks down the reasons why the client failed to connect to the hotspot, and
     the number of times they occurred.
@@ -29673,7 +29673,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="InstantTethering.ConnectionToHostResult.Failure.TetheringTimeout"
     enum="InstantTethering_ConnectionToHostResult_Failure_TetheringTimeout">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Captures the number of times of whether or not first-time setup was required
     when tethering timed out.
@@ -29719,7 +29719,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.ConnectionToHostResult.SuccessRate"
     enum="InstantTethering_ConnectionToHostResult_SuccessRate">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Captures the count of successful and failed connection attempts.
 
@@ -29731,7 +29731,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.FeatureState"
     enum="InstantTethering_FeatureState">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Breaks down the state of Instant Tethering during user sessions. All states,
     except for 'Enabled', indicate that the feature was not active. This
@@ -29760,7 +29760,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.HostScanResult"
     enum="InstantTethering_HostScanResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of the results of each host scan. This metric is
     recorded after each host scan.
@@ -29845,7 +29845,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.UserPreference.OnStartup"
     enum="BooleanEnabled">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides the count of the number of users who have the Instant Tethering
     toggle enabled vs. disabled on startup. This metric is logged each time a
@@ -29855,7 +29855,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="InstantTethering.UserPreference.OnToggle"
     enum="BooleanEnabled">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides the count of the number of times users have enabled or disabled the
     user preference for Mobile data. This metric is logged each time the value
@@ -66459,7 +66459,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ProximityAuth.BleWeaveConnectionResult"
     enum="ProximityAuth_BleWeaveConnectionResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how often each BLE weave connection result occurs.
   </summary>
@@ -66467,7 +66467,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ProximityAuth.BluetoothGattConnectionResult"
     enum="ProximityAuth_BluetoothGattConnectionResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     connection result occurs.
@@ -66480,7 +66480,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ProximityAuth.BluetoothGattNotifySessionResult"
     enum="ProximityAuth_BluetoothGattServiceOperationResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     &quot;notify session&quot; attempt result occurs.
@@ -66493,7 +66493,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ProximityAuth.BluetoothGattWriteCharacteristicResult"
     enum="ProximityAuth_BluetoothGattServiceOperationResult">
-  <owner>hansberry@chromium.com</owner>
+  <owner>hansberry@chromium.org</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     &quot;write characteristic&quot; attempt result occurs.
@@ -87735,7 +87735,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TouchBar.Default.Metrics" enum="DefaultTouchBarActions">
-  <owner>spqchan@chromium.com</owner>
+  <owner>spqchan@chromium.org</owner>
   <summary>Tracks the usage of the default touch bar buttons.</summary>
 </histogram>
 
@@ -90029,7 +90029,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="UpgradeDetector.NotificationStage"
     enum="UpgradeNotificationStage">
-  <owner>spqchan@chromium.com</owner>
+  <owner>spqchan@chromium.org</owner>
   <summary>
     Tracks the upgrade notification stage. This is recorded with every UMA log.
   </summary>
@@ -92030,7 +92030,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated 08/2016 because CertVerifier is not used for web view cert
     verification.
   </obsolete>
-  <owner>eugenebut@chromium.com</owner>
+  <owner>eugenebut@chromium.org</owner>
   <summary>
     [iOS] Reports certificate verification mismatch between SecTrust API and
     CertVerifier. SecTrust API is used for making load/no-load decision and
@@ -92043,7 +92043,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Web.CurrentOriginEqualsLastCommittedOrigin"
     enum="BooleanEqual">
-  <owner>eugenebut@chromium.com</owner>
+  <owner>eugenebut@chromium.org</owner>
   <summary>
     [iOS] Reports URL matches between the return value from the WebState's
     GetLastCommittedURL and GetCurrentURL methods. It is expected the origins
@@ -92061,7 +92061,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 9/2013, replaced by
     Web.CurrentOriginEqualsLastCommittedOrigin.
   </obsolete>
-  <owner>michaeldo@chromium.com</owner>
+  <owner>michaeldo@chromium.org</owner>
   <summary>
     [iOS] Reports URL matches between the return value from the WebState's
     GetLastCommittedURL and GetCurrentURL methods. It is expected the values
