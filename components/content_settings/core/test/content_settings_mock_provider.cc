@@ -28,13 +28,8 @@ bool MockProvider::SetWebsiteSetting(
     base::Value* value) {
   if (read_only_)
     return false;
-  if (value) {
-    value_map_.SetValue(requesting_url_pattern, embedding_url_pattern,
-                        content_type, resource_identifier, base::Time(), value);
-  } else {
-    value_map_.DeleteValue(requesting_url_pattern, embedding_url_pattern,
-                           content_type, resource_identifier);
-  }
+  value_map_.SetValue(requesting_url_pattern, embedding_url_pattern,
+                      content_type, resource_identifier, base::Time(), value);
   return true;
 }
 

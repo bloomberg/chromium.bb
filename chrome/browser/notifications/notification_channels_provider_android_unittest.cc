@@ -602,9 +602,6 @@ TEST_F(NotificationChannelsProviderAndroidTest,
       checked_blocked = true;
     }
   }
-  EXPECT_FALSE(
-      old_provider->GetRuleIterator(CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                    std::string(), false /* incognito */));
 }
 
 TEST_F(NotificationChannelsProviderAndroidTest,
