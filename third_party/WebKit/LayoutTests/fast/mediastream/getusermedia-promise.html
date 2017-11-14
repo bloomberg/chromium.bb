@@ -34,7 +34,8 @@ promise_test(function() {
   .then(function(s) {
     fail('getUserMedia should have failed');
   }).catch(function(e) {
-    assert_equals(e.name, 'ConstraintNotSatisfiedError');
+    assert_equals(e.name, 'OverconstrainedError');
+    assert_equals(e.constraint, 'valid_but_unsupported_1');
   });
 }, 'getUserMedia() with unsupported mandatory constraint');
 

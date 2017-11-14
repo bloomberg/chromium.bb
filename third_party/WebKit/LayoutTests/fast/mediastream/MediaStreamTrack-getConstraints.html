@@ -57,9 +57,9 @@ promise_test(function() {
   const complexConstraintSet = {
     width: { min: 30, max: 480 },
     height: { min: 30, max: 480, exact: 350 },
-    aspectRatio: { ideal: 1.3333333, exact: 1.4444 },
-    frameRate: { exact: 30.0 },
-    facingMode: { exact: "user" }
+    aspectRatio: 1.3333333,
+    frameRate: { min: 0 },
+    facingMode: "user"
   };
   // These constraints are syntactically valid, but may cause rejection.
   // They are included in an "advanced" constraint.

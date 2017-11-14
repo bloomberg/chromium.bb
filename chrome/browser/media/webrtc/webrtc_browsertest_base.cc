@@ -52,10 +52,8 @@ const char WebRtcTestBase::kVideoCallConstraints1080p[] =
 const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "{audio: true}";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "{video: true}";
 const char WebRtcTestBase::kOkGotStream[] = "ok-got-stream";
-const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
-    "failed-with-error-PermissionDeniedError";
-const char WebRtcTestBase::kFailedWithPermissionDismissedError[] =
-    "failed-with-error-PermissionDismissedError";
+const char WebRtcTestBase::kFailedWithNotAllowedError[] =
+    "failed-with-error-NotAllowedError";
 const char WebRtcTestBase::kAudioVideoCallConstraints360p[] =
    "{audio: true, video: {mandatory: {minWidth: 640, maxWidth: 640, "
    " minHeight: 360, maxHeight: 360}}}";
@@ -223,7 +221,7 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
   EXPECT_TRUE(permissionRequestObserver.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  EXPECT_EQ(kFailedWithPermissionDeniedError, result);
+  EXPECT_EQ(kFailedWithNotAllowedError, result);
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
@@ -237,7 +235,7 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
   // A dismiss should be treated like a deny.
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  EXPECT_EQ(kFailedWithPermissionDismissedError, result);
+  EXPECT_EQ(kFailedWithNotAllowedError, result);
 }
 
 void WebRtcTestBase::GetUserMediaAndExpectAutoAcceptWithoutPrompt(
@@ -279,7 +277,7 @@ void WebRtcTestBase::GetUserMediaAndExpectAutoDenyWithoutPrompt(
   EXPECT_FALSE(permissionRequestObserver.request_shown());
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       tab_contents->GetMainFrame(), "obtainGetUserMediaResult();", &result));
-  EXPECT_EQ(kFailedWithPermissionDeniedError, result);
+  EXPECT_EQ(kFailedWithNotAllowedError, result);
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
