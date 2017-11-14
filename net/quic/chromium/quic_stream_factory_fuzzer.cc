@@ -21,6 +21,9 @@
 #include "net/socket/fuzzed_socket_factory.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/gtest_util.h"
+#include "net/test/test_data_directory.h"
 
 namespace net {
 
@@ -62,10 +65,14 @@ struct Env {
     channel_id_service =
         std::make_unique<ChannelIDService>(new DefaultChannelIDStore(nullptr));
     cert_transparency_verifier = std::make_unique<MultiLogCTVerifier>();
+    verify_details.cert_verify_result.verified_cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
+    verify_details.cert_verify_result.is_issued_by_known_root = true;
   }
 
   MockClock clock;
   scoped_refptr<SSLConfigService> ssl_config_service;
+  ProofVerifyDetailsChromium verify_details;
   MockCryptoClientStreamFactory crypto_client_stream_factory;
   HostPortPair host_port_pair;
   MockRandom random_generator;
@@ -100,6 +107,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   bool race_cert_verification = data_provider.ConsumeBool();
   bool estimate_initial_rtt = data_provider.ConsumeBool();
   bool enable_token_binding = data_provider.ConsumeBool();
+
+  env->crypto_client_stream_factory.AddProofVerifyDetails(&env->verify_details);
 
   if (migrate_sessions_early)
     migrate_sessions_on_network_change = true;
