@@ -157,8 +157,6 @@ crbug.com/417782 virtual/threaded/printing/subframes-percentage-height.html [ Fa
 crbug.com/417782 virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/417782 compositing/iframes/iframe-composited-scrolling.html [ Failure ]
 crbug.com/417782 compositing/squashing/dont-squash-into-videos.html [ Failure ]
-crbug.com/417782 paint/invalidation/selection/selection-clear-after-move.html [ Failure ]
-crbug.com/417782 paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/autoscroll.html [ Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/drag-and-drop-autoscroll-frameset.html [ Timeout Failure ]
 crbug.com/417782 virtual/mouseevent_fractional/fast/events/drag-and-drop-autoscroll-inner-frame.html [ Timeout Failure ]
