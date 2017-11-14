@@ -226,6 +226,24 @@ bool isPointerTypeAlignmentOkay(Type*) {
 #define reinterpret_cast_ptr reinterpret_cast
 #endif
 
+template <typename TypePtr>
+NO_SANITIZE_UNRELATED_CAST
+TypePtr unsafe_reinterpret_cast_ptr(void* ptr) {
+#if defined(ARCH_CPU_ARMEL) && defined(COMPILER_GCC)
+  DCHECK(isPointerTypeAlignmentOkay(reinterpret_cast<TypePtr>(ptr)));
+#endif
+  return reinterpret_cast<TypePtr>(ptr);
+}
+
+template <typename TypePtr>
+NO_SANITIZE_UNRELATED_CAST
+TypePtr unsafe_reinterpret_cast_ptr(const void* ptr) {
+#if defined(ARCH_CPU_ARMEL) && defined(COMPILER_GCC)
+  DCHECK(isPointerTypeAlignmentOkay(reinterpret_cast<TypePtr>(ptr)));
+#endif
+  return reinterpret_cast<TypePtr>(ptr);
+}
+
 namespace WTF {
 
 /*
