@@ -61,14 +61,8 @@ enum SandboxType {
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 
-inline bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
-  // TODO(tsepez): Sandbox network process.
-  return sandbox_type == SANDBOX_TYPE_NO_SANDBOX ||
-#if defined(OS_WIN)
-         sandbox_type == SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES ||
-#endif
-         sandbox_type == SANDBOX_TYPE_NETWORK;
-}
+SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(
+    SandboxType sandbox_type);
 
 SERVICE_MANAGER_SANDBOX_EXPORT void SetCommandLineFlagsForSandboxType(
     base::CommandLine* command_line,
