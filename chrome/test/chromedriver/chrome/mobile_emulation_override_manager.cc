@@ -73,7 +73,14 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
     emit_touch_for_mouse_params.SetString("configuration", "mobile");
     status = client_->SendCommand("Emulation.setEmitTouchEventsForMouse",
                                   emit_touch_for_mouse_params);
-    if (status.IsError())
+    // OK if Emulation.setEmitTouchEventsForMouse isn't available, as it was
+    // added in Chrome v62. TODO(johnchen@chromium.org): Remove check for
+    // Emulation.setEmitTouchEventsForMouse not found error when ChromeDriver
+    // stops supporting v61.
+    if (status.IsError() &&
+        status.message().find(
+            "'Emulation.setEmitTouchEventsForMouse' wasn't found") ==
+            std::string::npos)
       return status;
   }
 
