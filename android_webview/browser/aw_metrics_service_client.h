@@ -44,9 +44,6 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
  public:
   static AwMetricsServiceClient* GetInstance();
 
-  // Return true if running on an sdk version metrics should be enabled for.
-  static bool CheckSDKVersionForMetrics();
-
   // Retrieve the client ID or generate one if none exists.
   static void LoadOrCreateClientId();
 

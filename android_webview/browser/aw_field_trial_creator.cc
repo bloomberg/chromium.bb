@@ -74,9 +74,6 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
 }
 
 void AwFieldTrialCreator::SetUpFieldTrials() {
-  if (!AwMetricsServiceClient::CheckSDKVersionForMetrics())
-    return;
-
   AwMetricsServiceClient::LoadOrCreateClientId();
 
   DCHECK(!field_trial_list_);
