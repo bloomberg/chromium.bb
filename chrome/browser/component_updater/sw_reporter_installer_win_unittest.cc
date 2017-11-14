@@ -211,7 +211,7 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
       std::string* out_session_id) {
     SCOPED_TRACE("Invocation with suffix " + expected_suffix);
     SwReporterInvocation invocation = launched_invocations_.front();
-    launched_invocations_.pop_front();
+    launched_invocations_.pop();
     EXPECT_EQ(MakeTestFilePath(default_path_),
               invocation.command_line.GetProgram());
     // There should be one switch added from the manifest, plus registry-suffix

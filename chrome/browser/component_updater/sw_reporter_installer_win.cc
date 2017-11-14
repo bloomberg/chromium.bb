@@ -278,7 +278,7 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
     auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.suffix = suffix;
     invocation.supported_behaviours = supported_behaviours;
-    invocations.push_back(invocation);
+    invocations.push(invocation);
   }
 
   DCHECK(!invocations.empty());
@@ -337,9 +337,7 @@ void SwReporterInstallerPolicy::ComponentReady(
         SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
         SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
 
-    safe_browsing::SwReporterQueue invocations;
-    invocations.push_back(invocation);
-    reporter_runner_.Run(invocations, version);
+    reporter_runner_.Run(safe_browsing::SwReporterQueue({invocation}), version);
   }
 }
 
