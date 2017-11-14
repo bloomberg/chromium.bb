@@ -218,8 +218,8 @@ using signin_ui::CompletionCallback;
 - (void)dismissPresentedViewControllersAnimated:(BOOL)animated
                                      completion:(ProceduralBlock)completion {
   if (self.presenter.isPresenting) {
-    [self.presenter dismissViewControllerAnimated:animated
-                                       completion:completion];
+    [self.presenter dismissAllViewControllersAnimated:animated
+                                           completion:completion];
   } else if (completion) {
     completion();
   }
