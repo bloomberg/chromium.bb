@@ -222,6 +222,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       created_notification_bridge_(false),
       created_safe_browsing_service_(false),
       created_subresource_filter_ruleset_service_(false),
+      created_optimization_guide_service_(false),
       shutting_down_(false),
       tearing_down_(false),
       download_status_updater_(base::MakeUnique<DownloadStatusUpdater>()),
