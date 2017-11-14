@@ -402,7 +402,7 @@
     },
     {
       name: "FetchRequestCache",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "FetchRequestKeepalive",
