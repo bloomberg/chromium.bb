@@ -202,7 +202,7 @@ and in Windows it is a DLL. For installation instructions see the
 README file. Please report bugs and oddities to the mailing list,
 @email{liblouis-liblouisxml@@freelists.org}
 
-This documentation is derived from Chapter 7 of the BRLTTY manual, but
+This documentation is derived from the BRLTTY manual, but
 it has been extensively rewritten to cover new features.
 
 @section Who is this manual for
