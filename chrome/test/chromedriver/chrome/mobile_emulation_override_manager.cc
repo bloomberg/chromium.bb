@@ -65,6 +65,16 @@ Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
     emulate_touch_params.SetBoolean("enabled", true);
     status = client_->SendCommand("Emulation.setTouchEmulationEnabled",
                                   emulate_touch_params);
+    if (status.IsError())
+      return status;
+
+    base::DictionaryValue emit_touch_for_mouse_params;
+    emit_touch_for_mouse_params.SetBoolean("enabled", true);
+    emit_touch_for_mouse_params.SetString("configuration", "mobile");
+    status = client_->SendCommand("Emulation.setEmitTouchEventsForMouse",
+                                  emit_touch_for_mouse_params);
+    if (status.IsError())
+      return status;
   }
 
   return Status(kOk);
