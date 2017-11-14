@@ -715,45 +715,105 @@ TEST_F(UiSceneManagerTest, WebVrTimeout) {
 
 TEST_F(UiSceneManagerTest, SpeechRecognitionUiVisibility) {
   MakeManager(kNotInCct, kNotInWebVr);
-  UiElement* growing_circle =
-      scene_->GetUiElementByName(kSpeechRecognitionListeningGrowingCircle);
 
   model_->speech.recognizing_speech = true;
-  EXPECT_TRUE(AnimateBy(MsToDelta(200)));
+
+  // Start hiding browsing foreground and showing speech recognition listening
+  // UI.
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
+                    {OPACITY}, true);
+  VerifyIsAnimating({kSpeechRecognitionResult}, {OPACITY}, false);
+
+  EXPECT_TRUE(
+      AnimateBy(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
+  // All opacity animations should be finished at this point.
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening,
+                     kSpeechRecognitionResult},
+                    {OPACITY}, false);
+  VerifyIsAnimating({kSpeechRecognitionListeningGrowingCircle}, {CIRCLE_GROW},
+                    false);
   VerifyVisibility(
       {kSpeechRecognitionListening, kSpeechRecognitionListeningMicrophoneIcon,
        kSpeechRecognitionListeningBackplane,
        kSpeechRecognitionListeningInnerCircle,
        kSpeechRecognitionListeningGrowingCircle},
       true);
-  EXPECT_FALSE(IsVisible(k2dBrowsingForeground));
-  EXPECT_FALSE(IsVisible(kSpeechRecognitionResult));
-  EXPECT_FALSE(IsAnimating(growing_circle, {CIRCLE_GROW}));
+  VerifyVisibility({k2dBrowsingForeground, kSpeechRecognitionResult}, false);
 
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_READY;
-  EXPECT_TRUE(AnimateBy(MsToDelta(300)));
-  EXPECT_TRUE(IsAnimating(growing_circle, {CIRCLE_GROW}));
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
+  VerifyIsAnimating({kSpeechRecognitionListeningGrowingCircle}, {CIRCLE_GROW},
+                    true);
 
+  // Mock received speech result.
   model_->speech.recognition_result = base::ASCIIToUTF16("test");
   model_->speech.recognizing_speech = false;
   model_->speech.speech_recognition_state = SPEECH_RECOGNITION_END;
-  EXPECT_TRUE(AnimateBy(MsToDelta(500)));
 
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
   VerifyVisibility({kSpeechRecognitionResult, kSpeechRecognitionResultCircle,
                     kSpeechRecognitionResultMicrophoneIcon,
                     kSpeechRecognitionResultBackplane},
                    true);
-  EXPECT_FALSE(IsAnimating(growing_circle, {CIRCLE_GROW}));
-  EXPECT_FALSE(IsVisible(kSpeechRecognitionListening));
-  EXPECT_FALSE(IsVisible(k2dBrowsingForeground));
+  // Speech result UI should show instantly while listening UI hide immediately.
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening,
+                     kSpeechRecognitionResult},
+                    {OPACITY}, false);
+  VerifyIsAnimating({kSpeechRecognitionListeningGrowingCircle}, {CIRCLE_GROW},
+                    false);
+  VerifyVisibility({k2dBrowsingForeground, kSpeechRecognitionListening}, false);
 
   // The visibility of Speech Recognition UI should not change at this point.
-  EXPECT_FALSE(AnimateBy(MsToDelta(600)));
+  EXPECT_FALSE(AnimateBy(MsToDelta(10)));
 
-  EXPECT_TRUE(AnimateBy(
-      MsToDelta(500 + kSpeechRecognitionResultTimeoutSeconds * 1000)));
-  EXPECT_FALSE(IsVisible(kSpeechRecognitionListening));
-  EXPECT_FALSE(IsVisible(kSpeechRecognitionResult));
+  EXPECT_TRUE(
+      AnimateBy(MsToDelta(kSpeechRecognitionResultTimeoutSeconds * 1000)));
+  // Start hide speech recognition result and show browsing foreground.
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionResult},
+                    {OPACITY}, true);
+  VerifyIsAnimating({kSpeechRecognitionListening}, {OPACITY}, false);
+
+  EXPECT_TRUE(
+      AnimateBy(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening,
+                     kSpeechRecognitionResult},
+                    {OPACITY}, false);
+
+  // Visibility is as expected.
+  VerifyVisibility({kSpeechRecognitionListening, kSpeechRecognitionResult},
+                   false);
+  EXPECT_TRUE(IsVisible(k2dBrowsingForeground));
+}
+
+TEST_F(UiSceneManagerTest, SpeechRecognitionUiVisibilityNoResult) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  model_->speech.recognizing_speech = true;
+  EXPECT_TRUE(
+      AnimateBy(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
+                    {OPACITY}, false);
+
+  // Mock exit without a recognition result
+  model_->speech.recognition_result.clear();
+  model_->speech.recognizing_speech = false;
+  model_->speech.speech_recognition_state = SPEECH_RECOGNITION_END;
+
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening},
+                    {OPACITY}, true);
+  VerifyIsAnimating({kSpeechRecognitionResult}, {OPACITY}, false);
+
+  EXPECT_TRUE(
+      AnimateBy(MsToDelta(kSpeechRecognitionOpacityAnimationDurationMs)));
+  VerifyIsAnimating({k2dBrowsingForeground, kSpeechRecognitionListening,
+                     kSpeechRecognitionResult},
+                    {OPACITY}, false);
+
+  // Visibility is as expected.
+  VerifyVisibility({kSpeechRecognitionListening, kSpeechRecognitionResult},
+                   false);
   EXPECT_TRUE(IsVisible(k2dBrowsingForeground));
 }
 

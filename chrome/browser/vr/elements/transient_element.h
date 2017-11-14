@@ -19,6 +19,8 @@ class TransientElement : public UiElement {
   // Sets the elements visibility to the given value. If the visibility is
   // changing to true, it stays visible for the set timeout.
   void SetVisible(bool visible) override;
+  void SetVisibleImmediately(bool visible) override;
+
   // Resets the time this element stays visible for if the element is currently
   // visible.
   void RefreshVisible();

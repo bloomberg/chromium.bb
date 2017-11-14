@@ -200,6 +200,9 @@ void UiSceneManager::Create2dBrowsingSubtreeRoots(Model* model) {
   element = base::MakeUnique<UiElement>();
   element->set_name(k2dBrowsingForeground);
   element->set_hit_testable(false);
+  element->SetTransitionedProperties({OPACITY});
+  element->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kSpeechRecognitionOpacityAnimationDurationMs));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
 
   element = base::MakeUnique<UiElement>();
@@ -594,11 +597,22 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   // it in a binding. However, k2dBrowsingForeground's binding updated before
   // kSpeechRecognitionResult. So the initial value needs to be correctly set
   // instead of depend on binding to kick in.
-  speech_result_parent->SetVisible(false);
-  speech_result_parent->AddBinding(
-      VR_BIND(bool, Model, model, speech.recognition_result.empty(), UiElement,
-              speech_result_parent, SetVisible(!value)));
-
+  speech_result_parent->SetVisibleImmediately(false);
+  speech_result_parent->SetTransitionedProperties({OPACITY});
+  speech_result_parent->SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      kSpeechRecognitionOpacityAnimationDurationMs));
+  speech_result_parent->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind([](Model* m) { return m->speech.recognition_result.empty(); },
+                 base::Unretained(model)),
+      base::Bind(
+          [](UiElement* e, const bool& v) {
+            if (v) {
+              e->SetVisible(false);
+            } else {
+              e->SetVisibleImmediately(true);
+            }
+          },
+          speech_result_parent)));
   auto speech_result = base::MakeUnique<Text>(512, kSuggestionContentTextHeight,
                                               kSuggestionTextFieldWidth);
   speech_result->set_name(kSpeechRecognitionResultText);
@@ -644,10 +658,24 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   speech_recognition_listening->set_hit_testable(false);
   // We need to explicitly set the initial visibility of this element for the
   // same reason as kSpeechRecognitionResult.
-  speech_recognition_listening->SetVisible(false);
-  speech_recognition_listening->AddBinding(
-      VR_BIND_FUNC(bool, Model, model, speech.recognizing_speech, UiElement,
-                   listening_ui_root, SetVisible));
+  speech_recognition_listening->SetVisibleImmediately(false);
+  speech_recognition_listening->SetTransitionedProperties({OPACITY});
+  speech_recognition_listening->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(
+          kSpeechRecognitionOpacityAnimationDurationMs));
+  speech_recognition_listening->AddBinding(base::MakeUnique<Binding<bool>>(
+      base::Bind([](Model* m) { return m->speech.recognizing_speech; },
+                 base::Unretained(model)),
+      base::Bind(
+          [](UiElement* listening, UiElement* result, const bool& value) {
+            if (result->GetTargetOpacity() != 0.f && !value) {
+              listening->SetVisibleImmediately(false);
+            } else {
+              listening->SetVisible(value);
+            }
+          },
+          base::Unretained(listening_ui_root),
+          base::Unretained(speech_result_parent))));
   scene_->AddUiElement(kSpeechRecognitionRoot,
                        std::move(speech_recognition_listening));
 
