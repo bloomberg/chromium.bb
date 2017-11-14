@@ -329,7 +329,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   content::MediaStreamRequestResult error_reason() const { return result_; }
-  blink::WebString error_name() const { return result_name_; }
+  blink::WebString constraint_name() const { return constraint_name_; }
 
   // UserMediaProcessor overrides.
   MediaStreamVideoSource* CreateVideoSource(
@@ -351,10 +351,9 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
        public:
         FailedAtLifeAudioSource() : MediaStreamAudioSource(true) {}
         ~FailedAtLifeAudioSource() override {}
+
        protected:
-        bool EnsureSourceIsStarted() override {
-          return false;
-        }
+        bool EnsureSourceIsStarted() override { return false; }
       };
       source = new FailedAtLifeAudioSource();
     } else {
@@ -382,12 +381,13 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
     *state_ = REQUEST_SUCCEEDED;
   }
 
-  void GetUserMediaRequestFailed(content::MediaStreamRequestResult result,
-                                 const blink::WebString& result_name) override {
+  void GetUserMediaRequestFailed(
+      content::MediaStreamRequestResult result,
+      const blink::WebString& constraint_name) override {
     last_generated_stream_.Reset();
     *state_ = REQUEST_FAILED;
     result_ = result;
-    result_name_ = result_name;
+    constraint_name_ = constraint_name;
   }
 
  private:
@@ -403,7 +403,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   bool create_source_that_fails_ = false;
   blink::WebMediaStream last_generated_stream_;
   content::MediaStreamRequestResult result_ = NUM_MEDIA_REQUEST_RESULTS;
-  blink::WebString result_name_;
+  blink::WebString constraint_name_;
   RequestState* state_;
 };
 
@@ -1252,8 +1252,8 @@ TEST_F(UserMediaClientImplTest, CreateWithBasicIdealValidDeviceId) {
 TEST_F(UserMediaClientImplTest, CreateWithAdvancedExactValidDeviceId) {
   blink::WebMediaConstraints audio_constraints =
       CreateDeviceConstraints(nullptr, nullptr, kFakeAudioInputDeviceId1);
-  blink::WebMediaConstraints video_constraints = CreateDeviceConstraints(
-      nullptr, nullptr, kFakeVideoInputDeviceId1);
+  blink::WebMediaConstraints video_constraints =
+      CreateDeviceConstraints(nullptr, nullptr, kFakeVideoInputDeviceId1);
   TestValidRequestWithConstraints(audio_constraints, video_constraints,
                                   kFakeAudioInputDeviceId1,
                                   kFakeVideoInputDeviceId1);

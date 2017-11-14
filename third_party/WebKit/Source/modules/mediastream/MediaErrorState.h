@@ -32,14 +32,15 @@
 #define MediaErrorState_h
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/dom_exception_or_overconstrained_error.h"
 
 namespace blink {
 
-class NavigatorUserMediaError;
+class OverconstrainedError;
 
 // A class that is able to be used like ExceptionState for carrying
 // information about an error up the stack, but it is up to the higher
-// level code whether it produces a DOMException or a NavigatorUserMediaError.
+// level code whether it produces a DOMException or a OverconstrainedError.
 class MediaErrorState {
  public:
   MediaErrorState();
@@ -52,7 +53,7 @@ class MediaErrorState {
   bool CanGenerateException();
   void RaiseException(ExceptionState&);
   String GetErrorMessage();
-  NavigatorUserMediaError* CreateError();
+  DOMExceptionOrOverconstrainedError CreateError();
 
  private:
   enum ErrorType { kNoError, kTypeError, kDOMException, kConstraintError };

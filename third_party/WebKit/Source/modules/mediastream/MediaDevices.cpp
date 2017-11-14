@@ -51,7 +51,9 @@ class PromiseErrorCallback final : public NavigatorUserMediaErrorCallback {
 
   ~PromiseErrorCallback() {}
 
-  void handleEvent(NavigatorUserMediaError* error) { resolver_->Reject(error); }
+  void handleEvent(DOMExceptionOrOverconstrainedError error) {
+    resolver_->Reject(error);
+  }
 
   virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(resolver_);

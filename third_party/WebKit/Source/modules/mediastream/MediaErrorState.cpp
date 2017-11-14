@@ -31,7 +31,7 @@
 #include "modules/mediastream/MediaErrorState.h"
 
 #include "core/dom/ExceptionCode.h"
-#include "modules/mediastream/NavigatorUserMediaError.h"
+#include "modules/mediastream/OverconstrainedError.h"
 
 namespace blink {
 
@@ -115,11 +115,10 @@ String MediaErrorState::GetErrorMessage() {
   return String();
 }
 
-NavigatorUserMediaError* MediaErrorState::CreateError() {
+DOMExceptionOrOverconstrainedError MediaErrorState::CreateError() {
   DCHECK(error_type_ == kConstraintError);
-  return NavigatorUserMediaError::Create(
-      NavigatorUserMediaError::kNameConstraintNotSatisfied, message_,
-      constraint_);
+  return DOMExceptionOrOverconstrainedError::FromOverconstrainedError(
+      OverconstrainedError::Create(constraint_, message_));
 }
 
 }  // namespace blink

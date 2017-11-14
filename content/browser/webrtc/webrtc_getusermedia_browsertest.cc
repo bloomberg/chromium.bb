@@ -318,21 +318,21 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   // Test with invalid mandatory audio sourceID.
   NavigateToURL(shell(), url);
-  EXPECT_EQ("ConstraintNotSatisfiedError",
+  EXPECT_EQ("OverconstrainedError",
             ExecuteJavascriptAndReturnResult(
                 GenerateGetUserMediaWithMandatorySourceID(
                     kGetUserMediaAndExpectFailure, "something invalid",
                     video_ids[0])));
 
   // Test with invalid mandatory video sourceID.
-  EXPECT_EQ("ConstraintNotSatisfiedError",
+  EXPECT_EQ("OverconstrainedError",
             ExecuteJavascriptAndReturnResult(
                 GenerateGetUserMediaWithMandatorySourceID(
                     kGetUserMediaAndExpectFailure, audio_ids[0],
                     "something invalid")));
 
   // Test with empty mandatory audio sourceID.
-  EXPECT_EQ("ConstraintNotSatisfiedError",
+  EXPECT_EQ("OverconstrainedError",
             ExecuteJavascriptAndReturnResult(
                 GenerateGetUserMediaWithMandatorySourceID(
                     kGetUserMediaAndExpectFailure, "", video_ids[0])));
@@ -478,8 +478,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
                                               large_value);
   NavigateToURL(shell(), url);
 
-  EXPECT_EQ("ConstraintNotSatisfiedError",
-            ExecuteJavascriptAndReturnResult(call));
+  EXPECT_EQ("OverconstrainedError", ExecuteJavascriptAndReturnResult(call));
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
@@ -495,8 +494,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
 
   const std::string call = base::StringPrintf(
       "%s({video: false, audio: true});", kGetUserMediaAndExpectFailure);
-  EXPECT_EQ("TrackStartError",
-            ExecuteJavascriptAndReturnResult(call));
+  EXPECT_EQ("NotReadableError", ExecuteJavascriptAndReturnResult(call));
 }
 
 // This test makes two getUserMedia requests, one with impossible constraints
@@ -522,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
     GenerateGetUserMediaCall(kGetUserMediaAndAnalyseAndStop,
                              640, 640, 480, 480, 10, 30);
 
-  ASSERT_EQ("ConstraintNotSatisfiedError",
+  ASSERT_EQ("OverconstrainedError",
             ExecuteJavascriptAndReturnResult(gum_with_impossible_constraints));
 
   ASSERT_EQ("w=640:h=480",

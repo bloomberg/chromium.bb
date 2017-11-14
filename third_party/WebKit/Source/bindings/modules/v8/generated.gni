@@ -36,6 +36,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/dictionary_or_string.h",
   "$bindings_modules_v8_output_dir/document_timeline_or_scroll_timeline.cc",
   "$bindings_modules_v8_output_dir/document_timeline_or_scroll_timeline.h",
+  "$bindings_modules_v8_output_dir/dom_exception_or_overconstrained_error.cc",
+  "$bindings_modules_v8_output_dir/dom_exception_or_overconstrained_error.h",
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.cc",
   "$bindings_modules_v8_output_dir/double_or_constrain_double_range.h",
   "$bindings_modules_v8_output_dir/float32_array_or_float64_array_or_dom_matrix.cc",

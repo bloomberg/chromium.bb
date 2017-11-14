@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Tests that setting an impossible constraint in getUserMedia fails assert_equals: An impossible constraint triggers a OverconstrainedError expected "OverconstrainedError" but got "ConstraintNotSatisfiedError"
-Harness: the test ran to completion.
-

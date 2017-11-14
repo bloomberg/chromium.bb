@@ -97,11 +97,6 @@ void WebUserMediaRequest::RequestSucceeded(
   private_->Succeed(stream_descriptor);
 }
 
-void WebUserMediaRequest::RequestDenied(const WebString& description) {
-  DCHECK(!IsNull());
-  private_->FailPermissionDenied(description);
-}
-
 void WebUserMediaRequest::RequestFailedConstraint(
     const WebString& constraint_name,
     const WebString& description) {
@@ -109,12 +104,10 @@ void WebUserMediaRequest::RequestFailedConstraint(
   private_->FailConstraint(constraint_name, description);
 }
 
-void WebUserMediaRequest::RequestFailedUASpecific(
-    const WebString& name,
-    const WebString& constraint_name,
-    const WebString& description) {
+void WebUserMediaRequest::RequestFailed(Error name,
+                                        const WebString& description) {
   DCHECK(!IsNull());
-  private_->FailUASpecific(name, constraint_name, description);
+  private_->Fail(name, description);
 }
 
 bool WebUserMediaRequest::Equals(const WebUserMediaRequest& other) const {

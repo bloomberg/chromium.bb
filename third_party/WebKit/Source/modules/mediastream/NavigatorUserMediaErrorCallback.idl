@@ -25,8 +25,14 @@
 
 // https://w3c.github.io/mediacapture-main/#navigatorusermediaerrorcallback
 
+// TODO(orphis): The only valid types for MediaStreamError are DOMException and
+// OverconstrainedError. The spec defines MediaStreamError as object because
+// neither DOMException nor OverconstrainedError is an IDL type in the spec.
+// Bug: http://crbug.com/737497 http://crbug.com/769726
+typedef (DOMException or OverconstrainedError) MediaStreamError;
+
 // TODO(foolip): This should be a callback function, not a callback interface.
 // https://crbug.com/569301
 callback interface NavigatorUserMediaErrorCallback {
-    void handleEvent(NavigatorUserMediaError error);
+    void handleEvent(MediaStreamError error);
 };

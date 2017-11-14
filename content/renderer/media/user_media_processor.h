@@ -125,8 +125,9 @@ class CONTENT_EXPORT UserMediaProcessor
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest web_request);
-  virtual void GetUserMediaRequestFailed(MediaStreamRequestResult result,
-                                         const blink::WebString& result_name);
+  virtual void GetUserMediaRequestFailed(
+      MediaStreamRequestResult result,
+      const blink::WebString& constraint_name = blink::WebString());
 
   // Creates a MediaStreamAudioSource/MediaStreamVideoSource objects.
   // These are virtual for test purposes.
@@ -156,9 +157,10 @@ class CONTENT_EXPORT UserMediaProcessor
   void DelayedGetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest web_request);
-  void DelayedGetUserMediaRequestFailed(blink::WebUserMediaRequest web_request,
-                                        MediaStreamRequestResult result,
-                                        const blink::WebString& result_name);
+  void DelayedGetUserMediaRequestFailed(
+      blink::WebUserMediaRequest web_request,
+      MediaStreamRequestResult result,
+      const blink::WebString& constraint_name);
 
   // Called when |source| has been stopped from JavaScript.
   void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
