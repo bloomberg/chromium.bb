@@ -136,10 +136,15 @@ bool IsDockedModeEnabled() {
 base::string16 GetEnterMirrorModeMessage() {
   DCHECK(GetDisplayManager()->IsInMirrorMode());
   if (display::Display::HasInternalDisplay()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
-        GetDisplayName(
-            GetDisplayManager()->GetMirroringDestinationDisplayIdList()[0]));
+    base::string16 display_names;
+    for (auto& id :
+         GetDisplayManager()->GetMirroringDestinationDisplayIdList()) {
+      if (!display_names.empty())
+        display_names.append(base::UTF8ToUTF16(","));
+      display_names.append(GetDisplayName(id));
+    }
+    return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING,
+                                      display_names);
   }
 
   return l10n_util::GetStringUTF16(
@@ -395,6 +400,11 @@ void ScreenLayoutObserver::OnDisplayConfigurationChanged() {
 bool ScreenLayoutObserver::GetExitMirrorModeMessage(
     base::string16* out_message,
     base::string16* out_additional_message) {
+  if (GetDisplayManager()->is_multi_mirroring_enabled()) {
+    *out_message =
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_MIRROR_EXIT);
+    return true;
+  }
   switch (current_display_mode_) {
     case DisplayMode::EXTENDED_3_PLUS:
       // Mirror mode was turned off due to having more than two displays.
