@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
@@ -39,7 +40,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -49,6 +49,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ash_config.h"
+#include "content/public/common/content_switches.h"
 #include "mash/common/config.h"                                   // nogncheck
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"  // nogncheck
 #endif
@@ -174,8 +175,13 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
         service_manager::Identity(ui::mojom::kServiceName));
     connection->GetConnector()->StartService(
         service_manager::Identity(mash::common::GetWindowManagerServiceName()));
-    connection->GetConnector()->StartService(
-        service_manager::Identity(mash::quick_launch::mojom::kServiceName));
+    // Don't start QuickLaunch in tests because it changes the startup shelf
+    // state vs. classic ash.
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kTestType)) {
+      connection->GetConnector()->StartService(
+          service_manager::Identity(mash::quick_launch::mojom::kServiceName));
+    }
   }
 #endif
 

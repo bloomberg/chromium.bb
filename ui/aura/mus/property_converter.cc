@@ -73,6 +73,9 @@ PropertyConverter::PropertyConverter() {
   RegisterPrimitiveProperty(client::kAlwaysOnTopKey,
                             ui::mojom::WindowManager::kAlwaysOnTop_Property,
                             CreateAcceptAnyValueCallback());
+  RegisterPrimitiveProperty(client::kDrawAttentionKey,
+                            ui::mojom::WindowManager::kDrawAttention_Property,
+                            CreateAcceptAnyValueCallback());
   RegisterPrimitiveProperty(
       client::kImmersiveFullscreenKey,
       ui::mojom::WindowManager::kImmersiveFullscreen_Property,

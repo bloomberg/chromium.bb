@@ -93,6 +93,10 @@ interface WindowManager {
   // The application icon; typically larger for shelf icons, etc. Type: SkBitmap
   const string kAppIcon_Property = "prop:app-icon";
 
+  // Whether the window is trying to draw attention to itself (e.g. pulsing its
+  // shelf icon). Type: bool.
+  const string kDrawAttention_Property = "prop:draw-attention";
+
   // Used to explicitly control whether a window appears in the most recently
   // used list of windows. Maps to aura::client::kExcludeFromMruKey. Type: bool.
   const string kExcludeFromMru_Property = "prop:exclude_from_mru";

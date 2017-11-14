@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -74,10 +73,12 @@
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/app_list/views/tile_item_view.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -93,7 +94,10 @@ namespace {
 ash::ShelfAction SelectItem(const ash::ShelfID& id,
                             ui::EventType event_type = ui::ET_MOUSE_PRESSED,
                             int64_t display_id = display::kInvalidDisplayId) {
-  return SelectShelfItem(id, event_type, display_id);
+  ash::ShelfAction action = SelectShelfItem(id, event_type, display_id);
+  // Wait for window manager to stabilize.
+  aura::test::WaitForAllChangesToComplete();
+  return action;
 }
 
 class TestEvent : public ui::Event {
@@ -135,6 +139,13 @@ void CloseBrowserWindow(Browser* browser,
   // Note that event_flag is never used inside function ExecuteCommand.
   menu->ExecuteCommand(close_command, ui::EventFlags::EF_NONE);
   close_observer.Wait();
+}
+
+// Returns the shelf view for the primary display.
+// TODO(jamescook): Convert users of this function to the mojo shelf test API.
+ash::ShelfView* GetPrimaryShelfView() {
+  return ash::Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow())
+      ->GetShelfViewForTesting();
 }
 
 }  // namespace
@@ -212,7 +223,6 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     // Ensure ash starts the session and creates the shelf and controller.
     SessionControllerClient::FlushForTesting();
 
-    shelf_ = Shelf::ForWindow(ash::Shell::GetPrimaryRootWindow());
     controller_ = ChromeLauncherController::instance();
     ASSERT_TRUE(controller_);
     ExtensionBrowserTest::SetUpOnMainThread();
@@ -316,7 +326,6 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
     return menu->GetIndexOfCommandId(command_id) != -1;
   }
 
-  Shelf* shelf_ = nullptr;
   ChromeLauncherController* controller_ = nullptr;
 
  private:
@@ -744,14 +753,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(item_id1)->status);
 }
 
-// TODO(crbug.com/735842): Flaky on CrOS MSan.
-#if defined(OS_CHROMEOS)
-#define MAYBE_SetIcon DISABLED_SetIcon
-#else
-#define MAYBE_SetIcon SetIcon
-#endif
 // Test that opening an app sets the correct icon
-IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MAYBE_SetIcon) {
+// TODO(crbug.com/735842): Flaky on CrOS MSan.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, DISABLED_SetIcon) {
   TestAppWindowIconObserver test_observer(browser()->profile());
 
   // Enable experimental APIs to allow panel creation.
@@ -1658,7 +1662,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragAndDrop) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(GetPrimaryShelfView());
   AppListService* service = AppListService::Get();
 
   // There should be two items in our launcher by this time.
@@ -1870,7 +1874,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MultiDisplayBasicDragAndDrop) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_DragOffShelf) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(GetPrimaryShelfView());
   test.SetAnimationDuration(1);  // Speed up animations for test.
   // Create a known application and check that we have 3 items in the shelf.
   CreateShortcut("app1");
@@ -1974,7 +1978,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   // Get a number of interfaces we need.
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
                                      gfx::Point());
-  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
+  ash::ShelfViewTestAPI test(GetPrimaryShelfView());
   AppListService* service = AppListService::Get();
   // There should be two items in our shelf by this time.
   EXPECT_EQ(2, shelf_model()->item_count());
