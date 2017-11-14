@@ -353,7 +353,7 @@ class GetCacheKeysForRequestData
 
     for (size_t i = 0; i < requests.size(); i++) {
       const auto& request = requests[i];
-      auto cache_request = WTF::MakeUnique<GetCacheResponsesForRequestData>(
+      auto cache_request = std::make_unique<GetCacheResponsesForRequestData>(
           params_, request, accumulator);
       cache_->DispatchMatch(std::move(cache_request), request,
                             WebServiceWorkerCache::QueryParams());
@@ -384,7 +384,7 @@ class GetCacheForRequestData
   ~GetCacheForRequestData() override {}
 
   void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
-    auto cache_request = WTF::MakeUnique<GetCacheKeysForRequestData>(
+    auto cache_request = std::make_unique<GetCacheKeysForRequestData>(
         params_, std::move(cache), std::move(callback_));
     cache_request->Cache()->DispatchKeys(std::move(cache_request),
                                          WebServiceWorkerRequest(),
@@ -457,7 +457,7 @@ class GetCacheForDeleteEntry
 
   void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
     auto delete_request =
-        WTF::MakeUnique<DeleteCacheEntry>(std::move(callback_));
+        std::make_unique<DeleteCacheEntry>(std::move(callback_));
     BatchOperation delete_operation;
     delete_operation.operation_type =
         WebServiceWorkerCache::kOperationTypeDelete;
@@ -600,8 +600,8 @@ void InspectorCacheStorageAgent::requestCacheNames(
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchKeys(
-      WTF::MakeUnique<RequestCacheNames>(security_origin, std::move(callback)));
+  cache->DispatchKeys(std::make_unique<RequestCacheNames>(security_origin,
+                                                          std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestEntries(
@@ -622,7 +622,7 @@ void InspectorCacheStorageAgent::requestEntries(
   params.page_size = page_size;
   params.skip_count = skip_count;
   cache->DispatchOpen(
-      WTF::MakeUnique<GetCacheForRequestData>(params, std::move(callback)),
+      std::make_unique<GetCacheForRequestData>(params, std::move(callback)),
       WebString(cache_name));
 }
 
@@ -637,7 +637,7 @@ void InspectorCacheStorageAgent::deleteCache(
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchDelete(WTF::MakeUnique<DeleteCache>(std::move(callback)),
+  cache->DispatchDelete(std::make_unique<DeleteCache>(std::move(callback)),
                         WebString(cache_name));
 }
 
@@ -653,7 +653,7 @@ void InspectorCacheStorageAgent::deleteEntry(
     callback->sendFailure(response);
     return;
   }
-  cache->DispatchOpen(WTF::MakeUnique<GetCacheForDeleteEntry>(
+  cache->DispatchOpen(std::make_unique<GetCacheForDeleteEntry>(
                           request, cache_name, std::move(callback)),
                       WebString(cache_name));
 }
@@ -677,7 +677,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   if (!response.isSuccess())
     return callback->sendFailure(response);
 
-  cache->DispatchMatch(WTF::MakeUnique<CachedResponseMatchCallback>(
+  cache->DispatchMatch(std::make_unique<CachedResponseMatchCallback>(
                            context, std::move(callback)),
                        request, WebServiceWorkerCache::QueryParams());
 }
