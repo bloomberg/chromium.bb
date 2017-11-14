@@ -1567,14 +1567,14 @@ void av1_iidentity4_c(const int32_t *input, int32_t *output,
                       const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
   for (int i = 0; i < 4; ++i)
-    output[i] = (int32_t)dct_const_round_shift(input[i] * Sqrt2);
+    output[i] = (int32_t)dct_const_round_shift(Sqrt2 * (int64_t)input[i]);
   range_check(0, input, output, 4, stage_range[0]);
 }
 
 void av1_iidentity8_c(const int32_t *input, int32_t *output,
                       const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
-  for (int i = 0; i < 8; ++i) output[i] = input[i] * 2;
+  for (int i = 0; i < 8; ++i) output[i] = (int32_t)((int64_t)input[i] * 2);
   range_check(0, input, output, 8, stage_range[0]);
 }
 
@@ -1582,14 +1582,14 @@ void av1_iidentity16_c(const int32_t *input, int32_t *output,
                        const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
   for (int i = 0; i < 16; ++i)
-    output[i] = (int32_t)dct_const_round_shift(input[i] * 2 * Sqrt2);
+    output[i] = (int32_t)dct_const_round_shift(Sqrt2 * (int64_t)input[i] * 2);
   range_check(0, input, output, 16, stage_range[0]);
 }
 
 void av1_iidentity32_c(const int32_t *input, int32_t *output,
                        const int8_t *cos_bit, const int8_t *stage_range) {
   (void)cos_bit;
-  for (int i = 0; i < 32; ++i) output[i] = input[i] * 4;
+  for (int i = 0; i < 32; ++i) output[i] = (int32_t)((int64_t)input[i] * 4);
   range_check(0, input, output, 32, stage_range[0]);
 }
 
