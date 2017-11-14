@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -43,26 +44,26 @@ NavigationDetailsFromLoadCommittedDetails(
 
 }  // namespace
 
-// static
-web::WebState* InfoBarManagerImpl::WebStateFromInfoBar(
-    infobars::InfoBar* infobar) {
-  if (!infobar || !infobar->owner())
-    return nullptr;
-  return static_cast<InfoBarManagerImpl*>(infobar->owner())->web_state();
-}
-
 InfoBarManagerImpl::InfoBarManagerImpl(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {
-  DCHECK(web_state);
+    : web_state_(web_state) {
+  web_state_->AddObserver(this);
 }
 
 InfoBarManagerImpl::~InfoBarManagerImpl() {
   ShutDown();
+
+  // As the object can commit suicide, it is possible that its destructor
+  // is called before WebStateDestroyed. In that case stop observing the
+  // WebState.
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
+  }
 }
 
 int InfoBarManagerImpl::GetActiveEntryID() {
   web::NavigationItem* visible_item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetVisibleItem();
   return visible_item ? visible_item->GetUniqueID() : 0;
 }
 
@@ -74,16 +75,17 @@ std::unique_ptr<infobars::InfoBar> InfoBarManagerImpl::CreateConfirmInfoBar(
 void InfoBarManagerImpl::NavigationItemCommitted(
     web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
+  DCHECK_EQ(web_state_, web_state);
   OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
 }
 
 void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   // The WebState is going away; be aggressively paranoid and delete this
   // InfoBarManagerImpl lest other parts of the system attempt to add infobars
-  // or use it otherwise during the destruction.
-  web_state->RemoveUserData(UserDataKey());
-  // That was the equivalent of "delete this". This object is now destroyed;
-  // returning from this function is the only safe thing to do.
+  // or use it otherwise during the destruction. As this is the equivalent of
+  // "delete this", returning from this function is the only safe thing to do.
+  web_state_->RemoveUserData(UserDataKey());
 }
 
 void InfoBarManagerImpl::OpenURL(const GURL& url,
