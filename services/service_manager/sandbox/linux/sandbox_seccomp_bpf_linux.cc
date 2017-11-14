@@ -64,24 +64,6 @@ namespace {
 
 #if !defined(OS_NACL_NONSFI)
 
-class BlacklistDebugAndNumaPolicy : public BPFBasePolicy {
- public:
-  BlacklistDebugAndNumaPolicy() {}
-  ~BlacklistDebugAndNumaPolicy() override {}
-
-  ResultExpr EvaluateSyscall(int system_call_number) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlacklistDebugAndNumaPolicy);
-};
-
-ResultExpr BlacklistDebugAndNumaPolicy::EvaluateSyscall(int sysno) const {
-  if (SyscallSets::IsDebug(sysno) || SyscallSets::IsNuma(sysno))
-    return sandbox::CrashSIGSYS();
-
-  return Allow();
-}
-
 class AllowAllPolicy : public BPFBasePolicy {
  public:
   AllowAllPolicy() {}
