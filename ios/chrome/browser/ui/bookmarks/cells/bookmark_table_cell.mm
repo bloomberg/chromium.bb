@@ -210,6 +210,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   self.titleText.text = nil;
   self.titleText.accessibilityIdentifier = nil;
   self.titleText.userInteractionEnabled = NO;
+  [self.accessibilityElements removeObject:self.titleText];
   self.textDelegate = nil;
   [super prepareForReuse];
 }
