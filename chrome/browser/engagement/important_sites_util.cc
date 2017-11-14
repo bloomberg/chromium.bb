@@ -224,7 +224,10 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
   return ignoring_domains;
 }
 
-void PopulateInfoMapWithSiteEngagementAndNotifications(
+// Inserts origins with some engagement measure into the map, including a site
+// engagement cutoff, notifications permission, and recent launches from home
+// screen.
+void PopulateInfoMapWithEngagement(
     Profile* profile,
     blink::mojom::EngagementLevel minimum_engagement,
     std::map<GURL, double>* engagement_map,
@@ -242,6 +245,12 @@ void PopulateInfoMapWithSiteEngagementAndNotifications(
       MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
                                           ImportantReason::NOTIFICATIONS,
                                           output);
+    }
+
+    if (detail.installed_bonus > 0) {
+      // This origin was recently launched from the home screen.
+      MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
+                                          ImportantReason::HOME_SCREEN, output);
     }
 
     (*engagement_map)[detail.origin] = detail.total_score;
@@ -330,26 +339,6 @@ void PopulateInfoMapWithBookmarks(
   }
 }
 
-void PopulateInfoMapWithHomeScreen(
-    Profile* profile,
-    std::map<std::string, ImportantDomainInfo>* output) {
-  ContentSettingsForOneType content_settings_list;
-  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_APP_BANNER, content_settings::ResourceIdentifier(),
-      &content_settings_list);
-  // Extract a set of urls, using the primary pattern. We don't handle
-  // wildcard patterns.
-  std::set<GURL> content_origins;
-  base::Time now = base::Time::Now();
-  for (const ContentSettingPatternSource& site : content_settings_list) {
-    GURL origin(site.primary_pattern.ToString());
-    if (!AppBannerSettingsHelper::WasLaunchedRecently(profile, origin, now))
-      continue;
-    MaybePopulateImportantInfoForReason(origin, &content_origins,
-                                        ImportantReason::HOME_SCREEN, output);
-  }
-}
-
 }  // namespace
 
 std::string ImportantSitesUtil::GetRegisterableDomainOrIP(const GURL& url) {
@@ -384,17 +373,14 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
   std::map<std::string, ImportantDomainInfo> important_info;
   std::map<GURL, double> engagement_map;
 
-  PopulateInfoMapWithSiteEngagementAndNotifications(
-      profile, blink::mojom::EngagementLevel::MEDIUM, &engagement_map,
-      &important_info);
+  PopulateInfoMapWithEngagement(profile, blink::mojom::EngagementLevel::MEDIUM,
+                                &engagement_map, &important_info);
 
   PopulateInfoMapWithContentTypeAllowed(
       profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, ImportantReason::DURABLE,
       &important_info);
 
   PopulateInfoMapWithBookmarks(profile, engagement_map, &important_info);
-
-  PopulateInfoMapWithHomeScreen(profile, &important_info);
 
   base::hash_set<std::string> blacklisted_domains =
       GetBlacklistedImportantDomains(profile);
