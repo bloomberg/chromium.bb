@@ -256,6 +256,15 @@ void BlobRegistryImpl::BlobUnderConstruction::StartTransportation() {
                      weak_ptr_factory_.GetWeakPtr()),
       memory_controller.limits());
 
+  if (memory_strategy != MemoryStrategy::NONE_NEEDED) {
+    // Free up memory from embedded_data, since that data is going to get
+    // requested asynchronously later again anyway.
+    for (auto& element : elements_) {
+      if (element->is_bytes())
+        element->get_bytes()->embedded_data = base::nullopt;
+    }
+  }
+
   // If there were no unresolved blobs, immediately proceed to the next step.
   // Currently this will only happen if there are no blobs referenced
   // whatsoever, but hopefully in the future blob UUIDs will be cached in the
