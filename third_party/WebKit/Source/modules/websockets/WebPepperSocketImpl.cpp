@@ -52,7 +52,7 @@ std::unique_ptr<WebPepperSocket> WebPepperSocket::Create(
     WebPepperSocketClient* client) {
   DCHECK(client);
 
-  return WTF::MakeUnique<WebPepperSocketImpl>(document, client);
+  return std::make_unique<WebPepperSocketImpl>(document, client);
 }
 
 WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document,

@@ -124,7 +124,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
     DCHECK(!raw_data_);
     DCHECK(!consumer_);
     client_ = client;
-    raw_data_ = WTF::MakeUnique<ArrayBufferBuilder>();
+    raw_data_ = std::make_unique<ArrayBufferBuilder>();
     consumer_ = consumer;
     consumer_->SetClient(this);
     OnStateChange();

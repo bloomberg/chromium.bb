@@ -317,7 +317,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVector) {
 
   Vector<char> foo_vector;
   foo_vector.Append("foo", 3);
-  Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(foo_vector));
+  Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(foo_vector));
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -342,22 +342,22 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorWithNullBytes) {
   {
     Vector<char> v;
     v.Append("\0ar", 3);
-    Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+    Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.Append("b\0z", 3);
-    Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+    Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.Append("qu\0", 3);
-    Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+    Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   }
   {
     Vector<char> v;
     v.Append("\0\0\0", 3);
-    Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+    Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   }
 
   EXPECT_EQ(12ul, sum_of_consumed_buffered_amount_);
@@ -373,7 +373,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonLatin1UTF8) {
 
   Vector<char> v;
   v.Append("\xe7\x8b\x90", 3);
-  Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+  Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -388,7 +388,7 @@ TEST_F(DocumentWebSocketChannelTest, sendBinaryInVectorNonUTF8) {
 
   Vector<char> v;
   v.Append("\x80\xff\xe7", 3);
-  Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+  Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
 
   EXPECT_EQ(3ul, sum_of_consumed_buffered_amount_);
 }
@@ -417,7 +417,7 @@ TEST_F(DocumentWebSocketChannelTest,
       "\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b\x90\xe7\x8b"
       "\x90",
       18);
-  Channel()->SendBinaryAsCharVector(WTF::MakeUnique<Vector<char>>(v));
+  Channel()->SendBinaryAsCharVector(std::make_unique<Vector<char>>(v));
   checkpoint.Call(1);
 
   HandleClient()->DidReceiveFlowControl(Handle(), 16);

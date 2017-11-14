@@ -167,7 +167,7 @@ DocumentWebSocketChannel* DocumentWebSocketChannel::Create(
     std::unique_ptr<SourceLocation> location) {
   return new DocumentWebSocketChannel(
       loading_context, client, std::move(location),
-      WTF::MakeUnique<WebSocketHandleImpl>(),
+      std::make_unique<WebSocketHandleImpl>(),
       Platform::Current()->CreateWebSocketHandshakeThrottle());
 }
 
@@ -564,7 +564,8 @@ void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
   DCHECK(client_);
 
   if (!throttle_passed_) {
-    connect_info_ = WTF::MakeUnique<ConnectInfo>(selected_protocol, extensions);
+    connect_info_ =
+        std::make_unique<ConnectInfo>(selected_protocol, extensions);
     return;
   }
 

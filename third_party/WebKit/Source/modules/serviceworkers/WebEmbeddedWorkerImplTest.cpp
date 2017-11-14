@@ -121,9 +121,9 @@ class MockServiceWorkerInstalledScriptsManager
 class WebEmbeddedWorkerImplTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    auto client = WTF::MakeUnique<MockServiceWorkerContextClient>();
+    auto client = std::make_unique<MockServiceWorkerContextClient>();
     auto installed_scripts_manager =
-        WTF::MakeUnique<MockServiceWorkerInstalledScriptsManager>();
+        std::make_unique<MockServiceWorkerInstalledScriptsManager>();
     mock_client_ = client.get();
     if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled()) {
       mock_installed_scripts_manager_ = installed_scripts_manager.get();

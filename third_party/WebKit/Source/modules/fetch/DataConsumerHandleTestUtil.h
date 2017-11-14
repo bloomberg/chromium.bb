@@ -222,7 +222,7 @@ class DataConsumerHandleTestUtil {
           : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
       std::unique_ptr<Reader> ObtainReader(Client*) override {
-        return WTF::MakeUnique<ReaderImpl>(name_, context_);
+        return std::make_unique<ReaderImpl>(name_, context_);
       }
       const char* DebugName() const override {
         return "ThreadingTestBase::DataConsumerHandle";
@@ -271,7 +271,7 @@ class DataConsumerHandleTestUtil {
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      waitable_event_ = WTF::MakeUnique<WaitableEvent>();
+      waitable_event_ = std::make_unique<WaitableEvent>();
       handle_ = std::move(handle);
 
       PostTaskToReadingThreadAndWait(
@@ -303,7 +303,7 @@ class DataConsumerHandleTestUtil {
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      waitable_event_ = WTF::MakeUnique<WaitableEvent>();
+      waitable_event_ = std::make_unique<WaitableEvent>();
       handle_ = std::move(handle);
 
       PostTaskToReadingThreadAndWait(

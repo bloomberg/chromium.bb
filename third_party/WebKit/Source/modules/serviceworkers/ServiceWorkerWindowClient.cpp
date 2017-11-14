@@ -59,8 +59,8 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* script_state) {
 
   ServiceWorkerGlobalScopeClient::From(ExecutionContext::From(script_state))
       ->Focus(Uuid(),
-              WTF::MakeUnique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
-                                                     ServiceWorkerError>>(
+              std::make_unique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
+                                                      ServiceWorkerError>>(
                   resolver));
   return promise;
 }
@@ -85,7 +85,7 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
   }
 
   ServiceWorkerGlobalScopeClient::From(context)->Navigate(
-      Uuid(), parsed_url, WTF::MakeUnique<NavigateClientCallback>(resolver));
+      Uuid(), parsed_url, std::make_unique<NavigateClientCallback>(resolver));
   return promise;
 }
 

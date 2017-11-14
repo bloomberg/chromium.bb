@@ -115,7 +115,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   ServiceWorkerGlobalScopeClient::From(execution_context)
-      ->GetClient(id, WTF::MakeUnique<GetCallback>(resolver));
+      ->GetClient(id, std::make_unique<GetCallback>(resolver));
   return promise;
 }
 
@@ -135,7 +135,7 @@ ScriptPromise ServiceWorkerClients::matchAll(
   web_options.include_uncontrolled = options.includeUncontrolled();
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->GetClients(web_options,
-                   WTF::MakeUnique<
+                   std::make_unique<
                        CallbackPromiseAdapter<ClientArray, ServiceWorkerError>>(
                        resolver));
   return promise;
@@ -152,7 +152,7 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* script_state) {
   ScriptPromise promise = resolver->Promise();
 
   auto callbacks =
-      WTF::MakeUnique<CallbackPromiseAdapter<void, ServiceWorkerError>>(
+      std::make_unique<CallbackPromiseAdapter<void, ServiceWorkerError>>(
           resolver);
   ServiceWorkerGlobalScopeClient::From(execution_context)
       ->Claim(std::move(callbacks));
@@ -187,7 +187,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* script_state,
   context->ConsumeWindowInteraction();
 
   ServiceWorkerGlobalScopeClient::From(context)->OpenWindowForClients(
-      parsed_url, WTF::MakeUnique<NavigateClientCallback>(resolver));
+      parsed_url, std::make_unique<NavigateClientCallback>(resolver));
   return promise;
 }
 

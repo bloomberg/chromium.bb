@@ -4,6 +4,9 @@
 
 #include "modules/serviceworkers/FetchRespondWithObserver.h"
 
+#include <memory>
+#include <utility>
+
 #include <v8.h>
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8BindingForCore.h"
@@ -256,7 +259,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
     DCHECK(consumer.is_valid());
 
     std::unique_ptr<WebServiceWorkerStreamHandle> body_stream_handle =
-        WTF::MakeUnique<WebServiceWorkerStreamHandle>(std::move(consumer));
+        std::make_unique<WebServiceWorkerStreamHandle>(std::move(consumer));
     ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
         ->RespondToFetchEventWithResponseStream(event_id_, web_response,
                                                 body_stream_handle.get(),
