@@ -230,8 +230,8 @@ bool QuicEndpoint::DataProducer::WriteStreamData(QuicStreamId id,
 }
 
 void QuicEndpoint::WriteStreamData() {
-  // Instantiate a bundler which would normally be here due to QuicSession.
-  QuicConnection::ScopedPacketBundler packet_bundler(
+  // Instantiate a flusher which would normally be here due to QuicSession.
+  QuicConnection::ScopedPacketFlusher flusher(
       &connection_, QuicConnection::SEND_ACK_IF_QUEUED);
 
   while (bytes_to_transfer_ > 0) {

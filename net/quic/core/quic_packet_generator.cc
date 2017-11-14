@@ -21,7 +21,7 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
       packet_creator_(connection_id, framer, delegate),
-      batch_mode_(false),
+      flusher_attached_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
       random_generator_(random_generator) {}
@@ -55,8 +55,8 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
                                                   size_t write_length,
                                                   QuicStreamOffset offset,
                                                   StreamSendingState state) {
-  QUIC_BUG_IF(!batch_mode_)
-      << "Generator is not in batch mode when trying to write stream data.";
+  QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
+                                     "generator tries to write stream data.";
   bool has_handshake = (id == kCryptoStreamId);
   bool fin = state != NO_FIN;
   QUIC_BUG_IF(has_handshake && fin)
@@ -107,10 +107,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     DCHECK(total_bytes_consumed == write_length ||
            (bytes_consumed > 0 && packet_creator_.HasPendingFrames()));
 
-    if (!InBatchMode()) {
-      packet_creator_.Flush();
-    }
-
     if (total_bytes_consumed == write_length) {
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
@@ -135,7 +131,6 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     SendQueuedFrames(/*flush=*/true);
   }
 
-  DCHECK(InBatchMode() || !packet_creator_.HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
@@ -222,24 +217,24 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush) {
       return;
     }
   }
-  if (flush || !InBatchMode()) {
+  if (flush) {
     packet_creator_.Flush();
   }
 }
 
-bool QuicPacketGenerator::InBatchMode() {
-  return batch_mode_;
+bool QuicPacketGenerator::PacketFlusherAttached() const {
+  return flusher_attached_;
 }
 
-void QuicPacketGenerator::StartBatchOperations() {
-  batch_mode_ = true;
+void QuicPacketGenerator::AttachPacketFlusher() {
+  flusher_attached_ = true;
 }
 
-void QuicPacketGenerator::FinishBatchOperations() {
+void QuicPacketGenerator::Flush() {
   SendQueuedFrames(/*flush=*/false);
   packet_creator_.Flush();
   SendRemainingPendingPadding();
-  batch_mode_ = false;
+  flusher_attached_ = false;
 }
 
 void QuicPacketGenerator::FlushAllQueuedFrames() {
@@ -260,8 +255,8 @@ bool QuicPacketGenerator::HasPendingFrames() const {
 }
 
 bool QuicPacketGenerator::AddNextPendingFrame() {
-  QUIC_BUG_IF(!batch_mode_)
-      << "Generator is not in batch mode when trying to write control frames.";
+  QUIC_BUG_IF(!flusher_attached_) << "Packet flusher is not attached when "
+                                     "generator tries to write control frames.";
   if (should_send_ack_) {
     should_send_ack_ =
         !packet_creator_.AddSavedFrame(delegate_->GetUpdatedAckFrame());

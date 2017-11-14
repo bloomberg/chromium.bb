@@ -163,7 +163,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup, false)
 // Deprecate QuicAckFrame.largest_observed since it is redundant.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_deprecate_largest_observed,
-          false)
+          true)
 
 // Fully drain the queue in QUIC BBR at least once per cycle(8 rounds) when
 // activated by the BBR3 connection option.

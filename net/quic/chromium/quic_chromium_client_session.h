@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Returns a new packet bundler while will cause writes to be batched up
     // until a packet is full, or the last bundler is destroyed.
-    std::unique_ptr<QuicConnection::ScopedPacketBundler> CreatePacketBundler(
+    std::unique_ptr<QuicConnection::ScopedPacketFlusher> CreatePacketBundler(
         QuicConnection::AckBundling bundling_mode);
 
     // Populates network error details for this session.
