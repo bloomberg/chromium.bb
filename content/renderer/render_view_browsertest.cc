@@ -654,6 +654,7 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   request_params.data_url_as_string =
       "data:text/html,<html><head><title>Data page</title></head></html>";
 
+  render_thread_->sink().ClearMessages();
   frame()->Navigate(common_params, StartNavigationParams(),
                     request_params);
   const IPC::Message* frame_title_msg = nullptr;

@@ -224,24 +224,27 @@ void SearchTabHelper::DidFinishNavigation(
                               search::CACHEABLE_NTP_LOAD_SUCCEEDED,
                               search::CACHEABLE_NTP_LOAD_MAX);
   }
+}
+
+void SearchTabHelper::TitleWasSet(content::NavigationEntry* entry) {
+  if (is_setting_title_)
+    return;
 
   // Always set the title on the new tab page to be the one from our UI
-  // resources. Normally, we set the title when we begin a NTP load, but it can
-  // get reset in several places (like when you press Reload). This check
-  // ensures that the title is properly set to the string defined by the Chrome
-  // UI language (rather than the server language) in all cases.
+  // resources. This check ensures that the title is properly set to the string
+  // defined by the Chrome UI language (rather than the server language) in all
+  // cases.
   //
   // We only override the title when it's nonempty to allow the page to set the
   // title if it really wants. An empty title means to use the default. There's
   // also a race condition between this code and the page's SetTitle call which
   // this rule avoids.
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetLastCommittedEntry();
-  if (entry && entry->GetTitle().empty() &&
-      (entry->GetVirtualURL() == chrome::kChromeUINewTabURL ||
-       search::NavEntryIsInstantNTP(web_contents_, entry))) {
+  if (entry->GetTitle().empty() &&
+      search::NavEntryIsInstantNTP(web_contents_, entry)) {
+    is_setting_title_ = true;
     web_contents_->UpdateTitleForEntry(
         entry, l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+    is_setting_title_ = false;
   }
 }
 

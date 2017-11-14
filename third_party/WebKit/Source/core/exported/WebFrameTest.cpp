@@ -9007,7 +9007,10 @@ class SwapMainFrameWhenTitleChangesWebFrameClient
   ~SwapMainFrameWhenTitleChangesWebFrameClient() override {}
 
   // FrameTestHelpers::TestWebFrameClient:
-  void DidReceiveTitle(const WebString&, WebTextDirection) override {
+  void DidReceiveTitle(const WebString& title, WebTextDirection) override {
+    if (title.IsEmpty())
+      return;
+
     if (!Frame()->Parent())
       Frame()->Swap(FrameTestHelpers::CreateRemote());
   }

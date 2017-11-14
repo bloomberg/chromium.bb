@@ -220,34 +220,8 @@ TEST_F(SearchTabHelperTest, HistorySyncCheckNotSyncing) {
   EXPECT_FALSE(search_tab_helper->HistorySyncCheck());
 }
 
-class TabTitleObserver : public content::WebContentsObserver {
- public:
-  explicit TabTitleObserver(content::WebContents* contents)
-      : WebContentsObserver(contents) {}
-
-  base::string16 title_on_start() { return title_on_start_; }
-  base::string16 title_on_commit() { return title_on_commit_; }
-
- private:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    title_on_start_ = web_contents()->GetTitle();
-  }
-
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    title_on_commit_ = web_contents()->GetTitle();
-  }
-
-  base::string16 title_on_start_;
-  base::string16 title_on_commit_;
-};
-
 TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
-  TabTitleObserver title_observer(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeUINewTabURL));
-  const base::string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
-  EXPECT_EQ(title, title_observer.title_on_start());
-  EXPECT_EQ(title, title_observer.title_on_commit());
-  EXPECT_EQ(title, web_contents()->GetTitle());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE),
+            web_contents()->GetTitle());
 }

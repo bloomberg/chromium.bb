@@ -1,5 +1,6 @@
 main frame - didStartProvisionalLoadForFrame
 main frame - didCommitLoadForFrame
+main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
@@ -11,6 +12,7 @@ http://127.0.0.1:8000/loading/resources/307-post-output-target.php - willSendReq
 main frame - didReceiveServerRedirectForProvisionalLoadForFrame
 http://127.0.0.1:8000/loading/resources/307-post-output-target.php - didReceiveResponse <NSURLResponse http://127.0.0.1:8000/loading/resources/307-post-output-target.php, http status code 200>
 main frame - didCommitLoadForFrame
+main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

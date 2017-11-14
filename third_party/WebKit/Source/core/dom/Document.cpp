@@ -1637,6 +1637,10 @@ void Document::UpdateTitle(const String& title) {
 
   if (!frame_ || old_title == title_)
     return;
+  DispatchDidReceiveTitle();
+}
+
+void Document::DispatchDidReceiveTitle() {
   frame_->Client()->DispatchDidReceiveTitle(title_);
 }
 
@@ -5783,6 +5787,11 @@ void Document::FinishedParsing() {
   well_formed_ = parser && parser->WellFormed();
 
   if (LocalFrame* frame = GetFrame()) {
+    // Guarantee at least one call to the client specifying a title. (If
+    // |title_| is not empty, then the title has already been dispatched.)
+    if (title_.IsEmpty())
+      DispatchDidReceiveTitle();
+
     // Don't update the layout tree if we haven't requested the main resource
     // yet to avoid adding extra latency. Note that the first layout tree update
     // can be expensive since it triggers the parsing of the default stylesheets
