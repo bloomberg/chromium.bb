@@ -39,7 +39,7 @@ class MessagePopupCollectionTest;
 }
 
 class MessageCenter;
-class MessageCenterTray;
+class UiController;
 class MessageViewContextMenuController;
 class PopupAlignmentDelegate;
 
@@ -53,7 +53,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
       public MessageCenterObserver {
  public:
   MessagePopupCollection(MessageCenter* message_center,
-                         MessageCenterTray* tray,
+                         UiController* tray,
                          PopupAlignmentDelegate* alignment_delegate);
   ~MessagePopupCollection() override;
 
@@ -146,7 +146,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   gfx::Rect GetToastRectAt(size_t index) const;
 
   MessageCenter* message_center_;
-  MessageCenterTray* tray_;
+  UiController* tray_;
   Toasts toasts_;
 
   PopupAlignmentDelegate* alignment_delegate_;
