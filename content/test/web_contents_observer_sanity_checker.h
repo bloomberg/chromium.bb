@@ -67,8 +67,10 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
                            bool renderer_initiated) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& media_info,
+      const MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;

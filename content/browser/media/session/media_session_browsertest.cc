@@ -89,8 +89,10 @@ class MediaSessionBrowserTest : public ContentBrowserTest {
       run_loop_.Quit();
     }
 
-    void MediaStoppedPlaying(const MediaPlayerInfo& info,
-                             const MediaPlayerId& id) override {
+    void MediaStoppedPlaying(
+        const MediaPlayerInfo& info,
+        const MediaPlayerId& id,
+        WebContentsObserver::MediaStoppedReason reason) override {
       if (type_ != Type::kStop)
         return;
 

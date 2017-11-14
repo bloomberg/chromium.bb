@@ -841,7 +841,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const WebContentsObserver::MediaPlayerId& id);
   void MediaStoppedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id);
+      const WebContentsObserver::MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason);
   // This will be called before playback is started, check
   // GetCurrentlyPlayingVideoCount if you need this when playback starts.
   void MediaResized(const gfx::Size& size,

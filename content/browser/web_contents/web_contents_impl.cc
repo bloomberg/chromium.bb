@@ -5931,12 +5931,13 @@ void WebContentsImpl::MediaStartedPlaying(
 
 void WebContentsImpl::MediaStoppedPlaying(
     const WebContentsObserver::MediaPlayerInfo& media_info,
-    const WebContentsObserver::MediaPlayerId& id) {
+    const WebContentsObserver::MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
   if (media_info.has_video)
     currently_playing_video_count_--;
 
   for (auto& observer : observers_)
-    observer.MediaStoppedPlaying(media_info, id);
+    observer.MediaStoppedPlaying(media_info, id, reason);
 }
 
 void WebContentsImpl::MediaResized(

@@ -261,7 +261,8 @@ void WebContentsObserverSanityChecker::MediaStartedPlaying(
 
 void WebContentsObserverSanityChecker::MediaStoppedPlaying(
     const MediaPlayerInfo& media_info,
-    const MediaPlayerId& id) {
+    const MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
   CHECK(!web_contents_destroyed_);
   CHECK(std::find(active_media_players_.begin(), active_media_players_.end(),
                   id) != active_media_players_.end());

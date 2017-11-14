@@ -435,8 +435,17 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   using MediaPlayerId = std::pair<RenderFrameHost*, int>;
   virtual void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                                    const MediaPlayerId& id) {}
-  virtual void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
-                                   const MediaPlayerId& id) {}
+  enum class MediaStoppedReason {
+    // The media was stopped for an unspecified reason.
+    kUnspecified,
+
+    // The media was stopped because it reached the end of the stream.
+    kReachedEndOfStream,
+  };
+  virtual void MediaStoppedPlaying(
+      const MediaPlayerInfo& video_type,
+      const MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) {}
   virtual void MediaResized(const gfx::Size& size, const MediaPlayerId& id) {}
   // Invoked when media enters or exits fullscreen. We must use a heuristic
   // to determine this as it is not trivial for media with custom controls.

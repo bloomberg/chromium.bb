@@ -26,8 +26,10 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_player_info,
                            const MediaPlayerId& media_player_id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_player_info,
-                           const MediaPlayerId& media_player_id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& media_player_info,
+      const MediaPlayerId& media_player_id,
+      WebContentsObserver::MediaStoppedReason reason) override;
   void DidUpdateAudioMutingState(bool muted) override;
   void MediaMutedStatusChanged(const MediaPlayerId& id, bool muted) override;
   void MediaResized(const gfx::Size& size, const MediaPlayerId& id) override;

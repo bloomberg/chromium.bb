@@ -222,8 +222,10 @@ class AppBannerManager : public content::WebContentsObserver,
                      const GURL& validated_url) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& media_info,
+      const MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override;
   void WebContentsDestroyed() override;
 
   // SiteEngagementObserver overrides.

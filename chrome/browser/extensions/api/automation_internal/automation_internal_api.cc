@@ -213,8 +213,10 @@ class AutomationWebContentsObserver
     AccessibilityEventReceived(details);
   }
 
-  void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
-                           const MediaPlayerId& id) override {
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& video_type,
+      const MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override {
     std::vector<content::AXEventNotificationDetails> details;
     content::AXEventNotificationDetails detail;
     detail.ax_tree_id = id.first->GetAXTreeID();

@@ -71,7 +71,8 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
   void MediaStoppedPlaying(SiteEngagementService::Helper* helper) {
     helper->media_tracker_.MediaStoppedPlaying(
         content::WebContentsObserver::MediaPlayerInfo(false, false),
-        content::WebContentsObserver::MediaPlayerId(nullptr, 1));
+        content::WebContentsObserver::MediaPlayerId(nullptr, 1),
+        content::WebContentsObserver::MediaStoppedReason::kUnspecified);
   }
 
   // Set a pause timer on the input tracker for test purposes.

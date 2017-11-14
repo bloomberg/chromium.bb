@@ -92,7 +92,9 @@ class MediaEngagementContentsObserverTest
     content::WebContentsObserver::MediaPlayerInfo player_info(true, true);
     content::WebContentsObserver::MediaPlayerId player_id =
         std::make_pair(nullptr /* RenderFrameHost */, id);
-    contents_observer_->MediaStoppedPlaying(player_info, player_id);
+    contents_observer_->MediaStoppedPlaying(
+        player_info, player_id,
+        content::WebContentsObserver::MediaStoppedReason::kUnspecified);
   }
 
   void SimulateMutedStateChange(int id, bool muted) {
@@ -501,7 +503,7 @@ TEST_F(MediaEngagementContentsObserverTest,
 
   SimulateSignificantAudioPlayer(0);
   EXPECT_TRUE(IsTimerRunning());
-};
+}
 
 TEST_F(MediaEngagementContentsObserverTest, TimerDoesNotRunIfEntryRecorded) {
   SimulateSignificantPlaybackRecorded();

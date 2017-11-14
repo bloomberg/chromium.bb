@@ -84,8 +84,10 @@ class CastWebView : content::WebContentsObserver, content::WebContentsDelegate {
       content::NavigationHandle* navigation_handle) override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId& id) override;
-  void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                           const MediaPlayerId& id) override;
+  void MediaStoppedPlaying(
+      const MediaPlayerInfo& media_info,
+      const MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override;
 
   // WebContentsDelegate implementation:
   content::WebContents* OpenURLFromTab(
