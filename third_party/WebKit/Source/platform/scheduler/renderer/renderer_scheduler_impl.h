@@ -624,7 +624,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::Optional<base::TimeTicks> last_audio_state_change;
     int renderer_pause_count;  // Renderer is paused if non-zero.
     int navigation_task_expected_count;
-    ExpensiveTaskPolicy expensive_task_policy;
+    TraceableState<ExpensiveTaskPolicy, kTracingCategoryNameInfo>
+        expensive_task_policy;
+    TraceableState<v8::RAILMode, kTracingCategoryNameInfo>
+        rail_mode_for_tracing;  // Don't use except for tracing.
     bool renderer_hidden;
     TraceableState<bool, kTracingCategoryNameDefault> renderer_backgrounded;
     bool stopping_when_backgrounded_enabled;
