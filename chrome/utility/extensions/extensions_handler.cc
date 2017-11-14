@@ -53,46 +53,6 @@ class RemovableStorageWriterImpl
   DISALLOW_COPY_AND_ASSIGN(RemovableStorageWriterImpl);
 };
 
-#if defined(OS_WIN)
-class WiFiCredentialsGetterImpl
-    : public extensions::mojom::WiFiCredentialsGetter {
- public:
-  WiFiCredentialsGetterImpl() = default;
-  ~WiFiCredentialsGetterImpl() override = default;
-
-  static void Create(extensions::mojom::WiFiCredentialsGetterRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<WiFiCredentialsGetterImpl>(),
-                            std::move(request));
-  }
-
- private:
-  // extensions::mojom::WiFiCredentialsGetter:
-  void GetWiFiCredentials(const std::string& ssid,
-                          GetWiFiCredentialsCallback callback) override {
-    if (ssid == kWiFiTestNetwork) {
-      // test-mode: return the ssid in key_data.
-      std::move(callback).Run(true, ssid);
-      return;
-    }
-
-    std::unique_ptr<wifi::WiFiService> wifi_service(
-        wifi::WiFiService::Create());
-    wifi_service->Initialize(nullptr);
-
-    std::string key_data;
-    std::string error;
-    wifi_service->GetKeyFromSystem(ssid, &key_data, &error);
-
-    const bool success = error.empty();
-    if (!success)
-      key_data.clear();
-
-    std::move(callback).Run(success, key_data);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(WiFiCredentialsGetterImpl);
-};
-#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -116,8 +76,6 @@ void ExposeInterfacesToBrowser(service_manager::BinderRegistry* registry,
   if (running_elevated) {
 #if defined(OS_WIN)
     registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create),
-                           base::ThreadTaskRunnerHandle::Get());
-    registry->AddInterface(base::Bind(&WiFiCredentialsGetterImpl::Create),
                            base::ThreadTaskRunnerHandle::Get());
 #endif
     return;

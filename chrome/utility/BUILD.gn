@@ -132,7 +132,10 @@ static_library("utility") {
       libs = [ "esent.lib" ]
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
-      deps += [ "//chrome/services/util_win:lib" ]
+      deps += [
+        "//chrome/services/util_win:lib",
+        "//chrome/services/wifi_util_win:lib",
+      ]
     }
 
     if (is_win || is_mac) {
