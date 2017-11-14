@@ -202,7 +202,6 @@ ColorSpace ICCProfile::GetColorSpace() const {
   gfx::ColorSpace color_space;
   if (internals_->is_parametric_) {
     color_space = GetParametricColorSpace();
-    color_space.icc_profile_sk_color_space_ = internals_->sk_color_space_;
   } else {
     color_space = ColorSpace::CreateCustom(internals_->to_XYZD50_,
                                            ColorSpace::TransferID::ICC_BASED);
