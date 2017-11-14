@@ -4,7 +4,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "device/u2f/u2f_packet.h"
-#include "net/base/io_buffer.h"
 
 #include "u2f_message.h"
 
@@ -91,15 +90,13 @@ std::list<std::unique_ptr<U2fPacket>>::const_iterator U2fMessage::end() {
   return packets_.cend();
 }
 
-scoped_refptr<net::IOBufferWithSize> U2fMessage::PopNextPacket() {
+std::vector<uint8_t> U2fMessage::PopNextPacket() {
+  std::vector<uint8_t> data;
   if (NumPackets() > 0) {
-    scoped_refptr<net::IOBufferWithSize> data =
-        packets_.front()->GetSerializedData();
-
+    data = packets_.front()->GetSerializedData();
     packets_.pop_front();
-    return data;
   }
-  return nullptr;
+  return data;
 }
 
 bool U2fMessage::AddContinuationPacket(const std::vector<uint8_t>& buf) {
