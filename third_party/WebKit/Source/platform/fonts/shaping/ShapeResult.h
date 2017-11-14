@@ -97,6 +97,8 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Returns the next or previous offsets respectively at which it is safe to
   // break without reshaping.
+  // The |offset| given and the return value is for the original string, between
+  // |StartIndexForResult| and |EndIndexForResult|.
   unsigned NextSafeToBreakOffset(unsigned offset) const;
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
@@ -123,12 +125,16 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   String ToString() const;
   void ToString(StringBuilder*) const;
 
+  struct RunInfo;
+  RunInfo* InsertRunForTesting(unsigned start_index,
+                               unsigned num_characters,
+                               TextDirection,
+                               Vector<uint16_t> safe_break_offsets = {});
 #if DCHECK_IS_ON()
   void CheckConsistency() const;
 #endif
 
  protected:
-  struct RunInfo;
 
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
@@ -150,6 +156,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                  unsigned start_glyph,
                  unsigned num_glyphs,
                  hb_buffer_t*);
+  void InsertRun(std::unique_ptr<ShapeResult::RunInfo>);
   void ReorderRtlRuns(unsigned run_size_before);
 
   float width_;

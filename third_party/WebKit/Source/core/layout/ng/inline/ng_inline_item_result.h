@@ -84,6 +84,10 @@ struct CORE_EXPORT NGInlineItemResult {
                      unsigned index,
                      unsigned start,
                      unsigned end);
+
+#if DCHECK_IS_ON()
+  void CheckConsistency() const;
+#endif
 };
 
 // Represents a set of NGInlineItemResult that form a line box.

@@ -159,6 +159,9 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
     NGInlineItemResult* item_result = &item_results->back();
     if (item.Type() == NGInlineItem::kText) {
       state = HandleText(line_info, item, item_result);
+#if DCHECK_IS_ON()
+      item_result->CheckConsistency();
+#endif
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       state = HandleAtomicInline(item, item_result, *line_info);
     } else if (item.Type() == NGInlineItem::kControl) {
@@ -330,6 +333,7 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   ShapingLineBreaker::Result result;
   scoped_refptr<ShapeResult> shape_result =
       breaker.ShapeLine(item_result->start_offset, available_width, &result);
+  DCHECK_GT(shape_result->NumCharacters(), 0u);
   if (result.has_hanging_spaces) {
     item_result->has_hanging_spaces = true;
     // Hanging spaces do not expand min-content. Handle them simliar to visual
@@ -676,6 +680,9 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info,
       if (force_break_anywhere)
         break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
       BreakText(item_result, item, item_available_width, line_info);
+#if DCHECK_IS_ON()
+      item_result->CheckConsistency();
+#endif
       if (item_result->inline_size <= item_available_width) {
         DCHECK(item_result->end_offset < item.EndOffset() ||
                (item_result->end_offset == item.EndOffset() &&

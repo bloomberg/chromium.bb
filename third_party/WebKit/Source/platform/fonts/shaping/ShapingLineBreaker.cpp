@@ -288,9 +288,12 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   scoped_refptr<ShapeResult> line_start_result;
   unsigned first_safe = result_->NextSafeToBreakOffset(start);
   DCHECK_GE(first_safe, start);
-  // Reshape takes place only when first_safe is before the break opportunity.
-  // Otherwise reshape will be part of line_end_result.
-  if (first_safe != start && first_safe < break_opportunity) {
+  if (first_safe != start) {
+    if (first_safe >= break_opportunity) {
+      // There is no safe-to-break, reshape the whole range.
+      result_out->break_offset = break_opportunity;
+      return Shape(direction, start, break_opportunity);
+    }
     LayoutUnit original_width =
         FlipRtl(SnapEnd(result_->PositionForOffset(first_safe - range_start),
                         direction) -
