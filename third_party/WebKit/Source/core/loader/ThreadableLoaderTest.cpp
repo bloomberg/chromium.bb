@@ -172,7 +172,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 
   void CreateLoader(ThreadableLoaderClient* client) override {
     std::unique_ptr<WaitableEvent> completion_event =
-        WTF::MakeUnique<WaitableEvent>();
+        std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCreateLoader,
@@ -184,7 +184,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 
   void StartLoader(const ResourceRequest& request) override {
     std::unique_ptr<WaitableEvent> completion_event =
-        WTF::MakeUnique<WaitableEvent>();
+        std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerStartLoader,
@@ -221,7 +221,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     testing::RunPendingTasks();
 
     std::unique_ptr<WaitableEvent> completion_event =
-        WTF::MakeUnique<WaitableEvent>();
+        std::make_unique<WaitableEvent>();
     worker_loading_task_runner_->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&WorkerThreadableLoaderTestHelper::WorkerCallCheckpoint,
@@ -231,11 +231,11 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   }
 
   void OnSetUp() override {
-    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
+    reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
     security_origin_ = GetDocument().GetSecurityOrigin();
     parent_frame_task_runners_ =
         ParentFrameTaskRunners::Create(dummy_page_holder_->GetFrame());
-    worker_thread_ = WTF::MakeUnique<WorkerThreadForTest>(
+    worker_thread_ = std::make_unique<WorkerThreadForTest>(
         ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
 
     worker_thread_->StartWithSourceCode(security_origin_.get(),

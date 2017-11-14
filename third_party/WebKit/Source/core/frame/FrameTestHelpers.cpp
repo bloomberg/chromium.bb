@@ -92,7 +92,7 @@ template <typename T>
 std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
   if (client)
     return nullptr;
-  auto owned_client = WTF::MakeUnique<T>();
+  auto owned_client = std::make_unique<T>();
   client = owned_client.get();
   return owned_client;
 }
@@ -184,10 +184,10 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   if (!frame->Parent()) {
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    owned_widget_client = WTF::MakeUnique<TestWebViewWidgetClient>(
+    owned_widget_client = std::make_unique<TestWebViewWidgetClient>(
         *static_cast<TestWebViewClient*>(frame->ViewImpl()->Client()));
   } else if (frame->Parent()->IsWebRemoteFrame()) {
-    owned_widget_client = WTF::MakeUnique<TestWebWidgetClient>();
+    owned_widget_client = std::make_unique<TestWebWidgetClient>();
   }
   if (owned_widget_client) {
     WebFrameWidget::Create(owned_widget_client.get(), frame);
@@ -266,7 +266,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   std::unique_ptr<TestWebWidgetClient> owned_web_widget_client;
   if (!web_widget_client) {
     owned_web_widget_client =
-        WTF::MakeUnique<TestWebViewWidgetClient>(*test_web_view_client_);
+        std::make_unique<TestWebViewWidgetClient>(*test_web_view_client_);
     web_widget_client = owned_web_widget_client.get();
   }
   blink::WebFrameWidget::Create(web_widget_client, frame);
@@ -445,7 +445,7 @@ TestWebViewClient::GetLayerTreeViewForTesting() {
 }
 
 WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
-  layer_tree_view_ = WTF::MakeUnique<WebLayerTreeViewImplForTesting>();
+  layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
   return layer_tree_view_.get();
 }
 
@@ -454,7 +454,7 @@ WebLayerTreeView* TestWebViewWidgetClient::InitializeLayerTreeView() {
 }
 
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
-  layer_tree_view_ = WTF::MakeUnique<WebLayerTreeViewImplForTesting>();
+  layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
   return layer_tree_view_.get();
 }
 

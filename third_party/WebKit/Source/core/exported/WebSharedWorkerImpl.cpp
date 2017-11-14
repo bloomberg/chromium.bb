@@ -241,7 +241,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   pending_interface_provider_.set_handle(std::move(interface_provider));
 
   instrumentation_token_ = instrumentation_token;
-  shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
+  shadow_page_ = std::make_unique<WorkerShadowPage>(this);
 
   // If we were asked to pause worker context on start and wait for debugger
   // then now is a good time to do that.
@@ -290,7 +290,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
       *worker_clients);
 
   ProvideContentSettingsClientToWorker(
-      worker_clients, WTF::MakeUnique<SharedWorkerContentSettingsProxy>(
+      worker_clients, std::make_unique<SharedWorkerContentSettingsProxy>(
                           std::move(content_settings_info_)));
 
   if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
@@ -337,7 +337,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
   ParentFrameTaskRunners* task_runners = ParentFrameTaskRunners::Create();
 
   reporting_proxy_ = new SharedWorkerReportingProxy(this, task_runners);
-  worker_thread_ = WTF::MakeUnique<SharedWorkerThread>(
+  worker_thread_ = std::make_unique<SharedWorkerThread>(
       name_, ThreadableLoadingContext::Create(*document), *reporting_proxy_);
   probe::scriptImported(document, main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());

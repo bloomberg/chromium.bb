@@ -57,7 +57,7 @@ std::unique_ptr<Vector<char>> CreateVectorFromMemoryRegion(
     const char* data,
     unsigned data_length) {
   std::unique_ptr<Vector<char>> buffer =
-      WTF::MakeUnique<Vector<char>>(data_length);
+      std::make_unique<Vector<char>>(data_length);
   memcpy(buffer->data(), data, data_length);
   return buffer;
 }
