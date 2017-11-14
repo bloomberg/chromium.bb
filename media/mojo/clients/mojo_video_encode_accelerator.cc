@@ -9,8 +9,7 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace media {
@@ -26,7 +25,9 @@ void KeepVideoFrameAlive(const scoped_refptr<VideoFrame>& frame) {}
 class VideoEncodeAcceleratorClient
     : public mojom::VideoEncodeAcceleratorClient {
  public:
-  explicit VideoEncodeAcceleratorClient(VideoEncodeAccelerator::Client* client);
+  VideoEncodeAcceleratorClient(
+      VideoEncodeAccelerator::Client* client,
+      mojom::VideoEncodeAcceleratorClientRequest request);
   ~VideoEncodeAcceleratorClient() override = default;
 
   // mojom::VideoEncodeAcceleratorClient impl.
@@ -41,13 +42,15 @@ class VideoEncodeAcceleratorClient
 
  private:
   VideoEncodeAccelerator::Client* client_;
+  mojo::Binding<mojom::VideoEncodeAcceleratorClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncodeAcceleratorClient);
 };
 
 VideoEncodeAcceleratorClient::VideoEncodeAcceleratorClient(
-    VideoEncodeAccelerator::Client* client)
-    : client_(client) {
+    VideoEncodeAccelerator::Client* client,
+    mojom::VideoEncodeAcceleratorClientRequest request)
+    : client_(client), binding_(this, std::move(request)) {
   DCHECK(client_);
 }
 
@@ -115,14 +118,13 @@ bool MojoVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
 
   // Get a mojom::VideoEncodeAcceleratorClient bound to a local implementation
   // (VideoEncodeAcceleratorClient) and send the pointer remotely.
-  mojom::VideoEncodeAcceleratorClientPtr vea_client;
-  mojo::MakeStrongBinding(
-      base::MakeUnique<VideoEncodeAcceleratorClient>(client),
-      mojo::MakeRequest(&vea_client));
+  mojom::VideoEncodeAcceleratorClientPtr vea_client_ptr;
+  vea_client_ = base::MakeUnique<VideoEncodeAcceleratorClient>(
+      client, mojo::MakeRequest(&vea_client_ptr));
 
   bool result = false;
   vea_->Initialize(input_format, input_visible_size, output_profile,
-                   initial_bitrate, std::move(vea_client), &result);
+                   initial_bitrate, std::move(vea_client_ptr), &result);
   return result;
 }
 
@@ -193,6 +195,7 @@ void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
 void MojoVideoEncodeAccelerator::Destroy() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  vea_client_.reset();
   vea_.reset();
   // See media::VideoEncodeAccelerator for more info on this peculiar pattern.
   delete this;

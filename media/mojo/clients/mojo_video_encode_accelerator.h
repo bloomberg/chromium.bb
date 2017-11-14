@@ -56,6 +56,9 @@ class MojoVideoEncodeAccelerator : public VideoEncodeAccelerator {
 
   mojom::VideoEncodeAcceleratorPtr vea_;
 
+  // Constructed during Initialize().
+  std::unique_ptr<mojom::VideoEncodeAcceleratorClient> vea_client_;
+
   const gpu::VideoEncodeAcceleratorSupportedProfiles supported_profiles_;
 
   SEQUENCE_CHECKER(sequence_checker_);
