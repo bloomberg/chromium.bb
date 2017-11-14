@@ -120,7 +120,13 @@ namespace exo {
 namespace wayland {
 namespace switches {
 
-constexpr char kForceRemoteShellScaleSwitch[] = "force-remote-shell-scale";
+// This flag can be used to emulate device scale factor for remote shell.
+constexpr char kForceRemoteShellScale[] = "force-remote-shell-scale";
+
+// This flag can be used to override the default wayland socket name. It is
+// useful when another wayland server is already running and using the
+// default name.
+constexpr char kWaylandServerSocket[] = "wayland-server-socket";
 }
 
 namespace {
@@ -162,11 +168,11 @@ void SetImplementation(wl_resource* resource,
 
 // Returns the scale factor to be used by remote shell clients.
 double GetDefaultDeviceScaleFactor() {
-  // A flag used by VM to emulate a device scale for a partiular board.
+  // A flag used by VM to emulate a device scale for a particular board.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceRemoteShellScaleSwitch)) {
-    std::string value = command_line->GetSwitchValueASCII(
-        switches::kForceRemoteShellScaleSwitch);
+  if (command_line->HasSwitch(switches::kForceRemoteShellScale)) {
+    std::string value =
+        command_line->GetSwitchValueASCII(switches::kForceRemoteShellScale);
     double scale = 1.0;
     if (base::StringToDouble(value, &scale))
       return std::max(1.0, scale);
@@ -4488,12 +4494,19 @@ std::unique_ptr<Server> Server::Create(Display* display) {
     return nullptr;
   }
 
-  if (!server->AddSocket(kSocketName)) {
-    LOG(ERROR) << "Failed to add socket: " << kSocketName;
+  std::string socket_name(kSocketName);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kWaylandServerSocket)) {
+    socket_name =
+        command_line->GetSwitchValueASCII(switches::kWaylandServerSocket);
+  }
+
+  if (!server->AddSocket(socket_name.c_str())) {
+    LOG(ERROR) << "Failed to add socket: " << socket_name;
     return nullptr;
   }
 
-  base::FilePath socket_path = base::FilePath(runtime_dir).Append(kSocketName);
+  base::FilePath socket_path = base::FilePath(runtime_dir).Append(socket_name);
 
   // Change permissions on the socket.
   struct group wayland_group;
