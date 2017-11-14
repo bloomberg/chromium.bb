@@ -40,8 +40,8 @@ bool IsViewUnfocusableChildOfFocusableAncestor(View* view) {
 }  // namespace
 
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
-    : view_(view),
-      ax_node_(ui::AXPlatformNode::Create(this)) {
+    : view_(view) {
+  ax_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_node_);
 }
 
