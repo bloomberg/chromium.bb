@@ -1760,7 +1760,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Arc.Launcher.Search.OpenPlayStore.InstantApps">
-  <owner>hejq@chromium.com</owner>
+  <owner>hejq@chromium.org</owner>
   <description>
     Recorded when the user opens the an instant app from a Play Store app search
     query.
@@ -1768,7 +1768,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Arc.Launcher.Search.OpenPlayStore.UninstalledApps">
-  <owner>hejq@chromium.com</owner>
+  <owner>hejq@chromium.org</owner>
   <description>
     Recorded when the user opens the installing page of a Play Store app search
     result.
@@ -12099,7 +12099,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileTabClosedUndoShortCut">
-  <owner>xingliu@chromium.com</owner>
+  <owner>xingliu@chromium.org</owner>
   <description>
     Undo tab closure by keyboard shortcut ctrl+shift+T, for Android only.
   </description>
