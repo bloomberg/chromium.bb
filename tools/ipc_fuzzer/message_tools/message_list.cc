@@ -56,6 +56,7 @@ static bool check_msgtable() {
   exemptions.push_back(CastChannelMsgStart);  // Reserved for chromecast.
   exemptions.push_back(CastMediaMsgStart);    // Reserved for chromecast.
   exemptions.push_back(IPCTestMsgStart);
+  exemptions.push_back(WorkerMsgStart);  // Now only used by tests.
 
 #if !BUILDFLAG(ENABLE_NACL)
   exemptions.push_back(NaClMsgStart);

@@ -19,6 +19,7 @@
 #if BUILDFLAG(ENABLE_PRINTING)
 // TODO(dgn) remove from here when all the code using these messages is removed
 // from /chrome. (crbug.com/311308, crbug.com/450822)
+#undef COMPONENTS_PRINTING_COMMON_PRINT_MESSAGES_H_
 #include "components/printing/common/print_messages.h"  // nogncheck
 #endif
 
