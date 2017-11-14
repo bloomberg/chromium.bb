@@ -205,8 +205,7 @@ p, h2, h3, h4 {
   <p>Modifiers:</p>
   <ul>
   <li><b>Shift</b> hold shift key to keep other details open.
-  <li><b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
-  <li><b>Meta</b> hold meta key down (alt on unix, control on Mac) to toggle all flags.
+  <li><b>Meta</b> meta means all. Toggle all flags, open all results (max 100).
   </ul>
   <p>This page lets you query and display test results.</p>
 
@@ -1234,7 +1233,7 @@ const GUI = {
   },
 
   toggleResults: function(expectation, event) {
-    let applyToAll = event && event.altKey;
+    let applyToAll = event && event.metaKey;
     let closeOthers = !applyToAll && event && !event.shiftKey;
     let details = expectation.querySelector(".details");
     let isOpen = details.classList.contains("open");
@@ -1243,7 +1242,7 @@ const GUI = {
       if (allExpectations.length > 100) {
         console.error("Too many details to be shown at once");
       } else {
-        for (e of allExpectations)
+        for (let e of allExpectations)
           if (e != expectation)
             isOpen ? GUI.hideResults(e) : GUI.showResults(e, true);
       }
