@@ -85,7 +85,7 @@ class AckAlarmDelegate : public QuicAlarm::Delegate {
 
   void OnAlarm() override {
     DCHECK(connection_->ack_frame_updated());
-    QuicConnection::ScopedPacketBundler bundler(connection_,
+    QuicConnection::ScopedPacketFlusher flusher(connection_,
                                                 QuicConnection::SEND_ACK);
   }
 
@@ -1103,7 +1103,7 @@ QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
   // packet (a handshake packet from client to server could result in a REJ or a
   // SHLO from the server, leading to two different decrypters at the server.)
   ScopedRetransmissionScheduler alarm_delayer(this);
-  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   return packet_generator_.ConsumeData(id, write_length, offset, state);
 }
 
@@ -1111,7 +1111,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
                                    QuicRstStreamErrorCode error,
                                    QuicStreamOffset bytes_written) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicRstStreamFrame(id, error, bytes_written)));
 
@@ -1154,14 +1154,14 @@ void QuicConnection::SendRstStream(QuicStreamId id,
 void QuicConnection::SendWindowUpdate(QuicStreamId id,
                                       QuicStreamOffset byte_offset) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicWindowUpdateFrame(id, byte_offset)));
 }
 
 void QuicConnection::SendBlocked(QuicStreamId id) {
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
   stats_.blocked_frames_sent++;
 }
@@ -1278,7 +1278,7 @@ void QuicConnection::OnCanWrite() {
   }
 
   {
-    ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
+    ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
     visitor_->OnCanWrite();
     visitor_->PostProcessAfterData();
   }
@@ -1302,7 +1302,7 @@ void QuicConnection::WriteIfNotBlocked() {
 
 void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
   if (!writer_->IsWriteBlocked()) {
-    ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
+    ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
     OnCanWrite();
   }
 }
@@ -1459,7 +1459,7 @@ void QuicConnection::WritePendingRetransmissions() {
     // be moved outside of the loop. Also, CanWrite is not checked after the
     // generator is flushed.
     {
-      ScopedPacketBundler bundler(this, NO_ACK);
+      ScopedPacketFlusher flusher(this, NO_ACK);
       packet_generator_.FlushAllQueuedFrames();
     }
     char buffer[kMaxPacketSize];
@@ -1809,7 +1809,7 @@ void QuicConnection::OnPingTimeout() {
 }
 
 void QuicConnection::SendPing() {
-  ScopedPacketBundler bundler(this, SEND_ACK_IF_QUEUED);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
   packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
   // Send PING frame immediately, without checking for congestion window bounds.
   packet_generator_.FlushAllQueuedFrames();
@@ -2000,7 +2000,7 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
                                                AckBundling ack_mode) {
   QUIC_DLOG(INFO) << ENDPOINT << "Sending connection close packet.";
   ClearQueuedPackets();
-  ScopedPacketBundler ack_bundler(this, ack_mode);
+  ScopedPacketFlusher flusher(this, ack_mode);
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
   frame->error_code = error;
   frame->error_details = details;
@@ -2058,7 +2058,7 @@ void QuicConnection::SendGoAway(QuicErrorCode error,
                   << QuicErrorCodeToString(error) << " (" << error << ")";
 
   // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
+  ScopedPacketFlusher flusher(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(
       QuicFrame(new QuicGoAwayFrame(error, last_good_stream_id, reason)));
 }
@@ -2219,27 +2219,26 @@ void QuicConnection::MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number) {
   }
 
   if (sent_packet_number >= next_mtu_probe_at_) {
-    // Use an alarm to send the MTU probe to ensure that no ScopedPacketBundlers
+    // Use an alarm to send the MTU probe to ensure that no ScopedPacketFlushers
     // are active.
     mtu_discovery_alarm_->Set(clock_->ApproximateNow());
   }
 }
 
-QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
+QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
     QuicConnection* connection,
     AckBundling ack_mode)
-    : connection_(connection),
-      already_in_batch_mode_(connection != nullptr &&
-                             connection->packet_generator_.InBatchMode()) {
+    : connection_(connection), flush_on_delete_(false) {
   if (connection_ == nullptr) {
     return;
   }
-  // Move generator into batch mode. If caller wants us to include an ack,
-  // check the delayed-ack timer to see if there's ack info to be sent.
-  if (!already_in_batch_mode_) {
-    QUIC_DVLOG(2) << "Entering Batch Mode.";
-    connection_->packet_generator_.StartBatchOperations();
+
+  if (!connection_->packet_generator_.PacketFlusherAttached()) {
+    flush_on_delete_ = true;
+    connection->packet_generator_.AttachPacketFlusher();
   }
+  // If caller wants us to include an ack, check the delayed-ack timer to see if
+  // there's ack info to be sent.
   if (ShouldSendAck(ack_mode)) {
     QUIC_DVLOG(1) << "Bundling ack with outgoing packet.";
     DCHECK(ack_mode == SEND_ACK || connection_->ack_frame_updated() ||
@@ -2248,7 +2247,7 @@ QuicConnection::ScopedPacketBundler::ScopedPacketBundler(
   }
 }
 
-bool QuicConnection::ScopedPacketBundler::ShouldSendAck(
+bool QuicConnection::ScopedPacketFlusher::ShouldSendAck(
     AckBundling ack_mode) const {
   switch (ack_mode) {
     case SEND_ACK:
@@ -2266,25 +2265,24 @@ bool QuicConnection::ScopedPacketBundler::ShouldSendAck(
   }
 }
 
-QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
+QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
   if (connection_ == nullptr) {
     return;
   }
-  // If we changed the generator's batch state, restore original batch state.
-  if (!already_in_batch_mode_) {
-    QUIC_DVLOG(2) << "Leaving Batch Mode.";
-    connection_->packet_generator_.FinishBatchOperations();
+
+  if (flush_on_delete_) {
+    connection_->packet_generator_.Flush();
 
     // Once all transmissions are done, check if there is any outstanding data
     // to send and notify the congestion controller if not.
     //
     // Note that this means that the application limited check will happen as
-    // soon as the last bundler gets destroyed, which is typically after a
+    // soon as the last flusher gets destroyed, which is typically after a
     // single stream write is finished.  This means that if all the data from a
     // single write goes through the connection, the application-limited signal
     // will fire even if the caller does a write operation immediately after.
     // There are two important approaches to remedy this situation:
-    // (1) Instantiate ScopedPacketBundler before performing multiple subsequent
+    // (1) Instantiate ScopedPacketFlusher before performing multiple subsequent
     //     writes, thus deferring this check until all writes are done.
     // (2) Write data in chunks sufficiently large so that they cause the
     //     connection to be limited by the congestion control.  Typically, this
@@ -2295,8 +2293,8 @@ QuicConnection::ScopedPacketBundler::~ScopedPacketBundler() {
     //     be marked as application-limited.
     connection_->CheckIfApplicationLimited();
   }
-  DCHECK_EQ(already_in_batch_mode_,
-            connection_->packet_generator_.InBatchMode());
+  DCHECK_EQ(flush_on_delete_,
+            !connection_->packet_generator_.PacketFlusherAttached());
 }
 
 QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(

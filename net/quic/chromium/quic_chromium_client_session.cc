@@ -335,13 +335,13 @@ void QuicChromiumClientSession::Handle::ResetPromised(
     session_->ResetPromised(id, error_code);
 }
 
-std::unique_ptr<QuicConnection::ScopedPacketBundler>
+std::unique_ptr<QuicConnection::ScopedPacketFlusher>
 QuicChromiumClientSession::Handle::CreatePacketBundler(
     QuicConnection::AckBundling bundling_mode) {
   if (!session_)
     return nullptr;
 
-  return std::make_unique<QuicConnection::ScopedPacketBundler>(
+  return std::make_unique<QuicConnection::ScopedPacketFlusher>(
       session_->connection(), bundling_mode);
 }
 

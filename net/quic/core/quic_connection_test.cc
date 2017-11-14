@@ -535,7 +535,7 @@ class TestConnection : public QuicConnection {
                                          size_t total_length,
                                          QuicStreamOffset offset,
                                          StreamSendingState state) {
-    ScopedPacketBundler bundler(this, NO_ACK);
+    ScopedPacketFlusher flusher(this, NO_ACK);
     producer_.SaveStreamData(id, iov, iov_count, 0u, offset, total_length);
     return QuicConnection::SendStreamData(id, total_length, offset, state);
   }
@@ -544,7 +544,7 @@ class TestConnection : public QuicConnection {
                                             QuicStringPiece data,
                                             QuicStreamOffset offset,
                                             StreamSendingState state) {
-    ScopedPacketBundler bundler(this, NO_ACK);
+    ScopedPacketFlusher flusher(this, NO_ACK);
     if (id != kCryptoStreamId && this->encryption_level() == ENCRYPTION_NONE) {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
@@ -930,7 +930,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   void SendAckPacketToPeer() {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
     {
-      QuicConnection::ScopedPacketBundler bundler(&connection_,
+      QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                   QuicConnection::NO_ACK);
       connection_.SendAck();
     }
@@ -1876,7 +1876,7 @@ TEST_P(QuicConnectionTest, RecordSentTimeBeforePacketSent) {
 TEST_P(QuicConnectionTest, FramePacking) {
   // Send an ack and two stream frames in 1 packet by queueing them.
   {
-    QuicConnection::ScopedPacketBundler bundler(&connection_,
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                 QuicConnection::SEND_ACK);
     connection_.SendStreamData3();
     connection_.SendStreamData5();
@@ -1905,7 +1905,7 @@ TEST_P(QuicConnectionTest, FramePackingNonCryptoThenCrypto) {
   // packets by queueing them.
   {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-    QuicConnection::ScopedPacketBundler bundler(&connection_,
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                 QuicConnection::SEND_ACK);
     connection_.SendStreamData3();
     connection_.SendCryptoStreamData();
@@ -1925,7 +1925,7 @@ TEST_P(QuicConnectionTest, FramePackingCryptoThenNonCrypto) {
   // packets by queueing them.
   {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-    QuicConnection::ScopedPacketBundler bundler(&connection_,
+    QuicConnection::ScopedPacketFlusher flusher(&connection_,
                                                 QuicConnection::SEND_ACK);
     connection_.SendCryptoStreamData();
     connection_.SendStreamData3();

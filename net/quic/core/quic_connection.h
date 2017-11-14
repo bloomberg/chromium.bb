@@ -624,26 +624,23 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool CanWrite(HasRetransmittableData retransmittable);
 
-  // Stores current batch state for connection, puts the connection
-  // into batch mode, and destruction restores the stored batch state.
-  // While the bundler is in scope, any generated frames are bundled
-  // as densely as possible into packets.  In addition, this bundler
-  // can be configured to ensure that an ACK frame is included in the
-  // first packet created, if there's new ack information to be sent.
-  class QUIC_EXPORT_PRIVATE ScopedPacketBundler {
+  // When the flusher is out of scope, only the outermost flusher will cause a
+  // flush of the connection.  In addition, this flusher can be configured to
+  // ensure that an ACK frame is included in the first packet created, if
+  // there's new ack information to be sent.
+  class QUIC_EXPORT_PRIVATE ScopedPacketFlusher {
    public:
-    // In addition to all outgoing frames being bundled when the
-    // bundler is in scope, setting |include_ack| to true ensures that
-    // an ACK frame is opportunistically bundled with the first
-    // outgoing packet.
-    ScopedPacketBundler(QuicConnection* connection, AckBundling send_ack);
-    ~ScopedPacketBundler();
+    // Setting |include_ack| to true ensures that an ACK frame is
+    // opportunistically bundled with the first outgoing packet.
+    ScopedPacketFlusher(QuicConnection* connection, AckBundling ack_mode);
+    ~ScopedPacketFlusher();
 
    private:
     bool ShouldSendAck(AckBundling ack_mode) const;
 
     QuicConnection* connection_;
-    bool already_in_batch_mode_;
+    // If true, flush connection when this flusher goes out of scope.
+    bool flush_on_delete_;
   };
 
   // Delays setting the retransmission alarm until the scope is exited.

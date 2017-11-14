@@ -112,12 +112,12 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Generates an MTU discovery packet of specified size.
   void GenerateMtuDiscoveryPacket(QuicByteCount target_mtu);
 
-  // Indicates whether batch mode is currently enabled.
-  bool InBatchMode();
-  // Disables flushing.
-  void StartBatchOperations();
-  // Enables flushing and flushes queued data which can be sent.
-  void FinishBatchOperations();
+  // Indicates whether packet flusher is currently attached.
+  bool PacketFlusherAttached() const;
+  // Attaches packet flusher.
+  void AttachPacketFlusher();
+  // Flushes everything, including all queued frames and pending padding.
+  void Flush();
 
   // Flushes all queued frames, even frames which are not sendable.
   void FlushAllQueuedFrames();
@@ -210,8 +210,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   QuicPacketCreator packet_creator_;
   QuicFrames queued_control_frames_;
 
-  // True if batch mode is currently enabled.
-  bool batch_mode_;
+  // True if packet flusher is currently attached.
+  bool flusher_attached_;
 
   // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;

@@ -118,7 +118,7 @@ void QuicChromiumClientStream::Handle::OnError(int error) {
   stream_ = nullptr;
 
   // Post a task to invoke the callbacks to ensure that there is no reentrancy.
-  // A ScopedPacketBundler might cause an error which closes the stream under
+  // A ScopedPacketFlusher might cause an error which closes the stream under
   // the call stack of the owner of the handle.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
