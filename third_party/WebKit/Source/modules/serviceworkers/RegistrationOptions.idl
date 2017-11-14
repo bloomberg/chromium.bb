@@ -5,4 +5,5 @@
 // https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
 dictionary RegistrationOptions {
     USVString scope;
+    ServiceWorkerUpdateViaCache updateViaCache = "imports";
 };

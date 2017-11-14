@@ -97,7 +97,7 @@ PASS ServiceWorkerRegistration interface: attribute waiting
 PASS ServiceWorkerRegistration interface: attribute active
 PASS ServiceWorkerRegistration interface: attribute navigationPreload
 PASS ServiceWorkerRegistration interface: attribute scope
-FAIL ServiceWorkerRegistration interface: attribute updateViaCache assert_true: The prototype object must have a property "updateViaCache" expected true got false
+PASS ServiceWorkerRegistration interface: attribute updateViaCache
 PASS ServiceWorkerRegistration interface: operation update()
 PASS ServiceWorkerRegistration interface: operation unregister()
 PASS ServiceWorkerRegistration interface: attribute onupdatefound
@@ -108,7 +108,7 @@ PASS ServiceWorkerRegistration interface: self.registration must inherit propert
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "active" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "navigationPreload" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "scope" with the proper type
-FAIL ServiceWorkerRegistration interface: self.registration must inherit property "updateViaCache" with the proper type assert_inherits: property "updateViaCache" not found in prototype chain
+PASS ServiceWorkerRegistration interface: self.registration must inherit property "updateViaCache" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "update()" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "unregister()" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "onupdatefound" with the proper type

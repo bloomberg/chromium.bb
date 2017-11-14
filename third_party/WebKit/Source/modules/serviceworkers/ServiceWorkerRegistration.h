@@ -70,6 +70,7 @@ class ServiceWorkerRegistration final
   NavigationPreloadManager* navigationPreload();
 
   String scope() const;
+  String updateViaCache() const;
 
   WebServiceWorkerRegistration* WebRegistration() {
     return handle_->Registration();

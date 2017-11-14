@@ -18,6 +18,7 @@
 #include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "public/platform/modules/serviceworker/service_worker_registration.mojom-blink.h"
 
 namespace blink {
 
@@ -86,6 +87,19 @@ NavigationPreloadManager* ServiceWorkerRegistration::navigationPreload() {
 
 String ServiceWorkerRegistration::scope() const {
   return handle_->Registration()->Scope().GetString();
+}
+
+String ServiceWorkerRegistration::updateViaCache() const {
+  switch (handle_->Registration()->UpdateViaCache()) {
+    case mojom::ServiceWorkerUpdateViaCache::kImports:
+      return "imports";
+    case mojom::ServiceWorkerUpdateViaCache::kAll:
+      return "all";
+    case mojom::ServiceWorkerUpdateViaCache::kNone:
+      return "none";
+  }
+  NOTREACHED();
+  return "";
 }
 
 ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
