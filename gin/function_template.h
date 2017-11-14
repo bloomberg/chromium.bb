@@ -36,7 +36,6 @@ struct CallbackParamTraits<const T*> {
   typedef T* LocalType;
 };
 
-
 // CallbackHolder and CallbackHolderBase are used to pass a base::Callback from
 // CreateFunctionTemplate through v8 (via v8::FunctionTemplate) to
 // DispatchToCallback, where it is invoked.
@@ -66,10 +65,12 @@ template<typename Sig>
 class CallbackHolder : public CallbackHolderBase {
  public:
   CallbackHolder(v8::Isolate* isolate,
-                 const base::Callback<Sig>& callback,
+                 base::RepeatingCallback<Sig> callback,
                  int flags)
-      : CallbackHolderBase(isolate), callback(callback), flags(flags) {}
-  base::Callback<Sig> callback;
+      : CallbackHolderBase(isolate),
+        callback(std::move(callback)),
+        flags(flags) {}
+  base::RepeatingCallback<Sig> callback;
   int flags;
  private:
   virtual ~CallbackHolder() {}
@@ -107,22 +108,6 @@ inline bool GetNextArgument(Arguments* args, int create_flags,
   return true;
 }
 
-// Classes for generating and storing an argument pack of integer indices
-// (based on well-known "indices trick", see: http://goo.gl/bKKojn):
-template <size_t... indices>
-struct IndicesHolder {};
-
-template <size_t requested_index, size_t... indices>
-struct IndicesGenerator {
-  using type = typename IndicesGenerator<requested_index - 1,
-                                         requested_index - 1,
-                                         indices...>::type;
-};
-template <size_t... indices>
-struct IndicesGenerator<0, indices...> {
-  using type = IndicesHolder<indices...>;
-};
-
 // Class template for extracting and storing single argument for callback
 // at position |index|.
 template <size_t index, typename ArgType>
@@ -146,10 +131,10 @@ struct ArgumentHolder {
 // Class template for converting arguments from JavaScript to C++ and running
 // the callback with them.
 template <typename IndicesType, typename... ArgTypes>
-class Invoker {};
+class Invoker;
 
 template <size_t... indices, typename... ArgTypes>
-class Invoker<IndicesHolder<indices...>, ArgTypes...>
+class Invoker<std::index_sequence<indices...>, ArgTypes...>
     : public ArgumentHolder<indices, ArgTypes>... {
  public:
   // Invoker<> inherits from ArgumentHolder<> for each argument.
@@ -158,11 +143,6 @@ class Invoker<IndicesHolder<indices...>, ArgTypes...>
   // extract arguments from Arguments) in the right order.
   Invoker(Arguments* args, int create_flags)
       : ArgumentHolder<indices, ArgTypes>(args, create_flags)..., args_(args) {
-    // GCC thinks that create_flags is going unused, even though the
-    // expansion above clearly makes use of it. Per jyasskin@, casting
-    // to void is the commonly accepted way to convince the compiler
-    // that you're actually using a parameter/varible.
-    (void)create_flags;
   }
 
   bool IsOK() {
@@ -170,14 +150,15 @@ class Invoker<IndicesHolder<indices...>, ArgTypes...>
   }
 
   template <typename ReturnType>
-  void DispatchToCallback(base::Callback<ReturnType(ArgTypes...)> callback) {
+  void DispatchToCallback(
+      base::RepeatingCallback<ReturnType(ArgTypes...)> callback) {
     args_->Return(callback.Run(ArgumentHolder<indices, ArgTypes>::value...));
   }
 
   // In C++, you can declare the function foo(void), but you can't pass a void
   // expression to foo. As a result, we must specialize the case of Callbacks
   // that have the void return type.
-  void DispatchToCallback(base::Callback<void(ArgTypes...)> callback) {
+  void DispatchToCallback(base::RepeatingCallback<void(ArgTypes...)> callback) {
     callback.Run(ArgumentHolder<indices, ArgTypes>::value...);
   }
 
@@ -209,7 +190,7 @@ struct Dispatcher<ReturnType(ArgTypes...)> {
     typedef CallbackHolder<ReturnType(ArgTypes...)> HolderT;
     HolderT* holder = static_cast<HolderT*>(holder_base);
 
-    using Indices = typename IndicesGenerator<sizeof...(ArgTypes)>::type;
+    using Indices = std::index_sequence_for<ArgTypes...>;
     Invoker<Indices, ArgTypes...> invoker(&args, holder->flags);
     if (invoker.IsOK())
       invoker.DispatchToCallback(holder->callback);
@@ -228,12 +209,13 @@ struct Dispatcher<ReturnType(ArgTypes...)> {
 // internal reasons, thus it is generally a good idea to cache the template
 // returned by this function.  Otherwise, repeated method invocations from JS
 // will create substantial memory leaks. See http://crbug.com/463487.
-template<typename Sig>
+template <typename Sig>
 v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
-    v8::Isolate* isolate, const base::Callback<Sig> callback,
+    v8::Isolate* isolate,
+    base::RepeatingCallback<Sig> callback,
     int callback_flags = 0) {
   typedef internal::CallbackHolder<Sig> HolderT;
-  HolderT* holder = new HolderT(isolate, callback, callback_flags);
+  HolderT* holder = new HolderT(isolate, std::move(callback), callback_flags);
 
   v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
       isolate, &internal::Dispatcher<Sig>::DispatchToCallback,
@@ -245,13 +227,13 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
 
 // CreateFunctionHandler installs a CallAsFunction handler on the given
 // object template that forwards to a provided C++ function or base::Callback.
-template<typename Sig>
+template <typename Sig>
 void CreateFunctionHandler(v8::Isolate* isolate,
                            v8::Local<v8::ObjectTemplate> tmpl,
-                           const base::Callback<Sig> callback,
+                           base::RepeatingCallback<Sig> callback,
                            int callback_flags = 0) {
   typedef internal::CallbackHolder<Sig> HolderT;
-  HolderT* holder = new HolderT(isolate, callback, callback_flags);
+  HolderT* holder = new HolderT(isolate, std::move(callback), callback_flags);
   tmpl->SetCallAsFunctionHandler(&internal::Dispatcher<Sig>::DispatchToCallback,
                                  ConvertToV8<v8::Local<v8::External> >(
                                      isolate, holder->GetHandle(isolate)));
