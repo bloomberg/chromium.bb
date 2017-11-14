@@ -12,7 +12,6 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
@@ -113,12 +112,6 @@ ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
 // static
 KeyedServiceBaseFactory* ArcIntentHelperBridge::GetFactory() {
   return ArcIntentHelperBridgeFactory::GetInstance();
-}
-
-// static
-std::string ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
-    const std::string& to_append) {
-  return base::JoinString({kArcIntentHelperPackageName, to_append}, ".");
 }
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
