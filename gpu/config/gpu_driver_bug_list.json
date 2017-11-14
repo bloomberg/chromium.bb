@@ -2680,6 +2680,18 @@
       "features": [
         "flush_on_framebuffer_change"
       ]
+    },
+    {
+      "id": 246,
+      "description": "Code produced by initializing variables using loops can trigger crashes on some Adreno drivers.",
+      "cr_bugs": [784817],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) *",
+      "features": [
+        "dont_use_loops_to_initialize_variables"
+      ]
     }
   ]
 }
