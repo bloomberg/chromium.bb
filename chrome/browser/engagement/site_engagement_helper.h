@@ -146,8 +146,10 @@ class SiteEngagementService::Helper
     // content::WebContentsObserver overrides.
     void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                              const MediaPlayerId& id) override;
-    void MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                             const MediaPlayerId& id) override;
+    void MediaStoppedPlaying(
+        const MediaPlayerInfo& media_info,
+        const MediaPlayerId& id,
+        WebContentsObserver::MediaStoppedReason reason) override;
     void WasShown() override;
     void WasHidden() override;
 

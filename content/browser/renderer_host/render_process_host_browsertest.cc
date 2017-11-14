@@ -488,7 +488,8 @@ class MediaStopObserver : public WebContentsObserver {
 
   void MediaStoppedPlaying(
       const WebContentsObserver::MediaPlayerInfo& media_info,
-      const WebContentsObserver::MediaPlayerId& id) override {
+      const WebContentsObserver::MediaPlayerId& id,
+      WebContentsObserver::MediaStoppedReason reason) override {
     quit_closure_.Run();
   }
 

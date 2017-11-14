@@ -316,8 +316,10 @@ void CastWebView::MediaStartedPlaying(const MediaPlayerInfo& media_info,
   metrics::CastMetricsHelper::GetInstance()->LogMediaPlay();
 }
 
-void CastWebView::MediaStoppedPlaying(const MediaPlayerInfo& media_info,
-                                      const MediaPlayerId& id) {
+void CastWebView::MediaStoppedPlaying(
+    const MediaPlayerInfo& media_info,
+    const MediaPlayerId& id,
+    WebContentsObserver::MediaStoppedReason reason) {
   metrics::CastMetricsHelper::GetInstance()->LogMediaPause();
 }
 

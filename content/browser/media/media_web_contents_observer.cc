@@ -167,7 +167,10 @@ void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
     // Notify observers the player has been "paused".
     web_contents_impl()->MediaStoppedPlaying(
         WebContentsObserver::MediaPlayerInfo(removed_video, removed_audio),
-        player_id);
+        player_id,
+        reached_end_of_stream
+            ? WebContentsObserver::MediaStoppedReason::kReachedEndOfStream
+            : WebContentsObserver::MediaStoppedReason::kUnspecified);
   }
 
   if (reached_end_of_stream)
@@ -259,7 +262,8 @@ void MediaWebContentsObserver::ClearWakeLocks(
     bool was_video = (it != video_players.end());
     bool was_audio = (audio_players.find(id) != audio_players.end());
     web_contents_impl()->MediaStoppedPlaying(
-        WebContentsObserver::MediaPlayerInfo(was_video, was_audio), id);
+        WebContentsObserver::MediaPlayerInfo(was_video, was_audio), id,
+        WebContentsObserver::MediaStoppedReason::kUnspecified);
   }
 }
 
