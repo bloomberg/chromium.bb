@@ -184,7 +184,8 @@ class DiscardableTextureMockContextProvider : public TestContextProvider {
       std::unique_ptr<TestWebGraphicsContext3D> context)
       : TestContextProvider(std::move(support),
                             std::move(gl),
-                            std::move(context)) {}
+                            std::move(context),
+                            false) {}
 };
 
 gfx::ColorSpace DefaultColorSpace() {

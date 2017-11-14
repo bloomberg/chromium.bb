@@ -92,19 +92,21 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create() {
+  constexpr bool support_locking = false;
   return new TestContextProvider(
       std::make_unique<TestContextSupport>(),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      TestWebGraphicsContext3D::Create());
+      TestWebGraphicsContext3D::Create(), support_locking);
 }
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
+  constexpr bool support_locking = true;
   scoped_refptr<TestContextProvider> worker_context_provider(
       new TestContextProvider(
           std::make_unique<TestContextSupport>(),
           std::make_unique<TestGLES2InterfaceForContextProvider>(),
-          TestWebGraphicsContext3D::Create()));
+          TestWebGraphicsContext3D::Create(), support_locking));
   // Worker contexts are bound to the thread they are created on.
   auto result = worker_context_provider->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
@@ -116,19 +118,21 @@ scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestWebGraphicsContext3D> context) {
   DCHECK(context);
+  constexpr bool support_locking = false;
   return new TestContextProvider(
       std::make_unique<TestContextSupport>(),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      std::move(context));
+      std::move(context), support_locking);
 }
 
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestGLES2Interface> gl) {
   DCHECK(gl);
-  return new TestContextProvider(std::make_unique<TestContextSupport>(),
-                                 std::move(gl),
-                                 TestWebGraphicsContext3D::Create());
+  constexpr bool support_locking = false;
+  return new TestContextProvider(
+      std::make_unique<TestContextSupport>(), std::move(gl),
+      TestWebGraphicsContext3D::Create(), support_locking);
 }
 
 // static
@@ -137,19 +141,41 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestContextSupport> support) {
   DCHECK(context);
   DCHECK(support);
+  constexpr bool support_locking = false;
   return new TestContextProvider(
       std::move(support),
       std::make_unique<TestGLES2InterfaceForContextProvider>(),
-      std::move(context));
+      std::move(context), support_locking);
+}
+
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker(
+    std::unique_ptr<TestWebGraphicsContext3D> context,
+    std::unique_ptr<TestContextSupport> support) {
+  DCHECK(context);
+  DCHECK(support);
+  constexpr bool support_locking = true;
+  scoped_refptr<TestContextProvider> worker_context_provider(
+      new TestContextProvider(
+          std::move(support),
+          std::make_unique<TestGLES2InterfaceForContextProvider>(),
+          std::move(context), support_locking));
+  // Worker contexts are bound to the thread they are created on.
+  auto result = worker_context_provider->BindToCurrentThread();
+  if (result != gpu::ContextResult::kSuccess)
+    return nullptr;
+  return worker_context_provider;
 }
 
 TestContextProvider::TestContextProvider(
     std::unique_ptr<TestContextSupport> support,
     std::unique_ptr<TestGLES2Interface> gl,
-    std::unique_ptr<TestWebGraphicsContext3D> context)
+    std::unique_ptr<TestWebGraphicsContext3D> context,
+    bool support_locking)
     : support_(std::move(support)),
       context3d_(std::move(context)),
       context_gl_(std::move(gl)),
+      support_locking_(support_locking),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(context3d_);
@@ -184,26 +210,22 @@ gpu::ContextResult TestContextProvider::BindToCurrentThread() {
   return gpu::ContextResult::kSuccess;
 }
 
-void TestContextProvider::DetachFromThread() {
-  context_thread_checker_.DetachFromThread();
-}
-
 const gpu::Capabilities& TestContextProvider::ContextCapabilities() const {
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   return context3d_->test_capabilities();
 }
 
 const gpu::GpuFeatureInfo& TestContextProvider::GetGpuFeatureInfo() const {
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   return gpu_feature_info_;
 }
 
 gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
   DCHECK(context3d_);
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   return context_gl_.get();
 }
@@ -214,7 +236,7 @@ gpu::ContextSupport* TestContextProvider::ContextSupport() {
 
 class GrContext* TestContextProvider::GrContext() {
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   if (gr_context_)
     return gr_context_->get();
@@ -231,13 +253,13 @@ class GrContext* TestContextProvider::GrContext() {
 }
 
 viz::ContextCacheController* TestContextProvider::CacheController() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
 }
 
 void TestContextProvider::InvalidateGrContext(uint32_t state) {
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   if (gr_context_)
     gr_context_->get()->resetContext(state);
@@ -248,7 +270,7 @@ base::Lock* TestContextProvider::GetLock() {
 }
 
 void TestContextProvider::OnLostContext() {
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
   for (auto& observer : observers_)
     observer.OnContextLost();
   if (gr_context_)
@@ -257,7 +279,7 @@ void TestContextProvider::OnLostContext() {
 
 TestWebGraphicsContext3D* TestContextProvider::TestContext3d() {
   DCHECK(bound_);
-  DCHECK(context_thread_checker_.CalledOnValidThread());
+  CheckValidThreadOrLockAcquired();
 
   return context3d_.get();
 }

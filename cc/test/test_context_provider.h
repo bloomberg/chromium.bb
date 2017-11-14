@@ -44,11 +44,13 @@ class TestContextProvider : public viz::ContextProvider {
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestWebGraphicsContext3D> context,
       std::unique_ptr<TestContextSupport> support);
+  static scoped_refptr<TestContextProvider> CreateWorker(
+      std::unique_ptr<TestWebGraphicsContext3D> context,
+      std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
 
   gpu::ContextResult BindToCurrentThread() override;
-  void DetachFromThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
@@ -75,17 +77,28 @@ class TestContextProvider : public viz::ContextProvider {
   explicit TestContextProvider(
       std::unique_ptr<TestContextSupport> support,
       std::unique_ptr<TestGLES2Interface> gl,
-      std::unique_ptr<TestWebGraphicsContext3D> context);
+      std::unique_ptr<TestWebGraphicsContext3D> context,
+      bool support_locking);
   ~TestContextProvider() override;
 
  private:
   void OnLostContext();
+  void CheckValidThreadOrLockAcquired() const {
+#if DCHECK_IS_ON()
+    if (support_locking_) {
+      context_lock_.AssertAcquired();
+    } else {
+      DCHECK(context_thread_checker_.CalledOnValidThread());
+    }
+#endif
+  }
 
   std::unique_ptr<TestContextSupport> support_;
   std::unique_ptr<TestWebGraphicsContext3D> context3d_;
   std::unique_ptr<TestGLES2Interface> context_gl_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
+  const bool support_locking_ ALLOW_UNUSED_TYPE;
   bool bound_ = false;
 
   gpu::GpuFeatureInfo gpu_feature_info_;

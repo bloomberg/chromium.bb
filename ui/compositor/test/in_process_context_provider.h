@@ -38,17 +38,18 @@ class InProcessContextProvider : public viz::ContextProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::SurfaceHandle window,
-      const std::string& debug_name);
+      const std::string& debug_name,
+      bool support_locking);
 
   // Uses default attributes for creating an offscreen context.
   static scoped_refptr<InProcessContextProvider> CreateOffscreen(
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
-      InProcessContextProvider* shared_context);
+      InProcessContextProvider* shared_context,
+      bool support_locking);
 
   // cc::ContextProvider implementation.
   gpu::ContextResult BindToCurrentThread() override;
-  void DetachFromThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
@@ -71,8 +72,19 @@ class InProcessContextProvider : public viz::ContextProvider {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::SurfaceHandle window,
-      const std::string& debug_name);
+      const std::string& debug_name,
+      bool support_locking);
   ~InProcessContextProvider() override;
+
+  void CheckValidThreadOrLockAcquired() const {
+#if DCHECK_IS_ON()
+    if (support_locking_) {
+      context_lock_.AssertAcquired();
+    } else {
+      DCHECK(context_thread_checker_.CalledOnValidThread());
+    }
+#endif
+  }
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;
@@ -81,6 +93,7 @@ class InProcessContextProvider : public viz::ContextProvider {
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
+  const bool support_locking_ ALLOW_UNUSED_TYPE;
   bool bind_tried_ = false;
   gpu::ContextResult bind_result_;
 
