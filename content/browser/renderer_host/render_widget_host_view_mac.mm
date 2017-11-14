@@ -1113,7 +1113,7 @@ void RenderWidgetHostViewMac::SetTooltipText(
 void RenderWidgetHostViewMac::UpdateScreenInfo(gfx::NativeView view) {
   RenderWidgetHostViewBase::UpdateScreenInfo(view);
 
-  if (!render_widget_host_->auto_resize_enabled())
+  if (!render_widget_host_ || !render_widget_host_->auto_resize_enabled())
     return;
 
   local_surface_id_ = local_surface_id_allocator_.GenerateId();
