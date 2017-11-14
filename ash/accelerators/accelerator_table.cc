@@ -489,14 +489,18 @@ const size_t kActionsAllowedInPinnedModeLength =
 const AcceleratorAction kActionsNeedingWindow[] = {
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
+    MOVE_WINDOW_TO_ABOVE_DISPLAY,
+    MOVE_WINDOW_TO_BELOW_DISPLAY,
+    MOVE_WINDOW_TO_LEFT_DISPLAY,
+    MOVE_WINDOW_TO_RIGHT_DISPLAY,
+    ROTATE_WINDOW,
+    TOGGLE_FULLSCREEN,
+    TOGGLE_MAXIMIZED,
     TOGGLE_OVERVIEW,
     WINDOW_CYCLE_SNAP_LEFT,
     WINDOW_CYCLE_SNAP_RIGHT,
     WINDOW_MINIMIZE,
-    TOGGLE_FULLSCREEN,
-    TOGGLE_MAXIMIZED,
     WINDOW_POSITION_CENTER,
-    ROTATE_WINDOW,
 };
 
 const size_t kActionsNeedingWindowLength = arraysize(kActionsNeedingWindow);

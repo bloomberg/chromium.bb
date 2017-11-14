@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <array>
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -142,7 +144,23 @@ void HandleMoveWindowToDisplay(DisplayMoveWindowDirection direction) {
   display::Display origin_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window);
   int64_t dest_display_id = GetNextDisplay(origin_display, direction);
+  if (dest_display_id == display::kInvalidDisplayId)
+    return;
   wm::MoveWindowToDisplay(window, dest_display_id);
+
+  // Send a11y alert.
+  mojom::AccessibilityAlert alert = mojom::AccessibilityAlert::NONE;
+  if (direction == DisplayMoveWindowDirection::kAbove) {
+    alert = mojom::AccessibilityAlert::WINDOW_MOVED_TO_ABOVE_DISPLAY;
+  } else if (direction == DisplayMoveWindowDirection::kBelow) {
+    alert = mojom::AccessibilityAlert::WINDOW_MOVED_TO_BELOW_DISPLAY;
+  } else if (direction == DisplayMoveWindowDirection::kLeft) {
+    alert = mojom::AccessibilityAlert::WINDOW_MOVED_TO_LEFT_DISPLAY;
+  } else {
+    DCHECK(direction == DisplayMoveWindowDirection::kRight);
+    alert = mojom::AccessibilityAlert::WINDOW_MOVED_TO_RIGHT_DISPLAY;
+  }
+  Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(alert);
 }
 
 }  // namespace ash

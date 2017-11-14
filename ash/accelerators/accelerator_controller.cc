@@ -257,22 +257,21 @@ void HandleMediaPrevTrack() {
   Shell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
-void HandleMoveWindowBetweenDisplays(const ui::Accelerator& accelerator) {
-  ui::KeyboardCode key_code = accelerator.key_code();
+void HandleMoveWindowBetweenDisplays(AcceleratorAction action) {
   DisplayMoveWindowDirection direction;
-  if (key_code == ui::VKEY_LEFT) {
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Left_Display"));
-    direction = DisplayMoveWindowDirection::kLeft;
-  } else if (key_code == ui::VKEY_UP) {
+  if (action == MOVE_WINDOW_TO_ABOVE_DISPLAY) {
     base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Above_Display"));
     direction = DisplayMoveWindowDirection::kAbove;
-  } else if (key_code == ui::VKEY_RIGHT) {
-    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Right_Display"));
-    direction = DisplayMoveWindowDirection::kRight;
-  } else {
-    DCHECK(key_code == ui::VKEY_DOWN);
+  } else if (action == MOVE_WINDOW_TO_BELOW_DISPLAY) {
     base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Below_Display"));
     direction = DisplayMoveWindowDirection::kBelow;
+  } else if (action == MOVE_WINDOW_TO_LEFT_DISPLAY) {
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Left_Display"));
+    direction = DisplayMoveWindowDirection::kLeft;
+  } else {
+    DCHECK(action == MOVE_WINDOW_TO_RIGHT_DISPLAY);
+    base::RecordAction(UserMetricsAction("Accel_Move_Window_To_Right_Display"));
+    direction = DisplayMoveWindowDirection::kRight;
   }
   HandleMoveWindowToDisplay(direction);
 }
@@ -1324,7 +1323,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case MOVE_WINDOW_TO_BELOW_DISPLAY:
     case MOVE_WINDOW_TO_LEFT_DISPLAY:
     case MOVE_WINDOW_TO_RIGHT_DISPLAY:
-      HandleMoveWindowBetweenDisplays(accelerator);
+      HandleMoveWindowBetweenDisplays(action);
       break;
     case NEW_INCOGNITO_WINDOW:
       HandleNewIncognitoWindow();
