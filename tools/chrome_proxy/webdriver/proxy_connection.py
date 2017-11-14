@@ -59,6 +59,7 @@ class ProxyConnection(IntegrationTest):
       self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
         'InvalidResponseHeadersReceived.NetError'))
 
+  @ChromeVersionEqualOrAfterM(63)
   def testTLSReset(self):
     port = common.GetOpenPort()
     with TestDriver() as t:
