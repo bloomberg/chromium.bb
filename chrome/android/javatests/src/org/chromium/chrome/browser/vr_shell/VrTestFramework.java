@@ -188,8 +188,17 @@ public class VrTestFramework {
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
     public static void waitOnJavaScriptStep(WebContents webContents) {
-        Assert.assertTrue("Polling JavaScript boolean javascriptDone timed out",
-                pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents));
+        if (!pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents)) {
+            String reason = "Polling JavaScript boolean javascriptDone timed out.";
+            String resultString =
+                    runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
+            if (resultString.equals("")) {
+                reason += " Did not obtain specific reason from testharness.";
+            } else {
+                reason += " Testharness reported failure: " + resultString;
+            }
+            Assert.fail(reason);
+        }
         // Reset the synchronization boolean
         runJavaScriptOrFail("javascriptDone = false", POLL_TIMEOUT_SHORT_MS, webContents);
     }
