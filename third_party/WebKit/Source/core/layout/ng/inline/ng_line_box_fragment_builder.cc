@@ -125,15 +125,17 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   NGPhysicalSize physical_size =
       NGLogicalSize(inline_size_, block_size_).ConvertToPhysical(writing_mode);
 
+  NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         writing_mode, Direction(), physical_size, child->Size()));
+    child->PropagateContentsVisualRect(&contents_visual_rect);
   }
 
   scoped_refptr<NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
-          Style(), physical_size, children_, metrics_,
+          Style(), physical_size, children_, contents_visual_rect, metrics_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
 

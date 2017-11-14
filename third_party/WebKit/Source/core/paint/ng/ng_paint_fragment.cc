@@ -7,6 +7,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/layout/ng/ng_physical_container_fragment.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/wtf/PtrUtil.h"
@@ -19,6 +20,20 @@ NGPaintFragment::NGPaintFragment(
     : physical_fragment_(std::move(fragment)) {
   DCHECK(physical_fragment_);
   PopulateDescendants(stop_at_block_layout_root);
+}
+
+bool NGPaintFragment::HasOverflowClip() const {
+  return physical_fragment_->IsBox() &&
+         ToNGPhysicalBoxFragment(*physical_fragment_).HasOverflowClip();
+}
+
+bool NGPaintFragment::ShouldClipOverflow() const {
+  return physical_fragment_->IsBox() &&
+         ToNGPhysicalBoxFragment(*physical_fragment_).ShouldClipOverflow();
+}
+
+LayoutRect NGPaintFragment::VisualOverflowRect() const {
+  return physical_fragment_->VisualRectWithContents().ToLayoutRect();
 }
 
 // Populate descendants from NGPhysicalFragment tree.
@@ -63,7 +78,7 @@ void NGPaintFragment::UpdateVisualRectFromLayoutObject(
   const LayoutObject* layout_object = fragment.GetLayoutObject();
   if (fragment.IsText() || fragment.IsLineBox() ||
       (fragment.IsBox() && layout_object && layout_object->IsLayoutInline())) {
-    NGPhysicalOffsetRect visual_rect = fragment.LocalVisualRect();
+    NGPhysicalOffsetRect visual_rect = fragment.SelfVisualRect();
     DCHECK(context.parent_box);
     // TODO(kojii): Review the use of FirstFragment() and PaintOffset(). This is
     // likely incorrect.
@@ -74,7 +89,7 @@ void NGPaintFragment::UpdateVisualRectFromLayoutObject(
   } else {
     // Copy the VisualRect from the corresponding LayoutObject.
     // PaintInvalidator has set the correct VisualRect to LayoutObject, computed
-    // from LocalVisualRect().
+    // from SelfVisualRect().
     // TODO(kojii): The relationship of fragment_data and NG multicol isn't
     // clear yet. For now, this copies from the union of fragment visual rects.
     // This should be revisited if this code lives long, but the hope is for

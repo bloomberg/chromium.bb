@@ -10,7 +10,7 @@
 
 namespace blink {
 
-NGPhysicalOffsetRect NGPhysicalTextFragment::LocalVisualRect() const {
+NGPhysicalOffsetRect NGPhysicalTextFragment::SelfVisualRect() const {
   if (!shape_result_)
     return {};
 

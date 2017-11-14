@@ -118,7 +118,10 @@ class CORE_EXPORT NGPhysicalFragment
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
   // VisualRect of itself, not including contents, in the local coordinate.
-  NGPhysicalOffsetRect LocalVisualRect() const;
+  NGPhysicalOffsetRect SelfVisualRect() const;
+
+  // VisualRect of itself including contents, in the local coordinate.
+  NGPhysicalOffsetRect VisualRectWithContents() const;
 
   // Unite visual rect to propagate to parent's ContentsVisualRect.
   void PropagateContentsVisualRect(NGPhysicalOffsetRect*) const;
