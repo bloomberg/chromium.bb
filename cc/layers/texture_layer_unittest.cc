@@ -824,16 +824,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
 
-  {
-    // Software resource.
-    std::unique_ptr<TextureLayerImpl> impl_layer =
-        TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetTextureMailbox(
-        test_data_.mailbox3_,
-        viz::SingleReleaseCallback::Create(test_data_.release_mailbox3_));
-    EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
-  }
-
   // Software mode.
   {
     std::unique_ptr<TextureLayerImpl> impl_layer =
