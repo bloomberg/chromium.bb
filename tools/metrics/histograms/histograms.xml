@@ -30139,6 +30139,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="interstitial.ssl.good_cert_seen" enum="SSLGoodCertSeenEvent">
+  <obsolete>
+    Deprecated Nov 2017 (M64).
+  </obsolete>
   <owner>jww@chromium.org</owner>
   <summary>
     Emitted when a good certificate is seen, specifying whether the user already
