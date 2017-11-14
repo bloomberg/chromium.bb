@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -172,8 +172,8 @@ void HatsNotificationController::ButtonClick(int /* button_index */) {
   HatsDialog::CreateAndShow(IsGoogleUser(profile_->GetProfileUserName()));
 
   // Remove the notification.
-  g_browser_process->notification_ui_manager()->CancelById(
-      kNotificationId, NotificationUIManager::GetProfileID(profile_));
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationCommon::TRANSIENT, kNotificationId);
 }
 
 // message_center::NotificationDelegate override:
@@ -223,7 +223,9 @@ void HatsNotificationController::OnPortalDetectionCompleted(
         message_center::kSystemNotificationColorNormal)));
     notification.set_vector_small_image(kNotificationGoogleIcon);
   }
-  g_browser_process->notification_ui_manager()->Add(notification, profile_);
+
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationCommon::TRANSIENT, notification);
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {

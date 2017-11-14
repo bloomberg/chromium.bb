@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/notifications/notification_common.h"
 
 class Profile;
@@ -28,6 +29,9 @@ class NotificationDisplayServiceTester {
   explicit NotificationDisplayServiceTester(Profile* profile);
   ~NotificationDisplayServiceTester();
 
+  // Returns the currently active tester, if any.
+  static NotificationDisplayServiceTester* Get();
+
   // Sets |closure| to be invoked when any notification has been added.
   void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
@@ -37,6 +41,9 @@ class NotificationDisplayServiceTester {
 
   const NotificationCommon::Metadata* GetMetadataForNotification(
       const message_center::Notification& notification);
+
+  base::Optional<message_center::Notification> GetNotification(
+      const std::string& notification_id);
 
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.

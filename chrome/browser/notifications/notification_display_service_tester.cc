@@ -11,6 +11,11 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/message_center/notification.h"
 
+namespace {
+// Pointer to currently active tester, which is assumed to be a singleton.
+NotificationDisplayServiceTester* g_tester = nullptr;
+}  // namespace
+
 NotificationDisplayServiceTester::NotificationDisplayServiceTester(
     Profile* profile)
     : profile_(profile) {
@@ -19,11 +24,18 @@ NotificationDisplayServiceTester::NotificationDisplayServiceTester(
   display_service_ = static_cast<StubNotificationDisplayService*>(
       NotificationDisplayServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile_, &StubNotificationDisplayService::FactoryForTests));
+  g_tester = this;
 }
 
 NotificationDisplayServiceTester::~NotificationDisplayServiceTester() {
+  g_tester = nullptr;
   NotificationDisplayServiceFactory::GetInstance()->SetTestingFactory(profile_,
                                                                       nullptr);
+}
+
+// static
+NotificationDisplayServiceTester* NotificationDisplayServiceTester::Get() {
+  return g_tester;
 }
 
 void NotificationDisplayServiceTester::SetNotificationAddedClosure(
@@ -35,6 +47,12 @@ std::vector<message_center::Notification>
 NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
     NotificationCommon::Type type) {
   return display_service_->GetDisplayedNotificationsForType(type);
+}
+
+base::Optional<message_center::Notification>
+NotificationDisplayServiceTester::GetNotification(
+    const std::string& notification_id) {
+  return display_service_->GetNotification(notification_id);
 }
 
 const NotificationCommon::Metadata*
