@@ -131,7 +131,7 @@ void XSSAuditorDelegate::DidBlockScript(const XSSInfo& xss_info) {
 
   if (xss_info.did_block_entire_page_) {
     local_frame->GetNavigationScheduler().SchedulePageBlock(
-        document_, ResourceError::BLOCKED_BY_XSS_AUDITOR);
+        document_, ResourceError::BlockedByXSSAuditorErrorCode());
   }
 }
 
