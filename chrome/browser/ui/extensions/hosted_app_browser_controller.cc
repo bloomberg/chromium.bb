@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "components/security_state/core/security_state.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -150,6 +151,14 @@ base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
   const Extension* extension =
       registry->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   return AppThemeColorInfo::GetThemeColor(extension);
+}
+
+base::string16 HostedAppBrowserController::GetTitle() const {
+  content::NavigationEntry* entry = browser_->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetVisibleEntry();
+  return entry ? entry->GetTitle() : base::string16();
 }
 
 }  // namespace extensions
