@@ -835,9 +835,12 @@ def Run(args, parser):
   any_input = apk_path or elf_path or map_path
   if not any_input:
     parser.error('Most pass at least one of --apk-file, --elf-file, --map-file')
-  lazy_paths = path_util.LazyPaths(tool_prefix=args.tool_prefix,
-                                   output_directory=args.output_directory,
-                                   any_path_within_output_directory=any_input)
+  output_directory_finder = path_util.OutputDirectoryFinder(
+      value=args.output_directory,
+      any_path_within_output_directory=any_input)
+  tool_prefix_finder = path_util.ToolPrefixFinder(
+      value=args.tool_prefix,
+      output_directory_finder=output_directory_finder)
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()
@@ -847,9 +850,9 @@ def Run(args, parser):
     #     secondary architectures.
     apk_so_path = max(lib_infos, key=lambda x:x.file_size).filename
     logging.debug('Sub-apk path=%s', apk_so_path)
-    if not elf_path and lazy_paths.output_directory:
+    if not elf_path and output_directory_finder.Tentative():
       elf_path = os.path.join(
-          lazy_paths.output_directory, 'lib.unstripped',
+          output_directory_finder.Tentative(), 'lib.unstripped',
           os.path.basename(apk_so_path.replace('crazy.', '')))
       logging.debug('Detected --elf-file=%s', elf_path)
 
@@ -865,10 +868,10 @@ def Run(args, parser):
                    'is_official_build=true, or use --map-file to point me a '
                    'linker map file.')
 
-  tool_prefix = lazy_paths.VerifyToolPrefix()
+  tool_prefix = tool_prefix_finder.Finalized()
   output_directory = None
   if not args.no_source_paths:
-    output_directory = lazy_paths.VerifyOutputDirectory()
+    output_directory = output_directory_finder.Finalized()
 
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
                             output_directory)
