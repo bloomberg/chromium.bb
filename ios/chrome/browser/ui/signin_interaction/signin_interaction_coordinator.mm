@@ -11,7 +11,6 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,6 +33,9 @@
 // The UIViewController upon which UI should be presented.
 @property(nonatomic, strong) UIViewController* presentingViewController;
 
+// Bookkeeping for the top-most view controller.
+@property(nonatomic, strong) UIViewController* topViewController;
+
 @end
 
 @implementation SigninInteractionCoordinator
@@ -42,6 +44,7 @@
 @synthesize controller = _controller;
 @synthesize dispatcher = _dispatcher;
 @synthesize presentingViewController = _presentingViewController;
+@synthesize topViewController = _topViewController;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationCommands>)dispatcher {
@@ -125,37 +128,39 @@
 - (void)presentViewController:(UIViewController*)viewController
                      animated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
-  [self.presentingViewController presentViewController:viewController
-                                              animated:animated
-                                            completion:completion];
+  DCHECK_EQ(self.presentingViewController, self.topViewController);
+  [self presentTopViewController:viewController
+                        animated:animated
+                      completion:completion];
 }
 
 - (void)presentTopViewController:(UIViewController*)viewController
                         animated:(BOOL)animated
                       completion:(ProceduralBlock)completion {
-  // TODO(crbug.com/754642): Stop using TopPresentedViewControllerFrom().
-  UIViewController* topController =
-      top_view_controller::TopPresentedViewControllerFrom(
-          self.presentingViewController);
-  [topController presentViewController:viewController
-                              animated:animated
-                            completion:completion];
+  DCHECK(viewController);
+  DCHECK(self.topViewController);
+  DCHECK(![self.topViewController presentedViewController]);
+  [self.topViewController presentViewController:viewController
+                                       animated:animated
+                                     completion:completion];
+  self.topViewController = viewController;
 }
 
-- (void)dismissViewControllerAnimated:(BOOL)animated
-                           completion:(ProceduralBlock)completion {
+- (void)dismissAllViewControllersAnimated:(BOOL)animated
+                               completion:(ProceduralBlock)completion {
+  DCHECK([self isPresenting]);
   [self.presentingViewController dismissViewControllerAnimated:animated
                                                     completion:completion];
+  self.topViewController = self.presentingViewController;
 }
 
 - (void)presentError:(NSError*)error
        dismissAction:(ProceduralBlock)dismissAction {
   DCHECK(!self.alertCoordinator);
-  // TODO(crbug.com/754642): Stop using TopPresentedViewControllerFrom().
+  DCHECK(self.topViewController);
+  DCHECK(![self.topViewController presentedViewController]);
   self.alertCoordinator =
-      ErrorCoordinator(error, dismissAction,
-                       top_view_controller::TopPresentedViewControllerFrom(
-                           self.presentingViewController));
+      ErrorCoordinator(error, dismissAction, self.topViewController);
   [self.alertCoordinator start];
 }
 
@@ -182,7 +187,9 @@ setupForSigninOperationWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
                            promoAction:(signin_metrics::PromoAction)promoAction
               presentingViewController:
                   (UIViewController*)presentingViewController {
+  DCHECK(![self isPresenting]);
   self.presentingViewController = presentingViewController;
+  self.topViewController = presentingViewController;
 
   self.controller = [[SigninInteractionController alloc]
       initWithBrowserState:self.browserState
@@ -200,6 +207,7 @@ setupForSigninOperationWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
   signin_ui::CompletionCallback completionCallback = ^(BOOL success) {
     weakSelf.controller = nil;
     weakSelf.presentingViewController = nil;
+    weakSelf.topViewController = nil;
     weakSelf.alertCoordinator = nil;
     if (completion) {
       completion(success);
