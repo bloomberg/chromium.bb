@@ -32,10 +32,10 @@ class XDGSurfaceWrapper {
   virtual void UnSetMaximized() = 0;
 
   // Sets a native window to fullscreen state.
-  virtual void SetFullScreen() = 0;
+  virtual void SetFullscreen() = 0;
 
   // Unsets a native window from fullscreen state.
-  virtual void UnSetFullScreen() = 0;
+  virtual void UnSetFullscreen() = 0;
 
   // Sets a native window to minimized state.
   virtual void SetMinimized() = 0;

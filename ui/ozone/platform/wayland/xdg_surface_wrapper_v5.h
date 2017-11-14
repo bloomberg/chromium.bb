@@ -23,8 +23,8 @@ class XDGSurfaceWrapperV5 : public XDGSurfaceWrapper {
   bool Initialize(WaylandConnection* connection, wl_surface* surface) override;
   void SetMaximized() override;
   void UnSetMaximized() override;
-  void SetFullScreen() override;
-  void UnSetFullScreen() override;
+  void SetFullscreen() override;
+  void UnSetFullscreen() override;
   void SetMinimized() override;
   void SurfaceMove(WaylandConnection* connection) override;
   void SurfaceResize(WaylandConnection* connection, uint32_t hittest) override;
