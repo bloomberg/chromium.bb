@@ -55,7 +55,9 @@ ComputePartialAbsoluteWithChildInlineSize(
     const ComputedStyle& style,
     const NGStaticPosition&,
     const Optional<MinMaxSize>& child_minmax,
-    const Optional<NGLogicalSize>& replaced_size);
+    const Optional<NGLogicalSize>& replaced_size,
+    const NGWritingMode container_writing_mode,
+    const TextDirection container_direction);
 
 // Compute rest of NGPhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
@@ -64,6 +66,8 @@ CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const NGStaticPosition&,
     const Optional<LayoutUnit>& child_block_size,
     const Optional<NGLogicalSize>& replaced_size,
+    const NGWritingMode container_writing_mode,
+    const TextDirection container_direction,
     NGAbsolutePhysicalPosition* position);
 
 }  // namespace blink
