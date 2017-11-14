@@ -902,6 +902,18 @@
       ]
     },
     {
+      "name": "meowth",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "monroe",
       "configs": [
         {
@@ -1639,7 +1651,7 @@
         {
           "builder": "RELEASE",
           "experimental": true,
-          "leader_board": true,
+          "leader_board": false,
           "board_group": "",
           "arch": "X86_INTERNAL"
         }
@@ -1667,52 +1679,62 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
-          "cq_test_enabled": true
+          "cq_test_enabled": true,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "blue",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "bruce",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "coral",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "lava",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "nasher",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "nasher360",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "porbeagle",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "robo",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "robo360",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
@@ -1726,17 +1748,20 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "whitetip1",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "coral",
           "name": "whitetip2",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         }
       ]
     },
@@ -1750,27 +1775,32 @@
         {
           "board_name": "fizz",
           "name": "fizz",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "fizz",
           "name": "kench",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "fizz",
           "name": "sion",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "fizz",
           "name": "talon",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "fizz",
           "name": "teemo",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         }
       ]
     },
@@ -1784,7 +1814,8 @@
         {
           "board_name": "kahlee",
           "name": "kahlee",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         }
       ]
     },
@@ -1798,32 +1829,38 @@
         {
           "board_name": "reef-uni",
           "name": "alan",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "reef",
           "name": "basking",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "reef-uni",
           "name": "bigdaddy",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "reef",
           "name": "electro",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "pyro",
           "name": "pyro",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "reef",
           "name": "reef",
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "sand",
@@ -1837,12 +1874,14 @@
             "bvt-cq",
             "bvt-perbuild"
           ],
-          "cq_test_enabled": false
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
         },
         {
           "board_name": "snappy",
           "name": "snappy",
-          "cq_test_enabled": true
+          "cq_test_enabled": true,
+          "release_builder_test_pool": "bvt"
         }
       ]
     }
