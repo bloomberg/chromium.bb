@@ -497,4 +497,27 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_FALSE(entity->HasCommitData());
 }
 
+// Tests that updating entity id with commit response while next local change is
+// pending correctly updates that change's id and version.
+TEST_F(ProcessorEntityTrackerTest, NewLocalChangeUpdatedId) {
+  std::unique_ptr<ProcessorEntityTracker> entity = CreateNew();
+  // Create new local change. Make sure initial id is empty.
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue1));
+
+  CommitRequestData request;
+  entity->InitializeCommitRequestData(&request);
+  EXPECT_TRUE(request.entity->id.empty());
+
+  // Before receiving commit response make local modification to the entity.
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue2));
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 1), false);
+
+  // Receiving commit response with valid id should update
+  // ProcessorEntityTracker. Consecutive commit requests should include updated
+  // id.
+  entity->InitializeCommitRequestData(&request);
+  EXPECT_EQ(kId, request.entity->id);
+  EXPECT_EQ(1, request.base_version);
+}
+
 }  // namespace syncer

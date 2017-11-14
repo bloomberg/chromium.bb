@@ -180,13 +180,26 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
   SetCommitData(data.get());
 }
 
-void ProcessorEntityTracker::Delete() {
+bool ProcessorEntityTracker::Delete() {
   IncrementSequenceNumber();
   metadata_.set_modification_time(TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
   // Clear any cached pending commit data.
   commit_data_.reset();
+  // Return true if server might know about this entity.
+  // TODO(crbug/740757): This check will prevent sending tombstone in situation
+  // when it should have been sent under following conditions:
+  //  - Original centity was committed to server, but client crashed before
+  //    receiving response.
+  //  - Entity was deleted while client was offline.
+  // Correct behavior is to send tombstone anyway, but directory based
+  // implementation doesn't and it is unclear how server will react to such
+  // tombstones. Change the behavior to always sending tombstone after
+  // experimenting with server.
+  return (metadata_.server_version() != kUncommittedVersion) ||
+         (commit_requested_sequence_number_ >
+          metadata_.acked_sequence_number());
 }
 
 void ProcessorEntityTracker::InitializeCommitRequestData(
@@ -234,6 +247,12 @@ void ProcessorEntityTracker::ReceiveCommitResponse(
     metadata_.clear_base_specifics_hash();
   } else {
     metadata_.set_base_specifics_hash(data.specifics_hash);
+    // If local change was made while server assigned a new id to the entity,
+    // update id in cached commit data.
+    if (HasCommitData() && commit_data_->id != metadata_.server_id()) {
+      DCHECK(commit_data_->id.empty());
+      commit_data_ = commit_data_->UpdateId(metadata_.server_id());
+    }
   }
 }
 

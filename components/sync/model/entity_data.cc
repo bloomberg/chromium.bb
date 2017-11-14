@@ -27,8 +27,9 @@ std::string UniquePositionToString(
 
 }  // namespace
 
-EntityData::EntityData() {}
-EntityData::~EntityData() {}
+EntityData::EntityData() = default;
+EntityData::~EntityData() = default;
+EntityData::EntityData(const EntityData& src) = default;
 
 void EntityData::Swap(EntityData* other) {
   id.swap(other->id);
@@ -47,6 +48,14 @@ void EntityData::Swap(EntityData* other) {
 EntityDataPtr EntityData::PassToPtr() {
   EntityDataPtr target;
   target.swap_value(this);
+  return target;
+}
+
+EntityDataPtr EntityData::UpdateId(const std::string& new_id) const {
+  EntityData entity_data(*this);
+  entity_data.id = new_id;
+  EntityDataPtr target;
+  target.swap_value(&entity_data);
   return target;
 }
 

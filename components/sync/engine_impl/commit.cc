@@ -129,12 +129,13 @@ SyncerError Commit::PostAndProcessResponse(
   cycle->SendProtocolEvent(request_event);
 
   TRACE_EVENT_BEGIN0("sync", "PostCommit");
+  sync_pb::ClientToServerResponse response;
   const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
-      &message_, &response_, cycle, nullptr);
+      &message_, &response, cycle, nullptr);
   TRACE_EVENT_END0("sync", "PostCommit");
 
   // TODO(rlarocque): Use result that includes errors captured later?
-  CommitResponseEvent response_event(base::Time::Now(), post_result, response_);
+  CommitResponseEvent response_event(base::Time::Now(), post_result, response);
   cycle->SendProtocolEvent(response_event);
 
   if (post_result != SYNCER_OK) {
@@ -142,13 +143,13 @@ SyncerError Commit::PostAndProcessResponse(
     return post_result;
   }
 
-  if (!response_.has_commit()) {
+  if (!response.has_commit()) {
     LOG(WARNING) << "Commit response has no commit body!";
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
   size_t message_entries = message_.commit().entries_size();
-  size_t response_entries = response_.commit().entryresponse_size();
+  size_t response_entries = response.commit().entryresponse_size();
   if (message_entries != response_entries) {
     LOG(ERROR) << "Commit response has wrong number of entries! "
                << "Expected: " << message_entries << ", "
@@ -169,7 +170,7 @@ SyncerError Commit::PostAndProcessResponse(
     TRACE_EVENT1("sync", "ProcessCommitResponse", "type",
                  ModelTypeToString(it->first));
     SyncerError type_result =
-        it->second->ProcessCommitResponse(response_, status);
+        it->second->ProcessCommitResponse(response, status);
     if (type_result == SERVER_RETURN_CONFLICT) {
       nudge_tracker->RecordCommitConflict(it->first);
     }

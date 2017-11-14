@@ -13,11 +13,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
-#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/activation_context.h"
-#include "components/sync/engine/commit_queue.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,6 +60,11 @@ std::unique_ptr<ModelTypeChangeProcessor>
 CreateProcessor(bool commit_only, ModelType type, ModelTypeSyncBridge* bridge) {
   return std::make_unique<SharedModelTypeProcessor>(
       type, bridge, base::RepeatingClosure(), commit_only);
+}
+
+void CaptureCommitRequest(CommitRequestDataList* dst,
+                          CommitRequestDataList&& src) {
+  *dst = std::move(src);
 }
 
 class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
@@ -984,6 +987,16 @@ TEST_F(SharedModelTypeProcessorTest, LocalDeleteItem) {
   EXPECT_EQ(3, metadata_v3.server_version());
 }
 
+// Tests that item created and deleted before sync cycle doesn't get committed.
+TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemUncommitted) {
+  InitializeToMetadataLoaded();
+  bridge()->WriteItem(kKey1, kValue1);
+  bridge()->DeleteItem(kKey1);
+
+  OnSyncStarting();
+  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
 // Tests creating and deleting an item locally before receiving a commit
 // response, then getting the commit responses.
 TEST_F(SharedModelTypeProcessorTest, LocalDeleteItemInterleaved) {
@@ -1080,6 +1093,41 @@ TEST_F(SharedModelTypeProcessorTest, ServerDeleteUnknown) {
   EXPECT_EQ(0U, db().metadata_count());
   EXPECT_EQ(0U, ProcessorEntityCount());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
+}
+
+// Tests that after committing entity fails, processor includes this entity in
+// consecutive commits.
+TEST_F(SharedModelTypeProcessorTest, CommitFailedOnServer) {
+  InitializeToReadyState();
+  bridge()->WriteItem(kKey1, kValue1);
+  worker()->VerifyPendingCommits({kHash1});
+
+  // Entity is sent to server. Processor shouldn't include it in local changes.
+  CommitRequestDataList commit_request;
+  type_processor()->GetLocalChanges(
+      INT_MAX, base::Bind(&CaptureCommitRequest, &commit_request));
+  EXPECT_TRUE(commit_request.empty());
+
+  // Fail commit from worker side indicating this entity was not committed.
+  // Processor should include it in consecutive GetLocalChanges responses.
+  worker()->FailOneCommit();
+  type_processor()->GetLocalChanges(
+      INT_MAX, base::Bind(&CaptureCommitRequest, &commit_request));
+  EXPECT_EQ(1U, commit_request.size());
+  EXPECT_EQ(kHash1, commit_request[0].entity->client_tag_hash);
+}
+
+// Tests that GetLocalChanges honors max_entries parameter.
+TEST_F(SharedModelTypeProcessorTest, LocalChangesPagination) {
+  InitializeToMetadataLoaded();
+  bridge()->WriteItem(kKey1, kValue1);
+  bridge()->WriteItem(kKey2, kValue2);
+
+  // Reqeust at most one intity per batch, ensure that only one was returned.
+  CommitRequestDataList commit_request;
+  type_processor()->GetLocalChanges(
+      1, base::Bind(&CaptureCommitRequest, &commit_request));
+  EXPECT_EQ(1U, commit_request.size());
 }
 
 // Creates two different sync items.

@@ -96,6 +96,11 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   void SetDisconnectCallback(const DisconnectCallback& callback);
 
+  // Sets commit request that will be returned by GetLocalChanges().
+  void SetCommitRequest(const CommitRequestDataList& commit_request);
+
+  int GetLocalChangesCallCount() const;
+
  private:
   // Process a received commit response.
   //
@@ -149,6 +154,11 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
 
   // Callback which will be call during disconnection
   DisconnectCallback disconnect_callback_;
+
+  // Commit request to return from GetLocalChanges().
+  CommitRequestDataList commit_request_;
+
+  int get_local_changes_call_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeProcessor);
 };

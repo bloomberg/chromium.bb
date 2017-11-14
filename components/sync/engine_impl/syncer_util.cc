@@ -469,25 +469,6 @@ void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
   entry->PutAttachmentMetadata(entry->GetServerAttachmentMetadata());
 }
 
-VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {
-  syncable::Id id = entry->GetId();
-  if (id == entry->GetParentId()) {
-    DCHECK(id.IsRoot()) << "Non-root item is self parenting." << *entry;
-    // If the root becomes unsynced it can cause us problems.
-    LOG(ERROR) << "Root item became unsynced " << *entry;
-    return VERIFY_UNSYNCABLE;
-  }
-  if (entry->IsRoot()) {
-    LOG(ERROR) << "Permanent item became unsynced " << *entry;
-    return VERIFY_UNSYNCABLE;
-  }
-  if (entry->GetIsDel() && !entry->GetId().ServerKnows()) {
-    // Drop deleted uncommitted entries.
-    return VERIFY_UNSYNCABLE;
-  }
-  return VERIFY_OK;
-}
-
 void MarkDeletedChildrenSynced(syncable::Directory* dir,
                                syncable::BaseWriteTransaction* trans,
                                std::set<syncable::Id>* deleted_folders) {

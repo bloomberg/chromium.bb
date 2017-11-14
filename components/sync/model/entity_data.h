@@ -75,6 +75,11 @@ struct EntityData {
   // The return value must be assigned into another EntityDataPtr.
   EntityDataPtr PassToPtr() WARN_UNUSED_RESULT;
 
+  // Makes a copy of EntityData and updates its id to |new_id|. This is needed
+  // when entity id is updated with commit response while EntityData for next
+  // local change is cached in ProcessorEntityTracker.
+  EntityDataPtr UpdateId(const std::string& new_id) const WARN_UNUSED_RESULT;
+
   // Dumps all info into a DictionaryValue and returns it.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue();
 
@@ -86,7 +91,10 @@ struct EntityData {
   // Used to transfer the data without copying.
   void Swap(EntityData* other);
 
-  DISALLOW_COPY_AND_ASSIGN(EntityData);
+  // Allow copy ctor so that UpdateId can make a copy of this EntityData.
+  EntityData(const EntityData& src);
+
+  DISALLOW_ASSIGN(EntityData);
 };
 
 }  // namespace syncer
