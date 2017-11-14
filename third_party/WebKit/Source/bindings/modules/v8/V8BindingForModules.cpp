@@ -602,7 +602,8 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
 
 ScriptValue DeserializeScriptValue(ScriptState* script_state,
                                    SerializedScriptValue* serialized_value,
-                                   const Vector<WebBlobInfo>* blob_info) {
+                                   const Vector<WebBlobInfo>* blob_info,
+                                   bool read_wasm_from_stream) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   if (!serialized_value)
@@ -610,6 +611,7 @@ ScriptValue DeserializeScriptValue(ScriptState* script_state,
 
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = blob_info;
+  options.read_wasm_from_stream = read_wasm_from_stream;
   return ScriptValue(script_state,
                      serialized_value->Deserialize(isolate, options));
 }
