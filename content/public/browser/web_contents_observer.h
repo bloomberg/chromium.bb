@@ -337,7 +337,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void FrameNameChanged(RenderFrameHost* render_frame_host,
                                 const std::string& name) {}
 
-  // This methods is invoked when the title of the WebContents is set.
+  // This method is invoked when the title of the WebContents is set. Note that
+  // |entry| may be null if the web page whose title changed has not yet had a
+  // NavigationEntry assigned to it.
   virtual void TitleWasSet(NavigationEntry* entry) {}
 
   virtual void AppCacheAccessed(const GURL& manifest_url,
