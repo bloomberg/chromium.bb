@@ -112,7 +112,7 @@ void MediaElementAudioSourceHandler::SetFormat(size_t number_of_channels,
 
     if (source_sample_rate != Context()->sampleRate()) {
       double scale_factor = source_sample_rate / Context()->sampleRate();
-      multi_channel_resampler_ = WTF::MakeUnique<MultiChannelResampler>(
+      multi_channel_resampler_ = std::make_unique<MultiChannelResampler>(
           scale_factor, number_of_channels);
     } else {
       // Bypass resampling.

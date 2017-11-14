@@ -4,6 +4,8 @@
 
 #include "modules/indexeddb/IDBValueWrapping.h"
 
+#include <memory>
+
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/fileapi/Blob.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -35,8 +37,9 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
 
   scoped_refptr<IDBValue> wrapped_value = IDBValue::Create(
       wrapped_marker_buffer,
-      WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>(blob_data_handles),
-      WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
+      std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>(
+          blob_data_handles),
+      std::make_unique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
   EXPECT_TRUE(IDBValueUnwrapper::IsWrapped(wrapped_value.get()));
 
   Vector<char> wrapped_marker_bytes(wrapped_marker_buffer->size());
@@ -50,9 +53,9 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
   for (size_t i = 0; i < 3; ++i) {
     scoped_refptr<IDBValue> mutant_value = IDBValue::Create(
         SharedBuffer::Create(wrapped_marker_bytes.data(), i),
-        WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>(
+        std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>(
             blob_data_handles),
-        WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
+        std::make_unique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
     EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
   }
@@ -67,9 +70,9 @@ TEST(IDBValueUnwrapperTest, IsWrapped) {
       scoped_refptr<IDBValue> mutant_value = IDBValue::Create(
           SharedBuffer::Create(wrapped_marker_bytes.data(),
                                wrapped_marker_bytes.size()),
-          WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>(
+          std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>(
               blob_data_handles),
-          WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
+          std::make_unique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
       EXPECT_FALSE(IDBValueUnwrapper::IsWrapped(mutant_value.get()));
 
       wrapped_marker_bytes[i] ^= mask;

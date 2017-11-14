@@ -45,7 +45,7 @@ DelayProcessor::~DelayProcessor() {
 }
 
 std::unique_ptr<AudioDSPKernel> DelayProcessor::CreateKernel() {
-  return WTF::MakeUnique<DelayDSPKernel>(this);
+  return std::make_unique<DelayDSPKernel>(this);
 }
 
 void DelayProcessor::ProcessOnlyAudioParams(size_t frames_to_process) {

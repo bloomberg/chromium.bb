@@ -52,7 +52,7 @@ BiquadProcessor::~BiquadProcessor() {
 }
 
 std::unique_ptr<AudioDSPKernel> BiquadProcessor::CreateKernel() {
-  return WTF::MakeUnique<BiquadDSPKernel>(this);
+  return std::make_unique<BiquadDSPKernel>(this);
 }
 
 void BiquadProcessor::CheckForDirtyCoefficients() {
@@ -146,7 +146,7 @@ void BiquadProcessor::GetFrequencyResponse(int n_frequencies,
   // thread on the main kernels.
 
   std::unique_ptr<BiquadDSPKernel> response_kernel =
-      WTF::MakeUnique<BiquadDSPKernel>(this);
+      std::make_unique<BiquadDSPKernel>(this);
   response_kernel->GetFrequencyResponse(n_frequencies, frequency_hz,
                                         mag_response, phase_response);
 }

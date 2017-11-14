@@ -4,6 +4,8 @@
 
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptModule.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -56,7 +58,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     Document* document = page_->GetFrame().GetDocument();
     document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
-    reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
+    reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
