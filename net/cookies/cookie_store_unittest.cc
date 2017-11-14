@@ -21,13 +21,6 @@ namespace {
 void MatchCookieLineToVector(
     const std::string& line,
     const std::vector<std::unique_ptr<CanonicalCookie>>& cookies) {
-  // Test the std::vector<CanonicalCookie> variant
-  // ('CookieMonster::CookieList'):
-  std::vector<CanonicalCookie> list;
-  for (const auto& cookie : cookies)
-    list.push_back(*cookie);
-  EXPECT_EQ(line, CookieStore::BuildCookieLine(list));
-
   // Test the std::vector<CanonicalCookie*> variant
   // ('CookieMonster::CanonicalCookieVector' (yes, this is absurd)):
   std::vector<CanonicalCookie*> ptr_list;
@@ -38,6 +31,8 @@ void MatchCookieLineToVector(
 
 } // namespace
 
+// TODO(rdsmith): Keep in sync with CanonicalCookieTest.BuildCookieLine;
+// remove when the need for CookieStore::BuildCookieLine is done.
 TEST(CookieStoreBaseTest, BuildCookieLine) {
   std::vector<std::unique_ptr<CanonicalCookie>> cookies;
   GURL url("https://example.com/");

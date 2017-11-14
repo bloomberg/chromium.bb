@@ -12,6 +12,20 @@
 
 namespace net {
 
+namespace {
+
+// Helper for testing BuildCookieLine
+void MatchCookieLineToVector(
+    const std::string& line,
+    const std::vector<std::unique_ptr<CanonicalCookie>>& cookies) {
+  std::vector<CanonicalCookie> list;
+  for (const auto& cookie : cookies)
+    list.push_back(*cookie);
+  EXPECT_EQ(line, CanonicalCookie::BuildCookieLine(list));
+}
+
+}  // namespace
+
 TEST(CanonicalCookieTest, Constructor) {
   GURL url("http://www.example.com/test");
   base::Time current_time = base::Time::Now();
@@ -913,6 +927,31 @@ TEST(CanonicalCookieTest, TestPrefixHistograms) {
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
+}
+
+TEST(CanonicalCookieTest, BuildCookieLine) {
+  std::vector<std::unique_ptr<CanonicalCookie>> cookies;
+  GURL url("https://example.com/");
+  CookieOptions options;
+  base::Time now = base::Time::Now();
+  MatchCookieLineToVector("", cookies);
+
+  cookies.push_back(CanonicalCookie::Create(url, "A=B", now, options));
+  MatchCookieLineToVector("A=B", cookies);
+  // Nameless cookies are sent back without a prefixed '='.
+  cookies.push_back(CanonicalCookie::Create(url, "C", now, options));
+  MatchCookieLineToVector("A=B; C", cookies);
+  // Cookies separated by ';'.
+  cookies.push_back(CanonicalCookie::Create(url, "D=E", now, options));
+  MatchCookieLineToVector("A=B; C; D=E", cookies);
+  // BuildCookieLine doesn't reorder the list, it relies on the caller to do so.
+  cookies.push_back(CanonicalCookie::Create(
+      url, "F=G", now - base::TimeDelta::FromSeconds(1), options));
+  MatchCookieLineToVector("A=B; C; D=E; F=G", cookies);
+  // BuildCookieLine doesn't deduplicate.
+  cookies.push_back(CanonicalCookie::Create(
+      url, "D=E", now - base::TimeDelta::FromSeconds(2), options));
+  MatchCookieLineToVector("A=B; C; D=E; F=G; D=E", cookies);
 }
 
 }  // namespace net

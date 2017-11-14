@@ -67,13 +67,15 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
-#include "net/cookies/cookie_store.h"
+#include "net/base/io_buffer.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/mock_source_stream.h"
@@ -81,8 +83,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/python_utils.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -384,40 +385,15 @@ void SimulateKeyPressImpl(WebContents* web_contents,
 }
 
 void GetCookiesCallback(std::string* cookies_out,
-                        base::WaitableEvent* event,
-                        const std::string& cookies) {
-  *cookies_out = cookies;
-  event->Signal();
+                        base::RunLoop* run_loop,
+                        const std::vector<net::CanonicalCookie>& cookies) {
+  *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
+  run_loop->Quit();
 }
 
-void GetCookiesOnIOThread(const GURL& url,
-                          net::URLRequestContextGetter* context_getter,
-                          base::WaitableEvent* event,
-                          std::string* cookies) {
-  net::CookieStore* cookie_store =
-      context_getter->GetURLRequestContext()->cookie_store();
-  cookie_store->GetCookiesWithOptionsAsync(
-      url, net::CookieOptions(),
-      base::BindOnce(&GetCookiesCallback, cookies, event));
-}
-
-void SetCookieCallback(bool* result,
-                       base::WaitableEvent* event,
-                       bool success) {
+void SetCookieCallback(bool* result, base::RunLoop* run_loop, bool success) {
   *result = success;
-  event->Signal();
-}
-
-void SetCookieOnIOThread(const GURL& url,
-                         const std::string& value,
-                         net::URLRequestContextGetter* context_getter,
-                         base::WaitableEvent* event,
-                         bool* result) {
-  net::CookieStore* cookie_store =
-      context_getter->GetURLRequestContext()->cookie_store();
-  cookie_store->SetCookieWithOptionsAsync(
-      url, value, net::CookieOptions(),
-      base::BindOnce(&SetCookieCallback, result, event));
+  run_loop->Quit();
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
@@ -1229,17 +1205,15 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
 
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   std::string cookies;
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(browser_context)->
-          GetURLRequestContext();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&GetCookiesOnIOThread, url,
-                     base::RetainedRef(context_getter), &event, &cookies));
-  event.Wait();
+  base::RunLoop run_loop;
+  network::mojom::CookieManagerPtr cookie_manager;
+  BrowserContext::GetDefaultStoragePartition(browser_context)
+      ->GetNetworkContext()
+      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  cookie_manager->GetCookieList(
+      url, net::CookieOptions(),
+      base::BindOnce(&GetCookiesCallback, &cookies, &run_loop));
+  run_loop.Run();
   return cookies;
 }
 
@@ -1247,17 +1221,19 @@ bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value) {
   bool result = false;
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(browser_context)->
-          GetURLRequestContext();
+  base::RunLoop run_loop;
+  network::mojom::CookieManagerPtr cookie_manager;
+  BrowserContext::GetDefaultStoragePartition(browser_context)
+      ->GetNetworkContext()
+      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      url, value, base::Time::Now(), net::CookieOptions()));
+  DCHECK(cc.get());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SetCookieOnIOThread, url, value,
-                     base::RetainedRef(context_getter), &event, &result));
-  event.Wait();
+  cookie_manager->SetCanonicalCookie(
+      *cc.get(), true /* secure_source */, true /* modify_http_only */,
+      base::BindOnce(&SetCookieCallback, &result, &run_loop));
+  run_loop.Run();
   return result;
 }
 

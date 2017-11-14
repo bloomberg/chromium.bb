@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/cookies/cookie_store.h"
 
 using content::BrowserThread;
 

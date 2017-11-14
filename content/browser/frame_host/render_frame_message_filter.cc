@@ -32,6 +32,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -393,7 +394,7 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
   if (context && GetContentClient()->browser()->AllowGetCookie(
                      url, site_for_cookies, cookie_list, resource_context_,
                      render_process_id_, render_frame_id)) {
-    std::move(callback).Run(net::CookieStore::BuildCookieLine(cookie_list));
+    std::move(callback).Run(net::CanonicalCookie::BuildCookieLine(cookie_list));
   } else {
     std::move(callback).Run(std::string());
   }

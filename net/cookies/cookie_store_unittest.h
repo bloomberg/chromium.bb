@@ -119,7 +119,7 @@ class CookieStoreTest : public testing::Test {
         url, options,
         base::Bind(&GetCookieListCallback::Run, base::Unretained(&callback)));
     callback.WaitUntilDone();
-    return CookieStore::BuildCookieLine(callback.cookies());
+    return CanonicalCookie::BuildCookieLine(callback.cookies());
   }
 
   CookieList GetCookieListWithOptions(CookieStore* cs,

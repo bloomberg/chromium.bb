@@ -5,6 +5,7 @@
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
 
 #include "base/strings/string_util.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -81,7 +82,7 @@ void InterceptDownloadResourceThrottle::CheckCookiePolicy(
   DownloadInfo info(request_);
   if (request_->context()->network_delegate()->CanGetCookies(*request_,
                                                              cookie_list)) {
-    std::string cookie = net::CookieStore::BuildCookieLine(cookie_list);
+    std::string cookie = net::CanonicalCookie::BuildCookieLine(cookie_list);
     if (!cookie.empty())
       info.cookie = cookie;
   }

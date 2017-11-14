@@ -34,6 +34,7 @@
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
 #include "net/filter/brotli_source_stream.h"
 #include "net/filter/filter_source_stream.h"
@@ -614,7 +615,8 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(const CookieList& cookie_list) {
       LogCookieAgeForNonSecureRequest(cookie_list, *request_);
 
     request_info_.extra_headers.SetHeader(
-        HttpRequestHeaders::kCookie, CookieStore::BuildCookieLine(cookie_list));
+        HttpRequestHeaders::kCookie,
+        CanonicalCookie::BuildCookieLine(cookie_list));
     // Disable privacy mode as we are sending cookies anyway.
     request_info_.privacy_mode = PRIVACY_MODE_DISABLED;
   }
