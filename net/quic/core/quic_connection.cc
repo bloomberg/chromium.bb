@@ -2376,6 +2376,47 @@ void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
   packet_generator_.GenerateMtuDiscoveryPacket(target_mtu);
 }
 
+void QuicConnection::SendConnectivityProbingPacket(
+    QuicPacketWriter* probing_writer,
+    const QuicSocketAddress& peer_address) {
+  if (perspective_ == Perspective::IS_SERVER && probing_writer == nullptr) {
+    // Server can use default packet writer to write probing packet.
+    probing_writer = writer_;
+  }
+
+  DCHECK(!probing_writer && peer_address.IsInitialized());
+
+  if (probing_writer->IsWriteBlocked()) {
+    QUIC_BUG << "Writer blocked when send connectivity probing packet";
+    visitor_->OnWriteBlocked();
+    return;
+  }
+
+  QUIC_DLOG(INFO) << ENDPOINT << "Sending connectivity probing packet for "
+                  << "connection_id = " << connection_id_;
+
+  std::unique_ptr<QuicEncryptedPacket> probing_packet(
+      packet_generator_.SerializeConnectivityProbingPacket());
+
+  WriteResult result = probing_writer->WritePacket(
+      probing_packet->data(), probing_packet->length(), self_address().host(),
+      peer_address, per_packet_options_);
+
+  if (result.status == WRITE_STATUS_ERROR) {
+    OnWriteError(result.error_code);
+    QUIC_BUG << "Write probing packet failed with error = "
+             << result.error_code;
+    return;
+  }
+
+  if (result.status == WRITE_STATUS_BLOCKED) {
+    visitor_->OnWriteBlocked();
+    if (probing_writer->IsWriteBlockedDataBuffered()) {
+      QUIC_BUG << "Write probing packet blocked";
+    }
+  }
+}
+
 void QuicConnection::DiscoverMtu() {
   DCHECK(!mtu_discovery_alarm_->IsSet());
 

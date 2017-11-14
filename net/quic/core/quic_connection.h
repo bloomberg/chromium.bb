@@ -666,6 +666,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // |target_mtu|.
   void SendMtuDiscoveryPacket(QuicByteCount target_mtu);
 
+  // Sends a connectivity probing packet to |peer_address| with
+  // |probing_writer|. If |probing_writer| is nullptr, will use default
+  // packet writer to write the packet.
+  void SendConnectivityProbingPacket(QuicPacketWriter* probing_writer,
+                                     const QuicSocketAddress& peer_address);
+
   // Sends an MTU discovery packet of size |mtu_discovery_target_| and updates
   // the MTU discovery alarm.
   void DiscoverMtu();
