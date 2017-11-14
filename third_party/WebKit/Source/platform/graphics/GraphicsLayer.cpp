@@ -72,7 +72,7 @@
 #include "public/platform/WebSize.h"
 
 #ifndef NDEBUG
-#include <stdio.h>
+#include "platform/graphics/LoggingCanvas.h"
 #endif
 
 namespace blink {
@@ -830,6 +830,11 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     json->SetArray("contentsClippingMaskLayer",
                    std::move(contents_clipping_mask_layer_json));
   }
+
+#ifndef NDEBUG
+  if (DrawsContent() && (flags & kLayerTreeIncludesPaintRecords))
+    json->SetValue("paintRecord", RecordAsJSON(*CapturePaintRecord()));
+#endif
 
   return json;
 }
