@@ -637,7 +637,8 @@ base::string16 Browser::GetWindowTitleFromWebContents(
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
   if (contents) {
-    title = contents->GetTitle();
+    title = hosted_app_controller_ ? hosted_app_controller_->GetTitle()
+                                   : contents->GetTitle();
     FormatTitleForDisplay(&title);
   }
 

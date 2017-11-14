@@ -49,6 +49,9 @@ class HostedAppBrowserController {
   // Returns the color of the title bar.
   base::Optional<SkColor> GetThemeColor() const;
 
+  // Returns the title to be displayed in the window title bar.
+  base::string16 GetTitle() const;
+
  private:
   Browser* browser_;
   const std::string extension_id_;
