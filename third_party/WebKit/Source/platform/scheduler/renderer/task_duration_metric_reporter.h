@@ -33,14 +33,15 @@ class PLATFORM_EXPORT TaskDurationMetricReporter {
       : TaskDurationMetricReporter(base::Histogram::FactoryGet(
             metric_name,
             1,
-            static_cast<int>(TaskClass::COUNT),
-            static_cast<int>(TaskClass::COUNT) + 1,
+            static_cast<int>(TaskClass::kCount),
+            static_cast<int>(TaskClass::kCount) + 1,
             base::HistogramBase::kUmaTargetedHistogramFlag)) {}
 
   ~TaskDurationMetricReporter() {}
 
   void RecordTask(TaskClass task_class, base::TimeDelta duration) {
-    DCHECK_LT(static_cast<int>(task_class), static_cast<int>(TaskClass::COUNT));
+    DCHECK_LT(static_cast<int>(task_class),
+              static_cast<int>(TaskClass::kCount));
     // Report only whole milliseconds to avoid overflow.
     base::TimeDelta& unreported_duration =
         unreported_task_duration_[static_cast<int>(task_class)];
@@ -59,7 +60,7 @@ class PLATFORM_EXPORT TaskDurationMetricReporter {
   TaskDurationMetricReporter(base::HistogramBase* histogram)
       : task_duration_per_queue_type_histogram_(histogram) {}
 
-  std::array<base::TimeDelta, static_cast<size_t>(TaskClass::COUNT)>
+  std::array<base::TimeDelta, static_cast<size_t>(TaskClass::kCount)>
       unreported_task_duration_;
   base::HistogramBase* task_duration_per_queue_type_histogram_;
 

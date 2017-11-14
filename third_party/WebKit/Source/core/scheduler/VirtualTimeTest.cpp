@@ -53,7 +53,7 @@ class VirtualTimeTest : public SimTest {
 
   void StopVirtualTimeAndExitRunLoop() {
     WebView().Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::PAUSE);
+        WebViewScheduler::VirtualTimePolicy::kPause);
     testing::ExitRunLoop();
   }
 
@@ -82,7 +82,7 @@ class VirtualTimeTest : public SimTest {
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
   WebView().Scheduler()->EnableVirtualTime();
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::ADVANCE);
+      WebViewScheduler::VirtualTimePolicy::kAdvance);
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -111,7 +111,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersFireInExpectedOrder) {
 TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
   WebView().Scheduler()->EnableVirtualTime();
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::ADVANCE);
+      WebViewScheduler::VirtualTimePolicy::kAdvance);
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -139,7 +139,7 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
 TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
   WebView().Scheduler()->EnableVirtualTime();
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::PAUSE);
+      WebViewScheduler::VirtualTimePolicy::kPause);
 
   ExecuteJavaScript(
       "var run_order = [];"
@@ -154,7 +154,7 @@ TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
   EXPECT_EQ("", ExecuteJavaScript("run_order.join(', ')"));
 
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::ADVANCE);
+      WebViewScheduler::VirtualTimePolicy::kAdvance);
   RunTasksForPeriod(1000);
 
   EXPECT_EQ("c, b, a", ExecuteJavaScript("run_order.join(', ')"));
@@ -172,7 +172,7 @@ TEST_F(VirtualTimeTest,
        MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading) {
   WebView().Scheduler()->EnableVirtualTime();
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
+      WebViewScheduler::VirtualTimePolicy::kDeterministicLoading);
 
   EXPECT_TRUE(WebView().Scheduler()->VirtualTimeAllowedToAdvance());
 
@@ -216,7 +216,7 @@ TEST_F(VirtualTimeTest,
 TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
   WebView().Scheduler()->EnableVirtualTime();
   WebView().Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::ADVANCE);
+      WebViewScheduler::VirtualTimePolicy::kAdvance);
 
   // Schedule normal DOM timers to run at 1s and 1.001s in the future.
   ExecuteJavaScript(
@@ -228,14 +228,15 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
       Window().GetExecutionContext()->GetTaskRunner(TaskType::kJavascriptTimer);
 
   // Schedule a task to suspend virtual time at the same point in time.
-  runner->PostDelayedTask(BLINK_FROM_HERE,
-                          WTF::Bind(
-                              [](WebViewScheduler* scheduler) {
-                                scheduler->SetVirtualTimePolicy(
-                                    WebViewScheduler::VirtualTimePolicy::PAUSE);
-                              },
-                              WTF::Unretained(WebView().Scheduler())),
-                          TimeDelta::FromMilliseconds(1000));
+  runner->PostDelayedTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(
+                WebViewScheduler::VirtualTimePolicy::kPause);
+          },
+          WTF::Unretained(WebView().Scheduler())),
+      TimeDelta::FromMilliseconds(1000));
 
   // ALso schedule a third timer for the same point in time.
   ExecuteJavaScript("setTimeout(() => { run_order.push(2); }, 1000);");

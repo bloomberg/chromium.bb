@@ -274,9 +274,9 @@ class PLATFORM_EXPORT TaskQueueManager
   bool SelectWorkQueueToService(internal::WorkQueue** out_work_queue);
 
   enum class ProcessTaskResult {
-    DEFERRED,
-    EXECUTED,
-    TASK_QUEUE_MANAGER_DELETED
+    kDeferred,
+    kExecuted,
+    kTaskQueueManagerDeleted,
   };
 
   // Runs a single nestable task from the |queue|. On exit, |out_task| will

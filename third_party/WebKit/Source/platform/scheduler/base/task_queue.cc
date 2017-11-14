@@ -146,7 +146,7 @@ void TaskQueue::SetQueuePriority(TaskQueue::QueuePriority priority) {
 TaskQueue::QueuePriority TaskQueue::GetQueuePriority() const {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!impl_)
-    return TaskQueue::QueuePriority::LOW_PRIORITY;
+    return TaskQueue::QueuePriority::kLowPriority;
   return impl_->GetQueuePriority();
 }
 

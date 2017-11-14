@@ -29,7 +29,7 @@ Blink Scheduler as well as other schedulers in Chrome.
 ## 2016
 
 * [Time-based renderer task throttling](https://drive.google.com/open?id=1vCUeGfr2xzZ67SFt2yZjNeaIcXGp2Td6KHN7bI02ySo)
-* [V8 Performance Mode](https://drive.google.com/open?id=1bRVAP08qNBvnEm_vO4hW1-NqQC9-lQZjUH29_vwfYRY)
+* [kV8 Performance Mode](https://drive.google.com/open?id=1bRVAP08qNBvnEm_vO4hW1-NqQC9-lQZjUH29_vwfYRY)
 * [Isolating performance of third-party iframes](https://docs.google.com/document/d/1CEggurHQGXenhu_GQT7KnRvtSuowuenXpxVzYSeRxSY/edit)
 * [Folly of Scheduling (BlinkOn 6)](https://drive.google.com/open?id=1ZMxbnSn1R1o2-NGztP0mVyOOoQg24bLSqWE1SWXnQ_E)
 * [Rendering pipeline throttling (BlinkOn 6)](https://docs.google.com/presentation/d/1aPZzH7J0O29sqA_FzsuWQNDwK6CoNcAcpMvJexsO6Vg/edit)

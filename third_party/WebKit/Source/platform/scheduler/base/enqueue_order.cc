@@ -11,7 +11,7 @@ namespace internal {
 // Note we set the first |enqueue_order_| to a specific non-zero value, because
 // first N values of EnqueueOrder have special meaning (see EnqueueOrderValues).
 EnqueueOrderGenerator::EnqueueOrderGenerator()
-    : enqueue_order_(static_cast<EnqueueOrder>(EnqueueOrderValues::FIRST)) {}
+    : enqueue_order_(static_cast<EnqueueOrder>(EnqueueOrderValues::kFirst)) {}
 
 EnqueueOrderGenerator::~EnqueueOrderGenerator() {}
 

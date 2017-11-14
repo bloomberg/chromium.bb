@@ -36,9 +36,9 @@ class WorkQueueSetsTest : public ::testing::Test {
 
   WorkQueue* NewTaskQueue(const char* queue_name) {
     WorkQueue* queue =
-        new WorkQueue(nullptr, "test", WorkQueue::QueueType::IMMEDIATE);
+        new WorkQueue(nullptr, "test", WorkQueue::QueueType::kImmediate);
     work_queues_.push_back(base::WrapUnique(queue));
-    work_queue_sets_->AddQueue(queue, TaskQueue::CONTROL_PRIORITY);
+    work_queue_sets_->AddQueue(queue, TaskQueue::kControlPriority);
     return queue;
   }
 
@@ -56,7 +56,7 @@ class WorkQueueSetsTest : public ::testing::Test {
 
 TEST_F(WorkQueueSetsTest, ChangeSetIndex) {
   WorkQueue* work_queue = NewTaskQueue("queue");
-  size_t set = TaskQueue::NORMAL_PRIORITY;
+  size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
 
   EXPECT_EQ(set, work_queue->work_queue_set_index());
@@ -64,7 +64,7 @@ TEST_F(WorkQueueSetsTest, ChangeSetIndex) {
 
 TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_QueueEmpty) {
   WorkQueue* work_queue = NewTaskQueue("queue");
-  size_t set = TaskQueue::NORMAL_PRIORITY;
+  size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
 
   WorkQueue* selected_work_queue;
@@ -74,7 +74,7 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_QueueEmpty) {
 
 TEST_F(WorkQueueSetsTest, OnTaskPushedToEmptyQueue) {
   WorkQueue* work_queue = NewTaskQueue("queue");
-  size_t set = TaskQueue::NORMAL_PRIORITY;
+  size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
 
   WorkQueue* selected_work_queue;
@@ -281,7 +281,7 @@ TEST_F(WorkQueueSetsTest, BlockQueuesByFence) {
   queue1->Push(FakeTaskWithEnqueueOrder(8));
   queue2->Push(FakeTaskWithEnqueueOrder(9));
 
-  size_t set = TaskQueue::CONTROL_PRIORITY;
+  size_t set = TaskQueue::kControlPriority;
 
   WorkQueue* selected_work_queue;
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));

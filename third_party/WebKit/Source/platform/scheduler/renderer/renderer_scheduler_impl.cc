@@ -90,14 +90,14 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           "RendererSchedulerIdlePeriod",
           base::TimeDelta(),
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-              MainThreadTaskQueue::QueueType::IDLE))),
+              MainThreadTaskQueue::QueueType::kIdle))),
       idle_canceled_delayed_task_sweeper_(&helper_,
                                           idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
       control_task_queue_(helper_.ControlMainThreadTaskQueue()),
       compositor_task_queue_(
           helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                                   MainThreadTaskQueue::QueueType::COMPOSITOR)
+                                   MainThreadTaskQueue::QueueType::kCompositor)
                                    .SetShouldMonitorQuiescence(true))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
@@ -128,13 +128,13 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                      compositor_task_queue_->CreateQueueEnabledVoter()));
 
   default_loading_task_queue_ =
-      NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::DEFAULT_LOADING);
+      NewLoadingTaskQueue(MainThreadTaskQueue::QueueType::kDefaultLoading);
   default_timer_task_queue_ =
-      NewTimerTaskQueue(MainThreadTaskQueue::QueueType::DEFAULT_TIMER);
+      NewTimerTaskQueue(MainThreadTaskQueue::QueueType::kDefaultTimer);
   v8_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-      MainThreadTaskQueue::QueueType::V8));
+      MainThreadTaskQueue::QueueType::kV8));
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-      MainThreadTaskQueue::QueueType::IPC));
+      MainThreadTaskQueue::QueueType::kIPC));
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
@@ -169,10 +169,10 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   for (auto& pair : task_runners_) {
     TaskCostEstimator* observer = nullptr;
     switch (pair.first->queue_class()) {
-      case MainThreadTaskQueue::QueueClass::LOADING:
+      case MainThreadTaskQueue::QueueClass::kLoading:
         observer = &main_thread_only().loading_task_cost_estimator;
         break;
-      case MainThreadTaskQueue::QueueClass::TIMER:
+      case MainThreadTaskQueue::QueueClass::kTimer:
         observer = &main_thread_only().timer_task_cost_estimator;
         break;
       default:
@@ -210,13 +210,13 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
                           kShortIdlePeriodDurationPercentile),
-      current_use_case(UseCase::NONE,
+      current_use_case(UseCase::kNone,
                        "RendererScheduler.UseCase",
                        renderer_scheduler_impl,
                        UseCaseToString),
       renderer_pause_count(0),
       navigation_task_expected_count(0),
-      expensive_task_policy(ExpensiveTaskPolicy::RUN),
+      expensive_task_policy(ExpensiveTaskPolicy::kRun),
       renderer_hidden(false),
       renderer_backgrounded(false,
                             "RendererScheduler.Backgrounded",
@@ -257,7 +257,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       wake_up_budget_pool(nullptr),
       metrics_helper(renderer_scheduler_impl, now, renderer_backgrounded),
       process_type(RendererProcessType::kRenderer),
-      virtual_time_policy(VirtualTimePolicy::ADVANCE),
+      virtual_time_policy(VirtualTimePolicy::kAdvance),
       virtual_time_pause_count(0),
       max_virtual_time_task_starvation_count(0),
       virtual_time_stopped(false),
@@ -355,7 +355,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::TimerTaskQueue() {
   return default_timer_task_queue_;
 }
 
-scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::V8TaskQueue() {
+scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::kV8TaskQueue() {
   helper_.CheckOnValidThread();
   return v8_task_queue_;
 }
@@ -383,9 +383,9 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
   auto insert_result =
       task_runners_.insert(std::make_pair(task_queue, std::move(voter)));
   auto queue_class = task_queue->queue_class();
-  if (queue_class == MainThreadTaskQueue::QueueClass::TIMER) {
+  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer) {
     task_queue->AddTaskObserver(&main_thread_only().timer_task_cost_estimator);
-  } else if (queue_class == MainThreadTaskQueue::QueueClass::LOADING) {
+  } else if (queue_class == MainThreadTaskQueue::QueueClass::kLoading) {
     task_queue->AddTaskObserver(
         &main_thread_only().loading_task_cost_estimator);
   }
@@ -397,9 +397,9 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
   if (task_queue->CanBeThrottled())
     AddQueueToWakeUpBudgetPool(task_queue.get());
 
-  if (queue_class == MainThreadTaskQueue::QueueClass::TIMER) {
+  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer) {
     if (main_thread_only().virtual_time_stopped)
-      task_queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+      task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   }
 
   return task_queue;
@@ -408,7 +408,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTaskQueue(
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
     MainThreadTaskQueue::QueueType queue_type) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
-            MainThreadTaskQueue::QueueClass::LOADING);
+            MainThreadTaskQueue::QueueClass::kLoading);
   return NewTaskQueue(
       MainThreadTaskQueue::QueueCreationParams(queue_type)
           .SetCanBePaused(true)
@@ -416,13 +416,13 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
           .SetCanBeDeferred(true)
           .SetUsedForControlTasks(
               queue_type ==
-              MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL));
+              MainThreadTaskQueue::QueueType::kFrameLoading_kControl));
 }
 
 scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
     MainThreadTaskQueue::QueueType queue_type) {
   DCHECK_EQ(MainThreadTaskQueue::QueueClassForQueueType(queue_type),
-            MainThreadTaskQueue::QueueClass::TIMER);
+            MainThreadTaskQueue::QueueClass::kTimer);
   return NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(queue_type)
                           .SetShouldReportWhenExecutionBlocked(true)
                           .SetCanBePaused(true)
@@ -446,10 +446,10 @@ void RendererSchedulerImpl::OnShutdownTaskQueue(
 
   if (task_runners_.erase(task_queue)) {
     switch (task_queue->queue_class()) {
-      case MainThreadTaskQueue::QueueClass::TIMER:
+      case MainThreadTaskQueue::QueueClass::kTimer:
         task_queue->RemoveTaskObserver(
             &main_thread_only().timer_task_cost_estimator);
-      case MainThreadTaskQueue::QueueClass::LOADING:
+      case MainThreadTaskQueue::QueueClass::kLoading:
         task_queue->RemoveTaskObserver(
             &main_thread_only().loading_task_cost_estimator);
       default:
@@ -503,7 +503,7 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
     // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
     // the next pending delayed tasks (as currently done in for long idle times)
     idle_helper_.StartIdlePeriod(
-        IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now,
+        IdleHelper::IdlePeriodState::kInShortIdlePeriod, now,
         main_thread_only().estimated_next_frame_begin);
   }
 
@@ -543,7 +543,7 @@ void RendererSchedulerImpl::BeginMainFrameNotExpectedUntil(
     // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
     // the next pending delayed tasks (as currently done in for long idle times)
     idle_helper_.StartIdlePeriod(
-        IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now, time);
+        IdleHelper::IdlePeriodState::kInShortIdlePeriod, now, time);
   }
 }
 
@@ -590,7 +590,7 @@ void RendererSchedulerImpl::SetHasVisibleRenderWidgetWithTouchHandler(
       has_visible_render_widget_with_touch_handler;
 
   base::AutoLock lock(any_thread_lock_);
-  UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
+  UpdatePolicyLocked(UpdateType::kForceUpdate);
 }
 
 void RendererSchedulerImpl::SetRendererHidden(bool hidden) {
@@ -614,12 +614,12 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererSchedulerImpl::OnRendererBackgrounded");
     RendererMetricsHelper::RecordBackgroundedTransition(
-        BackgroundedRendererTransition::BACKGROUNDED);
+        BackgroundedRendererTransition::kBackgrounded);
   } else {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererSchedulerImpl::OnRendererForegrounded");
     RendererMetricsHelper::RecordBackgroundedTransition(
-        BackgroundedRendererTransition::FOREGROUNDED);
+        BackgroundedRendererTransition::kForegrounded);
   }
 
   main_thread_only().renderer_backgrounded = backgrounded;
@@ -891,7 +891,7 @@ void RendererSchedulerImpl::DidHandleInputEventOnMainThread(
         result == WebInputEventResult::kHandledApplication) {
       any_thread().awaiting_touch_start_response = false;
       any_thread().default_gesture_prevented = true;
-      UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+      UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
     }
   }
 }
@@ -910,10 +910,10 @@ bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
   // indicate a strong likelihood of high-priority work in the near future.
   UseCase use_case = main_thread_only().current_use_case;
   return main_thread_only().touchstart_expected_soon ||
-         use_case == UseCase::TOUCHSTART ||
-         use_case == UseCase::MAIN_THREAD_GESTURE ||
-         use_case == UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING ||
-         use_case == UseCase::SYNCHRONIZED_GESTURE;
+         use_case == UseCase::kTouchstart ||
+         use_case == UseCase::kMainThreadGesture ||
+         use_case == UseCase::kMainThreadCustomInputHandling ||
+         use_case == UseCase::kSynchronizedGesture;
 }
 
 bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
@@ -928,20 +928,20 @@ bool RendererSchedulerImpl::ShouldYieldForHighPriorityWork() {
   // for it since these tasks are not user-provided work and they are only
   // intended to run before the next task, not interrupt the tasks.
   switch (main_thread_only().current_use_case) {
-    case UseCase::COMPOSITOR_GESTURE:
-    case UseCase::NONE:
+    case UseCase::kCompositorGesture:
+    case UseCase::kNone:
       return main_thread_only().touchstart_expected_soon;
 
-    case UseCase::MAIN_THREAD_GESTURE:
-    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
-    case UseCase::SYNCHRONIZED_GESTURE:
+    case UseCase::kMainThreadGesture:
+    case UseCase::kMainThreadCustomInputHandling:
+    case UseCase::kSynchronizedGesture:
       return compositor_task_queue_->HasTaskToRunImmediately() ||
              main_thread_only().touchstart_expected_soon;
 
-    case UseCase::TOUCHSTART:
+    case UseCase::kTouchstart:
       return true;
 
-    case UseCase::LOADING:
+    case UseCase::kLoading:
       return false;
 
     default:
@@ -984,12 +984,12 @@ void RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
 
 void RendererSchedulerImpl::UpdatePolicy() {
   base::AutoLock lock(any_thread_lock_);
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void RendererSchedulerImpl::ForceUpdatePolicy() {
   base::AutoLock lock(any_thread_lock_);
-  UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
+  UpdatePolicyLocked(UpdateType::kForceUpdate);
 }
 
 namespace {
@@ -1106,81 +1106,81 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
           kFastCompositingIdleTimeThreshold;
 
   Policy new_policy;
-  ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::RUN;
+  ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::kRun;
   new_policy.rail_mode() = v8::PERFORMANCE_ANIMATION;
 
   switch (use_case) {
-    case UseCase::COMPOSITOR_GESTURE:
+    case UseCase::kCompositorGesture:
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
         new_policy.compositor_queue_policy().priority =
-            TaskQueue::HIGH_PRIORITY;
+            TaskQueue::kHighPriority;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
         // compositor tasks. This should be safe since we've already gone to the
         // pain of fixing ordering issues with them.
-        new_policy.compositor_queue_policy().priority = TaskQueue::LOW_PRIORITY;
+        new_policy.compositor_queue_policy().priority = TaskQueue::kLowPriority;
       }
       break;
 
-    case UseCase::SYNCHRONIZED_GESTURE:
+    case UseCase::kSynchronizedGesture:
       new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
-                                          : TaskQueue::NORMAL_PRIORITY;
+          main_thread_compositing_is_fast ? TaskQueue::kHighPriority
+                                          : TaskQueue::kNormalPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       } else {
-        expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
+        expensive_task_policy = ExpensiveTaskPolicy::kThrottle;
       }
       break;
 
-    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
+    case UseCase::kMainThreadCustomInputHandling:
       // In main thread input handling scenarios we don't have perfect knowledge
       // about which things we should be prioritizing, so we don't attempt to
       // block expensive tasks because we don't know whether they were integral
       // to the page's functionality or not.
       new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::HIGH_PRIORITY
-                                          : TaskQueue::NORMAL_PRIORITY;
+          main_thread_compositing_is_fast ? TaskQueue::kHighPriority
+                                          : TaskQueue::kNormalPriority;
       break;
 
-    case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::kMainThreadGesture:
       // A main thread gesture is for example a scroll gesture which is handled
       // by the main thread. Since we know the established gesture type, we can
       // be a little more aggressive about prioritizing compositing and input
       // handling over other tasks.
-      new_policy.compositor_queue_policy().priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.compositor_queue_policy().priority = TaskQueue::kHighPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       } else {
-        expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
+        expensive_task_policy = ExpensiveTaskPolicy::kThrottle;
       }
       break;
 
-    case UseCase::TOUCHSTART:
+    case UseCase::kTouchstart:
       new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-      new_policy.compositor_queue_policy().priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.compositor_queue_policy().priority = TaskQueue::kHighPriority;
       new_policy.loading_queue_policy().is_blocked = true;
       new_policy.timer_queue_policy().is_blocked = true;
       // NOTE this is a nop due to the above.
-      expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+      expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       break;
 
-    case UseCase::NONE:
+    case UseCase::kNone:
       // It's only safe to block tasks that if we are expecting a compositor
       // driven gesture.
       if (touchstart_expected_soon &&
           any_thread().last_gesture_was_compositor_driven) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+        expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       }
       break;
 
-    case UseCase::LOADING:
+    case UseCase::kLoading:
       new_policy.rail_mode() = v8::PERFORMANCE_LOAD;
       // TODO(skyostil): Experiment with increasing loading and default queue
       // priorities and throttling rendering frame rate.
@@ -1194,24 +1194,24 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (main_thread_only().renderer_hidden)
     new_policy.rail_mode() = v8::PERFORMANCE_IDLE;
 
-  if (expensive_task_policy == ExpensiveTaskPolicy::BLOCK &&
+  if (expensive_task_policy == ExpensiveTaskPolicy::kBlock &&
       (!main_thread_only().have_seen_a_begin_main_frame ||
        main_thread_only().navigation_task_expected_count > 0)) {
-    expensive_task_policy = ExpensiveTaskPolicy::RUN;
+    expensive_task_policy = ExpensiveTaskPolicy::kRun;
   }
 
   switch (expensive_task_policy) {
-    case ExpensiveTaskPolicy::RUN:
+    case ExpensiveTaskPolicy::kRun:
       break;
 
-    case ExpensiveTaskPolicy::BLOCK:
+    case ExpensiveTaskPolicy::kBlock:
       if (loading_tasks_seem_expensive)
         new_policy.loading_queue_policy().is_blocked = true;
       if (timer_tasks_seem_expensive)
         new_policy.timer_queue_policy().is_blocked = true;
       break;
 
-    case ExpensiveTaskPolicy::THROTTLE:
+    case ExpensiveTaskPolicy::kThrottle:
       if (loading_tasks_seem_expensive) {
         new_policy.loading_queue_policy().is_throttled = true;
       }
@@ -1262,7 +1262,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                  "expensive_task_policy", expensive_task_policy);
 
   // TODO(alexclarke): Can we get rid of force update now?
-  if (update_type == UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED &&
+  if (update_type == UpdateType::kMayEarlyOutIfPolicyUnchanged &&
       new_policy == main_thread_only().current_policy) {
     return;
   }
@@ -1290,8 +1290,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       SetStoppedInBackground(main_thread_only().stopped_when_backgrounded);
       RendererMetricsHelper::RecordBackgroundedTransition(
           main_thread_only().stopped_when_backgrounded
-              ? BackgroundedRendererTransition::STOPPED_AFTER_DELAY
-              : BackgroundedRendererTransition::RESUMED);
+              ? BackgroundedRendererTransition::kStoppedAfterDelay
+              : BackgroundedRendererTransition::kResumed);
     }
   }
 
@@ -1335,12 +1335,12 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
       new_task_queue_policy.GetTimeDomainType(task_queue);
 
   if (old_time_domain_type != new_time_domain_type) {
-    if (old_time_domain_type == TimeDomainType::THROTTLED) {
+    if (old_time_domain_type == TimeDomainType::kThrottled) {
       task_queue_throttler_->DecreaseThrottleRefCount(task_queue);
-    } else if (new_time_domain_type == TimeDomainType::THROTTLED) {
+    } else if (new_time_domain_type == TimeDomainType::kThrottled) {
       task_queue_throttler_->IncreaseThrottleRefCount(task_queue);
     }
-    if (new_time_domain_type == TimeDomainType::VIRTUAL) {
+    if (new_time_domain_type == TimeDomainType::kVirtual) {
       DCHECK(virtual_time_domain_);
       task_queue->SetTimeDomain(virtual_time_domain_.get());
     } else {
@@ -1359,7 +1359,7 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
       !any_thread().awaiting_touch_start_response) {
     *expected_use_case_duration =
         any_thread().fling_compositor_escalation_deadline - now;
-    return UseCase::COMPOSITOR_GESTURE;
+    return UseCase::kCompositorGesture;
   }
   // Above all else we want to be responsive to user input.
   *expected_use_case_duration =
@@ -1368,12 +1368,12 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     // Has a gesture been fully established?
     if (any_thread().awaiting_touch_start_response) {
       // No, so arrange for compositor tasks to be run at the highest priority.
-      return UseCase::TOUCHSTART;
+      return UseCase::kTouchstart;
     }
 
     // Yes a gesture has been established.  Based on how the gesture is handled
     // we need to choose between one of four use cases:
-    // 1. COMPOSITOR_GESTURE where the gesture is processed only on the
+    // 1. kCompositorGesture where the gesture is processed only on the
     //    compositor thread.
     // 2. MAIN_THREAD_GESTURE where the gesture is processed only on the main
     //    thread.
@@ -1383,15 +1383,15 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     // 4. SYNCHRONIZED_GESTURE where the gesture is processed on both threads.
     if (any_thread().last_gesture_was_compositor_driven) {
       if (any_thread().begin_main_frame_on_critical_path) {
-        return UseCase::SYNCHRONIZED_GESTURE;
+        return UseCase::kSynchronizedGesture;
       } else {
-        return UseCase::COMPOSITOR_GESTURE;
+        return UseCase::kCompositorGesture;
       }
     }
     if (any_thread().default_gesture_prevented) {
-      return UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING;
+      return UseCase::kMainThreadCustomInputHandling;
     } else {
-      return UseCase::MAIN_THREAD_GESTURE;
+      return UseCase::kMainThreadGesture;
     }
   }
 
@@ -1400,23 +1400,23 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
   // content on the page.
   if (any_thread().waiting_for_meaningful_paint &&
       !any_thread().have_seen_input_since_navigation) {
-    return UseCase::LOADING;
+    return UseCase::kLoading;
   }
-  return UseCase::NONE;
+  return UseCase::kNone;
 }
 
 base::TimeDelta RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration()
     const {
   switch (main_thread_only().current_use_case) {
-    case UseCase::TOUCHSTART:
-    case UseCase::COMPOSITOR_GESTURE:
-    case UseCase::LOADING:
-    case UseCase::NONE:
+    case UseCase::kTouchstart:
+    case UseCase::kCompositorGesture:
+    case UseCase::kLoading:
+    case UseCase::kNone:
       return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
 
-    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
-    case UseCase::MAIN_THREAD_GESTURE:
-    case UseCase::SYNCHRONIZED_GESTURE:
+    case UseCase::kMainThreadCustomInputHandling:
+    case UseCase::kMainThreadGesture:
+    case UseCase::kSynchronizedGesture:
       return main_thread_only().idle_time_estimator.GetExpectedIdleDuration(
           main_thread_only().compositor_frame_interval);
 
@@ -1432,7 +1432,7 @@ bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
   helper_.CheckOnValidThread();
 
   MaybeUpdatePolicy();
-  if (main_thread_only().current_use_case == UseCase::TOUCHSTART) {
+  if (main_thread_only().current_use_case == UseCase::kTouchstart) {
     // Don't start a long idle task in touch start priority, try again when
     // the policy is scheduled to end.
     *next_long_idle_period_delay_out =
@@ -1487,9 +1487,9 @@ void RendererSchedulerImpl::EnableVirtualTime() {
   DCHECK(!virtual_time_control_task_queue_);
   virtual_time_control_task_queue_ =
       helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-          MainThreadTaskQueue::QueueType::CONTROL));
+          MainThreadTaskQueue::QueueType::kControl));
   virtual_time_control_task_queue_->SetQueuePriority(
-      TaskQueue::CONTROL_PRIORITY);
+      TaskQueue::kControlPriority);
   virtual_time_control_task_queue_->SetTimeDomain(virtual_time_domain_.get());
 
   main_thread_only().use_virtual_time = true;
@@ -1542,10 +1542,10 @@ void RendererSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
 
 void RendererSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
-    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
+    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       DCHECK(!pair.first->HasActiveFence());
-      pair.first->InsertFence(TaskQueue::InsertFencePosition::NOW);
+      pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
     }
   }
   for (auto& observer : main_thread_only().virtual_time_observers) {
@@ -1556,7 +1556,7 @@ void RendererSchedulerImpl::VirtualTimePaused() {
 
 void RendererSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
-    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::TIMER) {
+    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
       DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
       DCHECK(pair.first->HasActiveFence());
       pair.first->RemoveFence();
@@ -1583,15 +1583,15 @@ void RendererSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
   main_thread_only().virtual_time_policy = policy;
 
   switch (policy) {
-    case VirtualTimePolicy::ADVANCE:
+    case VirtualTimePolicy::kAdvance:
       SetVirtualTimeStopped(false);
       break;
 
-    case VirtualTimePolicy::PAUSE:
+    case VirtualTimePolicy::kPause:
       SetVirtualTimeStopped(true);
       break;
 
-    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+    case VirtualTimePolicy::kDeterministicLoading:
       ApplyVirtualTimePolicy();
       break;
   }
@@ -1618,7 +1618,7 @@ void RendererSchedulerImpl::OnVirtualTimeAdvanced() {
 
 void RendererSchedulerImpl::ApplyVirtualTimePolicy() {
   switch (main_thread_only().virtual_time_policy) {
-    case VirtualTimePolicy::ADVANCE:
+    case VirtualTimePolicy::kAdvance:
       if (virtual_time_domain_) {
         virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
             main_thread_only().nested_runloop
@@ -1627,12 +1627,12 @@ void RendererSchedulerImpl::ApplyVirtualTimePolicy() {
       }
       SetVirtualTimeStopped(false);
       break;
-    case VirtualTimePolicy::PAUSE:
+    case VirtualTimePolicy::kPause:
       if (virtual_time_domain_)
         virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
       SetVirtualTimeStopped(true);
       break;
-    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+    case VirtualTimePolicy::kDeterministicLoading:
       if (virtual_time_domain_) {
         virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
             main_thread_only().nested_runloop
@@ -1686,11 +1686,11 @@ void RendererSchedulerImpl::CreateTraceEventObjectSnapshotLocked() const {
 const char* RendererSchedulerImpl::ExpensiveTaskPolicyToString(
     ExpensiveTaskPolicy expensive_task_policy) {
   switch (expensive_task_policy) {
-    case ExpensiveTaskPolicy::RUN:
+    case ExpensiveTaskPolicy::kRun:
       return "RUN";
-    case ExpensiveTaskPolicy::BLOCK:
+    case ExpensiveTaskPolicy::kBlock:
       return "BLOCK";
-    case ExpensiveTaskPolicy::THROTTLE:
+    case ExpensiveTaskPolicy::kThrottle:
       return "THROTTLE";
     default:
       NOTREACHED();
@@ -1834,7 +1834,7 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 
 TaskQueue::QueuePriority RendererSchedulerImpl::TaskQueuePolicy::GetPriority(
     MainThreadTaskQueue* task_queue) const {
-  return task_queue->UsedForControlTasks() ? TaskQueue::HIGH_PRIORITY
+  return task_queue->UsedForControlTasks() ? TaskQueue::kHighPriority
                                            : priority;
 }
 
@@ -1842,10 +1842,10 @@ RendererSchedulerImpl::TimeDomainType
 RendererSchedulerImpl::TaskQueuePolicy::GetTimeDomainType(
     MainThreadTaskQueue* task_queue) const {
   if (use_virtual_time)
-    return TimeDomainType::VIRTUAL;
+    return TimeDomainType::kVirtual;
   if (is_throttled && task_queue->CanBeThrottled())
-    return TimeDomainType::THROTTLED;
-  return TimeDomainType::REAL;
+    return TimeDomainType::kThrottled;
+  return TimeDomainType::kReal;
 }
 
 void RendererSchedulerImpl::TaskQueuePolicy::AsValueInto(
@@ -1884,7 +1884,7 @@ void RendererSchedulerImpl::Policy::AsValueInto(
 void RendererSchedulerImpl::OnIdlePeriodStarted() {
   base::AutoLock lock(any_thread_lock_);
   any_thread().in_idle_period = true;
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void RendererSchedulerImpl::OnIdlePeriodEnded() {
@@ -1892,7 +1892,7 @@ void RendererSchedulerImpl::OnIdlePeriodEnded() {
   any_thread().last_idle_period_end_time =
       helper_.scheduler_tqm_delegate()->NowTicks();
   any_thread().in_idle_period = false;
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void RendererSchedulerImpl::OnPendingTasksChanged(bool has_tasks) {
@@ -1973,7 +1973,7 @@ void RendererSchedulerImpl::OnFirstMeaningfulPaint() {
                "RendererSchedulerImpl::OnFirstMeaningfulPaint");
   base::AutoLock lock(any_thread_lock_);
   any_thread().waiting_for_meaningful_paint = false;
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void RendererSchedulerImpl::ResetForNavigationLocked() {
@@ -1995,7 +1995,7 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
        main_thread_only().web_view_schedulers) {
     web_view_scheduler->OnNavigation();
   }
-  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
+  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
 
   UMA_HISTOGRAM_COUNTS_100("RendererScheduler.WebViewsPerScheduler",
                            main_thread_only().web_view_schedulers.size());
@@ -2105,7 +2105,7 @@ void RendererSchedulerImpl::BroadcastIntervention(const std::string& message) {
 }
 
 void RendererSchedulerImpl::OnTriedToExecuteBlockedTask() {
-  if (main_thread_only().current_use_case == UseCase::TOUCHSTART ||
+  if (main_thread_only().current_use_case == UseCase::kTouchstart ||
       main_thread_only().longest_jank_free_task_duration <
           base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis) ||
       main_thread_only().renderer_pause_count ||
@@ -2289,19 +2289,19 @@ void RendererSchedulerImpl::OnTraceLogDisabled() {}
 // static
 const char* RendererSchedulerImpl::UseCaseToString(UseCase use_case) {
   switch (use_case) {
-    case UseCase::NONE:
+    case UseCase::kNone:
       return "none";
-    case UseCase::COMPOSITOR_GESTURE:
+    case UseCase::kCompositorGesture:
       return "compositor_gesture";
-    case UseCase::MAIN_THREAD_CUSTOM_INPUT_HANDLING:
+    case UseCase::kMainThreadCustomInputHandling:
       return "main_thread_custom_input_handling";
-    case UseCase::SYNCHRONIZED_GESTURE:
+    case UseCase::kSynchronizedGesture:
       return "synchronized_gesture";
-    case UseCase::TOUCHSTART:
+    case UseCase::kTouchstart:
       return "touchstart";
-    case UseCase::LOADING:
+    case UseCase::kLoading:
       return "loading";
-    case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::kMainThreadGesture:
       return "main_thread_gesture";
     default:
       NOTREACHED();
@@ -2330,11 +2330,11 @@ const char* RendererSchedulerImpl::RAILModeToString(v8::RAILMode rail_mode) {
 const char* RendererSchedulerImpl::TimeDomainTypeToString(
     TimeDomainType domain_type) {
   switch (domain_type) {
-    case TimeDomainType::REAL:
+    case TimeDomainType::kReal:
       return "real";
-    case TimeDomainType::THROTTLED:
+    case TimeDomainType::kThrottled:
       return "throttled";
-    case TimeDomainType::VIRTUAL:
+    case TimeDomainType::kVirtual:
       return "virtual";
     default:
       NOTREACHED();
@@ -2346,11 +2346,11 @@ const char* RendererSchedulerImpl::TimeDomainTypeToString(
 const char* RendererSchedulerImpl::VirtualTimePolicyToString(
     VirtualTimePolicy virtual_time_policy) {
   switch (virtual_time_policy) {
-    case VirtualTimePolicy::ADVANCE:
+    case VirtualTimePolicy::kAdvance:
       return "ADVANCE";
-    case VirtualTimePolicy::PAUSE:
+    case VirtualTimePolicy::kPause:
       return "PAUSE";
-    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+    case VirtualTimePolicy::kDeterministicLoading:
       return "DETERMINISTIC_LOADING";
     default:
       NOTREACHED();

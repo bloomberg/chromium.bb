@@ -103,35 +103,35 @@ QueueingTimeEstimator::Calculator::Calculator(int steps_per_window)
 const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
     MainThreadTaskQueue::QueueType queue_type) {
   switch (queue_type) {
-    case MainThreadTaskQueue::QueueType::DEFAULT:
+    case MainThreadTaskQueue::QueueType::kDefault:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Default";
-    case MainThreadTaskQueue::QueueType::DEFAULT_LOADING:
+    case MainThreadTaskQueue::QueueType::kDefaultLoading:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType."
              "DefaultLoading";
-    case MainThreadTaskQueue::QueueType::UNTHROTTLED:
+    case MainThreadTaskQueue::QueueType::kUnthrottled:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType."
              "Unthrottled";
-    case MainThreadTaskQueue::QueueType::FRAME_LOADING:
+    case MainThreadTaskQueue::QueueType::kFrameLoading:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType."
              "FrameLoading";
-    case MainThreadTaskQueue::QueueType::COMPOSITOR:
+    case MainThreadTaskQueue::QueueType::kCompositor:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Compositor";
-    case MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE:
+    case MainThreadTaskQueue::QueueType::kFrameThrottleable:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType."
              "FrameThrottleable";
-    case MainThreadTaskQueue::QueueType::FRAME_PAUSABLE:
+    case MainThreadTaskQueue::QueueType::kFramePausable:
       return "RendererScheduler.ExpectedQueueingTimeByTaskQueueType."
              "FramePausable";
-    case MainThreadTaskQueue::QueueType::CONTROL:
-    case MainThreadTaskQueue::QueueType::DEFAULT_TIMER:
-    case MainThreadTaskQueue::QueueType::IDLE:
-    case MainThreadTaskQueue::QueueType::TEST:
-    case MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL:
-    case MainThreadTaskQueue::QueueType::FRAME_DEFERRABLE:
-    case MainThreadTaskQueue::QueueType::FRAME_UNPAUSABLE:
-    case MainThreadTaskQueue::QueueType::V8:
-    case MainThreadTaskQueue::QueueType::OTHER:
-    case MainThreadTaskQueue::QueueType::COUNT:
+    case MainThreadTaskQueue::QueueType::kControl:
+    case MainThreadTaskQueue::QueueType::kDefaultTimer:
+    case MainThreadTaskQueue::QueueType::kIdle:
+    case MainThreadTaskQueue::QueueType::kTest:
+    case MainThreadTaskQueue::QueueType::kFrameLoading_kControl:
+    case MainThreadTaskQueue::QueueType::kFrameDeferrable:
+    case MainThreadTaskQueue::QueueType::kFrameUnpausable:
+    case MainThreadTaskQueue::QueueType::kV8:
+    case MainThreadTaskQueue::QueueType::kOther:
+    case MainThreadTaskQueue::QueueType::kCount:
     // Using default here as well because there are some values less than COUNT
     // that have been removed and do not correspond to any QueueType.
     default:
@@ -143,49 +143,49 @@ const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromQueueType(
 const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromFrameType(
     FrameType frame_type) {
   switch (frame_type) {
-    case FrameType::MAIN_FRAME_VISIBLE:
-    case FrameType::MAIN_FRAME_VISIBLE_SERVICE:
+    case FrameType::kMainFrameVisible:
+    case FrameType::kMainFrameVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameVisible";
-    case FrameType::MAIN_FRAME_HIDDEN:
-    case FrameType::MAIN_FRAME_HIDDEN_SERVICE:
+    case FrameType::kMainFrameHidden:
+    case FrameType::kMainFrameHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameHidden";
-    case FrameType::MAIN_FRAME_BACKGROUND:
-    case FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_SELF:
-    case FrameType::MAIN_FRAME_BACKGROUND_EXEMPT_OTHER:
+    case FrameType::kMainFrameBackground:
+    case FrameType::kMainFrameBackgroundExemptSelf:
+    case FrameType::kMainFrameBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "MainFrameBackground";
-    case FrameType::SAME_ORIGIN_VISIBLE:
-    case FrameType::SAME_ORIGIN_VISIBLE_SERVICE:
+    case FrameType::kSameOriginVisible:
+    case FrameType::kSameOriginVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginVisible";
-    case FrameType::SAME_ORIGIN_HIDDEN:
-    case FrameType::SAME_ORIGIN_HIDDEN_SERVICE:
+    case FrameType::kSameOriginHidden:
+    case FrameType::kSameOriginHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginHidden";
-    case FrameType::SAME_ORIGIN_BACKGROUND:
-    case FrameType::SAME_ORIGIN_BACKGROUND_EXEMPT_SELF:
-    case FrameType::SAME_ORIGIN_BACKGROUND_EXEMPT_OTHER:
+    case FrameType::kSameOriginBackground:
+    case FrameType::kSameOriginBackgroundExemptSelf:
+    case FrameType::kSameOriginBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "SameOriginBackground";
-    case FrameType::CROSS_ORIGIN_VISIBLE:
-    case FrameType::CROSS_ORIGIN_VISIBLE_SERVICE:
+    case FrameType::kCrossOriginVisible:
+    case FrameType::kCrossOriginVisibleService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginVisible";
-    case FrameType::CROSS_ORIGIN_HIDDEN:
-    case FrameType::CROSS_ORIGIN_HIDDEN_SERVICE:
+    case FrameType::kCrossOriginHidden:
+    case FrameType::kCrossOriginHiddenService:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginHidden";
-    case FrameType::CROSS_ORIGIN_BACKGROUND:
-    case FrameType::CROSS_ORIGIN_BACKGROUND_EXEMPT_SELF:
-    case FrameType::CROSS_ORIGIN_BACKGROUND_EXEMPT_OTHER:
+    case FrameType::kCrossOriginBackground:
+    case FrameType::kCrossOriginBackgroundExemptSelf:
+    case FrameType::kCrossOriginBackgroundExemptOther:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType."
              "CrossOriginBackground";
-    case FrameType::NONE:
-    case FrameType::DETACHED:
+    case FrameType::kNone:
+    case FrameType::kDetached:
       return "RendererScheduler.ExpectedQueueingTimeByFrameType.Other";
-    case FrameType::COUNT:
+    case FrameType::kCount:
       NOTREACHED();
       return "";
   }
@@ -196,9 +196,9 @@ const char* QueueingTimeEstimator::Calculator::GetReportingMessageFromFrameType(
 void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
     MainThreadTaskQueue* queue) {
   current_queue_type_ =
-      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::OTHER;
+      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kOther;
   WebFrameScheduler* scheduler = queue ? queue->GetFrameScheduler() : nullptr;
-  current_frame_type_ = scheduler ? GetFrameType(scheduler) : FrameType::NONE;
+  current_frame_type_ = scheduler ? GetFrameType(scheduler) : FrameType::kNone;
 }
 
 void QueueingTimeEstimator::Calculator::AddQueueingTime(
@@ -225,13 +225,13 @@ void QueueingTimeEstimator::Calculator::EndStep(
     return;
 
   std::map<const char*, base::TimeDelta> delta_by_message;
-  for (int i = 0; i < static_cast<int>(MainThreadTaskQueue::QueueType::COUNT);
+  for (int i = 0; i < static_cast<int>(MainThreadTaskQueue::QueueType::kCount);
        ++i) {
     delta_by_message[GetReportingMessageFromQueueType(
         static_cast<MainThreadTaskQueue::QueueType>(i))] +=
         eqt_by_queue_type_[i];
   }
-  for (int i = 0; i < static_cast<int>(FrameType::COUNT); ++i) {
+  for (int i = 0; i < static_cast<int>(FrameType::kCount); ++i) {
     delta_by_message[GetReportingMessageFromFrameType(
         static_cast<FrameType>(i))] += eqt_by_frame_type_[i];
   }

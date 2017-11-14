@@ -41,9 +41,9 @@ class PLATFORM_EXPORT ThreadLoadTracker {
   // TODO(altimin): Count wake-ups.
 
  private:
-  enum class ThreadState { ACTIVE, PAUSED };
+  enum class ThreadState { kActive, kPaused };
 
-  enum class TaskState { TASK_RUNNING, IDLE };
+  enum class TaskState { kTaskRunning, kIdle };
 
   // This function advances |time_| to |now|, calling |callback_|
   // in the process (multiple times if needed).

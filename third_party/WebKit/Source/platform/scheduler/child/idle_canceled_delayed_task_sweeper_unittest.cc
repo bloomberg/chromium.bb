@@ -45,7 +45,7 @@ class IdleCanceledDelayedTaskSweeperTest : public ::testing::Test,
                            base::TimeDelta::FromSeconds(30),
                            scheduler_helper_->NewTaskQueue(
                                MainThreadTaskQueue::QueueCreationParams(
-                                   MainThreadTaskQueue::QueueType::TEST)))),
+                                   MainThreadTaskQueue::QueueType::kTest)))),
         idle_canceled_delayed_taks_sweeper_(
             new IdleCanceledDelayedTaskSweeper(scheduler_helper_.get(),
                                                idle_helper_->IdleTaskRunner())),

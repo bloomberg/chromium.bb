@@ -267,7 +267,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_task_queue_) {
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::FRAME_LOADING);
+        MainThreadTaskQueue::QueueType::kFrameLoading);
     loading_task_queue_->SetBlameContext(blame_context_);
     loading_task_queue_->SetFrameScheduler(this);
     loading_queue_enabled_voter_ =
@@ -281,7 +281,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
-        MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL);
+        MainThreadTaskQueue::QueueType::kFrameLoading_kControl);
     loading_control_task_queue_->SetBlameContext(blame_context_);
     loading_control_task_queue_->SetFrameScheduler(this);
     loading_control_queue_enabled_voter_ =
@@ -296,7 +296,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
   if (!throttleable_task_queue_) {
     throttleable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE)
+            MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeThrottled(true)
             .SetCanBeStopped(true)
@@ -328,7 +328,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE)
+            MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBeDeferred(true)
             .SetCanBePaused(true));
@@ -346,7 +346,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
   if (!pausable_task_queue_) {
     pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::FRAME_PAUSABLE)
+            MainThreadTaskQueue::QueueType::kFramePausable)
             .SetShouldReportWhenExecutionBlocked(true)
             .SetCanBePaused(true));
     pausable_task_queue_->SetBlameContext(blame_context_);
@@ -363,7 +363,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::FRAME_UNPAUSABLE));
+            MainThreadTaskQueue::QueueType::kFrameUnpausable));
     unpausable_task_queue_->SetBlameContext(blame_context_);
     unpausable_task_queue_->SetFrameScheduler(this);
   }

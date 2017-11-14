@@ -19,7 +19,7 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
   MainThreadTaskQueueForTest(QueueType queue_type)
       : MainThreadTaskQueue(nullptr,
                             Spec(MainThreadTaskQueue::NameForQueueType(
-                                MainThreadTaskQueue::QueueType::TEST)),
+                                MainThreadTaskQueue::QueueType::kTest)),
                             QueueCreationParams(queue_type),
                             nullptr) {}
   ~MainThreadTaskQueueForTest() {}

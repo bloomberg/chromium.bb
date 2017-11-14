@@ -142,14 +142,14 @@ Response InspectorEmulationAgent::setVirtualTimePolicy(
     protocol::Maybe<int> max_virtual_time_task_starvation_count) {
   if (protocol::Emulation::VirtualTimePolicyEnum::Advance == policy) {
     web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::ADVANCE);
+        WebViewScheduler::VirtualTimePolicy::kAdvance);
   } else if (protocol::Emulation::VirtualTimePolicyEnum::Pause == policy) {
     web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::PAUSE);
+        WebViewScheduler::VirtualTimePolicy::kPause);
   } else if (protocol::Emulation::VirtualTimePolicyEnum::
                  PauseIfNetworkFetchesPending == policy) {
     web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-        WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
+        WebViewScheduler::VirtualTimePolicy::kDeterministicLoading);
   }
   web_local_frame_->View()->Scheduler()->EnableVirtualTime();
   if (!virtual_time_observer_registered_) {
@@ -182,7 +182,7 @@ Response InspectorEmulationAgent::setNavigatorOverrides(
 
 void InspectorEmulationAgent::VirtualTimeBudgetExpired() {
   web_local_frame_->View()->Scheduler()->SetVirtualTimePolicy(
-      WebViewScheduler::VirtualTimePolicy::PAUSE);
+      WebViewScheduler::VirtualTimePolicy::kPause);
   GetFrontend()->virtualTimeBudgetExpired();
 }
 

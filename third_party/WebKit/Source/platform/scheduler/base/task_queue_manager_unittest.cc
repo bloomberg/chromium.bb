@@ -563,7 +563,7 @@ TEST_F(TaskQueueManagerTest, PendingDelayedTasksRemovedOnShutdown) {
 
 TEST_F(TaskQueueManagerTest, InsertAndRemoveFence) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   // Posting a task when pumping is disabled doesn't result in work getting
@@ -588,7 +588,7 @@ TEST_F(TaskQueueManagerTest, RemovingFenceForDisabledQueueDoesNotPostDoWork) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   runners_[0]->RemoveFence();
@@ -602,7 +602,7 @@ TEST_F(TaskQueueManagerTest, EnablingFencedQueueDoesNotPostDoWork) {
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   voter->SetQueueEnabled(true);
@@ -649,7 +649,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
       runners_[0]->CreateQueueEnabledVoter();
   voter->SetQueueEnabled(false);
@@ -666,7 +666,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
 
 TEST_F(TaskQueueManagerTest, RemovingFenceWithDelayedTask) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   // Posting a delayed task when fenced will apply the delay, but won't cause
@@ -688,7 +688,7 @@ TEST_F(TaskQueueManagerTest, RemovingFenceWithDelayedTask) {
 
 TEST_F(TaskQueueManagerTest, RemovingFenceWithMultipleDelayedTasks) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   // Posting a delayed task when fenced will apply the delay, but won't cause
@@ -715,7 +715,7 @@ TEST_F(TaskQueueManagerTest, RemovingFenceWithMultipleDelayedTasks) {
 
 TEST_F(TaskQueueManagerTest, InsertFencePreventsDelayedTasksFromRunning) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
@@ -732,13 +732,13 @@ TEST_F(TaskQueueManagerTest, MultipleFences) {
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2));
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   // Subsequent tasks should be blocked.
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 4, &run_order));
   test_task_runner_->RunUntilIdle();
@@ -747,7 +747,7 @@ TEST_F(TaskQueueManagerTest, MultipleFences) {
 
 TEST_F(TaskQueueManagerTest, InsertFenceThenImmediatlyRemoveDoesNotBlock) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->RemoveFence();
 
   std::vector<EnqueueOrder> run_order;
@@ -760,7 +760,7 @@ TEST_F(TaskQueueManagerTest, InsertFenceThenImmediatlyRemoveDoesNotBlock) {
 
 TEST_F(TaskQueueManagerTest, InsertFencePostThenRemoveDoesNotBlock) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
@@ -773,11 +773,11 @@ TEST_F(TaskQueueManagerTest, InsertFencePostThenRemoveDoesNotBlock) {
 
 TEST_F(TaskQueueManagerTest, MultipleFencesWithInitiallyEmptyQueue) {
   Initialize(1u);
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
@@ -787,14 +787,14 @@ TEST_F(TaskQueueManagerTest, BlockedByFence) {
   Initialize(1u);
   EXPECT_FALSE(runners_[0]->BlockedByFence());
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   EXPECT_TRUE(runners_[0]->BlockedByFence());
 
   runners_[0]->RemoveFence();
   EXPECT_FALSE(runners_[0]->BlockedByFence());
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   EXPECT_FALSE(runners_[0]->BlockedByFence());
 
   test_task_runner_->RunUntilIdle();
@@ -809,10 +809,10 @@ TEST_F(TaskQueueManagerTest, BlockedByFence_BothTypesOfFence) {
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   EXPECT_FALSE(runners_[0]->BlockedByFence());
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
   EXPECT_TRUE(runners_[0]->BlockedByFence());
 }
 
@@ -2665,7 +2665,7 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_Disabled) {
 TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_Fence) {
   Initialize(1u);
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   LazyNow lazy_now(now_src_.get());
@@ -2675,9 +2675,9 @@ TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_Fence) {
 TEST_F(TaskQueueManagerTest, ComputeDelayTillNextTask_FenceUnblocking) {
   Initialize(1u);
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&NopTask));
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   LazyNow lazy_now(now_src_.get());
   EXPECT_EQ(base::TimeDelta(), ComputeDelayTillNextTask(&lazy_now)->Delay());
@@ -2898,10 +2898,10 @@ TEST_F(TaskQueueManagerTest, CouldTaskRun_Fence) {
   EnqueueOrder enqueue_order = GetNextSequenceNumber();
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
   EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
   runners_[0]->RemoveFence();
@@ -2911,12 +2911,12 @@ TEST_F(TaskQueueManagerTest, CouldTaskRun_Fence) {
 TEST_F(TaskQueueManagerTest, CouldTaskRun_FenceBeforeThenAfter) {
   Initialize(1u);
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   EnqueueOrder enqueue_order = GetNextSequenceNumber();
   EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->CouldTaskRun(enqueue_order));
 }
 
@@ -3009,7 +3009,7 @@ TEST_F(TaskQueueManagerTest, GetNextScheduledWakeUp) {
   EXPECT_EQ(start_time + delay2, runners_[0]->GetNextScheduledWakeUp());
 
   // Neither should fences.
-  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+  runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
   EXPECT_EQ(start_time + delay2, runners_[0]->GetNextScheduledWakeUp());
 }
 

@@ -22,7 +22,7 @@ namespace scheduler {
   MAIN_THREAD_LOAD_METRIC_NAME ".Extension"
 #define PER_FRAME_TYPE_METRIC_NAME "RendererScheduler.TaskDurationPerFrameType2"
 
-enum class MainThreadTaskLoadState { LOW, HIGH, UNKNOWN };
+enum class MainThreadTaskLoadState { kLow, kHigh, kUnknown };
 
 namespace {
 
@@ -37,72 +37,72 @@ constexpr base::TimeDelta kLongIdlePeriodDiscardingThreshold =
     base::TimeDelta::FromMinutes(3);
 
 enum class FrameThrottlingState {
-  VISIBLE = 0,
-  VISIBLE_SERVICE = 1,
-  HIDDEN = 2,
-  HIDDEN_SERVICE = 3,
-  BACKGROUND = 4,
-  BACKGROUND_EXEMPT_SELF = 5,
-  BACKGROUND_EXEMPT_OTHER = 6,
+  kVisible = 0,
+  kVisibleService = 1,
+  kHidden = 2,
+  kHiddenService = 3,
+  kBackground = 4,
+  kBackgroundExemptSelf = 5,
+  kBackgroundExemptOther = 6,
 
-  COUNT = 7
+  kCount = 7
 };
 
 enum class FrameOriginState {
-  MAIN_FRAME = 0,
-  SAME_ORIGIN = 1,
-  CROSS_ORIGIN = 2,
+  kMainFrame = 0,
+  kSameOrigin = 1,
+  kCrossOrigin = 2,
 
-  COUNT = 3
+  kCount = 3
 };
 
 FrameThrottlingState GetFrameThrottlingState(
     const WebFrameScheduler& frame_scheduler) {
   if (frame_scheduler.IsPageVisible()) {
     if (frame_scheduler.IsFrameVisible())
-      return FrameThrottlingState::VISIBLE;
-    return FrameThrottlingState::HIDDEN;
+      return FrameThrottlingState::kVisible;
+    return FrameThrottlingState::kHidden;
   }
 
   WebViewScheduler* web_view_scheduler = frame_scheduler.GetWebViewScheduler();
   if (web_view_scheduler && web_view_scheduler->IsPlayingAudio()) {
     if (frame_scheduler.IsFrameVisible())
-      return FrameThrottlingState::VISIBLE_SERVICE;
-    return FrameThrottlingState::HIDDEN_SERVICE;
+      return FrameThrottlingState::kVisibleService;
+    return FrameThrottlingState::kHiddenService;
   }
 
   if (frame_scheduler.IsExemptFromBudgetBasedThrottling())
-    return FrameThrottlingState::BACKGROUND_EXEMPT_SELF;
+    return FrameThrottlingState::kBackgroundExemptSelf;
 
   if (web_view_scheduler &&
       web_view_scheduler->IsExemptFromBudgetBasedThrottling())
-    return FrameThrottlingState::BACKGROUND_EXEMPT_OTHER;
+    return FrameThrottlingState::kBackgroundExemptOther;
 
-  return FrameThrottlingState::BACKGROUND;
+  return FrameThrottlingState::kBackground;
 }
 
 FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
   if (frame_scheduler.GetFrameType() ==
       WebFrameScheduler::FrameType::kMainFrame) {
-    return FrameOriginState::MAIN_FRAME;
+    return FrameOriginState::kMainFrame;
   }
   if (frame_scheduler.IsCrossOrigin())
-    return FrameOriginState::CROSS_ORIGIN;
-  return FrameOriginState::SAME_ORIGIN;
+    return FrameOriginState::kCrossOrigin;
+  return FrameOriginState::kSameOrigin;
 }
 
 }  // namespace
 
 FrameType GetFrameType(WebFrameScheduler* frame_scheduler) {
   if (!frame_scheduler)
-    return FrameType::NONE;
+    return FrameType::kNone;
   FrameThrottlingState throttling_state =
       GetFrameThrottlingState(*frame_scheduler);
   FrameOriginState origin_state = GetFrameOriginState(*frame_scheduler);
   return static_cast<FrameType>(
-      static_cast<int>(FrameType::SPECIAL_CASES_COUNT) +
+      static_cast<int>(FrameType::kSpecialCasesCount) +
       static_cast<int>(origin_state) *
-          static_cast<int>(FrameThrottlingState::COUNT) +
+          static_cast<int>(FrameThrottlingState::kCount) +
       static_cast<int>(throttling_state));
 }
 
@@ -156,7 +156,7 @@ RendererMetricsHelper::RendererMetricsHelper(
       hidden_music_task_duration_reporter(TASK_DURATION_METRIC_NAME
                                           ".HiddenMusic"),
       frame_type_duration_reporter(PER_FRAME_TYPE_METRIC_NAME),
-      main_thread_task_load_state(MainThreadTaskLoadState::UNKNOWN) {
+      main_thread_task_load_state(MainThreadTaskLoadState::kUnknown) {
   main_thread_load_tracker.Resume(now);
   if (renderer_backgrounded) {
     background_main_thread_load_tracker.Resume(now);
@@ -228,36 +228,36 @@ void RendererMetricsHelper::RecordTaskMetrics(MainThreadTaskQueue* queue,
 
   UMA_HISTOGRAM_ENUMERATION(
       TASK_COUNT_METRIC_NAME, static_cast<int>(queue_type),
-      static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+      static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
 
   if (duration >= base::TimeDelta::FromMilliseconds(16)) {
     UMA_HISTOGRAM_ENUMERATION(
         TASK_COUNT_METRIC_NAME ".LongerThan16ms", static_cast<int>(queue_type),
-        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+        static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(50)) {
     UMA_HISTOGRAM_ENUMERATION(
         TASK_COUNT_METRIC_NAME ".LongerThan50ms", static_cast<int>(queue_type),
-        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+        static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(100)) {
     UMA_HISTOGRAM_ENUMERATION(
         TASK_COUNT_METRIC_NAME ".LongerThan100ms", static_cast<int>(queue_type),
-        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+        static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
   }
 
   if (duration >= base::TimeDelta::FromMilliseconds(150)) {
     UMA_HISTOGRAM_ENUMERATION(
         TASK_COUNT_METRIC_NAME ".LongerThan150ms", static_cast<int>(queue_type),
-        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+        static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
   }
 
   if (duration >= base::TimeDelta::FromSeconds(1)) {
     UMA_HISTOGRAM_ENUMERATION(
         TASK_COUNT_METRIC_NAME ".LongerThan1s", static_cast<int>(queue_type),
-        static_cast<int>(MainThreadTaskQueue::QueueType::COUNT));
+        static_cast<int>(MainThreadTaskQueue::QueueType::kCount));
   }
 
   task_duration_reporter.RecordTask(queue_type, duration);
@@ -366,13 +366,13 @@ void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
 
     // Avoid sending duplicate IPCs when the state doesn't change.
     if (load_percentage <= main_thread_task_load_low_threshold &&
-        main_thread_task_load_state != MainThreadTaskLoadState::LOW) {
+        main_thread_task_load_state != MainThreadTaskLoadState::kLow) {
       RendererResourceCoordinator::Get().SetMainThreadTaskLoadIsLow(true);
-      main_thread_task_load_state = MainThreadTaskLoadState::LOW;
+      main_thread_task_load_state = MainThreadTaskLoadState::kLow;
     } else if (load_percentage > main_thread_task_load_low_threshold &&
-               main_thread_task_load_state != MainThreadTaskLoadState::HIGH) {
+               main_thread_task_load_state != MainThreadTaskLoadState::kHigh) {
       RendererResourceCoordinator::Get().SetMainThreadTaskLoadIsLow(false);
-      main_thread_task_load_state = MainThreadTaskLoadState::HIGH;
+      main_thread_task_load_state = MainThreadTaskLoadState::kHigh;
     }
   }
 
@@ -454,7 +454,7 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
 void RendererMetricsHelper::RecordBackgroundedTransition(
     BackgroundedRendererTransition transition) {
   UMA_HISTOGRAM_ENUMERATION("RendererScheduler.BackgroundedRendererTransition",
-                            transition, BackgroundedRendererTransition::COUNT);
+                            transition, BackgroundedRendererTransition::kCount);
 }
 }  // namespace scheduler
 }  // namespace blink
