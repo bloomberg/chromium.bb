@@ -56,10 +56,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
                                   IDS_WIN10_WELCOME_CLICK_EDGE);
   html_source->AddLocalizedString("clickSelectChrome",
                                   IDS_WIN10_WELCOME_SELECT);
-  html_source->AddLocalizedString("webBrowserLabel",
-                                  IDS_WIN10_WELCOME_BROWSER_LABEL);
-  html_source->AddLocalizedString("microsoftEdgeLabel",
-                                  IDS_WIN10_WELCOME_EDGE_LABEL);
+  html_source->AddLocalizedString("switchAnywayLabel",
+                                  IDS_WIN10_WELCOME_SWITCH_ANYWAY_LABEL);
+  html_source->AddLocalizedString("clickSwitchAnywayText",
+                                  IDS_WIN10_WELCOME_CLICK_SWITCH_ANYWAY);
 
   // Taskbar pin strings.
   html_source->AddLocalizedString("pinSubheaderText",
@@ -94,10 +94,11 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("welcome_win10.js", IDR_WELCOME_WIN10_JS);
   html_source->AddResourcePath("default.webp", IDR_WELCOME_WIN10_DEFAULT_WEBP);
   html_source->AddResourcePath("pin.webp", IDR_WELCOME_WIN10_PIN_WEBP);
-  html_source->SetDefaultResource(IDR_WELCOME_WIN10_HTML);
 
   html_source->AddResourcePath("logo-small.png", IDR_PRODUCT_LOGO_64);
   html_source->AddResourcePath("logo-large.png", IDR_PRODUCT_LOGO_128);
+
+  html_source->SetDefaultResource(IDR_WELCOME_WIN10_HTML);
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 }

@@ -22,6 +22,7 @@
     <template>
       <style include="action-link">
         :host {
+          --expandable-section-height: 28.375em;
           align-items: flex-start;
           display: inline-flex;
           flex-direction: column;
@@ -119,7 +120,7 @@
         }
 
         .section.expandable .section-steps {
-          height: 26.375em;
+          height: var(--expandable-section-height);
           max-height: 0;
           opacity: 0;
           transition: max-height 300ms cubic-bezier(.4, .2, 0, 1) 50ms,
@@ -128,7 +129,7 @@
         }
 
         .section.expandable.expanded .section-steps {
-          max-height: 26.375em;
+          max-height: var(--expandable-section-height);
           opacity: 1;
           transition: max-height 300ms cubic-bezier(.4, .2, 0, 1) 50ms,
                       opacity 150ms 250ms;
@@ -219,16 +220,6 @@
           cursor: default;
         }
 
-        #browser-overlay {
-          left: 41%;
-          top: 81%;
-        }
-
-        #edge-overlay {
-          left: 49%;
-          top: 88%;
-        }
-
         #taskbar-overlay {
           left: 31%;
           top: 73%;
@@ -238,6 +229,16 @@
           color: #ccc;
           font-family: Tahoma, Verdana, Segoe, sans-serif;
           font-weight: 500;
+        }
+
+        #switch-anyway-overlay {
+          left: 38%;
+          top: 83%;
+        }
+
+        #switch-anyway-overlay div {
+          color: rgb(0, 117, 218);
+          font-family: Segoe UI;
         }
 
         #icon-overlay {
@@ -252,31 +253,23 @@
         /* These values are precisely set so that the text over the screenshot
          * starts scaling at the same time the image starts scaling too. */
         @media (max-width: 626px) {
-          #browser-overlay {
-            font-size: 1.28vw;
-          }
-
-          #edge-overlay {
-            font-size: 1.44vw;
-          }
-
           #taskbar-overlay {
             font-size: 1.95vw;
+          }
+
+          #switch-anyway-overlay {
+            font-size: 1.92vw;
           }
         }
 
         /* Font-sizes used when the screenshot exactly reaches its max size. */
         @media (min-width: 626px) {
-          #browser-overlay {
-            font-size: 8px;
-          }
-
-          #edge-overlay {
-            font-size: 9px;
-          }
-
           #taskbar-overlay {
             font-size: 12.2px;
+          }
+
+          #switch-anyway-overlay {
+            font-size: 12px;
           }
         }
       </style>
@@ -311,20 +304,22 @@
                 $i18n{openSettingsText}
               </a>
             </li>
-            <li>
-              <div role="presentation">$i18nRaw{clickEdgeText}</div>
-              <div class="screenshot-image" id="default-image"
-                  role="presentation">
-                <div class="screenshot-overlay" id="browser-overlay">
-                  <div aria-hidden="true">$i18n{webBrowserLabel}</div>
-                </div>
-                <div class="screenshot-overlay" id="edge-overlay">
-                  <div aria-hidden="true">$i18n{microsoftEdgeLabel}</div>
-                </div>
-              </div>
-            </li>
+            <template is="dom-if" if="[[!isAccelerated]]">
+              <li>
+                <div role="presentation">$i18nRaw{clickEdgeText}</div>
+              </li>
+            </template>
             <li>
               <div role="presentation">$i18nRaw{clickSelectChrome}</div>
+            </li>
+            <li>
+              <div role="presentation">$i18nRaw{clickSwitchAnywayText}</div>
+              <div class="screenshot-image" id="default-image"
+                  role="presentation">
+                <div class="screenshot-overlay" id="switch-anyway-overlay">
+                  <div aria-hidden="true">$i18n{switchAnywayLabel}</div>
+                </div>
+              </div>
             </li>
           </ol>
         </div>
