@@ -42,6 +42,9 @@ class RemoteFrameClient : public FrameClient {
   virtual void VisibilityChanged(bool visible) = 0;
 
   virtual void SetIsInert(bool) = 0;
+
+  virtual void UpdateRenderThrottlingStatus(bool isThrottled,
+                                            bool subtreeThrottled) = 0;
 };
 
 }  // namespace blink
