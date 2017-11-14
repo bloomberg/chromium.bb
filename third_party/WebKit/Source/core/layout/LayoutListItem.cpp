@@ -138,9 +138,12 @@ static LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
     if (curr_child->IsFloating() || curr_child->IsOutOfFlowPositioned())
       continue;
 
+    if (curr->HasOverflowClip())
+      return curr;
+
     if (!curr_child->IsLayoutBlockFlow() ||
         (curr_child->IsBox() && ToLayoutBox(curr_child)->IsWritingModeRoot()))
-      break;
+      return curr_child;
 
     if (curr->IsListItem() && in_quirks_mode && curr_child->GetNode() &&
         (IsHTMLUListElement(*curr_child->GetNode()) ||
@@ -168,7 +171,8 @@ static LayoutObject* FirstNonMarkerChild(LayoutObject* parent) {
 // 2. Manage the logicalHeight of marker_container(marker's anonymous parent):
 // If marker is the only child of marker_container, set logicalHeight of
 // marker_container to 0px; else restore it to logicalHeight of <li>.
-bool LayoutListItem::DealWithOverflow(const LayoutObject* line_box_parent) {
+bool LayoutListItem::PrepareForBlockDirectionAlign(
+    const LayoutObject* line_box_parent) {
   LayoutObject* marker_parent = marker_->Parent();
   // Deal with the situation of layout tree changed.
   if (marker_parent && marker_parent->IsAnonymous()) {
@@ -225,10 +229,13 @@ bool LayoutListItem::UpdateMarkerLocation() {
       marker_->IsInside() ? this : GetParentOfFirstLineBox(this, marker_);
 
   if (!marker_->IsInside() && line_box_parent &&
-      line_box_parent->HasOverflowClip())
+      (line_box_parent->HasOverflowClip() ||
+       !line_box_parent->IsLayoutBlockFlow() ||
+       (line_box_parent->IsBox() &&
+        ToLayoutBox(line_box_parent)->IsWritingModeRoot())))
     need_block_direction_align_ = true;
   if (need_block_direction_align_)
-    return DealWithOverflow(line_box_parent);
+    return PrepareForBlockDirectionAlign(line_box_parent);
 
   if (!line_box_parent) {
     // If the marker is currently contained inside an anonymous box, then we
@@ -263,49 +270,54 @@ void LayoutListItem::AddOverflowFromChildren() {
 // baseline.
 void LayoutListItem::AlignMarkerInBlockDirection() {
   LayoutObject* line_box_parent = GetParentOfFirstLineBox(this, marker_);
-  if (line_box_parent && line_box_parent->IsLayoutBlockFlow()) {
-    LayoutBlockFlow* line_box_parent_block = ToLayoutBlockFlow(line_box_parent);
-    RootInlineBox* line_box_root = line_box_parent_block->FirstRootBox();
+  if (!line_box_parent || !line_box_parent->IsBox())
+    return;
 
-    InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
-    RootInlineBox& marker_root = marker_inline_box->Root();
+  LayoutBox* line_box_parent_block = ToLayoutBox(line_box_parent);
+  // Don't align marker if line_box_parent has a different writing-mode.
+  // Just let marker positioned at the left-top of line_box_parent.
+  if (line_box_parent_block->IsWritingModeRoot())
+    return;
 
-    if (line_box_root && line_box_root != &marker_root) {
-      LayoutUnit offset = line_box_parent_block->FirstLineBoxBaseline();
-      if (offset != -1) {
-        for (LayoutBox* o = line_box_parent_block; o != this;
-             o = o->ParentBox()) {
-          offset += o->LogicalTop();
-        }
+  InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
+  RootInlineBox& marker_root = marker_inline_box->Root();
+  if (line_box_parent_block->IsLayoutBlockFlow()) {
+    // If marker_ and line_box_parent_block share a same RootInlineBox, no need
+    // to align marker.
+    if (ToLayoutBlockFlow(line_box_parent_block)->FirstRootBox() ==
+        &marker_root)
+      return;
+  }
 
-        // Compute marker_inline_box's baseline.
-        // We shouldn't use FirstLineBoxBaseline here. FirstLineBoxBaseline is
-        // the baseline of root. We should compute marker_inline_box's baseline
-        // instead. BaselinePosition is workable when marker is an image.
-        // However, when marker is text, BaselinePosition contains lineheight
-        // information. So use marker_font_metrics.Ascent when marker is text.
-        if (marker_->IsImage()) {
-          offset -=
-              marker_inline_box->BaselinePosition(marker_root.BaselineType());
-        } else {
-          const SimpleFontData* marker_font_data =
-              marker_->Style(true)->GetFont().PrimaryFont();
-          if (marker_font_data) {
-            const FontMetrics& marker_font_metrics =
-                marker_font_data->GetFontMetrics();
-            offset -= marker_font_metrics.Ascent(marker_root.BaselineType());
-          }
-        }
-        offset -= marker_inline_box->LogicalTop();
+  LayoutUnit offset = line_box_parent_block->FirstLineBoxBaseline();
+  if (offset != -1) {
+    for (LayoutBox* o = line_box_parent_block; o != this; o = o->ParentBox())
+      offset += o->LogicalTop();
 
-        for (LayoutBox* o = marker_->ParentBox(); o != this;
-             o = o->ParentBox()) {
-          offset -= o->LogicalTop();
-        }
-
-        marker_inline_box->MoveInBlockDirection(offset);
+    // Compute marker_inline_box's baseline.
+    // We shouldn't use FirstLineBoxBaseline here. FirstLineBoxBaseline is
+    // the baseline of root. We should compute marker_inline_box's baseline
+    // instead. BaselinePosition is workable when marker is an image.
+    // However, when marker is text, BaselinePosition contains lineheight
+    // information. So use marker_font_metrics.Ascent when marker is text.
+    if (marker_->IsImage()) {
+      offset -= marker_inline_box->BaselinePosition(marker_root.BaselineType());
+    } else {
+      const SimpleFontData* marker_font_data =
+          marker_->Style(true)->GetFont().PrimaryFont();
+      if (marker_font_data) {
+        const FontMetrics& marker_font_metrics =
+            marker_font_data->GetFontMetrics();
+        offset -= marker_font_metrics.Ascent(marker_root.BaselineType());
       }
     }
+    offset -= marker_inline_box->LogicalTop();
+
+    for (LayoutBox* o = marker_->ParentBox(); o != this; o = o->ParentBox()) {
+      offset -= o->LogicalTop();
+    }
+
+    marker_inline_box->MoveInBlockDirection(offset);
   }
 }
 
