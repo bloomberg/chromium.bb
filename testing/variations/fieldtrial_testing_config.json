@@ -3083,7 +3083,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_Launch",
                     "enable_features": [
                         "SyncPasswordReuseEvent"
                     ]
