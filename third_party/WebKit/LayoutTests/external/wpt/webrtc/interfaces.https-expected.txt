@@ -150,10 +150,13 @@ PASS RTCSessionDescription interface: existence and properties of interface prot
 PASS RTCSessionDescription interface: existence and properties of interface prototype object's "constructor" property
 FAIL RTCSessionDescription interface: attribute type assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
 FAIL RTCSessionDescription interface: attribute sdp assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
+PASS RTCSessionDescription interface: operation toJSON()
 PASS RTCSessionDescription must be primary interface of new RTCSessionDescription({ type: 'offer' })
 PASS Stringification of new RTCSessionDescription({ type: 'offer' })
 PASS RTCSessionDescription interface: new RTCSessionDescription({ type: 'offer' }) must inherit property "type" with the proper type
 FAIL RTCSessionDescription interface: new RTCSessionDescription({ type: 'offer' }) must inherit property "sdp" with the proper type assert_equals: expected "string" but got "object"
+PASS RTCSessionDescription interface: new RTCSessionDescription({ type: 'offer' }) must inherit property "toJSON()" with the proper type
+FAIL Test default toJSON operation of RTCSessionDescription assert_equals: expected "string" but got "object"
 PASS RTCIceCandidate interface: existence and properties of interface object
 FAIL RTCIceCandidate interface object length assert_equals: wrong value for RTCIceCandidate.length expected 0 but got 1
 PASS RTCIceCandidate interface object name
@@ -172,7 +175,8 @@ FAIL RTCIceCandidate interface: attribute type assert_true: The prototype object
 FAIL RTCIceCandidate interface: attribute tcpType assert_true: The prototype object must have a property "tcpType" expected true got false
 FAIL RTCIceCandidate interface: attribute relatedAddress assert_true: The prototype object must have a property "relatedAddress" expected true got false
 FAIL RTCIceCandidate interface: attribute relatedPort assert_true: The prototype object must have a property "relatedPort" expected true got false
-FAIL RTCIceCandidate interface: attribute ufrag assert_true: The prototype object must have a property "ufrag" expected true got false
+FAIL RTCIceCandidate interface: attribute usernameFragment assert_true: The prototype object must have a property "usernameFragment" expected true got false
+PASS RTCIceCandidate interface: operation toJSON()
 FAIL RTCIceCandidate must be primary interface of new RTCIceCandidate({ sdpMid: 1 }) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL Stringification of new RTCIceCandidate({ sdpMid: 1 }) assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "candidate" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
@@ -188,7 +192,9 @@ FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit 
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "tcpType" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "relatedAddress" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
 FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "relatedPort" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
-FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "ufrag" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
+FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "usernameFragment" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
+FAIL RTCIceCandidate interface: new RTCIceCandidate({ sdpMid: 1 }) must inherit property "toJSON()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty."
+FAIL Test toJSON operation of RTCIceCandidate Cannot read property 'toJSON' of undefined
 FAIL RTCPeerConnectionIceEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS RTCPeerConnectionIceEvent interface object length
 PASS RTCPeerConnectionIceEvent interface object name
