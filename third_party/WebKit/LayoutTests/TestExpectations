@@ -72,6 +72,8 @@ crbug.com/769942 virtual/spv175/paint/clipath/clip-path-bigger-than-visual-overf
 crbug.com/769942 virtual/spv175/paint/clipath/clip-path-with-background-and-box-behind.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-constant-repaint.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/clip/clip-path-resize.html [ Failure ]
+crbug.com/769942 virtual/spv175/paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure ]
+crbug.com/769942 virtual/spv175/paint/invalidation/reflection/reflection-redraw.html [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/clip-path-child-changes.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/clip-path-href-changes.svg [ Failure ]
 crbug.com/769942 virtual/spv175/paint/invalidation/svg/clip-path-id-changes.svg [ Failure ]
