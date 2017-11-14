@@ -47,7 +47,8 @@ TEST_F(AwMediaUrlInterceptorTest, TestInterceptValidAssetUrl) {
   EXPECT_NE(UNSET_VALUE, size_);
 }
 
-TEST_F(AwMediaUrlInterceptorTest, TestInterceptInvalidAssetUrl) {
+// TODO(crbug/784572)
+TEST_F(AwMediaUrlInterceptorTest, DISABLED_TestInterceptInvalidAssetUrl) {
   // This asset file does not exist in the android_webview_unittests-debug.apk.
   // See gyp rule android_webview_unittests_apk.
   const std::string invalid_asset_url(
