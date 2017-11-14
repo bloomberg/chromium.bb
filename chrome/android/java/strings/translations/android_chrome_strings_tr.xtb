@@ -135,7 +135,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2154484045852737596">Kartı düzenle</translation>
 <translation id="2154710561487035718">URL'yi Kopyala</translation>
 <translation id="2156074688469523661">Kalan site sayısı (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">Yeni Chrome'u neden kapattığınızı bizimle paylaşın</translation>
+<translation id="2172731970979873816">Yeni Chrome'u neden kullanmadığınızı bizimle paylaşın</translation>
 <translation id="2185784955520093231">Yeni Chrome'u kullanıyorsunuz</translation>
 <translation id="219985413780390209">Kendinizi ve cihazınızı tehlikeli sitelerden koruyun</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web uygulaması. <ph name="APP_URL" /></translation>
@@ -726,7 +726,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7607552448134703340">Aradığınız şeyi yazın</translation>
 <translation id="7612619742409846846">Google'da şu hesapla oturum açıldı:</translation>
 <translation id="7619072057915878432">Ağ sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />Göz atmanın daha kolay bir yolunu<ph name="END_LINK" /> deneyin</translation>
+<translation id="7620146066550602128"><ph name="BEGIN_LINK" />Daha kolay bir tarayıcı deneyimi<ph name="END_LINK" /> ister misiniz?</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Yardım alın<ph name="END_LINK1" /> veya <ph name="BEGIN_LINK2" />yeniden tarayın<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome'a Hoş Geldiniz</translation>
 <translation id="7638584964844754484">Yanlış parola</translation>

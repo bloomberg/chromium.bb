@@ -2,14 +2,14 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1065672644894730302">आपली प्राधान्ये वाचता आली नाहीत.
-काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात आणि प्राधान्यांमधील बदल जतन केले जाणार नाहीत.</translation>
+काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात आणि प्राधान्यांमधील बदल सेव्ह केले जाणार नाहीत.</translation>
 <translation id="1115445892567829615">Chromium आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन वाक्यांश अपडेट करा.</translation>
 <translation id="113122355610423240">Chromium आपला डीफॉल्ट ब्राउझर आहे</translation>
 <translation id="1170115874949214249">आपल्या फोनवर Chromium इंस्टॉल करा. आम्ही आपल्या खाते पुनर्प्राप्ती फोन नंबरवर एक SMS पाठवू.</translation>
 <translation id="1174473354587728743">एक संगणक सामायिक करायचा? आपल्याला आवडते त्या प्रकारे आपण आता Chromium सेट करू शकता.</translation>
 <translation id="1185134272377778587">Chromium बद्दल</translation>
 <translation id="1298199220304005244">Chromium OS वापरून मदत मिळवा</translation>
-<translation id="1396446129537741364">Chromium संकेतशब्द दर्शविण्याचा प्रयत्न करत आहे.</translation>
+<translation id="1396446129537741364">Chromium पासवर्ड दर्शविण्याचा प्रयत्न करत आहे.</translation>
 <translation id="1403254041219632970">Chromium च्या भविष्‍यातील आवृत्त्या यापुढे Mac OS X 10.6, 10.7 किंवा 10.8 ला समर्थन देणार नाहीत.</translation>
 <translation id="1414495520565016063">आपण Chromium मध्ये साइन इन केले आहे!</translation>
 <translation id="1440917365206527807">Chromium ने या साइटला तुम्हाला यावर नेण्यापासून थांबवले</translation>
@@ -25,7 +25,7 @@
 <translation id="1779356040007214683">Chromium अधिक सुरक्षित बनविण्‍यासाठी, आम्‍ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्‍ये सूचीबद्ध नसलेले आणि आपल्‍या माहिती शिवाय कदाचित जोडले गेलेले काही विस्‍तार अक्षम केले.</translation>
 <translation id="1808667845054772817">Chromium पुनर्स्थापित करा</translation>
 <translation id="1869480248812203386">आपण Google कडे संभाव्य सुरक्षितता घटनांच्या तपशीलांचा स्वयंचलितपणे अहवाल देऊन Chromium वापरणे अधिक सुरक्षित आणि अधिक सुलभ करण्यात मदत करू शकता.</translation>
-<translation id="1881322772814446296">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. आपण आपला विद्यमान Chromium डेटा विभक्त ठेवण्यासाठी एक नवीन प्रोफाईल वैकल्पिकपणे तयार करू शकता. <ph name="LEARN_MORE" /></translation>
+<translation id="1881322772814446296">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. आपण आपला विद्यमान Chromium डेटा विभक्त ठेवण्यासाठी एक नवीन प्रोफाईल वैकल्पिकपणे तयार करू शकता. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">Chromium असंवादी आहे. आता पुन्‍हा लाँच करायचे?</translation>
 <translation id="1966382378801805537">Chromium डीफॉल्ट ब्राउझर निर्धारित किंवा सेट करू शकत नाही</translation>
 <translation id="1967743265616885482">यासारख्या नावाचे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
@@ -59,7 +59,7 @@
 <translation id="2910007522516064972">&amp;Chromium बद्दल</translation>
 <translation id="2977470724722393594">Chromium अद्ययावत आहे</translation>
 <translation id="3032787606318309379">Chromium वर जोडत आहे...</translation>
-<translation id="3046695367536568084">अॅप्स वापरण्यासाठी Chromium मध्ये आपल्याला साइन इन करण्याची आवश्यकता आहे. हे डिव्हाइसेसवर आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज संकालित करण्याची Chromium ला अनुमती देते.</translation>
+<translation id="3046695367536568084">अॅप्स वापरण्यासाठी Chromium मध्ये आपल्याला साइन इन करण्याची आवश्यकता आहे. हे डिव्हाइसेसवर आपले अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज संकालित करण्याची Chromium ला अनुमती देते.</translation>
 <translation id="3068515742935458733">Google कडे क्रॅश अहवाल आणि <ph name="UMA_LINK" /> पाठवून Chromium अधिक चांगले करण्यात मदत करा</translation>
 <translation id="3103660991484857065">संग्रहण असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
 <translation id="3130323860337406239">Chromium आपला मायक्रोफोन वापरत आहे.</translation>
@@ -87,7 +87,7 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3852700440713538496">Chromium ला आपल्या टास्कबारवर पिन करा</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
-<translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
+<translation id="390894725198123737">Mac वर, पासवर्ड हे आपल्या किचेनमध्ये सेव्ह केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chromium उत्कृष्ट बनव‍िण्यात मदत करा</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> निवडा</translation>
@@ -121,11 +121,11 @@
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>
 <translation id="4994636714258228724">आपल्या स्वतःस Chromium वर जोडा</translation>
-<translation id="5032989939245619637">Chromium मध्ये तपशील जतन करा</translation>
+<translation id="5032989939245619637">Chromium मध्ये तपशील सेव्ह करा</translation>
 <translation id="5045248521775609809">Chromium ला सर्वत्र न्या</translation>
 <translation id="5116586539350239523">Chromium आपले वैयक्तिक तपशील सुरक्षितपणे संचयित करेल जेणेकरून आपल्याला ते पुन्हा टाइप करण्याची आवश्यकता नसेल.</translation>
 <translation id="5231355151045086930">Chromium मधून साइन आउट करा</translation>
-<translation id="5358375970380395591">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, संकेतशब्द आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE" /></translation>
+<translation id="5358375970380395591">आपण एका व्यवस्थापित खात्यासह साइन इन करत आहात आणि आपल्या Chromium प्रोफाईलवर त्याच्या प्रशासकास नियंत्रण देत आहात. आपला Chromium डेटा, जसे की आपले अॅप्स, बुकमार्क, इतिहास, पासवर्ड आणि अन्य सेटिंग्ज <ph name="USER_NAME" /> वर कायमच्या बद्ध होतील. आपण Google खाती डॅशबोर्डद्वारे हा डेटा हटविण्यात सक्षम व्हाल, परंतु आपण दुसर्‍या खात्यासह हा डेटा संबद्ध करण्यात सक्षम होणार नाही. <ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">Chromium अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium ची नवीन आवृत्ती उपलब्ध आहे.</translation>
 <translation id="5427571867875391349">आपला डीफॉल्ट ब्राउझर म्हणून Chromium सेट करा</translation>
@@ -231,14 +231,14 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> पूर्वी Chromium वापरत होते</translation>
 <translation id="8453117565092476964">इन्स्टॉलर संग्रहण दूषित किंवा वैध आहे. कृपया Chromium पुन्हा डाउनलोड करा.</translation>
 <translation id="8493179195440786826">Chromium कालबाह्य आहे</translation>
-<translation id="8563206822260884157">Chromium द्वारे व्युत्पन्न केलेला सशक्त संकेतशब्द वापरा</translation>
+<translation id="8563206822260884157">Chromium द्वारे व्युत्पन्न केलेला सशक्त पासवर्ड वापरा</translation>
 <translation id="85843667276690461">Chromium वापरून मदत मिळवा</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium लेखक. सर्व हक्क राखीव.</translation>
 <translation id="8590769996813453836">Chromium ला तुमच्या काँप्युटरवर धोकादायक सॉफ्टवेअर आढळले आहे. Chromium ते काढून टाकू आणि तुमचा ब्राउझर पुन्हा नीट चालावा यासाठी तुमच्या सेटिंग्ज रीस्टोअर करू शकते.</translation>
 <translation id="8621669128220841554">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="8628626585870903697">Chromium कार्य करण्यासाठी मुद्रण पूर्वावलोकनास आवश्यक असलेले PDF viewer समाविष्ट करीत नाही.</translation>
 <translation id="8667808506758191620">आपले <ph name="DEVICE_TYPE" /> अद्ययावत आहे.</translation>
-<translation id="8697124171261953979">आपण Chromium प्रारंभ करता किंवा विविधोपयोगी क्षेत्रातून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
+<translation id="8697124171261953979">आपण Chromium प्रारंभ करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="8704119203788522458">हे आपले Chromium आहे</translation>
 <translation id="872034308864968620">Chromium पार्श्वभूमीवर चालू द्या</translation>
 <translation id="8803635938069941624">Chromium OS अटी</translation>
@@ -249,7 +249,7 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8907580949721785412">Chromium संकेतशब्‍द दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी आपला Windows संकेतशब्‍द टाइप करा.</translation>
 <translation id="8941642502866065432">Chromium अपडेट करू शकत नाही</translation>
 <translation id="894903460958736500">आपल्या संगणकावर चालत असलेले सॉफ्टवेअर Chromium सह विसंगत आहे.</translation>
-<translation id="8968921422458636175">Chromium <ph name="SAVED_PASSWORD_LINK" /> सह हा संकेतशब्द जतन करेल. आपल्याला तो लक्षात ठेवण्याची आवश्यकता नाही.</translation>
+<translation id="8968921422458636175">Chromium <ph name="SAVED_PASSWORD_LINK" /> सह हा पासवर्ड जतन करेल. आपल्याला तो लक्षात ठेवण्याची आवश्यकता नाही.</translation>
 <translation id="8974095189086268230">अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />खुले स्रोत सॉफ्‍टवेअर<ph name="END_LINK_CROS_OSS" /> द्वारे Chromium OS बनवणे शक्‍य झाले.</translation>
 <translation id="8985587603644336029">कोणीतरी यापूर्वी या संगणकावरील Chromium मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> या रुपात साइन इन केले होते. ते आपले खाते नसल्यास, आपली माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chromium वापरकर्ता तयार करा.
 

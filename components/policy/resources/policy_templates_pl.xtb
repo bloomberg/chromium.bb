@@ -881,19 +881,19 @@ Jeśli ta zasada jest wyłączona, informacje o sesji nie będą przesyłane. Je
 
 Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku nieskonfigurowania zasady ustawienie jest wyłączone i treść dodatkowa innej firmy nie może wyświetlać okna dialogowego z podstawowym uwierzytelnianiem HTTP.</translation>
 <translation id="4056910949759281379">Wyłącz protokół SPDY</translation>
-<translation id="4077363032873906037">Włącza w <ph name="PRODUCT_NAME" /> funkcję ograniczonego logowania w Google Apps for Work i nie pozwala użytkownikom zmieniać tego ustawienia.
+<translation id="4077363032873906037">Włącza w <ph name="PRODUCT_NAME" /> funkcję ograniczonego logowania w G Suite i nie pozwala użytkownikom zmieniać tego ustawienia.
 
       Jeśli skonfigurujesz to ustawienie, użytkownik będzie mógł uzyskiwać dostęp
-      do Google Apps for Work tylko za pomocą kont z określonych domen
+      do G Suite tylko z kont z określonych domen
       (gmail.com/googlemail.com nie działa).
 
-      To ustawienie NIE uniemożliwia użytkownikowi logowania się na urządzeniu
-      zarządzanym wymagającym uwierzytelniania Google. Użytkownik nadal
+      To ustawienie NIE uniemożliwia użytkownikowi zalogowania się na zarządzanym 
+      urządzeniu wymagającym uwierzytelniania Google. Użytkownik nadal
       będzie mógł logować się na konta z innych domen, ale jeśli spróbuje na tych
-      kontach skorzystać z Google Apps for Work, napotka błąd.
+      kontach skorzystać z G Suite, napotka błąd.
 
       Jeśli pozostawisz to ustawienie puste/nieskonfigurowane, użytkownik będzie
-      mógł uzyskiwać dostęp do Google Apps for Work z dowolnego konta.
+      mógł uzyskiwać dostęp do G Suite z dowolnego konta.
 
       Ta zasada powoduje, że do wszystkich żądań HTTP i HTTPS dotyczących
       wszystkich domen google.com jest dodawany nagłówek
@@ -1126,9 +1126,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Pamiętaj, że kod źródłowy każdego rozszerzenia można zmodyfikować za pomocą narzędzi dla programistów (potencjalnie blokując jego działanie). Jeśli jest to problemem, ustaw zasadę <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
+          Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator rozszerzenia i URL aktualizacji oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator rozszerzenia to ciąg 32 znaków, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie programisty. URL aktualizacji powinien wskazywać plik manifestu aktualizacji w postaci dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />. Uwaga: URL aktualizacji ustawiony przez tę zasadę jest używany tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają z adresu URL aktualizacji wskazanego w pliku manifestu.
 
-          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL „aktualizacji” Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL aktualizacji z Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń znajdziesz na <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Jeśli ta zasada nie jest ustawiona, aplikacje ani rozszerzenia nie są instalowane automatycznie, a użytkownik może odinstalować dowolne z nich w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Zdefiniuj domeny, które będą mogły uzyskiwać dostęp do Google Apps for Work</translation>
@@ -2160,7 +2160,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 
       Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek oprócz tych, których identyfikatory w niej określono.
       </translation>
-<translation id="8538235451413605457">Konfiguruje wymóg minimalnej dozwolonej wersji <ph name="PRODUCT_NAME" />. Wersje poniżej podanej są traktowane jako przestarzałe. W takim przypadku urządzenie zezwala na zalogowanie się użytkownika dopiero wtedy, gdy zaktualizuje on system operacyjny.
+<translation id="8538235451413605457">Konfiguruje wymóg minimalnej dozwolonej wersji <ph name="PRODUCT_NAME" />. Starsze wersje są traktowane jako przestarzałe. W takim przypadku urządzenie zezwala na zalogowanie się użytkownika dopiero wtedy, gdy zaktualizuje on system operacyjny.
       
 Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, jego wylogowanie się zostanie wymuszone.
 

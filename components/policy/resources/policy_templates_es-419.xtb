@@ -1112,13 +1112,13 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si esta política se establece en Falso, las solicitudes de bloqueo de activación de pantalla se ignorarán.</translation>
 <translation id="4876805738539874299">Versión de SSL máxima habilitada</translation>
 <translation id="4881315447528084360">Especifica una lista de apps y extensiones que se instalan de forma silenciosa,
-          sin interacción del usuario, y que el usuario no puede desinstalarlas
-          ni inhabilitarlas. Todos los permisos que solicitan las apps y extensiones
+          sin interacción del usuario, y que el usuario no puede desinstalar
+          ni inhabilitar. Todos los permisos que solicitan las apps y extensiones
           se conceden de forma implícita, sin interacción del usuario, incluso los
           permisos adicionales que soliciten las apps o extensiones en próximas
           versiones. Además, los permisos se conceden para las API de las
           extensiones enterprise.deviceAttributes y enterprise.platformKeys (estas
-          dos API no están disponibles para las apps o extensiones cuyas
+          no están disponibles para las apps o extensiones cuyas
           instalaciones no se hayan forzado).
 
           Esta política tiene prioridad por sobre una política de <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> posiblemente conflictiva. Si una app o extensión, cuya instalación se forzó anteriormente, se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstala de forma automática.
@@ -1324,9 +1324,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       programa de distribución pública) se considera software malicioso y
       es posible que Google y los proveedores de antivirus lo consideren como tal.
 
-      No es necesario ajustar manualmente estas opciones de configuración . Hay plantillas para Windows, Mac y Linux disponibles para descargar en <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+      No es necesario ajustar manualmente estas opciones de configuración. Hay plantillas para Windows, Mac y Linux disponibles para descargar en <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
-      Se recomienda configurar la política en Windows a través de GPO, aunque  para las instancias de Windows que son parte de un dominio de <ph name="MS_AD_NAME" /> todavía es posible hacer la disposición de políticas a través del registro.</translation>
+      Se recomienda configurar la política en Windows a través de GPO, aunque para las instancias de Windows que son parte de un dominio de <ph name="MS_AD_NAME" /> todavía es posible hacer la disposición de políticas a través del registro.</translation>
 <translation id="5770738360657678870">Canal para desarrolladores (puede ser inestable)</translation>
 <translation id="5774856474228476867">Dirección URL de búsqueda de proveedores de búsqueda predeterminada</translation>
 <translation id="5776485039795852974">Preguntar siempre que un sitio quiera mostrar notificaciones de escritorio.</translation>
@@ -2149,7 +2149,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="847472800012384958">No permitir que ningún sitio muestre ventanas emergentes</translation>
 <translation id="8476127435468057643">Controla si está habilitada la autenticación NTLMv2.
 
-          Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Solo debe inhabilitarse para admitir la compatibilidad con versiones anteriores, porque se reduce la seguridad de la autenticación.
+          Todas las versiones recientes de servidores de Samba y Windows son compatibles con NTLMv2. Solo debe inhabilitarse para admitir la compatibilidad con versiones anteriores y reduce la seguridad de la autenticación.
 
           El valor predeterminado cuando esta política no está definida actualmente es falso para la compatibilidad con versiones anteriores, pero cambiará a verdadero en el futuro.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>
@@ -2167,10 +2167,10 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si se usa esta política, se proporcionarán todas las impresoras al usuario, excepto aquellas con un ID que se enumere en esta política.
       </translation>
-<translation id="8538235451413605457">Configura los requisitos de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones anteriores se tratan como obsoletas y es posible que el dispositivo no permita acceder al usuario si no actualiza el SO.
+<translation id="8538235451413605457">Configura los requisitos de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones anteriores se tratan como obsoletas, y es posible que el dispositivo no permita acceder al usuario si no actualiza el SO.
       Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
 
-      Si no se establece esta política, no se aplicarán restricciones y el usuario accederá más allá de la versión de <ph name="PRODUCT_NAME" />.
+      Si no se establece esta política, no se aplicarán restricciones, y el usuario accederá independientemente de la versión de <ph name="PRODUCT_NAME" />.
 
       Aquí, la "versión" puede ser una exacta, como "61.0.3163.120" o el prefijo de una versión, como "61.0"  </translation>
 <translation id="8544375438507658205">Procesador HTML predeterminado para <ph name="PRODUCT_FRAME_NAME" /></translation>

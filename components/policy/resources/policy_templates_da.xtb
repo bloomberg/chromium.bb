@@ -802,11 +802,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Hvis denne politik ikke er angivet, vil skærmtastaturet være slået fra som udgangspunkt, men brugeren kan til enhver tid aktivere det.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-præfikset for værter med fjernadgang</translation>
-<translation id="383466854578875212">Giver dig mulighed for at angive, hvilke indbyggede beskedhosts der ikke skal være omfattet af spærrelisten.
+<translation id="383466854578875212">Giver dig mulighed for at angive, hvilke indbyggede beskedhosts der ikke skal være omfattet af sortlisten.
 
-          En spærrelisteværdi på * betyder, at alle indbyggede beskedhosts er på spærrelisten, og at kun indbyggede beskedhosts på hvidlisten vil blive indlæst.
+          En sortlisteværdi på * betyder, at alle indbyggede beskedhosts er på sortlisten, og at kun indbyggede beskedhosts på hvidlisten vil blive indlæst.
 
-          Som standard sættes alle indbyggede beskedhosts på hvidlisten, men hvis alle indbyggede beskedhosts er blevet sat på spærrelisten via en politik, kan hvidlisten bruges til at tilsidesætte denne politik.</translation>
+          Som standard sættes alle indbyggede beskedhosts på hvidlisten, men hvis alle indbyggede beskedhosts er blevet sat på sortlisten via en politik, kan hvidlisten bruges til at tilsidesætte denne politik.</translation>
 <translation id="384743459174066962">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som ikke må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="3851039766298741586">Rapportér oplysninger om aktive terminalsessioner, f.eks.
       app-id og -version.
@@ -899,7 +899,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
       Hvis du undlader at markere/konfigurere denne indstilling,
       kan brugerne få adgang til Google Apps med enhver konto.
 
-      Som følge af denne politik føjes overskriften X-GoogApps-Allowed-Domains til alle
+      Som følge af denne politik føjes headeren X-GoogApps-Allowed-Domains til alle
       HTTP- og HTTPS-anmodninger på alle google.com-domæner, som beskrevet på
       https://support.google.com/a/answer/1668854.
 
@@ -1038,7 +1038,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="4555850956567117258">Aktivér fjernattestering for brugeren</translation>
 <translation id="4557134566541205630">Webadresse for siden Ny fane i standardsøgemaskinen</translation>
 <translation id="4600786265870346112">Aktivér Stor markør</translation>
-<translation id="4604931264910482931">Konfigurer spærrelisten for indbyggede beskedhosts</translation>
+<translation id="4604931264910482931">Konfigurer sortlisten for indbyggede beskedhosts</translation>
 <translation id="4617338332148204752">Spring kontrol af metatag over i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurer hvidliste for installation af udvidelser</translation>
 <translation id="4632343302005518762">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer de angivne indholdstyper</translation>
@@ -1047,7 +1047,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
           Hvis denne politik er angivet til Sand, vil den øverste række med taster på tastaturet som standard være funktionstaster. For igen at gøre tasterne til medietaster skal man trykke på søgetasten.
 
           Hvis denne politik er angivet til Falsk, eller hvis den ikke er indstillet, vil tastaturet skulle bruges som medietaster som standard og funktionstaster, når søgefeltet anvendes.</translation>
-<translation id="4639407427807680016">Navne på de indbyggede beskedhosts, som fritages fra spærrelisten</translation>
+<translation id="4639407427807680016">Navne på de indbyggede beskedhosts, som fritages fra sortlisten</translation>
 <translation id="4650759511838826572">Deaktiver protokolskemaer for webadresser</translation>
 <translation id="465099050592230505">Webadresse for virksomhedens webshop (udfaset)</translation>
 <translation id="4665897631924472251">Indstillinger for administration af udvidelser</translation>
@@ -1118,8 +1118,8 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis denne politik er angivet til falsk, ignoreres anmodninger om aktiveringslås for skærm.</translation>
 <translation id="4876805738539874299">Maksimalversion af SSL er aktiveret</translation>
-<translation id="4881315447528084360">Angiver en liste over apps og udvidelser, der er installeret.
-          Dette foregår i baggrunden uden brugerinteraktion og kan ikke
+<translation id="4881315447528084360">Angiver en liste over apps og udvidelser, der installeres uovervåget
+          Dette foregår i baggrunden uden brugerinteraktion, og hverken apps eller udvidelser kan
           afinstalleres af brugeren. Alle tilladelser, som apps/udvidelser
           anmoder om, gives implicit uden brugerinteraktion, herunder
           eventuelle ekstra tilladelser, der anmodes om af fremtidige
@@ -1134,7 +1134,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Bemærk, at kildekoden i alle udvidelser kan ændres af brugere via Udviklerværktøjer (hvilket kan medføre, at udvidelsen ikke fungerer). Hvis du vil undgå dette, skal politikken <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> angives.
 
-          Hvert listepunkt for politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" /> når udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et XML-dokument med manifest om opdatering, som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest.
+          Hvert listepunkt i politikken er en streng, som indeholder et udvidelses-id og en "opdateringswebadresse" adskilt af et semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er den streng på 32 bogstaver, som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" />, når udviklertilstanden bruges. "Opdateringswebadressen" skal pege på et XML-dokument med et opdateringsmanifest som beskrevet på <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk, at "opdateringswebadressen", der angives i denne politik, kun bruges til den første installation. Efterfølgende opdateringer af udvidelsen anvender den opdateringswebadresse, som er angivet i udvidelsens manifest.
 
           <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra "standardopdateringswebadressen" fra Chrome Webshop. Du kan få flere oplysninger om hosting af udvidelser her: <ph name="LINK_TO_EXTENSION_DOC2" />.
 
@@ -1196,7 +1196,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="527237119693897329">Giver dig mulighed for at angive, hvilke indbyggede beskedhosts der ikke skal indlæses.
 
-          En spærrelisteværdi på "*" betyder, at alle indbyggede beskedhosts er på spærrelisten, medmindre de udtrykkeligt opføres på hvidlisten.
+          En sortlisteværdi på "*" betyder, at alle indbyggede beskedhosts er på sortlisten, medmindre de udtrykkeligt opføres på hvidlisten.
 
           Hvis ikke denne politik angives, vil <ph name="PRODUCT_NAME" /> indlæse alle installerede indbyggede beskedhosts.</translation>
 <translation id="5272684451155669299">Hvis denne er angivet som sand, kan brugeren benytte hardwaren på Chrome-enheder til at fjernbekræfte sin identitet over for privatlivs-CA'en via <ph name="ENTERPRISE_PLATFORM_KEYS_API" /> med <ph name="CHALLENGE_USER_KEY_FUNCTION" />.
@@ -2158,10 +2158,10 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 
       Hvis denne politik anvendes, kan alle printere anvendes af brugeren, medmindre deres id er angivet i denne politik.
       </translation>
-<translation id="8538235451413605457">Konfigurerer kravene for den <ph name="PRODUCT_NAME" />-version, der som minimum påkræves. De versioner, der ikke opfylder kravene, betragtes som forældede, og enheden tillader ikke, at brugere logger ind, før OS er opdateret.
+<translation id="8538235451413605457">Konfigurerer kravene for den <ph name="PRODUCT_NAME" />-version, der som minimum tillades. De versioner, der ikke opfylder kravene, betragtes som forældede, og enheden tillader ikke, at brugere logger ind, før OS er opdateret.
       Hvis den nuværende version bliver forældet under brugersessionen, logges brugeren ud ved tvang.
 
-      Hvis denne politik ikke er angivet, gælder ingen begrænsninger, og brugeren kan logge ind i alle <ph name="PRODUCT_NAME" />-versioner.
+      Hvis denne politik ikke er angivet, gælder der ingen begrænsninger, og brugeren kan logge ind i alle <ph name="PRODUCT_NAME" />-versioner.
 
       Her kan "Version" være enten en eksakt version såsom "61.0.3163.120" eller et præfiks for versionen, f.eks. "61.0"  </translation>
 <translation id="8544375438507658205">Standard HTML-gengivelse for <ph name="PRODUCT_FRAME_NAME" /></translation>

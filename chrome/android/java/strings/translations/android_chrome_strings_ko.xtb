@@ -37,7 +37,7 @@
 <translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
 <translation id="1303671224831497365">블루투스 기기를 찾을 수 없습니다.</translation>
-<translation id="1320663236730331991">위로 스와이프하여 인기 사이트 및 기사, 다운로드 항목 등에 간편하게 액세스하세요.</translation>
+<translation id="1320663236730331991">위로 스와이프하여 인기 사이트 및 기사, 다운로드 항목 등에 간편하게 액세스하세요</translation>
 <translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="1332501820983677155">Chrome 기능 단축키</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
@@ -292,7 +292,7 @@
 <translation id="3706423975342040244">엔터테인먼트</translation>
 <translation id="3712575778697986964">데이터 절약 모드를 초기화하시겠습니까?</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
-<translation id="3734660163659757482">북마크 등을 보려면 위로 당기세요.</translation>
+<translation id="3734660163659757482">북마크 등을 보려면 위로 당기세요</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />에 북마크됨</translation>
 <translation id="3744111309925758534">기타 앱 <ph name="MEGABYTES" />MB</translation>
@@ -726,7 +726,7 @@
 <translation id="7607552448134703340">검색 내용 입력</translation>
 <translation id="7612619742409846846">다음 계정으로 Google에 로그인함:</translation>
 <translation id="7619072057915878432">네트워크에 문제가 발생하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
-<translation id="7620146066550602128"><ph name="BEGIN_LINK" />웹을 더욱 간편하게 탐색<ph name="END_LINK" />해 보세요.</translation>
+<translation id="7620146066550602128"><ph name="BEGIN_LINK" />웹을 더 간편하게 탐색<ph name="END_LINK" />해 보세요.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />도움말 보기<ph name="END_LINK1" /> 또는 <ph name="BEGIN_LINK2" />다시 검색하기<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다.</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>

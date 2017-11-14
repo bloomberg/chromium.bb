@@ -37,7 +37,7 @@
 <translation id="1291207594882862231">履歴、Cookie、サイトデータ、キャッシュを消去…</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="1303671224831497365">Bluetooth デバイスが見つかりませんでした</translation>
-<translation id="1320663236730331991">人気の高いサイトや記事、ダウンロードしたアイテムなどにすばやくアクセスするには、上にスワイプします</translation>
+<translation id="1320663236730331991">上にスワイプすると、人気の高いサイトや記事、ダウンロードしたアイテムなどにすばやくアクセスできます</translation>
 <translation id="1326317727527857210">他の端末と同じタブを使用するには、Chrome にログインします。</translation>
 <translation id="1332501820983677155">Google Chrome 機能のショートカット</translation>
 <translation id="1369915414381695676">サイト <ph name="SITE_NAME" /> を追加しました</translation>
@@ -292,7 +292,7 @@
 <translation id="3706423975342040244">エンターテイメント</translation>
 <translation id="3712575778697986964">データセーバーをリセットしますか？</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
-<translation id="3734660163659757482">上にスワイプするとブックマークなどが表示されます</translation>
+<translation id="3734660163659757482">上にスワイプしてブックマークなどを表示</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>

@@ -456,7 +456,7 @@
 <translation id="167832068858235403">Leiser</translation>
 <translation id="1679068421605151609">Entwicklertools</translation>
 <translation id="1681120471812444678">Einrichten und Drucker hinzufügen…</translation>
-<translation id="1682548588986054654">Neues &amp;Inkognito-Fenster</translation>
+<translation id="1682548588986054654">Neues &amp;Inkognitofenster</translation>
 <translation id="1682889864035450286">Webbrowser</translation>
 <translation id="168991973552362966">Drucker in der Nähe hinzufügen</translation>
 <translation id="1691063574428301566">Der Computer wird neu gestartet, sobald die Aktualisierung abgeschlossen ist.</translation>
@@ -1771,7 +1771,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3653999333232393305"><ph name="HOST" /> weiterhin Zugriff auf Ihr Mikrofon gestatten</translation>
 <translation id="3654045516529121250">Einstellungen für Bedienungshilfen lesen</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Dauerhafter Zugriff auf eine Datei}other{Dauerhafter Zugriff auf # Dateien}}</translation>
-<translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Wenn Sie die automatische Sicherung aktivieren, werden Geräte- und App-Daten regelmäßig in einem privaten Ordner in Google Drive gespeichert. Bei App-Daten kann es sich um alle von einer App basierend auf Entwicklereinstellungen gespeicherten Daten einschließlich potentiell vertraulicher Daten wie Kontakte, Nachrichten und Fotos handeln.<ph name="END_PARAGRAPH1" />
+<translation id="365793796291733849"><ph name="BEGIN_PARAGRAPH1" />Wenn Sie die automatische Sicherung aktivieren, werden Geräte- und App-Daten regelmäßig in einem privaten Ordner in Google Drive gespeichert. Bei App-Daten kann es sich um alle von einer App basierend auf Entwicklereinstellungen gespeicherten Daten einschließlich potenziell vertraulicher Daten wie Kontakte, Nachrichten und Fotos handeln.<ph name="END_PARAGRAPH1" />
 <ph name="BEGIN_PARAGRAPH2" />Sicherungsdaten werden nicht auf Ihr Drive-Speicherplatzkontingent angerechnet. Große Dateien oder Dateien, die Entwickler aus dem Dienst ausgeschlossen haben, werden nicht gesichert.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="3660234220361471169">Nicht vertrauenswürdig</translation>
 <translation id="3661054927247347545">Die Anmeldezertifizierung ist ungültig. Das Fenster wird in <ph name="MINUTES" />:<ph name="SECONDS" /> geschlossen.</translation>
@@ -1861,7 +1861,7 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3790909017043401679">PIN der SIM-Karte eingeben</translation>
 <translation id="3792890930871100565">Druckerverbindungen trennen</translation>
 <translation id="379422718204375917">Zum Anmelden im Konto Smart Lock verwenden</translation>
-<translation id="3794595850995182458">Ausstiegsseite</translation>
+<translation id="3794595850995182458">Seite verlassen</translation>
 <translation id="3796648294839530037">Bevorzugte Netzwerke:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> nach "<ph name="SEARCH_TERMS" />" durchsuchen</translation>
 <translation id="3798325802885154040">Ermöglicht das Aktivieren/Deaktivieren des Touchpad-Klicks</translation>
@@ -3380,7 +3380,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="6237816943013845465">Ermöglicht die Anpassung der Bildschirmauflösung</translation>
 <translation id="6238923052227198598">Neueste Notiz auf Sperrbildschirm anzeigen</translation>
 <translation id="6239558157302047471">&amp;Frame neu laden</translation>
-<translation id="624022915548992686">Ausstiegsseite</translation>
+<translation id="624022915548992686">Seite Verlassen</translation>
 <translation id="6241530762627360640">Informationen zu mit ihrem System gekoppelten Bluetooth-Geräten abrufen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="6243774244933267674">Server nicht verfügbar</translation>
 <translation id="6246413617632217567">Der betreute Nutzer konnte nicht importiert werden. Bitte überprüfen Sie Ihren Festplattenspeicherplatz und Ihre Berechtigungen und versuchen Sie es noch einmal.</translation>

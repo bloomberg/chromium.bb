@@ -383,7 +383,7 @@
 <translation id="2312134445771258233">시작 시 로드되는 페이지를 설정할 수 있습니다. '시작 시 동작'에서 'URL 목록 열기'를 선택하지 않으면 '시작 시 열리는 URL' 목록의 콘텐츠는 무시됩니다.</translation>
 <translation id="2334591568684482454"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트 기능의 사용 가능 여부 및 동작을 설정합니다.
 
-      개별 설정을 JASON 속성으로 지정할 수 있습니다.
+      개별 설정을 JSON 속성으로 지정할 수 있습니다.
 
       <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />(으)로 설정된 경우, 사용자가 파워워시 절차를 실행하여 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 펌웨어 업데이트를 설치할 수 있습니다.
 
@@ -1165,7 +1165,7 @@
 <translation id="4876805738539874299">최대 SSL 버전 사용 설정됨</translation>
 <translation id="4881315447528084360">사용자와의 상호작용 없이 자동으로 설치되며 사용자가 제거하거나
           사용 중지할 수 없는 앱 및 확장 프로그램의 목록을
-          지정합니다. 향후 버전의 앱/ 확장 프로그램에서 요청하는
+          지정합니다. 향후 버전의 앱/확장 프로그램에서 요청하는
           추가 권한을 비롯하여 앱/확장 프로그램에서 요청하는
           모든 권한은 사용자와의 상호작용 없이 암묵적으로 허용됩니다.
           또한 enterprise.deviceAttributes 및 enterprise.platformKeys
@@ -1179,7 +1179,7 @@
 
           모든 확장 프로그램의 소스 코드는 사용자가 개발자 도구를 사용하여 수정할 수 있습니다. 이 과정에서 확장 프로그램 오작동이 발생할 수도 있습니다. 이런 상황이 걱정된다면 <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> 정책을 설정하시기 바랍니다.
 
-          정책의 각 목록 항목은 세미콜론(<ph name="SEMICOLON" />)으로 구분된 확장 프로그램 ID와 ‘업데이트’ URL이 포함된 문자열입니다. 확장 프로그램 ID는 32자 문자열로, 예를 들어 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" />에서 확인할 수 있습니다. ‘업데이트’ URL은 <ph name="LINK_TO_EXTENSION_DOC1" />에서 설명된 것처럼 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 이 정책에 설정된 ‘업데이트’ URL은 처음 설치할 때만 사용되며, 이후 확장 프로그램의 업데이트에는 확장 프로그램의 매니페스트에 지정된 업데이트 URL이 사용됩니다.
+          정책의 각 목록 항목은 확장 프로그램 ID와 ‘업데이트’ URL이 포함된 문자열로 세미콜론(<ph name="SEMICOLON" />)으로 구분되어 있습니다. 확장 프로그램 ID는 32자 문자열로, 개발자 모드일 때 <ph name="CHROME_EXTENSIONS_LINK" /> 등에서 확인할 수 있습니다. ‘업데이트’ URL은 <ph name="LINK_TO_EXTENSION_DOC1" />에서 설명된 것처럼 업데이트 매니페스트 XML 문서로 연결되어야 합니다. 이 정책에 설정된 ‘업데이트’ URL은 처음 설치할 때만 사용되며, 이후 확장 프로그램의 업데이트에는 확장 프로그램의 매니페스트에 지정된 업데이트 URL이 사용됩니다.
 
           예를 들어, <ph name="EXTENSION_POLICY_EXAMPLE" />은(는) 표준 Chrome 웹 스토어 ‘업데이트’ URL에서 <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 앱을 설치합니다. 확장 프로그램 호스팅에 관해 자세히 알아보려면 <ph name="LINK_TO_EXTENSION_DOC2" /> 페이지를 참조하세요.
 

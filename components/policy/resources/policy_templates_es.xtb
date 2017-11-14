@@ -927,16 +927,17 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       que esta opción no funciona con gmail.com ni googlemail.com.
 
       Esta opción no evita que el usuario inicie sesión en un dispositivo
-      administrado que requiera una cuenta de Google. El usuario puede iniciar 
-      sesión con cuentas de otros dominios, pero aparece un error cuando 
+      administrado que requiera la autenticación de Google. El usuario puede 
+      iniciar sesión con cuentas de otros dominios, pero aparece un error cuando 
       intenta utilizar Google Apps con esa cuenta.
 
-      Si no configuras esta opción, el usuario puede acceder a Google Apps 
-      con cualquier cuenta.
+      Si no configuras esta opción (o queda vacía), el usuario puede acceder a 
+      Google Apps con cualquier cuenta.
 
-      Esta política hace que el encabezado X-GoogApps-Allowed-Domains se añada
-      a todas las solicitudes HTTP y HTTPS en todos los dominios de google.com,
-      como se describe en la página https://support.google.com/a/answer/1668854.
+      Esta política hace que el encabezado X-GoogApps-Allowed-Domains se
+      añada a todas las solicitudes HTTP y HTTPS en todos los dominios de
+      google.com,como se describe en la página
+      https://support.google.com/a/answer/1668854.
 
       Los usuarios no pueden cambiar ni anular este ajuste.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
@@ -1172,7 +1173,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Estas dos API no están disponibles para las aplicaciones o extensiones
           que no se hayan instalado de manera forzada.
 
-          Esta política prevalece frente a una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> que pueda ser conflictiva. Si una aplicación o extensión que se hayan instalado anteriormente de manera forzada se eliminan de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
+          Esta política prevalece frente a una política <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> que pueda ser conflictiva. Si una aplicación o extensión que se haya instalado anteriormente de manera forzada se elimina de la lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
 
           Para las instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />, la instalación forzada se limitará a las aplicaciones y extensiones disponibles en Chrome Web Store.
 
@@ -2284,7 +2285,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="847472800012384958">No permitir que ningún sitio muestre pop-ups</translation>
 <translation id="8476127435468057643">Controla si la autenticación NTLMv2 está habilitada.
 
-          Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe desactivarse para obtener compatibilidad con versiones anteriores y reduce la seguridad a la hora de autenticarse.
+          Todas las versiones recientes de los servidores Windows y Samba admiten la autenticación NTLMv2. Solo debe desactivarse para obtener compatibilidad con versiones anteriores, lo cual reduce la seguridad a la hora de autenticarse.
 
           Actualmente, el valor predeterminado cuando esta política no está configurada es false (para obtener compatibilidad con versiones anteriores), pero cambiará a true próximamente.</translation>
 <translation id="8477885780684655676">TLS 1.0</translation>

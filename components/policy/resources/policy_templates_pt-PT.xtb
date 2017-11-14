@@ -1147,7 +1147,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
           Cada item de lista da política é uma string que inclui um ID de extensão e um URL de "atualização", separados por ponto e vírgula (<ph name="SEMICOLON" />). O ID de extensão é uma string de 32 letras encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> quando está no modo de programador. O URL de "atualização" deve indicar um documento XML de manifesto de atualização, tal como descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. Tenha em atenção que o URL de "atualização" definido nesta política apenas é utilizado para a instalação inicial, uma vez que as atualizações subsequentes da extensão utilizam o URL de atualização indicado no manifesto da extensão.
 
-          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.
+          Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" /> instala a aplicação <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL de "atualização" padrão da Web Store do Chrome. Para mais informações acerca do alojamento de extensões, consulte <ph name="LINK_TO_EXTENSION_DOC2" />.
 
           Se deixar esta política por definir, não são instaladas automaticamente quaisquer aplicações ou extensões e o utilizador pode desinstalar qualquer aplicação ou extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4882546920824859909">Definir domínios com permissão para aceder ao Google Apps</translation>

@@ -37,7 +37,7 @@
 <translation id="1291207594882862231">清除歷史紀錄、Cookie、網站資料、快取…</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="1303671224831497365">找不到藍牙裝置</translation>
-<translation id="1320663236730331991">向上滑動即可輕鬆存取熱門網站和文章、下載項目等內容</translation>
+<translation id="1320663236730331991">向上滑動即可輕鬆瀏覽熱門網站和文章、下載項目等內容</translation>
 <translation id="1326317727527857210">如要存取您在其他裝置上開啟的分頁，請登入 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快速鍵</translation>
 <translation id="1369915414381695676">已新增 <ph name="SITE_NAME" /> 網站</translation>
@@ -135,7 +135,7 @@
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
 <translation id="2156074688469523661">其餘網站 (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">請將你關閉新版 Chrome 的原因告訴我們</translation>
+<translation id="2172731970979873816">請告訴我們您為何不想使用新版 Chrome</translation>
 <translation id="2185784955520093231">你目前使用的是新版 Chrome</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
@@ -726,7 +726,7 @@
 <translation id="7607552448134703340">輸入你要尋找的項目</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
-<translation id="7620146066550602128">嘗試<ph name="BEGIN_LINK" />更輕鬆的瀏覽方式<ph name="END_LINK" /></translation>
+<translation id="7620146066550602128">體驗<ph name="BEGIN_LINK" />更輕鬆的瀏覽方式<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />查看說明<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新掃描<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>

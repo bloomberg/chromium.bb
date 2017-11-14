@@ -37,7 +37,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1291207594882862231">Borrar el historial, las cookies, los datos de sitios web, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="1303671224831497365">No se han encontrado dispositivos Bluetooth</translation>
-<translation id="1320663236730331991">Desliza el dedo hacia arriba para acceder fácilmente a descargas, artículos y sitios web populares, y mucho más</translation>
+<translation id="1320663236730331991">Desliza el dedo hacia arriba para acceder fácilmente a artículos y sitios web populares, descargas y mucho más.</translation>
 <translation id="1326317727527857210">Inicia sesión en Chrome para ver las pestañas de tus otros dispositivos.</translation>
 <translation id="1332501820983677155">Combinaciones de teclas de funciones de Google Chrome</translation>
 <translation id="1369915414381695676">Se ha añadido el sitio <ph name="SITE_NAME" /></translation>
@@ -292,7 +292,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3706423975342040244">Espectáculos</translation>
 <translation id="3712575778697986964">¿Quieres vaciar el historial de Ahorro de Datos?</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
-<translation id="3734660163659757482">Súbela para ver marcadores y más</translation>
+<translation id="3734660163659757482">Desliza hacia arriba para ver marcadores y más</translation>
 <translation id="3738139272394829648">Tocar para Buscar</translation>
 <translation id="3739899004075612870">Marcador añadido a <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB de otras aplicaciones</translation>
@@ -726,7 +726,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="7607552448134703340">Escribe lo que quieras buscar</translation>
 <translation id="7612619742409846846">Has iniciado sesión en Google como</translation>
 <translation id="7619072057915878432">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas de la red.</translation>
-<translation id="7620146066550602128">Prueba una <ph name="BEGIN_LINK" />forma más sencilla de navegar por la Web<ph name="END_LINK" /></translation>
+<translation id="7620146066550602128">Prueba una <ph name="BEGIN_LINK" />forma más sencilla de navegar<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obtener ayuda<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />volver a buscar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>

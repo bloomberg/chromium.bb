@@ -37,7 +37,7 @@
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1303671224831497365">لم يتم العثور على أي أجهزة بلوتوث</translation>
-<translation id="1320663236730331991">مرِّر سريعًا لأعلى للوصول بسهولة إلى المواقع والمقالات والتنزيلات الشائعة، وغيرها</translation>
+<translation id="1320663236730331991">ما عليك سوى التمرير سريعًا لأعلى للوصول بسهولة إلى المواقع والمقالات والتنزيلات الرائجة وغيرها</translation>
 <translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="1332501820983677155">‏اختصارات ميزات Google Chrome</translation>
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
@@ -118,7 +118,7 @@
 <translation id="2045104531052923016">تطبيقات أخرى بحجم <ph name="GIGABYTES" /> غيغابايت</translation>
 <translation id="2079545284768500474">تراجع</translation>
 <translation id="2082238445998314030">النتيجة <ph name="RESULT_NUMBER" /> من <ph name="TOTAL_RESULTS" /></translation>
-<translation id="2086116129690175316">‏تقديم متصفح Chrome الجديد</translation>
+<translation id="2086116129690175316">‏إليك متصفّح Chrome الجديد</translation>
 <translation id="2086652334978798447">‏للحصول على محتوى مخصص اقترحته Google، سجِّلْ الدخول إلى Chrome.</translation>
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2095887075102408547">‏عند تشغيل هذه الميزة، سيستخدم Chrome خوادم Google لضغط الصفحات التي تزورها قبل تنزيلها. ولن يتم تحسين الصفحات التي يتم الوصول إليها باستخدام الاتصالات الخاصة (HTTPS) أو من خلال علامات تبويب التصفح المتخفي أو لن يكتشفها متصفح Google.</translation>
@@ -129,14 +129,14 @@
 <translation id="2126426811489709554">‏يدعمها Chrome</translation>
 <translation id="2131665479022868825">تم توفير <ph name="DATA" /></translation>
 <translation id="213279576345780926">تم إغلاق <ph name="TAB_TITLE" /></translation>
-<translation id="2139186145475833000">إضافة إلى الشاشة الرئيسية</translation>
+<translation id="2139186145475833000">الإضافة إلى الشاشة الرئيسية</translation>
 <translation id="2146738493024040262">فتح تطبيق فوري</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2154710561487035718">‏نسخ عنوان URL</translation>
 <translation id="2156074688469523661">المواقع المتبقية (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2172731970979873816">‏أخبرنا عن سبب إيقاف تشغيل متصفح Chrome الجديد</translation>
-<translation id="2185784955520093231">‏أنت تستخدم متصفح Chrome الجديد</translation>
+<translation id="2172731970979873816">‏أخبرنا عن سبب إيقاف تشغيل متصفّح Chrome الجديد</translation>
+<translation id="2185784955520093231">‏أنت تستخدم متصفّح Chrome الجديد</translation>
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">متابعة باسم <ph name="USER_FULL_NAME" /></translation>
@@ -174,7 +174,7 @@
 <translation id="2512222046227390255">الملء التلقائي للنماذج</translation>
 <translation id="2526148617758225454">تم تشغيل توفير البيانات. يمكنك إدارته في الإعدادات.</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
-<translation id="2533871075713227669">‏استخدام متصفح Chrome الجديد</translation>
+<translation id="2533871075713227669">‏استخدام متصفّح Chrome الجديد</translation>
 <translation id="2536728043171574184">عرض نسخة بلا اتصال من هذه الصفحة</translation>
 <translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات الموقع</translation>
 <translation id="2567385386134582609">صورة</translation>
@@ -292,7 +292,7 @@
 <translation id="3706423975342040244">الترفيه</translation>
 <translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
-<translation id="3734660163659757482">اسحب لأعلى للاطلاع على الإشارات المرجعية والمزيد</translation>
+<translation id="3734660163659757482">اسحب لأعلى للاطّلاع على الإشارات المرجعية والمزيد</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">تطبيقات أخرى بحجم <ph name="MEGABYTES" /> ميغابايت</translation>
@@ -613,7 +613,7 @@
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="6575643671698722332">أخفقت إعادة التعيين. تأكد من مدى اتصال جهازك وأعد المحاولة.</translation>
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
-<translation id="6593061639179217415">عرض بإصدار سطح المكتب</translation>
+<translation id="6593061639179217415">العرض بإصدار سطح المكتب</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6612358246767739896">محتوى محمي</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
@@ -727,7 +727,7 @@
 <translation id="7607552448134703340">إدخال ما تبحث عنه</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
 <translation id="7619072057915878432">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
-<translation id="7620146066550602128">تجربة <ph name="BEGIN_LINK" />طريقة أسهل للتصفح<ph name="END_LINK" /></translation>
+<translation id="7620146066550602128">تجربة <ph name="BEGIN_LINK" />طريقة أسهل للتصفّح<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />الحصول على مساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />إعادة الفحص<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
@@ -752,7 +752,8 @@
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
-<translation id="785312750761189439">مرّر سريعًا من أسفل الشاشة إلى أعلاها أو انقر على زر التوسيع للوصول بسهولة إلى التنزيلات والمواقع والمقالات الشائعة وغيرها</translation>
+<translation id="785312750761189439">ما عليك سوى التمرير سريعًا من أسفل الشاشة إلى أعلاها أو النقر على زر التوسيع للوصول بسهولة إلى التنزيلات والمواقع 
+ الإلكترونية والمقالات الرائجة وغيرها</translation>
 <translation id="7875915731392087153">إنشاء بريد إلكتروني</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
 <translation id="7882131421121961860">لم يتم العثور على أي سجلّ</translation>
@@ -811,7 +812,7 @@
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
-<translation id="8428213095426709021">إعدادات</translation>
+<translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم مواقع الويب.</translation>
 <translation id="8441146129660941386">الرجوع للوراء</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
@@ -859,7 +860,7 @@
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>
 <translation id="8922289737868596582">تنزيل الصفحات من الزر "مزيد من الخيارات" لاستخدامها بلا اتصال بالإنترنت</translation>
-<translation id="8936297887573571433">انقر للاطلاع على الإشارات المرجعية والتنزيلات والسجل</translation>
+<translation id="8936297887573571433">انقر للاطّلاع على الإشارات المرجعية والتنزيلات والسجل</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">فتح في نافذة أخرى</translation>
 <translation id="8951232171465285730">‏لقد وفر Chrome لك <ph name="MEGABYTES" /> ميغابايت</translation>

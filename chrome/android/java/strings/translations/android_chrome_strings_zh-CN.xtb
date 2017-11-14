@@ -37,7 +37,7 @@
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1303671224831497365">未找到任何蓝牙设备</translation>
-<translation id="1320663236730331991">向上滑动即可轻松访问热门网站和文章、各项下载内容，等等</translation>
+<translation id="1320663236730331991">向上滑动即可轻松浏览热门网站和文章，查看各项下载内容等等</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
@@ -135,8 +135,8 @@
 <translation id="2154484045852737596">修改支付卡</translation>
 <translation id="2154710561487035718">复制网址</translation>
 <translation id="2156074688469523661">其余的网站（<ph name="NUMBER_OF_SITES" /> 个）</translation>
-<translation id="2172731970979873816">告诉我们您为何关闭新版 Chrome</translation>
-<translation id="2185784955520093231">您正在使用新版 Chrome</translation>
+<translation id="2172731970979873816">请告诉我们您为何停用新版 Chrome</translation>
+<translation id="2185784955520093231">您目前使用的是新版 Chrome</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
@@ -226,7 +226,7 @@
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="311456632243022227">已在 Chrome 中打开多个链接</translation>
 <translation id="3115898365077584848">显示信息</translation>
-<translation id="3135915540460564231">“下载内容”、“书签”和“历史记录”这三项内容现在何处？</translation>
+<translation id="3135915540460564231">下载内容、书签和历史记录在哪里？</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3148434565183091099">要将您的书签同步到您所有的设备上，请登录 Chrome。</translation>
 <translation id="3157842584138209013">通过“更多选项”按钮查看您已节省多少数据流量</translation>
@@ -726,7 +726,7 @@
 <translation id="7607552448134703340">输入您要寻找的内容</translation>
 <translation id="7612619742409846846">已使用以下帐号登录 Google：</translation>
 <translation id="7619072057915878432">未能成功下载 <ph name="FILE_NAME" />，因为出现了网络故障。</translation>
-<translation id="7620146066550602128">体验一种<ph name="BEGIN_LINK" />更轻松的浏览方式<ph name="END_LINK" /></translation>
+<translation id="7620146066550602128">体验<ph name="BEGIN_LINK" />更轻松的浏览方式<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />获取帮助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新扫描<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
 <translation id="7638584964844754484">密码不正确</translation>
@@ -751,7 +751,7 @@
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="784934925303690534">时间范围</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
-<translation id="785312750761189439">从屏幕底部向上滑动手指或点按“展开”按钮，即可轻松访问热门网站和文章、各项下载内容，等等</translation>
+<translation id="785312750761189439">从屏幕底部向上滑动手指或点按“展开”按钮，即可轻松浏览热门网站和文章，查看各项下载内容等等</translation>
 <translation id="7875915731392087153">创建电子邮件</translation>
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7882131421121961860">未找到任何记录</translation>

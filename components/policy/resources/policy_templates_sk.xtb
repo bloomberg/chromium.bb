@@ -285,7 +285,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2067011586099792101">Blokovať prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2077273864382355561">Oneskorenie vypnutia obrazovky pri napájaní z batérie</translation>
-<translation id="2082205219176343977">Konfigurácia minimálnej povolenej verzie Chromu pre zariadenie</translation>
+<translation id="2082205219176343977">Konfigurácia minimálnej povolenej verzie Chromu pre zariadenie.</translation>
 <translation id="209586405398070749">Stabilná verzia</translation>
 <translation id="2098658257603918882">Povoliť hlásenie údajov týkajúcich sa používania a zlyhaní</translation>
 <translation id="2113068765175018713">Obmedziť časové obdobie prevádzky zariadenia automatickým reštartovaním</translation>
@@ -927,7 +927,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       do služby Google Apps získať prístup pomocou akéhokoľvek účtu.
 
       Toto pravidlo spôsobí, že hlavička X-GoogApps-Allowed-Domains bude pripojená
-      k všetkých žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese
+      ku všetkým žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese
       https://support.google.com/a/answer/1668854.
 
       Používatelia nemôžu toto nastavenie zmeniť ani prepísať.</translation>
@@ -1162,7 +1162,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           bezpodmienečne udelené bez interakcie s používateľom,
           a to vrátane všetkých ďalších povolení vyžiadaných budúcimi verziami
           daných aplikácií/rozšírení. Ďalej sa udeľujú povolenia pre rozhrania API
-          rozšírení enterprise.deviceAttributes a enterprise.platformKey.
+          rozšírení enterprise.deviceAttributes a enterprise.platformKeys.
           (Tieto dve rozhrania sú k dispozícii iba pre aplikácie/rozšírenia, ktorých inštalácia bola vynútená.)
 
           Tieto pravidlá sú uprednostnené pred potenciálne konfliktnými pravidlami <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />. Ak je z tohto zoznamu odstránená aplikácia alebo rozšírenie, ktorého inštalácia v minulosti bola vynútená, <ph name="PRODUCT_NAME" /> ich automaticky odinštaluje.
@@ -1171,7 +1171,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
           Všimnite si, že zdrojový kód jednotlivých rozšírení je možné pozmeniť pomocou nástrojov pre vývojárov (t. j. potenciálne tým znefunkčniť dané rozšírenie). Ak sa toho obávate, nastavte pravidlo <ph name="DEVELOPER_TOOLS_POLICY_NAME" />.
 
-          Každá položka zoznamu je reťazec s identifikátorom rozšírenia a webovou adresou aktualizácie oddelenou bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor rozšírenia je reťazec pozostávajúci z 32 písmen a nájdete ho napríklad v adrese <ph name="CHROME_EXTENSIONS_LINK" />, keď prejdete do režimu pre vývojárov. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />. Upozorňujeme, že webová adresa aktualizácie nastavená v tom pravidle sa používa iba na prvotnú inštaláciu; nasledujúce aktualizácie rozšírenia využívajú webovú adresu aktualizácie uvedené v manifeste rozšírenia.
+          Každá položka zoznamu je reťazec s identifikátorom rozšírenia a webovou adresou aktualizácie oddelenou bodkočiarkou (<ph name="SEMICOLON" />). Identifikátor rozšírenia je reťazec pozostávajúci z 32 písmen a nájdete ho napríklad v adrese <ph name="CHROME_EXTENSIONS_LINK" />, keď prejdete do režimu pre vývojárov. Webová adresa aktualizácie by mala odkazovať na dokument XML manifestu aktualizácie tak, ako je to uvedené na adrese <ph name="LINK_TO_EXTENSION_DOC1" />. Upozorňujeme, že webová adresa aktualizácie nastavená v tom pravidle sa používa iba na prvotnú inštaláciu; nasledujúce aktualizácie rozšírenia využívajú webovú adresu aktualizácie uvedenú v manifeste rozšírenia.
 
           Napríklad pravidlo <ph name="EXTENSION_POLICY_EXAMPLE" /> nainštaluje aplikáciu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> zo štandardnej webovej adresy aktualizácie Internetového obchodu Chrome. Ďalšie informácie o hostení rozšírení si môžete prečítať na adrese <ph name="LINK_TO_EXTENSION_DOC2" />.
 
