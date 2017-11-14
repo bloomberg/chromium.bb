@@ -14,8 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/address_validation_util.h"
-#include "components/autofill/core/browser/phone_email_validation_util.h"
+#include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_profile_validation_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
 
@@ -36,7 +36,7 @@ const int kRulesLoadingTimeoutSeconds = 5;
 }  // namespace
 
 AutofillProfileValidator::ValidationRequest::ValidationRequest(
-    AutofillProfile* profile,
+    base::WeakPtr<AutofillProfile> profile,
     autofill::AddressValidator* validator,
     AutofillProfileValidatorCallback on_validated)
     : profile_(profile),
@@ -61,42 +61,31 @@ void AutofillProfileValidator::ValidationRequest::OnRulesLoaded() {
   if (has_responded_)
     return;
   has_responded_ = true;
-  AutofillProfile::ValidityState profile_validity =
-      AutofillProfile::UNVALIDATED;
-  AutofillProfile::ValidityState address_validity =
-      address_validation_util::ValidateAddress(profile_, validator_);
-  AutofillProfile::ValidityState phone_email_validity =
-      phone_email_validation_util::ValidatePhoneAndEmail(profile_);
 
-  if (address_validity == AutofillProfile::INVALID ||
-      phone_email_validity == AutofillProfile::INVALID) {
-    profile_validity = AutofillProfile::INVALID;
-  } else if (address_validity == AutofillProfile::VALID &&
-             phone_email_validity == AutofillProfile::VALID) {
-    profile_validity = AutofillProfile::VALID;
-  }
+  if (!profile_)
+    return;
 
-  std::move(on_validated_).Run(profile_validity);
+  profile_validation_util::ValidateProfile(profile_.get(), validator_);
+
+  std::move(on_validated_).Run(profile_.get());
 }
 
 AutofillProfileValidator::AutofillProfileValidator(
-    std::unique_ptr<Source> source,
-    std::unique_ptr<Storage> storage)
+    std::unique_ptr<::i18n::addressinput::Source> source,
+    std::unique_ptr<::i18n::addressinput::Storage> storage)
     : address_validator_(std::move(source), std::move(storage), this) {}
 
 AutofillProfileValidator::~AutofillProfileValidator() {}
 
-void AutofillProfileValidator::ValidateProfile(
+void AutofillProfileValidator::StartProfileValidation(
     AutofillProfile* profile,
     AutofillProfileValidatorCallback cb) {
-  if (!profile) {
-    // An null profile is an unvalidated profile.
-    std::move(cb).Run(AutofillProfile::UNVALIDATED);
+  DCHECK(profile);
+  if (!profile)
     return;
-  }
   std::unique_ptr<ValidationRequest> request(
-      std::make_unique<ValidationRequest>(profile, &address_validator_,
-                                          std::move(cb)));
+      std::make_unique<ValidationRequest>(profile->AsWeakPtr(),
+                                          &address_validator_, std::move(cb)));
 
   // If the |region_code| is not a valid code according to our source, calling
   // LoadRules would result in calling OnAddressValidationRulesLoaded with
