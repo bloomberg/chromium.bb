@@ -4,34 +4,59 @@
 
 #include "content/browser/webauth/cbor/cbor_writer.h"
 
+#include <string>
+
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
 
 namespace content {
+
+namespace {
+
+// Mask selecting the last 5 bits  of the "initial byte" where
+// 'additional information is encoded.
+constexpr uint8_t kAdditionalInformationDataMask = 0x1F;
+// Indicates the integer is in the following byte.
+constexpr uint8_t kAdditionalInformation1Byte = 24u;
+// Indicates the integer is in the next 2 bytes.
+constexpr uint8_t kAdditionalInformation2Bytes = 25u;
+// Indicates the integer is in the next 4 bytes.
+constexpr uint8_t kAdditionalInformation4Bytes = 26u;
+// Indicates the integer is in the next 8 bytes.
+constexpr uint8_t kAdditionalInformation8Bytes = 27u;
+
+}  // namespace
 
 CBORWriter::~CBORWriter() {}
 
 // static
-std::vector<uint8_t> CBORWriter::Write(const CBORValue& node) {
+base::Optional<std::vector<uint8_t>> CBORWriter::Write(
+    const CBORValue& node,
+    size_t max_nesting_level) {
   std::vector<uint8_t> cbor;
   CBORWriter writer(&cbor);
-  writer.EncodeCBOR(node);
-  return cbor;
+  if (writer.EncodeCBOR(node, base::checked_cast<int>(max_nesting_level)))
+    return cbor;
+  return base::nullopt;
 }
 
 CBORWriter::CBORWriter(std::vector<uint8_t>* cbor) : encoded_cbor_(cbor) {}
 
-void CBORWriter::EncodeCBOR(const CBORValue& node) {
+bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
+  if (max_nesting_level < 0)
+    return false;
+
   switch (node.type()) {
     case CBORValue::Type::NONE: {
       StartItem(CborMajorType::kByteString, 0);
-      return;
+      return true;
     }
 
     // Represents unsigned integers.
     case CBORValue::Type::UNSIGNED: {
       uint64_t value = node.GetUnsigned();
       StartItem(CborMajorType::kUnsigned, value);
-      return;
+      return true;
     }
 
     // Represents a byte string.
@@ -41,7 +66,7 @@ void CBORWriter::EncodeCBOR(const CBORValue& node) {
                 base::strict_cast<uint64_t>(bytes.size()));
       // Add the bytes.
       encoded_cbor_->insert(encoded_cbor_->end(), bytes.begin(), bytes.end());
-      return;
+      return true;
     }
 
     case CBORValue::Type::STRING: {
@@ -51,7 +76,7 @@ void CBORWriter::EncodeCBOR(const CBORValue& node) {
 
       // Add the characters.
       encoded_cbor_->insert(encoded_cbor_->end(), string.begin(), string.end());
-      return;
+      return true;
     }
 
     // Represents an array.
@@ -59,24 +84,28 @@ void CBORWriter::EncodeCBOR(const CBORValue& node) {
       const CBORValue::ArrayValue& array = node.GetArray();
       StartItem(CborMajorType::kArray, array.size());
       for (const auto& value : array) {
-        EncodeCBOR(value);
+        if (!EncodeCBOR(value, max_nesting_level - 1))
+          return false;
       }
-      return;
+      return true;
     }
 
     // Represents a map.
     case CBORValue::Type::MAP: {
       const CBORValue::MapValue& map = node.GetMap();
       StartItem(CborMajorType::kMap, map.size());
+
       for (const auto& value : map) {
-        EncodeCBOR(CBORValue(value.first));
-        EncodeCBOR(value.second);
+        if (!EncodeCBOR(CBORValue(value.first), max_nesting_level - 1))
+          return false;
+        if (!EncodeCBOR(value.second, max_nesting_level - 1))
+          return false;
       }
-      return;
+      return true;
     }
   }
   NOTREACHED();
-  return;
+  return true;
 }
 
 void CBORWriter::StartItem(CborMajorType type, uint64_t size) {
