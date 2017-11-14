@@ -91,17 +91,17 @@ bool ThemePainter::Paint(const LayoutObject& o,
   // Call the appropriate paint method based off the appearance value.
   switch (part) {
     case kCheckboxPart:
-      return PaintCheckbox(node, style, paint_info, r);
+      return PaintCheckbox(node, o.GetDocument(), style, paint_info, r);
     case kRadioPart:
-      return PaintRadio(node, style, paint_info, r);
+      return PaintRadio(node, o.GetDocument(), style, paint_info, r);
     case kPushButtonPart:
     case kSquareButtonPart:
     case kButtonPart:
-      return PaintButton(node, style, paint_info, r);
+      return PaintButton(node, o.GetDocument(), style, paint_info, r);
     case kInnerSpinButtonPart:
       return PaintInnerSpinButton(node, style, paint_info, r);
     case kMenulistPart:
-      return PaintMenuList(node, style, paint_info, r);
+      return PaintMenuList(node, o.GetDocument(), style, paint_info, r);
     case kMeterPart:
       return true;
     case kProgressBarPart:
@@ -158,16 +158,19 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
   // Call the appropriate paint method based off the appearance value.
   switch (style.Appearance()) {
     case kTextFieldPart:
-      UseCounter::Count(node->GetDocument(),
-                        WebFeature::kCSSValueAppearanceTextFieldRendered);
-      if (auto* input = ToHTMLInputElementOrNull(node)) {
-        if (input->type() == InputTypeNames::search) {
-          UseCounter::Count(node->GetDocument(),
-                            WebFeature::kCSSValueAppearanceTextFieldForSearch);
-        } else if (input->IsTextField()) {
-          UseCounter::Count(
-              node->GetDocument(),
-              WebFeature::kCSSValueAppearanceTextFieldForTextField);
+      if (node) {
+        UseCounter::Count(node->GetDocument(),
+                          WebFeature::kCSSValueAppearanceTextFieldRendered);
+        if (auto* input = ToHTMLInputElementOrNull(node)) {
+          if (input->type() == InputTypeNames::search) {
+            UseCounter::Count(
+                node->GetDocument(),
+                WebFeature::kCSSValueAppearanceTextFieldForSearch);
+          } else if (input->IsTextField()) {
+            UseCounter::Count(
+                node->GetDocument(),
+                WebFeature::kCSSValueAppearanceTextFieldForTextField);
+          }
         }
       }
       return PaintTextField(node, style, paint_info, r);
@@ -198,13 +201,14 @@ bool ThemePainter::PaintBorderOnly(const Node* node,
 }
 
 bool ThemePainter::PaintDecorations(const Node* node,
+                                    const Document& document,
                                     const ComputedStyle& style,
                                     const PaintInfo& paint_info,
                                     const IntRect& r) {
   // Call the appropriate paint method based off the appearance value.
   switch (style.Appearance()) {
     case kMenulistButtonPart:
-      return PaintMenuListButton(node, style, paint_info, r);
+      return PaintMenuListButton(node, document, style, paint_info, r);
     case kTextFieldPart:
     case kTextAreaPart:
     case kCheckboxPart:
