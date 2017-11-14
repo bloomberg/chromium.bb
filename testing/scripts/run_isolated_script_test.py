@@ -15,6 +15,14 @@ remapped to the command line argument --write-full-results-to.
 json is written to that file in the format produced by
 common.parse_common_test_results.
 
+Optional argument:
+
+  --isolated-script-test-filter-file=[FILENAME]
+
+points to a file containing newline-separated test names, to run just
+that subset of tests. This gets remapped to the command line argument
+--file-list.
+
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
@@ -47,12 +55,16 @@ def main():
   parser.add_argument('--isolated-script-test-chartjson-output', type=str)
   # This argument is ignored for now.
   parser.add_argument('--isolated-script-test-perf-output', type=str)
+  # This argument is translated below.
+  parser.add_argument('--isolated-script-test-filter-file', type=str)
 
   args, rest_args = parser.parse_known_args()
 
   env = os.environ
   cmd = [sys.executable] + rest_args
   cmd += ['--write-full-results-to', args.isolated_script_test_output]
+  if args.isolated_script_test_filter_file:
+    cmd += ['--file-list=' + args.isolated_script_test_filter_file]
   if args.xvfb:
     return xvfb.run_executable(cmd, env)
   else:
