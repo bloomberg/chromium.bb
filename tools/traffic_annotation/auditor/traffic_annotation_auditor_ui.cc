@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -24,7 +25,7 @@ and coverage, produces reports, and updates related files.
 Usage: traffic_annotation_auditor [OPTION]... [path_filters]
 
 Extracts network traffic annotations from source files. If path filter(s) are
-specified, only those directories of the source  will be analyzed.
+specified, only those directories of the source will be analyzed.
 
 Options:
   -h, --help          Shows help.
@@ -51,6 +52,8 @@ Options:
                       be called to update downstream files.
   --summary-file      Optional path to the output file with all annotations.
   --annotations-file  Optional path to a TSV output file with all annotations.
+  --limit             Limit for the maximum number of returned errors.
+                      Use 0 for unlimited.
   path_filters        Optional paths to filter what files the tool is run on.
 
 Example:
@@ -306,6 +309,16 @@ int main(int argc, char* argv[]) {
   base::FilePath annotations_file =
       command_line.GetSwitchValuePath("annotations-file");
   std::vector<std::string> path_filters;
+  int outputs_limit = 0;
+  if (command_line.HasSwitch("limit")) {
+    if (!base::StringToInt(command_line.GetSwitchValueNative("limit"),
+                           &outputs_limit) ||
+        outputs_limit < 0) {
+      LOG(ERROR)
+          << "The value for 'limit' switch should be a positive integer.";
+      return 1;
+    }
+  }
 
 #if defined(OS_WIN)
   for (const auto& path : command_line.GetArgs())
@@ -390,31 +403,36 @@ int main(int argc, char* argv[]) {
 
   std::vector<AuditorResult> errors = auditor.errors();
 
-  // Test/Update annotations.xml.
-  TrafficAnnotationExporter exporter(source_path);
-  if (!exporter.UpdateAnnotations(
-          auditor.extracted_annotations(),
-          TrafficAnnotationAuditor::GetReservedUniqueIDs())) {
-    return 1;
-  }
-  if (exporter.modified()) {
-    if (test_only) {
-      errors.push_back(
-          AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
-                        exporter.GetRequiredUpdates()));
-    } else if (!exporter.SaveAnnotationsXML() ||
-               !RunAnnotationDownstreamUpdater(source_path)) {
-      LOG(ERROR) << "Could not update annotations XML or downstream files.";
+  // Test/Update annotations.xml if everything else is OK.
+  if (errors.empty()) {
+    TrafficAnnotationExporter exporter(source_path);
+    if (!exporter.UpdateAnnotations(
+            auditor.extracted_annotations(),
+            TrafficAnnotationAuditor::GetReservedUniqueIDs())) {
       return 1;
+    }
+    if (exporter.modified()) {
+      if (test_only) {
+        errors.push_back(
+            AuditorResult(AuditorResult::Type::ERROR_ANNOTATIONS_XML_UPDATE,
+                          exporter.GetRequiredUpdates()));
+      } else if (!exporter.SaveAnnotationsXML() ||
+                 !RunAnnotationDownstreamUpdater(source_path)) {
+        LOG(ERROR) << "Could not update annotations XML or downstream files.";
+        return 1;
+      }
     }
   }
 
   // Dump Errors to stdout.
-  for (const auto& error : errors) {
-    printf("%s: %s\n",
-           "Error",  // "Warning" can be used for minor nags.
-           error.ToText().c_str());
+  if (errors.size()) {
+    printf("[Errors]\n");
+    for (int i = 0; i < static_cast<int>(errors.size()); i++) {
+      printf("  (%i)\t%s\n", i + 1, errors[i].ToText().c_str());
+      if (i + 1 == outputs_limit)
+        break;
+    }
   }
 
-  return 0;
+  return static_cast<int>(errors.size());
 }

@@ -19,7 +19,7 @@ Refer to README.md for content description and update process.
  <item id="background_fetch_context" hash_code="16469669" content_hash_code="52235434" os_list="linux,windows"/>
  <item id="background_performance_tracer" hash_code="84575287" content_hash_code="120154250" os_list="linux,windows"/>
  <item id="blink_extension_resource_loader" hash_code="84165821" content_hash_code="3695143" os_list="linux,windows"/>
- <item id="blink_resource_loader" hash_code="101845102" content_hash_code="69137084" os_list="linux,windows"/>
+ <item id="blink_resource_loader" hash_code="101845102" content_hash_code="75331172" os_list="linux,windows"/>
  <item id="blob_read" hash_code="112303907" content_hash_code="135449692" os_list="linux,windows"/>
  <item id="blob_reader" hash_code="5154306" content_hash_code="39702178" os_list="linux,windows"/>
  <item id="brandcode_config" hash_code="109679553" content_hash_code="128843792" os_list="linux,windows"/>
