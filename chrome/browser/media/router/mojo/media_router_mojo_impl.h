@@ -121,18 +121,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Creates a binding between |this| and |request|.
   void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request);
 
-  // Methods for obtaining a pointer to the provider associated with the given
-  // object. They return a nullptr when such a provider is not found. The
-  // returned pointer should not be stored or passed to another object, as the
-  // Mojo connection may be terminated at any later time.
-  mojom::MediaRouteProvider* GetProviderForRoute(
-      const MediaRoute::Id& route_id);
-  mojom::MediaRouteProvider* GetProviderForSink(
-      const MediaSink::Id& sink_id,
-      const MediaSource::Id& source_id);
-  virtual mojom::MediaRouteProvider* GetProviderForPresentation(
-      const std::string& presentation_id);
-
   content::BrowserContext* context() const { return context_; }
 
   // Mojo pointers to media route providers. Providers are added via
@@ -381,6 +369,18 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Invalidates and removes controllers from |route_controllers_| whose media
   // routes do not appear in |routes|.
   void RemoveInvalidRouteControllers(const std::vector<MediaRoute>& routes);
+
+  // Methods for obtaining a pointer to the provider associated with the given
+  // object. They return a nullptr when such a provider is not found. The
+  // returned pointer should not be stored or passed to another object, as the
+  // Mojo connection may be terminated at any later time.
+  mojom::MediaRouteProvider* GetProviderForRoute(
+      const MediaRoute::Id& route_id);
+  mojom::MediaRouteProvider* GetProviderForSink(
+      const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id);
+  mojom::MediaRouteProvider* GetProviderForPresentation(
+      const std::string& presentation_id);
 
   base::flat_map<MediaSource::Id, std::unique_ptr<MediaSinksQuery>>
       sinks_queries_;

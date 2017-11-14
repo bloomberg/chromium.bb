@@ -57,12 +57,6 @@ void MediaRouterDesktop::OnUserGesture() {
 #endif
 }
 
-mojom::MediaRouteProvider* MediaRouterDesktop::GetProviderForPresentation(
-    const std::string& presentation_id) {
-  // TODO(takumif): Support other MRPs as well.
-  return media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION].get();
-}
-
 MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
                                        FirewallCheck check_firewall)
     : MediaRouterMojoImpl(context),
