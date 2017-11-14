@@ -4,6 +4,8 @@
 
 #include "core/css/cssom/CSSNumericValueType.h"
 
+#include <algorithm>
+
 namespace blink {
 
 namespace {
@@ -62,6 +64,14 @@ CSSNumericValueType::BaseType UnitTypeToBaseType(
 CSSNumericValueType::CSSNumericValueType(CSSPrimitiveValue::UnitType unit) {
   if (unit != CSSPrimitiveValue::UnitType::kNumber)
     SetEntry(UnitTypeToBaseType(unit), 1);
+}
+
+/* static */
+CSSNumericValueType CSSNumericValueType::NegateEntries(
+    CSSNumericValueType type) {
+  std::for_each(type.entries_.begin(), type.entries_.end(),
+                [](int& v) { v *= -1; });
+  return type;
 }
 
 }  // namespace blink
