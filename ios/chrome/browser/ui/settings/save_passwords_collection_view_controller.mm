@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -132,6 +133,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   // to the PasswordForm, the PasswordForm must outlive the calls to
   // RemoveLogin. This vector will ensure this.
   std::vector<std::unique_ptr<autofill::PasswordForm>> deletedForms_;
+  // Map containing duplicates of saved passwords.
+  password_manager::DuplicatesMap savedPasswordDuplicates_;
+  // Map containing duplicates of blacklisted passwords.
+  password_manager::DuplicatesMap blacklistedPasswordDuplicates_;
   // The current Chrome browser state.
   ios::ChromeBrowserState* browserState_;
   // Object storing the time of the previous successful re-authentication.
@@ -419,6 +424,13 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
       savedForms_.push_back(std::move(form));
   }
 
+  password_manager::SortEntriesAndHideDuplicates(
+      &savedForms_, &savedPasswordDuplicates_,
+      password_manager::PasswordEntryType::SAVED);
+  password_manager::SortEntriesAndHideDuplicates(
+      &blacklistedForms_, &blacklistedPasswordDuplicates_,
+      password_manager::PasswordEntryType::BLACKLISTED);
+
   [self updateEditButton];
   [self reloadData];
 }
@@ -511,9 +523,24 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     // Adjust index to account for deleted items.
     formIndex -= blacklisted ? blacklistedDeleted : passwordsDeleted;
     auto& forms = blacklisted ? blacklistedForms_ : savedForms_;
+    auto& duplicates =
+        blacklisted ? blacklistedPasswordDuplicates_ : savedPasswordDuplicates_;
+    password_manager::PasswordEntryType entryType =
+        blacklisted ? password_manager::PasswordEntryType::BLACKLISTED
+                    : password_manager::PasswordEntryType::SAVED;
+
     DCHECK_LT(formIndex, forms.size());
     auto formIterator = forms.begin() + formIndex;
+
     std::unique_ptr<autofill::PasswordForm> form = std::move(*formIterator);
+    std::string key = password_manager::CreateSortKey(*form, entryType);
+    auto duplicatesRange = duplicates.equal_range(key);
+    for (auto iterator = duplicatesRange.first;
+         iterator != duplicatesRange.second; ++iterator) {
+      passwordStore_->RemoveLogin(*(iterator->second));
+    }
+    duplicates.erase(key);
+
     forms.erase(formIterator);
     passwordStore_->RemoveLogin(*form);
     deletedForms_.push_back(std::move(form));
