@@ -24,6 +24,14 @@ void TransientElement::SetVisible(bool visible) {
   super::SetVisible(visible);
 }
 
+void TransientElement::SetVisibleImmediately(bool visible) {
+  bool will_be_visible = GetTargetOpacity() == opacity_when_visible();
+  if (!will_be_visible && visible)
+    set_visible_time_ = last_frame_time();
+
+  super::SetVisibleImmediately(visible);
+}
+
 void TransientElement::RefreshVisible() {
   // Do nothing if we're not going to be visible.
   if (GetTargetOpacity() != opacity_when_visible())

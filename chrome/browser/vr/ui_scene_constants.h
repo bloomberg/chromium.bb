@@ -200,6 +200,7 @@ static constexpr int kControllerFadeOutMs = 550;
 
 static constexpr float kSpeechRecognitionResultTextYOffset = 0.5f;
 static constexpr int kSpeechRecognitionResultTimeoutSeconds = 2;
+static constexpr int kSpeechRecognitionOpacityAnimationDurationMs = 200;
 
 }  // namespace vr
 
