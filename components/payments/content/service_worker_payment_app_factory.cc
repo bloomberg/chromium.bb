@@ -4,6 +4,7 @@
 
 #include "components/payments/content/service_worker_payment_app_factory.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/callback.h"
@@ -20,13 +21,52 @@
 namespace payments {
 namespace {
 
-// Returns true if |app| supports at least one of the |requested_methods|.
-bool AppSupportsAtLeastOneRequestedMethod(
-    const std::set<std::string>& requested_methods,
-    const content::StoredPaymentApp& app) {
-  for (const auto& enabled_method : app.enabled_methods) {
-    if (requested_methods.find(enabled_method) != requested_methods.end())
+// Returns true if |requested| is empty or contains at least one of the items in
+// |capabilities|.
+template <typename T>
+bool CapabilityMatches(const std::vector<T>& requested,
+                       const std::vector<int32_t>& capabilities) {
+  if (requested.empty())
+    return true;
+  for (const auto& request : requested) {
+    if (base::ContainsValue(capabilities, static_cast<int32_t>(request)))
       return true;
+  }
+  return false;
+}
+
+// Returns true if the basic-card |capabilities| of the payment app match the
+// |request|.
+bool BasicCardCapabilitiesMatch(
+    const std::vector<content::StoredCapabilities>& capabilities,
+    const mojom::PaymentMethodDataPtr& request) {
+  for (const auto& capability : capabilities) {
+    if (CapabilityMatches(request->supported_networks,
+                          capability.supported_card_networks) &&
+        CapabilityMatches(request->supported_types,
+                          capability.supported_card_types)) {
+      return true;
+    }
+  }
+  return capabilities.empty() && request->supported_networks.empty() &&
+         request->supported_types.empty();
+}
+
+// Returns true if |app| supports at least one of the |requests|.
+bool AppSupportsAtLeastOneRequestedMethodData(
+    const content::StoredPaymentApp& app,
+    const std::vector<mojom::PaymentMethodDataPtr>& requests) {
+  for (const auto& enabled_method : app.enabled_methods) {
+    for (const auto& request : requests) {
+      auto it = std::find(request->supported_methods.begin(),
+                          request->supported_methods.end(), enabled_method);
+      if (it != request->supported_methods.end()) {
+        if (enabled_method != "basic-card" ||
+            BasicCardCapabilitiesMatch(app.capabilities, request)) {
+          return true;
+        }
+      }
+    }
   }
   return false;
 }
@@ -51,7 +91,7 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
     content::BrowserContext* browser_context,
     std::unique_ptr<PaymentMethodManifestDownloaderInterface> downloader,
     scoped_refptr<PaymentManifestWebDataService> cache,
-    const std::set<std::string>& payment_method_identifiers_set,
+    const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
     content::PaymentAppProvider::GetAllPaymentAppsCallback callback,
     base::OnceClosure finished_using_resources_callback) {
   DCHECK(!verifier_);
@@ -59,23 +99,32 @@ void ServiceWorkerPaymentAppFactory::GetAllPaymentApps(
   verifier_ = std::make_unique<ManifestVerifier>(
       std::move(downloader), std::make_unique<PaymentManifestParser>(), cache);
 
+  // Method data cannot be copied and is passed in as a const-ref, which cannot
+  // be moved, so make a manual copy for moving into the callback below.
+  std::vector<mojom::PaymentMethodDataPtr> requested_method_data_copy;
+  for (const auto& request : requested_method_data) {
+    requested_method_data_copy.emplace_back(request.Clone());
+  }
+
   content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
       browser_context,
       base::BindOnce(&ServiceWorkerPaymentAppFactory::OnGotAllPaymentApps,
                      weak_ptr_factory_.GetWeakPtr(),
-                     payment_method_identifiers_set, std::move(callback),
+                     std::move(requested_method_data_copy), std::move(callback),
                      std::move(finished_using_resources_callback)));
 }
 
 // static
-void ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethods(
-    const std::set<std::string>& requested_methods,
+void ServiceWorkerPaymentAppFactory::RemoveAppsWithoutMatchingMethodData(
+    const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
     content::PaymentAppProvider::PaymentApps* apps) {
   for (auto it = apps->begin(); it != apps->end();) {
-    if (AppSupportsAtLeastOneRequestedMethod(requested_methods, *(it->second)))
+    if (AppSupportsAtLeastOneRequestedMethodData(*it->second,
+                                                 requested_method_data)) {
       ++it;
-    else
+    } else {
       it = apps->erase(it);
+    }
   }
 }
 
@@ -84,14 +133,14 @@ void ServiceWorkerPaymentAppFactory::IgnorePortInAppScopeForTesting() {
 }
 
 void ServiceWorkerPaymentAppFactory::OnGotAllPaymentApps(
-    const std::set<std::string>& payment_method_identifiers_set,
+    const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
     content::PaymentAppProvider::GetAllPaymentAppsCallback callback,
     base::OnceClosure finished_using_resources_callback,
     content::PaymentAppProvider::PaymentApps apps) {
   if (ignore_port_in_app_scope_for_testing_)
     RemovePortNumbersFromScopesForTest(&apps);
 
-  RemoveAppsWithoutMatchingMethods(payment_method_identifiers_set, &apps);
+  RemoveAppsWithoutMatchingMethodData(requested_method_data, &apps);
   if (apps.empty()) {
     std::move(callback).Run(std::move(apps));
     std::move(finished_using_resources_callback).Run();
