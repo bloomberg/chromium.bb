@@ -16,17 +16,25 @@ CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathMax : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathMin : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathNegate : CSSMathValue
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathProduct : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathSum : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathValue : CSSNumericValue
 CONSOLE MESSAGE: line 147:     getter operator
 CONSOLE MESSAGE: line 147:     method constructor
@@ -34,6 +42,9 @@ CONSOLE MESSAGE: line 147: interface CSSMatrixComponent : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter matrix
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter matrix
+CONSOLE MESSAGE: line 147: interface CSSNumericArray
+CONSOLE MESSAGE: line 147:     getter length
+CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor
@@ -295,17 +306,25 @@ CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathMax : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathMin : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathNegate : CSSMathValue
 CONSOLE MESSAGE: line 147:     getter value
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter value
 CONSOLE MESSAGE: line 147: interface CSSMathProduct : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathSum : CSSMathValue
+CONSOLE MESSAGE: line 147:     getter values
 CONSOLE MESSAGE: line 147:     method constructor
+CONSOLE MESSAGE: line 147:     setter values
 CONSOLE MESSAGE: line 147: interface CSSMathValue : CSSNumericValue
 CONSOLE MESSAGE: line 147:     getter operator
 CONSOLE MESSAGE: line 147:     method constructor
@@ -313,6 +332,9 @@ CONSOLE MESSAGE: line 147: interface CSSMatrixComponent : CSSTransformComponent
 CONSOLE MESSAGE: line 147:     getter matrix
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     setter matrix
+CONSOLE MESSAGE: line 147: interface CSSNumericArray
+CONSOLE MESSAGE: line 147:     getter length
+CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147: interface CSSNumericValue : CSSStyleValue
 CONSOLE MESSAGE: line 147:     method add
 CONSOLE MESSAGE: line 147:     method constructor

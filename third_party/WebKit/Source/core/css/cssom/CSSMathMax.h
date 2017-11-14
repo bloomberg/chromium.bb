@@ -5,13 +5,13 @@
 #ifndef CSSMathMax_h
 #define CSSMathMax_h
 
-#include "core/css/cssom/CSSMathValue.h"
+#include "core/css/cssom/CSSMathVariadic.h"
 
 namespace blink {
 
 // Represents the maximum of one or more CSSNumericValues.
 // See CSSMathMax.idl for more information about this class.
-class CORE_EXPORT CSSMathMax : public CSSMathValue {
+class CORE_EXPORT CSSMathMax final : public CSSMathVariadic {
   WTF_MAKE_NONCOPYABLE(CSSMathMax);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -27,7 +27,7 @@ class CORE_EXPORT CSSMathMax : public CSSMathValue {
 
     // TODO(crbug.com/776173): Implement add typing.
     CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
-    return new CSSMathMax(args, type);
+    return new CSSMathMax(CSSNumericArray::FromNumberishes(args), type);
   }
 
   String getOperator() const final { return "max"; }
@@ -36,8 +36,8 @@ class CORE_EXPORT CSSMathMax : public CSSMathValue {
   StyleValueType GetType() const final { return CSSStyleValue::kMaxType; }
 
  private:
-  CSSMathMax(const HeapVector<CSSNumberish>&, const CSSNumericValueType& type)
-      : CSSMathValue(type) {}
+  CSSMathMax(CSSNumericArray* values, const CSSNumericValueType& type)
+      : CSSMathVariadic(values, type) {}
 };
 
 }  // namespace blink

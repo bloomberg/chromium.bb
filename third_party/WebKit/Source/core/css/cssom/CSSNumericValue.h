@@ -67,6 +67,8 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSNumericValueType type_;
 };
 
+using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
+
 }  // namespace blink
 
 #endif  // CSSNumericValue_h
