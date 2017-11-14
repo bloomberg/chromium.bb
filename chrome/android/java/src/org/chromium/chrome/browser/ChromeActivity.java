@@ -1267,7 +1267,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      */
     @VisibleForTesting
     public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
-        ShareMenuActionHandler.onShareMenuItemSelected(
+        ShareMenuActionHandler.getInstance().onShareMenuItemSelected(
                 this, getActivityTab(), shareDirectly, isIncognito);
     }
 
