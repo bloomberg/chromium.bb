@@ -227,7 +227,7 @@ void SearchTabHelper::DidFinishNavigation(
 }
 
 void SearchTabHelper::TitleWasSet(content::NavigationEntry* entry) {
-  if (is_setting_title_)
+  if (is_setting_title_ || !entry)
     return;
 
   // Always set the title on the new tab page to be the one from our UI
