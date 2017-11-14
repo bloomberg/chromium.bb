@@ -68,7 +68,7 @@ def _WriteToStream(lines, use_pager=None, to_file=None):
 class _Session(object):
   _readline_initialized = False
 
-  def __init__(self, size_infos, lazy_paths):
+  def __init__(self, size_infos, output_directory_finder, tool_prefix_finder):
     self._printed_variables = []
     self._variables = {
         'Print': self._PrintFunc,
@@ -82,7 +82,8 @@ class _Session(object):
         'printed': self._printed_variables,
         'models': models,
     }
-    self._lazy_paths = lazy_paths
+    self._output_directory_finder = output_directory_finder
+    self._tool_prefix_finder = tool_prefix_finder
     self._size_infos = size_infos
     self._disassemble_prefix_len = None
 
@@ -213,7 +214,7 @@ class _Session(object):
     _WriteToStream(lines, use_pager=use_pager, to_file=to_file)
 
   def _ElfPathAndToolPrefixForSymbol(self, size_info, elf_path):
-    tool_prefix = self._lazy_paths.tool_prefix
+    tool_prefix = self._tool_prefix_finder.Tentative()
     orig_tool_prefix = size_info.metadata.get(models.METADATA_TOOL_PREFIX)
     if orig_tool_prefix:
       orig_tool_prefix = path_util.FromSrcRootRelative(orig_tool_prefix)
@@ -236,11 +237,12 @@ class _Session(object):
     if elf_path:
       paths_to_try.append(elf_path)
     else:
-      auto_lazy_paths = [
-          path_util.LazyPaths(any_path_within_output_directory=s.size_path)
-          for s in self._size_infos]
-      for lazy_paths in auto_lazy_paths + [self._lazy_paths]:
-        output_dir = lazy_paths.output_directory
+      auto_output_directory_finders = [
+          path_util.OutputDirectoryFinder(
+              any_path_within_output_directory=s.size_path)
+          for s in self._size_infos] + [self._output_directory_finder]
+      for output_directory_finder in auto_output_directory_finders:
+        output_dir = output_directory_finder.Tentative()
         if output_dir:
           # Local build: File is located in output directory.
           paths_to_try.append(
@@ -319,7 +321,7 @@ class _Session(object):
         self._disassemble_prefix_len = prefix_len
 
     if self._disassemble_prefix_len is not None:
-      output_directory = self._lazy_paths.output_directory
+      output_directory = self._output_directory_finder.Tentative()
       # Only matters for non-generated paths, so be lenient here.
       if output_directory is None:
         output_directory = os.path.join(path_util.SRC_ROOT, 'out', 'Release')
@@ -472,11 +474,13 @@ def Run(args, parser):
       parser.error('All inputs must end with ".size"')
 
   size_infos = [archive.LoadAndPostProcessSizeInfo(p) for p in args.inputs]
-  lazy_paths = path_util.LazyPaths(tool_prefix=args.tool_prefix,
-                                   output_directory=args.output_directory,
-                                   any_path_within_output_directory=
-                                       args.inputs[0])
-  session = _Session(size_infos, lazy_paths)
+  output_directory_finder = path_util.OutputDirectoryFinder(
+      value=args.output_directory,
+      any_path_within_output_directory=args.inputs[0])
+  tool_prefix_finder = path_util.ToolPrefixFinder(
+      value=args.tool_prefix,
+      output_directory_finder=output_directory_finder)
+  session = _Session(size_infos, output_directory_finder, tool_prefix_finder)
 
   if args.query:
     logging.info('Running query from command-line.')
