@@ -322,12 +322,12 @@ void TaskQueueManager::DoWork(bool delayed) {
     base::TimeTicks time_after_task;
     switch (ProcessTaskFromWorkQueue(work_queue, is_nested, lazy_now,
                                      &time_after_task)) {
-      case ProcessTaskResult::DEFERRED:
+      case ProcessTaskResult::kDeferred:
         // If a task was deferred, try again with another task.
         continue;
-      case ProcessTaskResult::EXECUTED:
+      case ProcessTaskResult::kExecuted:
         break;
-      case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
+      case ProcessTaskResult::kTaskQueueManagerDeleted:
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
 
@@ -484,7 +484,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
 
   // It's possible the task was canceled, if so bail out.
   if (pending_task.task.IsCancelled())
-    return ProcessTaskResult::EXECUTED;
+    return ProcessTaskResult::kExecuted;
 
   internal::TaskQueueImpl* queue = work_queue->task_queue();
   if (queue->GetQuiescenceMonitored())
@@ -500,7 +500,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     delegate_->PostNonNestableTask(
         pending_task.posted_from,
         UnsafeConvertOnceClosureToRepeating(std::move(pending_task.task)));
-    return ProcessTaskResult::DEFERRED;
+    return ProcessTaskResult::kDeferred;
   }
 
   double task_start_time_sec = 0;
@@ -536,7 +536,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
   if (!protect)
-    return ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED;
+    return ProcessTaskResult::kTaskQueueManagerDeleted;
 
   currently_executing_task_queue_ = prev_executing_task_queue;
 
@@ -564,7 +564,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
                          "duration", task_end_time_sec - task_start_time_sec);
   }
 
-  return ProcessTaskResult::EXECUTED;
+  return ProcessTaskResult::kExecuted;
 }
 
 bool TaskQueueManager::RunsTasksInCurrentSequence() const {

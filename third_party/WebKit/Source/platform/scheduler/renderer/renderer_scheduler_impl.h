@@ -63,31 +63,31 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // Keep RendererScheduler::UseCaseToString in sync with this enum.
   enum class UseCase {
     // No active use case detected.
-    NONE,
+    kNone,
     // A continuous gesture (e.g., scroll, pinch) which is being driven by the
     // compositor thread.
-    COMPOSITOR_GESTURE,
+    kCompositorGesture,
     // An unspecified touch gesture which is being handled by the main thread.
     // Note that since we don't have a full view of the use case, we should be
     // careful to prioritize all work equally.
-    MAIN_THREAD_CUSTOM_INPUT_HANDLING,
+    kMainThreadCustomInputHandling,
     // A continuous gesture (e.g., scroll, pinch) which is being driven by the
     // compositor thread but also observed by the main thread. An example is
     // synchronized scrolling where a scroll listener on the main thread changes
     // page layout based on the current scroll position.
-    SYNCHRONIZED_GESTURE,
+    kSynchronizedGesture,
     // A gesture has recently started and we are about to run main thread touch
     // listeners to find out the actual gesture type. To minimize touch latency,
     // only input handling work should run in this state.
-    TOUCHSTART,
+    kTouchstart,
     // A page is loading.
-    LOADING,
+    kLoading,
     // A continuous gesture (e.g., scroll) which is being handled by the main
     // thread.
-    MAIN_THREAD_GESTURE,
+    kMainThreadGesture,
     // Must be the last entry.
-    USE_CASE_COUNT,
-    FIRST_USE_CASE = NONE,
+    kUseCaseCount,
+    kFirstUseCase = kNone,
   };
   static const char* UseCaseToString(UseCase use_case);
   static const char* RAILModeToString(v8::RAILMode rail_mode);
@@ -163,7 +163,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();
   scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
   scoped_refptr<MainThreadTaskQueue> TimerTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> V8TaskQueue();
+  scoped_refptr<MainThreadTaskQueue> kV8TaskQueue();
 
   // Returns a new task queue created with given params.
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
@@ -171,7 +171,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   // Returns a new loading task queue. This queue is intended for tasks related
   // to resource dispatch, foreground HTML parsing, etc...
-  // Note: Tasks posted to FRAME_LOADING_CONTROL queues must execute quickly.
+  // Note: Tasks posted to kFrameLoading_kControl queues must execute quickly.
   scoped_refptr<MainThreadTaskQueue> NewLoadingTaskQueue(
       MainThreadTaskQueue::QueueType queue_type);
 
@@ -292,12 +292,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
       renderer_scheduler_impl_unittest::RendererSchedulerImplTest,
       Tracing);
 
-  enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
+  enum class ExpensiveTaskPolicy { kRun, kBlock, kThrottle };
 
   enum class TimeDomainType {
-    REAL,
-    THROTTLED,
-    VIRTUAL,
+    kReal,
+    kThrottled,
+    kVirtual,
   };
 
   static const char* TimeDomainTypeToString(TimeDomainType domain_type);
@@ -314,7 +314,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
           is_blocked(false),
           is_stopped(false),
           use_virtual_time(false),
-          priority(TaskQueue::NORMAL_PRIORITY) {}
+          priority(TaskQueue::kNormalPriority) {}
 
     bool is_enabled;
     bool is_paused;
@@ -350,38 +350,38 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
     TaskQueuePolicy& compositor_queue_policy() {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::COMPOSITOR)];
+          MainThreadTaskQueue::QueueClass::kCompositor)];
     }
     const TaskQueuePolicy& compositor_queue_policy() const {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::COMPOSITOR)];
+          MainThreadTaskQueue::QueueClass::kCompositor)];
     }
 
     TaskQueuePolicy& loading_queue_policy() {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::LOADING)];
+          MainThreadTaskQueue::QueueClass::kLoading)];
     }
     const TaskQueuePolicy& loading_queue_policy() const {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::LOADING)];
+          MainThreadTaskQueue::QueueClass::kLoading)];
     }
 
     TaskQueuePolicy& timer_queue_policy() {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::TIMER)];
+          MainThreadTaskQueue::QueueClass::kTimer)];
     }
     const TaskQueuePolicy& timer_queue_policy() const {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::TIMER)];
+          MainThreadTaskQueue::QueueClass::kTimer)];
     }
 
     TaskQueuePolicy& default_queue_policy() {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::NONE)];
+          MainThreadTaskQueue::QueueClass::kNone)];
     }
     const TaskQueuePolicy& default_queue_policy() const {
       return policies_[static_cast<size_t>(
-          MainThreadTaskQueue::QueueClass::NONE)];
+          MainThreadTaskQueue::QueueClass::kNone)];
     }
 
     const TaskQueuePolicy& GetQueuePolicy(
@@ -409,7 +409,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool should_disable_throttling_;
 
     std::array<TaskQueuePolicy,
-               static_cast<size_t>(MainThreadTaskQueue::QueueClass::COUNT)>
+               static_cast<size_t>(MainThreadTaskQueue::QueueClass::kCount)>
         policies_;
   };
 
@@ -498,12 +498,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void ForceUpdatePolicy();
 
   enum class UpdateType {
-    MAY_EARLY_OUT_IF_POLICY_UNCHANGED,
-    FORCE_UPDATE,
+    kMayEarlyOutIfPolicyUnchanged,
+    kForceUpdate,
   };
 
   // The implelemtation of UpdatePolicy & ForceUpdatePolicy.  It is allowed to
-  // early out if |update_type| is MAY_EARLY_OUT_IF_POLICY_UNCHANGED.
+  // early out if |update_type| is kMayEarlyOutIfPolicyUnchanged.
   virtual void UpdatePolicyLocked(UpdateType update_type);
 
   // Helper for computing the use case. |expected_usecase_duration| will be
@@ -657,12 +657,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::TimeTicks initial_virtual_time;
     VirtualTimePolicy virtual_time_policy;
 
-    // In VirtualTimePolicy::DETERMINISTIC_LOADING virtual time is only allowed
+    // In VirtualTimePolicy::kDeterministicLoading virtual time is only allowed
     // to advance if this is zero.
     int virtual_time_pause_count;
 
     // The maximum number amount of delayed task starvation we will allow in
-    // VirtualTimePolicy::ADVANCE or VirtualTimePolicy::DETERMINISTIC_LOADING
+    // VirtualTimePolicy::kAdvance or VirtualTimePolicy::kDeterministicLoading
     // unless the run_loop is nested (in which case infinite starvation is
     // allowed). NB a value of 0 allows infinite starvation.
     int max_virtual_time_task_starvation_count;

@@ -61,20 +61,20 @@ class PLATFORM_EXPORT WebViewScheduler {
     // runs out of immediate work, the virtual timebase will be incremented so
     // that the next sceduled timer may fire.  NOTE Tasks will be run in time
     // order (as usual).
-    ADVANCE,
+    kAdvance,
 
     // In this policy virtual time is not allowed to advance. Delayed tasks
     // posted to WebTaskRunners owned by any child WebFrameSchedulers will be
     // paused, unless their scheduled run time is less than or equal to the
     // current virtual time.  Note non-delayed tasks will run as normal.
-    PAUSE,
+    kPause,
 
     // In this policy virtual time is allowed to advance unless there are
     // pending network fetches associated any child WebFrameScheduler, or a
     // document is being parsed on a background thread. Initially virtual time
     // is not allowed to advance until we have seen at least one load. The aim
     // being to try and make loading (more) deterministic.
-    DETERMINISTIC_LOADING
+    kDeterministicLoading,
   };
 
   // Sets the virtual time policy, which is applied imemdiatly to all child
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT WebViewScheduler {
   // It's possible for pages to send infinite messages which can arbitrarily
   // block virtual time.  We can prevent this by setting an upper limit on the
   // number of tasks that can run before virtual time is advanced.
-  // NB this anti-starvation logic doesn't apply to VirtualTimePolicy::PAUSE.
+  // NB this anti-starvation logic doesn't apply to VirtualTimePolicy::kPause.
   virtual void SetMaxVirtualTimeTaskStarvationCount(
       int max_task_starvation_count) = 0;
 

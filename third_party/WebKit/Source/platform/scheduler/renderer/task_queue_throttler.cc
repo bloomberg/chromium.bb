@@ -120,7 +120,7 @@ void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   task_queue->SetTimeDomain(time_domain_.get());
   // This blocks any tasks from |task_queue| until PumpThrottledTasks() to
   // enforce task alignment.
-  task_queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+  task_queue->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
 
   if (!task_queue->IsQueueEnabled())
     return;
@@ -331,7 +331,7 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
     if (!unblock_until || unblock_until.value() > now) {
       queue->InsertFenceAt(unblock_until.value());
     } else if (unblock_until.value() == now) {
-      queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+      queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
     } else {
       DCHECK_GE(unblock_until.value(), now);
     }
@@ -365,7 +365,7 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
 
   switch (block_type.value()) {
     case QueueBlockType::kAllTasks:
-      queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+      queue->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
 
       {
         // Braces limit the scope for a declared variable. Does not compile
@@ -381,7 +381,7 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
       if (!queue->HasActiveFence()) {
         // Insert a new non-fully blocking fence only when there is no fence
         // already in order avoid undesired unblocking of old tasks.
-        queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+        queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
       }
       break;
   }
@@ -561,7 +561,7 @@ void TaskQueueThrottler::EnableThrottling() {
 
     // Throttling is enabled and task queue should be blocked immediately
     // to enforce task alignment.
-    queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
+    queue->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
     queue->SetTimeDomain(time_domain_.get());
     UpdateQueueThrottlingState(lazy_now.Now(), queue);
   }

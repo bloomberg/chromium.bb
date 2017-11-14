@@ -76,14 +76,14 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
 
   // Keep IdleHelper::IdlePeriodStateToString in sync with this enum.
   enum class IdlePeriodState {
-    NOT_IN_IDLE_PERIOD,
-    IN_SHORT_IDLE_PERIOD,
-    IN_LONG_IDLE_PERIOD,
-    IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE,
-    IN_LONG_IDLE_PERIOD_PAUSED,
+    kNotInIdlePeriod,
+    kInShortIdlePeriod,
+    kInLongIdlePeriod,
+    kInLongIdlePeriodWithMaxDeadline,
+    kInLongIdlePeriodPaused,
     // Must be the last entry.
-    IDLE_PERIOD_STATE_COUNT,
-    FIRST_IDLE_PERIOD_STATE = NOT_IN_IDLE_PERIOD,
+    kIdlePeriodStateCount,
+    kFirstIdlePeriodState = kNotInIdlePeriod,
   };
 
   // The maximum length of an idle period.

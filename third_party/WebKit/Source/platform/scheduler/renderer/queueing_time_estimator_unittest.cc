@@ -741,7 +741,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   // Beginning of window 1.
   time += base::TimeDelta::FromMilliseconds(500);
   scoped_refptr<MainThreadTaskQueueForTest> default_queue(
-      new MainThreadTaskQueueForTest(QueueType::DEFAULT));
+      new MainThreadTaskQueueForTest(QueueType::kDefault));
   estimator.OnTopLevelTaskStarted(time, default_queue.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   estimator.OnTopLevelTaskCompleted(time);
@@ -749,7 +749,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   time += base::TimeDelta::FromMilliseconds(1500);
   // Beginning of window 2.
   scoped_refptr<MainThreadTaskQueueForTest> default_loading_queue(
-      new MainThreadTaskQueueForTest(QueueType::DEFAULT_LOADING));
+      new MainThreadTaskQueueForTest(QueueType::kDefaultLoading));
   estimator.OnTopLevelTaskStarted(time, default_loading_queue.get());
   time += base::TimeDelta::FromMilliseconds(2000);
   estimator.OnTopLevelTaskCompleted(time);
@@ -771,11 +771,11 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 
   time += base::TimeDelta::FromMilliseconds(1000);
   scoped_refptr<MainThreadTaskQueueForTest> frame_loading_queue(
-      new MainThreadTaskQueueForTest(QueueType::FRAME_LOADING));
+      new MainThreadTaskQueueForTest(QueueType::kFrameLoading));
   scoped_refptr<MainThreadTaskQueueForTest> frame_throttleable_queue(
-      new MainThreadTaskQueueForTest(QueueType::FRAME_THROTTLEABLE));
+      new MainThreadTaskQueueForTest(QueueType::kFrameThrottleable));
   scoped_refptr<MainThreadTaskQueueForTest> unthrottled_queue(
-      new MainThreadTaskQueueForTest(QueueType::UNTHROTTLED));
+      new MainThreadTaskQueueForTest(QueueType::kUnthrottled));
   MainThreadTaskQueue* queues_for_thousand[] = {frame_loading_queue.get(),
                                                 frame_throttleable_queue.get(),
                                                 unthrottled_queue.get()};
@@ -787,9 +787,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 
   // Beginning of window 5.
   scoped_refptr<MainThreadTaskQueueForTest> frame_pausable_queue(
-      new MainThreadTaskQueueForTest(QueueType::FRAME_PAUSABLE));
+      new MainThreadTaskQueueForTest(QueueType::kFramePausable));
   scoped_refptr<MainThreadTaskQueueForTest> compositor_queue(
-      new MainThreadTaskQueueForTest(QueueType::COMPOSITOR));
+      new MainThreadTaskQueueForTest(QueueType::kCompositor));
   MainThreadTaskQueue* queues_for_six_hundred[] = {
       default_queue.get(),        default_loading_queue.get(),
       frame_loading_queue.get(),  frame_throttleable_queue.get(),
@@ -801,18 +801,18 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
     estimator.OnTopLevelTaskCompleted(time);
   }
 
-  // The following task contributes to "Other" because CONTROL is not a
+  // The following task contributes to "Other" because kControl is not a
   // supported queue type.
   scoped_refptr<MainThreadTaskQueueForTest> control_queue(
-      new MainThreadTaskQueueForTest(QueueType::CONTROL));
+      new MainThreadTaskQueueForTest(QueueType::kControl));
   estimator.OnTopLevelTaskStarted(time, control_queue.get());
   time += base::TimeDelta::FromMilliseconds(300);
   estimator.OnTopLevelTaskCompleted(time);
 
-  // The following task contributes to "Other" because TEST is not a supported
+  // The following task contributes to "Other" because kTest is not a supported
   // queue type.
   scoped_refptr<MainThreadTaskQueueForTest> test_queue(
-      new MainThreadTaskQueueForTest(QueueType::TEST));
+      new MainThreadTaskQueueForTest(QueueType::kTest));
   estimator.OnTopLevelTaskStarted(time, test_queue.get());
   time += base::TimeDelta::FromMilliseconds(300);
   estimator.OnTopLevelTaskCompleted(time);
@@ -823,7 +823,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   estimator.OnTopLevelTaskCompleted(time);
 
   // End of window 5. Now check the vectors per task queue type.
-  EXPECT_THAT(client.QueueTypeValues(QueueType::DEFAULT),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kDefault),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
@@ -834,7 +834,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Default",
                 5, expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::DEFAULT_LOADING),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kDefaultLoading),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
                                      base::TimeDelta::FromMilliseconds(900),
@@ -845,7 +845,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.DefaultLoading", 5,
       expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::FRAME_LOADING),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kFrameLoading),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -856,7 +856,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.FrameLoading", 5,
       expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::FRAME_THROTTLEABLE),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kFrameThrottleable),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -867,7 +867,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.FrameThrottleable",
       5, expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::FRAME_PAUSABLE),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kFramePausable),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -878,7 +878,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.FramePausable", 5,
       expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::UNTHROTTLED),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kUnthrottled),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -889,7 +889,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Unthrottled", 5,
       expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::COMPOSITOR),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kCompositor),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -900,7 +900,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       "RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Compositor", 5,
       expected);
 
-  EXPECT_THAT(client.QueueTypeValues(QueueType::OTHER),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kOther),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -916,7 +916,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
                                      base::TimeDelta::FromMilliseconds(1700),
                                      base::TimeDelta::FromMilliseconds(400),
                                      base::TimeDelta::FromMilliseconds(274)};
-  EXPECT_THAT(client.FrameTypeValues(FrameType::NONE),
+  EXPECT_THAT(client.FrameTypeValues(FrameType::kNone),
               ::testing::ElementsAreArray(expected_sums));
   expected = {{274, 1}, {400, 1}, {800, 1}, {900, 1}, {1700, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByFrameType.Other", 5,
@@ -935,8 +935,8 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
 // the first 2000ms from a 3000ms task in a background main frame: 800 EQT for
 // that.
 // Window 4: The remaining 100 EQT for background main frame. Also 1000ms
-// tasks (which contribute 100) for SAME_ORIGIN_VISIBLE, SAME_ORIGIN_HIDDEN,
-// and CROSS_ORIGIN_VISIBLE.
+// tasks (which contribute 100) for kSameOriginVisible, kSameOriginHidden,
+// and kCrossOriginVisible.
 // Window 5: 400 ms tasks (which contribute 16) for each of the buckets except
 // other. Two 300 ms (each contributing 9) and one 800 ms tasks (contributes
 // 64) for the other bucket.
@@ -948,7 +948,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   estimator.OnTopLevelTaskStarted(time, nullptr);
   estimator.OnTopLevelTaskCompleted(time);
   scoped_refptr<MainThreadTaskQueueForTest> queue1(
-      new MainThreadTaskQueueForTest(QueueType::TEST));
+      new MainThreadTaskQueueForTest(QueueType::kTest));
 
   // Beginning of window 1.
   time += base::TimeDelta::FromMilliseconds(500);
@@ -977,7 +977,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   estimator.OnTopLevelTaskCompleted(time);
 
   scoped_refptr<MainThreadTaskQueueForTest> queue2(
-      new MainThreadTaskQueueForTest(QueueType::TEST));
+      new MainThreadTaskQueueForTest(QueueType::kTest));
   queue2->SetFrameScheduler(frame2.get());
   time += base::TimeDelta::FromMilliseconds(1000);
   estimator.OnTopLevelTaskStarted(time, queue2.get());
@@ -1093,7 +1093,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   estimator.OnTopLevelTaskCompleted(time);
 
   // End of window 5. Now check the vectors per frame type.
-  EXPECT_THAT(client.FrameTypeValues(FrameType::MAIN_FRAME_BACKGROUND),
+  EXPECT_THAT(client.FrameTypeValues(FrameType::kMainFrameBackground),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(900),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
@@ -1105,7 +1105,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
       "RendererScheduler.ExpectedQueueingTimeByFrameType.MainFrameBackground",
       5, expected);
 
-  EXPECT_THAT(client.FrameTypeValues(FrameType::MAIN_FRAME_VISIBLE),
+  EXPECT_THAT(client.FrameTypeValues(FrameType::kMainFrameVisible),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(800),
                                      base::TimeDelta::FromMilliseconds(900),
@@ -1121,11 +1121,11 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
     std::string name;
   };
   FrameExpectation three_expected[] = {
-      {FrameType::SAME_ORIGIN_VISIBLE,
+      {FrameType::kSameOriginVisible,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.SameOriginVisible"},
-      {FrameType::SAME_ORIGIN_HIDDEN,
+      {FrameType::kSameOriginHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.SameOriginHidden"},
-      {FrameType::CROSS_ORIGIN_VISIBLE,
+      {FrameType::kCrossOriginVisible,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.CrossOriginVisible"},
   };
   for (const auto& frame_expectation : three_expected) {
@@ -1140,15 +1140,15 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
   }
 
   FrameExpectation more_expected[] = {
-      {FrameType::MAIN_FRAME_HIDDEN,
+      {FrameType::kMainFrameHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "MainFrameHidden"},
-      {FrameType::SAME_ORIGIN_BACKGROUND,
+      {FrameType::kSameOriginBackground,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "SameOriginBackground"},
-      {FrameType::CROSS_ORIGIN_HIDDEN,
+      {FrameType::kCrossOriginHidden,
        "RendererScheduler.ExpectedQueueingTimeByFrameType.CrossOriginHidden"},
-      {FrameType::CROSS_ORIGIN_BACKGROUND,
+      {FrameType::kCrossOriginBackground,
        "RendererScheduler.ExpectedQueueingTimeByFrameType."
        "CrossOriginBackground"}};
   for (const auto& frame_expectation : more_expected) {
@@ -1162,7 +1162,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
     TestHistogram(frame_expectation.name, 5, expected);
   }
 
-  EXPECT_THAT(client.FrameTypeValues(FrameType::NONE),
+  EXPECT_THAT(client.FrameTypeValues(FrameType::kNone),
               ::testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
                                      base::TimeDelta::FromMilliseconds(0),
@@ -1178,7 +1178,7 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameType) {
                                      base::TimeDelta::FromMilliseconds(1700),
                                      base::TimeDelta::FromMilliseconds(400),
                                      base::TimeDelta::FromMilliseconds(226)};
-  EXPECT_THAT(client.QueueTypeValues(QueueType::OTHER),
+  EXPECT_THAT(client.QueueTypeValues(QueueType::kOther),
               ::testing::ElementsAreArray(expected_sums));
   expected = {{226, 1}, {400, 1}, {800, 1}, {900, 1}, {1700, 1}};
   TestHistogram("RendererScheduler.ExpectedQueueingTimeByTaskQueueType.Other",

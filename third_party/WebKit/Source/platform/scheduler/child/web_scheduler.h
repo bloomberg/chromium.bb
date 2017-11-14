@@ -74,7 +74,7 @@ class PLATFORM_EXPORT WebScheduler {
   // Returns a WebTaskRunner for timer tasks. Can be called from any thread.
   virtual WebTaskRunner* TimerTaskRunner() = 0;
 
-  // Returns a WebTaskRunner for V8 tasks. Can be called from any thread.
+  // Returns a WebTaskRunner for kV8 tasks. Can be called from any thread.
   virtual WebTaskRunner* V8TaskRunner() = 0;
 
   // Returns a WebTaskRunner for compositor tasks. This is intended only to be

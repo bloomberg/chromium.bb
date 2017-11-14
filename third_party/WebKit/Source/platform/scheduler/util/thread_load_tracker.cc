@@ -13,7 +13,7 @@ ThreadLoadTracker::ThreadLoadTracker(base::TimeTicks now,
                                      const Callback& callback,
                                      base::TimeDelta reporting_interval)
     : time_(now),
-      thread_state_(ThreadState::PAUSED),
+      thread_state_(ThreadState::kPaused),
       last_state_change_time_(now),
       reporting_interval_(reporting_interval),
       callback_(callback) {
@@ -23,15 +23,15 @@ ThreadLoadTracker::ThreadLoadTracker(base::TimeTicks now,
 ThreadLoadTracker::~ThreadLoadTracker() {}
 
 void ThreadLoadTracker::Pause(base::TimeTicks now) {
-  Advance(now, TaskState::IDLE);
-  thread_state_ = ThreadState::PAUSED;
+  Advance(now, TaskState::kIdle);
+  thread_state_ = ThreadState::kPaused;
 
   Reset(now);
 }
 
 void ThreadLoadTracker::Resume(base::TimeTicks now) {
-  Advance(now, TaskState::IDLE);
-  thread_state_ = ThreadState::ACTIVE;
+  Advance(now, TaskState::kIdle);
+  thread_state_ = ThreadState::kActive;
 
   Reset(now);
 }
@@ -47,12 +47,12 @@ void ThreadLoadTracker::RecordTaskTime(base::TimeTicks start_time,
   start_time = std::max(last_state_change_time_, start_time);
   end_time = std::max(last_state_change_time_, end_time);
 
-  Advance(start_time, TaskState::IDLE);
-  Advance(end_time, TaskState::TASK_RUNNING);
+  Advance(start_time, TaskState::kIdle);
+  Advance(end_time, TaskState::kTaskRunning);
 }
 
 void ThreadLoadTracker::RecordIdle(base::TimeTicks now) {
-  Advance(now, TaskState::IDLE);
+  Advance(now, TaskState::kIdle);
 }
 
 namespace {
@@ -80,7 +80,7 @@ void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
   // when appropriate.
   DCHECK_LE(time_, now);
 
-  if (thread_state_ == ThreadState::PAUSED) {
+  if (thread_state_ == ThreadState::kPaused) {
     // If the load tracker is paused, bail out early.
     time_ = now;
     return;
@@ -96,7 +96,7 @@ void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
 
     // Keep a running total of the time spent running tasks within the window
     // and the total time.
-    if (task_state == TaskState::TASK_RUNNING) {
+    if (task_state == TaskState::kTaskRunning) {
       run_time_inside_window_ +=
           Intersection(next_reporting_time_ - reporting_interval_,
                        next_reporting_time_, time_, time_ + delta);
@@ -106,9 +106,9 @@ void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
 
     if (time_ == next_reporting_time_) {
       // Call |callback_| if need and update next callback time.
-      if (thread_state_ == ThreadState::ACTIVE) {
+      if (thread_state_ == ThreadState::kActive) {
         callback_.Run(time_, Load());
-        DCHECK_EQ(thread_state_, ThreadState::ACTIVE);
+        DCHECK_EQ(thread_state_, ThreadState::kActive);
       }
       next_reporting_time_ += reporting_interval_;
       run_time_inside_window_ = base::TimeDelta();

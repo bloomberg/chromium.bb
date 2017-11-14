@@ -106,7 +106,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
 
   TaskQueueImpl::Task pending_task = work_queue_.TakeFirst();
   // NB immediate tasks have a different pipeline to delayed ones.
-  if (queue_type_ == QueueType::IMMEDIATE && work_queue_.empty()) {
+  if (queue_type_ == QueueType::kImmediate && work_queue_.empty()) {
     // Short-circuit the queue reload so that OnPopQueue does the right thing.
     work_queue_ = task_queue_->TakeImmediateIncomingQueue();
   }

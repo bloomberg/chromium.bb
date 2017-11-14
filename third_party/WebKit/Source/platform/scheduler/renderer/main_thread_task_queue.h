@@ -23,30 +23,30 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
     // This enum is used for a histogram and it should not be re-numbered.
     // TODO(altimin): Clean up obsolete names and use a new histogram when
     // the situation settles.
-    CONTROL = 0,
-    DEFAULT = 1,
-    DEFAULT_LOADING = 2,
-    // DEFAULT_TIMER is deprecated and should be replaced with appropriate
+    kControl = 0,
+    kDefault = 1,
+    kDefaultLoading = 2,
+    // kDefaultTimer is deprecated and should be replaced with appropriate
     // per-frame task queues.
-    DEFAULT_TIMER = 3,
-    UNTHROTTLED = 4,
-    FRAME_LOADING = 5,
-    // 6 : FRAME_THROTTLEABLE, replaced with FRAME_THROTTLEABLE.
-    // 7 : FRAME_PAUSABLE, replaced with FRAME_PAUSABLE
-    COMPOSITOR = 8,
-    IDLE = 9,
-    TEST = 10,
-    FRAME_LOADING_CONTROL = 11,
-    FRAME_THROTTLEABLE = 12,
-    FRAME_DEFERRABLE = 13,
-    FRAME_PAUSABLE = 14,
-    FRAME_UNPAUSABLE = 15,
-    V8 = 16,
-    IPC = 17,
+    kDefaultTimer = 3,
+    kUnthrottled = 4,
+    kFrameLoading = 5,
+    // 6 : kFrameThrottleable, replaced with FRAME_THROTTLEABLE.
+    // 7 : kFramePausable, replaced with kFramePausable
+    kCompositor = 8,
+    kIdle = 9,
+    kTest = 10,
+    kFrameLoading_kControl = 11,
+    kFrameThrottleable = 12,
+    kFrameDeferrable = 13,
+    kFramePausable = 14,
+    kFrameUnpausable = 15,
+    kV8 = 16,
+    kIPC = 17,
 
     // Used to group multiple types when calculating Expected Queueing Time.
-    OTHER = 18,
-    COUNT = 19
+    kOther = 18,
+    kCount = 19
   };
 
   // Returns name of the given queue type. Returned string has application
@@ -55,12 +55,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
   // High-level category used by RendererScheduler to make scheduling decisions.
   enum class QueueClass {
-    NONE = 0,
-    LOADING = 1,
-    TIMER = 2,
-    COMPOSITOR = 4,
+    kNone = 0,
+    kLoading = 1,
+    kTimer = 2,
+    kCompositor = 4,
 
-    COUNT = 5
+    kCount = 5,
   };
 
   static QueueClass QueueClassForQueueType(QueueType type);

@@ -97,15 +97,15 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
 
     // Variables to split Expected Queueing Time by task queue type.
     std::array<base::TimeDelta,
-               static_cast<int>(MainThreadTaskQueue::QueueType::COUNT)>
+               static_cast<int>(MainThreadTaskQueue::QueueType::kCount)>
         eqt_by_queue_type_;
     MainThreadTaskQueue::QueueType current_queue_type_ =
-        MainThreadTaskQueue::QueueType::OTHER;
+        MainThreadTaskQueue::QueueType::kOther;
 
     // Variables to split Expected Queueing Time by frame type.
-    std::array<base::TimeDelta, static_cast<int>(FrameType::COUNT)>
+    std::array<base::TimeDelta, static_cast<int>(FrameType::kCount)>
         eqt_by_frame_type_;
-    FrameType current_frame_type_ = FrameType::NONE;
+    FrameType current_frame_type_ = FrameType::kNone;
   };
 
   class State {

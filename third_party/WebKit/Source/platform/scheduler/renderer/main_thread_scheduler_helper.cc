@@ -17,11 +17,11 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
       renderer_scheduler_(renderer_scheduler),
       default_task_queue_(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                           MainThreadTaskQueue::QueueType::DEFAULT)
+                           MainThreadTaskQueue::QueueType::kDefault)
                            .SetShouldMonitorQuiescence(true))),
       control_task_queue_(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                           MainThreadTaskQueue::QueueType::CONTROL)
+                           MainThreadTaskQueue::QueueType::kControl)
                            .SetShouldNotifyObservers(false))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_);
 }

@@ -40,8 +40,8 @@ IdleHelper::IdleHelper(
       base::MakeRefCounted<SingleThreadIdleTaskRunner>(idle_queue_, this);
 
   // This fence will block any idle tasks from running.
-  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
-  idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
+  idle_queue_->SetQueuePriority(TaskQueue::kBestEffortPriority);
 }
 
 IdleHelper::~IdleHelper() {
@@ -75,7 +75,7 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
 
   if (!delegate_->CanEnterLongIdlePeriod(now,
                                          next_long_idle_period_delay_out)) {
-    return IdlePeriodState::NOT_IN_IDLE_PERIOD;
+    return IdlePeriodState::kNotInIdlePeriod;
   }
 
   base::TimeTicks next_pending_delayed_task;
@@ -95,17 +95,17 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
       base::TimeDelta::FromMilliseconds(kMinimumIdlePeriodDurationMillis)) {
     *next_long_idle_period_delay_out = long_idle_period_duration;
     if (!idle_queue_->HasTaskToRunImmediately()) {
-      return IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
+      return IdlePeriodState::kInLongIdlePeriodPaused;
     } else if (long_idle_period_duration == max_long_idle_period_duration) {
-      return IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
+      return IdlePeriodState::kInLongIdlePeriodWithMaxDeadline;
     } else {
-      return IdlePeriodState::IN_LONG_IDLE_PERIOD;
+      return IdlePeriodState::kInLongIdlePeriod;
     }
   } else {
     // If we can't start the idle period yet then try again after wake-up.
     *next_long_idle_period_delay_out = base::TimeDelta::FromMilliseconds(
         kRetryEnableLongIdlePeriodDelayMillis);
-    return IdlePeriodState::NOT_IN_IDLE_PERIOD;
+    return IdlePeriodState::kNotInIdlePeriod;
   }
 }
 
@@ -185,7 +185,7 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
 
   // Use a fence to make sure any idle tasks posted after this point do not run
   // until the next idle period and unblock existing tasks.
-  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::NOW);
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::kNow);
 
   state_.UpdateState(new_state, idle_period_deadline, now);
 }
@@ -208,8 +208,8 @@ void IdleHelper::EndIdlePeriod() {
   helper_->RemoveTaskObserver(this);
 
   // This fence will block any idle tasks from running.
-  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
-  state_.UpdateState(IdlePeriodState::NOT_IN_IDLE_PERIOD, base::TimeTicks(),
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);
+  state_.UpdateState(IdlePeriodState::kNotInIdlePeriod, base::TimeTicks(),
                      base::TimeTicks());
 }
 
@@ -223,8 +223,7 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
   DCHECK(IsInIdlePeriod(state_.idle_period_state()));
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "DidProcessTask");
-  if (state_.idle_period_state() !=
-          IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED &&
+  if (state_.idle_period_state() != IdlePeriodState::kInLongIdlePeriodPaused &&
       helper_->scheduler_tqm_delegate()->NowTicks() >=
           state_.idle_period_deadline()) {
     // If the idle period deadline has now been reached, either end the idle
@@ -232,8 +231,7 @@ void IdleHelper::DidProcessTask(const base::PendingTask& pending_task) {
     if (IsInLongIdlePeriod(state_.idle_period_state())) {
       EnableLongIdlePeriod();
     } else {
-      DCHECK(IdlePeriodState::IN_SHORT_IDLE_PERIOD ==
-             state_.idle_period_state());
+      DCHECK(IdlePeriodState::kInShortIdlePeriod == state_.idle_period_state());
       EndIdlePeriod();
     }
   }
@@ -249,7 +247,7 @@ void IdleHelper::UpdateLongIdlePeriodStateAfterIdleTask() {
   if (!idle_queue_->HasTaskToRunImmediately()) {
     // If there are no more idle tasks then pause long idle period ticks until a
     // new idle task is posted.
-    state_.UpdateState(IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED,
+    state_.UpdateState(IdlePeriodState::kInLongIdlePeriodPaused,
                        state_.idle_period_deadline(), base::TimeTicks());
   } else if (idle_queue_->BlockedByFence()) {
     // If there is still idle work to do then just start the next idle period.
@@ -293,8 +291,7 @@ void IdleHelper::OnIdleTaskPostedOnMainThread() {
   if (is_shutdown_)
     return;
   delegate_->OnPendingTasksChanged(true);
-  if (state_.idle_period_state() ==
-      IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
+  if (state_.idle_period_state() == IdlePeriodState::kInLongIdlePeriodPaused) {
     // Restart long idle period ticks.
     helper_->ControlTaskQueue()->PostTask(
         FROM_HERE, enable_next_long_idle_period_closure_.GetCallback());
@@ -325,14 +322,14 @@ base::TimeTicks IdleHelper::NowTicks() {
 
 // static
 bool IdleHelper::IsInIdlePeriod(IdlePeriodState state) {
-  return state != IdlePeriodState::NOT_IN_IDLE_PERIOD;
+  return state != IdlePeriodState::kNotInIdlePeriod;
 }
 
 // static
 bool IdleHelper::IsInLongIdlePeriod(IdlePeriodState state) {
-  return state == IdlePeriodState::IN_LONG_IDLE_PERIOD ||
-         state == IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE ||
-         state == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED;
+  return state == IdlePeriodState::kInLongIdlePeriod ||
+         state == IdlePeriodState::kInLongIdlePeriodWithMaxDeadline ||
+         state == IdlePeriodState::kInLongIdlePeriodPaused;
 }
 
 bool IdleHelper::CanExceedIdleDeadlineIfRequired() const {
@@ -340,7 +337,7 @@ bool IdleHelper::CanExceedIdleDeadlineIfRequired() const {
                "CanExceedIdleDeadlineIfRequired");
   helper_->CheckOnValidThread();
   return state_.idle_period_state() ==
-         IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
+         IdlePeriodState::kInLongIdlePeriodWithMaxDeadline;
 }
 
 IdleHelper::IdlePeriodState IdleHelper::SchedulerIdlePeriodState() const {
@@ -352,7 +349,7 @@ IdleHelper::State::State(SchedulerHelper* helper,
                          const char* idle_period_tracing_name)
     : helper_(helper),
       delegate_(delegate),
-      idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
+      idle_period_state_(IdlePeriodState::kNotInIdlePeriod),
       idle_period_trace_event_started_(false),
       running_idle_task_for_tracing_(false),
       idle_period_tracing_name_(idle_period_tracing_name) {}
@@ -461,16 +458,16 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
       TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
                                    idle_period_tracing_name_, this,
                                    "RunningIdleTask");
-    } else if (new_state == IdlePeriodState::IN_SHORT_IDLE_PERIOD) {
+    } else if (new_state == IdlePeriodState::kInShortIdlePeriod) {
       TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
                                    idle_period_tracing_name_, this,
                                    "ShortIdlePeriod");
     } else if (IsInLongIdlePeriod(new_state) &&
-               new_state != IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
+               new_state != IdlePeriodState::kInLongIdlePeriodPaused) {
       TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
                                    idle_period_tracing_name_, this,
                                    "LongIdlePeriod");
-    } else if (new_state == IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED) {
+    } else if (new_state == IdlePeriodState::kInLongIdlePeriodPaused) {
       TRACE_EVENT_ASYNC_STEP_INTO0("renderer.scheduler",
                                    idle_period_tracing_name_, this,
                                    "LongIdlePeriodPaused");
@@ -486,15 +483,15 @@ void IdleHelper::State::TraceEventIdlePeriodStateChange(
 const char* IdleHelper::IdlePeriodStateToString(
     IdlePeriodState idle_period_state) {
   switch (idle_period_state) {
-    case IdlePeriodState::NOT_IN_IDLE_PERIOD:
+    case IdlePeriodState::kNotInIdlePeriod:
       return "not_in_idle_period";
-    case IdlePeriodState::IN_SHORT_IDLE_PERIOD:
+    case IdlePeriodState::kInShortIdlePeriod:
       return "in_short_idle_period";
-    case IdlePeriodState::IN_LONG_IDLE_PERIOD:
+    case IdlePeriodState::kInLongIdlePeriod:
       return "in_long_idle_period";
-    case IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE:
+    case IdlePeriodState::kInLongIdlePeriodWithMaxDeadline:
       return "in_long_idle_period_with_max_deadline";
-    case IdlePeriodState::IN_LONG_IDLE_PERIOD_PAUSED:
+    case IdlePeriodState::kInLongIdlePeriodPaused:
       return "in_long_idle_period_paused";
     default:
       NOTREACHED();

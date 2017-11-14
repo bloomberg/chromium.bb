@@ -32,7 +32,7 @@ class WorkQueueSets;
 // throttling mechanisms.
 class PLATFORM_EXPORT WorkQueue {
  public:
-  enum class QueueType { DELAYED, IMMEDIATE };
+  enum class QueueType { kDelayed, kImmediate };
 
   WorkQueue(TaskQueueImpl* task_queue, const char* name, QueueType queue_type);
   ~WorkQueue();

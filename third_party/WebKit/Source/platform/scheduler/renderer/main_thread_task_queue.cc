@@ -14,41 +14,41 @@ namespace scheduler {
 const char* MainThreadTaskQueue::NameForQueueType(
     MainThreadTaskQueue::QueueType queue_type) {
   switch (queue_type) {
-    case MainThreadTaskQueue::QueueType::CONTROL:
+    case MainThreadTaskQueue::QueueType::kControl:
       return "ControlTQ";
-    case MainThreadTaskQueue::QueueType::DEFAULT:
+    case MainThreadTaskQueue::QueueType::kDefault:
       return "DefaultTQ";
-    case MainThreadTaskQueue::QueueType::DEFAULT_LOADING:
+    case MainThreadTaskQueue::QueueType::kDefaultLoading:
       return "DefaultLoadingTQ";
-    case MainThreadTaskQueue::QueueType::DEFAULT_TIMER:
+    case MainThreadTaskQueue::QueueType::kDefaultTimer:
       return "DefaultTimerTQ";
-    case MainThreadTaskQueue::QueueType::UNTHROTTLED:
+    case MainThreadTaskQueue::QueueType::kUnthrottled:
       return "UnthrottledTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_LOADING:
+    case MainThreadTaskQueue::QueueType::kFrameLoading:
       return "FrameLoadingTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE:
+    case MainThreadTaskQueue::QueueType::kFrameThrottleable:
       return "FrameThrottleableTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_DEFERRABLE:
+    case MainThreadTaskQueue::QueueType::kFrameDeferrable:
       return "FrameDeferrableTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_PAUSABLE:
+    case MainThreadTaskQueue::QueueType::kFramePausable:
       return "FramePausableTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_UNPAUSABLE:
+    case MainThreadTaskQueue::QueueType::kFrameUnpausable:
       return "FrameUnpausableTQ";
-    case MainThreadTaskQueue::QueueType::COMPOSITOR:
+    case MainThreadTaskQueue::QueueType::kCompositor:
       return "CompositorTQ";
-    case MainThreadTaskQueue::QueueType::IDLE:
+    case MainThreadTaskQueue::QueueType::kIdle:
       return "IdleTQ";
-    case MainThreadTaskQueue::QueueType::TEST:
+    case MainThreadTaskQueue::QueueType::kTest:
       return "TestTQ";
-    case MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL:
+    case MainThreadTaskQueue::QueueType::kFrameLoading_kControl:
       return "FrameLoadingControlTQ";
-    case MainThreadTaskQueue::QueueType::V8:
+    case MainThreadTaskQueue::QueueType::kV8:
       return "V8TQ";
-    case MainThreadTaskQueue::QueueType::IPC:
+    case MainThreadTaskQueue::QueueType::kIPC:
       return "IPCTQ";
-    case MainThreadTaskQueue::QueueType::OTHER:
+    case MainThreadTaskQueue::QueueType::kOther:
       return "OtherTQ";
-    case MainThreadTaskQueue::QueueType::COUNT:
+    case MainThreadTaskQueue::QueueType::kCount:
       NOTREACHED();
       return nullptr;
   }
@@ -59,33 +59,33 @@ const char* MainThreadTaskQueue::NameForQueueType(
 MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
     QueueType type) {
   switch (type) {
-    case QueueType::CONTROL:
-    case QueueType::DEFAULT:
-    case QueueType::IDLE:
-    case QueueType::TEST:
-    case QueueType::V8:
-    case QueueType::IPC:
-      return QueueClass::NONE;
-    case QueueType::DEFAULT_LOADING:
-    case QueueType::FRAME_LOADING:
-    case QueueType::FRAME_LOADING_CONTROL:
-      return QueueClass::LOADING;
-    case QueueType::DEFAULT_TIMER:
-    case QueueType::UNTHROTTLED:
-    case QueueType::FRAME_THROTTLEABLE:
-    case QueueType::FRAME_DEFERRABLE:
-    case QueueType::FRAME_PAUSABLE:
-    case QueueType::FRAME_UNPAUSABLE:
-      return QueueClass::TIMER;
-    case QueueType::COMPOSITOR:
-      return QueueClass::COMPOSITOR;
-    case QueueType::OTHER:
-    case QueueType::COUNT:
+    case QueueType::kControl:
+    case QueueType::kDefault:
+    case QueueType::kIdle:
+    case QueueType::kTest:
+    case QueueType::kV8:
+    case QueueType::kIPC:
+      return QueueClass::kNone;
+    case QueueType::kDefaultLoading:
+    case QueueType::kFrameLoading:
+    case QueueType::kFrameLoading_kControl:
+      return QueueClass::kLoading;
+    case QueueType::kDefaultTimer:
+    case QueueType::kUnthrottled:
+    case QueueType::kFrameThrottleable:
+    case QueueType::kFrameDeferrable:
+    case QueueType::kFramePausable:
+    case QueueType::kFrameUnpausable:
+      return QueueClass::kTimer;
+    case QueueType::kCompositor:
+      return QueueClass::kCompositor;
+    case QueueType::kOther:
+    case QueueType::kCount:
       DCHECK(false);
-      return QueueClass::COUNT;
+      return QueueClass::kCount;
   }
   NOTREACHED();
-  return QueueClass::NONE;
+  return QueueClass::kNone;
 }
 
 MainThreadTaskQueue::MainThreadTaskQueue(
