@@ -119,8 +119,11 @@ const KURL& ImageElementBase::SourceURL() const {
 }
 
 bool ImageElementBase::IsOpaque() const {
-  Image* image = const_cast<Element&>(GetElement()).ImageContents();
-  return image && image->CurrentFrameKnownToBeOpaque();
+  ImageResourceContent* image_content = CachedImage();
+  if (!GetImageLoader().ImageComplete() || !image_content)
+    return false;
+  Image* image = image_content->GetImage();
+  return image->CurrentFrameKnownToBeOpaque();
 }
 
 IntSize ImageElementBase::BitmapSourceSize() const {
