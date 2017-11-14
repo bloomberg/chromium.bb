@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
@@ -34,6 +35,9 @@ class RenderProcessHost;
 }  // namespace content
 
 namespace profiling {
+
+extern const base::Feature kOOPHeapProfilingFeature;
+extern const char kOOPHeapProfilingFeatureMode[];
 
 // Represents the browser side of the profiling process (//chrome/profiling).
 //
