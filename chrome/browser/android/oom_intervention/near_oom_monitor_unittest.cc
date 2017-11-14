@@ -42,6 +42,8 @@ class MockNearOomMonitor : public NearOomMonitor {
     return true;
   }
 
+  bool ComponentCallbackIsEnabled() override { return false; }
+
   base::SystemMemoryInfoKB memory_info_;
   bool is_get_system_memory_info_called_ = false;
 
