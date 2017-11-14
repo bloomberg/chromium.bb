@@ -35,11 +35,10 @@ void FormInputAccessoryViewTabHelper::CloseKeyboard() {
 FormInputAccessoryViewTabHelper::FormInputAccessoryViewTabHelper(
     web::WebState* web_state,
     NSArray<id<FormInputAccessoryViewProvider>>* providers)
-    : web::WebStateObserver(web_state),
-      controller_([[FormInputAccessoryViewController alloc]
+    : controller_([[FormInputAccessoryViewController alloc]
           initWithWebState:web_state
                  providers:providers]) {
-  DCHECK(web::WebStateObserver::web_state());
+  web_state->AddObserver(this);
 }
 
 void FormInputAccessoryViewTabHelper::WasShown(web::WebState* web_state) {
@@ -53,5 +52,6 @@ void FormInputAccessoryViewTabHelper::WasHidden(web::WebState* web_state) {
 void FormInputAccessoryViewTabHelper::WebStateDestroyed(
     web::WebState* web_state) {
   [controller_ detachFromWebState];
+  web_state->RemoveObserver(this);
   controller_ = nil;
 }
