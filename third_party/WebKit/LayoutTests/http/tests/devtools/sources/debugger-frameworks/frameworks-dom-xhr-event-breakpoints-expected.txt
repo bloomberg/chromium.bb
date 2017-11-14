@@ -1,60 +1,72 @@
-CONSOLE ERROR: line 21: Uncaught Error: FrameworkException: EXPECTED
 Tests framework black-boxing on DOM, XHR and Event breakpoints.
-
 
 
 Running: testDOMBreakpoint
 Call stack:
   * 0) Framework.appendChild (framework.js:72)
-    1) appendElement (frameworks-dom-xhr-event-breakpoints.html:14)
+    1) appendElement (frameworks-dom-xhr-event-breakpoints.js:21)
     2)  (:1)
+    [setTimeout]
+    0)  (:1)
 Paused on subtree modificationsdiv#rootElementChild div#rootElement added
 
 Running: testXHRBreakpoint
 Call stack:
   * 0) Framework.sendXHR (framework.js:79)
-    1) sendXHR (frameworks-dom-xhr-event-breakpoints.html:19)
+    1) sendXHR (frameworks-dom-xhr-event-breakpoints.js:26)
     2)  (:1)
-Paused on XMLHttpRequestfile:///foo?a=b
+    [setTimeout]
+    0)  (:1)
+Paused on XHR or fetchhttp://127.0.0.1:8000/devtools/sources/debugger-frameworks/resources/foo?xhr
 
 Running: testEventListenerBreakpoint
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:44)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:50)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
 Running: testSteppingThroughEventListenerBreakpoint
 Executing StepOver...
 Call stack:
-    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:33)
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:40)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Call stack:
-    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:34)
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:41)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Executing StepOver...
 Executing StepOver...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:44)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Executing StepOver...
@@ -62,70 +74,84 @@ Executing StepOver...
 Executing StepOver...
 Executing StepOver...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:50)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Executing StepOver...
 Executing StepOver...
 Call stack:
-    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:44)
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:51)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
 Running: testSteppingOutOnEventListenerBreakpoint
 Executing StepOut...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:44)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Executing StepOut...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:24)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:31)
   * 1) Framework_bound (framework.js:105)
   * 2) Framework_eventListener (framework.js:86)
-    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
+    3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:50)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
-    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:44)
+    0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.js:51)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
 Running: testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne
 Executing StepOut...
 Call stack:
-    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.html:50)
+    0) testElementClicked (frameworks-dom-xhr-event-breakpoints.js:57)
   * 1) Framework.safeRun (framework.js:8)
   * 2) Framework.safeRun (framework.js:10)
   * 3) Framework_bound (framework.js:105)
   * 4) Framework_eventListener (framework.js:86)
-    5) inner (frameworks-dom-xhr-event-breakpoints.html:64)
-    6) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:70)
+    5) inner (frameworks-dom-xhr-event-breakpoints.js:71)
+    6) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.js:77)
     7)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
-    0) inner (frameworks-dom-xhr-event-breakpoints.html:65)
-    1) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:70)
+    0) inner (frameworks-dom-xhr-event-breakpoints.js:72)
+    1) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.js:77)
     2)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
-    0) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:71)
+    0) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.js:77)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
-
-Running: tearDown
 
