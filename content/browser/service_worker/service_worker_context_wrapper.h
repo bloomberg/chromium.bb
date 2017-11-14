@@ -55,6 +55,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   using GetRegistrationsInfosCallback =
       ServiceWorkerStorage::GetRegistrationsInfosCallback;
   using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
+  using GetUserKeysAndDataCallback =
+      ServiceWorkerStorage::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =
       ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback;
 
@@ -215,6 +217,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void GetRegistrationUserDataByKeyPrefix(int64_t registration_id,
                                           const std::string& key_prefix,
                                           const GetUserDataCallback& callback);
+  void GetRegistrationUserKeysAndDataByKeyPrefix(
+      int64_t registration_id,
+      const std::string& key_prefix,
+      const GetUserKeysAndDataCallback& callback);
   void StoreRegistrationUserData(
       int64_t registration_id,
       const GURL& origin,

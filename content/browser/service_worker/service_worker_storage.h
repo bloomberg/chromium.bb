@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -71,6 +73,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
   using GetUserDataCallback =
       base::Callback<void(const std::vector<std::string>& data,
                           ServiceWorkerStatusCode status)>;
+  using GetUserKeysAndDataCallback = base::Callback<void(
+      const base::flat_map<std::string, std::string>& data_map,
+      ServiceWorkerStatusCode status)>;
   typedef base::Callback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       ServiceWorkerStatusCode status)> GetUserDataForAllRegistrationsCallback;
@@ -178,14 +183,23 @@ class CONTENT_EXPORT ServiceWorkerStorage
 
   // Provide a storage mechanism to read/write arbitrary data associated with
   // a registration. Each registration has its own key namespace.
-  // GetUserData/GetUserDataByKeyPrefix responds OK only if all keys are found;
-  // otherwise NOT_FOUND, and the callback's data will be empty.
+  // GetUserData responds OK only if all keys are found; otherwise NOT_FOUND,
+  // and the callback's data will be empty.
   void GetUserData(int64_t registration_id,
                    const std::vector<std::string>& keys,
                    const GetUserDataCallback& callback);
+  // GetUserDataByKeyPrefix responds OK with a vector containing data rows that
+  // had matching keys assuming the database was read successfully.
   void GetUserDataByKeyPrefix(int64_t registration_id,
                               const std::string& key_prefix,
                               const GetUserDataCallback& callback);
+  // GetUserKeysAndDataByKeyPrefix responds OK with a flat_map containing
+  // matching keys and their data assuming the database was read successfully.
+  // The map keys have |key_prefix| stripped from them.
+  void GetUserKeysAndDataByKeyPrefix(
+      int64_t registration_id,
+      const std::string& key_prefix,
+      const GetUserKeysAndDataCallback& callback);
 
   // Stored data is deleted when the associated registraton is deleted.
   void StoreUserData(
@@ -319,6 +333,9 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status)> FindInDBCallback;
+  using GetUserKeysAndDataInDBCallback = base::Callback<void(
+      const base::flat_map<std::string, std::string>& data_map,
+      ServiceWorkerDatabase::Status)>;
   typedef base::Callback<void(const std::vector<std::string>& data,
                               ServiceWorkerDatabase::Status)>
       GetUserDataInDBCallback;
@@ -395,9 +412,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void DidGetUserData(const GetUserDataCallback& callback,
                       const std::vector<std::string>& data,
                       ServiceWorkerDatabase::Status status);
-  void DidDeleteUserData(
-      const StatusCallback& callback,
+  void DidGetUserKeysAndData(
+      const GetUserKeysAndDataCallback& callback,
+      const base::flat_map<std::string, std::string>& map,
       ServiceWorkerDatabase::Status status);
+  void DidDeleteUserData(const StatusCallback& callback,
+                         ServiceWorkerDatabase::Status status);
   void DidGetUserDataForAllRegistrations(
       const GetUserDataForAllRegistrationsCallback& callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
@@ -492,6 +512,12 @@ class CONTENT_EXPORT ServiceWorkerStorage
       int64_t registration_id,
       const std::string& key_prefix,
       const GetUserDataInDBCallback& callback);
+  static void GetUserKeysAndDataByKeyPrefixInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      int64_t registration_id,
+      const std::string& key_prefix,
+      const GetUserKeysAndDataInDBCallback& callback);
   static void GetUserDataForAllRegistrationsInDB(
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,

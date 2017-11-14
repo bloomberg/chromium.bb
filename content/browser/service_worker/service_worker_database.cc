@@ -4,8 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_database.h"
 
-#include <utility>
-
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -939,6 +937,57 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadUserDataByKeyPrefix(
       }
 
       user_data_values->push_back(user_data_value);
+    }
+  }
+
+  HandleReadResult(FROM_HERE, status);
+  return status;
+}
+
+ServiceWorkerDatabase::Status
+ServiceWorkerDatabase::ReadUserKeysAndDataByKeyPrefix(
+    int64_t registration_id,
+    const std::string& user_data_name_prefix,
+    base::flat_map<std::string, std::string>* user_data_map) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, registration_id);
+  DCHECK(user_data_map);
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return STATUS_ERROR_NOT_FOUND;
+  if (status != STATUS_OK)
+    return status;
+
+  std::string prefix =
+      CreateUserDataKey(registration_id, user_data_name_prefix);
+  {
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
+      if (status != STATUS_OK) {
+        user_data_map->clear();
+        break;
+      }
+
+      if (!itr->key().starts_with(prefix))
+        break;
+
+      std::string user_data_value;
+      status = LevelDBStatusToServiceWorkerDBStatus(
+          db_->Get(leveldb::ReadOptions(), itr->key(), &user_data_value));
+      if (status != STATUS_OK) {
+        user_data_map->clear();
+        break;
+      }
+
+      leveldb::Slice s = itr->key();
+      s.remove_prefix(prefix.size());
+      // Always insert at the end of the map as they're retrieved presorted from
+      // the database.
+      user_data_map->insert(user_data_map->end(),
+                            {s.ToString(), user_data_value});
     }
   }
 

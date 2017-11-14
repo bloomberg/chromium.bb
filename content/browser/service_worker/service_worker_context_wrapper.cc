@@ -640,6 +640,22 @@ void ServiceWorkerContextWrapper::GetRegistrationUserDataByKeyPrefix(
                                                    callback);
 }
 
+void ServiceWorkerContextWrapper::GetRegistrationUserKeysAndDataByKeyPrefix(
+    int64_t registration_id,
+    const std::string& key_prefix,
+    const GetUserKeysAndDataCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!context_core_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(callback, base::flat_map<std::string, std::string>(),
+                       SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  context_core_->storage()->GetUserKeysAndDataByKeyPrefix(registration_id,
+                                                          key_prefix, callback);
+}
+
 void ServiceWorkerContextWrapper::StoreRegistrationUserData(
     int64_t registration_id,
     const GURL& origin,
