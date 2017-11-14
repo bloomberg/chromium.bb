@@ -302,7 +302,7 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
   // Need a PostTask() here because RemoveSocket() will release the memory of
   // |socket|. Need to make sure all tasks on |socket| finish before deleting
   // the object.
-  task_runner_->PostTask(
+  task_runner_->PostNonNestableTask(
       FROM_HERE,
       base::Bind(
           base::IgnoreResult(&cast_channel::CastSocketService::RemoveSocket),
