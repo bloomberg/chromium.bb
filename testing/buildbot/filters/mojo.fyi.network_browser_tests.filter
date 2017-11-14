@@ -11,7 +11,6 @@
 -BrowserNavigatorTest.CloseSingletonTab
 -BrowserNavigatorTest.Disposition_CurrentTab
 -BrowserNavigatorTest.NavigateFromPageToOptionsInNewTab
--BrowserNonClientFrameViewBrowserTest.InactiveSeparatorColor
 # note: this passes locally but fails on bot.
 -BrowserTest.CancelBeforeUnloadResetsURL
 -BrowserTest.ClearPendingOnFailUnlessNTP
@@ -60,54 +59,13 @@
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_OnDemandMojoPipe
 -CredentialManagerBrowserTest.StoreInUnloadHandler_SameSite_PreestablishedPipe
 -CredentialManagerBrowserTest.StoreSavesPSLMatchedCredential
--CrExtensionsCodeSectionTest.Layout
--CrExtensionsDetailViewTest.ClickableElements
--CrExtensionsDetailViewTest.IndicatorTest
--CrExtensionsDetailViewTest.Layout
--CrExtensionsDetailViewTest.Warnings
--CrExtensionsErrorPageTest.CodeSection
--CrExtensionsErrorPageTest.ErrorSelection
--CrExtensionsErrorPageTest.Layout
--CrExtensionsItemListTest.Filtering
--CrExtensionsItemListTest.NoItems
--CrExtensionsItemListTest.NoSearchResults
--CrExtensionsItemsTest.ClickableItems
--CrExtensionsItemsTest.DeveloperState
--CrExtensionsItemsTest.EnableToggle
--CrExtensionsItemsTest.NormalState
--CrExtensionsItemsTest.RemoveButton
--CrExtensionsItemsTest.SourceIndicator
--CrExtensionsItemsTest.Warnings
--CrExtensionsLoadErrorTest.CodeSection
--CrExtensionsLoadErrorTest.Interaction
 -CrExtensionsManagerTest.ItemOrder
 -CrExtensionsManagerTest.UpdateItemData
--CrExtensionsManagerTestWithIdQueryParam.NavigationToDetails
--CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.ChangePages
--CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.ItemListVisibility
--CrExtensionsManagerTestWithMultipleExtensionTypesInstalled.SplitItems
--CrExtensionsNavigationHelperTest.Basic
--CrExtensionsNavigationHelperTest.Conversion
--CrExtensionsNavigationHelperTest.PushAndReplaceState
--CrExtensionsNavigationHelperTest.SupportedRoutes
--CrExtensionsOptionsDialogTest.Layout
--CrExtensionsPackDialogTest.Interaction
--CrExtensionsPackDialogTest.PackError
--CrExtensionsPackDialogTest.PackSuccess
--CrExtensionsPackDialogTest.PackWarning
 -CrExtensionsServiceTest.ProfileSettings
 -CrExtensionsServiceTest.ToggleEnable
 -CrExtensionsServiceTest.ToggleIncognito
 -CrExtensionsServiceTest.Uninstall
 -CrExtensionsShortcutTest.Basic
--CrExtensionsShortcutTest.Layout
--CrExtensionsSidebarTest.LayoutAndClickHandlers
--CrExtensionsSidebarTest.SetSelected
--CrExtensionsToggleRowTest.ToggleRowTest
--CrExtensionsToolbarTest.ClickHandlers
--CrExtensionsToolbarTest.Layout
--CrExtensionsViewManagerTest.EventFiringTest
--CrExtensionsViewManagerTest.VisibilityTest
 -DataProxyScriptBrowserTest.Verify
 -DeclarativeContentApiTest.UninstallWhileActivePageAction
 -DevToolsSanityTest.TestRawHeadersWithRedirectAndHSTS
@@ -124,22 +82,17 @@
 -DicePrepareMigrationBrowserTest.Signout
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 # The next two DnsProbeBrowserTests are flaky.
--DnsProbeBrowserTest.CorrectionsLoadStopped
--DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
 -DomainReliabilityBrowserTest.Upload
 -DoNotTrackTest.Redirect
 -DoNotTrackTest.Simple
 -DownloadExtensionTest.DownloadExtensionTest_Download_Basic
 -DownloadExtensionTest.DownloadExtensionTest_Download_Redirect
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
--ExecuteScriptApiTest.ExecuteScriptPermissions
 -ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
 -ExpectCTBrowserTest.TestDynamicExpectCTReporting
 -ExperimentalAppWindowApiTest.SetIcon
 -ExtensionApiTabTest.OnUpdatedDiscardedState
--ExtensionApiTabTest.TabEvents
 -ExtensionApiTabTest.TabsOnUpdated
--ExtensionApiTabTest.UpdateWindowResize
 -ExtensionApiTest.ContentSecurityPolicy
 -ExtensionApiTest.Cookies
 -ExtensionApiTest.Debugger
@@ -155,7 +108,6 @@
 -ExtensionIconSourceTest.IconsLoadedIncognito
 -ExtensionModuleTest.TestModulesAvailable
 -ExtensionResourceRequestPolicyTest.WebAccessibleResources
--ExtensionsA11yTestFixture.BASIC_EXTENSIONS_region
 -ExtensionTabUtilBrowserTest.OpenSpanningModeExtensionOptionsPageIncognito
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -FeedbackTest.AnonymousUser
@@ -198,7 +150,6 @@
 -MediaStreamDevicesControllerTest.ExtensionRequestMicCam
 -NaClBrowserTestGLibcVcacheExtension.ValidationCacheOfMainNexe
 -NaClBrowserTestNewlibVcacheExtension.ValidationCacheOfMainNexe
--NativeBindingsApiTest.FileSystemApiGetDisplayPath
 -NetInternalsTest.netInternalsPrerenderViewFail
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.MulticastPermissions
@@ -254,12 +205,13 @@
 -PlatformAppDevToolsBrowserTest.ReOpenedWithID
 -PlatformAppDevToolsBrowserTest.ReOpenedWithURL
 -PolicyTest.BookmarkBarEnabled
+-PolicyTest.DefaultCookiesSetting
 -PolicyTest.HomepageLocation
 -PPAPINaClNewlibTest.FileRef1
 -PPAPINaClNewlibTest.FileRef2
 -PPAPINaClNewlibTest.URLLoader1
--PPAPINaClPNaClNonSfiTest.FileRef1
 # Note: the next 3 tests pass locally but fail on bot.
+-PPAPINaClPNaClNonSfiTest.FileRef1
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
 -PredictorBrowserTest.CrossSiteNoReferrerNoPredictionAfterOneNavigation
@@ -292,7 +244,6 @@
 -ProfileWindowBrowserTest.GuestClearsCookies
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
--RemoteDebuggingTest.RemoteDebugger
 -ResourcePrefetchPredictorBrowserTest.AlwaysRevalidate
 -ResourcePrefetchPredictorBrowserTest.CrossSiteNavigation
 -ResourcePrefetchPredictorBrowserTest.HttpToHttpsRedirect
@@ -335,7 +286,6 @@
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.Events/0
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.EventsToStoppedWorker/0
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.FetchArbitraryPaths/0
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.FetchFromContentScriptShouldNotGoToServiceWorkerOfPage/0
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.FilteredEvents/0
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.GetBackgroundClientFailsWithNoBackgroundPage/0
 -ServiceWorkerTestWithJSBindings/ServiceWorkerTest.LoadingBackgroundPageBypassesServiceWorker/0
@@ -354,7 +304,6 @@
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.Events/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.EventsToStoppedWorker/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.FetchArbitraryPaths/0
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.FetchFromContentScriptShouldNotGoToServiceWorkerOfPage/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.FilteredEvents/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.GetBackgroundClientFailsWithNoBackgroundPage/0
 -ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.LoadingBackgroundPageBypassesServiceWorker/0
@@ -452,7 +401,6 @@
 -WebRtcRtpBrowserTest.GetSenders
 -WebRtcRtpBrowserTest.SwitchRemoteStreamAndBackAgain
 -WebRtcRtpBrowserTest.SwitchRemoteStreamWithoutWaitingForPromisesToResolve
--WebRtcRtpBrowserTest.TrackAddedToSecondStream
 -WebRtcRtpBrowserTest.TrackSwitchingStream
 -WebSocketBrowserTest.WebSocketAppliesHSTS
 -WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
@@ -476,15 +424,12 @@
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/1
 -WebViewTests/WebViewTest.DownloadPermission/0
 -WebViewTests/WebViewTest.DownloadPermission/1
--WebViewTests/WebViewTest.LoadWebviewAccessibleResource/1
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/0
 -WebViewTests/WebViewTest.OpenURLFromTab_CurrentTab_Succeed/1
 -WebViewTests/WebViewTest.Shim_TestLoadStartLoadRedirect/0
 -WebViewTests/WebViewTest.Shim_TestLoadStartLoadRedirect/1
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/0
 -WebViewTests/WebViewTest.Shim_TestNavigationToExternalProtocol/1
--WebViewTests/WebViewTest.Shim_TestNestedSubframes/0
--WebViewTests/WebViewTest.Shim_TestNestedSubframes/1
 -WebViewTests/WebViewTest.StoragePersistence/0
 -WebViewTests/WebViewTest.StoragePersistence/1
 -WebViewTests/WebViewTest.WebViewInBackgroundPage/0
@@ -553,7 +498,6 @@
 -DnsProbeBrowserTest.NxdomainProbeResultWithWorkingSlowCorrections
 -DnsProbeBrowserTest.OtherErrorWithCorrectionsFailure
 -DnsProbeBrowserTest.OtherErrorWithCorrectionsSuccess
--DownloadExtensionTest.DownloadExtensionTest_AcceptDanger
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -DownloadExtensionTest.DownloadExtensionTest_Download_Headers_Fail
 -DownloadExtensionTest.DownloadExtensionTest_Download_InterruptAndResume
@@ -661,7 +605,6 @@
 -PrerenderBrowserTest.PrerenderXhrPut
 -PrerenderBrowserTest.ResourcePriority
 -PrerenderBrowserTest.ResourcePriorityOverlappingSwap
--PrerenderBrowserTestWithExtensions.TabsApi
 -PrerenderBrowserTestWithExtensions.WebNavigation
 -ProfileBrowserTest.SendHPKPReport
 -ProfileBrowserTest.SendHPKPReportServerHangs
@@ -707,10 +650,6 @@
 -SSLUITest.MarkBlobAsNonSecure
 -SSLUITest.TestWSSInvalidCertAndGoForward
 -SSLUITestHSTS.TestInterstitialOptionsNonOverridable
-
-# crbug.com/778376
--PaymentRequestCanMakePaymentQueryPMITest.QueryQuotaForDisabledPaymentAppsInIncognitoMode
--PaymentRequestJourneyLoggerMultipleShowTest.StartNewRequestWithoutPaymentAppsFeature
 
 # crbug.com/778793
 -PreviewsBrowserTest.NoScriptPreviewsEnabled
