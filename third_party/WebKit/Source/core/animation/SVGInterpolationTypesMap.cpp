@@ -5,6 +5,8 @@
 #include "core/animation/SVGInterpolationTypesMap.h"
 
 #include <memory>
+#include <utility>
+
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
@@ -33,20 +35,21 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
     return *entry->value.get();
 
   std::unique_ptr<InterpolationTypes> applicable_types =
-      WTF::MakeUnique<InterpolationTypes>();
+      std::make_unique<InterpolationTypes>();
 
   const QualifiedName& attribute = property.SvgAttribute();
   if (attribute == SVGNames::orientAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGAngleInterpolationType>(attribute));
+        std::make_unique<SVGAngleInterpolationType>(attribute));
   } else if (attribute == SVGNames::numOctavesAttr ||
              attribute == SVGNames::targetXAttr ||
              attribute == SVGNames::targetYAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGIntegerInterpolationType>(attribute));
+        std::make_unique<SVGIntegerInterpolationType>(attribute));
   } else if (attribute == SVGNames::orderAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGIntegerOptionalIntegerInterpolationType>(attribute));
+        std::make_unique<SVGIntegerOptionalIntegerInterpolationType>(
+            attribute));
   } else if (attribute == SVGNames::cxAttr || attribute == SVGNames::cyAttr ||
              attribute == SVGNames::fxAttr || attribute == SVGNames::fyAttr ||
              attribute == SVGNames::heightAttr ||
@@ -61,17 +64,17 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
              attribute == SVGNames::x1Attr || attribute == SVGNames::x2Attr ||
              attribute == SVGNames::y1Attr || attribute == SVGNames::y2Attr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGLengthInterpolationType>(attribute));
+        std::make_unique<SVGLengthInterpolationType>(attribute));
   } else if (attribute == SVGNames::dxAttr || attribute == SVGNames::dyAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGNumberInterpolationType>(attribute));
+        std::make_unique<SVGNumberInterpolationType>(attribute));
     applicable_types->push_back(
-        WTF::MakeUnique<SVGLengthListInterpolationType>(attribute));
+        std::make_unique<SVGLengthListInterpolationType>(attribute));
   } else if (attribute == SVGNames::xAttr || attribute == SVGNames::yAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGLengthInterpolationType>(attribute));
+        std::make_unique<SVGLengthInterpolationType>(attribute));
     applicable_types->push_back(
-        WTF::MakeUnique<SVGLengthListInterpolationType>(attribute));
+        std::make_unique<SVGLengthListInterpolationType>(attribute));
   } else if (attribute == SVGNames::amplitudeAttr ||
              attribute == SVGNames::azimuthAttr ||
              attribute == SVGNames::biasAttr ||
@@ -96,33 +99,33 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
              attribute == SVGNames::surfaceScaleAttr ||
              attribute == SVGNames::zAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGNumberInterpolationType>(attribute));
+        std::make_unique<SVGNumberInterpolationType>(attribute));
   } else if (attribute == SVGNames::kernelMatrixAttr ||
              attribute == SVGNames::rotateAttr ||
              attribute == SVGNames::tableValuesAttr ||
              attribute == SVGNames::valuesAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGNumberListInterpolationType>(attribute));
+        std::make_unique<SVGNumberListInterpolationType>(attribute));
   } else if (attribute == SVGNames::baseFrequencyAttr ||
              attribute == SVGNames::kernelUnitLengthAttr ||
              attribute == SVGNames::radiusAttr ||
              attribute == SVGNames::stdDeviationAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGNumberOptionalNumberInterpolationType>(attribute));
+        std::make_unique<SVGNumberOptionalNumberInterpolationType>(attribute));
   } else if (attribute == SVGNames::dAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGPathInterpolationType>(attribute));
+        std::make_unique<SVGPathInterpolationType>(attribute));
   } else if (attribute == SVGNames::pointsAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGPointListInterpolationType>(attribute));
+        std::make_unique<SVGPointListInterpolationType>(attribute));
   } else if (attribute == SVGNames::viewBoxAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGRectInterpolationType>(attribute));
+        std::make_unique<SVGRectInterpolationType>(attribute));
   } else if (attribute == SVGNames::gradientTransformAttr ||
              attribute == SVGNames::patternTransformAttr ||
              attribute == SVGNames::transformAttr) {
     applicable_types->push_back(
-        WTF::MakeUnique<SVGTransformListInterpolationType>(attribute));
+        std::make_unique<SVGTransformListInterpolationType>(attribute));
   } else if (attribute == HTMLNames::classAttr ||
              attribute == SVGNames::clipPathUnitsAttr ||
              attribute == SVGNames::edgeModeAttr ||
@@ -156,7 +159,7 @@ const InterpolationTypes& SVGInterpolationTypesMap::Get(
   }
 
   applicable_types->push_back(
-      WTF::MakeUnique<SVGValueInterpolationType>(attribute));
+      std::make_unique<SVGValueInterpolationType>(attribute));
 
   auto add_result =
       applicable_types_map.insert(property, std::move(applicable_types));
