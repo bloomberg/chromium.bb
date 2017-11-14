@@ -91,7 +91,17 @@ static VisiblePosition ComputeVisibleExtent(
 }
 
 TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
-  return DirectionOfEnclosingBlockOf(selection_.Extent());
+  const Position& selection_extent = selection_.Extent();
+
+  // TODO(editing-dev): Check for Position::IsNotNull is an easy fix for few
+  // editing/ layout tests, that didn't expect that (e.g.
+  // editing/selection/extend-byline-withfloat.html).
+  // That should be fixed in a more appropriate manner.
+  // We should either have SelectionModifier aborted earlier for null selection,
+  // or do not allow null selection in SelectionModifier at all.
+  return selection_extent.IsNotNull()
+             ? DirectionOfEnclosingBlockOf(selection_extent)
+             : TextDirection::kLtr;
 }
 
 static TextDirection DirectionOf(const VisibleSelection& visible_selection) {
