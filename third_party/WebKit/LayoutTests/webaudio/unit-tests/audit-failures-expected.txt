@@ -20,9 +20,9 @@ FAIL X 2 is not less than or equal to 1. Got 2. assert_true: expected true got f
 FAIL X 1 is not equal to 2. Got 1. assert_true: expected true got false
 FAIL X should(1).beEqualTo(2) is not true. Got false. assert_true: expected true got false
 FAIL X The message is false! Got false. assert_true: expected true got false
-FAIL X Decoding audio data with no argument rejected incorrectly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. Got undefined. assert_true: expected true got false
-FAIL X Suspending OAC with no argument rejected correctly but got TypeError instead of IndexSizeError. Got undefined. assert_true: expected true got false
-FAIL X Start OAC rendering resolved incorrectly. Got undefined. assert_true: expected true got false
+FAIL X Decoding audio data with no argument rejected incorrectly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. Got Promise. assert_true: expected true got false
+FAIL X Suspending OAC with no argument rejected correctly but got TypeError instead of IndexSizeError. Got Promise. assert_true: expected true got false
+FAIL X Start OAC rendering resolved incorrectly. Got Promise. assert_true: expected true got false
 FAIL < [basic-failure] 19 out of 19 assertions were failed. assert_true: expected true got false
 PASS > [numerical-failures] Testing numerical assertion failures.
 FAIL X 0 is not close to 0.1 within a relative error of 0 (RelErr=1). Got 0. assert_true: expected true got false
@@ -95,7 +95,7 @@ FAIL X [1,2,3,4,5,6,7,8,9,10,11] does not equal [2,3,4,5,6,7,800,900,1000,1100,1
  assert_true: expected true got false
 FAIL < [numerical-failures] 11 out of 11 assertions were failed. assert_true: expected true got false
 PASS > [load-file-in-should] Testing the failure handling of Audit.loadFileFromUrl().
-FAIL X Loading non-existent file within should().beResolved() rejected incorrectly with loadFile: Network failure when loading non-existent-audio-file.wav.. Got undefined. assert_true: expected true got false
+FAIL X Loading non-existent file within should().beResolved() rejected incorrectly with loadFile: Network failure when loading non-existent-audio-file.wav.. Got Promise. assert_true: expected true got false
 FAIL < [load-file-in-should] 1 out of 1 assertions were failed. assert_true: expected true got false
 FAIL # AUDIT TASK RUNNER FINISHED: 3 out of 3 tasks were failed. assert_true: expected true got false
 Harness: the test ran to completion.
