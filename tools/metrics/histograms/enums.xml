@@ -34515,6 +34515,7 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="FramePausable"/>
   <int value="15" label="FrameUnpausable"/>
   <int value="16" label="V8"/>
+  <int value="17" label="IPC"/>
 </enum>
 
 <enum name="RendererType">
