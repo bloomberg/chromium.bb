@@ -32,7 +32,6 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
                            const Properties& properties)
     : delegate_(delegate),
       id_(id),
-      frame_sink_id_(frame_sink_id),
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),
@@ -51,15 +50,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       observers_(
           base::ObserverList<ServerWindowObserver>::NOTIFY_EXISTING_ONLY) {
   DCHECK(delegate);  // Must provide a delegate.
-  // TODO(kylechar): Add method to reregister |frame_sink_id_| when viz service
-  // has crashed.
-  DCHECK(frame_sink_id_.is_valid());
-  auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
-  DCHECK(host_frame_sink_manager);
-  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id_, this);
-#if DCHECK_IS_ON()
-  host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id_, GetName());
-#endif
+  UpdateFrameSinkId(frame_sink_id);
 }
 
 ServerWindow::~ServerWindow() {
@@ -125,6 +116,26 @@ void ServerWindow::CreateCompositorFrameSink(
   has_created_compositor_frame_sink_ = true;
   delegate_->GetHostFrameSinkManager()->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request), std::move(client));
+}
+
+void ServerWindow::UpdateFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+  DCHECK(frame_sink_id.is_valid());
+  auto* host_frame_sink_manager = delegate_->GetHostFrameSinkManager();
+  DCHECK(host_frame_sink_manager);
+  host_frame_sink_manager->RegisterFrameSinkId(frame_sink_id, this);
+#if DCHECK_IS_ON()
+  host_frame_sink_manager->SetFrameSinkDebugLabel(frame_sink_id, GetName());
+#endif
+  if (frame_sink_id_.is_valid()) {
+    if (parent()) {
+      host_frame_sink_manager->UnregisterFrameSinkHierarchy(
+          parent()->frame_sink_id(), frame_sink_id_);
+      host_frame_sink_manager->RegisterFrameSinkHierarchy(
+          parent()->frame_sink_id(), frame_sink_id);
+    }
+    host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
+  }
+  frame_sink_id_ = frame_sink_id;
 }
 
 void ServerWindow::Add(ServerWindow* child) {

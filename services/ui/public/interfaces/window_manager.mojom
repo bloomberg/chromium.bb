@@ -188,10 +188,10 @@ interface WindowManager {
   WmSetCanFocus(uint32 window_id, bool can_focus);
 
   // Asks the WindowManager to create a new window.
-  // |requesting_client_id| is the id of the client issuing the request. This
-  // allows the window manager to track top level windows by client.
+  // |frame_sink_id| is the FrameSinkId for the new window. Window manager
+  // tracks top level windows by client with |frame_sink_id|.client_id().
   WmCreateTopLevelWindow(uint32 change_id,
-                         uint16 requesting_client_id,
+                         viz.mojom.FrameSinkId frame_sink_id,
                          map<string, array<uint8>> properties);
 
   // A WindowTreeClient is considered "janky" by Mus when it stops ACK'ing input

@@ -51,6 +51,7 @@ namespace test {
 const ClientSpecificId kWindowManagerClientId = kWindowServerClientId + 1;
 const std::string kWindowManagerClientIdString =
     std::to_string(kWindowManagerClientId);
+const ClientSpecificId kEmbedTreeWindowId = 1;
 
 // Collection of utilities useful in creating mus tests.
 
@@ -411,7 +412,7 @@ class TestWindowManager : public mojom::WindowManager {
   void WmSetCanFocus(uint32_t window_id, bool can_focus) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
-      ClientSpecificId requesting_client_id,
+      const viz::FrameSinkId& frame_sink_id,
       const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void WmClientJankinessChanged(ClientSpecificId client_id,
@@ -753,7 +754,7 @@ class WindowEventTargetingHelper {
   TestDisplayBinding* display_binding_ = nullptr;
   // Owned by WindowServer's DisplayManager.
   Display* display_ = nullptr;
-  ClientSpecificId next_primary_tree_window_id_ = 1;
+  ClientSpecificId next_primary_tree_window_id_ = kEmbedTreeWindowId;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
 };

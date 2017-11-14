@@ -511,7 +511,8 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
   ASSERT_EQ(1u, tracker->changes()->size());
   // clients that created this window is receiving the event, so client_id part
   // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,1 event_action=7",
+  EXPECT_EQ("InputEvent window=0," + std::to_string(kEmbedTreeWindowId) +
+                " event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
   EXPECT_TRUE(wm_client()->tracker()->changes()->empty());
 
@@ -616,6 +617,8 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     const uint32_t embed_flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
     WindowTree* embed_tree = nullptr;
     TestWindowTreeClient* embed_client_proxy = nullptr;
+    const ClientWindowId embed_client_window_id =
+        embedder_window->frame_sink_id();
     EmbedAt(embedder_tree, embed_window_id, embed_flags, &embed_tree,
             &embed_client_proxy);
     ASSERT_TRUE(embed_client_proxy);
@@ -641,7 +644,8 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     // Embed another tree in the embedded tree.
     const ClientWindowId nested_embed_window_id(embed_tree->id(), 23);
     embed_tree->NewWindow(nested_embed_window_id, ServerWindow::Properties());
-    ASSERT_TRUE(embed_tree->AddWindow(embed_window_id, nested_embed_window_id));
+    ASSERT_TRUE(
+        embed_tree->AddWindow(embed_client_window_id, nested_embed_window_id));
 
     WindowTree* nested_embed_tree = nullptr;
     TestWindowTreeClient* nested_embed_client_proxy = nullptr;

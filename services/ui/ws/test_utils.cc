@@ -32,7 +32,7 @@ namespace test {
 namespace {
 
 ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
-  for (ClientSpecificId id = 1;; ++id) {
+  for (ClientSpecificId id = kEmbedTreeWindowId;; ++id) {
     // Used the id of the client in the upper bits to simplify things.
     const ClientWindowId client_id = ClientWindowId(tree->id(), id);
     if (!tree->GetWindowByClientId(client_id))
@@ -236,7 +236,7 @@ void TestWindowManager::WmSetModalType(uint32_t window_id, ui::ModalType type) {
 
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
-    ClientSpecificId requesting_client_id,
+    const viz::FrameSinkId& frame_sink_id,
     const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
   got_create_top_level_window_ = true;
   change_id_ = change_id;
@@ -638,7 +638,7 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
     ServerWindow** window) {
   WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
   ASSERT_TRUE(tree1 != nullptr);
-  const ClientWindowId child1_id(tree1->id(), 1);
+  const ClientWindowId child1_id(tree1->id(), kEmbedTreeWindowId);
   ASSERT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
   ServerWindow* child1 = tree1->GetWindowByClientId(child1_id);
   ASSERT_TRUE(child1);
