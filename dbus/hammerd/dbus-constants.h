@@ -11,6 +11,7 @@ const char kHammerdServicePath[] = "/org/chromium/hammerd";
 const char kHammerdServiceName[] = "org.chromium.hammerd";
 
 // Signals emitted by hammerd.
+const char kBaseFirmwareNeedUpdateSignal[] = "BaseFirmwareNeedUpdate";
 const char kBaseFirmwareUpdateStartedSignal[] = "BaseFirmwareUpdateStarted";
 const char kBaseFirmwareUpdateSucceededSignal[] = "BaseFirmwareUpdateSucceeded";
 const char kBaseFirmwareUpdateFailedSignal[] = "BaseFirmwareUpdateFailed";
