@@ -18,7 +18,6 @@ namespace net {
 class HttpRequestHeaders;
 class HttpResponseHeaders;
 class ProxyInfo;
-class ProxyService;
 
 class TestProxyDelegate : public ProxyDelegate {
  public:
@@ -51,7 +50,7 @@ class TestProxyDelegate : public ProxyDelegate {
   // ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
                       const std::string& method,
-                      const ProxyService& proxy_service,
+                      const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override;
   void OnTunnelConnectCompleted(const HostPortPair& endpoint,
                                 const HostPortPair& proxy_server,
