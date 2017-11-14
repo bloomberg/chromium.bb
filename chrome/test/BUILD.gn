@@ -3326,6 +3326,7 @@ test("unit_tests") {
       "../common/extensions/permissions/settings_override_permission_unittest.cc",
       "../common/extensions/sync_type_unittest.cc",
       "../renderer/extensions/chrome_native_extension_bindings_system_unittest.cc",
+      "../renderer/extensions/extension_hooks_delegate_unittest.cc",
       "../renderer/extensions/extension_localization_peer_unittest.cc",
       "../renderer/extensions/renderer_permissions_policy_delegate_unittest.cc",
       "../renderer/extensions/tabs_hooks_delegate_unittest.cc",

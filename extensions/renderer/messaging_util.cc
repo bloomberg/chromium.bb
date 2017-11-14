@@ -7,13 +7,24 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/extension.h"
+#include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 
 namespace extensions {
 namespace messaging_util {
+
+namespace {
+
+constexpr char kExtensionIdRequiredErrorTemplate[] =
+    "chrome.%s() called from a webpage must specify an "
+    "Extension ID (string) for its first argument.";
+
+}  // namespace
 
 const char kSendMessageChannel[] = "chrome.runtime.sendMessage";
 const char kSendRequestChannel[] = "chrome.extension.sendRequest";
@@ -159,6 +170,96 @@ ParseOptionsResult ParseMessageOptions(v8::Local<v8::Context> context,
 
   *options_out = std::move(options);
   return SUCCESS;
+}
+
+bool GetTargetExtensionId(ScriptContext* script_context,
+                          v8::Local<v8::Value> v8_target_id,
+                          const char* method_name,
+                          std::string* target_out,
+                          std::string* error_out) {
+  DCHECK(!v8_target_id.IsEmpty());
+
+  std::string target_id;
+  if (v8_target_id->IsNull()) {
+    if (!script_context->extension()) {
+      *error_out =
+          base::StringPrintf(kExtensionIdRequiredErrorTemplate, method_name);
+      return false;
+    }
+
+    *target_out = script_context->extension()->id();
+  } else {
+    DCHECK(v8_target_id->IsString());
+    *target_out = gin::V8ToString(v8_target_id);
+  }
+
+  return true;
+}
+
+void MassageSendMessageArguments(
+    v8::Isolate* isolate,
+    bool allow_options_argument,
+    std::vector<v8::Local<v8::Value>>* arguments_out) {
+  base::span<const v8::Local<v8::Value>> arguments = *arguments_out;
+  size_t max_size = allow_options_argument ? 4u : 3u;
+  if (arguments.empty() || arguments.size() > max_size)
+    return;
+
+  v8::Local<v8::Value> target_id = v8::Null(isolate);
+  v8::Local<v8::Value> message = v8::Null(isolate);
+  v8::Local<v8::Value> options;
+  if (allow_options_argument)
+    options = v8::Null(isolate);
+  v8::Local<v8::Value> response_callback = v8::Null(isolate);
+
+  // If the last argument is a function, it is the response callback.
+  // Ignore it for the purposes of further argument parsing.
+  if ((*arguments.rbegin())->IsFunction()) {
+    response_callback = *arguments.rbegin();
+    arguments = arguments.first(arguments.size() - 1);
+  }
+
+  // Re-check for too many arguments after looking for the callback. If there
+  // are, early-out and rely on normal signature parsing to report the error.
+  if (arguments.size() >= max_size)
+    return;
+
+  switch (arguments.size()) {
+    case 0:
+      // Required argument (message) is missing.
+      // Early-out and rely on normal signature parsing to report this error.
+      return;
+    case 1:
+      // Argument must be the message.
+      message = arguments[0];
+      break;
+    case 2:
+      // Assume the meaning is (id, message) if id would be a string, or if
+      // the options argument isn't expected.
+      // Otherwise the meaning is (message, options).
+      if (!allow_options_argument || arguments[0]->IsString()) {
+        target_id = arguments[0];
+        message = arguments[1];
+      } else {
+        message = arguments[0];
+        options = arguments[1];
+      }
+      break;
+    case 3:
+      DCHECK(allow_options_argument);
+      // The meaning in this case is unambiguous.
+      target_id = arguments[0];
+      message = arguments[1];
+      options = arguments[2];
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  if (allow_options_argument)
+    *arguments_out = {target_id, message, options, response_callback};
+  else
+    *arguments_out = {target_id, message, response_callback};
 }
 
 }  // namespace messaging_util

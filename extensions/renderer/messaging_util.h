@@ -11,6 +11,7 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class ScriptContext;
 struct Message;
 
 namespace messaging_util {
@@ -74,6 +75,27 @@ ParseOptionsResult ParseMessageOptions(v8::Local<v8::Context> context,
                                        int flags,
                                        MessageOptions* options_out,
                                        std::string* error_out);
+
+// Parses the target from |v8_target_id|, or uses the extension associated with
+// the |script_context| as a default. Returns true on success, and false on
+// failure. In the case of failure, will populate |error_out| with an error
+// based on the |method_name|.
+bool GetTargetExtensionId(ScriptContext* script_context,
+                          v8::Local<v8::Value> v8_target_id,
+                          const char* method_name,
+                          std::string* target_out,
+                          std::string* error_out);
+
+// Massages the sendMessage() or sendRequest() arguments into the expected
+// schema. These arguments are ambiguous (could match multiple signatures), so
+// we can't just rely on the normal signature parsing. Sets |arguments| to the
+// result if successful; otherwise leaves |arguments| untouched. (If the massage
+// is unsuccessful, our normal argument parsing code should throw a reasonable
+// error.
+void MassageSendMessageArguments(
+    v8::Isolate* isolate,
+    bool allow_options_argument,
+    std::vector<v8::Local<v8::Value>>* arguments_out);
 
 }  // namespace messaging_util
 }  // namespace extensions
