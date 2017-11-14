@@ -525,9 +525,13 @@ void RemoteSuggestionsSchedulerImpl::OnSuggestionsCleared() {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   // This should be called by |provider_| so it should exist.
   DCHECK(provider_);
-  // Some user action causes suggestions to be cleared, fetch now (as an
-  // interactive request).
-  provider_->ReloadSuggestions();
+  // Some user action causes suggestions to be cleared, we need to fetch as soon
+  // as possible.
+  ClearLastFetchAttemptTime();
+  // We cannot guarantee that the surface is not visible when the event happens.
+  // To make sure the suggestions get replaced, we use the SURFACE_OPENED
+  // trigger.
+  RefetchIfAppropriate(TriggerType::SURFACE_OPENED);
 }
 
 void RemoteSuggestionsSchedulerImpl::OnHistoryCleared() {
@@ -884,6 +888,10 @@ void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
 
 void RemoteSuggestionsSchedulerImpl::ClearLastFetchAttemptTime() {
   profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttemptTime);
+  // To mark the last fetch as stale, we need to keep the time in prefs, only
+  // making sure it is long ago.
+  profile_prefs_->SetInt64(prefs::kSnippetLastSuccessfulFetchTime,
+                           SerializeTime(base::Time()));
 }
 
 std::set<RemoteSuggestionsSchedulerImpl::TriggerType>

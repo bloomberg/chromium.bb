@@ -123,7 +123,8 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   void OnFetchCompleted(Status fetch_status);
 
   // Clears the time of the last fetch so that the provider is ready to make a
-  // soft fetch at any later time (upon a trigger).
+  // soft fetch at any later time (upon a trigger), treating the last fetch as
+  // stale.
   void ClearLastFetchAttemptTime();
 
   FetchingSchedule GetDesiredFetchingSchedule() const;
