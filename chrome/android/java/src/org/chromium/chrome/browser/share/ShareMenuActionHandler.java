@@ -32,8 +32,24 @@ import java.util.List;
  */
 public class ShareMenuActionHandler {
     private static boolean sScreenshotCaptureSkippedForTesting;
+    private static ShareMenuActionHandler sInstance;
 
-    private ShareMenuActionHandler() {}
+    private final ShareMenuActionDelegate mDelegate;
+
+    /**
+     * @return The singleton share menu handler.
+     */
+    public static ShareMenuActionHandler getInstance() {
+        if (sInstance == null) {
+            sInstance = new ShareMenuActionHandler(new ShareMenuActionDelegate());
+        }
+        return sInstance;
+    }
+
+    @VisibleForTesting
+    ShareMenuActionHandler(ShareMenuActionDelegate delegate) {
+        mDelegate = delegate;
+    }
 
     @VisibleForTesting
     public static void setScreenshotCaptureSkippedForTesting(boolean value) {
@@ -47,7 +63,7 @@ public class ShareMenuActionHandler {
      *                      recently used to share.
      * @param isIncognito Whether currentTab is incognito.
      */
-    public static void onShareMenuItemSelected(
+    public void onShareMenuItemSelected(
             Activity activity, Tab currentTab, boolean shareDirectly, boolean isIncognito) {
         if (currentTab == null) return;
 
@@ -98,7 +114,7 @@ public class ShareMenuActionHandler {
         return canonicalUrl;
     }
 
-    private static void triggerShare(final Activity activity, final Tab currentTab,
+    private void triggerShare(final Activity activity, final Tab currentTab,
             final boolean shareDirectly, boolean isIncognito) {
         boolean isOffline = OfflinePageUtils.isOfflinePage(currentTab);
         RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOffline);
@@ -107,7 +123,7 @@ public class ShareMenuActionHandler {
         if (canShareOfflinePage && isOffline) {
             ShareParams params = OfflinePageUtils.buildShareParams(activity, currentTab);
             if (params == null) return;
-            ShareHelper.share(params);
+            mDelegate.share(params);
             return;
         }
 
@@ -126,7 +142,7 @@ public class ShareMenuActionHandler {
         }
     }
 
-    private static void triggerShareWithCanonicalUrlResolved(final Activity mainActivity,
+    private void triggerShareWithCanonicalUrlResolved(final Activity mainActivity,
             final Tab currentTab, final String canonicalUrl, final boolean shareDirectly,
             boolean isIncognito) {
         WebContents webContents = currentTab.getWebContents();
@@ -143,7 +159,7 @@ public class ShareMenuActionHandler {
                         .setShareDirectly(shareDirectly)
                         .setSaveLastUsed(!shareDirectly)
                         .setScreenshotUri(blockingUri);
-        ShareHelper.share(builder.build());
+        mDelegate.share(builder.build());
         if (shareDirectly) {
             RecordUserAction.record("MobileMenuDirectShare");
         } else {
@@ -163,6 +179,18 @@ public class ShareMenuActionHandler {
             callback.onFinishGetBitmap(null, ReadbackResponse.SURFACE_UNAVAILABLE);
         } else {
             webContents.getContentBitmapAsync(0, 0, callback);
+        }
+    }
+
+    /**
+     * Delegate for share handling.
+     */
+    static class ShareMenuActionDelegate {
+        /**
+         * Trigger the share action for the specified params.
+         */
+        void share(ShareParams params) {
+            ShareHelper.share(params);
         }
     }
 }
