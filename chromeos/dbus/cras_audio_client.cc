@@ -20,10 +20,6 @@
 
 namespace chromeos {
 
-// Error name if cras dbus call fails with empty ErrorResponse.
-const char kNoResponseError[] =
-    "org.chromium.cras.Error.NoResponse";
-
 // The CrasAudioClient implementation used in production.
 class CrasAudioClientImpl : public CrasAudioClient {
  public:
@@ -63,16 +59,13 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetNodes(const GetNodesCallback& callback,
-                const ErrorCallback& error_callback) override {
+  void GetNodes(DBusMethodCallback<AudioNodeList> callback) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kGetNodes);
-    cras_proxy_->CallMethodWithErrorCallback(
+    cras_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrasAudioClientImpl::OnGetNodes,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
-        base::BindOnce(&CrasAudioClientImpl::OnError,
-                       weak_ptr_factory_.GetWeakPtr(), error_callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override {
@@ -430,54 +423,38 @@ class CrasAudioClientImpl : public CrasAudioClient {
     callback.Run(buffer_size, success);
   }
 
-  void OnGetNodes(const GetNodesCallback& callback,
+  void OnGetNodes(DBusMethodCallback<AudioNodeList> callback,
                   dbus::Response* response) {
-    bool success = true;
-    AudioNodeList node_list;
-    if (response) {
-      dbus::MessageReader response_reader(response);
-      dbus::MessageReader array_reader(response);
-      while (response_reader.HasMoreData()) {
-        if (!response_reader.PopArray(&array_reader)) {
-          success = false;
-          LOG(ERROR) << "Error reading response from cras: "
-                     << response->ToString();
-          break;
-        }
-
-        AudioNode node;
-        if (!GetAudioNode(response, &array_reader, &node)) {
-          success = false;
-          LOG(WARNING) << "Error reading audio node data from cras: "
-                       << response->ToString();
-          break;
-        }
-        // Filter out the "UNKNOWN" type of audio devices.
-        if (node.type != "UNKNOWN")
-          node_list.push_back(node);
-      }
-    }
-
-    if (node_list.empty())
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
       return;
-
-    callback.Run(node_list, success);
-  }
-
-  void OnError(const ErrorCallback& error_callback,
-               dbus::ErrorResponse* response) {
-    // Error response has optional error message argument.
-    std::string error_name;
-    std::string error_message;
-    if (response) {
-      dbus::MessageReader reader(response);
-      error_name = response->GetErrorName();
-      reader.PopString(&error_message);
-    } else {
-      error_name = kNoResponseError;
-      error_message = "";
     }
-    error_callback.Run(error_name, error_message);
+
+    AudioNodeList node_list;
+    dbus::MessageReader response_reader(response);
+    dbus::MessageReader array_reader(response);
+    while (response_reader.HasMoreData()) {
+      if (!response_reader.PopArray(&array_reader)) {
+        LOG(ERROR) << "Error reading response from cras: "
+                   << response->ToString();
+        std::move(callback).Run(base::nullopt);
+        return;
+      }
+
+      AudioNode node;
+      if (!GetAudioNode(response, &array_reader, &node)) {
+        LOG(WARNING) << "Error reading audio node data from cras: "
+                     << response->ToString();
+        std::move(callback).Run(base::nullopt);
+        return;
+      }
+
+      // Filter out the "UNKNOWN" type of audio devices.
+      if (node.type != "UNKNOWN")
+        node_list.push_back(std::move(node));
+    }
+
+    std::move(callback).Run(std::move(node_list));
   }
 
   bool GetAudioNode(dbus::Response* response,

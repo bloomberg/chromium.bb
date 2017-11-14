@@ -81,18 +81,6 @@ const AudioNode kInternalMicV2(true,
                                false,
                                0);
 
-// A mock ErrorCallback.
-class MockErrorCallback {
- public:
-  MockErrorCallback() {}
-  ~MockErrorCallback() {}
-  MOCK_METHOD2(Run, void(const std::string& error_name,
-                         const std::string& error_message));
-  CrasAudioClient::ErrorCallback GetCallback() {
-    return base::Bind(&MockErrorCallback::Run, base::Unretained(this));
-  }
-};
-
 // A mock CrasAudioClient Observer.
 class MockObserver : public CrasAudioClient::Observer {
  public:
@@ -224,26 +212,27 @@ void WriteNodesToResponse(const AudioNodeList& node_list,
 }
 
 // Expect the AudioNodeList result.
-void ExpectAudioNodeListResult(const AudioNodeList* expected_node_list,
-                               const AudioNodeList& node_list,
-                               bool call_status) {
-  EXPECT_EQ(true, call_status);
-  EXPECT_EQ(expected_node_list->size(), node_list.size());
+void ExpectAudioNodeListResult(bool* called,
+                               const AudioNodeList& expected_node_list,
+                               base::Optional<AudioNodeList> result) {
+  *called = true;
+  ASSERT_TRUE(result.has_value());
+  const AudioNodeList& node_list = result.value();
+  ASSERT_EQ(expected_node_list.size(), node_list.size());
   for (size_t i = 0; i < node_list.size(); ++i) {
-    EXPECT_EQ((*expected_node_list)[i].is_input, node_list[i].is_input);
-    EXPECT_EQ((*expected_node_list)[i].id, node_list[i].id);
-    EXPECT_EQ((*expected_node_list)[i].stable_device_id_v1,
+    EXPECT_EQ(expected_node_list[i].is_input, node_list[i].is_input);
+    EXPECT_EQ(expected_node_list[i].id, node_list[i].id);
+    EXPECT_EQ(expected_node_list[i].stable_device_id_v1,
               node_list[i].stable_device_id_v1);
-    EXPECT_EQ((*expected_node_list)[i].stable_device_id_v2,
+    EXPECT_EQ(expected_node_list[i].stable_device_id_v2,
               node_list[i].stable_device_id_v2);
-    EXPECT_EQ((*expected_node_list)[i].device_name, node_list[i].device_name);
-    EXPECT_EQ((*expected_node_list)[i].type, node_list[i].type);
-    EXPECT_EQ((*expected_node_list)[i].name, node_list[i].name);
-    EXPECT_EQ((*expected_node_list)[i].mic_positions,
-              node_list[i].mic_positions);
-    EXPECT_EQ((*expected_node_list)[i].active, node_list[i].active);
-    EXPECT_EQ((*expected_node_list)[i].plugged_time, node_list[i].plugged_time);
-    EXPECT_EQ((*expected_node_list)[i].StableDeviceIdVersion(),
+    EXPECT_EQ(expected_node_list[i].device_name, node_list[i].device_name);
+    EXPECT_EQ(expected_node_list[i].type, node_list[i].type);
+    EXPECT_EQ(expected_node_list[i].name, node_list[i].name);
+    EXPECT_EQ(expected_node_list[i].mic_positions, node_list[i].mic_positions);
+    EXPECT_EQ(expected_node_list[i].active, node_list[i].active);
+    EXPECT_EQ(expected_node_list[i].plugged_time, node_list[i].plugged_time);
+    EXPECT_EQ(expected_node_list[i].StableDeviceIdVersion(),
               node_list[i].StableDeviceIdVersion());
   }
 }
@@ -770,9 +759,7 @@ TEST_F(CrasAudioClientTest, OutputNodeVolumeChanged) {
 
 TEST_F(CrasAudioClientTest, GetNodes) {
   // Create the expected value.
-  AudioNodeList expected_node_list;
-  expected_node_list.push_back(kInternalSpeaker);
-  expected_node_list.push_back(kInternalMic);
+  AudioNodeList expected_node_list{kInternalSpeaker, kInternalMic};
 
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -784,20 +771,17 @@ TEST_F(CrasAudioClientTest, GetNodes) {
                        base::Bind(&ExpectNoArgument),
                        response.get());
   // Call method.
-  MockErrorCallback error_callback;
-  client_->GetNodes(base::Bind(&ExpectAudioNodeListResult,
-                               &expected_node_list),
-                    error_callback.GetCallback());
-  EXPECT_CALL(error_callback, Run(_, _)).Times(0);
+  bool called = false;
+  client_->GetNodes(
+      base::BindOnce(&ExpectAudioNodeListResult, &called, expected_node_list));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(CrasAudioClientTest, GetNodesV2) {
   // Create the expected value.
-  AudioNodeList expected_node_list;
-  expected_node_list.push_back(kInternalSpeakerV2);
-  expected_node_list.push_back(kInternalMicV2);
+  AudioNodeList expected_node_list{kInternalSpeakerV2, kInternalMicV2};
 
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -807,13 +791,14 @@ TEST_F(CrasAudioClientTest, GetNodesV2) {
   // Set expectations.
   PrepareForMethodCall(cras::kGetNodes, base::Bind(&ExpectNoArgument),
                        response.get());
+
   // Call method.
-  MockErrorCallback error_callback;
-  client_->GetNodes(base::Bind(&ExpectAudioNodeListResult, &expected_node_list),
-                    error_callback.GetCallback());
-  EXPECT_CALL(error_callback, Run(_, _)).Times(0);
+  bool called = false;
+  client_->GetNodes(
+      base::BindOnce(&ExpectAudioNodeListResult, &called, expected_node_list));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(CrasAudioClientTest, SetOutputNodeVolume) {

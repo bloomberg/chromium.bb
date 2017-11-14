@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -132,10 +131,6 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
                          command_line->HasSwitch(::switches::kTestType);
   if (!is_running_test) {
-    // Enable CrasAudioHandler logging when chrome restarts after crashing.
-    if (chromeos::CrasAudioHandler::IsInitialized())
-      chromeos::CrasAudioHandler::Get()->LogErrors();
-
     // We did not log in (we crashed or are debugging), so we need to
     // restore Sync.
     UserSessionManager::GetInstance()->RestoreAuthenticationSession(

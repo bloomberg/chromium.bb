@@ -107,9 +107,8 @@ void FakeCrasAudioClient::GetDefaultOutputBufferSize(
   callback.Run(512, true);
 }
 
-void FakeCrasAudioClient::GetNodes(const GetNodesCallback& callback,
-                                   const ErrorCallback& error_callback) {
-  callback.Run(node_list_, true);
+void FakeCrasAudioClient::GetNodes(DBusMethodCallback<AudioNodeList> callback) {
+  std::move(callback).Run(node_list_);
 }
 
 void FakeCrasAudioClient::SetOutputNodeVolume(uint64_t node_id,
