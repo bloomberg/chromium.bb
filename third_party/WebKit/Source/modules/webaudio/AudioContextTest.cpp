@@ -4,6 +4,8 @@
 
 #include "modules/webaudio/AudioContext.h"
 
+#include <memory>
+
 #include "core/dom/Document.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/webaudio/AudioWorkletThread.h"
@@ -68,7 +70,7 @@ class AudioContextTestPlatform : public TestingPlatformSupport {
         break;
     }
 
-    return WTF::MakeUnique<MockWebAudioDeviceForAudioContext>(
+    return std::make_unique<MockWebAudioDeviceForAudioContext>(
         AudioHardwareSampleRate(), buffer_size);
   }
 

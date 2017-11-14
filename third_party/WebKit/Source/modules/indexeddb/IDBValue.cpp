@@ -32,7 +32,7 @@ IDBValue::IDBValue(scoped_refptr<SharedBuffer> data,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
     : data_(std::move(data)),
-      blob_data_(WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>()),
+      blob_data_(std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>()),
       blob_info_(
           WTF::WrapUnique(new Vector<WebBlobInfo>(web_blob_info.size()))),
       primary_key_(primary_key && primary_key->IsValid() ? primary_key
@@ -49,7 +49,7 @@ IDBValue::IDBValue(const IDBValue* value,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
     : data_(value->data_),
-      blob_data_(WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>()),
+      blob_data_(std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>()),
       blob_info_(
           WTF::WrapUnique(new Vector<WebBlobInfo>(value->blob_info_->size()))),
       primary_key_(primary_key),

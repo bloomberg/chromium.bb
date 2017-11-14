@@ -281,7 +281,7 @@ void PeriodicWave::CreateBandLimitedTables(const float* real_data,
     // Create the band-limited table.
     unsigned wave_size = PeriodicWaveSize();
     std::unique_ptr<AudioFloatArray> table =
-        WTF::MakeUnique<AudioFloatArray>(wave_size);
+        std::make_unique<AudioFloatArray>(wave_size);
     AdjustV8ExternalMemory(wave_size * sizeof(float));
     band_limited_tables_.push_back(std::move(table));
 

@@ -79,7 +79,7 @@ std::unique_ptr<ThreadedWorkletObjectProxy>
 AudioWorkletMessagingProxy::CreateObjectProxy(
     ThreadedWorkletMessagingProxy* messaging_proxy,
     ParentFrameTaskRunners* parent_frame_task_runners) {
-  return WTF::MakeUnique<AudioWorkletObjectProxy>(
+  return std::make_unique<AudioWorkletObjectProxy>(
       static_cast<AudioWorkletMessagingProxy*>(messaging_proxy),
       parent_frame_task_runners);
 }

@@ -4,7 +4,9 @@
 
 #include "modules/indexeddb/IDBTestHelper.h"
 
+#include <memory>
 #include <utility>
+
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBValueWrapping.h"
@@ -29,7 +31,7 @@ scoped_refptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
   wrapper.WrapIfBiggerThan(create_wrapped_value ? 0 : 1024 * element_count);
 
   std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data_handles =
-      WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>();
+      std::make_unique<Vector<scoped_refptr<BlobDataHandle>>>();
   wrapper.ExtractBlobDataHandles(blob_data_handles.get());
   Vector<WebBlobInfo>& blob_infos = wrapper.WrappedBlobInfo();
   scoped_refptr<SharedBuffer> wrapped_marker_buffer =
@@ -39,7 +41,7 @@ scoped_refptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
 
   scoped_refptr<IDBValue> idb_value = IDBValue::Create(
       std::move(wrapped_marker_buffer), std::move(blob_data_handles),
-      WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
+      std::make_unique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 
   DCHECK_EQ(create_wrapped_value,
             IDBValueUnwrapper::IsWrapped(idb_value.get()));

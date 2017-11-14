@@ -57,7 +57,7 @@ RealtimeAnalyser::RealtimeAnalyser()
       min_decibels_(kDefaultMinDecibels),
       max_decibels_(kDefaultMaxDecibels),
       last_analysis_time_(-1) {
-  analysis_frame_ = WTF::MakeUnique<FFTFrame>(kDefaultFFTSize);
+  analysis_frame_ = std::make_unique<FFTFrame>(kDefaultFFTSize);
 }
 
 bool RealtimeAnalyser::SetFftSize(size_t size) {
@@ -69,7 +69,7 @@ bool RealtimeAnalyser::SetFftSize(size_t size) {
     return false;
 
   if (fft_size_ != size) {
-    analysis_frame_ = WTF::MakeUnique<FFTFrame>(size);
+    analysis_frame_ = std::make_unique<FFTFrame>(size);
     // m_magnitudeBuffer has size = fftSize / 2 because it contains floats
     // reduced from complex values in m_analysisFrame.
     magnitude_buffer_.Allocate(size / 2);

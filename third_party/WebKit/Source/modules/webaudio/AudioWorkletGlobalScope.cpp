@@ -4,6 +4,9 @@
 
 #include "modules/webaudio/AudioWorkletGlobalScope.h"
 
+#include <memory>
+#include <utility>
+
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
@@ -304,7 +307,7 @@ unsigned AudioWorkletGlobalScope::NumberOfRegisteredDefinitions() {
 std::unique_ptr<Vector<CrossThreadAudioWorkletProcessorInfo>>
 AudioWorkletGlobalScope::WorkletProcessorInfoListForSynchronization() {
   auto processor_info_list =
-      WTF::MakeUnique<Vector<CrossThreadAudioWorkletProcessorInfo>>();
+      std::make_unique<Vector<CrossThreadAudioWorkletProcessorInfo>>();
   for (auto definition_entry : processor_definition_map_) {
     if (!definition_entry.value->IsSynchronized()) {
       definition_entry.value->MarkAsSynchronized();

@@ -24,6 +24,9 @@
  */
 
 #include "modules/webaudio/ScriptProcessorNode.h"
+
+#include <memory>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -227,7 +230,7 @@ void ScriptProcessorHandler::Process(size_t frames_to_process) {
         // If this node is in the offline audio context, use the
         // waitable event to synchronize to the offline rendering thread.
         std::unique_ptr<WaitableEvent> waitable_event =
-            WTF::MakeUnique<WaitableEvent>();
+            std::make_unique<WaitableEvent>();
 
         task_runner_->PostTask(
             BLINK_FROM_HERE,
