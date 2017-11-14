@@ -4,12 +4,11 @@
 
 // https://w3c.github.io/webvr/#interface-navigator
 [
-    ImplementedAs=NavigatorVR,
-    OriginTrialEnabled=WebVR
+    ImplementedAs=NavigatorVR
 ] partial interface Navigator {
     // Latest API
-    [SecureContext] readonly attribute VR vr;
+    [SecureContext, RuntimeEnabled=WebVR2] readonly attribute VR vr;
 
     // Legacy API
-    [CallWith=ScriptState] Promise getVRDisplays();
+    [OriginTrialEnabled=WebVR, CallWith=ScriptState] Promise getVRDisplays();
 };
