@@ -36,14 +36,14 @@ FormSuggestionTabHelper::GetAccessoryViewProvider() {
 FormSuggestionTabHelper::FormSuggestionTabHelper(
     web::WebState* web_state,
     NSArray<id<FormSuggestionProvider>>* providers)
-    : web::WebStateObserver(web_state),
-      controller_([[FormSuggestionController alloc]
+    : controller_([[FormSuggestionController alloc]
           initWithWebState:web_state
                  providers:providers]) {
-  DCHECK(web::WebStateObserver::web_state());
+  web_state->AddObserver(this);
 }
 
 void FormSuggestionTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
+  web_state->RemoveObserver(this);
   controller_ = nil;
 }
