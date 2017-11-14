@@ -4,7 +4,9 @@
 
 #include "chrome/utility/mash_service_factory.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
+#include "base/bind.h"
 #include "build/build_config.h"
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"
 #include "mash/quick_launch/quick_launch.h"
@@ -13,7 +15,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/autoclick/mus/autoclick_application.h"  // nogncheck
-#include "ash/mus/window_manager_application.h"       // nogncheck
+#include "ash/mus/window_manager_service.h"           // nogncheck
 #include "ash/public/interfaces/constants.mojom.h"    // nogncheck
 #include "ash/touch_hud/mus/touch_hud_application.h"  // nogncheck
 #endif                                                // defined(OS_CHROMEOS)
@@ -37,32 +39,32 @@ void RegisterMashService(
 }
 
 std::unique_ptr<service_manager::Service> CreateUiService() {
-  return base::MakeUnique<ui::Service>();
+  return std::make_unique<ui::Service>();
 }
 
 #if defined(OS_CHROMEOS)
 std::unique_ptr<service_manager::Service> CreateAshService() {
   const bool show_primary_host_on_connect = true;
-  return base::MakeUnique<ash::mus::WindowManagerApplication>(
+  return std::make_unique<ash::mus::WindowManagerService>(
       show_primary_host_on_connect);
 }
 
 std::unique_ptr<service_manager::Service> CreateAccessibilityAutoclick() {
-  return base::MakeUnique<ash::autoclick::AutoclickApplication>();
+  return std::make_unique<ash::autoclick::AutoclickApplication>();
 }
 
 std::unique_ptr<service_manager::Service> CreateQuickLaunch() {
-  return base::MakeUnique<mash::quick_launch::QuickLaunch>();
+  return std::make_unique<mash::quick_launch::QuickLaunch>();
 }
 
 std::unique_ptr<service_manager::Service> CreateTouchHud() {
-  return base::MakeUnique<ash::touch_hud::TouchHudApplication>();
+  return std::make_unique<ash::touch_hud::TouchHudApplication>();
 }
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 std::unique_ptr<service_manager::Service> CreateFontService() {
-  return base::MakeUnique<font_service::FontServiceApp>();
+  return std::make_unique<font_service::FontServiceApp>();
 }
 
 #endif  // defined(OS_LINUX) && !defined(OS_ANDROID)

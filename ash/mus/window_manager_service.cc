@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_service.h"
 
 #include <memory>
 #include <utility>
@@ -37,7 +37,7 @@
 namespace ash {
 namespace mus {
 
-WindowManagerApplication::WindowManagerApplication(
+WindowManagerService::WindowManagerService(
     bool show_primary_host_on_connect,
     Config ash_config,
     std::unique_ptr<ash::ShellDelegate> shell_delegate)
@@ -45,7 +45,7 @@ WindowManagerApplication::WindowManagerApplication(
       shell_delegate_(std::move(shell_delegate)),
       ash_config_(ash_config) {}
 
-WindowManagerApplication::~WindowManagerApplication() {
+WindowManagerService::~WindowManagerService() {
   // Verify that we created a WindowManager before attempting to tear everything
   // down. In some fast running tests OnStart may never have been called.
   if (!window_manager_.get())
@@ -59,11 +59,11 @@ WindowManagerApplication::~WindowManagerApplication() {
   ShutdownComponents();
 }
 
-service_manager::Connector* WindowManagerApplication::GetConnector() {
+service_manager::Connector* WindowManagerService::GetConnector() {
   return context() ? context()->connector() : nullptr;
 }
 
-void WindowManagerApplication::InitWindowManager(
+void WindowManagerService::InitWindowManager(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
     bool init_network_handler) {
   // Tests may have already set the WindowTreeClient.
@@ -83,7 +83,7 @@ void WindowManagerApplication::InitWindowManager(
                         std::move(shell_delegate_));
 }
 
-void WindowManagerApplication::InitializeComponents(bool init_network_handler) {
+void WindowManagerService::InitializeComponents(bool init_network_handler) {
   message_center::MessageCenter::Initialize();
 
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
@@ -109,7 +109,7 @@ void WindowManagerApplication::InitializeComponents(bool init_network_handler) {
   chromeos::SystemSaltGetter::Initialize();
 }
 
-void WindowManagerApplication::ShutdownComponents() {
+void WindowManagerService::ShutdownComponents() {
   // NOTE: PowerStatus is shutdown by Shell.
   chromeos::SystemSaltGetter::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
@@ -125,7 +125,7 @@ void WindowManagerApplication::ShutdownComponents() {
   message_center::MessageCenter::Shutdown();
 }
 
-void WindowManagerApplication::OnStart() {
+void WindowManagerService::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
 
@@ -152,7 +152,7 @@ void WindowManagerApplication::OnStart() {
   InitWindowManager(std::move(window_tree_client), init_network_handler);
 }
 
-void WindowManagerApplication::OnBindInterface(
+void WindowManagerService::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {

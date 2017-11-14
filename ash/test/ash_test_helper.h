@@ -53,7 +53,7 @@ class TestSessionControllerClient;
 enum class Config;
 
 namespace mus {
-class WindowManagerApplication;
+class WindowManagerService;
 }
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -96,8 +96,8 @@ class AshTestHelper {
   display::Display GetSecondaryDisplay();
 
   // Null in classic ash.
-  mus::WindowManagerApplication* window_manager_app() {
-    return window_manager_app_.get();
+  mus::WindowManagerService* window_manager_service() {
+    return window_manager_service_.get();
   }
   aura::TestWindowTreeClientSetup* window_tree_client_setup() {
     return &window_tree_client_setup_;
@@ -145,7 +145,7 @@ class AshTestHelper {
   bool bluez_dbus_manager_initialized_;
 
   aura::TestWindowTreeClientSetup window_tree_client_setup_;
-  std::unique_ptr<mus::WindowManagerApplication> window_manager_app_;
+  std::unique_ptr<mus::WindowManagerService> window_manager_service_;
   std::unique_ptr<aura::WindowTreeClientPrivate> window_tree_client_private_;
   // Id for the next Display created by CreateRootWindowController().
   int64_t next_display_id_ = 1;

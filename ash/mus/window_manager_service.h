@@ -3,8 +3,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_WINDOW_MANAGER_APPLICATION_H_
-#define ASH_MUS_WINDOW_MANAGER_APPLICATION_H_
+#ifndef ASH_MUS_WINDOW_MANAGER_SERVICE_H_
+#define ASH_MUS_WINDOW_MANAGER_SERVICE_H_
 
 #include <stdint.h>
 
@@ -28,7 +28,7 @@ namespace chromeos {
 namespace system {
 class ScopedFakeStatisticsProvider;
 }
-}
+}  // namespace chromeos
 
 namespace service_manager {
 class Connector;
@@ -47,16 +47,16 @@ class NetworkConnectDelegateMus;
 class WindowManager;
 
 // Hosts the window manager and the ash system user interface for mash.
-class WindowManagerApplication : public service_manager::Service {
+class WindowManagerService : public service_manager::Service {
  public:
   // If |observer| is non-null it is added to the WindowManager once created.
   // See WindowManager's constructor for details of
   // |show_primary_host_on_connect|.
-  explicit WindowManagerApplication(
+  explicit WindowManagerService(
       bool show_primary_host_on_connect,
       Config ash_config = Config::MASH,
       std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
-  ~WindowManagerApplication() override;
+  ~WindowManagerService() override;
 
   WindowManager* window_manager() { return window_manager_.get(); }
 
@@ -105,10 +105,10 @@ class WindowManagerApplication : public service_manager::Service {
   // Whether this class initialized DBusThreadManager and needs to clean it up.
   bool dbus_thread_manager_initialized_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerService);
 };
 
 }  // namespace mus
 }  // namespace ash
 
-#endif  // ASH_MUS_WINDOW_MANAGER_APPLICATION_H_
+#endif  // ASH_MUS_WINDOW_MANAGER_SERVICE_H_

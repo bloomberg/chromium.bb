@@ -305,8 +305,7 @@ void WindowManager::OnLostConnection(aura::WindowTreeClient* client) {
     return;
   }
   Shutdown();
-  // TODO(sky): this case should trigger shutting down WindowManagerApplication
-  // too.
+  // TODO(sky): this case should trigger shutting down WindowManagerService too.
 }
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,

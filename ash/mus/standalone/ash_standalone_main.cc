@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "ash/mus/window_manager_application.h"
+#include "ash/mus/window_manager_service.h"
 #include "ash/shell.h"
 #include "ash/shell/example_app_list_presenter.h"
 #include "ash/shell/example_session_controller_client.h"
@@ -38,16 +38,16 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
       : input_device_client_(std::make_unique<ui::InputDeviceClient>()) {}
   ~ShellInit() override = default;
 
-  void set_window_manager_app(mus::WindowManagerApplication* app) {
-    window_manager_app_ = app;
+  void set_window_manager_service(mus::WindowManagerService* service) {
+    window_manager_service_ = service;
   }
 
   // shell::ShellDelegateImpl:
   void PreInit() override {
-    DCHECK(window_manager_app_->GetConnector());
+    DCHECK(window_manager_service_->GetConnector());
     ui::mojom::InputDeviceServerPtr server;
-    window_manager_app_->GetConnector()->BindInterface(ui::mojom::kServiceName,
-                                                       &server);
+    window_manager_service_->GetConnector()->BindInterface(
+        ui::mojom::kServiceName, &server);
     input_device_client_->Connect(std::move(server));
 
     shell::ShellDelegateImpl::PreInit();
@@ -84,7 +84,7 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
   std::unique_ptr<shell::ExampleSessionControllerClient>
       example_session_controller_client_;
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
-  mus::WindowManagerApplication* window_manager_app_ = nullptr;
+  mus::WindowManagerService* window_manager_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ShellInit);
 };
@@ -98,11 +98,11 @@ MojoResult ServiceMain(MojoHandle service_request_handle) {
   std::unique_ptr<ash::ShellInit> shell_init_ptr =
       std::make_unique<ash::ShellInit>();
   ash::ShellInit* shell_init = shell_init_ptr.get();
-  ash::mus::WindowManagerApplication* window_manager_app =
-      new ash::mus::WindowManagerApplication(show_primary_host_on_connect,
-                                             ash::Config::MUS,
-                                             std::move(shell_init_ptr));
-  shell_init->set_window_manager_app(window_manager_app);
-  service_manager::ServiceRunner runner(window_manager_app);
+  ash::mus::WindowManagerService* window_manager_service =
+      new ash::mus::WindowManagerService(show_primary_host_on_connect,
+                                         ash::Config::MUS,
+                                         std::move(shell_init_ptr));
+  shell_init->set_window_manager_service(window_manager_service);
+  service_manager::ServiceRunner runner(window_manager_service);
   return runner.Run(service_request_handle);
 }

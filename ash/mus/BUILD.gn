@@ -58,8 +58,8 @@ source_set("lib") {
     "wallpaper_delegate_mus.h",
     "window_manager.cc",
     "window_manager.h",
-    "window_manager_application.cc",
-    "window_manager_application.h",
+    "window_manager_service.cc",
+    "window_manager_service.h",
     "window_properties.cc",
     "window_properties.h",
   ]
