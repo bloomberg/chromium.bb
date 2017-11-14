@@ -198,6 +198,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   mutable AncestorDisabledState ancestor_disabled_state_;
   enum DataListAncestorState { kUnknown, kInsideDataList, kNotInsideDataList };
   mutable enum DataListAncestorState data_list_ancestor_state_;
+  mutable bool may_have_field_set_ancestor_ : 1;
 
   bool is_autofilled_ : 1;
   bool has_validation_message_ : 1;
