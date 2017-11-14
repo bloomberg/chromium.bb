@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult(`Tests framework black-boxing on DOM, XHR and Event breakpoints.\n`);
+  TestRunner.addResult(
+      `Tests framework black-boxing on DOM, XHR and Event breakpoints.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
@@ -90,7 +91,8 @@
       function step1(node) {
         TestRunner.domDebuggerModel.setDOMBreakpoint(
             node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
-        TestRunner.evaluateInPageWithTimeout('appendElement(\'rootElement\', \'childElement\')');
+        TestRunner.evaluateInPageWithTimeout(
+            'appendElement(\'rootElement\', \'childElement\')');
         SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
       }
     },
@@ -102,7 +104,9 @@
     },
 
     function testEventListenerBreakpoint(next) {
-      SDK.domDebuggerManager.resolveEventListenerBreakpoint({eventName: 'listener:click'}).setEnabled(true);
+      SDK.domDebuggerManager
+          .resolveEventListenerBreakpoint({eventName: 'listener:click'})
+          .setEnabled(true);
       TestRunner.evaluateInPageWithTimeout('addListenerAndClick(false)');
       SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
           [
@@ -118,9 +122,12 @@
       TestRunner.evaluateInPageWithTimeout('addListenerAndClick(true)');
       SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
           [
-            'StepOver', 'Print',    'StepOver', 'Print',  // should break at the first "remover()"
-            'StepOver', 'StepOver', 'StepOver', 'Print',  // enter testElementClicked()
-            'StepOut',  'StepOver', 'StepOver', 'StepOver', 'StepOver', 'Print',  // enter testElementClicked()
+            'StepOver', 'Print',    'StepOver',
+            'Print',  // should break at the first "remover()"
+            'StepOver', 'StepOver', 'StepOver',
+            'Print',  // enter testElementClicked()
+            'StepOut',  'StepOver', 'StepOver', 'StepOver', 'StepOver',
+            'Print',  // enter testElementClicked()
             'StepOver', 'StepOver', 'StepOver', 'Print',    'Resume',
           ],
           next);
@@ -143,7 +150,8 @@
     },
 
     function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next) {
-      TestRunner.evaluateInPageWithTimeout('addFewBlackboxedListenersAndClick(true)');
+      TestRunner.evaluateInPageWithTimeout(
+          'addFewBlackboxedListenersAndClick(true)');
       SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
           [
             'StepOut',
