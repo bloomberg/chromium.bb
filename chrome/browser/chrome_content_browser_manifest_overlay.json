@@ -53,8 +53,7 @@
           "input_device_controller",
           "window_manager"
         ],
-        "util_win" : [ "shell_util_win" ],
-        "wifi_util_win": [ "wifi_credentials" ]
+        "util_win" : [ "shell_util_win" ]
       }
     },
     "navigation:frame": {

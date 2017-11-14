@@ -29,6 +29,10 @@ mojom("mojo_bindings") {
     "removable_storage_writer.mojom",
   ]
 
+  if (is_win) {
+    sources += [ "wifi_credentials_getter.mojom" ]
+  }
+
   public_deps = [
     "//mojo/common:common_custom_types",
   ]
