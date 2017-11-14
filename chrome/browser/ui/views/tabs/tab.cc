@@ -526,14 +526,14 @@ bool Tab::IsSelected() const {
   return controller_->IsTabSelected(this);
 }
 
-void Tab::SetData(const TabRendererData& data) {
+void Tab::SetData(TabRendererData data) {
   DCHECK(GetWidget());
 
   if (data_ == data)
     return;
 
   TabRendererData old(std::move(data_));
-  data_ = data;
+  data_ = std::move(data);
   UpdateThrobber(old);
 
   base::string16 title = data_.title;

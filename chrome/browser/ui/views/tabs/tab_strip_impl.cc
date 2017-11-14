@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -418,18 +419,19 @@ void TabStripImpl::StopAllHighlighting() {
 }
 
 void TabStripImpl::AddTabAt(int model_index,
-                            const TabRendererData& data,
+                            TabRendererData data,
                             bool is_active) {
   Tab* tab = new Tab(this, animation_container_.get());
   AddChildView(tab);
-  tab->SetData(data);
+  const bool pinned = data.pinned;
+  tab->SetData(std::move(data));
   UpdateTabsClosingMap(model_index, 1);
   tabs_.Add(tab, model_index);
 
   if (touch_layout_) {
     GenerateIdealBoundsForPinnedTabs(NULL);
     int add_types = 0;
-    if (data.pinned)
+    if (pinned)
       add_types |= StackedTabStripLayout::kAddTypePinned;
     if (is_active)
       add_types |= StackedTabStripLayout::kAddTypeActive;
@@ -465,10 +467,10 @@ void TabStripImpl::AddTabAt(int model_index,
 
 void TabStripImpl::MoveTab(int from_model_index,
                            int to_model_index,
-                           const TabRendererData& data) {
+                           TabRendererData data) {
   DCHECK_GT(tabs_.view_size(), 0);
   const Tab* last_tab = GetLastVisibleTab();
-  tab_at(from_model_index)->SetData(data);
+  tab_at(from_model_index)->SetData(std::move(data));
   if (touch_layout_) {
     tabs_.MoveViewOnly(from_model_index, to_model_index);
     int pinned_count = 0;
@@ -528,10 +530,10 @@ void TabStripImpl::RemoveTabAt(content::WebContents* contents,
   }
 }
 
-void TabStripImpl::SetTabData(int model_index, const TabRendererData& data) {
+void TabStripImpl::SetTabData(int model_index, TabRendererData data) {
   Tab* tab = tab_at(model_index);
   bool pinned_state_changed = tab->data().pinned != data.pinned;
-  tab->SetData(data);
+  tab->SetData(std::move(data));
 
   if (pinned_state_changed) {
     if (touch_layout_) {

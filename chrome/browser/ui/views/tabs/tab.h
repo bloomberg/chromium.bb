@@ -92,7 +92,7 @@ class Tab : public gfx::AnimationDelegate,
 
   // Sets the data this tabs displays. Invokes DataChanged. Should only be
   // called after Tab is added to widget hierarchy.
-  void SetData(const TabRendererData& data);
+  void SetData(TabRendererData data);
   const TabRendererData& data() const { return data_; }
 
   // Redraws the loading animation if one is visible. Otherwise, no-op.

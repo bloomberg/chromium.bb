@@ -104,19 +104,17 @@ class TabStripImpl : public TabStrip,
   void StopAllHighlighting();
 
   // Adds a tab at the specified index.
-  void AddTabAt(int model_index, const TabRendererData& data, bool is_active);
+  void AddTabAt(int model_index, TabRendererData data, bool is_active);
 
   // Moves a tab.
-  void MoveTab(int from_model_index,
-               int to_model_index,
-               const TabRendererData& data);
+  void MoveTab(int from_model_index, int to_model_index, TabRendererData data);
 
   // Removes a tab at the specified index. If the tab with |contents| is being
   // dragged then the drag is completed.
   void RemoveTabAt(content::WebContents* contents, int model_index);
 
   // Sets the tab data at the specified model index.
-  void SetTabData(int model_index, const TabRendererData& data);
+  void SetTabData(int model_index, TabRendererData data);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
