@@ -67,6 +67,7 @@ class BrowserAccessibilityAuraLinux : public BrowserAccessibility {
   ~BrowserAccessibilityAuraLinux() override;
 
   AtkObject* GetAtkObject() const;
+  AtkHyperlink* GetAtkHyperlink();
 
   AtkRole atk_role() { return atk_role_; }
 
@@ -84,7 +85,8 @@ class BrowserAccessibilityAuraLinux : public BrowserAccessibility {
   AtkRole atk_role_;
   int interface_mask_;
 
- private:
+  AtkHyperlink* atk_hyperlink_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAuraLinux);
 };
 
