@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
@@ -93,7 +94,7 @@ public class MainPreferences extends PreferenceFragment
         setManagedPreferenceDelegateForPreference(PREF_SAVED_PASSWORDS);
         setManagedPreferenceDelegateForPreference(PREF_DATA_REDUCTION);
 
-        if (BuildInfo.isAtLeastO()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // If we are on Android O+ the Notifications preference should lead to the Android
             // Settings notifications page, not to Chrome's notifications settings page.
             Preference notifications = findPreference(PREF_NOTIFICATIONS);

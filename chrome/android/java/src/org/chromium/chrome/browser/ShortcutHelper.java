@@ -24,12 +24,12 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -701,7 +701,7 @@ public class ShortcutHelper {
 
     private static boolean isRequestPinShortcutSupported() {
         if (!sCheckedIfRequestPinShortcutSupported) {
-            if (BuildInfo.isAtLeastO()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 checkIfRequestPinShortcutSupported();
             }
             sCheckedIfRequestPinShortcutSupported = true;

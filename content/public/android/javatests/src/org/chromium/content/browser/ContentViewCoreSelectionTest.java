@@ -8,6 +8,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
@@ -18,8 +19,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -284,8 +285,8 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
     public void testPastePopupPasteAsPlainTextPlainTextRichEditor() throws Throwable {
-        if (!BuildInfo.isAtLeastO()) return;
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "rich_div");
         waitForPastePopupStatus(true);
@@ -296,8 +297,8 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
     public void testPastePopupPasteAsPlainTextPlainTextNormalEditor() throws Throwable {
-        if (!BuildInfo.isAtLeastO()) return;
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
         waitForPastePopupStatus(true);
@@ -308,8 +309,8 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
     public void testPastePopupPasteAsPlainTextHtmlTextRichEditor() throws Throwable {
-        if (!BuildInfo.isAtLeastO()) return;
         copyHtmlToClipboard("SampleTextToCopy", "<span style=\"color: red;\">HTML</span>");
         DOMUtils.longPressNode(mContentViewCore, "rich_div");
         waitForPastePopupStatus(true);
@@ -320,8 +321,8 @@ public class ContentViewCoreSelectionTest {
     @Test
     @SmallTest
     @Feature({"TextInput"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
     public void testPastePopupPasteAsPlainTextHtmlTextNormalEditor() throws Throwable {
-        if (!BuildInfo.isAtLeastO()) return;
         copyHtmlToClipboard("SampleTextToCopy", "<span style=\"color: red;\">HTML</span>");
         DOMUtils.longPressNode(mContentViewCore, "empty_input_text");
         waitForPastePopupStatus(true);

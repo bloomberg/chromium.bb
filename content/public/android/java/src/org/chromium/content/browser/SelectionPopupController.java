@@ -32,7 +32,6 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -558,7 +557,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         MenuItem item = menu.findItem(R.id.select_action_menu_paste_as_plain_text);
         if (item == null) return;
         // android.R.string.paste_as_plain_text is available in SDK since O.
-        assert BuildInfo.isAtLeastO();
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
         item.setTitle(android.R.string.paste_as_plain_text);
     }
 
@@ -650,7 +649,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     public boolean canPasteAsPlainText() {
         // String resource "paste_as_plain_text" only exist in O.
         // Also this is an O feature, we need to make it consistant with TextView.
-        if (!BuildInfo.isAtLeastO()) return false;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
         if (!mCanEditRichly) return false;
         ClipboardManager clipMgr =
                 (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -672,7 +671,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private void updateAssistMenuItem(MenuDescriptor descriptor) {
         // There is no Assist functionality before Android O.
-        if (!BuildInfo.isAtLeastO()) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
             descriptor.addItem(R.id.select_action_menu_assist_items, android.R.id.textAssist, 1,
@@ -727,7 +726,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                     getActionType(id), mClassificationResult);
         }
 
-        if (BuildInfo.isAtLeastO() && id == android.R.id.textAssist) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && id == android.R.id.textAssist) {
             doAssistAction();
             mode.finish();
         } else if (id == R.id.select_action_menu_select_all) {
@@ -739,7 +738,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             mode.finish();
         } else if (id == R.id.select_action_menu_paste) {
             paste();
-        } else if (BuildInfo.isAtLeastO() && id == R.id.select_action_menu_paste_as_plain_text) {
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && id == R.id.select_action_menu_paste_as_plain_text) {
             pasteAsPlainText();
         } else if (id == R.id.select_action_menu_share) {
             share();

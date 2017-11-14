@@ -26,7 +26,6 @@ import android.view.Window;
 import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -223,7 +222,7 @@ public class WindowAndroid {
         // Because of crbug.com/756180, many devices report true for isScreenWideColorGamut in
         // 8.0.0, even when they don't actually support wide color gamut.
         // TODO(boliu): Observe configuration changes to update the value of isScreenWideColorGamut.
-        if (BuildInfo.isAtLeastO() && !Build.VERSION.RELEASE.equals("8.0.0")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !Build.VERSION.RELEASE.equals("8.0.0")
                 && activityFromContext(context) != null) {
             Configuration configuration = context.getResources().getConfiguration();
             boolean isScreenWideColorGamut = false;

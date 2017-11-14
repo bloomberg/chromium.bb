@@ -34,7 +34,6 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
@@ -285,7 +284,7 @@ public class MediaNotificationManager {
     // created service no matter what or it will crash. Show the minimal notification. The caller is
     // responsible for hiding it afterwards.
     private static void finishStartingForegroundService(ListenerService s) {
-        if (!BuildInfo.isAtLeastO()) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(
@@ -918,7 +917,7 @@ public class MediaNotificationManager {
         // On O, finish starting the foreground service nevertheless, or Android will
         // crash Chrome.
         boolean foregroundedService = false;
-        if (BuildInfo.isAtLeastO() && serviceStarting) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && serviceStarting) {
             mService.startForeground(mMediaNotificationInfo.id, notification);
             foregroundedService = true;
         }
