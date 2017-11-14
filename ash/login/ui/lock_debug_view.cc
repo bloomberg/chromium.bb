@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/login/lock_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
@@ -269,7 +268,7 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   toggle_caps_lock_ = AddButton("Toggle caps lock");
   add_user_ = AddButton("Add user");
   remove_user_ = AddButton("Remove user");
-  toggle_auth_ = AddButton("Force fail auth");
+  toggle_auth_ = AddButton("Auth (allowed)");
 
   RebuildDebugUserColumn();
 }
@@ -323,9 +322,32 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Linux Desktop builds, where the cryptohome dbus stub accepts all passwords
   // as valid.
   if (sender == toggle_auth_) {
-    force_fail_auth_ = !force_fail_auth_;
-    toggle_auth_->SetText(base::ASCIIToUTF16(
-        force_fail_auth_ ? "Allow auth" : "Force fail auth"));
+    auto get_next_auth_state = [](LockScreenController::ForceFailAuth auth) {
+      switch (auth) {
+        case LockScreenController::ForceFailAuth::kOff:
+          return LockScreenController::ForceFailAuth::kImmediate;
+        case LockScreenController::ForceFailAuth::kImmediate:
+          return LockScreenController::ForceFailAuth::kDelayed;
+        case LockScreenController::ForceFailAuth::kDelayed:
+          return LockScreenController::ForceFailAuth::kOff;
+      }
+      NOTREACHED();
+      return LockScreenController::ForceFailAuth::kOff;
+    };
+    auto get_auth_label = [](LockScreenController::ForceFailAuth auth) {
+      switch (auth) {
+        case LockScreenController::ForceFailAuth::kOff:
+          return "Auth (allowed)";
+        case LockScreenController::ForceFailAuth::kImmediate:
+          return "Auth (immediate fail)";
+        case LockScreenController::ForceFailAuth::kDelayed:
+          return "Auth (delayed fail)";
+      }
+      NOTREACHED();
+      return "Auth (allowed)";
+    };
+    force_fail_auth_ = get_next_auth_state(force_fail_auth_);
+    toggle_auth_->SetText(base::ASCIIToUTF16(get_auth_label(force_fail_auth_)));
     Shell::Get()
         ->lock_screen_controller()
         ->set_force_fail_auth_for_debug_overlay(force_fail_auth_);
