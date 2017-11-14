@@ -16,7 +16,6 @@ group("android_tools") {
     "//tools/android/forwarder2",
     "//tools/android/md5sum",
     "//tools/android/memtrack_helper:memtrack_helper",
-    "//tools/android/purge_ashmem",
     "//tools/perf:run_benchmark_wrapper",
   ]
 }
