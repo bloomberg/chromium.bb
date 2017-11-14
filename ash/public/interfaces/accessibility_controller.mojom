@@ -4,27 +4,34 @@
 
 module ash.mojom;
 
+// Alert sent to the accessibility api.
 enum AccessibilityAlert {
   // Default value, indicates no accessibility alert.
   NONE,
 
-  // Caps Lock is On.
+  // When caps lock is turned on.
   CAPS_ON,
 
-  // Caps Lock is Off.
+  // When caps lock is turned off.
   CAPS_OFF,
 
-  // Screen turned on by tablet power button.
+  // When screen is turned on by tablet power button.
   SCREEN_ON,
 
-  // Screen turned off by tablet power button.
+  // When screen is turned off by tablet power button.
   SCREEN_OFF,
 
-  // Alerted when no window avaiable and accelerators operated which requires at
-  // least one window.
+  // When window moved to above/below/left/right display by accelerators.
+  WINDOW_MOVED_TO_ABOVE_DISPLAY,
+  WINDOW_MOVED_TO_BELOW_DISPLAY,
+  WINDOW_MOVED_TO_LEFT_DISPLAY,
+  WINDOW_MOVED_TO_RIGHT_DISPLAY,
+
+  // When the user attempts a keyboard command that requires a window to work,
+  // and none is available.
   WINDOW_NEEDED,
 
-  // Entered overview mode.
+  // When the user enters window overview mode.
   WINDOW_OVERVIEW_MODE_ENTERED
 };
 

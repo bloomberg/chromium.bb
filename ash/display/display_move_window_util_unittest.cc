@@ -4,6 +4,8 @@
 
 #include "ash/display/display_move_window_util.h"
 
+#include "ash/accessibility/accessibility_controller.h"
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
@@ -211,6 +213,39 @@ TEST_F(DisplayMoveWindowUtilTest, SelectClosestCandidate) {
   // direction. [5] has the furthest right space so it is selected.
   HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
   EXPECT_EQ(list[5], screen->GetDisplayNearestWindow(window).id());
+}
+
+// Tests that a11y alert is sent on handling move window to display.
+TEST_F(DisplayMoveWindowUtilTest, A11yAlert) {
+  display::Screen* screen = display::Screen::GetScreen();
+  int64_t primary_id = screen->GetPrimaryDisplay().id();
+  display::DisplayIdList list =
+      display::test::CreateDisplayIdList2(primary_id, primary_id + 1);
+  // Layout: [p][1]
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.AddDisplayPlacement(list[1], primary_id,
+                              display::DisplayPlacement::RIGHT, 0);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+  UpdateDisplay("400x300,400x300");
+  EXPECT_EQ(2U, display_manager()->GetNumDisplays());
+  EXPECT_EQ(gfx::Rect(0, 0, 400, 300),
+            display_manager()->GetDisplayAt(0).bounds());
+  EXPECT_EQ(gfx::Rect(400, 0, 400, 300),
+            display_manager()->GetDisplayAt(1).bounds());
+
+  AccessibilityController* controller =
+      Shell::Get()->accessibility_controller();
+  TestAccessibilityControllerClient client;
+  controller->SetClient(client.CreateInterfacePtrAndBind());
+
+  aura::Window* window =
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
+  wm::ActivateWindow(window);
+  HandleMoveWindowToDisplay(DisplayMoveWindowDirection::kRight);
+  controller->FlushMojoForTest();
+  EXPECT_EQ(mojom::AccessibilityAlert::WINDOW_MOVED_TO_RIGHT_DISPLAY,
+            client.last_a11y_alert());
 }
 
 }  // namespace ash

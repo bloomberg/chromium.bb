@@ -82,6 +82,18 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
     case ash::mojom::AccessibilityAlert::SCREEN_OFF:
       msg = IDS_A11Y_ALERT_SCREEN_OFF;
       break;
+    case ash::mojom::AccessibilityAlert::WINDOW_MOVED_TO_ABOVE_DISPLAY:
+      msg = IDS_A11Y_ALERT_WINDOW_MOVED_TO_ABOVE_DISPLAY;
+      break;
+    case ash::mojom::AccessibilityAlert::WINDOW_MOVED_TO_BELOW_DISPLAY:
+      msg = IDS_A11Y_ALERT_WINDOW_MOVED_TO_BELOW_DISPLAY;
+      break;
+    case ash::mojom::AccessibilityAlert::WINDOW_MOVED_TO_LEFT_DISPLAY:
+      msg = IDS_A11Y_ALERT_WINDOW_MOVED_TO_LEFT_DISPLAY;
+      break;
+    case ash::mojom::AccessibilityAlert::WINDOW_MOVED_TO_RIGHT_DISPLAY:
+      msg = IDS_A11Y_ALERT_WINDOW_MOVED_TO_RIGHT_DISPLAY;
+      break;
     case ash::mojom::AccessibilityAlert::WINDOW_NEEDED:
       msg = IDS_A11Y_ALERT_WINDOW_NEEDED;
       break;
