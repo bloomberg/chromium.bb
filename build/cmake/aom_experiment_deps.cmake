@@ -76,6 +76,15 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_EXT_INTRA_MOD)
+    if (NOT CONFIG_INTRA_EDGE)
+      change_config_and_warn(CONFIG_INTRA_EDGE 1 CONFIG_EXT_INTRA_MOD)
+    endif ()
+    if (NOT CONFIG_EXT_INTRA)
+      change_config_and_warn(CONFIG_EXT_INTRA 1 CONFIG_EXT_INTRA_MOD)
+    endif ()
+  endif ()
+
   if (CONFIG_EXT_PARTITION_TYPES)
     if (CONFIG_FP_MB_STATS)
       change_config_and_warn(CONFIG_FP_MB_STATS 0 CONFIG_EXT_PARTITION_TYPES)
@@ -104,6 +113,12 @@ macro (fix_experiment_configs)
     if (NOT CONFIG_FRAME_SUPERRES)
       change_config_and_warn(CONFIG_FRAME_SUPERRES 1
                              CONFIG_HORZONLY_FRAME_SUPERRES)
+    endif ()
+  endif ()
+
+  if (CONFIG_INTRA_EDGE)
+    if (NOT CONFIG_EXT_INTRA)
+      change_config_and_warn(CONFIG_EXT_INTRA 1 CONFIG_INTRA_EDGE)
     endif ()
   endif ()
 
