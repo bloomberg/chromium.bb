@@ -92,12 +92,26 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
+    # Need to forbid mipmap generation with this extension.
+    # Uncomment suppressions below when re-enabling. (Or remove them?
+    # Were the failures caused by this gray area in the spec, now
+    # forbidden?)
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['linux', 'mac', 'win'], bug=769989)
+
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
 
     # Need to add detection of feedback loops with multiple render targets.
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         bug=1619) # angle bug ID
+
+    # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
+    self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
+        ['nvidia'], bug=772651)
+    self.Fail('conformance/glsl/bugs/' +
+        'vector-scalar-arithmetic-inside-loop-complex.html',
+        ['nvidia'], bug=772651)
 
     # Timing out on multiple platforms right now.
     self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
@@ -163,8 +177,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        ['passthrough', 'opengl', 'amd'], bug=679696)
+    # self.Fail('conformance/extensions/ext-sRGB.html',
+    #     ['passthrough', 'opengl', 'amd'], bug=679696)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/glsl/constructors/' +
@@ -224,8 +238,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'nvidia', 'no_passthrough'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        ['win', 'nvidia', 'no_passthrough'], bug=679696)
+    # self.Fail('conformance/extensions/ext-sRGB.html',
+    #     ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
     # Win10 / NVIDIA Quadro P400 / D3D9 failures
     self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
@@ -341,8 +355,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', 'intel', 'opengl'], bug=680797)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['win10', 'intel', 'opengl'], bug=680797)
-    self.Fail('conformance/extensions/ext-sRGB.html',
-        ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
+    # self.Fail('conformance/extensions/ext-sRGB.html',
+    #     ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
     self.Fail('conformance/extensions/ext-shader-texture-lod.html',
         ['win10', 'intel', 'opengl', 'no_passthrough'], bug=680797)
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',

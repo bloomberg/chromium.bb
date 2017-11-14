@@ -48,6 +48,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
         bug=757097)
 
+    # Failing on Windows and Linux with NVIDIA GPUs and OpenGL driver.
+    self.Fail('conformance/glsl/bugs/vector-scalar-arithmetic-inside-loop.html',
+        ['nvidia'], bug=772651)
+    self.Fail('conformance/glsl/bugs/' +
+        'vector-scalar-arithmetic-inside-loop-complex.html',
+        ['nvidia'], bug=772651)
+
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
