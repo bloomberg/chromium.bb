@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,29 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorFrontendClient_h
-#define InspectorFrontendClient_h
+#ifndef WebDevToolsFrontend_h
+#define WebDevToolsFrontend_h
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 
-class ContextMenuProvider;
-class LocalFrame;
+class WebDevToolsFrontendClient;
+class WebLocalFrame;
 
-class InspectorFrontendClient {
+// WebDevToolsFrontend represents DevTools client sitting in the Glue. It
+// provides direct and delegate Apis to the host.
+class WebDevToolsFrontend {
  public:
-  virtual ~InspectorFrontendClient() {}
+  BLINK_EXPORT static WebDevToolsFrontend* Create(WebLocalFrame*,
+                                                  WebDevToolsFrontendClient*);
 
-  virtual void SendMessageToEmbedder(const String&) = 0;
-
-  virtual bool IsUnderTest() = 0;
-
-  virtual void ShowContextMenu(LocalFrame* target_frame,
-                               float x,
-                               float y,
-                               ContextMenuProvider*) = 0;
+  virtual ~WebDevToolsFrontend() {}
 };
 
 }  // namespace blink

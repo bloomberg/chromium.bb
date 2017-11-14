@@ -82,7 +82,7 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   DevToolsHost(InspectorFrontendClient*, LocalFrame* frontend_frame);
   void EvaluateScript(const String&);
 
-  Member<InspectorFrontendClient> client_;
+  InspectorFrontendClient* client_;
   Member<LocalFrame> frontend_frame_;
   Member<FrontendMenuProvider> menu_provider_;
 };
