@@ -20,7 +20,6 @@ MouseWheelPhaseHandler::MouseWheelPhaseHandler(
 void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
     blink::WebMouseWheelEvent& mouse_wheel_event,
     bool should_route_event) {
-  last_mouse_wheel_event_ = mouse_wheel_event;
 
   bool has_phase =
       mouse_wheel_event.phase != blink::WebMouseWheelEvent::kPhaseNone ||
@@ -45,6 +44,7 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
   } else {  // !has_phase
     switch (scroll_phase_state_) {
       case SCROLL_STATE_UNKNOWN: {
+        mouse_wheel_event.has_synthetic_phase = true;
         if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
           mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
           ScheduleMouseWheelEndDispatching(should_route_event);
@@ -69,6 +69,8 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
         NOTREACHED();
     }
   }
+
+  last_mouse_wheel_event_ = mouse_wheel_event;
 }
 
 void MouseWheelPhaseHandler::DispatchPendingWheelEndEvent() {

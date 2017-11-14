@@ -55,6 +55,10 @@ class WebMouseWheelEvent : public WebMouseEvent {
   Phase phase;
   Phase momentum_phase;
 
+  // True when phase information is added in mouse_wheel_phase_handler based
+  // on its timer.
+  bool has_synthetic_phase;
+
   bool scroll_by_page;
   bool has_precise_scrolling_deltas;
 
