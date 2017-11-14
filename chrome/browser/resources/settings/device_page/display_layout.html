@@ -69,7 +69,12 @@
             draggable="[[dragEnabled]]" on-tap="onSelectDisplayTap_"
             style$="[[getDivStyle_(item.id, item.bounds, visualScale)]]"
             selected$="[[isSelected_(item, selectedDisplay)]]">
-          [[item.name]]
+          <div hidden$="[[mirroring]]">
+            [[item.name]]
+          </div>
+          <div hidden$="[[!mirroring]]">
+            $i18n{displayMirrorDisplayName}
+          </div>
         </div>
       </template>
     </div>

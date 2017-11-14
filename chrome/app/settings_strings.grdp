@@ -3397,7 +3397,10 @@
       Drag to move a display
     </message>
     <message name="IDS_SETTINGS_DISPLAY_MIRROR" desc="In Device Settings > Displays, the label for the control for mirroring.">
-      Mirroring
+      Mirror <ph name="DISPLAY_NAME">$1<ex>HP Z27n</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_MIRROR_DISPLAY_NAME" desc="In Device Settings > Displays, the label for the mirrored display name shown in the layout.">
+      Mirrored
     </message>
     <message name="IDS_SETTINGS_DISPLAY_NIGHT_LIGHT_LABEL" desc="In Device Settings > Displays, the label for the Night Light feature (which controls the color temperature of the screen) section.">
       Night Light
