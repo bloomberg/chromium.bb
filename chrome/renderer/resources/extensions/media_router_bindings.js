@@ -94,11 +94,11 @@ define('media_router_bindings', [
       'for_display': route.forDisplay,
       'is_incognito': route.offTheRecord,
       'is_local_presentation': route.isOffscreenPresentation,
-      'supports_media_route_controller': !!route.supportsMediaRouteController,
+      'supports_media_route_controller': route.supportsMediaRouteController,
       'controller_type': route.controllerType,
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
-      'presentation_id': route.presentationId
+      'presentation_id': route.presentationId || ''  // M64
     });
   }
 
@@ -164,35 +164,6 @@ define('media_router_bindings', [
             reason);
         return PresentationConnectionCloseReason.CONNECTION_ERROR;
     }
-  }
-
-  // TODO(crbug.com/688177): remove this conversion when M60 is in stable.
-  /**
-   * Converts string to Mojo origin.
-   * @param {string|!originMojom.Origin} origin
-   * @return {!originMojom.Origin}
-   */
-  function stringToMojoOrigin_(origin) {
-    if (origin instanceof originMojom.Origin) {
-      return origin;
-    }
-    const url = new URL(origin);
-    const mojoOrigin = {};
-    mojoOrigin.scheme = url.protocol.replace(':', '');
-    mojoOrigin.host = url.hostname;
-    var port = url.port ? Number.parseInt(url.port) : 0;
-    switch (mojoOrigin.scheme) {
-      case 'http':
-        mojoOrigin.port = port || 80;
-        break;
-      case 'https':
-        mojoOrigin.port = port || 443;
-        break;
-      default:
-        throw new Error('Scheme must be http or https');
-    }
-    mojoOrigin.suborigin = '';
-    return new originMojom.Origin(mojoOrigin);
   }
 
   /**
@@ -346,12 +317,12 @@ define('media_router_bindings', [
    * updated.
    * @param {!string} sourceUrn
    * @param {!Array<!MediaSink>} sinks
-   * @param {!Array<string>} origins
+   * @param {!Array<!originMojom.Origin>} origins
    */
   MediaRouter.prototype.onSinksReceived = function(sourceUrn, sinks, origins) {
     this.service_.onSinksReceived(
         mediaRouterMojom.MediaRouteProvider.Id.EXTENSION, sourceUrn,
-        sinks.map(sinkToMojo_), origins.map(stringToMojoOrigin_));
+        sinks.map(sinkToMojo_), origins);
   };
 
   /**
@@ -952,11 +923,6 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.createMediaRouteController = function(
       routeId, controllerRequest, observer) {
-    // TODO(imcheng): Remove this check when M60 is in stable.
-    if (!this.handlers_.createMediaRouteController) {
-      return Promise.resolve({success: false});
-    }
-
     this.handlers_.onBeforeInvokeHandler();
     return this.handlers_
         .createMediaRouteController(routeId, controllerRequest, observer)
