@@ -25,6 +25,15 @@ namespace metrics {
 // periodically to test if the event should be fired.
 class DailyEvent {
  public:
+  // Different reasons that Observer::OnDailyEvent() is called.
+  // This enum is used for histograms and must not be renumbered.
+  enum class IntervalType {
+    FIRST_RUN,
+    DAY_ELAPSED,
+    CLOCK_CHANGED,
+    NUM_TYPES,
+  };
+
   // Observer receives notifications from a DailyEvent.
   // Observers must be added before the DailyEvent begins checking time,
   // and will be owned by the DailyEvent.
@@ -34,7 +43,7 @@ class DailyEvent {
     virtual ~Observer();
 
     // Called when the daily event is fired.
-    virtual void OnDailyEvent() = 0;
+    virtual void OnDailyEvent(IntervalType type) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -64,8 +73,8 @@ class DailyEvent {
   static void RegisterPref(PrefRegistrySimple* registry, const char* pref_name);
 
  private:
-  // Handles an interval elapsing.
-  void OnInterval(base::Time now);
+  // Handles an interval elapsing because of |type|.
+  void OnInterval(base::Time now, IntervalType type);
 
   // A weak pointer to the PrefService object to read and write preferences
   // from. Calling code should ensure this object continues to exist for the

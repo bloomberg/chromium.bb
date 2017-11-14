@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,19 +19,18 @@ const char kTestMetricName[] = "TestMetric";
 
 class TestDailyObserver : public DailyEvent::Observer {
  public:
-  TestDailyObserver() : fired_(false) {}
+  TestDailyObserver() = default;
 
-  bool fired() const { return fired_; }
+  bool fired() const { return type_.has_value(); }
+  DailyEvent::IntervalType type() const { return type_.value(); }
 
-  void OnDailyEvent() override { fired_ = true; }
+  void OnDailyEvent(DailyEvent::IntervalType type) override { type_ = type; }
 
-  void Reset() {
-    fired_ = false;
-  }
+  void Reset() { type_ = {}; }
 
  private:
-  // True if this event has been observed.
-  bool fired_;
+  // Last-received type, or unset if OnDailyEvent() hasn't been called.
+  base::Optional<DailyEvent::IntervalType> type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDailyObserver);
 };
@@ -57,7 +57,8 @@ class DailyEventTest : public testing::Test {
 // The event should fire if the preference is not available.
 TEST_F(DailyEventTest, TestNewFires) {
   event_.CheckInterval();
-  EXPECT_TRUE(observer_->fired());
+  ASSERT_TRUE(observer_->fired());
+  EXPECT_EQ(DailyEvent::IntervalType::FIRST_RUN, observer_->type());
 }
 
 // The event should fire if the preference is more than a day old.
@@ -65,7 +66,8 @@ TEST_F(DailyEventTest, TestOldFires) {
   base::Time last_time = base::Time::Now() - base::TimeDelta::FromHours(25);
   prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
-  EXPECT_TRUE(observer_->fired());
+  ASSERT_TRUE(observer_->fired());
+  EXPECT_EQ(DailyEvent::IntervalType::DAY_ELAPSED, observer_->type());
 }
 
 // The event should fire if the preference is more than a day in the future.
@@ -73,7 +75,8 @@ TEST_F(DailyEventTest, TestFutureFires) {
   base::Time last_time = base::Time::Now() + base::TimeDelta::FromHours(25);
   prefs_.SetInt64(kTestPrefName, last_time.since_origin().InMicroseconds());
   event_.CheckInterval();
-  EXPECT_TRUE(observer_->fired());
+  ASSERT_TRUE(observer_->fired());
+  EXPECT_EQ(DailyEvent::IntervalType::CLOCK_CHANGED, observer_->type());
 }
 
 // The event should not fire if the preference is more recent than a day.
