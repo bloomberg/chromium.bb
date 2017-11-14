@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/accessibility/accessibility_highlight_layer.h"
 #include "ash/accessibility/focus_ring_layer.h"
 #include "base/logging.h"
 
@@ -41,6 +42,9 @@ const int kCaretFadeOutTimeMilliseconds = 1600;
 const int kCaretRingColorRed = 51;
 const int kCaretRingColorGreen = 51;
 const int kCaretRingColorBlue = 255;
+
+// Highlight constants.
+const float kHighlightOpacity = 0.3f;
 
 // A Region is an unordered collection of Rects that maintains its
 // bounding box. Used in the middle of an algorithm that groups
@@ -136,6 +140,13 @@ void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
   }
 }
 
+void AccessibilityFocusRingController::UpdateHighlightFromHighlightRects() {
+  if (!highlight_layer_)
+    highlight_layer_ = std::make_unique<AccessibilityHighlightLayer>(this);
+  highlight_layer_->Set(highlight_rects_, highlight_color_);
+  highlight_layer_->SetOpacity(kHighlightOpacity);
+}
+
 void AccessibilityFocusRingController::OnLayerChange(
     AccessibilityFocusRingController::LayerAnimationInfo* animation_info) {
   animation_info->change_time = base::TimeTicks::Now();
@@ -174,6 +185,19 @@ void AccessibilityFocusRingController::SetCaretRing(
 
 void AccessibilityFocusRingController::HideCaretRing() {
   caret_layer_.reset();
+}
+
+void AccessibilityFocusRingController::SetHighlights(
+    const std::vector<gfx::Rect>& rects,
+    SkColor color) {
+  highlight_rects_ = rects;
+  highlight_color_ = color;
+  UpdateHighlightFromHighlightRects();
+}
+
+void AccessibilityFocusRingController::HideHighlights() {
+  highlight_rects_.clear();
+  UpdateHighlightFromHighlightRects();
 }
 
 void AccessibilityFocusRingController::SetNoFadeForTesting() {
