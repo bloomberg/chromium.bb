@@ -272,12 +272,38 @@ void Coalesce(const WebMouseEvent& event_to_coalesce, WebMouseEvent* event) {
   event->movement_y += y;
 }
 
+bool HaveConsistentPhase(const WebMouseWheelEvent& event_to_coalesce,
+                         const WebMouseWheelEvent& event) {
+  if (event.has_synthetic_phase != event_to_coalesce.has_synthetic_phase)
+    return false;
+
+  if (event.has_synthetic_phase) {
+    // Wheel events with synthetic phase information don't have momentum_phase.
+    DCHECK_EQ(WebMouseWheelEvent::kPhaseNone, event.momentum_phase);
+    DCHECK_EQ(WebMouseWheelEvent::kPhaseNone, event_to_coalesce.momentum_phase);
+
+    if (event.phase == event_to_coalesce.phase)
+      return true;
+
+    // Synthetic phase information is added based on a timer in
+    // MouseWheelPhaseHandler. This information is for simulating scroll
+    // sequences when the beginning and end of scrolls are not available. It is
+    // alright to coalesce an event with synthetic phaseBegan to its previous
+    // event with synthetic phaseEnded since these phase values don't correspond
+    // with real start and end of the scroll sequences.
+    return event.phase == WebMouseWheelEvent::kPhaseEnded &&
+           event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan;
+  } else {
+    return event.phase == event_to_coalesce.phase &&
+           event.momentum_phase == event_to_coalesce.momentum_phase;
+  }
+}
+
 bool CanCoalesce(const WebMouseWheelEvent& event_to_coalesce,
                  const WebMouseWheelEvent& event) {
   return event.GetModifiers() == event_to_coalesce.GetModifiers() &&
          event.scroll_by_page == event_to_coalesce.scroll_by_page &&
-         event.phase == event_to_coalesce.phase &&
-         event.momentum_phase == event_to_coalesce.momentum_phase &&
+         HaveConsistentPhase(event_to_coalesce, event) &&
          event.resending_plugin_id == event_to_coalesce.resending_plugin_id &&
          event.has_precise_scrolling_deltas ==
              event_to_coalesce.has_precise_scrolling_deltas;
@@ -314,6 +340,12 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
       GetAccelerationRatio(event->delta_y, unaccelerated_y);
   event->dispatch_type =
       MergeDispatchTypes(old_dispatch_type, event_to_coalesce.dispatch_type);
+  // Coalesce a wheel event with synthetic phase began with a wheel event with
+  // synthetic phase ended.
+  if (event_to_coalesce.has_synthetic_phase &&
+      event_to_coalesce.phase == WebMouseWheelEvent::kPhaseBegan) {
+    event->phase = WebMouseWheelEvent::kPhaseChanged;
+  }
 }
 
 bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
