@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/core/browser/address_validation_util.h"
+#include "components/autofill/core/browser/autofill_profile_validation_util.h"
 
 #include <utility>
 
@@ -13,8 +13,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/country_data.h"
+#include "components/autofill/core/browser/validation.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
+#include "third_party/libphonenumber/dist/cpp/src/phonenumbers/phonenumberutil.h"
 
 namespace autofill {
 
@@ -40,6 +42,8 @@ using ::i18n::addressinput::MISSING_REQUIRED_FIELD;
 using ::i18n::addressinput::UNEXPECTED_FIELD;
 using ::i18n::addressinput::UNKNOWN_VALUE;
 
+using ::i18n::phonenumbers::PhoneNumberUtil;
+
 const AddressField kFields[] = {COUNTRY, ADMIN_AREA, LOCALITY,
                                 DEPENDENT_LOCALITY, POSTAL_CODE};
 const AddressProblem kProblems[] = {UNEXPECTED_FIELD, MISSING_REQUIRED_FIELD,
@@ -62,8 +66,8 @@ bool SetValidityStateForAddressField(AutofillProfile* profile,
 }
 
 // Set the validity state of all address fields in the |profile| to |state|.
-void SetAllValidityStates(AutofillProfile* profile,
-                          AutofillProfile::ValidityState state) {
+void SetAllAddressValidityStates(AutofillProfile* profile,
+                                 AutofillProfile::ValidityState state) {
   DCHECK(profile);
   for (auto field : kFields)
     SetValidityStateForAddressField(profile, field, state);
@@ -120,14 +124,21 @@ void SetEmptyValidityIfEmpty(AutofillProfile* profile) {
 
 }  // namespace
 
-namespace address_validation_util {
+namespace profile_validation_util {
 
-AutofillProfile::ValidityState ValidateAddress(
-    AutofillProfile* profile,
-    AddressValidator* address_validator) {
+void ValidateProfile(AutofillProfile* profile,
+                     AddressValidator* address_validator) {
   DCHECK(address_validator);
-  if (!profile)
-    return AutofillProfile::UNVALIDATED;
+  DCHECK(profile);
+  ValidateAddress(profile, address_validator);
+  ValidatePhoneNumber(profile);
+  ValidateEmailAddress(profile);
+}
+
+void ValidateAddress(AutofillProfile* profile,
+                     AddressValidator* address_validator) {
+  DCHECK(address_validator);
+  DCHECK(profile);
 
   if (!base::ContainsValue(
           CountryDataMap::GetInstance()->country_codes(),
@@ -135,16 +146,15 @@ AutofillProfile::ValidityState ValidateAddress(
     // If the country code is not in the database, the country code and the
     // profile are invalid, and other fields cannot be validated, because it is
     // unclear which, if any, rule should apply.
-    SetAllValidityStates(profile, AutofillProfile::UNVALIDATED);
+    SetAllAddressValidityStates(profile, AutofillProfile::UNVALIDATED);
     SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::INVALID);
     SetEmptyValidityIfEmpty(profile);
-    return AutofillProfile::INVALID;
+    return;
   }
 
   AddressData address;
   InitializeAddressFromProfile(*profile, &address);
 
-  AutofillProfile::ValidityState profile_validity;
   FieldProblemMap problems;
   // status denotes if the rule was successfully loaded before validation.
   AddressValidator::Status status =
@@ -153,28 +163,61 @@ AutofillProfile::ValidityState ValidateAddress(
   if (status == AddressValidator::SUCCESS) {
     // The rules were found and applied. Initialize all fields to VALID here and
     // update the fields with problems below.
-    profile_validity = AutofillProfile::VALID;
-    SetAllValidityStates(profile, AutofillProfile::VALID);
+    SetAllAddressValidityStates(profile, AutofillProfile::VALID);
   } else {
     // If the rules are not yet available, ValidateAddress can still check for
     // MISSING_REQUIRED_FIELD. In this case, the address fields will be either
     // UNVALIDATED or INVALID.
-    profile_validity = AutofillProfile::UNVALIDATED;
-    SetAllValidityStates(profile, AutofillProfile::UNVALIDATED);
+    SetAllAddressValidityStates(profile, AutofillProfile::UNVALIDATED);
     SetValidityStateForAddressField(profile, COUNTRY, AutofillProfile::VALID);
   }
 
   for (auto problem : problems) {
-    if (SetValidityStateForAddressField(profile, problem.first,
-                                        AutofillProfile::INVALID)) {
-      profile_validity = AutofillProfile::INVALID;
-    }
+    SetValidityStateForAddressField(profile, problem.first,
+                                    AutofillProfile::INVALID);
   }
 
   SetEmptyValidityIfEmpty(profile);
-
-  return profile_validity;
 }
 
-}  // namespace address_validation_util
+void ValidateEmailAddress(AutofillProfile* profile) {
+  const base::string16& email = profile->GetRawInfo(EMAIL_ADDRESS);
+  if (email.empty()) {
+    profile->SetValidityState(EMAIL_ADDRESS, AutofillProfile::EMPTY);
+    return;
+  }
+
+  profile->SetValidityState(EMAIL_ADDRESS, autofill::IsValidEmailAddress(email)
+                                               ? AutofillProfile::VALID
+                                               : AutofillProfile::INVALID);
+}
+
+void ValidatePhoneNumber(AutofillProfile* profile) {
+  const std::string& phone_number =
+      base::UTF16ToUTF8(profile->GetRawInfo(PHONE_HOME_WHOLE_NUMBER));
+  if (phone_number.empty()) {
+    profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER, AutofillProfile::EMPTY);
+    return;
+  }
+
+  const std::string& country_code =
+      base::UTF16ToUTF8(profile->GetRawInfo(ADDRESS_HOME_COUNTRY));
+  if (!base::ContainsValue(CountryDataMap::GetInstance()->country_codes(),
+                           country_code)) {
+    // If the country code is not in the database, the phone number cannot be
+    // validated.
+    profile->SetValidityState(PHONE_HOME_WHOLE_NUMBER,
+                              AutofillProfile::UNVALIDATED);
+    return;
+  }
+
+  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
+  profile->SetValidityState(
+      PHONE_HOME_WHOLE_NUMBER,
+      phone_util->IsPossibleNumberForString(phone_number, country_code)
+          ? AutofillProfile::VALID
+          : AutofillProfile::INVALID);
+}
+
+}  // namespace profile_validation_util
 }  // namespace autofill

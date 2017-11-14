@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/address.h"
@@ -27,7 +28,8 @@ namespace autofill {
 // implements the FormGroup interface so that owners of this object can request
 // form information from the profile, and the profile will delegate the request
 // to the requested form group type.
-class AutofillProfile : public AutofillDataModel {
+class AutofillProfile : public AutofillDataModel,
+                        public base::SupportsWeakPtr<AutofillProfile> {
  public:
   enum RecordType {
     // A profile stored and editable locally.
