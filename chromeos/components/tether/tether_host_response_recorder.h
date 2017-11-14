@@ -13,7 +13,10 @@
 #include "components/cryptauth/remote_device.h"
 
 class PrefService;
-class PrefRegistrySimple;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 namespace chromeos {
 
@@ -32,7 +35,7 @@ class TetherHostResponseRecorder {
 
   // Registers the prefs used by this class to |registry|. Must be called before
   // this class is utilized.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Note: The PrefService* passed here must be created using the same registry
   // passed to RegisterPrefs().

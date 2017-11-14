@@ -15,7 +15,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
@@ -110,7 +110,8 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
                        base::Unretained(this))));
     fake_configuration_remover_ =
         base::MakeUnique<FakeNetworkConfigurationRemover>();
-    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    test_pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
 
     WifiHotspotDisconnectorImpl::RegisterPrefs(test_pref_service_->registry());
     wifi_hotspot_disconnector_ = base::MakeUnique<WifiHotspotDisconnectorImpl>(
@@ -205,7 +206,8 @@ class WifiHotspotDisconnectorImplTest : public NetworkStateTest {
   std::unique_ptr<TestNetworkConnectionHandler>
       test_network_connection_handler_;
   std::unique_ptr<FakeNetworkConfigurationRemover> fake_configuration_remover_;
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
 
   std::string wifi_service_path_;
   std::string disconnection_result_;

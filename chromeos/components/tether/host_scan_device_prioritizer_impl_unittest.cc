@@ -9,7 +9,7 @@
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/tether_host_response_recorder.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -22,7 +22,8 @@ class HostScanDevicePrioritizerImplTest : public testing::Test {
       : test_devices_(cryptauth::GenerateTestRemoteDevices(10)) {}
 
   void SetUp() override {
-    pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
     TetherHostResponseRecorder::RegisterPrefs(pref_service_->registry());
     recorder_ =
         base::MakeUnique<TetherHostResponseRecorder>(pref_service_.get());
@@ -33,7 +34,7 @@ class HostScanDevicePrioritizerImplTest : public testing::Test {
 
   std::vector<cryptauth::RemoteDevice> test_devices_;
 
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TetherHostResponseRecorder> recorder_;
 
   std::unique_ptr<HostScanDevicePrioritizerImpl> prioritizer_;

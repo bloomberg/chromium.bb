@@ -15,7 +15,7 @@
 #include "chromeos/components/tether/tether_component_impl.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "components/prefs/testing_pref_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +45,8 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     fake_cryptauth_service_ =
         base::MakeUnique<cryptauth::FakeCryptAuthService>();
 
-    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
+    test_pref_service_ =
+        base::MakeUnique<sync_preferences::TestingPrefServiceSyncable>();
     TetherComponentImpl::RegisterProfilePrefs(test_pref_service_->registry());
 
     // Note: The null pointers passed to the constructor are not actually used
@@ -86,7 +87,8 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
   FakeBleAdvertiser* fake_ble_advertiser_;
   FakeBleScanner* fake_ble_scanner_;
   FakeDisconnectTetheringRequestSender*

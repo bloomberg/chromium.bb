@@ -313,7 +313,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<chromeos::FakePowerManagerClient> fake_power_manager_client_;
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
+      test_pref_service_;
   std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>>
       mock_cryptauth_device_manager_;
   std::unique_ptr<TestTetherComponentFactory> test_tether_component_factory_;
