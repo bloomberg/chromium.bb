@@ -36,13 +36,6 @@ namespace {
 
 const char kSSLManagerKeyName[] = "content_ssl_manager";
 
-// Events for UMA. Do not reorder or change!
-enum SSLGoodCertSeenEvent {
-  NO_PREVIOUS_EXCEPTION = 0,
-  HAD_PREVIOUS_EXCEPTION = 1,
-  SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
-};
-
 void OnAllowCertificateWithRecordDecision(
     bool record_decision,
     const base::Callback<void(bool, content::CertificateRequestResultType)>&
@@ -322,7 +315,6 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
     // have occurred. If the cert info has not been set, do nothing since it
     // isn't known if the connection was actually a valid connection or if it
     // had a cert error.
-    SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
     if (ssl_host_state_delegate_ &&
         ssl_host_state_delegate_->HasAllowException(url.host())) {
       // If there's no certificate error, a good certificate has been seen, so
@@ -330,10 +322,7 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
       // certificates. This intentionally does not apply to cached resources
       // (see https://crbug.com/634553 for an explanation).
       ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
-      event = HAD_PREVIOUS_EXCEPTION;
     }
-    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.good_cert_seen", event,
-                              SSL_GOOD_CERT_SEEN_EVENT_MAX);
   }
 }
 
