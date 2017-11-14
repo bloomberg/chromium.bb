@@ -15981,6 +15981,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.BeaconInterval" units="ms">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The time between successive Domain Reliability beacons being queued in the
@@ -15989,6 +15992,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.BeaconIntervalGlobal" units="ms">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The time between successive Domain Reliability beacons being queued across
@@ -15997,6 +16003,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.BeaconReported" enum="BooleanReported">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     Whether a beacon added to a Domain Reliability context was saved to be
@@ -16005,6 +16014,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.OnBeaconDidEvict" enum="BooleanDidEvict">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     Whether adding a beacon to a Domain Reliability context caused it to evict
@@ -16013,6 +16025,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.ReportedBeaconError" enum="NetErrorCodes">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The Chrome error code included in a beacon saved to be uploaded to the
@@ -16022,6 +16037,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DomainReliability.ReportedBeaconError_HasServerIP"
     enum="NetErrorCodes">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The Chrome error code included in a beacon with a non-empty server_ip field
@@ -16030,6 +16048,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.ReportedBeaconUploadDepth" units="levels">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The upload depth included in a beacon saved to be uploaded to the collector.
@@ -16040,6 +16061,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DomainReliability.SetConfigRecreatedContext"
     enum="BooleanCreated">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     When Domain Reliability receives a valid NEL configuration header for an
@@ -16049,6 +16073,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.UploadCollectorIndex">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The index of the collector that a Domain Reliability upload was sent to.
@@ -16057,6 +16084,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.UploadCollectorRetryDelay" units="ms">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     After an upload to a collector finishes (successfully or not), the delay
@@ -16087,6 +16117,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.UploadInterval" units="ms">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The time between successive Domain Reliability uploads being started in the
@@ -16096,6 +16129,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomainReliability.UploadIntervalGlobal" units="ms">
+  <obsolete>
+    Removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     The time between successive Domain Reliability uploads being started across
@@ -45153,6 +45189,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ResponseSizeByProcess.Browser" units="KB">
+  <obsolete>
+    The code to record this histogram was removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by
@@ -45161,6 +45200,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ResponseSizeByProcess.Renderer" units="KB">
+  <obsolete>
+    The code to record this histogram was removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by
@@ -45169,6 +45211,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ResponseSizeByProcess.Unknown" units="KB">
+  <obsolete>
+    The code to record this histogram was removed November 2017.
+  </obsolete>
   <owner>juliatuttle@chromium.org</owner>
   <summary>
     Count of (post-SSL/proxy, pre-filter) kilobytes received per request made by

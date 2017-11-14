@@ -83,13 +83,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   // uploaded.
   base::TimeTicks first_beacon_time() const { return first_beacon_time_; }
 
-  // Gets the time until the next upload attempt on the last collector used.
-  // This will be 0 if the upload was a success; it does not take into account
-  // minimum_upload_delay and maximum_upload_delay.
-  base::TimeDelta last_collector_retry_delay() const {
-    return last_collector_retry_delay_;
-  }
-
  private:
   void MaybeScheduleUpload();
 
@@ -126,10 +119,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
   // first_beacon_time_ saved during uploads.  Restored if upload fails.
   base::TimeTicks old_first_beacon_time_;
-
-  // Time until the next upload attempt on the last collector used. (Saved for
-  // histograms in Context.)
-  base::TimeDelta last_collector_retry_delay_;
 
   // Extra bits to return in GetWebUIData.
   base::TimeTicks scheduled_min_time_;

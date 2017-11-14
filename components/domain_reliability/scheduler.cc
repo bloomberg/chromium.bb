@@ -144,7 +144,6 @@ void DomainReliabilityScheduler::OnUploadComplete(
   backoff->InformOfRequest(result.is_success());
   if (result.is_retry_after())
     backoff->SetCustomReleaseTime(time_->NowTicks() + result.retry_after);
-  last_collector_retry_delay_ = backoff->GetTimeUntilRelease();
 
   if (!result.is_success()) {
     // Restore upload_pending_ and first_beacon_time_ to pre-upload state,

@@ -779,8 +779,6 @@ split_static_library("browser") {
     "net/quota_policy_channel_id_store.h",
     "net/referrer.cc",
     "net/referrer.h",
-    "net/request_source_bandwidth_histograms.cc",
-    "net/request_source_bandwidth_histograms.h",
     "net/safe_search_util.cc",
     "net/safe_search_util.h",
     "net/service_providers_win.cc",

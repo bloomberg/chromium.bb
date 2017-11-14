@@ -26,16 +26,7 @@ void DomainReliabilityContextManager::RouteBeacon(
   if (!context)
     return;
 
-  bool queued = context->OnBeacon(std::move(beacon));
-  if (!queued)
-    return;
-
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (!last_routed_beacon_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("DomainReliability.BeaconIntervalGlobal",
-                             now - last_routed_beacon_time_);
-  }
-  last_routed_beacon_time_ = now;
+  context->OnBeacon(std::move(beacon));
 }
 
 void DomainReliabilityContextManager::SetConfig(
@@ -57,8 +48,6 @@ void DomainReliabilityContextManager::SetConfig(
     // needlessly; make sure the config has actually changed before recreating
     // the context.
     bool config_same = contexts_[key]->config().Equals(*config);
-    UMA_HISTOGRAM_BOOLEAN("DomainReliability.SetConfigRecreatedContext",
-                          !config_same);
     if (!config_same) {
       DVLOG(1) << "Ignoring unchanged NEL header for existing origin "
                << origin.spec() << ".";

@@ -73,8 +73,6 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // context manager knows they are allowed to set a config again later.
   std::unordered_set<std::string> removed_contexts_;
 
-  base::TimeTicks last_routed_beacon_time_;
-
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityContextManager);
 };
 

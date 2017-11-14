@@ -26,12 +26,6 @@ using base::Value;
 
 namespace domain_reliability {
 
-namespace {
-void LogOnBeaconDidEvictHistogram(bool evicted) {
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.OnBeaconDidEvict", evicted);
-}
-}  // namespace
-
 // static
 const int DomainReliabilityContext::kMaxUploadDepthToSchedule = 1;
 
@@ -69,33 +63,15 @@ DomainReliabilityContext::~DomainReliabilityContext() {
   ClearBeacons();
 }
 
-bool DomainReliabilityContext::OnBeacon(
+void DomainReliabilityContext::OnBeacon(
     std::unique_ptr<DomainReliabilityBeacon> beacon) {
   bool success = (beacon->status == "ok");
   double sample_rate = beacon->details.quic_port_migration_detected
                            ? 1.0
                            : config().GetSampleRate(success);
-  bool should_report = base::RandDouble() < sample_rate;
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.BeaconReported", should_report);
-  if (!should_report) {
-    // If the beacon isn't queued to be reported, it definitely cannot evict
-    // an older beacon. (This histogram is also logged below based on whether
-    // an older beacon was actually evicted.)
-    LogOnBeaconDidEvictHistogram(false);
-    return false;
-  }
+  if (base::RandDouble() >= sample_rate)
+    return;
   beacon->sample_rate = sample_rate;
-
-  UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.ReportedBeaconError",
-                              -beacon->chrome_error);
-  if (!beacon->server_ip.empty()) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "DomainReliability.ReportedBeaconError_HasServerIP",
-        -beacon->chrome_error);
-  }
-  UMA_HISTOGRAM_COUNTS_100("DomainReliability.ReportedBeaconUploadDepth",
-                           beacon->upload_depth);
-  // TODO(juliatuttle): Histogram HTTP response code?
 
   // Allow beacons about reports, but don't schedule an upload for more than
   // one layer of recursion, to avoid infinite report loops.
@@ -105,17 +81,6 @@ bool DomainReliabilityContext::OnBeacon(
   bool should_evict = beacons_.size() > kMaxQueuedBeacons;
   if (should_evict)
     RemoveOldestBeacon();
-
-  LogOnBeaconDidEvictHistogram(should_evict);
-
-  base::TimeTicks now = base::TimeTicks::Now();
-  if (last_queued_beacon_time_ != base::TimeTicks()) {
-    UMA_HISTOGRAM_LONG_TIMES("DomainReliability.BeaconInterval",
-                             now - last_queued_beacon_time_);
-  }
-  last_queued_beacon_time_ = now;
-
-  return true;
 }
 
 void DomainReliabilityContext::ClearBeacons() {
@@ -198,13 +163,6 @@ void DomainReliabilityContext::StartUpload() {
       base::Bind(
           &DomainReliabilityContext::OnUploadComplete,
           weak_factory_.GetWeakPtr()));
-
-  UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadCollectorIndex",
-                              static_cast<int>(collector_index));
-  if (!last_upload_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadInterval",
-                             upload_time_ - last_upload_time_);
-  }
 }
 
 void DomainReliabilityContext::OnUploadComplete(
@@ -223,8 +181,6 @@ void DomainReliabilityContext::OnUploadComplete(
   DCHECK(!upload_time_.is_null());
   UMA_HISTOGRAM_MEDIUM_TIMES("DomainReliability.UploadDuration",
                              now - upload_time_);
-  UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadCollectorRetryDelay",
-                           scheduler_.last_collector_retry_delay());
   last_upload_time_ = upload_time_;
   upload_time_ = base::TimeTicks();
 }
