@@ -257,22 +257,6 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void AsyncMountPublic(const cryptohome::Identification& public_mount_id,
-                        int flags,
-                        AsyncMethodCallback callback) override {
-    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeAsyncMountPublic);
-    dbus::MessageWriter writer(&method_call);
-    writer.AppendString(public_mount_id.id());
-    writer.AppendBool(flags & cryptohome::CREATE_IF_MISSING);
-    writer.AppendBool(flags & cryptohome::ENSURE_EPHEMERAL);
-    proxy_->CallMethod(
-        &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  // CryptohomeClient override.
   void TpmIsReady(DBusMethodCallback<bool> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
                                  cryptohome::kCryptohomeTpmIsReady);

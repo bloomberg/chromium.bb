@@ -170,13 +170,6 @@ void FakeCryptohomeClient::AsyncMountGuest(AsyncMethodCallback callback) {
   ReturnAsyncMethodResult(std::move(callback));
 }
 
-void FakeCryptohomeClient::AsyncMountPublic(
-    const cryptohome::Identification& public_mount_id,
-    int flags,
-    AsyncMethodCallback callback) {
-  ReturnAsyncMethodResult(std::move(callback));
-}
-
 void FakeCryptohomeClient::TpmIsReady(DBusMethodCallback<bool> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));

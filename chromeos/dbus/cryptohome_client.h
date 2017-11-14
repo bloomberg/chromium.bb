@@ -218,15 +218,6 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // succeeds.
   virtual void AsyncMountGuest(AsyncMethodCallback callback) = 0;
 
-  // Calls the AsyncMount method to asynchronously mount the cryptohome for
-  // |public_mount_id|. For supported |flags|, see the documentation of
-  // AsyncMethodCaller::AsyncMount().  |callback| is called after the method
-  // call succeeds.
-  virtual void AsyncMountPublic(
-      const cryptohome::Identification& public_mount_id,
-      int flags,
-      AsyncMethodCallback callback) = 0;
-
   // Calls TpmIsReady method.
   virtual void TpmIsReady(DBusMethodCallback<bool> callback) = 0;
 
