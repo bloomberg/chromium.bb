@@ -83,16 +83,20 @@ void ExtensionEnableFlow::Run() {
 }
 
 void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extensions::ExtensionSystem* system =
+      extensions::ExtensionSystem::Get(profile_);
+  ExtensionService* service = system->extension_service();
   const Extension* extension = service->GetExtensionById(extension_id_, true);
-  if (!extension) {
-    delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
-    return;
-  }
 
-  // Supervised users can't re-enable custodian-installed extensions.
-  if (extensions::util::IsExtensionSupervised(extension, profile_)) {
+  bool abort =
+      !extension ||
+      // The extension might be force-disabled by policy.
+      system->management_policy()->MustRemainDisabled(extension, nullptr,
+                                                      nullptr) ||
+      // Supervised users can't re-enable custodian-installed extensions.
+      extensions::util::IsExtensionSupervised(extension, profile_);
+
+  if (abort) {
     delegate_->ExtensionEnableFlowAborted(false);  // |delegate_| may delete us.
     return;
   }
@@ -109,6 +113,7 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
     // This is a no-op if the extension was previously terminated.
     service->EnableExtension(extension_id_);
 
+    DCHECK(service->IsExtensionEnabled(extension_id_));
     delegate_->ExtensionEnableFlowFinished();  // |delegate_| may delete us.
     return;
   }
@@ -187,6 +192,8 @@ void ExtensionEnableFlow::InstallPromptDone(
     }
 
     service->GrantPermissionsAndEnableExtension(extension);
+
+    DCHECK(service->IsExtensionEnabled(extension_id_));
     delegate_->ExtensionEnableFlowFinished();  // |delegate_| may delete us.
   } else {
     delegate_->ExtensionEnableFlowAborted(
