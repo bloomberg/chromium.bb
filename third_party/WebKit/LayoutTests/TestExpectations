@@ -3007,9 +3007,9 @@ crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/devtools/workers-on-nav
 crbug.com/700374 [ Win ] http/tests/devtools/workers-on-navigation.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
-crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.html [ Failure Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/worker-js-frames.html [ Failure Pass ]
-crbug.com/703518 virtual/threaded/http/tests/devtools/tracing/worker-js-frames.html [ Failure Pass ]
+crbug.com/703518 http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
+crbug.com/703518 virtual/threaded/http/tests/devtools/tracing/worker-js-frames.js [ Failure Pass ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
 
@@ -3830,8 +3830,8 @@ crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/ti
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations.html [ Pass Timeout ]
@@ -3863,7 +3863,7 @@ crbug.com/720047 external/wpt/paint-timing [ Skip ]
 crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
-crbug.com/770232 [ Mac ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.html [ Pass Failure ]
+crbug.com/770232 [ Mac ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 
 # Test flaky (crashing) on WebKit Android (Nexus4)
 crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]

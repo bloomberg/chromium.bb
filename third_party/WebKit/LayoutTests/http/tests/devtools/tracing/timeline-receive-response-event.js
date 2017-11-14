@@ -1,29 +1,35 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/timeline-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function performActions()
-{
-    var callback;
-    var promise = new Promise((fulfill) => callback = fulfill);
-    var image = new Image();
-    image.onload = bar;
-    // Use random urls to avoid caching.
-    const random = Math.random();
-    image.src = "resources/anImage.png?random=" + random;
+(async function() {
+  TestRunner.addResult(`Tests the Timeline API instrumentation of a SendRequest, ReceiveResponse etc.\n`);
+  await TestRunner.loadModule('performance_test_runner');
+  await TestRunner.showPanel('timeline');
+  await TestRunner.evaluateInPagePromise(`
+      function performActions()
+      {
+          var callback;
+          var promise = new Promise((fulfill) => callback = fulfill);
+          var image = new Image();
+          image.onload = bar;
+          // Use random urls to avoid caching.
+          const random = Math.random();
+          image.src = "resources/anImage.png?random=" + random;
 
-    function bar()
-    {
-        var image = new Image();
-        image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
-        image.src = "resources/anotherImage.png?random=" + random;
-    }
-    return promise;
-}
+          function bar()
+          {
+              var image = new Image();
+              image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
+              image.src = "resources/anotherImage.png?random=" + random;
+          }
+          return promise;
+      }
 
-function test() {
+      if (!window.testRunner)
+          setTimeout(performActions, 3000);
+  `);
+
   UI.viewManager.showView('timeline');
   const panel = UI.panels.timeline;
   panel._disableCaptureJSProfileSetting.set(true);
@@ -57,18 +63,4 @@ function test() {
     PerformanceTestRunner.walkTimelineEventTree(dumpEvent);
     TestRunner.completeTest();
   }
-}
-
-if (!window.testRunner)
-    setTimeout(performActions, 3000);
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests the Timeline API instrumentation of a SendRequest, ReceiveResponse etc.
-</p>
-
-</body>
-</html>
+})();
