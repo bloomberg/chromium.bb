@@ -50,7 +50,6 @@ class HoverButton : public views::LabelButton {
 
   // views::InkDropHostView:
   SkColor GetInkDropBaseColor() const override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
