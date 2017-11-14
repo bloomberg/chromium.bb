@@ -70,10 +70,8 @@ data thanks to Bert Frees
 ** New, renamed or removed tables
 *** New
 - hr-g1.ctb
-- hr-g1.tbl
 *** Renamed
 - hr.ctb -> hr-comp8.utb
-- hr.tbl -> hr-comp8.tbl
 *** Removed
 
 * Noteworthy changes in release 3.2.0 (2017-06-06)
