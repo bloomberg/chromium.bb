@@ -75,6 +75,9 @@ component("message_center") {
       "message_center_observer.h",
       "message_center_style.cc",
       "message_center_style.h",
+      "message_center_tray.cc",
+      "message_center_tray.h",
+      "message_center_tray_delegate.h",
       "message_center_types.h",
       "notification.cc",
       "notification.h",
@@ -92,9 +95,6 @@ component("message_center") {
       "popup_timer.h",
       "popup_timers_controller.cc",
       "popup_timers_controller.h",
-      "ui_controller.cc",
-      "ui_controller.h",
-      "ui_delegate.h",
     ]
 
     sources += get_target_outputs(":message_center_vector_icons")
@@ -187,8 +187,8 @@ if (enable_message_center) {
     sources = [
       "fake_message_center.cc",
       "fake_message_center.h",
-      "fake_ui_delegate.cc",
-      "fake_ui_delegate.h",
+      "fake_message_center_tray_delegate.cc",
+      "fake_message_center_tray_delegate.h",
     ]
 
     deps = [
@@ -211,10 +211,10 @@ if (enable_message_center) {
       "cocoa/popup_collection_unittest.mm",
       "cocoa/popup_controller_unittest.mm",
       "message_center_impl_unittest.cc",
+      "message_center_tray_unittest.cc",
       "notification_delegate_unittest.cc",
       "notification_list_unittest.cc",
       "test/run_all_unittests.cc",
-      "ui_controller_unittest.cc",
     ]
 
     deps = [

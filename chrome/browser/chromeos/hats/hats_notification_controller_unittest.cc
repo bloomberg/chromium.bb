@@ -23,7 +23,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/message_center/fake_ui_delegate.h"
+#include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 
@@ -51,7 +51,9 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
     MessageCenterNotificationManager* manager =
         static_cast<MessageCenterNotificationManager*>(
             g_browser_process->notification_ui_manager());
-    manager->SetUiDelegateForTest(new message_center::FakeUiDelegate());
+    manager->SetMessageCenterTrayDelegateForTest(
+        new message_center::FakeMessageCenterTrayDelegate(
+            message_center::MessageCenter::Get()));
 
     network_portal_detector::InitializeForTesting(
         &mock_network_portal_detector_);

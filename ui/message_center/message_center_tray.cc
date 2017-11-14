@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/message_center/ui_controller.h"
+#include "ui/message_center/message_center_tray.h"
 
 #include <memory>
 
@@ -14,9 +14,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_blocker.h"
-#include "ui/message_center/ui_delegate.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace message_center {
@@ -31,7 +31,7 @@ const int kShowSettingsCommand = 1;
 class NotificationMenuModel : public ui::SimpleMenuModel,
                               public ui::SimpleMenuModel::Delegate {
  public:
-  NotificationMenuModel(UiController* controller,
+  NotificationMenuModel(MessageCenterTray* tray,
                         const Notification& notification);
   ~NotificationMenuModel() override;
 
@@ -41,16 +41,14 @@ class NotificationMenuModel : public ui::SimpleMenuModel,
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  UiController* controller_;
+  MessageCenterTray* tray_;
   Notification notification_;
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuModel);
 };
 
-NotificationMenuModel::NotificationMenuModel(UiController* controller,
+NotificationMenuModel::NotificationMenuModel(MessageCenterTray* tray,
                                              const Notification& notification)
-    : ui::SimpleMenuModel(this),
-      controller_(controller),
-      notification_(notification) {
+    : ui::SimpleMenuModel(this), tray_(tray), notification_(notification) {
   DCHECK(!notification.display_source().empty());
   AddItem(kTogglePermissionCommand,
           l10n_util::GetStringFUTF16(IDS_MESSAGE_CENTER_NOTIFIER_DISABLE,
@@ -63,7 +61,8 @@ NotificationMenuModel::NotificationMenuModel(UiController* controller,
 #endif
 }
 
-NotificationMenuModel::~NotificationMenuModel() {}
+NotificationMenuModel::~NotificationMenuModel() {
+}
 
 bool NotificationMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
@@ -85,7 +84,7 @@ void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
       MessageCenter::Get()->RemoveNotification(notification_.id(), false);
       break;
     case kShowSettingsCommand:
-      controller_->ShowNotifierSettingsBubble();
+      tray_->ShowNotifierSettingsBubble();
       break;
     default:
       NOTREACHED();
@@ -94,19 +93,21 @@ void NotificationMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 }  // namespace
 
-UiController::UiController(UiDelegate* delegate)
-    : message_center_(MessageCenter::Get()),
+MessageCenterTray::MessageCenterTray(
+    MessageCenterTrayDelegate* delegate,
+    message_center::MessageCenter* message_center)
+    : message_center_(message_center),
       message_center_visible_(false),
       popups_visible_(false),
       delegate_(delegate) {
   message_center_->AddObserver(this);
 }
 
-UiController::~UiController() {
+MessageCenterTray::~MessageCenterTray() {
   message_center_->RemoveObserver(this);
 }
 
-bool UiController::ShowMessageCenterBubble(bool show_by_click) {
+bool MessageCenterTray::ShowMessageCenterBubble(bool show_by_click) {
   if (message_center_visible_)
     return true;
 
@@ -115,12 +116,12 @@ bool UiController::ShowMessageCenterBubble(bool show_by_click) {
   message_center_visible_ = delegate_->ShowMessageCenter(show_by_click);
   if (message_center_visible_) {
     message_center_->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-    NotifyUiControllerChanged();
+    NotifyMessageCenterTrayChanged();
   }
   return message_center_visible_;
 }
 
-bool UiController::HideMessageCenterBubble() {
+bool MessageCenterTray::HideMessageCenterBubble() {
 #if defined(OS_CHROMEOS)
   // TODO(yoshiki): Move the message center bubble related logic to ash/.
   hide_empty_message_center_callback_.reset();
@@ -134,7 +135,7 @@ bool UiController::HideMessageCenterBubble() {
   return true;
 }
 
-void UiController::MarkMessageCenterHidden() {
+void MessageCenterTray::MarkMessageCenterHidden() {
   if (!message_center_visible_)
     return;
   message_center_visible_ = false;
@@ -147,15 +148,15 @@ void UiController::MarkMessageCenterHidden() {
     return;
   }
 
-  NotifyUiControllerChanged();
+  NotifyMessageCenterTrayChanged();
 }
 
-void UiController::ShowPopupBubble() {
+void MessageCenterTray::ShowPopupBubble() {
   if (message_center_visible_)
     return;
 
   if (popups_visible_) {
-    NotifyUiControllerChanged();
+    NotifyMessageCenterTrayChanged();
     return;
   }
 
@@ -164,19 +165,19 @@ void UiController::ShowPopupBubble() {
 
   popups_visible_ = delegate_->ShowPopups();
 
-  NotifyUiControllerChanged();
+  NotifyMessageCenterTrayChanged();
 }
 
-bool UiController::HidePopupBubble() {
+bool MessageCenterTray::HidePopupBubble() {
   if (!popups_visible_)
     return false;
   HidePopupBubbleInternal();
-  NotifyUiControllerChanged();
+  NotifyMessageCenterTrayChanged();
 
   return true;
 }
 
-void UiController::HidePopupBubbleInternal() {
+void MessageCenterTray::HidePopupBubbleInternal() {
   if (!popups_visible_)
     return;
 
@@ -184,65 +185,70 @@ void UiController::HidePopupBubbleInternal() {
   popups_visible_ = false;
 }
 
-void UiController::ShowNotifierSettingsBubble() {
+void MessageCenterTray::ShowNotifierSettingsBubble() {
   if (popups_visible_)
     HidePopupBubbleInternal();
 
   message_center_visible_ = delegate_->ShowNotifierSettings();
   message_center_->SetVisibility(message_center::VISIBILITY_SETTINGS);
 
-  NotifyUiControllerChanged();
+  NotifyMessageCenterTrayChanged();
 }
 
-std::unique_ptr<ui::MenuModel> UiController::CreateNotificationMenuModel(
+std::unique_ptr<ui::MenuModel> MessageCenterTray::CreateNotificationMenuModel(
     const Notification& notification) {
   return std::make_unique<NotificationMenuModel>(this, notification);
 }
 
-void UiController::OnNotificationAdded(const std::string& notification_id) {
+void MessageCenterTray::OnNotificationAdded(
+    const std::string& notification_id) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationRemoved(const std::string& notification_id,
-                                         bool by_user) {
+void MessageCenterTray::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationUpdated(const std::string& notification_id) {
+void MessageCenterTray::OnNotificationUpdated(
+    const std::string& notification_id) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationClicked(const std::string& notification_id) {
+void MessageCenterTray::OnNotificationClicked(
+    const std::string& notification_id) {
   if (popups_visible_)
     OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationButtonClicked(
+void MessageCenterTray::OnNotificationButtonClicked(
     const std::string& notification_id,
     int button_index) {
   if (popups_visible_)
     OnMessageCenterChanged();
 }
 
-void UiController::OnNotificationSettingsClicked(bool handled) {
+void MessageCenterTray::OnNotificationSettingsClicked(bool handled) {
   if (!handled)
     ShowNotifierSettingsBubble();
 }
 
-void UiController::OnNotificationDisplayed(const std::string& notification_id,
-                                           const DisplaySource source) {
-  NotifyUiControllerChanged();
+void MessageCenterTray::OnNotificationDisplayed(
+    const std::string& notification_id,
+    const DisplaySource source) {
+  NotifyMessageCenterTrayChanged();
 }
 
-void UiController::OnQuietModeChanged(bool in_quiet_mode) {
-  NotifyUiControllerChanged();
+void MessageCenterTray::OnQuietModeChanged(bool in_quiet_mode) {
+  NotifyMessageCenterTrayChanged();
 }
 
-void UiController::OnBlockingStateChanged(NotificationBlocker* blocker) {
+void MessageCenterTray::OnBlockingStateChanged(NotificationBlocker* blocker) {
   OnMessageCenterChanged();
 }
 
-void UiController::OnMessageCenterChanged() {
+void MessageCenterTray::OnMessageCenterChanged() {
 #if defined(OS_CHROMEOS)
   // TODO(yoshiki): Move the message center bubble related logic to ash/.
   if (message_center_visible_ && message_center_->NotificationCount() == 0) {
@@ -251,7 +257,7 @@ void UiController::OnMessageCenterChanged() {
 
     hide_empty_message_center_callback_ =
         std::make_unique<base::CancelableClosure>(base::Bind(
-            base::IgnoreResult(&UiController::HideMessageCenterBubble),
+            base::IgnoreResult(&MessageCenterTray::HideMessageCenterBubble),
             base::Unretained(this)));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, hide_empty_message_center_callback_->callback());
@@ -268,11 +274,11 @@ void UiController::OnMessageCenterChanged() {
   else if (!popups_visible_ && message_center_->HasPopupNotifications())
     ShowPopupBubble();
 
-  NotifyUiControllerChanged();
+  NotifyMessageCenterTrayChanged();
 }
 
-void UiController::NotifyUiControllerChanged() {
-  delegate_->OnMessageCenterContentsChanged();
+void MessageCenterTray::NotifyMessageCenterTrayChanged() {
+  delegate_->OnMessageCenterTrayChanged();
 }
 
 }  // namespace message_center

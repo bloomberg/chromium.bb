@@ -31,7 +31,7 @@
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#include "ui/message_center/fake_ui_delegate.h"
+#include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
@@ -187,7 +187,9 @@ class BackgroundContentsServiceNotificationTest
     MessageCenterNotificationManager* manager =
         static_cast<MessageCenterNotificationManager*>(
             g_browser_process->notification_ui_manager());
-    manager->SetUiDelegateForTest(new message_center::FakeUiDelegate());
+    manager->SetMessageCenterTrayDelegateForTest(
+        new message_center::FakeMessageCenterTrayDelegate(
+            message_center::MessageCenter::Get()));
   }
 
   void TearDown() override {
