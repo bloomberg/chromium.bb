@@ -383,5 +383,37 @@ TEST_F(OopPixelTest, DrawRectScaleTransformOptions) {
   ExpectEquals(options.bitmap_rect.size(), &actual, &expected);
 }
 
+TEST_F(OopPixelTest, DrawRectQueryMiddleOfDisplayList) {
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  std::vector<SkColor> colors = {
+      SkColorSetARGB(255, 0, 0, 255),    SkColorSetARGB(255, 0, 255, 0),
+      SkColorSetARGB(255, 0, 255, 255),  SkColorSetARGB(255, 255, 0, 0),
+      SkColorSetARGB(255, 255, 0, 255),  SkColorSetARGB(255, 255, 255, 0),
+      SkColorSetARGB(255, 255, 255, 255)};
+
+  for (int i = 0; i < 20; ++i) {
+    gfx::Rect draw_rect(0, i, 1, 1);
+    PaintFlags flags;
+    flags.setColor(colors[i % colors.size()]);
+    display_item_list->StartPaint();
+    display_item_list->push<DrawRectOp>(gfx::RectToSkRect(draw_rect), flags);
+    display_item_list->EndPaintOfUnpaired(draw_rect);
+  }
+  display_item_list->Finalize();
+
+  // Draw a "tile" in the middle of the display list with a post scale.
+  RasterOptions options;
+  options.bitmap_rect = {0, 10, 1, 10};
+  options.playback_rect = {0, 10, 1, 10};
+  options.background_color = SK_ColorGRAY;
+  options.post_translate_x = 0.f;
+  options.post_translate_y = 0.f;
+  options.post_scale = 2.f;
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(options.bitmap_rect.size(), &actual, &expected);
+}
+
 }  // namespace
 }  // namespace cc
