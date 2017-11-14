@@ -21,6 +21,7 @@ class Extension;
 namespace media_router {
 class CastMediaSinkService;
 class DialMediaSinkServiceProxy;
+class WiredDisplayMediaRouteProvider;
 
 // MediaRouter implementation that uses the MediaRouteProvider implemented in
 // the component extension.
@@ -93,6 +94,10 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // Initializes MRPs and adds them to |media_route_providers_|.
   void InitializeMediaRouteProviders();
 
+  // Helper methods for InitializeMediaRouteProviders().
+  void InitializeExtensionMediaRouteProviderProxy();
+  void InitializeWiredDisplayMediaRouteProvider();
+
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be
   // called many times but the MRPM will only be called once per registration
@@ -108,6 +113,9 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   // MediaRouteProvider proxy that forwards calls to the MRPM in the component
   // extension.
   std::unique_ptr<ExtensionMediaRouteProviderProxy> extension_provider_proxy_;
+
+  // MediaRouteProvider for casting to local screens.
+  std::unique_ptr<WiredDisplayMediaRouteProvider> wired_display_provider_;
 
   // Media sink service for DIAL devices.
   scoped_refptr<DialMediaSinkServiceProxy> dial_media_sink_service_proxy_;

@@ -10,6 +10,8 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
+#include "chrome/browser/media/router/mojo/wired_display_media_route_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/media_router/media_source_helper.h"
 #include "extensions/common/extension.h"
 #if defined(OS_WIN)
@@ -177,13 +179,32 @@ void MediaRouterDesktop::ProvideSinks(const std::string& provider_name,
 }
 
 void MediaRouterDesktop::InitializeMediaRouteProviders() {
-  // Initialize the extension MRP proxy.
+  InitializeExtensionMediaRouteProviderProxy();
+  if (base::FeatureList::IsEnabled(features::kLocalScreenCasting))
+    InitializeWiredDisplayMediaRouteProvider();
+}
+
+void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
   mojom::MediaRouteProviderPtr extension_provider_proxy_ptr;
   extension_provider_proxy_ =
       std::make_unique<ExtensionMediaRouteProviderProxy>(
           context(), mojo::MakeRequest(&extension_provider_proxy_ptr));
   media_route_providers_[mojom::MediaRouteProvider::Id::EXTENSION] =
       std::move(extension_provider_proxy_ptr);
+}
+
+void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
+  mojom::MediaRouterPtr media_router_ptr;
+  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
+  mojom::MediaRouteProviderPtr wired_display_provider_ptr;
+  wired_display_provider_ = std::make_unique<WiredDisplayMediaRouteProvider>(
+      mojo::MakeRequest(&wired_display_provider_ptr),
+      std::move(media_router_ptr), Profile::FromBrowserContext(context()));
+  RegisterMediaRouteProvider(
+      mojom::MediaRouteProvider::Id::WIRED_DISPLAY,
+      std::move(wired_display_provider_ptr),
+      base::BindOnce([](const std::string& instance_id,
+                        mojom::MediaRouteProviderConfigPtr config) {}));
 }
 
 #if defined(OS_WIN)
