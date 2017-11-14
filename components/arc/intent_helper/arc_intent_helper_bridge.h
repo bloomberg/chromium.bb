@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "url/gurl.h"
 
 class KeyedServiceBaseFactory;
 
@@ -110,6 +112,11 @@ class ArcIntentHelperBridge
  private:
   THREAD_CHECKER(thread_checker_);
 
+  // Returns true if |url| is whitelisted. This function also returns true when
+  // |url| is neither chrome:// nor about:.
+  // TODO(yusukes): Properly fix b/68953603 and remove the function.
+  bool IsWhitelistedChromeUrl(const GURL& url);
+
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
@@ -122,6 +129,9 @@ class ArcIntentHelperBridge
   std::vector<IntentFilter> intent_filters_;
 
   base::ObserverList<ArcIntentHelperObserver> observer_list_;
+
+  // TODO(yusukes): Properly fix b/68953603 and remove the variable.
+  std::set<GURL> whitelisted_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

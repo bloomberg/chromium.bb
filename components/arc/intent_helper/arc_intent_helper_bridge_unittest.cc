@@ -290,14 +290,48 @@ TEST_F(ArcIntentHelperTest, TestOnOpenUrl_ChromeScheme) {
   instance_->OnOpenUrl("chrome://www.google.com");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 
-  instance_->OnOpenUrl("chrome://settings");
+  instance_->OnOpenUrl("chrome://help");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 
-  instance_->OnOpenUrl("about:");
+  instance_->OnOpenUrl("chrome://version");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:");  // this redirects to chrome://version
+  EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  // Some of the about/chrome URLs are whitelisted (for now).
+  instance_->OnOpenUrl("about:blank");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:downloads");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:history");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 
   instance_->OnOpenUrl("about:settings");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/accounts");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/keyboard-overlay");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/networks?type=VPN");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/networks?type=this_is_not_whitelisted");
   EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/syncSetup");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("about:settings/thisIsNotWhitelisted");
+  EXPECT_FALSE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
+
+  instance_->OnOpenUrl("chrome://settings");
+  EXPECT_TRUE(test_open_url_delegate_->TakeLastOpenedUrl().is_valid());
 }
 
 // Tests that OnOpenChromeSettings opens the specified settings section in the
