@@ -140,7 +140,7 @@ class CORE_EXPORT AtomicHTMLToken {
         break;
       case HTMLToken::DOCTYPE:
         name_ = AtomicString(token.Data());
-        doctype_data_ = WTF::MakeUnique<DoctypeData>();
+        doctype_data_ = std::make_unique<DoctypeData>();
         doctype_data_->has_public_identifier_ = true;
         token.PublicIdentifier().AppendTo(doctype_data_->public_identifier_);
         doctype_data_->has_system_identifier_ = true;

@@ -1079,7 +1079,7 @@ void PaintLayer::UpdateAncestorDependentCompositingInputs(
     const AncestorDependentCompositingInputs& compositing_inputs,
     bool has_ancestor_with_clip_path) {
   ancestor_dependent_compositing_inputs_ =
-      WTF::MakeUnique<AncestorDependentCompositingInputs>(compositing_inputs);
+      std::make_unique<AncestorDependentCompositingInputs>(compositing_inputs);
   has_ancestor_with_clip_path_ = has_ancestor_with_clip_path;
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
@@ -1577,7 +1577,7 @@ void PaintLayer::DidUpdateScrollsOverflow() {
 void PaintLayer::UpdateStackingNode() {
   DCHECK(!stacking_node_);
   if (RequiresStackingNode())
-    stacking_node_ = WTF::MakeUnique<PaintLayerStackingNode>(this);
+    stacking_node_ = std::make_unique<PaintLayerStackingNode>(this);
   else
     stacking_node_ = nullptr;
 }

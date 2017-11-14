@@ -24,7 +24,7 @@ void RarePaintData::ClearLocalBorderBoxProperties() {
 
 void RarePaintData::SetLocalBorderBoxProperties(PropertyTreeState& state) {
   if (!local_border_box_properties_)
-    local_border_box_properties_ = WTF::MakeUnique<PropertyTreeState>(state);
+    local_border_box_properties_ = std::make_unique<PropertyTreeState>(state);
   else
     *local_border_box_properties_ = state;
 }

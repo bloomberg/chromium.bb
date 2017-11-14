@@ -305,7 +305,7 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
     : time_origin_(MonotonicallyIncreasingTime()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
-      inspector_task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
+      inspector_task_runner_(std::make_unique<InspectorTaskRunner>()),
       loading_context_(loading_context),
       worker_reporting_proxy_(worker_reporting_proxy),
       shutdown_event_(WTF::WrapUnique(
@@ -374,7 +374,7 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
       static_cast<scheduler::WebThreadImplForWorkerScheduler&>(
           GetWorkerBackingThread().BackingThread().PlatformThread());
   global_scope_scheduler_ =
-      WTF::MakeUnique<scheduler::WorkerGlobalScopeScheduler>(
+      std::make_unique<scheduler::WorkerGlobalScopeScheduler>(
           web_thread_for_worker.GetWorkerScheduler());
   waitable_event->Signal();
 }

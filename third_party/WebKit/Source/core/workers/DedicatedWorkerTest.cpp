@@ -112,7 +112,7 @@ class DedicatedWorkerMessagingProxyForTest
       : DedicatedWorkerMessagingProxy(execution_context,
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
-    worker_object_proxy_ = WTF::MakeUnique<DedicatedWorkerObjectProxyForTest>(
+    worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxyForTest>(
         this, GetParentFrameTaskRunners());
   }
 
@@ -153,7 +153,7 @@ class DedicatedWorkerMessagingProxyForTest
  private:
   std::unique_ptr<WorkerThread> CreateWorkerThread() override {
     auto worker_thread =
-        WTF::MakeUnique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
+        std::make_unique<DedicatedWorkerThreadForTest>(WorkerObjectProxy());
     mock_worker_thread_lifecycle_observer_ =
         new MockWorkerThreadLifecycleObserver(
             worker_thread->GetWorkerThreadLifecycleContext());
