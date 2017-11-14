@@ -265,9 +265,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
         newToolbarModelIOSWithDelegate:static_cast<ToolbarModelDelegateIOS*>(
                                            [OCMArg anyPointer])];
     [[[factory stub] andReturn:testWTC]
-        newWebToolbarControllerWithDelegate:[OCMArg any]
-                                  urlLoader:[OCMArg any]
-                                 dispatcher:[OCMArg any]];
+        newToolbarControllerWithDelegate:[OCMArg any]
+                               urlLoader:[OCMArg any]
+                              dispatcher:[OCMArg any]];
     [[[factory stub] andReturn:passKitViewController_]
         newPassKitViewControllerForPass:nil];
     [[[factory stub] andReturn:nil] showPassKitErrorInfoBarForManager:nil];

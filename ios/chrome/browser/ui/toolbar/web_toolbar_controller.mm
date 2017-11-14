@@ -95,6 +95,7 @@ using ios::material::TimingFunction;
 // switch the main bots to Xcode 8.
 #if defined(__IPHONE_10_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0)
 @interface WebToolbarController ()<CAAnimationDelegate>
+@property(nonatomic, weak) id<UrlLoader> urlLoader;
 @end
 #endif
 

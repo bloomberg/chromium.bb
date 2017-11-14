@@ -15,10 +15,10 @@
 @class PKPass;
 @class PKAddPassesViewController;
 @class TabModel;
+@protocol Toolbar;
 class ToolbarModelDelegateIOS;
 class ToolbarModelIOS;
 @protocol UrlLoader;
-@class WebToolbarController;
 @protocol WebToolbarDelegate;
 
 namespace infobars {
@@ -47,11 +47,11 @@ class ChromeBrowserState;
 - (ToolbarModelIOS*)newToolbarModelIOSWithDelegate:
     (ToolbarModelDelegateIOS*)delegate;
 
-- (WebToolbarController*)
-newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
-                          urlLoader:(id<UrlLoader>)urlLoader
-                         dispatcher:(id<ApplicationCommands, BrowserCommands>)
-                                        dispatcher;
+- (id<Toolbar>)
+newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
+                       urlLoader:(id<UrlLoader>)urlLoader
+                      dispatcher:
+                          (id<ApplicationCommands, BrowserCommands>)dispatcher;
 
 // Returns a new keyboard commands coordinator to handle keyboard commands.
 - (KeyCommandsProvider*)newKeyCommandsProvider;

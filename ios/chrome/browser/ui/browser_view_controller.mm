@@ -1901,10 +1901,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinator;
   _toolbarCoordinator.tabModel = _model;
   [_toolbarCoordinator
-      setWebToolbar:[_dependencyFactory
-                        newWebToolbarControllerWithDelegate:self
-                                                  urlLoader:self
-                                                 dispatcher:self.dispatcher]];
+      setToolbarController:
+          [_dependencyFactory
+              newToolbarControllerWithDelegate:self
+                                     urlLoader:self
+                                    dispatcher:self.dispatcher]];
   [_dispatcher startDispatchingToTarget:_toolbarCoordinator
                             forProtocol:@protocol(OmniboxFocuser)];
   [_toolbarCoordinator setTabCount:[_model count]];

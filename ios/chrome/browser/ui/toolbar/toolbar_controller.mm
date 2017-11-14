@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
@@ -94,6 +95,11 @@ using ios::material::TimingFunction;
 
 @property(nonatomic, strong) NSLayoutConstraint* leadingFakeSafeAreaConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* trailingFakeSafeAreaConstraint;
+// Style of this toolbar.
+@property(nonatomic, readonly, assign) ToolbarControllerStyle style;
+// The view containing all the content of the toolbar. It respects the trailing
+// and leading anchors of the safe area.
+@property(nonatomic, readonly, strong) UIView* contentView;
 
 // Returns the background image that should be used for |style|.
 - (UIImage*)getBackgroundImageForStyle:(ToolbarControllerStyle)style;
@@ -116,13 +122,6 @@ using ios::material::TimingFunction;
 @synthesize leadingFakeSafeAreaConstraint = _leadingFakeSafeAreaConstraint;
 @synthesize trailingFakeSafeAreaConstraint = _trailingFakeSafeAreaConstraint;
 @dynamic view;
-
-- (NSLayoutConstraint*)heightConstraint {
-  if (!heightConstraint_) {
-    heightConstraint_ = [self.view.heightAnchor constraintEqualToConstant:0];
-  }
-  return heightConstraint_;
-}
 
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
                    dispatcher:
@@ -492,6 +491,19 @@ using ios::material::TimingFunction;
 - (void)hideViewsForNewTabPage:(BOOL)hide {
   DCHECK(!IsIPadIdiom());
   [shadowView_ setHidden:hide];
+}
+
+- (void)adjustToolbarHeight {
+  self.heightConstraint.constant =
+      ToolbarHeightWithTopOfScreenOffset([self statusBarOffset]);
+  self.heightConstraint.active = YES;
+}
+
+- (NSLayoutConstraint*)heightConstraint {
+  if (!heightConstraint_) {
+    heightConstraint_ = [self.view.heightAnchor constraintEqualToConstant:0];
+  }
+  return heightConstraint_;
 }
 
 #pragma mark Animations

@@ -56,15 +56,16 @@
   return new ToolbarModelImplIOS(delegate);
 }
 
-- (WebToolbarController*)
-newWebToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
-                          urlLoader:(id<UrlLoader>)urlLoader
-                         dispatcher:(id<ApplicationCommands, BrowserCommands>)
-                                        dispatcher {
-  return [[WebToolbarController alloc] initWithDelegate:delegate
-                                              urlLoader:urlLoader
-                                           browserState:browserState_
-                                             dispatcher:dispatcher];
+- (id<Toolbar>)
+newToolbarControllerWithDelegate:(id<WebToolbarDelegate>)delegate
+                       urlLoader:(id<UrlLoader>)urlLoader
+                      dispatcher:
+                          (id<ApplicationCommands, BrowserCommands>)dispatcher {
+  return static_cast<id<Toolbar>>([[WebToolbarController alloc]
+      initWithDelegate:delegate
+             urlLoader:urlLoader
+          browserState:browserState_
+            dispatcher:dispatcher]);
 }
 
 - (KeyCommandsProvider*)newKeyCommandsProvider {
