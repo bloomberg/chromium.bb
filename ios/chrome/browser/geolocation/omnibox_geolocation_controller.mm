@@ -318,8 +318,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 }
 
 - (void)finishPageLoadForTab:(Tab*)tab loadSuccess:(BOOL)loadSuccess {
-  if (tab.isPrerenderTab || !loadSuccess || !tab.browserState ||
-      tab.browserState->IsOffTheRecord()) {
+  if (!loadSuccess || !tab.browserState || tab.browserState->IsOffTheRecord()) {
     return;
   }
 

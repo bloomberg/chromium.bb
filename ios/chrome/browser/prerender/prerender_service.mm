@@ -47,8 +47,7 @@ bool PrerenderService::HasPrerenderForUrl(const GURL& url) {
 }
 
 bool PrerenderService::IsWebStatePrerendered(web::WebState* web_state) {
-  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
-  return tab.isPrerenderTab;
+  return [controller_ isWebStatePrerendered:web_state];
 }
 
 std::unique_ptr<web::WebState> PrerenderService::ReleasePrerenderContents() {

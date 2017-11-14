@@ -22,6 +22,7 @@ source_set("prerender") {
     "//components/signin/ios/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/geolocation:geolocation_internal",
     "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/prefs",

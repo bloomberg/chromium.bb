@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
+#import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "net/url_request/url_fetcher.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -33,6 +34,7 @@ class WebState;
 // webpage.  This class contains methods to queue and cancel prerendering for a
 // given URL as well as a method to return the prerendered Tab.
 @interface PreloadController : NSObject<CRWNativeContentProvider,
+                                        CRWWebStateDelegate,
                                         PrefObserverDelegate,
                                         TabDelegate,
                                         CRConnectionTypeObserverBridge>
@@ -66,6 +68,9 @@ class WebState;
 
 // Cancels any outstanding prerender requests and destroys any prerendered Tabs.
 - (void)cancelPrerender;
+
+// Returns whether |webState| is the WebState used for pre-rendering.
+- (BOOL)isWebStatePrerendered:(web::WebState*)webState;
 
 // Returns the currently prerendered WebState, or nil if none exists.  After
 // this method is called, the PrerenderController reverts to a non-prerendering

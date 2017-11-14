@@ -55,6 +55,8 @@
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -157,9 +159,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
 
   OpenInController* _openInController;
 
-  // YES if this Tab is being prerendered.
-  BOOL _isPrerenderTab;
-
   // Last visited timestamp.
   double _lastVisitedTimestamp;
 
@@ -260,7 +259,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 @synthesize browserState = _browserState;
 @synthesize useGreyImageCache = useGreyImageCache_;
-@synthesize isPrerenderTab = _isPrerenderTab;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
@@ -406,33 +404,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (web::NavigationManager*)navigationManager {
   return self.webState ? self.webState->GetNavigationManager() : nullptr;
-}
-
-- (void)setIsPrerenderTab:(BOOL)isPrerender {
-  if (_isPrerenderTab == isPrerender)
-    return;
-
-  _isPrerenderTab = isPrerender;
-
-  self.webState->SetShouldSuppressDialogs(isPrerender);
-
-  if (_isPrerenderTab)
-    return;
-
-  if (!base::FeatureList::IsEnabled(fullscreen::features::kNewFullscreen)) {
-    [_legacyFullscreenController moveContentBelowHeader];
-  }
-
-  // If the page has finished loading, take a snapshot.  If the page is still
-  // loading, do nothing, as CRWWebController will automatically take a
-  // snapshot once the load completes.
-  if ([self loadFinished])
-    [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
-
-  [[OmniboxGeolocationController sharedInstance]
-      finishPageLoadForTab:self
-               loadSuccess:[self loadFinished]];
-  [self countMainFrameLoad];
 }
 
 - (void)setLegacyFullscreenControllerDelegate:
@@ -714,7 +685,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)countMainFrameLoad {
-  if ([self isPrerenderTab] ||
+  if (self.isPrerenderTab ||
       self.webState->GetLastCommittedURL().SchemeIs(kChromeUIScheme)) {
     return;
   }
@@ -860,7 +831,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 
   if ([self shouldRecordPageLoadStartForNavigation:navigation] &&
-      [_parentTabModel tabUsageRecorder] && !_isPrerenderTab) {
+      [_parentTabModel tabUsageRecorder] && !self.isPrerenderTab) {
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(webState);
   }
 
@@ -922,9 +893,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   // Cancel prerendering if response is "application/octet-stream". It can be a
   // video file which should not be played from preload tab (crbug.com/436813).
-  if (_isPrerenderTab &&
+  if (self.isPrerenderTab &&
       self.webState->GetContentsMimeType() == "application/octet-stream") {
-    [delegate_ discardPrerender];
+    [self discardPrerender];
   }
 
   bool wasPost = false;
@@ -962,9 +933,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                                      [NSNumber numberWithBool:loadSuccess],
                                      kTabModelPageLoadSuccess, nil]];
   }
-  [[OmniboxGeolocationController sharedInstance]
-      finishPageLoadForTab:self
-               loadSuccess:loadSuccess];
+
+  if (!self.isPrerenderTab) {
+    [[OmniboxGeolocationController sharedInstance]
+        finishPageLoadForTab:self
+                 loadSuccess:loadSuccess];
+  }
 
   if (loadSuccess)
     [self updateSnapshotWithOverlay:YES visibleFrameOnly:YES];
@@ -994,8 +968,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (BOOL)webController:(CRWWebController*)webController
     shouldOpenExternalURL:(const GURL&)URL {
-  if (_isPrerenderTab) {
-    [delegate_ discardPrerender];
+  if (self.isPrerenderTab) {
+    [self discardPrerender];
     return NO;
   }
   return YES;
@@ -1129,8 +1103,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 #pragma mark - CRWWebDelegate and CRWWebStateObserver protocol methods
 
 - (void)webStateDidSuppressDialog:(web::WebState*)webState {
-  DCHECK(_isPrerenderTab);
-  [delegate_ discardPrerender];
+  DCHECK(self.isPrerenderTab);
+  [self discardPrerender];
 }
 
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController {
@@ -1173,12 +1147,16 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)discardPrerender {
-  DCHECK(_isPrerenderTab);
+  DCHECK(self.isPrerenderTab);
   [delegate_ discardPrerender];
 }
 
 - (BOOL)isPrerenderTab {
-  return _isPrerenderTab;
+  DCHECK(_browserState);
+  PrerenderService* prerenderService =
+      PrerenderServiceFactory::GetForBrowserState(_browserState);
+  return prerenderService &&
+         prerenderService->IsWebStatePrerendered(self.webState);
 }
 
 - (void)wasShown {
