@@ -75,8 +75,8 @@ class ReadingListWebStateObserverTest : public web::WebTest {
         nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
     reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle,
                                   reading_list::ADDED_VIA_CURRENT_APP);
-    ReadingListWebStateObserver::FromWebState(&test_web_state_,
-                                              reading_list_model_.get());
+    ReadingListWebStateObserver::CreateForWebState(&test_web_state_,
+                                                   reading_list_model_.get());
   }
 
  protected:

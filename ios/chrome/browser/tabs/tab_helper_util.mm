@@ -80,7 +80,7 @@ void AttachTabHelpers(web::WebState* web_state) {
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
-  ReadingListWebStateObserver::FromWebState(web_state, model);
+  ReadingListWebStateObserver::CreateForWebState(web_state, model);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.

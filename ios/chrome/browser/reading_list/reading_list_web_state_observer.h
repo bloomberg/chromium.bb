@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "components/reading_list/core/reading_list_model_observer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 #include "url/gurl.h"
 
 class ReadingListModel;
@@ -20,12 +21,13 @@ class NavigationItem;
 // Observes the loading of pages coming from the reading list, determines
 // whether loading an offline version of the page is needed, and actually
 // trigger the loading of the offline page (if possible).
-class ReadingListWebStateObserver : public web::WebStateObserver,
-                                    public ReadingListModelObserver {
+class ReadingListWebStateObserver
+    : public ReadingListModelObserver,
+      public web::WebStateObserver,
+      public web::WebStateUserData<ReadingListWebStateObserver> {
  public:
-  static ReadingListWebStateObserver* FromWebState(
-      web::WebState* web_state,
-      ReadingListModel* reading_list_model);
+  static void CreateForWebState(web::WebState* web_state,
+                                ReadingListModel* reading_list_model);
 
   ~ReadingListWebStateObserver() override;
 
@@ -72,6 +74,10 @@ class ReadingListWebStateObserver : public web::WebStateObserver,
       web::PageLoadCompletionStatus load_completion_status) override;
   void WebStateDestroyed(web::WebState* web_state) override;
   void DidStartLoading(web::WebState* web_state) override;
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   ReadingListModel* reading_list_model_;
   std::unique_ptr<base::Timer> timer_;

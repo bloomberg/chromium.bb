@@ -22,75 +22,43 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - ReadingListWebStateObserverUserDataWrapper
+DEFINE_WEB_STATE_USER_DATA_KEY(ReadingListWebStateObserver);
 
-namespace {
-// The key under which ReadingListWebStateObserverUserDataWrapper are stored in
-// a WebState's user data.
-const void* const kObserverKey = &kObserverKey;
-}  // namespace
-
-// Wrapper class used to associated ReadingListWebStateObserver with their
-// WebStates.
-class ReadingListWebStateObserverUserDataWrapper
-    : public base::SupportsUserData::Data {
- public:
-  static ReadingListWebStateObserverUserDataWrapper* FromWebState(
-      web::WebState* web_state,
-      ReadingListModel* reading_list_model) {
-    DCHECK(web_state);
-    ReadingListWebStateObserverUserDataWrapper* wrapper =
-        static_cast<ReadingListWebStateObserverUserDataWrapper*>(
-            web_state->GetUserData(kObserverKey));
-    if (!wrapper) {
-      auto newDataWrapper =
-          base::MakeUnique<ReadingListWebStateObserverUserDataWrapper>(
-              web_state, reading_list_model);
-      wrapper = newDataWrapper.get();
-      web_state->SetUserData(kObserverKey, std::move(newDataWrapper));
-    }
-    return wrapper;
-  }
-
-  ReadingListWebStateObserverUserDataWrapper(
-      web::WebState* web_state,
-      ReadingListModel* reading_list_model)
-      : observer_(web_state, reading_list_model) {
-    DCHECK(web_state);
-  }
-
-  ReadingListWebStateObserver* observer() { return &observer_; }
-
- private:
-  ReadingListWebStateObserver observer_;
-};
-
-#pragma mark - ReadingListWebStateObserver
-
-ReadingListWebStateObserver* ReadingListWebStateObserver::FromWebState(
+// static
+void ReadingListWebStateObserver::CreateForWebState(
     web::WebState* web_state,
     ReadingListModel* reading_list_model) {
-  return ReadingListWebStateObserverUserDataWrapper::FromWebState(
-             web_state, reading_list_model)
-      ->observer();
+  DCHECK(web_state);
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(UserDataKey(),
+                           base::WrapUnique(new ReadingListWebStateObserver(
+                               web_state, reading_list_model)));
+  }
 }
 
 ReadingListWebStateObserver::~ReadingListWebStateObserver() {
   if (reading_list_model_) {
     reading_list_model_->RemoveObserver(this);
+    reading_list_model_ = nullptr;
+  }
+  // As the object can commit suicide, it is possible that its destructor
+  // is called before WebStateDestroyed. In that case stop observing the
+  // WebState.
+  if (web_state_) {
+    web_state_->RemoveObserver(this);
+    web_state_ = nullptr;
   }
 }
 
 ReadingListWebStateObserver::ReadingListWebStateObserver(
     web::WebState* web_state,
     ReadingListModel* reading_list_model)
-    : web::WebStateObserver(web_state),
+    : web_state_(web_state),
       reading_list_model_(reading_list_model),
       last_load_was_offline_(false),
       last_load_result_(web::PageLoadCompletionStatus::SUCCESS) {
+  web_state_->AddObserver(this);
   reading_list_model_->AddObserver(this);
-  DCHECK(web_state);
-  DCHECK(reading_list_model_);
 }
 
 bool ReadingListWebStateObserver::ShouldObserveItem(
@@ -110,16 +78,16 @@ bool ReadingListWebStateObserver::IsUrlAvailableOffline(const GURL& url) const {
 void ReadingListWebStateObserver::ReadingListModelLoaded(
     const ReadingListModel* model) {
   DCHECK(model == reading_list_model_);
-  if (web_state()->IsLoading()) {
-    DidStartLoading(web_state());
+  if (web_state_->IsLoading()) {
+    DidStartLoading(web_state_);
     return;
   }
   if (last_load_result_ == web::PageLoadCompletionStatus::SUCCESS ||
-      web_state()->IsShowingWebInterstitial()) {
+      web_state_->IsShowingWebInterstitial()) {
     return;
   }
   // An error page is being displayed.
-  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationManager* manager = web_state_->GetNavigationManager();
   web::NavigationItem* item = manager->GetLastCommittedItem();
   if (!ShouldObserveItem(item)) {
     return;
@@ -134,29 +102,30 @@ void ReadingListWebStateObserver::ReadingListModelLoaded(
 
 void ReadingListWebStateObserver::ReadingListModelBeingDeleted(
     const ReadingListModel* model) {
-  DCHECK(model == reading_list_model_);
+  DCHECK_EQ(reading_list_model_, model);
   StopCheckingProgress();
-  reading_list_model_->RemoveObserver(this);
-  reading_list_model_ = nullptr;
-  web::WebState* local_web_state = web_state();
-  Observe(nullptr);
-  local_web_state->RemoveUserData(kObserverKey);
+
+  // The call to RemoveUserData cause the destruction of the current instance,
+  // so nothing should be done after that point (this is like "delete this;").
+  // Unregistration as an observer happens in the destructor.
+  web_state_->RemoveUserData(UserDataKey());
 }
 
 void ReadingListWebStateObserver::DidStartLoading(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   StartCheckingLoading();
 }
 
 void ReadingListWebStateObserver::StartCheckingLoading() {
   DCHECK(reading_list_model_);
-  DCHECK(web_state());
+  DCHECK(web_state_);
   if (!reading_list_model_->loaded() ||
-      web_state()->IsShowingWebInterstitial()) {
+      web_state_->IsShowingWebInterstitial()) {
     StopCheckingProgress();
     return;
   }
 
-  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationManager* manager = web_state_->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
   bool is_reload = false;
 
@@ -205,10 +174,10 @@ void ReadingListWebStateObserver::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   DCHECK(reading_list_model_);
-  DCHECK(web_state);
+  DCHECK_EQ(web_state_, web_state);
   last_load_result_ = load_completion_status;
   web::NavigationItem* item =
-      web_state->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
   if (!item || !pending_url_.is_valid() ||
       !reading_list_model_->GetEntryByURL(pending_url_)) {
     StopCheckingProgress();
@@ -225,12 +194,13 @@ void ReadingListWebStateObserver::PageLoaded(
 }
 
 void ReadingListWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
   StopCheckingProgress();
-  if (reading_list_model_) {
-    reading_list_model_->RemoveObserver(this);
-    reading_list_model_ = nullptr;
-  }
-  web_state->RemoveUserData(kObserverKey);
+
+  // The call to RemoveUserData cause the destruction of the current instance,
+  // so nothing should be done after that point (this is like "delete this;").
+  // Unregistration as an observer happens in the destructor.
+  web_state_->RemoveUserData(UserDataKey());
 }
 
 void ReadingListWebStateObserver::StopCheckingProgress() {
@@ -243,7 +213,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
     StopCheckingProgress();
     return;
   }
-  web::NavigationManager* manager = web_state()->GetNavigationManager();
+  web::NavigationManager* manager = web_state_->GetNavigationManager();
   web::NavigationItem* item = manager->GetPendingItem();
 
   // Manager->GetPendingItem() returns null on reload.
@@ -258,7 +228,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
     return;
   }
   try_number_++;
-  double progress = web_state()->GetLoadingProgress();
+  double progress = web_state_->GetLoadingProgress();
   const double kMinimumExpectedProgressPerStep = 0.25;
   if (progress < try_number_ * kMinimumExpectedProgressPerStep) {
     LoadOfflineReadingListEntry();
@@ -286,7 +256,7 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
   GURL url = reading_list::OfflineURLForPath(
       entry->DistilledPath(), entry->URL(), entry->DistilledURL());
   web::NavigationManager* navigationManager =
-      web_state()->GetNavigationManager();
+      web_state_->GetNavigationManager();
   web::NavigationItem* item = navigationManager->GetPendingItem();
   if (!item) {
     // Either the loading finished on error and the item is already committed,
@@ -324,7 +294,7 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
     web::WebState::OpenURLParams params(url, item->GetReferrer(),
                                         WindowOpenDisposition::CURRENT_TAB,
                                         item->GetTransitionType(), NO);
-    web_state()->OpenURL(params);
+    web_state_->OpenURL(params);
   }
   reading_list_model_->SetReadStatus(entry->URL(), true);
   UMA_HISTOGRAM_BOOLEAN("ReadingList.OfflineVersionDisplayed", true);
