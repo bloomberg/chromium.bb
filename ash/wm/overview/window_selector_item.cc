@@ -360,9 +360,7 @@ class WindowSelectorItem::RoundedContainerView
     DCHECK(WasAnimationCompletedForProperty(
         ui::LayerAnimationElement::AnimatableProperty::OPACITY));
 
-    // Otherwise, hide the header and animate the color of this view.
-    if (item_)
-      item_->HideHeader();
+    // Otherwise, animate the color of this view.
     AnimateColor(gfx::Tween::EASE_IN, kSelectorColorSlideMilliseconds);
   }
 
@@ -596,10 +594,6 @@ void WindowSelectorItem::CloseWindow() {
   AnimateOpacity(0.0,
                  OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
   transform_window_.Close();
-}
-
-void WindowSelectorItem::HideHeader() {
-  transform_window_.HideHeader();
 }
 
 void WindowSelectorItem::OnMinimizedStateChanged() {

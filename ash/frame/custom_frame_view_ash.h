@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/window_style.mojom.h"
+#include "ash/shell_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -31,13 +32,30 @@ enum class FrameBackButtonState {
   kVisibleDisabled,
 };
 
+// A base class for v2 and ARC apps to hide header in overview mode.
+class ASH_EXPORT CustomFrameViewAshBase : public views::NonClientFrameView,
+                                          public ash::ShellObserver {
+ public:
+  CustomFrameViewAshBase();
+  ~CustomFrameViewAshBase() override;
+
+  // ash::ShellObserver:
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
+
+  // If |paint| is false, we should not paint the header. Used for overview mode
+  // with OnOverviewModeStarting() and OnOverviewModeEnded() to hide/show the
+  // header of v2 and ARC apps.
+  virtual void SetShouldPaintHeader(bool paint) {}
+};
+
 // A NonClientFrameView used for packaged apps, dialogs and other non-browser
 // windows. It supports immersive fullscreen. When in immersive fullscreen, the
 // client view takes up the entire widget and the window header is an overlay.
 // The window header overlay slides onscreen when the user hovers the mouse at
 // the top of the screen. See also views::CustomFrameView and
 // BrowserNonClientFrameViewAsh.
-class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
+class ASH_EXPORT CustomFrameViewAsh : public CustomFrameViewAshBase {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -97,6 +115,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
   gfx::Size GetMaximumSize() const override;
   void SchedulePaintInRect(const gfx::Rect& r) override;
   void SetVisible(bool visible) override;
+
+  // ash::CustomFrameViewAshBase:
+  void SetShouldPaintHeader(bool paint) override;
 
   const views::View* GetAvatarIconViewForTest() const;
 

@@ -73,10 +73,36 @@ const struct {
     {ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
     {ui::VKEY_F4, ui::EF_ALT_DOWN}};
 
-class CustomFrameView : public views::NonClientFrameView {
+class CustomFrameView : public ash::CustomFrameViewAshBase {
  public:
+  using ShapeRects = std::vector<gfx::Rect>;
+
   explicit CustomFrameView(views::Widget* widget) : widget_(widget) {}
   ~CustomFrameView() override {}
+
+  // Overridden from ash::CustomFrameViewAshBase:
+  void SetShouldPaintHeader(bool paint) override {
+    aura::Window* window = widget_->GetNativeWindow();
+    ui::Layer* layer = window->layer();
+    if (paint) {
+      if (layer->alpha_shape()) {
+        layer->SetAlphaShape(nullptr);
+        layer->SetMasksToBounds(false);
+      }
+      return;
+    }
+
+    int inset = window->GetProperty(aura::client::kTopViewInset);
+    if (inset <= 0)
+      return;
+
+    gfx::Rect bound(bounds().size());
+    bound.Inset(0, inset, 0, 0);
+    std::unique_ptr<ShapeRects> shape = std::make_unique<ShapeRects>();
+    shape->push_back(bound);
+    layer->SetAlphaShape(std::move(shape));
+    layer->SetMasksToBounds(true);
+  }
 
   // Overridden from views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override { return bounds(); }

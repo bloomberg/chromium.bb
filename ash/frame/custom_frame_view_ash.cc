@@ -162,6 +162,25 @@ class CustomFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// CustomFrameViewAshBase, public:
+
+CustomFrameViewAshBase::CustomFrameViewAshBase() {
+  Shell::Get()->AddShellObserver(this);
+}
+
+CustomFrameViewAshBase::~CustomFrameViewAshBase() {
+  Shell::Get()->RemoveShellObserver(this);
+}
+
+void CustomFrameViewAshBase::OnOverviewModeStarting() {
+  SetShouldPaintHeader(false);
+}
+
+void CustomFrameViewAshBase::OnOverviewModeEnded() {
+  SetShouldPaintHeader(true);
+}
+
 // static
 bool CustomFrameViewAsh::use_empty_minimum_size_for_test_ = false;
 
@@ -470,6 +489,10 @@ void CustomFrameViewAsh::SetVisible(bool visible) {
 
 const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
   return header_view_->avatar_icon();
+}
+
+void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
+  header_view_->SetShouldPaintHeader(paint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

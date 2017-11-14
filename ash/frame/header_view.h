@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/interfaces/window_style.mojom.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,7 +35,6 @@ enum class FrameBackButtonState;
 // and on screen in immersive fullscreen.
 class ASH_EXPORT HeaderView : public views::View,
                               public ImmersiveFullscreenControllerDelegate,
-                              public ShellObserver,
                               public TabletModeObserver {
  public:
   // |target_widget| is the widget that the caption buttons act on.
@@ -84,10 +82,6 @@ class ASH_EXPORT HeaderView : public views::View,
   void OnPaint(gfx::Canvas* canvas) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // ShellObserver:
-  void OnOverviewModeStarting() override;
-  void OnOverviewModeEnded() override;
-
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
@@ -97,6 +91,8 @@ class ASH_EXPORT HeaderView : public views::View,
   }
 
   views::View* avatar_icon() const;
+
+  void SetShouldPaintHeader(bool paint);
 
  private:
   // ImmersiveFullscreenControllerDelegate:
@@ -127,6 +123,9 @@ class ASH_EXPORT HeaderView : public views::View,
   bool is_immersive_delegate_ = true;
 
   bool did_layout_ = false;
+
+  // False to skip painting. Used for overview mode to hide the header.
+  bool should_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };

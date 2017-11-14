@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -579,6 +580,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
   ImmersiveModeController* immersive_mode_controller =
       browser_view->immersive_mode_controller();
   aura::Window* window = browser->window()->GetNativeWindow();
+  window->Show();
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
 
@@ -601,4 +603,12 @@ IN_PROC_BROWSER_TEST_F(HostedAppNonClientFrameViewAshTest, V1AppTopViewInset) {
   ToggleFullscreenModeAndWait(browser);
   EXPECT_FALSE(immersive_mode_controller->IsEnabled());
   EXPECT_LT(0, window->GetProperty(aura::client::kTopViewInset));
+
+  // The kTopViewInset is the same as in overview mode.
+  const int inset_normal = window->GetProperty(aura::client::kTopViewInset);
+  EXPECT_TRUE(
+      ash::Shell::Get()->window_selector_controller()->ToggleOverview());
+  const int inset_in_overview_mode =
+      window->GetProperty(aura::client::kTopViewInset);
+  EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }

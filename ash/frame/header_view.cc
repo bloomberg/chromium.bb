@@ -24,7 +24,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
       header_painter_(std::make_unique<DefaultHeaderPainter>(window_style)),
       avatar_icon_(nullptr),
       caption_button_container_(nullptr),
-      fullscreen_visible_fraction_(0) {
+      fullscreen_visible_fraction_(0),
+      should_paint_(true) {
   caption_button_container_ =
       new FrameCaptionButtonContainerView(target_widget_);
   caption_button_container_->UpdateSizeButtonVisibility();
@@ -33,14 +34,12 @@ HeaderView::HeaderView(views::Widget* target_widget,
   header_painter_->Init(target_widget_, this, caption_button_container_,
                         nullptr);
 
-  Shell::Get()->AddShellObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
 HeaderView::~HeaderView() {
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->RemoveShellObserver(this);
 }
 
 void HeaderView::SchedulePaintForTitle() {
@@ -140,6 +139,9 @@ void HeaderView::Layout() {
 }
 
 void HeaderView::OnPaint(gfx::Canvas* canvas) {
+  if (!should_paint_)
+    return;
+
   bool paint_as_active =
       target_widget_->non_client_view()->frame_view()->ShouldPaintAsActive();
   header_painter_->SetPaintAsActive(paint_as_active);
@@ -160,17 +162,6 @@ void HeaderView::ChildPreferredSizeChanged(views::View* child) {
   parent()->Layout();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// HeaderView, ShellObserver overrides:
-
-void HeaderView::OnOverviewModeStarting() {
-  caption_button_container_->SetVisible(false);
-}
-
-void HeaderView::OnOverviewModeEnded() {
-  caption_button_container_->SetVisible(true);
-}
-
 void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
@@ -186,6 +177,15 @@ void HeaderView::OnTabletModeEnded() {
 
 views::View* HeaderView::avatar_icon() const {
   return avatar_icon_;
+}
+
+void HeaderView::SetShouldPaintHeader(bool paint) {
+  if (should_paint_ == paint)
+    return;
+
+  should_paint_ = paint;
+  caption_button_container_->SetVisible(should_paint_);
+  SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -111,6 +111,10 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // need their frames painted.
   bool ShouldPaint() const;
 
+  // Helps to hide or show the header as needed when overview mode starts or
+  // ends.
+  void OnOverviewModeChanged(bool in_overview);
+
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
 
@@ -125,6 +129,12 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // Container for extra frame buttons shown for hosted app windows.
   // Owned by views hierarchy.
   HostedAppButtonContainer* hosted_app_button_container_;
+
+  // Indicates whether overview mode is active. Hide the header for V1 apps in
+  // overview mode because a fake header is added for better UX. If also in
+  // immersive mode before entering overview mode, the flag will be ignored
+  // because the reveal lock will determine the show/hide header.
+  bool in_overview_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewAsh);
 };
