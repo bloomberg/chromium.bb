@@ -1760,7 +1760,7 @@ unsigned Internals::mediaKeySessionCount() {
       InstanceCounters::kMediaKeySessionCounter);
 }
 
-unsigned Internals::suspendableObjectCount(Document* document) {
+unsigned Internals::pausableObjectCount(Document* document) {
   DCHECK(document);
   return document->PausableObjectCount();
 }

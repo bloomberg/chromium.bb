@@ -288,7 +288,7 @@ class Internals final : public ScriptWrappable {
 
   unsigned mediaKeysCount();
   unsigned mediaKeySessionCount();
-  unsigned suspendableObjectCount(Document*);
+  unsigned pausableObjectCount(Document*);
   unsigned wheelEventHandlerCount(Document*) const;
   unsigned scrollEventHandlerCount(Document*) const;
   unsigned touchStartOrMoveEventHandlerCount(Document*) const;

@@ -10,14 +10,14 @@
         window.iframe = document.querySelector('iframe').contentDocument;
 
         log('Before Reparenting');
-        shouldBe('window.internals.suspendableObjectCount(document)', 3);
-        shouldBe('window.internals.suspendableObjectCount(iframe)', 3);
+        shouldBe('window.internals.pausableObjectCount(document)', 3);
+        shouldBe('window.internals.pausableObjectCount(iframe)', 3);
 
         document.body.appendChild(window.iframe.querySelector('video'));
 
         log('After Reparenting');
-        shouldBe('window.internals.suspendableObjectCount(document)', 4);
-        shouldBe('window.internals.suspendableObjectCount(iframe)', 2);
+        shouldBe('window.internals.pausableObjectCount(document)', 4);
+        shouldBe('window.internals.pausableObjectCount(iframe)', 2);
     }
 </script>
 </body>
