@@ -211,12 +211,6 @@ public class ExternalAuthUtils {
         return false;
     }
 
-    // Temporary placeholder to be removed after downstream fix.
-    public boolean canUseGooglePlayServices(
-            final Context context, final UserRecoverableErrorHandler errorHandler) {
-        return canUseGooglePlayServices(errorHandler);
-    }
-
     /**
      * Shortcut of {@link #canUseGooglePlayServices(UserRecoverableErrorHandler)}.
      *
@@ -246,12 +240,6 @@ public class ExternalAuthUtils {
     public boolean canUseFirstPartyGooglePlayServices(
             UserRecoverableErrorHandler userRecoverableErrorHandler) {
         return canUseGooglePlayServices(userRecoverableErrorHandler) && isChromeGoogleSigned();
-    }
-
-    // Temporary placeholder to be removed after downstream fix.
-    public boolean canUseFirstPartyGooglePlayServices(
-            final Context context, final UserRecoverableErrorHandler errorHandler) {
-        return canUseFirstPartyGooglePlayServices(errorHandler);
     }
 
     /**
