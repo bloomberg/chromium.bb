@@ -84,17 +84,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
     STACK_ABOVE,
     STACK_BELOW
   };
-  enum class OcclusionState {
-    // The window's occlusion state isn't tracked
-    // (WindowOcclusionTracker::Track) or hasn't been computed yet.
-    UNKNOWN,
-    // The window is occluded, i.e. one of these conditions is true:
-    // - The window is hidden (Window::IsVisible() is true).
-    // - The bounds of the window are completely covered by opaque windows.
-    OCCLUDED,
-    // The window is not occluded.
-    NOT_OCCLUDED,
-  };
 
   typedef std::vector<Window*> Windows;
 
@@ -167,11 +156,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // account the visibility of the layer and ancestors, where as this tracks
   // whether Show() without a Hide() has been invoked.
   bool TargetVisibility() const { return visible_; }
-  // Returns the occlusion state of this window. Will be UNKNOWN if the
-  // occlusion state of this window isn't tracked
-  // (WindowOcclusionTracker::Track). Will be stale if called within the scope
-  // of a WindowOcclusionTracker::ScopedPauseOcclusionTracking.
-  OcclusionState occlusion_state() const { return occlusion_state_; }
 
   // Returns the window's bounds in root window's coordinates.
   gfx::Rect GetBoundsInRootWindow() const;
@@ -385,7 +369,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   friend class HitTestDataProviderAura;
   friend class LayoutManager;
   friend class PropertyConverter;
-  friend class WindowOcclusionTracker;
   friend class WindowPort;
   friend class WindowPortForShutdown;
   friend class WindowTargeter;
@@ -404,9 +387,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Updates the visible state of the layer, but does not make visible-state
   // specific changes. Called from Show()/Hide().
   void SetVisible(bool visible);
-
-  // Updates the occlusion state of the window.
-  void SetOccluded(bool occluded);
 
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
@@ -533,9 +513,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // from the visibility of the underlying layer, which may remain visible after
   // the window is hidden (e.g. to animate its disappearance).
   bool visible_;
-
-  // Occlusion state of the window.
-  OcclusionState occlusion_state_;
 
   int id_;
 
