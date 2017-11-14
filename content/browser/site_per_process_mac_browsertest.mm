@@ -9,6 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -64,56 +65,6 @@ class TextInputClientMacHelper {
   scoped_refptr<MessageLoopRunner> loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMacHelper);
-};
-
-// Class to detect incoming gesture event acks for scrolling tests.
-class InputEventAckWaiter
-    : public content::RenderWidgetHost::InputEventObserver {
- public:
-  InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
-      : message_loop_runner_(new content::MessageLoopRunner),
-        ack_type_waiting_for_(ack_type_waiting_for),
-        desired_ack_type_received_(false) {}
-  ~InputEventAckWaiter() override {}
-
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
-                       const blink::WebInputEvent& event) override {
-    if (event.GetType() != ack_type_waiting_for_)
-      return;
-
-    // Ignore synthetic GestureScrollBegin/Ends.
-    if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
-         static_cast<const blink::WebGestureEvent&>(event)
-             .data.scroll_begin.synthetic) ||
-        (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
-         static_cast<const blink::WebGestureEvent&>(event)
-             .data.scroll_end.synthetic)) {
-      return;
-    }
-
-    desired_ack_type_received_ = true;
-    if (message_loop_runner_->loop_running())
-      message_loop_runner_->Quit();
-  }
-
-  void Wait() {
-    if (!desired_ack_type_received_) {
-      message_loop_runner_->Run();
-    }
-  }
-
-  void Reset() {
-    desired_ack_type_received_ = false;
-    message_loop_runner_ = new content::MessageLoopRunner;
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  blink::WebInputEvent::Type ack_type_waiting_for_;
-  bool desired_ack_type_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
 };
 
 }  // namespace
@@ -196,14 +147,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   RenderWidgetHost* child_rwh =
       child_iframe_node->current_frame_host()->GetRenderWidgetHost();
 
-  std::unique_ptr<InputEventAckWaiter> gesture_scroll_begin_ack_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollBegin);
-  std::unique_ptr<InputEventAckWaiter> gesture_scroll_end_ack_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollEnd);
-  child_rwh->AddInputEventObserver(gesture_scroll_begin_ack_observer.get());
-  child_rwh->AddInputEventObserver(gesture_scroll_end_ack_observer.get());
+  InputEventAckWaiter gesture_scroll_begin_ack_observer(
+      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+                                        const blink::WebInputEvent& event) {
+        return event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+               !static_cast<const blink::WebGestureEvent&>(event)
+                    .data.scroll_begin.synthetic;
+      }));
+  InputEventAckWaiter gesture_scroll_end_ack_observer(
+      child_rwh, base::BindRepeating([](InputEventAckSource, InputEventAckState,
+                                        const blink::WebInputEvent& event) {
+        return event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
+               !static_cast<const blink::WebGestureEvent&>(event)
+                    .data.scroll_end.synthetic;
+      }));
 
   RenderWidgetHostViewBase* child_rwhv =
       static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
@@ -225,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
   child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  gesture_scroll_begin_ack_observer->Wait();
+  gesture_scroll_begin_ack_observer.Wait();
 
   scroll_event.delta_y = -2.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
@@ -242,9 +199,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
     scroll_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
     scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseNone;
     child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-    gesture_scroll_end_ack_observer->Wait();
-    gesture_scroll_begin_ack_observer->Reset();
-    gesture_scroll_end_ack_observer->Reset();
+    gesture_scroll_end_ack_observer.Wait();
+    gesture_scroll_begin_ack_observer.Reset();
+    gesture_scroll_end_ack_observer.Reset();
   }
 
   // We now go into a fling.
@@ -253,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseBegan;
   child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   if (!child_rwhv->wheel_scroll_latching_enabled())
-    gesture_scroll_begin_ack_observer->Wait();
+    gesture_scroll_begin_ack_observer.Wait();
 
   scroll_event.delta_y = -2.0f;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
@@ -265,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMacBrowserTest,
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseNone;
   scroll_event.momentum_phase = blink::WebMouseWheelEvent::kPhaseEnded;
   child_rwhv->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  gesture_scroll_end_ack_observer->Wait();
+  gesture_scroll_end_ack_observer.Wait();
 }
 
 namespace {

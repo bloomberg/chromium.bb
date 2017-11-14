@@ -1919,6 +1919,57 @@ InputEventAckState InputMsgWatcher::GetAckStateWaitIfNecessary() {
   return WaitForAck();
 }
 
+InputEventAckWaiter::InputEventAckWaiter(RenderWidgetHost* render_widget_host,
+                                         InputEventAckPredicate predicate)
+    : render_widget_host_(render_widget_host),
+      predicate_(predicate),
+      event_received_(false) {
+  render_widget_host_->AddInputEventObserver(this);
+}
+
+namespace {
+InputEventAckWaiter::InputEventAckPredicate EventAckHasType(
+    blink::WebInputEvent::Type type) {
+  return base::BindRepeating(
+      [](blink::WebInputEvent::Type expected_type, InputEventAckSource source,
+         InputEventAckState state, const blink::WebInputEvent& event) {
+        return event.GetType() == expected_type;
+      },
+      type);
+}
+}  // namespace
+
+InputEventAckWaiter::InputEventAckWaiter(RenderWidgetHost* render_widget_host,
+                                         blink::WebInputEvent::Type type)
+    : InputEventAckWaiter(render_widget_host, EventAckHasType(type)) {}
+
+InputEventAckWaiter::~InputEventAckWaiter() {
+  render_widget_host_->RemoveInputEventObserver(this);
+}
+
+void InputEventAckWaiter::Wait() {
+  if (!event_received_) {
+    base::RunLoop run_loop;
+    quit_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+}
+
+void InputEventAckWaiter::Reset() {
+  event_received_ = false;
+  quit_ = base::Closure();
+}
+
+void InputEventAckWaiter::OnInputEventAck(InputEventAckSource source,
+                                          InputEventAckState state,
+                                          const blink::WebInputEvent& event) {
+  if (predicate_.Run(source, state, event)) {
+    event_received_ = true;
+    if (quit_)
+      quit_.Run();
+  }
+}
+
 #if defined(OS_WIN)
 static void RunTaskAndSignalCompletion(const base::Closure& task,
                                        base::WaitableEvent* completion) {

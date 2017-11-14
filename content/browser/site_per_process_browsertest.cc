@@ -968,45 +968,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
   EXPECT_EQ(expected_title, entry->GetTitle());
 }
 
-// Class to detect incoming GestureScrollEnd acks for bubbling tests.
-class InputEventAckWaiter
-    : public content::RenderWidgetHost::InputEventObserver {
- public:
-  explicit InputEventAckWaiter(blink::WebInputEvent::Type ack_type_waiting_for)
-      : message_loop_runner_(new content::MessageLoopRunner),
-        ack_type_waiting_for_(ack_type_waiting_for),
-        desired_ack_type_received_(false) {}
-  ~InputEventAckWaiter() override {}
-
-  void OnInputEventAck(InputEventAckSource source,
-                       InputEventAckState state,
-                       const blink::WebInputEvent& event) override {
-    if (event.GetType() == ack_type_waiting_for_) {
-      desired_ack_type_received_ = true;
-      if (message_loop_runner_->loop_running())
-        message_loop_runner_->Quit();
-    }
-  }
-
-  void Wait() {
-    if (!desired_ack_type_received_) {
-      message_loop_runner_->Run();
-    }
-  }
-
-  void Reset() {
-    desired_ack_type_received_ = false;
-    message_loop_runner_ = new content::MessageLoopRunner;
-  }
-
- private:
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  blink::WebInputEvent::Type ack_type_waiting_for_;
-  bool desired_ack_type_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputEventAckWaiter);
-};
-
 // Test that the view bounds for an out-of-process iframe are set and updated
 // correctly, including accounting for local frame offsets in the parent and
 // scroll positions.
@@ -1093,6 +1054,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             ->GetFrameTree()
                             ->root();
   ASSERT_EQ(1U, root->child_count());
+  RenderWidgetHost* root_rwh =
+      root->current_frame_host()->GetRenderWidgetHost();
 
   FrameTreeNode* child_iframe_node = root->child_at(0);
 
@@ -1102,21 +1065,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderWidgetHostViewBase* child_rwhv =
       static_cast<RenderWidgetHostViewBase*>(child_rwh->GetView());
 
-  std::unique_ptr<InputEventAckWaiter> gesture_fling_start_ack_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureFlingStart);
-  if (child_rwhv->wheel_scroll_latching_enabled()) {
-    // If wheel scroll latching is enabled, the fling start won't bubble since
-    // its corresponding GSB hasn't bubbled.
-    child_rwh->AddInputEventObserver(gesture_fling_start_ack_observer.get());
-  } else {
-    root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-        gesture_fling_start_ack_observer.get());
-  }
+  // If wheel scroll latching is enabled, the fling start won't bubble since
+  // its corresponding GSB hasn't bubbled.
+  InputEventAckWaiter gesture_fling_start_ack_observer(
+      (child_rwhv->wheel_scroll_latching_enabled() ? child_rwh : root_rwh),
+      blink::WebInputEvent::kGestureFlingStart);
 
   WaitForChildFrameSurfaceReady(child_iframe_node->current_frame_host());
 
-  gesture_fling_start_ack_observer->Reset();
+  gesture_fling_start_ack_observer.Reset();
   // Send a GSB, GSU, GFS sequence and verify that the GFS bubbles.
   blink::WebGestureEvent gesture_scroll_begin(
       blink::WebGestureEvent::kGestureScrollBegin,
@@ -1155,7 +1112,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // We now wait for the fling start event to be acked by the parent
   // frame. If the test fails, then the test times out.
-  gesture_fling_start_ack_observer->Wait();
+  gesture_fling_start_ack_observer.Wait();
 }
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
@@ -1184,12 +1141,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
-  std::unique_ptr<InputEventAckWaiter> ack_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollEnd);
-  parent_iframe_node->current_frame_host()
-      ->GetRenderWidgetHost()
-      ->AddInputEventObserver(ack_observer.get());
+  InputEventAckWaiter ack_observer(
+      parent_iframe_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
 
   GURL site_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
@@ -1261,7 +1215,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   update_rect = filter->last_rect();
   EXPECT_LT(update_rect.y(), initial_y);
   filter->Reset();
-  ack_observer->Reset();
+  ack_observer.Reset();
 
   // Now scroll the nested frame upward, which should bubble to the parent.
   // The upscroll exceeds the amount that the frame was initially scrolled
@@ -1307,7 +1261,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // This timing only seems to be needed for CrOS, but we'll enable it on
   // all platforms just to lessen the possibility of tests being flakey
   // on non-CrOS platforms.
-  ack_observer->Wait();
+  ack_observer.Wait();
 
   // Scroll the parent down again in order to test scroll bubbling from
   // gestures.
@@ -1431,17 +1385,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
 
-  std::unique_ptr<InputEventAckWaiter> scroll_begin_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollBegin);
-  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-      scroll_begin_observer.get());
-
-  std::unique_ptr<InputEventAckWaiter> scroll_end_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollEnd);
-  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-      scroll_end_observer.get());
+  InputEventAckWaiter scroll_begin_observer(
+      root->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollBegin);
+  InputEventAckWaiter scroll_end_observer(
+      root->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
 
   // Scroll the iframe upward, scroll events get bubbled up to the root.
   blink::WebMouseWheelEvent scroll_event(
@@ -1459,7 +1408,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   scroll_event.has_precise_scrolling_deltas = true;
   router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
-  scroll_begin_observer->Wait();
+  scroll_begin_observer.Wait();
 
   // Now destroy the child_rwhv, scroll bubbling stops and a GSE gets sent to
   // the root_view.
@@ -1475,7 +1424,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebInputEvent::DispatchType::kEventNonBlocking;
   router->RouteMouseWheelEvent(root_view, &scroll_event, ui::LatencyInfo());
 
-  scroll_end_observer->Wait();
+  scroll_end_observer.Wait();
 }
 
 class ScrollObserver : public RenderWidgetHost::InputEventObserver {
@@ -1553,11 +1502,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
-  std::unique_ptr<InputEventAckWaiter> ack_observer =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollBegin);
-  root->current_frame_host()->GetRenderWidgetHost()->AddInputEventObserver(
-      ack_observer.get());
+  InputEventAckWaiter ack_observer(
+      root->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollBegin);
 
   std::unique_ptr<ScrollObserver> scroll_observer;
   if (root_view->wheel_scroll_latching_enabled()) {
@@ -1589,7 +1536,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   scroll_event.has_precise_scrolling_deltas = true;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
-  ack_observer->Wait();
+  ack_observer.Wait();
 
   // When wheel scroll latching is disabled, each wheel event will have its own
   // complete scroll seqeunce.
@@ -1798,18 +1745,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       mock_overscroll_handler.get();
 #endif  // defined(USE_AURA)
 
-  std::unique_ptr<InputEventAckWaiter> gesture_begin_observer_child =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollBegin);
-  child_node->current_frame_host()
-      ->GetRenderWidgetHost()
-      ->AddInputEventObserver(gesture_begin_observer_child.get());
-  std::unique_ptr<InputEventAckWaiter> gesture_end_observer_child =
-      std::make_unique<InputEventAckWaiter>(
-          blink::WebInputEvent::kGestureScrollEnd);
-  child_node->current_frame_host()
-      ->GetRenderWidgetHost()
-      ->AddInputEventObserver(gesture_end_observer_child.get());
+  InputEventAckWaiter gesture_begin_observer_child(
+      child_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollBegin);
+  InputEventAckWaiter gesture_end_observer_child(
+      child_node->current_frame_host()->GetRenderWidgetHost(),
+      blink::WebInputEvent::kGestureScrollEnd);
 
 #if defined(USE_AURA)
   const float overscroll_threshold =
@@ -1843,7 +1784,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
 
   // Make sure the child is indeed receiving the gesture stream.
-  gesture_begin_observer_child->Wait();
+  gesture_begin_observer_child.Wait();
 
   blink::WebGestureEvent gesture_scroll_update(
       blink::WebGestureEvent::kGestureScrollUpdate,
@@ -1901,7 +1842,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Ensure that the method of providing the child's scroll events to the root
   // does not leave the child in an invalid state.
-  gesture_end_observer_child->Wait();
+  gesture_end_observer_child.Wait();
 }
 #endif  // defined(USE_AURA) || defined(OS_ANDROID)
 
