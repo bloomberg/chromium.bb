@@ -40,10 +40,11 @@ void TestProxyDelegate::VerifyOnTunnelHeadersReceived(
   EXPECT_EQ(status_line, on_tunnel_headers_received_status_line_);
 }
 
-void TestProxyDelegate::OnResolveProxy(const GURL& url,
-                                       const std::string& method,
-                                       const ProxyService& proxy_service,
-                                       ProxyInfo* result) {}
+void TestProxyDelegate::OnResolveProxy(
+    const GURL& url,
+    const std::string& method,
+    const ProxyRetryInfoMap& proxy_retry_info,
+    ProxyInfo* result) {}
 
 void TestProxyDelegate::OnTunnelConnectCompleted(
     const HostPortPair& endpoint,

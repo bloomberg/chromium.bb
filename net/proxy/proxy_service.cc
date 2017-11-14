@@ -1363,7 +1363,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
     // Allow the proxy delegate to interpose on the resolution decision,
     // possibly modifying the ProxyInfo.
     if (proxy_delegate)
-      proxy_delegate->OnResolveProxy(url, method, *this, result);
+      proxy_delegate->OnResolveProxy(url, method, proxy_retry_info_, result);
 
     net_log.AddEvent(NetLogEventType::PROXY_SERVICE_RESOLVED_PROXY_LIST,
                      base::Bind(&NetLogFinishedResolvingProxyCallback, result));
@@ -1395,7 +1395,7 @@ int ProxyService::DidFinishResolvingProxy(const GURL& url,
       // Allow the proxy delegate to interpose on the resolution decision,
       // possibly modifying the ProxyInfo.
       if (proxy_delegate)
-        proxy_delegate->OnResolveProxy(url, method, *this, result);
+        proxy_delegate->OnResolveProxy(url, method, proxy_retry_info_, result);
     } else {
       result_code = ERR_MANDATORY_PROXY_CONFIGURATION_FAILED;
     }

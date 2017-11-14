@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
+#include "net/proxy/proxy_retry_info.h"
 
 class GURL;
 
@@ -37,7 +38,7 @@ class NET_EXPORT ProxyDelegate {
   // ProxyInfo |result|.
   virtual void OnResolveProxy(const GURL& url,
                               const std::string& method,
-                              const ProxyService& proxy_service,
+                              const ProxyRetryInfoMap& proxy_retry_info,
                               ProxyInfo* result) = 0;
 
   // Called when use of |bad_proxy| fails due to |net_error|. |net_error| is

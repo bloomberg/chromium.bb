@@ -221,7 +221,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
  protected:
   void OnResolveProxy(const GURL& url,
                       const std::string& method,
-                      const ProxyService& proxy_service,
+                      const ProxyRetryInfoMap& proxy_retry_info,
                       ProxyInfo* result) override {
     resolved_proxy_info_.url = url;
     resolved_proxy_info_.proxy_info = *result;
