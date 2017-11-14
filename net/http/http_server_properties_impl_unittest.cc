@@ -1357,6 +1357,136 @@ TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
   EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(quic_server_id));
 }
 
+// Tests that GetQuicServerInfo() returns server info of a host
+// with the same canonical suffix when there is no exact host match.
+TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatch) {
+  // Set up HttpServerProperties.
+  // Add a host that has the same canonical suffix.
+  QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  std::string foo_server_info("foo_server_info");
+  impl_.SetQuicServerInfo(foo_server_id, foo_server_info);
+
+  // Add a host that has a different canonical suffix.
+  QuicServerId baz_server_id("baz.video.com", 443);
+  std::string baz_server_info("baz_server_info");
+  impl_.SetQuicServerInfo(baz_server_id, baz_server_info);
+
+  // Create QuicServerId with a host that has the same canonical suffix.
+  QuicServerId bar_server_id("bar.googlevideo.com", 443);
+
+  // Check the the server info associated with "foo" is returned for "bar".
+  const std::string* bar_server_info = impl_.GetQuicServerInfo(bar_server_id);
+  ASSERT_TRUE(bar_server_info != nullptr);
+  EXPECT_STREQ(foo_server_info.c_str(), bar_server_info->c_str());
+}
+
+// Verifies that GetQuicServerInfo() returns the MRU entry if multiple records
+// match a given canonical host.
+TEST_F(QuicServerInfoServerPropertiesTest,
+       TestCanonicalSuffixMatchReturnsMruEntry) {
+  // Set up HttpServerProperties by adding two hosts with the same canonical
+  // suffixes.
+  QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  std::string h1_server_info("h1_server_info");
+  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+
+  QuicServerId h2_server_id("h2.googlevideo.com", 443);
+  std::string h2_server_info("h2_server_info");
+  impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
+
+  // Create QuicServerId to use for the search.
+  QuicServerId foo_server_id("foo.googlevideo.com", 443);
+
+  // Check that 'h2' info is returned since it is MRU.
+  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  ASSERT_TRUE(server_info != nullptr);
+  EXPECT_STREQ(h2_server_info.c_str(), server_info->c_str());
+
+  // Access 'h1' info, so it becomes MRU.
+  impl_.GetQuicServerInfo(h1_server_id);
+
+  // Check that 'h1' info is returned since it is MRU now.
+  server_info = impl_.GetQuicServerInfo(foo_server_id);
+  ASSERT_TRUE(server_info != nullptr);
+  EXPECT_STREQ(h1_server_info.c_str(), server_info->c_str());
+}
+
+// Verifies that |GetQuicServerInfo| doesn't change the MRU order of the server
+// info map when a record is matched based on a canonical name.
+TEST_F(QuicServerInfoServerPropertiesTest,
+       TestCanonicalSuffixMatchDoesntChangeOrder) {
+  // Add a host with a matching canonical name.
+  QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  std::string h1_server_info("h1_server_info");
+  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+
+  // Add a host hosts with a non-matching canonical name.
+  QuicServerId h2_server_id("h2.video.com", 443);
+  std::string h2_server_info("h2_server_info");
+  impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
+
+  // Check that "h2.video.com" is the MRU entry in the map.
+  EXPECT_EQ(h2_server_id, impl_.quic_server_info_map().begin()->first);
+
+  // Search for the entry that matches the canonical name
+  // ("h1.googlevideo.com").
+  QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  ASSERT_TRUE(server_info != nullptr);
+
+  // Check that the search (although successful) hasn't changed the MRU order of
+  // the map.
+  EXPECT_EQ(h2_server_id, impl_.quic_server_info_map().begin()->first);
+
+  // Search for "h1.googlevideo.com" directly, so it becomes MRU
+  impl_.GetQuicServerInfo(h1_server_id);
+
+  // Check that "h1.googlevideo.com" is the MRU entry now.
+  EXPECT_EQ(h1_server_id, impl_.quic_server_info_map().begin()->first);
+}
+
+// Tests that the canonical host matching works for hosts stored in memory cache
+// and the ones loaded from persistent storage, i.e. server info added
+// using SetQuicServerInfo() and SetQuicServerInfoMap() is taken into
+// cosideration when searching for server info for a host with the same
+// canonical suffix.
+TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatchSetInfoMap) {
+  // Add a host info using SetQuicServerInfo(). That will simulate an info
+  // entry stored in memory cache.
+  QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  std::string h1_server_info("h1_server_info_memory_cache");
+  impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
+
+  // Prepare a map with host info and add it using SetQuicServerInfoMap(). That
+  // will simulate info records read from the persistence storage.
+  QuicServerId h2_server_id("h2.googlevideo.com", 443);
+  std::string h2_server_info("h2_server_info_from_disk");
+
+  QuicServerId h3_server_id("h3.ggpht.com", 443);
+  std::string h3_server_info("h3_server_info_from_disk");
+
+  std::unique_ptr<QuicServerInfoMap> quic_server_info_map(
+      new QuicServerInfoMap(QuicServerInfoMap::NO_AUTO_EVICT));
+  quic_server_info_map->Put(h2_server_id, h2_server_info);
+  quic_server_info_map->Put(h3_server_id, h3_server_info);
+  impl_.SetQuicServerInfoMap(std::move(quic_server_info_map));
+
+  // Check that the server info from the memory cache is returned since unique
+  // entries from the memory cache are added after entries from the
+  // persistence storage and, therefore, are most recently used.
+  QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
+  ASSERT_TRUE(server_info != nullptr);
+  EXPECT_STREQ(h1_server_info.c_str(), server_info->c_str());
+
+  // Check that server info that was added using SetQuicServerInfoMap() can be
+  // found.
+  foo_server_id = QuicServerId("foo.ggpht.com", 443);
+  server_info = impl_.GetQuicServerInfo(foo_server_id);
+  ASSERT_TRUE(server_info != nullptr);
+  EXPECT_STREQ(h3_server_info.c_str(), server_info->c_str());
+}
+
 }  // namespace
 
 }  // namespace net
