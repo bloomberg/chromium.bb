@@ -382,6 +382,7 @@ struct ServiceWorkerContextClient::WorkerContextData {
   }
 
   mojo::Binding<mojom::ServiceWorkerEventDispatcher> event_dispatcher_binding;
+  blink::mojom::ServiceWorkerHostAssociatedPtr service_worker_host;
 
   // Pending callbacks for GetClientDocuments().
   ClientsCallbacksMap clients_callbacks;
@@ -647,6 +648,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     bool is_script_streaming,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
+    blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client)
@@ -660,6 +662,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       pending_controller_request_(std::move(controller_request)),
+      pending_service_worker_host_(std::move(service_worker_host)),
       embedded_worker_client_(std::move(embedded_worker_client)) {
   instance_host_ =
       mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
@@ -752,12 +755,14 @@ void ServiceWorkerContextClient::OpenNewPopup(
 void ServiceWorkerContextClient::SetCachedMetadata(const blink::WebURL& url,
                                                    const char* data,
                                                    size_t size) {
-  std::vector<char> copy(data, data + size);
-  Send(new ServiceWorkerHostMsg_SetCachedMetadata(GetRoutingID(), url, copy));
+  DCHECK(context_->service_worker_host);
+  context_->service_worker_host->SetCachedMetadata(
+      url, std::vector<uint8_t>(data, data + size));
 }
 
 void ServiceWorkerContextClient::ClearCachedMetadata(const blink::WebURL& url) {
-  Send(new ServiceWorkerHostMsg_ClearCachedMetadata(GetRoutingID(), url));
+  DCHECK(context_->service_worker_host);
+  context_->service_worker_host->ClearCachedMetadata(url);
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspection() {
@@ -819,6 +824,10 @@ void ServiceWorkerContextClient::WorkerContextStarted(
     context_->controller_impl = std::make_unique<ControllerServiceWorkerImpl>(
         std::move(pending_controller_request_), GetWeakPtr());
   }
+
+  DCHECK(pending_service_worker_host_.is_valid());
+  DCHECK(!context_->service_worker_host);
+  context_->service_worker_host.Bind(std::move(pending_service_worker_host_));
 
   SetRegistrationInServiceWorkerGlobalScope(std::move(registration_info));
 

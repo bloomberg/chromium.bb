@@ -164,16 +164,6 @@ IPC_MESSAGE_ROUTED3(
     base::string16 /* message */,
     std::vector<blink::MessagePortChannel> /* sent_message_ports */)
 
-// ServiceWorker -> Browser message to request that the ServiceWorkerStorage
-// cache |data| associated with |url|.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_SetCachedMetadata,
-                    GURL /* url */,
-                    std::vector<char> /* data */)
-
-// ServiceWorker -> Browser message to request that the ServiceWorkerStorage
-// clear the cache associated with |url|.
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClearCachedMetadata, GURL /* url */)
-
 // Ask the browser to open a tab/window (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenNewTab,
                     int /* request_id */,

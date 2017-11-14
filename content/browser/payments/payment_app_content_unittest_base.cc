@@ -66,6 +66,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -77,8 +78,9 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
         pause_after_download, std::move(dispatcher_request),
-        std::move(controller_request), std::move(instance_host),
-        std::move(provider_info), std::move(installed_scripts_info));
+        std::move(controller_request), std::move(service_worker_host),
+        std::move(instance_host), std::move(provider_info),
+        std::move(installed_scripts_info));
   }
 
   void OnPaymentRequestEvent(

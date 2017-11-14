@@ -91,6 +91,7 @@ class EmbeddedWorkerInstanceClientImpl
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)

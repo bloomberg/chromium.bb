@@ -796,6 +796,7 @@ mojom("mojo_bindings") {
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
     "platform/modules/serviceworker/navigation_preload_state.mojom",
+    "platform/modules/serviceworker/service_worker.mojom",
     "platform/modules/serviceworker/service_worker_error_type.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/serviceworker/service_worker_object.mojom",

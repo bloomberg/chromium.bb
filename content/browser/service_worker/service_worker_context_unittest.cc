@@ -187,6 +187,7 @@ class RecordableEmbeddedWorkerInstanceClient
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
       mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info,
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings_proxy)
@@ -194,8 +195,9 @@ class RecordableEmbeddedWorkerInstanceClient
     events_.push_back(Message::StartWorker);
     EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
         params, std::move(dispatcher_request), std::move(controller_request),
-        std::move(scripts_info), std::move(instance_host),
-        std::move(provider_info), std::move(content_settings_proxy));
+        std::move(scripts_info), std::move(service_worker_host),
+        std::move(instance_host), std::move(provider_info),
+        std::move(content_settings_proxy));
   }
 
   void StopWorker() override {

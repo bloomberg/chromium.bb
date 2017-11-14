@@ -29,6 +29,7 @@
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker.mojom.h"
 #include "url/gurl.h"
 
 // Windows headers will redefine SendMessage.
@@ -140,6 +141,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
              mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
              mojom::ControllerServiceWorkerRequest controller_request,
              mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
+             blink::mojom::ServiceWorkerHostAssociatedPtrInfo
+                 service_worker_host_ptr_info,
              StatusCallback callback);
 
   // Stops the worker. It is invalid to call this when the worker is not in
@@ -320,16 +323,18 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
   mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
 
-  // |pending_dispatcher_request_|, |pending_controller_request_| and
-  // |pending_installed_scripts_info_| are parameters of the StartWorker
-  // message. These are called "pending" because they are not used directly
-  // by this class and are just transferred to the renderer in
-  // SendStartWorker().
+  // |pending_dispatcher_request_|, |pending_controller_request_|,
+  // |pending_installed_scripts_info_|, and
+  // |pending_service_worker_host_ptr_info_| are parameters of the StartWorker
+  // message. These are called "pending" because they are not used directly by
+  // this class and are just transferred to the renderer in SendStartWorker().
   // TODO(shimazu): Remove these when EmbeddedWorkerStartParams is
   // changed to a mojo struct and we put them in EmbeddedWorkerStartParams.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
   mojom::ControllerServiceWorkerRequest pending_controller_request_;
   mojom::ServiceWorkerInstalledScriptsInfoPtr pending_installed_scripts_info_;
+  blink::mojom::ServiceWorkerHostAssociatedPtrInfo
+      pending_service_worker_host_ptr_info_;
 
   // This is set at Start and used on SendStartWorker.
   ProviderInfoGetter provider_info_getter_;
