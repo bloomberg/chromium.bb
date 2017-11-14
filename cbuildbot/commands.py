@@ -334,11 +334,10 @@ def RunBranchUtilTest(buildroot, version):
   with osutils.TempDir() as tempdir:
     cmd = [
         'cros', 'tryjob', '--local', '--yes',
-        '--skip-remote-push',
         '--branch-name', 'test_branch',
         '--version', version,
         '--buildroot', tempdir,
-        'branch-util',
+        'branch-util-tryjob',
     ]
     RunBuildScript(buildroot, cmd, chromite_cmd=True)
 

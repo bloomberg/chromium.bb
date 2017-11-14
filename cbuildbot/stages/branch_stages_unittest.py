@@ -209,7 +209,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testRelease(self):
     """Run-through of branch creation."""
-    self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
+    self._Prepare(extra_cmd_args=['--buildbot',
+                                  '--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--version', self.DEFAULT_VERSION])
     # Simulate branch not existing.
     self.rc_mock.AddCmdResult(
@@ -270,7 +271,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testNonRelease(self):
     """Non-release branch creation."""
-    self._Prepare(extra_cmd_args=['--branch-name', 'refs/heads/test-branch',
+    self._Prepare(extra_cmd_args=['--buildbot',
+                                  '--branch-name', 'refs/heads/test-branch',
                                   '--version', self.DEFAULT_VERSION])
     # Simulate branch not existing.
     self.rc_mock.AddCmdResult(
@@ -291,7 +293,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testDeletion(self):
     """Branch deletion."""
-    self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
+    self._Prepare(extra_cmd_args=['--buildbot',
+                                  '--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--delete-branch'])
     self.rc_mock.AddCmdResult(
         partial_mock.ListRegex('git show-ref .*release-test-branch.*'),
@@ -302,7 +305,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testRename(self):
     """Branch rename."""
-    self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
+    self._Prepare(extra_cmd_args=['--buildbot',
+                                  '--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--rename-to', 'refs/heads/release-rename'])
     # Simulate source branch existing and destination branch not existing.
     self.rc_mock.AddCmdResult(
@@ -349,7 +353,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def _SimulateIncrementFailure(self):
     """Simulates a git push failure during source branch increment."""
-    self._Prepare(extra_cmd_args=['--branch-name', self.RELEASE_BRANCH_NAME,
+    self._Prepare(extra_cmd_args=['--buildbot',
+                                  '--branch-name', self.RELEASE_BRANCH_NAME,
                                   '--version', self.DEFAULT_VERSION])
     overlay_dir = os.path.join(
         self.build_root, constants.CHROMIUMOS_OVERLAY_DIR)

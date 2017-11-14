@@ -625,7 +625,8 @@ def _FinishParsing(options):
   # We force --debug to be set for builds that are not 'official'.
   options.debug = options.debug or not options.buildbot
 
-  if constants.BRANCH_UTIL_CONFIG == options.build_config_name:
+  if options.build_config_name in (constants.BRANCH_UTIL_CONFIG,
+                                   'branch-util-tryjob'):
     if not options.branch_name:
       cros_build_lib.Die(
           'Must specify --branch-name with the %s config.',
