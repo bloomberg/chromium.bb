@@ -80,7 +80,8 @@ void MockWidgetInputHandler::RequestTextInputStateUpdate() {
 void MockWidgetInputHandler::RequestCompositionUpdates(bool immediate_request,
                                                        bool monitor_request) {
   dispatched_messages_.emplace_back(
-      std::make_unique<DispatchedMessage>("RequestCompositionUpdates"));
+      std::make_unique<DispatchedRequestCompositionUpdatesMessage>(
+          immediate_request, monitor_request));
 }
 
 void MockWidgetInputHandler::DispatchEvent(
@@ -119,6 +120,11 @@ MockWidgetInputHandler::DispatchedMessage::ToEvent() {
 }
 MockWidgetInputHandler::DispatchedIMEMessage*
 MockWidgetInputHandler::DispatchedMessage::ToIME() {
+  return nullptr;
+}
+
+MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage*
+MockWidgetInputHandler::DispatchedMessage::ToRequestCompositionUpdates() {
   return nullptr;
 }
 
@@ -222,6 +228,22 @@ bool MockWidgetInputHandler::DispatchedEventMessage::HasCallback() const {
 const content::InputEvent*
 MockWidgetInputHandler::DispatchedEventMessage::Event() const {
   return event_.get();
+}
+
+MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage::
+    DispatchedRequestCompositionUpdatesMessage(bool immediate_request,
+                                               bool monitor_request)
+    : DispatchedMessage("RequestCompositionUpdates"),
+      immediate_request_(immediate_request),
+      monitor_request_(monitor_request) {}
+
+MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage::
+    ~DispatchedRequestCompositionUpdatesMessage() {}
+
+MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage*
+MockWidgetInputHandler::DispatchedRequestCompositionUpdatesMessage::
+    ToRequestCompositionUpdates() {
+  return this;
 }
 
 }  // namespace content
