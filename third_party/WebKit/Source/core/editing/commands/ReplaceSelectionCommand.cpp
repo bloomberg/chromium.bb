@@ -1385,9 +1385,8 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       !enclosing_block_of_insertion_pos->isConnected())
     enclosing_block_of_insertion_pos = nullptr;
 
-  VisiblePosition start_of_inserted_content =
-      CreateVisiblePosition(FirstPositionInOrBeforeNodeDeprecated(
-          inserted_nodes.FirstNodeInserted()));
+  VisiblePosition start_of_inserted_content = CreateVisiblePosition(
+      FirstPositionInOrBeforeNode(*inserted_nodes.FirstNodeInserted()));
 
   // We inserted before the enclosingBlockOfInsertionPos to prevent nesting, and
   // the content before the enclosingBlockOfInsertionPos wasn't in its own block
@@ -1451,12 +1450,18 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       return;
   }
 
-  // Setup m_startOfInsertedContent and m_endOfInsertedContent. This should be
-  // the last two lines of code that access insertedNodes.
+  // Setup |start_of_inserted_content_| and |end_of_inserted_content_|.
+  // This should be the last two lines of code that access insertedNodes.
+  // TODO(editing-dev): The {First,Last}NodeInserted() nullptr checks may be
+  // unnecessary. Investigate.
   start_of_inserted_content_ =
-      FirstPositionInOrBeforeNodeDeprecated(inserted_nodes.FirstNodeInserted());
+      inserted_nodes.FirstNodeInserted()
+          ? FirstPositionInOrBeforeNode(*inserted_nodes.FirstNodeInserted())
+          : Position();
   end_of_inserted_content_ =
-      LastPositionInOrAfterNodeDeprecated(inserted_nodes.LastLeafInserted());
+      inserted_nodes.LastLeafInserted()
+          ? LastPositionInOrAfterNode(*inserted_nodes.LastLeafInserted())
+          : Position();
 
   // Determine whether or not we should merge the end of inserted content with
   // what's after it before we do the start merge so that the start merge

@@ -1507,7 +1507,7 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
           DCHECK(s.IsBeforeAnchor() || s.IsBeforeChildren() ||
                  s.OffsetInContainerNode() <= 0)
               << s;
-          s = FirstPositionInOrBeforeNodeDeprecated(next);
+          s = next ? FirstPositionInOrBeforeNode(*next) : Position();
         }
         if (e.AnchorNode() == elem) {
           // Since elem must have been fully selected, and it is at the end
@@ -1517,7 +1517,7 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
                  !OffsetIsBeforeLastNodeOffset(s.OffsetInContainerNode(),
                                                s.ComputeContainerNode()))
               << s;
-          e = LastPositionInOrAfterNodeDeprecated(prev);
+          e = prev ? LastPositionInOrAfterNode(*prev) : Position();
         }
       }
 

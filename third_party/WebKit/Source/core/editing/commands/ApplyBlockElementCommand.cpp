@@ -326,22 +326,24 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
       SplitTextNode(end_container, end.OffsetInContainerNode());
       GetDocument().UpdateStyleAndLayoutTree();
 
+      const Node* const previous_sibling_of_end =
+          end_container->previousSibling();
+      DCHECK(previous_sibling_of_end);
       if (is_start_and_end_on_same_node) {
-        start = FirstPositionInOrBeforeNodeDeprecated(
-            end_container->previousSibling());
+        start = FirstPositionInOrBeforeNode(*previous_sibling_of_end);
       }
       if (is_end_and_end_of_last_paragraph_on_same_node) {
         if (end_of_last_paragraph.OffsetInContainerNode() ==
             end.OffsetInContainerNode()) {
-          end_of_last_paragraph = LastPositionInOrAfterNodeDeprecated(
-              end_container->previousSibling());
+          end_of_last_paragraph =
+              LastPositionInOrAfterNode(*previous_sibling_of_end);
         } else {
           end_of_last_paragraph = Position(
               end_container, end_of_last_paragraph.OffsetInContainerNode() -
                                  end.OffsetInContainerNode());
         }
       }
-      end = Position::LastPositionInNode(*end_container->previousSibling());
+      end = Position::LastPositionInNode(*previous_sibling_of_end);
     }
   }
 }
