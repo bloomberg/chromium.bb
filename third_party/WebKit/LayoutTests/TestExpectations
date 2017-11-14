@@ -3980,10 +3980,6 @@ crbug.com/778745 virtual/mojo-loading/http/tests/inspector-protocol/cachestorage
 crbug.com/777777 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Pass Failure ]
 crbug.com/773122 crbug.com/777813 [ Win ] fast/text/font-ascent-mac.html [ Failure Pass ]
 
-crbug.com/778575 [ Mac Linux ] http/tests/devtools/tracing/timeline-js/timeline-script-id.html [ Pass Failure ]
-crbug.com/778575 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-injected-script-eval.html [ Pass Failure ]
-crbug.com/778575 [ Mac ] virtual/threaded/http/tests/devtools/tracing/hit-test.html [ Pass Failure ]
-
 # Sheriff failures 2017-11-03
 crbug.com/781171 [ Android ] external/wpt/css/css-timing/cubic-bezier-timing-functions-output.html [ Failure Crash Pass ]
 crbug.com/781171 [ Android ] external/wpt/css/css-timing/frames-timing-functions-output.html [ Skip ]
