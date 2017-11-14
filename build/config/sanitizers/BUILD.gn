@@ -204,7 +204,7 @@ config("default_sanitizer_ldflags") {
       ldflags += [ "-fsanitize-coverage=$sanitizer_coverage_flags" ]
     }
 
-    if (is_cfi && !is_nacl) {
+    if (is_cfi && current_toolchain == default_toolchain) {
       ldflags += [ "-fsanitize=cfi-vcall" ]
       if (use_cfi_cast) {
         ldflags += [
@@ -349,7 +349,7 @@ config("link_shared_library") {
 
 config("cfi_flags") {
   cflags = []
-  if (is_cfi && !is_nacl) {
+  if (is_cfi && current_toolchain == default_toolchain) {
     if (!defined(cfi_blacklist_path)) {
       cfi_blacklist_path =
           rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
