@@ -6,6 +6,7 @@
 #define BeforeInstallPromptEvent_h
 
 #include <utility>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "core/dom/ContextLifecycleObserver.h"
@@ -13,7 +14,6 @@
 #include "modules/EventModules.h"
 #include "modules/app_banner/AppBannerPromptResult.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "public/platform/modules/app_banner/app_banner.mojom-blink.h"
 
 namespace blink {

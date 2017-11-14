@@ -6,6 +6,7 @@
 #define WorkletGlobalScope_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
@@ -13,7 +14,6 @@
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkletModuleResponsesMapProxy.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"

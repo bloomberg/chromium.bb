@@ -5,11 +5,11 @@
 #ifndef MojoInterfaceInterceptor_h
 #define MojoInterfaceInterceptor_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 

@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/events/EventListener.h"
@@ -36,7 +37,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IndexedDB.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashSet.h"

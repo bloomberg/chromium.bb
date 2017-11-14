@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/modules/v8/string_or_string_sequence.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
@@ -41,7 +42,6 @@
 #include "modules/indexeddb/IDBObjectStoreParameters.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"

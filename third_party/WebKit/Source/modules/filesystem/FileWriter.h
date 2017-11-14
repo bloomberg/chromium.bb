@@ -31,12 +31,12 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "modules/EventTargetModules.h"
 #include "modules/filesystem/FileWriterBase.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
 

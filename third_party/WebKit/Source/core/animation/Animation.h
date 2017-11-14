@@ -32,6 +32,7 @@
 #define Animation_h
 
 #include <memory>
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
@@ -45,7 +46,6 @@
 #include "core/dom/events/EventTarget.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"

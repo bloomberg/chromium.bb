@@ -32,7 +32,7 @@
 #define WrapperTypeInfo_h
 
 #include "gin/public/wrapper_info.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ActiveScriptWrappableBase.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"

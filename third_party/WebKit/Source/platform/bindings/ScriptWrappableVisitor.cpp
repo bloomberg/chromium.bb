@@ -5,7 +5,7 @@
 #include "platform/bindings/ScriptWrappableVisitor.h"
 
 #include "platform/Supplementable.h"
-#include "platform/bindings/ActiveScriptWrappable.h"
+#include "platform/bindings/ActiveScriptWrappableBase.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/bindings/ScriptWrappable.h"
