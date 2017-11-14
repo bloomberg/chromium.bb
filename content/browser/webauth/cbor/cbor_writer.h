@@ -5,20 +5,18 @@
 #ifndef CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_WRITER_H_
 #define CONTENT_BROWSER_WEBAUTH_CBOR_CBOR_WRITER_H_
 
+#include "content/browser/webauth/cbor/cbor_values.h"
+
 #include <stdint.h>
-#include <string>
 #include <vector>
 
-#include "base/numerics/safe_math.h"
-#include "base/strings/string_piece.h"
-#include "content/browser/webauth/cbor/cbor_values.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
 
 // A basic Concise Binary Object Representation (CBOR) encoder as defined by
-// https://tools.ietf.org/html/rfc7049.
-// This is a non-canonical, generic encoder that supplies well-formed
-// CBOR values but does not guarantee their validity (see
-// https://tools.ietf.org/html/rfc7049#section-3.2).
+// https://tools.ietf.org/html/rfc7049. This is a generic encoder that supplies
+// canonical, well-formed CBOR values but does not guarantee their validity
+// (see https://tools.ietf.org/html/rfc7049#section-3.2).
 // Supported:
 //  * Major types:
 //     * 0: Unsigned integers, up to 64-bit.
@@ -32,6 +30,24 @@
 //  * Floating-point numbers.
 //  * Indefinite-length encodings.
 //  * Parsing.
+//
+// Requirements for canonical CBOR as suggested by RFC 7049 are:
+//  1) All major data types for the CBOR values must be as short as possible.
+//      * Unsigned integer between 0 to 23 must be expressed in same byte as
+//            the major type.
+//      * 24 to 255 must be expressed only with an additional uint8_t.
+//      * 256 to 65535 must be expressed only with an additional uint16_t.
+//      * 65536 to 4294967295 must be expressed only with an additional
+//            uint32_t. * The rules for expression of length in major types
+//            2 to 5 follow the above rule for integers.
+//  2) Keys in every map must be sorted (first by major type, then by key
+//         length, then by value in byte-wise lexical order).
+//  3) Indefinite length items must be converted to definite length items.
+//  4) All maps must not have duplicate keys.
+//
+// Current implementation of CBORWriter encoder meets all the requirements of
+// canonical CBOR.
+
 enum class CborMajorType {
   kUnsigned = 0,    // Unsigned integer.
   kNegative = 1,    // Negative integer. Unsupported by this implementation.
@@ -42,34 +58,31 @@ enum class CborMajorType {
 };
 
 namespace content {
-
 namespace {
-// Mask selecting the last 5 bits  of the "initial byte" where
-// 'additional information is encoded.
-constexpr uint8_t kAdditionalInformationDataMask = 0x1F;
-// Indicates the integer is in the following byte.
-constexpr uint8_t kAdditionalInformation1Byte = 24;
-// Indicates the integer is in the next 2 bytes.
-constexpr uint8_t kAdditionalInformation2Bytes = 25;
-// Indicates the integer is in the next 4 bytes.
-constexpr uint8_t kAdditionalInformation4Bytes = 26;
-// Indicates the integer is in the next 8 bytes.
-constexpr uint8_t kAdditionalInformation8Bytes = 27;
+// Default that should be sufficiently large for most use cases.
+constexpr size_t kDefaultMaxNestingDepth = 16;
 }  // namespace
 
 class CONTENT_EXPORT CBORWriter {
  public:
   ~CBORWriter();
 
-  // Generates a CBOR byte string.
-  static std::vector<uint8_t> Write(const CBORValue& node);
+  // Returns the CBOR byte string representation of |node|, unless its nesting
+  // depth is greater than |max_nesting_depth|, in which case an empty optional
+  // value is returned. The nesting depth of |node| is defined as the number of
+  // arrays/maps that has to be traversed to reach the most nested CBORValue
+  // contained in |node|. Primitive values and empty containers have nesting
+  // depths of 0.
+  static base::Optional<std::vector<uint8_t>> Write(
+      const CBORValue& node,
+      size_t max_nesting_level = kDefaultMaxNestingDepth);
 
  private:
   CBORWriter(std::vector<uint8_t>* cbor);
 
   // Called recursively to build the CBOR bytestring. When completed,
   // |encoded_cbor_| will contain the CBOR.
-  void EncodeCBOR(const CBORValue& node);
+  bool EncodeCBOR(const CBORValue& node, int max_nesting_level);
 
   // Encodes the type and size of the data being added.
   void StartItem(CborMajorType type, uint64_t size);
