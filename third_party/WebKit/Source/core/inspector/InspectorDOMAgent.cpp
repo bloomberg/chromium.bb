@@ -2150,7 +2150,7 @@ Response InspectorDOMAgent::setInspectedNode(int node_id) {
   Response response = AssertNode(node_id, node);
   if (!response.isSuccess())
     return response;
-  v8_session_->addInspectedObject(WTF::MakeUnique<InspectableNode>(node));
+  v8_session_->addInspectedObject(std::make_unique<InspectableNode>(node));
   return Response::OK();
 }
 

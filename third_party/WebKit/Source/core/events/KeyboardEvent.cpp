@@ -102,7 +102,7 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key,
               ? dom_window->GetInputDeviceCapabilities()->FiresTouchEvents(
                     false)
               : nullptr),
-      key_event_(WTF::MakeUnique<WebKeyboardEvent>(key)),
+      key_event_(std::make_unique<WebKeyboardEvent>(key)),
       // TODO(crbug.com/482880): Fix this initialization to lazy initialization.
       code_(Platform::Current()->DomCodeStringFromEnum(key.dom_code)),
       key_(Platform::Current()->DomKeyStringFromEnum(key.dom_key)),

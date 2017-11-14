@@ -335,7 +335,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollBegin(
 
   current_scroll_chain_.clear();
   std::unique_ptr<ScrollStateData> scroll_state_data =
-      WTF::MakeUnique<ScrollStateData>();
+      std::make_unique<ScrollStateData>();
   IntPoint position = FlooredIntPoint(gesture_event.PositionInRootFrame());
   scroll_state_data->position_x = position.X();
   scroll_state_data->position_y = position.Y();
@@ -413,7 +413,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollUpdate(
     return WebInputEventResult::kNotHandled;
 
   std::unique_ptr<ScrollStateData> scroll_state_data =
-      WTF::MakeUnique<ScrollStateData>();
+      std::make_unique<ScrollStateData>();
   scroll_state_data->delta_x = delta.Width();
   scroll_state_data->delta_y = delta.Height();
   scroll_state_data->delta_granularity = static_cast<double>(
@@ -471,7 +471,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
       return WebInputEventResult::kNotHandled;
     }
     std::unique_ptr<ScrollStateData> scroll_state_data =
-        WTF::MakeUnique<ScrollStateData>();
+        std::make_unique<ScrollStateData>();
     scroll_state_data->is_ending = true;
     scroll_state_data->is_in_inertial_phase =
         gesture_event.InertialPhase() == WebGestureEvent::kMomentumPhase;

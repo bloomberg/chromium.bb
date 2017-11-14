@@ -190,7 +190,7 @@ void FileReaderLoader::DidReceiveResponse(
     }
 
     if (initial_buffer_length < 0)
-      raw_data_ = WTF::MakeUnique<ArrayBufferBuilder>();
+      raw_data_ = std::make_unique<ArrayBufferBuilder>();
     else
       raw_data_ = WTF::WrapUnique(
           new ArrayBufferBuilder(static_cast<unsigned>(initial_buffer_length)));

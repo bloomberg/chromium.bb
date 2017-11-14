@@ -862,7 +862,7 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
       input->PaintRecordForContainer(NullURL(), input->Size(), draw_src_rect,
                                      draw_dst_rect, parsed_options.flip_y);
   std::unique_ptr<ParsedOptions> passed_parsed_options =
-      WTF::MakeUnique<ParsedOptions>(parsed_options);
+      std::make_unique<ParsedOptions>(parsed_options);
   BackgroundTaskRunner::PostOnBackgroundThread(
       BLINK_FROM_HERE,
       CrossThreadBind(&RasterizeImageOnBackgroundThread,

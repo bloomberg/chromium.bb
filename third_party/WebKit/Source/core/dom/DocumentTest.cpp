@@ -847,7 +847,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
-  appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
+  appcache_host->host_ = std::make_unique<MockWebApplicationCacheHost>();
   appcache_host->SelectCacheWithManifest(
       KURL(NullURL(), "https://test.com/foobar/manifest"));
   MockWebApplicationCacheHost* mock_web_host =
@@ -868,7 +868,7 @@ TEST_F(DocumentTest, SuboriginDisablesAppCache) {
 
   ApplicationCacheHost* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
-  appcache_host->host_ = WTF::MakeUnique<MockWebApplicationCacheHost>();
+  appcache_host->host_ = std::make_unique<MockWebApplicationCacheHost>();
   appcache_host->SelectCacheWithManifest(
       KURL(NullURL(), "https://test.com/foobar/manifest"));
   MockWebApplicationCacheHost* mock_web_host =

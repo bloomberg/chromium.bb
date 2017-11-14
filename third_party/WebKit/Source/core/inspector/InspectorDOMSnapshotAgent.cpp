@@ -109,8 +109,8 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
       protocol::Array<protocol::DOMSnapshot::LayoutTreeNode>::create();
   computed_styles_ =
       protocol::Array<protocol::DOMSnapshot::ComputedStyle>::create();
-  computed_styles_map_ = WTF::MakeUnique<ComputedStylesMap>();
-  css_property_whitelist_ = WTF::MakeUnique<CSSPropertyWhitelist>();
+  computed_styles_map_ = std::make_unique<ComputedStylesMap>();
+  css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
 
   // Look up the CSSPropertyIDs for each entry in |style_whitelist|.
   for (size_t i = 0; i < style_whitelist->length(); i++) {

@@ -425,7 +425,7 @@ Response InspectorOverlayAgent::highlightQuad(
     std::unique_ptr<protocol::Array<double>> quad_array,
     Maybe<protocol::DOM::RGBA> color,
     Maybe<protocol::DOM::RGBA> outline_color) {
-  std::unique_ptr<FloatQuad> quad = WTF::MakeUnique<FloatQuad>();
+  std::unique_ptr<FloatQuad> quad = std::make_unique<FloatQuad>();
   if (!ParseQuad(std::move(quad_array), quad.get()))
     return Response::Error("Invalid Quad format");
   InnerHighlightQuad(std::move(quad), std::move(color),
@@ -464,7 +464,7 @@ Response InspectorOverlayAgent::highlightFrame(
   // FIXME: Inspector doesn't currently work cross process.
   if (frame && frame->DeprecatedLocalOwner()) {
     std::unique_ptr<InspectorHighlightConfig> highlight_config =
-        WTF::MakeUnique<InspectorHighlightConfig>();
+        std::make_unique<InspectorHighlightConfig>();
     highlight_config->show_info = true;  // Always show tooltips for frames.
     highlight_config->content =
         InspectorDOMAgent::ParseColor(color.fromMaybe(nullptr));
@@ -1222,7 +1222,7 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
   protocol::Overlay::HighlightConfig* config =
       highlight_inspector_object.fromJust();
   std::unique_ptr<InspectorHighlightConfig> highlight_config =
-      WTF::MakeUnique<InspectorHighlightConfig>();
+      std::make_unique<InspectorHighlightConfig>();
   highlight_config->show_info = config->getShowInfo(false);
   highlight_config->show_rulers = config->getShowRulers(false);
   highlight_config->show_extension_lines = config->getShowExtensionLines(false);

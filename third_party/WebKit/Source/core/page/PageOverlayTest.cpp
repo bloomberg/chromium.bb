@@ -87,7 +87,7 @@ class PageOverlayTest : public ::testing::Test {
   std::unique_ptr<PageOverlay> CreateSolidYellowOverlay() {
     return PageOverlay::Create(
         GetWebView()->MainFrameImpl(),
-        WTF::MakeUnique<SolidColorOverlay>(SK_ColorYELLOW));
+        std::make_unique<SolidColorOverlay>(SK_ColorYELLOW));
   }
 
   void SetViewportSize(const WebSize& size) { helper_.SetViewportSize(size); }
