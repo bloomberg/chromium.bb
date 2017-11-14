@@ -335,7 +335,8 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   }
 }
 
-bool BeginSmoothScroll(v8::Isolate* isolate,
+bool BeginSmoothScroll(GpuBenchmarkingContext* context,
+                       gin::Arguments* args,
                        mojom::InputInjectorPtr& injector,
                        float pixels_to_scroll,
                        v8::Local<v8::Function> callback,
@@ -345,29 +346,32 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
                        bool prevent_fling,
                        float start_x,
                        float start_y) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
+  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+  if (!rect.Contains(start_x, start_y)) {
+    args->ThrowTypeError("Start point not in bounds");
     return false;
+  }
 
   if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
     // Ensure the mouse is centered and visible, in case it will
     // trigger any hover or mousemove effects.
-    context.web_view()->SetIsActive(true);
-    blink::WebRect contentRect =
-        context.render_view_impl()->GetWidget()->ViewRect();
+    context->web_view()->SetIsActive(true);
+    blink::WebRect content_rect =
+        context->render_view_impl()->GetWidget()->ViewRect();
     blink::WebMouseEvent mouseMove(
         blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
         ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
-    mouseMove.SetPositionInWidget((contentRect.x + contentRect.width / 2.0),
-                                  (contentRect.y + contentRect.height / 2.0));
-    context.web_view()->HandleInputEvent(
+    mouseMove.SetPositionInWidget((content_rect.x + content_rect.width / 2.0),
+                                  (content_rect.y + content_rect.height / 2.0));
+    context->web_view()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
-    context.web_view()->SetCursorVisibilityState(true);
+    context->web_view()->SetCursorVisibilityState(true);
   }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(isolate, callback,
-                             context.web_frame()->MainWorldScriptContext());
+      new CallbackAndContext(args->isolate(), callback,
+                             context->web_frame()->MainWorldScriptContext());
 
   SyntheticSmoothScrollGestureParams gesture_params;
 
@@ -418,7 +422,8 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   return true;
 }
 
-bool BeginSmoothDrag(v8::Isolate* isolate,
+bool BeginSmoothDrag(GpuBenchmarkingContext* context,
+                     gin::Arguments* args,
                      mojom::InputInjectorPtr& injector,
                      float start_x,
                      float start_y,
@@ -427,12 +432,15 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
                      v8::Local<v8::Function> callback,
                      int gesture_source_type,
                      float speed_in_pixels_s) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
+  gfx::Rect rect = context->render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+  if (!rect.Contains(start_x, start_y)) {
+    args->ThrowTypeError("Start point not in bounds");
     return false;
+  }
   scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(isolate, callback,
-                             context.web_frame()->MainWorldScriptContext());
+      new CallbackAndContext(args->isolate(), callback,
+                             context->web_frame()->MainWorldScriptContext());
 
   SyntheticSmoothDragGestureParams gesture_params;
 
@@ -702,7 +710,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
   }
 
   EnsureRemoteInterface();
-  return BeginSmoothScroll(args->isolate(), input_injector_, pixels_to_scroll,
+  return BeginSmoothScroll(&context, args, input_injector_, pixels_to_scroll,
                            callback, gesture_source_type, direction,
                            speed_in_pixels_s, true, start_x, start_y);
 }
@@ -731,7 +739,7 @@ bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
   }
 
   EnsureRemoteInterface();
-  return BeginSmoothDrag(args->isolate(), input_injector_, start_x, start_y,
+  return BeginSmoothDrag(&context, args, input_injector_, start_x, start_y,
                          end_x, end_y, callback, gesture_source_type,
                          speed_in_pixels_s);
 }
@@ -761,7 +769,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
 
   EnsureRemoteInterface();
   return BeginSmoothScroll(
-      args->isolate(), input_injector_, -pixels_to_scroll, callback,
+      &context, args, input_injector_, -pixels_to_scroll, callback,
       1,  // TOUCH_INPUT
       direction, speed_in_pixels_s, false, start_x, start_y);
 }
@@ -771,15 +779,16 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   if (!context.Init(false))
     return false;
 
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  blink::WebRect content_rect =
+      context.render_view_impl()->GetWidget()->ViewRect();
 
   std::string direction = "down";
   float distance_length = 0;
   float overscroll_length = 0;
   int repeat_count = 1;
   v8::Local<v8::Function> callback;
-  float start_x = rect.width / 2;
-  float start_y = rect.height / 2;
+  float start_x = content_rect.width / 2;
+  float start_y = content_rect.height / 2;
   float speed_in_pixels_s = 800;
 
   if (!GetOptionalArg(args, &direction) ||
@@ -790,6 +799,13 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
       !GetOptionalArg(args, &start_x) ||
       !GetOptionalArg(args, &start_y) ||
       !GetOptionalArg(args, &speed_in_pixels_s)) {
+    return false;
+  }
+
+  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+  if (!rect.Contains(start_x, start_y)) {
+    args->ThrowTypeError("Start point not in bounds");
     return false;
   }
 
@@ -844,12 +860,18 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   v8::Local<v8::Function> callback;
   float relative_pointer_speed_in_pixels_s = 800;
 
-
   if (!GetArg(args, &scale_factor) ||
       !GetArg(args, &anchor_x) ||
       !GetArg(args, &anchor_y) ||
       !GetOptionalArg(args, &callback) ||
       !GetOptionalArg(args, &relative_pointer_speed_in_pixels_s)) {
+    return false;
+  }
+
+  gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
+  rect -= rect.OffsetFromOrigin();
+  if (!rect.Contains(anchor_x, anchor_y)) {
+    args->ThrowTypeError("Anchor point not in bounds");
     return false;
   }
 
@@ -954,11 +976,10 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
     return false;
   }
 
-  // Convert coordinates from CSS pixels to density independent pixels (DIPs).
   gfx::Rect rect = context.render_view_impl()->GetWidget()->ViewRect();
   rect -= rect.OffsetFromOrigin();
   if (!rect.Contains(position_x, position_y)) {
-    args->ThrowError();
+    args->ThrowTypeError("Start point not in bounds");
     return false;
   }
 
