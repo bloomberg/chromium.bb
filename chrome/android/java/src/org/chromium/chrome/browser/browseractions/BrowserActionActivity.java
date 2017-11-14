@@ -40,10 +40,8 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
 
     private int mType;
     private Uri mUri;
-    @VisibleForTesting
-    String mCreatorPackageName;
-    @VisibleForTesting
-    List<BrowserActionItem> mActions = new ArrayList<>();
+    private String mCreatorPackageName;
+    private List<BrowserActionItem> mActions = new ArrayList<>();
     private PendingIntent mOnBrowserActionSelectedCallback;
     private BrowserActionsContextMenuHelper mHelper;
 

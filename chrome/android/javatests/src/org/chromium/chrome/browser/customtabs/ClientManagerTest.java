@@ -42,7 +42,7 @@ public class ClientManagerTest {
 
     private ClientManager mClientManager;
     private CustomTabsSessionToken mSession =
-            CustomTabsSessionToken.createMockSessionTokenForTesting();
+            CustomTabsSessionToken.createDummySessionTokenForTesting();
     private int mUid = Process.myUid();
 
     @Before
@@ -123,7 +123,7 @@ public class ClientManagerTest {
         mClientManager.newSession(mSession, mUid, null, null);
         Assert.assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(mSession));
 
-        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
         mClientManager.newSession(token, mUid, null, null);
         Assert.assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(token));
     }
