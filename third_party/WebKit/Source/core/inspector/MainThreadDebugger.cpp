@@ -93,7 +93,7 @@ MainThreadDebugger* MainThreadDebugger::instance_ = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate),
-      task_runner_(WTF::MakeUnique<InspectorTaskRunner>()),
+      task_runner_(std::make_unique<InspectorTaskRunner>()),
       paused_(false) {
   MutexLocker locker(CreationMutex());
   DCHECK(!instance_);

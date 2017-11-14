@@ -939,7 +939,7 @@ void ScrollingCoordinator::LayerTreeViewInitialized(
     std::unique_ptr<CompositorAnimationTimeline> timeline =
         CompositorAnimationTimeline::Create();
     std::unique_ptr<CompositorAnimationHost> host =
-        WTF::MakeUnique<CompositorAnimationHost>(
+        std::make_unique<CompositorAnimationHost>(
             layer_tree_view.CompositorAnimationHost());
     if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
       view->SetAnimationHost(std::move(host));

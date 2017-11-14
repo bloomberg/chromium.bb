@@ -19,7 +19,7 @@ ScrollState* CreateScrollState(double delta_x,
                                bool beginning,
                                bool ending) {
   std::unique_ptr<ScrollStateData> scroll_state_data =
-      WTF::MakeUnique<ScrollStateData>();
+      std::make_unique<ScrollStateData>();
   scroll_state_data->delta_x = delta_x;
   scroll_state_data->delta_y = delta_y;
   scroll_state_data->is_beginning = beginning;

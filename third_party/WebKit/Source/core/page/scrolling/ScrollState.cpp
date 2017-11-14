@@ -29,7 +29,7 @@ Element* ElementForId(int element_id) {
 
 ScrollState* ScrollState::Create(ScrollStateInit init) {
   std::unique_ptr<ScrollStateData> scroll_state_data =
-      WTF::MakeUnique<ScrollStateData>();
+      std::make_unique<ScrollStateData>();
   scroll_state_data->delta_x = init.deltaX();
   scroll_state_data->delta_y = init.deltaY();
   scroll_state_data->delta_x_hint = init.deltaXHint();

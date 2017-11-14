@@ -1019,7 +1019,7 @@ void XMLDocumentParser::EndElementNs() {
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        WTF::MakeUnique<PendingEndElementNSCallback>(script_start_position_));
+        std::make_unique<PendingEndElementNSCallback>(script_start_position_));
     return;
   }
 
@@ -1089,7 +1089,7 @@ void XMLDocumentParser::Characters(const xmlChar* chars, int length) {
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        WTF::MakeUnique<PendingCharactersCallback>(chars, length));
+        std::make_unique<PendingCharactersCallback>(chars, length));
     return;
   }
 
@@ -1123,7 +1123,7 @@ void XMLDocumentParser::GetProcessingInstruction(const String& target,
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        WTF::MakeUnique<PendingProcessingInstructionCallback>(target, data));
+        std::make_unique<PendingProcessingInstructionCallback>(target, data));
     return;
   }
 
@@ -1165,7 +1165,7 @@ void XMLDocumentParser::CdataBlock(const String& text) {
 
   if (parser_paused_) {
     pending_callbacks_.push_back(
-        WTF::MakeUnique<PendingCDATABlockCallback>(text));
+        std::make_unique<PendingCDATABlockCallback>(text));
     return;
   }
 
@@ -1181,7 +1181,8 @@ void XMLDocumentParser::Comment(const String& text) {
     return;
 
   if (parser_paused_) {
-    pending_callbacks_.push_back(WTF::MakeUnique<PendingCommentCallback>(text));
+    pending_callbacks_.push_back(
+        std::make_unique<PendingCommentCallback>(text));
     return;
   }
 
@@ -1492,7 +1493,7 @@ void XMLDocumentParser::DoEnd() {
     xmlDocPtr doc = XmlDocPtrForString(
         GetDocument(), original_source_for_transform_.ToString(),
         GetDocument()->Url().GetString());
-    GetDocument()->SetTransformSource(WTF::MakeUnique<TransformSource>(doc));
+    GetDocument()->SetTransformSource(std::make_unique<TransformSource>(doc));
     DocumentParser::StopParsing();
   }
 }

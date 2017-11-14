@@ -5,6 +5,8 @@
 #ifndef SubTaskAttribution_h
 #define SubTaskAttribution_h
 
+#include <memory>
+
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
@@ -19,8 +21,8 @@ class SubTaskAttribution {
                                                     String script_url,
                                                     double start_time,
                                                     double duration) {
-    return WTF::MakeUnique<SubTaskAttribution>(sub_task_name, script_url,
-                                               start_time, duration);
+    return std::make_unique<SubTaskAttribution>(sub_task_name, script_url,
+                                                start_time, duration);
   }
   SubTaskAttribution(String sub_task_name,
                      String script_url,

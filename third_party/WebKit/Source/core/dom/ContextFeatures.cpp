@@ -35,7 +35,7 @@
 namespace blink {
 
 std::unique_ptr<ContextFeaturesClient> ContextFeaturesClient::Empty() {
-  return WTF::MakeUnique<ContextFeaturesClient>();
+  return std::make_unique<ContextFeaturesClient>();
 }
 
 const char* ContextFeatures::SupplementName() {

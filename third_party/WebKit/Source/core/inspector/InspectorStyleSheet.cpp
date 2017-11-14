@@ -903,10 +903,10 @@ void InspectorStyle::Trace(blink::Visitor* visitor) {
 InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
     : id_(IdentifiersFactory::CreateIdentifier()),
       listener_(listener),
-      line_endings_(WTF::MakeUnique<LineEndings>()) {}
+      line_endings_(std::make_unique<LineEndings>()) {}
 
 void InspectorStyleSheetBase::OnStyleSheetTextChanged() {
-  line_endings_ = WTF::MakeUnique<LineEndings>();
+  line_endings_ = std::make_unique<LineEndings>();
   if (GetListener())
     GetListener()->StyleSheetChanged(this);
 }
