@@ -107,7 +107,9 @@ ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     ShelfBackgroundType background_type,
     Shelf* shelf,
     WallpaperController* wallpaper_controller)
-    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {
+    : shelf_(shelf),
+      wallpaper_controller_(wallpaper_controller),
+      scoped_session_observer_(this) {
   if (wallpaper_controller_)
     wallpaper_controller_->AddObserver(this);
   if (shelf_)
@@ -276,8 +278,8 @@ void ShelfBackgroundAnimator::GetTargetValues(
   if (Shell::HasInstance() &&
       Shell::Get()->session_controller()->GetSessionState() !=
           session_manager::SessionState::ACTIVE) {
-    shelf_background_values->SetTargetValues(SK_AlphaTRANSPARENT);
-    item_background_values->SetTargetValues(SK_AlphaTRANSPARENT);
+    shelf_background_values->SetTargetValues(SK_ColorTRANSPARENT);
+    item_background_values->SetTargetValues(SK_ColorTRANSPARENT);
     return;
   }
 
