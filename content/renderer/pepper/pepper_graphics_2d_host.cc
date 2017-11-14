@@ -10,12 +10,15 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "components/viz/client/client_shared_bitmap_manager.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "content/public/renderer/render_thread.h"
@@ -25,6 +28,8 @@
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
@@ -35,7 +40,10 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
 #include "ppapi/thunk/enter.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "ui/gfx/blit.h"
@@ -189,6 +197,15 @@ PepperGraphics2DHost::PepperGraphics2DHost(RendererPpapiHost* host,
       texture_mailbox_modified_(true) {}
 
 PepperGraphics2DHost::~PepperGraphics2DHost() {
+  // Delete textures owned by PepperGraphics2DHost, but not those sent to the
+  // compositor, since those will be deleted by ReleaseTextureCallback() when it
+  // runs.
+  while (main_thread_context_ && !recycled_texture_copies_.empty()) {
+    uint32_t texture_id = recycled_texture_copies_.back().first;
+    main_thread_context_->ContextGL()->DeleteTextures(1, &texture_id);
+    recycled_texture_copies_.pop_back();
+  }
+
   // Unbind from the instance when destroyed if we're still bound.
   if (bound_instance_)
     bound_instance_->BindGraphics(bound_instance_->pp_instance(), 0);
@@ -539,7 +556,7 @@ int32_t PepperGraphics2DHost::OnHostMsgReadImageData(
   return ReadImageData(image, &top_left) ? PP_OK : PP_ERROR_FAILED;
 }
 
-void PepperGraphics2DHost::ReleaseCallback(
+void PepperGraphics2DHost::ReleaseSoftwareCallback(
     std::unique_ptr<viz::SharedBitmap> bitmap,
     const gfx::Size& bitmap_size,
     const gpu::SyncToken& sync_token,
@@ -552,12 +569,138 @@ void PepperGraphics2DHost::ReleaseCallback(
   cached_bitmap_size_ = bitmap_size;
 }
 
+// static
+void PepperGraphics2DHost::ReleaseTextureCallback(
+    base::WeakPtr<PepperGraphics2DHost> host,
+    scoped_refptr<viz::ContextProvider> context,
+    uint32_t id,
+    const gpu::SyncToken& sync_token,
+    bool lost) {
+  if (sync_token.HasData())
+    context->ContextGL()->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  if (host && !lost) {
+    // Recycle the texture to be used in future frames. This moves it from
+    // the busy textures list to the recycled list.
+    auto it = host->texture_copies_.begin();
+    for (; it != host->texture_copies_.end(); ++it) {
+      if (it->first == id) {
+        host->recycled_texture_copies_.push_back(*it);
+        host->texture_copies_.erase(it);
+        break;
+      }
+    }
+    return;
+  }
+
+  // The otherwise, the texture can not be reused so remove it from the busy
+  // texture list and delete it.
+  if (host) {
+    auto matches_id = [id](const std::pair<uint32_t, gpu::Mailbox>& element) {
+      return element.first == id;
+    };
+    base::EraseIf(host->texture_copies_, matches_id);
+  }
+  context->ContextGL()->DeleteTextures(1, &id);
+}
+
 bool PepperGraphics2DHost::PrepareTextureMailbox(
     viz::TextureMailbox* mailbox,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
+  // Reuse the |main_thread_context_| if it is not lost. If it is lost, we
+  // can't reuse the texture ids, they are invalid. If the compositing mode
+  // changed, the context will be lost also, so we get both together.
+  if (!main_thread_context_ ||
+      main_thread_context_->ContextGL()->GetGraphicsResetStatusKHR() !=
+          GL_NO_ERROR) {
+    texture_copies_.clear();
+    recycled_texture_copies_.clear();
+    main_thread_context_ = nullptr;
+
+    if (!is_gpu_compositing_disabled_) {
+      RenderThreadImpl* rti = RenderThreadImpl::current();
+      is_gpu_compositing_disabled_ = rti->IsGpuCompositingDisabled();
+      if (!is_gpu_compositing_disabled_) {
+        // Using gpu compositing.
+        main_thread_context_ = rti->SharedMainThreadContextProvider();
+      } else {
+        // Just switched to software compositing. Force us to send the
+        // frame to the compositor again even if not changed.
+        texture_mailbox_modified_ = true;
+      }
+    }
+  }
+
   if (!texture_mailbox_modified_)
     return false;
-  // TODO(jbauman): Send image_data_ through mailbox to avoid copy.
+
+  // Context creation failed, so we're unable to give this frame to the
+  // compositor. Try again next time.
+  if (!is_gpu_compositing_disabled_ && !main_thread_context_)
+    return false;
+
+  // When gpu compositing, the compositor expects gpu resources, so we copy the
+  // |image_data_| into a texture.
+  if (main_thread_context_) {
+    auto* gl = main_thread_context_->ContextGL();
+    uint32_t texture_id;
+    gpu::Mailbox gpu_mailbox;
+    if (!recycled_texture_copies_.empty()) {
+      texture_id = recycled_texture_copies_.back().first;
+      gpu_mailbox = recycled_texture_copies_.back().second;
+      recycled_texture_copies_.pop_back();
+      gl->BindTexture(GL_TEXTURE_2D, texture_id);
+    } else {
+      gl->GenTextures(1, &texture_id);
+      gl->BindTexture(GL_TEXTURE_2D, texture_id);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+      gl->GenMailboxCHROMIUM(gpu_mailbox.name);
+      gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, gpu_mailbox.name);
+    }
+
+    texture_copies_.push_back(std::make_pair(texture_id, gpu_mailbox));
+
+    void* src = image_data_->Map();
+    // The bitmap in |image_data_| uses the skia N32 byte order.
+    constexpr bool bitmap_is_bgra = kN32_SkColorType == kBGRA_8888_SkColorType;
+    bool texture_can_be_bgra =
+        main_thread_context_->ContextCapabilities().texture_format_bgra8888;
+
+    // Convert to RGBA if we can't upload BGRA. This is slow sad times.
+    std::unique_ptr<uint32_t[]> swizzled;
+    if (bitmap_is_bgra && !texture_can_be_bgra) {
+      size_t num_pixels = (base::CheckedNumeric<size_t>(image_data_->width()) *
+                           image_data_->height())
+                              .ValueOrDie();
+      swizzled = std::make_unique<uint32_t[]>(num_pixels);
+      SkSwapRB(swizzled.get(), static_cast<uint32_t*>(src), num_pixels);
+      src = swizzled.get();
+    }
+
+    GLenum format =
+        bitmap_is_bgra && texture_can_be_bgra ? GL_BGRA_EXT : GL_RGBA;
+    gl->TexImage2D(GL_TEXTURE_2D, 0, format, image_data_->width(),
+                   image_data_->height(), 0, format, GL_UNSIGNED_BYTE, src);
+    image_data_->Unmap();
+    swizzled.reset();
+
+    gpu::SyncToken sync_token;
+    uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+    gl->BindTexture(GL_TEXTURE_2D, 0);
+
+    *mailbox = viz::TextureMailbox(gpu_mailbox, sync_token, GL_TEXTURE_2D);
+    *release_callback = viz::SingleReleaseCallback::Create(
+        base::Bind(&ReleaseTextureCallback, this->AsWeakPtr(),
+                   main_thread_context_, texture_id));
+    return true;
+  }
+
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
   std::unique_ptr<viz::SharedBitmap> shared_bitmap;
   if (cached_bitmap_) {
@@ -579,9 +722,9 @@ bool PepperGraphics2DHost::PrepareTextureMailbox(
   image_data_->Unmap();
 
   *mailbox = viz::TextureMailbox(shared_bitmap.get(), pixel_image_size);
-  *release_callback = viz::SingleReleaseCallback::Create(
-      base::Bind(&PepperGraphics2DHost::ReleaseCallback, this->AsWeakPtr(),
-                 base::Passed(&shared_bitmap), pixel_image_size));
+  *release_callback = viz::SingleReleaseCallback::Create(base::Bind(
+      &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
+      base::Passed(&shared_bitmap), pixel_image_size));
   texture_mailbox_modified_ = false;
   return true;
 }

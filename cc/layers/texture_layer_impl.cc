@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "cc/resources/scoped_resource.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -33,7 +32,6 @@ void TextureLayerImpl::SetTextureMailbox(
   texture_mailbox_ = mailbox;
   release_callback_ = std::move(release_callback);
   own_mailbox_ = true;
-  valid_texture_copy_ = false;
   SetNeedsPushProperties();
 }
 
@@ -67,69 +65,34 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
                                 LayerTreeResourceProvider* resource_provider) {
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
+  // These imply some synchronization problem where the compositor is in gpu
+  // compositing but the client thinks it is in software, or vice versa. These
+  // should only happen transiently, and should resolve when the client hears
+  // about the mode switch.
+  if (draw_mode == DRAW_MODE_HARDWARE && !texture_mailbox_.IsTexture()) {
+    DLOG(ERROR) << "Gpu compositor has software resource in TextureLayer";
+    return false;
+  }
+  if (draw_mode == DRAW_MODE_SOFTWARE && !texture_mailbox_.IsSharedMemory()) {
+    DLOG(ERROR) << "Software compositor has gpu resource in TextureLayer";
+    return false;
+  }
 
   if (own_mailbox_) {
     DCHECK(!external_texture_resource_);
-    if ((draw_mode == DRAW_MODE_HARDWARE && texture_mailbox_.IsTexture()) ||
-        (draw_mode == DRAW_MODE_SOFTWARE &&
-         texture_mailbox_.IsSharedMemory())) {
-      external_texture_resource_ =
-          resource_provider->CreateResourceFromTextureMailbox(
-              texture_mailbox_, std::move(release_callback_));
-      DCHECK(external_texture_resource_);
-      texture_copy_ = nullptr;
-      valid_texture_copy_ = false;
-    }
-    if (external_texture_resource_)
-      own_mailbox_ = false;
+    external_texture_resource_ =
+        resource_provider->CreateResourceFromTextureMailbox(
+            texture_mailbox_, std::move(release_callback_));
+    own_mailbox_ = false;
   }
 
-  if (!valid_texture_copy_ && draw_mode == DRAW_MODE_HARDWARE &&
-      texture_mailbox_.IsSharedMemory()) {
-    DCHECK(!external_texture_resource_);
-    // Have to upload a copy to a texture for it to be used in a
-    // hardware draw.
-    if (!texture_copy_)
-      texture_copy_ = std::make_unique<ScopedResource>(resource_provider);
-    if (texture_copy_->size() != texture_mailbox_.size_in_pixels() ||
-        resource_provider->InUseByConsumer(texture_copy_->id()))
-      texture_copy_->Free();
-
-    if (!texture_copy_->id()) {
-      texture_copy_->Allocate(
-          texture_mailbox_.size_in_pixels(), viz::ResourceTextureHint::kDefault,
-          resource_provider->best_texture_format(), gfx::ColorSpace());
-    }
-
-    if (texture_copy_->id()) {
-      std::vector<uint8_t> swizzled;
-      uint8_t* pixels = texture_mailbox_.shared_bitmap()->pixels();
-
-      if (!viz::PlatformColor::SameComponentOrder(texture_copy_->format())) {
-        // Swizzle colors. This is slow, but should be really uncommon.
-        size_t bytes = texture_mailbox_.SharedMemorySizeInBytes();
-        swizzled.resize(bytes);
-        for (size_t i = 0; i < bytes; i += 4) {
-          swizzled[i] = pixels[i + 2];
-          swizzled[i + 1] = pixels[i + 1];
-          swizzled[i + 2] = pixels[i];
-          swizzled[i + 3] = pixels[i + 3];
-        }
-        pixels = &swizzled[0];
-      }
-
-      resource_provider->CopyToResource(texture_copy_->id(), pixels,
-                                        texture_mailbox_.size_in_pixels());
-      valid_texture_copy_ = true;
-    }
-  }
-  return (external_texture_resource_ || valid_texture_copy_) &&
+  return external_texture_resource_ &&
          LayerImpl::WillDraw(draw_mode, resource_provider);
 }
 
 void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
-  DCHECK(external_texture_resource_ || valid_texture_copy_);
+  DCHECK(external_texture_resource_);
 
   SkColor bg_color =
       blend_background_color_ ? background_color() : SK_ColorTRANSPARENT;
@@ -156,14 +119,11 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
 
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-  viz::ResourceId id =
-      valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
-               id, premultiplied_alpha_, uv_top_left_, uv_bottom_right_,
-               bg_color, vertex_opacity_, flipped_, nearest_neighbor_, false);
-  if (!valid_texture_copy_) {
-    quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
-  }
+               external_texture_resource_, premultiplied_alpha_, uv_top_left_,
+               uv_bottom_right_, bg_color, vertex_opacity_, flipped_,
+               nearest_neighbor_, false);
+  quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
   ValidateQuadResources(quad);
 }
 
@@ -179,9 +139,7 @@ SimpleEnclosedRegion TextureLayerImpl::VisibleOpaqueRegion() const {
 
 void TextureLayerImpl::ReleaseResources() {
   FreeTextureMailbox();
-  texture_copy_ = nullptr;
   external_texture_resource_ = 0;
-  valid_texture_copy_ = false;
 }
 
 void TextureLayerImpl::SetPremultipliedAlpha(bool premultiplied_alpha) {
