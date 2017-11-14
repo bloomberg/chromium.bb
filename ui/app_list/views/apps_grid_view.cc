@@ -930,20 +930,19 @@ void AppsGridView::Layout() {
   page_switcher_view_->SetBoundsRect(rect);
 }
 
-void AppsGridView::UpdateControlVisibility(
-    AppListView::AppListState app_list_state,
-    bool is_in_drag) {
+void AppsGridView::UpdateControlVisibility(AppListViewState app_list_state,
+                                           bool is_in_drag) {
   if (!is_fullscreen_app_list_enabled_)
     return;
 
   const bool fullscreen_apps_in_drag =
-      app_list_state == AppListView::FULLSCREEN_ALL_APPS || is_in_drag;
+      app_list_state == AppListViewState::FULLSCREEN_ALL_APPS || is_in_drag;
   if (all_apps_indicator_)
     all_apps_indicator_->SetVisible(fullscreen_apps_in_drag);
 
   if (expand_arrow_view_) {
     expand_arrow_view_->SetVisible(
-        app_list_state == AppListView::PEEKING ? true : false);
+        app_list_state == AppListViewState::PEEKING ? true : false);
   }
 
   for (int i = 0; i < view_model_.view_size(); ++i) {
@@ -960,13 +959,12 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
     if (!CanProcessUpDownKeyTraversal(event))
       return false;
 
-    AppListView::AppListState state =
-        contents_view_->app_list_view()->app_list_state();
+    AppListViewState state = contents_view_->app_list_view()->app_list_state();
     bool arrow_up = event.key_code() == ui::VKEY_UP;
-    if (state == AppListView::PEEKING)
+    if (state == AppListViewState::PEEKING)
       return HandleFocusMovementInPeekingState(arrow_up);
 
-    DCHECK(state == AppListView::FULLSCREEN_ALL_APPS);
+    DCHECK(state == AppListViewState::FULLSCREEN_ALL_APPS);
     return HandleFocusMovementInFullscreenAllAppsState(arrow_up);
   }
   // TODO(weidongg/766807) Remove everything below when the flag is enabled by
@@ -1987,7 +1985,7 @@ void AppsGridView::UpdateOpacity() {
   int screen_bottom = app_list_view->GetScreenBottom();
   bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != AppListView::AppListState::CLOSED);
+      (app_list_view->app_list_state() != AppListViewState::CLOSED);
 
   // The opacity of suggested apps is a function of the fractional displacement
   // of the app list from collapsed(0) to peeking(1) state. When the fraction
@@ -2550,7 +2548,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
     // Ensure that AppListItems that are added to the AppListItemList are not
     // shown while in PEEKING. The visibility of the app icons will be updated
     // on drag/animation from PEEKING.
-    view->SetVisible(model_->state_fullscreen() != AppListView::PEEKING);
+    view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
   }
   UpdatePaging();
   UpdatePulsingBlockViews();

@@ -14,6 +14,7 @@ namespace app_list {
 
 class AppListViewDelegate;
 class ContentsView;
+class PaginationModel;
 class SearchResultTileItemView;
 class TileItemView;
 

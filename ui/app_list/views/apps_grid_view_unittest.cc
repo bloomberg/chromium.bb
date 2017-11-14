@@ -139,7 +139,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
       model_->results()->Add(std::make_unique<TestSuggestedSearchResult>());
     // Needed to update suggestions from |model_|.
     apps_grid_view_->ResetForShowApps();
-    app_list_view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+    app_list_view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
     app_list_view_->Layout();
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_));
