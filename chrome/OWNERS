@@ -12,7 +12,7 @@ thestig@chromium.org
 # structural changes, please get a review from a reviewer in this file.
 per-file *.gni=*
 per-file BUILD.gn=file://build/OWNERS
-per-file VERSION=amineer@chromium.com
-per-file VERSION=anantha@chromium.com
-per-file VERSION=govind@chromium.com
-per-file VERSION=mmoss@chromium.com
+per-file VERSION=amineer@chromium.org
+per-file VERSION=anantha@chromium.org
+per-file VERSION=govind@chromium.org
+per-file VERSION=mmoss@chromium.org
