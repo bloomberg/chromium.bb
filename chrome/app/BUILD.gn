@@ -415,10 +415,7 @@ if (is_chromeos) {
 }
 
 if (is_win) {
-  chrome_packaged_services += [
-    "//chrome/services/util_win:manifest",
-    "//chrome/services/wifi_util_win:manifest",
-  ]
+  chrome_packaged_services += [ "//chrome/services/util_win:manifest" ]
 }
 
 if (!is_android) {

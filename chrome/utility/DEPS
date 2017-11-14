@@ -8,8 +8,6 @@ include_rules = [
   "+chrome/services/media_gallery_util/public/interfaces",
   "+chrome/services/util_win/util_win_service.h",
   "+chrome/services/util_win/public/interfaces",
-  "+chrome/services/wifi_util_win/wifi_util_win_service.h",
-  "+chrome/services/wifi_util_win/public/interfaces",
   "+components/font_service/font_service_app.h",
   "+components/patch_service",
   "+components/payments/content/utility",

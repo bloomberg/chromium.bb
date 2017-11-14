@@ -12,6 +12,7 @@
           "extensions::mojom::ManifestParser",
           "extensions::mojom::MediaParser",
           "extensions::mojom::RemovableStorageWriter",
+          "extensions::mojom::WiFiCredentialsGetter",
           "payments::mojom::PaymentManifestParser",
           "profiling::mojom::ProfilingClient",
           "proxy_resolver::mojom::ProxyResolverFactory",
