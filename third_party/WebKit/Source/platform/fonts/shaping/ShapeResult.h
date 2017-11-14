@@ -123,6 +123,10 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   String ToString() const;
   void ToString(StringBuilder*) const;
 
+#if DCHECK_IS_ON()
+  void CheckConsistency() const;
+#endif
+
  protected:
   struct RunInfo;
 

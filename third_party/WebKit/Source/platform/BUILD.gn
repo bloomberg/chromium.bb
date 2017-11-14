@@ -1349,6 +1349,8 @@ jumbo_component("platform") {
     "text/TextCheckerClient.h",
     "text/TextChecking.h",
     "text/TextDecoration.h",
+    "text/TextDirection.cpp",
+    "text/TextDirection.h",
     "text/TextEncodingDetector.cpp",
     "text/TextEncodingDetector.h",
     "text/TextJustify.h",

@@ -686,14 +686,6 @@ void ShapeResult::ReorderRtlRuns(unsigned run_size_before) {
   for (unsigned i = run_size_before; i < runs_.size(); i++)
     new_runs.push_back(std::move(runs_[i]));
 
-  // Recompute |start_index_| in the decreasing order.
-  unsigned index = num_characters_;
-  for (auto it = new_runs.rbegin(); it != new_runs.rend(); it++) {
-    auto& run = *it;
-    run->start_index_ = index;
-    index += run->num_characters_;
-  }
-
   // Then append existing runs.
   for (unsigned i = 0; i < run_size_before; i++)
     new_runs.push_back(std::move(runs_[i]));
@@ -706,7 +698,16 @@ void ShapeResult::CopyRange(unsigned start_offset,
   if (!runs_.size())
     return;
 
-  unsigned index = target->num_characters_;
+#if DCHECK_IS_ON()
+  unsigned target_num_characters_before = target->num_characters_;
+#endif
+
+  // When |target| is empty, its character indexes are the specified sub range
+  // of |this|. Otherwise the character indexes are renumbered to be continuous.
+  int index_diff = !target->num_characters_
+                       ? 0
+                       : target->EndIndexForResult() -
+                             std::max(start_offset, StartIndexForResult());
   unsigned target_run_size_before = target->runs_.size();
   float total_width = 0;
   for (const auto& run : runs_) {
@@ -719,9 +720,10 @@ void ShapeResult::CopyRange(unsigned start_offset,
       DCHECK(end > start);
 
       auto sub_run = run->CreateSubRun(start, end);
-      sub_run->start_index_ = index;
+      sub_run->start_index_ += index_diff;
       total_width += sub_run->width_;
-      index += sub_run->num_characters_;
+      target->num_characters_ += sub_run->num_characters_;
+      target->num_glyphs_ += sub_run->glyph_data_.size();
       target->runs_.push_back(std::move(sub_run));
     }
   }
@@ -752,13 +754,47 @@ void ShapeResult::CopyRange(unsigned start_offset,
                          glyph_bounding_box_.Height());
   target->glyph_bounding_box_.UniteIfNonZero(adjusted_box);
 
-  DCHECK_EQ(index - target->num_characters_,
+  target->has_vertical_offsets_ |= has_vertical_offsets_;
+
+#if DCHECK_IS_ON()
+  DCHECK_EQ(target->num_characters_ - target_num_characters_before,
             std::min(end_offset, EndIndexForResult()) -
                 std::max(start_offset, StartIndexForResult()));
-  target->num_characters_ = index;
 
-  target->has_vertical_offsets_ |= has_vertical_offsets_;
+  target->CheckConsistency();
+#endif
 }
+
+#if DCHECK_IS_ON()
+void ShapeResult::CheckConsistency() const {
+  if (runs_.IsEmpty()) {
+    DCHECK_EQ(0u, num_characters_);
+    DCHECK_EQ(0u, num_glyphs_);
+    return;
+  }
+
+  unsigned index = StartIndexForResult();
+  unsigned num_glyphs = 0;
+  if (!Rtl()) {
+    for (const auto& run : runs_) {
+      DCHECK_EQ(index, run->start_index_);
+      index += run->num_characters_;
+      num_glyphs += run->glyph_data_.size();
+    }
+  } else {
+    // RTL on Mac may not have runs for the all characters. crbug.com/774034
+    index = runs_.back()->start_index_;
+    for (auto it = runs_.rbegin(); it != runs_.rend(); ++it) {
+      const auto& run = *it;
+      DCHECK_EQ(index, run->start_index_);
+      index += run->num_characters_;
+      num_glyphs += run->glyph_data_.size();
+    }
+  }
+  DCHECK_EQ(index, EndIndexForResult());
+  DCHECK_EQ(num_glyphs, num_glyphs_);
+}
+#endif
 
 scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     const Font* font,

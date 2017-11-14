@@ -680,6 +680,7 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/styledEmptyInlinesWithBRs.h
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-position-top-align.html [ Crash Failure ]
 # Crashes in SPv2 only?
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-box-background-repeat-x.html [ Crash Failure ]
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/justify-emphasis-inline-box.html [ Crash Failure ]
 
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/continuation-positioned-reparenting.html [ Crash ]
@@ -720,7 +721,6 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-borders-with-bidi-ov
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-destroy-dirty-lines-crash.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-focus-ring-under-absolute-enclosing-relative-div.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/outline-continuations.html [ Failure ]
