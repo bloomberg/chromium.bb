@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
@@ -128,6 +129,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
   SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   button_bar_ = new MessageCenterButtonBar(
       this, message_center, initially_settings_visible, GetButtonBarTitle());
@@ -228,8 +230,9 @@ void MessageCenterView::ClearAllClosableNotifications() {
 
 void MessageCenterView::OnLockStateChanged(bool locked) {
   is_locked_ = locked;
-  UpdateButtonBarStatus();
   Update(true /* animate */);
+  // Refresh a11y information, because accessible name of the view changes.
+  NotifyAccessibilityEvent(ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED, true);
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
@@ -351,6 +354,11 @@ void MessageCenterView::OnMouseExited(const ui::MouseEvent& event) {
 
   message_list_view_->ResetRepositionSession();
   Update(true /* animate */);
+}
+
+void MessageCenterView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ui::AX_ROLE_DIALOG;
+  node_data->SetName(GetButtonBarTitle());
 }
 
 void MessageCenterView::OnNotificationAdded(const std::string& id) {

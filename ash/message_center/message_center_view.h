@@ -91,6 +91,7 @@ class ASH_EXPORT MessageCenterView
   int GetHeightForWidth(int width) const override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from MessageCenterObserver:
   void OnNotificationAdded(const std::string& id) override;
