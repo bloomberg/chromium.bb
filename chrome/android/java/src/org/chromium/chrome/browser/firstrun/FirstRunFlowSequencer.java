@@ -87,7 +87,7 @@ public abstract class FirstRunFlowSequencer  {
                 initializeSharedState(isAndroidEduDevice(), hasChildAccount());
                 processFreEnvironmentPreNative();
             }
-        }.start(mActivity.getApplicationContext());
+        }.start();
     }
 
     @VisibleForTesting

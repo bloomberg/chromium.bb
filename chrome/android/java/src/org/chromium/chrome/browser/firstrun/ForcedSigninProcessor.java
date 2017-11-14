@@ -59,7 +59,7 @@ public final class ForcedSigninProcessor {
                 assert !(isAndroidEduDevice && hasChildAccount);
                 processForcedSignIn(appContext, onComplete);
             }
-        }.start(appContext);
+        }.start();
     }
 
     /**
