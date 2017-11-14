@@ -10,9 +10,6 @@
 
 @interface ToolbarController (Protected)
 
-// Animation key used for toolbar transition animations.
-extern NSString* const kToolbarTransitionAnimationKey;
-
 // An array of CALayers that are currently animating under
 // kToolbarTransitionAnimationKey.
 @property(nonatomic, readonly) NSMutableArray* transitionLayers;

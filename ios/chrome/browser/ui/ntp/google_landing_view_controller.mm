@@ -697,14 +697,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 #pragma mark - ToolbarOwner
 
-- (ToolbarController*)relinquishedToolbarController {
-  return [_headerView relinquishedToolbarController];
-}
-
-- (void)reparentToolbarController {
-  [_headerView reparentToolbarController];
-}
-
 - (CGRect)toolbarFrame {
   return [_headerView toolbarFrame];
 }

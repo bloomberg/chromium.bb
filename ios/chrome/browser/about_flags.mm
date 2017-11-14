@@ -186,10 +186,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPropertyAnimationsToolbarName,
      flag_descriptions::kPropertyAnimationsToolbarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPropertyAnimationsToolbar)},
-    {"toolbar-snapshot-animation",
-     flag_descriptions::kToolbarSnapshotAnimationName,
-     flag_descriptions::kToolbarSnapshotAnimationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kToolbarSnapshotAnimation)},
     {"new-fullscreen-controller", flag_descriptions::kNewFullscreenName,
      flag_descriptions::kNewFullscreenDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(fullscreen::features::kNewFullscreen)}};

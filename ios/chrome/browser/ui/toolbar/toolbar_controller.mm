@@ -101,15 +101,6 @@ using ios::material::TimingFunction;
 // Whether the share button should be visible in the toolbar.
 - (BOOL)shareButtonShouldBeVisible;
 
-// Returns an animation for |button| for a toolbar transition animation with
-// |style|.  |button|'s frame will be interpolated between its layout in the
-// screen toolbar to the card's tab frame, and will be faded in for
-// ToolbarTransitionStyleToStackView and faded out for
-// ToolbarTransitionStyleToBVC.
-- (CAAnimation*)transitionAnimationForButton:(UIButton*)button
-                        containerBeginBounds:(CGRect)containerBeginBounds
-                          containerEndBounds:(CGRect)containerEndBounds
-                                   withStyle:(ToolbarTransitionStyle)style;
 @end
 
 @implementation ToolbarController
@@ -505,81 +496,6 @@ using ios::material::TimingFunction;
 
 #pragma mark Animations
 
-- (void)animateTransitionWithBeginFrame:(CGRect)beginFrame
-                               endFrame:(CGRect)endFrame
-                        transitionStyle:(ToolbarTransitionStyle)style {
-  // Animation values.
-  DCHECK(!self.transitionLayers.count);
-  BOOL transitioningToStackView =
-      (style == TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW);
-  CAAnimation* frameAnimation = nil;
-  CAMediaTimingFunction* frameTiming =
-      TimingFunction(ios::material::CurveEaseInOut);
-  CFTimeInterval frameDuration = ios::material::kDuration1;
-  CGRect beginBounds = {CGPointZero, beginFrame.size};
-  CGRect endBounds = {CGPointZero, endFrame.size};
-
-  // Update layer geometry.
-  frameAnimation = FrameAnimationMake(self.view.layer, beginFrame, endFrame);
-  frameAnimation.duration = frameDuration;
-  frameAnimation.timingFunction = frameTiming;
-  [self.transitionLayers addObject:self.view.layer];
-  [self.view.layer addAnimation:frameAnimation
-                         forKey:kToolbarTransitionAnimationKey];
-
-  // Hide background view using CAAnimation so it can be unhidden when the
-  // animations are removed in |-cleanUpTransitionAnimations|.
-  CAAnimation* hideAnimation = OpacityAnimationMake(0.0, 0.0);
-  [self.transitionLayers addObject:self.backgroundView.layer];
-  [self.backgroundView.layer addAnimation:hideAnimation
-                                   forKey:kToolbarTransitionAnimationKey];
-
-  // Update shadow.  When transitioning to the stack view, hide the shadow.
-  // When transitioning to the BVC, animate its frame while fading in.
-  CAAnimation* shadowAnimation = nil;
-  if (transitioningToStackView) {
-    shadowAnimation = hideAnimation;
-  } else {
-    InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
-    CGFloat shadowHeight = kShadowViewFrame[idiom].size.height;
-    CGFloat shadowVerticalOffset = 0.0;
-    beginFrame = CGRectOffset(beginBounds, 0.0,
-                              beginBounds.size.height - shadowVerticalOffset);
-    beginFrame.size.height = shadowHeight;
-    endFrame = CGRectOffset(endBounds, 0.0,
-                            endBounds.size.height - shadowVerticalOffset);
-    endFrame.size.height = shadowHeight;
-    frameAnimation =
-        FrameAnimationMake([shadowView_ layer], beginFrame, endFrame);
-    frameAnimation.duration = frameDuration;
-    frameAnimation.timingFunction = frameTiming;
-    CAAnimation* fadeAnimation = OpacityAnimationMake(0.0, 1.0);
-    fadeAnimation.timingFunction = TimingFunction(ios::material::CurveEaseOut);
-    fadeAnimation.duration = ios::material::kDuration3;
-    shadowAnimation = AnimationGroupMake(@[ frameAnimation, fadeAnimation ]);
-  }
-  [self.transitionLayers addObject:[shadowView_ layer]];
-  [[shadowView_ layer] addAnimation:shadowAnimation
-                             forKey:kToolbarTransitionAnimationKey];
-
-  // Animate toolbar buttons
-  [self animateTransitionForButtonsInView:self.contentView
-                     containerBeginBounds:beginBounds
-                       containerEndBounds:endBounds
-                          transitionStyle:style];
-}
-
-- (void)reverseTransitionAnimations {
-  ReverseAnimationsForKeyForLayers(kToolbarTransitionAnimationKey,
-                                   [self transitionLayers]);
-}
-
-- (void)cleanUpTransitionAnimations {
-  RemoveAnimationForKeyFromLayers(kToolbarTransitionAnimationKey,
-                                  self.transitionLayers);
-  [self.transitionLayers removeAllObjects];
-}
-
 - (void)triggerToolsMenuButtonAnimation {
   [toolsMenuButton_ triggerAnimation];
 }
@@ -710,25 +626,6 @@ using ios::material::TimingFunction;
 }
 
 #pragma mark Animations
-
-- (void)animateTransitionForButtonsInView:(UIView*)containerView
-                     containerBeginBounds:(CGRect)containerBeginBounds
-                       containerEndBounds:(CGRect)containerEndBounds
-                          transitionStyle:(ToolbarTransitionStyle)style {
-  [containerView.subviews enumerateObjectsUsingBlock:^(
-                              UIButton* button, NSUInteger idx, BOOL* stop) {
-    if ([button isKindOfClass:[UIButton class]] && button.alpha > 0.0) {
-      CAAnimation* buttonAnimation =
-          [self transitionAnimationForButton:button
-                        containerBeginBounds:containerBeginBounds
-                          containerEndBounds:containerEndBounds
-                                   withStyle:style];
-      [self.transitionLayers addObject:button.layer];
-      [button.layer addAnimation:buttonAnimation
-                          forKey:kToolbarTransitionAnimationKey];
-    }
-  }];
-}
 
 - (void)fadeInView:(UIView*)view
     fromLeadingOffset:(LayoutOffset)leadingOffset
@@ -880,71 +777,6 @@ using ios::material::TimingFunction;
                      [shadowView_ setAlpha:self.backgroundView.alpha];
                      [fullBleedShadowView_ setAlpha:0];
                    }];
-}
-
-- (void)configureFadeInAnimation API_AVAILABLE(ios(10.0)) {
-  // First shift the Buttons by |kButtonFadeOutXOffset| so then the
-  // PropertyAnimator can move them in into their final position.
-  for (UIButton* button in standardButtons_) {
-    button.alpha = 0;
-    button.frame = CGRectOffset(button.frame, kButtonFadeOutXOffset, 0);
-  }
-  __weak NSArray* weakStandardButtons = standardButtons_;
-  [self.omniboxContractorAnimator addAnimations:^{
-    for (UIButton* button in weakStandardButtons) {
-      button.alpha = 1.0;
-      button.frame = CGRectOffset(button.frame, -kButtonFadeOutXOffset, 0);
-    }
-  }];
-}
-
-- (CAAnimation*)transitionAnimationForButton:(UIButton*)button
-                        containerBeginBounds:(CGRect)containerBeginBounds
-                          containerEndBounds:(CGRect)containerEndBounds
-                                   withStyle:(ToolbarTransitionStyle)style {
-  BOOL toStackView = style == TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW;
-  CGRect cardBounds = toStackView ? containerEndBounds : containerBeginBounds;
-  CGRect toolbarBounds =
-      toStackView ? containerBeginBounds : containerEndBounds;
-
-  // |button|'s model layer frame is the button's frame within |toolbarBounds|.
-  CGRect toolbarButtonFrame = button.layer.frame;
-  LayoutRect toolbarButtonLayout =
-      LayoutRectForRectInBoundingRect(toolbarButtonFrame, toolbarBounds);
-
-  // |button|'s leading or trailing padding is maintained depending on its
-  // resizing mask.  Its vertical positioning should be centered within the
-  // container view's card bounds.
-  LayoutRect cardButtonLayout = toolbarButtonLayout;
-  cardButtonLayout.boundingWidth = CGRectGetWidth(cardBounds);
-  BOOL flexibleLeading =
-      button.autoresizingMask & UIViewAutoresizingFlexibleLeadingMargin();
-  if (flexibleLeading) {
-    CGFloat trailingPadding =
-        LayoutRectGetTrailingLayout(toolbarButtonLayout).size.width;
-    cardButtonLayout.position.leading = cardButtonLayout.boundingWidth -
-                                        trailingPadding -
-                                        cardButtonLayout.size.width;
-  }
-  cardButtonLayout.position.originY =
-      CGRectGetMidY(cardBounds) - 0.5 * cardButtonLayout.size.height;
-  cardButtonLayout.position =
-      AlignLayoutRectPositionToPixel(cardButtonLayout.position);
-  CGRect cardButtonFrame = LayoutRectGetRect(cardButtonLayout);
-
-  CGRect beginFrame = toStackView ? toolbarButtonFrame : cardButtonFrame;
-  CGRect endFrame = toStackView ? cardButtonFrame : toolbarButtonFrame;
-
-  // Create animations.
-  CAAnimation* frameAnimation =
-      FrameAnimationMake(button.layer, beginFrame, endFrame);
-  frameAnimation.duration = ios::material::kDuration1;
-  frameAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
-  CAAnimation* fadeAnimation =
-      OpacityAnimationMake(toStackView ? 1.0 : 0.0, toStackView ? 0.0 : 1.0);
-  fadeAnimation.duration = ios::material::kDuration8;
-  fadeAnimation.timingFunction = TimingFunction(ios::material::CurveEaseIn);
-  return AnimationGroupMake(@[ frameAnimation, fadeAnimation ]);
 }
 
 #pragma mark Helpers

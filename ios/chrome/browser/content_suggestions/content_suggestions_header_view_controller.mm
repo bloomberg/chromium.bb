@@ -373,14 +373,6 @@ const CGFloat kHintLabelSidePadding = 12;
 
 #pragma mark - ToolbarOwner
 
-- (ToolbarController*)relinquishedToolbarController {
-  return [self.headerView relinquishedToolbarController];
-}
-
-- (void)reparentToolbarController {
-  [self.headerView reparentToolbarController];
-}
-
 - (CGRect)toolbarFrame {
   return [self.headerView toolbarFrame];
 }

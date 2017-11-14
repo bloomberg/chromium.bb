@@ -122,22 +122,6 @@ class ReadingListModel;
 // Shows/hides iPhone toolbar views for when the new tab page is displayed.
 - (void)hideViewsForNewTabPage:(BOOL)hide;
 
-// Performs the transition animation specified by |style|, animating the
-// toolbar view from |beginFrame| to |endFrame|. Animations are added to
-// subview depending on |style|:
-//   - ToolbarTransitionStyleToStackView: faded out immediately
-//   - ToolbarTransitionStyleToBVC: fade in from a vertical offset after a
-//   delay
-- (void)animateTransitionWithBeginFrame:(CGRect)beginFrame
-                               endFrame:(CGRect)endFrame
-                        transitionStyle:(ToolbarTransitionStyle)style;
-
-// Reverses transition animations that are cancelled before they can finish.
-- (void)reverseTransitionAnimations;
-
-// Called when transition animations can be removed.
-- (void)cleanUpTransitionAnimations;
-
 // Triggers an animation on the tools menu button to draw the user's
 // attention.
 - (void)triggerToolsMenuButtonAnimation;

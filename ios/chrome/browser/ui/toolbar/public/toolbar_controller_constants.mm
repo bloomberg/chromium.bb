@@ -24,8 +24,6 @@ NSString* const kToolbarShareButtonIdentifier =
 
 const NSInteger kStackButtonMaxTabCount = 99;
 
-NSString* const kToolbarTransitionAnimationKey = @"ToolbarTransitionAnimation";
-
 const NSInteger kFontSizeFewerThanTenTabs = 11;
 const NSInteger kFontSizeTenTabsOrMore = 9;
 

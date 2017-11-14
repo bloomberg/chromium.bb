@@ -126,8 +126,6 @@ typedef enum {
 
 // Fade in/out the text and auxiliary views depending on |style|.
 - (void)animateFadeWithStyle:(OmniboxTextFieldFadeStyle)style;
-// Reverses animations added by |-animateFadeWithStyle:|.
-- (void)reverseFadeAnimations;
 // Called when animations added by |-animateFadeWithStyle:| can be removed.
 - (void)cleanUpFadeAnimations;
 
