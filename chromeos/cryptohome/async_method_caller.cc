@@ -87,16 +87,6 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
             "Couldn't initiate async mount of cryptohome."));
   }
 
-  void AsyncMountPublic(const Identification& public_mount_id,
-                        int flags,
-                        Callback callback) override {
-    DBusThreadManager::Get()->GetCryptohomeClient()->AsyncMountPublic(
-        public_mount_id, flags,
-        base::Bind(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                   weak_ptr_factory_.GetWeakPtr(), callback,
-                   "Couldn't initiate async mount public of cryptohome."));
-  }
-
   void AsyncRemove(const Identification& cryptohome_id,
                    Callback callback) override {
     DBusThreadManager::Get()->GetCryptohomeClient()->AsyncRemove(

@@ -66,9 +66,6 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
                    const std::string& new_key,
                    AsyncMethodCallback callback) override;
   void AsyncMountGuest(AsyncMethodCallback callback) override;
-  void AsyncMountPublic(const cryptohome::Identification& public_mount_id,
-                        int flags,
-                        AsyncMethodCallback callback) override;
   void TpmIsReady(DBusMethodCallback<bool> callback) override;
   void TpmIsEnabled(DBusMethodCallback<bool> callback) override;
   bool CallTpmIsEnabledAndBlock(bool* enabled) override;
