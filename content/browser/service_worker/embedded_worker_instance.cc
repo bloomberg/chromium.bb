@@ -563,7 +563,7 @@ void EmbeddedWorkerInstance::StopIfIdle() {
   Stop();
 }
 
-ServiceWorkerStatusCode EmbeddedWorkerInstance::SendMessage(
+ServiceWorkerStatusCode EmbeddedWorkerInstance::SendIpcMessage(
     const IPC::Message& message) {
   DCHECK_NE(kInvalidEmbeddedWorkerThreadId, thread_id_);
   if (status_ != EmbeddedWorkerStatus::RUNNING &&
