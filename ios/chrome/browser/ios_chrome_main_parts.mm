@@ -218,6 +218,16 @@ void IOSChromeMainParts::SetupFieldTrials() {
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+
+  if (command_line->HasSwitch(variations::switches::kForceFieldTrialParams)) {
+    bool result =
+        variations::AssociateParamsFromString(command_line->GetSwitchValueASCII(
+            variations::switches::kForceFieldTrialParams));
+    CHECK(result) << "Invalid --"
+                  << variations::switches::kForceFieldTrialParams
+                  << " list specified.";
+  }
+
   // Ensure any field trials specified on the command line are initialized.
   // Also stop the metrics service so that we don't pollute UMA.
   if (command_line->HasSwitch(switches::kForceFieldTrials)) {
