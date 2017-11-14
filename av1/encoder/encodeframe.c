@@ -4433,12 +4433,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
     }
     make_consistent_compound_tools(cm);
 
-#if CONFIG_RECT_TX_EXT
-    if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0 &&
-        counts->quarter_tx_size[1] == 0)
-#else
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
-#endif
 #if CONFIG_SIMPLIFY_TX_MODE
       cm->tx_mode = TX_MODE_LARGEST;
 #else
@@ -4596,32 +4591,20 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   assert(tx_size > TX_4X4);
 
   if (depth == MAX_VARTX_DEPTH) {
-// Don't add to counts in this case
-#if CONFIG_RECT_TX_EXT
-    if (tx_size == plane_tx_size)
-#endif
-      mbmi->tx_size = tx_size;
+    // Don't add to counts in this case
+    mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
   }
 
-#if CONFIG_RECT_TX_EXT
-  if (tx_size == plane_tx_size ||
-      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type])
-#else
-  if (tx_size == plane_tx_size)
-#endif
-  {
+  if (tx_size == plane_tx_size) {
     ++counts->txfm_partition[ctx][0];
 #if CONFIG_NEW_MULTISYMBOL
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 0, 2);
 #endif
-#if CONFIG_RECT_TX_EXT
-    if (tx_size == plane_tx_size)
-#endif
-      mbmi->tx_size = tx_size;
+    mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   } else {
@@ -4941,21 +4924,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       } else {
         if (tx_size != get_max_rect_tx_size(bsize, 0)) ++x->txb_split_count;
       }
-
-#if CONFIG_RECT_TX_EXT
-      if (is_quarter_tx_allowed(xd, mbmi, is_inter) &&
-          quarter_txsize_lookup[bsize] !=
-              get_max_rect_tx_size(bsize, is_inter) &&
-          (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
-           mbmi->tx_size == get_max_rect_tx_size(bsize, is_inter))) {
-        const int use_qttx = mbmi->tx_size == quarter_txsize_lookup[bsize];
-        ++td->counts->quarter_tx_size[use_qttx];
-#if CONFIG_NEW_MULTISYMBOL
-        if (tile_data->allow_update_cdf)
-          update_cdf(xd->tile_ctx->quarter_tx_size_cdf, use_qttx, 2);
-#endif
-      }
-#endif
       assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed(xd, mbmi)));
     } else {
       int i, j;

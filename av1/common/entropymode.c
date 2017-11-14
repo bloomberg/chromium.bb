@@ -1566,14 +1566,6 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
                                                     1] = { -1, -1, 0, -1, -1,
                                                            4,  3,  2, 1 };
 
-#if CONFIG_RECT_TX_EXT
-static const aom_prob default_quarter_tx_size_prob = 192;
-#if CONFIG_NEW_MULTISYMBOL
-static const aom_cdf_prob default_quarter_tx_size_cdf[CDF_SIZE(2)] = { AOM_CDF2(
-    192 * 128) };
-#endif
-#endif
-
 #if CONFIG_LOOP_RESTORATION
 static const aom_cdf_prob default_switchable_restore_cdf[CDF_SIZE(
     RESTORE_SWITCHABLE_TYPES)] = { AOM_CDF3(32 * 128, 144 * 128) };
@@ -3254,12 +3246,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_RECT_TX_EXT
-  fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
-#if CONFIG_NEW_MULTISYMBOL
-  av1_copy(fc->quarter_tx_size_cdf, default_quarter_tx_size_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
-#endif
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
@@ -3484,13 +3470,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = cm->pre_fc;
   const FRAME_COUNTS *counts = &cm->counts;
-
-  if (cm->tx_mode == TX_MODE_SELECT) {
-#if CONFIG_RECT_TX_EXT
-    fc->quarter_tx_size_prob = av1_mode_mv_merge_probs(
-        pre_fc->quarter_tx_size_prob, counts->quarter_tx_size);
-#endif
-  }
 
   if (cm->tx_mode == TX_MODE_SELECT) {
     for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)

@@ -341,15 +341,9 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                             pd->dst.stride, max_scan_line, eob);
     *eob_total += eob;
   } else {
-#if CONFIG_RECT_TX_EXT
-    int is_qttx = plane_tx_size == quarter_txsize_lookup[plane_bsize];
-    const TX_SIZE sub_txs = is_qttx ? plane_tx_size : sub_tx_size_map[tx_size];
-    if (is_qttx) assert(blk_row == 0 && blk_col == 0 && block == 0);
-#else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
-#endif
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
     const int sub_step = bsw * bsh;
@@ -3370,11 +3364,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                       pbi->decrypt_state))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
-
-#if CONFIG_RECT_TX_EXT
-  if (cm->tx_mode == TX_MODE_SELECT)
-    av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
-#endif
 
   if (cm->tx_mode == TX_MODE_SELECT)
     for (int i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)

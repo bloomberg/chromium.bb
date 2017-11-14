@@ -413,7 +413,7 @@ void av1_inv_txfm2d_add_32x64_c(const int32_t *input, uint16_t *output,
 }
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
+#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
 void av1_inv_txfm2d_add_4x16_c(const int32_t *input, uint16_t *output,
                                int stride, TX_TYPE tx_type, int bd) {
   int txfm_buf[4 * 16 + 16 + 16];
@@ -471,4 +471,4 @@ void av1_inv_txfm2d_add_32x8_c(const int32_t *input, uint16_t *output,
   inv_txfm2d_add_facade(input, output, stride, txfm_buf, tx_type, TX_32X8, bd);
 #endif  // CONFIG_TXMG
 }
-#endif
+#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT

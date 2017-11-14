@@ -663,15 +663,9 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     encode_block(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
   } else {
     assert(tx_size < TX_SIZES_ALL);
-#if CONFIG_RECT_TX_EXT
-    int is_qttx = plane_tx_size == quarter_txsize_lookup[plane_bsize];
-    const TX_SIZE sub_txs = is_qttx ? plane_tx_size : sub_tx_size_map[tx_size];
-    if (is_qttx) assert(blk_row == 0 && blk_col == 0 && block == 0);
-#else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     assert(IMPLIES(tx_size <= TX_4X4, sub_txs == tx_size));
     assert(IMPLIES(tx_size > TX_4X4, sub_txs < tx_size));
-#endif
     // This is the square transform block partition entry point.
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];

@@ -205,16 +205,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->tx_size_cost[i][j], fc->tx_size_cdf[i][j],
                                NULL);
 
-#if CONFIG_RECT_TX_EXT
-#if CONFIG_NEW_MULTISYMBOL
-  av1_cost_tokens_from_cdf(x->quarter_tx_size_cost, fc->quarter_tx_size_cdf,
-                           NULL);
-#else
-  x->quarter_tx_size_cost[0] = av1_cost_bit(fc->quarter_tx_size_prob, 0);
-  x->quarter_tx_size_cost[1] = av1_cost_bit(fc->quarter_tx_size_prob, 1);
-#endif
-#endif
-
   for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
     av1_cost_tokens_from_cdf(x->txfm_partition_cost[i],
@@ -925,7 +915,7 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 4)
         t_left[i] = !!*(const uint32_t *)&left[i];
       break;
-#if CONFIG_RECT_TX_EXT || (CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT)
+#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     case TX_4X16:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       for (i = 0; i < num_4x4_h; i += 4)
@@ -948,7 +938,7 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 2)
         t_left[i] = !!*(const uint16_t *)&left[i];
       break;
-#endif
+#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
     default: assert(0 && "Invalid transform size."); break;
   }
 }

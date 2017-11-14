@@ -261,12 +261,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 
   const int write_txfm_partition =
-#if CONFIG_RECT_TX_EXT
-      tx_size == mbmi->inter_tx_size[tx_row][tx_col] ||
-      mbmi->tx_size == quarter_txsize_lookup[mbmi->sb_type];
-#else
       tx_size == mbmi->inter_tx_size[tx_row][tx_col];
-#endif
   if (write_txfm_partition) {
 #if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, 0, ec_ctx->txfm_partition_cdf[ctx], 2);
@@ -337,16 +332,6 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                      max_depths + 1);
-#if CONFIG_RECT_TX_EXT
-    if (is_quarter_tx_allowed(xd, mbmi, 0) && tx_size != coded_tx_size)
-#if CONFIG_NEW_MULTISYMBOL
-      aom_write_symbol(w, tx_size == quarter_txsize_lookup[bsize],
-                       cm->fc->quarter_tx_size_cdf, 2);
-#else
-      aom_write(w, tx_size == quarter_txsize_lookup[bsize],
-                cm->fc->quarter_tx_size_prob);
-#endif
-#endif
   }
 }
 
@@ -714,12 +699,7 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     token_stats->cost += tmp_token_stats.cost;
 #endif
   } else {
-#if CONFIG_RECT_TX_EXT
-    int is_qttx = plane_tx_size == quarter_txsize_lookup[plane_bsize];
-    const TX_SIZE sub_txs = is_qttx ? plane_tx_size : sub_tx_size_map[tx_size];
-#else
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
-#endif
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
@@ -1451,20 +1431,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
       for (idy = 0; idy < height; idy += bh)
         for (idx = 0; idx < width; idx += bw)
           write_tx_size_vartx(cm, xd, mbmi, max_tx_size, 0, idy, idx, w);
-#if CONFIG_RECT_TX_EXT
-      if (is_quarter_tx_allowed(xd, mbmi, is_inter_block(mbmi)) &&
-          quarter_txsize_lookup[bsize] != max_tx_size &&
-          (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
-           mbmi->tx_size == max_tx_size)) {
-#if CONFIG_NEW_MULTISYMBOL
-        aom_write_symbol(w, mbmi->tx_size != max_tx_size,
-                         cm->fc->quarter_tx_size_cdf, 2);
-#else
-        aom_write(w, mbmi->tx_size != max_tx_size,
-                  cm->fc->quarter_tx_size_prob);
-#endif
-      }
-#endif
     } else {
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
       write_selected_tx_size(cm, xd, w);
@@ -4505,12 +4471,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   header_bc->size = 1 << cpi->common.ans_window_size_log2;
 #endif
   aom_start_encode(header_bc, data);
-
-#if CONFIG_RECT_TX_EXT
-  if (cm->tx_mode == TX_MODE_SELECT)
-    av1_cond_prob_diff_update(header_bc, &cm->fc->quarter_tx_size_prob,
-                              cm->counts.quarter_tx_size, probwt);
-#endif
 
 #if !CONFIG_NEW_MULTISYMBOL
   if (cm->tx_mode == TX_MODE_SELECT)

@@ -717,7 +717,7 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   TX_32X32,  TX_32X32, TX_32X32,
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_TX64X64
-#if CONFIG_EXT_PARTITION_TYPES && USE_RECT_TX_EXT
+#if CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
   // 4x16,   16x4,     8x32
   TX_4X16,   TX_16X4,  TX_8X16,
   // 32x8
@@ -727,7 +727,7 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   TX_4X8,    TX_8X4,   TX_8X16,
   // 32x8
   TX_16X8,
-#endif  // CONFIG_RECT_TX_EXT
+#endif  // CONFIG_EXT_PARTITION_TYPES && CONFIG_RECT_TX_EXT
   // 16x64,  64x16
   TX_16X32,  TX_32X16,
 #if CONFIG_EXT_PARTITION
@@ -735,35 +735,6 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   TX_32X32,  TX_32X32
 #endif  // CONFIG_EXT_PARTITION
 };
-
-#if CONFIG_RECT_TX_EXT
-static const TX_SIZE quarter_txsize_lookup[BLOCK_SIZES_ALL] = {
-  //     2X2,        2X4,        4X2,
-  TX_INVALID, TX_INVALID, TX_INVALID,
-  //                             4x4,
-                          TX_INVALID,
-  //     4x8,        8x4,        8x8,
-  TX_INVALID, TX_INVALID, TX_INVALID,
-  // 8x16, 16x8, 16x16,
-  TX_4X16, TX_16X4, TX_INVALID,
-  // 16x32, 32x16, 32x32,
-  TX_8X32, TX_32X8, TX_INVALID,
-  // 32x64, 64x32, 64x64
-  TX_INVALID, TX_INVALID, TX_INVALID,
-#if CONFIG_EXT_PARTITION
-  // 64x128, 128x64, 128x128
-  TX_INVALID, TX_INVALID, TX_INVALID,
-#endif
-  // 4x16,    16x4,       8x32
-  TX_4X16,    TX_16X4,    TX_8X32,
-  // 32x8     16x64       64x16
-  TX_32X8,    TX_INVALID, TX_INVALID,
-#if CONFIG_EXT_PARTITION
-  // 32x128   128x32
-  TX_INVALID, TX_INVALID
-#endif  // CONFIG_EXT_PARTITION
-};
-#endif  // CONFIG_RECT_TX_EXT
 
 static const TX_TYPE_1D vtx_tab[TX_TYPES] = {
   DCT_1D,      ADST_1D, DCT_1D,      ADST_1D,

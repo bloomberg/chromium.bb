@@ -1000,53 +1000,6 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
          !xd->lossless[mbmi->segment_id];
 }
 
-#if CONFIG_RECT_TX_EXT
-static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
-  static const char LUT_QTTX[BLOCK_SIZES_ALL] = {
-    0,  // BLOCK_2X2
-    0,  // BLOCK_2X4
-    0,  // BLOCK_4X2
-    0,  // BLOCK_4X4
-    0,  // BLOCK_4X8
-    0,  // BLOCK_8X4
-    0,  // BLOCK_8X8
-    1,  // BLOCK_8X16
-    1,  // BLOCK_16X8
-    0,  // BLOCK_16X16
-    0,  // BLOCK_16X32
-    0,  // BLOCK_32X16
-    0,  // BLOCK_32X32
-    0,  // BLOCK_32X64
-    0,  // BLOCK_64X32
-    0,  // BLOCK_64X64
-#if CONFIG_EXT_PARTITION
-    0,  // BLOCK_64X128
-    0,  // BLOCK_128X64
-    0,  // BLOCK_128X128
-#endif  // CONFIG_EXT_PARTITION
-    0,  // BLOCK_4X16
-    0,  // BLOCK_16X4
-    0,  // BLOCK_8X32
-    0,  // BLOCK_32X8
-    0,  // BLOCK_16X64
-    0,  // BLOCK_64X16
-#if CONFIG_EXT_PARTITION
-    0,  // BLOCK_32X128
-    0,  // BLOCK_128X32
-#endif  // CONFIG_EXT_PARTITION
-  };
-
-  return LUT_QTTX[bsize];
-}
-
-static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
-                                        const MB_MODE_INFO *mbmi,
-                                        int is_inter) {
-  return is_quarter_tx_allowed_bsize(mbmi->sb_type) && is_inter &&
-         !xd->lossless[mbmi->segment_id];
-}
-#endif
-
 static INLINE TX_SIZE get_max_rect_tx_size(BLOCK_SIZE bsize, int is_inter) {
   if (is_inter)
     return max_txsize_rect_lookup[bsize];

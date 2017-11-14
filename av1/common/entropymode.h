@@ -266,12 +266,6 @@ typedef struct frame_contexts {
 #if CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_RECT_TX_EXT
-  aom_prob quarter_tx_size_prob;
-#if CONFIG_NEW_MULTISYMBOL
-  aom_cdf_prob quarter_tx_size_cdf[CDF_SIZE(2)];
-#endif
-#endif
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
@@ -459,9 +453,6 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_COMPOUND_SINGLEREF
   unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_RECT_TX_EXT
-  unsigned int quarter_tx_size[2];
-#endif
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
 #if CONFIG_EXT_SKIP
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
