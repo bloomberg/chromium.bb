@@ -150,11 +150,8 @@ void PrePaintTreeWalk::InvalidatePaintLayerOptimizationsIfNeeded(
 
   PaintLayer& paint_layer = *ToLayoutBoxModelObject(object).Layer();
 
-  // Ignore clips across paint invalidation container or transform
-  // boundaries.
-  if (object ==
-          context.paint_invalidator_context->paint_invalidation_container ||
-      object.StyleRef().HasTransform())
+  // Ignore clips across transform boundaries.
+  if (object.StyleRef().HasTransform())
     context.tree_builder_context->clip_changed = false;
 
   if (!context.tree_builder_context->clip_changed)
