@@ -130,13 +130,6 @@ class DomainReliabilityUploaderImpl
     fetcher->Start();
 
     uploads_[fetcher] = {std::move(owned_fetcher), callback};
-
-    base::TimeTicks now = base::TimeTicks::Now();
-    if (!last_upload_start_time_.is_null()) {
-      UMA_HISTOGRAM_LONG_TIMES("DomainReliability.UploadIntervalGlobal",
-                               now - last_upload_start_time_);
-    }
-    last_upload_start_time_ = now;
   }
 
   void SetDiscardUploads(bool discard_uploads) override {
@@ -204,7 +197,6 @@ class DomainReliabilityUploaderImpl
            std::pair<std::unique_ptr<net::URLFetcher>, UploadCallback>>
       uploads_;
   bool discard_uploads_;
-  base::TimeTicks last_upload_start_time_;
   bool shutdown_;
   int discarded_upload_count_;
 };
