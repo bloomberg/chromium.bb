@@ -230,7 +230,8 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
 
 // Verifies focus does not change on pointer events.
 TEST_F(WindowTreeTest, DontFocusOnPointer) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
@@ -256,7 +257,8 @@ TEST_F(WindowTreeTest, DontFocusOnPointer) {
 
   embed_window->SetBounds(gfx::Rect(0, 0, 50, 50));
 
-  const ClientWindowId child1_id(BuildClientWindowId(tree1, 1));
+  const ClientWindowId child1_id(
+      BuildClientWindowId(tree1, kEmbedTreeWindowId));
   EXPECT_TRUE(tree1->NewWindow(child1_id, ServerWindow::Properties()));
   EXPECT_TRUE(tree1->AddWindow(ClientWindowIdForWindow(tree1, embed_window),
                                child1_id));
@@ -287,7 +289,8 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   ASSERT_EQ(1u, embed_client->tracker()->changes()->size());
   // embed_client created this window that is receiving the event, so client_id
   // part would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,1 event_action=16",
+  EXPECT_EQ("InputEvent window=0," + std::to_string(kEmbedTreeWindowId) +
+                " event_action=16",
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 
@@ -422,7 +425,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherSendsOnce) {
   ASSERT_EQ(1u, client->tracker()->changes()->size());
   // clients that created this window is receiving the event, so client_id part
   // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("InputEvent window=0,1 event_action=18 matches_pointer_watcher",
+  EXPECT_EQ("InputEvent window=0," + std::to_string(kEmbedTreeWindowId) +
+                " event_action=18 matches_pointer_watcher",
             SingleChangeToDescription(*client->tracker()->changes()));
 }
 
@@ -626,7 +630,8 @@ TEST_F(WindowTreeTest, CursorMultipleTrees) {
 }
 
 TEST_F(WindowTreeTest, EventAck) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(wm_tree()->SetWindowVisibility(embed_window_id, true));
@@ -662,7 +667,8 @@ TEST_F(WindowTreeTest, EventAck) {
 
 // Establish client, call Embed() in WM, make sure to get FrameSinkId.
 TEST_F(WindowTreeTest, Embed) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
@@ -690,7 +696,8 @@ TEST_F(WindowTreeTest, Embed) {
 }
 
 TEST_F(WindowTreeTest, DisallowSetSystemModalForEmbedded) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
@@ -796,18 +803,7 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
 
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
   ASSERT_TRUE(embed_window);
-  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())
-      << SingleChangeToDescription(*wm_client()->tracker()->changes());
-  // The window manager should be told about the FrameSinkId of the embedded
-  // window. Clients that created this window is receiving the event, so
-  // client_id part would be reset to 0 before sending back to clients.
-  EXPECT_EQ(
-      base::StringPrintf(
-          "OnFrameSinkIdAllocated window=%s %s",
-          ClientWindowIdToString(ClientWindowId(0, embed_window_id2.sink_id()))
-              .c_str(),
-          embed_window->frame_sink_id().ToString().c_str()),
-      SingleChangeToDescription(*wm_client()->tracker()->changes()));
+  EXPECT_EQ(embed_window_id2_in_child, embed_window->frame_sink_id());
   EXPECT_FALSE(child_binding->is_paused());
   // TODO(fsamuel): Currently the FrameSinkId maps directly to the server's
   // window ID. This is likely bad from a security perspective and should be
@@ -854,21 +850,18 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   mojom::WindowTree* mojom_window_tree = static_cast<mojom::WindowTree*>(tree);
   uint32_t change_id = 42;
   mojom_window_tree->SetCapture(
-      change_id, tree->ClientWindowIdToTransportId(ClientWindowId(
-                     window->id().client_id, window->id().window_id)));
+      change_id, tree->ClientWindowIdToTransportId(window->frame_sink_id()));
   Display* display = tree->GetDisplay(window);
   EXPECT_EQ(window, GetCaptureWindow(display));
 
   // Only the capture window should be able to release capture
   mojom_window_tree->ReleaseCapture(
       ++change_id,
-      tree->ClientWindowIdToTransportId(ClientWindowId(
-          root_window->id().client_id, root_window->id().window_id)));
+      tree->ClientWindowIdToTransportId(root_window->frame_sink_id()));
   EXPECT_EQ(window, GetCaptureWindow(display));
 
   mojom_window_tree->ReleaseCapture(
-      ++change_id, tree->ClientWindowIdToTransportId(ClientWindowId(
-                       window->id().client_id, window->id().window_id)));
+      ++change_id, tree->ClientWindowIdToTransportId(window->frame_sink_id()));
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
@@ -992,7 +985,7 @@ TEST_F(WindowTreeTest, ShowModalWindowWithNonDescendantCapture) {
 
   // Create |w2| as a child of |root_window| and modal to |w1| and leave it
   // hidden.
-  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ClientWindowId w2_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
   ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
@@ -1001,7 +994,7 @@ TEST_F(WindowTreeTest, ShowModalWindowWithNonDescendantCapture) {
   ASSERT_TRUE(tree->SetModalType(w2_id, MODAL_TYPE_WINDOW));
 
   // Create |w3| as a child of |root_window| and make it visible.
-  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ClientWindowId w3_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 2);
   ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
   ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
   w3->SetBounds(gfx::Rect(70, 10, 10, 10));
@@ -1035,14 +1028,14 @@ TEST_F(WindowTreeTest, VisibleWindowToModalWithNonDescendantCapture) {
   Display* display = tree->GetDisplay(w1);
 
   // Create |w2| and |w3| as children of |root_window| and make them visible.
-  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ClientWindowId w2_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
   ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
   ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
   ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
 
-  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ClientWindowId w3_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 2);
   ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
   ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
   w3->SetBounds(gfx::Rect(70, 10, 10, 10));
@@ -1077,7 +1070,7 @@ TEST_F(WindowTreeTest, ShowSystemModalWindowWithCapture) {
 
   // Create a system modal window |w2| as a child of |root_window| and leave it
   // hidden.
-  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ClientWindowId w2_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
   ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
   w2->SetBounds(gfx::Rect(30, 10, 10, 10));
@@ -1110,7 +1103,7 @@ TEST_F(WindowTreeTest, VisibleWindowToSystemModalWithCapture) {
   Display* display = tree->GetDisplay(w1);
 
   // Create |w2| as a child of |root_window| and make it visible.
-  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ClientWindowId w2_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
   ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
   w2->SetBounds(gfx::Rect(30, 10, 10, 10));
@@ -1143,14 +1136,14 @@ TEST_F(WindowTreeTest, MoveCaptureWindowToModalParent) {
   Display* display = tree->GetDisplay(w1);
 
   // Create |w2| and |w3| as children of |root_window| and make them visible.
-  ClientWindowId w2_id = BuildClientWindowId(tree, 2);
+  ClientWindowId w2_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(tree->NewWindow(w2_id, ServerWindow::Properties()));
   ServerWindow* w2 = tree->GetWindowByClientId(w2_id);
   w2->SetBounds(gfx::Rect(50, 10, 10, 10));
   ASSERT_TRUE(tree->AddWindow(root_window_id, w2_id));
   ASSERT_TRUE(tree->SetWindowVisibility(w2_id, true));
 
-  ClientWindowId w3_id = BuildClientWindowId(tree, 3);
+  ClientWindowId w3_id = BuildClientWindowId(tree, kEmbedTreeWindowId + 2);
   ASSERT_TRUE(tree->NewWindow(w3_id, ServerWindow::Properties()));
   ServerWindow* w3 = tree->GetWindowByClientId(w3_id);
   w3->SetBounds(gfx::Rect(70, 10, 10, 10));
@@ -1500,7 +1493,7 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   ASSERT_NE(owning_tree, embed_tree);
 
   const ClientWindowId embed_child_window_id =
-      BuildClientWindowId(embed_tree, 2);
+      BuildClientWindowId(embed_tree, kEmbedTreeWindowId + 1);
   ASSERT_TRUE(
       embed_tree->NewWindow(embed_child_window_id, ServerWindow::Properties()));
   EXPECT_TRUE(embed_tree->SetWindowVisibility(embed_child_window_id, true));
@@ -1510,8 +1503,9 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   embed_client->tracker()->changes()->clear();
   EXPECT_TRUE(embed_tree->SetCapture(embed_child_window_id));
   ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
-  EXPECT_EQ("OnCaptureChanged new_window=" + kNextWindowClientIdString +
-                ",2 old_window=null",
+  EXPECT_EQ("OnCaptureChanged new_window=" + kNextWindowClientIdString + "," +
+                std::to_string(embed_child_window_id.sink_id()) +
+                " old_window=null",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
 
@@ -1521,8 +1515,10 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
   // clients that created this window is receiving the event, so client_id part
   // would be reset to 0 before sending back to clients.
-  EXPECT_EQ("OnCaptureChanged new_window=0,1 old_window=" +
-                kNextWindowClientIdString + ",2",
+  EXPECT_EQ("OnCaptureChanged new_window=0," +
+                std::to_string(kEmbedTreeWindowId) +
+                " old_window=" + kNextWindowClientIdString + "," +
+                std::to_string(embed_child_window_id.sink_id()),
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
   wm_client()->tracker()->changes()->clear();
@@ -1574,7 +1570,8 @@ TEST_F(WindowTreeTest, SetModalTypeForwardedToWindowManager) {
 }
 
 TEST_F(WindowTreeTest, TestWindowManagerSettingCursorLocation) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
@@ -2038,7 +2035,8 @@ TEST_F(WindowTreeManualDisplayTest, SwapDisplayRoots) {
 }
 
 TEST_F(WindowTreeTest, EmbedFlagEmbedderControlsVisibility) {
-  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  const ClientWindowId embed_window_id =
+      BuildClientWindowId(wm_tree(), kEmbedTreeWindowId);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);

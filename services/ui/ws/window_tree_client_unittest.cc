@@ -232,11 +232,9 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   // Waits for all messages to be received by |ws|. This is done by attempting
-  // to create a bogus window. When we get the response we know all messages
-  // have been processed.
-  bool WaitForAllMessages() {
-    return NewWindowWithCompleteId(kInvalidClientId) == 0;
-  }
+  // to set opacity on an embed/invalid window. 1.0f is the default opacity
+  // value. When we get the response we know all messages have been processed.
+  bool WaitForAllMessages() { return !SetWindowOpacity(0, 1.0f); }
 
   Id NewWindow(ClientSpecificId window_id) {
     return NewWindowWithCompleteId(window_id);
@@ -504,7 +502,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void WmSetCanFocus(uint32_t window_id, bool can_focus) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
-      ClientSpecificId requesting_client_id,
+      const viz::FrameSinkId& frame_sink_id,
       const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
       override {
     NOTIMPLEMENTED();
@@ -1580,7 +1578,10 @@ TEST_F(WindowTreeClientTest, EmbedWithSameWindowId2) {
   // Create a window in the third client and parent it to the root.
   Id window_3_1 = wt_client3()->NewWindow(1);
   ASSERT_TRUE(window_3_1);
-  ASSERT_TRUE(wt_client3()->AddWindow(window_1_1, window_3_1));
+  // After EstablishThirdClient, window_1_1 should have a ClientWindowId of
+  // (client_id_2, 0).
+  Id embedded_window_1_1_wt3 = BuildWindowId(client_id_2(), 0);
+  ASSERT_TRUE(wt_client3()->AddWindow(embedded_window_1_1_wt3, window_3_1));
 
   // wt1 created window_1_1 but not window_3_1.
   Id window11_in_wt1 = LoWord(window_1_1);
@@ -1601,15 +1602,18 @@ TEST_F(WindowTreeClientTest, EmbedWithSameWindowId2) {
     // We should get a new client for the new embedding.
     std::unique_ptr<TestWindowTreeClient> client4(
         EstablishClientViaEmbed(wt1(), window_1_1));
+    Id embedded_window_1_1_wt4 = BuildWindowId(client_id_3(), 0);
     ASSERT_TRUE(client4.get());
-    EXPECT_EQ("[" + WindowParentToString(window_1_1, kNullParentId) + "]",
+    EXPECT_EQ("[" +
+                  WindowParentToString(embedded_window_1_1_wt4, kNullParentId) +
+                  "]",
               ChangeWindowDescription(*client4->tracker()->changes()));
 
     // And 3 should get an unembed and delete.
     wt_client3_->WaitForChangeCount(2);
-    EXPECT_EQ("OnUnembed window=" + IdToString(window_1_1),
+    EXPECT_EQ("OnUnembed window=" + IdToString(embedded_window_1_1_wt3),
               ChangesToDescription1(*changes3())[0]);
-    EXPECT_EQ("WindowDeleted window=" + IdToString(window_1_1),
+    EXPECT_EQ("WindowDeleted window=" + IdToString(embedded_window_1_1_wt3),
               ChangesToDescription1(*changes3())[1]);
   }
 
@@ -2397,8 +2401,8 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   viz::FrameSinkId frame_sink_id =
       changes1()->back().surface_id.frame_sink_id();
   // FrameSinkId is based on window's ClientWindowId.
-  EXPECT_NE(0u, frame_sink_id.client_id());
-  EXPECT_EQ(LoWord(window_1_100), frame_sink_id.sink_id());
+  EXPECT_EQ(static_cast<size_t>(client_id_2()), frame_sink_id.client_id());
+  EXPECT_EQ(0u, frame_sink_id.sink_id());
   changes1()->clear();
 
   // The first window created in the second client gets a server id of

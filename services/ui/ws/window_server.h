@@ -174,7 +174,7 @@ class WindowServer : public ServerWindowDelegate,
                                     bool success);
   void WindowManagerCreatedTopLevelWindow(WindowTree* wm_tree,
                                           uint32_t window_manager_change_id,
-                                          const ServerWindow* window);
+                                          ServerWindow* window);
 
   // Called when we get an unexpected message from the WindowManager.
   // TODO(sky): decide what we want to do here.

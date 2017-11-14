@@ -211,9 +211,10 @@ class WindowTree : public mojom::WindowTree,
                           DispatchEventCallback callback);
 
   bool IsWaitingForNewTopLevelWindow(uint32_t wm_change_id);
-  void OnWindowManagerCreatedTopLevelWindow(uint32_t wm_change_id,
-                                            uint32_t client_change_id,
-                                            const ServerWindow* window);
+  viz::FrameSinkId OnWindowManagerCreatedTopLevelWindow(
+      uint32_t wm_change_id,
+      uint32_t client_change_id,
+      const ServerWindow* window);
   void AddActivationParent(const ClientWindowId& window_id);
 
   // Calls through to the client.

@@ -80,6 +80,7 @@ class ServerWindow : public viz::HostFrameSinkClient {
   const WindowId& id() const { return id_; }
 
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  void UpdateFrameSinkId(const viz::FrameSinkId& frame_sink_id);
 
   const base::Optional<viz::LocalSurfaceId>& current_local_surface_id() const {
     return current_local_surface_id_;
@@ -249,7 +250,8 @@ class ServerWindow : public viz::HostFrameSinkClient {
 
   ServerWindowDelegate* const delegate_;
   const WindowId id_;
-  const viz::FrameSinkId frame_sink_id_;
+  // This may change for embed windows.
+  viz::FrameSinkId frame_sink_id_;
   base::Optional<viz::LocalSurfaceId> current_local_surface_id_;
 
   ServerWindow* parent_;

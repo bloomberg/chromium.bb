@@ -1798,9 +1798,10 @@ void WindowTreeClient::WmSetCanFocus(Id window_id, bool can_focus) {
 
 void WindowTreeClient::WmCreateTopLevelWindow(
     uint32_t change_id,
-    ClientSpecificId requesting_client_id,
+    const viz::FrameSinkId& frame_sink_id,
     const std::unordered_map<std::string, std::vector<uint8_t>>&
         transport_properties) {
+  DCHECK(frame_sink_id.is_valid());
   std::map<std::string, std::vector<uint8_t>> properties =
       mojo::UnorderedMapToMap(transport_properties);
   ui::mojom::WindowType window_type = ui::mojom::WindowType::UNKNOWN;
@@ -1818,10 +1819,13 @@ void WindowTreeClient::WmCreateTopLevelWindow(
                                                       kInvalidServerId);
     return;
   }
-  embedded_windows_[requesting_client_id].insert(window);
+  embedded_windows_[base::checked_cast<ClientSpecificId>(
+                        frame_sink_id.client_id())]
+      .insert(window);
   if (window_manager_client_) {
     window_manager_client_->OnWmCreatedTopLevelWindow(
         change_id, WindowMus::Get(window)->server_id());
+    OnFrameSinkIdAllocated(WindowMus::Get(window)->server_id(), frame_sink_id);
   }
 }
 
