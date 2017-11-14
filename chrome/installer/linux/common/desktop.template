@@ -111,9 +111,9 @@ Icon=@@PACKAGE@@
 Type=Application
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml_xml;image/webp;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
-Actions=NewWindow;NewPrivateWindow;
+Actions=new-window;new-private-window;
 
-[Desktop Action NewWindow]
+[Desktop Action new-window]
 Name=New Window
 Name[am]=አዲስ መስኮት
 Name[ar]=نافذة جديدة
@@ -167,7 +167,7 @@ Name[zh_CN]=新建窗口
 Name[zh_TW]=開新視窗
 Exec=/usr/bin/@@USR_BIN_SYMLINK_NAME@@
 
-[Desktop Action NewPrivateWindow]
+[Desktop Action new-private-window]
 Name=New Incognito Window
 Name[ar]=نافذة جديدة للتصفح المتخفي
 Name[bg]=Нов прозорец „инкогнито“
