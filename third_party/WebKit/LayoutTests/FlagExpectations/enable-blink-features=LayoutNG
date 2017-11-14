@@ -6432,7 +6432,7 @@ crbug.com/591099 http/tests/devtools/bindings/livelocation-main-frame-navigated.
 crbug.com/591099 http/tests/devtools/console/command-line-api.js [ Pass Timeout ]
 crbug.com/591099 http/tests/devtools/console/console-format.html [ Failure ]
 crbug.com/591099 http/tests/devtools/console/console-functions.js [ Failure ]
-crbug.com/591099 http/tests/devtools/console/console-uncaught-promise.html [ Failure Pass ]
+crbug.com/591099 http/tests/devtools/console/console-uncaught-promise.js [ Failure Pass ]
 crbug.com/591099 http/tests/devtools/console/shadow-element.js [ Timeout ]
 crbug.com/591099 http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Crash Timeout ]
 crbug.com/591099 http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Crash ]
