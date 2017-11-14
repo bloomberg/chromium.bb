@@ -18,9 +18,12 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
  public:
   // The constructor defined in the IDL.
   static CSSMathNegate* Create(const CSSNumberish& arg) {
-    // TODO(crbug.com/776173): Implement negate typing.
-    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
-    return new CSSMathNegate(CSSNumericValue::FromNumberish(arg), type);
+    return Create(CSSNumericValue::FromNumberish(arg));
+  }
+  // Blink-internal constructor
+  static CSSMathNegate* Create(CSSNumericValue* value) {
+    return new CSSMathNegate(value,
+                             CSSNumericValueType::NegateEntries(value->Type()));
   }
 
   String getOperator() const final { return "negate"; }

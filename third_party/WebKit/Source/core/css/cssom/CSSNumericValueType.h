@@ -14,7 +14,7 @@ namespace blink {
 // Represents the type of a CSSNumericValue, which is a map of base types to
 // integers, and an associated percent hint.
 // https://drafts.css-houdini.org/css-typed-om-1/#numeric-typing
-class CSSNumericValueType {
+class CORE_EXPORT CSSNumericValueType {
  public:
   enum class BaseType : unsigned {
     kLength,
@@ -31,6 +31,8 @@ class CSSNumericValueType {
       static_cast<unsigned>(BaseType::kNumBaseTypes);
 
   explicit CSSNumericValueType(CSSPrimitiveValue::UnitType);
+
+  static CSSNumericValueType NegateEntries(CSSNumericValueType);
 
   int GetEntry(BaseType type) const {
     DCHECK_LT(type, BaseType::kNumBaseTypes);

@@ -18,9 +18,12 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
  public:
   // The constructor defined in the IDL.
   static CSSMathInvert* Create(const CSSNumberish& arg) {
-    // TODO(crbug.com/776173): Implement negate typing.
-    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
-    return new CSSMathInvert(CSSNumericValue::FromNumberish(arg), type);
+    return Create(CSSNumericValue::FromNumberish(arg));
+  }
+  // Blink-internal constructor
+  static CSSMathInvert* Create(CSSNumericValue* value) {
+    return new CSSMathInvert(value,
+                             CSSNumericValueType::NegateEntries(value->Type()));
   }
 
   String getOperator() const final { return "invert"; }
