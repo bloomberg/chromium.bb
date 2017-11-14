@@ -73,7 +73,7 @@ class LayoutListItem final : public LayoutBlockFlow {
 
   void AlignMarkerInBlockDirection();
 
-  bool DealWithOverflow(const LayoutObject*);
+  bool PrepareForBlockDirectionAlign(const LayoutObject*);
 
   ListItemOrdinal ordinal_;
   LayoutListMarker* marker_;
