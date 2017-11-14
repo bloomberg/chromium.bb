@@ -18,7 +18,7 @@
 #include "components/arc/audio/arc_audio_bridge.h"
 #include "components/url_formatter/url_fixer.h"
 #include "ui/base/layout.h"
-#include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace arc {
 namespace {
@@ -60,6 +60,42 @@ class ArcIntentHelperBridgeFactory
 
 // Base URL for the Chrome settings pages.
 constexpr char kSettingsPageBaseUrl[] = "chrome://settings";
+
+// TODO(yusukes): Properly fix b/68953603 and remove the constant.
+constexpr const char* kWhitelistedUrls[] = {
+    "about:blank", "chrome://downloads", "chrome://history",
+    "chrome://settings",
+};
+
+// TODO(yusukes): Properly fix b/68953603 and remove the constant.
+constexpr const char* kWhitelistedSettingsPaths[] = {
+    "accounts",
+    "appearance",
+    "autofill",
+    "bluetoothDevices",
+    "changePicture",
+    "clearBrowserData",
+    "cloudPrinters",
+    "cupsPrinters",
+    "dateTime",
+    "display",
+    "downloads",
+    "help",
+    "keyboard-overlay",
+    "languages",
+    "lockScreen",
+    "manageAccessibility",
+    "networks?type=VPN",
+    "onStartup",
+    "passwords",
+    "pointer-overlay",
+    "power",
+    "privacy",
+    "reset",
+    "search",
+    "storage",
+    "syncSetup",
+};
 
 }  // namespace
 
@@ -128,7 +164,7 @@ void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
   // for example.
   const GURL gurl(url_formatter::FixupURL(url, std::string()));
   // Disallow opening chrome:// URLs.
-  if (!gurl.is_valid() || gurl.SchemeIs(kChromeUIScheme))
+  if (!gurl.is_valid() || !IsWhitelistedChromeUrl(gurl))
     return;
   open_url_delegate_->OpenUrl(gurl);
 }
@@ -263,6 +299,20 @@ void ArcIntentHelperBridge::OnIntentFiltersUpdated(
 void ArcIntentHelperBridge::SetOpenUrlDelegateForTesting(
     std::unique_ptr<OpenUrlDelegate> open_url_delegate) {
   open_url_delegate_ = std::move(open_url_delegate);
+}
+
+bool ArcIntentHelperBridge::IsWhitelistedChromeUrl(const GURL& url) {
+  if (!url.SchemeIs(kChromeUIScheme) && !url.SchemeIs(url::kAboutScheme))
+    return true;
+
+  if (whitelisted_urls_.empty()) {
+    whitelisted_urls_.insert(std::begin(kWhitelistedUrls),
+                             std::end(kWhitelistedUrls));
+    const std::string prefix = "chrome://settings/";
+    for (const char* path : kWhitelistedSettingsPaths)
+      whitelisted_urls_.insert(GURL(prefix + path));
+  }
+  return whitelisted_urls_.count(url) > 0;
 }
 
 }  // namespace arc
