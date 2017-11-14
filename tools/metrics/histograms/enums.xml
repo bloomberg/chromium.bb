@@ -24612,6 +24612,7 @@ from previous Chrome versions.
   <int value="-881854123" label="enable-heap-profiling"/>
   <int value="-881447505" label="ash-disable-shelf-model-synchronization"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
+  <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-876773752" label="enable-tablet-splitview"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
@@ -24761,6 +24762,7 @@ from previous Chrome versions.
   <int value="-460081932" label="CustomFeedbackUi:disabled"/>
   <int value="-455203267" label="use_new_features_summary"/>
   <int value="-449465495" label="disable-browser-task-scheduler"/>
+  <int value="-435914745" label="ClipboardContentSetting:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
