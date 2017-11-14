@@ -86,6 +86,7 @@ Polymer({
   listeners: {
     'discard-image': 'onDiscardImage_',
     'image-activate': 'onImageActivate_',
+    'focus-action': 'onFocusAction_',
     'photo-taken': 'onPhotoTaken_',
     'switch-mode': 'onSwitchMode_',
   },
@@ -187,6 +188,11 @@ Polymer({
    */
   onImageActivate_: function(event) {
     this.selectImage_(event.detail);
+  },
+
+  /** Focus the action button in the picture pane. */
+  onFocusAction_: function() {
+    /** CrPicturePaneElement */ (this.$.picturePane).focusActionButton();
   },
 
   /**
