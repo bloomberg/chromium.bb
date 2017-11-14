@@ -165,7 +165,7 @@ bool WebShareTargetPickerView::IsDialogButtonEnabled(
 }
 
 void WebShareTargetPickerView::OnSelectionChanged() {
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void WebShareTargetPickerView::OnDoubleClick() {

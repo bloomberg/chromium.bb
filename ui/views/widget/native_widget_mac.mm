@@ -147,6 +147,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 
 void NativeWidgetMac::OnWidgetInitDone() {
   OnSizeConstraintsChanged();
+  bridge_->OnWidgetInitDone();
 }
 
 NonClientFrameView* NativeWidgetMac::CreateNonClientFrameView() {

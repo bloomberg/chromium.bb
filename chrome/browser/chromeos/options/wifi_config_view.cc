@@ -497,7 +497,7 @@ bool WifiConfigView::CaCertActive() const {
 }
 
 void WifiConfigView::UpdateDialogButtons() {
-  parent_->GetDialogClientView()->UpdateDialogButtons();
+  parent_->DialogModelChanged();
 }
 
 void WifiConfigView::RefreshEapFields() {

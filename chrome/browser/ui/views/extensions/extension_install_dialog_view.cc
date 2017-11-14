@@ -615,7 +615,7 @@ void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
 
 void ExtensionInstallDialogView::EnableInstallButton() {
   install_button_enabled_ = true;
-  GetDialogClientView()->UpdateDialogButtons();
+  DialogModelChanged();
 }
 
 void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)

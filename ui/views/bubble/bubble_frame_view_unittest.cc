@@ -598,7 +598,6 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     SizeToContents();
   }
 
-  void set_override_snap(bool value) { override_snap_ = value; }
   void set_icon(const gfx::ImageSkia& icon) { icon_ = icon; }
 
   // BubbleDialogDelegateView:
@@ -611,17 +610,15 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
   void DeleteDelegate() override {
     // This delegate is owned by the test case itself, so it should not delete
-    // itself here.
+    // itself here. But DialogDelegates shouldn't be reused, so check for that.
+    destroyed_ = true;
   }
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
-  bool ShouldSnapFrameWidth() const override {
-    return override_snap_.value_or(
-        BubbleDialogDelegateView::ShouldSnapFrameWidth());
-  }
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(200, 200);
   }
+  void Init() override { DCHECK(!destroyed_); }
 
   BubbleFrameView* GetBubbleFrameView() const {
     return static_cast<BubbleFrameView*>(
@@ -631,7 +628,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  private:
   gfx::ImageSkia icon_;
   base::string16 title_;
-  base::Optional<bool> override_snap_;
+  bool destroyed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
 };
@@ -652,41 +649,59 @@ class TestAnchor {
   DISALLOW_COPY_AND_ASSIGN(TestAnchor);
 };
 
+// BubbleDialogDelegate with no margins to test width snapping.
+class TestWidthSnapDelegate : public TestBubbleDialogDelegateView {
+ public:
+  TestWidthSnapDelegate(TestAnchor* anchor, bool should_snap)
+      : should_snap_(should_snap) {
+    SetAnchorView(anchor->widget().GetContentsView());
+    set_margins(gfx::Insets());
+    BubbleDialogDelegateView::CreateBubble(this);
+    GetWidget()->Show();
+  }
+
+  ~TestWidthSnapDelegate() override { GetWidget()->CloseNow(); }
+
+  // TestBubbleDialogDelegateView:
+  bool ShouldSnapFrameWidth() const override { return should_snap_; }
+
+ private:
+  bool should_snap_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWidthSnapDelegate);
+};
+
 }  // namespace
 
 // This test ensures that if the installed LayoutProvider snaps dialog widths,
 // BubbleFrameView correctly sizes itself to that width.
 TEST_F(BubbleFrameViewTest, WidthSnaps) {
   test::TestLayoutProvider provider;
-  TestBubbleDialogDelegateView delegate;
   TestAnchor anchor(CreateParams(Widget::InitParams::TYPE_WINDOW));
 
-  delegate.SetAnchorView(anchor.widget().GetContentsView());
-  delegate.set_margins(gfx::Insets());
-
-  Widget* w0 = BubbleDialogDelegateView::CreateBubble(&delegate);
-  w0->Show();
-  EXPECT_EQ(delegate.GetPreferredSize().width(),
-            w0->GetWindowBoundsInScreen().width());
-  w0->CloseNow();
+  {
+    TestWidthSnapDelegate delegate(&anchor, true);
+    EXPECT_EQ(delegate.GetPreferredSize().width(),
+              delegate.GetWidget()->GetWindowBoundsInScreen().width());
+  }
 
   constexpr int kTestWidth = 300;
   provider.SetSnappedDialogWidth(kTestWidth);
 
-  // The Widget's snapped width should exactly match the width returned by the
-  // LayoutProvider.
-  Widget* w1 = BubbleDialogDelegateView::CreateBubble(&delegate);
-  w1->Show();
-  EXPECT_EQ(kTestWidth, w1->GetWindowBoundsInScreen().width());
-  w1->CloseNow();
+  {
+    TestWidthSnapDelegate delegate(&anchor, true);
+    // The Widget's snapped width should exactly match the width returned by the
+    // LayoutProvider.
+    EXPECT_EQ(kTestWidth,
+              delegate.GetWidget()->GetWindowBoundsInScreen().width());
+  }
 
-  // If the DialogDelegate asks not to snap, it should not snap.
-  delegate.set_override_snap(false);
-  Widget* w2 = BubbleDialogDelegateView::CreateBubble(&delegate);
-  w2->Show();
-  EXPECT_EQ(delegate.GetPreferredSize().width(),
-            w2->GetWindowBoundsInScreen().width());
-  w2->CloseNow();
+  {
+    // If the DialogDelegate asks not to snap, it should not snap.
+    TestWidthSnapDelegate delegate(&anchor, false);
+    EXPECT_EQ(delegate.GetPreferredSize().width(),
+              delegate.GetWidget()->GetWindowBoundsInScreen().width());
+  }
 }
 
 // Tests edge cases when the frame's title view starts to wrap text. This is to

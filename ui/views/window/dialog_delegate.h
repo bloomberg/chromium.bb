@@ -18,6 +18,7 @@
 namespace views {
 
 class DialogClientView;
+class DialogObserver;
 class LabelButton;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -120,6 +121,13 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   const DialogClientView* GetDialogClientView() const;
   DialogClientView* GetDialogClientView();
 
+  // Add or remove an observer notified by calls to DialogModelChanged().
+  void AddObserver(DialogObserver* observer);
+  void RemoveObserver(DialogObserver* observer);
+
+  // Notifies observers when the result of the DialogModel overrides changes.
+  void DialogModelChanged();
+
  protected:
   // Overridden from WidgetDelegate:
   ui::AXRole GetAccessibleWindowRole() const override;
@@ -134,6 +142,9 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
   // The time the dialog is created.
   base::TimeTicks creation_time_;
+
+  // Observers for DialogModel changes.
+  base::ObserverList<DialogObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogDelegate);
 };

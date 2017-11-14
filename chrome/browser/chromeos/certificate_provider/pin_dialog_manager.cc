@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
@@ -83,7 +82,7 @@ PinDialogManager::RequestPinResponse PinDialogManager::ShowPinDialog(
     active_pin_dialog_->SetCallback(callback);
     active_pin_dialog_->SetDialogParameters(code_type, error_type,
                                             attempts_left, accept_input);
-    active_pin_dialog_->GetDialogClientView()->UpdateDialogButtons();
+    active_pin_dialog_->DialogModelChanged();
     return SUCCESS;
   }
 
@@ -143,7 +142,7 @@ PinDialogManager::StopPinRequestResponse PinDialogManager::UpdatePinDialog(
   active_pin_dialog_->SetDialogParameters(
       RequestPinView::RequestPinCodeType::UNCHANGED, error_type, -1,
       accept_input);
-  active_pin_dialog_->GetDialogClientView()->UpdateDialogButtons();
+  active_pin_dialog_->DialogModelChanged();
   return STOPPED;
 }
 

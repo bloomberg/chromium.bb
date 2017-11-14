@@ -236,6 +236,7 @@ component("views") {
     "window/custom_frame_view.h",
     "window/dialog_client_view.h",
     "window/dialog_delegate.h",
+    "window/dialog_observer.h",
     "window/frame_background.h",
     "window/frame_buttons.h",
     "window/native_frame_view.h",

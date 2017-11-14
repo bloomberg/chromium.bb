@@ -294,7 +294,7 @@ void DialogExample::ButtonPressed(Button* sender, const ui::Event& event) {
 
   // Other buttons are all checkboxes. Update the dialog if there is one.
   if (last_dialog_) {
-    last_dialog_->GetDialogClientView()->UpdateDialogButtons();
+    last_dialog_->DialogModelChanged();
     ResizeDialog();
   }
 }
@@ -312,7 +312,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
   } else if (sender == body_) {
     last_body_label_->SetText(new_contents);
   } else {
-    last_dialog_->GetDialogClientView()->UpdateDialogButtons();
+    last_dialog_->DialogModelChanged();
   }
 
   ResizeDialog();

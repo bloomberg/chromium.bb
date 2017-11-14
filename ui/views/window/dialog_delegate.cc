@@ -21,6 +21,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
+#include "ui/views/window/dialog_observer.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
@@ -233,6 +234,19 @@ const DialogClientView* DialogDelegate::GetDialogClientView() const {
 
 DialogClientView* DialogDelegate::GetDialogClientView() {
   return GetWidget()->client_view()->AsDialogClientView();
+}
+
+void DialogDelegate::AddObserver(DialogObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void DialogDelegate::RemoveObserver(DialogObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void DialogDelegate::DialogModelChanged() {
+  for (DialogObserver& observer : observer_list_)
+    observer.OnDialogModelChanged();
 }
 
 ui::AXRole DialogDelegate::GetAccessibleWindowRole() const {

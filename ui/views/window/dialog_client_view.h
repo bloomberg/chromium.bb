@@ -10,6 +10,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/client_view.h"
+#include "ui/views/window/dialog_observer.h"
 
 namespace views {
 
@@ -28,7 +29,8 @@ class Widget;
 //   | [Extra View]   [OK] [Cancel] |
 //   +------------------------------+
 class VIEWS_EXPORT DialogClientView : public ClientView,
-                                      public ButtonListener {
+                                      public ButtonListener,
+                                      public DialogObserver {
  public:
   DialogClientView(Widget* widget, View* contents_view);
   ~DialogClientView() override;
@@ -41,8 +43,6 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   LabelButton* ok_button() const { return ok_button_; }
   LabelButton* cancel_button() const { return cancel_button_; }
 
-  // Update the dialog buttons to match the dialog's delegate.
-  void UpdateDialogButtons();
   void SetButtonRowInsets(const gfx::Insets& insets);
 
   // ClientView implementation:
@@ -79,6 +79,12 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // View implementation.
   void ChildPreferredSizeChanged(View* child) override;
   void ChildVisibilityChanged(View* child) override;
+
+  // DialogObserver:
+  void OnDialogModelChanged() override;
+
+  // Update the dialog buttons to match the dialog's delegate.
+  void UpdateDialogButtons();
 
   // Creates, deletes, or updates the appearance of the button of type |type|
   // (which must be pointed to by |member|).  Which action is chosen is based on
