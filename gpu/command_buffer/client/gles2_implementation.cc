@@ -7213,9 +7213,14 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                      << ", " << post_translate_x << ", " << post_translate_y
                      << ", " << post_scale << ")");
 
+  if (std::abs(post_scale) < std::numeric_limits<float>::epsilon())
+    return;
+
   gfx::Rect playback_rect(clip_x, clip_y, clip_w, clip_h);
-  std::vector<size_t> indices = list->rtree_.Search(playback_rect);
-  if (indices.empty())
+  gfx::Rect query_rect =
+      gfx::ScaleToEnclosingRect(playback_rect, 1.f / post_scale);
+  std::vector<size_t> offsets = list->rtree_.Search(query_rect);
+  if (offsets.empty())
     return;
 
   // TODO(enne): tune these numbers
@@ -7238,7 +7243,7 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   cc::PaintOpBufferSerializer::SerializeCallback serialize_cb = base::Bind(
       &PaintOpSerializer::Serialize, base::Unretained(&op_serializer));
   cc::PaintOpBufferSerializer serializer(serialize_cb, nullptr);
-  serializer.Serialize(&list->paint_op_buffer_, &indices, preamble);
+  serializer.Serialize(&list->paint_op_buffer_, &offsets, preamble);
   DCHECK(serializer.valid());
   op_serializer.SendSerializedData();
 
