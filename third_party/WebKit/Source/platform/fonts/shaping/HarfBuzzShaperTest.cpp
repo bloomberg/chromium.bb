@@ -947,4 +947,33 @@ TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
 // TODO(layout-dev): Expand RTL test coverage and add tests for mixed
 // directionality strings.
 
+// Test when some characters are missing in |runs_|.
+// RTL on Mac may not have runs for all characters. crbug.com/774034
+TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
+  TextDirection direction = GetParam();
+  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 7, direction);
+  result->InsertRunForTesting(2, 1, direction, {0});
+  result->InsertRunForTesting(3, 3, direction, {0, 1});
+  // The character index 7 is missing.
+  result->InsertRunForTesting(8, 2, direction, {0});
+
+  EXPECT_EQ(2u, result->NextSafeToBreakOffset(2));
+  EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
+  EXPECT_EQ(4u, result->NextSafeToBreakOffset(4));
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(5));
+  EXPECT_EQ(6u, result->NextSafeToBreakOffset(6));
+  EXPECT_EQ(8u, result->NextSafeToBreakOffset(7));
+  EXPECT_EQ(8u, result->NextSafeToBreakOffset(8));
+  EXPECT_EQ(10u, result->NextSafeToBreakOffset(9));
+
+  EXPECT_EQ(2u, result->PreviousSafeToBreakOffset(2));
+  EXPECT_EQ(3u, result->PreviousSafeToBreakOffset(3));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(4));
+  EXPECT_EQ(4u, result->PreviousSafeToBreakOffset(5));
+  EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(6));
+  EXPECT_EQ(6u, result->PreviousSafeToBreakOffset(7));
+  EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(8));
+  EXPECT_EQ(8u, result->PreviousSafeToBreakOffset(9));
+}
+
 }  // namespace blink
