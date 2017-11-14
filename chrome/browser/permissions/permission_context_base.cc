@@ -207,8 +207,8 @@ void PermissionContextBase::ContinueRequestPermission(
   }
 
   // We are going to show a prompt now.
-  PermissionUmaUtil::PermissionRequested(
-      content_settings_type_, requesting_origin, embedding_origin, profile_);
+  PermissionUmaUtil::PermissionRequested(content_settings_type_,
+                                         requesting_origin);
   PermissionUmaUtil::RecordEmbargoPromptSuppression(
       PermissionEmbargoStatus::NOT_EMBARGOED);
 
