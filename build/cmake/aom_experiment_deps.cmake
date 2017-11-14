@@ -157,6 +157,13 @@ macro (fix_experiment_configs)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
     endif ()
   endif ()
+
+  if (CONFIG_TXMG)
+    if (NOT CONFIG_HIGHBITDEPTH)
+      change_config_and_warn(CONFIG_HIGHBITDEPTH 1 CONFIG_TXMG)
+    endif ()
+  endif ()
+
 endmacro ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_
