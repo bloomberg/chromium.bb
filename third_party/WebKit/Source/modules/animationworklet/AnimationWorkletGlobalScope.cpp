@@ -4,7 +4,8 @@
 
 #include "modules/animationworklet/AnimationWorkletGlobalScope.h"
 
-#include "platform/weborigin/SecurityOrigin.h"
+#include <memory>
+#include <utility>
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
@@ -13,8 +14,7 @@
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
-
-#include <utility>
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {
 
@@ -126,7 +126,7 @@ AnimationWorkletGlobalScope::Mutate(
   ScriptState::Scope scope(script_state);
 
   std::unique_ptr<CompositorMutatorOutputState> result =
-      WTF::MakeUnique<CompositorMutatorOutputState>();
+      std::make_unique<CompositorMutatorOutputState>();
 
   for (const CompositorMutatorInputState::AnimationState& animation_input :
        mutator_input.animations) {

@@ -43,7 +43,7 @@
 namespace blink {
 
 DatabaseThread::DatabaseThread()
-    : transaction_client_(WTF::MakeUnique<SQLTransactionClient>()),
+    : transaction_client_(std::make_unique<SQLTransactionClient>()),
       cleanup_sync_(nullptr),
       termination_requested_(false) {
   DCHECK(IsMainThread());

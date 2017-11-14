@@ -775,7 +775,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   IntSize size = ClampedCanvasSize();
   std::unique_ptr<AcceleratedImageBufferSurface> surface =
-      WTF::MakeUnique<AcceleratedImageBufferSurface>(size, ColorParams());
+      std::make_unique<AcceleratedImageBufferSurface>(size, ColorParams());
   if (!surface->IsValid())
     return nullptr;
   std::unique_ptr<ImageBuffer> buffer = ImageBuffer::Create(std::move(surface));

@@ -78,9 +78,9 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
         installed_scripts_manager,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
-  return WTF::MakeUnique<WebEmbeddedWorkerImpl>(
+  return std::make_unique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager),
-      WTF::MakeUnique<ServiceWorkerContentSettingsProxy>(
+      std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           mojom::blink::WorkerContentSettingsProxyPtrInfo(
               std::move(content_settings_handle), 0u)),
@@ -105,7 +105,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
   if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
       installed_scripts_manager) {
     installed_scripts_manager_ =
-        WTF::MakeUnique<ServiceWorkerInstalledScriptsManager>(
+        std::make_unique<ServiceWorkerInstalledScriptsManager>(
             std::move(installed_scripts_manager));
   }
 }
@@ -142,7 +142,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
     pause_after_download_state_ = kDoPauseAfterDownload;
 
   instrumentation_token_ = data.instrumentation_token;
-  shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
+  shadow_page_ = std::make_unique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
 
   // Currently we block all mixed-content requests from a ServiceWorker.
@@ -382,7 +382,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
   }
 
   std::unique_ptr<WorkerSettings> worker_settings =
-      WTF::MakeUnique<WorkerSettings>(document->GetSettings());
+      std::make_unique<WorkerSettings>(document->GetSettings());
 
   std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params;
   // |main_script_loader_| isn't created if the InstalledScriptsManager had the
@@ -393,7 +393,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     SetContentSecurityPolicyAndReferrerPolicy(
         main_script_loader_->ReleaseContentSecurityPolicy(),
         main_script_loader_->GetReferrerPolicy());
-    global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
+    global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         main_script_loader_->SourceText(),
         main_script_loader_->ReleaseCachedMetadata(),
@@ -408,7 +408,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // ContentSecurityPolicy and ReferrerPolicy are applied to |document| at
     // SetContentSecurityPolicyAndReferrerPolicy() before evaluating the main
     // script.
-    global_scope_creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
+    global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
         worker_start_data_.script_url, worker_start_data_.user_agent,
         "" /* SourceText */, nullptr /* CachedMetadata */,
         nullptr /* ContentSecurityPolicy */, kReferrerPolicyDefault,
@@ -418,7 +418,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         std::move(interface_provider_info_));
   }
 
-  worker_thread_ = WTF::MakeUnique<ServiceWorkerThread>(
+  worker_thread_ = std::make_unique<ServiceWorkerThread>(
       ThreadableLoadingContext::Create(*document),
       ServiceWorkerGlobalScopeProxy::Create(*this, *worker_context_client_),
       std::move(installed_scripts_manager_));

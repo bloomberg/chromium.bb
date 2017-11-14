@@ -4,6 +4,8 @@
 
 #include "modules/screen_orientation/ScreenOrientation.h"
 
+#include <memory>
+
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
@@ -168,7 +170,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
   }
 
   Controller()->lock(StringToOrientationLock(lock_string),
-                     WTF::MakeUnique<LockOrientationCallback>(resolver));
+                     std::make_unique<LockOrientationCallback>(resolver));
   return promise;
 }
 
