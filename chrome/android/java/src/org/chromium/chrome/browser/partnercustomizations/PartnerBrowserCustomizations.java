@@ -347,8 +347,11 @@ public class PartnerBrowserCustomizations {
         return sHomepage;
     }
 
-    private static boolean isValidHomepage(String url) {
-        if (!UrlUtilities.isHttpOrHttps(url)) {
+    @VisibleForTesting
+    static boolean isValidHomepage(String url) {
+        if (url == null) return false;
+        if (!UrlUtilities.isHttpOrHttps(url)
+                && !UrlConstants.CHROME_SCHEME.equals(Uri.parse(url).getScheme())) {
             Log.w(TAG, "The scheme in homepage URL \"%s\" is not allowed.", url);
             return false;
         }
