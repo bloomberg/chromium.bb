@@ -23,6 +23,15 @@ _log = logging.getLogger(__name__)
 _COMMANDS_THAT_TAKE_REFRESH_TOKEN = ('try',)
 
 
+class CLStatus(collections.namedtuple('CLStatus', ('status', 'try_job_results'))):
+    """Represents the current status of a particular CL.
+
+    It contains both the CL's status as reported by `git-cl status' as well as
+    a mapping of Build objects to TryJobStatus objects.
+    """
+    pass
+
+
 class TryJobStatus(collections.namedtuple('TryJobStatus', ('status', 'result'))):
     """Represents a current status of a particular job.
 
@@ -70,20 +79,28 @@ class GitCL(object):
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
 
+    def _get_cl_status(self):
+        return self.run(['status', '--field=status']).strip()
+
     def wait_for_try_jobs(self, poll_delay_seconds=10 * 60, timeout_seconds=120 * 60):
         """Waits until all try jobs are finished and returns results, or None.
 
+        This function can also be interrupted if the corresponding CL is
+        closed while the try jobs are still running.
+
         Returns:
-            A dict mapping Build objects to TryJobStatus objects, or
-            None if a timeout occurred.
+            None if a timeout occurs, a CLStatus tuple otherwise.
         """
 
         def finished_try_job_results_or_none():
-            results = self.try_job_results()
-            _log.debug('Fetched try results: %s', results)
-            if results and self.all_finished(results):
-                self._host.print_('All jobs finished.')
-                return results
+            cl_status = self._get_cl_status()
+            _log.debug('Fetched CL status: %s', cl_status)
+            try_job_results = self.try_job_results()
+            _log.debug('Fetched try results: %s', try_job_results)
+            if (cl_status == 'closed' or
+                    (try_job_results and self.all_finished(try_job_results))):
+                return CLStatus(status=cl_status,
+                                try_job_results=try_job_results)
             return None
 
         return self._wait_for(
@@ -95,7 +112,7 @@ class GitCL(object):
         """Waits until git cl reports that the current CL is closed."""
 
         def closed_status_or_none():
-            status = self.run(['status', '--field=status']).strip()
+            status = self._get_cl_status()
             if status == 'closed':
                 self._host.print_('CL is closed.')
                 return status
