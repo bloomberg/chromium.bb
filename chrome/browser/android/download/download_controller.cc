@@ -289,8 +289,6 @@ void DownloadController::AcquireFileAccessPermission(
 void DownloadController::CreateAndroidDownload(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const DownloadInfo& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadController::StartAndroidDownload,

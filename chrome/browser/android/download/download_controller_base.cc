@@ -12,6 +12,21 @@ DownloadControllerBase* DownloadControllerBase::download_controller_ = nullptr;
 
 using content::ResourceRequestInfo;
 
+DownloadInfo::DownloadInfo(const GURL& url,
+                           const GURL& original_url,
+                           const std::string& content_disposition,
+                           const std::string& original_mime_type,
+                           const std::string& user_agent,
+                           const std::string& cookie,
+                           const std::string& referer)
+    : url(url),
+      original_url(original_url),
+      content_disposition(content_disposition),
+      original_mime_type(original_mime_type),
+      user_agent(user_agent),
+      cookie(cookie),
+      referer(referer) {}
+
 DownloadInfo::DownloadInfo(const net::URLRequest* request) {
   request->GetResponseHeaderByName("content-disposition", &content_disposition);
 
