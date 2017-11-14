@@ -58,6 +58,7 @@ class PreviewsIOData : public PreviewsDecider,
   virtual void Initialize(
       base::WeakPtr<PreviewsUIService> previews_ui_service,
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback);
 
   // Adds log message of the navigation asynchronously.
@@ -109,10 +110,6 @@ class PreviewsIOData : public PreviewsDecider,
   // Sets a blacklist for testing.
   void SetPreviewsBlacklistForTesting(
       std::unique_ptr<PreviewsBlackList> previews_back_list);
-
-  // Sets an optimization guide for testing.
-  void SetPreviewsOptimizationGuideForTesting(
-      std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide);
 
  private:
   // The UI thread portion of the inter-thread communication for previews.

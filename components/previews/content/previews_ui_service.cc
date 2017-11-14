@@ -14,15 +14,16 @@ PreviewsUIService::PreviewsUIService(
     PreviewsIOData* previews_io_data,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback,
     std::unique_ptr<PreviewsLogger> logger)
     : io_task_runner_(io_task_runner),
       logger_(std::move(logger)),
       weak_factory_(this) {
   DCHECK(logger_);
-  previews_io_data->Initialize(weak_factory_.GetWeakPtr(),
-                               std::move(previews_opt_out_store),
-                               is_enabled_callback);
+  previews_io_data->Initialize(
+      weak_factory_.GetWeakPtr(), std::move(previews_opt_out_store),
+      std::move(previews_opt_guide), is_enabled_callback);
 }
 
 PreviewsUIService::~PreviewsUIService() {

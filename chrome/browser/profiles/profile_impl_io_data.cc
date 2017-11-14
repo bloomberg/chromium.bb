@@ -180,6 +180,7 @@ void ProfileImplIOData::Handle::Init(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
       io_data_->previews_io_data(),
+      g_browser_process->optimization_guide_service(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
 
   io_data_->set_data_reduction_proxy_io_data(

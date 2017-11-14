@@ -74,10 +74,12 @@ PreviewsIOData::~PreviewsIOData() {}
 void PreviewsIOData::Initialize(
     base::WeakPtr<PreviewsUIService> previews_ui_service,
     std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
     const PreviewsIsEnabledCallback& is_enabled_callback) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   is_enabled_callback_ = is_enabled_callback;
   previews_ui_service_ = previews_ui_service;
+  previews_opt_guide_ = std::move(previews_opt_guide);
 
   // Set up the IO thread portion of |this|.
   io_task_runner_->PostTask(
@@ -122,11 +124,6 @@ void PreviewsIOData::InitializeOnIOThread(
 void PreviewsIOData::SetPreviewsBlacklistForTesting(
     std::unique_ptr<PreviewsBlackList> previews_back_list) {
   previews_black_list_ = std::move(previews_back_list);
-}
-
-void PreviewsIOData::SetPreviewsOptimizationGuideForTesting(
-    std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide) {
-  previews_opt_guide_ = std::move(previews_opt_guide);
 }
 
 void PreviewsIOData::LogPreviewNavigation(const GURL& url,

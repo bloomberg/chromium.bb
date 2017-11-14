@@ -44,7 +44,8 @@ class OptimizationGuideService {
   virtual ~OptimizationGuideService();
 
   void AddObserver(OptimizationGuideServiceObserver* observer);
-  void RemoveObserver(OptimizationGuideServiceObserver* observer);
+  // Virtual so it can be mocked out in tests.
+  virtual void RemoveObserver(OptimizationGuideServiceObserver* observer);
 
   // Processes hints from the given unindexed hints, unless its |hints_version|
   // matches that of the most recently parsed version, in which case it does
