@@ -63,7 +63,14 @@ Service::Service(Profile* profile,
   extension_registry_->AddObserver(this);
 }
 
-Service::~Service() {
+Service::~Service() {}
+
+// static
+Service* Service::Get(content::BrowserContext* context) {
+  return ServiceFactory::Get(context);
+}
+
+void Service::Shutdown() {
   extension_registry_->RemoveObserver(this);
 
   // Provided file systems should be already unmounted because of receiving
@@ -83,11 +90,6 @@ Service::~Service() {
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
-}
-
-// static
-Service* Service::Get(content::BrowserContext* context) {
-  return ServiceFactory::Get(context);
 }
 
 void Service::AddObserver(Observer* observer) {

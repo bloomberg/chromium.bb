@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "ui/message_center/notification.h"
@@ -36,6 +37,9 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   // Returns a vector of the displayed Notification objects.
   std::vector<message_center::Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type) const;
+
+  base::Optional<message_center::Notification> GetNotification(
+      const std::string& notification_id);
 
   const NotificationCommon::Metadata* GetMetadataForNotification(
       const message_center::Notification& notification);

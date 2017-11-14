@@ -18,8 +18,9 @@
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "ui/base/ui_base_types.h"
-#include "ui/message_center/message_center.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
 
 namespace extensions {
 namespace {
@@ -62,11 +63,15 @@ class NotificationButtonClicker : public RequestManager::Observer {
 
  private:
   void ClickButton() {
-    g_browser_process->message_center()->ClickOnNotificationButton(
-        file_system_info_.mount_path().value(), ui::DIALOG_BUTTON_OK);
+    base::Optional<message_center::Notification> notification =
+        NotificationDisplayServiceTester::Get()->GetNotification(
+            file_system_info_.mount_path().value());
+    if (notification)
+      notification->delegate()->ButtonClick(0);
   }
 
   ProvidedFileSystemInfo file_system_info_;
+
   DISALLOW_COPY_AND_ASSIGN(NotificationButtonClicker);
 };
 
@@ -110,6 +115,7 @@ class AbortOnUnresponsivePerformer : public Observer {
  private:
   Service* service_;  // Not owned.
   std::vector<std::unique_ptr<NotificationButtonClicker>> clickers_;
+
   DISALLOW_COPY_AND_ASSIGN(AbortOnUnresponsivePerformer);
 };
 
@@ -126,7 +132,15 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
         test_data_dir_.AppendASCII("file_system_provider/test_util"),
         kFlagEnableIncognito);
     ASSERT_TRUE(extension);
+
+    display_service_ = std::make_unique<NotificationDisplayServiceTester>(
+        browser()->profile());
   }
+
+  std::unique_ptr<NotificationDisplayServiceTester> display_service_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FileSystemProviderApiTest);
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {

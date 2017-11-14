@@ -81,6 +81,12 @@ class Service : public KeyedService,
   Service(Profile* profile, extensions::ExtensionRegistry* extension_registry);
   ~Service() override;
 
+  // Gets the singleton instance for the |context|.
+  static Service* Get(content::BrowserContext* context);
+
+  // KeyedService:
+  void Shutdown() override;
+
   // Sets a custom ProvidedFileSystemInterface factory. Used by unit tests,
   // where an event router is not available.
   void SetDefaultFileSystemFactoryForTesting(
@@ -143,9 +149,6 @@ class Service : public KeyedService,
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Gets the singleton instance for the |context|.
-  static Service* Get(content::BrowserContext* context);
 
   // extensions::ExtensionRegistryObserver overrides.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

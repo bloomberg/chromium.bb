@@ -22,10 +22,6 @@ class Image;
 class ImageSkia;
 }  // message gfx
 
-namespace message_center {
-class Notification;
-}  // namespace message_center
-
 namespace chromeos {
 namespace file_system_provider {
 
@@ -58,8 +54,12 @@ class NotificationManager : public NotificationManagerInterface,
  private:
   typedef std::map<int, NotificationCallback> CallbackMap;
 
-  // Creates a notification object for the actual state of the manager.
-  std::unique_ptr<message_center::Notification> CreateNotification();
+  std::string GetNotificationId();
+
+  // Creates and displays a notification object for the actual state of the
+  // manager. This will either add a new one or update the existing
+  // notification.
+  void ShowNotification();
 
   // Handles a notification result by calling all registered callbacks and
   // clearing the list.

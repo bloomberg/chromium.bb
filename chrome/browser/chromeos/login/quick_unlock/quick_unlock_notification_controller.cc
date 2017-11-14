@@ -5,12 +5,11 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 
 #include "ash/system/system_notifier.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -171,7 +170,8 @@ void QuickUnlockNotificationController::Observe(
 
   std::unique_ptr<message_center::Notification> notification =
       CreateNotification();
-  g_browser_process->notification_ui_manager()->Add(*notification, profile_);
+  NotificationDisplayService::GetForProfile(profile_)->Display(
+      NotificationCommon::TRANSIENT, *notification);
 }
 
 // message_center::NotificationDelegate override:
@@ -191,8 +191,8 @@ void QuickUnlockNotificationController::Click() {
   SetNotificationPreferenceWasShown();
 
   // Remove the notification from tray.
-  g_browser_process->notification_ui_manager()->CancelById(
-      params_.notification_id, NotificationUIManager::GetProfileID(profile_));
+  NotificationDisplayService::GetForProfile(profile_)->Close(
+      NotificationCommon::TRANSIENT, params_.notification_id);
 }
 
 void QuickUnlockNotificationController::SetNotificationPreferenceWasShown() {

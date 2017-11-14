@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
@@ -36,6 +37,7 @@ ServiceFactory::ServiceFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  DependsOn(NotificationDisplayServiceFactory::GetInstance());
 }
 
 ServiceFactory::~ServiceFactory() {}
