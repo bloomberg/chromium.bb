@@ -465,9 +465,8 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 // Opens the sign in screen from the bookmarks and then cancel it by opening a
 // new tab. Ensures that the sign in screen is correctly dismissed.
 // Regression test for crbug.com/596029.
-// TODO(crbug.com/695749): Check if we need to rewrite this test for the new
-// Bookmarks UI.
 - (void)testSignInCancelFromBookmarks {
+  // TODO(crbug.com/782551): Rewrite this test for the new Bookmarks UI.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 

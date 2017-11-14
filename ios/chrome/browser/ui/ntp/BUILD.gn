@@ -298,6 +298,7 @@ source_set("eg_tests") {
     "new_tab_page_egtest.mm",
   ]
   deps = [
+    ":modal_ntp",
     ":ntp_controller",
     ":ntp_internal",
     "//components/strings",

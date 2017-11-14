@@ -175,9 +175,8 @@ const CGFloat kScrollDisplacement = 50.0;
 
 // Tests that keyboard commands are not registered when the Bookmarks UI is
 // shown on iPhone and registered on iPad.
-// TODO(crbug.com/695749): Check if we need to rewrite this test for the new
-// Bookmarks UI.
 - (void)testKeyboardCommandsNotRegistered_BookmarksPresented {
+  // TODO(crbug.com/782551): Rewrite this test for the new Bookmarks UI.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(kBookmarkNewGeneration);
 
