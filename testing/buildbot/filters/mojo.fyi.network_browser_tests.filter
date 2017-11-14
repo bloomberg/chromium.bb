@@ -401,6 +401,8 @@
 -WebRtcRtpBrowserTest.GetSenders
 -WebRtcRtpBrowserTest.SwitchRemoteStreamAndBackAgain
 -WebRtcRtpBrowserTest.SwitchRemoteStreamWithoutWaitingForPromisesToResolve
+# This test is flaky.
+-WebRtcRtpBrowserTest.TrackAddedToSecondStream
 -WebRtcRtpBrowserTest.TrackSwitchingStream
 -WebSocketBrowserTest.WebSocketAppliesHSTS
 -WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
