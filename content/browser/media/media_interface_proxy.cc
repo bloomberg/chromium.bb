@@ -266,11 +266,7 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
     const std::string& key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Set the CDM GUID to be the default user ID used when connecting to mojo
-  // services. This is needed when ENABLE_STANDALONE_CDM_SERVICE is true but
-  // ENABLE_LIBRARY_CDMS is false.
-  std::string cdm_guid = service_manager::mojom::kInheritUserID;
-
+  std::string cdm_guid;
   base::FilePath cdm_path;
   std::string cdm_file_system_id;
 
@@ -311,7 +307,9 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
   DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid;
 
   DCHECK(!cdm_interface_factory_map_.count(cdm_guid));
-  service_manager::Identity identity(media::mojom::kCdmServiceName, cdm_guid);
+  service_manager::Identity identity(media::mojom::kCdmServiceName,
+                                     service_manager::mojom::kInheritUserID,
+                                     cdm_guid);
 
   // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
   service_manager::Connector* connector =
