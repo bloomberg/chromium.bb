@@ -241,7 +241,7 @@ void MessageBoxView::ResetLayoutManager() {
     column_set->AddPaddingColumn(0, horizontal_insets.right());
   }
 
-  const int kMaxScrollViewHeight = 400;
+  constexpr int kMaxScrollViewHeight = 160;
   views::View* message_contents = new views::View();
   // We explicitly set insets on the message contents instead of the scroll view
   // so that the scroll view borders are not capped by dialog insets.
