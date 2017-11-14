@@ -12,10 +12,6 @@
 #include "device/u2f/u2f_command_type.h"
 #include "device/u2f/u2f_packet.h"
 
-namespace net {
-class IOBufferWithSize;
-}  // namespace net
-
 namespace device {
 
 // U2fMessages are defined by the specification at
@@ -37,7 +33,7 @@ class U2fMessage {
   static std::unique_ptr<U2fMessage> CreateFromSerializedData(
       const std::vector<uint8_t>& buf);
   // Pop front of queue with next packet
-  scoped_refptr<net::IOBufferWithSize> PopNextPacket();
+  std::vector<uint8_t> PopNextPacket();
   // Adds a continuation packet to the packet list, from the serialized
   // response value
   bool AddContinuationPacket(const std::vector<uint8_t>& packet_buf);

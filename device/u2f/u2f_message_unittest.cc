@@ -4,7 +4,6 @@
 
 #include "device/u2f/u2f_message.h"
 #include "base/memory/ptr_util.h"
-#include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,11 +18,11 @@ TEST_F(U2fMessageTest, TestPacketSize) {
 
   auto init_packet =
       std::make_unique<U2fInitPacket>(channel_id, 0, data, data.size());
-  EXPECT_EQ(65, init_packet->GetSerializedData()->size());
+  EXPECT_EQ(64u, init_packet->GetSerializedData().size());
 
   auto continuation_packet =
       std::make_unique<U2fContinuationPacket>(channel_id, 0, data);
-  EXPECT_EQ(65, continuation_packet->GetSerializedData()->size());
+  EXPECT_EQ(64u, continuation_packet->GetSerializedData().size());
 }
 
 /*
@@ -42,29 +41,21 @@ TEST_F(U2fMessageTest, TestPacketData) {
   uint8_t cmd = static_cast<uint8_t>(U2fCommandType::CMD_WINK);
   auto init_packet =
       std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
-  int index = 0;
+  size_t index = 0;
 
-  scoped_refptr<net::IOBufferWithSize> serialized =
-      init_packet->GetSerializedData();
-  EXPECT_EQ(0, serialized->data()[index++]);
-  EXPECT_EQ((channel_id >> 24) & 0xff,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ((channel_id >> 16) & 0xff,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ((channel_id >> 8) & 0xff,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ(channel_id & 0xff,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ(cmd, static_cast<uint8_t>(serialized->data()[index++]));
+  std::vector<uint8_t> serialized = init_packet->GetSerializedData();
+  EXPECT_EQ((channel_id >> 24) & 0xff, serialized[index++]);
+  EXPECT_EQ((channel_id >> 16) & 0xff, serialized[index++]);
+  EXPECT_EQ((channel_id >> 8) & 0xff, serialized[index++]);
+  EXPECT_EQ(channel_id & 0xff, serialized[index++]);
+  EXPECT_EQ(cmd, serialized[index++]);
 
-  EXPECT_EQ(data.size() >> 8,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ(data.size() & 0xff,
-            static_cast<uint8_t>(serialized->data()[index++]));
-  EXPECT_EQ(data[0], serialized->data()[index++]);
-  EXPECT_EQ(data[1], serialized->data()[index++]);
-  for (; index < serialized->size(); index++)
-    EXPECT_EQ(0, serialized->data()[index]) << "mismatch at index " << index;
+  EXPECT_EQ(data.size() >> 8, serialized[index++]);
+  EXPECT_EQ(data.size() & 0xff, serialized[index++]);
+  EXPECT_EQ(data[0], serialized[index++]);
+  EXPECT_EQ(data[1], serialized[index++]);
+  for (; index < serialized.size(); index++)
+    EXPECT_EQ(0, serialized[index]) << "mismatch at index " << index;
 }
 
 TEST_F(U2fMessageTest, TestPacketConstructors) {
@@ -75,10 +66,8 @@ TEST_F(U2fMessageTest, TestPacketConstructors) {
       std::make_unique<U2fInitPacket>(channel_id, cmd, data, data.size());
 
   size_t payload_length = static_cast<size_t>(orig_packet->payload_length());
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      orig_packet->GetSerializedData();
-  std::vector<uint8_t> orig_data(buffer->data(),
-                                 buffer->data() + buffer->size());
+  std::vector<uint8_t> orig_data = orig_packet->GetSerializedData();
+
   std::unique_ptr<U2fInitPacket> reconstructed_packet =
       U2fInitPacket::CreateFromSerializedData(orig_data, &payload_length);
   EXPECT_EQ(orig_packet->command(), reconstructed_packet->command());
@@ -89,15 +78,15 @@ TEST_F(U2fMessageTest, TestPacketConstructors) {
 
   EXPECT_EQ(channel_id, reconstructed_packet->channel_id());
 
-  ASSERT_EQ(orig_packet->GetSerializedData()->size(),
-            reconstructed_packet->GetSerializedData()->size());
-  for (int index = 0; index < orig_packet->GetSerializedData()->size();
+  ASSERT_EQ(orig_packet->GetSerializedData().size(),
+            reconstructed_packet->GetSerializedData().size());
+  for (size_t index = 0; index < orig_packet->GetSerializedData().size();
        ++index) {
-    EXPECT_EQ(orig_packet->GetSerializedData()->data()[index],
-              reconstructed_packet->GetSerializedData()->data()[index])
+    EXPECT_EQ(orig_packet->GetSerializedData()[index],
+              reconstructed_packet->GetSerializedData()[index])
         << "mismatch at index " << index;
   }
-  }
+}
 
 TEST_F(U2fMessageTest, TestMaxLengthPacketConstructors) {
   uint32_t channel_id = 0xAAABACAD;
@@ -110,15 +99,12 @@ TEST_F(U2fMessageTest, TestMaxLengthPacketConstructors) {
       U2fMessage::Create(channel_id, cmd, data);
   auto it = orig_msg->begin();
 
-  scoped_refptr<net::IOBufferWithSize> buffer = (*it)->GetSerializedData();
-  std::vector<uint8_t> msg_data(buffer->data(),
-                                buffer->data() + buffer->size());
+  std::vector<uint8_t> msg_data = (*it)->GetSerializedData();
   std::unique_ptr<U2fMessage> new_msg =
       U2fMessage::CreateFromSerializedData(msg_data);
   it++;
   for (; it != orig_msg->end(); ++it) {
-    buffer = (*it)->GetSerializedData();
-    msg_data.assign(buffer->data(), buffer->data() + buffer->size());
+    msg_data = (*it)->GetSerializedData();
     new_msg->AddContinuationPacket(msg_data);
   }
 
@@ -132,12 +118,12 @@ TEST_F(U2fMessageTest, TestMaxLengthPacketConstructors) {
 
     EXPECT_EQ((*orig_it)->channel_id(), (*new_it)->channel_id());
 
-    ASSERT_EQ((*orig_it)->GetSerializedData()->size(),
-              (*new_it)->GetSerializedData()->size());
-    for (int index = 0; index < (*orig_it)->GetSerializedData()->size();
+    ASSERT_EQ((*orig_it)->GetSerializedData().size(),
+              (*new_it)->GetSerializedData().size());
+    for (size_t index = 0; index < (*orig_it)->GetSerializedData().size();
          ++index) {
-      EXPECT_EQ((*orig_it)->GetSerializedData()->data()[index],
-                (*new_it)->GetSerializedData()->data()[index])
+      EXPECT_EQ((*orig_it)->GetSerializedData()[index],
+                (*new_it)->GetSerializedData()[index])
           << "mismatch at index " << index;
     }
   }
@@ -185,23 +171,21 @@ TEST_F(U2fMessageTest, TestDeserialize) {
 
   std::unique_ptr<U2fMessage> orig_message =
       U2fMessage::Create(channel_id, U2fCommandType::CMD_PING, data);
-  std::list<scoped_refptr<net::IOBufferWithSize>> orig_list;
-  scoped_refptr<net::IOBufferWithSize> buf = orig_message->PopNextPacket();
+  std::list<std::vector<uint8_t>> orig_list;
+  std::vector<uint8_t> buf = orig_message->PopNextPacket();
   orig_list.push_back(buf);
 
-  std::vector<uint8_t> message_data(buf->data(), buf->data() + buf->size());
   std::unique_ptr<U2fMessage> new_message =
-      U2fMessage::CreateFromSerializedData(message_data);
+      U2fMessage::CreateFromSerializedData(buf);
   while (!new_message->MessageComplete()) {
     buf = orig_message->PopNextPacket();
     orig_list.push_back(buf);
-    message_data.assign(buf->data(), buf->data() + buf->size());
-    new_message->AddContinuationPacket(message_data);
+    new_message->AddContinuationPacket(buf);
   }
 
-  while ((buf = new_message->PopNextPacket())) {
-    ASSERT_EQ(buf->size(), orig_list.front()->size());
-    EXPECT_EQ(0, memcmp(buf->data(), orig_list.front()->data(), buf->size()));
+  while (!(buf = new_message->PopNextPacket()).empty()) {
+    ASSERT_EQ(buf.size(), orig_list.front().size());
+    EXPECT_EQ(0, memcmp(buf.data(), orig_list.front().data(), buf.size()));
     orig_list.pop_front();
   }
 }
