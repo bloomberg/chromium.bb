@@ -198,8 +198,8 @@ class PreviewsInfoBarDelegateUnitTest
         base::MessageLoop::current()->task_runner());
     previews_ui_service_ = base::MakeUnique<previews::PreviewsUIService>(
         previews_io_data_.get(), base::MessageLoop::current()->task_runner(),
-        nullptr /* previews_opt_out_store */, base::Bind(&IsPreviewsEnabled),
-        std::move(previews_logger));
+        nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
+        base::Bind(&IsPreviewsEnabled), std::move(previews_logger));
     base::RunLoop().RunUntilIdle();
   }
 

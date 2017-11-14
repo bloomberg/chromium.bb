@@ -137,6 +137,7 @@ class TestPreviewsIOData : public previews::PreviewsIOData {
   void Initialize(
       base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
       std::unique_ptr<previews::PreviewsOptOutStore> opt_out_store,
+      std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide,
       const previews::PreviewsIsEnabledCallback& is_enabled_callback) override {
     // Do nothing.
   }
@@ -150,6 +151,7 @@ class TestPreviewsUIService : public previews::PreviewsUIService {
       : PreviewsUIService(io_data,
                           nullptr, /* io_task_runner */
                           nullptr, /* previews_opt_out_store */
+                          nullptr, /* previews_opt_guide */
                           base::Bind(&MockedPreviewsIsEnabled),
                           std::move(logger)),
         blacklist_ignored_(false) {}

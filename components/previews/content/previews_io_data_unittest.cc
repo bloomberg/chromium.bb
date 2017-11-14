@@ -14,16 +14,17 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_delegate.h"
@@ -96,7 +97,10 @@ class TestPreviewsBlackList : public PreviewsBlackList {
 // when testing PreviewsIOData.
 class TestPreviewsOptimizationGuide : public PreviewsOptimizationGuide {
  public:
-  TestPreviewsOptimizationGuide() {}
+  TestPreviewsOptimizationGuide(
+      optimization_guide::OptimizationGuideService* optimization_guide_service,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+      : PreviewsOptimizationGuide(optimization_guide_service, io_task_runner) {}
   ~TestPreviewsOptimizationGuide() override {}
 
   // PreviewsOptimizationGuide:
@@ -114,11 +118,13 @@ class TestPreviewsUIService : public PreviewsUIService {
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
       std::unique_ptr<PreviewsLogger> logger)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
                           std::move(previews_opt_out_store),
+                          std::move(previews_opt_guide),
                           is_enabled_callback,
                           std::move(logger)),
         user_blacklisted_(false),
@@ -233,13 +239,6 @@ class TestPreviewsIOData : public PreviewsIOData {
     SetPreviewsBlacklistForTesting(std::move(blacklist));
   }
 
-  // Expose the injecting previews optimization guide method from
-  // PreviewsIOData, and inject |guide| into |this|.
-  void InjectTestPreviewsOptimizationGuide(
-      std::unique_ptr<TestPreviewsOptimizationGuide> guide) {
-    SetPreviewsOptimizationGuideForTesting(std::move(guide));
-  }
-
  private:
   // Set |initialized_| to true and use base class functionality.
   void InitializeOnIOThread(
@@ -290,7 +289,10 @@ class PreviewsIODataTest : public testing::Test {
  public:
   PreviewsIODataTest()
       : field_trial_list_(nullptr),
-        io_data_(loop_.task_runner(), loop_.task_runner()),
+        io_data_(scoped_task_environment_.GetMainThreadTaskRunner(),
+                 scoped_task_environment_.GetMainThreadTaskRunner()),
+        optimization_guide_service_(
+            scoped_task_environment_.GetMainThreadTaskRunner()),
         context_(true) {
     context_.set_network_quality_estimator(&network_quality_estimator_);
     context_.Init();
@@ -306,15 +308,19 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
-    ui_service_.reset(
-        new TestPreviewsUIService(&io_data_, loop_.task_runner(),
-                                  base::MakeUnique<TestPreviewsOptOutStore>(),
-                                  base::Bind(&IsPreviewFieldTrialEnabled),
-                                  base::MakeUnique<PreviewsLogger>()));
+    ui_service_.reset(new TestPreviewsUIService(
+        &io_data_, scoped_task_environment_.GetMainThreadTaskRunner(),
+        base::MakeUnique<TestPreviewsOptOutStore>(),
+        base::MakeUnique<TestPreviewsOptimizationGuide>(
+            &optimization_guide_service_,
+            scoped_task_environment_.GetMainThreadTaskRunner()),
+        base::Bind(&IsPreviewFieldTrialEnabled),
+        base::MakeUnique<PreviewsLogger>()));
   }
 
   void InitializeUIService() {
     InitializeUIServiceWithoutWaitingForBlackList();
+    scoped_task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -338,12 +344,11 @@ class PreviewsIODataTest : public testing::Test {
     return &network_quality_estimator_;
   }
 
- protected:
-  base::MessageLoopForIO loop_;
-
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::FieldTrialList field_trial_list_;
   TestPreviewsIOData io_data_;
+  optimization_guide::OptimizationGuideService optimization_guide_service_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;
@@ -678,10 +683,6 @@ TEST_F(PreviewsIODataTest, NoScriptAllowedByFeatureWithWhitelist) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kNoScriptPreviews, features::kOptimizationHints}, {});
-
-  std::unique_ptr<TestPreviewsOptimizationGuide> guide =
-      base::MakeUnique<TestPreviewsOptimizationGuide>();
-  io_data()->InjectTestPreviewsOptimizationGuide(std::move(guide));
 
   network_quality_estimator()->set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);

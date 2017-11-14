@@ -90,6 +90,9 @@ void OptimizationGuideService::ProcessHintsInBackground(
     const ComponentInfo& component_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(crbug.com/783246): Add crash loop detection to ensure bad component
+  // updates do not crash Chrome.
+
   if (!component_info.hints_version.IsValid())
     return;
   if (latest_processed_version_.CompareTo(component_info.hints_version) >= 0)

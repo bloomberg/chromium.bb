@@ -27,10 +27,12 @@ class TestPreviewsUIService : public PreviewsUIService {
       PreviewsIOData* previews_io_data,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       std::unique_ptr<PreviewsLogger> logger)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
                           std::move(previews_opt_out_store),
+                          std::move(previews_opt_guide),
                           PreviewsIsEnabledCallback(),
                           std::move(logger)),
         io_data_set_(false) {}
@@ -178,7 +180,8 @@ class PreviewsUIServiceTest : public testing::Test {
     io_data_ = base::MakeUnique<TestPreviewsIOData>(loop_.task_runner(),
                                                     loop_.task_runner());
     ui_service_ = base::MakeUnique<TestPreviewsUIService>(
-        io_data(), loop_.task_runner(), nullptr, std::move(logger));
+        io_data(), loop_.task_runner(), nullptr /* previews_opt_out_store */,
+        nullptr /* previews_opt_guide */, std::move(logger));
     base::RunLoop().RunUntilIdle();
   }
 
