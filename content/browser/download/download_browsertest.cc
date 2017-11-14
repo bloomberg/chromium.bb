@@ -2900,7 +2900,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 // Verify parallel download in normal case.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
+#if defined(THREAD_SANITIZER)
+// Failing/Flaky under TSAN: https://crbug.com/782037
+#define MAYBE_ParallelDownloadComplete DISABLED_DownloadComplete
+#else
+#define MAYBE_ParallelDownloadComplete ParallelDownloadComplete
+#endif
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadComplete) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
@@ -2938,7 +2944,13 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
 }
 
 // Verify parallel download resumption.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
+#if defined(THREAD_SANITIZER)
+// Failing/Flaky under TSAN: https://crbug.com/782037
+#define MAYBE_ParallelDownloadResumption DISABLED_DownloadResumption
+#else
+#define MAYBE_ParallelDownloadResumption ParallelDownloadResumption
+#endif
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, MAYBE_ParallelDownloadResumption) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
   GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
