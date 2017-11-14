@@ -501,6 +501,11 @@ bool HFSBTreeIterator::Init(ReadStream* stream) {
   }
   ConvertBigEndian(&header_);
 
+  if (header_.nodeSize == 0) {
+    DLOG(ERROR) << "Invalid header: zero node size";
+    return false;
+  }
+
   current_leaf_number_ = header_.firstLeafNode;
   leaf_data_.resize(header_.nodeSize);
 
