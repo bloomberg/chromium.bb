@@ -77,11 +77,6 @@ void AnimationEffectTiming::setDirection(String direction) {
 void AnimationEffectTiming::setEasing(String easing,
                                       ExceptionState& exception_state) {
   Timing timing = parent_->SpecifiedTiming();
-  // The AnimationEffectTiming might not be attached to a document at this
-  // point, so we pass nullptr in to setTimingFunction. This means that these
-  // calls are not considered in the WebAnimationsEasingAsFunction*
-  // UseCounters, but the bug we are tracking there does not come through
-  // this interface.
   if (TimingInput::SetTimingFunction(timing, easing, nullptr, exception_state))
     parent_->UpdateSpecifiedTiming(timing);
 }

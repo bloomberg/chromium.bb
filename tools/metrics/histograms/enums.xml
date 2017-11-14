@@ -15999,8 +15999,6 @@ Called by update_net_error_codes.py.-->
   <int value="1292" label="FormValidationStarted"/>
   <int value="1293" label="FormValidationAbortedSubmission"/>
   <int value="1294" label="FormValidationShowedMessage"/>
-  <int value="1295" label="WebAnimationsEasingAsFunctionLinear"/>
-  <int value="1296" label="WebAnimationsEasingAsFunctionOther"/>
   <int value="1297" label="V8Document_Images_AttributeGetter"/>
   <int value="1298" label="V8Document_Embeds_AttributeGetter"/>
   <int value="1299" label="V8Document_Plugins_AttributeGetter"/>
