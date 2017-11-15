@@ -32,10 +32,32 @@ constexpr base::TaskTraits kTaskTraits = {
 
 namespace update_client {
 
+UrlFetcherDownloader::URLFetcherDelegate::URLFetcherDelegate(
+    UrlFetcherDownloader* downloader)
+    : downloader_(downloader) {}
+
+UrlFetcherDownloader::URLFetcherDelegate::~URLFetcherDelegate() = default;
+
+void UrlFetcherDownloader::URLFetcherDelegate::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  downloader_->OnURLFetchComplete(source);
+}
+
+void UrlFetcherDownloader::URLFetcherDelegate::OnURLFetchDownloadProgress(
+    const net::URLFetcher* source,
+    int64_t current,
+    int64_t total,
+    int64_t current_network_bytes) {
+  downloader_->OnURLFetchDownloadProgress(source, current, total,
+                                          current_network_bytes);
+}
+
 UrlFetcherDownloader::UrlFetcherDownloader(
     std::unique_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter)
-    : CrxDownloader(std::move(successor)), context_getter_(context_getter) {}
+    : CrxDownloader(std::move(successor)),
+      delegate_(std::make_unique<URLFetcherDelegate>(this)),
+      context_getter_(context_getter) {}
 
 UrlFetcherDownloader::~UrlFetcherDownloader() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -113,8 +135,8 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
   const base::FilePath response =
       download_dir_.AppendASCII(url.ExtractFileName());
 
-  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET, this,
-                                         traffic_annotation);
+  url_fetcher_ = net::URLFetcher::Create(0, url, net::URLFetcher::GET,
+                                         delegate_.get(), traffic_annotation);
   url_fetcher_->SetRequestContext(context_getter_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES |
