@@ -123,6 +123,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   friend class BackgroundProfilingTriggersTest;
   friend class MemlogBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(ProfilingProcessHost, ShouldProfileNewRenderer);
 
   ProfilingProcessHost();
   ~ProfilingProcessHost() override;

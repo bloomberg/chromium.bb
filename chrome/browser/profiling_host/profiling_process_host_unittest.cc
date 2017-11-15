@@ -9,10 +9,30 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace profiling {
-namespace {
+
+TEST(ProfilingProcessHost, ShouldProfileNewRenderer) {
+  content::TestBrowserThreadBundle thread_bundle;
+
+  ProfilingProcessHost pph;
+  TestingProfile testing_profile;
+  content::MockRenderProcessHost rph(&testing_profile);
+
+  pph.SetMode(ProfilingProcessHost::Mode::kNone);
+  EXPECT_FALSE(pph.ShouldProfileNewRenderer(&rph));
+
+  pph.SetMode(ProfilingProcessHost::Mode::kAll);
+  EXPECT_TRUE(pph.ShouldProfileNewRenderer(&rph));
+
+  Profile* incognito_profile = testing_profile.GetOffTheRecordProfile();
+  content::MockRenderProcessHost incognito_rph(incognito_profile);
+  EXPECT_FALSE(pph.ShouldProfileNewRenderer(&incognito_rph));
+}
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
@@ -196,5 +216,4 @@ TEST(ProfilingProcessHost, GetCurrentMode_NoModeWithoutShim) {
 
 #endif
 
-}  // namespace
 }  // namespace profiling
