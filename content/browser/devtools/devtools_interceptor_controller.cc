@@ -74,6 +74,17 @@ bool DevToolsInterceptorController::ShouldCancelNavigation(
   return true;
 }
 
+void DevToolsInterceptorController::GetResponseBody(
+    std::string interception_id,
+    std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&DevToolsURLRequestInterceptor::GetResponseBody,
+                     interceptor_, std::move(interception_id),
+                     std::move(callback)));
+}
+
 void DevToolsInterceptorController::NavigationStarted(
     const std::string& interception_id,
     const GlobalRequestID& request_id) {
