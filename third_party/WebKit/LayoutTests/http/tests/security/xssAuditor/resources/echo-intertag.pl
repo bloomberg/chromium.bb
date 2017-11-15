@@ -13,6 +13,8 @@ if ($cgi->param('disable-protection')) {
     print "X-XSS-Protection: 1; mode=block\n";
 } elsif ($cgi->param('enable-report')) {
     print "X-XSS-Protection: 1; report=/security/contentSecurityPolicy/resources/save-report.php?test=" . $cgi->param('test') . "\n";
+} elsif ($cgi->param('enable-report-cross-origin')) {
+    print "X-XSS-Protection: 1; report=http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=" . $cgi->param('test') . "\n";
 } elsif ($cgi->param('enable-full-block-report')) {
     print "X-XSS-Protection: 1; mode=block; report=/security/contentSecurityPolicy/resources/save-report.php?test=" . $cgi->param('test') . "\n";
 } elsif ($cgi->param('valid-header')) {
