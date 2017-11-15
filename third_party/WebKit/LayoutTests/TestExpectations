@@ -677,6 +677,9 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure
 
 # ====== LayoutNG,LayoutNGPaintFragments ======
 
+### Crash site: ContainerNode.cpp
+crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Crash ]
+
 ### Crash site: DrawingRecorder.cpp
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/dirtyLinesForInline.html [ Crash ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlinesWithWS.html [ Crash Failure ]
@@ -728,7 +731,6 @@ crbug.com/714962 virtual/layout_ng_paint/fast/inline/drawStyledEmptyInlines.html
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-borders-with-bidi-override.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-destroy-dirty-lines-crash.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-focus-ring-under-absolute-enclosing-relative-div.html [ Failure ]
-crbug.com/714962 virtual/layout_ng_paint/fast/inline/inline-with-empty-inline-children.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/left-right-center-inline-alignment-in-ltr-and-rtl-blocks.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/out-of-flow-objects-and-whitespace-after-empty-inline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng_paint/fast/inline/outline-continuations.html [ Failure ]
