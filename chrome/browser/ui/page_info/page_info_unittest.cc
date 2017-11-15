@@ -212,9 +212,6 @@ bool PermissionInfoListContainsPermission(const PermissionInfoList& permissions,
 }  // namespace
 
 TEST_F(PageInfoTest, NonFactoryDefaultPermissionsShown) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kSiteDetails);
-
   page_info()->PresentSitePermissions();
 // By default, the number of permissions shown should be 0, except on Android,
 // where Geolocation needs to be checked for DSE settings.

@@ -784,9 +784,6 @@ extern const char kSimplifiedFullscreenUiDescription[];
 extern const char kSingleClickAutofillName[];
 extern const char kSingleClickAutofillDescription[];
 
-extern const char kSiteDetails[];
-extern const char kSiteDetailsDescription[];
-
 extern const char kSitePerProcessName[];
 extern const char kSitePerProcessDescription[];
 

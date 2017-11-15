@@ -87,19 +87,12 @@ void ClickAndWaitForSettingsPageToOpen(views::View* site_settings_button) {
 
 // Returns the URL of the new tab that's opened on clicking the "Site settings"
 // button from Page Info.
-const GURL OpenSiteSettingsForUrl(Browser* browser,
-                                  const GURL& url,
-                                  bool enable_site_details) {
+const GURL OpenSiteSettingsForUrl(Browser* browser, const GURL& url) {
   ui_test_utils::NavigateToURL(browser, url);
   OpenPageInfoBubble(browser);
   // Get site settings button.
   views::View* site_settings_button = GetView(
       browser, PageInfoBubbleView::VIEW_ID_PAGE_INFO_LINK_SITE_SETTINGS);
-  base::test::ScopedFeatureList feature_list;
-  if (enable_site_details)
-    feature_list.InitAndEnableFeature(features::kSiteDetails);
-  else
-    feature_list.InitAndDisableFeature(features::kSiteDetails);
   ClickAndWaitForSettingsPageToOpen(site_settings_button);
 
   return browser->tab_strip_model()
@@ -239,59 +232,50 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ViewSourceURL) {
             PageInfoBubbleView::GetShownBubbleType());
 }
 
-// Test opening "Content Settings" via Page Info from an ASCII origin works.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, SiteSettingsLink) {
-  GURL url = GURL("https://www.google.com/");
-  EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
-            OpenSiteSettingsForUrl(browser(), url, false));
-}
-
 // Test opening "Site Details" via Page Info from an ASCII origin does the
 // correct URL canonicalization.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       SiteSettingsLinkWithSiteDetailsEnabled) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, SiteSettingsLink) {
   GURL url = GURL("https://www.google.com/");
   std::string expected_origin = "https%3A%2F%2Fwww.google.com";
   EXPECT_EQ(GURL(chrome::kChromeUISiteDetailsPrefixURL + expected_origin),
-            OpenSiteSettingsForUrl(browser(), url, true));
+            OpenSiteSettingsForUrl(browser(), url));
 }
 
 // Test opening "Site Details" via Page Info from a non-ASCII URL converts it to
 // an origin and does punycode conversion as well as URL canonicalization.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       SiteSettingsLinkWithSiteDetailsEnabledAndNonAsciiUrl) {
+                       SiteSettingsLinkWithNonAsciiUrl) {
   GURL url = GURL("http://🥄.ws/other/stuff.htm");
   std::string expected_origin = "http%3A%2F%2Fxn--9q9h.ws";
   EXPECT_EQ(GURL(chrome::kChromeUISiteDetailsPrefixURL + expected_origin),
-            OpenSiteSettingsForUrl(browser(), url, true));
+            OpenSiteSettingsForUrl(browser(), url));
 }
 
 // Test opening "Site Details" via Page Info from an origin with a non-default
 // (scheme, port) pair will specify port # in the origin passed to query params.
-IN_PROC_BROWSER_TEST_F(
-    PageInfoBubbleViewBrowserTest,
-    SiteSettingsLinkWithSiteDetailsEnabledAndNonDefaultPort) {
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       SiteSettingsLinkWithNonDefaultPort) {
   GURL url = GURL("https://www.example.com:8372");
   std::string expected_origin = "https%3A%2F%2Fwww.example.com%3A8372";
   EXPECT_EQ(GURL(chrome::kChromeUISiteDetailsPrefixURL + expected_origin),
-            OpenSiteSettingsForUrl(browser(), url, true));
+            OpenSiteSettingsForUrl(browser(), url));
 }
 
 // Test opening "Site Details" via Page Info from about:blank goes to "Content
 // Settings" (the alternative is a blank origin being sent to "Site Details").
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       SiteSettingsLinkAboutBlankWithSiteDetailsEnabled) {
+                       SiteSettingsLinkWithAboutBlankURL) {
   EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
-            OpenSiteSettingsForUrl(browser(), GURL(url::kAboutBlankURL), true));
+            OpenSiteSettingsForUrl(browser(), GURL(url::kAboutBlankURL)));
 }
 
 // Test opening "Site Details" via Page Info from a file:// URL goes to "Content
 // Settings".
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       SiteSettingsLinkWithSiteDetailsEnabledAndFileUrl) {
+                       SiteSettingsLinkWithFileUrl) {
   GURL url = GURL("file:///Users/homedirname/folder/file.pdf");
   EXPECT_EQ(GURL(chrome::kChromeUIContentSettingsURL),
-            OpenSiteSettingsForUrl(browser(), url, true));
+            OpenSiteSettingsForUrl(browser(), url));
 }
 
 // Test opening page info bubble that matches SB_THREAT_TYPE_PASSWORD_REUSE
