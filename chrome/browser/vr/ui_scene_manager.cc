@@ -570,11 +570,11 @@ void UiSceneManager::CreateVoiceSearchUiGroup(Model* model) {
   auto voice_search_button = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnVoiceSearchButtonClicked,
                  base::Unretained(this)),
-      kPhaseForeground, kCloseButtonWidth, kCloseButtonHeight,
+      kPhaseForeground, kVoiceSearchButtonWidth, kVoiceSearchButtonHeight,
       vector_icons::kMicrophoneIcon);
   voice_search_button->set_name(kVoiceSearchButton);
-  voice_search_button->SetTranslate(kVoiceSearchButtonXOffset, 0.f, 0.f);
-  voice_search_button->set_x_anchoring(RIGHT);
+  voice_search_button->SetTranslate(0.f, -kVoiceSearchButtonYOffset, 0.f);
+  voice_search_button->set_y_anchoring(BOTTOM);
   voice_search_button->AddBinding(base::MakeUnique<Binding<bool>>(
       base::Bind(
           [](Model* m) {

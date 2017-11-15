@@ -74,7 +74,7 @@ void InitializeColorSchemes() {
   normal_scheme.spinner_color = 0xFFF3F3F3;
   normal_scheme.timeout_message_background = 0xFF444444;
   normal_scheme.timeout_message_foreground = normal_scheme.spinner_color;
-  normal_scheme.speech_recognition_circle_background = 0xFF4DB6AC;
+  normal_scheme.speech_recognition_circle_background = 0xFF4285F4;
 
   gColorSchemes[ColorScheme::kModeFullscreen] =
       gColorSchemes[ColorScheme::kModeNormal];

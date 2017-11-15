@@ -115,13 +115,19 @@ static constexpr int kFloorGridlineCount = 40;
 // Tiny distance to offset textures that should appear in the same plane.
 static constexpr float kTextureOffset = 0.01f;
 
+static constexpr float kVoiceSearchButtonWidth = 0.096f * kUrlBarDistance;
+static constexpr float kVoiceSearchButtonHeight = kVoiceSearchButtonWidth;
+static constexpr float kVoiceSearchButtonYOffset =
+    (0.5 * kUrlBarHeightDMM + 0.032) * kUrlBarDistance;
+
 static constexpr float kUnderDevelopmentNoticeFontHeightM =
     0.02f * kUrlBarDistance;
 static constexpr float kUnderDevelopmentNoticeHeightM = 0.1f * kUrlBarDistance;
 static constexpr float kUnderDevelopmentNoticeWidthM = 0.44f * kUrlBarDistance;
 static constexpr float kUnderDevelopmentNoticeVerticalOffsetM =
-    0.5f * kUnderDevelopmentNoticeHeightM + kUrlBarHeight;
-static constexpr float kUnderDevelopmentNoticeRotationRad = -0.19f;
+    kVoiceSearchButtonYOffset + kVoiceSearchButtonHeight +
+    0.04f * kUrlBarDistance;
+static constexpr float kUnderDevelopmentNoticeRotationRad = -0.78f;
 
 static constexpr float kSpinnerWidth = kCloseButtonWidth;
 static constexpr float kSpinnerHeight = kCloseButtonHeight;
@@ -184,8 +190,6 @@ static constexpr float kLaserWidth = 0.01f;
 
 static constexpr float kReticleWidth = 0.025f;
 static constexpr float kReticleHeight = 0.025f;
-
-static constexpr float kVoiceSearchButtonXOffset = 0.25f;
 
 static constexpr float kSuggestionGap = 0.01f;
 static constexpr float kSuggestionLineGap = 0.01f;
