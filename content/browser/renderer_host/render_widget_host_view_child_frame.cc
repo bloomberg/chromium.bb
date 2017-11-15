@@ -77,7 +77,11 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       background_color_(SK_ColorWHITE),
       scroll_bubbling_state_(NO_ACTIVE_GESTURE_SCROLL),
       weak_factory_(this) {
-  if (!IsUsingMus()) {
+  if (IsUsingMus()) {
+    // In Mus the RenderFrameProxy will eventually assign a viz::FrameSinkId
+    // until then set ours invalid, as operations using it will be disregarded.
+    frame_sink_id_ = viz::FrameSinkId();
+  } else {
     GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
 #if DCHECK_IS_ON()
     GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
@@ -175,6 +179,14 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
   }
 #endif
 }
+
+#if defined(USE_AURA)
+void RenderWidgetHostViewChildFrame::SetFrameSinkId(
+    const viz::FrameSinkId& frame_sink_id) {
+  if (IsUsingMus())
+    frame_sink_id_ = frame_sink_id;
+}
+#endif  // defined(USE_AURA)
 
 void RenderWidgetHostViewChildFrame::OnManagerWillDestroy(
     TouchSelectionControllerClientManager* manager) {

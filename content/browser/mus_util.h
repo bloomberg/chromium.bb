@@ -9,7 +9,7 @@
 
 namespace content {
 
-bool IsUsingMus();
+CONTENT_EXPORT bool IsUsingMus();
 
 }  // namespace content
 

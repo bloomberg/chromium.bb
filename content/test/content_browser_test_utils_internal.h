@@ -27,7 +27,6 @@
 namespace content {
 
 class FrameTreeNode;
-class MessageLoopRunner;
 class RenderFrameHost;
 class Shell;
 class SiteInstance;
@@ -181,31 +180,39 @@ class UrlCommitObserver : WebContentsObserver {
 };
 
 // Class to sniff incoming IPCs for FrameHostMsg_UpdateResizeParams messages.
+// This allows the message to continue to the target child so that processing
+// can be verified by tests.
 class UpdateResizeParamsMessageFilter : public content::BrowserMessageFilter {
  public:
   UpdateResizeParamsMessageFilter();
 
-  bool OnMessageReceived(const IPC::Message& message) override;
+  gfx::Rect last_rect() const { return last_rect_; }
 
-  gfx::Rect last_rect() const;
+  void WaitForRect();
+  void ResetRectRunLoop();
 
-  void Wait();
-  void Reset();
+  // Returns the new viz::FrameSinkId immediately if the IPC has been received.
+  // Otherwise this will block the UI thread until it has been received, then it
+  // will return the new viz::FrameSinkId.
+  viz::FrameSinkId GetOrWaitForId();
 
- private:
+ protected:
   ~UpdateResizeParamsMessageFilter() override;
 
+ private:
   void OnUpdateResizeParams(const gfx::Rect& rect,
                             const ScreenInfo& screen_info,
                             uint64_t sequence_number,
-                            const viz::LocalSurfaceId& local_surface_id);
+                            const viz::SurfaceId& surface_id);
+  void OnUpdatedFrameRectOnUI(const gfx::Rect& rect);
+  void OnUpdatedFrameSinkIdOnUI();
 
-  void OnUpdateResizeParamsOnUI(const gfx::Rect& rect,
-                                const ScreenInfo& screen_info,
-                                uint64_t sequence_number,
-                                const viz::LocalSurfaceId& local_surface_id);
+  bool OnMessageReceived(const IPC::Message& message) override;
 
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  viz::FrameSinkId frame_sink_id_;
+  base::RunLoop frame_sink_id_run_loop_;
+
+  std::unique_ptr<base::RunLoop> frame_rect_run_loop_;
   bool frame_rect_received_;
   gfx::Rect last_rect_;
 

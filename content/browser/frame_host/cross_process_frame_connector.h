@@ -9,6 +9,7 @@
 
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/common/content_export.h"
 
@@ -129,7 +130,7 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnUpdateResizeParams(const gfx::Rect& frame_rect,
                             const ScreenInfo& screen_info,
                             uint64_t sequence_number,
-                            const viz::LocalSurfaceId& local_surface_id);
+                            const viz::SurfaceId& surface_id);
   void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection);
   void OnVisibilityChanged(bool visible);
   void OnSetIsInert(bool);

@@ -279,12 +279,12 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
     const gfx::Rect& frame_rect,
     const ScreenInfo& screen_info,
     uint64_t sequence_number,
-    const viz::LocalSurfaceId& local_surface_id) {
+    const viz::SurfaceId& surface_id) {
   // If the |frame_rect| or |screen_info| of the frame has changed, then the
   // viz::LocalSurfaceId must also change.
   if ((frame_rect_.size() != frame_rect.size() ||
        screen_info_ != screen_info) &&
-      local_surface_id_ == local_surface_id) {
+      local_surface_id_ == surface_id.local_surface_id()) {
     bad_message::ReceivedBadMessage(
         frame_proxy_in_parent_renderer_->GetProcess(),
         bad_message::CPFC_RESIZE_PARAMS_CHANGED_LOCAL_SURFACE_ID_UNCHANGED);
@@ -292,11 +292,14 @@ void CrossProcessFrameConnector::OnUpdateResizeParams(
   }
 
   screen_info_ = screen_info;
-  local_surface_id_ = local_surface_id;
+  local_surface_id_ = surface_id.local_surface_id();
   SetRect(frame_rect);
 
   if (!view_)
     return;
+#if defined(USE_AURA)
+  view_->SetFrameSinkId(surface_id.frame_sink_id());
+#endif  // defined(USE_AURA)
 
   RenderWidgetHostImpl* render_widget_host =
       RenderWidgetHostImpl::From(view_->GetRenderWidgetHost());
