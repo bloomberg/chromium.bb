@@ -184,25 +184,9 @@ class ArcNotificationContentView::SlideHelper
     return layer ? layer : owner_->GetWidget()->GetLayer();
   }
 
-  void OnSlideStart() {
-    if (!owner_->surface_)
-      return;
-    DCHECK(owner_->surface_->GetWindow());
-    surface_copy_ = ::wm::RecreateLayers(owner_->surface_->GetWindow());
-    // |surface_copy_| is at (0, 0) in owner_->layer().
-    surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
-    owner_->layer()->Add(surface_copy_->root());
-    owner_->surface_->GetWindow()->layer()->SetOpacity(0.0f);
-  }
+  void OnSlideStart() { owner_->ShowCopiedSurface(); }
 
-  void OnSlideEnd() {
-    if (!owner_->surface_)
-      return;
-    DCHECK(owner_->surface_->GetWindow());
-    owner_->surface_->GetWindow()->layer()->SetOpacity(1.0f);
-    owner_->Layout();
-    surface_copy_.reset();
-  }
+  void OnSlideEnd() { owner_->HideCopiedSurface(); }
 
   // ui::LayerAnimationObserver
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override {
@@ -215,7 +199,6 @@ class ArcNotificationContentView::SlideHelper
 
   ArcNotificationContentView* const owner_;
   bool sliding_ = false;
-  std::unique_ptr<ui::LayerTreeOwner> surface_copy_;
 
   DISALLOW_COPY_AND_ASSIGN(SlideHelper);
 };
@@ -255,6 +238,14 @@ class ArcNotificationContentView::ContentViewDelegate
   bool IsExpanded() const override { return owner_->IsExpanded(); }
 
   void SetExpanded(bool expanded) override { owner_->SetExpanded(expanded); }
+
+  void OnContainerAnimationStarted() override {
+    owner_->OnContainerAnimationStarted();
+  }
+
+  void OnContainerAnimationEnded() override {
+    owner_->OnContainerAnimationEnded();
+  }
 
  private:
   ArcNotificationContentView* const owner_;
@@ -507,6 +498,34 @@ void ArcNotificationContentView::SetExpanded(bool expanded) {
     if (expand_state == mojom::ArcNotificationExpandState::EXPANDED)
       item_->ToggleExpansion();
   }
+}
+
+void ArcNotificationContentView::OnContainerAnimationStarted() {
+  ShowCopiedSurface();
+}
+
+void ArcNotificationContentView::OnContainerAnimationEnded() {
+  HideCopiedSurface();
+}
+
+void ArcNotificationContentView::ShowCopiedSurface() {
+  if (!surface_)
+    return;
+  DCHECK(surface_->GetWindow());
+  surface_copy_ = ::wm::RecreateLayers(surface_->GetWindow());
+  // |surface_copy_| is at (0, 0) in owner_->layer().
+  surface_copy_->root()->SetBounds(gfx::Rect(surface_copy_->root()->size()));
+  layer()->Add(surface_copy_->root());
+  surface_->GetWindow()->layer()->SetOpacity(0.0f);
+}
+
+void ArcNotificationContentView::HideCopiedSurface() {
+  if (!surface_)
+    return;
+  DCHECK(surface_->GetWindow());
+  surface_->GetWindow()->layer()->SetOpacity(1.0f);
+  Layout();
+  surface_copy_.reset();
 }
 
 void ArcNotificationContentView::ViewHierarchyChanged(

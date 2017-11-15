@@ -25,6 +25,8 @@ class ArcNotificationContentViewDelegate {
   GetControlButtonsView() const = 0;
   virtual bool IsExpanded() const = 0;
   virtual void SetExpanded(bool expanded) = 0;
+  virtual void OnContainerAnimationStarted() = 0;
+  virtual void OnContainerAnimationEnded() = 0;
 };
 
 }  // namespace arc

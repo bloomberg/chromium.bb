@@ -83,6 +83,8 @@ class TestContentViewDelegate : public ArcNotificationContentViewDelegate {
   }
   bool IsExpanded() const override { return false; }
   void SetExpanded(bool expanded) override {}
+  void OnContainerAnimationStarted() override {}
+  void OnContainerAnimationEnded() override {}
 };
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(

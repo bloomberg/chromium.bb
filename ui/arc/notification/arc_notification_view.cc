@@ -117,6 +117,16 @@ void ArcNotificationView::SetExpanded(bool expanded) {
     contents_view_delegate_->SetExpanded(expanded);
 }
 
+void ArcNotificationView::OnContainerAnimationStarted() {
+  if (contents_view_delegate_)
+    contents_view_delegate_->OnContainerAnimationStarted();
+}
+
+void ArcNotificationView::OnContainerAnimationEnded() {
+  if (contents_view_delegate_)
+    contents_view_delegate_->OnContainerAnimationEnded();
+}
+
 void ArcNotificationView::OnSlideChanged() {
   if (contents_view_delegate_)
     contents_view_delegate_->OnSlideChanged();

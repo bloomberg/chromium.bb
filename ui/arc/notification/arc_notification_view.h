@@ -47,6 +47,8 @@ class ArcNotificationView : public message_center::MessageView {
       const override;
   bool IsExpanded() const override;
   void SetExpanded(bool expanded) override;
+  void OnContainerAnimationStarted() override;
+  void OnContainerAnimationEnded() override;
 
   // views::SlideOutController::Delegate:
   void OnSlideChanged() override;
