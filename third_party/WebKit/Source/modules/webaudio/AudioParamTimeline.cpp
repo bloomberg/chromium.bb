@@ -565,6 +565,11 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
     // Overwrite same event type and time.
     if (events_[i]->Time() == insert_time &&
         events_[i]->GetType() == event->GetType()) {
+      // Be sure to remove the old event from |new_events_| too, in
+      // case it was just added.
+      if (new_events_.Contains(events_[i].get())) {
+        new_events_.erase(events_[i].get());
+      }
       events_[i] = std::move(event);
       new_events_.insert(events_[i].get());
       return;
@@ -814,6 +819,13 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
 
   int number_of_events = events_.size();
 
+  // MUST clamp event before |events_| is possibly mutated because
+  // |new_events_| has raw pointers to objects in |events_|.  Clamping
+  // will clear out all of these pointers before |events_| is
+  // potentially modified.
+  //
+  // TODO(rtoy): Consider making |events_| be scoped_refptr instead of
+  // unique_ptr.
   if (new_events_.size() > 0) {
     ClampNewEventsToCurrentTime(start_frame / sample_rate);
   }
@@ -1109,6 +1121,9 @@ bool AudioParamTimeline::HandleAllEventsInThePast(double current_time,
               1.5 * AudioUtilities::kRenderQuantumFrames / sample_rate <
           current_time &&
       last_event_type != ParamEvent::kSetTarget) {
+    // |events_| is being mutated.  |new_events_| better be empty because there
+    // are raw pointers there.
+    DCHECK_EQ(new_events_.size(), 0U);
     // The event has finished, so just copy the default value out.
     // Since all events are now also in the past, we can just remove all
     // timeline events too because |defaultValue| has the expected
