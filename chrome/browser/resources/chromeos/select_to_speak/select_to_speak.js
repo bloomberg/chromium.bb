@@ -251,6 +251,9 @@ var SelectToSpeak = function() {
   /** @private {?Object} */
   this.currentNodeWord_ = null;
 
+  /** @private {?AutomationNode} */
+  this.currentBlockParent_ = null;
+
   /**
    * The interval ID from a call to setInterval, which is set whenever
    * speech is in progress.
@@ -539,6 +542,13 @@ SelectToSpeak.prototype = {
         onEvent:
             (function(nodeGroup, isLast, event) {
               if (event.type == 'start' && nodeGroup.nodes.length > 0) {
+                if (nodeGroup.endIndex != nodeGroup.startIndex) {
+                  // The block parent only matters if the block has more
+                  // than one item in it.
+                  this.currentBlockParent_ = nodeGroup.blockParent;
+                } else {
+                  this.currentBlockParent_ = null;
+                }
                 this.currentNodeGroupIndex_ = 0;
                 this.currentNode_ =
                     nodeGroup.nodes[this.currentNodeGroupIndex_];
@@ -732,13 +742,19 @@ SelectToSpeak.prototype = {
               chrome.accessibilityPrivate.setHighlights(
                   [], this.highlightColor_);
             }
-            // TODO: If highlight is shown, set the focus ring to be the
-            // full paragraph box. Highlighting the node is not super useful.
+          }
+          // Show the parent element of the currently verbalized node with the
+          // focus ring. This is a nicer user-facing behavior than jumping from
+          // node to node, as nodes may not correspond well to paragraphs or
+          // blocks.
+          // TODO: Better test: has no siblings in the group, highlight just
+          // the one node. if it has siblings, highlight the parent.
+          if (this.currentBlockParent_ != null &&
+              (node.role == RoleType.STATIC_TEXT ||
+               node.role == RoleType.INLINE_TEXT_BOX)) {
             chrome.accessibilityPrivate.setFocusRing(
-                [node.location], this.color_);
+                [this.currentBlockParent_.location], this.color_);
           } else {
-            // TODO: Probably still want to highlight the full paragraph box
-            // rather than the individual node, if the node is in a paragraph.
             chrome.accessibilityPrivate.setFocusRing(
                 [node.location], this.color_);
           }

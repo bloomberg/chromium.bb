@@ -6,8 +6,8 @@ var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 
 /**
- * Gets the first ancestor of a node which is a paragraph, or display:block,
- * or the root node if none is found.
+ * Gets the first ancestor of a node which is a paragraph or is not inline,
+ * or get the root node if none is found.
  * @param { AutomationNode } node The node to get the parent for.
  * @return { ?AutomationNode } the parent paragraph or null if there is none.
  */
@@ -21,7 +21,7 @@ function getFirstBlockAncestor(node) {
     if (parent.role == RoleType.PARAGRAPH) {
       return parent;
     }
-    if ((parent.display == 'block' || parent.display == 'inline-block') &&
+    if (parent.display !== undefined && parent.display != 'inline' &&
         parent.role != RoleType.STATIC_TEXT) {
       return parent;
     }
@@ -82,7 +82,7 @@ function isWhitespace(name) {
 function buildNodeGroup(nodes, index) {
   let node = nodes[index];
   let next = nodes[index + 1];
-  let result = new NodeGroup(index);
+  let result = new NodeGroup(index, getFirstBlockAncestor(nodes[index]));
   // TODO: Don't skip nodes. Instead, go through every node in
   // this paragraph from the first to the last in the nodes list.
   // This will catch nodes at the edges of the user's selection like
@@ -110,33 +110,41 @@ function buildNodeGroup(nodes, index) {
  * Class representing a node group, which may be a single node or a
  * full paragraph of nodes.
  *
- * @param { number } startIndex The index of the first node within
+ * @param {number} startIndex The index of the first node within
+ * @param {?AutomationNode} blockParent The first block ancestor of
+ *     this group. This may be the paragraph parent, for example.
  * @constructor
  */
-function NodeGroup(startIndex) {
+function NodeGroup(startIndex, blockParent) {
   /**
    * Full text of this paragraph.
-   * @type { string|undefined }
+   * @type {string|undefined}
    */
   this.text = '';
 
   /**
    * List of nodes in this paragraph in order.
-   * @type { Array<NodeGroupItem> }
+   * @type {Array<NodeGroupItem>}
    */
   this.nodes = [];
 
   /**
+   * The block parent of this NodeGroup, if there is one.
+   * @type {?AutomationNode}
+   */
+  this.blockParent = blockParent;
+
+  /**
    * The index of the first node in this paragraph from the list of
    * nodes originally selected by the user.
-   * @type { number }
+   * @type {number}
    */
   this.startIndex = startIndex;
 
   /**
    * The index of the last node in this paragraph from the list of
    * nodes originally selected by the user.
-   * @type { number }
+   * @type {number}
    */
   this.endIndex = -1;
 }
@@ -147,21 +155,21 @@ function NodeGroup(startIndex) {
  * total text, as well as the original AutomationNode it was associated
  * with.
  *
- * @param { AutomationNode } node The AutomationNode associated with this item
- * @param { number } startChar The index into the NodeGroup's text string where
+ * @param {AutomationNode} node The AutomationNode associated with this item
+ * @param {number} startChar The index into the NodeGroup's text string where
  *                             this item begins.
  * @constructor
  */
 function NodeGroupItem(node, startChar) {
   /**
-   * @type { AutomationNode }
+   * @type {AutomationNode}
    */
   this.node = node;
 
   /**
    * The index into the NodeGroup's text string that is the first character
    * of the text of this automation node.
-   * @type { number }
+   * @type {number}
    */
   this.startChar = startChar;
 }
