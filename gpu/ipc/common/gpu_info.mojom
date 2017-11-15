@@ -54,6 +54,7 @@ enum VideoCodecProfile {
   DOLBYVISION_PROFILE5,
   DOLBYVISION_PROFILE7,
   THEORAPROFILE_ANY,
+  AV1PROFILE_PROFILE0,
 };
 
 // gpu::VideoDecodeAcceleratorSupportedProfile

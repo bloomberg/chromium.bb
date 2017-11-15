@@ -10,6 +10,7 @@ include_rules = [
   "+ppapi/features",
   "+skia/ext",
   "+third_party/ffmpeg",
+  "+third_party/libaom",
   "+third_party/libvpx",
   "+third_party/libyuv",
   "+third_party/opus",

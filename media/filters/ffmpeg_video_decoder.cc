@@ -61,6 +61,7 @@ static int GetThreadCount(const VideoDecoderConfig& config) {
       case kCodecMPEG2:
       case kCodecHEVC:
       case kCodecVP9:
+      case kCodecAV1:
       case kCodecDolbyVision:
         // We do not compile ffmpeg with support for any of these codecs.
         break;

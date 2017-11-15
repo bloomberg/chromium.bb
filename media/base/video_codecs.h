@@ -30,13 +30,13 @@ enum VideoCodec {
   kCodecVP9,
   kCodecHEVC,
   kCodecDolbyVision,
+  kCodecAV1,
   // DO NOT ADD RANDOM VIDEO CODECS!
   //
   // The only acceptable time to add a new codec is if there is production code
   // that uses said codec in the same CL.
 
-  kVideoCodecMax =
-      kCodecDolbyVision,  // Must equal the last "real" codec above.
+  kVideoCodecMax = kCodecAV1,  // Must equal the last "real" codec above.
 };
 
 // Video codec profiles. Keep in sync with mojo::VideoCodecProfile (see
@@ -88,7 +88,12 @@ enum VideoCodecProfile {
   THEORAPROFILE_MIN = 23,
   THEORAPROFILE_ANY = THEORAPROFILE_MIN,
   THEORAPROFILE_MAX = THEORAPROFILE_ANY,
-  VIDEO_CODEC_PROFILE_MAX = THEORAPROFILE_ANY,
+  // TODO(dalecurtis): AV1 profiles are not finalized, this needs updating
+  // before enabling for release. http://crbug.com/784993
+  AV1PROFILE_MIN = 24,
+  AV1PROFILE_PROFILE0 = AV1PROFILE_MIN,
+  AV1PROFILE_MAX = AV1PROFILE_PROFILE0,
+  VIDEO_CODEC_PROFILE_MAX = AV1PROFILE_PROFILE0,
 };
 
 struct CodecProfileLevel {

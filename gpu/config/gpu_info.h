@@ -67,7 +67,8 @@ enum VideoCodecProfile {
   DOLBYVISION_PROFILE5,
   DOLBYVISION_PROFILE7,
   THEORAPROFILE_ANY,
-  VIDEO_CODEC_PROFILE_MAX = THEORAPROFILE_ANY,
+  AV1PROFILE_PROFILE0,
+  VIDEO_CODEC_PROFILE_MAX = AV1PROFILE_PROFILE0,
 };
 
 // Specification of a decoding profile supported by a hardware decoder.
