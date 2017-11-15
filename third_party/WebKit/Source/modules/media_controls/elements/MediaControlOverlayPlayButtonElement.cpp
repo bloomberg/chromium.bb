@@ -77,8 +77,10 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
 
     MediaElement().TogglePlayState();
     UpdateDisplayType();
+    MaybeRecordInteracted();
     event->SetDefaultHandled();
   }
+
   // TODO(mlamouri): should call MediaControlInputElement::DefaultEventHandler.
 }
 
