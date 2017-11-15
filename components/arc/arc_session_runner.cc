@@ -105,6 +105,13 @@ bool IsRestartNeeded(base::Optional<ArcInstanceMode> target_mode,
 // operation.
 bool IsRequestAllowed(const base::Optional<ArcInstanceMode>& current_mode,
                       ArcInstanceMode request_mode) {
+  if (request_mode == ArcInstanceMode::MINI_INSTANCE &&
+      ShouldArcOnlyStartAfterLogin()) {
+    // Skip starting ARC for now. We'll have another chance to start the full
+    // instance after the user logs in.
+    return false;
+  }
+
   if (!current_mode.has_value()) {
     // This is a request to start a new ARC instance (either mini instance
     // or full instance).
@@ -329,12 +336,6 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
 }
 
 void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
-  if (ShouldArcOnlyStartAfterLogin()) {
-    // Skip starting ARC for now. We'll have another chance to start the full
-    // instance after the user logs in.
-    return;
-  }
-
   // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
   // instance may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start a mini instance.
