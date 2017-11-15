@@ -42,7 +42,7 @@ BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
 // AtkAction interface.
 //
 
-static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
     AtkAction* atk_action) {
   if (!IS_BROWSER_ACCESSIBILITY(atk_action))
     return nullptr;
