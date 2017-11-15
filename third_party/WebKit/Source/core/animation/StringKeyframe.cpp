@@ -99,21 +99,23 @@ scoped_refptr<Keyframe> StringKeyframe::Clone() const {
 }
 
 scoped_refptr<Keyframe::PropertySpecificKeyframe>
-StringKeyframe::CreatePropertySpecificKeyframe(
-    const PropertyHandle& property) const {
-  if (property.IsCSSProperty())
+StringKeyframe::CreatePropertySpecificKeyframe(const PropertyHandle& property,
+                                               double offset) const {
+  if (property.IsCSSProperty()) {
     return CSSPropertySpecificKeyframe::Create(
-        Offset(), &Easing(), &CssPropertyValue(property), Composite());
+        offset, &Easing(), &CssPropertyValue(property), Composite());
+  }
 
-  if (property.IsPresentationAttribute())
+  if (property.IsPresentationAttribute()) {
     return CSSPropertySpecificKeyframe::Create(
-        Offset(), &Easing(),
+        offset, &Easing(),
         &PresentationAttributeValue(property.PresentationAttribute()),
         Composite());
+  }
 
   DCHECK(property.IsSVGAttribute());
   return SVGPropertySpecificKeyframe::Create(
-      Offset(), &Easing(), SvgPropertyValue(property.SvgAttribute()),
+      offset, &Easing(), SvgPropertyValue(property.SvgAttribute()),
       Composite());
 }
 

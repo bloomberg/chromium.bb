@@ -543,8 +543,8 @@ namespace blink {
 
 class KeyframeEffectModelTest : public ::testing::Test {
  public:
-  static KeyframeVector NormalizedKeyframes(const KeyframeVector& keyframes) {
-    return KeyframeEffectModelBase::NormalizedKeyframes(keyframes);
+  static Vector<double> GetComputedOffsets(const KeyframeVector& keyframes) {
+    return KeyframeEffectModelBase::GetComputedOffsets(keyframes);
   }
 };
 
@@ -558,13 +558,13 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed1) {
   keyframes[4] = StringKeyframe::Create();
   keyframes[4]->SetOffset(0.625);
 
-  const KeyframeVector result = NormalizedKeyframes(keyframes);
+  const Vector<double> result = GetComputedOffsets(keyframes);
   EXPECT_EQ(5U, result.size());
-  EXPECT_DOUBLE_EQ(0.125, result[0]->Offset());
-  EXPECT_DOUBLE_EQ(0.25, result[1]->Offset());
-  EXPECT_DOUBLE_EQ(0.375, result[2]->Offset());
-  EXPECT_DOUBLE_EQ(0.5, result[3]->Offset());
-  EXPECT_DOUBLE_EQ(0.625, result[4]->Offset());
+  EXPECT_DOUBLE_EQ(0.125, result[0]);
+  EXPECT_DOUBLE_EQ(0.25, result[1]);
+  EXPECT_DOUBLE_EQ(0.375, result[2]);
+  EXPECT_DOUBLE_EQ(0.5, result[3]);
+  EXPECT_DOUBLE_EQ(0.625, result[4]);
 }
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed2) {
@@ -577,14 +577,14 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed2) {
   keyframes[4] = StringKeyframe::Create();
   keyframes[5] = StringKeyframe::Create();
 
-  const KeyframeVector result = NormalizedKeyframes(keyframes);
+  const Vector<double> result = GetComputedOffsets(keyframes);
   EXPECT_EQ(6U, result.size());
-  EXPECT_DOUBLE_EQ(0.0, result[0]->Offset());
-  EXPECT_DOUBLE_EQ(0.25, result[1]->Offset());
-  EXPECT_DOUBLE_EQ(0.5, result[2]->Offset());
-  EXPECT_DOUBLE_EQ(0.75, result[3]->Offset());
-  EXPECT_DOUBLE_EQ(0.875, result[4]->Offset());
-  EXPECT_DOUBLE_EQ(1.0, result[5]->Offset());
+  EXPECT_DOUBLE_EQ(0.0, result[0]);
+  EXPECT_DOUBLE_EQ(0.25, result[1]);
+  EXPECT_DOUBLE_EQ(0.5, result[2]);
+  EXPECT_DOUBLE_EQ(0.75, result[3]);
+  EXPECT_DOUBLE_EQ(0.875, result[4]);
+  EXPECT_DOUBLE_EQ(1.0, result[5]);
 }
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed3) {
@@ -605,20 +605,20 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed3) {
   keyframes[10] = StringKeyframe::Create();
   keyframes[11] = StringKeyframe::Create();
 
-  const KeyframeVector result = NormalizedKeyframes(keyframes);
+  const Vector<double> result = GetComputedOffsets(keyframes);
   EXPECT_EQ(12U, result.size());
-  EXPECT_DOUBLE_EQ(0.0, result[0]->Offset());
-  EXPECT_DOUBLE_EQ(0.125, result[1]->Offset());
-  EXPECT_DOUBLE_EQ(0.25, result[2]->Offset());
-  EXPECT_DOUBLE_EQ(0.375, result[3]->Offset());
-  EXPECT_DOUBLE_EQ(0.5, result[4]->Offset());
-  EXPECT_DOUBLE_EQ(0.6, result[5]->Offset());
-  EXPECT_DOUBLE_EQ(0.7, result[6]->Offset());
-  EXPECT_DOUBLE_EQ(0.8, result[7]->Offset());
-  EXPECT_DOUBLE_EQ(0.85, result[8]->Offset());
-  EXPECT_DOUBLE_EQ(0.9, result[9]->Offset());
-  EXPECT_DOUBLE_EQ(0.95, result[10]->Offset());
-  EXPECT_DOUBLE_EQ(1.0, result[11]->Offset());
+  EXPECT_DOUBLE_EQ(0.0, result[0]);
+  EXPECT_DOUBLE_EQ(0.125, result[1]);
+  EXPECT_DOUBLE_EQ(0.25, result[2]);
+  EXPECT_DOUBLE_EQ(0.375, result[3]);
+  EXPECT_DOUBLE_EQ(0.5, result[4]);
+  EXPECT_DOUBLE_EQ(0.6, result[5]);
+  EXPECT_DOUBLE_EQ(0.7, result[6]);
+  EXPECT_DOUBLE_EQ(0.8, result[7]);
+  EXPECT_DOUBLE_EQ(0.85, result[8]);
+  EXPECT_DOUBLE_EQ(0.9, result[9]);
+  EXPECT_DOUBLE_EQ(0.95, result[10]);
+  EXPECT_DOUBLE_EQ(1.0, result[11]);
 }
 
 }  // namespace blink
