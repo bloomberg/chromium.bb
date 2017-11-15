@@ -5,7 +5,9 @@
 import base64
 import json
 import logging
+from urllib2 import HTTPError
 
+from webkitpy.common.net.network_transaction import NetworkTimeout
 from webkitpy.w3c.chromium_commit import ChromiumCommit
 from webkitpy.w3c.chromium_finder import absolute_chromium_dir
 from webkitpy.w3c.common import CHROMIUM_WPT_DIR, is_file_exportable
@@ -49,7 +51,12 @@ class GerritAPI(object):
         path = ('/changes/?q=project:\"chromium/src\"+status:open'
                 '&o=CURRENT_FILES&o=CURRENT_REVISION&o=COMMIT_FOOTERS'
                 '&o=DETAILED_ACCOUNTS&o=DETAILED_LABELS&n={}').format(limit)
-        open_cls_data = self.get(path)
+        # The underlying host.web.get_binary() automatically retries until it
+        # times out, at which point NetworkTimeout is raised.
+        try:
+            open_cls_data = self.get(path)
+        except NetworkTimeout:
+            raise GerritError('Timed out querying exportable open CLs.')
         open_cls = [GerritCL(data, self) for data in open_cls_data]
 
         return [cl for cl in open_cls if cl.is_exportable()]
@@ -100,10 +107,14 @@ class GerritCL(object):
         return self.current_revision['description']
 
     def post_comment(self, message):
+        """Posts a comment to the CL."""
         path = '/a/changes/{change_id}/revisions/current/review'.format(
             change_id=self.change_id,
         )
-        return self.api.post(path, {'message': message})
+        try:
+            return self.api.post(path, {'message': message})
+        except HTTPError as e:
+            raise GerritError('Failed to post a comment to issue {} (code {}).'.format(self.change_id, e.code))
 
     def is_exportable(self):
         # TODO(robertma): Consolidate with the related part in chromium_exportable_commits.py.
@@ -162,3 +173,8 @@ class GerritCL(object):
         git.run(['fetch', url, ref])
         sha = git.run(['rev-parse', 'FETCH_HEAD']).strip()
         return ChromiumCommit(host, sha=sha)
+
+
+class GerritError(Exception):
+    """Raised when Gerrit returns a non-OK response or times out."""
+    pass
