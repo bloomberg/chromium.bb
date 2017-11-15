@@ -436,6 +436,19 @@ TEST_F(APISignatureTest, ParseIgnoringSchema) {
     EXPECT_EQ(R"([{"not":"a string"}])", ValueToString(*parsed));
     EXPECT_TRUE(callback.IsEmpty());
   }
+
+  {
+    auto signature = OneObject();
+    std::vector<v8::Local<v8::Value>> v8_args =
+        string_to_v8_vector("[{prop1: 'foo', other: 'bar', nullProp: null}]");
+    v8::Local<v8::Function> callback;
+    std::unique_ptr<base::ListValue> parsed;
+    EXPECT_TRUE(signature->ConvertArgumentsIgnoringSchema(context, v8_args,
+                                                          &parsed, &callback));
+    ASSERT_TRUE(parsed);
+    EXPECT_EQ(R"([{"other":"bar","prop1":"foo"}])", ValueToString(*parsed));
+    EXPECT_TRUE(callback.IsEmpty());
+  }
 }
 
 }  // namespace extensions

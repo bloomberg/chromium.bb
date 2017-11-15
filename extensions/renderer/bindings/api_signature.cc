@@ -332,9 +332,14 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
   }
 
   auto json = std::make_unique<base::ListValue>();
+  json->Reserve(size);
+
   std::unique_ptr<content::V8ValueConverter> converter =
       content::V8ValueConverter::Create();
   converter->SetFunctionAllowed(true);
+  converter->SetConvertNegativeZeroToInt(true);
+  converter->SetStripNullFromObjects(true);
+
   for (size_t i = 0; i < size; ++i) {
     std::unique_ptr<base::Value> converted =
         converter->FromV8Value(arguments[i], context);

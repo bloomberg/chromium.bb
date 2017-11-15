@@ -660,6 +660,12 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
     std::unique_ptr<content::V8ValueConverter> converter =
         content::V8ValueConverter::Create();
     converter->SetStripNullFromObjects(!preserve_null_);
+    converter->SetConvertNegativeZeroToInt(true);
+    // Note: don't allow functions. Functions are handled either by the specific
+    // type (ArgumentType::FUNCTION) or by allowing arbitrary optional
+    // arguments, which allows unserializable values.
+    // TODO(devlin): Is this correct? Or do we rely on an 'any' type of function
+    // being serialized in an odd-ball API?
     std::unique_ptr<base::Value> converted =
         converter->FromV8Value(value, context);
     if (!converted) {
