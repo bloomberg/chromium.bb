@@ -901,6 +901,8 @@ jumbo_component("platform") {
     "graphics/FrameData.h",
     "graphics/GeneratedImage.cpp",
     "graphics/GeneratedImage.h",
+    "graphics/GpuMemoryBufferImageCopy.cpp",
+    "graphics/GpuMemoryBufferImageCopy.h",
     "graphics/Gradient.cpp",
     "graphics/Gradient.h",
     "graphics/GradientGeneratedImage.cpp",

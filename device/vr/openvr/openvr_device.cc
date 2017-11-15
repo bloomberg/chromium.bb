@@ -26,8 +26,12 @@ mojom::VRFieldOfViewPtr OpenVRFovToWebVRFov(vr::IVRSystem* vr_system,
   auto out = mojom::VRFieldOfView::New();
   float up_tan, down_tan, left_tan, right_tan;
   vr_system->GetProjectionRaw(eye, &left_tan, &right_tan, &up_tan, &down_tan);
-  out->upDegrees = -gfx::RadToDeg(atanf(up_tan));
-  out->downDegrees = gfx::RadToDeg(atanf(down_tan));
+
+  // TODO(billorr): Plumb the expected projection matrix over mojo instead of
+  // using angles. Up and down are intentionally swapped to account for
+  // differences in expected projection matrix format for GVR and OpenVR.
+  out->upDegrees = gfx::RadToDeg(atanf(down_tan));
+  out->downDegrees = -gfx::RadToDeg(atanf(up_tan));
   out->leftDegrees = -gfx::RadToDeg(atanf(left_tan));
   out->rightDegrees = gfx::RadToDeg(atanf(right_tan));
   return out;
@@ -169,6 +173,7 @@ void OpenVRDevice::RequestPresent(
   render_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::RequestPresent, render_loop_->GetWeakPtr(),
+                 base::Passed(submit_client.PassInterface()),
                  base::Passed(&request), base::Passed(&my_callback)));
 }
 

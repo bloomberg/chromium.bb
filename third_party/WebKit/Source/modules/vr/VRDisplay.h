@@ -33,6 +33,8 @@ class VREyeParameters;
 class VRFrameData;
 class VRStageParameters;
 
+class PLATFORM_EXPORT GpuMemoryBufferImageCopy;
+
 class WebGLRenderingContextBase;
 
 enum VREye { kVREyeNone, kVREyeLeft, kVREyeRight };
@@ -178,6 +180,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   device::mojom::blink::VRPosePtr frame_pose_;
   device::mojom::blink::VRPosePtr pending_pose_;
 
+  std::unique_ptr<GpuMemoryBufferImageCopy> frame_copier_;
+
   // This frame ID is vr-specific and is used to track when frames arrive at the
   // VR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.
@@ -214,6 +218,8 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   device::mojom::blink::VRMagicWindowProviderPtr magic_window_provider_;
   device::mojom::blink::VRDisplayHostPtr display_;
+
+  bool present_image_needs_copy_ = false;
 
   mojo::Binding<device::mojom::blink::VRSubmitFrameClient>
       submit_frame_client_binding_;
