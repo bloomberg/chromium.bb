@@ -1124,7 +1124,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
           BrowserContext::GetDownloadManager(browser_context));
       loader_->InterceptNavigation(
           download_manager->GetNavigationInterceptionCB(
-              response_, std::move(handle_), ssl_status_));
+              response_, std::move(handle_), ssl_status_,
+              frame_tree_node_->frame_tree_node_id()));
       OnRequestFailed(false, net::ERR_ABORTED, base::nullopt, false);
       return;
     }
