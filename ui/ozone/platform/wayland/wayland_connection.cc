@@ -123,6 +123,13 @@ void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
   pointer_->cursor()->UpdateBitmap(bitmaps, location, serial_);
 }
 
+int WaylandConnection::GetKeyboardModifiers() {
+  int modifiers = 0;
+  if (keyboard_)
+    modifiers = keyboard_->modifiers();
+  return modifiers;
+}
+
 void WaylandConnection::OnDispatcherListChanged() {
   StartProcessingEvents();
 }
