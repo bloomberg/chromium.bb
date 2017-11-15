@@ -92,6 +92,24 @@ class ObserverListBase
     explicit Iter(ContainerType* list);
     ~Iter();
 
+    // Copy constructor.
+    Iter(const Iter& other)
+        : list_(other.list_),
+          index_(other.index_),
+          max_index_(other.max_index_) {
+      if (list_)
+        ++list_->live_iterator_count_;
+    }
+
+    // Unified assignment operator.
+    Iter& operator=(Iter other) {
+      using std::swap;
+      swap(list_, other.list_);
+      swap(index_, other.index_);
+      swap(max_index_, other.max_index_);
+      return *this;
+    }
+
     // A workaround for C2244. MSVC requires fully qualified type name for
     // return type on a function definition to match a function declaration.
     using ThisType =
@@ -144,9 +162,9 @@ class ObserverListBase
   }
   const_iterator end() const { return const_iterator(); }
 
-  ObserverListBase() : notify_depth_(0), type_(NOTIFY_ALL) {}
+  ObserverListBase() : live_iterator_count_(0), type_(NOTIFY_ALL) {}
   explicit ObserverListBase(NotificationType type)
-      : notify_depth_(0), type_(type) {}
+      : live_iterator_count_(0), type_(type) {}
 
   // Add an observer to the list.  An observer should not be added to
   // the same list more than once.
@@ -171,8 +189,14 @@ class ObserverListBase
   typedef std::vector<ObserverType*> ListType;
 
   ListType observers_;
-  int notify_depth_;
-  NotificationType type_;
+
+  // Number of active iterators referencing this ObserverListBase.
+  //
+  // This counter is not synchronized although it is modified by const
+  // iterators.
+  int live_iterator_count_;
+
+  const NotificationType type_;
 
   template <class ContainerType>
   friend class Iter;
@@ -194,13 +218,17 @@ ObserverListBase<ObserverType>::Iter<ContainerType>::Iter(ContainerType* list)
                                            : list->observers_.size()) {
   EnsureValidIndex();
   DCHECK(list_);
-  ++list_->notify_depth_;
+  ++list_->live_iterator_count_;
 }
 
 template <class ObserverType>
 template <class ContainerType>
 ObserverListBase<ObserverType>::Iter<ContainerType>::~Iter() {
-  if (list_ && --list_->notify_depth_ == 0)
+  if (!list_)
+    return;
+
+  DCHECK_GT(list_->live_iterator_count_, 0);
+  if (--list_->live_iterator_count_ == 0)
     list_->Compact();
 }
 
@@ -285,7 +313,8 @@ void ObserverListBase<ObserverType>::RemoveObserver(ObserverType* obs) {
   typename ListType::iterator it =
     std::find(observers_.begin(), observers_.end(), obs);
   if (it != observers_.end()) {
-    if (notify_depth_) {
+    DCHECK_GE(live_iterator_count_, 0);
+    if (live_iterator_count_) {
       *it = nullptr;
     } else {
       observers_.erase(it);
@@ -305,7 +334,8 @@ bool ObserverListBase<ObserverType>::HasObserver(
 
 template <class ObserverType>
 void ObserverListBase<ObserverType>::Clear() {
-  if (notify_depth_) {
+  DCHECK_GE(live_iterator_count_, 0);
+  if (live_iterator_count_) {
     for (typename ListType::iterator it = observers_.begin();
       it != observers_.end(); ++it) {
       *it = nullptr;
