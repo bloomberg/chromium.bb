@@ -165,4 +165,11 @@ void RemoteFrameClientImpl::SetIsInert(bool inert) {
   web_frame_->Client()->SetIsInert(inert);
 }
 
+void RemoteFrameClientImpl::UpdateRenderThrottlingStatus(
+    bool is_throttled,
+    bool subtree_throttled) {
+  web_frame_->Client()->UpdateRenderThrottlingStatus(is_throttled,
+                                                     subtree_throttled);
+}
+
 }  // namespace blink
