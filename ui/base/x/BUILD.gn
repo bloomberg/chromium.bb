@@ -13,6 +13,8 @@ component("x") {
     "ui_base_x_export.h",
     "x11_menu_list.cc",
     "x11_menu_list.h",
+    "x11_pointer_grab.cc",
+    "x11_pointer_grab.h",
     "x11_util.cc",
     "x11_util.h",
     "x11_util_internal.h",

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/base/x/x11_pointer_grab.h"
+
 #include "base/logging.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
-#include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 
-#include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 
-namespace views {
+namespace ui {
 
 namespace {
 
@@ -43,9 +44,9 @@ int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
         ui::DeviceDataManagerX11::GetInstance()->master_pointers();
     for (int master_pointer : master_pointers) {
       evmask.deviceid = master_pointer;
-      result = XIGrabDevice(
-          gfx::GetXDisplay(), master_pointer, window, CurrentTime, cursor,
-          GrabModeAsync, GrabModeAsync, owner_events, &evmask);
+      result = XIGrabDevice(gfx::GetXDisplay(), master_pointer, window,
+                            CurrentTime, cursor, GrabModeAsync, GrabModeAsync,
+                            owner_events, &evmask);
       // Assume that the grab will succeed on either all or none of the master
       // pointers.
       if (result != GrabSuccess) {
@@ -86,4 +87,4 @@ void UngrabPointer() {
   XUngrabPointer(gfx::GetXDisplay(), CurrentTime);
 }
 
-}  // namespace views
+}  // namespace ui
