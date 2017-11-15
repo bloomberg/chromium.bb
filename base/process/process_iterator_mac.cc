@@ -57,7 +57,8 @@ ProcessIterator::ProcessIterator(const ProcessFilter* filter)
         }
       } else {
         // Got the list, just make sure we're sized exactly right
-        kinfo_procs_.resize(len / sizeof(struct kinfo_proc));
+        size_t num_of_kinfo_proc = len / sizeof(struct kinfo_proc);
+        kinfo_procs_.resize(num_of_kinfo_proc);
         done = true;
       }
     }

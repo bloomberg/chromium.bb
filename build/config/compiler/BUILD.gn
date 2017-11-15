@@ -1427,18 +1427,6 @@ config("no_chromium_code") {
   configs = [ ":default_warnings" ]
 }
 
-# noshadowing -----------------------------------------------------------------
-#
-# Allows turning -Wshadow on.
-
-config("noshadowing") {
-  # This flag has to be disabled for nacl because the nacl compiler is too
-  # strict about shadowing.
-  if (is_clang && !is_nacl) {
-    cflags = [ "-Wshadow" ]
-  }
-}
-
 # rtti ------------------------------------------------------------------------
 #
 # Allows turning Run-Time Type Identification on or off.
