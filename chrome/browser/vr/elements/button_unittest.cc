@@ -26,17 +26,22 @@ TEST(Button, HoverTest) {
       button->foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation background_op =
       button->background()->GetTargetTransform().at(UiElement::kTranslateIndex);
+  cc::TransformOperation hit_plane_op =
+      button->hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
   button->OnHoverEnter(gfx::PointF(0.5f, 0.5f));
   cc::TransformOperation foreground_op_hover =
       button->foreground()->GetTargetTransform().at(UiElement::kTranslateIndex);
   cc::TransformOperation background_op_hover =
       button->background()->GetTargetTransform().at(UiElement::kTranslateIndex);
+  cc::TransformOperation hit_plane_op_hover =
+      button->hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
   EXPECT_TRUE(foreground_op_hover.translate.z - foreground_op.translate.z >
               0.f);
   EXPECT_TRUE(background_op_hover.translate.z - background_op.translate.z >
               0.f);
+  EXPECT_TRUE(hit_plane_op_hover.scale.x - hit_plane_op.scale.x > 0.f);
 }
 
 }  // namespace vr

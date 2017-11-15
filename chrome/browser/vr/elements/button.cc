@@ -19,7 +19,7 @@ namespace vr {
 namespace {
 
 constexpr float kIconScaleFactor = 0.5;
-constexpr float kHitPlaneScaleFactor = 1.1;
+constexpr float kHitPlaneScaleFactorHovered = 1.2;
 constexpr float kBackgroundZOffset = -kTextureOffset;
 constexpr float kForegroundZOffset = kTextureOffset;
 constexpr float kBackgroundZOffsetHover = kTextureOffset;
@@ -62,9 +62,8 @@ Button::Button(base::Callback<void()> click_handler,
   auto hit_plane = base::MakeUnique<InvisibleHitTarget>();
   hit_plane->set_name(kNone);
   hit_plane->set_draw_phase(draw_phase);
-  hit_plane->SetSize(width * kHitPlaneScaleFactor,
-                     height * kHitPlaneScaleFactor);
-  hit_plane->set_corner_radius(width * kHitPlaneScaleFactor / 2);
+  hit_plane->SetSize(width, height);
+  hit_plane->set_corner_radius(width / 2);
   hit_plane_ = hit_plane.get();
   foreground_->AddChild(std::move(hit_plane));
 
@@ -125,9 +124,12 @@ void Button::OnStateUpdated() {
   if (hovered_) {
     background_->SetTranslate(0.0, 0.0, kBackgroundZOffsetHover);
     foreground_->SetTranslate(0.0, 0.0, kForegroundZOffsetHover);
+    hit_plane_->SetScale(kHitPlaneScaleFactorHovered,
+                         kHitPlaneScaleFactorHovered, 1.0f);
   } else {
     background_->SetTranslate(0.0, 0.0, kBackgroundZOffset);
     foreground_->SetTranslate(0.0, 0.0, kForegroundZOffset);
+    hit_plane_->SetScale(1.0f, 1.0f, 1.0f);
   }
 
   if (pressed_) {
