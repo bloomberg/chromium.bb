@@ -1474,7 +1474,7 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_UpdateResizeParams,
                     gfx::Rect /* frame_rect */,
                     content::ScreenInfo /* screen_info */,
                     uint64_t /* sequence_number */,
-                    viz::LocalSurfaceId /* local_surface_id */)
+                    viz::SurfaceId /* surface_id */)
 
 // Sent by a parent frame to update its child's viewport intersection rect for
 // use by the IntersectionObserver API.

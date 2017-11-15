@@ -63,6 +63,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void SetFrameConnectorDelegate(FrameConnectorDelegate* frame_connector);
 
+#if defined(USE_AURA)
+  // When the viz::FrameSinkId for this child frame is created and registered
+  // remotely, it can be set here.
+  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
+#endif  // defined(USE_AURA)
+
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
   // ProcessCompositorFrame, which is the appropriate time to request pixel

@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_root->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
-  filter->Wait();
+  filter->WaitForRect();
 
   // The precise amount of scroll for the first view position update is not
   // deterministic, so this simply verifies that the OOPIF moved from its
@@ -1179,10 +1179,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
   // Save the original offset as a point of reference.
-  filter->Wait();
+  filter->WaitForRect();
   gfx::Rect update_rect = filter->last_rect();
   int initial_y = update_rect.y();
-  filter->Reset();
+  filter->ResetRectRunLoop();
 
   // Scroll the parent frame downward.
   blink::WebMouseWheelEvent scroll_event(
@@ -1211,10 +1211,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   }
 
   // Ensure that the view position is propagated to the child properly.
-  filter->Wait();
+  filter->WaitForRect();
   update_rect = filter->last_rect();
   EXPECT_LT(update_rect.y(), initial_y);
-  filter->Reset();
+  filter->ResetRectRunLoop();
   ack_observer.Reset();
 
   // Now scroll the nested frame upward, which should bubble to the parent.
@@ -1225,7 +1225,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
 
-  filter->Wait();
+  filter->WaitForRect();
   // This loop isn't great, but it accounts for the possibility of multiple
   // incremental updates happening as a result of the scroll animation.
   // A failure condition of this test is that the loop might not terminate
@@ -1253,7 +1253,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
     rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
   }
 
-  filter->Reset();
+  filter->ResetRectRunLoop();
   // Once we've sent a wheel to the nested iframe that we expect to turn into
   // a bubbling scroll, we need to delay to make sure the GestureScrollBegin
   // from this new scroll doesn't hit the RenderWidgetHostImpl before the
@@ -1283,8 +1283,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   }
 
   // Ensure ensuing offset change is received, and then reset the filter.
-  filter->Wait();
-  filter->Reset();
+  filter->WaitForRect();
+  filter->ResetRectRunLoop();
 
   // Scroll down the nested iframe via gesture. This requires 3 separate input
   // events.
@@ -1321,7 +1321,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   gesture_event.y = 1;
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
-  filter->Wait();
+  filter->WaitForRect();
   update_rect = filter->last_rect();
   // As above, if this loop does not terminate then it indicates an issue
   // with scroll bubbling.
@@ -1335,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
 
   // Test that when the child frame absorbs all of the scroll delta, it does
   // not propagate to the parent (see https://crbug.com/621624).
-  filter->Reset();
+  filter->ResetRectRunLoop();
   scroll_event.delta_y = -5.0f;
   scroll_event.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
   scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
