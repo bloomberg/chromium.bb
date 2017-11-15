@@ -41,8 +41,6 @@
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
-namespace chrome {
-
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
@@ -854,5 +852,3 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, MultipleCdmTypes) {
 }
 
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-}  // namespace chrome
