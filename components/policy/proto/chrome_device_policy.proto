@@ -931,6 +931,8 @@ message ForcedReenrollmentProto {
 // in session.
 message MinimumRequiredVersionProto {
   // Value is chrome_version string, e.g. 61.0.3163.120
+  // The client will use prefix matching to compare its version against the
+  // value of this field.
   optional string chrome_version = 1;
 }
 
