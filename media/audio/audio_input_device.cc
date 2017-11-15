@@ -104,6 +104,14 @@ AudioInputDevice::AudioInputDevice(
 void AudioInputDevice::Initialize(const AudioParameters& params,
                                   CaptureCallback* callback,
                                   int session_id) {
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputDevice::InitializeOnIOThread, this,
+                                params, callback, session_id));
+}
+
+void AudioInputDevice::InitializeOnIOThread(const AudioParameters& params,
+                                            CaptureCallback* callback,
+                                            int session_id) {
   DCHECK(params.IsValid());
   DCHECK(!callback_);
   DCHECK_EQ(0, session_id_);
@@ -113,7 +121,6 @@ void AudioInputDevice::Initialize(const AudioParameters& params,
 }
 
 void AudioInputDevice::Start() {
-  DCHECK(callback_) << "Initialize hasn't been called";
   DVLOG(1) << "Start()";
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&AudioInputDevice::StartUpOnIOThread, this));
@@ -275,6 +282,7 @@ AudioInputDevice::~AudioInputDevice() {
 
 void AudioInputDevice::StartUpOnIOThread() {
   DCHECK(task_runner()->BelongsToCurrentThread());
+  DCHECK(callback_) << "Initialize hasn't been called";
 
   // Make sure we don't call Start() more than once.
   if (state_ != IDLE)

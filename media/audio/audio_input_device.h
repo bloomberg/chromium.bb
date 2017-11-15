@@ -124,6 +124,9 @@ class MEDIA_EXPORT AudioInputDevice : public AudioCapturerSource,
   // The following methods are tasks posted on the IO thread that needs to
   // be executed on that thread. They interact with AudioInputMessageFilter and
   // sends IPC messages on that thread.
+  void InitializeOnIOThread(const AudioParameters& params,
+                            CaptureCallback* callback,
+                            int session_id);
   void StartUpOnIOThread();
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);

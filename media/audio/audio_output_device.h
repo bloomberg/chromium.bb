@@ -145,7 +145,9 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
   // be executed on that thread.  They use AudioOutputIPC to send IPC messages
   // upon state changes.
   void RequestDeviceAuthorizationOnIOThread();
-  void CreateStreamOnIOThread(const AudioParameters& params);
+  void InitializeOnIOThread(const AudioParameters& params,
+                            RenderCallback* callback);
+  void CreateStreamOnIOThread();
   void PlayOnIOThread();
   void PauseOnIOThread();
   void ShutDownOnIOThread();
