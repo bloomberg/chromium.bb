@@ -173,21 +173,28 @@ class _BackgroundPlaybackPage(_MediaPage):
 
 
 class _MSEPage(_MediaPage):
-  # TODO(crouleau): Figure out a way to make MSE pages provide consistent
-  # data. Currently the data haa a lot of outliers for time_to_play and other
-  # startup metrics. To do this, we must either:
-  # 1. Tell Telemetry to repeat these pages (this requires Telemetry's
-  # providing this option in the API.)
-  # 2. Edit the page to reload and run multiple times (you can clear the cache
-  # with tab.CleanCache). This requires crbug/775264.
 
-  def __init__(self, url, page_set, tags, extra_browser_args=None):
+  def __init__(self, url, page_set, tags, extra_browser_args=None,
+               number_of_runs=10):
+    assert number_of_runs >= 1
+    self._number_of_runs = number_of_runs
     tags.append('mse')
     super(_MSEPage, self).__init__(
         url, page_set, tags, extra_browser_args)
 
   def RunPageInteractions(self, action_runner):
     # The page automatically runs the test at load time.
+    self._CheckTestResult(action_runner)
+    # Now run it a few more times to get more reliable data.
+    # Note that each run takes ~.5s, so running a bunch of times to get reliable
+    # data is reasonable.
+    for _ in range(self._number_of_runs - 1):
+      url = action_runner.tab.url
+      action_runner.tab.ClearCache(force=True)
+      action_runner.tab.Navigate(url)
+      self._CheckTestResult(action_runner)
+
+  def _CheckTestResult(self, action_runner):
     action_runner.WaitForJavaScriptCondition('window.__testDone == true')
     test_failed = action_runner.EvaluateJavaScript('window.__testFailed')
     if test_failed:
