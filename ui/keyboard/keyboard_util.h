@@ -157,11 +157,11 @@ KEYBOARD_EXPORT bool InsertText(const base::string16& text);
 // virtually pressed. The event is dispatched to the active TextInputClient
 // associated with |root_window|. The type may be "keydown" or "keyup".
 KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
-                                   int key_value,
-                                   int key_code,
-                                   std::string key_name,
-                                   int modifiers,
-                                   aura::WindowTreeHost* host);
+                                  int key_value,
+                                  int key_code,
+                                  std::string key_name,
+                                  int modifiers,
+                                  aura::WindowTreeHost* host);
 
 // Marks that the keyboard load has started. This is used to measure the time it
 // takes to fully load the keyboard. This should be called before
