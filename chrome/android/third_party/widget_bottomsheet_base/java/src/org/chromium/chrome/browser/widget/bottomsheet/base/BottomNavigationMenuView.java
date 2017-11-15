@@ -30,6 +30,7 @@ import android.widget.LinearLayout;
 /**
  * Forked from android.support.design.internal.BottomNavigationMenuView.
  */
+@SuppressWarnings("RestrictTo")
 public class BottomNavigationMenuView extends LinearLayout implements MenuView {
     private final OnClickListener mOnClickListener;
     private static final Pools.Pool<BottomNavigationItemView> sItemPool =

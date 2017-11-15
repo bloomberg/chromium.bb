@@ -76,7 +76,6 @@ public class ObserverListTest {
         }
     }
 
-    @SuppressWarnings("ElementsCountedInLoop")
     private static <T> int getSizeOfIterable(Iterable<T> iterable) {
         if (iterable instanceof Collection<?>) return ((Collection<?>) iterable).size();
         int num = 0;

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 class ChromeVersionConstants {
     static final String PRODUCT_NAME = "@PRODUCT_FULLNAME@";
     static final String PRODUCT_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
+    @SuppressWarnings("ComplexBooleanConstant")
     static final boolean IS_OFFICIAL_BUILD = @OFFICIAL_BUILD@ == 1;
 
     static final int PRODUCT_MAJOR_VERSION = @MAJOR@;
