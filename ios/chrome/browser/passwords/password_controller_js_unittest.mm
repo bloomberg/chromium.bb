@@ -145,7 +145,7 @@ TEST_F(PasswordControllerJsTest,
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
            "{\"element\":\"password\",\"type\":\"password\"},"
-           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "{\"element\":\"gChrome~field~2\",\"type\":\"submit\"}],"
            "\"usernameElement\":\"name\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]}]",
@@ -179,7 +179,7 @@ TEST_F(PasswordControllerJsTest,
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
            "{\"element\":\"password\",\"type\":\"password\"},"
-           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "{\"element\":\"gChrome~field~2\",\"type\":\"submit\"}],"
            "\"usernameElement\":\"name\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]},"
@@ -188,7 +188,7 @@ TEST_F(PasswordControllerJsTest,
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name2\",\"type\":\"text\"},"
            "{\"element\":\"password2\",\"type\":\"password\"},"
-           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "{\"element\":\"gChrome~field~2\",\"type\":\"submit\"}],"
            "\"usernameElement\":\"name2\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password2\",\"value\":\"\"}]}]",
@@ -217,7 +217,7 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
            "{\"element\":\"password\",\"type\":\"password\"},"
-           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "{\"element\":\"gChrome~field~2\",\"type\":\"submit\"}],"
            "\"usernameElement\":\"name\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]}",
@@ -248,7 +248,7 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
            "\"origin\":\"%s\","
            "\"fields\":[{\"element\":\"name\",\"type\":\"text\"},"
            "{\"element\":\"password\",\"type\":\"password\"},"
-           "{\"element\":\"\",\"type\":\"submit\"}],"
+           "{\"element\":\"gChrome~field~2\",\"type\":\"submit\"}],"
            "\"usernameElement\":\"name\","
            "\"usernameValue\":\"\","
            "\"passwords\":[{\"element\":\"password\",\"value\":\"\"}]}]",

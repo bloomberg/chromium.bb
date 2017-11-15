@@ -122,6 +122,21 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     };
 
   /**
+   * Returns the element from |inputs| which has the field identifier equal to
+   * |identifier| and null if there is no such element.
+   * @param {Array.<Input>}
+   * @return {Input}
+   */
+   var findInputByFieldIdentifier_ = function(inputs, identifier) {
+     for (var i = 0; i < inputs.length; ++i) {
+       if (identifier == __gCrWeb.common.getFieldIdentifier(inputs[i])) {
+         return inputs[i];
+       }
+     }
+     return null;
+   }
+
+  /**
    * Returns the password form with the given |name| as a JSON string.
    * @param {string} name The name of the form to extract.
    * @return {string} The password form.
@@ -134,81 +149,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     if (!formData)
       return 'noPasswordsFound';
     return __gCrWeb.stringify(formData);
-  };
-
-  /**
-   * Returns an array of forms on the page that match the structure described by
-   * |formData|. The form matching logic follows that in
-   * chrome/renderer/autofill/password_autofill_manager.h.
-   * @param {Object} formData Form data.
-   * @param {Object} doc A document containing formData.
-   * @param {string=} opt_normalizedAction The action URL to compare to.
-   * @return {Array.<Element>} Array of forms found.
-   */
-  __gCrWeb.findMatchingPasswordForms = function(formData, doc,
-                                                opt_normalizedAction) {
-    var forms = doc.forms;
-    var fields = formData['fields'];
-    var matching = [];
-    for (var i = 0; i < forms.length; i++) {
-      var form = forms[i];
-      var normalizedFormAction = opt_normalizedAction ||
-          getCanonicalActionForForm_(form);
-      if (formData.action != normalizedFormAction) {
-        continue;
-      }
-
-      // We need to find all input fields matching |formData| in this form,
-      // otherwise it is the wrong form.
-      var inputs = form.getElementsByTagName('input');
-      var foundAllFields = true;
-      for (var fieldIndex = 0; fieldIndex < fields.length; fieldIndex++) {
-        var name = fields[fieldIndex]['name'];
-        var value = fields[fieldIndex]['value'];
-        // The first field in |formData| is always the username field,
-        // the second is always the password field.
-        var findingUsername = fieldIndex == 0;
-        var findingPassword = fieldIndex == 1;
-        var foundField = false;
-        for (var k = 0; k < inputs.length; k++) {
-          var input = inputs[k];
-
-          // Ensure that the field is the right type.
-          if (findingPassword && input.type != 'password') {
-            continue;
-          }
-          if (!findingPassword && (input.type == 'password' ||
-                                   !__gCrWeb.common.isTextField(input))) {
-            continue;
-          }
-
-          // Skip read-only fields without a value since they cannot be filled.
-          if (input.readOnly && input.value == '') {
-            continue;
-          }
-
-          // If more than one match is made, then we have an ambiguity (due to
-          // misuse of 'name' attribute) and the form is considered a mismatch.
-          if (input.name == name) {
-            if (foundField) {
-              foundField = false;
-              break;
-            }
-            foundField = true;
-          }
-        }
-
-        if (!foundField) {
-          foundAllFields = false;
-          break;
-        }
-      }
-
-      if (foundAllFields) {
-        matching.push(form);
-      }
-    }
-    return matching;
   };
 
   /**
@@ -281,40 +221,51 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   var fillPasswordFormWithData_ = function(
       formData, username, password, win, opt_normalizedOrigin) {
     var doc = win.document;
+    var forms = doc.forms;
     var filled = false;
 
-    __gCrWeb.findMatchingPasswordForms(formData, doc, opt_normalizedOrigin).
-        forEach(function(form) {
+    for (var i = 0; i < forms.length; i++) {
+      var form = forms[i];
+      var normalizedFormAction = opt_normalizedOrigin ||
+          getCanonicalActionForForm_(form);
+      if (formData.action != normalizedFormAction)
+        continue;
+
+      var inputs = form.getElementsByTagName('input');
       var usernameInput =
-          __gCrWeb.getElementByNameWithParent(form, formData.fields[0].name);
+          findInputByFieldIdentifier_(inputs, formData.fields[0].name);
+      if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput)
+          || usernameInput.disabled)
+        continue;
       var passwordInput =
-          __gCrWeb.getElementByNameWithParent(
-              form, formData.fields[1].name, true);
-      if (!usernameInput.disabled && !passwordInput.disabled) {
-        // If username was provided on a read-only field and it matches the
-        // requested username, fill the form.
-        if (usernameInput.readOnly && usernameInput.value) {
-          if (usernameInput.value == username) {
-            passwordInput.value = password;
-            __gCrWeb.setAutofilled(passwordInput, true);
-            filled = true;
-          }
-        } else {
-          // Setting input fields via .value assignment does not trigger all
-          // the events that a web site can observe. This has the effect of
-          // certain web sites rejecting an autofilled sign in form as not
-          // signed in because the user didn't actually "typed" into the field.
-          // Adding the .focus() works around this problems.
-          usernameInput.focus();
-          usernameInput.value = username;
-          passwordInput.focus();
+          findInputByFieldIdentifier_(inputs, formData.fields[1].name);
+      if (passwordInput == null || passwordInput.type != "password" ||
+          passwordInput.readOnly || passwordInput.disabled)
+        continue;
+
+      // If username was provided on a read-only field and it matches the
+      // requested username, fill the form.
+      if (usernameInput.readOnly) {
+        if (usernameInput.value == username) {
           passwordInput.value = password;
           __gCrWeb.setAutofilled(passwordInput, true);
-          __gCrWeb.setAutofilled(usernameInput, true);
           filled = true;
         }
+      } else {
+        // Setting input fields via .value assignment does not trigger all
+        // the events that a web site can observe. This has the effect of
+        // certain web sites rejecting an autofilled sign in form as not
+        // signed in because the user didn't actually "typed" into the field.
+        // Adding the .focus() works around this problems.
+        usernameInput.focus();
+        usernameInput.value = username;
+        passwordInput.focus();
+        passwordInput.value = password;
+        __gCrWeb.setAutofilled(passwordInput, true);
+        __gCrWeb.setAutofilled(usernameInput, true);
+        filled = true;
       }
-    });
+    }
 
     // Recursively invoke for all iframes.
     var frames = getSameOriginFrames_(win);
@@ -405,7 +356,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
       var input = inputs[j];
 
       fields.push({
-        'element': input.name,
+        'element': __gCrWeb.common.getFieldIdentifier(input),
         'type': input.type
       });
 
@@ -414,7 +365,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
           firstPasswordIndex = j;
         }
         passwords.push({
-          'element': input.name,
+          'element': __gCrWeb.common.getFieldIdentifier(input),
           'value': input.value
         });
       }
@@ -428,7 +379,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
     for (var j = firstPasswordIndex - 1; j >= 0; j--) {
       var input = inputs[j];
       if (!input.disabled && __gCrWeb.common.isTextField(input)) {
-        usernameElement = input.name;
+        usernameElement = __gCrWeb.common.getFieldIdentifier(input);
         usernameValue = input.value;
         break;
       }
