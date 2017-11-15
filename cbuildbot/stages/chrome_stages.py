@@ -304,7 +304,7 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       extra_args = ['--cwd', self.chrome_src, '--sdk-path',
                     self.archive_path]
       # Do not automatically run 'gn gen', that will be done in _BuildChrome.
-      extra_args.extend(['--nogngen'])
+      extra_args.extend(['--nogn-gen'])
       if self._ShouldEnableGoma():
         # TODO(crbug.com/751010): Revisit to enable DepsCache for
         # non-chrome-pfq bots, too.
