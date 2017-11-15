@@ -19,9 +19,10 @@ using content::WebContents;
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
                                    LocationBarView* location_bar)
-    : IconLabelBubbleView(font_list, true),
+    : IconLabelBubbleView(font_list),
       location_bar_(location_bar),
       animation_(this) {
+  label()->SetElideBehavior(gfx::ELIDE_MIDDLE);
   set_id(VIEW_ID_LOCATION_ICON);
   SetInkDropMode(InkDropMode::ON);
 

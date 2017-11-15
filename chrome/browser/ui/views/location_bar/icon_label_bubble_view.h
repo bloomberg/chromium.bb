@@ -65,7 +65,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
     DISALLOW_COPY_AND_ASSIGN(SeparatorView);
   };
 
-  IconLabelBubbleView(const gfx::FontList& font_list, bool elide_in_middle);
+  explicit IconLabelBubbleView(const gfx::FontList& font_list);
   ~IconLabelBubbleView() override;
 
   // views::InkDropObserver:

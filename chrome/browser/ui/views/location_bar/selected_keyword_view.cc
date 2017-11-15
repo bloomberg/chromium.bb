@@ -20,7 +20,7 @@
 
 SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          Profile* profile)
-    : IconLabelBubbleView(font_list, false), profile_(profile) {
+    : IconLabelBubbleView(font_list), profile_(profile) {
   full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);

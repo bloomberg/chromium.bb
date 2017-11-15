@@ -41,9 +41,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
   };
 
   explicit TestIconLabelBubbleView(const gfx::FontList& font_list)
-      : IconLabelBubbleView(font_list, false),
-        value_(0),
-        is_bubble_showing_(false) {
+      : IconLabelBubbleView(font_list), value_(0), is_bubble_showing_(false) {
     GetImageView()->SetImageSize(gfx::Size(kImageSize, kImageSize));
     SetLabel(base::ASCIIToUTF16("Label"));
     separator_view()->set_disable_animation_for_test(true);
