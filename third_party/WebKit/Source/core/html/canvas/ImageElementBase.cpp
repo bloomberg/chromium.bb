@@ -45,27 +45,26 @@ scoped_refptr<Image> ImageElementBase::GetSourceImageForCanvas(
     AccelerationHint,
     SnapshotReason,
     const FloatSize& default_object_size) {
-  if (!GetImageLoader().ImageComplete() || !CachedImage()) {
+  ImageResourceContent* image_content = CachedImage();
+  if (!GetImageLoader().ImageComplete() || !image_content) {
     *status = kIncompleteSourceImageStatus;
     return nullptr;
   }
 
-  if (CachedImage()->ErrorOccurred()) {
+  if (image_content->ErrorOccurred()) {
     *status = kUndecodableSourceImageStatus;
     return nullptr;
   }
 
-  scoped_refptr<Image> source_image;
-  if (CachedImage()->GetImage()->IsSVGImage()) {
+  scoped_refptr<Image> source_image = image_content->GetImage();
+  if (source_image->IsSVGImage()) {
     UseCounter::Count(GetElement().GetDocument(), WebFeature::kSVGInCanvas2D);
-    SVGImage* svg_image = ToSVGImage(CachedImage()->GetImage());
+    SVGImage* svg_image = ToSVGImage(source_image.get());
     IntSize image_size =
         RoundedIntSize(svg_image->ConcreteObjectSize(default_object_size));
     source_image = SVGImageForContainer::Create(
         svg_image, image_size, 1,
         GetElement().GetDocument().CompleteURL(GetElement().ImageSourceURL()));
-  } else {
-    source_image = CachedImage()->GetImage();
   }
 
   *status = kNormalSourceImageStatus;
@@ -80,33 +79,31 @@ bool ImageElementBase::WouldTaintOrigin(
 
 FloatSize ImageElementBase::ElementSize(
     const FloatSize& default_object_size) const {
-  ImageResourceContent* image = CachedImage();
-  if (!image)
+  ImageResourceContent* image_content = CachedImage();
+  if (!image_content)
     return FloatSize();
 
-  if (image->GetImage() && image->GetImage()->IsSVGImage()) {
-    return ToSVGImage(CachedImage()->GetImage())
-        ->ConcreteObjectSize(default_object_size);
-  }
+  Image* image = image_content->GetImage();
+  if (image->IsSVGImage())
+    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
 
   return FloatSize(
-      image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
+      image_content->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
           GetElement().GetLayoutObject())));
 }
 
 FloatSize ImageElementBase::DefaultDestinationSize(
     const FloatSize& default_object_size) const {
-  ImageResourceContent* image = CachedImage();
-  if (!image)
+  ImageResourceContent* image_content = CachedImage();
+  if (!image_content)
     return FloatSize();
 
-  if (image->GetImage() && image->GetImage()->IsSVGImage()) {
-    return ToSVGImage(CachedImage()->GetImage())
-        ->ConcreteObjectSize(default_object_size);
-  }
+  Image* image = image_content->GetImage();
+  if (image->IsSVGImage())
+    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
 
   return FloatSize(
-      image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
+      image_content->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
           GetElement().GetLayoutObject())));
 }
 
@@ -141,16 +138,17 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
     const ImageBitmapOptions& options) {
   DCHECK(event_target.ToLocalDOMWindow());
 
-  if (!CachedImage()) {
+  ImageResourceContent* image_content = CachedImage();
+  if (!image_content) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
             kInvalidStateError,
             "No image can be retrieved from the provided element."));
   }
-  if (CachedImage()->GetImage()->IsSVGImage()) {
-    SVGImage* image = ToSVGImage(CachedImage()->GetImage());
-    if (!image->HasIntrinsicDimensions() &&
+  Image* image = image_content->GetImage();
+  if (image->IsSVGImage()) {
+    if (!ToSVGImage(image)->HasIntrinsicDimensions() &&
         (!crop_rect &&
          (!options.hasResizeWidth() || !options.hasResizeHeight()))) {
       return ScriptPromise::RejectWithDOMException(

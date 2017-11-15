@@ -81,10 +81,11 @@ LayoutSize StyleFetchedImage::ImageSize(
     const Document&,
     float multiplier,
     const LayoutSize& default_object_size) const {
-  if (image_->GetImage() && image_->GetImage()->IsSVGImage())
-    return ImageSizeForSVGImage(ToSVGImage(image_->GetImage()), multiplier,
+  Image* image = image_->GetImage();
+  if (image->IsSVGImage()) {
+    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
                                 default_object_size);
-
+  }
   // Image orientation should only be respected for content images,
   // not decorative images such as StyleImage (backgrounds,
   // border-image, etc.)
@@ -111,13 +112,12 @@ void StyleFetchedImage::RemoveClient(ImageResourceObserver* observer) {
 }
 
 void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
-  if (document_ && image_ && image_->GetImage() &&
-      image_->GetImage()->IsSVGImage())
-    ToSVGImage(image_->GetImage())->UpdateUseCounters(*document_);
+  if (image_ && image_->HasImage()) {
+    Image& image = *image_->GetImage();
+    Image::RecordCheckerableImageUMA(image, Image::ImageType::kCss);
 
-  if (image_ && image_->GetImage()) {
-    Image::RecordCheckerableImageUMA(*image_->GetImage(),
-                                     Image::ImageType::kCss);
+    if (document_ && image.IsSVGImage())
+      ToSVGImage(image).UpdateUseCounters(*document_);
   }
 
   // Oilpan: do not prolong the Document's lifetime.
@@ -130,12 +130,11 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
     const ComputedStyle& style,
     const IntSize& container_size,
     const LayoutSize* logical_size) const {
-  if (!image_->GetImage()->IsSVGImage())
-    return image_->GetImage();
-
-  return SVGImageForContainer::Create(ToSVGImage(image_->GetImage()),
-                                      container_size, style.EffectiveZoom(),
-                                      url_);
+  Image* image = image_->GetImage();
+  if (!image->IsSVGImage())
+    return image;
+  return SVGImageForContainer::Create(ToSVGImage(image), container_size,
+                                      style.EffectiveZoom(), url_);
 }
 
 bool StyleFetchedImage::KnownToBeOpaque(const Document&,

@@ -103,13 +103,12 @@ FloatSize SVGImagePainter::ComputeImageViewportSize() const {
   // Avoid returning the size of the broken image.
   if (cached_image->ErrorOccurred())
     return FloatSize();
-
-  if (cached_image->GetImage()->IsSVGImage()) {
-    return ToSVGImage(cached_image->GetImage())
-        ->ConcreteObjectSize(layout_svg_image_.ObjectBoundingBox().Size());
+  Image* image = cached_image->GetImage();
+  if (image->IsSVGImage()) {
+    return ToSVGImage(image)->ConcreteObjectSize(
+        layout_svg_image_.ObjectBoundingBox().Size());
   }
-
-  return FloatSize(cached_image->GetImage()->Size());
+  return FloatSize(image->Size());
 }
 
 }  // namespace blink

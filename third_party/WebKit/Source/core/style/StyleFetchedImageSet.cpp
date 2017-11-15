@@ -84,10 +84,11 @@ LayoutSize StyleFetchedImageSet::ImageSize(
     const Document&,
     float multiplier,
     const LayoutSize& default_object_size) const {
-  if (best_fit_image_->GetImage() && best_fit_image_->GetImage()->IsSVGImage())
-    return ImageSizeForSVGImage(ToSVGImage(best_fit_image_->GetImage()),
-                                multiplier, default_object_size);
-
+  Image* image = best_fit_image_->GetImage();
+  if (image->IsSVGImage()) {
+    return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
+                                default_object_size);
+  }
   // Image orientation should only be respected for content images,
   // not decorative ones such as StyleImage (backgrounds,
   // border-image, etc.)
@@ -122,12 +123,11 @@ scoped_refptr<Image> StyleFetchedImageSet::GetImage(
     const ComputedStyle& style,
     const IntSize& container_size,
     const LayoutSize* logical_size) const {
-  if (!best_fit_image_->GetImage()->IsSVGImage())
-    return best_fit_image_->GetImage();
-
-  return SVGImageForContainer::Create(ToSVGImage(best_fit_image_->GetImage()),
-                                      container_size, style.EffectiveZoom(),
-                                      url_);
+  Image* image = best_fit_image_->GetImage();
+  if (!image->IsSVGImage())
+    return image;
+  return SVGImageForContainer::Create(ToSVGImage(image), container_size,
+                                      style.EffectiveZoom(), url_);
 }
 
 bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,

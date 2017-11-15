@@ -58,9 +58,10 @@ void SVGFEImageElement::Trace(blink::Visitor* visitor) {
 }
 
 bool SVGFEImageElement::CurrentFrameHasSingleSecurityOrigin() const {
-  if (cached_image_ && cached_image_->GetImage())
-    return cached_image_->GetImage()->CurrentFrameHasSingleSecurityOrigin();
-
+  if (cached_image_) {
+    if (Image* image = cached_image_->GetImage())
+      return image->CurrentFrameHasSingleSecurityOrigin();
+  }
   return true;
 }
 
