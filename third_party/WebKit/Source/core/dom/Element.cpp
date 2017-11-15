@@ -1850,7 +1850,8 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
   AddCallbackSelectors();
 
-  if (HasRareData() && !GetLayoutObject()) {
+  if (HasRareData() && !GetLayoutObject() &&
+      !GetElementRareData()->GetComputedStyle()) {
     if (ElementAnimations* element_animations =
             GetElementRareData()->GetElementAnimations()) {
       element_animations->CssAnimations().Cancel();
