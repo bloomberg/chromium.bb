@@ -59,6 +59,10 @@ class VIEWS_EXPORT AnimatedIconView : public views::ImageView,
   // The current state, or when transitioning the goal state.
   State state_ = START;
 
+  // The compositor that |this| is observing, if and when there is an active
+  // animation. Otherwise it is null.
+  ui::Compositor* compositor_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(AnimatedIconView);
 };
 
