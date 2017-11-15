@@ -56,6 +56,7 @@
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/events/AnimationEvent.h"
@@ -245,18 +246,13 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
   if (!element_animations || element_animations->IsAnimationStyleChange())
     return;
 
-  if (!animating_element->GetLayoutObject() ||
-      !animating_element->GetLayoutObject()->Style())
-    return;
-
-  const ComputedStyle& old_style =
-      *animating_element->GetLayoutObject()->Style();
-  if (!old_style.ShouldCompositeForCurrentAnimations())
+  const ComputedStyle* old_style = animating_element->GetComputedStyle();
+  if (!old_style || !old_style->ShouldCompositeForCurrentAnimations())
     return;
 
   bool transform_zoom_changed =
-      old_style.HasCurrentTransformAnimation() &&
-      old_style.EffectiveZoom() != style.EffectiveZoom();
+      old_style->HasCurrentTransformAnimation() &&
+      old_style->EffectiveZoom() != style.EffectiveZoom();
   for (auto& entry : element_animations->Animations()) {
     Animation& animation = *entry.key;
     const KeyframeEffectModelBase* keyframe_effect =
@@ -273,7 +269,7 @@ void CSSAnimations::CalculateCompositorAnimationUpdate(
       update_compositor_keyframes = true;
     } else if (keyframe_effect->HasSyntheticKeyframes() &&
                keyframe_effect->SnapshotNeutralCompositorKeyframes(
-                   element, old_style, style, parent_style)) {
+                   element, *old_style, style, parent_style)) {
       update_compositor_keyframes = true;
     }
 
@@ -894,12 +890,12 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
 
   HashSet<PropertyHandle> listed_properties;
   bool any_transition_had_transition_all = false;
-  const LayoutObject* layout_object = animating_element->GetLayoutObject();
+  const ComputedStyle* old_style = animating_element->GetComputedStyle();
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
-      layout_object && layout_object->Style() && transition_data) {
+      old_style && transition_data) {
     TransitionUpdateState state = {
-        update,  animating_element,  *layout_object->Style(), style,
-        nullptr, active_transitions, listed_properties,       *transition_data};
+        update,  animating_element,  *old_style,        style,
+        nullptr, active_transitions, listed_properties, *transition_data};
 
     for (size_t transition_index = 0;
          transition_index < transition_data->PropertyList().size();
