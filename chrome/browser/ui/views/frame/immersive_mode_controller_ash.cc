@@ -105,19 +105,12 @@ class TopContainerMirrorView : public views::View {
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : ImmersiveModeController(Type::ASH),
-      controller_(new ash::ImmersiveFullscreenController),
-      browser_view_(nullptr),
-      native_window_(nullptr),
-      observers_enabled_(false),
-      visible_fraction_(1) {}
+      controller_(new ash::ImmersiveFullscreenController) {}
 
-ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
-  EnableWindowObservers(false);
-}
+ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() = default;
 
 void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
   browser_view_ = browser_view;
-  native_window_ = browser_view_->GetNativeWindow();
   controller_->Init(this, browser_view_->frame(),
       browser_view_->top_container());
 }
@@ -207,9 +200,10 @@ void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {
     return;
   observers_enabled_ = enable;
 
+  aura::Window* native_window = browser_view_->GetNativeWindow();
   aura::Window* target_window = ash_util::IsRunningInMash()
-                                    ? native_window_->GetRootWindow()
-                                    : native_window_;
+                                    ? native_window->GetRootWindow()
+                                    : native_window;
 
   content::Source<FullscreenController> source(browser_view_->browser()
                                                    ->exclusive_access_manager()
@@ -251,7 +245,7 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
   init_params.accept_events = false;
   init_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  init_params.parent = native_window_->GetRootWindow();
+  init_params.parent = browser_view_->GetNativeWindow()->GetRootWindow();
   // The widget needs to be translucent so the frame decorations drawn by the
   // window manager are visible.
   init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
@@ -349,7 +343,7 @@ void ImmersiveModeControllerAsh::Observe(
   // Auto hide the shelf in immersive browser fullscreen.
   bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
       IsWindowFullscreenForTabOrPending();
-  ash::wm::GetWindowState(native_window_)
+  ash::wm::GetWindowState(browser_view_->GetNativeWindow())
       ->set_hide_shelf_when_fullscreen(in_tab_fullscreen);
   ash::Shell::Get()->UpdateShelfVisibility();
 }
@@ -372,4 +366,10 @@ void ImmersiveModeControllerAsh::OnWindowPropertyChanged(aura::Window* window,
       browser_view_->FullscreenStateChanged();
     }
   }
+}
+
+void ImmersiveModeControllerAsh::OnWindowDestroying(aura::Window* window) {
+  // Clean up observers here rather than in the destructor because the owning
+  // BrowserView has already destroyed the aura::Window.
+  EnableWindowObservers(false);
 }
