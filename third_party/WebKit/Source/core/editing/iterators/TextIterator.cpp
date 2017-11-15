@@ -341,23 +341,25 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
 
       // Handle the current node according to its type.
       if (iteration_progress_ < kHandledNode) {
-        if (layout_object->IsText() &&
-            node_->getNodeType() ==
-                Node::kTextNode) {  // FIXME: What about kCdataSectionNode?
-          if (!fully_clipped_stack_.Top() || IgnoresStyleVisibility())
-            HandleTextNode();
-        } else if (layout_object &&
-                   (layout_object->IsImage() ||
-                    layout_object->IsLayoutEmbeddedContent() ||
-                    (node_ && node_->IsHTMLElement() &&
-                     (IsHTMLFormControlElement(ToHTMLElement(*node_)) ||
-                      IsHTMLLegendElement(ToHTMLElement(*node_)) ||
-                      IsHTMLImageElement(ToHTMLElement(*node_)) ||
-                      IsHTMLMeterElement(ToHTMLElement(*node_)) ||
-                      IsHTMLProgressElement(ToHTMLElement(*node_)))))) {
-          HandleReplacedElement();
-        } else {
-          HandleNonTextNode();
+        if (!SkipsUnselectableContent() || layout_object->IsSelectable()) {
+          if (layout_object->IsText() &&
+              node_->getNodeType() ==
+                  Node::kTextNode) {  // FIXME: What about kCdataSectionNode?
+            if (!fully_clipped_stack_.Top() || IgnoresStyleVisibility())
+              HandleTextNode();
+          } else if (layout_object &&
+                     (layout_object->IsImage() ||
+                      layout_object->IsLayoutEmbeddedContent() ||
+                      (node_ && node_->IsHTMLElement() &&
+                       (IsHTMLFormControlElement(ToHTMLElement(*node_)) ||
+                        IsHTMLLegendElement(ToHTMLElement(*node_)) ||
+                        IsHTMLImageElement(ToHTMLElement(*node_)) ||
+                        IsHTMLMeterElement(ToHTMLElement(*node_)) ||
+                        IsHTMLProgressElement(ToHTMLElement(*node_)))))) {
+            HandleReplacedElement();
+          } else {
+            HandleNonTextNode();
+          }
         }
         iteration_progress_ = kHandledNode;
         if (text_state_.PositionNode())

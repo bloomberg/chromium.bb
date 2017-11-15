@@ -61,6 +61,10 @@ class CORE_EXPORT TextIteratorBehavior final {
     return values_.bits.does_not_emit_space_beyond_range_end;
   }
 
+  bool SkipsUnselectableContent() const {
+    return values_.bits.skips_unselectable_content;
+  }
+
   static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
   static TextIteratorBehavior IgnoresStyleVisibilityBehavior();
   static TextIteratorBehavior DefaultRangeLengthBehavior();
@@ -88,6 +92,7 @@ class CORE_EXPORT TextIteratorBehavior final {
       bool ignores_style_visibility : 1;
       bool stops_on_form_controls : 1;
       bool does_not_emit_space_beyond_range_end : 1;
+      bool skips_unselectable_content : 1;
     } bits;
   } values_;
 };
@@ -117,6 +122,7 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder& SetIgnoresStyleVisibility(bool);
   Builder& SetStopsOnFormControls(bool);
   Builder& SetDoesNotEmitSpaceBeyondRangeEnd(bool);
+  Builder& SetSkipsUnselectableContent(bool);
 
  private:
   TextIteratorBehavior behavior_;
