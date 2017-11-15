@@ -94,28 +94,16 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     const base::Optional<viz::SurfaceId>& fallback_surface_id) {
   DCHECK(surface_info.is_valid());
 
-  gfx::Rect quad_rect(surface_info.size_in_pixels());
+  float device_scale_factor = layer_tree_impl()->device_scale_factor();
+
+  gfx::Rect quad_rect(gfx::ScaleToEnclosingRect(
+      gfx::Rect(bounds()), device_scale_factor, device_scale_factor));
   gfx::Rect visible_quad_rect =
       draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
           gfx::Rect(bounds()));
 
-  float layer_to_content_scale_x, layer_to_content_scale_y;
-  if (stretch_content_to_fill_bounds_) {
-    // Stretches the surface contents to exactly fill the layer bounds,
-    // regardless of scale or aspect ratio differences.
-    layer_to_content_scale_x =
-        static_cast<float>(surface_info.size_in_pixels().width()) /
-        bounds().width();
-    layer_to_content_scale_y =
-        static_cast<float>(surface_info.size_in_pixels().height()) /
-        bounds().height();
-  } else {
-    layer_to_content_scale_x = layer_to_content_scale_y =
-        surface_info.device_scale_factor();
-  }
-
   visible_quad_rect = gfx::ScaleToEnclosingRect(
-      visible_quad_rect, layer_to_content_scale_x, layer_to_content_scale_y);
+      visible_quad_rect, device_scale_factor, device_scale_factor);
   visible_quad_rect = gfx::IntersectRects(quad_rect, visible_quad_rect);
 
   if (visible_quad_rect.IsEmpty())
@@ -128,14 +116,15 @@ viz::SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   viz::SharedQuadState* shared_quad_state =
     shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
 
-  PopulateScaledSharedQuadState(shared_quad_state, layer_to_content_scale_x,
-                                layer_to_content_scale_y, contents_opaque());
+  PopulateScaledSharedQuadState(shared_quad_state, device_scale_factor,
+                                device_scale_factor, contents_opaque());
 
   auto* surface_draw_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_draw_quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
                             surface_info.id(), fallback_surface_id,
-                            default_background_color_);
+                            default_background_color_,
+                            stretch_content_to_fill_bounds_);
 
   return surface_draw_quad;
 }

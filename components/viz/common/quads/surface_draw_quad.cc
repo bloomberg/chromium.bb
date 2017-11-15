@@ -26,13 +26,15 @@ void SurfaceDrawQuad::SetNew(
     const gfx::Rect& visible_rect,
     const SurfaceId& primary_surface_id,
     const base::Optional<SurfaceId>& fallback_surface_id,
-    SkColor default_background_color) {
+    SkColor default_background_color,
+    bool stretch_content_to_fill_bounds) {
   bool needs_blending = true;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
                    visible_rect, needs_blending);
   this->primary_surface_id = primary_surface_id;
   this->fallback_surface_id = fallback_surface_id;
   this->default_background_color = default_background_color;
+  this->stretch_content_to_fill_bounds = stretch_content_to_fill_bounds;
 }
 
 void SurfaceDrawQuad::SetAll(
@@ -42,12 +44,14 @@ void SurfaceDrawQuad::SetAll(
     bool needs_blending,
     const SurfaceId& primary_surface_id,
     const base::Optional<SurfaceId>& fallback_surface_id,
-    SkColor default_background_color) {
+    SkColor default_background_color,
+    bool stretch_content_to_fill_bounds) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
                    visible_rect, needs_blending);
   this->primary_surface_id = primary_surface_id;
   this->fallback_surface_id = fallback_surface_id;
   this->default_background_color = default_background_color;
+  this->stretch_content_to_fill_bounds = stretch_content_to_fill_bounds;
 }
 
 const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {

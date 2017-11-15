@@ -129,7 +129,7 @@ class VideoDetectorTest : public testing::Test {
           render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
       quad->SetNew(shared_quad_state, gfx::Rect(0, 0, 10, 10),
                    gfx::Rect(0, 0, 5, 5), frame_sink->current_surface_id(),
-                   base::nullopt, SK_ColorMAGENTA);
+                   base::nullopt, SK_ColorMAGENTA, false);
     }
     root_frame_sink_->SubmitCompositorFrame(
         root_frame_sink_->local_surface_id(), std::move(frame));
