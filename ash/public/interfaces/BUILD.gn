@@ -23,7 +23,7 @@ mojom("interfaces_internal") {
     "ime_controller.mojom",
     "ime_info.mojom",
     "locale.mojom",
-    "lock_screen.mojom",
+    "login_screen.mojom",
     "login_user_info.mojom",
     "media.mojom",
     "new_window.mojom",

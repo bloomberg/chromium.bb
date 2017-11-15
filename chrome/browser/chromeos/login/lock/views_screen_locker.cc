@@ -33,7 +33,7 @@ constexpr char kLockDisplay[] = "lock";
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker), weak_factory_(this) {
-  LockScreenClient::Get()->SetDelegate(this);
+  LoginScreenClient::Get()->SetDelegate(this);
   user_selection_screen_proxy_ = base::MakeUnique<UserSelectionScreenProxy>();
   user_selection_screen_ =
       base::MakeUnique<ChromeUserSelectionScreen>(kLockDisplay);
@@ -49,13 +49,13 @@ ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
 ViewsScreenLocker::~ViewsScreenLocker() {
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
-  LockScreenClient::Get()->SetDelegate(nullptr);
+  LoginScreenClient::Get()->SetDelegate(nullptr);
 }
 
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
   user_selection_screen_->Init(screen_locker_->users());
-  LockScreenClient::Get()->LoadUsers(
+  LoginScreenClient::Get()->LoadUsers(
       user_selection_screen_->UpdateAndReturnUserListForMojo(),
       false /* show_guests */);
   if (!ime_state_.get())
@@ -93,13 +93,13 @@ void ViewsScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {
   // TODO(xiaoyinh): Complete the implementation here.
-  LockScreenClient::Get()->ShowErrorMessage(0 /* login_attempts */,
-                                            std::string(), std::string(),
-                                            static_cast<int>(help_topic_id));
+  LoginScreenClient::Get()->ShowErrorMessage(0 /* login_attempts */,
+                                             std::string(), std::string(),
+                                             static_cast<int>(help_topic_id));
 }
 
 void ViewsScreenLocker::ClearErrors() {
-  LockScreenClient::Get()->ClearErrors();
+  LoginScreenClient::Get()->ClearErrors();
 }
 
 void ViewsScreenLocker::AnimateAuthenticationSuccess() {
@@ -231,7 +231,7 @@ void ViewsScreenLocker::UnregisterLockScreenAppFocusHandler() {
 }
 
 void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
-  LockScreenClient::Get()->HandleFocusLeavingLockScreenApps(reverse);
+  LoginScreenClient::Get()->HandleFocusLeavingLockScreenApps(reverse);
 }
 
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
@@ -241,7 +241,7 @@ void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
     return;
 
   bool is_enabled = quick_unlock_storage->IsPinAuthenticationAvailable();
-  LockScreenClient::Get()->SetPinEnabledForUser(account_id, is_enabled);
+  LoginScreenClient::Get()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
 void ViewsScreenLocker::OnAllowedInputMethodsChanged() {

@@ -8,7 +8,7 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_bubble.h"
@@ -223,7 +223,7 @@ LockContentsView::LockContentsView(
       session_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
-  Shell::Get()->lock_screen_controller()->AddLockScreenAppsFocusObserver(this);
+  Shell::Get()->login_screen_controller()->AddLockScreenAppsFocusObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   error_bubble_ = std::make_unique<LoginBubble>();
   tooltip_bubble_ = std::make_unique<LoginBubble>();
@@ -247,7 +247,7 @@ LockContentsView::LockContentsView(
 
 LockContentsView::~LockContentsView() {
   data_dispatcher_->RemoveObserver(this);
-  Shell::Get()->lock_screen_controller()->RemoveLockScreenAppsFocusObserver(
+  Shell::Get()->login_screen_controller()->RemoveLockScreenAppsFocusObserver(
       this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
@@ -297,7 +297,7 @@ void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // focused we should change the currently focused widget (ie, to the shelf or
   // status area, or lock screen apps, if they are active).
   if (reverse && lock_screen_apps_active_) {
-    Shell::Get()->lock_screen_controller()->FocusLockScreenApps(reverse);
+    Shell::Get()->login_screen_controller()->FocusLockScreenApps(reverse);
     return;
   }
 
@@ -431,7 +431,7 @@ void LockContentsView::OnFocusLeavingSystemTray(bool reverse) {
   FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
 
   if (lock_screen_apps_active_) {
-    Shell::Get()->lock_screen_controller()->FocusLockScreenApps(reverse);
+    Shell::Get()->login_screen_controller()->FocusLockScreenApps(reverse);
     return;
   }
 }
@@ -688,7 +688,7 @@ void LockContentsView::OnAuthUserChanged() {
   const AccountId new_auth_user =
       CurrentAuthUserView()->current_user()->basic_user_info->account_id;
 
-  Shell::Get()->lock_screen_controller()->OnFocusPod(new_auth_user);
+  Shell::Get()->login_screen_controller()->OnFocusPod(new_auth_user);
   UpdateEasyUnlockIconForUser(new_auth_user);
 
   if (unlock_attempt_ > 0) {
@@ -798,7 +798,7 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   if (easy_unlock_state->hardlock_on_click) {
     AccountId user =
         CurrentAuthUserView()->current_user()->basic_user_info->account_id;
-    Shell::Get()->lock_screen_controller()->HardlockPod(user);
+    Shell::Get()->login_screen_controller()->HardlockPod(user);
     // TODO(jdufault): This should get called as a result of HardlockPod.
     OnClickToUnlockEnabledForUserChanged(user, false /*enabled*/);
   }

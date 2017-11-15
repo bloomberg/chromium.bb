@@ -12,7 +12,7 @@
 #include "ash/display/ash_display_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/media_controller.h"
 #include "ash/message_center/message_center_controller.h"
 #include "ash/new_window_controller.h"
@@ -87,8 +87,8 @@ void BindLocaleNotificationControllerOnMainThread(
       std::move(request));
 }
 
-void BindLockScreenRequestOnMainThread(mojom::LockScreenRequest request) {
-  Shell::Get()->lock_screen_controller()->BindRequest(std::move(request));
+void BindLockScreenRequestOnMainThread(mojom::LoginScreenRequest request) {
+  Shell::Get()->login_screen_controller()->BindRequest(std::move(request));
 }
 
 void BindMediaControllerRequestOnMainThread(

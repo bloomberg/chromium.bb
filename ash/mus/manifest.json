@@ -16,7 +16,7 @@
           "ash::mojom::HighlighterController",
           "ash::mojom::ImeController",
           "ash::mojom::LocaleNotificationController",
-          "ash::mojom::LockScreen",
+          "ash::mojom::LoginScreen",
           "ash::mojom::MediaController",
           "ash::mojom::NewWindowController",
           "ash::mojom::NightLightController",

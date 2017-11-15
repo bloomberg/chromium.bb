@@ -44,7 +44,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/laser/laser_pointer_controller.h"
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -349,7 +349,7 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
   BluetoothPowerController::RegisterProfilePrefs(registry);
-  LockScreenController::RegisterProfilePrefs(registry, for_test);
+  LoginScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
   PaletteTray::RegisterProfilePrefs(registry);
@@ -599,7 +599,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           std::make_unique<KeyboardBrightnessController>()),
       locale_notification_controller_(
           std::make_unique<LocaleNotificationController>()),
-      lock_screen_controller_(std::make_unique<LockScreenController>()),
+      login_screen_controller_(std::make_unique<LoginScreenController>()),
       media_controller_(std::make_unique<MediaController>()),
       new_window_controller_(std::make_unique<NewWindowController>()),
       session_controller_(std::make_unique<SessionController>(

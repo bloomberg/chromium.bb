@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LOCK_SCREEN_CLIENT_H_
-#define CHROME_BROWSER_UI_ASH_LOCK_SCREEN_CLIENT_H_
+#ifndef CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
+#define CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_
 
-#include "ash/public/interfaces/lock_screen.mojom.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 using AuthenticateUserCallback =
-    ash::mojom::LockScreenClient::AuthenticateUserCallback;
+    ash::mojom::LoginScreenClient::AuthenticateUserCallback;
 
 // Handles method calls sent from ash to chrome. Also sends messages from chrome
 // to ash.
-class LockScreenClient : public ash::mojom::LockScreenClient {
+class LoginScreenClient : public ash::mojom::LoginScreenClient {
  public:
-  LockScreenClient();
-  ~LockScreenClient() override;
+  LoginScreenClient();
+  ~LoginScreenClient() override;
 
   // Handles method calls coming from ash into chrome.
   class Delegate {
@@ -43,9 +43,9 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  static LockScreenClient* Get();
+  static LoginScreenClient* Get();
 
-  // ash::mojom::LockScreenClient:
+  // ash::mojom::LoginScreenClient:
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& hashed_password,
                         bool authenticated_by_pin,
@@ -62,7 +62,7 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   void FocusLockScreenApps(bool reverse) override;
 
   // Wrappers around the mojom::LockScreen interface.
-  void ShowLockScreen(ash::mojom::LockScreen::ShowLockScreenCallback on_shown);
+  void ShowLockScreen(ash::mojom::LoginScreen::ShowLockScreenCallback on_shown);
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
                         const std::string& help_link_text,
@@ -83,13 +83,13 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
 
  private:
   // Lock screen mojo service in ash.
-  ash::mojom::LockScreenPtr lock_screen_;
+  ash::mojom::LoginScreenPtr login_screen_;
 
   // Binds this object to the client interface.
-  mojo::Binding<ash::mojom::LockScreenClient> binding_;
+  mojo::Binding<ash::mojom::LoginScreenClient> binding_;
   Delegate* delegate_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(LockScreenClient);
+  DISALLOW_COPY_AND_ASSIGN(LoginScreenClient);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LOCK_SCREEN_CLIENT_H_
+#endif  // CHROME_BROWSER_UI_ASH_LOGIN_SCREEN_CLIENT_H_

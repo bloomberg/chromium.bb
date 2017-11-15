@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LOGIN_MOCK_LOCK_SCREEN_CLIENT_H_
-#define ASH_LOGIN_MOCK_LOCK_SCREEN_CLIENT_H_
+#ifndef ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
+#define ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_
 
-#include "ash/public/interfaces/lock_screen.mojom.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
 
-class MockLockScreenClient : public mojom::LockScreenClient {
+class MockLoginScreenClient : public mojom::LoginScreenClient {
  public:
-  MockLockScreenClient();
-  ~MockLockScreenClient() override;
+  MockLoginScreenClient();
+  ~MockLoginScreenClient() override;
 
-  mojom::LockScreenClientPtr CreateInterfacePtrAndBind();
+  mojom::LoginScreenClientPtr CreateInterfacePtrAndBind();
 
   MOCK_METHOD4(AuthenticateUser_,
                void(const AccountId& account_id,
@@ -29,7 +29,7 @@ class MockLockScreenClient : public mojom::LockScreenClient {
     authenticate_user_callback_result_ = value;
   }
 
-  // mojom::LockScreenClient:
+  // mojom::LoginScreenClient:
   void AuthenticateUser(const AccountId& account_id,
                         const std::string& password,
                         bool authenticated_by_pin,
@@ -49,14 +49,14 @@ class MockLockScreenClient : public mojom::LockScreenClient {
  private:
   bool authenticate_user_callback_result_ = true;
 
-  mojo::Binding<mojom::LockScreenClient> binding_;
+  mojo::Binding<mojom::LoginScreenClient> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockLockScreenClient);
+  DISALLOW_COPY_AND_ASSIGN(MockLoginScreenClient);
 };
 
-// Helper method to bind a lock screen client so it receives all mojo calls.
-std::unique_ptr<MockLockScreenClient> BindMockLockScreenClient();
+// Helper method to bind a login screen client so it receives all mojo calls.
+std::unique_ptr<MockLoginScreenClient> BindMockLoginScreenClient();
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_MOCK_LOCK_SCREEN_CLIENT_H_
+#endif  // ASH_LOGIN_MOCK_LOGIN_SCREEN_CLIENT_H_

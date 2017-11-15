@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/lock_screen.mojom.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"

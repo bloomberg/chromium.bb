@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
-#include "chrome/browser/ui/ash/lock_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/media_client.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -150,7 +150,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   cast_config_client_media_router_ =
       base::MakeUnique<CastConfigClientMediaRouter>();
   media_client_ = base::MakeUnique<MediaClient>();
-  lock_screen_client_ = base::MakeUnique<LockScreenClient>();
+  login_screen_client_ = base::MakeUnique<LoginScreenClient>();
 
   // TODO(mash): Port TabScrubber and keyboard initialization.
   if (ash_util::IsRunningInMash())
@@ -178,7 +178,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   ime_controller_client_.reset();
   system_tray_client_.reset();
   accessibility_controller_client_.reset();
-  lock_screen_client_.reset();
+  login_screen_client_.reset();
   media_client_.reset();
   cast_config_client_media_router_.reset();
   session_controller_client_.reset();
