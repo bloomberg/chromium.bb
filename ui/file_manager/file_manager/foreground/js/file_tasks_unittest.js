@@ -201,30 +201,28 @@ function testOpenSuggestAppsDialogWithMetadata(callback) {
     var fileSystem = new MockFileSystem('volumeId');
     var entry = new MockFileEntry(fileSystem, '/test.rtf');
 
-    FileTasks.create(
-        {
-          getDriveConnectionState: function() {
-            return VolumeManagerCommon.DriveConnectionType.ONLINE;
-          }
-        },
-        {},
-        {},
-        {
-          taskMenuButton: document.createElement('button'),
-          fileContextMenu: {
-            defaultActionMenuItem: document.createElement('div')
-          },
-          suggestAppsDialog: {
-            showByExtensionAndMime: function(
-                extension, mimeType, onDialogClosed) {
-              assertEquals('.rtf', extension);
-              assertEquals('application/rtf', mimeType);
-              resolve();
-            }
-          }
-        },
-        [entry],
-        ['application/rtf']).then(function(tasks) {
+    FileTasks
+        .create(
+            {
+              getDriveConnectionState: function() {
+                return VolumeManagerCommon.DriveConnectionType.ONLINE;
+              }
+            },
+            {}, {}, {
+              taskMenuButton: document.createElement('button'),
+              fileContextMenu:
+                  {defaultActionMenuItem: document.createElement('div')},
+              suggestAppsDialog: {
+                showByExtensionAndMime: function(
+                    extension, mimeType, onDialogClosed) {
+                  assertEquals('.rtf', extension);
+                  assertEquals('application/rtf', mimeType);
+                  resolve();
+                }
+              }
+            },
+            [entry], ['application/rtf'], mockTaskHistory)
+        .then(function(tasks) {
           tasks.openSuggestAppsDialog(
               function() {}, function() {}, function() {});
         });
