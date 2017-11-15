@@ -71,10 +71,10 @@ extern const base::Feature kTrustedWebActivity;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
 extern const base::Feature kVrBrowsingFeedback;
-extern const base::Feature kVrCustomTabBrowsing;
-extern const base::Feature kVrLaunchIntent;
+extern const base::Feature kVrBrowsingInCustomTab;
+extern const base::Feature kVrLaunchIntents;
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
-extern const base::Feature kWebVrAutopresent;
+extern const base::Feature kWebVrAutopresentFromIntent;
 extern const base::Feature kWebVRCardboardSupport;
 
 }  // namespace android

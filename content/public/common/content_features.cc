@@ -403,9 +403,13 @@ const base::Feature kImageCaptureAPI{"ImageCaptureAPI",
 const base::Feature kKeepAliveRendererForKeepaliveRequests{
     "KeepAliveRendererForKeepaliveRequests", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables WebVR experimental rendering optimizations.
-const base::Feature kWebVRExperimentalRendering{
+// Controls whether WebVR experimental rendering optimizations is enabled.
+const base::Feature kWebVrExperimentalRendering{
     "WebVRExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether WebVR VSync-aligned render loop timing is enabled.
+const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enabled "work stealing" in the script runner.
 const base::Feature kWorkStealingInScriptRunner{
@@ -424,10 +428,6 @@ const base::Feature kHideIncorrectlySizedFullscreenFrames{
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables WebVR VSync-aligned render loop timing.
-const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

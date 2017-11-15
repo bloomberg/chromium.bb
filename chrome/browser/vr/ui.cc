@@ -40,7 +40,7 @@ Ui::Ui(UiBrowserInterface* browser,
   model_->started_for_autopresentation =
       ui_initial_state.web_vr_autopresentation_expected;
   model_->experimental_features_enabled =
-      base::FeatureList::IsEnabled(features::kExperimentalVRFeatures);
+      base::FeatureList::IsEnabled(features::kVrBrowsingExperimentalFeatures);
   model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
 }

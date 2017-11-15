@@ -467,7 +467,7 @@ public class VrShellDelegate
     private static boolean activitySupportsVrBrowsing(Activity activity) {
         if (activity instanceof ChromeTabbedActivity) return true;
         if (activity instanceof CustomTabActivity) {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_CUSTOM_TAB_BROWSING);
+            return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_IN_CUSTOM_TAB);
         }
         return false;
     }
@@ -549,7 +549,7 @@ public class VrShellDelegate
         // controller.
         if (vrSupportLevel != VR_DAYDREAM) return false;
         if (deviceChangesDensityInVr()) return false;
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING);
     }
 
     private static boolean deviceChangesDensityInVr() {
@@ -906,12 +906,12 @@ public class VrShellDelegate
         setVrModeEnabled(activity);
         // TODO(ymalik): This should use isTrustedAutopresentIntent once the Daydream Home change
         // that adds the autopresent intent extra rolls out on most devices. This will allow us to
-        // differentiate trusted auto-present intents from Chrome VR intents.
+        // differentiate trusted auto-present intents from other VR intents.
         if (VrIntentUtils.getHandlerInstance().isTrustedDaydreamIntent(intent)) {
             if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: autopresent");
             assert activitySupportsAutopresentation(activity);
             instance.mAutopresentWebVr = true;
-            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)) {
+            if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT_FROM_INTENT)) {
                 instance.onEnterVrUnsupported();
                 return;
             }

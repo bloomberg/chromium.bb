@@ -50,7 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=VrShell"})
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG})
 public class VrShellTransitionTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -135,14 +135,11 @@ public class VrShellTransitionTest {
     /**
      * Verifies that browser successfully transitions from 2D chrome to the VR
      * browser when Chrome gets a VR intent.
-     * Note that we need to remove the enable-features flag that's set above and reset it with
-     * VrLaunchIntent above otherwise the one set on the class takes precedence.
      */
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
     @MediumTest
-    @CommandLineFlags.Remove("enable-features=VrShell")
-    @CommandLineFlags.Add("enable-features=VrShell,VrLaunchIntent")
+    @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testVrIntentStartsVrShell() {
         // Send a VR intent, which will open the link in a CTA.
         String url = VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
