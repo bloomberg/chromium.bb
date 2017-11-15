@@ -141,7 +141,7 @@ void WebFaviconDriver::OnFaviconDeleted(
   // instance, FetchFavicon() is not synchronously called when the active URL
   // changes as a result of CRWSessionController::goToEntry().
   web::NavigationItem* item =
-      web_state()->GetNavigationManager()->GetVisibleItem();
+      web_state_->GetNavigationManager()->GetVisibleItem();
   if (!item || item->GetURL() != page_url)
     return;
 
