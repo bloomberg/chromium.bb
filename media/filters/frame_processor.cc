@@ -66,6 +66,10 @@ class MseTrackBuffer {
     return last_processed_decode_timestamp_;
   }
 
+  base::TimeDelta last_keyframe_presentation_timestamp() const {
+    return last_keyframe_presentation_timestamp_;
+  }
+
   base::TimeDelta pending_group_start_pts() const {
     return pending_group_start_pts_;
   }
@@ -122,12 +126,16 @@ class MseTrackBuffer {
   // cases. See also FrameProcessor::ProcessFrame().
   base::TimeDelta pending_group_start_pts_;
 
-  // This is used to understand if the stream parser is producing random access
-  // points that are not SAP Type 1, whose support is likely going to be
-  // deprecated from MSE API pending real-world usage data. This is kNoTimestamp
-  // if no frames have been enqueued ever or since the last
+  // This is kNoTimestamp if no frames have been enqueued ever or since the last
   // NotifyStartOfCodedFrameGroup() or Reset(). Otherwise, this is the most
   // recently enqueued keyframe's presentation timestamp.
+  // This is used:
+  // 1) to understand if the stream parser is producing random access
+  //    points that are not SAP Type 1, whose support is likely going to be
+  //    deprecated from MSE API pending real-world usage data, and
+  // 2) (by owning FrameProcessor) to determine if it's hit a decreasing
+  //    keyframe PTS sequence when buffering by PTS intervals, such that a new
+  //    coded frame group needs to be signalled.
   base::TimeDelta last_keyframe_presentation_timestamp_;
 
   // The coded frame duration of the last coded frame appended in the current
@@ -873,7 +881,8 @@ bool FrameProcessor::ProcessFrame(
     // segments append mode discontinuity, or following a switch to segments
     // append mode from sequence append mode), notify all the track buffers
     // that a coded frame group is starting.
-    //
+    bool signal_new_cfg = pending_notify_all_group_start_;
+
     // In muxed multi-track streams, it may occur that we already signaled a new
     // coded frame group (CFG) upon detecting a discontinuity in trackA, only to
     // now find that frames in trackB actually have an earlier timestamp. If
@@ -887,10 +896,23 @@ bool FrameProcessor::ProcessFrame(
     // CFG), re-signal trackB that a CFG is starting with its new earlier PTS.
     // Avoid re-signalling trackA, as it has already started processing frames
     // for this CFG.
-    if (pending_notify_all_group_start_ ||
+    signal_new_cfg |=
         track_buffer->last_processed_decode_timestamp() > decode_timestamp ||
         (track_buffer->pending_group_start_pts() != kNoTimestamp &&
-         track_buffer->pending_group_start_pts() > presentation_timestamp)) {
+         track_buffer->pending_group_start_pts() > presentation_timestamp);
+
+    // When buffering by PTS intervals and a keyframe is discovered to have
+    // a decreasing PTS versus the previous keyframe for that track in the
+    // current coded frame group, signal a new coded frame group for that track
+    // buffer so that it can correctly process overlap-removals of the new GOP.
+    signal_new_cfg |=
+        range_api_ == ChunkDemuxerStream::RangeApi::kNewByPts &&
+        frame->is_key_frame() &&
+        track_buffer->last_keyframe_presentation_timestamp() != kNoTimestamp &&
+        track_buffer->last_keyframe_presentation_timestamp() >
+            presentation_timestamp;
+
+    if (signal_new_cfg) {
       DCHECK(frame->is_key_frame());
 
       // First, complete the append to track buffer streams of the previous
