@@ -127,7 +127,7 @@ public class TileGridLayout extends FrameLayout {
         int paddingTop = getPaddingTop();
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
 
-        List<TileView> orderedChildren = getCorrectTileViewOrder(numColumns);
+        List<TileView> orderedChildren = getCorrectTileViewOrder(numColumns, numRows);
 
         for (int i = 0; i < visibleChildCount; i++) {
             View child = orderedChildren.get(i);
@@ -158,23 +158,26 @@ public class TileGridLayout extends FrameLayout {
      * Returns a list of {@link TileView}s in the order that they should be displayed in the tile
      * grid. The {@link TileView}s in the list are the children of the {@link TileGridLayout}.
      *
-     * If there is a home page tile view, it is put on the first row of the grid. If its original
-     * position is on the first row, we keep that position, otherwise we put it as the last tile on
-     * the first row and shift all following tiles.
+     * If there is a home page tile view:
+     *  - For multiple rows: pin it to the very first position.
+     *  - For a single row: keep the position or use it as last tile in that role.
      *
      * @param numColumns The number of columns that the tile grid will display.
+     * @param numRows The number of rows that the tile grid will display.
      * @return A list of {@link TileView}s in the order they should be displayed.
      */
-    private List<TileView> getCorrectTileViewOrder(int numColumns) {
+    private List<TileView> getCorrectTileViewOrder(int numColumns, int numRows) {
         List<TileView> orderedChildren = new ArrayList<>(getChildCount());
 
         for (int i = 0; i < getChildCount(); i++) {
             TileView view = (TileView) getChildAt(i);
 
-            if (view.getTileSource() == TileSource.HOMEPAGE && i > numColumns - 1) {
-                orderedChildren.add(numColumns - 1, view);
-            } else {
+            if (view.getTileSource() != TileSource.HOMEPAGE) {
                 orderedChildren.add(view);
+            } else if (numRows > 1) {
+                orderedChildren.add(0, view);
+            } else {
+                orderedChildren.add(Math.min(i, numColumns - 1), view);
             }
         }
 
