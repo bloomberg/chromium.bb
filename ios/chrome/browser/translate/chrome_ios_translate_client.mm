@@ -53,7 +53,7 @@
 DEFINE_WEB_STATE_USER_DATA_KEY(ChromeIOSTranslateClient);
 
 ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
-    : web::WebStateObserver(web_state),
+    : web_state_(web_state),
       translate_manager_(base::MakeUnique<translate::TranslateManager>(
           this,
           translate::TranslateRankerFactory::GetForBrowserState(
@@ -64,9 +64,12 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
                   web_state->GetBrowserState())))),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
-                        translate_manager_.get()) {}
+                        translate_manager_.get()) {
+  web_state_->AddObserver(this);
+}
 
 ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
+  DCHECK(!web_state_);
 }
 
 // static
@@ -121,9 +124,9 @@ void ChromeIOSTranslateClient::RecordTranslateEvent(
   syncer::UserEventService* const user_event_service =
       IOSUserEventServiceFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(
-              web_state()->GetBrowserState()));
+              web_state_->GetBrowserState()));
   const auto* const item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
 
   // If entry is null, we don't record the page.
   // The navigation entry can be null in situations like download or initial
@@ -146,7 +149,7 @@ void ChromeIOSTranslateClient::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
-  DCHECK(web_state());
+  DCHECK(web_state_);
   if (error_type != translate::TranslateErrors::NONE)
     step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
 
@@ -154,8 +157,8 @@ void ChromeIOSTranslateClient::ShowTranslateUI(
   translate::TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
       translate_manager_->GetWeakPtr(),
-      InfoBarManagerImpl::FromWebState(web_state()),
-      web_state()->GetBrowserState()->IsOffTheRecord(), step, source_language,
+      InfoBarManagerImpl::FromWebState(web_state_),
+      web_state_->GetBrowserState()->IsOffTheRecord(), step, source_language,
       target_language, error_type, triggered_from_menu);
 }
 
@@ -164,26 +167,25 @@ translate::IOSTranslateDriver* ChromeIOSTranslateClient::GetTranslateDriver() {
 }
 
 PrefService* ChromeIOSTranslateClient::GetPrefs() {
-  DCHECK(web_state());
+  DCHECK(web_state_);
   ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState());
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return chrome_browser_state->GetOriginalChromeBrowserState()->GetPrefs();
 }
 
 std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::GetTranslatePrefs() {
-  DCHECK(web_state());
+  DCHECK(web_state_);
   ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState());
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   return CreateTranslatePrefs(chrome_browser_state->GetPrefs());
 }
 
 translate::TranslateAcceptLanguages*
 ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
-  DCHECK(web_state());
+  DCHECK(web_state_);
   return TranslateAcceptLanguagesFactory::GetForBrowserState(
-      ios::ChromeBrowserState::FromBrowserState(
-          web_state()->GetBrowserState()));
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState()));
 }
 
 int ChromeIOSTranslateClient::GetInfobarIconID() const {
@@ -198,9 +200,9 @@ void ChromeIOSTranslateClient::RecordLanguageDetectionEvent(
   syncer::UserEventService* const user_event_service =
       IOSUserEventServiceFactory::GetForBrowserState(
           ios::ChromeBrowserState::FromBrowserState(
-              web_state()->GetBrowserState()));
+              web_state_->GetBrowserState()));
   const auto* const item =
-      web_state()->GetNavigationManager()->GetLastCommittedItem();
+      web_state_->GetNavigationManager()->GetLastCommittedItem();
 
   // If entry is null, we don't record the page.
   // The navigation entry can be null in situations like download or initial
@@ -223,6 +225,10 @@ void ChromeIOSTranslateClient::ShowReportLanguageDetectionErrorUI(
 }
 
 void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
+
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with nullptr WebState.
