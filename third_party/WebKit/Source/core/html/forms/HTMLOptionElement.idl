@@ -35,7 +35,6 @@
     [ImplementedAs=selectedForBinding] attribute boolean selected;
     [CEReactions] attribute DOMString value;
 
-    // TODO(foolip): The text setter should never throw.
-    [CEReactions, RaisesException=Setter] attribute DOMString text;
+    [CEReactions] attribute DOMString text;
     readonly attribute long index;
 };
