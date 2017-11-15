@@ -214,10 +214,6 @@
       status: "experimental",
     },
     {
-      name: "CSSApplyAtRules",
-      status: "experimental",
-    },
-    {
       name: "CSSBackdropFilter",
       status: "experimental",
     },

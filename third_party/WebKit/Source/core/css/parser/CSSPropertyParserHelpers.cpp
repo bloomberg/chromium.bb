@@ -13,6 +13,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPaintValue.h"
+#include "core/css/CSSPropertyValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSURIValue.h"

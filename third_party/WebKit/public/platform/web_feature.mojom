@@ -858,7 +858,7 @@ enum WebFeature {
   kApplicationCacheAPISecureOrigin = 1248,
   // The above items are available in M50 branch
 
-  kCSSAtRuleApply = 1249,
+  kCSSAtRuleApply = 1249, // Removed
   kCSSSelectorPseudoAny = 1250,
   kDocumentAllItemNoArguments = 1252,
   kDocumentAllItemNamed = 1253,

@@ -54,7 +54,7 @@ class CSSVariableResolver {
   // These return false if we encounter a reference to an invalid variable with
   // no fallback.
 
-  // Resolves a range which may contain var() references or @apply rules.
+  // Resolves a range which may contain var() references.
   bool ResolveTokenRange(CSSParserTokenRange,
                          bool disallow_animation_tainted,
                          Vector<CSSParserToken>& result,
@@ -73,10 +73,6 @@ class CSSVariableResolver {
                                 Vector<CSSParserToken>& result,
                                 Vector<String>& result_backing_strings,
                                 bool& result_is_animation_tainted);
-  // Consumes and resolves an @apply rule.
-  void ResolveApplyAtRule(CSSParserTokenRange&,
-                          Vector<CSSParserToken>& result,
-                          Vector<String>& result_backing_strings);
 
   // These return null if the custom property is invalid.
 

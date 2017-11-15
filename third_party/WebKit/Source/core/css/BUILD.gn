@@ -475,7 +475,6 @@ blink_core_sources("css") {
     "properties/longhands/AnimationIterationCount.cpp",
     "properties/longhands/AnimationName.cpp",
     "properties/longhands/AnimationPlayState.cpp",
-    "properties/longhands/ApplyAtRule.h",
     "properties/longhands/AutoOrString.cpp",
     "properties/longhands/BackdropFilter.cpp",
     "properties/longhands/BackgroundAttachment.cpp",

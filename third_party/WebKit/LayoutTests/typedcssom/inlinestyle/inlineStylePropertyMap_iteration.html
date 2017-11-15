@@ -116,17 +116,4 @@ test(function() {
   assert_equals(propertyAndValue[1].toString(), '5px');
 }, "Custom properties set on the element come out as CSSStyleValues");
 
-test(function() {
-  testElement.style.cssText = "@apply --foo";
-
-  var entries = [...testElement.attributeStyleMap.entries()];
-  assert_equals(entries.length, 1);
-  var propertyAndValue = entries[0];
-  assert_equals(propertyAndValue.length, 2);
-
-  assert_equals(propertyAndValue[0], '@apply');
-  assert_equals(propertyAndValue[1].constructor, CSSStyleValue);
-  assert_equals(propertyAndValue[1].toString(), '--foo');
-}, "@apply rules come out as CSSStyleValues");
-
 </script>

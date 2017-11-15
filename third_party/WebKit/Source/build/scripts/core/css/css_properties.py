@@ -71,9 +71,8 @@ class CSSProperties(object):
         # properties + aliases.
         self._alias_offset = 512
         # 0: CSSPropertyInvalid
-        # 1: CSSPropertyApplyAtRule
-        # 2: CSSPropertyVariable
-        self._first_enum_value = 3
+        # 1: CSSPropertyVariable
+        self._first_enum_value = 2
         self._last_used_enum_value = self._first_enum_value
 
         self._properties_by_id = {}

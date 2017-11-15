@@ -5,21 +5,11 @@
 #include "core/css/CSSVariableData.h"
 
 #include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/StringView.h"
 
 namespace blink {
-
-CSSPropertyValueSet* CSSVariableData::PropertySet() {
-  DCHECK(!needs_variable_resolution_);
-  if (!cached_property_set_) {
-    property_set_ = CSSParser::ParseCustomPropertySet(tokens_);
-    cached_property_set_ = true;
-  }
-  return property_set_.Get();
-}
 
 template <typename CharacterType>
 static void UpdateTokens(const CSSParserTokenRange& range,
@@ -68,8 +58,7 @@ CSSVariableData::CSSVariableData(const CSSParserTokenRange& range,
                                  bool is_animation_tainted,
                                  bool needs_variable_resolution)
     : is_animation_tainted_(is_animation_tainted),
-      needs_variable_resolution_(needs_variable_resolution),
-      cached_property_set_(false) {
+      needs_variable_resolution_(needs_variable_resolution) {
   DCHECK(!range.AtEnd());
   ConsumeAndUpdateTokens(range);
 }

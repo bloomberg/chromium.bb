@@ -1025,8 +1025,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 530;
     case CSSPropertyColumns:
       return 531;
-    case CSSPropertyApplyAtRule:
-      return 532;
+    // CSSPropertyApplyAtRule was 532.
     case CSSPropertyFontVariantCaps:
       return 533;
     case CSSPropertyHyphens:

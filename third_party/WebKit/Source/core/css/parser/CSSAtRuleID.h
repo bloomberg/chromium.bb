@@ -25,7 +25,6 @@ enum CSSAtRuleID {
   kCSSAtRuleViewport = 9,
 
   kCSSAtRuleWebkitKeyframes = 10,
-  kCSSAtRuleApply = 11,
 };
 
 CSSAtRuleID CssAtRuleID(StringView name);

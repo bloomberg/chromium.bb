@@ -8,7 +8,6 @@
 
 #include "core/css/properties/CSSProperty.h"
 
-#include "core/css/properties/longhands/ApplyAtRule.h"
 #include "core/css/properties/longhands/Variable.h"
 {% for property_class in longhand_property_classnames %}
   {% if property_class != "Longhand" %}
@@ -22,7 +21,6 @@
 namespace blink {
 namespace {
 
-static constexpr ApplyAtRule property_csspropertyapplyatrule(CSSPropertyApplyAtRule);
 static constexpr Variable property_csspropertyvariable(CSSPropertyVariable);
 {% for _, property_id, classname, superclass in property_classes_by_property_id %}
   {% if superclass != None %}
@@ -34,7 +32,6 @@ static constexpr {{classname}} property_{{property_id.lower()}}({{property_id}})
 
 const CSSProperty& GetProperty(CSSPropertyID id) {
   static constexpr const CSSProperty* const property_classes[] = {
-    &property_csspropertyapplyatrule,  // CSSPropertyApplyAtRule
     &property_csspropertyvariable,  // CSSPropertyVariable
     {% for property_class_data in property_classes_by_property_id %}
     &property_{{property_class_data.property_id.lower()}},  // {{property_class_data.property_id}}
@@ -46,9 +43,6 @@ const CSSProperty& GetProperty(CSSPropertyID id) {
 
 } // namespace
 
-const CSSProperty& GetCSSPropertyApplyAtRule() {
-  return property_csspropertyapplyatrule;
-}
 const CSSProperty& GetCSSPropertyVariable() {
   return property_csspropertyvariable;
 }

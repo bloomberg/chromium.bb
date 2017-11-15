@@ -97,9 +97,7 @@ CSSStyleValueVector InlineStylePropertyMap::GetAllInternal(
 }
 
 Vector<String> InlineStylePropertyMap::getProperties() {
-  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   Vector<String> result;
-  bool contains_at_apply = false;
   CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
   for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
@@ -110,11 +108,6 @@ Vector<String> InlineStylePropertyMap::getProperties() {
       const CSSCustomPropertyDeclaration& custom_declaration =
           ToCSSCustomPropertyDeclaration(property_reference.Value());
       result.push_back(custom_declaration.GetName());
-    } else if (property_id == CSSPropertyApplyAtRule) {
-      if (!contains_at_apply) {
-        result.push_back(kAtApply);
-        contains_at_apply = true;
-      }
     } else {
       result.push_back(getPropertyNameString(property_id));
     }
@@ -211,7 +204,6 @@ void InlineStylePropertyMap::remove(CSSPropertyID property_id,
 HeapVector<StylePropertyMap::StylePropertyMapEntry>
 InlineStylePropertyMap::GetIterationEntries() {
   // TODO(779841): Needs to be sorted.
-  DEFINE_STATIC_LOCAL(const String, kAtApply, ("@apply"));
   HeapVector<StylePropertyMap::StylePropertyMapEntry> result;
   CSSPropertyValueSet& inline_style_set =
       owner_element_->EnsureMutableInlineStyle();
@@ -231,10 +223,6 @@ InlineStylePropertyMap::GetIterationEntries() {
       // TODO(779477): Should these return CSSUnparsedValues?
       value.SetCSSStyleValue(
           CSSUnsupportedStyleValue::Create(custom_declaration.CustomCSSText()));
-    } else if (property_id == CSSPropertyApplyAtRule) {
-      name = kAtApply;
-      value.SetCSSStyleValue(CSSUnsupportedStyleValue::Create(
-          ToCSSCustomIdentValue(property_reference.Value()).Value()));
     } else {
       name = getPropertyNameString(property_id);
       CSSStyleValueVector style_value_vector =

@@ -15,7 +15,6 @@ namespace blink {
 
 class Color;
 class CSSParserObserver;
-class CSSParserTokenRange;
 class CSSSelectorList;
 class Element;
 class ImmutableCSSPropertyValueSet;
@@ -67,8 +66,6 @@ class CORE_EXPORT CSSParser {
       bool important,
       StyleSheetContents*,
       bool is_animation_tainted);
-  static ImmutableCSSPropertyValueSet* ParseCustomPropertySet(
-      CSSParserTokenRange);
 
   // This is for non-shorthands only
   static const CSSValue* ParseSingleValue(
