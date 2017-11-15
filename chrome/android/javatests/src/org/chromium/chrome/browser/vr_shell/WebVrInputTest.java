@@ -247,7 +247,7 @@ public class WebVrInputTest {
     @Test
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_SHELL})
+    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_BROWSING})
     public void testAppButtonNoopsWhenBrowsingDisabled() throws InterruptedException {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);

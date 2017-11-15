@@ -188,7 +188,7 @@ VrShellGl::VrShellGl(GlBrowserInterface* browser_interface,
       webvr_js_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
       webvr_render_time_(new vr::SlidingAverage(kWebVRSlidingAverageSize)),
       skips_redraw_when_not_dirty_(base::FeatureList::IsEnabled(
-          features::kVrShellExperimentalRendering)),
+          features::kVrBrowsingExperimentalRendering)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);
 }
