@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -64,8 +65,15 @@ public class ClearBrowsingDataCheckBoxPreference extends ChromeBaseCheckBoxPrefe
             // Find out which character was touched.
             int offset = textView.getOffsetForPosition(event.getX(), event.getY());
             // Check if this character contains a span.
-            Spanned text = (Spanned) textView.getText();
-            ClickableSpan[] types = text.getSpans(offset, offset, ClickableSpan.class);
+            CharSequence text = textView.getText();
+            // TODO(crbug.com/783866): On some devices the SpannableString is not applied correctly.
+            boolean isSpanned = text instanceof Spanned;
+            RecordHistogram.recordBooleanHistogram(
+                    "History.ClearBrowsingData.SpannableStringAppliedCorrectly", isSpanned);
+            if (!isSpanned) {
+                return false;
+            }
+            ClickableSpan[] types = ((Spanned) text).getSpans(offset, offset, ClickableSpan.class);
 
             if (types.length > 0) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
