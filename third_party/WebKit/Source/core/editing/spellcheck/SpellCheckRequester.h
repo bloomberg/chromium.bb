@@ -30,8 +30,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/Forward.h"
+#include "core/editing/spellcheck/TextChecking.h"
 #include "platform/Timer.h"
-#include "platform/text/TextChecking.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
@@ -41,29 +41,33 @@ namespace blink {
 
 class LocalFrame;
 class SpellCheckRequester;
-class TextCheckerClient;
+class WebTextCheckClient;
 
-class CORE_EXPORT SpellCheckRequest final : public TextCheckingRequest {
+class CORE_EXPORT SpellCheckRequest
+    : public GarbageCollectedFinalized<SpellCheckRequest> {
  public:
+  static const int kUnrequestedTextCheckingSequence = -1;
+
   static SpellCheckRequest* Create(const EphemeralRange& checking_range,
                                    int request_number);
 
-  ~SpellCheckRequest() override;
+  ~SpellCheckRequest();
   void Dispose();
 
   Range* CheckingRange() const { return checking_range_; }
   Element* RootEditableElement() const { return root_editable_element_; }
 
   void SetCheckerAndSequence(SpellCheckRequester*, int sequence);
+  int Sequence() const { return sequence_; }
+  String GetText() const { return text_; }
 
-  const TextCheckingRequestData& Data() const override;
   bool IsValid() const;
-  void DidSucceed(const Vector<TextCheckingResult>&) override;
-  void DidCancel() override;
+  void DidSucceed(const Vector<TextCheckingResult>&);
+  void DidCancel();
 
   int RequestNumber() const { return request_number_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*);
 
  private:
   SpellCheckRequest(Range* checking_range, const String&, int request_number);
@@ -71,7 +75,8 @@ class CORE_EXPORT SpellCheckRequest final : public TextCheckingRequest {
   Member<SpellCheckRequester> requester_;
   Member<Range> checking_range_;
   Member<Element> root_editable_element_;
-  TextCheckingRequestData request_data_;
+  int sequence_ = kUnrequestedTextCheckingSequence;
+  String text_;
   int request_number_;
 };
 
@@ -104,7 +109,7 @@ class CORE_EXPORT SpellCheckRequester final
 
   explicit SpellCheckRequester(LocalFrame&);
 
-  TextCheckerClient& Client() const;
+  WebTextCheckClient* GetTextCheckerClient() const;
   void TimerFiredToProcessQueuedRequest(TimerBase*);
   void InvokeRequest(SpellCheckRequest*);
   void EnqueueRequest(SpellCheckRequest*);

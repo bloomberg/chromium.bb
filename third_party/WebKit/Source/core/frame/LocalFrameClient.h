@@ -85,7 +85,6 @@ class ResourceResponse;
 class SecurityOrigin;
 class SharedWorkerRepositoryClient;
 class SubstituteData;
-class TextCheckerClient;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCookieJar;
@@ -99,6 +98,7 @@ class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class WebSpellCheckPanelHostClient;
 struct WebRemoteScrollProperties;
+class WebTextCheckClient;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
@@ -352,7 +352,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const = 0;
 
-  virtual TextCheckerClient& GetTextCheckerClient() const = 0;
+  virtual WebTextCheckClient* GetTextCheckerClient() const = 0;
 
   virtual std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() = 0;
 

@@ -392,9 +392,9 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
       Vector<String> suggestions;
       description.Split('\n', suggestions);
       data.dictionary_suggestions = suggestions;
-    } else if (selected_web_frame->TextCheckClient()) {
+    } else if (selected_web_frame->GetTextCheckerClient()) {
       int misspelled_offset, misspelled_length;
-      selected_web_frame->TextCheckClient()->CheckSpelling(
+      selected_web_frame->GetTextCheckerClient()->CheckSpelling(
           data.misspelled_word, misspelled_offset, misspelled_length,
           &data.dictionary_suggestions);
     }

@@ -48,7 +48,6 @@
 #include "platform/graphics/TouchAction.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceError.h"
-#include "platform/text/TextCheckerClient.h"
 #include "platform/wtf/Forward.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFocusType.h"
@@ -362,7 +361,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
-  TextCheckerClient& GetTextCheckerClient() const override;
+  WebTextCheckClient* GetTextCheckerClient() const override;
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
     return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
@@ -375,18 +374,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   ContentSettingsClient content_settings_client_;
   service_manager::InterfaceProvider interface_provider_;
-};
-
-class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
-  WTF_MAKE_NONCOPYABLE(EmptyTextCheckerClient);
-  USING_FAST_MALLOC(EmptyTextCheckerClient);
-
- public:
-  EmptyTextCheckerClient() {}
-
-  void CheckSpellingOfString(const String&, int*, int*) override {}
-  void RequestCheckingOfString(TextCheckingRequest*) override;
-  void CancelAllPendingRequests() override;
 };
 
 class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {

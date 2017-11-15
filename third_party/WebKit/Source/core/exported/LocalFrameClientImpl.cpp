@@ -1093,7 +1093,7 @@ WebSpellCheckPanelHostClient* LocalFrameClientImpl::SpellCheckPanelHostClient()
   return web_frame_->SpellCheckPanelHostClient();
 }
 
-TextCheckerClient& LocalFrameClientImpl::GetTextCheckerClient() const {
+WebTextCheckClient* LocalFrameClientImpl::GetTextCheckerClient() const {
   return web_frame_->GetTextCheckerClient();
 }
 

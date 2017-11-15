@@ -55,8 +55,6 @@ class KURL;
 class LocalFrameClient;
 class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
-class TextCheckerClient;
-class TextCheckerClientImpl;
 class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -399,8 +397,9 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void SetInputEventsScaleForEmulation(float);
 
-  TextCheckerClient& GetTextCheckerClient() const;
-  WebTextCheckClient* TextCheckClient() const { return text_check_client_; }
+  WebTextCheckClient* GetTextCheckerClient() const {
+    return text_check_client_;
+  }
 
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
     return spell_check_panel_host_client_;
@@ -505,8 +504,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   WebInputMethodControllerImpl input_method_controller_;
 
-  // Stores the TextCheckerClient to bridge SpellChecker and WebTextCheckClient.
-  Member<TextCheckerClientImpl> text_checker_client_;
   WebTextCheckClient* text_check_client_;
 
   WebSpellCheckPanelHostClient* spell_check_panel_host_client_;

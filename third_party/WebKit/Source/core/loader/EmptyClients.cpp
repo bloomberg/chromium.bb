@@ -196,14 +196,9 @@ WebRemotePlaybackClient* EmptyLocalFrameClient::CreateWebRemotePlaybackClient(
   return nullptr;
 }
 
-TextCheckerClient& EmptyLocalFrameClient::GetTextCheckerClient() const {
-  DEFINE_STATIC_LOCAL(EmptyTextCheckerClient, client, ());
-  return client;
+WebTextCheckClient* EmptyLocalFrameClient::GetTextCheckerClient() const {
+  return nullptr;
 }
-
-void EmptyTextCheckerClient::RequestCheckingOfString(TextCheckingRequest*) {}
-
-void EmptyTextCheckerClient::CancelAllPendingRequests() {}
 
 std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {

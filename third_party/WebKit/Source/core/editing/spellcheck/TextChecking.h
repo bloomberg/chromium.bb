@@ -28,8 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextDecoration_h
-#define TextDecoration_h
+#ifndef TextChecking_h
+#define TextChecking_h
+
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -37,6 +41,24 @@ enum TextDecorationType {
   kTextDecorationTypeSpelling,
   kTextDecorationTypeGrammar,
 };
-}
 
-#endif  // TextDecoration_h
+struct GrammarDetail {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  int location;
+  int length;
+  Vector<String> guesses;
+  String user_description;
+};
+
+struct TextCheckingResult {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  TextDecorationType decoration;
+  int location;
+  int length;
+  Vector<GrammarDetail> details;
+  Vector<String> replacements;
+};
+
+}  // namespace blink
+
+#endif  // TextChecking_h
