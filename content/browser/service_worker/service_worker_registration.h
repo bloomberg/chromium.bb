@@ -28,7 +28,7 @@ struct ServiceWorkerRegistrationInfo;
 
 // Represents the core of a service worker registration object. Other
 // registration derivatives (WebServiceWorkerRegistration etc) ultimately refer
-// to this class. This is refcounted via ServiceWorkerRegistrationHandle to
+// to this class. This is refcounted via ServiceWorkerRegistrationObjectHost to
 // facilitate multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : public base::RefCounted<ServiceWorkerRegistration>,

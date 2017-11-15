@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_HANDLE_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_HANDLE_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_OBJECT_HOST_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_OBJECT_HOST_H_
 
 #include <memory>
 
@@ -23,26 +23,28 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerVersion;
 
-// TODO(leonhsl): Merge this class into ServiceWorkerRegistration.
+// TODO(leonhsl): Manage instances of this class per ServiceWorkerProviderHost
+// rather than per ServiceWorkerDispatcherHost (per renderer process).
 
-// ServiceWorkerRegistrationHandle has a 1:1 correspondence to
+// ServiceWorkerRegistrationObjectHost has a 1:1 correspondence to
 // WebServiceWorkerRegistration in the renderer process.
-// WebServiceWorkerRegistration owns ServiceWorkerRegistrationHandle via an
-// associated interface pointer to
-// blink::mojom::ServiceWorkerRegistrationObjectHost.
+// The host stays alive while the WebServiceWorkerRegistration is alive, and
+// also initiates destruction of the WebServiceWorkerRegistration once detected
+// that it's no longer needed. See the class documentation in
+// WebServiceWorkerRegistrationImpl for details.
 //
 // Has a reference to the corresponding ServiceWorkerRegistration in order to
-// ensure that the registration is alive while this handle is around.
-class CONTENT_EXPORT ServiceWorkerRegistrationHandle
+// ensure that the registration is alive while this object host is around.
+class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
     : public blink::mojom::ServiceWorkerRegistrationObjectHost,
       public ServiceWorkerRegistration::Listener {
  public:
-  ServiceWorkerRegistrationHandle(
+  ServiceWorkerRegistrationObjectHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
       ServiceWorkerDispatcherHost* dispatcher_host,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ServiceWorkerRegistration* registration);
-  ~ServiceWorkerRegistrationHandle() override;
+  ~ServiceWorkerRegistrationObjectHost() override;
 
   // Establishes a new mojo connection into |bindings_|.
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr CreateObjectInfo();
@@ -97,11 +99,10 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
 
   // Sets the corresponding version field to the given version or if the given
   // version is nullptr, clears the field.
-  void SetVersionAttributes(
-      ChangedVersionAttributesMask changed_mask,
-      ServiceWorkerVersion* installing_version,
-      ServiceWorkerVersion* waiting_version,
-      ServiceWorkerVersion* active_version);
+  void SetVersionAttributes(ChangedVersionAttributesMask changed_mask,
+                            ServiceWorkerVersion* installing_version,
+                            ServiceWorkerVersion* waiting_version,
+                            ServiceWorkerVersion* active_version);
 
   void OnConnectionError();
 
@@ -129,14 +130,13 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
       remote_registration_;
 
-  // This handle is the primary owner of this registration.
   scoped_refptr<ServiceWorkerRegistration> registration_;
 
-  base::WeakPtrFactory<ServiceWorkerRegistrationHandle> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerRegistrationObjectHost> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandle);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationObjectHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_HANDLE_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_OBJECT_HOST_H_

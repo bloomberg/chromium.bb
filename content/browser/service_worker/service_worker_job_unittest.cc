@@ -24,7 +24,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_registration_handle.h"
+#include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -53,7 +53,7 @@ namespace content {
 namespace {
 
 // A dispatcher host that holds on to all registered ServiceWorkerHandles and
-// ServiceWorkerRegistrationHandles.
+// ServiceWorkerRegistrationObjectHosts.
 class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
  public:
   KeepHandlesDispatcherHost(int render_process_id,
@@ -63,40 +63,41 @@ class KeepHandlesDispatcherHost : public ServiceWorkerDispatcherHost {
       std::unique_ptr<ServiceWorkerHandle> handle) override {
     handles_.push_back(std::move(handle));
   }
-  void RegisterServiceWorkerRegistrationHandle(
-      ServiceWorkerRegistrationHandle* handle) override {
-    registration_handles_.push_back(base::WrapUnique(handle));
+  void RegisterServiceWorkerRegistrationObjectHost(
+      ServiceWorkerRegistrationObjectHost* registration_object_host) override {
+    registration_object_hosts_.push_back(
+        base::WrapUnique(registration_object_host));
   }
-  void UnregisterServiceWorkerRegistrationHandle(int handle_id) override {
-    auto iter = registration_handles_.begin();
-    for (; iter != registration_handles_.end(); ++iter) {
+  void UnregisterServiceWorkerRegistrationObjectHost(int handle_id) override {
+    auto iter = registration_object_hosts_.begin();
+    for (; iter != registration_object_hosts_.end(); ++iter) {
       if ((*iter)->handle_id() == handle_id)
         break;
     }
-    ASSERT_NE(registration_handles_.end(), iter);
-    registration_handles_.erase(iter);
+    ASSERT_NE(registration_object_hosts_.end(), iter);
+    registration_object_hosts_.erase(iter);
   }
 
-  void RemoveHandles() {
+  void Clear() {
     handles_.clear();
-    registration_handles_.clear();
+    registration_object_hosts_.clear();
   }
 
   const std::vector<std::unique_ptr<ServiceWorkerHandle>>& handles() {
     return handles_;
   }
 
-  const std::vector<std::unique_ptr<ServiceWorkerRegistrationHandle>>&
-  registration_handles() {
-    return registration_handles_;
+  const std::vector<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>&
+  registration_object_hosts() {
+    return registration_object_hosts_;
   }
 
  private:
   ~KeepHandlesDispatcherHost() override {}
 
   std::vector<std::unique_ptr<ServiceWorkerHandle>> handles_;
-  std::vector<std::unique_ptr<ServiceWorkerRegistrationHandle>>
-      registration_handles_;
+  std::vector<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
+      registration_object_hosts_;
   DISALLOW_COPY_AND_ASSIGN(KeepHandlesDispatcherHost);
 };
 
@@ -416,15 +417,15 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   scoped_refptr<ServiceWorkerRegistration> registration =
       RunRegisterJob(pattern, GURL("http://www.example.com/service_worker.js"));
 
-  EXPECT_EQ(1UL, dispatcher_host->registration_handles().size());
+  EXPECT_EQ(1UL, dispatcher_host->registration_object_hosts().size());
   EXPECT_EQ(3UL, dispatcher_host->handles().size());
 
   RunUnregisterJob(pattern);
 
-  // Remove the handles. The only reference to the registration object should be
-  // |registration|.
-  dispatcher_host->RemoveHandles();
-  EXPECT_EQ(0UL, dispatcher_host->registration_handles().size());
+  // Clear all the references. The only reference to the registration object
+  // should be |registration|.
+  dispatcher_host->Clear();
+  EXPECT_EQ(0UL, dispatcher_host->registration_object_hosts().size());
   EXPECT_EQ(0UL, dispatcher_host->handles().size());
   ASSERT_TRUE(registration->HasOneRef());
 
@@ -485,10 +486,10 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   scoped_refptr<ServiceWorkerRegistration> old_registration =
       RunRegisterJob(pattern, script_url);
 
-  // Ensure that the registration's handle doesn't have the reference.
-  EXPECT_EQ(1UL, dispatcher_host->registration_handles().size());
-  dispatcher_host->RemoveHandles();
-  EXPECT_EQ(0UL, dispatcher_host->registration_handles().size());
+  // Ensure that the registration's object host doesn't have the reference.
+  EXPECT_EQ(1UL, dispatcher_host->registration_object_hosts().size());
+  dispatcher_host->Clear();
+  EXPECT_EQ(0UL, dispatcher_host->registration_object_hosts().size());
   ASSERT_TRUE(old_registration->HasOneRef());
 
   scoped_refptr<ServiceWorkerRegistration> old_registration_by_pattern =
