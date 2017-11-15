@@ -54,8 +54,7 @@ SignalingConnector::SignalingConnector(
       weak_factory_(this) {
   DCHECK(!auth_failed_callback_.is_null());
   DCHECK(dns_blackhole_checker_.get());
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-  net::NetworkChangeNotifier::AddIPAddressObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   signal_strategy_->AddListener(this);
   ScheduleTryReconnect();
 }
@@ -63,8 +62,7 @@ SignalingConnector::SignalingConnector(
 SignalingConnector::~SignalingConnector() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   signal_strategy_->RemoveListener(this);
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
-  net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void SignalingConnector::OnSignalStrategyStateChange(
@@ -92,20 +90,12 @@ bool SignalingConnector::OnSignalStrategyIncomingStanza(
   return false;
 }
 
-void SignalingConnector::OnConnectionTypeChanged(
+void SignalingConnector::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
       signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
     HOST_LOG << "Network state changed to online.";
-    ResetAndTryReconnect();
-  }
-}
-
-void SignalingConnector::OnIPAddressChanged() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (signal_strategy_->GetState() == SignalStrategy::DISCONNECTED) {
-    HOST_LOG << "IP address has changed.";
     ResetAndTryReconnect();
   }
 }
