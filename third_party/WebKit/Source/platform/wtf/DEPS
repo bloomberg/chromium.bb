@@ -27,3 +27,9 @@ include_rules = [
     "+sandbox/linux/services/resource_limits.h",
     "-v8",
 ]
+
+specific_include_rules = {
+  ".*Test\.cpp": [
+    "+base/threading/thread.h"
+  ]
+}
