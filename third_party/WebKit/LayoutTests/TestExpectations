@@ -1996,8 +1996,6 @@ crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-sta
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
@@ -3020,8 +3018,6 @@ crbug.com/722212 virtual/mouseevent_fractional/fast/events/pointerevents/mouse-p
 # Crashes on win
 crbug.com/722943 media/audio-repaint.html [ Skip ]
 
-crbug.com/714166 http/tests/devtools/network/waterfall-images.html [ Skip ]
-crbug.com/715405 virtual/mojo-loading/http/tests/devtools/network/waterfall-images.html [ Skip ]
 crbug.com/708175 external/wpt/IndexedDB/interleaved-cursors.html [ Failure Pass ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-activesourcebuffers.html [ Failure Pass ]
