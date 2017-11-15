@@ -93,6 +93,7 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
   assertEquals(text1, result.nodes[0].node);
   assertEquals(6, result.nodes[1].startChar);
   assertEquals(text2, result.nodes[1].node);
+  assertEquals(paragraph1, result.blockParent);
 });
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
@@ -116,4 +117,5 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
   assertEquals(text1, result.nodes[0].node);
   assertEquals(6, result.nodes[1].startChar);
   assertEquals(linkText, result.nodes[1].node);
+  assertEquals(paragraph1, result.blockParent);
 });
