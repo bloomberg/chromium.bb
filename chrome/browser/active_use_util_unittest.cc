@@ -19,6 +19,18 @@ TEST(ShouldRecordActiveUse, OrdinaryCommand) {
 #endif
 }
 
+// --try-chrome-again by itself shouldn't do anything, just like the
+// OrdinaryCommand case.
+TEST(ShouldRecordActiveUse, FakeTryChromeAgainCommand) {
+  base::CommandLine cmd_line(base::FilePath(FILE_PATH_LITERAL("foo.exe")));
+  cmd_line.AppendSwitch(switches::kTryChromeAgain);
+#if !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(ShouldRecordActiveUse(cmd_line));
+#else
+  EXPECT_FALSE(ShouldRecordActiveUse(cmd_line));
+#endif
+}
+
 TEST(ShouldRecordActiveUse, TryChromeAgainCommand) {
   base::CommandLine cmd_line(base::FilePath(FILE_PATH_LITERAL("foo.exe")));
   cmd_line.AppendSwitchASCII(switches::kTryChromeAgain, "0");

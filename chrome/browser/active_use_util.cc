@@ -17,5 +17,5 @@ bool ShouldRecordActiveUse(const base::CommandLine& command_line) {
   if (!install_static::kUseGoogleUpdateIntegration)
     return false;
 #endif
-  return !command_line.HasSwitch(switches::kTryChromeAgain);
+  return command_line.GetSwitchValueNative(switches::kTryChromeAgain).empty();
 }
