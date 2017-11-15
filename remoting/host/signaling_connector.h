@@ -25,8 +25,7 @@ class DnsBlackholeChecker;
 // whenever connection type changes or IP address changes.
 class SignalingConnector
     : public SignalStrategy::Listener,
-      public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public net::NetworkChangeNotifier::IPAddressObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // The |auth_failed_callback| is called when authentication fails.
   SignalingConnector(XmppSignalStrategy* signal_strategy,
@@ -44,12 +43,9 @@ class SignalingConnector
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
-  // NetworkChangeNotifier::ConnectionTypeObserver interface.
-  void OnConnectionTypeChanged(
+  // NetworkChangeNotifier::NetworkChangeObserver interface.
+  void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
-
-  // NetworkChangeNotifier::IPAddressObserver interface.
-  void OnIPAddressChanged() override;
 
  private:
   void OnNetworkError();
