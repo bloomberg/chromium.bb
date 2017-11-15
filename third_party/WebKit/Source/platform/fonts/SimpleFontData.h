@@ -205,8 +205,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   // These are set to non-zero when ascent or descent is rounded or shifted
   // to be smaller than the actual ascent or descent. When calculating visual
   // overflows, we should add the inflations.
-  unsigned visual_overflow_inflation_for_ascent_ : 2;
-  unsigned visual_overflow_inflation_for_descent_ : 2;
+  unsigned visual_overflow_inflation_for_ascent_;
+  unsigned visual_overflow_inflation_for_descent_;
 
   mutable LayoutUnit em_height_ascent_;
   mutable LayoutUnit em_height_descent_;
