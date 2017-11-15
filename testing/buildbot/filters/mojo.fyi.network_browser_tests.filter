@@ -81,7 +81,8 @@
 -DicePrepareMigrationBrowserTest.Signin
 -DicePrepareMigrationBrowserTest.Signout
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
-# The next two DnsProbeBrowserTests are flaky.
+# DnsProbeBrowserTests that are flaky.
+-DnsProbeBrowserTest.CorrectionsLoadStoppedSlowProbe
 -DomainReliabilityBrowserTest.Upload
 -DoNotTrackTest.Redirect
 -DoNotTrackTest.Simple
