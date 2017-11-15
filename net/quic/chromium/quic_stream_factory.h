@@ -203,6 +203,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool mark_quic_broken_when_network_blackholes,
       int idle_connection_timeout_seconds,
       int reduced_ping_timeout_seconds,
+      int max_time_before_crypto_handshake_seconds,
+      int max_idle_time_before_crypto_handshake_seconds,
       bool connect_using_default_network,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,

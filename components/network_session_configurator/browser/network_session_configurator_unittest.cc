@@ -95,6 +95,10 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params_.quic_idle_connection_timeout_seconds);
   EXPECT_EQ(net::kPingTimeoutSecs, params_.quic_reduced_ping_timeout_seconds);
+  EXPECT_EQ(net::kMaxTimeForCryptoHandshakeSecs,
+            params_.quic_max_time_before_crypto_handshake_seconds);
+  EXPECT_EQ(net::kInitialIdleTimeoutSecs,
+            params_.quic_max_idle_time_before_crypto_handshake_seconds);
   EXPECT_FALSE(params_.quic_race_cert_verification);
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
   EXPECT_FALSE(params_.quic_connect_using_default_network);
@@ -202,6 +206,48 @@ TEST_F(NetworkSessionConfiguratorTest,
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
   ParseFieldTrials();
   EXPECT_EQ(10, params_.quic_reduced_ping_timeout_seconds);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMaxTimeBeforeCryptoHandshakeSeconds) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_time_before_crypto_handshake_seconds"] = "7";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+  ParseFieldTrials();
+  EXPECT_EQ(7, params_.quic_max_time_before_crypto_handshake_seconds);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       NegativeQuicMaxTimeBeforeCryptoHandshakeSeconds) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_time_before_crypto_handshake_seconds"] = "-1";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+  ParseFieldTrials();
+  EXPECT_EQ(net::kMaxTimeForCryptoHandshakeSecs,
+            params_.quic_max_time_before_crypto_handshake_seconds);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicMaxIdleTimeBeforeCryptoHandshakeSeconds) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_idle_time_before_crypto_handshake_seconds"] = "11";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+  ParseFieldTrials();
+  EXPECT_EQ(11, params_.quic_max_idle_time_before_crypto_handshake_seconds);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       NegativeQuicMaxIdleTimeBeforeCryptoHandshakeSeconds) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["max_idle_time_before_crypto_handshake_seconds"] = "-1";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+  ParseFieldTrials();
+  EXPECT_EQ(net::kInitialIdleTimeoutSecs,
+            params_.quic_max_idle_time_before_crypto_handshake_seconds);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {

@@ -152,6 +152,11 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // Specifies the reduced ping timeout subsequent connections should use when
     // a connection was timed out with open streams.
     int quic_reduced_ping_timeout_seconds;
+    // Maximum time the session can be alive before crypto handshake is
+    // finished.
+    int quic_max_time_before_crypto_handshake_seconds;
+    // Maximum idle time before the crypto handshake has completed.
+    int quic_max_idle_time_before_crypto_handshake_seconds;
     // If true, QUIC will attempt to explicitly use default network for sockets.
     bool quic_connect_using_default_network;
     // If true, active QUIC sessions may be migrated onto a new network when
