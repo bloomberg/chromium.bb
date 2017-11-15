@@ -88,7 +88,7 @@
 
       <!-- Old Mojo JS bindings library. -->
       <include name="IDR_MOJO_ASSOCIATED_BINDINGS_JS" file="../../../mojo/public/js/associated_bindings.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_MOJO_BINDINGS_JS" file="../../../mojo/public/js/bindings.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_BINDINGS_JS_DEPRECATED" file="../../../mojo/public/js/bindings.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_BUFFER_JS" file="../../../mojo/public/js/buffer.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_CODEC_JS" file="../../../mojo/public/js/codec.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_MOJO_CONNECTOR_JS" file="../../../mojo/public/js/connector.js" flattenhtml="true" type="BINDATA" />

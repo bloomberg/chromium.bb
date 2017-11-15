@@ -189,11 +189,12 @@ void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
 }
 
 void ModuleSystemTestEnvironment::RegisterModule(const std::string& name,
-                                                 int resource_id) {
+                                                 int resource_id,
+                                                 bool gzipped) {
   const std::string& code = ui::ResourceBundle::GetSharedInstance()
                                 .GetRawDataResource(resource_id)
                                 .as_string();
-  source_map_->RegisterModule(name, code);
+  source_map_->RegisterModule(name, code, gzipped);
 }
 
 void ModuleSystemTestEnvironment::OverrideNativeHandler(

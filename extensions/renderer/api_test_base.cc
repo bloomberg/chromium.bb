@@ -121,12 +121,13 @@ ApiTestEnvironment::~ApiTestEnvironment() {
 
 void ApiTestEnvironment::RegisterModules() {
   v8_schema_registry_.reset(new V8SchemaRegistry);
-  const std::vector<std::pair<const char*, int>> resources =
+  const std::vector<Dispatcher::JsResourceInfo> resources =
       Dispatcher::GetJsResources();
   for (const auto& resource : resources) {
-    if (base::StringPiece(resource.first) !=
-        "test_environment_specific_bindings")
-      env()->RegisterModule(resource.first, resource.second);
+    if (base::StringPiece(resource.name) !=
+        "test_environment_specific_bindings") {
+      env()->RegisterModule(resource.name, resource.id, resource.gzipped);
+    }
   }
   Dispatcher::RegisterNativeHandlers(env()->module_system(),
                                      env()->context(),

@@ -101,6 +101,7 @@
 #include "extensions/renderer/worker_thread_dispatcher.h"
 #include "gin/converter.h"
 #include "mojo/public/js/constants.h"
+#include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -644,9 +645,9 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
 }
 
 // static
-std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
+std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
   // Libraries.
-  std::vector<std::pair<const char*, int>> resources = {
+  std::vector<JsResourceInfo> resources = {
       {"appView", IDR_APP_VIEW_JS},
       {"entryIdManager", IDR_ENTRY_ID_MANAGER},
       {"extensionOptions", IDR_EXTENSION_OPTIONS_JS},
@@ -690,7 +691,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {"webViewInternal", IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS},
 
       {mojo::kAssociatedBindingsModuleName, IDR_MOJO_ASSOCIATED_BINDINGS_JS},
-      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
+      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS_DEPRECATED},
       {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
       {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
       {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
@@ -715,6 +716,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
       {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
       {"async_waiter", IDR_ASYNC_WAITER_JS},
       {"keep_alive", IDR_KEEP_ALIVE_JS},
+      {"mojo_bindings", IDR_MOJO_BINDINGS_JS, true},
       {"extensions/common/mojo/keep_alive.mojom", IDR_KEEP_ALIVE_MOJOM_JS},
 
       // Custom bindings.
@@ -739,19 +741,19 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
   };
 
   if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
-    resources.emplace_back("binding", IDR_BINDING_JS);
-    resources.emplace_back(kEventBindings, IDR_EVENT_BINDINGS_JS);
-    resources.emplace_back("lastError", IDR_LAST_ERROR_JS);
-    resources.emplace_back("sendRequest", IDR_SEND_REQUEST_JS);
+    resources.push_back({"binding", IDR_BINDING_JS});
+    resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
+    resources.push_back({"lastError", IDR_LAST_ERROR_JS});
+    resources.push_back({"sendRequest", IDR_SEND_REQUEST_JS});
 
     // Custom types sources.
-    resources.emplace_back("StorageArea", IDR_STORAGE_AREA_JS);
+    resources.push_back({"StorageArea", IDR_STORAGE_AREA_JS});
   }
 
   if (base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames)) {
-    resources.emplace_back("guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS);
-    resources.emplace_back("guestViewIframeContainer",
-                           IDR_GUEST_VIEW_IFRAME_CONTAINER_JS);
+    resources.push_back({"guestViewIframe", IDR_GUEST_VIEW_IFRAME_JS});
+    resources.push_back(
+        {"guestViewIframeContainer", IDR_GUEST_VIEW_IFRAME_CONTAINER_JS});
   }
 
   return resources;
@@ -1378,10 +1380,9 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
 }
 
 void Dispatcher::PopulateSourceMap() {
-  const std::vector<std::pair<const char*, int>> resources = GetJsResources();
-  for (const auto& resource : resources) {
-    source_map_.RegisterSource(resource.first, resource.second);
-  }
+  const std::vector<JsResourceInfo> resources = GetJsResources();
+  for (const auto& resource : resources)
+    source_map_.RegisterSource(resource.name, resource.id, resource.gzipped);
   delegate_->PopulateSourceMap(&source_map_);
 }
 
