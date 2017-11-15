@@ -235,6 +235,8 @@ source_set("snapshot_test") {
 
   data_deps = [
     ":crashpad_snapshot_test_module",
+    ":crashpad_snapshot_test_module_large",
+    ":crashpad_snapshot_test_module_small",
   ]
 
   if (is_mac) {
@@ -268,6 +270,28 @@ loadable_module("crashpad_snapshot_test_module") {
   deps = [
     "//base",
     "//third_party/crashpad/crashpad/client",
+  ]
+}
+
+loadable_module("crashpad_snapshot_test_module_large") {
+  testonly = true
+  sources = [
+    "crashpad_info_size_test_module.cc",
+  ]
+  defines = [ "CRASHPAD_INFO_SIZE_TEST_MODULE_LARGE" ]
+  deps = [
+    "//base",
+  ]
+}
+
+loadable_module("crashpad_snapshot_test_module_small") {
+  testonly = true
+  sources = [
+    "crashpad_info_size_test_module.cc",
+  ]
+  defines = [ "CRASHPAD_INFO_SIZE_TEST_MODULE_SMALL" ]
+  deps = [
+    "//base",
   ]
 }
 
