@@ -141,25 +141,6 @@ const uint64_t kCompositingReasonComboAllStyleDeterminedReasons =
     kCompositingReasonComboCompositedDescendants |
     kCompositingReasonCombo3DDescendants | kCompositingReasonInlineTransform;
 
-const uint64_t kCompositingReasonComboReasonsThatRequireOwnBacking =
-    kCompositingReasonComboAllDirectReasons | kCompositingReasonOverlap |
-    kCompositingReasonAssumedOverlap |
-    kCompositingReasonNegativeZIndexChildren |
-    kCompositingReasonSquashingDisallowed |
-    kCompositingReasonTransformWithCompositedDescendants |
-    kCompositingReasonOpacityWithCompositedDescendants |
-    kCompositingReasonMaskWithCompositedDescendants |
-    kCompositingReasonFilterWithCompositedDescendants |
-    kCompositingReasonBlendingWithCompositedDescendants |
-    kCompositingReasonIsolateCompositedDescendants |
-    kCompositingReasonPreserve3DWith3DDescendants |  // preserve-3d has to
-                                                     // create a backing store
-                                                     // to ensure that
-                                                     // 3d-transformed elements
-                                                     // intersect.
-    kCompositingReasonBackdropFilter |
-    kCompositingReasonPositionFixedOrStickyWithCompositedDescendants;
-
 const uint64_t kCompositingReasonComboSquashableReasons =
     kCompositingReasonOverlap | kCompositingReasonAssumedOverlap |
     kCompositingReasonOverflowScrollingParent;
