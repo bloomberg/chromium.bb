@@ -4,12 +4,8 @@
 
 #include "ash/login/ui/lock_window.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "ui/aura/window.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 
 namespace ash {
@@ -22,14 +18,10 @@ LockWindow::LockWindow(Config config) {
   params.delegate = this;
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  const int kLockContainer = kShellWindowId_LockScreenContainer;
-
-  if (config == Config::MASH) {
-    params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(kLockContainer);
-  } else {
-    params.parent =
-        Shell::GetContainer(Shell::GetPrimaryRootWindow(), kLockContainer);
+  // Shell may be null in tests.
+  if (Shell::HasInstance()) {
+    params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                        kShellWindowId_LockScreenContainer);
   }
   Init(params);
   SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
