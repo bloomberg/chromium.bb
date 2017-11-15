@@ -31,8 +31,8 @@ class EmbeddedWorkerDevToolsAgent : public IPC::Listener {
   void SendMessage(IPC::Sender* sender,
                    int session_id,
                    int call_id,
-                   const std::string& message,
-                   const std::string& state_cookie);
+                   std::string message,
+                   std::string state_cookie);
 
   bool OnMessageReceived(const IPC::Message& message) override;
 
