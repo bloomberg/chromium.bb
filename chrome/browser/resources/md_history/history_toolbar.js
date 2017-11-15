@@ -92,6 +92,15 @@ Polymer({
   },
 
   /**
+   * @param {boolean} showMenuPromo
+   * @return {boolean}
+   * @private
+   */
+  canShowMenuPromo_: function(showMenuPromo) {
+    return this.showMenuPromo && !loadTimeData.getBoolean('isGuestSession');
+  },
+
+  /**
    * @param {!CustomEvent} event
    * @private
    */
