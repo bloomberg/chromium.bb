@@ -496,7 +496,6 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
                                'zircon.bin')
 
   kernel_args = ['devmgr.epoch=%d' % time.time(),
-                 'kernel.halt_on_panic=true',
                  'zircon.nodename=' + INSTANCE_ID]
   if bootfs_data.has_autorun:
     # See https://fuchsia.googlesource.com/zircon/+/master/docs/kernel_cmdline.md#zircon_autorun_system_command.
