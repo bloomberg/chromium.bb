@@ -58,12 +58,4 @@ bool FrameConnectorDelegate::IsHidden() const {
   return false;
 }
 
-bool FrameConnectorDelegate::IsThrottled() const {
-  return false;
-}
-
-bool FrameConnectorDelegate::IsSubtreeThrottled() const {
-  return false;
-}
-
 }  // namespace content

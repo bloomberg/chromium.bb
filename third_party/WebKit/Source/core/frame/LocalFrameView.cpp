@@ -3199,13 +3199,6 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   AutoReset<bool> past_layout_lifecycle_update(&past_layout_lifecycle_update_,
                                                true);
 
-  // OOPIF local frame roots that are throttled can return now that layout
-  // is clean and intersection observations can be calculated.
-  if (ShouldThrottleRendering()) {
-    UpdateViewportIntersectionsForSubtree(target_state);
-    return;
-  }
-
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.PerformScrollAnchoringAdjustments();
   });
@@ -5222,11 +5215,10 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
 
   // Note that we disallow throttling of 0x0 and display:none frames because
   // some sites use them to drive UI logic.
-  hidden_for_throttling_ = hidden && !FrameRect().IsEmpty();
-  subtree_throttled_ = subtree_throttled;
   HTMLFrameOwnerElement* owner_element = frame_->DeprecatedLocalOwner();
-  if (owner_element)
-    hidden_for_throttling_ &= !!owner_element->GetLayoutObject();
+  hidden_for_throttling_ = hidden && !FrameRect().IsEmpty() &&
+                           (owner_element && owner_element->GetLayoutObject());
+  subtree_throttled_ = subtree_throttled;
 
   bool is_throttled = CanThrottleRendering();
   bool became_unthrottled = was_throttled && !is_throttled;

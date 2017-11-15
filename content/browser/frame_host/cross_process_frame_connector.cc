@@ -50,8 +50,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
                         OnUpdateViewportIntersection)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetIsInert, OnSetIsInert)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateRenderThrottlingStatus,
-                        OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequireSequence, OnRequireSequence)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -461,26 +459,6 @@ void CrossProcessFrameConnector::SetVisibilityForChildViews(
 void CrossProcessFrameConnector::ResetFrameRect() {
   local_surface_id_ = viz::LocalSurfaceId();
   frame_rect_ = gfx::Rect();
-}
-
-void CrossProcessFrameConnector::OnUpdateRenderThrottlingStatus(
-    bool is_throttled,
-    bool subtree_throttled) {
-  if (is_throttled != is_throttled_ ||
-      subtree_throttled != subtree_throttled_) {
-    is_throttled_ = is_throttled;
-    subtree_throttled_ = subtree_throttled;
-    if (view_)
-      view_->UpdateRenderThrottlingStatus();
-  }
-}
-
-bool CrossProcessFrameConnector::IsThrottled() const {
-  return is_throttled_;
-}
-
-bool CrossProcessFrameConnector::IsSubtreeThrottled() const {
-  return subtree_throttled_;
 }
 
 }  // namespace content
