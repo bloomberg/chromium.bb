@@ -73,6 +73,7 @@ http://ftp.us.debian.org/debian/pool/main/k/krb5/libkdb5-8_1.15-1+deb9u1_amd64.d
 http://ftp.us.debian.org/debian/pool/main/k/krb5/libkrb5-3_1.15-1+deb9u1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/k/krb5/libkrb5-dev_1.15-1+deb9u1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/k/krb5/libkrb5support0_1.15-1+deb9u1_amd64.deb
+http://ftp.us.debian.org/debian/pool/main/libb/libbsd/libbsd0_0.8.3-1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libc/libcap2/libcap2_2.25-1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libc/libcap2/libcap-dev_2.25-1_amd64.deb
 http://ftp.us.debian.org/debian/pool/main/libd/libdrm/libdrm2_2.4.74-1_amd64.deb

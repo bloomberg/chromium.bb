@@ -1,37 +1,37 @@
 {
     "stretch_amd64": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "ee33ea4e4de55a2d24c4d28aea83cfcf3eecad4e",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "eb7e2d2c563b6a6f6e32b967d5585a6d33636d35",
         "SysrootDir": "debian_stretch_amd64-sysroot",
         "Tarball": "debian_stretch_amd64_sysroot.tar.xz"
     },
     "stretch_arm": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "d322e43a2b714eae47dd5defdc96217c87a4b3de",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "1d827c64de8f0205bef7ec0c9c7f769326e32141",
         "SysrootDir": "debian_stretch_arm-sysroot",
         "Tarball": "debian_stretch_arm_sysroot.tar.xz"
     },
     "stretch_arm64": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "9d045c8c2c302f88d99f84e9c82953beeb495164",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "2649a7ffa2e0d9a42a9a567a33967ec706bd3b8e",
         "SysrootDir": "debian_stretch_arm64-sysroot",
         "Tarball": "debian_stretch_arm64_sysroot.tar.xz"
     },
     "stretch_i386": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "9c7a45ab99ce6bb24935108b2d92a129f935c459",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "8fa3ac112fe5bb583624100379f715f3db5d6965",
         "SysrootDir": "debian_stretch_i386-sysroot",
         "Tarball": "debian_stretch_i386_sysroot.tar.xz"
     },
     "stretch_mips": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "191df324dba5f82ffffbb750fa2c887146db28a7",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "85a3f9e3f2d6ff2a5b2623f202689ef03ea12231",
         "SysrootDir": "debian_stretch_mips-sysroot",
         "Tarball": "debian_stretch_mips_sysroot.tar.xz"
     },
     "stretch_mips64el": {
-        "Revision": "78c7b1906cf3ee5f342eddc46398c97530e8757a",
-        "Sha1Sum": "3941b9493d200423bb55bd5ab4ff2585fbf667c4",
+        "Revision": "2202c161310ffde63729f29d27fe7bb24a0bc540",
+        "Sha1Sum": "004ad054e0613b9d8d51573068387625bb657d12",
         "SysrootDir": "debian_stretch_mips64el-sysroot",
         "Tarball": "debian_stretch_mips64el_sysroot.tar.xz"
     }
