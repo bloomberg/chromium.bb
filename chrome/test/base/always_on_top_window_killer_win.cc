@@ -251,6 +251,18 @@ BOOL WindowEnumerator::OnWindow(HWND hwnd) {
     LOG(ERROR) << (run_type_ == RunType::BEFORE_SHARD ? kWindowFoundBeforeTest
                                                       : kWindowFoundPostTest)
                << details;
+    // Try to strip the style and iconify the window.
+    if (::SetWindowLongPtr(
+            hwnd, GWL_EXSTYLE,
+            ::GetWindowLong(hwnd, GWL_EXSTYLE) & ~WS_EX_TOPMOST)) {
+      LOG(ERROR) << "Stripped WS_EX_TOPMOST.";
+    } else {
+      PLOG(ERROR) << "Failed to strip WS_EX_TOPMOST";
+    }
+    if (::ShowWindow(hwnd, SW_FORCEMINIMIZE))
+      LOG(ERROR) << "Minimized window.";
+    else
+      PLOG(ERROR) << "Failed to minimize window";
   }
 
   return kContinueIterating;
