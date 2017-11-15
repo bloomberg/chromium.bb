@@ -1,12 +1,13 @@
-<html>
-<head>
-<title>Test search in sources.</title>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/search/search-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests that ScriptSearchScope sorts network and dirty results correctly.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   function fileSystemUISourceCodes() {
     var uiSourceCodes = [];
     var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
@@ -57,9 +58,7 @@ function test() {
   }
 
   function loadResource(name) {
-    var urlPrefix =
-        TestRunner.mainTarget.inspectedURL().substr(0, TestRunner.mainTarget.inspectedURL().lastIndexOf('/') + 1);
-    var url = urlPrefix + 'resources/' + name;
+    var url = TestRunner.url('resources/' + name);
     return Runtime.loadResourcePromise(url).then(function(text) {
       resources[name] = text;
     });
@@ -103,11 +102,4 @@ function test() {
       SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     }
   ];
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that ScriptSearchScope sorts network and dirty results correctly.</p>
-</body>
-</html>
+})();
