@@ -73,7 +73,7 @@ void RecordIndexAndWriteRulesetResult(
 // ruleset, and it is expected that version updates will be frequent enough.
 class SentinelFile {
  public:
-  SentinelFile(base::FilePath& version_directory)
+  explicit SentinelFile(const base::FilePath& version_directory)
       : path_(IndexedRulesetLocator::GetSentinelFilePath(version_directory)) {}
 
   bool IsPresent() { return base::PathExists(path_); }
@@ -411,13 +411,14 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   // Due to the same-version check in IndexAndStoreAndPublishRulesetIfNeeded, we
   // would not normally find a pre-existing copy at this point unless the
   // previous write was interrupted.
-  if (!base::DeleteFile(indexed_ruleset_version_dir, true)) {
+  if (!base::DeleteFile(indexed_ruleset_version_dir, true))
     return IndexAndWriteRulesetResult::FAILED_DELETE_PREEXISTING;
-  }
 
+  base::FilePath scratch_dir_with_new_indexed_ruleset = scratch_dir.Take();
   base::File::Error error;
-  if (!(*g_replace_file_func)(scratch_dir.GetPath(),
+  if (!(*g_replace_file_func)(scratch_dir_with_new_indexed_ruleset,
                               indexed_ruleset_version_dir, &error)) {
+    base::DeleteFile(scratch_dir_with_new_indexed_ruleset, true);
     // While enumerators of base::File::Error all have negative values, the
     // histogram records the absolute values.
     UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.WriteRuleset.ReplaceFileError",
@@ -425,7 +426,6 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
     return IndexAndWriteRulesetResult::FAILED_REPLACE_FILE;
   }
 
-  scratch_dir.Take();
   return IndexAndWriteRulesetResult::SUCCESS;
 }
 
