@@ -475,15 +475,19 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                 models.append(model)
 
             if len(models) > 1:
-              parallel.RunParallelSteps(
-                  [lambda: self._RunPaygenTestStage(
-                      suite_name,
-                      archive_board,
-                      model.name,
-                      model.lab_board_name,
-                      archive_build,
-                      finished_uri)
-                   for model in models])
+              stages = [PaygenTestStage(
+                  self._run,
+                  suite_name,
+                  archive_board,
+                  model.name,
+                  model.lab_board_name,
+                  self.channel,
+                  archive_build,
+                  finished_uri,
+                  self.skip_duts_check,
+                  self.debug) for model in models]
+              steps = [stage.Run for stage in stages]
+              parallel.RunParallelSteps(steps)
             elif len(models) == 1:
               PaygenTestStage(
                   self._run,
@@ -520,21 +524,6 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         # This means the build was finished by the other process, or is already
         # being processed (so the build is locked).
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
-
-  def _RunPaygenTestStage(
-      self, suite_name, board, model, lab_board_name, build, finished_uri):
-    """Runs the PaygenTest stage"""
-    PaygenTestStage(
-        self._run,
-        suite_name,
-        board,
-        model,
-        lab_board_name,
-        self.channel,
-        build,
-        finished_uri,
-        self.skip_duts_check,
-        self.debug).Run()
 
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
