@@ -12,7 +12,8 @@ import argparse
 import os
 import sys
 
-from runner_common import RunFuchsia, BuildBootfs, ReadRuntimeDeps
+from runner_common import BuildBootfs, ImageCreationData, ReadRuntimeDeps, \
+    RunFuchsia
 
 
 def main():
@@ -55,11 +56,18 @@ def main():
       return 2
     runtime_deps.append(tuple(parts))
 
-  bootfs = BuildBootfs(
-      args.output_directory, runtime_deps, args.exe_name, child_args,
-      args.dry_run, args.bootdata, summary_output=None, shutdown_machine=False,
-      target_cpu=args.target_cpu, use_device=args.device,
-      wait_for_network=True, use_autorun=not args.no_autorun)
+  image_creation_data = ImageCreationData(
+      output_directory=args.output_directory,
+      exe_name=args.exe_name,
+      runtime_deps=runtime_deps,
+      target_cpu=args.target_cpu,
+      dry_run=args.dry_run,
+      child_args=child_args,
+      use_device=args.device,
+      bootdata=args.bootdata,
+      wait_for_network=True,
+      use_autorun=not args.no_autorun)
+  bootfs = BuildBootfs(image_creation_data)
   if not bootfs:
     return 2
 

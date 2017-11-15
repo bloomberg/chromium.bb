@@ -16,8 +16,8 @@ import sys
 import tempfile
 import time
 
-from runner_common import RunFuchsia, BuildBootfs, ReadRuntimeDeps, \
-    HOST_IP_ADDRESS
+from runner_common import BuildBootfs, ImageCreationData, ReadRuntimeDeps, \
+    RunFuchsia, HOST_IP_ADDRESS
 
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
@@ -215,13 +215,20 @@ def main():
                                  'not applied.')
 
   try:
-    bootfs = BuildBootfs(
-        args.output_directory, runtime_deps, args.exe_name, child_args,
-        args.dry_run, bootdata=args.bootdata,
+    image_creation_data = ImageCreationData(
+        output_directory=args.output_directory,
+        exe_name=args.exe_name,
+        runtime_deps=runtime_deps,
+        target_cpu=args.target_cpu,
+        dry_run=args.dry_run,
+        child_args=child_args,
+        use_device=args.device,
+        bootdata=args.bootdata,
         summary_output=args.test_launcher_summary_output,
-        shutdown_machine=True, target_cpu=args.target_cpu,
-        use_device=args.device, wait_for_network=args.wait_for_network,
+        shutdown_machine=True,
+        wait_for_network=args.wait_for_network,
         use_autorun=True)
+    bootfs = BuildBootfs(image_creation_data)
     if not bootfs:
       return 2
 
