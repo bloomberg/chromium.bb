@@ -16,6 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
+#include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
+#include "chrome/browser/chromeos/file_system_provider/logging_observer.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/observer.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -47,123 +49,6 @@ const char kCustomProviderId[] = "custom_provider_id";
 // preferences works correctly. File System ID is used as a key in
 // a base::DictionaryValue, so it has to be stored without path expansion.
 const char kFileSystemId[] = "camera/pictures/id .!@#$%^&*()_+";
-
-// Utility observer, logging events from file_system_provider::Service.
-class LoggingObserver : public Observer {
- public:
-  class Event {
-   public:
-    Event(const ProvidedFileSystemInfo& file_system_info,
-          MountContext context,
-          base::File::Error error)
-        : file_system_info_(file_system_info),
-          context_(context),
-          error_(error) {}
-    ~Event() {}
-
-    const ProvidedFileSystemInfo& file_system_info() const {
-      return file_system_info_;
-    }
-    MountContext context() const { return context_; }
-    base::File::Error error() const { return error_; }
-
-   private:
-    ProvidedFileSystemInfo file_system_info_;
-    MountContext context_;
-    base::File::Error error_;
-  };
-
-  LoggingObserver() {}
-  ~LoggingObserver() override {}
-
-  // file_system_provider::Observer overrides.
-  void OnProvidedFileSystemMount(const ProvidedFileSystemInfo& file_system_info,
-                                 MountContext context,
-                                 base::File::Error error) override {
-    mounts.push_back(Event(file_system_info, context, error));
-  }
-
-  void OnProvidedFileSystemUnmount(
-      const ProvidedFileSystemInfo& file_system_info,
-      base::File::Error error) override {
-    // TODO(mtomasz): Split these events, as mount context doesn't make sense
-    // for unmounting.
-    unmounts.push_back(Event(file_system_info, MOUNT_CONTEXT_USER, error));
-  }
-
-  std::vector<Event> mounts;
-  std::vector<Event> unmounts;
-
-  DISALLOW_COPY_AND_ASSIGN(LoggingObserver);
-};
-
-// Fake implementation of the registry, since it's already tested separately.
-// For simplicity it can remember at most only one file system.
-class FakeRegistry : public RegistryInterface {
- public:
-  FakeRegistry() {}
-  ~FakeRegistry() override {}
-
-  // RegistryInterface overrides.
-  void RememberFileSystem(const ProvidedFileSystemInfo& file_system_info,
-                          const Watchers& watchers) override {
-    file_system_info_.reset(new ProvidedFileSystemInfo(file_system_info));
-    watchers_.reset(new Watchers(watchers));
-  }
-
-  void ForgetFileSystem(const std::string& extension_id,
-                        const std::string& file_system_id) override {
-    if (!file_system_info_.get() || !watchers_.get())
-      return;
-    if (file_system_info_->provider_id() == extension_id &&
-        file_system_info_->file_system_id() == file_system_id) {
-      file_system_info_.reset();
-      watchers_.reset();
-    }
-  }
-
-  std::unique_ptr<RestoredFileSystems> RestoreFileSystems(
-      const std::string& extension_id) override {
-    std::unique_ptr<RestoredFileSystems> result(new RestoredFileSystems);
-
-    if (file_system_info_.get() && watchers_.get()) {
-      RestoredFileSystem restored_file_system;
-      restored_file_system.provider_id = file_system_info_->provider_id();
-
-      MountOptions options;
-      options.file_system_id = file_system_info_->file_system_id();
-      options.display_name = file_system_info_->display_name();
-      options.writable = file_system_info_->writable();
-      options.supports_notify_tag = file_system_info_->supports_notify_tag();
-      restored_file_system.options = options;
-      restored_file_system.watchers = *watchers_.get();
-
-      result->push_back(restored_file_system);
-    }
-
-    return result;
-  }
-
-  void UpdateWatcherTag(const ProvidedFileSystemInfo& file_system_info,
-                        const Watcher& watcher) override {
-    ASSERT_TRUE(watchers_.get());
-    const Watchers::iterator it =
-        watchers_->find(WatcherKey(watcher.entry_path, watcher.recursive));
-    ASSERT_NE(watchers_->end(), it);
-    it->second.last_tag = watcher.last_tag;
-  }
-
-  const ProvidedFileSystemInfo* file_system_info() const {
-    return file_system_info_.get();
-  }
-  const Watchers* watchers() const { return watchers_.get(); }
-
- private:
-  std::unique_ptr<ProvidedFileSystemInfo> file_system_info_;
-  std::unique_ptr<Watchers> watchers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeRegistry);
-};
 
 // Creates a fake extension with the specified |extension_id|.
 scoped_refptr<extensions::Extension> CreateFakeExtension(
