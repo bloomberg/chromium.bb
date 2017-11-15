@@ -97,7 +97,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Were the failures caused by this gray area in the spec, now
     # forbidden?)
     self.Fail('conformance/extensions/ext-sRGB.html',
-        ['linux', 'mac', 'win'], bug=769989)
+        ['linux', 'mac', 'win', 'android'], bug=769989)
 
     # Need to implement new lifetime/deletion semantics.
     self.Fail('conformance/extensions/oes-vertex-array-object.html', bug=739604)
