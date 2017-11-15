@@ -1002,6 +1002,15 @@ class UnmatchedServiceWorkerProcessTracker
     RenderProcessHost* host = FindFreshestProcessForSite(site_url);
     if (!host)
       return nullptr;
+
+    // It's possible that |host| is currently unsuitable for hosting
+    // |site_url|, for example if it was used for a ServiceWorker for a
+    // nonexistent extension URL.  See https://crbug.com/782349 and
+    // https://crbug.com/780661.
+    if (!host->MayReuseHost() || !RenderProcessHostImpl::IsSuitableHost(
+                                     host, host->GetBrowserContext(), site_url))
+      return nullptr;
+
     site_process_set_.erase(SiteProcessIDPair(site_url, host->GetID()));
     if (!HasProcess(host))
       host->RemoveObserver(this);
@@ -3318,8 +3327,9 @@ bool RenderProcessHostImpl::IsSuitableHost(RenderProcessHost* host,
       ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK) {
     // If the process is already dedicated to a site, only allow the destination
     // URL to reuse this process if the URL has the same site.
-    return lock_state == ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
-                             HAS_EQUAL_LOCK;
+    if (lock_state !=
+        ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_EQUAL_LOCK)
+      return false;
   } else if (!host->IsUnused() && SiteInstanceImpl::ShouldLockToOrigin(
                                       browser_context, host, site_url)) {
     // Otherwise, if this process has been used to host any other content, it
@@ -3557,6 +3567,22 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   if (!render_process_host &&
       ShouldTryToUseExistingProcessHost(browser_context, site_url)) {
     render_process_host = GetExistingProcessHost(browser_context, site_url);
+  }
+
+  // If we found a process to reuse, sanity check that it is suitable for
+  // hosting |site_url|. For example, if |site_url| requires a dedicated
+  // process, we should never pick a process used by, or locked to, a different
+  // site.
+  if (render_process_host &&
+      !RenderProcessHostImpl::IsSuitableHost(render_process_host,
+                                             browser_context, site_url)) {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    base::debug::SetCrashKeyValue("requested_site_url", site_url.spec());
+    base::debug::SetCrashKeyValue(
+        "killed_process_origin_lock",
+        policy->GetOriginLock(render_process_host->GetID()).spec());
+    CHECK(false) << "Unsuitable process reused for site " << site_url;
   }
 
   // Otherwise, use the spare RenderProcessHost or create a new one.
