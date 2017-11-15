@@ -24,6 +24,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     private boolean mPaused = false;
     private Context mContext;
     private int mLastNotificationId;
+    private boolean mIsForegroundRunning = false;
 
     void setContext(Context context) {
         mContext = context;
@@ -33,10 +34,17 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     public void stopForegroundInternal(boolean killNotification) {
         if (!useForegroundService()) return;
         if (killNotification) mNotificationIds.clear();
+        mIsForegroundRunning = false;
     }
 
     @Override
-    public void startForegroundInternal() {}
+    public void startForegroundInternal() {
+        mIsForegroundRunning = true;
+    }
+
+    public boolean isForegroundRunning() {
+        return mIsForegroundRunning;
+    }
 
     @Override
     public void cancelOffTheRecordDownloads() {
