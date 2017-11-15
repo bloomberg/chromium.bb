@@ -123,6 +123,13 @@ class WebFrameWidget : public WebWidget {
   // input.
   virtual void SetIsInert(bool) {}
 
+  // Toggles render throttling for an out-of-process iframe. Local frames are
+  // throttled based on their visibility in the viewport, but remote frames
+  // have to have throttling information propagated from parent to child
+  // across processes.
+  virtual void UpdateRenderThrottlingStatus(bool is_throttled,
+                                            bool subtree_throttled) {}
+
   // Called to inform the WebFrameWidget that a wheel fling animation was
   // started externally (for instance by the compositor) but must be completed
   // by the WebFrameWidget.
