@@ -49,6 +49,9 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
   typedef base::Callback<void(bool, const std::string&, const std::string&)>
       UploadDoneCallback;
+  typedef base::Callback<void(const std::string&, const std::string&)>
+      LogsDirectoryCallback;
+  typedef base::Callback<void(const std::string&)> LogsDirectoryErrorCallback;
 
   // Key used to attach the handler to the RenderProcessHost.
   static const char kWebRtcLoggingHandlerHostKey[];
@@ -137,6 +140,12 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       const WebRtcEventLogHandler::RecordingDoneCallback& callback,
       const WebRtcEventLogHandler::RecordingErrorCallback& error_callback);
 
+  // Ensures that the WebRTC Logs directory exists and then grants render
+  // process access to the 'WebRTC Logs' directory, and invokes |callback| with
+  // the ids necessary to create a DirectoryEntry object.
+  void GetLogsDirectory(const LogsDirectoryCallback& callback,
+                        const LogsDirectoryErrorCallback& error_callback);
+
  private:
   friend class content::BrowserThread;
   friend class base::DeleteHelper<WebRtcLoggingHandlerHost>;
@@ -200,6 +209,15 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       const WebRtcLoggingHandlerHost::GenericDoneCallback& callback,
       bool success,
       const std::string& error_message);
+
+  // Grants the render process access to the 'WebRTC Logs' directory, and
+  // invokes |callback| with the ids necessary to create a DirectoryEntry
+  // object. If the |logs_path| couldn't be created or found, |error_callback|
+  // is run.
+  void GrantLogsDirectoryAccess(
+      const LogsDirectoryCallback& callback,
+      const LogsDirectoryErrorCallback& error_callback,
+      const base::FilePath& logs_path);
 
   // The render process ID this object belongs to.
   int render_process_id_;

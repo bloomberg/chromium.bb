@@ -1262,6 +1262,7 @@ enum HistogramValue {
   LANGUAGESETTINGSPRIVATE_MOVELANGUAGE,
   MEDIAPERCEPTIONPRIVATE_SETANALYTICSCOMPONENT,
   ACCESSIBILITY_PRIVATE_SETHIGHLIGHTS,
+  WEBRTCLOGGINGPRIVATE_GETLOGSDIRECTORY,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
