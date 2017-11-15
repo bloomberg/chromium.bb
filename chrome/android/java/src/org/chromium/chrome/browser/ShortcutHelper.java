@@ -9,10 +9,11 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -49,9 +50,6 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,8 +113,7 @@ public class ShortcutHelper {
     // True when it is already checked if ShortcutManager.requestPinShortcut() is supported.
     private static boolean sCheckedIfRequestPinShortcutSupported;
 
-    // TODO(martiw): Use 'ShortcutInfo' instead of 'Object' below when compileSdk is bumped to O.
-    private static Object sShortcutManager;
+    private static ShortcutManager sShortcutManager;
 
     /** Helper for generating home screen shortcuts. */
     public static class Delegate {
@@ -222,52 +219,19 @@ public class ShortcutHelper {
         }
     }
 
-    // TODO(martiw): Use Build.VERSION_CODES.O instead of hardcoded number when it is available.
-    @TargetApi(26)
+    @TargetApi(Build.VERSION_CODES.O)
     private static void addShortcutWithShortcutManager(
             String title, Bitmap icon, Intent shortcutIntent) {
         String id = shortcutIntent.getStringExtra(ShortcutHelper.EXTRA_ID);
         Context context = ContextUtils.getApplicationContext();
 
-        // The code in the try-block uses reflection in order to compile as it calls APIs newer than
-        // our compileSdkVersion of Android. The equivalent code without reflection looks like this:
-        //  ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, id)
-        //                                  .setShortLabel(title)
-        //                                  .setLongLabel(title)
-        //                                  .setIcon(Icon.createWithBitmap(icon))
-        //                                  .setIntent(shortcutIntent)
-        //                                  .build();
-        //  sShortcutManager.requestPinShortcut(shortcutInfo, null);
-        // TODO(martiw): Remove the following reflection once compileSdk is bumped to O.
-        try {
-            Class<?> builderClass = Class.forName("android.content.pm.ShortcutInfo$Builder");
-            Constructor<?> builderConstructor =
-                    builderClass.getDeclaredConstructor(Context.class, String.class);
-            Object shortcutBuilder = builderConstructor.newInstance(context, id);
-
-            Method setShortLabel = builderClass.getMethod("setShortLabel", CharSequence.class);
-            setShortLabel.invoke(shortcutBuilder, title);
-
-            Method setLongLabel = builderClass.getMethod("setLongLabel", CharSequence.class);
-            setLongLabel.invoke(shortcutBuilder, title);
-
-            Method setIcon = builderClass.getMethod("setIcon", Icon.class);
-            setIcon.invoke(shortcutBuilder, Icon.createWithBitmap(icon));
-
-            Method setIntent = builderClass.getMethod("setIntent", Intent.class);
-            setIntent.invoke(shortcutBuilder, shortcutIntent);
-
-            Method build = builderClass.getMethod("build");
-            Object shortcutInfo = build.invoke(shortcutBuilder);
-
-            Class<?> ShortcutInfoClass = Class.forName("android.content.pm.ShortcutInfo");
-            Method requestPinShortcut = sShortcutManager.getClass().getMethod(
-                    "requestPinShortcut", ShortcutInfoClass, IntentSender.class);
-            requestPinShortcut.invoke(sShortcutManager, shortcutInfo, null);
-        } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException
-                | InvocationTargetException | IllegalAccessException e) {
-            Log.e(TAG, "Error adding shortcut with ShortcutManager:", e);
-        }
+        ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(context, id)
+                                            .setShortLabel(title)
+                                            .setLongLabel(title)
+                                            .setIcon(Icon.createWithBitmap(icon))
+                                            .setIntent(shortcutIntent)
+                                            .build();
+        sShortcutManager.requestPinShortcut(shortcutInfo, null);
     }
 
     /**
@@ -709,28 +673,11 @@ public class ShortcutHelper {
         return sIsRequestPinShortcutSupported;
     }
 
-    // TODO(martiw): Use Build.VERSION_CODES.O instead of hardcoded number when it is available.
-    @TargetApi(26)
+    @TargetApi(Build.VERSION_CODES.O)
     private static void checkIfRequestPinShortcutSupported() {
-        // The code in the try-block uses reflection in order to compile as it calls APIs newer than
-        // our target version of Android. The equivalent code without reflection is as follows:
-        //  sShortcutManager =
-        //          ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
-        //  sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
-        // TODO(martiw): Remove the following reflection once compileSdk is bumped to O.
-        try {
-            Class<?> ShortcutManagerClass = Class.forName("android.content.pm.ShortcutManager");
-            sShortcutManager =
-                    ContextUtils.getApplicationContext().getSystemService(ShortcutManagerClass);
-
-            Method isRequestPinShortcutSupported =
-                    ShortcutManagerClass.getMethod("isRequestPinShortcutSupported");
-            sIsRequestPinShortcutSupported =
-                    (boolean) isRequestPinShortcutSupported.invoke(sShortcutManager);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
-                | IllegalAccessException e) {
-            Log.e(TAG, "Error checking if RequestPinShortcut is supported:", e);
-        }
+        sShortcutManager =
+                ContextUtils.getApplicationContext().getSystemService(ShortcutManager.class);
+        sIsRequestPinShortcutSupported = sShortcutManager.isRequestPinShortcutSupported();
     }
 
     private static int getSizeFromResourceInPx(Context context, int resource) {
