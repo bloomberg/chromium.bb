@@ -99,3 +99,21 @@ h2 {
     margin-left: 20px;
     padding: 0 20px;
 }
+
+.example {
+    display: inline-block;
+    padding: 0 3px;
+}
+
+.dark {
+    background: black;
+    color: white;
+}
+
+.highlight {
+    opacity: .3;
+    z-index: 10;
+    top: -45px;
+    position: relative;
+    height: 2em;
+}
