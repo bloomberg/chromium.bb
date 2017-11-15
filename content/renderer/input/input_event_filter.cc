@@ -118,7 +118,6 @@ void InputEventFilter::QueueClosureForMainThreadEventQueue(
 
   // For some reason we didn't find an event queue for the route.
   // Don't drop the task on the floor allow it to execute.
-  NOTREACHED();
   main_task_runner_->PostTask(FROM_HERE, closure);
 }
 
