@@ -728,6 +728,10 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     return;
   }
 
+  // Start the mini-container here to save time starting the container if the
+  // user decides to opt-in.
+  arc_session_runner_->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+
   terms_of_service_negotiator_->StartNegotiation(
       base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
                  weak_ptr_factory_.GetWeakPtr()));
