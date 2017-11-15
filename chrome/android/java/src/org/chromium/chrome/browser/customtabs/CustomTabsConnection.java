@@ -75,7 +75,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implementation of the ICustomTabsConnectionService interface.
@@ -137,7 +136,8 @@ public class CustomTabsConnection {
     @VisibleForTesting
     static final String REDIRECT_ENDPOINT_KEY = "android.support.customtabs.REDIRECT_ENDPOINT";
 
-    private static AtomicReference<CustomTabsConnection> sInstance = new AtomicReference<>();
+    private static final CustomTabsConnection sInstance =
+            AppHooks.get().createCustomTabsConnection();
 
     /** Holds the parameters for the current speculation. */
     @VisibleForTesting
@@ -228,10 +228,7 @@ public class CustomTabsConnection {
      * @return The unique instance of ChromeCustomTabsConnection.
      */
     public static CustomTabsConnection getInstance() {
-        if (sInstance.get() == null) {
-            sInstance.compareAndSet(null, AppHooks.get().createCustomTabsConnection());
-        }
-        return sInstance.get();
+        return sInstance;
     }
 
     /**
@@ -362,7 +359,7 @@ public class CustomTabsConnection {
      * @return Whether {@link CustomTabsConnection#warmup(long)} has been called.
      */
     public static boolean hasWarmUpBeenFinished() {
-        return getInstance().mWarmupHasBeenFinished.get();
+        return sInstance.mWarmupHasBeenFinished.get();
     }
 
     /**

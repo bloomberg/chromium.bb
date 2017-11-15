@@ -12,8 +12,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.tab.Tab;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
  * Utility class for managing revenue sharing information.
  */
@@ -21,17 +19,13 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RevenueStats {
     private static final String PREF_RLZ_NOTIFIED = "rlz_first_search_notified";
 
-    // Use an AtomicReference since getInstance() can be called from multiple threads.
-    private static AtomicReference<RevenueStats> sInstance = new AtomicReference<RevenueStats>();
+    private static final RevenueStats sInstance = AppHooks.get().createRevenueStatsInstance();
 
     /**
      * Returns the singleton instance of ExternalAuthUtils, creating it if needed.
      */
     public static RevenueStats getInstance() {
-        if (sInstance.get() == null) {
-            sInstance.compareAndSet(null, AppHooks.get().createRevenueStatsInstance());
-        }
-        return sInstance.get();
+        return sInstance;
     }
 
     /**
