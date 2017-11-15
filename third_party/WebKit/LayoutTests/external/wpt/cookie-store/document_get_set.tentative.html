@@ -1,7 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Async Cookies: cookieStore.delete() impacts cookieStore.get()</title>
-<link rel="help" href="https://github.com/WICG/async-cookies-api">
+<title>Async Cookies: cookieStore.get() sees cookieStore.set() cookie</title>
+<link rel="help" href="https://github.com/WICG/cookie-store">
 <link rel="author" href="pwnall@chromium.org" title="Victor Costan">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
@@ -20,11 +20,12 @@ async function async_cleanup(cleanup_function) {
 
 promise_test(async testCase => {
   await cookieStore.set('cookie-name', 'cookie-value');
-  await cookieStore.delete('cookie-name');
-  const cookie = await cookieStore.get();
-  assert_equals(cookie, null);
+  const cookie = await cookieStore.get('cookie-name');
+
+  assert_equals(cookie.name, 'cookie-name');
+  assert_equals(cookie.value, 'cookie-value');
 
   await async_cleanup(() => cookieStore.delete('cookie-name'));
-}, 'cookieStore.get returns null for a cookie deleted by cookieStore.delete');
+}, 'cookieStore.get returns the cookie written by cookieStore.set');
 
 </script>
