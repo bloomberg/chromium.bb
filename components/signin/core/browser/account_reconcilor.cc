@@ -71,9 +71,6 @@ bool AccountEqualToFunc::operator()(const gaia::ListedAccount& other) const {
 gaia::ListedAccount AccountForId(const std::string& account_id) {
   gaia::ListedAccount account;
   account.id = account_id;
-  account.gaia_id = std::string();
-  account.email = std::string();
-  account.valid = true;
   return account;
 }
 
