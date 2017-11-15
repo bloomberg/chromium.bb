@@ -29,9 +29,6 @@ mojom("mojom") {
   sources = [
     "mime_handler.mojom",
   ]
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  use_new_js_bindings = false
 }
 
 group("api") {

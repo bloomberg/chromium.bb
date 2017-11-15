@@ -21,7 +21,9 @@ class StringSourceMap : public SourceMap {
   ~StringSourceMap() override;
 
   // Adds a new string to be used in the source map.
-  void RegisterModule(const std::string& name, const std::string& source);
+  void RegisterModule(const std::string& name,
+                      const std::string& source,
+                      bool gzipped = false);
 
   // SourceMap:
   v8::Local<v8::String> GetSource(v8::Isolate* isolate,

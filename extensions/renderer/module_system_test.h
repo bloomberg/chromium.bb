@@ -36,7 +36,9 @@ class ModuleSystemTestEnvironment {
   void RegisterModule(const std::string& name, const std::string& code);
 
   // Register a named JS module with source retrieved from a ResourceBundle.
-  void RegisterModule(const std::string& name, int resource_id);
+  void RegisterModule(const std::string& name,
+                      int resource_id,
+                      bool gzipped = false);
 
   // Register a named JS module in the module system and tell the module system
   // to use it to handle any requireNative() calls for native modules with that

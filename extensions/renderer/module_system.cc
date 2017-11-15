@@ -25,6 +25,7 @@
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/converter.h"
 #include "gin/modules/module_registry.h"
+#include "third_party/WebKit/public/web/WebContextFeatures.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
@@ -195,6 +196,7 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
       ContextNeedsMojoBindings(context_)) {
     context_->GetRenderFrame()->EnsureMojoBuiltinsAreAvailable(
         context->isolate(), context->v8_context());
+    blink::WebContextFeatures::EnableMojoJS(context->v8_context(), true);
   }
 }
 

@@ -5,6 +5,7 @@
 #include "extensions/renderer/string_source_map.h"
 
 #include "gin/converter.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace extensions {
 
@@ -25,10 +26,18 @@ bool StringSourceMap::Contains(const std::string& name) const {
 }
 
 void StringSourceMap::RegisterModule(const std::string& name,
-                                     const std::string& source) {
+                                     const std::string& source,
+                                     bool gzipped) {
   CHECK_EQ(0u, sources_.count(name)) << "A module for '" << name
                                      << "' already exists.";
-  sources_[name] = source;
+  if (!gzipped) {
+    sources_[name] = source;
+    return;
+  }
+
+  std::string uncompressed;
+  CHECK(compression::GzipUncompress(source, &uncompressed));
+  sources_[name] = uncompressed;
 }
 
 }  // namespace extensions
