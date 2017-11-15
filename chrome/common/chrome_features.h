@@ -238,8 +238,6 @@ extern const base::Feature kShowAllDialogsWithViewsToolkit;
 
 extern const base::Feature kSimplifiedFullscreenUI;
 
-extern const base::Feature kSiteDetails;
-
 #if defined(OS_ANDROID)
 extern const base::Feature kSiteNotificationChannels;
 #endif

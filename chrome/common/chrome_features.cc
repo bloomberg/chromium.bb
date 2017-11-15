@@ -461,11 +461,6 @@ const base::Feature kSiteNotificationChannels{"SiteNotificationChannels",
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables UI in MD Settings to view content settings grouped by
-// origin.
-const base::Feature kSiteDetails{"SiteDetails",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_CHROMEOS)
 // Enables or disables the ability to add a Samba Share to the Files app
 const base::Feature kNativeSamba{"NativeSamba",

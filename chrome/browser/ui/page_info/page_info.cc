@@ -174,10 +174,7 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
 #endif
 
   // All other content settings only show when they are non-factory-default.
-  if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableSiteSettings) ||
-       base::FeatureList::IsEnabled(features::kSiteDetails)) &&
-      IsPermissionFactoryDefault(content_settings, info)) {
+  if (IsPermissionFactoryDefault(content_settings, info)) {
     return false;
   }
 
