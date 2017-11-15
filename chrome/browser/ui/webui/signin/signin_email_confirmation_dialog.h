@@ -5,14 +5,18 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_EMAIL_CONFIRMATION_DIALOG_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_EMAIL_CONFIRMATION_DIALOG_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class WebUIMessageHandler;
 class Profile;
+class WebUIMessageHandler;
 
 namespace content {
 class WebContents;
@@ -86,8 +90,8 @@ class SigninEmailConfirmationDialog : public ui::WebDialogDelegate {
   content::WebContents* const web_contents_;
   Profile* const profile_;
 
-  std::string last_email_;
-  std::string new_email_;
+  const std::string last_email_;
+  const std::string new_email_;
   Callback callback_;
 
   // Observer for lifecycle events of the web contents of the dialog.

@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
@@ -56,7 +57,9 @@ class SigninEmailConfirmationDialog::DialogWebContentsObserver
     signin_email_confirmation_dialog_->CloseDialog();
   }
 
-  SigninEmailConfirmationDialog* signin_email_confirmation_dialog_;
+  SigninEmailConfirmationDialog* const signin_email_confirmation_dialog_;
+
+  DISALLOW_COPY_AND_ASSIGN(DialogWebContentsObserver);
 };
 
 SigninEmailConfirmationDialog::SigninEmailConfirmationDialog(
@@ -90,21 +93,29 @@ void SigninEmailConfirmationDialog::AskForConfirmation(
 }
 
 void SigninEmailConfirmationDialog::ShowDialog() {
-  gfx::Size minSize(kDialogWidth, kDialogMinHeight);
-  gfx::Size maxSize(kDialogWidth, kDialogMaxHeight);
+  gfx::Size min_size(kDialogWidth, kDialogMinHeight);
+  gfx::Size max_size(kDialogWidth, kDialogMaxHeight);
   ConstrainedWebDialogDelegate* dialog_delegate =
       ShowConstrainedWebDialogWithAutoResize(profile_, this, web_contents_,
-                                             minSize, maxSize);
+                                             min_size, max_size);
 
   content::WebContents* dialog_web_contents = dialog_delegate->GetWebContents();
-  dialog_observer_.reset(
-      new DialogWebContentsObserver(dialog_web_contents, this));
+
+  // Clear the zoom level for the dialog so that it is not affected by the page
+  // zoom setting.
+  const GURL dialog_url = GetDialogContentURL();
+  content::HostZoomMap::Get(dialog_web_contents->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
+
+  dialog_observer_ =
+      std::make_unique<DialogWebContentsObserver>(dialog_web_contents, this);
 }
 
 void SigninEmailConfirmationDialog::CloseDialog() {
   content::WebContents* dialog_web_contents = GetDialogWebContents();
-  if (dialog_web_contents == nullptr)
+  if (!dialog_web_contents)
     return;
+
   content::WebUI* web_ui = dialog_web_contents->GetWebUI();
   if (web_ui) {
     SigninEmailConfirmationUI* signin_email_confirmation_ui =
