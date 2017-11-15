@@ -745,8 +745,7 @@ bool SequencedWorkerPool::Inner::PostTask(
       if (!PostTaskToTaskScheduler(std::move(sequenced), delay))
         return false;
     } else {
-      SequencedWorkerPool::WorkerShutdown shutdown_behavior =
-          sequenced.shutdown_behavior;
+      shutdown_behavior = sequenced.shutdown_behavior;
       pending_tasks_.insert(std::move(sequenced));
 
       if (shutdown_behavior == BLOCK_SHUTDOWN)

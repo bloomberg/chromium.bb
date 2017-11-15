@@ -360,8 +360,8 @@ void DiscardSystemPages(void* address, size_t length) {
   // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on
   // failure.
   if (ret) {
-    void* ret = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
-    CHECK(ret);
+    void* ptr = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
+    CHECK(ptr);
   }
 #endif
 }
