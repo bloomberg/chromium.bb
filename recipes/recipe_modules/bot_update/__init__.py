@@ -21,7 +21,6 @@ PROPERTIES = {
   # Gerrit patches will have all properties about them prefixed with patch_.
   'patch_issue': Property(default=None),  # TODO(tandrii): add kind=int.
   'patch_set': Property(default=None),  # TODO(tandrii): add kind=int.
-  'patch_project': Property(default=None),  # Also used by Rietveld.
   'patch_gerrit_url': Property(default=None),
   'patch_repository_url': Property(default=None),
   'patch_ref': Property(default=None),

@@ -10,7 +10,7 @@ from recipe_engine import recipe_api
 
 class BotUpdateApi(recipe_api.RecipeApi):
 
-  def __init__(self, issue, patch_issue, patchset, patch_set, patch_project,
+  def __init__(self, issue, patch_issue, patchset, patch_set,
                repository, patch_repository_url, gerrit_ref, patch_ref,
                patch_gerrit_url, rietveld, revision, parent_got_revision,
                deps_revision_overrides, fail_patch, *args, **kwargs):

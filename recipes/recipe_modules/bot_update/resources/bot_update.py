@@ -379,12 +379,12 @@ def normalize_git_url(url):
   if not p.netloc.endswith('.googlesource.com'):
     # Not a googlesource.com URL, can't normalize this, just return as is.
     return url
-  path = p.path
-  if path.startswith('/a'):
-    path = path[len('/a'):]
-  if path.endswith('.git'):
-    path = path[:-len('.git')]
-  return 'https://%s%s' % (p.netloc, path)
+  upath = p.path
+  if upath.startswith('/a'):
+    upath = upath[len('/a'):]
+  if upath.endswith('.git'):
+    upath = upath[:-len('.git')]
+  return 'https://%s%s' % (p.netloc, upath)
 
 
 # TODO(hinoka): Remove this once all downstream recipes stop using this format.
