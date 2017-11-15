@@ -9,6 +9,7 @@
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
 namespace content {
@@ -16,21 +17,29 @@ namespace content {
 // This class is only used for providing the WebContents to DownloadItemImpl.
 class RequestHandle : public DownloadRequestHandleInterface {
  public:
-  RequestHandle(int render_process_id, int render_frame_id)
+  RequestHandle(int render_process_id,
+                int render_frame_id,
+                int frame_tree_node_id)
       : render_process_id_(render_process_id),
-        render_frame_id_(render_frame_id) {}
+        render_frame_id_(render_frame_id),
+        frame_tree_node_id_(frame_tree_node_id) {}
   RequestHandle(RequestHandle&& other)
       : render_process_id_(other.render_process_id_),
-        render_frame_id_(other.render_frame_id_) {}
+        render_frame_id_(other.render_frame_id_),
+        frame_tree_node_id_(other.frame_tree_node_id_) {}
 
   // DownloadRequestHandleInterface
   WebContents* GetWebContents() const override {
-    RenderFrameHost* host =
-        RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-    if (host)
-      return WebContents::FromRenderFrameHost(host);
-    return nullptr;
+    DCHECK(IsBrowserSideNavigationEnabled());
+
+    WebContents* web_contents = WebContents::FromRenderFrameHost(
+        RenderFrameHost::FromID(render_process_id_, render_frame_id_));
+    if (web_contents)
+      return web_contents;
+
+    return WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
   }
+
   DownloadManager* GetDownloadManager() const override { return nullptr; }
   void PauseRequest() const override {}
   void ResumeRequest() const override {}
@@ -39,6 +48,7 @@ class RequestHandle : public DownloadRequestHandleInterface {
  private:
   int render_process_id_;
   int render_frame_id_;
+  int frame_tree_node_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestHandle);
 };
@@ -73,6 +83,7 @@ ResourceDownloader::InterceptNavigationResponse(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
+    int frame_tree_node_id,
     std::unique_ptr<ThrottlingURLLoader> url_loader,
     std::vector<GURL> url_chain,
     base::Optional<network::URLLoaderStatus> status) {
@@ -80,9 +91,9 @@ ResourceDownloader::InterceptNavigationResponse(
       delegate, std::move(resource_request),
       std::make_unique<DownloadSaveInfo>(), content::DownloadItem::kInvalidId,
       std::string(), false, false, false);
-  downloader->InterceptResponse(std::move(url_loader), response,
-                                std::move(consumer_handle), ssl_status,
-                                std::move(url_chain), std::move(status));
+  downloader->InterceptResponse(
+      std::move(url_loader), response, std::move(consumer_handle), ssl_status,
+      frame_tree_node_id, std::move(url_chain), std::move(status));
   return downloader;
 }
 
@@ -141,12 +152,14 @@ void ResourceDownloader::InterceptResponse(
     const scoped_refptr<ResourceResponse>& response,
     mojo::ScopedDataPipeConsumerHandle consumer_handle,
     const SSLStatus& ssl_status,
+    int frame_tree_node_id,
     std::vector<GURL> url_chain,
     base::Optional<network::URLLoaderStatus> status) {
   url_loader_ = std::move(url_loader);
   url_loader_->set_forwarding_client(&response_handler_);
   net::SSLInfo info;
   info.cert_status = ssl_status.cert_status;
+  frame_tree_node_id_ = frame_tree_node_id;
   response_handler_.SetURLChain(std::move(url_chain));
   response_handler_.OnReceiveResponse(response->head,
                                       base::Optional<net::SSLInfo>(info),
@@ -161,10 +174,10 @@ void ResourceDownloader::OnResponseStarted(
     mojom::DownloadStreamHandlePtr stream_handle) {
   download_create_info->download_id = download_id_;
   download_create_info->guid = guid_;
-  if (resource_request_->origin_pid >= 0) {
-    download_create_info->request_handle.reset(new RequestHandle(
-        resource_request_->origin_pid, resource_request_->render_frame_id));
-  }
+  download_create_info->request_handle.reset(new RequestHandle(
+      resource_request_->origin_pid, resource_request_->render_frame_id,
+      frame_tree_node_id_));
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,

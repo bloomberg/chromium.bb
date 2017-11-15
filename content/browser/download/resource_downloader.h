@@ -38,6 +38,7 @@ class ResourceDownloader : public UrlDownloadHandler,
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
       const SSLStatus& ssl_status,
+      int frame_tree_node_id,
       std::unique_ptr<ThrottlingURLLoader> url_loader,
       std::vector<GURL> url_chain,
       base::Optional<network::URLLoaderStatus> status);
@@ -50,8 +51,6 @@ class ResourceDownloader : public UrlDownloadHandler,
                      bool is_parallel_request,
                      bool is_transient,
                      bool fetch_error_body);
-  ResourceDownloader(base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-                     std::unique_ptr<ThrottlingURLLoader> url_loader);
   ~ResourceDownloader() override;
 
   // DownloadResponseHandler::Delegate
@@ -71,6 +70,7 @@ class ResourceDownloader : public UrlDownloadHandler,
                          const scoped_refptr<ResourceResponse>& response,
                          mojo::ScopedDataPipeConsumerHandle consumer_handle,
                          const SSLStatus& ssl_status,
+                         int frame_tree_node_id,
                          std::vector<GURL> url_chain,
                          base::Optional<network::URLLoaderStatus> status);
 
@@ -97,6 +97,9 @@ class ResourceDownloader : public UrlDownloadHandler,
 
   // Callback to run after download starts.
   DownloadUrlParameters::OnStartedCallback callback_;
+
+  // Used to get WebContents in browser process.
+  int frame_tree_node_id_ = -1;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 

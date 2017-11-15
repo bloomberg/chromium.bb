@@ -147,7 +147,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   NavigationURLLoader::NavigationInterceptionCB GetNavigationInterceptionCB(
       const scoped_refptr<ResourceResponse>& response,
       mojo::ScopedDataPipeConsumerHandle consumer_handle,
-      const SSLStatus& ssl_status);
+      const SSLStatus& ssl_status,
+      int frame_tree_node_id);
 
  private:
   using DownloadSet = std::set<DownloadItem*>;
