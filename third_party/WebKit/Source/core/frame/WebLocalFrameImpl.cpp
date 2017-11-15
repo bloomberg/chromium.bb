@@ -125,7 +125,6 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
-#include "core/editing/spellcheck/TextCheckerClientImpl.h"
 #include "core/exported/LocalFrameClientImpl.h"
 #include "core/exported/SharedWorkerRepositoryClientImpl.h"
 #include "core/exported/WebAssociatedURLLoaderImpl.h"
@@ -1647,7 +1646,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       interface_registry_(interface_registry),
       web_dev_tools_frontend_(nullptr),
       input_method_controller_(*this),
-      text_checker_client_(new TextCheckerClientImpl(this)),
       spell_check_panel_host_client_(nullptr),
       self_keep_alive_(this) {
   DCHECK(client_);
@@ -1680,7 +1678,6 @@ void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(print_context_);
   visitor->Trace(context_menu_node_);
   visitor->Trace(input_method_controller_);
-  visitor->Trace(text_checker_client_);
   WebFrame::TraceFrames(visitor, this);
 }
 
@@ -2529,10 +2526,6 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
 
   next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
   next_element->focus();
-}
-
-TextCheckerClient& WebLocalFrameImpl::GetTextCheckerClient() const {
-  return *text_checker_client_;
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

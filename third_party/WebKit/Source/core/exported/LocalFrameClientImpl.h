@@ -234,7 +234,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override;
 
-  TextCheckerClient& GetTextCheckerClient() const override;
+  WebTextCheckClient* GetTextCheckerClient() const override;
 
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
 

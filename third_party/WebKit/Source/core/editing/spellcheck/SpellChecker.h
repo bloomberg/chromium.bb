@@ -29,8 +29,8 @@
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
 #include "core/editing/markers/DocumentMarker.h"
+#include "core/editing/spellcheck/TextChecking.h"
 #include "platform/heap/Handle.h"
-#include "platform/text/TextChecking.h"
 
 namespace blink {
 
@@ -42,9 +42,9 @@ class HTMLElement;
 class SpellCheckMarker;
 class SpellCheckRequest;
 class SpellCheckRequester;
-class TextCheckerClient;
 struct TextCheckingResult;
 class WebSpellCheckPanelHostClient;
+class WebTextCheckClient;
 
 class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   WTF_MAKE_NONCOPYABLE(SpellChecker);
@@ -55,7 +55,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void Trace(blink::Visitor*);
 
   WebSpellCheckPanelHostClient& SpellCheckPanelHostClient() const;
-  TextCheckerClient& TextChecker() const;
+  WebTextCheckClient* GetTextCheckerClient() const;
 
   static bool IsSpellCheckingEnabledAt(const Position&);
   bool IsSpellCheckingEnabled() const;
