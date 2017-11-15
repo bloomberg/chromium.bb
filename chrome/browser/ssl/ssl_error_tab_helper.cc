@@ -47,6 +47,11 @@ void SSLErrorTabHelper::AssociateBlockingPage(
   helper->SetBlockingPage(navigation_id, std::move(blocking_page));
 }
 
+security_interstitials::SecurityInterstitialPage*
+SSLErrorTabHelper::GetBlockingPageForCurrentlyCommittedNavigationForTesting() {
+  return blocking_page_for_currently_committed_navigation_.get();
+}
+
 SSLErrorTabHelper::SSLErrorTabHelper(content::WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
 
