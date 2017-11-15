@@ -561,8 +561,8 @@ def _maybe_break_locks(checkout_path):
           raise
 
 
-def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
-                 cleanup_dir):
+def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
   if path.isdir(git_cache_dir):
@@ -574,92 +574,98 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
         raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
   for sln in solutions:
-    # Just in case we're hitting a different git server than the one from
-    # which the target revision was polled, we retry some.
-    done = False
-
-    # One minute (5 tries with exp. backoff). We retry at least once regardless
-    # of deadline in case initial fetch takes longer than the deadline but does
-    # not contain the required revision.
-    deadline = time.time() + 60
-    tries = 0
-    while not done:
-      name = sln['name']
-      url = sln['url']
-      if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-        # Experiments show there's little to be gained from
-        # a shallow clone of src.
-        shallow = False
-      sln_dir = path.join(build_dir, name)
-      s = ['--shallow'] if shallow else []
-      populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                       '--cache-dir', git_cache_dir] + s + [url])
-      for ref in refs:
-        populate_cmd.extend(['--ref', ref])
-      git(*populate_cmd)
-      mirror_dir = git(
-          'cache', 'exists', '--quiet',
-          '--cache-dir', git_cache_dir, url).strip()
-      clone_cmd = (
-          'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
-
-      try:
-        # If repo deletion was aborted midway, it may have left .git in broken
-        # state.
-        if path.exists(sln_dir) and is_broken_repo_dir(sln_dir):
-          print 'Git repo %s appears to be broken, removing it' % sln_dir
-          remove(sln_dir, cleanup_dir)
-
-        # Use "tries=1", since we retry manually in this loop.
-        if not path.isdir(sln_dir):
-          git(*clone_cmd)
-        else:
-          git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
-          git('fetch', 'origin', cwd=sln_dir)
-        for ref in refs:
-          refspec = '%s:%s' % (ref, ref.lstrip('+'))
-          git('fetch', 'origin', refspec, cwd=sln_dir)
-
-        # Windows sometimes has trouble deleting files.
-        # This can make git commands that rely on locks fail.
-        # Try a few times in case Windows has trouble again (and again).
-        if sys.platform.startswith('win'):
-          tries = 3
-          while tries:
-            try:
-              _maybe_break_locks(sln_dir)
-              break
-            except Exception:
-              tries -= 1
-
-        revision = get_target_revision(name, url, revisions) or 'HEAD'
-        force_revision(sln_dir, revision)
-        done = True
-      except SubprocessFailed as e:
-        # Exited abnormally, theres probably something wrong.
-        print 'Something failed: %s.' % str(e)
-
-        # Only kick in deadline after trying once, in case the revision hasn't
-        # yet propagated.
-        if tries >= 1 and time.time() > deadline:
-          overrun = time.time() - deadline
-          print 'Ran %s seconds past deadline. Aborting.' % overrun
-          raise
-
-        # Lets wipe the checkout and try again.
-        tries += 1
-        sleep_secs = 2**tries
-        print 'waiting %s seconds and trying again...' % sleep_secs
-        time.sleep(sleep_secs)
-        remove(sln_dir, cleanup_dir)
-
-    git('clean', '-dff', cwd=sln_dir)
-
+    _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir)
     if first_solution:
       git_ref = git('log', '--format=%H', '--max-count=1',
-                    cwd=sln_dir).strip()
+                    cwd=path.join(build_dir, sln['name'])
+                ).strip()
     first_solution = False
   return git_ref
+
+
+def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
+                  cleanup_dir):
+  # Just in case we're hitting a different git server than the one from
+  # which the target revision was polled, we retry some.
+  done = False
+
+  # One minute (5 tries with exp. backoff). We retry at least once regardless
+  # of deadline in case initial fetch takes longer than the deadline but does
+  # not contain the required revision.
+  deadline = time.time() + 60
+  tries = 0
+  while not done:
+    name = sln['name']
+    url = sln['url']
+    if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+      # Experiments show there's little to be gained from
+      # a shallow clone of src.
+      shallow = False
+    sln_dir = path.join(build_dir, name)
+    s = ['--shallow'] if shallow else []
+    populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
+                     '--cache-dir', git_cache_dir] + s + [url])
+    for ref in refs:
+      populate_cmd.extend(['--ref', ref])
+    git(*populate_cmd)
+    mirror_dir = git(
+        'cache', 'exists', '--quiet',
+        '--cache-dir', git_cache_dir, url).strip()
+    clone_cmd = (
+        'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
+
+    try:
+      # If repo deletion was aborted midway, it may have left .git in broken
+      # state.
+      if path.exists(sln_dir) and is_broken_repo_dir(sln_dir):
+        print 'Git repo %s appears to be broken, removing it' % sln_dir
+        remove(sln_dir, cleanup_dir)
+
+      # Use "tries=1", since we retry manually in this loop.
+      if not path.isdir(sln_dir):
+        git(*clone_cmd)
+      else:
+        git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
+        git('fetch', 'origin', cwd=sln_dir)
+      for ref in refs:
+        refspec = '%s:%s' % (ref, ref.lstrip('+'))
+        git('fetch', 'origin', refspec, cwd=sln_dir)
+
+      # Windows sometimes has trouble deleting files.
+      # This can make git commands that rely on locks fail.
+      # Try a few times in case Windows has trouble again (and again).
+      if sys.platform.startswith('win'):
+        tries = 3
+        while tries:
+          try:
+            _maybe_break_locks(sln_dir)
+            break
+          except Exception:
+            tries -= 1
+
+      revision = get_target_revision(name, url, revisions) or 'HEAD'
+      force_revision(sln_dir, revision)
+      done = True
+    except SubprocessFailed as e:
+      # Exited abnormally, theres probably something wrong.
+      print 'Something failed: %s.' % str(e)
+
+      # Only kick in deadline after trying once, in case the revision hasn't
+      # yet propagated.
+      if tries >= 1 and time.time() > deadline:
+        overrun = time.time() - deadline
+        print 'Ran %s seconds past deadline. Aborting.' % overrun
+        raise
+
+      # Lets wipe the checkout and try again.
+      tries += 1
+      sleep_secs = 2**tries
+      print 'waiting %s seconds and trying again...' % sleep_secs
+      time.sleep(sleep_secs)
+      remove(sln_dir, cleanup_dir)
+
+  git('clean', '-dff', cwd=sln_dir)
 
 
 def _download(url):
@@ -833,8 +839,8 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # invoking DEPS.
   print 'Fetching Git checkout'
 
-  git_ref = git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
-                         cleanup_dir)
+  git_ref = git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
+                          cleanup_dir)
 
   print '===Processing patch solutions==='
   already_patched = []
