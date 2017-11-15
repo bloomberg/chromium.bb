@@ -1287,8 +1287,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       if (has_second_ref(mbmi)) {
         const int comp_index_ctx = get_comp_index_context(cm, xd);
         ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-        update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
-                   2);
+        if (allow_update_cdf)
+          update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
+                     2);
       }
 #endif  // CONFIG_JNT_COMP
     }
