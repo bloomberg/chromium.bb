@@ -416,7 +416,7 @@ deps = {
     Var('chromium_git') + '/chromium/llvm-project/compiler-rt/lib/fuzzer.git' + '@' +  Var('libfuzzer_revision'),
 
   'src/third_party/libaddressinput/src':
-    Var('chromium_git') + '/external/libaddressinput.git' + '@' + '2a7c3d38915138189f4ac78e1188b58b2fbf5219',
+    Var('chromium_git') + '/external/libaddressinput.git' + '@' + 'b97a6f7015aad5622a341d8d82c0145d7466feb7',
 
   'src/third_party/libaom/source/libaom': {
     'url': Var('aomedia_git') + '/aom.git' + '@' +  '08b26a8a257e54210d8bbdba799980bc291f368e',
