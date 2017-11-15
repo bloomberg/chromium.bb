@@ -47,6 +47,7 @@ DEBIAN_PACKAGES="\
   libbluetooth-dev
   libbrlapi0.6
   libbrlapi-dev
+  libbsd0
   libc6
   libc6-dev
   libcairo2
