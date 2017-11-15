@@ -387,6 +387,7 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   rd_stats_dst->rate += rd_stats_src->rate;
   rd_stats_dst->dist += rd_stats_src->dist;
   rd_stats_dst->sse += rd_stats_src->sse;
+  rd_stats_dst->zero_rate += rd_stats_src->zero_rate;
   rd_stats_dst->skip &= rd_stats_src->skip;
   rd_stats_dst->invalid_rate &= rd_stats_src->invalid_rate;
 #if CONFIG_RD_DEBUG

@@ -4183,16 +4183,16 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
           return;
         }
         av1_merge_rd_stats(rd_stats, &pn_rd_stats);
-        this_rd += AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
-                          RDCOST(x->rdmult, 0, pn_rd_stats.sse));
+        this_rd +=
+            AOMMIN(RDCOST(x->rdmult, pn_rd_stats.rate, pn_rd_stats.dist),
+                   RDCOST(x->rdmult, pn_rd_stats.zero_rate, pn_rd_stats.sse));
         block += step;
         if (rd_info_tree != NULL) rd_info_tree += 1;
       }
     }
   }
-
   this_rd = AOMMIN(RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist),
-                   RDCOST(x->rdmult, 0, rd_stats->sse));
+                   RDCOST(x->rdmult, rd_stats->zero_rate, rd_stats->sse));
   if (this_rd > ref_best_rd) is_cost_valid = 0;
 
   if (!is_cost_valid) {
