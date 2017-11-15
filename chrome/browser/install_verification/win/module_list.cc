@@ -15,7 +15,7 @@ namespace {
 
 void CheckFreeLibrary(HMODULE module) {
   BOOL result = ::FreeLibrary(module);
-  DCHECK(result);
+  DPCHECK(result);
 }
 
 }  // namespace
