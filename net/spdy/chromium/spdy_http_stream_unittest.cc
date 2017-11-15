@@ -232,6 +232,62 @@ TEST_F(SpdyHttpStreamTest, SendRequest) {
             http_stream->GetTotalReceivedBytes());
 }
 
+TEST_F(SpdyHttpStreamTest, RequestInfoDestroyedBeforeRead) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, "", 0, true));
+  MockRead reads[] = {
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
+      MockRead(ASYNC, 0, 3)  // EOF
+  };
+
+  InitSession(reads, arraysize(reads), writes, arraysize(writes));
+
+  std::unique_ptr<HttpRequestInfo> request =
+      std::make_unique<HttpRequestInfo>();
+  request->method = "GET";
+  request->url = url_;
+  TestCompletionCallback callback;
+  HttpResponseInfo response;
+  HttpRequestHeaders headers;
+  NetLogWithSource net_log;
+  auto http_stream =
+      std::make_unique<SpdyHttpStream>(session_, true, net_log.source());
+
+  ASSERT_THAT(http_stream->InitializeStream(request.get(), DEFAULT_PRIORITY,
+                                            net_log, CompletionCallback()),
+              IsOk());
+  EXPECT_THAT(http_stream->SendRequest(headers, &response, callback.callback()),
+              IsError(ERR_IO_PENDING));
+  EXPECT_TRUE(HasSpdySession(http_session_->spdy_session_pool(), key_));
+
+  EXPECT_LE(0, callback.WaitForResult());
+
+  TestLoadTimingNotReused(*http_stream);
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(http_stream->GetLoadTimingInfo(&load_timing_info));
+
+  // Perform all async reads.
+  base::RunLoop().RunUntilIdle();
+
+  // Destroy the request info before Read starts.
+  request.reset();
+
+  // Read stream to completion.
+  scoped_refptr<IOBuffer> buf(new IOBuffer(1));
+  ASSERT_EQ(0,
+            http_stream->ReadResponseBody(buf.get(), 1, callback.callback()));
+
+  // Stream 1 has been read to completion.
+  TestLoadTimingNotReused(*http_stream);
+
+  EXPECT_EQ(static_cast<int64_t>(req.size()), http_stream->GetTotalSentBytes());
+  EXPECT_EQ(static_cast<int64_t>(resp.size() + body.size()),
+            http_stream->GetTotalReceivedBytes());
+}
+
 TEST_F(SpdyHttpStreamTest, LoadTimingTwoRequests) {
   SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));

@@ -160,9 +160,10 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   int64_t closed_stream_sent_bytes_;
 
   // The request to send.
-  // Set to null when response body is starting to be read. This is to allow
-  // the stream to be shared for reading and to possibly outlive request_info_'s
-  // owner.
+  // Set to null before response body is starting to be read. This is to allow
+  // |this| to be shared for reading and to possibly outlive request_info_'s
+  // owner. Setting to null happens after headers are completely read or upload
+  // data stream is uploaded, whichever is later.
   const HttpRequestInfo* request_info_;
 
   // |response_info_| is the HTTP response data object which is filled in
@@ -173,6 +174,8 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   std::unique_ptr<HttpResponseInfo> push_response_info_;
 
   bool response_headers_complete_;
+
+  bool upload_stream_in_progress_;
 
   // We buffer the response body as it arrives asynchronously from the stream.
   SpdyReadQueue response_body_queue_;
