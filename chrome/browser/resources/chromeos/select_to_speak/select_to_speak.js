@@ -177,6 +177,46 @@ function nextWordHelper(text, indexAfter, re, defaultValue) {
 }
 
 /**
+ * Finds all nodes within the subtree rooted at |node| that overlap
+ * a given rectangle.
+ * @param {AutomationNode} node The starting node.
+ * @param {{left: number, top: number, width: number, height: number}} rect
+ *     The bounding box to search.
+ * @param {Array<AutomationNode>} nodes The matching node array to be
+ *     populated.
+ * @return {boolean} True if any matches are found.
+ */
+function findAllMatching(node, rect, nodes) {
+  var found = false;
+  for (var c = node.firstChild; c; c = c.nextSibling) {
+    if (findAllMatching(c, rect, nodes))
+      found = true;
+  }
+
+  if (found)
+    return true;
+
+  if (!node.name || !node.location || node.state.offscreen ||
+      node.state.invisible)
+    return false;
+
+  if (overlaps(node.location, rect)) {
+    if (!node.children || node.children.length == 0 ||
+        node.children[0].role != RoleType.INLINE_TEXT_BOX) {
+      // Only add a node if it has no inlineTextBox children. If
+      // it has text children, they will be more precisely bounded
+      // and specific, so no need to add the parent node.
+      nodes.push(node);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+
+/**
  * @constructor
  */
 var SelectToSpeak = function() {
@@ -377,8 +417,8 @@ SelectToSpeak.prototype = {
       // which is computed based on which window is the event handler for the
       // hit point, isn't the part of the tree that contains the actual
       // content. In such cases, use focus to get the root.
-      if (!this.findAllMatching_(root, rect, nodes) && focusedNode)
-        this.findAllMatching_(focusedNode.root, rect, nodes);
+      if (!findAllMatching(root, rect, nodes) && focusedNode)
+        findAllMatching(focusedNode.root, rect, nodes);
       this.startSpeechQueue_(nodes);
     }.bind(this));
   },
@@ -478,38 +518,6 @@ SelectToSpeak.prototype = {
     document.addEventListener('mousedown', this.onMouseDown_.bind(this));
     document.addEventListener('mousemove', this.onMouseMove_.bind(this));
     document.addEventListener('mouseup', this.onMouseUp_.bind(this));
-  },
-
-  /**
-   * Finds all nodes within the subtree rooted at |node| that overlap
-   * a given rectangle.
-   * @param {AutomationNode} node The starting node.
-   * @param {{left: number, top: number, width: number, height: number}} rect
-   *     The bounding box to search.
-   * @param {Array<AutomationNode>} nodes The matching node array to be
-   *     populated.
-   * @return {boolean} True if any matches are found.
-   */
-  findAllMatching_: function(node, rect, nodes) {
-    var found = false;
-    for (var c = node.firstChild; c; c = c.nextSibling) {
-      if (this.findAllMatching_(c, rect, nodes))
-        found = true;
-    }
-
-    if (found)
-      return true;
-
-    if (!node.name || !node.location || node.state.offscreen ||
-        node.state.invisible)
-      return false;
-
-    if (overlaps(node.location, rect)) {
-      nodes.push(node);
-      return true;
-    }
-
-    return false;
   },
 
   /**
