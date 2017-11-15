@@ -28,6 +28,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   stream.zalloc = Z_NULL;
   stream.zfree = Z_NULL;
 
+  if (Z_OK != deflateInit(&stream, Z_DEFAULT_COMPRESSION)) {
+    deflateEnd(&stream);
+    assert(false);
+  }
+
   auto deflate_set_dictionary_result =
       deflateSetDictionary(&stream, data, size);
   deflateEnd(&stream);
