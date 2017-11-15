@@ -327,7 +327,8 @@
     <dimen name="tile_view_title_margin_top_modern">61dp</dimen>
     <dimen name="ntp_logo_height">116dp</dimen>
     <dimen name="ntp_logo_margin_top_modern">25dp</dimen>
-    <dimen name="ntp_logo_margin_bottom_modern">8dp</dimen>
+    <!-- bottom_control_container_height + 8 -->
+    <dimen name="ntp_logo_margin_bottom_modern">64dp</dimen>
     <dimen name="ntp_search_box_height">62dp</dimen>
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
@@ -353,6 +354,9 @@
     <dimen name="snippets_offline_icon_size">18sp</dimen>
     <dimen name="ntp_suggestions_footer_padding_top">40dp</dimen>
     <dimen name="ntp_suggestions_footer_padding_bottom">18dp</dimen>
+    <dimen name="chrome_home_logo_minimum_height">1dp</dimen>
+    <!-- bottom_control_container_height - chrome_home_logo_minimum_height -->
+    <dimen name="chrome_home_suggestions_recycler_view_padding_top">55dp</dimen>
     <dimen name="chrome_home_suggestions_footer_padding_top">24dp</dimen>
     <dimen name="chrome_home_suggestions_footer_padding_bottom">24dp</dimen>
     <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
