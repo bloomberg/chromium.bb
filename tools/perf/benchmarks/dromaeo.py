@@ -14,23 +14,11 @@ from telemetry.page import legacy_page_test
 from telemetry import story
 from telemetry.value import scalar
 
-from metrics import power
-
 
 class _DromaeoMeasurement(legacy_page_test.LegacyPageTest):
 
   def __init__(self):
     super(_DromaeoMeasurement, self).__init__()
-    self._power_metric = None
-
-  def CustomizeBrowserOptions(self, options):
-    power.PowerMetric.CustomizeBrowserOptions(options)
-
-  def WillStartBrowser(self, platform):
-    self._power_metric = power.PowerMetric(platform)
-
-  def DidNavigateToPage(self, page, tab):
-    self._power_metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptCondition(
@@ -58,9 +46,6 @@ class _DromaeoMeasurement(legacy_page_test.LegacyPageTest):
     tab.ExecuteJavaScript('window.document.getElementById("pause").click();')
 
     tab.WaitForJavaScriptCondition('!!window.results_', timeout=600)
-
-    self._power_metric.Stop(page, tab)
-    self._power_metric.AddResults(tab, results)
 
     score = json.loads(tab.EvaluateJavaScript('window.results_ || "[]"'))
 
