@@ -19,15 +19,18 @@ namespace ios {
 // until |timeout| expires. DCHECKs if |condition| is non-nil and |timeout|
 // expires before |condition| becomes true. If |timeout| is zero, a reasonable
 // default is used. Returns the time spent in the function.
+// DEPRECATED - Do not use in new code. http://crbug.com/784735
 TimeDelta TimeUntilCondition(ProceduralBlock action,
                              ConditionBlock condition,
                              bool run_message_loop,
                              TimeDelta timeout);
 
 // Same as TimeUntilCondition, but doesn't run an action.
+// DEPRECATED - Do not use in new code. http://crbug.com/784735
 void WaitUntilCondition(ConditionBlock condition,
                         bool run_message_loop,
                         TimeDelta timeout);
+// DEPRECATED - Do not use in new code. http://crbug.com/784735
 void WaitUntilCondition(ConditionBlock condition);
 
 // Lets the run loop of the current thread process other messages
