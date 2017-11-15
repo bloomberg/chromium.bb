@@ -180,10 +180,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // |set_rtt_estimate_internal|. If it has not been set, then the base
   // implementation is called.
   base::TimeDelta GetRTTEstimateInternal(
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources,
       base::TimeTicks start_time,
       const base::Optional<NetworkQualityEstimator::Statistic>& statistic,
+      nqe::internal::ObservationCategory observation_category,
       int percentile,
       size_t* observations_count) const override;
 

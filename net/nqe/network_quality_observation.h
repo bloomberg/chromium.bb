@@ -56,6 +56,9 @@ class NET_EXPORT_PRIVATE Observation {
   // A unique identifier for the remote host which was used for the measurement.
   base::Optional<IPHash> host() const { return host_; }
 
+  // Returns the observation category of this observation.
+  ObservationCategory GetObservationCategory() const;
+
  private:
   int32_t value_;
 

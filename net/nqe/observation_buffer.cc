@@ -55,8 +55,6 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
     base::TimeTicks begin_timestamp,
     const base::Optional<int32_t>& current_signal_strength,
     int percentile,
-    const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources,
     size_t* observations_count) const {
   // Stores weighted observations in increasing order by value.
   std::vector<WeightedObservation> weighted_observations;
@@ -65,8 +63,7 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
   double total_weight = 0.0;
 
   ComputeWeightedObservations(begin_timestamp, current_signal_strength,
-                              &weighted_observations, &total_weight,
-                              disallowed_observation_sources);
+                              &weighted_observations, &total_weight);
 
   if (observations_count) {
     // |observations_count| may be null.
@@ -96,8 +93,6 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
 void ObservationBuffer::GetPercentileForEachHostWithCounts(
     base::TimeTicks begin_timestamp,
     int percentile,
-    const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources,
     const base::Optional<std::set<IPHash>>& host_filter,
     std::map<IPHash, int32_t>* host_keyed_percentiles,
     std::map<IPHash, size_t>* host_keyed_counts) const {
@@ -108,7 +103,7 @@ void ObservationBuffer::GetPercentileForEachHostWithCounts(
   host_keyed_percentiles->clear();
   host_keyed_counts->clear();
 
-  // Filter the observations based on timestamp, disallowed sources and the
+  // Filter the observations based on timestamp, and the
   // presence of a valid host tag. Split the observations into a map keyed by
   // the remote host to make it easy to calculate percentiles for each host.
   std::map<IPHash, std::vector<int32_t>> host_keyed_observations;
@@ -123,16 +118,6 @@ void ObservationBuffer::GetPercentileForEachHostWithCounts(
 
     // Filter the observations recorded before |begin_timestamp|.
     if (observation.timestamp() < begin_timestamp)
-      continue;
-
-    // If the source of the observation is in the list of disallowed sources,
-    // skip that observation.
-    bool disallowed = false;
-    for (const auto& disallowed_source : disallowed_observation_sources) {
-      if (disallowed_source == observation.source())
-        disallowed = true;
-    }
-    if (disallowed)
       continue;
 
     // Skip 0 values of RTT.
@@ -177,9 +162,7 @@ void ObservationBuffer::ComputeWeightedObservations(
     const base::TimeTicks& begin_timestamp,
     const base::Optional<int32_t>& current_signal_strength,
     std::vector<WeightedObservation>* weighted_observations,
-    double* total_weight,
-    const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources) const {
+    double* total_weight) const {
   DCHECK_GE(Capacity(), Size());
 
   weighted_observations->clear();
@@ -189,13 +172,7 @@ void ObservationBuffer::ComputeWeightedObservations(
   for (const auto& observation : observations_) {
     if (observation.timestamp() < begin_timestamp)
       continue;
-    bool disallowed = false;
-    for (const auto& disallowed_source : disallowed_observation_sources) {
-      if (disallowed_source == observation.source())
-        disallowed = true;
-    }
-    if (disallowed)
-      continue;
+
     base::TimeDelta time_since_sample_taken = now - observation.timestamp();
     double time_weight =
         pow(weight_multiplier_per_second_, time_since_sample_taken.InSeconds());
