@@ -1,18 +1,20 @@
-<html>
-<head>
-<script src='../../inspector/inspector-test.js'></script>
-<script src='../../inspector/debugger-test.js'></script>
-<script src='../../inspector/isolated-filesystem-test.js'></script>
-<script src='../../inspector/persistence/persistence-test.js'></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function addFooJS() {
-    var script = document.createElement('script');
-    script.src = './resources/foo.js';
-    document.body.appendChild(script);
-}
+(async function() {
+  TestRunner.addResult(`Verify that breakpoints are moved appropriately in case of page reload.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function addFooJS() {
+          var script = document.createElement('script');
+          script.src = '${TestRunner.url("./resources/foo.js")}';
+          document.body.appendChild(script);
+      }
+  `);
 
-function test() {
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   BindingsTestRunner.addFooJSFile(fs);
@@ -59,10 +61,4 @@ function test() {
       TestRunner.addResult('    ' + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber);
     }
   }
-};
-</script>
-</head>
-<body onload='runTest()'>
-<p>Verify that breakpoints are moved appropriately in case of page reload.</p>
-</body>
-</html>
+})();
