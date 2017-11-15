@@ -54,6 +54,7 @@ PaymentRequestState::PaymentRequestState(
       selected_shipping_option_error_profile_(nullptr),
       selected_contact_profile_(nullptr),
       selected_instrument_(nullptr),
+      number_of_pending_sw_payment_instruments_(0),
       payment_request_delegate_(payment_request_delegate),
       profile_comparator_(app_locale, *spec),
       weak_ptr_factory_(this) {
@@ -89,13 +90,44 @@ void PaymentRequestState::GetAllPaymentAppsCallback(
     const GURL& top_level_origin,
     const GURL& frame_origin,
     content::PaymentAppProvider::PaymentApps apps) {
-  for (auto& app : apps) {
-    available_instruments_.push_back(
-        std::make_unique<ServiceWorkerPaymentInstrument>(
-            context, top_level_origin, frame_origin, spec_,
-            std::move(app.second)));
+  number_of_pending_sw_payment_instruments_ = apps.size();
+  if (number_of_pending_sw_payment_instruments_ == 0U) {
+    FinishedGetAllSWPaymentInstruments();
+    return;
   }
 
+  for (auto& app : apps) {
+    std::unique_ptr<ServiceWorkerPaymentInstrument> instrument =
+        std::make_unique<ServiceWorkerPaymentInstrument>(
+            context, top_level_origin, frame_origin, spec_,
+            std::move(app.second));
+    instrument->ValidateCanMakePayment(
+        base::BindOnce(&PaymentRequestState::OnSWPaymentInstrumentValidated,
+                       weak_ptr_factory_.GetWeakPtr()));
+    available_instruments_.push_back(std::move(instrument));
+  }
+}
+
+void PaymentRequestState::OnSWPaymentInstrumentValidated(
+    ServiceWorkerPaymentInstrument* instrument,
+    bool result) {
+  // Remove service worker payment instruments failed on validation.
+  if (!result) {
+    for (size_t i = 0; i < available_instruments_.size(); i++) {
+      if (available_instruments_[i].get() == instrument) {
+        available_instruments_.erase(available_instruments_.begin() + i);
+        break;
+      }
+    }
+  }
+
+  if (--number_of_pending_sw_payment_instruments_ > 0)
+    return;
+
+  FinishedGetAllSWPaymentInstruments();
+}
+
+void PaymentRequestState::FinishedGetAllSWPaymentInstruments() {
   PopulateProfileCache();
   SetDefaultProfileSelections();
 
