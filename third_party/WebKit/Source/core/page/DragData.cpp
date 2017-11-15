@@ -39,8 +39,8 @@
 namespace blink {
 
 DragData::DragData(DataObject* data,
-                   const IntPoint& client_position,
-                   const IntPoint& global_position,
+                   const FloatPoint& client_position,
+                   const FloatPoint& global_position,
                    DragOperation source_operation_mask,
                    DragApplicationFlags flags)
     : client_position_(client_position),

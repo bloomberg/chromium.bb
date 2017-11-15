@@ -198,10 +198,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Informs the render view host and the BrowserPluginEmbedder, if present, of
   // a Drag Source End.
-  void DragSourceEndedAt(int client_x,
-                         int client_y,
-                         int screen_x,
-                         int screen_y,
+  void DragSourceEndedAt(float client_x,
+                         float client_y,
+                         float screen_x,
+                         float screen_y,
                          blink::WebDragOperation operation,
                          RenderWidgetHost* source_rwh);
 

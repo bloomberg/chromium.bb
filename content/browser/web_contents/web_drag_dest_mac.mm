@@ -143,7 +143,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  gfx::Point transformedPt;
+  gfx::PointF transformedPt;
   if (!webContents_->GetRenderWidgetHostView()) {
     // TODO(ekaramad, paulmeyer): Find a better way than toggling |canceled_|.
     // This could happen when the renderer process for the top-level RWH crashes
@@ -192,7 +192,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   dropData_.swap(dropData);
 
   currentRWHForDrag_->DragTargetDragEnter(
-      *dropData_, transformedPt, gfx::Point(screenPoint.x, screenPoint.y),
+      *dropData_, transformedPt, gfx::PointF(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   // We won't know the true operation (whether the drag is allowed) until we
@@ -216,7 +216,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
     delegate_->OnDragLeave();
 
   if (currentRWHForDrag_) {
-    currentRWHForDrag_->DragTargetDragLeave(gfx::Point(), gfx::Point());
+    currentRWHForDrag_->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
     currentRWHForDrag_.reset();
   }
   dropData_.reset();
@@ -234,7 +234,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  gfx::Point transformedPt;
+  gfx::PointF transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
       [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
 
@@ -258,9 +258,8 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
           transformedLeavePoint, currentDragView, &transformedLeavePoint);
       rootView->TransformPointToCoordSpaceForView(
           transformedScreenPoint, currentDragView, &transformedScreenPoint);
-      currentRWHForDrag_->DragTargetDragLeave(
-          gfx::ToFlooredPoint(transformedLeavePoint),
-          gfx::ToFlooredPoint(transformedScreenPoint));
+      currentRWHForDrag_->DragTargetDragLeave(transformedLeavePoint,
+                                              transformedScreenPoint);
     }
     [self draggingEntered:info view:view];
   }
@@ -276,7 +275,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   NSDragOperation mask = [info draggingSourceOperationMask];
   targetRWH->DragTargetDragOver(
-      transformedPt, gfx::Point(screenPoint.x, screenPoint.y),
+      transformedPt, gfx::PointF(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask), GetModifierFlags());
 
   if (delegate_)
@@ -292,7 +291,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  gfx::Point transformedPt;
+  gfx::PointF transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
       [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
 
@@ -302,7 +301,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   if (targetRWH != currentRWHForDrag_.get()) {
     if (currentRWHForDrag_)
       currentRWHForDrag_->DragTargetDragLeave(
-          transformedPt, gfx::Point(screenPoint.x, screenPoint.y));
+          transformedPt, gfx::PointF(screenPoint.x, screenPoint.y));
     [self draggingEntered:info view:view];
   }
 
@@ -327,7 +326,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
   currentRVH_ = NULL;
 
   targetRWH->DragTargetDrop(*dropData_, transformedPt,
-                            gfx::Point(screenPoint.x, screenPoint.y),
+                            gfx::PointF(screenPoint.x, screenPoint.y),
                             GetModifierFlags());
 
   dropData_.reset();
@@ -337,10 +336,10 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
 - (content::RenderWidgetHostImpl*)
 GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
-             transformedPt:(gfx::Point*)transformedPt {
+             transformedPt:(gfx::PointF*)transformedPt {
   return webContents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
       webContents_->GetRenderViewHost()->GetWidget()->GetView(),
-      gfx::Point(viewPoint.x, viewPoint.y), transformedPt);
+      gfx::PointF(viewPoint.x, viewPoint.y), transformedPt);
 }
 
 - (void)setDragStartTrackersForProcess:(int)processID {

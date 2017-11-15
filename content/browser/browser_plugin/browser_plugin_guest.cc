@@ -551,14 +551,13 @@ void BrowserPluginGuest::SendMessageToEmbedder(
     rwh->Send(msg.release());
 }
 
-void BrowserPluginGuest::DragSourceEndedAt(int client_x,
-                                           int client_y,
-                                           int screen_x,
-                                           int screen_y,
+void BrowserPluginGuest::DragSourceEndedAt(float client_x,
+                                           float client_y,
+                                           float screen_x,
+                                           float screen_y,
                                            blink::WebDragOperation operation) {
   web_contents()->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
-      gfx::Point(client_x, client_y),
-      gfx::Point(screen_x, screen_y),
+      gfx::PointF(client_x, client_y), gfx::PointF(screen_x, screen_y),
       operation);
   seen_embedder_drag_source_ended_at_ = true;
   EndSystemDragIfApplicable();
@@ -883,7 +882,7 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
                                             blink::WebDragStatus drag_status,
                                             const DropData& drop_data,
                                             blink::WebDragOperationsMask mask,
-                                            const gfx::Point& location) {
+                                            const gfx::PointF& location) {
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
   auto* embedder = owner_web_contents_->GetBrowserPluginEmbedder();
   DropData filtered_data(drop_data);
@@ -906,7 +905,7 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
       break;
     case blink::kWebDragStatusLeave:
       embedder->DragLeftGuest(this);
-      widget->DragTargetDragLeave(gfx::Point(), gfx::Point());
+      widget->DragTargetDragLeave(gfx::PointF(), gfx::PointF());
       ignore_dragged_url_ = true;
       break;
     case blink::kWebDragStatusDrop:

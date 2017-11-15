@@ -1372,14 +1372,11 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->PositionInWidget().x,
-                        event->PositionInWidget().y);
-  WebPoint screen_point(event->PositionInScreen().x,
-                        event->PositionInScreen().y);
   current_drag_data_ = drag_data;
   current_drag_effects_allowed_ = mask;
   current_drag_effect_ = mainFrameWidget()->DragTargetDragEnter(
-      drag_data, client_point, screen_point, current_drag_effects_allowed_,
+      drag_data, event->PositionInWidget(), event->PositionInScreen(),
+      current_drag_effects_allowed_,
       modifiersWithButtons(
           current_pointer_state_[kRawMousePointerId].modifiers_,
           current_pointer_state_[kRawMousePointerId].current_buttons_));
@@ -2059,7 +2056,7 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   const WebPoint& last_pos =
       current_pointer_state_[kRawMousePointerId].last_pos_;
   float scale = delegate()->GetWindowToViewportScale();
-  WebPoint scaled_last_pos(last_pos.x * scale, last_pos.y * scale);
+  WebFloatPoint scaled_last_pos(last_pos.x * scale, last_pos.y * scale);
 
   // Provide a drag source.
   mainFrameWidget()->DragTargetDragEnter(current_drag_data_, scaled_last_pos,
@@ -2684,22 +2681,20 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->PositionInWidget().x,
-                        event->PositionInWidget().y);
-  WebPoint screen_point(event->PositionInScreen().x,
-                        event->PositionInScreen().y);
   current_drag_effect_ = drag_effect;
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
-    mainFrameWidget()->DragTargetDrop(current_drag_data_, client_point,
-                                      screen_point, event->GetModifiers());
+    mainFrameWidget()->DragTargetDrop(
+        current_drag_data_, event->PositionInWidget(),
+        event->PositionInScreen(), event->GetModifiers());
   } else {
-    mainFrameWidget()->DragTargetDragLeave(blink::WebPoint(),
-                                           blink::WebPoint());
+    mainFrameWidget()->DragTargetDragLeave(blink::WebFloatPoint(),
+                                           blink::WebFloatPoint());
   }
   current_drag_data_.Reset();
-  mainFrameWidget()->DragSourceEndedAt(client_point, screen_point,
+  mainFrameWidget()->DragSourceEndedAt(event->PositionInWidget(),
+                                       event->PositionInScreen(),
                                        current_drag_effect_);
   mainFrameWidget()->DragSourceSystemDragEnded();
 }
@@ -2718,13 +2713,9 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
   if (current_drag_data_.IsNull())
     return;
 
-  WebPoint client_point(event->PositionInWidget().x,
-                        event->PositionInWidget().y);
-  WebPoint screen_point(event->PositionInScreen().x,
-                        event->PositionInScreen().y);
   blink::WebDragOperation drag_effect = mainFrameWidget()->DragTargetDragOver(
-      client_point, screen_point, current_drag_effects_allowed_,
-      event->GetModifiers());
+      event->PositionInWidget(), event->PositionInScreen(),
+      current_drag_effects_allowed_, event->GetModifiers());
 
   // Bail if dragover caused cancellation.
   if (current_drag_data_.IsNull())
@@ -2746,13 +2737,9 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& raw_event) {
       widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
                          : &raw_event;
 
-  WebPoint client_point(event->PositionInWidget().x,
-                        event->PositionInWidget().y);
-  WebPoint screen_point(event->PositionInScreen().x,
-                        event->PositionInScreen().y);
   current_drag_effect_ = mainFrameWidget()->DragTargetDragOver(
-      client_point, screen_point, current_drag_effects_allowed_,
-      event->GetModifiers());
+      event->PositionInWidget(), event->PositionInScreen(),
+      current_drag_effects_allowed_, event->GetModifiers());
 }
 
 void EventSender::ReplaySavedEvents() {

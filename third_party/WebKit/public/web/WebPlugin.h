@@ -52,6 +52,7 @@ struct WebCursorInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebPoint;
+struct WebFloatPoint;
 struct WebRect;
 struct WebURLError;
 template <typename T>
@@ -123,8 +124,8 @@ class WebPlugin {
   virtual bool HandleDragStatusUpdate(WebDragStatus,
                                       const WebDragData&,
                                       WebDragOperationsMask,
-                                      const WebPoint& position,
-                                      const WebPoint& screen_position) {
+                                      const WebFloatPoint& position,
+                                      const WebFloatPoint& screen_position) {
     return false;
   }
 

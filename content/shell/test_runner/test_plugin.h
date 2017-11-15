@@ -80,11 +80,12 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   blink::WebInputEventResult HandleInputEvent(
       const blink::WebCoalescedInputEvent& event,
       blink::WebCursorInfo& info) override;
-  bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
-                              const blink::WebDragData& data,
-                              blink::WebDragOperationsMask mask,
-                              const blink::WebPoint& position,
-                              const blink::WebPoint& screen_position) override;
+  bool HandleDragStatusUpdate(
+      blink::WebDragStatus drag_status,
+      const blink::WebDragData& data,
+      blink::WebDragOperationsMask mask,
+      const blink::WebFloatPoint& position,
+      const blink::WebFloatPoint& screen_position) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override {}
   void DidReceiveData(const char* data, int data_length) override {}
   void DidFinishLoading() override {}

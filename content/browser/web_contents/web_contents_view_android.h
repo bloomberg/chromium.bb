@@ -108,14 +108,14 @@ class WebContentsViewAndroid : public WebContentsView,
 
  private:
   void OnDragEntered(const std::vector<DropData::Metadata>& metadata,
-                     const gfx::Point& location,
-                     const gfx::Point& screen_location);
-  void OnDragUpdated(const gfx::Point& location,
-                     const gfx::Point& screen_location);
+                     const gfx::PointF& location,
+                     const gfx::PointF& screen_location);
+  void OnDragUpdated(const gfx::PointF& location,
+                     const gfx::PointF& screen_location);
   void OnDragExited();
   void OnPerformDrop(DropData* drop_data,
-                     const gfx::Point& location,
-                     const gfx::Point& screen_location);
+                     const gfx::PointF& location,
+                     const gfx::PointF& screen_location);
   void OnDragEnded();
 
   // The WebContents whose contents we display.

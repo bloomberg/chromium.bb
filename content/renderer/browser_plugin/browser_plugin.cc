@@ -616,8 +616,8 @@ blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
 bool BrowserPlugin::HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                                            const blink::WebDragData& drag_data,
                                            blink::WebDragOperationsMask mask,
-                                           const blink::WebPoint& position,
-                                           const blink::WebPoint& screen) {
+                                           const blink::WebFloatPoint& position,
+                                           const blink::WebFloatPoint& screen) {
   if (guest_crashed_ || !attached())
     return false;
   BrowserPluginManager::Get()->Send(

@@ -116,8 +116,12 @@ bool BrowserPluginEmbedder::OnMessageReceived(
   return handled;
 }
 
-void BrowserPluginEmbedder::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, blink::WebDragOperation operation) {
+void BrowserPluginEmbedder::DragSourceEndedAt(
+    float client_x,
+    float client_y,
+    float screen_x,
+    float screen_y,
+    blink::WebDragOperation operation) {
   if (guest_started_drag_) {
     gfx::Point guest_offset =
         guest_started_drag_->GetScreenCoordinates(gfx::Point());

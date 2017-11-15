@@ -247,33 +247,33 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Drag-and-drop drop target messages that get sent to Blink.
   virtual void DragTargetDragEnter(
       const DropData& drop_data,
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
+      const gfx::PointF& client_pt,
+      const gfx::PointF& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) {}
   virtual void DragTargetDragEnterWithMetaData(
       const std::vector<DropData::Metadata>& metadata,
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
+      const gfx::PointF& client_pt,
+      const gfx::PointF& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) {};
+      int key_modifiers){};
   virtual void DragTargetDragOver(
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
+      const gfx::PointF& client_pt,
+      const gfx::PointF& screen_pt,
       blink::WebDragOperationsMask operations_allowed,
       int key_modifiers) {}
-  virtual void DragTargetDragLeave(const gfx::Point& client_point,
-                                   const gfx::Point& screen_point) {}
+  virtual void DragTargetDragLeave(const gfx::PointF& client_point,
+                                   const gfx::PointF& screen_point) {}
   virtual void DragTargetDrop(const DropData& drop_data,
-                              const gfx::Point& client_pt,
-                              const gfx::Point& screen_pt,
+                              const gfx::PointF& client_pt,
+                              const gfx::PointF& screen_pt,
                               int key_modifiers) {}
 
   // Notifies the renderer that a drag operation that it started has ended,
   // either in a drop or by being cancelled.
-  virtual void DragSourceEndedAt(const gfx::Point& client_pt,
-                                 const gfx::Point& screen_pt,
-                                 blink::WebDragOperation operation) {};
+  virtual void DragSourceEndedAt(const gfx::PointF& client_pt,
+                                 const gfx::PointF& screen_pt,
+                                 blink::WebDragOperation operation){};
 
   // Notifies the renderer that we're done with the drag and drop operation.
   // This allows the renderer to reset some state.

@@ -35,7 +35,6 @@
 #include "public/platform/WebDragOperation.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/web/WebWidget.h"
-
 namespace blink {
 
 class WebDragData;
@@ -43,6 +42,7 @@ class WebLocalFrame;
 class WebInputMethodController;
 class WebWidgetClient;
 struct WebActiveWheelFlingParameters;
+struct WebFloatPoint;
 
 class WebFrameWidget : public WebWidget {
  public:
@@ -89,25 +89,25 @@ class WebFrameWidget : public WebWidget {
   // on the WebFrameWidget.
   virtual WebDragOperation DragTargetDragEnter(
       const WebDragData&,
-      const WebPoint& point_in_viewport,
-      const WebPoint& screen_point,
+      const WebFloatPoint& point_in_viewport,
+      const WebFloatPoint& screen_point,
       WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
   virtual WebDragOperation DragTargetDragOver(
-      const WebPoint& point_in_viewport,
-      const WebPoint& screen_point,
+      const WebFloatPoint& point_in_viewport,
+      const WebFloatPoint& screen_point,
       WebDragOperationsMask operations_allowed,
       int modifiers) = 0;
-  virtual void DragTargetDragLeave(const WebPoint& point_in_viewport,
-                                   const WebPoint& screen_point) = 0;
+  virtual void DragTargetDragLeave(const WebFloatPoint& point_in_viewport,
+                                   const WebFloatPoint& screen_point) = 0;
   virtual void DragTargetDrop(const WebDragData&,
-                              const WebPoint& point_in_viewport,
-                              const WebPoint& screen_point,
+                              const WebFloatPoint& point_in_viewport,
+                              const WebFloatPoint& screen_point,
                               int modifiers) = 0;
 
   // Notifies the WebFrameWidget that a drag has terminated.
-  virtual void DragSourceEndedAt(const WebPoint& point_in_viewport,
-                                 const WebPoint& screen_point,
+  virtual void DragSourceEndedAt(const WebFloatPoint& point_in_viewport,
+                                 const WebFloatPoint& screen_point,
                                  WebDragOperation) = 0;
 
   // Notifies the WebFrameWidget that the system drag and drop operation has

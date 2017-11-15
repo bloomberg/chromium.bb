@@ -363,11 +363,11 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
         metadata.push_back(DropData::Metadata::CreateForMimeType(
             DropData::Kind::STRING, mime_type));
       }
-      OnDragEntered(metadata, event.GetLocation(), event.GetScreenLocation());
+      OnDragEntered(metadata, event.location_f(), event.screen_location_f());
       break;
     }
     case JNI_DragEvent::ACTION_DRAG_LOCATION:
-      OnDragUpdated(event.GetLocation(), event.GetScreenLocation());
+      OnDragUpdated(event.location_f(), event.screen_location_f());
       break;
     case JNI_DragEvent::ACTION_DROP: {
       DropData drop_data;
@@ -385,7 +385,7 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
         }
       }
 
-      OnPerformDrop(&drop_data, event.GetLocation(), event.GetScreenLocation());
+      OnPerformDrop(&drop_data, event.location_f(), event.screen_location_f());
       break;
     }
     case JNI_DragEvent::ACTION_DRAG_EXITED:
@@ -407,8 +407,8 @@ bool WebContentsViewAndroid::OnDragEvent(const ui::DragEventAndroid& event) {
 
 void WebContentsViewAndroid::OnDragEntered(
     const std::vector<DropData::Metadata>& metadata,
-    const gfx::Point& location,
-    const gfx::Point& screen_location) {
+    const gfx::PointF& location,
+    const gfx::PointF& screen_location) {
   blink::WebDragOperationsMask allowed_ops =
       static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
                                                 blink::kWebDragOperationMove);
@@ -417,8 +417,8 @@ void WebContentsViewAndroid::OnDragEntered(
                                       allowed_ops, 0);
 }
 
-void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
-                                           const gfx::Point& screen_location) {
+void WebContentsViewAndroid::OnDragUpdated(const gfx::PointF& location,
+                                           const gfx::PointF& screen_location) {
   blink::WebDragOperationsMask allowed_ops =
       static_cast<blink::WebDragOperationsMask>(blink::kWebDragOperationCopy |
                                                 blink::kWebDragOperationMove);
@@ -428,12 +428,12 @@ void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
 
 void WebContentsViewAndroid::OnDragExited() {
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave(
-      gfx::Point(), gfx::Point());
+      gfx::PointF(), gfx::PointF());
 }
 
 void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
-                                           const gfx::Point& location,
-                                           const gfx::Point& screen_location) {
+                                           const gfx::PointF& location,
+                                           const gfx::PointF& screen_location) {
   web_contents_->GetRenderViewHost()->GetWidget()->FilterDropData(drop_data);
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
       *drop_data, location, screen_location, 0);

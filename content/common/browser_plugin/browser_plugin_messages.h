@@ -143,7 +143,7 @@ IPC_MESSAGE_CONTROL5(BrowserPluginHostMsg_DragStatusUpdate,
                      blink::WebDragStatus /* drag_status */,
                      content::DropData /* drop_data */,
                      blink::WebDragOperationsMask /* operation_mask */,
-                     gfx::Point /* plugin_location */)
+                     gfx::PointF /* plugin_location */)
 
 // Sends a PointerLock Lock ACK to the BrowserPluginGuest.
 IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_LockMouse_ACK,
