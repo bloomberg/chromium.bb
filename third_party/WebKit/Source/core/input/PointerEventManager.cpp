@@ -49,23 +49,6 @@ Vector<WebPointerEvent> GetCoalescedWebPointerEventsWithNoTransformation(
   return related_pointer_events;
 }
 
-Vector<std::pair<WebTouchPoint, TimeTicks>> GetCoalescedPoints(
-    const Vector<WebTouchEvent>& coalesced_events,
-    int id) {
-  Vector<std::pair<WebTouchPoint, TimeTicks>> related_points;
-  for (const auto& touch_event : coalesced_events) {
-    for (unsigned i = 0; i < touch_event.touches_length; ++i) {
-      if (touch_event.touches[i].id == id &&
-          touch_event.touches[i].state != WebTouchPoint::kStateStationary) {
-        related_points.push_back(std::pair<WebTouchPoint, TimeTicks>(
-            touch_event.TouchPointInRootFrame(i),
-            TimeTicks::FromSeconds(touch_event.TimeStampSeconds())));
-      }
-    }
-  }
-  return related_points;
-}
-
 }  // namespace
 
 PointerEventManager::PointerEventManager(LocalFrame& frame,
@@ -377,17 +360,17 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
                         : first_pointer_event_target;
 
     if (touch_point.state != blink::WebTouchPoint::kStateStationary) {
-      DispatchTouchPointerEvent(
-          touch_point, pointer_event_target,
-          GetCoalescedPoints(coalesced_events, touch_point.id),
-          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-          event.TimeStampSeconds(), event.unique_touch_event_id);
-
-      touch_event_manager_->HandleTouchPoint(
-          WebPointerEvent(event, event.touches[touch_point_idx]),
+      const WebPointerEvent& web_pointer_event =
+          WebPointerEvent(event, event.touches[touch_point_idx]);
+      const Vector<WebPointerEvent>& web_coalesced_pointer_events =
           GetCoalescedWebPointerEventsWithNoTransformation(
-              coalesced_events, event.touches[touch_point_idx].id),
-          pointer_event_target);
+              coalesced_events, event.touches[touch_point_idx].id);
+      DispatchTouchPointerEvent(web_pointer_event, web_coalesced_pointer_events,
+                                pointer_event_target);
+
+      touch_event_manager_->HandleTouchPoint(web_pointer_event,
+                                             web_coalesced_pointer_events,
+                                             pointer_event_target);
     }
   }
 
@@ -450,21 +433,16 @@ PointerEventManager::ComputePointerEventTarget(
 }
 
 void PointerEventManager::DispatchTouchPointerEvent(
-    const WebTouchPoint& touch_point,
-    const EventHandlingUtil::PointerEventTarget& pointer_event_target,
-    const Vector<std::pair<WebTouchPoint, TimeTicks>>& coalesced_events,
-    WebInputEvent::Modifiers modifiers,
-    double timestamp,
-    uint32_t unique_touch_event_id) {
+    const WebPointerEvent& web_pointer_event,
+    const Vector<WebPointerEvent>& coalesced_events,
+    const EventHandlingUtil::PointerEventTarget& pointer_event_target) {
   // Iterate through the touch points, sending PointerEvents to the targets as
   // required.
   // Do not send pointer events for stationary touches or null targetFrame
   if (pointer_event_target.target_node && pointer_event_target.target_frame &&
       !scroll_capable_pointers_canceled_) {
     PointerEvent* pointer_event = pointer_event_factory_.Create(
-        touch_point, coalesced_events,
-        static_cast<WebInputEvent::Modifiers>(modifiers),
-        TimeTicks::FromSeconds(timestamp), pointer_event_target.target_frame,
+        web_pointer_event, coalesced_events,
         pointer_event_target.target_node
             ? pointer_event_target.target_node->GetDocument().domWindow()
             : nullptr);
@@ -481,7 +459,8 @@ void PointerEventManager::DispatchTouchPointerEvent(
     if (result != WebInputEventResult::kNotHandled &&
         pointer_event->type() == EventTypeNames::pointerdown &&
         pointer_event->isPrimary()) {
-      touch_ids_for_canceled_pointerdowns_.push_back(unique_touch_event_id);
+      touch_ids_for_canceled_pointerdowns_.push_back(
+          web_pointer_event.unique_touch_event_id);
     }
   }
 }

@@ -47,6 +47,7 @@ WebPointerEvent::WebPointerEvent(const WebTouchEvent& touch_event,
   dispatch_type = touch_event.dispatch_type;
   moved_beyond_slop_region = touch_event.moved_beyond_slop_region;
   touch_start_or_first_touch_move = touch_event.touch_start_or_first_touch_move;
+  unique_touch_event_id = touch_event.unique_touch_event_id;
   // WebTouchPoint attributes
   rotation_angle = touch_point.rotation_angle;
 }
