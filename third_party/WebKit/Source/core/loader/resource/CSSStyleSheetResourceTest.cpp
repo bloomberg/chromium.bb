@@ -5,6 +5,7 @@
 #include "core/loader/resource/CSSStyleSheetResource.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -30,7 +31,6 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"

@@ -5,12 +5,12 @@
 #ifndef NGPhysicalFragment_h
 #define NGPhysicalFragment_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

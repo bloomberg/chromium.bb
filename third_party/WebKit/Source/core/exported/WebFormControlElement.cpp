@@ -38,7 +38,7 @@
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
 
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace blink {
 

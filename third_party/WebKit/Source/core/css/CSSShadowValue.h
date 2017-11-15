@@ -21,9 +21,9 @@
 #ifndef CSSShadowValue_h
 #define CSSShadowValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

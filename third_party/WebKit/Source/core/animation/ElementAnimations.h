@@ -31,11 +31,11 @@
 #ifndef ElementAnimations_h
 #define ElementAnimations_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/animation/EffectStack.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -26,8 +26,8 @@
 #ifndef CSSBorderImageSliceValue_h
 #define CSSBorderImageSliceValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSQuadValue.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -31,6 +31,7 @@
 #include "core/inspector/DOMPatchSupport.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ContextFeatures.h"
@@ -50,7 +51,6 @@
 #include "platform/Crypto.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashTraits.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"

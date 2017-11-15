@@ -6,6 +6,7 @@
 #define DedicatedWorkerMessagingProxy_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
@@ -14,7 +15,6 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

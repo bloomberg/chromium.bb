@@ -28,13 +28,13 @@
 #ifndef SVGComputedStyleDefs_h
 #define SVGComputedStyleDefs_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/style/StylePath.h"
 #include "platform/Length.h"
 #include "platform/graphics/Color.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/RefVector.h"
 #include "platform/wtf/text/WTFString.h"
 

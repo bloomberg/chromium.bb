@@ -30,6 +30,7 @@
 
 #include "core/inspector/DOMEditor.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -40,7 +41,6 @@
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/protocol/Protocol.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

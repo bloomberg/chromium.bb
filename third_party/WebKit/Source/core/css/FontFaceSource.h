@@ -5,9 +5,9 @@
 #ifndef FontFaceSource_h
 #define FontFaceSource_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

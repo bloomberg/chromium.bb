@@ -6,6 +6,7 @@
 #define ImageBitmap_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/html/canvas/ImageElementBase.h"
@@ -17,7 +18,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {

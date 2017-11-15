@@ -5,6 +5,7 @@
 #ifndef DedicatedWorker_h
 #define DedicatedWorker_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
@@ -13,7 +14,6 @@
 #include "core/dom/events/EventTarget.h"
 #include "core/workers/AbstractWorker.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -5,6 +5,7 @@
 #ifndef NGContainerFragmentBuilder_h
 #define NGContainerFragmentBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
@@ -14,7 +15,6 @@
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

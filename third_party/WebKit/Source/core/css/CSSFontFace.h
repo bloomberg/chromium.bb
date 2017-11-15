@@ -26,6 +26,7 @@
 #ifndef CSSFontFace_h
 #define CSSFontFace_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSSegmentedFontFace.h"
@@ -34,7 +35,6 @@
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

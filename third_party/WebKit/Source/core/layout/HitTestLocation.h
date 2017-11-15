@@ -22,6 +22,7 @@
 #ifndef HitTestLocation_h
 #define HitTestLocation_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRect.h"
@@ -29,7 +30,6 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/ListHashSet.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

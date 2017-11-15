@@ -26,6 +26,7 @@
 #ifndef SpellCheckRequester_h
 #define SpellCheckRequester_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
 #include "core/editing/Forward.h"
@@ -33,7 +34,6 @@
 #include "platform/text/TextChecking.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 

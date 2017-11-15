@@ -26,9 +26,9 @@
 #ifndef PerformanceMeasure_h
 #define PerformanceMeasure_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/timing/PerformanceEntry.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

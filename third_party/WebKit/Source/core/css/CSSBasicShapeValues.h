@@ -30,11 +30,11 @@
 #ifndef CSSBasicShapeValues_h
 #define CSSBasicShapeValues_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValuePair.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 

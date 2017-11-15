@@ -6,10 +6,10 @@
 #define CSSPathValue_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSValue.h"
 #include "core/style/StylePath.h"
 #include "core/svg/SVGPathByteStream.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

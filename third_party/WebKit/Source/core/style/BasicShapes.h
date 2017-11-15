@@ -30,6 +30,7 @@
 #ifndef BasicShapes_h
 #define BasicShapes_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/Length.h"
@@ -37,7 +38,6 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

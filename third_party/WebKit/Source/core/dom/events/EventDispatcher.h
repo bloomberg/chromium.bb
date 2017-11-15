@@ -28,10 +28,10 @@
 #ifndef EventDispatcher_h
 #define EventDispatcher_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/events/EventDispatchResult.h"
 #include "core/dom/events/SimulatedClickOptions.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

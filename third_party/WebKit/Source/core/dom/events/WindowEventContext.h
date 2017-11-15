@@ -27,9 +27,9 @@
 #ifndef WindowEventContext_h
 #define WindowEventContext_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

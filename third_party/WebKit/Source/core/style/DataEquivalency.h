@@ -6,7 +6,7 @@
 #define DataEquivalency_h
 
 #include <memory>
-#include "platform/wtf/RefPtr.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace blink {
 

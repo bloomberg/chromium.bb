@@ -20,9 +20,9 @@
 #ifndef CSSBorderImage_h
 #define CSSBorderImage_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSValueList.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

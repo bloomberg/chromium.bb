@@ -27,6 +27,7 @@
 #define HTMLDocumentParser_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -47,7 +48,6 @@
 #include "core/html/parser/XSSAuditorDelegate.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/WeakPtr.h"
 #include "platform/wtf/text/TextPosition.h"
 

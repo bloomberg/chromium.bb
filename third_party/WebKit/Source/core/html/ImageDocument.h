@@ -25,10 +25,10 @@
 #ifndef ImageDocument_h
 #define ImageDocument_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImageElement.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

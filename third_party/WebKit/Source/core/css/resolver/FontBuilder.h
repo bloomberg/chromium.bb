@@ -24,13 +24,13 @@
 #ifndef FontBuilder_h
 #define FontBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
 #include "core/css/FontSizeFunctions.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontVariantNumeric.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

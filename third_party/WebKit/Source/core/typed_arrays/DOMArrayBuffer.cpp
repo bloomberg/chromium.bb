@@ -4,10 +4,10 @@
 
 #include "core/typed_arrays/DOMArrayBuffer.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

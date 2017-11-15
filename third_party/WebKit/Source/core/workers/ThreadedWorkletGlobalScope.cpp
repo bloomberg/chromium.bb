@@ -4,6 +4,7 @@
 
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/WorkerThreadDebugger.h"
@@ -13,7 +14,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 
 namespace blink {

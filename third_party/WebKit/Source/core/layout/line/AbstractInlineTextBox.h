@@ -31,13 +31,13 @@
 #ifndef AbstractInlineTextBox_h
 #define AbstractInlineTextBox_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/layout/api/LineLayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

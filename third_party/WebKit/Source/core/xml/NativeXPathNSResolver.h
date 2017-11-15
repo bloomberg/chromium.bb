@@ -26,8 +26,8 @@
 #ifndef NativeXPathNSResolver_h
 #define NativeXPathNSResolver_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/xml/XPathNSResolver.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

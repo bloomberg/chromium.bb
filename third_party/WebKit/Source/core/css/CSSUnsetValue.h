@@ -5,8 +5,8 @@
 #ifndef CSSUnsetValue_h
 #define CSSUnsetValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSValue.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

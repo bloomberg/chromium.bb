@@ -5,6 +5,7 @@
 #include "core/imagebitmap/ImageBitmap.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/media/HTMLVideoElement.h"
@@ -17,7 +18,6 @@
 #include "platform/threading/BackgroundTaskRunner.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

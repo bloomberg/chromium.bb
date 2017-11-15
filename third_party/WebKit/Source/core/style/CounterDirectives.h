@@ -26,11 +26,11 @@
 #define CounterDirectives_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 

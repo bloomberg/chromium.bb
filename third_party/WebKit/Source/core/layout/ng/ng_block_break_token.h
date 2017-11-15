@@ -5,10 +5,10 @@
 #ifndef NGBlockBreakToken_h
 #define NGBlockBreakToken_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "platform/LayoutUnit.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

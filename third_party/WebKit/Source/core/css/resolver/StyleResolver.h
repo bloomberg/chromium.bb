@@ -23,6 +23,7 @@
 #ifndef StyleResolver_h
 #define StyleResolver_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/PropertyHandle.h"
@@ -38,7 +39,6 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/ListHashSet.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

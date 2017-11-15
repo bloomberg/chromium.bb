@@ -5,13 +5,13 @@
 #ifndef PropertyRegistration_h
 #define PropertyRegistration_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/animation/CSSInterpolationType.h"
 #include "core/animation/InterpolationTypesMap.h"
 #include "core/css/CSSSyntaxDescriptor.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSVariableData.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

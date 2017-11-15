@@ -31,10 +31,10 @@
 #ifndef LinkImport_h
 #define LinkImport_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/LinkResource.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -32,12 +32,12 @@
 #ifndef FileInputType_h
 #define FileInputType_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/html/forms/FileChooser.h"
 #include "core/html/forms/InputType.h"
 #include "core/html/forms/KeyboardClickableInputTypeView.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -31,6 +31,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
@@ -41,7 +42,6 @@
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

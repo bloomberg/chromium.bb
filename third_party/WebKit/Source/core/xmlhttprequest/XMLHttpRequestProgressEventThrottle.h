@@ -27,10 +27,10 @@
 #ifndef XMLHttpRequestProgressEventThrottle_h
 #define XMLHttpRequestProgressEventThrottle_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

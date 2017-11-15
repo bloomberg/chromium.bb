@@ -5,10 +5,10 @@
 #ifndef CSSVariableReferenceValue_h
 #define CSSVariableReferenceValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/parser/CSSParserContext.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

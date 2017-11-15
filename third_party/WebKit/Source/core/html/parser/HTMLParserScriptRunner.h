@@ -26,6 +26,7 @@
 #ifndef HTMLParserScriptRunner_h
 #define HTMLParserScriptRunner_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
 #include "core/html/parser/HTMLParserReentryPermit.h"
@@ -34,7 +35,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {

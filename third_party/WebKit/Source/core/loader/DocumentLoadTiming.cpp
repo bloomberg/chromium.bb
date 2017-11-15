@@ -25,10 +25,10 @@
 
 #include "core/loader/DocumentLoadTiming.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

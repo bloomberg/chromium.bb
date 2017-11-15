@@ -30,8 +30,8 @@
 
 #include "core/xml/parser/SharedBufferReader.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/SharedBuffer.h"
-#include "platform/wtf/RefPtr.h"
 
 #include <algorithm>
 #include <cstring>

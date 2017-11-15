@@ -31,6 +31,7 @@
 #define InspectorDOMAgent_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -39,7 +40,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "v8/include/v8-inspector.h"

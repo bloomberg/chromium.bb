@@ -30,12 +30,12 @@
 #ifndef ShapeValue_h
 #define ShapeValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/BasicShapes.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/StyleImage.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

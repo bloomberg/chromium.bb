@@ -30,6 +30,7 @@
 
 #include "public/web/WebDocument.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ElementRegistrationOptions.h"
@@ -55,7 +56,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebDistillability.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebDOMEvent.h"

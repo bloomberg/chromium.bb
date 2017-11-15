@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
@@ -74,7 +75,6 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/CurrentTime.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebMixedContentContextType.h"

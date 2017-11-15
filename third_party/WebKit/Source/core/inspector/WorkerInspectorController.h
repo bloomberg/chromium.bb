@@ -31,13 +31,13 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebThread.h"
 
 namespace blink {

@@ -30,9 +30,9 @@
 #ifndef BasicShapeFunctions_h
 #define BasicShapeFunctions_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 
