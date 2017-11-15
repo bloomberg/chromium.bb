@@ -263,8 +263,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
   V8RemotePlaybackAvailabilityCallback* availability_callback =
-      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                   callback_function->Bind());
+      V8RemotePlaybackAvailabilityCallback::Create(callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
@@ -338,8 +337,7 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
   V8RemotePlaybackAvailabilityCallback* availability_callback =
-      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                   callback_function->Bind());
+      V8RemotePlaybackAvailabilityCallback::Create(callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.
@@ -389,8 +387,7 @@ TEST_F(RemotePlaybackTest, IsListening) {
   MockFunction* callback_function =
       MockFunction::Create(scope.GetScriptState());
   V8RemotePlaybackAvailabilityCallback* availability_callback =
-      V8RemotePlaybackAvailabilityCallback::Create(scope.GetScriptState(),
-                                                   callback_function->Bind());
+      V8RemotePlaybackAvailabilityCallback::Create(callback_function->Bind());
 
   // The initial call upon registering will not happen as it's posted on the
   // message loop.

@@ -52,11 +52,8 @@ class MutationObserver::V8DelegateImpl final
   USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
 
  public:
-  static V8DelegateImpl* Create(v8::Isolate* isolate,
-                                V8MutationCallback* callback) {
-    ExecutionContext* execution_context =
-        ToExecutionContext(callback->v8Value(isolate)->CreationContext());
-
+  static V8DelegateImpl* Create(V8MutationCallback* callback,
+                                ExecutionContext* execution_context) {
     return new V8DelegateImpl(callback, execution_context);
   }
 
@@ -106,9 +103,9 @@ MutationObserver* MutationObserver::Create(Delegate* delegate) {
 MutationObserver* MutationObserver::Create(ScriptState* script_state,
                                            V8MutationCallback* callback) {
   DCHECK(IsMainThread());
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   return new MutationObserver(
-      ExecutionContext::From(script_state),
-      V8DelegateImpl::Create(script_state->GetIsolate(), callback));
+      execution_context, V8DelegateImpl::Create(callback, execution_context));
 }
 
 MutationObserver::MutationObserver(ExecutionContext* execution_context,

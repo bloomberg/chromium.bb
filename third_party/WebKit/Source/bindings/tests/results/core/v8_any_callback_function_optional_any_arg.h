@@ -12,26 +12,28 @@
 #ifndef V8AnyCallbackFunctionOptionalAnyArg_h
 #define V8AnyCallbackFunctionOptionalAnyArg_h
 
-#include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/CallbackFunctionBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class ScriptWrappable;
+
 class CORE_EXPORT V8AnyCallbackFunctionOptionalAnyArg final : public CallbackFunctionBase {
  public:
-  static V8AnyCallbackFunctionOptionalAnyArg* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8AnyCallbackFunctionOptionalAnyArg* Create(v8::Local<v8::Function> callback_function) {
+    return new V8AnyCallbackFunctionOptionalAnyArg(callback_function);
+  }
 
-  ~V8AnyCallbackFunctionOptionalAnyArg() = default;
+  ~V8AnyCallbackFunctionOptionalAnyArg() override = default;
 
-  bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);
+  // Performs "invoke".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  bool call(ScriptWrappable* callback_this_value, ScriptValue optionalAnyArg, ScriptValue& return_value);
 
  private:
-  V8AnyCallbackFunctionOptionalAnyArg(ScriptState*, v8::Local<v8::Function>);
+  explicit V8AnyCallbackFunctionOptionalAnyArg(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
 };
 
 }  // namespace blink

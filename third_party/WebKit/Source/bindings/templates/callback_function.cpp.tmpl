@@ -11,76 +11,113 @@
 
 namespace blink {
 
-// static
-{{cpp_class}}* {{cpp_class}}::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
-  if (IsUndefinedOrNull(callback))
-    return nullptr;
-  return new {{cpp_class}}(scriptState, v8::Local<v8::Function>::Cast(callback));
-}
-
-{{cpp_class}}::{{cpp_class}}(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : CallbackFunctionBase(scriptState, callback) {}
-
 bool {{cpp_class}}::call({{argument_declarations | join(', ')}}) {
-  if (callback_.IsEmpty())
-    return false;
+  // This function implements "invoke" steps in
+  // "3.10. Invoking callback functions".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
-  if (!script_state_->ContextIsValid())
-    return false;
+  {# TODO(yukishiino): This implementation does not support a return type of
+     promise type, in which case this function needs to convert any exception
+     into a rejected promise. See also step 14.4. to 14.6. #}
 
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
-
-  {% for argument in arguments if argument.enum_values %}
-  {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
-  {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | indent(2)}}
-  if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exceptionState)) {
-    NOTREACHED();
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return false;
   }
+
+  // step 4. If ! IsCallable(F) is false:
+  //
+  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
+  // case.
+#if DCHECK_IS_ON()
+  {
+    v8::HandleScope handle_scope(GetIsolate());
+    DCHECK(CallbackFunction()->IsFunction());
+  }
+#endif
+
+  // step 8. Prepare to run script with relevant settings.
+  ScriptState::Scope callback_relevant_context_scope(
+      CallbackRelevantScriptState());
+  // step 9. Prepare to run a callback with stored settings.
+  {# TODO(yukishiino): Callback function type value must make the incumbent
+     environment alive, i.e. the reference to v8::Context must be strong. #}
+  if (IncumbentScriptState()->GetContext().IsEmpty()) {
+    return false;
+  }
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      IncumbentScriptState()->GetContext());
+
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
+
+  v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
+                                       CallbackRelevantScriptState());
+
+  {% for argument in arguments if argument.enum_values %}
+  // Enum values provided by Blink must be valid, otherwise typo.
+#if DCHECK_IS_ON()
+  {
+    {% set valid_enum_variables = 'valid_' + argument.name + '_values' %}
+    {{declare_enum_validation_variable(argument.enum_values, valid_enum_variables) | indent(4)}}
+    ExceptionState exception_state(GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   "{{callback_function_name}}",
+                                   "invoke");
+    if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
+      NOTREACHED();
+      return false;
+    }
+  }
+#endif
+
   {% endfor %}
 
-  ExecutionContext* context = ExecutionContext::From(script_state_.get());
-  DCHECK(context);
-  if (context->IsContextPaused() || context->IsContextDestroyed())
-    return false;
-
-  ScriptState::Scope scope(script_state_.get());
-  v8::Isolate* isolate = script_state_->GetIsolate();
-
-  v8::Local<v8::Value> thisValue = ToV8(
-      scriptWrappable,
-      script_state_->GetContext()->Global(),
-      isolate);
-
+  // step 10. Let esArgs be the result of converting args to an ECMAScript
+  //   arguments list. If this throws an exception, set completion to the
+  //   completion value representing the thrown exception and jump to the step
+  //   labeled return.
+  v8::Local<v8::Object> argument_creation_context =
+      CallbackRelevantScriptState()->GetContext()->Global();
+  ALLOW_UNUSED_LOCAL(argument_creation_context);
   {% for argument in arguments %}
   v8::Local<v8::Value> {{argument.v8_name}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
   {% if arguments %}
   v8::Local<v8::Value> argv[] = { {{arguments | join(', ', 'v8_name')}} };
   {% else %}
-  {# Empty array initializers are illegal, and don\'t compile in MSVC. #}
+  {# Zero-length arrays are ill-formed in C++. #}
   v8::Local<v8::Value> *argv = nullptr;
   {% endif %}
-  v8::TryCatch exceptionCatcher(isolate);
-  exceptionCatcher.SetVerbose(true);
 
-  v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                                    context,
-                                    thisValue,
-                                    {{arguments | length}},
-                                    argv,
-                                    isolate).ToLocal(&v8ReturnValue)) {
+  // step 11. Let callResult be Call(X, thisArg, esArgs).
+  v8::Local<v8::Value> call_result;
+  if (!V8ScriptRunner::CallFunction(
+          CallbackFunction(),
+          ExecutionContext::From(CallbackRelevantScriptState()),
+          this_arg,
+          {{arguments | length}},
+          argv,
+          GetIsolate()).ToLocal(&call_result)) {
+    // step 12. If callResult is an abrupt completion, set completion to
+    //   callResult and jump to the step labeled return.
     return false;
   }
 
-  {% if return_value %}
-  {{v8_value_to_local_cpp_value(return_value) | indent(2)}}
-  returnValue = cppValue;
-  {% endif %}
+  // step 13. Set completion to the result of converting callResult.[[Value]] to
+  //   an IDL value of the same type as the operation's return type.
+  {% if idl_type == 'void' %}
   return true;
+  {% else %}
+  {
+    ExceptionState exceptionState(GetIsolate(),
+                                  ExceptionState::kExecutionContext,
+                                  "{{callback_function_name}}",
+                                  "invoke");
+    {{v8_value_to_local_cpp_value(return_value_conversion) | indent(4)}}
+    return_value = native_result;
+    return true;
+  }
+  {% endif %}
 }
 
 }  // namespace blink

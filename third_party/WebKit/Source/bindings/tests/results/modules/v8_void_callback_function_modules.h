@@ -12,26 +12,28 @@
 #ifndef V8VoidCallbackFunctionModules_h
 #define V8VoidCallbackFunctionModules_h
 
-#include "bindings/core/v8/NativeValueTraits.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/CallbackFunctionBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class ScriptWrappable;
+
 class MODULES_EXPORT V8VoidCallbackFunctionModules final : public CallbackFunctionBase {
  public:
-  static V8VoidCallbackFunctionModules* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionModules* Create(v8::Local<v8::Function> callback_function) {
+    return new V8VoidCallbackFunctionModules(callback_function);
+  }
 
-  ~V8VoidCallbackFunctionModules() = default;
+  ~V8VoidCallbackFunctionModules() override = default;
 
-  bool call(ScriptWrappable* scriptWrappable);
+  // Performs "invoke".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  bool call(ScriptWrappable* callback_this_value);
 
  private:
-  V8VoidCallbackFunctionModules(ScriptState*, v8::Local<v8::Function>);
+  explicit V8VoidCallbackFunctionModules(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
 };
 
 }  // namespace blink

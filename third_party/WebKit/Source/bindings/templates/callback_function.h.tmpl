@@ -17,14 +17,21 @@ class {{forward_declaration}};
 
 class {{exported}}{{cpp_class}} final : public CallbackFunctionBase {
  public:
-  static {{cpp_class}}* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static {{cpp_class}}* Create(v8::Local<v8::Function> callback_function) {
+    return new {{cpp_class}}(callback_function);
+  }
 
-  ~{{cpp_class}}() = default;
+  ~{{cpp_class}}() override = default;
 
+  {# TODO(yukishiino): Change the return type to v8::Maybe<T> so that the
+     function returns a return value or throws an exception. #}
+  // Performs "invoke".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
   bool call({{argument_declarations | join(', ')}});
 
  private:
-  {{cpp_class}}(ScriptState*, v8::Local<v8::Function>);
+  explicit {{cpp_class}}(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
 };
 
 }  // namespace blink
