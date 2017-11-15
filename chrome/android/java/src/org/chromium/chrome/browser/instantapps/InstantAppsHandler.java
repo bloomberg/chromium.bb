@@ -292,7 +292,22 @@ public class InstantAppsHandler {
     /**
      * Shows an Instant App banner if necessary for the page we're loading.
      */
-    protected void maybeShowInstantAppBanner(Context context, String url, Uri referrer, Tab tab) {}
+    @Deprecated
+    protected void maybeShowInstantAppBanner(Context context, String url, Uri referrer, Tab tab) {
+        maybeShowInstantAppBanner(context, url, referrer, tab, false /* isInstantAppDefault */);
+    }
+
+    /**
+     * Shows an Instant App banner if necessary for the page we're loading.
+     *
+     * @param context An Android {@link Context}.
+     * @param url The URL we're navigating to.
+     * @param referrer The referrer {@link Uri}.
+     * @param tab A Chrome {@link Tab}.
+     * @param isInstantAppDefault Whether this instant app is being opened by default.
+     */
+    protected void maybeShowInstantAppBanner(
+            Context context, String url, Uri referrer, Tab tab, boolean isInstantAppDefault) {}
 
     /**
      * Launches an Instant App immediately, if possible.
