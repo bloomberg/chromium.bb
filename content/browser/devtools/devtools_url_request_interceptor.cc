@@ -16,7 +16,9 @@
 
 namespace content {
 
-InterceptedRequestInfo::InterceptedRequestInfo() = default;
+InterceptedRequestInfo::InterceptedRequestInfo()
+    : response_error_code(net::OK) {}
+
 InterceptedRequestInfo::~InterceptedRequestInfo() = default;
 
 // static
