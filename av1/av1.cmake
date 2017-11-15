@@ -35,8 +35,6 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/convolve.h"
     "${AOM_ROOT}/av1/common/daala_tx.c"
     "${AOM_ROOT}/av1/common/daala_tx.h"
-    "${AOM_ROOT}/av1/common/daala_inv_txfm.c"
-    "${AOM_ROOT}/av1/common/daala_inv_txfm.h"
     "${AOM_ROOT}/av1/common/debugmodes.c"
     "${AOM_ROOT}/av1/common/entropy.c"
     "${AOM_ROOT}/av1/common/entropy.h"
@@ -78,6 +76,13 @@ set(AOM_AV1_COMMON_SOURCES
     "${AOM_ROOT}/av1/common/tile_common.c"
     "${AOM_ROOT}/av1/common/tile_common.h")
 
+if (CONFIG_DAALA_TX)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/daala_inv_txfm.c"
+      "${AOM_ROOT}/av1/common/daala_inv_txfm.h")
+endif ()
+
 set(AOM_AV1_DECODER_SOURCES
     "${AOM_ROOT}/av1/av1_dx_iface.c"
     "${AOM_ROOT}/av1/decoder/decodeframe.c"
@@ -111,8 +116,6 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/context_tree.h"
     "${AOM_ROOT}/av1/encoder/cost.c"
     "${AOM_ROOT}/av1/encoder/cost.h"
-    "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.c"
-    "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.h"
     "${AOM_ROOT}/av1/encoder/dct.c"
     "${AOM_ROOT}/av1/encoder/encodeframe.c"
     "${AOM_ROOT}/av1/encoder/encodeframe.h"
@@ -160,6 +163,13 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/tokenize.h"
     "${AOM_ROOT}/av1/encoder/treewriter.c"
     "${AOM_ROOT}/av1/encoder/treewriter.h")
+
+if (CONFIG_DAALA_TX)
+  set(AOM_AV1_ENCODER_SOURCES
+      ${AOM_AV1_ENCODER_SOURCES}
+      "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.c"
+      "${AOM_ROOT}/av1/encoder/daala_fwd_txfm.h")
+endif ()
 
 set(AOM_AV1_COMMON_INTRIN_SSE2
     "${AOM_ROOT}/av1/common/x86/idct_intrin_sse2.c")
