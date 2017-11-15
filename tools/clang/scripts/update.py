@@ -530,6 +530,10 @@ def UpdateClang(args):
                      '-DLLVM_USE_CRT_RELEASE=MT',
                      ]
 
+  if sys.platform != 'win32':
+    # libxml2 is required by the Win manifest merging tool used in cross-builds.
+    base_cmake_args.append('-DLLVM_ENABLE_LIBXML2=FORCE_ON')
+
   if args.bootstrap:
     print 'Building bootstrap compiler'
     EnsureDirExists(LLVM_BOOTSTRAP_DIR)
