@@ -898,24 +898,6 @@ using ios::material::TimingFunction;
   } else {
     [self animateMaterialOmnibox];
   }
-
-  // Record the appropriate user action for focusing the omnibox.
-  web::WebState* webState = [self.delegate currentWebState];
-  if (webState) {
-    if (webState->GetVisibleURL() == GURL(kChromeUINewTabURL)) {
-      OmniboxEditModel* model = _locationBar->GetLocationEntry()->model();
-      if (model->is_caret_visible()) {
-        base::RecordAction(
-            base::UserMetricsAction("MobileFocusedOmniboxOnNtp"));
-      } else {
-        base::RecordAction(
-            base::UserMetricsAction("MobileFocusedFakeboxOnNtp"));
-      }
-    } else {
-      base::RecordAction(
-          base::UserMetricsAction("MobileFocusedOmniboxNotOnNtp"));
-    }
-  }
 }
 
 - (void)locationBarHasResignedFirstResponder {
