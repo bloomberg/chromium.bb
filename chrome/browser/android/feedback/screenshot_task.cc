@@ -30,9 +30,9 @@ void SnapshotCallback(JNIEnv* env,
     size_t size = png_data->size();
     ScopedJavaLocalRef<jbyteArray> jbytes(env, env->NewByteArray(size));
     env->SetByteArrayRegion(jbytes.obj(), 0, size, (jbyte*)png_data->front());
-    Java_ScreenshotTask_onBytesReceived(env, callback, jbytes);
+    Java_ScreenshotTask_notifySnapshotFinished(env, callback, jbytes);
   } else {
-    Java_ScreenshotTask_onBytesReceived(env, callback, nullptr);
+    Java_ScreenshotTask_notifySnapshotFinished(env, callback, nullptr);
   }
 }
 
