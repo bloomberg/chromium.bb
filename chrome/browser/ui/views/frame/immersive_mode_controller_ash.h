@@ -80,16 +80,15 @@ class ImmersiveModeControllerAsh
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
+  void OnWindowDestroying(aura::Window* window) override;
 
   std::unique_ptr<ash::ImmersiveFullscreenController> controller_;
 
-  // Not owned.
-  BrowserView* browser_view_;
-  aura::Window* native_window_;
+  BrowserView* browser_view_ = nullptr;
 
   // True if the observers for window restore and entering / exiting tab
   // fullscreen are enabled.
-  bool observers_enabled_;
+  bool observers_enabled_ = false;
 
   // The current visible bounds of the find bar, in screen coordinates. This is
   // an empty rect if the find bar is not visible.
@@ -97,7 +96,7 @@ class ImmersiveModeControllerAsh
 
   // The fraction of the TopContainerView's height which is visible. Zero when
   // the top-of-window views are not revealed.
-  double visible_fraction_;
+  double visible_fraction_ = 1.0;
 
   // When running in mash a widget is created to draw the top container. This
   // widget does not actually contain the top container, it just renders it.
