@@ -26,6 +26,7 @@
 #include "chrome/common/net/x509_certificate_model_nss.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "net/cert/x509_util_nss.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -312,6 +313,13 @@ void CertificateViewerDialog::Show(WebContents* web_contents,
   // on the title for Aura ConstrainedWebDialogUI.
   dialog_ = ShowConstrainedWebDialog(web_contents->GetBrowserContext(), this,
                                      web_contents);
+
+  // Clear the zoom level for the dialog so that it is not affected by the page
+  // zoom setting.
+  content::WebContents* dialog_web_contents = dialog_->GetWebContents();
+  const GURL dialog_url = GetDialogContentURL();
+  content::HostZoomMap::Get(dialog_web_contents->GetSiteInstance())
+      ->SetZoomLevelForHostAndScheme(dialog_url.scheme(), dialog_url.host(), 0);
 }
 
 gfx::NativeWindow CertificateViewerDialog::GetNativeWebContentsModalDialog() {
