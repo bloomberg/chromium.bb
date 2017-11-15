@@ -223,7 +223,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private boolean mDeferredStartupPosted;
 
     private boolean mTabModelsInitialized;
-    protected boolean mNativeInitialized;
+    private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
 
     // The class cannot implement TouchExplorationStateChangeListener,
@@ -1226,6 +1226,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
         VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();
+    }
+
+    /**
+     * @return Whether native initialization has been completed for this activity.
+     */
+    public boolean didFinishNativeInitialization() {
+        return mNativeInitialized;
     }
 
     /**
