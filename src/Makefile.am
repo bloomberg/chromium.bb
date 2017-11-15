@@ -140,6 +140,7 @@ libfontconfig_la_SOURCES = \
 	fcfreetype.c \
 	fcfs.c \
 	fcptrlist.c \
+	fchash.c \
 	fcinit.c \
 	fclang.c \
 	fclist.c \

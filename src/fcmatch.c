@@ -653,14 +653,15 @@ FcFontRenderPrepare (FcConfig	    *config,
 		if (FcStat (FcValueString (&l->value), &statb) < 0)
 		{
 		    FcChar8 *dir = FcStrDirname (FcValueString (&l->value));
-		    const FcChar8 *alias;
+		    FcChar8 *alias;
 
-		    if ((alias = FcDirCacheFindAliasPath (dir)))
+		    if (FcHashTableFind (config->alias_table, dir, (void **) &alias))
 		    {
 			FcChar8 *base = FcStrBasename (FcValueString (&l->value));
 			FcChar8 *s = FcStrBuildFilename (alias, base, NULL);
 			FcValue v;
 
+			FcStrFree (alias);
 			FcStrFree (base);
 			v.type = FcTypeString;
 			v.u.s = s;

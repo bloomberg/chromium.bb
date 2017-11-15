@@ -458,14 +458,16 @@ FcListAppend (FcListHashTable	*table,
 		if (FcStat (FcValueString (&v->value), &statb) < 0)
 		{
 		    FcChar8 *dir = FcStrDirname (FcValueString (&v->value));
-		    const FcChar8 *alias;
+		    FcChar8 *alias;
+		    FcConfig *config = FcConfigGetCurrent (); /* FIXME: this may need to be exported as API? */
 
-		    if ((alias = FcDirCacheFindAliasPath (dir)))
+		    if (FcHashTableFind (config->alias_table, dir, (void **) &alias))
 		    {
 			FcChar8 *base = FcStrBasename (FcValueString (&v->value));
 			FcChar8 *s = FcStrBuildFilename (alias, base, NULL);
 			FcValue vv;
 
+			FcStrFree (alias);
 			FcStrFree (base);
 			vv.type = FcTypeString;
 			vv.u.s = s;

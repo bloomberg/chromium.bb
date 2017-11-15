@@ -409,7 +409,7 @@ FcDirCacheRead (const FcChar8 *dir, FcBool force, FcConfig *config)
 {
     FcCache		*cache = NULL;
 
-    FcDirCacheCreateUUID (dir, force);
+    FcDirCacheCreateUUID ((FcChar8 *) dir, force, config);
     /* Try to use existing cache file */
     if (!force)
 	cache = FcDirCacheLoad (dir, config, NULL);
