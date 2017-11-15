@@ -290,10 +290,11 @@ class QuicStreamFactoryTestBase {
 
     QuicStreamRequest request(factory_.get());
     GURL url("https://" + destination.host() + "/");
-    EXPECT_EQ(ERR_IO_PENDING,
-              request.Request(destination, version_, privacy_mode_,
-                              /*cert_verify_flags=*/0, url, net_log_,
-                              &net_error_details_, callback_.callback()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        request.Request(destination, version_, privacy_mode_, DEFAULT_PRIORITY,
+                        /*cert_verify_flags=*/0, url, net_log_,
+                        &net_error_details_, callback_.callback()));
 
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
     std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -430,10 +431,11 @@ class QuicStreamFactoryTestBase {
 
     // Create request and QuicHttpStream.
     QuicStreamRequest request(factory_.get());
-    EXPECT_EQ(ERR_IO_PENDING,
-              request.Request(host_port_pair_, version_, privacy_mode_,
-                              /*cert_verify_flags=*/0, url_, net_log_,
-                              &net_error_details_, callback_.callback()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        request.Request(host_port_pair_, version_, privacy_mode_,
+                        DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                        net_log_, &net_error_details_, callback_.callback()));
     EXPECT_EQ(OK, callback_.WaitForResult());
 
     // Run QuicChromiumClientSession::WriteToNewSocket()
@@ -611,11 +613,11 @@ class QuicStreamFactoryTestBase {
     socket_data.AddSocketDataToFactory(&socket_factory_);
 
     QuicStreamRequest request(factory_.get());
-    EXPECT_EQ(
-        ERR_IO_PENDING,
-        request.Request(quic_server_id.host_port_pair(), version_,
-                        privacy_mode_, /*cert_verify_flags=*/0, url_, net_log_,
-                        &net_error_details_, callback_.callback()));
+    EXPECT_EQ(ERR_IO_PENDING,
+              request.Request(quic_server_id.host_port_pair(), version_,
+                              privacy_mode_, DEFAULT_PRIORITY,
+                              /*cert_verify_flags=*/0, url_, net_log_,
+                              &net_error_details_, callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
@@ -646,10 +648,11 @@ class QuicStreamFactoryTestBase {
 
     QuicStreamRequest request2(factory_.get());
     EXPECT_EQ(ERR_IO_PENDING,
-              request2.Request(
-                  quic_server_id2.host_port_pair(), version_, privacy_mode_,
-                  /*cert_verify_flags=*/0, GURL("https://mail.example.org/"),
-                  net_log_, &net_error_details_, callback_.callback()));
+              request2.Request(quic_server_id2.host_port_pair(), version_,
+                               privacy_mode_, DEFAULT_PRIORITY,
+                               /*cert_verify_flags=*/0,
+                               GURL("https://mail.example.org/"), net_log_,
+                               &net_error_details_, callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
@@ -763,19 +766,23 @@ TEST_P(QuicStreamFactoryTest, Create) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
+  EXPECT_EQ(DEFAULT_PRIORITY, host_resolver_.last_request_priority());
+
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback_.callback()));
   // Will reset stream 3.
   stream = CreateStream(&request2);
 
@@ -785,8 +792,9 @@ TEST_P(QuicStreamFactoryTest, Create) {
   // in streams on different sessions.
   QuicStreamRequest request3(factory_.get());
   EXPECT_EQ(OK, request3.Request(host_port_pair_, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback_.callback()));
   stream = CreateStream(&request3);  // Will reset stream 5.
   stream.reset();                    // Will reset stream 7.
 
@@ -811,9 +819,10 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -838,9 +847,10 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRttPost) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -859,10 +869,11 @@ TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -885,10 +896,11 @@ TEST_P(QuicStreamFactoryTest, FactoryDestroyedWhenJobPending) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   auto request = std::make_unique<QuicStreamRequest>(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request->Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request->Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   request.reset();
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
   // Tearing down a QuicStreamFactory with a pending Job should not cause any
@@ -913,10 +925,11 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   IPAddress last_address;
   EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
@@ -953,10 +966,11 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_THAT(request.Request(host_port_pair_, version_, privacy_mode_,
-                              /*cert_verify_flags=*/0, url_, net_log_,
-                              &net_error_details_, callback_.callback()),
-              IsOk());
+  EXPECT_THAT(
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()),
+      IsOk());
 
   IPAddress last_address;
   EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
@@ -990,10 +1004,11 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1021,10 +1036,11 @@ TEST_P(QuicStreamFactoryTest, 2gInitialRtt) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1052,10 +1068,11 @@ TEST_P(QuicStreamFactoryTest, 3gInitialRtt) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1078,10 +1095,11 @@ TEST_P(QuicStreamFactoryTest, GoAway) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1108,10 +1126,11 @@ TEST_P(QuicStreamFactoryTest, GoAwayForConnectionMigrationWithPortOnly) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1153,17 +1172,19 @@ TEST_P(QuicStreamFactoryTest, Pooling) {
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -1211,7 +1232,7 @@ TEST_P(QuicStreamFactoryTest, PoolingWithServerMigration) {
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(server2, version_, privacy_mode_,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
                              /*cert_verify_flags=*/0, url2_, net_log_,
                              &net_error_details_, callback.callback()));
   EXPECT_EQ(OK, callback.WaitForResult());
@@ -1245,17 +1266,19 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -1265,9 +1288,10 @@ TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
 
   TestCompletionCallback callback3;
   QuicStreamRequest request3(factory_.get());
-  EXPECT_EQ(OK, request3.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback3.callback()));
+  EXPECT_EQ(OK,
+            request3.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback3.callback()));
   std::unique_ptr<HttpStream> stream3 = CreateStream(&request3);
   EXPECT_TRUE(stream3.get());
 
@@ -1298,17 +1322,19 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(server1, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(server1, version_, privacy_mode_, DEFAULT_PRIORITY,
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -1342,17 +1368,19 @@ TEST_P(QuicStreamFactoryTest, HttpsPoolingWithMatchingPins) {
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(server1, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(server1, version_, privacy_mode_, DEFAULT_PRIORITY,
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -1397,17 +1425,19 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithDifferentPins) {
   host_resolver_.rules()->AddIPLiteralRule(server2.host(), "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(server1, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request.Request(server1, version_, privacy_mode_, DEFAULT_PRIORITY,
+                            /*cert_verify_flags=*/0, url_, net_log_,
+                            &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
 
   TestCompletionCallback callback;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -1435,10 +1465,11 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1455,10 +1486,11 @@ TEST_P(QuicStreamFactoryTest, Goaway) {
   // Create a new request for the same destination and verify that a
   // new session is created.
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -1498,9 +1530,10 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   // kDefaultMaxStreamsPerConnection / 2.
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection / 2; i++) {
     QuicStreamRequest request(factory_.get());
-    int rv = request.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback());
+    int rv =
+        request.Request(host_port_pair_, version_, privacy_mode_,
+                        DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                        net_log_, &net_error_details_, callback_.callback());
     if (i == 0) {
       EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
       EXPECT_THAT(callback_.WaitForResult(), IsOk());
@@ -1515,9 +1548,10 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   }
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, CompletionCallback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, CompletionCallback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -1549,10 +1583,11 @@ TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   host_resolver_.rules()->AddSimulatedFailure(kDefaultServerHostName);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
 
@@ -1568,10 +1603,11 @@ TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_ADDRESS_IN_USE));
 
@@ -1587,18 +1623,20 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
   {
     QuicStreamRequest request(factory_.get());
-    EXPECT_EQ(ERR_IO_PENDING,
-              request.Request(host_port_pair_, version_, privacy_mode_,
-                              /*cert_verify_flags=*/0, url_, net_log_,
-                              &net_error_details_, callback_.callback()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        request.Request(host_port_pair_, version_, privacy_mode_,
+                        DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                        net_log_, &net_error_details_, callback_.callback()));
   }
 
   base::RunLoop().RunUntilIdle();
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback_.callback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request2);
 
   EXPECT_TRUE(stream.get());
@@ -1626,10 +1664,11 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1646,10 +1685,11 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   // a new session.
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
@@ -1680,10 +1720,11 @@ TEST_P(QuicStreamFactoryTest,
 
   // Create request, should fail after the write of the CHLO fails.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(ERR_QUIC_HANDSHAKE_FAILED, callback_.WaitForResult());
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -1699,10 +1740,11 @@ TEST_P(QuicStreamFactoryTest,
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
   // Run the message loop to complete host resolution.
@@ -1742,10 +1784,11 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
 
   // Create request, should fail immediately.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_QUIC_HANDSHAKE_FAILED,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_QUIC_HANDSHAKE_FAILED,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   // Check no active session, or active jobs left for this server.
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -1761,10 +1804,11 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
 
@@ -1803,10 +1847,11 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1827,10 +1872,11 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   // a new session.
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
@@ -1856,10 +1902,11 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -1878,8 +1925,9 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
   // Attempting a new request to the same origin uses the same connection.
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback_.callback()));
   stream = CreateStream(&request2);
 
   stream.reset();
@@ -1919,10 +1967,11 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -1986,10 +2035,11 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -2049,10 +2099,11 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2111,10 +2162,11 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnected(bool async_write_before) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -2159,10 +2211,11 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2217,10 +2270,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNonMigratableStream) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2266,10 +2320,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultConnectionMigrationDisabled) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2318,10 +2373,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNonMigratableStream) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2366,10 +2422,11 @@ TEST_P(QuicStreamFactoryTest,
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2414,10 +2471,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkMadeDefaultNoOpenStreams) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2452,10 +2510,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoOpenStreams) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2494,10 +2553,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2570,10 +2630,11 @@ TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedPauseBeforeConnected) {
   socket_data2.AddWrite(ConstructInitialSettingsPacket());
   socket_data2.AddSocketDataToFactory(&socket_factory_);
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -2619,17 +2680,19 @@ TEST_P(QuicStreamFactoryTest,
 
   // Create request and QuicHttpStream to create session1.
   QuicStreamRequest request1(factory_.get());
-  EXPECT_EQ(OK, request1.Request(server1, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request1.Request(server1, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url_, net_log_,
+                             &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
   EXPECT_TRUE(stream1.get());
 
   // Create request and QuicHttpStream to create session2.
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback_.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -2711,10 +2774,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2775,10 +2839,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarly) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -2836,10 +2901,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -2902,10 +2968,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyWithAsyncWrites) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -2955,10 +3022,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3007,10 +3075,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3059,10 +3128,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3117,10 +3187,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3206,10 +3277,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3295,10 +3367,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3359,10 +3432,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3438,10 +3512,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnMultipleWriteErrors(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3518,10 +3593,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorWithNotificationQueued(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3616,10 +3692,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3715,10 +3792,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3796,10 +3874,11 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorPauseBeforeConnected(
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -3848,10 +3927,11 @@ void QuicStreamFactoryTestBase::
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -3937,10 +4017,11 @@ void QuicStreamFactoryTestBase::
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -4002,10 +4083,11 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyToBadSocket) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -4065,10 +4147,11 @@ TEST_P(QuicStreamFactoryTest, ServerMigration) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -4208,10 +4291,11 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {
 
   // Create request and QuicHttpStream.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -4262,10 +4346,11 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -4282,10 +4367,11 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   // a new session.
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
@@ -4315,10 +4401,11 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -4336,10 +4423,11 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   // a new session.
 
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, privacy_mode_,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   stream = CreateStream(&request2);
@@ -4442,9 +4530,10 @@ TEST_P(QuicStreamFactoryTest, EnableNotLoadFromDiskCache) {
                                            "192.168.0.1", "");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   // If we are waiting for disk cache, we would have posted a task. Verify that
   // the CancelWaitForDataReady task hasn't been posted.
@@ -4489,9 +4578,10 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kPingTimeoutSecs),
             QuicStreamFactoryPeer::GetPingTimeout(factory_.get()));
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   EXPECT_EQ(QuicTime::Delta::FromSeconds(kPingTimeoutSecs),
@@ -4521,9 +4611,10 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
   DVLOG(1) << "Create 2nd session and timeout with open stream";
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(OK, request2.Request(server2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2_, net_log_,
-                                 &net_error_details_, callback2.callback()));
+  EXPECT_EQ(OK,
+            request2.Request(server2, version_, privacy_mode_, DEFAULT_PRIORITY,
+                             /*cert_verify_flags=*/0, url2_, net_log_,
+                             &net_error_details_, callback2.callback()));
   QuicChromiumClientSession* session2 = GetActiveSession(server2);
   EXPECT_EQ(QuicTime::Delta::FromSeconds(10),
             session2->connection()->ping_timeout());
@@ -4586,10 +4677,11 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
   // Start a QUIC request.
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_EQ(OK, callback_.WaitForResult());
 
@@ -4633,9 +4725,10 @@ TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {
                                        "StartReading");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   // Call run_loop so that QuicChromiumPacketReader::OnReadComplete() gets
   // called.
@@ -4679,9 +4772,10 @@ TEST_P(QuicStreamFactoryTest, YieldAfterDuration) {
                                        "StartReading");
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
-                                /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      OK, request.Request(host_port_pair_, version_, privacy_mode_,
+                          DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                          net_log_, &net_error_details_, callback_.callback()));
 
   // Call run_loop so that QuicChromiumPacketReader::OnReadComplete() gets
   // called.
@@ -4710,10 +4804,11 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -4732,8 +4827,9 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(host_port_pair_, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback_.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback_.callback()));
 
   EXPECT_EQ(1, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
 }
@@ -4757,10 +4853,11 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   socket_data2.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(host_port_pair_, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url_, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -4783,10 +4880,11 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
   // Doing the request should not use the push stream, but rather
   // cancel it because the privacy modes do not match.
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(host_port_pair_, version_, PRIVACY_MODE_ENABLED,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(host_port_pair_, version_, PRIVACY_MODE_ENABLED,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url_,
+                       net_log_, &net_error_details_, callback_.callback()));
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
   EXPECT_EQ(index->GetPromised(kDefaultUrl), nullptr);
@@ -4818,10 +4916,11 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   QuicStreamRequest request1(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request1.Request(destination1, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url_, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request1.Request(destination1, version_, privacy_mode_, DEFAULT_PRIORITY,
+                       /*cert_verify_flags=*/0, url_, net_log_,
+                       &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
   EXPECT_TRUE(stream1.get());
@@ -4831,8 +4930,9 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(destination2, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                 &net_error_details_, callback2.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url_, net_log_, &net_error_details_,
+                                 callback2.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -4930,10 +5030,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, InvalidCertificate) {
   AddHangingSocketData();
 
   QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request.Request(destination, version_, privacy_mode_,
-                            /*cert_verify_flags=*/0, url, net_log_,
-                            &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(destination, version_, privacy_mode_, DEFAULT_PRIORITY,
+                      /*cert_verify_flags=*/0, url, net_log_,
+                      &net_error_details_, callback_.callback()));
 
   EXPECT_THAT(callback_.WaitForResult(), IsError(ERR_QUIC_HANDSHAKE_FAILED));
 
@@ -4973,10 +5074,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data));
 
   QuicStreamRequest request1(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request1.Request(destination, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url1, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request1.Request(destination, version_, privacy_mode_, DEFAULT_PRIORITY,
+                       /*cert_verify_flags=*/0, url1, net_log_,
+                       &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
@@ -4987,8 +5089,9 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
   EXPECT_EQ(OK, request2.Request(destination, version_, privacy_mode_,
-                                 /*cert_verify_flags=*/0, url2, net_log_,
-                                 &net_error_details_, callback2.callback()));
+                                 DEFAULT_PRIORITY, /*cert_verify_flags=*/0,
+                                 url2, net_log_, &net_error_details_,
+                                 callback2.callback()));
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
 
@@ -5045,10 +5148,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data1));
 
   QuicStreamRequest request1(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request1.Request(destination, version_, PRIVACY_MODE_DISABLED,
-                             /*cert_verify_flags=*/0, url1, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request1.Request(destination, version_, PRIVACY_MODE_DISABLED,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url1,
+                       net_log_, &net_error_details_, callback_.callback()));
   EXPECT_EQ(OK, callback_.WaitForResult());
   std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
   EXPECT_TRUE(stream1.get());
@@ -5056,10 +5160,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
 
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(destination, version_, PRIVACY_MODE_ENABLED,
-                             /*cert_verify_flags=*/0, url2, net_log_,
-                             &net_error_details_, callback2.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(destination, version_, PRIVACY_MODE_ENABLED,
+                       DEFAULT_PRIORITY, /*cert_verify_flags=*/0, url2,
+                       net_log_, &net_error_details_, callback2.callback()));
   EXPECT_EQ(OK, callback2.WaitForResult());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -5128,10 +5233,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
   sequenced_socket_data_vector_.push_back(std::move(sequenced_socket_data1));
 
   QuicStreamRequest request1(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request1.Request(destination, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url1, net_log_,
-                             &net_error_details_, callback_.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request1.Request(destination, version_, privacy_mode_, DEFAULT_PRIORITY,
+                       /*cert_verify_flags=*/0, url1, net_log_,
+                       &net_error_details_, callback_.callback()));
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream1 = CreateStream(&request1);
   EXPECT_TRUE(stream1.get());
@@ -5139,10 +5245,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
 
   TestCompletionCallback callback2;
   QuicStreamRequest request2(factory_.get());
-  EXPECT_EQ(ERR_IO_PENDING,
-            request2.Request(destination, version_, privacy_mode_,
-                             /*cert_verify_flags=*/0, url2, net_log_,
-                             &net_error_details_, callback2.callback()));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request2.Request(destination, version_, privacy_mode_, DEFAULT_PRIORITY,
+                       /*cert_verify_flags=*/0, url2, net_log_,
+                       &net_error_details_, callback2.callback()));
   EXPECT_THAT(callback2.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
   EXPECT_TRUE(stream2.get());
@@ -5227,6 +5334,35 @@ TEST_P(QuicStreamFactoryTest, ConfigConnectionOptions) {
       net::kTBBR, Perspective::IS_CLIENT));
   EXPECT_TRUE(config->HasClientRequestedIndependentOption(
       net::k1RTT, Perspective::IS_CLIENT));
+}
+
+// Verifies that the host resolver uses the request priority passed to
+// QuicStreamRequest::Request().
+TEST_P(QuicStreamFactoryTest, HostResolverUsesRequestPriority) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data;
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(&socket_factory_);
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(host_port_pair_, version_, privacy_mode_,
+                      MAXIMUM_PRIORITY, /*cert_verify_flags=*/0, url_, net_log_,
+                      &net_error_details_, callback_.callback()));
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  EXPECT_EQ(MAXIMUM_PRIORITY, host_resolver_.last_request_priority());
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 }  // namespace test
