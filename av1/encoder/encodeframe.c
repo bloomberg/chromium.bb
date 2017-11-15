@@ -4349,6 +4349,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_DUAL_FILTER
     cm->interp_filter = SWITCHABLE;
 #endif
+#if CONFIG_EXT_TILE
+    if (cm->large_scale_tile) cm->interp_filter = EIGHTTAP_REGULAR;
+#endif  // CONFIG_EXT_TILE
 
     make_consistent_compound_tools(cm);
 
@@ -4375,12 +4378,18 @@ void av1_encode_frame(AV1_COMP *cpi) {
     }
     make_consistent_compound_tools(cm);
 
-    if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
+#if CONFIG_EXT_TILE
+    if (!cm->large_scale_tile) {
+#endif  // CONFIG_EXT_TILE
+      if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
 #if CONFIG_SIMPLIFY_TX_MODE
-      cm->tx_mode = TX_MODE_LARGEST;
+        cm->tx_mode = TX_MODE_LARGEST;
 #else
       cm->tx_mode = ALLOW_32X32 + CONFIG_TX64X64;
 #endif  // CONFIG_SIMPLIFY_TX_MODE
+#if CONFIG_EXT_TILE
+    }
+#endif  // CONFIG_EXT_TILE
   } else {
     make_consistent_compound_tools(cm);
     encode_frame_internal(cpi);

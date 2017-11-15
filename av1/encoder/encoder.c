@@ -2491,7 +2491,14 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   rc->worst_quality = cpi->oxcf.worst_allowed_q;
   rc->best_quality = cpi->oxcf.best_allowed_q;
 
-  cm->interp_filter = cpi->sf.default_interp_filter;
+#if CONFIG_EXT_TILE
+  if (!oxcf->large_scale_tile)
+#endif  // CONFIG_EXT_TILE
+    cm->interp_filter = cpi->sf.default_interp_filter;
+#if CONFIG_EXT_TILE
+  else
+    cm->interp_filter = EIGHTTAP_REGULAR;
+#endif  // CONFIG_EXT_TILE
 
   if (cpi->oxcf.render_width > 0 && cpi->oxcf.render_height > 0) {
     cm->render_width = cpi->oxcf.render_width;
@@ -5496,6 +5503,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_EXT_TILE
   cm->large_scale_tile = cpi->oxcf.large_scale_tile;
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
+#if CONFIG_REFERENCE_BUFFER
+  if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
+#endif  // CONFIG_REFERENCE_BUFFER
 #endif  // CONFIG_EXT_TILE
 
 #if CONFIG_MONO_VIDEO
