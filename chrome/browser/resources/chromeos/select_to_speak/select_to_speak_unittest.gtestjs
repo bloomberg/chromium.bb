@@ -121,3 +121,97 @@ TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
   assertEquals(8, getNextWordEnd('kitty cat', 7));
   assertEquals(10, getNextWordEnd('kitty "cat"', 5));
 });
+
+TEST_F('SelectToSpeakUnitTest', 'findAllMatching', function() {
+  let rect = {left: 0, top: 0, width: 100, height: 100};
+  let rootNode = {root: {}, state: {}, role: 'rootWebArea', state: {},
+      location: {left: 0, top: 0, width: 600, height: 600}};
+  let container1 = {root: rootNode, parent: rootNode, role: 'staticText',
+      name: 'one two', state: {},
+      location: {left: 0, top: 0, width: 200, height: 200}};
+  let container2 = {root: rootNode, parent: rootNode, state: {},
+      role: 'genericContainer',
+      location: {left: 0, top: 0, width: 200, height: 200}};
+  let node1 = {root: rootNode, parent: container1, name: 'one',
+      role: 'inlineTextBox', state: {},
+      location: {left: 50, top: 0, width: 50, height: 50}};
+  let node2 = {root: rootNode, parent: container1, name: 'two',
+      role: 'inlineTextBox', state: {},
+      location: {left: 0, top: 50, width: 50, height: 50}};
+
+  // Set up relationships between nodes.
+  rootNode.children = [container1, container2];
+  rootNode.firstChild = container1;
+  container1.nextSibling = container2;
+  container1.children = [node1, node2];
+  container1.firstChild = node1;
+  node1.nextSibling = node2;
+
+  // Should get both children of the first container, without getting
+  // the first container itself or the empty container.
+  let result = [];
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(2, result.length);
+  assertEquals(node1, result[0]);
+  assertEquals(node2, result[1]);
+
+  // If a node doesn't have a name, it should not be included.
+  result = [];
+  node2.name = undefined;
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(node1, result[0]);
+
+  // Try a rect that only overlaps one of the children.
+  result = [];
+  node2.name = 'two';
+  rect.height = 25;
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(node1, result[0]);
+
+  // Now just overlap a different child.
+  result = [];
+  rect.top = 50;
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(node2, result[0]);
+
+  // Offscreen should cause a node to be skipped.
+  result = [];
+  node2.state = {offscreen: true}
+  assertFalse(findAllMatching(rootNode, rect, result));
+  assertEquals(0, result.length);
+
+  // No location should cause a node to be skipped.
+  result = [];
+  node2.state = {};
+  node2.location = undefined;
+  assertFalse(findAllMatching(rootNode, rect, result));
+
+  // A non staticText container without a name should still have
+  // children found.
+  result = [];
+  let node3 = {root: rootNode, parent: container2, name: 'three',
+      state: {}, location: {left: 0, top: 50, width: 50, height: 50}};
+  container2.firstChild = node3;
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(node3, result[0]);
+
+  // A non staticText container with a valid name should not be
+  // read if its children are read. Children take precidence.
+  result = [];
+  container2.name = 'container2';
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(node3, result[0]);
+
+  // A non staticText container with a valid name which has only
+  // children without names should be read instead of its children.
+  result = [];
+  node3.name = undefined;
+  assertTrue(findAllMatching(rootNode, rect, result));
+  assertEquals(1, result.length);
+  assertEquals(container2, result[0]);
+});
