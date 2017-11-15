@@ -187,11 +187,7 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   FRAME_COUNTS *counts = xd->counts;
   int16_t mode_ctx = ctx & NEWMV_CTX_MASK;
   int is_newmv, is_zeromv, is_refmv;
-#if CONFIG_NEW_MULTISYMBOL
   is_newmv = aom_read_symbol(r, ec_ctx->newmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
-#else
-  is_newmv = aom_read(r, ec_ctx->newmv_prob[mode_ctx], ACCT_STR) == 0;
-#endif
   if (is_newmv) {
     if (counts) ++counts->newmv_mode[mode_ctx][0];
     return NEWMV;
@@ -199,12 +195,8 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   if (counts) ++counts->newmv_mode[mode_ctx][1];
   if (ctx & (1 << ALL_ZERO_FLAG_OFFSET)) return GLOBALMV;
   mode_ctx = (ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-#if CONFIG_NEW_MULTISYMBOL
   is_zeromv =
       aom_read_symbol(r, ec_ctx->zeromv_cdf[mode_ctx], 2, ACCT_STR) == 0;
-#else
-  is_zeromv = aom_read(r, ec_ctx->zeromv_prob[mode_ctx], ACCT_STR) == 0;
-#endif
   if (is_zeromv) {
     if (counts) ++counts->zeromv_mode[mode_ctx][0];
     return GLOBALMV;
@@ -214,11 +206,7 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   if (ctx & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
   if (ctx & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
   if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
-#if CONFIG_NEW_MULTISYMBOL
   is_refmv = aom_read_symbol(r, ec_ctx->refmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
-#else
-  is_refmv = aom_read(r, ec_ctx->refmv_prob[mode_ctx], ACCT_STR) == 0;
-#endif
   if (is_refmv) {
     if (counts) ++counts->refmv_mode[mode_ctx][0];
     return NEARESTMV;
@@ -237,11 +225,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     for (idx = 0; idx < 2; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
-#if CONFIG_NEW_MULTISYMBOL
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
-#else
-        int drl_idx = aom_read(r, ec_ctx->drl_prob[drl_ctx], ACCT_STR);
-#endif
         mbmi->ref_mv_idx = idx + drl_idx;
         if (xd->counts) ++xd->counts->drl_mode[drl_ctx][drl_idx];
         if (!drl_idx) return;
@@ -256,11 +240,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     for (idx = 1; idx < 3; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
-#if CONFIG_NEW_MULTISYMBOL
         int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
-#else
-        int drl_idx = aom_read(r, ec_ctx->drl_prob[drl_ctx], ACCT_STR);
-#endif
         mbmi->ref_mv_idx = idx + drl_idx - 1;
         if (xd->counts) ++xd->counts->drl_mode[drl_ctx][drl_idx];
         if (!drl_idx) return;
@@ -272,9 +252,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
-#if CONFIG_NEW_MULTISYMBOL
   (void)cm;
-#endif
 
   const MOTION_MODE last_motion_mode_allowed =
       motion_mode_allowed(0, xd->global_motion, xd, mi);
@@ -284,12 +262,8 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return SIMPLE_TRANSLATION;
 
   if (last_motion_mode_allowed == OBMC_CAUSAL) {
-#if CONFIG_NEW_MULTISYMBOL
     motion_mode =
         aom_read_symbol(r, xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2, ACCT_STR);
-#else
-    motion_mode = aom_read(r, cm->fc->obmc_prob[mbmi->sb_type], ACCT_STR);
-#endif
     if (counts) ++counts->obmc[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   } else {
@@ -388,13 +362,8 @@ static int read_q_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return 0;
   }
 
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob *pred_cdf = segp->q_seg_cdf[cdf_num];
   int coded_id = aom_read_symbol(r, pred_cdf, 8, ACCT_STR);
-#else
-  const aom_prob pred_cdf = segp->q_seg_cdf[cdf_num];
-  int coded_id = aom_read(r, pred_cdf, ACCT_STR);
-#endif
 
   int segment_id = neg_deinterleave(coded_id, pred, seg->q_lvls);
 
@@ -410,10 +379,8 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
                                MB_MODE_INFO *mbmi, FRAME_COUNTS *counts,
                                TX_SIZE tx_size, int depth, int blk_row,
                                int blk_col, aom_reader *r) {
-#if CONFIG_NEW_MULTISYMBOL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#endif
   int is_split = 0;
   const int tx_row = blk_row >> 1;
   const int tx_col = blk_col >> 1;
@@ -441,11 +408,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
     return;
   }
 
-#if CONFIG_NEW_MULTISYMBOL
   is_split = aom_read_symbol(r, ec_ctx->txfm_partition_cdf[ctx], 2, ACCT_STR);
-#else
-  is_split = aom_read(r, cm->fc->txfm_partition_prob[ctx], ACCT_STR);
-#endif
 
   if (is_split) {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -619,13 +582,8 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   if (seg->temporal_update) {
     const int ctx = av1_get_pred_context_seg_id(xd);
-#if CONFIG_NEW_MULTISYMBOL
     aom_cdf_prob *pred_cdf = segp->pred_cdf[ctx];
     mbmi->seg_id_predicted = aom_read_symbol(r, pred_cdf, 2, ACCT_STR);
-#else
-    const aom_prob pred_prob = segp->pred_probs[ctx];
-    mbmi->seg_id_predicted = aom_read(r, pred_prob, ACCT_STR);
-#endif
     if (counts) ++counts->seg.pred[ctx][mbmi->seg_id_predicted];
     if (mbmi->seg_id_predicted) {
       segment_id = predicted_segment_id;
@@ -651,13 +609,9 @@ static int read_skip_mode(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
     return 0;
   } else {
     const int ctx = av1_get_skip_mode_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     const int skip_mode =
         aom_read_symbol(r, ec_ctx->skip_mode_cdfs[ctx], 2, ACCT_STR);
-#else
-    const int skip_mode = aom_read(r, cm->fc->skip_mode_probs[ctx], ACCT_STR);
-#endif  // CONFIG_NEW_MULTISYMBOL
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->skip_mode[ctx][skip_mode];
 
@@ -674,12 +628,8 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
     return 1;
   } else {
     const int ctx = av1_get_skip_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     const int skip = aom_read_symbol(r, ec_ctx->skip_cdfs[ctx], 2, ACCT_STR);
-#else
-    const int skip = aom_read(r, cm->fc->skip_probs[ctx], ACCT_STR);
-#endif
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->skip[ctx][skip];
     return skip;
@@ -818,17 +768,10 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-#if CONFIG_NEW_MULTISYMBOL
     modev = aom_read_symbol(
         r,
         xd->tile_ctx->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
         2, ACCT_STR);
-#else
-    modev = aom_read(
-        r,
-        av1_default_palette_y_mode_prob[block_palette_idx][palette_y_mode_ctx],
-        ACCT_STR);
-#endif
     if (modev) {
       pmi->palette_size[0] =
           aom_read_symbol(r,
@@ -845,13 +788,8 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   if (mbmi->uv_mode == UV_DC_PRED) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-#if CONFIG_NEW_MULTISYMBOL
     modev = aom_read_symbol(
         r, xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2, ACCT_STR);
-#else
-    modev = aom_read(r, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx],
-                     ACCT_STR);
-#endif
     if (modev) {
       pmi->palette_size[1] =
           aom_read_symbol(r,
@@ -1241,33 +1179,21 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
 #endif  // CONFIG_INTRABC || CONFIG_AMVR
                              int usehp) {
   int mag, d, fr, hp;
-#if CONFIG_NEW_MULTISYMBOL
   const int sign = aom_read_symbol(r, mvcomp->sign_cdf, 2, ACCT_STR);
-#else
-  const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
-#endif
   const int mv_class =
       aom_read_symbol(r, mvcomp->classes_cdf, MV_CLASSES, ACCT_STR);
   const int class0 = mv_class == MV_CLASS_0;
 
   // Integer part
   if (class0) {
-#if CONFIG_NEW_MULTISYMBOL
     d = aom_read_symbol(r, mvcomp->class0_cdf, CLASS0_SIZE, ACCT_STR);
-#else
-    d = aom_read(r, mvcomp->class0[0], ACCT_STR);
-#endif
     mag = 0;
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
     d = 0;
-#if CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < n; ++i)
       d |= aom_read_symbol(r, mvcomp->bits_cdf[i], 2, ACCT_STR) << i;
-#else
-    for (i = 0; i < n; ++i) d |= aom_read(r, mvcomp->bits[i], ACCT_STR) << i;
-#endif
     mag = CLASS0_SIZE << (mv_class + 2);
   }
 
@@ -1278,16 +1204,11 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp,
     fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                          MV_FP_SIZE, ACCT_STR);
 
-// High precision part (if hp is not used, the default value of the hp is 1)
-#if CONFIG_NEW_MULTISYMBOL
+    // High precision part (if hp is not used, the default value of the hp is 1)
     hp = usehp ? aom_read_symbol(
                      r, class0 ? mvcomp->class0_hp_cdf : mvcomp->hp_cdf, 2,
                      ACCT_STR)
                : 1;
-#else
-  hp = usehp ? aom_read(r, class0 ? mvcomp->class0_hp : mvcomp->hp, ACCT_STR)
-             : 1;
-#endif
 #if CONFIG_INTRABC || CONFIG_AMVR
   } else {
     fr = 3;
@@ -1334,13 +1255,8 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
   if (!is_comp_ref_allowed(xd->mi[0]->mbmi.sb_type)) return SINGLE_REFERENCE;
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     const int ctx = av1_get_reference_mode_context(cm, xd);
-#if CONFIG_NEW_MULTISYMBOL
     const REFERENCE_MODE mode = (REFERENCE_MODE)aom_read_symbol(
         r, xd->tile_ctx->comp_inter_cdf[ctx], 2, ACCT_STR);
-#else
-    const REFERENCE_MODE mode =
-        (REFERENCE_MODE)aom_read(r, cm->fc->comp_inter_prob[ctx], ACCT_STR);
-#endif
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->comp_inter[ctx][mode];
     return mode;  // SINGLE_REFERENCE or COMPOUND_REFERENCE
@@ -1356,27 +1272,18 @@ static void update_block_reference_mode(AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (cm->reference_mode == REFERENCE_MODE_SELECT) {
     assert(mode == SINGLE_REFERENCE || mode == COMPOUND_REFERENCE);
     const int ctx = av1_get_reference_mode_context(cm, xd);
-#if CONFIG_NEW_MULTISYMBOL
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->comp_inter_cdf[ctx], mode, 2);
-#endif  // CONFIG_NEW_MULTISYMBOL
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->comp_inter[ctx][mode];
   }
 }
 #endif  // CONFIG_EXT_SKIP
 
-#if CONFIG_NEW_MULTISYMBOL
 #define READ_REF_BIT(pname) \
   aom_read_symbol(r, av1_get_pred_cdf_##pname(cm, xd), 2, ACCT_STR)
 #define READ_REF_BIT2(pname) \
   aom_read_symbol(r, av1_get_pred_cdf_##pname(xd), 2, ACCT_STR)
-#else
-#define READ_REF_BIT(pname) \
-  aom_read(r, av1_get_pred_prob_##pname(cm, xd), ACCT_STR)
-#define READ_REF_BIT2(pname) \
-  aom_read(r, av1_get_pred_prob_##pname(cm, xd), ACCT_STR)
-#endif
 
 #if CONFIG_EXT_COMP_REFS
 static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
@@ -1384,14 +1291,9 @@ static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
                                                     aom_reader *r) {
   const int ctx = av1_get_comp_reference_type_context(xd);
   COMP_REFERENCE_TYPE comp_ref_type;
-#if CONFIG_NEW_MULTISYMBOL
   (void)cm;
   comp_ref_type = (COMP_REFERENCE_TYPE)aom_read_symbol(
       r, xd->tile_ctx->comp_ref_type_cdf[ctx], 2, ACCT_STR);
-#else
-  comp_ref_type = (COMP_REFERENCE_TYPE)aom_read(
-      r, cm->fc->comp_ref_type_prob[ctx], ACCT_STR);
-#endif
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
   return comp_ref_type;  // UNIDIR_COMP_REFERENCE or BIDIR_COMP_REFERENCE
@@ -1407,10 +1309,8 @@ static void update_comp_reference_type(AV1_COMMON *cm, const MACROBLOCKD *xd,
          comp_ref_type == BIDIR_COMP_REFERENCE);
   (void)cm;
   const int ctx = av1_get_comp_reference_type_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
   if (allow_update_cdf)
     update_cdf(xd->tile_ctx->comp_ref_type_cdf[ctx], comp_ref_type, 2);
-#endif  // CONFIG_NEW_MULTISYMBOL
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->comp_ref_type[ctx][comp_ref_type];
 }
@@ -1434,17 +1334,11 @@ static void set_ref_frames_for_skip_mode(AV1_COMMON *const cm,
 #endif  // CONFIG_EXT_COMP_REFS
 
 // Update stats for both forward and backward references
-#if CONFIG_NEW_MULTISYMBOL
 #define UPDATE_REF_BIT(bname, pname, cname, iname)          \
   if (allow_update_cdf)                                     \
     update_cdf(av1_get_pred_cdf_##pname(cm, xd), bname, 2); \
   if (counts)                                               \
     ++counts->comp_##cname[av1_get_pred_context_##pname(cm, xd)][iname][bname];
-#else
-#define UPDATE_REF_BIT(bname, pname, cname, iname) \
-  if (counts)                                      \
-    ++counts->comp_##cname[av1_get_pred_context_##pname(cm, xd)][iname][bname];
-#endif  // CONFIG_NEW_MULTISYMBOL
 
   FRAME_COUNTS *counts = xd->counts;
 
@@ -1915,13 +1809,9 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) != INTRA_FRAME;
   } else {
     const int ctx = av1_get_intra_inter_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     const int is_inter =
         aom_read_symbol(r, ec_ctx->intra_inter_cdf[ctx], 2, ACCT_STR);
-#else
-    const int is_inter = aom_read(r, cm->fc->intra_inter_prob[ctx], ACCT_STR);
-#endif
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->intra_inter[ctx][is_inter];
     return is_inter;
@@ -1935,10 +1825,8 @@ static void update_block_intra_inter(AV1_COMMON *const cm,
                                      uint8_t allow_update_cdf) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     const int ctx = av1_get_intra_inter_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     if (allow_update_cdf) update_cdf(ec_ctx->intra_inter_cdf[ctx], is_inter, 2);
-#endif  // CONFIG_NEW_MULTISYMBOL
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->intra_inter[ctx][is_inter];
   }
@@ -2025,13 +1913,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_JNT_COMP
   if (is_compound) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
-#if CONFIG_NEW_MULTISYMBOL
     mbmi->compound_idx = aom_read_symbol(
         r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
-#else
-    mbmi->compound_idx =
-        aom_read(r, ec_ctx->compound_index_probs[comp_index_ctx], ACCT_STR);
-#endif  // CONFIG_NEW_MULTISYMBOL
     if (xd->counts)
       ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   }
@@ -2254,13 +2137,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (cm->reference_mode != COMPOUND_REFERENCE &&
       cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
     const int bsize_group = size_group_lookup[bsize];
-#if CONFIG_NEW_MULTISYMBOL
     const int interintra =
         aom_read_symbol(r, ec_ctx->interintra_cdf[bsize_group], 2, ACCT_STR);
-#else
-    const int interintra =
-        aom_read(r, cm->fc->interintra_prob[bsize_group], ACCT_STR);
-#endif
     if (xd->counts) xd->counts->interintra[bsize_group][interintra]++;
     assert(mbmi->ref_frame[1] == NONE_FRAME);
     if (interintra) {
@@ -2277,13 +2155,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
 #endif  // CONFIG_FILTER_INTRA
       if (is_interintra_wedge_used(bsize)) {
-#if CONFIG_NEW_MULTISYMBOL
         mbmi->use_wedge_interintra = aom_read_symbol(
             r, ec_ctx->wedge_interintra_cdf[bsize], 2, ACCT_STR);
-#else
-        mbmi->use_wedge_interintra =
-            aom_read(r, cm->fc->wedge_interintra_prob[bsize], ACCT_STR);
-#endif
         if (xd->counts)
           xd->counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
         if (mbmi->use_wedge_interintra) {

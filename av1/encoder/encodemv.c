@@ -42,32 +42,20 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
   assert(comp != 0);
 
-// Sign
-#if CONFIG_NEW_MULTISYMBOL
+  // Sign
   aom_write_symbol(w, sign, mvcomp->sign_cdf, 2);
-#else
-  aom_write(w, sign, mvcomp->sign);
-#endif
 
   // Class
   aom_write_symbol(w, mv_class, mvcomp->classes_cdf, MV_CLASSES);
 
   // Integer bits
   if (mv_class == MV_CLASS_0) {
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, d, mvcomp->class0_cdf, CLASS0_SIZE);
-#else
-    aom_write(w, d, mvcomp->class0[0]);
-#endif
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
-#if CONFIG_NEW_MULTISYMBOL
     for (i = 0; i < n; ++i)
       aom_write_symbol(w, (d >> i) & 1, mvcomp->bits_cdf[i], 2);
-#else
-    for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
-#endif
   }
 // Fractional bits
 #if CONFIG_INTRABC || CONFIG_AMVR
@@ -82,13 +70,9 @@ static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
 
   // High precision bit
   if (precision > MV_SUBPEL_LOW_PRECISION)
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(
         w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp_cdf : mvcomp->hp_cdf,
         2);
-#else
-    aom_write(w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp : mvcomp->hp);
-#endif
 }
 
 static void build_nmv_component_cost_table(int *mvcost,
@@ -100,25 +84,11 @@ static void build_nmv_component_cost_table(int *mvcost,
   int class0_fp_cost[CLASS0_SIZE][MV_FP_SIZE], fp_cost[MV_FP_SIZE];
   int class0_hp_cost[2], hp_cost[2];
 
-#if CONFIG_NEW_MULTISYMBOL
   av1_cost_tokens_from_cdf(sign_cost, mvcomp->sign_cdf, NULL);
-#else
-  sign_cost[0] = av1_cost_zero(mvcomp->sign);
-  sign_cost[1] = av1_cost_one(mvcomp->sign);
-#endif  // CONFIG_NEW_MULTISYMBOL
   av1_cost_tokens_from_cdf(class_cost, mvcomp->classes_cdf, NULL);
-#if CONFIG_NEW_MULTISYMBOL
   av1_cost_tokens_from_cdf(class0_cost, mvcomp->class0_cdf, NULL);
-#else
-  av1_cost_tokens(class0_cost, mvcomp->class0, av1_mv_class0_tree);
-#endif  // CONFIG_NEW_MULTISYMBOL
   for (i = 0; i < MV_OFFSET_BITS; ++i) {
-#if CONFIG_NEW_MULTISYMBOL
     av1_cost_tokens_from_cdf(bits_cost[i], mvcomp->bits_cdf[i], NULL);
-#else
-    bits_cost[i][0] = av1_cost_zero(mvcomp->bits[i]);
-    bits_cost[i][1] = av1_cost_one(mvcomp->bits[i]);
-#endif  // CONFIG_NEW_MULTISYMBOL
   }
 
   for (i = 0; i < CLASS0_SIZE; ++i)
@@ -126,15 +96,8 @@ static void build_nmv_component_cost_table(int *mvcost,
   av1_cost_tokens_from_cdf(fp_cost, mvcomp->fp_cdf, NULL);
 
   if (precision > MV_SUBPEL_LOW_PRECISION) {
-#if CONFIG_NEW_MULTISYMBOL
     av1_cost_tokens_from_cdf(class0_hp_cost, mvcomp->class0_hp_cdf, NULL);
     av1_cost_tokens_from_cdf(hp_cost, mvcomp->hp_cdf, NULL);
-#else
-    class0_hp_cost[0] = av1_cost_zero(mvcomp->class0_hp);
-    class0_hp_cost[1] = av1_cost_one(mvcomp->class0_hp);
-    hp_cost[0] = av1_cost_zero(mvcomp->hp);
-    hp_cost[1] = av1_cost_one(mvcomp->hp);
-#endif  // CONFIG_NEW_MULTISYMBOL
   }
   mvcost[0] = 0;
   for (v = 1; v <= MV_MAX; ++v) {
@@ -172,40 +135,6 @@ static void build_nmv_component_cost_table(int *mvcost,
     mvcost[-v] = cost + sign_cost[1];
   }
 }
-
-#if !CONFIG_NEW_MULTISYMBOL
-static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
-                      aom_prob upd_p) {
-  (void)upd_p;
-  // Just use the default maximum number of tile groups to avoid passing in the
-  // actual
-  // number
-  av1_cond_prob_diff_update(w, cur_p, ct, DEFAULT_MAX_NUM_TG);
-}
-
-void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
-                         nmv_context_counts *const nmv_counts) {
-  int i;
-  int nmv_ctx = 0;
-#if CONFIG_AMVR
-  if (cm->cur_frame_force_integer_mv) {
-    return;
-  }
-#endif
-  for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
-    nmv_context *const mvc = &cm->fc->nmvc[nmv_ctx];
-    nmv_context_counts *const counts = &nmv_counts[nmv_ctx];
-
-    if (usehp) {
-      for (i = 0; i < 2; ++i) {
-        update_mv(w, counts->comps[i].class0_hp, &mvc->comps[i].class0_hp,
-                  MV_UPDATE_PROB);
-        update_mv(w, counts->comps[i].hp, &mvc->comps[i].hp, MV_UPDATE_PROB);
-      }
-    }
-  }
-}
-#endif
 
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx, int usehp) {

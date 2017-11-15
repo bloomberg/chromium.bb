@@ -705,7 +705,6 @@ static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS] = {
 static const aom_prob default_drl_prob[DRL_MODE_CONTEXTS] = {
   119, 128, 189, 134, 128,
 };
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
     { { AOM_CDF2(128 * 155) }, { AOM_CDF2(128 * 116) }, { AOM_CDF2(128 * 94) },
       { AOM_CDF2(128 * 32) },  { AOM_CDF2(128 * 96) },  { AOM_CDF2(128 * 56) },
@@ -725,7 +724,6 @@ static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 134) },
   { AOM_CDF2(128 * 128) }
 };
-#endif
 
 static const aom_prob default_inter_compound_mode_probs
     [INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1] = {
@@ -792,13 +790,11 @@ static const aom_cdf_prob
 static const aom_prob default_interintra_prob[BLOCK_SIZE_GROUPS] = {
   128, 226, 244, 254,
 };
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 128) },
             { AOM_CDF2(226 * 128) },
             { AOM_CDF2(244 * 128) },
             { AOM_CDF2(254 * 128) } };
-#endif
 
 static const aom_prob
     default_interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1] = {
@@ -826,7 +822,6 @@ static const aom_prob default_wedge_interintra_prob[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
       { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
@@ -844,7 +839,6 @@ static const aom_cdf_prob
       { AOM_CDF2(255 * 128) }, { AOM_CDF2(255 * 128) },
 #endif  // CONFIG_EXT_PARTITION
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 const aom_tree_index av1_motion_mode_tree[TREE_SIZE(MOTION_MODES)] = {
   -SIMPLE_TRANSLATION, 2, -OBMC_CAUSAL, -WARPED_CAUSAL,
@@ -899,7 +893,6 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
   { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) },
@@ -916,7 +909,6 @@ static const aom_cdf_prob default_obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)] = {
   { AOM_CDF2(252 * 128) }, { AOM_CDF2(252 * 128) },
 #endif  // CONFIG_EXT_PARTITION
 };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 static const aom_prob default_delta_q_probs[DELTA_Q_PROBS] = { 220, 220, 220 };
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
@@ -969,7 +961,6 @@ static const aom_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
   6, 97, 151, 205,
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_intra_inter_cdf[INTRA_INTER_CONTEXTS]
                                                  [CDF_SIZE(2)] = {
                                                    { AOM_CDF2(768) },
@@ -977,20 +968,17 @@ static const aom_cdf_prob default_intra_inter_cdf[INTRA_INTER_CONTEXTS]
                                                    { AOM_CDF2(19328) },
                                                    { AOM_CDF2(26240) }
                                                  };
-#endif
 
 static const aom_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
   190, 156, 91, 77, 22
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(24290) },
             { AOM_CDF2(19956) },
             { AOM_CDF2(11641) },
             { AOM_CDF2(9804) },
             { AOM_CDF2(2842) } };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_EXT_COMP_REFS
 static const aom_prob default_comp_ref_type_p[COMP_REF_TYPE_CONTEXTS] = {
@@ -1001,7 +989,6 @@ static const aom_prob
       { 88, 30, 28 }, { 218, 97, 105 }, { 254, 180, 196 }
     };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS]
                                                    [CDF_SIZE(2)] = {
                                                      { AOM_CDF2(8 * 128) },
@@ -1021,7 +1008,6 @@ static const aom_cdf_prob
                                               { { AOM_CDF2(254 * 128) },
                                                 { AOM_CDF2(180 * 128) },
                                                 { AOM_CDF2(196 * 128) } } };
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
 
 static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1] = {
@@ -1036,7 +1022,6 @@ static const aom_prob default_comp_bwdref_p[REF_CONTEXTS][BWD_REFS - 1] = {
   { 22, 13 }, { 140, 124 }, { 241, 239 }, { 128, 128 }, { 128, 128 }
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)] = {
       { { AOM_CDF2(3556) }, { AOM_CDF2(1217) }, { AOM_CDF2(988) } },
@@ -1054,7 +1039,6 @@ static const aom_cdf_prob
       { { AOM_CDF2(32768) }, { AOM_CDF2(32768) } },
       { { AOM_CDF2(32768) }, { AOM_CDF2(32768) } }
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
   { 36, 16, 32, 57, 11, 14 },
@@ -1064,7 +1048,6 @@ static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
   { 224, 128, 230, 242, 208, 128 }
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
                                                 [CDF_SIZE(2)] = {
                                                   { { AOM_CDF2(4623) },
@@ -1098,7 +1081,6 @@ static const aom_cdf_prob default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1]
                                                     { AOM_CDF2(26676) },
                                                     { AOM_CDF2(32768) } }
                                                 };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 // TODO(huisu): tune these cdfs
 const aom_cdf_prob
@@ -1150,7 +1132,6 @@ const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
   253, 229
 };
 
-#if CONFIG_NEW_MULTISYMBOL
 const aom_cdf_prob default_palette_y_mode_cdf[PALETTE_BLOCK_SIZES]
                                              [PALETTE_Y_MODE_CONTEXTS]
                                              [CDF_SIZE(2)] = {
@@ -1190,7 +1171,6 @@ const aom_cdf_prob
     default_palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)] = {
       { AOM_CDF2(128 * 253) }, { AOM_CDF2(128 * 229) }
     };
-#endif
 
 const aom_cdf_prob default_palette_y_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
@@ -1421,13 +1401,11 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
 static const aom_cdf_prob default_switchable_restore_cdf[CDF_SIZE(
     RESTORE_SWITCHABLE_TYPES)] = { AOM_CDF3(32 * 128, 144 * 128) };
 
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_wiener_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(
     64 * 128) };
 
 static const aom_cdf_prob default_sgrproj_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(
     64 * 128) };
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
 
 #define NUM_PALETTE_NEIGHBORS 3  // left, top-left and top.
@@ -1522,7 +1500,6 @@ static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
   250, 231, 212, 241, 166, 66, 241, 230, 135, 243, 154, 64, 248, 161, 63, 128
 #endif  // CONFIG_TX64X64
 };
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)] = {
 #if CONFIG_TX64X64
@@ -1543,9 +1520,7 @@ static const aom_cdf_prob
       { AOM_CDF2(128 * 128) },
 #endif  // CONFIG_TX64X64
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
-#if CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_SKIP
 static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(24576) }, { AOM_CDF2(16384) }, { AOM_CDF2(8192) } };
@@ -1553,16 +1528,8 @@ static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(24576) }, { AOM_CDF2(16384) }, { AOM_CDF2(8192) }
 };
-#else  // !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_SKIP
-static const aom_prob default_skip_mode_probs[SKIP_MODE_CONTEXTS] = { 192, 128,
-                                                                      64 };
-#endif  // CONFIG_EXT_SKIP
-static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_compound_idx_cdfs[COMP_INDEX_CONTEXTS][CDF_SIZE(2)] = {
       { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
@@ -1572,7 +1539,6 @@ static const aom_cdf_prob
       { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
       { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
     };
-#endif  // CONFIG_NEW_MULTISYMBOL
 static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
   192, 128, 64, 192, 128, 64
 };
@@ -1599,14 +1565,12 @@ static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
 static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
   128, 128, 128
 };
-#if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_segment_pred_cdf[PREDICTION_PROBS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 128) },
   { AOM_CDF2(128 * 128) },
   { AOM_CDF2(128 * 128) }
 };
-#endif
 // clang-format on
 #if CONFIG_DUAL_FILTER
 #if USE_EXTRA_FILTER
@@ -3047,23 +3011,17 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->mrc_mask_inter_cdf, default_mrc_mask_inter_cdf);
   av1_copy(fc->mrc_mask_intra_cdf, default_mrc_mask_intra_cdf);
 #endif  // CONFIG_MRC_TX
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_type_prob, default_comp_ref_type_p);
   av1_copy(fc->uni_comp_ref_prob, default_uni_comp_ref_p);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_ref_type_cdf, default_comp_ref_type_cdf);
   av1_copy(fc->uni_comp_ref_cdf, default_uni_comp_ref_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_prob, default_comp_ref_p);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->palette_y_mode_cdf, default_palette_y_mode_cdf);
   av1_copy(fc->palette_uv_mode_cdf, default_palette_uv_mode_cdf);
   av1_copy(fc->comp_ref_cdf, default_comp_ref_cdf);
-#endif
 #if CONFIG_LV_MAP
   av1_copy(fc->txb_skip, default_txb_skip);
   av1_copy(fc->nz_map, default_nz_map);
@@ -3086,66 +3044,48 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_init_txb_probs(fc);
 #endif
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_bwdref_cdf, default_comp_bwdref_cdf);
-#endif
   av1_copy(fc->single_ref_prob, default_single_ref_p);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
-#endif
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
-#endif
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->compound_index_cdf, default_compound_idx_cdfs);
-#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->compound_index_probs, default_compound_idx_probs);
 #endif  // CONFIG_JNT_COMP
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
   av1_copy(fc->drl_prob, default_drl_prob);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->newmv_cdf, default_newmv_cdf);
   av1_copy(fc->zeromv_cdf, default_zeromv_cdf);
   av1_copy(fc->refmv_cdf, default_refmv_cdf);
   av1_copy(fc->drl_cdf, default_drl_cdf);
-#endif
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
   av1_copy(fc->motion_mode_cdf, default_motion_mode_cdf);
   av1_copy(fc->obmc_prob, default_obmc_prob);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
-#endif
   av1_copy(fc->inter_compound_mode_probs, default_inter_compound_mode_probs);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
   av1_copy(fc->compound_type_prob, default_compound_type_probs);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
   av1_copy(fc->interintra_prob, default_interintra_prob);
   av1_copy(fc->wedge_interintra_prob, default_wedge_interintra_prob);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->interintra_cdf, default_interintra_cdf);
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->seg.pred_cdf, default_segment_pred_cdf);
-#endif
 #if CONFIG_FILTER_INTRA
   av1_copy(fc->filter_intra_cdfs, default_filter_intra_cdfs);
   av1_copy(fc->filter_intra_mode_cdf, default_filter_intra_mode_cdf);
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
   av1_copy(fc->switchable_restore_cdf, default_switchable_restore_cdf);
-#if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->wiener_restore_cdf, default_wiener_restore_cdf);
   av1_copy(fc->sgrproj_restore_cdf, default_sgrproj_restore_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
   av1_copy(fc->y_mode_cdf, default_if_y_mode_cdf);
   av1_copy(fc->uv_mode_cdf, default_uv_mode_cdf);
@@ -3153,18 +3093,11 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_cdf, default_partition_cdf);
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
-#if CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_SKIP
   av1_copy(fc->skip_mode_cdfs, default_skip_mode_cdfs);
 #endif  // CONFIG_EXT_SKIP
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
-#else  // !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_SKIP
-  av1_copy(fc->skip_mode_probs, default_skip_mode_probs);
-#endif  // CONFIG_EXT_SKIP
-  av1_copy(fc->skip_probs, default_skip_probs);
-#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
 #if CONFIG_Q_SEGMENTATION
   for (int i = 0; i < Q_SEGMENT_CDF_COUNT; i++)
@@ -3303,17 +3236,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
       fc->txfm_partition_prob[i] = av1_mode_mv_merge_probs(
           pre_fc->txfm_partition_prob[i], counts->txfm_partition[i]);
   }
-
-#if !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_SKIP
-  for (i = 0; i < SKIP_MODE_CONTEXTS; ++i)
-    fc->skip_mode_probs[i] = av1_mode_mv_merge_probs(pre_fc->skip_mode_probs[i],
-                                                     counts->skip_mode[i]);
-#endif  // CONFIG_EXT_SKIP
-  for (i = 0; i < SKIP_CONTEXTS; ++i)
-    fc->skip_probs[i] =
-        av1_mode_mv_merge_probs(pre_fc->skip_probs[i], counts->skip[i]);
-#endif  // !CONFIG_NEW_MULTISYMBOL
 
   if (cm->seg.temporal_update) {
     for (i = 0; i < PREDICTION_PROBS; i++)

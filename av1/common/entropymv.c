@@ -59,7 +59,6 @@ static const nmv_context default_nmv_context = {
         { AOM_CDF4(8192, 17408, 21248) },       // fp_cdf
         160,                                    // class0_hp bit
         128,                                    // hp
-#if CONFIG_NEW_MULTISYMBOL
         { AOM_CDF2(128 * 128) },
         { AOM_CDF2(160 * 128) },
         { AOM_CDF2(128 * 128) },
@@ -74,7 +73,6 @@ static const nmv_context default_nmv_context = {
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
-#endif
     },
     {
         // Horizontal component
@@ -91,7 +89,6 @@ static const nmv_context default_nmv_context = {
         { AOM_CDF4(8192, 17408, 21248) },       // fp_cdf
         160,                                    // class0_hp bit
         128,                                    // hp
-#if CONFIG_NEW_MULTISYMBOL
         { AOM_CDF2(128 * 128) },
         { AOM_CDF2(160 * 128) },
         { AOM_CDF2(128 * 128) },
@@ -106,7 +103,6 @@ static const nmv_context default_nmv_context = {
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 234) },
           { AOM_CDF2(128 * 240) } },  // bits_cdf
-#endif
     } },
 };
 

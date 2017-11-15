@@ -39,7 +39,6 @@
     if (counts) ++coef_counts[band][ctx][token]; \
   } while (0)
 
-#if CONFIG_NEW_MULTISYMBOL
 #define READ_COEFF(counts, prob_name, cdf_name, num, r) \
   read_coeff(counts, cdf_name, num, r);
 static INLINE int read_coeff(FRAME_COUNTS *counts,
@@ -59,21 +58,6 @@ static INLINE int read_coeff(FRAME_COUNTS *counts,
   }
   return val;
 }
-#else
-#define READ_COEFF(counts, prob_name, cdf_name, num, r) \
-  read_coeff(counts, prob_name, num, r);
-static INLINE int read_coeff(FRAME_COUNTS *counts, const aom_prob *probs, int n,
-                             aom_reader *r) {
-#if !CONFIG_SYMBOLRATE
-  (void)counts;
-#endif
-  int i, val = 0;
-  for (i = 0; i < n; ++i)
-    val = (val << 1) | av1_read_record(counts, r, probs[i], ACCT_STR);
-  return val;
-}
-
-#endif
 
 static int token_to_value(FRAME_COUNTS *counts, aom_reader *const r, int token,
                           TX_SIZE tx_size, int bit_depth) {

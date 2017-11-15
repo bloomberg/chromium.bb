@@ -181,12 +181,10 @@ typedef struct frame_contexts {
   aom_prob zeromv_prob[GLOBALMV_MODE_CONTEXTS];
   aom_prob refmv_prob[REFMV_MODE_CONTEXTS];
   aom_prob drl_prob[DRL_MODE_CONTEXTS];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)];
-#endif
 
   aom_prob inter_compound_mode_probs[INTER_MODE_CONTEXTS]
                                     [INTER_COMPOUND_MODES - 1];
@@ -197,18 +195,14 @@ typedef struct frame_contexts {
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
   aom_prob wedge_interintra_prob[BLOCK_SIZES_ALL];
   aom_prob interintra_mode_prob[BLOCK_SIZE_GROUPS][INTERINTRA_MODES - 1];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(2)];
   aom_cdf_prob wedge_interintra_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
-#endif
   aom_cdf_prob interintra_mode_cdf[BLOCK_SIZE_GROUPS]
                                   [CDF_SIZE(INTERINTRA_MODES)];
   aom_prob motion_mode_prob[BLOCK_SIZES_ALL][MOTION_MODES - 1];
   aom_cdf_prob motion_mode_cdf[BLOCK_SIZES_ALL][CDF_SIZE(MOTION_MODES)];
   aom_prob obmc_prob[BLOCK_SIZES_ALL];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob obmc_cdf[BLOCK_SIZES_ALL][CDF_SIZE(2)];
-#endif  // CONFIG_NEW_MULTISYMBOL
   aom_prob intra_inter_prob[INTRA_INTER_CONTEXTS];
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
   aom_cdf_prob palette_y_size_cdf[PALETTE_BLOCK_SIZES][CDF_SIZE(PALETTE_SIZES)];
@@ -226,51 +220,34 @@ typedef struct frame_contexts {
   aom_cdf_prob mrc_mask_intra_cdf[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
                                  [CDF_SIZE(PALETTE_COLORS)];
 #endif  // CONFIG_MRC_TX
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob palette_y_mode_cdf[PALETTE_BLOCK_SIZES][PALETTE_Y_MODE_CONTEXTS]
                                  [CDF_SIZE(2)];
   aom_cdf_prob palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
-#endif
 #if CONFIG_EXT_COMP_REFS
   aom_prob comp_ref_type_prob[COMP_REF_TYPE_CONTEXTS];
   aom_prob uni_comp_ref_prob[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob comp_ref_type_cdf[COMP_REF_TYPE_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob uni_comp_ref_cdf[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1]
                                [CDF_SIZE(2)];
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
   aom_prob single_ref_prob[REF_CONTEXTS][SINGLE_REFS - 1];
   aom_prob comp_ref_prob[REF_CONTEXTS][FWD_REFS - 1];
   aom_prob comp_bwdref_prob[REF_CONTEXTS][BWD_REFS - 1];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
-#endif
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
-#endif
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
-#endif  // CONFIG_NEW_MULTISYMBOL
   aom_prob compound_index_probs[COMP_INDEX_CONTEXTS];
 #endif  // CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
 #if CONFIG_EXT_SKIP
   aom_cdf_prob skip_mode_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
 #endif  // CONFIG_EXT_SKIP
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
-#else  // !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_SKIP
-  aom_prob skip_mode_probs[SKIP_CONTEXTS];
-#endif  // CONFIG_EXT_SKIP
-  aom_prob skip_probs[SKIP_CONTEXTS];
-#endif  // CONFIG_NEW_MULTISYMBOL
   nmv_context nmvc[NMV_CONTEXTS];
 #if CONFIG_INTRABC
   nmv_context ndvc;
@@ -284,10 +261,8 @@ typedef struct frame_contexts {
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
   aom_cdf_prob switchable_restore_cdf[CDF_SIZE(RESTORE_SWITCHABLE_TYPES)];
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob wiener_restore_cdf[CDF_SIZE(2)];
   aom_cdf_prob sgrproj_restore_cdf[CDF_SIZE(2)];
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
   aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)];
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)];

@@ -305,7 +305,6 @@ EXPERIMENT_LIST="
     mv_compress
     segment_globalmv
     frame_superres
-    new_multisymbol
     aom_qm
     ext_qm
     ext_comp_refs
@@ -504,7 +503,6 @@ post_process_cmdline() {
       soft_enable loop_restoration
       soft_enable ext_partition
       soft_enable ext_partition_types
-      soft_enable new_multisymbol
 
       # Provisional adopted
       soft_enable q_adapt_probs

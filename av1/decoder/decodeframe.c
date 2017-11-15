@@ -147,20 +147,6 @@ static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 }
 #endif  // CONFIG_SIMPLIFY_TX_MODE
 
-#if !CONFIG_NEW_MULTISYMBOL
-static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
-  int i;
-  for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->newmv_prob[i], ACCT_STR);
-  for (i = 0; i < GLOBALMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->zeromv_prob[i], ACCT_STR);
-  for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->refmv_prob[i], ACCT_STR);
-  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    av1_diff_update_prob(r, &fc->drl_prob[i], ACCT_STR);
-}
-#endif
-
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (is_compound_reference_allowed(cm)) {
@@ -175,63 +161,6 @@ static REFERENCE_MODE read_frame_reference_mode(
     return SINGLE_REFERENCE;
   }
 }
-
-#if !CONFIG_NEW_MULTISYMBOL
-static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
-  FRAME_CONTEXT *const fc = cm->fc;
-  int i;
-
-  if (cm->reference_mode == REFERENCE_MODE_SELECT)
-    for (i = 0; i < COMP_INTER_CONTEXTS; ++i)
-      av1_diff_update_prob(r, &fc->comp_inter_prob[i], ACCT_STR);
-
-  if (cm->reference_mode != COMPOUND_REFERENCE) {
-    for (i = 0; i < REF_CONTEXTS; ++i) {
-      int j;
-      for (j = 0; j < (SINGLE_REFS - 1); ++j) {
-        av1_diff_update_prob(r, &fc->single_ref_prob[i][j], ACCT_STR);
-      }
-    }
-  }
-
-  if (cm->reference_mode != SINGLE_REFERENCE) {
-#if CONFIG_EXT_COMP_REFS
-    for (i = 0; i < COMP_REF_TYPE_CONTEXTS; ++i)
-      av1_diff_update_prob(r, &fc->comp_ref_type_prob[i], ACCT_STR);
-
-    for (i = 0; i < UNI_COMP_REF_CONTEXTS; ++i) {
-      int j;
-      for (j = 0; j < (UNIDIR_COMP_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->uni_comp_ref_prob[i][j], ACCT_STR);
-    }
-#endif  // CONFIG_EXT_COMP_REFS
-
-    for (i = 0; i < REF_CONTEXTS; ++i) {
-      int j;
-      for (j = 0; j < (FWD_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
-      for (j = 0; j < (BWD_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->comp_bwdref_prob[i][j], ACCT_STR);
-    }
-  }
-}
-
-static void update_mv_probs(aom_prob *p, int n, aom_reader *r) {
-  int i;
-  for (i = 0; i < n; ++i) av1_diff_update_prob(r, &p[i], ACCT_STR);
-}
-
-static void read_mv_probs(nmv_context *ctx, int allow_hp, aom_reader *r) {
-  int i;
-  if (allow_hp) {
-    for (i = 0; i < 2; ++i) {
-      nmv_component *const comp_ctx = &ctx->comps[i];
-      update_mv_probs(&comp_ctx->class0_hp, 1, r);
-      update_mv_probs(&comp_ctx->hp, 1, r);
-    }
-  }
-}
-#endif
 
 static void inverse_transform_block(MACROBLOCKD *xd, int plane,
                                     const TX_TYPE tx_type,
@@ -1257,22 +1186,14 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
       default: assert(rui->restoration_type == RESTORE_NONE); break;
     }
   } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-#if CONFIG_NEW_MULTISYMBOL
     if (aom_read_symbol(r, xd->tile_ctx->wiener_restore_cdf, 2, ACCT_STR)) {
-#else
-    if (aom_read(r, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
-#endif  // CONFIG_NEW_MULTISYMBOL
       rui->restoration_type = RESTORE_WIENER;
       read_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, r);
     } else {
       rui->restoration_type = RESTORE_NONE;
     }
   } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-#if CONFIG_NEW_MULTISYMBOL
     if (aom_read_symbol(r, xd->tile_ctx->sgrproj_restore_cdf, 2, ACCT_STR)) {
-#else
-    if (aom_read(r, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
-#endif  // CONFIG_NEW_MULTISYMBOL
       rui->restoration_type = RESTORE_SGRPROJ;
       read_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, r);
     } else {
@@ -3333,74 +3254,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
 static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                                   size_t partition_size) {
-#if CONFIG_NEW_MULTISYMBOL
   (void)pbi;
   (void)data;
   (void)partition_size;
   return 0;
-#else
-  AV1_COMMON *const cm = &pbi->common;
-  aom_reader r;
-  FRAME_CONTEXT *const fc = cm->fc;
-
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-  r.window_size = 1 << cm->ans_window_size_log2;
-#endif
-  if (aom_reader_init(&r, data, partition_size, pbi->decrypt_cb,
-                      pbi->decrypt_state))
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate bool decoder 0");
-
-  if (cm->tx_mode == TX_MODE_SELECT)
-    for (int i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
-      av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
-  for (int i = 0; i < SKIP_CONTEXTS; ++i)
-    av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
-
-#if CONFIG_JNT_COMP
-  for (int i = 0; i < COMP_INDEX_CONTEXTS; ++i)
-    av1_diff_update_prob(&r, &fc->compound_index_probs[i], ACCT_STR);
-#endif  // CONFIG_JNT_COMP
-
-  if (!frame_is_intra_only(cm)) {
-    read_inter_mode_probs(fc, &r);
-
-    if (cm->reference_mode != COMPOUND_REFERENCE &&
-        cm->allow_interintra_compound) {
-      for (int i = 0; i < BLOCK_SIZE_GROUPS; i++) {
-        if (is_interintra_allowed_bsize_group(i)) {
-          av1_diff_update_prob(&r, &fc->interintra_prob[i], ACCT_STR);
-        }
-      }
-#if CONFIG_EXT_PARTITION_TYPES
-      int block_sizes_to_update = BLOCK_SIZES_ALL;
-#else
-      int block_sizes_to_update = BLOCK_SIZES;
-#endif
-      for (int i = 0; i < block_sizes_to_update; i++) {
-        if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i)) {
-          av1_diff_update_prob(&r, &fc->wedge_interintra_prob[i], ACCT_STR);
-        }
-      }
-    }
-
-    for (int i = 0; i < INTRA_INTER_CONTEXTS; i++)
-      av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
-
-    read_frame_reference_mode_probs(cm, &r);
-
-#if CONFIG_AMVR
-    if (cm->cur_frame_force_integer_mv == 0) {
-#endif
-      for (int i = 0; i < NMV_CONTEXTS; ++i)
-        read_mv_probs(&fc->nmvc[i], cm->allow_high_precision_mv, &r);
-#if CONFIG_AMVR
-    }
-#endif
-  }
-
-  return aom_reader_has_error(&r);
-#endif  // CONFIG_NEW_MULTISYMBOL
 }
 
 #ifdef NDEBUG
@@ -3815,9 +3672,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
       if (!frame_is_intra_only(cm)) {
         av1_adapt_inter_frame_probs(cm);
-#if !CONFIG_NEW_MULTISYMBOL
-        av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
-#endif
         av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
                                     cdf_ptrs, num_bwd_ctxs);
         av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,

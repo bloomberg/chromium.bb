@@ -143,23 +143,17 @@ DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob[3]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob[4]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob[5]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob[18]);
-#if CONFIG_NEW_MULTISYMBOL
 extern const aom_cdf_prob *av1_cat1_cdf[];
 extern const aom_cdf_prob *av1_cat2_cdf[];
 extern const aom_cdf_prob *av1_cat3_cdf[];
 extern const aom_cdf_prob *av1_cat4_cdf[];
 extern const aom_cdf_prob *av1_cat5_cdf[];
 extern const aom_cdf_prob *av1_cat6_cdf[];
-#endif
 
 #define EOB_MODEL_TOKEN 3
 
 typedef struct {
-#if CONFIG_NEW_MULTISYMBOL
   const aom_cdf_prob **cdf;
-#else
-  const aom_prob *prob;
-#endif
   int len;
   int base_val;
   const int16_t *cost;
@@ -177,10 +171,8 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
 #endif
   int tx_offset = (int)(tx_size - TX_4X4);
   int bits = (int)bit_depth + 3 + tx_offset;
-#if CONFIG_NEW_MULTISYMBOL
   // Round up
   bits = AOMMIN((int)sizeof(av1_cat6_prob), ((bits + 3) & ~3));
-#endif
   assert(bits <= (int)sizeof(av1_cat6_prob));
   return bits;
 }

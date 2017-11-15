@@ -113,11 +113,7 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
                              FRAME_CONTEXT *ec_ctx, const int16_t mode_ctx) {
   const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
 
-#if CONFIG_NEW_MULTISYMBOL
   aom_write_symbol(w, mode != NEWMV, ec_ctx->newmv_cdf[newmv_ctx], 2);
-#else
-  aom_write(w, mode != NEWMV, ec_ctx->newmv_prob[newmv_ctx]);
-#endif
 
   if (mode != NEWMV) {
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
@@ -127,11 +123,7 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
 
     const int16_t zeromv_ctx =
         (mode_ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, mode != GLOBALMV, ec_ctx->zeromv_cdf[zeromv_ctx], 2);
-#else
-    aom_write(w, mode != GLOBALMV, ec_ctx->zeromv_prob[zeromv_ctx]);
-#endif
 
     if (mode != GLOBALMV) {
       int16_t refmv_ctx = (mode_ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
@@ -139,11 +131,7 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
       if (mode_ctx & (1 << SKIP_NEARESTMV_OFFSET)) refmv_ctx = 6;
       if (mode_ctx & (1 << SKIP_NEARMV_OFFSET)) refmv_ctx = 7;
       if (mode_ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) refmv_ctx = 8;
-#if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, mode != NEARESTMV, ec_ctx->refmv_cdf[refmv_ctx], 2);
-#else
-      aom_write(w, mode != NEARESTMV, ec_ctx->refmv_prob[refmv_ctx]);
-#endif
     }
   }
 }
@@ -162,12 +150,8 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
 
-#if CONFIG_NEW_MULTISYMBOL
         aom_write_symbol(w, mbmi->ref_mv_idx != idx, ec_ctx->drl_cdf[drl_ctx],
                          2);
-#else
-        aom_write(w, mbmi->ref_mv_idx != idx, ec_ctx->drl_prob[drl_ctx]);
-#endif
         if (mbmi->ref_mv_idx == idx) return;
       }
     }
@@ -181,12 +165,8 @@ static void write_drl_idx(FRAME_CONTEXT *ec_ctx, const MB_MODE_INFO *mbmi,
       if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx =
             av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
-#if CONFIG_NEW_MULTISYMBOL
         aom_write_symbol(w, mbmi->ref_mv_idx != (idx - 1),
                          ec_ctx->drl_cdf[drl_ctx], 2);
-#else
-        aom_write(w, mbmi->ref_mv_idx != (idx - 1), ec_ctx->drl_prob[drl_ctx]);
-#endif
         if (mbmi->ref_mv_idx == (idx - 1)) return;
       }
     }
@@ -213,10 +193,8 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 const MB_MODE_INFO *mbmi, TX_SIZE tx_size,
                                 int depth, int blk_row, int blk_col,
                                 aom_writer *w) {
-#if CONFIG_NEW_MULTISYMBOL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#endif
   const int tx_row = blk_row >> 1;
   const int tx_col = blk_col >> 1;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
@@ -237,11 +215,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const int write_txfm_partition =
       tx_size == mbmi->inter_tx_size[tx_row][tx_col];
   if (write_txfm_partition) {
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, 0, ec_ctx->txfm_partition_cdf[ctx], 2);
-#else
-    aom_write(w, 0, cm->fc->txfm_partition_prob[ctx]);
-#endif
 
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
@@ -251,11 +225,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, 1, ec_ctx->txfm_partition_cdf[ctx], 2);
-#else
-    aom_write(w, 1, cm->fc->txfm_partition_prob[ctx]);
-#endif
 
     if (sub_txs == TX_4X4) {
       txfm_partition_update(xd->above_txfm_context + blk_col,
@@ -273,16 +243,6 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
       }
   }
 }
-
-#if !CONFIG_NEW_MULTISYMBOL
-static void update_txfm_partition_probs(AV1_COMMON *cm, aom_writer *w,
-                                        FRAME_COUNTS *counts, int probwt) {
-  int k;
-  for (k = 0; k < TXFM_PARTITION_CONTEXTS; ++k)
-    av1_cond_prob_diff_update(w, &cm->fc->txfm_partition_prob[k],
-                              counts->txfm_partition[k], probwt);
-}
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
@@ -309,26 +269,6 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
-#if !CONFIG_NEW_MULTISYMBOL
-static void update_inter_mode_probs(AV1_COMMON *cm, aom_writer *w,
-                                    FRAME_COUNTS *counts) {
-  int i;
-  const int probwt = cm->num_tg;
-  for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i)
-    av1_cond_prob_diff_update(w, &cm->fc->newmv_prob[i], counts->newmv_mode[i],
-                              probwt);
-  for (i = 0; i < GLOBALMV_MODE_CONTEXTS; ++i)
-    av1_cond_prob_diff_update(w, &cm->fc->zeromv_prob[i],
-                              counts->zeromv_mode[i], probwt);
-  for (i = 0; i < REFMV_MODE_CONTEXTS; ++i)
-    av1_cond_prob_diff_update(w, &cm->fc->refmv_prob[i], counts->refmv_mode[i],
-                              probwt);
-  for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
-    av1_cond_prob_diff_update(w, &cm->fc->drl_prob[i], counts->drl_mode[i],
-                              probwt);
-}
-#endif
-
 static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int segment_id, const MODE_INFO *mi, aom_writer *w) {
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
@@ -336,12 +276,8 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   } else {
     const int skip = mi->mbmi.skip;
     const int ctx = av1_get_skip_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     aom_write_symbol(w, skip, ec_ctx->skip_cdfs[ctx], 2);
-#else
-    aom_write(w, skip, cm->fc->skip_probs[ctx]);
-#endif
     return skip;
   }
 }
@@ -350,12 +286,8 @@ static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, aom_writer *w, const int is_inter) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     const int ctx = av1_get_intra_inter_context(xd);
-#if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
     aom_write_symbol(w, is_inter, ec_ctx->intra_inter_cdf[ctx], 2);
-#else
-    aom_write(w, is_inter, cm->fc->intra_inter_prob[ctx]);
-#endif
   }
 }
 
@@ -368,13 +300,8 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   switch (last_motion_mode_allowed) {
     case SIMPLE_TRANSLATION: break;
     case OBMC_CAUSAL:
-#if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, mbmi->motion_mode == OBMC_CAUSAL,
                        xd->tile_ctx->obmc_cdf[mbmi->sb_type], 2);
-#else
-      aom_write(w, mbmi->motion_mode == OBMC_CAUSAL,
-                cm->fc->obmc_prob[mbmi->sb_type]);
-#endif
       break;
     default:
       aom_write_symbol(w, mbmi->motion_mode,
@@ -445,18 +372,6 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 }
 #endif  // CONFIG_EXT_DELTA_Q
 
-#if !CONFIG_NEW_MULTISYMBOL
-static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
-                              FRAME_COUNTS *counts) {
-  int k;
-  const int probwt = cm->num_tg;
-  for (k = 0; k < SKIP_CONTEXTS; ++k) {
-    av1_cond_prob_diff_update(w, &cm->fc->skip_probs[k], counts->skip[k],
-                              probwt);
-  }
-}
-#endif
-
 static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
                             int num) {
   const TOKENEXTRA *p = *tp;
@@ -471,7 +386,6 @@ static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
 }
 
 #if !CONFIG_LV_MAP
-#if CONFIG_NEW_MULTISYMBOL
 static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
                                      int n, aom_writer *w) {
   // Code the extra bits from LSB to MSB in groups of 4
@@ -485,19 +399,6 @@ static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
     count += size;
   }
 }
-#else
-static INLINE void write_coeff_extra(const aom_prob *pb, int value,
-                                     int num_bits, int skip_bits, aom_writer *w,
-                                     TOKEN_STATS *token_stats) {
-  // Code the extra bits from MSB to LSB 1 bit at a time
-  int index;
-  for (index = skip_bits; index < num_bits; ++index) {
-    const int shift = num_bits - index - 1;
-    const int bb = (value >> shift) & 1;
-    aom_write_record(w, bb, pb[index], token_stats);
-  }
-}
-#endif  // CONFIG_NEW_MULTISYMBOL
 
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
@@ -556,13 +457,8 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
       assert(!(bit_string >> (bit_string_length - skip_bits + 1)));
       if (bit_string_length > 0)
-#if CONFIG_NEW_MULTISYMBOL
         write_coeff_extra(extra_bits->cdf, bit_string >> 1,
                           bit_string_length - skip_bits, w);
-#else
-        write_coeff_extra(extra_bits->prob, bit_string >> 1, bit_string_length,
-                          skip_bits, w, token_stats);
-#endif
 
       aom_write_bit_record(w, bit_string & 1, token_stats);
     }
@@ -756,13 +652,8 @@ static void write_q_segment_id(const AV1_COMMON *cm, int skip,
 
   int coded_id = neg_interleave(mbmi->q_segment_id, pred, seg->q_lvls);
 
-#if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob *pred_cdf = segp->q_seg_cdf[cdf_num];
   aom_write_symbol(w, coded_id, pred_cdf, 8);
-#else
-  aom_prob pred_cdf = segp->q_seg_cdf[cdf_num];
-  aom_write(w, coded_id, pred_prob);
-#endif
 
   set_q_segment_id(cm, cm->q_seg_map, bsize, mi_row, mi_col,
                    mbmi->q_segment_id);
@@ -776,17 +667,10 @@ static void write_segment_id(aom_writer *w, const struct segmentation *seg,
   }
 }
 
-#if CONFIG_NEW_MULTISYMBOL
 #define WRITE_REF_BIT(bname, pname) \
   aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(cm, xd), 2)
 #define WRITE_REF_BIT2(bname, pname) \
   aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(xd), 2)
-#else
-#define WRITE_REF_BIT(bname, pname) \
-  aom_write(w, bname, av1_get_pred_prob_##pname(cm, xd))
-#define WRITE_REF_BIT2(bname, pname) \
-  aom_write(w, bname, av1_get_pred_prob_##pname(cm, xd))
-#endif
 
 // This function encodes the reference frame
 static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
@@ -816,11 +700,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     // (if not specified at the frame/segment level)
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
       if (is_comp_ref_allowed(mbmi->sb_type))
-#if CONFIG_NEW_MULTISYMBOL
         aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(cm, xd), 2);
-#else
-        aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
-#endif  // CONFIG_NEW_MULTISYMBOL
     } else {
       assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
     }
@@ -830,12 +710,8 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const COMP_REFERENCE_TYPE comp_ref_type = has_uni_comp_refs(mbmi)
                                                     ? UNIDIR_COMP_REFERENCE
                                                     : BIDIR_COMP_REFERENCE;
-#if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, comp_ref_type, av1_get_comp_reference_type_cdf(xd),
                        2);
-#else
-      aom_write(w, comp_ref_type, av1_get_comp_reference_type_prob(cm, xd));
-#endif
 
       if (comp_ref_type == UNIDIR_COMP_REFERENCE) {
         const int bit = mbmi->ref_frame[0] == BWDREF_FRAME;
@@ -1141,16 +1017,10 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(
         w, n > 0,
         xd->tile_ctx->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
         2);
-#else
-    aom_write(
-        w, n > 0,
-        av1_default_palette_y_mode_prob[block_palette_idx][palette_y_mode_ctx]);
-#endif
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
@@ -1174,12 +1044,8 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (uv_dc_pred) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, n > 0,
                      xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2);
-#else
-    aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
-#endif
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
@@ -1333,13 +1199,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   if (seg->update_map) {
     if (seg->temporal_update) {
       const int pred_flag = mbmi->seg_id_predicted;
-#if CONFIG_NEW_MULTISYMBOL
       aom_cdf_prob *pred_cdf = av1_get_pred_cdf_seg_id(segp, xd);
       aom_write_symbol(w, pred_flag, pred_cdf, 2);
-#else
-      aom_prob pred_prob = av1_get_pred_prob_seg_id(segp, xd);
-      aom_write(w, pred_flag, pred_prob);
-#endif
       if (!pred_flag) write_segment_id(w, seg, segp, segment_id);
     } else {
       write_segment_id(w, seg, segp, segment_id);
@@ -1439,19 +1300,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     write_ref_frames(cm, xd, w);
 
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
     if (has_second_ref(mbmi)) {
       const int comp_index_ctx = get_comp_index_context(cm, xd);
       aom_write_symbol(w, mbmi->compound_idx,
                        ec_ctx->compound_index_cdf[comp_index_ctx], 2);
     }
-#else
-    if (has_second_ref(mbmi)) {
-      const int comp_index_ctx = get_comp_index_context(cm, xd);
-      aom_write(w, mbmi->compound_idx,
-                ec_ctx->compound_index_probs[comp_index_ctx]);
-    }
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_JNT_COMP
 
     if (is_compound)
@@ -1510,23 +1363,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         cpi->common.allow_interintra_compound && is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
       const int bsize_group = size_group_lookup[bsize];
-#if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, interintra, ec_ctx->interintra_cdf[bsize_group], 2);
-#else
-      aom_write(w, interintra, cm->fc->interintra_prob[bsize_group]);
-#endif
       if (interintra) {
         aom_write_symbol(w, mbmi->interintra_mode,
                          ec_ctx->interintra_mode_cdf[bsize_group],
                          INTERINTRA_MODES);
         if (is_interintra_wedge_used(bsize)) {
-#if CONFIG_NEW_MULTISYMBOL
           aom_write_symbol(w, mbmi->use_wedge_interintra,
                            ec_ctx->wedge_interintra_cdf[bsize], 2);
-#else
-          aom_write(w, mbmi->use_wedge_interintra,
-                    cm->fc->wedge_interintra_prob[bsize]);
-#endif
           if (mbmi->use_wedge_interintra) {
             aom_write_literal(w, mbmi->interintra_wedge_index,
                               get_wedge_bits_lookup(bsize));
@@ -2564,22 +2408,14 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
       default: assert(unit_rtype == RESTORE_NONE); break;
     }
   } else if (frame_rtype == RESTORE_WIENER) {
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->wiener_restore_cdf, 2);
-#else
-    aom_write(w, unit_rtype != RESTORE_NONE, RESTORE_NONE_WIENER_PROB);
-#endif  // CONFIG_NEW_MULTISYMBOL
     if (unit_rtype != RESTORE_NONE) {
       write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
     }
   } else if (frame_rtype == RESTORE_SGRPROJ) {
-#if CONFIG_NEW_MULTISYMBOL
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->sgrproj_restore_cdf, 2);
-#else
-    aom_write(w, unit_rtype != RESTORE_NONE, RESTORE_NONE_SGRPROJ_PROB);
-#endif  // CONFIG_NEW_MULTISYMBOL
     if (unit_rtype != RESTORE_NONE) {
       write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
     }
@@ -4377,10 +4213,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   FRAME_CONTEXT *const fc = cm->fc;
   aom_writer *header_bc;
 
-#if !CONFIG_NEW_MULTISYMBOL
-  FRAME_COUNTS *counts = cpi->td.counts;
-#endif
-
   const int probwt = cm->num_tg;
   (void)probwt;
   (void)fc;
@@ -4392,100 +4224,10 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
   aom_start_encode(header_bc, data);
 
-#if !CONFIG_NEW_MULTISYMBOL
-  if (cm->tx_mode == TX_MODE_SELECT)
-    update_txfm_partition_probs(cm, header_bc, counts, probwt);
-#endif
-
-#if !CONFIG_NEW_MULTISYMBOL
-  update_skip_probs(cm, header_bc, counts);
-#if CONFIG_JNT_COMP
-  for (int k = 0; k < COMP_INDEX_CONTEXTS; ++k)
-    av1_cond_prob_diff_update(header_bc, &cm->fc->compound_index_probs[k],
-                              counts->compound_index[k], probwt);
-#endif  // CONFIG_JNT_COMP
-#endif
-
   if (!frame_is_intra_only(cm)) {
-#if !CONFIG_NEW_MULTISYMBOL
-    update_inter_mode_probs(cm, header_bc, counts);
-#endif
     if (cm->reference_mode != COMPOUND_REFERENCE &&
         cm->allow_interintra_compound) {
-#if !CONFIG_NEW_MULTISYMBOL
-      for (int i = 0; i < BLOCK_SIZE_GROUPS; i++) {
-        if (is_interintra_allowed_bsize_group(i)) {
-          av1_cond_prob_diff_update(header_bc, &fc->interintra_prob[i],
-                                    cm->counts.interintra[i], probwt);
-        }
-      }
-#endif
-#if !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_PARTITION_TYPES
-      int block_sizes_to_update = BLOCK_SIZES_ALL;
-#else
-      int block_sizes_to_update = BLOCK_SIZES;
-#endif
-      for (int i = 0; i < block_sizes_to_update; i++) {
-        if (is_interintra_allowed_bsize(i) && is_interintra_wedge_used(i))
-          av1_cond_prob_diff_update(header_bc, &fc->wedge_interintra_prob[i],
-                                    cm->counts.wedge_interintra[i], probwt);
-      }
-#endif  // !CONFIG_NEW_MULTISYMBOL
     }
-
-#if !CONFIG_NEW_MULTISYMBOL
-    for (int i = 0; i < INTRA_INTER_CONTEXTS; i++)
-      av1_cond_prob_diff_update(header_bc, &fc->intra_inter_prob[i],
-                                counts->intra_inter[i], probwt);
-#endif
-
-#if !CONFIG_NEW_MULTISYMBOL
-    if (cpi->allow_comp_inter_inter) {
-      const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
-      if (use_hybrid_pred)
-        for (int i = 0; i < COMP_INTER_CONTEXTS; i++)
-          av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
-                                    counts->comp_inter[i], probwt);
-    }
-
-    if (cm->reference_mode != COMPOUND_REFERENCE) {
-      for (int i = 0; i < REF_CONTEXTS; i++) {
-        for (int j = 0; j < (SINGLE_REFS - 1); j++) {
-          av1_cond_prob_diff_update(header_bc, &fc->single_ref_prob[i][j],
-                                    counts->single_ref[i][j], probwt);
-        }
-      }
-    }
-
-    if (cm->reference_mode != SINGLE_REFERENCE) {
-#if CONFIG_EXT_COMP_REFS
-      for (int i = 0; i < COMP_REF_TYPE_CONTEXTS; i++)
-        av1_cond_prob_diff_update(header_bc, &fc->comp_ref_type_prob[i],
-                                  counts->comp_ref_type[i], probwt);
-
-      for (int i = 0; i < UNI_COMP_REF_CONTEXTS; i++)
-        for (int j = 0; j < (UNIDIR_COMP_REFS - 1); j++)
-          av1_cond_prob_diff_update(header_bc, &fc->uni_comp_ref_prob[i][j],
-                                    counts->uni_comp_ref[i][j], probwt);
-#endif  // CONFIG_EXT_COMP_REFS
-
-      for (int i = 0; i < REF_CONTEXTS; i++) {
-        for (int j = 0; j < (FWD_REFS - 1); j++) {
-          av1_cond_prob_diff_update(header_bc, &fc->comp_ref_prob[i][j],
-                                    counts->comp_ref[i][j], probwt);
-        }
-        for (int j = 0; j < (BWD_REFS - 1); j++) {
-          av1_cond_prob_diff_update(header_bc, &fc->comp_bwdref_prob[i][j],
-                                    counts->comp_bwdref[i][j], probwt);
-        }
-      }
-    }
-#endif  // CONFIG_NEW_MULTISYMBOL
-
-#if !CONFIG_NEW_MULTISYMBOL
-    av1_write_nmv_probs(cm, cm->allow_high_precision_mv, header_bc, counts->mv);
-#endif
   }
   aom_stop_encode(header_bc);
   assert(header_bc->pos <= 0xffff);

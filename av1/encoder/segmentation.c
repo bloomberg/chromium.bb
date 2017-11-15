@@ -311,9 +311,6 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 
   aom_prob no_pred_tree[SEG_TREE_PROBS];
   aom_prob t_pred_tree[SEG_TREE_PROBS];
-#if !CONFIG_NEW_MULTISYMBOL
-  aom_prob t_nopred_prob[PREDICTION_PROBS];
-#endif
 
   (void)xd;
 
@@ -358,23 +355,6 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
     calc_segtree_probs(t_unpred_seg_counts, t_pred_tree, segp->tree_probs,
                        probwt);
     t_pred_cost = cost_segmap(t_unpred_seg_counts, t_pred_tree);
-#if !CONFIG_NEW_MULTISYMBOL
-    // Add in the cost of the signaling for each prediction context.
-    int i;
-    for (i = 0; i < PREDICTION_PROBS; i++) {
-      const int count0 = temporal_predictor_count[i][0];
-      const int count1 = temporal_predictor_count[i][1];
-
-      t_nopred_prob[i] = get_binary_prob(count0, count1);
-      av1_prob_diff_update_savings_search(
-          temporal_predictor_count[i], segp->pred_probs[i], &t_nopred_prob[i],
-          DIFF_UPDATE_PROB, probwt);
-
-      // Add in the predictor signaling cost
-      t_pred_cost += count0 * av1_cost_zero(t_nopred_prob[i]) +
-                     count1 * av1_cost_one(t_nopred_prob[i]);
-    }
-#endif
   }
 
   // Now choose which coding method to use.

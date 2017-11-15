@@ -38,7 +38,6 @@ const aom_tree_index av1_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
 };
 /* clang-format on */
 
-#if CONFIG_NEW_MULTISYMBOL
 /* Extra bits coded from LSB to MSB */
 const aom_cdf_prob av1_cat1_cdf0[CDF_SIZE(2)] = { AOM_CDF2(20352) };
 const aom_cdf_prob *av1_cat1_cdf[] = { av1_cat1_cdf0 };
@@ -78,7 +77,6 @@ const aom_cdf_prob av1_cat6_cdf4[CDF_SIZE(4)] = { AOM_CDF4(32513, 32641,
 const aom_cdf_prob *av1_cat6_cdf[] = {
   av1_cat6_cdf0, av1_cat6_cdf1, av1_cat6_cdf2, av1_cat6_cdf3, av1_cat6_cdf4
 };
-#endif
 /* Extra bits coded from MSB to LSB */
 const aom_prob av1_cat1_prob[] = { 159 };
 const aom_prob av1_cat2_prob[] = { 165, 145 };
@@ -1658,13 +1656,11 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].classes_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_fp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].fp_cdf)
-#if CONFIG_NEW_MULTISYMBOL
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].sign_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_hp_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].class0_cdf)
       AVERAGE_TILE_CDFS(nmvc[j].comps[k].bits_cdf)
-#endif
     }
   }
 }
@@ -1689,10 +1685,8 @@ void av1_average_tile_loopfilter_cdfs(FRAME_CONTEXT *fc,
 
 #if CONFIG_LOOP_RESTORATION
   AVERAGE_TILE_CDFS(switchable_restore_cdf)
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(wiener_restore_cdf)
   AVERAGE_TILE_CDFS(sgrproj_restore_cdf)
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
 }
 
@@ -1711,9 +1705,7 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(inter_ext_tx_cdf)
 
   AVERAGE_TILE_CDFS(seg.tree_cdf)
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(seg.pred_cdf)
-#endif
   AVERAGE_TILE_CDFS(uv_mode_cdf)
 
 #if CONFIG_CFL
@@ -1731,10 +1723,8 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #endif
 #endif
 
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(skip_cdfs)
   AVERAGE_TILE_CDFS(txfm_partition_cdf)
-#endif  // CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(palette_y_size_cdf)
   AVERAGE_TILE_CDFS(palette_uv_size_cdf)
   AVERAGE_TILE_CDFS(palette_y_color_index_cdf)
@@ -1746,10 +1736,8 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #if CONFIG_MRC_TX
   AVERAGE_TILE_CDFS(mrc_mask_intra_cdf)
 #endif  // CONFIG_MRC_TX
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(palette_y_mode_cdf)
   AVERAGE_TILE_CDFS(palette_uv_mode_cdf)
-#endif
 #if CONFIG_LPF_SB
   AVERAGE_TILE_CDFS(lpf_reuse_cdf);
   AVERAGE_TILE_CDFS(lpf_delta_cdf);
@@ -1771,13 +1759,10 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 #endif
   aom_cdf_prob *fc_cdf_ptr;
 
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(comp_inter_cdf)
   AVERAGE_TILE_CDFS(comp_ref_cdf)
   AVERAGE_TILE_CDFS(comp_bwdref_cdf)
-#endif
 
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(single_ref_cdf)
 
   AVERAGE_TILE_CDFS(newmv_cdf)
@@ -1788,7 +1773,6 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   AVERAGE_TILE_CDFS(uni_comp_ref_cdf)
   AVERAGE_TILE_CDFS(comp_ref_type_cdf)
 #endif
-#endif
 
   // FIXME: cdfs not defined for super_tx
 
@@ -1796,10 +1780,8 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
   AVERAGE_TILE_CDFS(compound_type_cdf)
 
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(interintra_cdf)
   AVERAGE_TILE_CDFS(wedge_interintra_cdf)
-#endif
   AVERAGE_TILE_CDFS(interintra_mode_cdf)
 
   /* NB: kf_y_cdf is discarded after use, so no need
@@ -1809,11 +1791,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   if (cm->interp_filter == SWITCHABLE) {
     AVERAGE_TILE_CDFS(switchable_interp_cdf)
   }
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(intra_inter_cdf)
   AVERAGE_TILE_CDFS(motion_mode_cdf)
   AVERAGE_TILE_CDFS(obmc_cdf)
-#endif
 #if CONFIG_MRC_TX
   AVERAGE_TILE_CDFS(mrc_mask_inter_cdf)
 #endif  // CONFIG_MRC_TX
@@ -1827,8 +1807,6 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   for (j = 0; j < Q_SEGMENT_CDF_COUNT; j++) AVERAGE_TILE_CDFS(seg.q_seg_cdf[j]);
 #endif
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(compound_index_cdf);
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_JNT_COMP
 }

@@ -644,12 +644,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 
 #if CONFIG_JNT_COMP
-#if !CONFIG_NEW_MULTISYMBOL
-  if (has_second_ref(mbmi)) {
-    const int comp_index_ctx = get_comp_index_context(cm, xd);
-    ++td->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
-  }
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_JNT_COMP
 }
 
@@ -1030,9 +1024,7 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   if (!seg_ref_active) {
     const int skip_ctx = av1_get_skip_context(xd);
     td->counts->skip[skip_ctx][mbmi->skip]++;
-#if CONFIG_NEW_MULTISYMBOL
     if (allow_update_cdf) update_cdf(fc->skip_cdfs[skip_ctx], mbmi->skip, 2);
-#endif  // CONFIG_NEW_MULTISYMBOL
   }
 
   if (cm->delta_q_present_flag && (bsize != cm->sb_size || !mbmi->skip) &&
@@ -1095,11 +1087,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     const int inter_block = is_inter_block(mbmi);
     if (!seg_ref_active) {
       counts->intra_inter[av1_get_intra_inter_context(xd)][inter_block]++;
-#if CONFIG_NEW_MULTISYMBOL
       if (allow_update_cdf)
         update_cdf(fc->intra_inter_cdf[av1_get_intra_inter_context(xd)],
                    inter_block, 2);
-#endif
       // If the segment reference feature is enabled we have only a single
       // reference frame allowed for the segment so exclude it from
       // the reference frame counts used to work out probabilities.
@@ -1117,11 +1107,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           if (is_comp_ref_allowed(mbmi->sb_type)) {
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
                               [has_second_ref(mbmi)]++;
-#if CONFIG_NEW_MULTISYMBOL
             if (allow_update_cdf)
               update_cdf(av1_get_reference_mode_cdf(cm, xd),
                          has_second_ref(mbmi), 2);
-#endif  // CONFIG_NEW_MULTISYMBOL
           }
         }
 
@@ -1197,28 +1185,22 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           const int bsize_group = size_group_lookup[bsize];
           if (mbmi->ref_frame[1] == INTRA_FRAME) {
             counts->interintra[bsize_group][1]++;
-#if CONFIG_NEW_MULTISYMBOL
             if (allow_update_cdf)
               update_cdf(fc->interintra_cdf[bsize_group], 1, 2);
-#endif
             counts->interintra_mode[bsize_group][mbmi->interintra_mode]++;
             if (allow_update_cdf)
               update_cdf(fc->interintra_mode_cdf[bsize_group],
                          mbmi->interintra_mode, INTERINTRA_MODES);
             if (is_interintra_wedge_used(bsize)) {
               counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
-#if CONFIG_NEW_MULTISYMBOL
               if (allow_update_cdf)
                 update_cdf(fc->wedge_interintra_cdf[bsize],
                            mbmi->use_wedge_interintra, 2);
-#endif
             }
           } else {
             counts->interintra[bsize_group][0]++;
-#if CONFIG_NEW_MULTISYMBOL
             if (allow_update_cdf)
               update_cdf(fc->interintra_cdf[bsize_group], 0, 2);
-#endif
           }
         }
 
@@ -1233,11 +1215,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
                          MOTION_MODES);
           } else if (motion_allowed == OBMC_CAUSAL) {
             counts->obmc[mbmi->sb_type][mbmi->motion_mode == OBMC_CAUSAL]++;
-#if CONFIG_NEW_MULTISYMBOL
             if (allow_update_cdf)
               update_cdf(fc->obmc_cdf[mbmi->sb_type],
                          mbmi->motion_mode == OBMC_CAUSAL, 2);
-#endif
           }
         }
 
@@ -1304,14 +1284,12 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       }
 
 #if CONFIG_JNT_COMP
-#if CONFIG_NEW_MULTISYMBOL
       if (has_second_ref(mbmi)) {
         const int comp_index_ctx = get_comp_index_context(cm, xd);
         ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
         update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
                    2);
       }
-#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_JNT_COMP
     }
   }
@@ -4499,7 +4477,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
 }
 
-#if CONFIG_NEW_MULTISYMBOL
 // TODO(anybody) We can add stats accumulation here to train entropy models for
 // palette modes
 static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
@@ -4534,7 +4511,6 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
     update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
   }
 }
-#endif
 
 static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts, TX_SIZE tx_size, int depth,
@@ -4563,10 +4539,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
 
   if (tx_size == plane_tx_size) {
     ++counts->txfm_partition[ctx][0];
-#if CONFIG_NEW_MULTISYMBOL
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 0, 2);
-#endif
     mbmi->tx_size = tx_size;
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
@@ -4576,10 +4550,8 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     const int bsh = tx_size_high_unit[sub_txs];
 
     ++counts->txfm_partition[ctx][1];
-#if CONFIG_NEW_MULTISYMBOL
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 1, 2);
-#endif
     ++x->txb_split_count;
 
     if (sub_txs == TX_4X4) {
@@ -4790,11 +4762,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col,
                       tile_data->allow_update_cdf);
-#if CONFIG_NEW_MULTISYMBOL
       if (av1_allow_palette(cm->allow_screen_content_tools, bsize) &&
           tile_data->allow_update_cdf)
         update_palette_cdf(xd, mi);
-#endif
     }
 
     if (bsize >= BLOCK_8X8) {
