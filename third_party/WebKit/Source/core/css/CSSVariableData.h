@@ -5,7 +5,6 @@
 #ifndef CSSVariableData_h
 #define CSSVariableData_h
 
-#include "core/css/CSSPropertyValueSet.h"
 #include "core/css/parser/CSSParserToken.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/wtf/Forward.h"
@@ -50,8 +49,6 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
 
   const CSSValue* ParseForSyntax(const CSSSyntaxDescriptor&) const;
 
-  CSSPropertyValueSet* PropertySet();
-
  private:
   CSSVariableData(const CSSParserTokenRange&,
                   bool is_animation_tainted,
@@ -63,8 +60,7 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
       : backing_strings_(std::move(backing_strings)),
         tokens_(resolved_tokens),
         is_animation_tainted_(is_animation_tainted),
-        needs_variable_resolution_(false),
-        cached_property_set_(false) {}
+        needs_variable_resolution_(false) {}
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 
@@ -75,10 +71,6 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   Vector<CSSParserToken> tokens_;
   const bool is_animation_tainted_;
   const bool needs_variable_resolution_;
-
-  // Parsed representation for @apply
-  bool cached_property_set_;
-  Persistent<CSSPropertyValueSet> property_set_;
 };
 
 }  // namespace blink

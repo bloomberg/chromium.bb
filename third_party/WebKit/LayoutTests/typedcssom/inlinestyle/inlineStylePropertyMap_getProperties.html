@@ -52,14 +52,4 @@ test(function() {
   assert_array_equals(testElement.attributeStyleMap.getProperties(), ['--my-custom-property']);
 }, "getProperties returns expected values for custom properties");
 
-test(function() {
-    testElement.style.cssText = "@apply --foo";
-    assert_array_equals(testElement.attributeStyleMap.getProperties(), ['@apply']);
-}, "getProperties returns expected values when @apply is used");
-
-test(function() {
-    testElement.style.cssText = "@apply --foo; @apply --bar;";
-    assert_array_equals(testElement.attributeStyleMap.getProperties(), ['@apply']);
-}, "getProperties returns only one @apply when multiple things are applied");
-
 </script>

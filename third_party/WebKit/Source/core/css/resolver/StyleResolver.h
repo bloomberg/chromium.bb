@@ -272,12 +272,6 @@ class CORE_EXPORT StyleResolver final
                         const CSSValue&,
                         bool inherited_only,
                         PropertyWhitelistType);
-  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
-  void ApplyPropertiesForApplyAtRule(StyleResolverState&,
-                                     const CSSValue&,
-                                     bool is_important,
-                                     NeedsApplyPass&,
-                                     PropertyWhitelistType);
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,

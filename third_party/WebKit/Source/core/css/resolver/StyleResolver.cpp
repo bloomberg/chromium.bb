@@ -53,6 +53,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorWatch.h"
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/ElementRuleCollector.h"
@@ -104,37 +105,6 @@ void SetAnimationUpdateIfNeeded(StyleResolverState& state, Element& element) {
   if (!state.AnimationUpdate().IsEmpty())
     element.EnsureElementAnimations().CssAnimations().SetPendingUpdate(
         state.AnimationUpdate());
-}
-
-// Returns whether any @apply rule sets a custom property
-bool CacheCustomPropertiesForApplyAtRules(StyleResolverState& state,
-                                          const MatchedPropertiesRange& range) {
-  bool rule_sets_custom_property = false;
-  // TODO(timloh): @apply should also work with properties registered as
-  // non-inherited.
-  if (!state.Style()->InheritedVariables())
-    return false;
-  for (const auto& matched_properties : range) {
-    const CSSPropertyValueSet& properties = *matched_properties.properties;
-    unsigned property_count = properties.PropertyCount();
-    for (unsigned i = 0; i < property_count; ++i) {
-      CSSPropertyValueSet::PropertyReference current = properties.PropertyAt(i);
-      if (current.Id() != CSSPropertyApplyAtRule)
-        continue;
-      AtomicString name(ToCSSCustomIdentValue(current.Value()).Value());
-      CSSVariableData* variable_data =
-          state.Style()->InheritedVariables()->GetVariable(name);
-      if (!variable_data)
-        continue;
-      CSSPropertyValueSet* custom_property_set = variable_data->PropertySet();
-      if (!custom_property_set)
-        continue;
-      if (custom_property_set->FindPropertyIndex(CSSPropertyVariable) != -1)
-        rule_sets_custom_property = true;
-      state.SetCustomPropertySetForApplyAtRule(name, custom_property_set);
-    }
-  }
-  return rule_sets_custom_property;
 }
 
 }  // namespace
@@ -1533,28 +1503,6 @@ void StyleResolver::ApplyAllProperty(
 
 template <CSSPropertyPriority priority,
           StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
-void StyleResolver::ApplyPropertiesForApplyAtRule(
-    StyleResolverState& state,
-    const CSSValue& value,
-    bool is_important,
-    NeedsApplyPass& needs_apply_pass,
-    PropertyWhitelistType property_whitelist_type) {
-  state.Style()->SetHasVariableReferenceFromNonInheritedProperty();
-  if (!state.Style()->InheritedVariables())
-    return;
-  const String& name = ToCSSCustomIdentValue(value).Value();
-  const CSSPropertyValueSet* property_set =
-      state.CustomPropertySetForApplyAtRule(name);
-  bool inherited_only = false;
-  if (property_set) {
-    ApplyProperties<priority, shouldUpdateNeedsApplyPass>(
-        state, property_set, is_important, inherited_only, needs_apply_pass,
-        property_whitelist_type);
-  }
-}
-
-template <CSSPropertyPriority priority,
-          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::ApplyProperties(
     StyleResolverState& state,
     const CSSPropertyValueSet* properties,
@@ -1566,14 +1514,6 @@ void StyleResolver::ApplyProperties(
   for (unsigned i = 0; i < property_count; ++i) {
     CSSPropertyValueSet::PropertyReference current = properties->PropertyAt(i);
     CSSPropertyID property = current.Id();
-
-    if (property == CSSPropertyApplyAtRule) {
-      DCHECK(!inherited_only);
-      ApplyPropertiesForApplyAtRule<priority, shouldUpdateNeedsApplyPass>(
-          state, current.Value(), is_important, needs_apply_pass,
-          property_whitelist_type);
-      continue;
-    }
 
     if (property == CSSPropertyAll && is_important == current.IsImportant()) {
       if (shouldUpdateNeedsApplyPass) {
@@ -1788,28 +1728,6 @@ void StyleResolver::ApplyCustomProperties(StyleResolverState& state,
   }
   // TODO(leviw): stop recalculating every time
   CSSVariableResolver(state).ResolveVariableDefinitions();
-
-  if (RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()) {
-    if (CacheCustomPropertiesForApplyAtRules(state,
-                                             match_result.AuthorRules())) {
-      ApplyMatchedProperties<kResolveVariables, kUpdateNeedsApplyPass>(
-          state, match_result.UserRules(), false, apply_inherited_only,
-          needs_apply_pass);
-      ApplyMatchedProperties<kResolveVariables, kUpdateNeedsApplyPass>(
-          state, match_result.AuthorRules(), false, apply_inherited_only,
-          needs_apply_pass);
-      ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
-          state, match_result.AuthorRules(), true, apply_inherited_only,
-          needs_apply_pass);
-      ApplyMatchedProperties<kResolveVariables, kCheckNeedsApplyPass>(
-          state, match_result.UserRules(), true, apply_inherited_only,
-          needs_apply_pass);
-      if (apply_animations == kIncludeAnimations) {
-        ApplyAnimatedCustomProperties(state);
-      }
-      CSSVariableResolver(state).ResolveVariableDefinitions();
-    }
-  }
 }
 
 void StyleResolver::ApplyMatchedAnimationProperties(

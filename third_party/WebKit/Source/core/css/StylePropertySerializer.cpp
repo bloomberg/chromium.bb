@@ -191,17 +191,6 @@ String StylePropertySerializer::GetCustomPropertyText(
   return result.ToString();
 }
 
-static String GetApplyAtRuleText(const CSSValue* value,
-                                 bool is_not_first_decl) {
-  StringBuilder result;
-  if (is_not_first_decl)
-    result.Append(' ');
-  result.Append("@apply ");
-  result.Append(ToCSSCustomIdentValue(value)->Value());
-  result.Append(';');
-  return result.ToString();
-}
-
 String StylePropertySerializer::GetPropertyText(CSSPropertyID property_id,
                                                 const String& value,
                                                 bool is_important,
@@ -252,9 +241,6 @@ String StylePropertySerializer::AsText() const {
       case CSSPropertyAll:
         result.Append(GetPropertyText(property_id, property.Value()->CssText(),
                                       property.IsImportant(), num_decls++));
-        continue;
-      case CSSPropertyApplyAtRule:
-        result.Append(GetApplyAtRuleText(property.Value(), num_decls++));
         continue;
       default:
         break;

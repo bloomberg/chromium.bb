@@ -54,7 +54,6 @@ class CSSParserImpl {
     kAllowNamespaceRules,
     kRegularRules,
     kKeyframeRules,
-    kApplyRules,  // For @apply inside style rules
     kNoRules,     // For parsing at-rules inside declaration lists
   };
 
@@ -101,13 +100,6 @@ class CSSParserImpl {
                               bool defer_property_parsing = false);
   static CSSSelectorList ParsePageSelector(CSSParserTokenRange,
                                            StyleSheetContents*);
-
-  static ImmutableCSSPropertyValueSet* ParseCustomPropertySet(
-      CSSParserTokenRange);
-  // TODO(shend): Remove this when crbug.com/661854 is fixed. We need to use a
-  // stream for parsing @apply blocks so we can correctly store custom
-  // property values.
-  void ConsumeDeclarationListForAtApply(CSSParserTokenRange);
 
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
 
@@ -161,8 +153,6 @@ class CSSParserImpl {
   StyleRulePage* ConsumePageRule(CSSParserTokenRange prelude,
                                  const RangeOffset& prelude_offset,
                                  CSSParserTokenStream& block);
-  // Updates parsed_properties_
-  void ConsumeApplyRule(CSSParserTokenRange prelude);
 
   StyleRuleKeyframe* ConsumeKeyframeStyleRule(CSSParserTokenRange prelude,
                                               const RangeOffset& prelude_offset,

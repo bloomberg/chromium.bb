@@ -164,8 +164,6 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
   if (property.Id() == CSSPropertyVariable)
     return ToCSSCustomPropertyDeclaration(property.Value()).GetName();
-  if (property.Id() == CSSPropertyApplyAtRule)
-    return "@apply";
   return getPropertyName(property.Id());
 }
 

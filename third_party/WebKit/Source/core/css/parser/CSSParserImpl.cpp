@@ -145,8 +145,6 @@ static inline void FilterProperties(
       if (seen_custom_properties.Contains(name))
         continue;
       seen_custom_properties.insert(name);
-    } else if (property.Id() == CSSPropertyApplyAtRule) {
-      // TODO(timloh): Do we need to do anything here?
     } else {
       if (seen_properties.test(property_id_index))
         continue;
@@ -322,61 +320,6 @@ CSSSelectorList CSSParserImpl::ParsePageSelector(
   return selector_list;
 }
 
-ImmutableCSSPropertyValueSet* CSSParserImpl::ParseCustomPropertySet(
-    CSSParserTokenRange range) {
-  range.ConsumeWhitespace();
-  if (range.Peek().GetType() != kLeftBraceToken)
-    return nullptr;
-  CSSParserTokenRange block = range.ConsumeBlock();
-  range.ConsumeWhitespace();
-  if (!range.AtEnd())
-    return nullptr;
-  CSSParserImpl parser(StrictCSSParserContext());
-  parser.ConsumeDeclarationListForAtApply(block);
-
-  return CreateCSSPropertyValueSet(parser.parsed_properties_,
-                                   kHTMLStandardMode);
-}
-
-void CSSParserImpl::ConsumeDeclarationListForAtApply(
-    CSSParserTokenRange range) {
-  DCHECK(parsed_properties_.IsEmpty());
-  DCHECK(RuntimeEnabledFeatures::CSSApplyAtRulesEnabled());
-  DCHECK(!observer_);
-
-  while (!range.AtEnd()) {
-    switch (range.Peek().GetType()) {
-      case kWhitespaceToken:
-      case kSemicolonToken:
-        range.Consume();
-        break;
-      case kIdentToken: {
-        const CSSParserToken* declaration_start = &range.Peek();
-
-        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-
-        ConsumeDeclaration(range.MakeSubRange(declaration_start, &range.Peek()),
-                           RangeOffset::Ignore(), StyleRule::kStyle);
-
-        break;
-      }
-      case kAtKeywordToken: {
-        range.Consume();
-        while (!range.AtEnd() && range.Peek().GetType() != kLeftBraceToken &&
-               range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-        range.ConsumeComponentValue();
-        break;
-      }
-      default:  // Parse error, unexpected token in declaration list
-        while (!range.AtEnd() && range.Peek().GetType() != kSemicolonToken)
-          range.ConsumeComponentValue();
-        break;
-    }
-  }
-}
-
 std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
     const String& key_list) {
   CSSTokenizer tokenizer(key_list);
@@ -538,10 +481,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
     }
     if (allowed_rules <= kAllowNamespaceRules && id == kCSSAtRuleNamespace)
       return ConsumeNamespaceRule(prelude);
-    if (allowed_rules == kApplyRules && id == kCSSAtRuleApply) {
-      ConsumeApplyRule(prelude);
-      return nullptr;  // ConsumeApplyRule just updates parsed_properties_
-    }
     return nullptr;  // Parse error, unrecognised at-rule without block
   }
 
@@ -549,7 +488,7 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
 
   if (allowed_rules == kKeyframeRules)
     return nullptr;  // Parse error, no at-rules supported inside @keyframes
-  if (allowed_rules == kNoRules || allowed_rules == kApplyRules)
+  if (allowed_rules == kNoRules)
     return nullptr;  // Parse error, no at-rules with blocks supported inside
                      // declaration lists
 
@@ -822,17 +761,6 @@ StyleRulePage* CSSParserImpl::ConsumePageRule(const CSSParserTokenRange prelude,
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
-void CSSParserImpl::ConsumeApplyRule(CSSParserTokenRange prelude) {
-  DCHECK(RuntimeEnabledFeatures::CSSApplyAtRulesEnabled());
-
-  const CSSParserToken& ident = prelude.ConsumeIncludingWhitespace();
-  if (!prelude.AtEnd() || !CSSVariableParser::IsValidVariableName(ident))
-    return;  // Parse error, expected a single custom property name
-  parsed_properties_.push_back(CSSPropertyValue(
-      CSSPropertyApplyAtRule,
-      *CSSCustomIdentValue::Create(ident.Value().ToAtomicString())));
-}
-
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
@@ -942,17 +870,6 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
         if (!stream.AtEnd())
           stream.UncheckedConsume();  // kSemicolonToken
 
-        break;
-      }
-      case kAtKeywordToken: {
-        AllowedRulesType allowed_rules =
-            rule_type == StyleRule::kStyle &&
-                    RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()
-                ? kApplyRules
-                : kNoRules;
-
-        StyleRuleBase* rule = ConsumeAtRule(stream, allowed_rules);
-        DCHECK(!rule);
         break;
       }
       default:

@@ -4,6 +4,7 @@
 
 #include "modules/media_controls/elements/MediaControlLoadingPanelElement.h"
 
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"

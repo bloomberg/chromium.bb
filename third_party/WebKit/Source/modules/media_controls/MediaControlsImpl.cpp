@@ -27,6 +27,7 @@
 #include "modules/media_controls/MediaControlsImpl.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSStyleDeclaration.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
 #include "core/dom/MutationRecord.h"

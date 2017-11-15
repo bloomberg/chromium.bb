@@ -150,11 +150,6 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
                                            is_animation_tainted);
 }
 
-ImmutableCSSPropertyValueSet* CSSParser::ParseCustomPropertySet(
-    CSSParserTokenRange range) {
-  return CSSParserImpl::ParseCustomPropertySet(range);
-}
-
 MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
     MutableCSSPropertyValueSet* declaration,
     CSSPropertyID unresolved_property,

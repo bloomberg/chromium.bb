@@ -48,19 +48,6 @@ bool ClassifyBlock(CSSParserTokenRange range,
       --block_stack_size;
     } else {
       switch (token.GetType()) {
-        case kAtKeywordToken: {
-          if (EqualIgnoringASCIICase(token.Value(), "apply")) {
-            range.ConsumeWhitespace();
-            const CSSParserToken& variable_name =
-                range.ConsumeIncludingWhitespace();
-            if (!CSSVariableParser::IsValidVariableName(variable_name) ||
-                !(range.AtEnd() || range.Peek().GetType() == kSemicolonToken ||
-                  range.Peek().GetType() == kRightBraceToken))
-              return false;
-            has_at_apply_rule = true;
-          }
-          break;
-        }
         case kDelimiterToken: {
           if (token.Delimiter() == '!' && block_stack_size == 0)
             return false;

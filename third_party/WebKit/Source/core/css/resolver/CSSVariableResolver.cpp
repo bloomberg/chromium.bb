@@ -169,36 +169,6 @@ bool CSSVariableResolver::ResolveVariableReference(
   return true;
 }
 
-void CSSVariableResolver::ResolveApplyAtRule(
-    CSSParserTokenRange& range,
-    Vector<CSSParserToken>& result,
-    Vector<String>& result_backing_strings) {
-  DCHECK(range.Peek().GetType() == kAtKeywordToken &&
-         EqualIgnoringASCIICase(range.Peek().Value(), "apply"));
-  range.ConsumeIncludingWhitespace();
-  const CSSParserToken& variable_name = range.ConsumeIncludingWhitespace();
-  // TODO(timloh): Should we actually be consuming this?
-  if (range.Peek().GetType() == kSemicolonToken)
-    range.Consume();
-
-  CSSVariableData* variable_data =
-      ValueForCustomProperty(variable_name.Value().ToAtomicString());
-  if (!variable_data)
-    return;  // Invalid custom property
-
-  CSSParserTokenRange rule = variable_data->TokenRange();
-  rule.ConsumeWhitespace();
-  if (rule.Peek().GetType() != kLeftBraceToken)
-    return;
-  CSSParserTokenRange rule_contents = rule.ConsumeBlock();
-  rule.ConsumeWhitespace();
-  if (!rule.AtEnd())
-    return;
-
-  result.AppendRange(rule_contents.begin(), rule_contents.end());
-  result_backing_strings.AppendVector(variable_data->BackingStrings());
-}
-
 bool CSSVariableResolver::ResolveTokenRange(
     CSSParserTokenRange range,
     bool disallow_animation_tainted,
@@ -211,10 +181,6 @@ bool CSSVariableResolver::ResolveTokenRange(
       success &= ResolveVariableReference(
           range.ConsumeBlock(), disallow_animation_tainted, result,
           result_backing_strings, result_is_animation_tainted);
-    } else if (range.Peek().GetType() == kAtKeywordToken &&
-               EqualIgnoringASCIICase(range.Peek().Value(), "apply") &&
-               RuntimeEnabledFeatures::CSSApplyAtRulesEnabled()) {
-      ResolveApplyAtRule(range, result, result_backing_strings);
     } else {
       result.push_back(range.Consume());
     }
