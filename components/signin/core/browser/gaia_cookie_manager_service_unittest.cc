@@ -59,6 +59,30 @@ class MockObserver : public GaiaCookieManagerService::Observer {
 
 int total = 0;
 
+// Custom matcher for ListedAccounts.
+MATCHER_P(ListedAccountEquals, expected, "") {
+  if (expected.size() != arg.size())
+    return false;
+
+  for (size_t i = 0u; i < expected.size(); ++i) {
+    const gaia::ListedAccount& expected_account = expected[i];
+    const gaia::ListedAccount& actual_account = arg[i];
+    // If both accounts have an ID, use it for the comparison.
+    if (!expected_account.id.empty() && !actual_account.id.empty()) {
+      if (expected_account.id != actual_account.id)
+        return false;
+    } else if (expected_account.email != actual_account.email ||
+               expected_account.gaia_id != actual_account.gaia_id ||
+               expected_account.raw_email != actual_account.raw_email ||
+               expected_account.valid != actual_account.valid ||
+               expected_account.signed_out != actual_account.signed_out ||
+               expected_account.verified != actual_account.verified) {
+      return false;
+    }
+  }
+  return true;
+}
+
 class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
   InstrumentedGaiaCookieManagerService(
@@ -554,8 +578,6 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
   listed_account.email = "a@b.com";
   listed_account.raw_email = "a@b.com";
   listed_account.gaia_id = "8";
-  listed_account.valid = true;
-  listed_account.signed_out = false;
   expected_accounts.push_back(listed_account);
 
   std::vector<gaia::ListedAccount> signed_out_accounts;
@@ -563,7 +585,9 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
-      expected_accounts, expected_signed_out_accounts, no_error()));
+                            ListedAccountEquals(expected_accounts),
+                            ListedAccountEquals(expected_signed_out_accounts),
+                            no_error()));
 
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
@@ -582,8 +606,6 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsSignedOutAccounts) {
   listed_account.email = "a@b.com";
   listed_account.raw_email = "a@b.com";
   listed_account.gaia_id = "8";
-  listed_account.valid = true;
-  listed_account.signed_out = false;
   expected_accounts.push_back(listed_account);
 
   std::vector<gaia::ListedAccount> signed_out_accounts;
@@ -592,13 +614,14 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsSignedOutAccounts) {
   signed_out_account.email = "c@d.com";
   signed_out_account.raw_email = "c@d.com";
   signed_out_account.gaia_id = "9";
-  signed_out_account.valid = true;
   signed_out_account.signed_out = true;
   expected_signed_out_accounts.push_back(signed_out_account);
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
-      expected_accounts, expected_signed_out_accounts, no_error()));
+                            ListedAccountEquals(expected_accounts),
+                            ListedAccountEquals(expected_signed_out_accounts),
+                            no_error()));
 
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
@@ -646,7 +669,8 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
               OnGaiaAccountsInCookieUpdated(
-                  empty_list_accounts, empty_signed_out_accounts, no_error()));
+                  ListedAccountEquals(empty_list_accounts),
+                  ListedAccountEquals(empty_signed_out_accounts), no_error()));
   ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts,
                                    GaiaConstants::kChromeSource));
   ASSERT_TRUE(list_accounts.empty());
@@ -662,7 +686,8 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
               OnGaiaAccountsInCookieUpdated(
-                  empty_list_accounts, empty_signed_out_accounts, no_error()));
+                  ListedAccountEquals(empty_list_accounts),
+                  ListedAccountEquals(empty_signed_out_accounts), no_error()));
   helper.ForceOnCookieChangedProcessing();
 
   // OnCookieChanged should invalidate cached data.

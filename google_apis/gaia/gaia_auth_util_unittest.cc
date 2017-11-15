@@ -245,6 +245,29 @@ TEST(GaiaAuthUtilTest, ParseListAccountsWithSignedOutAccounts) {
   ASSERT_TRUE(signed_out_accounts[0].signed_out);
 }
 
+TEST(GaiaAuthUtilTest, ParseListAccountsVerifiedAccounts) {
+  std::vector<ListedAccount> accounts;
+  std::vector<ListedAccount> signed_out_accounts;
+
+  ASSERT_TRUE(ParseListAccountsData(
+      "[\"foo\","
+      "[[\"a\",0,\"n\",\"a@g.c\",\"photo\",0,0,0,0,1,\"45\"],"
+      "[\"b\",0,\"n\",\"b@g.c\",\"photo\",0,0,0,0,1,\"45\","
+      "null,null,null,null,0],"
+      "[\"c\",0,\"n\",\"c@g.c\",\"photo\",0,0,0,0,1,\"45\","
+      "null,null,null,null,1]]]",
+      &accounts, &signed_out_accounts));
+
+  ASSERT_EQ(3u, accounts.size());
+  ASSERT_EQ("a@g.c", accounts[0].email);
+  EXPECT_TRUE(accounts[0].verified);  // Accounts are verified by default.
+  ASSERT_EQ("b@g.c", accounts[1].email);
+  EXPECT_FALSE(accounts[1].verified);
+  ASSERT_EQ("c@g.c", accounts[2].email);
+  EXPECT_TRUE(accounts[2].verified);
+  ASSERT_EQ(0u, signed_out_accounts.size());
+}
+
 TEST(GaiaAuthUtilTest, ParseListAccountsAcceptsNull) {
   ASSERT_TRUE(ParseListAccountsData(
       "[\"foo\","

@@ -25,13 +25,13 @@ struct ListedAccount {
   std::string email;
   std::string gaia_id;
   std::string raw_email;
-  bool valid;
-  bool signed_out;
+  bool valid = true;
+  bool signed_out = false;
+  bool verified = true;
 
   ListedAccount();
   ListedAccount(const ListedAccount& other);
   ~ListedAccount();
-  bool operator==(const ListedAccount& other) const;
 };
 
 // Perform basic canonicalization of |email_address|, taking into account that
