@@ -11,11 +11,34 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+std::unique_ptr<display::DisplaySnapshot> CreateTestDisplaySnapshot(
+    int64_t id,
+    const gfx::Size& size,
+    display::DisplayConnectionType type) {
+  return std::make_unique<display::DisplaySnapshot>(
+      id, gfx::Point(0, 0) /* origin */, size, type,
+      false /* is_aspect_preserving_scaling */, false /* has_overscan */,
+      false /* has_color_correction_matrix */,
+      gfx::ColorSpace() /* color_space */, std::string() /* display_name */,
+      base::FilePath() /* sys_path */,
+      display::DisplaySnapshot::DisplayModeList() /* modes */,
+      std::vector<uint8_t>() /* edid */, nullptr /* current_mode */,
+      nullptr /* native_mode */, 0 /* product_id */,
+      gfx::Size() /* maximum_cursor_size */);
+}
+
+}  // namespace
 
 class DisplayErrorObserverTest : public AshTestBase {
  protected:
@@ -76,6 +99,34 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
 
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),
+      display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
+  EXPECT_EQ(ui::SubstituteChromeOSDeviceType(
+                IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
+            GetMessageContents());
+}
+
+TEST_F(DisplayErrorObserverTest, FailureWithInternalDisplay) {
+  // Failure with a single internal display --> No notification.
+  UpdateDisplay("200x200,300x300");
+  const int64_t internal_display_id = display_manager()->GetDisplayAt(0).id();
+  const int64_t external_display_id = display_manager()->GetDisplayAt(1).id();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         internal_display_id);
+  auto snapshot1 =
+      CreateTestDisplaySnapshot(internal_display_id, {200, 200},
+                                display::DISPLAY_CONNECTION_TYPE_INTERNAL);
+
+  observer()->OnDisplayModeChangeFailed(
+      {snapshot1.get()}, display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
+  EXPECT_TRUE(GetMessageContents().empty());
+
+  // Failure in both displays, user will see a notification even though one of
+  // them is the internal display.
+  auto snapshot2 =
+      CreateTestDisplaySnapshot(external_display_id, {300, 300},
+                                display::DISPLAY_CONNECTION_TYPE_UNKNOWN);
+  observer()->OnDisplayModeChangeFailed(
+      {snapshot1.get(), snapshot2.get()},
       display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
