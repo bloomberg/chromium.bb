@@ -35,7 +35,8 @@ void InfoBarManager::Observer::OnManagerShuttingDown(InfoBarManager* manager) {
 
 // InfoBarManager --------------------------------------------------------------
 
-InfoBar* InfoBarManager::AddInfoBar(std::unique_ptr<InfoBar> infobar) {
+InfoBar* InfoBarManager::AddInfoBar(std::unique_ptr<InfoBar> infobar,
+                                    bool replace_existing) {
   DCHECK(infobar);
   if (!infobars_enabled_)
     return nullptr;
@@ -44,7 +45,8 @@ InfoBar* InfoBarManager::AddInfoBar(std::unique_ptr<InfoBar> infobar) {
        ++i) {
     if ((*i)->delegate()->EqualsDelegate(infobar->delegate())) {
       DCHECK_NE((*i)->delegate(), infobar->delegate());
-      return nullptr;
+      return replace_existing ? ReplaceInfoBar(*i, std::move(infobar))
+                              : nullptr;
     }
   }
 
