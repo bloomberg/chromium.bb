@@ -89,8 +89,7 @@ size_t PaintWorklet::SelectNewGlobalScope() {
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const IntSize& container_size,
-                                         const CSSStyleValueVector* data,
-                                         const LayoutSize* logical_size) {
+                                         const CSSStyleValueVector* data) {
   if (!document_definition_map_.Contains(name))
     return nullptr;
 
@@ -103,7 +102,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
   PaintWorkletGlobalScopeProxy* proxy =
       PaintWorkletGlobalScopeProxy::From(FindAvailableGlobalScope());
   CSSPaintDefinition* paint_definition = proxy->FindDefinition(name);
-  return paint_definition->Paint(observer, container_size, data, logical_size);
+  return paint_definition->Paint(observer, container_size, data);
 }
 
 const char* PaintWorklet::SupplementName() {
