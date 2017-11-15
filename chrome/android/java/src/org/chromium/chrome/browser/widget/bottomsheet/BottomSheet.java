@@ -36,6 +36,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -485,7 +486,9 @@ public class BottomSheet
             float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
             startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
             endX = startX + allowedSwipeWidth;
-        } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_VELOCITY.equals(logicType)) {
+        } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_VELOCITY.equals(logicType)
+                || ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CHROME_HOME_SWIPE_VELOCITY_FEATURE)) {
             if (mVelocityLogicBlockSwipe) return false;
 
             float scrollDistanceDp = MathUtils.distance(initialEvent.getX(), initialEvent.getY(),
