@@ -1,0 +1,14 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+action_foreach("generate_spdy_session_fuzzer_includes") {
+  script = "//net/data/ssl/scripts/generate-spdy-session-fuzzer-includes.py"
+  sources = [
+    "spdy_pooling.pem",
+  ]
+  outputs = [
+    "$target_gen_dir/{{source_name_part}}.inc",
+  ]
+  args = [ "{{source}}" ] + rebase_path(outputs, root_build_dir)
+}
