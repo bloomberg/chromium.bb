@@ -587,10 +587,10 @@ public class DownloadNotificationServiceTest
     @Test
     @SmallTest
     @Feature({"Download"})
-    public void testServiceStopsIfCancelIsCalledWhenServiceIsStopped() {
+    public void testForegroundServiceStopsIfCancelIsCalledWhenServiceIsStopped() {
         // On versions of Android that use a foreground service, the service will currently die with
         // the notifications.
-        if (DownloadNotificationService.useForegroundService()) return;
+        if (!DownloadNotificationService.useForegroundService()) return;
 
         // Make sure that when the download fails, the service stops.
         setupService();
@@ -599,13 +599,37 @@ public class DownloadNotificationServiceTest
         ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
         service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
                 10L, 1000L, 10L, false, false, false, null);
-        Assert.assertFalse(service.hideSummaryNotificationIfNecessary(-1));
+        Assert.assertTrue(getService().isForegroundRunning());
         service.notifyDownloadFailed(id, "/path/to/test", null);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        Assert.assertFalse(getService().isForegroundRunning());
 
         // In the case of offline pages failures, cancel is called even after the download fails and
         // the service stops. Confirm that if this happens, the service will still stop.
         service.notifyDownloadCanceled(id);
-        Assert.assertTrue(service.hideSummaryNotificationIfNecessary(-1));
+        Assert.assertFalse(getService().isForegroundRunning());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testForegroundServiceStopsIfPauseIsCalledWhenServiceIsStopped() {
+        // This only applies to versions that uses the foreground service.
+        if (!DownloadNotificationService.useForegroundService()) return;
+
+        // Make sure that when the download fails, the service stops.
+        setupService();
+        startNotificationService();
+        DownloadNotificationService service = bindNotificationService();
+        ContentId id = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
+        service.notifyDownloadProgress(id, "/path/to/test", Progress.createIndeterminateProgress(),
+                10L, 1000L, 10L, false, false, false, null);
+        Assert.assertTrue(getService().isForegroundRunning());
+        service.notifyDownloadPaused(id, "/path/to/test", true, false, false, false, null);
+        Assert.assertFalse(getService().isForegroundRunning());
+
+        // In the case of offline pages pause, pause is called even after the download pauses and
+        // the service stops. Confirm that if this happens, the service will still stop.
+        service.notifyDownloadPaused(id, "/path/to/test", true, false, false, false, null);
+        Assert.assertFalse(getService().isForegroundRunning());
     }
 }
