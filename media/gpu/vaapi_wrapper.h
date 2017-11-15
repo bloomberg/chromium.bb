@@ -236,12 +236,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();
 
-  // Map VideoCodecProfile enum values to VaProfile values. This function
-  // includes a workaround for crbug.com/345569. If va_profile is h264 baseline
-  // and it is not supported, we try constrained baseline.
-  static VAProfile ProfileToVAProfile(VideoCodecProfile profile,
-                                      CodecMode mode);
-
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for
   // the lifetime of VaapiWrapper.
   base::Lock* va_lock_;
