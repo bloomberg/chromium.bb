@@ -550,18 +550,18 @@ void PeerConnectionTracker::TrackSetConfiguration(
 }
 
 void PeerConnectionTracker::TrackAddIceCandidate(
-      RTCPeerConnectionHandler* pc_handler,
-      const blink::WebRTCICECandidate& candidate,
-      Source source,
-      bool succeeded) {
+    RTCPeerConnectionHandler* pc_handler,
+    scoped_refptr<blink::WebRTCICECandidate> candidate,
+    Source source,
+    bool succeeded) {
   DCHECK(main_thread_.CalledOnValidThread());
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
   std::string value =
-      "sdpMid: " + candidate.SdpMid().Utf8() + ", " +
-      "sdpMLineIndex: " + base::UintToString(candidate.SdpMLineIndex()) + ", " +
-      "candidate: " + candidate.Candidate().Utf8();
+      "sdpMid: " + candidate->SdpMid().Utf8() + ", " +
+      "sdpMLineIndex: " + base::UintToString(candidate->SdpMLineIndex()) +
+      ", " + "candidate: " + candidate->Candidate().Utf8();
 
   // OnIceCandidate always succeeds as it's a callback from the browser.
   DCHECK(source != SOURCE_LOCAL || succeeded);

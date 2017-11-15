@@ -31,6 +31,7 @@
 #ifndef WebRTCPeerConnectionHandler_h
 #define WebRTCPeerConnectionHandler_h
 
+#include "WebRTCICECandidate.h"
 #include "WebRTCStats.h"
 #include "WebVector.h"
 
@@ -43,7 +44,6 @@ class WebRTCAnswerOptions;
 class WebRTCDTMFSenderHandler;
 class WebRTCDataChannelHandler;
 enum class WebRTCErrorType;
-class WebRTCICECandidate;
 class WebRTCOfferOptions;
 class WebRTCRtpSender;
 class WebRTCSessionDescription;
@@ -78,10 +78,12 @@ class WebRTCPeerConnectionHandler {
   virtual WebRTCErrorType SetConfiguration(const WebRTCConfiguration&) = 0;
 
   // DEPRECATED
-  virtual bool AddICECandidate(const WebRTCICECandidate&) { return false; }
+  virtual bool AddICECandidate(scoped_refptr<WebRTCICECandidate>) {
+    return false;
+  }
 
   virtual bool AddICECandidate(const WebRTCVoidRequest&,
-                               const WebRTCICECandidate&) {
+                               scoped_refptr<WebRTCICECandidate>) {
     return false;
   }
   virtual bool AddStream(const WebMediaStream&, const WebMediaConstraints&) = 0;

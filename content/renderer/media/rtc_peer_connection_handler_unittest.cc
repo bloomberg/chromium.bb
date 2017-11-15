@@ -166,7 +166,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
            const webrtc::PeerConnectionInterface::RTCConfiguration& config));
   MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const blink::WebRTCICECandidate& candidate,
+                    scoped_refptr<blink::WebRTCICECandidate> candidate,
                     Source source,
                     bool succeeded));
   MOCK_METHOD3(TrackAddStream,
@@ -725,14 +725,12 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
-  blink::WebRTCICECandidate candidate;
-  candidate.Initialize(kDummySdp, "sdpMid", 1);
+  scoped_refptr<blink::WebRTCICECandidate> candidate =
+      blink::WebRTCICECandidate::Create(kDummySdp, "sdpMid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
-              TrackAddIceCandidate(pc_handler_.get(),
-                                   testing::Ref(candidate),
-                                   PeerConnectionTracker::SOURCE_REMOTE,
-                                   true));
+              TrackAddIceCandidate(pc_handler_.get(), candidate,
+                                   PeerConnectionTracker::SOURCE_REMOTE, true));
   EXPECT_TRUE(pc_handler_->AddICECandidate(candidate));
   EXPECT_EQ(kDummySdp, mock_peer_connection_->ice_sdp());
   EXPECT_EQ(1, mock_peer_connection_->sdp_mline_index());

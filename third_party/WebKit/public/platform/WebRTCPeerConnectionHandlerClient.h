@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "WebCommon.h"
+#include "base/memory/scoped_refptr.h"
 
 namespace blink {
 
@@ -74,7 +75,7 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual ~WebRTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
-  virtual void DidGenerateICECandidate(const WebRTCICECandidate&) = 0;
+  virtual void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) = 0;
   virtual void DidChangeSignalingState(SignalingState) = 0;
   virtual void DidChangeICEGatheringState(ICEGatheringState) = 0;
   virtual void DidChangeICEConnectionState(ICEConnectionState) = 0;

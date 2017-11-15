@@ -34,50 +34,50 @@
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
+#include "base/memory/ref_counted.h"
 
 namespace blink {
 
-class WebString;
-class WebRTCICECandidatePrivate;
-
-class WebRTCICECandidate {
+class WebRTCICECandidate final : public base::RefCounted<WebRTCICECandidate> {
  public:
-  WebRTCICECandidate() {}
-  WebRTCICECandidate(const WebRTCICECandidate& other) { Assign(other); }
-  ~WebRTCICECandidate() { Reset(); }
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
-  WebRTCICECandidate& operator=(const WebRTCICECandidate& other) {
-    Assign(other);
-    return *this;
-  }
-
-  BLINK_PLATFORM_EXPORT void Assign(const WebRTCICECandidate&);
-
-  BLINK_PLATFORM_EXPORT void Initialize(const WebString& candidate,
-                                        const WebString& sdp_mid,
-                                        unsigned short sdp_m_line_index);
-  BLINK_PLATFORM_EXPORT void Reset();
-  bool IsNull() const { return private_.IsNull(); }
-
-  BLINK_PLATFORM_EXPORT WebString Candidate() const;
-  BLINK_PLATFORM_EXPORT WebString SdpMid() const;
-  BLINK_PLATFORM_EXPORT unsigned short SdpMLineIndex() const;
-  BLINK_PLATFORM_EXPORT void SetCandidate(WebString);
-  BLINK_PLATFORM_EXPORT void SetSdpMid(WebString);
-  BLINK_PLATFORM_EXPORT void SetSdpMLineIndex(unsigned short);
-
-#if INSIDE_BLINK
   // TODO(guidou): Support setting sdp_m_line_index to -1 to indicate the
   // absence of a value for sdp_m_line_index. crbug.com/614958
-  WebRTCICECandidate(WebString candidate,
-                     WebString sdp_mid,
-                     unsigned short sdp_m_line_index) {
-    this->Initialize(candidate, sdp_mid, sdp_m_line_index);
+  static scoped_refptr<WebRTCICECandidate> Create(
+      const WebString& candidate,
+      const WebString& sdp_mid,
+      unsigned short sdp_m_line_index) {
+    return base::AdoptRef(
+        new WebRTCICECandidate(candidate, sdp_mid, sdp_m_line_index));
   }
-#endif
+
+  const WebString& Candidate() const { return candidate_; }
+  const WebString& SdpMid() const { return sdp_mid_; }
+  unsigned short SdpMLineIndex() const { return sdp_m_line_index_; }
+  void SetCandidate(WebString candidate) { candidate_ = std::move(candidate); }
+  void SetSdpMid(WebString sdp_mid) { sdp_mid_ = std::move(sdp_mid); }
+  void SetSdpMLineIndex(unsigned short sdp_m_line_index) {
+    sdp_m_line_index_ = sdp_m_line_index;
+  }
 
  private:
-  WebPrivatePtr<WebRTCICECandidatePrivate> private_;
+  friend class base::RefCounted<WebRTCICECandidate>;
+
+  WebRTCICECandidate(const WebString& candidate,
+                     const WebString& sdp_mid,
+                     unsigned short sdp_m_line_index)
+      : candidate_(candidate),
+        sdp_mid_(sdp_mid),
+        sdp_m_line_index_(sdp_m_line_index) {}
+
+  ~WebRTCICECandidate() {}
+
+  WebString candidate_;
+  WebString sdp_mid_;
+  unsigned short sdp_m_line_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRTCICECandidate);
 };
 
 }  // namespace blink

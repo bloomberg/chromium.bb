@@ -50,7 +50,7 @@ class RTCIceCandidate final : public ScriptWrappable {
   static RTCIceCandidate* Create(ExecutionContext*,
                                  const RTCIceCandidateInit&,
                                  ExceptionState&);
-  static RTCIceCandidate* Create(WebRTCICECandidate);
+  static RTCIceCandidate* Create(scoped_refptr<WebRTCICECandidate>);
 
   String candidate() const;
   void setCandidate(String);
@@ -61,12 +61,12 @@ class RTCIceCandidate final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  WebRTCICECandidate WebCandidate() const;
+  scoped_refptr<WebRTCICECandidate> WebCandidate() const;
 
  private:
-  explicit RTCIceCandidate(WebRTCICECandidate);
+  explicit RTCIceCandidate(scoped_refptr<WebRTCICECandidate>);
 
-  WebRTCICECandidate web_candidate_;
+  scoped_refptr<WebRTCICECandidate> web_candidate_;
 };
 
 }  // namespace blink

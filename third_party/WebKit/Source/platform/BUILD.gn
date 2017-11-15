@@ -605,7 +605,6 @@ jumbo_component("platform") {
     "exported/WebPresentationController.cpp",
     "exported/WebPresentationReceiver.cpp",
     "exported/WebRTCAnswerOptions.cpp",
-    "exported/WebRTCICECandidate.cpp",
     "exported/WebRTCOfferOptions.cpp",
     "exported/WebRTCPeerConnectionHandlerClient.cpp",
     "exported/WebRTCRtpContributingSource.cpp",

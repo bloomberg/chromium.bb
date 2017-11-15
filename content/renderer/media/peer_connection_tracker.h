@@ -110,7 +110,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Sends an update when an Ice candidate is added.
   virtual void TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
-      const blink::WebRTCICECandidate& candidate,
+      scoped_refptr<blink::WebRTCICECandidate> candidate,
       Source source,
       bool succeeded);
 
