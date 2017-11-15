@@ -15,7 +15,7 @@
 namespace printing {
 
 bool Image::LoadMetafile(const Metafile& metafile) {
-  // The printing system uses single-page metafiles (page indexes are 1-based).
+  // Load only the first page of |metafile|, just like Windows.
   const unsigned int page_number = 1;
   gfx::Rect rect(metafile.GetPageBounds(page_number));
   if (rect.width() < 1 || rect.height() < 1)
@@ -41,9 +41,7 @@ bool Image::LoadMetafile(const Metafile& metafile) {
 
   struct Metafile::MacRenderPageParams params;
   params.shrink_to_fit = true;
-  metafile.RenderPage(page_number, bitmap_context,
-                      CGRectMake(0, 0, size_.width(), size_.height()), params);
-
+  metafile.RenderPage(page_number, bitmap_context, rect.ToCGRect(), params);
   return true;
 }
 
