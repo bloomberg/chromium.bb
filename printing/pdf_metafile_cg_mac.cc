@@ -102,7 +102,6 @@ bool PdfMetafileCg::InitFromData(const void* src_buffer,
   pdf_data_.reset(CFDataCreateMutable(kCFAllocatorDefault, src_buffer_size));
   CFDataAppendBytes(pdf_data_, static_cast<const UInt8*>(src_buffer),
                     src_buffer_size);
-
   return true;
 }
 
@@ -143,7 +142,7 @@ bool PdfMetafileCg::FinishDocument() {
   DCHECK(!page_is_open_);
 
 #ifndef NDEBUG
-  // Check that the context will be torn down properly; if it's not, pdf_data_
+  // Check that the context will be torn down properly; if it's not, |pdf_data|
   // will be incomplete and generate invalid PDF files/documents.
   if (context_.get()) {
     CFIndex extra_retain_count = CFGetRetainCount(context_.get()) - 1;
@@ -167,10 +166,10 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
     LOG(ERROR) << "Unable to create PDF document from data";
     return false;
   }
+
   CGPDFPageRef pdf_page = CGPDFDocumentGetPage(pdf_doc, page_number);
   CGRect source_rect = CGPDFPageGetBoxRect(pdf_page, kCGPDFCropBox);
   int pdf_src_rotation = CGPDFPageGetRotationAngle(pdf_page);
-  float scaling_factor = 1.0;
   const bool source_is_landscape =
         (source_rect.size.width > source_rect.size.height);
   const bool dest_is_landscape = (rect.size.width > rect.size.height);
@@ -182,6 +181,7 @@ bool PdfMetafileCg::RenderPage(unsigned int page_number,
       rotate ? source_rect.size.width : source_rect.size.height;
 
   // See if we need to scale the output.
+  float scaling_factor = 1.0;
   const bool scaling_needed =
       (params.shrink_to_fit && ((source_width > rect.size.width) ||
                                 (source_height > rect.size.height))) ||

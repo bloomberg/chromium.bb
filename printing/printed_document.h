@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "printing/native_drawing_context.h"
 #include "printing/print_settings.h"
 
@@ -47,7 +48,7 @@ class PRINTING_EXPORT PrintedDocument
                std::unique_ptr<MetafilePlayer> metafile,
 #if defined(OS_WIN)
                float shrink,
-#endif  // OS_WIN
+#endif
                const gfx::Size& paper_size,
                const gfx::Rect& page_rect);
 
@@ -58,7 +59,7 @@ class PRINTING_EXPORT PrintedDocument
 
   // Draws the page in the context.
   // Note: locks for a short amount of time in debug only.
-#if defined(OS_WIN) || defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(USE_AURA))
   void RenderPrintedPage(const PrintedPage& page,
                          printing::NativeDrawingContext context) const;
 #elif defined(OS_POSIX)
@@ -126,14 +127,14 @@ class PRINTING_EXPORT PrintedDocument
 
     // Number of expected pages to be rendered.
     // Warning: Lock must be held when accessing this member.
-    int expected_page_count_;
+    int expected_page_count_ = 0;
 
     // The total number of pages in the document.
-    int page_count_;
+    int page_count_ = 0;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     // Page number of the first page.
-    int first_page;
+    int first_page = INT_MAX;
 #endif
   };
 
