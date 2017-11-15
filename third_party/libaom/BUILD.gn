@@ -284,10 +284,8 @@ if (enable_av1_decoder) {
       ]
     }
   }
-}
 
-static_library("libaom") {
-  if (enable_av1_decoder) {
+  static_library("libaom") {
     if (!is_debug && is_win) {
       configs -= [ "//build/config/compiler:default_optimization" ]
       configs += [ "//build/config/compiler:optimize_max" ]
