@@ -35,8 +35,7 @@ class WebState;
 //                          const WebState*,
 //                          std::unique_ptr<DownloadTask> task) override {
 //     task->AddObserver(this);
-//     task->SetResponseWriter(GetURLFetcherFileWriter());
-//     task->Start();
+//     task->Start(GetURLFetcherFileWriter());
 //     _task = std::move(task);
 //   }
 //   void OnDownloadUpdated(DownloadTask* task) override {
@@ -71,8 +70,7 @@ class WebState;
 //       info.totalBytes,
 //       info.MIMEType);
 //   );
-//   task->SetResponseWriter(GetURLFetcherFileWriter(info.fileName));
-//   task->Start();
+//   task->Start(GetURLFetcherFileWriter(info.fileName));
 // }
 // - (void)applicationWillTerminate:(UIApplication *)application {
 //   for (DownloadTask* task : self.downloadTasks) {
