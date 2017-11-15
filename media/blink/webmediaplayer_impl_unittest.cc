@@ -1001,12 +1001,12 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
 
   SetEnded(true);
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->CurrentTime());
+  EXPECT_EQ(0, wmpi_->CurrentTime());
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
 
   // Pause should not pick up infinity for the current time.
   wmpi_->Pause();
-  EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->CurrentTime());
+  EXPECT_EQ(0, wmpi_->CurrentTime());
   EXPECT_EQ(base::TimeDelta(), GetCurrentTimeInternal());
 }
 
