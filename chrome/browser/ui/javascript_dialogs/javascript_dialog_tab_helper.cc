@@ -337,6 +337,11 @@ void JavaScriptDialogTabHelper::CloseDialog(DismissalCause cause,
   if (dialog_callback_)
     std::move(dialog_callback_).Run(success, user_input);
 
+  // If there's a pending dialog, then the tab is still in the "needs attention"
+  // state; clear it out.
+  if (pending_dialog_)
+    SetTabNeedsAttention(false);
+
   dialog_.reset();
   pending_dialog_.Reset();
   dialog_callback_.Reset();
