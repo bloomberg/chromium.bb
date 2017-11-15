@@ -167,7 +167,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/rendering/attrib-type-match.html',
         ['win', 'nvidia', 'opengl'], bug=782254)
     self.Fail('conformance2/textures/canvas_sub_rectangle/' +
-        'tex-2d-rg16f-rg-float.html',
+        'tex-2d-rg16f-rg-half_float.html',
+        ['win', 'nvidia', 'opengl'], bug=784849)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r8-red-unsigned_byte.html',
         ['win', 'nvidia', 'opengl'], bug=784849)
 
     # Win / AMD
