@@ -407,6 +407,37 @@ LazyProfileInfos::~LazyProfileInfos() {
   va_display_ = nullptr;
 }
 
+std::vector<LazyProfileInfos::ProfileInfo>
+LazyProfileInfos::GetSupportedProfileInfosForCodecModeInternal(
+    VaapiWrapper::CodecMode mode) {
+  std::vector<ProfileInfo> supported_profile_infos;
+  std::vector<VAProfile> va_profiles;
+  if (!GetSupportedVAProfiles(&va_profiles))
+    return supported_profile_infos;
+
+  std::vector<VAConfigAttrib> required_attribs = GetRequiredAttribs(mode);
+  VAEntrypoint entrypoint =
+      (mode == VaapiWrapper::kEncode ? VAEntrypointEncSlice : VAEntrypointVLD);
+
+  base::AutoLock auto_lock(*va_lock_);
+  for (const auto& va_profile : va_profiles) {
+    if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
+      continue;
+    if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
+      continue;
+    ProfileInfo profile_info;
+    if (!GetMaxResolution_Locked(va_profile, entrypoint, required_attribs,
+                                 &profile_info.max_resolution)) {
+      LOG(ERROR) << "GetMaxResolution failed for va_profile " << va_profile
+                 << " and entrypoint " << entrypoint;
+      continue;
+    }
+    profile_info.va_profile = va_profile;
+    supported_profile_infos.push_back(profile_info);
+  }
+  return supported_profile_infos;
+}
+
 bool LazyProfileInfos::GetSupportedVAProfiles(
     std::vector<VAProfile>* profiles) {
   base::AutoLock auto_lock(*va_lock_);
@@ -519,6 +550,39 @@ bool LazyProfileInfos::GetMaxResolution_Locked(
     return false;
   }
   return true;
+}
+
+// Maps VideoCodecProfile enum values to VaProfile values. This function
+// includes a workaround for https://crbug.com/345569: if va_profile is h264
+// baseline and it is not supported, we try constrained baseline.
+VAProfile ProfileToVAProfile(VideoCodecProfile profile,
+                             VaapiWrapper::CodecMode mode) {
+  VAProfile va_profile = VAProfileNone;
+  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
+    if (kProfileMap[i].profile == profile) {
+      va_profile = kProfileMap[i].va_profile;
+      break;
+    }
+  }
+  if (!LazyProfileInfos::Get()->IsProfileSupported(mode, va_profile) &&
+      va_profile == VAProfileH264Baseline) {
+    // https://crbug.com/345569: ProfileIDToVideoCodecProfile() currently strips
+    // the information whether the profile is constrained or not, so we have no
+    // way to know here. Try for baseline first, but if it is not supported,
+    // try constrained baseline and hope this is what it actually is
+    // (which in practice is true for a great majority of cases).
+    if (LazyProfileInfos::Get()->IsProfileSupported(
+            mode, VAProfileH264ConstrainedBaseline)) {
+      va_profile = VAProfileH264ConstrainedBaseline;
+      DVLOG(1) << "Fall back to constrained baseline profile.";
+    }
+  }
+  return va_profile;
+}
+
+void DestroyVAImage(VADisplay va_display, VAImage image) {
+  if (image.image_id != VA_INVALID_ID)
+    vaDestroyImage(va_display, image.image_id);
 }
 
 }  // namespace
@@ -638,63 +702,6 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
   VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
   if (va_res != VA_STATUS_SUCCESS)
     DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
-}
-
-// static
-VAProfile VaapiWrapper::ProfileToVAProfile(VideoCodecProfile profile,
-                                           CodecMode mode) {
-  VAProfile va_profile = VAProfileNone;
-  for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
-    if (kProfileMap[i].profile == profile) {
-      va_profile = kProfileMap[i].va_profile;
-      break;
-    }
-  }
-  if (!LazyProfileInfos::Get()->IsProfileSupported(mode, va_profile) &&
-      va_profile == VAProfileH264Baseline) {
-    // https://crbug.com/345569: ProfileIDToVideoCodecProfile() currently strips
-    // the information whether the profile is constrained or not, so we have no
-    // way to know here. Try for baseline first, but if it is not supported,
-    // try constrained baseline and hope this is what it actually is
-    // (which in practice is true for a great majority of cases).
-    if (LazyProfileInfos::Get()->IsProfileSupported(
-            mode, VAProfileH264ConstrainedBaseline)) {
-      va_profile = VAProfileH264ConstrainedBaseline;
-      DVLOG(1) << "Fall back to constrained baseline profile.";
-    }
-  }
-  return va_profile;
-}
-
-std::vector<LazyProfileInfos::ProfileInfo>
-LazyProfileInfos::GetSupportedProfileInfosForCodecModeInternal(
-    VaapiWrapper::CodecMode mode) {
-  std::vector<ProfileInfo> supported_profile_infos;
-  std::vector<VAProfile> va_profiles;
-  if (!GetSupportedVAProfiles(&va_profiles))
-    return supported_profile_infos;
-
-  std::vector<VAConfigAttrib> required_attribs = GetRequiredAttribs(mode);
-  VAEntrypoint entrypoint =
-      (mode == VaapiWrapper::kEncode ? VAEntrypointEncSlice : VAEntrypointVLD);
-
-  base::AutoLock auto_lock(*va_lock_);
-  for (const auto& va_profile : va_profiles) {
-    if (!IsEntrypointSupported_Locked(va_profile, entrypoint))
-      continue;
-    if (!AreAttribsSupported_Locked(va_profile, entrypoint, required_attribs))
-      continue;
-    ProfileInfo profile_info;
-    if (!GetMaxResolution_Locked(va_profile, entrypoint, required_attribs,
-                                 &profile_info.max_resolution)) {
-      LOG(ERROR) << "GetMaxResolution failed for va_profile " << va_profile
-                 << " and entrypoint " << entrypoint;
-      continue;
-    }
-    profile_info.va_profile = va_profile;
-    supported_profile_infos.push_back(profile_info);
-  }
-  return supported_profile_infos;
 }
 
 bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
@@ -1107,11 +1114,6 @@ void VaapiWrapper::ReturnVaImage(VAImage* image) {
 
   va_res = vaDestroyImage(va_display_, image->image_id);
   VA_LOG_ON_ERROR(va_res, "vaDestroyImage failed");
-}
-
-static void DestroyVAImage(VADisplay va_display, VAImage image) {
-  if (image.image_id != VA_INVALID_ID)
-    vaDestroyImage(va_display, image.image_id);
 }
 
 bool VaapiWrapper::UploadVideoFrameToSurface(
