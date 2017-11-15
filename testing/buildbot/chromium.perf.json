@@ -25522,26 +25522,6 @@
         }
       },
       {
-        "args": [],
-        "isolate_name": "gpu_perftests",
-        "name": "gpu_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "id": "build18-b1--device2",
-              "os": "Android",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [
           "jetstream",
           "-v",
