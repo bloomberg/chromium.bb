@@ -28,8 +28,6 @@ class TranslateEventProto;
 
 namespace translate {
 
-extern const base::Feature kTranslateLanguageByULP;
-
 class TranslateClient;
 class TranslateDriver;
 class TranslatePrefs;
@@ -148,14 +146,6 @@ class TranslateManager {
   void DoTranslatePage(const std::string& translate_script,
                        const std::string& source_lang,
                        const std::string& target_lang);
-
-  // Returns the language to translate to by looking at ULP. Return empty string
-  // If it cannot conclude from ULP.
-  static std::string GetTargetLanguageFromULP(const TranslatePrefs* prefs);
-
-  // Return true if the language is in the ULP with high confidence and high
-  // probability.
-  bool LanguageInULP(const std::string& language) const;
 
   // Notifies all registered callbacks of translate errors.
   void NotifyTranslateError(TranslateErrors::Type error_type);

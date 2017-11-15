@@ -19,6 +19,10 @@ namespace language {
 class LanguageModel;
 }  // namespace language
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 namespace ios_web_view {
 
 class WebViewBrowserState;
@@ -38,6 +42,8 @@ class WebViewLanguageModelFactory : public BrowserStateKeyedServiceFactory {
   // BrowserStateKeyedServiceFactory implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
+  void RegisterBrowserStatePrefs(
+      user_prefs::PrefRegistrySyncable* const registry) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewLanguageModelFactory);
 };

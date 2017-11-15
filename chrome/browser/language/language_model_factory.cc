@@ -14,6 +14,8 @@
 #include "components/language/core/browser/baseline_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 
 // static
 LanguageModelFactory* LanguageModelFactory::GetInstance() {
@@ -53,4 +55,13 @@ content::BrowserContext* LanguageModelFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   // Use the original profile's language model even in Incognito mode.
   return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+void LanguageModelFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* const registry) {
+  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+    registry->RegisterDictionaryPref(
+        language::prefs::kUserLanguageProfile,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  }
 }

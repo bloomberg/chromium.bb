@@ -889,9 +889,6 @@ extern const char kTraceUploadUrlChoiceTesting[];
 extern const char kTranslate2016q2UiName[];
 extern const char kTranslate2016q2UiDescription[];
 
-extern const char kTranslateLanguageByUlpName[];
-extern const char kTranslateLanguageByUlpDescription[];
-
 extern const char kTranslateRankerEnforcementName[];
 extern const char kTranslateRankerEnforcementDescription[];
 

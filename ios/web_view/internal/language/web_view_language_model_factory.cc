@@ -14,6 +14,7 @@
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -54,6 +55,15 @@ WebViewLanguageModelFactory::BuildServiceInstanceFor(
       web_view_browser_state->GetPrefs(),
       ApplicationContext::GetInstance()->GetApplicationLocale(),
       prefs::kAcceptLanguages);
+}
+
+void WebViewLanguageModelFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* const registry) {
+  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+    registry->RegisterDictionaryPref(
+        language::prefs::kUserLanguageProfile,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  }
 }
 
 }  // namespace ios_web_view

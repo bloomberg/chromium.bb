@@ -12,6 +12,8 @@
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -57,4 +59,13 @@ web::BrowserState* LanguageModelFactory::GetBrowserStateToUse(
     web::BrowserState* const state) const {
   // Use the original profile's language model even in Incognito mode.
   return GetBrowserStateRedirectedInIncognito(state);
+}
+
+void LanguageModelFactory::RegisterBrowserStatePrefs(
+    user_prefs::PrefRegistrySyncable* const registry) {
+  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+    registry->RegisterDictionaryPref(
+        language::prefs::kUserLanguageProfile,
+        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  }
 }

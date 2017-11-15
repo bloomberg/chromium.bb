@@ -19,7 +19,6 @@
 #include "url/gurl.h"
 
 class PrefService;
-class Profile;
 
 namespace base {
 class DictionaryValue;
@@ -219,17 +218,6 @@ class TranslatePrefs {
                             const std::string& language);
   bool ShouldAutoTranslate(const std::string& original_language,
                            std::string* target_language);
-
-  // Language and probability pair.
-  typedef std::pair<std::string, double> LanguageAndProbability;
-  typedef std::vector<LanguageAndProbability> LanguageAndProbabilityList;
-
-  // Output the User Profile Profile's (ULP) "reading list" into |list| as
-  // ordered list of <string, double> pair, sorted by the double in decreasing
-  // order. Return the confidence of the list or 0.0 if there no ULP "reading
-  // list".
-  double GetReadingFromUserLanguageProfile(
-      LanguageAndProbabilityList* list) const;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static void MigrateUserPrefs(PrefService* user_prefs,

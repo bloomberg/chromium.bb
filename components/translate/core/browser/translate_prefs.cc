@@ -24,7 +24,6 @@
 
 namespace translate {
 
-const char TranslatePrefs::kPrefLanguageProfile[] = "language_profile";
 const char TranslatePrefs::kPrefTranslateSiteBlacklist[] =
     "translate_site_blacklist";
 const char TranslatePrefs::kPrefTranslateWhitelists[] = "translate_whitelists";
@@ -51,13 +50,6 @@ const char TranslatePrefs::kPrefTranslateAutoAlwaysCount[] =
 const char TranslatePrefs::kPrefTranslateAutoNeverCount[] =
     "translate_auto_never_count";
 #endif
-
-// For reading ULP prefs.
-const char kConfidence[] = "confidence";
-const char kLanguage[] = "language";
-const char kPreference[] = "preference";
-const char kProbability[] = "probability";
-const char kReading[] = "reading";
 
 // The below properties used to be used but now are deprecated. Don't use them
 // since an old profile might have some values there.
@@ -679,9 +671,6 @@ void TranslatePrefs::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(
       kPrefTranslateTooOftenDeniedForLanguage,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      kPrefLanguageProfile,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
 #if defined(OS_ANDROID)
   registry->RegisterDictionaryPref(
       kPrefTranslateAutoAlwaysCount,
@@ -786,59 +775,6 @@ bool TranslatePrefs::IsListEmpty(const char* pref_id) const {
 bool TranslatePrefs::IsDictionaryEmpty(const char* pref_id) const {
   const base::DictionaryValue* dict = prefs_->GetDictionary(pref_id);
   return (dict == nullptr || dict->empty());
-}
-
-double TranslatePrefs::GetReadingFromUserLanguageProfile(
-    LanguageAndProbabilityList* out_value) const {
-  const base::DictionaryValue* dict =
-      prefs_->GetDictionary(kPrefLanguageProfile);
-  const base::DictionaryValue* entries = nullptr;
-
-  // Return 0.0 if no ULP prefs.
-  if (!dict)
-    return 0.0;
-
-  // Return 0.0 if no such list.
-  if (!dict->GetDictionary(kReading, &entries))
-    return 0.0;
-
-  double confidence = 0.0;
-  // Return 0.0 if cannot find confidence.
-  if (!entries->GetDouble(kConfidence, &confidence))
-    return 0.0;
-
-  const base::ListValue* preference = nullptr;
-  // Return the confidence if there are no item on the 'preference' field.
-  if (!entries->GetList(kPreference, &preference))
-    return confidence;
-
-  // Use a map to fold the probability of all the same normalized language
-  // code together.
-  std::map<std::string, double> probability_map;
-  // Iterate through the preference.
-  for (const auto& entry : *preference) {
-    const base::DictionaryValue* item = nullptr;
-    std::string language;
-    double probability = 0.0;
-    if (entry.GetAsDictionary(&item) && item->GetString(kLanguage, &language) &&
-        item->GetDouble(kProbability, &probability)) {
-      // Normalize the the language code known and supported by
-      // Translate.
-      translate::ToTranslateLanguageSynonym(&language);
-      // Discard if the normalized version is unsupported.
-      if (TranslateDownloadManager::IsSupportedLanguage(language)) {
-        probability_map[language] += probability;
-      }
-    }
-  }
-  for (const auto& it : probability_map)
-    out_value->push_back(it);
-  std::sort(out_value->begin(), out_value->end(),
-            [](const LanguageAndProbability& left,
-               const LanguageAndProbability& right) {
-              return left.second > right.second;
-            });
-  return confidence;
 }
 
 }  // namespace translate
