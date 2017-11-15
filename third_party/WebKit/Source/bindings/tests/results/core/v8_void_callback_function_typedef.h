@@ -12,26 +12,28 @@
 #ifndef V8VoidCallbackFunctionTypedef_h
 #define V8VoidCallbackFunctionTypedef_h
 
-#include "bindings/core/v8/NativeValueTraits.h"
 #include "core/CoreExport.h"
 #include "platform/bindings/CallbackFunctionBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
+class ScriptWrappable;
+
 class CORE_EXPORT V8VoidCallbackFunctionTypedef final : public CallbackFunctionBase {
  public:
-  static V8VoidCallbackFunctionTypedef* Create(ScriptState*, v8::Local<v8::Value> callback);
+  static V8VoidCallbackFunctionTypedef* Create(v8::Local<v8::Function> callback_function) {
+    return new V8VoidCallbackFunctionTypedef(callback_function);
+  }
 
-  ~V8VoidCallbackFunctionTypedef() = default;
+  ~V8VoidCallbackFunctionTypedef() override = default;
 
-  bool call(ScriptWrappable* scriptWrappable, const String& arg);
+  // Performs "invoke".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
+  bool call(ScriptWrappable* callback_this_value, const String& arg);
 
  private:
-  V8VoidCallbackFunctionTypedef(ScriptState*, v8::Local<v8::Function>);
+  explicit V8VoidCallbackFunctionTypedef(v8::Local<v8::Function> callback_function)
+      : CallbackFunctionBase(callback_function) {}
 };
 
 }  // namespace blink

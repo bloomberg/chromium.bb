@@ -12,76 +12,97 @@
 #include "v8_void_callback_function_enum_arg.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/ExecutionContext.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Assertions.h"
 
 namespace blink {
 
-// static
-V8VoidCallbackFunctionEnumArg* V8VoidCallbackFunctionEnumArg::Create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
-  if (IsUndefinedOrNull(callback))
-    return nullptr;
-  return new V8VoidCallbackFunctionEnumArg(scriptState, v8::Local<v8::Function>::Cast(callback));
-}
+bool V8VoidCallbackFunctionEnumArg::call(ScriptWrappable* callback_this_value, const String& arg) {
+  // This function implements "invoke" steps in
+  // "3.10. Invoking callback functions".
+  // https://heycam.github.io/webidl/#es-invoking-callback-functions
 
-V8VoidCallbackFunctionEnumArg::V8VoidCallbackFunctionEnumArg(ScriptState* scriptState, v8::Local<v8::Function> callback)
-    : CallbackFunctionBase(scriptState, callback) {}
-
-bool V8VoidCallbackFunctionEnumArg::call(ScriptWrappable* scriptWrappable, const String& arg) {
-  if (callback_.IsEmpty())
-    return false;
-
-  if (!script_state_->ContextIsValid())
-    return false;
-
-  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
-  // crbug.com/653769
-  DummyExceptionStateForTesting exceptionState;
-
-  const char* valid_arg_values[] = {
-      "",
-      "EnumValue1",
-      "EnumValue2",
-      "EnumValue3",
-  };
-  if (!IsValidEnum(arg, valid_arg_values, WTF_ARRAY_LENGTH(valid_arg_values), "TestEnum", exceptionState)) {
-    NOTREACHED();
+  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState())) {
     return false;
   }
 
-  ExecutionContext* context = ExecutionContext::From(script_state_.get());
-  DCHECK(context);
-  if (context->IsContextPaused() || context->IsContextDestroyed())
+  // step 4. If ! IsCallable(F) is false:
+  //
+  // As Blink no longer supports [TreatNonObjectAsNull], there must be no such a
+  // case.
+#if DCHECK_IS_ON()
+  {
+    v8::HandleScope handle_scope(GetIsolate());
+    DCHECK(CallbackFunction()->IsFunction());
+  }
+#endif
+
+  // step 8. Prepare to run script with relevant settings.
+  ScriptState::Scope callback_relevant_context_scope(
+      CallbackRelevantScriptState());
+  // step 9. Prepare to run a callback with stored settings.
+  if (IncumbentScriptState()->GetContext().IsEmpty()) {
     return false;
+  }
+  v8::Context::BackupIncumbentScope backup_incumbent_scope(
+      IncumbentScriptState()->GetContext());
 
-  ScriptState::Scope scope(script_state_.get());
-  v8::Isolate* isolate = script_state_->GetIsolate();
+  v8::TryCatch try_catch(GetIsolate());
+  try_catch.SetVerbose(true);
 
-  v8::Local<v8::Value> thisValue = ToV8(
-      scriptWrappable,
-      script_state_->GetContext()->Global(),
-      isolate);
+  v8::Local<v8::Value> this_arg = ToV8(callback_this_value,
+                                       CallbackRelevantScriptState());
 
-  v8::Local<v8::Value> v8_arg = V8String(script_state_->GetIsolate(), arg);
+  // Enum values provided by Blink must be valid, otherwise typo.
+#if DCHECK_IS_ON()
+  {
+    const char* valid_arg_values[] = {
+        "",
+        "EnumValue1",
+        "EnumValue2",
+        "EnumValue3",
+    };
+    ExceptionState exception_state(GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   "VoidCallbackFunctionEnumArg",
+                                   "invoke");
+    if (!IsValidEnum(arg, valid_arg_values, WTF_ARRAY_LENGTH(valid_arg_values), "TestEnum", exception_state)) {
+      NOTREACHED();
+      return false;
+    }
+  }
+#endif
+
+  // step 10. Let esArgs be the result of converting args to an ECMAScript
+  //   arguments list. If this throws an exception, set completion to the
+  //   completion value representing the thrown exception and jump to the step
+  //   labeled return.
+  v8::Local<v8::Object> argument_creation_context =
+      CallbackRelevantScriptState()->GetContext()->Global();
+  ALLOW_UNUSED_LOCAL(argument_creation_context);
+  v8::Local<v8::Value> v8_arg = V8String(GetIsolate(), arg);
   v8::Local<v8::Value> argv[] = { v8_arg };
-  v8::TryCatch exceptionCatcher(isolate);
-  exceptionCatcher.SetVerbose(true);
 
-  v8::Local<v8::Value> v8ReturnValue;
-  if (!V8ScriptRunner::CallFunction(callback_.NewLocal(isolate),
-                                    context,
-                                    thisValue,
-                                    1,
-                                    argv,
-                                    isolate).ToLocal(&v8ReturnValue)) {
+  // step 11. Let callResult be Call(X, thisArg, esArgs).
+  v8::Local<v8::Value> call_result;
+  if (!V8ScriptRunner::CallFunction(
+          CallbackFunction(),
+          ExecutionContext::From(CallbackRelevantScriptState()),
+          this_arg,
+          1,
+          argv,
+          GetIsolate()).ToLocal(&call_result)) {
+    // step 12. If callResult is an abrupt completion, set completion to
+    //   callResult and jump to the step labeled return.
     return false;
   }
 
+  // step 13. Set completion to the result of converting callResult.[[Value]] to
+  //   an IDL value of the same type as the operation's return type.
   return true;
 }
 

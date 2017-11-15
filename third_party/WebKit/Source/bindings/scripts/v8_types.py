@@ -661,8 +661,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     elif idl_type.use_output_parameter_for_result:
         cpp_expression_format = 'V8{idl_type}::ToImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif idl_type.is_callback_function:
-        cpp_expression_format = (
-            'V8{idl_type}::Create(ScriptState::Current({isolate}), {v8_value})')
+        cpp_expression_format = 'V8{idl_type}::Create({v8_value}.As<v8::Function>())'
     elif idl_type.v8_conversion_needs_exception_state:
         # Effectively, this if branch means everything with v8_conversion_needs_exception_state == True
         # except for unions and dictionary interfaces.

@@ -3,20 +3,25 @@
 // found in the LICENSE file.
 
 #include "platform/bindings/CallbackFunctionBase.h"
-#include "platform/bindings/ScriptState.h"
 
 namespace blink {
 
-CallbackFunctionBase::CallbackFunctionBase(ScriptState* scriptState,
-                                           v8::Local<v8::Function> callback)
-    : script_state_(scriptState),
-      callback_(scriptState->GetIsolate(), this, callback) {
-  DCHECK(!callback_.IsEmpty());
+CallbackFunctionBase::CallbackFunctionBase(
+    v8::Local<v8::Function> callback_function)
+    : callback_function_(this) {
+  DCHECK(!callback_function.IsEmpty());
+
+  callback_relevant_script_state_ =
+      ScriptState::From(callback_function->CreationContext());
+  v8::Isolate* isolate = callback_relevant_script_state_->GetIsolate();
+
+  callback_function_.Set(isolate, callback_function);
+  incumbent_script_state_ = ScriptState::From(isolate->GetIncumbentContext());
 }
 
 void CallbackFunctionBase::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
-  visitor->TraceWrappers(callback_);
+  visitor->TraceWrappers(callback_function_);
 }
 
 }  // namespace blink
