@@ -46,9 +46,6 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 
-// TODO(ellyjones): Remove this when the deployment target is 10.9 or later.
-extern NSString* const NSAccessibilityPriorityKey;
-
 using content::WebContents;
 
 // Focus-handling between |field_| and model() is a bit subtle.
