@@ -99,24 +99,7 @@ void OverviewWindowDragController::CompleteDrag(
       IndicatorType::NONE, gfx::Point());
 
   if (!did_move_) {
-    // If no drag was initiated (e.g., a click/tap on the overview window),
-    // activate the window. If the split view is active and has a left window,
-    // snap the current window to right. If the split view is active and has a
-    // right window, snap the current window to left. If split view is active
-    // and the selected window cannot be snapped, exit splitview and activate
-    // the selected window, and also exit the overview.
-    SplitViewController::State split_state = split_view_controller_->state();
-    if (split_state == SplitViewController::NO_SNAP) {
-      window_selector_->SelectWindow(item_);
-    } else if (split_view_controller_->CanSnap(item_->GetWindow())) {
-      SnapWindow(split_state == SplitViewController::LEFT_SNAPPED
-                     ? SplitViewController::RIGHT
-                     : SplitViewController::LEFT);
-    } else {
-      split_view_controller_->EndSplitView();
-      window_selector_->SelectWindow(item_);
-      split_view_controller_->ShowAppCannotSnapToast();
-    }
+    ActivateDraggedWindow();
   } else {
     did_move_ = false;
     // If the window was dragged around but should not be snapped, move it back
@@ -126,6 +109,34 @@ void OverviewWindowDragController::CompleteDrag(
     else
       SnapWindow(snap_position_);
   }
+}
+
+void OverviewWindowDragController::ActivateDraggedWindow() {
+  // If no drag was initiated (e.g., a click/tap on the overview window),
+  // activate the window. If the split view is active and has a left window,
+  // snap the current window to right. If the split view is active and has a
+  // right window, snap the current window to left. If split view is active
+  // and the selected window cannot be snapped, exit splitview and activate
+  // the selected window, and also exit the overview.
+  SplitViewController::State split_state = split_view_controller_->state();
+  if (split_state == SplitViewController::NO_SNAP) {
+    window_selector_->SelectWindow(item_);
+  } else if (split_view_controller_->CanSnap(item_->GetWindow())) {
+    SnapWindow(split_state == SplitViewController::LEFT_SNAPPED
+                   ? SplitViewController::RIGHT
+                   : SplitViewController::LEFT);
+  } else {
+    split_view_controller_->EndSplitView();
+    window_selector_->SelectWindow(item_);
+    split_view_controller_->ShowAppCannotSnapToast();
+  }
+}
+
+void OverviewWindowDragController::ResetGesture() {
+  phantom_window_controller_.reset();
+  window_selector_->PositionWindows(true /* animate */);
+  window_selector_->SetSplitViewOverviewOverlayIndicatorType(
+      IndicatorType::NONE, gfx::Point());
 }
 
 void OverviewWindowDragController::ResetWindowSelector() {

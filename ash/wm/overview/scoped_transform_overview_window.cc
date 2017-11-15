@@ -481,8 +481,15 @@ void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
       case ui::ET_GESTURE_SCROLL_UPDATE:
         selector_item_->HandleDragEvent(location);
         break;
-      case ui::ET_GESTURE_END:
+      case ui::ET_SCROLL_FLING_START:
+      case ui::ET_GESTURE_SCROLL_END:
         selector_item_->HandleReleaseEvent(location);
+        break;
+      case ui::ET_GESTURE_TAP:
+        selector_item_->ActivateDraggedWindow();
+        break;
+      case ui::ET_GESTURE_END:
+        selector_item_->ResetDraggedWindowGesture();
         break;
       default:
         break;
