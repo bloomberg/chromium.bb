@@ -26,6 +26,11 @@
 // Run lightfield encoder to encode whole lightfield:
 // examples/lightfield_encoder 1024 1024 vase10x10.yuv vase10x10.webm 10 10 5
 
+// Note: In bitstream.c and encoder.c, define EXT_TILE_DEBUG as 1 will print
+// out the uncompressed header and the frame contexts, which can be used to
+// test the bit exactness of the headers and the frame contexts for large scale
+// tile coded frames.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -152,12 +157,10 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
 
   if (aom_codec_enc_init(&codec, encoder->codec_interface(), cfg, 0))
     die_codec(&codec, "Failed to initialize encoder");
-  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 1))
-    die_codec(&codec, "Failed to set frame parallel decoding");
   if (aom_codec_control(&codec, AOME_SET_ENABLEAUTOALTREF, 0))
     die_codec(&codec, "Failed to turn off auto altref");
-  if (aom_codec_control(&codec, AV1E_SET_SINGLE_TILE_DECODING, 1))
-    die_codec(&codec, "Failed to turn on single tile decoding");
+  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 0))
+    die_codec(&codec, "Failed to set frame parallel decoding");
 
   image_size_bytes = aom_img_size_bytes(raw);
 
@@ -185,18 +188,25 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
       fseek(infile, (block_ref_u + block_ref_v * lf_width) * image_size_bytes,
             SEEK_SET);
       aom_img_read(raw, infile);
-      if (aom_codec_control(&codec, AOME_USE_REFERENCE,
-                            AOM_LAST_FLAG | AOM_GOLD_FLAG | AOM_ALT_FLAG))
-        die_codec(&codec, "Failed to set reference flags");
+
       // Reference frames can be encoded encoded without tiles.
       ++frame_count;
-      get_frame_stats(&codec, raw, frame_count, 1, AOM_EFLAG_NO_UPD_ENTROPY,
+      get_frame_stats(&codec, raw, frame_count, 1,
+                      AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
+                          AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                          AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
+                          AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                          AOM_EFLAG_NO_UPD_ARF,
                       deadline, &stats);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
     }
   }
+
+  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 1))
+    die_codec(&codec, "Failed to set frame parallel decoding");
+
   for (bv = 0; bv < v_blocks; ++bv) {
     for (bu = 0; bu < u_blocks; ++bu) {
       const int block_u_min = bu * lf_blocksize;
@@ -208,27 +218,6 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
       block_v_end = block_v_end < lf_height ? block_v_end : lf_height;
       for (v = block_v_min; v < block_v_end; ++v) {
         for (u = block_u_min; u < block_u_end; ++u) {
-          // This was a work around for a bug in libvpx.  I'm not sure if this
-          // same bug exists in current version of av1.  Need to call this,
-          // otherwise the default is to not use any reference frames.  Then
-          // if you don't have at least one AOM_EFLAG_NO_REF_* flag, all frames
-          // will be intra encoded.  I'm not sure why the default is not to use
-          // any reference frames.  It looks like there is something about the
-          // way I encode the reference frames above that sets that as
-          // default...
-          if (aom_codec_control(&codec, AOME_USE_REFERENCE,
-                                AOM_LAST_FLAG | AOM_GOLD_FLAG | AOM_ALT_FLAG))
-            die_codec(&codec, "Failed to set reference flags");
-
-          // Set tile size to 64 pixels. The tile_columns and
-          // tile_rows in the tile coding are overloaded to represent
-          // tile_width and tile_height, that range from 1 to 64, in the unit
-          // of 64 pixels.
-          if (aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 1))
-            die_codec(&codec, "Failed to set tile width");
-          if (aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 1))
-            die_codec(&codec, "Failed to set tile height");
-
           av1_ref_frame_t ref;
           ref.idx = 0;
           ref.img = reference_images[bv * u_blocks + bu];
@@ -238,16 +227,20 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
           fseek(infile, (u + v * lf_width) * image_size_bytes, SEEK_SET);
           aom_img_read(raw, infile);
           ++frame_count;
+
           get_frame_stats(&codec, raw, frame_count, 1,
-                          AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                              AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY |
-                              AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF,
+                          AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
+                              AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                              AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
+                              AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                              AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
                           deadline, &stats);
         }
       }
     }
   }
   // Flush encoder.
+  // No ARF, this should not be needed.
   while (get_frame_stats(&codec, NULL, frame_count, 1, 0, deadline, &stats)) {
   }
 
@@ -258,7 +251,7 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
 }
 
 static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
-                  const AvxInterface *encoder, const aom_codec_enc_cfg_t *cfg,
+                  const AvxInterface *encoder, aom_codec_enc_cfg_t *cfg,
                   int lf_width, int lf_height, int lf_blocksize) {
   AvxVideoInfo info = { encoder->fourcc,
                         cfg->g_w,
@@ -276,12 +269,10 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
 
   if (aom_codec_enc_init(&codec, encoder->codec_interface(), cfg, 0))
     die_codec(&codec, "Failed to initialize encoder");
-  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 1))
-    die_codec(&codec, "Failed to set frame parallel decoding");
   if (aom_codec_control(&codec, AOME_SET_ENABLEAUTOALTREF, 0))
     die_codec(&codec, "Failed to turn off auto altref");
-  if (aom_codec_control(&codec, AV1E_SET_SINGLE_TILE_DECODING, 1))
-    die_codec(&codec, "Failed to turn on single tile decoding");
+  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 0))
+    die_codec(&codec, "Failed to set frame parallel decoding");
 
   image_size_bytes = aom_img_size_bytes(raw);
   u_blocks = (lf_width + lf_blocksize - 1) / lf_blocksize;
@@ -309,20 +300,43 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
       fseek(infile, (block_ref_u + block_ref_v * lf_width) * image_size_bytes,
             SEEK_SET);
       aom_img_read(raw, infile);
-      if (aom_codec_control(&codec, AOME_USE_REFERENCE,
-                            AOM_LAST_FLAG | AOM_GOLD_FLAG | AOM_ALT_FLAG))
-        die_codec(&codec, "Failed to set reference flags");
       // Reference frames may be encoded without tiles.
       ++frame_count;
       printf("Encoding reference image %d of %d\n", bv * u_blocks + bu,
              u_blocks * v_blocks);
-      encode_frame(&codec, raw, frame_count, 1, AOM_EFLAG_NO_UPD_ENTROPY,
+      encode_frame(&codec, raw, frame_count, 1,
+                   AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
+                       AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                       AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
+                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
                    deadline, writer);
       ref_frame.idx = 0;
       aom_codec_control(&codec, AV1_GET_REFERENCE, &ref_frame);
       aom_img_copy(&ref_frame.img, &reference_images[frame_count - 1]);
     }
   }
+
+  cfg->large_scale_tile = 1;
+  // Fixed q encoding for camera frames.
+  cfg->rc_end_usage = AOM_Q;
+  if (aom_codec_enc_config_set(&codec, cfg))
+    die_codec(&codec, "Failed to configure encoder");
+
+  // The fixed q value used in encoding.
+  if (aom_codec_control(&codec, AOME_SET_CQ_LEVEL, 36))
+    die_codec(&codec, "Failed to set cq level");
+  if (aom_codec_control(&codec, AV1E_SET_FRAME_PARALLEL_DECODING, 1))
+    die_codec(&codec, "Failed to set frame parallel decoding");
+  if (aom_codec_control(&codec, AV1E_SET_SINGLE_TILE_DECODING, 1))
+    die_codec(&codec, "Failed to turn on single tile decoding");
+  // Set tile size to 64 pixels. The tile_columns and
+  // tile_rows in the tile coding are overloaded to represent tile_width
+  // and tile_height, that range from 1 to 64, in the unit of 64 pixels.
+  if (aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 1))
+    die_codec(&codec, "Failed to set tile width");
+  if (aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 1))
+    die_codec(&codec, "Failed to set tile height");
 
   for (bv = 0; bv < v_blocks; ++bv) {
     for (bu = 0; bu < u_blocks; ++bu) {
@@ -335,26 +349,6 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
       block_v_end = block_v_end < lf_height ? block_v_end : lf_height;
       for (v = block_v_min; v < block_v_end; ++v) {
         for (u = block_u_min; u < block_u_end; ++u) {
-          // This was a work around for a bug in libvpx.  I'm not sure if this
-          // same bug exists in current version of av1.  Need to call this,
-          // otherwise the default is to not use any reference frames.  Then
-          // if you don't have at least one AOM_EFLAG_NO_REF_* flag, all frames
-          // will be intra encoded.  I'm not sure why the default is not to use
-          // any reference frames.  It looks like there is something about the
-          // way I encode the reference frames above that sets that as
-          // default...
-          if (aom_codec_control(&codec, AOME_USE_REFERENCE,
-                                AOM_LAST_FLAG | AOM_GOLD_FLAG | AOM_ALT_FLAG))
-            die_codec(&codec, "Failed to set reference flags");
-
-          // Set tile size to 64 pixels. The tile_columns and
-          // tile_rows in the tile coding are overloaded to represent tile_width
-          // and tile_height, that range from 1 to 64, in the unit of 64 pixels.
-          if (aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 1))
-            die_codec(&codec, "Failed to set tile width");
-          if (aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 1))
-            die_codec(&codec, "Failed to set tile height");
-
           av1_ref_frame_t ref;
           ref.idx = 0;
           ref.img = reference_images[bv * u_blocks + bu];
@@ -367,9 +361,11 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
           printf("Encoding image %d of %d\n",
                  frame_count - (u_blocks * v_blocks), lf_width * lf_height);
           encode_frame(&codec, raw, frame_count, 1,
-                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                           AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY |
-                           AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF,
+                       AOM_EFLAG_NO_REF_LAST2 | AOM_EFLAG_NO_REF_LAST3 |
+                           AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                           AOM_EFLAG_NO_REF_BWD | AOM_EFLAG_NO_REF_ARF2 |
+                           AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                           AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY,
                        deadline, writer);
         }
       }
@@ -377,6 +373,7 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   }
 
   // Flush encoder.
+  // No ARF, this should not be needed.
   while (encode_frame(&codec, NULL, -1, 1, 0, deadline, writer)) {
   }
 
@@ -448,13 +445,10 @@ int main(int argc, char **argv) {
   cfg.g_timebase.num = 1;
   cfg.g_timebase.den = fps;
   cfg.rc_target_bitrate = bitrate;
-  cfg.g_error_resilient = AOM_ERROR_RESILIENT_DEFAULT;
-  // Need to set lag_in_frames to 1 or 0.  Otherwise the frame flags get
-  // overridden after the first frame in encode_frame_to_data_rate() (see where
-  // get_frame_flags() is called).
-  cfg.g_lag_in_frames = 0;
+  cfg.g_error_resilient = 0;  // This is required.
+  cfg.g_lag_in_frames = 0;    // need to set this since default is 19.
   cfg.kf_mode = AOM_KF_DISABLED;
-  cfg.large_scale_tile = 1;
+  cfg.large_scale_tile = 0;  // Only set it to 1 for camera frame encoding.
 
   if (!(infile = fopen(infile_arg, "rb")))
     die("Failed to open %s for reading", infile_arg);

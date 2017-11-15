@@ -6664,6 +6664,21 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 #endif  // CONFIG_EXT_TILE
 
+#if CONFIG_EXT_TILE
+#define EXT_TILE_DEBUG 0
+#if EXT_TILE_DEBUG
+  if (cm->large_scale_tile && oxcf->pass == 2) {
+    char fn[20] = "./fc";
+    fn[4] = cm->current_video_frame / 100 + '0';
+    fn[5] = (cm->current_video_frame % 100) / 10 + '0';
+    fn[6] = (cm->current_video_frame % 10) + '0';
+    fn[7] = '\0';
+    av1_print_frame_contexts(cm->fc, fn);
+  }
+#endif  // EXT_TILE_DEBUG
+#undef EXT_TILE_DEBUG
+#endif  // CONFIG_EXT_TILE
+
   // No frame encoded, or frame was dropped, release scaled references.
   if ((*size == 0) && (frame_is_intra_only(cm) == 0)) {
     release_scaled_references(cpi);
