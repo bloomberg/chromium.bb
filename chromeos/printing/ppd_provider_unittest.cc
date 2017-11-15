@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <map>
 #include <memory>
 #include <utility>
@@ -623,10 +624,16 @@ TEST_F(PpdProviderTest, ExtractPpdFilters) {
   ASSERT_EQ(2UL, captured_resolve_ppd_.size());
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
   EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
+
+  std::sort(captured_resolve_ppd_[0].ppd_filters.begin(),
+            captured_resolve_ppd_[0].ppd_filters.end());
+
   EXPECT_EQ(
       std::vector<std::string>({"a_different_filter", "filter3", "my_filter"}),
       captured_resolve_ppd_[0].ppd_filters);
 
+  std::sort(captured_resolve_ppd_[1].ppd_filters.begin(),
+            captured_resolve_ppd_[1].ppd_filters.end());
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[1].code);
   EXPECT_EQ(kCupsFilter2PpdContents, captured_resolve_ppd_[1].ppd_contents);
   EXPECT_EQ(
