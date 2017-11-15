@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(
       `Tests Comparison view of detailed heap snapshots. Shown node count must be preserved after sorting.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
   await TestRunner.loadHTML(`
       <p>
@@ -16,65 +16,65 @@
 
   var instanceCount = 24;
   function createHeapSnapshotA() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount, 5);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
   }
   function createHeapSnapshotB() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Comparison', step2);
+      HeapProfilerTestRunner.switchToView('Comparison', step2);
     }
 
     var columns;
     function step2() {
-      columns = HeapSnapshotTestRunner.viewColumns();
-      HeapSnapshotTestRunner.clickColumn(columns[0], step3);
+      columns = HeapProfilerTestRunner.viewColumns();
+      HeapProfilerTestRunner.clickColumn(columns[0], step3);
     }
 
     function step3() {
-      var row = HeapSnapshotTestRunner.findRow('B');
+      var row = HeapProfilerTestRunner.findRow('B');
       TestRunner.assertEquals(true, !!row, '"B" row');
-      HeapSnapshotTestRunner.expandRow(row, showNext);
+      HeapProfilerTestRunner.expandRow(row, showNext);
       function showNext(row) {
-        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
-        HeapSnapshotTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
+        HeapProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
       }
     }
 
     function step4() {
-      var row = HeapSnapshotTestRunner.findRow('B');
+      var row = HeapProfilerTestRunner.findRow('B');
       TestRunner.assertEquals(true, !!row, '"B" row');
       function deletedNodeMatcher(data) {
         return data._isDeletedNode && data._name.charAt(0) === 'B';
       }
-      var bInstanceRow = HeapSnapshotTestRunner.findMatchingRow(deletedNodeMatcher, row);
+      var bInstanceRow = HeapProfilerTestRunner.findMatchingRow(deletedNodeMatcher, row);
       TestRunner.assertEquals(true, !!bInstanceRow, '"B" instance row');
-      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row, bInstanceRow);
+      var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row, bInstanceRow);
       TestRunner.assertEquals(false, !!buttonsNode, 'buttons node found!');
       step5();
     }
 
     var nodeCount;
     function step5() {
-      nodeCount = HeapSnapshotTestRunner.columnContents(columns[0]).length;
+      nodeCount = HeapProfilerTestRunner.columnContents(columns[0]).length;
       TestRunner.assertEquals(true, nodeCount > 0, 'nodeCount > 0');
 
-      HeapSnapshotTestRunner.clickColumn(columns[0], clickTwice);
+      HeapProfilerTestRunner.clickColumn(columns[0], clickTwice);
       function clickTwice() {
-        HeapSnapshotTestRunner.clickColumn(columns[0], step6);
+        HeapProfilerTestRunner.clickColumn(columns[0], step6);
       }
     }
 
     function step6() {
-      var newNodeCount = HeapSnapshotTestRunner.columnContents(columns[0]).length;
+      var newNodeCount = HeapProfilerTestRunner.columnContents(columns[0]).length;
       TestRunner.assertEquals(nodeCount, newNodeCount);
       setTimeout(next, 0);
     }

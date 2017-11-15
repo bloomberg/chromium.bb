@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests that CPU profile removal from a group works. Bug 110466\n`);
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
   await TestRunner.showPanel('js_profiler');
 
   await TestRunner.evaluateInPagePromise(`
@@ -18,7 +18,7 @@
       }
   `);
 
-  ProfilerTestRunner.startProfilerTest(function() {
+  CPUProfilerTestRunner.startProfilerTest(function() {
     function viewLoaded() {
       var profiles = UI.panels.js_profiler;
       var type = Profiler.ProfileTypeRegistry.instance.cpuProfileType;
@@ -29,10 +29,10 @@
         TestRunner.addResult(key + ': ' + profiles._profileGroups[key].length);
       var section = profiles._typeIdToSidebarSection[type.id];
       TestRunner.assertEquals(0, section.children.length, 'All children has been removed');
-      ProfilerTestRunner.completeProfilerTest();
+      CPUProfilerTestRunner.completeProfilerTest();
     }
     TestRunner.evaluateInPage('pageFunction()', function() {});
-    ProfilerTestRunner.showProfileWhenAdded('p2');
-    ProfilerTestRunner.waitUntilProfileViewIsShown('p2', setTimeout.bind(null, viewLoaded, 0));
+    CPUProfilerTestRunner.showProfileWhenAdded('p2');
+    CPUProfilerTestRunner.waitUntilProfileViewIsShown('p2', setTimeout.bind(null, viewLoaded, 0));
   });
 })();

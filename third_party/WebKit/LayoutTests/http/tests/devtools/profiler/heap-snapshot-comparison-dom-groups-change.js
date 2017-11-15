@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(
       `Tests that Comparison view of heap snapshots will contain added nodes even if their ids are less than the maximumm JS object id in the base snapshot.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   function createHeapSnapshotA() {
@@ -62,25 +62,25 @@
     };
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
     // Make sure all nodes are visible.
     Profiler.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() {
       return 100;
     };
 
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Comparison', step2);
+      HeapProfilerTestRunner.switchToView('Comparison', step2);
     }
 
     function step2() {
-      var row = HeapSnapshotTestRunner.findRow('A');
+      var row = HeapProfilerTestRunner.findRow('A');
       TestRunner.assertEquals(true, !!row, '"A" row');
-      HeapSnapshotTestRunner.expandRow(row, step3);
+      HeapProfilerTestRunner.expandRow(row, step3);
     }
 
     function step3(row) {

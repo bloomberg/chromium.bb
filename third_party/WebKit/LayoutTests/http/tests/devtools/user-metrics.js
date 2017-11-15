@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(`Tests list of user metrics codes and invocations.\n`);
   await TestRunner.loadModule('performance_test_runner');
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
   await TestRunner.loadModule('audits_test_runner');
 
   InspectorFrontendHost.recordEnumeratedHistogram = function(name, code) {
