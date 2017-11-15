@@ -117,6 +117,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const base::Closure& callback) override;
   void Flush() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;
+  void FlushNetworkInterfaceForTesting() override;
 
   BackgroundFetchContext* GetBackgroundFetchContext();
   BackgroundSyncContext* GetBackgroundSyncContext();
@@ -236,6 +237,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   // storage configuration info.
   void GetQuotaSettings(storage::OptionalQuotaSettingsCallback callback);
 
+  // |is_in_memory_| and |relative_partition_path_| are cached from
+  // |StoragePartitionImpl::Create()| in order to re-create |NetworkContext|.
+  bool is_in_memory_;
+  base::FilePath relative_partition_path_;
   base::FilePath partition_path_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;

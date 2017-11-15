@@ -196,6 +196,10 @@ class CONTENT_EXPORT StoragePartition {
   // Clear the bluetooth allowed devices map. For test use only.
   virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;
 
+  // Call |FlushForTesting()| on Network Service related interfaces. For test
+  // use only.
+  virtual void FlushNetworkInterfaceForTesting() = 0;
+
  protected:
   virtual ~StoragePartition() {}
 };

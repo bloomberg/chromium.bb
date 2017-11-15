@@ -62,6 +62,10 @@ class SystemNetworkContextManager {
   // NetworkService, and for those using the network service (if enabled).
   void DisableQuic();
 
+  // Call |FlushForTesting()| on Network Service related interfaces. For test
+  // use only.
+  void FlushNetworkInterfaceForTesting();
+
  private:
   // NetworkContext using the network service, if the network service is
   // enabled. nullptr, otherwise.
