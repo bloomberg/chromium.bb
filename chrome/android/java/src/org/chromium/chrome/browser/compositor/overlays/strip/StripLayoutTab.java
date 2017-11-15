@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
-import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
-
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.RectF;
 
@@ -13,10 +13,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
-import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
+import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
@@ -85,6 +85,7 @@ public class StripLayoutTab
     private final StripLayoutTabDelegate mDelegate;
     private final TabLoadTracker mLoadTracker;
     private final LayoutRenderHost mRenderHost;
+    private final LayoutUpdateHost mUpdateHost;
 
     private boolean mVisible = true;
     private boolean mIsDying;
@@ -111,7 +112,7 @@ public class StripLayoutTab
     private final CompositorButton mCloseButton;
 
     // Content Animations
-    private ChromeAnimation<Animatable<?>> mContentAnimations;
+    private CompositorAnimator mButtonOpacityAnimation;
 
     private float mLoadingSpinnerRotationDegrees;
 
@@ -134,11 +135,12 @@ public class StripLayoutTab
      */
     public StripLayoutTab(Context context, int id, StripLayoutTabDelegate delegate,
             TabLoadTrackerCallback loadTrackerCallback, LayoutRenderHost renderHost,
-            boolean incognito) {
+            LayoutUpdateHost updateHost, boolean incognito) {
         mId = id;
         mDelegate = delegate;
         mLoadTracker = new TabLoadTracker(id, loadTrackerCallback);
         mRenderHost = renderHost;
+        mUpdateHost = updateHost;
         mIncognito = incognito;
         CompositorOnClickHandler closeClickAction = new CompositorOnClickHandler() {
             @Override
@@ -505,52 +507,11 @@ public class StripLayoutTab
         return mTabOffsetY;
     }
 
-    private void startAnimation(Animation<Animatable<?>> animation, boolean finishPrevious) {
-        if (finishPrevious) finishAnimation();
-
-        if (mContentAnimations == null) {
-            mContentAnimations = new ChromeAnimation<Animatable<?>>();
-        }
-
-        mContentAnimations.add(animation);
-    }
-
     /**
      * Finishes any content animations currently owned and running on this StripLayoutTab.
      */
     public void finishAnimation() {
-        if (mContentAnimations == null) return;
-
-        mContentAnimations.updateAndFinish();
-        mContentAnimations = null;
-    }
-
-    /**
-     * @return Whether or not there are any content animations running on this StripLayoutTab.
-     */
-    public boolean isAnimating() {
-        return mContentAnimations != null;
-    }
-
-    /**
-     * Updates any content animations on this StripLayoutTab.
-     * @param time      The current time of the app in ms.
-     * @param jumpToEnd Whether or not to force any current animations to end.
-     * @return          Whether or not animations are done.
-     */
-    public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
-        if (mContentAnimations == null) return true;
-
-        boolean finished = true;
-        if (jumpToEnd) {
-            finished = mContentAnimations.finished();
-        } else {
-            finished = mContentAnimations.update(time);
-        }
-
-        if (jumpToEnd || finished) finishAnimation();
-
-        return finished;
+        if (mButtonOpacityAnimation != null) mButtonOpacityAnimation.end();
     }
 
     @Override
@@ -615,18 +576,22 @@ public class StripLayoutTab
         if (shouldShow != mShowingCloseButton) {
             float opacity = shouldShow ? 1.f : 0.f;
             if (animate) {
-                startAnimation(buildCloseButtonOpacityAnimation(opacity), true);
+                if (mButtonOpacityAnimation != null) mButtonOpacityAnimation.end();
+                mButtonOpacityAnimation = CompositorAnimator.ofFloatProperty(
+                        mUpdateHost.getAnimationHandler(), mCloseButton, CompositorButton.OPACITY,
+                        mCloseButton.getOpacity(), opacity, ANIM_TAB_CLOSE_BUTTON_FADE_MS);
+                mButtonOpacityAnimation.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mButtonOpacityAnimation = null;
+                    }
+                });
+                mButtonOpacityAnimation.start();
             } else {
                 mCloseButton.setOpacity(opacity);
             }
             mShowingCloseButton = shouldShow;
             if (!mShowingCloseButton) mCloseButton.setPressed(false);
         }
-    }
-
-    private Animation<Animatable<?>> buildCloseButtonOpacityAnimation(float finalOpacity) {
-        return createAnimation(mCloseButton, CompositorButton.Property.OPACITY,
-                mCloseButton.getOpacity(), finalOpacity, ANIM_TAB_CLOSE_BUTTON_FADE_MS, 0, false,
-                ChromeAnimation.getLinearInterpolator());
     }
 }
