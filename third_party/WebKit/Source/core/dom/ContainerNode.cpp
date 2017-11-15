@@ -1019,6 +1019,7 @@ bool ContainerNode::GetUpperLeftCorner(FloatPoint& point) const {
       return true;
     }
 
+    DCHECK(CanUseInlineBox(*o));
     if (p->GetNode() && p->GetNode() == this && o->IsText() && !o->IsBR() &&
         !ToLayoutText(o)->HasTextBoxes()) {
       // Do nothing - skip unrendered whitespace that is a child or next sibling
