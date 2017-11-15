@@ -459,7 +459,8 @@ std::string ScriptContext::GetStackTraceAsString() const {
 v8::Local<v8::Value> ScriptContext::RunScript(
     v8::Local<v8::String> name,
     v8::Local<v8::String> code,
-    const RunScriptExceptionHandler& exception_handler) {
+    const RunScriptExceptionHandler& exception_handler,
+    v8::ScriptCompiler::NoCacheReason no_cache_reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(v8_context());
@@ -480,8 +481,12 @@ v8::Local<v8::Value> ScriptContext::RunScript(
   try_catch.SetCaptureMessage(true);
   v8::ScriptOrigin origin(
       v8_helpers::ToV8StringUnsafe(isolate(), internal_name.c_str()));
+  v8::ScriptCompiler::Source script_source(code, origin);
   v8::Local<v8::Script> script;
-  if (!v8::Script::Compile(v8_context(), code, &origin).ToLocal(&script)) {
+  if (!v8::ScriptCompiler::Compile(v8_context(), &script_source,
+                                   v8::ScriptCompiler::kNoCompileOptions,
+                                   no_cache_reason)
+           .ToLocal(&script)) {
     exception_handler.Run(try_catch);
     return v8::Undefined(isolate());
   }
