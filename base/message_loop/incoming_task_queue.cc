@@ -21,8 +21,7 @@ namespace {
 #if DCHECK_IS_ON()
 // Delays larger than this are often bogus, and a warning should be emitted in
 // debug builds to warn developers.  http://crbug.com/450045
-const int kTaskDelayWarningThresholdInSeconds =
-    14 * 24 * 60 * 60;  // 14 days.
+constexpr TimeDelta kTaskDelayWarningThreshold = TimeDelta::FromDays(14);
 #endif
 
 // Returns true if MessagePump::ScheduleWork() must be called one
@@ -67,8 +66,7 @@ bool IncomingTaskQueue::AddToIncomingQueue(const Location& from_here,
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task);
-  DLOG_IF(WARNING,
-          delay.InSeconds() > kTaskDelayWarningThresholdInSeconds)
+  DLOG_IF(WARNING, delay > kTaskDelayWarningThreshold)
       << "Requesting super-long task delay period of " << delay.InSeconds()
       << " seconds from here: " << from_here.ToString();
 
