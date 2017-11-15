@@ -40,12 +40,6 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   // Returns agent instance for its routing id.
   static DevToolsAgent* FromRoutingId(int routing_id);
 
-  static void SendChunkedProtocolMessage(IPC::Sender* sender,
-                                         int routing_id,
-                                         int session_id,
-                                         int call_id,
-                                         const std::string& message,
-                                         const std::string& post_state);
   static blink::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createMessageLoopWrapper();
 
@@ -96,6 +90,11 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                    const GURL& manifest_url,
                    const Manifest& manifest,
                    const ManifestDebugInfo& debug_info);
+
+  void SendChunkedProtocolMessage(int session_id,
+                                  int call_id,
+                                  std::string message,
+                                  std::string post_state);
 
   std::set<int> session_ids_;
   bool paused_;

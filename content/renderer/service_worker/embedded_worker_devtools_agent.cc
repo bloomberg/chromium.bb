@@ -15,6 +15,10 @@ using blink::WebString;
 
 namespace content {
 
+namespace {
+const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
+}
+
 EmbeddedWorkerDevToolsAgent::EmbeddedWorkerDevToolsAgent(
     blink::WebEmbeddedWorker* webworker,
     int route_id)
@@ -29,10 +33,22 @@ EmbeddedWorkerDevToolsAgent::~EmbeddedWorkerDevToolsAgent() {
 void EmbeddedWorkerDevToolsAgent::SendMessage(IPC::Sender* sender,
                                               int session_id,
                                               int call_id,
-                                              const std::string& message,
-                                              const std::string& state_cookie) {
-  DevToolsAgent::SendChunkedProtocolMessage(sender, route_id_, session_id,
-                                            call_id, message, state_cookie);
+                                              std::string message,
+                                              std::string state_cookie) {
+  bool single_chunk = message.length() < kMaxMessageChunkSize;
+  for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    DevToolsMessageChunk chunk;
+    chunk.is_first = pos == 0;
+    chunk.message_size = pos == 0 ? message.size() : 0;
+    chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
+    chunk.session_id = session_id;
+    chunk.call_id = chunk.is_last ? call_id : 0;
+    chunk.post_state = chunk.is_last ? std::move(state_cookie) : std::string();
+    chunk.data = single_chunk ? std::move(message)
+                              : message.substr(pos, kMaxMessageChunkSize);
+    sender->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        route_id_, std::move(chunk)));
+  }
 }
 
 bool EmbeddedWorkerDevToolsAgent::OnMessageReceived(

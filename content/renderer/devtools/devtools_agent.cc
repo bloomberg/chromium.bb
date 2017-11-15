@@ -133,8 +133,8 @@ void DevToolsAgent::SendProtocolMessage(int session_id,
         session_id, call_id, message.Utf8(), state_cookie.Utf8());
     return;
   }
-  SendChunkedProtocolMessage(this, routing_id(), session_id, call_id,
-                             message.Utf8(), state_cookie.Utf8());
+  SendChunkedProtocolMessage(session_id, call_id, message.Utf8(),
+                             state_cookie.Utf8());
 }
 
 // static
@@ -196,38 +196,23 @@ DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
   return nullptr;
 }
 
-// static
-void DevToolsAgent::SendChunkedProtocolMessage(IPC::Sender* sender,
-                                               int routing_id,
-                                               int session_id,
+void DevToolsAgent::SendChunkedProtocolMessage(int session_id,
                                                int call_id,
-                                               const std::string& message,
-                                               const std::string& post_state) {
-  DevToolsMessageChunk chunk;
-  chunk.message_size = message.size();
-  chunk.is_first = true;
-
-  if (message.length() < kMaxMessageChunkSize) {
-    chunk.data = message;
-    chunk.session_id = session_id;
-    chunk.call_id = call_id;
-    chunk.post_state = post_state;
-    chunk.is_last = true;
-    sender->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-                     routing_id, chunk));
-    return;
-  }
-
+                                               std::string message,
+                                               std::string post_state) {
+  bool single_chunk = message.length() < kMaxMessageChunkSize;
   for (size_t pos = 0; pos < message.length(); pos += kMaxMessageChunkSize) {
+    DevToolsMessageChunk chunk;
+    chunk.is_first = pos == 0;
+    chunk.message_size = pos == 0 ? message.size() : 0;
     chunk.is_last = pos + kMaxMessageChunkSize >= message.length();
     chunk.session_id = session_id;
     chunk.call_id = chunk.is_last ? call_id : 0;
-    chunk.post_state = chunk.is_last ? post_state : std::string();
-    chunk.data = message.substr(pos, kMaxMessageChunkSize);
-    sender->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
-                     routing_id, chunk));
-    chunk.is_first = false;
-    chunk.message_size = 0;
+    chunk.post_state = chunk.is_last ? std::move(post_state) : std::string();
+    chunk.data = single_chunk ? std::move(message)
+                              : message.substr(pos, kMaxMessageChunkSize);
+    this->Send(new DevToolsClientMsg_DispatchOnInspectorFrontend(
+        routing_id(), std::move(chunk)));
   }
 }
 
@@ -329,8 +314,8 @@ void DevToolsAgent::GotManifest(int session_id,
 
   std::string json_message;
   base::JSONWriter::Write(*response, &json_message);
-  SendChunkedProtocolMessage(this, routing_id(), session_id, call_id,
-                             json_message, std::string());
+  SendChunkedProtocolMessage(session_id, call_id, std::move(json_message),
+                             std::string());
 }
 
 }  // namespace content
