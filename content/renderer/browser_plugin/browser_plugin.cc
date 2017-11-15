@@ -534,6 +534,7 @@ void BrowserPlugin::UpdateGeometry(const WebRect& plugin_rect_in_viewport,
   }
 
   pending_resize_params_.frame_rect = frame_rect;
+  pending_resize_params_.screen_info = render_widget->screen_info();
   WasResized();
 }
 
