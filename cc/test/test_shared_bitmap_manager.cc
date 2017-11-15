@@ -13,13 +13,15 @@ namespace cc {
 
 namespace {
 
+static uint32_t g_next_sequence_number = 1;
+
 class OwnedSharedBitmap : public viz::SharedBitmap {
  public:
   OwnedSharedBitmap(std::unique_ptr<base::SharedMemory> shared_memory,
                     const viz::SharedBitmapId& id)
       : viz::SharedBitmap(static_cast<uint8_t*>(shared_memory->memory()),
                           id,
-                          0 /* sequence_number */),
+                          g_next_sequence_number++),
         shared_memory_(std::move(shared_memory)) {}
 
   ~OwnedSharedBitmap() override {}
@@ -36,7 +38,7 @@ class OwnedSharedBitmap : public viz::SharedBitmap {
 class UnownedSharedBitmap : public viz::SharedBitmap {
  public:
   UnownedSharedBitmap(uint8_t* pixels, const viz::SharedBitmapId& id)
-      : viz::SharedBitmap(pixels, id, 0 /* sequence_number */) {}
+      : viz::SharedBitmap(pixels, id, g_next_sequence_number++) {}
 
   // viz::SharedBitmap:
   base::SharedMemoryHandle GetSharedMemoryHandle() const override {

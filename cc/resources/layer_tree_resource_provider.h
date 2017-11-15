@@ -59,6 +59,18 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   void ReceiveReturnsFromParent(
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
+  // Receives a resource from an external client that can be used in compositor
+  // frames, via the returned ResourceId.
+  viz::ResourceId ImportResource(const viz::TransferableResource&,
+                                 std::unique_ptr<viz::SingleReleaseCallback>);
+  // Removes an imported resource, which will call the ReleaseCallback given
+  // originally, once the resource is no longer in use by any compositor frame.
+  void RemoveImportedResource(viz::ResourceId);
+
+  // Verify that the ResourceId is valid and is known to this class, for debug
+  // checks.
+  void ValidateResource(viz::ResourceId id) const;
+
   // The following lock classes are part of the LayerTreeResourceProvider API
   // and are needed to write the resource contents. The user must ensure that
   // they only use GL locks on GL resources, etc, and this is enforced by
@@ -87,9 +99,16 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   };
 
  private:
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
   void TransferResource(viz::internal::Resource* source,
                         viz::ResourceId id,
                         viz::TransferableResource* resource);
+
+  struct ImportedResource;
+  base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeResourceProvider);
 };
