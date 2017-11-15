@@ -181,40 +181,6 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Exhaustive) {
   TestGetPrefName(true, true, true, true, true, scout);
 }
 
-// Basic test that command-line flags can force the ScoutGroupSelected pref on
-// or off.
-TEST_F(SafeBrowsingPrefsTest, InitPrefs_ForceScoutGroupOnOff) {
-  // By default ScoutGroupSelected is off.
-  EXPECT_FALSE(IsScoutGroupSelected());
-
-  // Command-line flag can force it on during initialization.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      kSwitchForceScoutGroup, "true");
-  InitPrefs();
-  EXPECT_TRUE(IsScoutGroupSelected());
-
-  // ScoutGroup remains on if switches are cleared, but only if an experiment
-  // is active (since being in the Control group automatically clears the
-  // Scout prefs).
-  base::CommandLine::StringVector empty;
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(empty);
-  ResetExperiments(/*can_show_scout=*/true, /*only_show_scout=*/false);
-  EXPECT_TRUE(IsScoutGroupSelected());
-
-  // Nonsense values are ignored and ScoutGroup is unchanged.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      kSwitchForceScoutGroup, "foo");
-  InitPrefs();
-  EXPECT_TRUE(IsScoutGroupSelected());
-
-  // ScoutGroup can also be forced off during initialization.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(empty);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      kSwitchForceScoutGroup, "false");
-  InitPrefs();
-  EXPECT_FALSE(IsScoutGroupSelected());
-}
-
 // Test all combinations of prefs during initialization when neither experiment
 // is on (ie: control group). In all cases the Scout prefs should be cleared,
 // and the SBER pref may get switched.

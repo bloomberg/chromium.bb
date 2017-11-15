@@ -56,11 +56,6 @@ extern const char kSafeBrowsingUnhandledSyncPasswordReuses[];
 
 namespace safe_browsing {
 
-// Command-line switch for changing the scout_group_selected preference. Should
-// be set to either 'true' or 'false'. Primarily for testing purposes.
-// TODO: this is temporary (crbug.com/662944)
-extern const char kSwitchForceScoutGroup[];
-
 // When this feature is enabled, the Scout opt-in text will be displayed as of
 // the next security incident. Until then, the legacy SBER text will appear.
 // TODO: this is temporary (crbug.com/662944)
