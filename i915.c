@@ -404,7 +404,9 @@ static int i915_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t
 					 uint32_t format, const uint64_t *modifiers, uint32_t count)
 {
 	static const uint64_t modifier_order[] = {
-		I915_FORMAT_MOD_Y_TILED, I915_FORMAT_MOD_X_TILED, DRM_FORMAT_MOD_LINEAR,
+		I915_FORMAT_MOD_Y_TILED,
+		I915_FORMAT_MOD_X_TILED,
+		DRM_FORMAT_MOD_LINEAR,
 	};
 	uint64_t modifier;
 
@@ -445,7 +447,7 @@ static int i915_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-static void *i915_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
+static void *i915_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	void *addr;
@@ -489,7 +491,7 @@ static void *i915_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, u
 		return addr;
 	}
 
-	mapping->vma->length = bo->total_size;
+	vma->length = bo->total_size;
 	return addr;
 }
 

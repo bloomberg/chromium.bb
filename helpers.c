@@ -309,7 +309,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-void *drv_dumb_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
+void *drv_dumb_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	size_t i;
@@ -326,15 +326,15 @@ void *drv_dumb_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint
 
 	for (i = 0; i < bo->num_planes; i++)
 		if (bo->handles[i].u32 == bo->handles[plane].u32)
-			mapping->vma->length += bo->sizes[i];
+			vma->length += bo->sizes[i];
 
-	return mmap(0, mapping->vma->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
+	return mmap(0, vma->length, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 		    map_dumb.offset);
 }
 
-int drv_bo_munmap(struct bo *bo, struct mapping *mapping)
+int drv_bo_munmap(struct bo *bo, struct vma *vma)
 {
-	return munmap(mapping->vma->addr, mapping->vma->length);
+	return munmap(vma->addr, vma->length);
 }
 
 int drv_mapping_destroy(struct bo *bo)
@@ -359,7 +359,7 @@ int drv_mapping_destroy(struct bo *bo)
 			}
 
 			if (!--mapping->vma->refcount) {
-				ret = bo->drv->backend->bo_unmap(bo, mapping);
+				ret = bo->drv->backend->bo_unmap(bo, mapping->vma);
 				if (ret) {
 					fprintf(stderr, "drv: munmap failed");
 					return ret;

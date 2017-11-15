@@ -300,7 +300,7 @@ static int tegra_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 	return 0;
 }
 
-static void *tegra_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, uint32_t map_flags)
+static void *tegra_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
 {
 	int ret;
 	struct drm_tegra_gem_mmap gem_map;
@@ -317,12 +317,12 @@ static void *tegra_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, 
 
 	void *addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			  gem_map.offset);
-	mapping->vma->length = bo->total_size;
+	vma->length = bo->total_size;
 	if ((bo->tiling & 0xFF) == NV_MEM_KIND_C32_2CRA && addr != MAP_FAILED) {
 		priv = calloc(1, sizeof(*priv));
 		priv->untiled = calloc(1, bo->total_size);
 		priv->tiled = addr;
-		mapping->vma->priv = priv;
+		vma->priv = priv;
 		transfer_tiled_memory(bo, priv->tiled, priv->untiled, TEGRA_READ_TILED_BUFFER);
 		addr = priv->untiled;
 	}
@@ -330,17 +330,17 @@ static void *tegra_bo_map(struct bo *bo, struct mapping *mapping, size_t plane, 
 	return addr;
 }
 
-static int tegra_bo_unmap(struct bo *bo, struct mapping *mapping)
+static int tegra_bo_unmap(struct bo *bo, struct vma *vma)
 {
-	if (mapping->vma->priv) {
-		struct tegra_private_map_data *priv = mapping->vma->priv;
-		mapping->vma->addr = priv->tiled;
+	if (vma->priv) {
+		struct tegra_private_map_data *priv = vma->priv;
+		vma->addr = priv->tiled;
 		free(priv->untiled);
 		free(priv);
-		mapping->vma->priv = NULL;
+		vma->priv = NULL;
 	}
 
-	return munmap(mapping->vma->addr, mapping->vma->length);
+	return munmap(vma->addr, vma->length);
 }
 
 static int tegra_bo_flush(struct bo *bo, struct mapping *mapping)

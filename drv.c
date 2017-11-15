@@ -413,7 +413,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	}
 
 	mapping.vma = calloc(1, sizeof(*mapping.vma));
-	addr = bo->drv->backend->bo_map(bo, &mapping, plane, map_flags);
+	addr = bo->drv->backend->bo_map(bo, mapping.vma, plane, map_flags);
 	if (addr == MAP_FAILED) {
 		*map_data = NULL;
 		free(mapping.vma);
@@ -448,7 +448,7 @@ int drv_bo_unmap(struct bo *bo, struct mapping *mapping)
 	pthread_mutex_lock(&bo->drv->driver_lock);
 
 	if (!--mapping->vma->refcount) {
-		ret = bo->drv->backend->bo_unmap(bo, mapping);
+		ret = bo->drv->backend->bo_unmap(bo, mapping->vma);
 		free(mapping->vma);
 	}
 
