@@ -202,8 +202,8 @@ static const CGFloat kTabElementYOrigin = 6;
     [tabView setState:selected ? NSMixedState : NSOffState];
   }
   // The attention indicator must always be updated, as it needs to disappear
-  // if a tab is blocked and is brought forward.
-  [self updateAttentionIndicator];
+  // if a tab is blocked and is brought forward. It is updated at the end of
+  // -updateVisibility.
   [self updateVisibility];
   [self updateTitleColor];
 }
@@ -448,6 +448,8 @@ static const CGFloat kTabElementYOrigin = 6;
       [iconView_ setFrame:iconFrame];
     }
   }
+
+  [self updateAttentionIndicator];
 }
 
 - (void)updateAttentionIndicator {
@@ -457,7 +459,7 @@ static const CGFloat kTabElementYOrigin = 6;
   if ([self active])
     actualAttentionTypes &= ~AttentionType::kBlockedWebContents;
 
-  if (actualAttentionTypes != 0) {
+  if (actualAttentionTypes != 0 && iconView_ && isIconShowing_) {
     // The attention indicator consists of two parts:
     // . a wedge cut out of the bottom right (or left in rtl) of the favicon.
     // . a circle in the bottom right (or left in rtl) of the favicon.
@@ -601,6 +603,8 @@ static const CGFloat kTabElementYOrigin = 6;
   newTitleFrame.origin.x = titleLeft;
 
   [tabView setTitleFrame:newTitleFrame];
+
+  [self updateAttentionIndicator];
 }
 
 - (void)updateTitleColor {
