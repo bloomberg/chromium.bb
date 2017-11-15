@@ -146,19 +146,19 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
   if (!cached_image_->HasImage())
     return Image::NullImage();
 
-  if (!cached_image_->GetImage()->IsSVGImage())
-    return cached_image_->GetImage();
+  Image* image = cached_image_->GetImage();
+  if (!image->IsSVGImage())
+    return image;
 
   KURL url;
-  SVGImage* svg_image = ToSVGImage(cached_image_->GetImage());
   Node* node = layout_object_->GetNode();
   if (node && node->IsElementNode()) {
     const AtomicString& url_string = ToElement(node)->ImageSourceURL();
     url = node->GetDocument().CompleteURL(url_string);
   }
   return SVGImageForContainer::Create(
-      svg_image, container_size, layout_object_->StyleRef().EffectiveZoom(),
-      url);
+      ToSVGImage(image), container_size,
+      layout_object_->StyleRef().EffectiveZoom(), url);
 }
 
 bool LayoutImageResource::MaybeAnimated() const {

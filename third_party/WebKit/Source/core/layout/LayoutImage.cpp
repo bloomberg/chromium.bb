@@ -223,8 +223,8 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
     unsigned) const {
   if (!image_resource_->HasImage() || image_resource_->ErrorOccurred())
     return false;
-  if (!image_resource_->CachedImage() ||
-      !image_resource_->CachedImage()->IsLoaded())
+  ImageResourceContent* image_content = image_resource_->CachedImage();
+  if (!image_content || !image_content->IsLoaded())
     return false;
   if (!ContentBoxRect().Contains(local_rect))
     return false;
@@ -248,12 +248,10 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   if (object_fit != EObjectFit::kFill && object_fit != EObjectFit::kCover)
     return false;
   // Check for image with alpha.
-  TRACE_EVENT1(
-      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
-      InspectorPaintImageEvent::Data(this, *image_resource_->CachedImage()));
-  return image_resource_->CachedImage()
-      ->GetImage()
-      ->CurrentFrameKnownToBeOpaque(Image::kPreCacheMetadata);
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+               "data", InspectorPaintImageEvent::Data(this, *image_content));
+  return image_content->GetImage()->CurrentFrameKnownToBeOpaque(
+      Image::kPreCacheMetadata);
 }
 
 bool LayoutImage::ComputeBackgroundIsKnownToBeObscured() const {
@@ -330,15 +328,15 @@ bool LayoutImage::NeedsPreferredWidthsRecalculation() const {
 LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
   if (!image_resource_)
     return nullptr;
-
   ImageResourceContent* cached_image = image_resource_->CachedImage();
   // TODO(japhet): This shouldn't need to worry about cache validation.
   // https://crbug.com/761026
-  if (cached_image && !cached_image->IsCacheValidator() &&
-      cached_image->GetImage() && cached_image->GetImage()->IsSVGImage())
-    return ToSVGImage(cached_image->GetImage())->EmbeddedReplacedContent();
-
-  return nullptr;
+  if (!cached_image || cached_image->IsCacheValidator())
+    return nullptr;
+  Image* image = cached_image->GetImage();
+  if (!image->IsSVGImage())
+    return nullptr;
+  return ToSVGImage(image)->EmbeddedReplacedContent();
 }
 
 }  // namespace blink

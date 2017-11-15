@@ -633,18 +633,18 @@ bool HTMLImageElement::IsInteractiveContent() const {
 
 FloatSize HTMLImageElement::DefaultDestinationSize(
     const FloatSize& default_object_size) const {
-  ImageResourceContent* image = CachedImage();
-  if (!image)
+  ImageResourceContent* image_content = CachedImage();
+  if (!image_content)
     return FloatSize();
 
-  if (image->GetImage() && image->GetImage()->IsSVGImage())
-    return ToSVGImage(CachedImage()->GetImage())
-        ->ConcreteObjectSize(default_object_size);
+  Image* image = image_content->GetImage();
+  if (image->IsSVGImage())
+    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
 
-  LayoutSize size(image->IntrinsicSize(
+  LayoutSize size(image_content->IntrinsicSize(
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject())));
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&
-      image->GetImage() && !image->GetImage()->HasRelativeSize())
+      !image->HasRelativeSize())
     size.Scale(ToLayoutImage(GetLayoutObject())->ImageDevicePixelRatio());
   return FloatSize(size);
 }
