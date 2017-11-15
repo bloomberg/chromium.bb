@@ -196,6 +196,7 @@ Still reading?
     <ignore regexp="Call requires API level 19.*`java.util.Objects#requireNonNull`"/>
     <!-- AutoCloseable has been available since API 15, just hidden. -->
     <ignore regexp="Class requires API level 19.*java.lang.AutoCloseable"/>
+    <ignore regexp="Call requires API level 19.*java.lang.AutoCloseable#close"/>
     <!-- We support try-with-resources via desugar. -->
     <ignore regexp="Try-with-resources requires API level 19"/>
     <ignore regexp="Call requires API level 19.*`java.lang.Throwable#addSuppressed`"/>

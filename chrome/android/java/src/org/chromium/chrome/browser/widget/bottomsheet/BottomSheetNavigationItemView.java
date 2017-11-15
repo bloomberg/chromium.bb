@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationItemV
  *
  * Uses a different layout XML that simplifies the menu item with only one label.
  */
+@SuppressWarnings("RestrictTo")
 public class BottomSheetNavigationItemView extends BottomNavigationItemView {
     private boolean mLabelHidden;
     private TextView mLabel;
