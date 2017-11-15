@@ -42,6 +42,11 @@ class InsecureInputTabHelper
   // WebStateObserver implementation.
   void FormActivityRegistered(web::WebState* web_state,
                               const web::FormActivityParams& params) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
+
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(InsecureInputTabHelper);
 };
