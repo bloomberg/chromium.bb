@@ -35,10 +35,7 @@ source_set("browser") {
       "crash_handler_host_linux.cc",
       "crash_handler_host_linux.h",
     ]
-    deps += [
-      "//components/crash/content/app:app_non_mac_win",
-      "//third_party/breakpad:client",
-    ]
+    deps += [ "//third_party/breakpad:client" ]
   }
 
   # This is not in the GYP build but this target includes breakpad client
