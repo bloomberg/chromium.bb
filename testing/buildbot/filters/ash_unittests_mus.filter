@@ -4,6 +4,10 @@
 
 # TODO: wire up mirroring and unified display.
 # http://crbug.com/770243.
+-DisplayManagerTest.SoftwareMirroring
+-DisplayManagerTest.SingleDisplayToSoftwareMirroring
+-MultiMirroringTest.SoftwareMirrorModeBasics
+-UnifiedMouseWarpControllerTest.BoundaryTest
 -UnifiedMouseWarpControllerTest.BoundaryTestGrid
 -UnifiedMouseWarpControllerTest.WarpMouse
 -UnifiedMouseWarpControllerTest.BoundaryAndWarpSimpleTest

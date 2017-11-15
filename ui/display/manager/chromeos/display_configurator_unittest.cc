@@ -7,10 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chromeos/chromeos_switches.cc"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/chromeos/test/action_logger_util.h"
 #include "ui/display/manager/chromeos/test/test_native_display_delegate.h"
@@ -215,6 +217,10 @@ class DisplayConfiguratorTest : public testing::Test {
 
   void SetUp() override {
     log_.reset(new ActionLogger());
+
+    // Force system compositor mode to simulate on-device configurator behavior.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kForceSystemCompositorMode);
 
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
     configurator_.SetDelegateForTesting(

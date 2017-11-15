@@ -69,6 +69,9 @@ class Display : public PlatformDisplayDelegate,
   void Init(const display::ViewportMetrics& metrics,
             std::unique_ptr<DisplayBinding> binding);
 
+  // Initialize the display's root window to host window manager content.
+  void InitWindowManagerDisplayRoots();
+
   // Returns the ID for this display. In internal mode this is the
   // display::Display ID. In external mode this hasn't been defined yet.
   int64_t GetId() const;
@@ -167,9 +170,6 @@ class Display : public PlatformDisplayDelegate,
       std::map<UserId, WindowManagerDisplayRoot*>;
 
   class CursorState;
-
-  // Inits the necessary state once the display is ready.
-  void InitWindowManagerDisplayRoots();
 
   // Creates the set of WindowManagerDisplayRoots from the
   // WindowManagerWindowTreeFactorySet.

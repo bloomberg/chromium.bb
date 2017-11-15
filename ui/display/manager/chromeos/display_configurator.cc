@@ -158,6 +158,11 @@ DisplayConfigurator::DisplayLayoutManagerImpl::ParseDisplays(
     cached_displays.push_back(display_state);
   }
 
+  // Hardware mirroring doesn't work on desktop-linux Chrome OS's fake displays.
+  // Skip mirror mode setup in that case to fall back on software mirroring.
+  if (!chromeos::IsRunningAsSystemCompositor())
+    return cached_displays;
+
   // Set |mirror_mode| fields.
   if (cached_displays.size() == 2) {
     bool one_is_internal =
