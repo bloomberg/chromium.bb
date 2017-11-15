@@ -224,12 +224,16 @@ class InternalPageInfoBubbleView : public views::BubbleDialogDelegateView {
   ~InternalPageInfoBubbleView() override;
 
   // views::BubbleDialogDelegateView:
-  void OnWidgetDestroying(views::Widget* widget) override;
   int GetDialogButtons() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
-  // Used around icon and inside bubble border.
-  static constexpr int kSpacing = 12;
+  base::string16 title_text_;
+  gfx::ImageSkia* bubble_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoBubbleView);
 };
@@ -411,34 +415,55 @@ InternalPageInfoBubbleView::InternalPageInfoBubbleView(
   set_anchor_view_insets(gfx::Insets(
       GetLayoutConstant(LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET), 0));
 
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        gfx::Insets(kSpacing), kSpacing));
+  // Title insets assume there is content (and thus have no bottom padding). Use
+  // dialog insets to get the bottom margin back.
+  set_title_margins(
+      ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   set_margins(gfx::Insets());
-  if (ChromeLayoutProvider::Get()->ShouldShowWindowIcon()) {
-    views::ImageView* icon_view = new NonAccessibleImageView();
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    icon_view->SetImage(rb.GetImageSkiaNamed(icon));
-    AddChildView(icon_view);
-  }
 
-  views::Label* label = new views::Label(l10n_util::GetStringUTF16(text));
-  label->SetMultiLine(true);
-  label->SetAllowCharacterBreak(true);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(label);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  bubble_icon_ = rb.GetImageSkiaNamed(icon);
+  title_text_ = l10n_util::GetStringUTF16(text);
 
   views::BubbleDialogDelegateView::CreateBubble(this);
+
+  // Use a normal label's style for the title since there is no content.
+  views::Label* title_label =
+      static_cast<views::Label*>(GetBubbleFrameView()->title());
+  title_label->SetFontList(views::Label::GetDefaultFontList());
+  title_label->SetMultiLine(false);
+  title_label->SetElideBehavior(gfx::NO_ELIDE);
+
+  SizeToContents();
 }
 
 InternalPageInfoBubbleView::~InternalPageInfoBubbleView() {}
 
+int InternalPageInfoBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
+}
+
+base::string16 InternalPageInfoBubbleView::GetWindowTitle() const {
+  return title_text_;
+}
+
+bool InternalPageInfoBubbleView::ShouldShowCloseButton() const {
+  // TODO(patricialor): When Harmony is default, also remove |bubble_icon_| and
+  // supporting code.
+  return ui::MaterialDesignController::IsSecondaryUiMaterial();
+}
+
+gfx::ImageSkia InternalPageInfoBubbleView::GetWindowIcon() {
+  return *bubble_icon_;
+}
+
+bool InternalPageInfoBubbleView::ShouldShowWindowIcon() const {
+  return ChromeLayoutProvider::Get()->ShouldShowWindowIcon();
+}
+
 void InternalPageInfoBubbleView::OnWidgetDestroying(views::Widget* widget) {
   g_shown_bubble_type = PageInfoBubbleView::BUBBLE_NONE;
   g_page_info_bubble = nullptr;
-}
-
-int InternalPageInfoBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

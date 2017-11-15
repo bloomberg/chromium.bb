@@ -111,6 +111,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     // All the possible test names.
     constexpr char kInsecure[] = "Insecure";
     constexpr char kInternal[] = "Internal";
+    constexpr char kInternalExtension[] = "InternalExtension";
+    constexpr char kInternalViewSource[] = "InternalViewSource";
     constexpr char kSecure[] = "Secure";
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
@@ -121,6 +123,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kMixedContent[] = "MixedContent";
 
     const GURL internal_url("chrome://settings");
+    const GURL internal_extension_url("chrome-extension://example");
     // Note the following two URLs are not really necessary to get the different
     // versions of Page Info to appear, but are here to indicate the type of
     // URL each IdentityInfo type would normally be associated with.
@@ -130,8 +133,17 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     GURL url = http_url;
     if (name == kSecure || name == kMixedContentForm || name == kMixedContent)
       url = https_url;
-    if (name == kInternal)
+    if (name == kInternal) {
       url = internal_url;
+    } else if (name == kInternalExtension) {
+      url = internal_extension_url;
+    } else if (name == kInternalViewSource) {
+      constexpr char kTestHtml[] = "/viewsource/test.html";
+      ASSERT_TRUE(embedded_test_server()->Start());
+      url = GURL(content::kViewSourceScheme +
+                 std::string(url::kStandardSchemeSeparator) +
+                 embedded_test_server()->GetURL(kTestHtml).spec());
+    }
 
     ui_test_utils::NavigateToURL(browser(), url);
     OpenPageInfoBubble(browser());
@@ -175,7 +187,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
           PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE;
     }
 
-    if (name != kInsecure && name != kInternal) {
+    if (name != kInsecure && name.find(kInternal) == std::string::npos) {
       // The bubble may be PageInfoBubbleView or InternalPageInfoBubbleView. The
       // latter is only used for |kInternal|, so it is safe to static_cast here.
       static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
@@ -348,6 +360,18 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Secure) {
 
 // Shows the Page Info bubble for an internal page, e.g. chrome://settings.
 IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, InvokeDialog_Internal) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for an extensions page.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_InternalExtension) {
+  RunDialog();
+}
+
+// Shows the Page Info bubble for a chrome page that displays the source HTML.
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       InvokeDialog_InternalViewSource) {
   RunDialog();
 }
 
