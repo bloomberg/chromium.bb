@@ -39,7 +39,12 @@ BLACKLIST_LINT_FILTERS = [
 
 ### Description checks
 
+# TODO(myjang): Remove this once all presubmit scripts use the other
 def CheckChangedConfigs(input_api, output_api):
+  return CheckChangedLUCIConfigs(input_api, output_api)
+
+
+def CheckChangedLUCIConfigs(input_api, output_api):
   import collections
   import base64
   import json

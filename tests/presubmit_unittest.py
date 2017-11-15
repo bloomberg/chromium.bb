@@ -1800,7 +1800,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
       'CheckCIPDManifest', 'CheckCIPDPackages',
-      'CheckChangedConfigs',
+      'CheckChangedLUCIConfigs', 'CheckChangedConfigs',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -1963,7 +1963,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      "TODO(foo): bar", None, "TODO: bar", None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
-  def testCannedCheckChangedConfigs(self):
+  def testCannedCheckChangedLUCIConfigs(self):
     affected_file1 = self.mox.CreateMock(presubmit.GitAffectedFile)
     affected_file1.LocalPath().AndReturn('foo.cfg')
     affected_file1.NewContents().AndReturn(['test', 'foo'])
@@ -2006,7 +2006,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     self.mox.ReplayAll()
 
-    results = presubmit_canned_checks.CheckChangedConfigs(
+    results = presubmit_canned_checks.CheckChangedLUCIConfigs(
         input_api, presubmit.OutputApi)
     self.assertEquals(len(results), 1)
 
