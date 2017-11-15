@@ -60,8 +60,11 @@ class CC_EXPORT VideoFrameExternalResources {
   gfx::BufferFormat buffer_format;
 
   // TODO(danakj): Remove these too.
+  using SoftwareReleaseCallback =
+      base::RepeatingCallback<void(const gpu::SyncToken& sync_token,
+                                   bool is_lost)>;
   std::vector<unsigned> software_resources;
-  viz::ReleaseCallback software_release_callback;
+  SoftwareReleaseCallback software_release_callback;
 
   // Used by hardware textures which do not return values in the 0-1 range.
   // After a lookup, subtract offset and multiply by multiplier.
@@ -70,7 +73,8 @@ class CC_EXPORT VideoFrameExternalResources {
   uint32_t bits_per_channel;
 
   VideoFrameExternalResources();
-  VideoFrameExternalResources(const VideoFrameExternalResources& other);
+  VideoFrameExternalResources(VideoFrameExternalResources&& other);
+  VideoFrameExternalResources& operator=(VideoFrameExternalResources&& other);
   ~VideoFrameExternalResources();
 };
 

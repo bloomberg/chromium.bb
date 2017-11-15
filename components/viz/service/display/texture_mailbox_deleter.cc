@@ -36,7 +36,8 @@ static void PostTaskFromMainToImplThread(
     bool is_lost) {
   // This posts the task to RunDeleteTextureOnImplThread().
   impl_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(run_impl_callback, sync_token, is_lost));
+      FROM_HERE,
+      base::BindOnce(std::move(run_impl_callback), sync_token, is_lost));
 }
 
 TextureMailboxDeleter::TextureMailboxDeleter(
@@ -71,10 +72,11 @@ TextureMailboxDeleter::GetReleaseCallback(
   // thread.
   std::unique_ptr<SingleReleaseCallback> main_callback;
   if (impl_task_runner_) {
-    main_callback = SingleReleaseCallback::Create(base::Bind(
-        &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));
+    main_callback = SingleReleaseCallback::Create(
+        base::Bind(&PostTaskFromMainToImplThread, impl_task_runner_,
+                   base::Passed(&run_impl_callback)));
   } else {
-    main_callback = SingleReleaseCallback::Create(run_impl_callback);
+    main_callback = SingleReleaseCallback::Create(std::move(run_impl_callback));
   }
 
   return main_callback;

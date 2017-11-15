@@ -130,7 +130,7 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
     unsigned resource_id = resource_provider->CreateResourceFromTextureMailbox(
         external_resources.mailboxes[i],
         viz::SingleReleaseCallback::Create(
-            external_resources.release_callbacks[i]),
+            std::move(external_resources.release_callbacks[i])),
         external_resources.read_lock_fences_enabled,
         external_resources.buffer_format);
     frame_resources_.push_back(FrameResource(

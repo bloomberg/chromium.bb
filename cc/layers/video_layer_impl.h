@@ -84,8 +84,10 @@ class CC_EXPORT VideoLayerImpl : public LayerImpl {
   // TODO(danakj): Remove these, hide software path inside ResourceProvider and
   // ExternalResource (aka TextureMailbox) classes.
   std::vector<unsigned> software_resources_;
-  // Called once for each software resource.
-  viz::ReleaseCallback software_release_callback_;
+  using SoftwareReleaseCallback =
+      VideoFrameExternalResources::SoftwareReleaseCallback;
+  // Called once for software_resources_.
+  SoftwareReleaseCallback software_release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoLayerImpl);
 };

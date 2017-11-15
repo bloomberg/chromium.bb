@@ -45,7 +45,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   bool HasReleaseCallbackForResource(viz::ResourceId id);
   void SetResourceReleaseCallback(viz::ResourceId id,
-                                  const viz::ReleaseCallback& callback);
+                                  viz::ReleaseCallback callback);
   int AllocateResourceId();
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
 

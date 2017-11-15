@@ -9,8 +9,8 @@
 
 namespace viz {
 
-SingleReleaseCallback::SingleReleaseCallback(const ReleaseCallback& callback)
-    : callback_(callback) {
+SingleReleaseCallback::SingleReleaseCallback(ReleaseCallback callback)
+    : callback_(std::move(callback)) {
   DCHECK(!callback_.is_null())
       << "Use a NULL SingleReleaseCallback for an empty callback.";
 }
@@ -23,7 +23,7 @@ void SingleReleaseCallback::Run(const gpu::SyncToken& sync_token,
                                 bool is_lost) {
   DCHECK(!callback_.is_null())
       << "SingleReleaseCallback was run more than once.";
-  base::ResetAndReturn(&callback_).Run(sync_token, is_lost);
+  std::move(callback_).Run(sync_token, is_lost);
 }
 
 }  // namespace viz

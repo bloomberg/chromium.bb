@@ -494,7 +494,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       resource->shared_bitmap = nullptr;
       resource->pixels = nullptr;
     }
-    resource->release_callback.Run(sync_token, lost_resource);
+    std::move(resource->release_callback).Run(sync_token, lost_resource);
   }
 
   if (resource->image_id) {

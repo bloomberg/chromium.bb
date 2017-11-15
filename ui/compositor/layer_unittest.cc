@@ -1175,8 +1175,9 @@ TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
   std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
   viz::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(),
                               GL_TEXTURE_2D);
-  root->SetTextureMailbox(mailbox, viz::SingleReleaseCallback::Create(callback),
-                          gfx::Size(10, 10));
+  root->SetTextureMailbox(
+      mailbox, viz::SingleReleaseCallback::Create(std::move(callback)),
+      gfx::Size(10, 10));
   compositor()->SetRootLayer(root.get());
 
   root->SetBounds(gfx::Rect(0, 0, 10, 10));
