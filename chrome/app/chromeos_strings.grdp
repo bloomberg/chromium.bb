@@ -4221,6 +4221,9 @@
   <message name="IDS_AD_USER_HIT_JOIN_QUOTA" desc="Alert message that user can't add more machines to the domain">
     Failed to join the machine to the domain. This might be due to exceeding the maximum number of allowed machine joins for your account on the server.
   </message>
+  <message name="IDS_AD_BOARD_NOT_SUPPORTED" desc="Alert message that the Chromebook model is not supported for Active Directory">
+    Chrome <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> integration is only supported on x86_64 platforms. Chromebooks built on top of an ARM or x86 platform do not support this functionality.
+  </message>
   <message name="IDS_AD_AUTH_NETWORK_ERROR" desc="Error message to show when there is a problem contacting the logon server when authenticating for Active Directory enrollment.">
     Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
   </message>

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
@@ -617,6 +618,13 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
     case authpolicy::ERROR_USER_HIT_JOIN_QUOTA:
       ShowError(IDS_AD_USER_HIT_JOIN_QUOTA, true);
       return;
+#if !defined(ARCH_CPU_X86_64)
+    // Currently, the Active Directory integration is only supported on x86_64
+    // systems. (see https://crbug.com/676602)
+    case authpolicy::ERROR_DBUS_FAILURE:
+      ShowError(IDS_AD_BOARD_NOT_SUPPORTED, true);
+      return;
+#endif
     default:
       LOG(WARNING) << "Unhandled error code: " << code;
       ShowError(IDS_AD_DOMAIN_JOIN_UNKNOWN_ERROR, true);
