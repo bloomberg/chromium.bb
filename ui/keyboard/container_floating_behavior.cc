@@ -238,4 +238,8 @@ bool ContainerFloatingBehavior::TextBlurHidesKeyboard() const {
   return true;
 }
 
+bool ContainerFloatingBehavior::BoundsAffectWorkspaceLayout() const {
+  return false;
+}
+
 }  //  namespace keyboard
