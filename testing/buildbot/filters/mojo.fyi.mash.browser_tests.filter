@@ -340,6 +340,8 @@
 -RequestFileSystemDialogTest.*
 -ResetFirstAfterBootTest.*
 -SafeBrowsingBlockingPageBrowserTestWithThreatTypeAndIsolationSetting/SafeBrowsingBlockingPageBrowserTest.*
+# Flaky. SessionRestoreStatsCollector::Observe failure. crbug.com/785298
+-SAMLPolicyTest.TransferCookiesAffiliated
 -ScreenlockPrivateApiTest.*
 -SessionRestoreTest.*
 -SessionRestoreTestChromeOS.*
