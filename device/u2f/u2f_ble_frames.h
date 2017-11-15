@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_U2F_U2F_BLE_FRAMES_
-#define DEVICE_U2F_U2F_BLE_FRAMES_
-
-#include "base/macros.h"
-
-#include "device/u2f/u2f_command_type.h"
+#ifndef DEVICE_U2F_U2F_BLE_FRAMES_H_
+#define DEVICE_U2F_U2F_BLE_FRAMES_H_
 
 #include <stdint.h>
+
 #include <utility>
 #include <vector>
+
+#include "base/containers/span.h"
+#include "base/macros.h"
+#include "device/u2f/u2f_command_type.h"
 
 namespace device {
 
@@ -97,33 +98,29 @@ class U2fBleFrame {
 // Note: This class and its subclasses don't own the |data|.
 class U2fBleFrameFragment {
  public:
-  U2fBleFrameFragment() = default;
-  ~U2fBleFrameFragment() = default;
-
-  const uint8_t* data() const { return data_; }
-  size_t size() const { return size_; }
+  base::span<const uint8_t> fragment() const { return fragment_; }
 
  protected:
-  U2fBleFrameFragment(const uint8_t* data, size_t size)
-      : data_(data), size_(size) {}
+  U2fBleFrameFragment();
+  explicit U2fBleFrameFragment(base::span<const uint8_t> fragment);
+  U2fBleFrameFragment(const U2fBleFrameFragment& frame);
+  ~U2fBleFrameFragment();
 
  private:
-  const uint8_t* data_ = nullptr;
-  size_t size_ = 0;
+  base::span<const uint8_t> fragment_;
 };
 
 // An initialization fragment of a frame.
 class U2fBleFrameInitializationFragment : public U2fBleFrameFragment {
  public:
-  static bool Parse(const std::vector<uint8_t>& data,
+  static bool Parse(base::span<const uint8_t> data,
                     U2fBleFrameInitializationFragment* fragment);
 
   U2fBleFrameInitializationFragment() = default;
   U2fBleFrameInitializationFragment(U2fCommandType command,
                                     uint16_t data_length,
-                                    const uint8_t* fragment_data,
-                                    size_t fragment_size)
-      : U2fBleFrameFragment(fragment_data, fragment_size),
+                                    base::span<const uint8_t> fragment)
+      : U2fBleFrameFragment(fragment),
         command_(command),
         data_length_(data_length) {}
 
@@ -140,14 +137,13 @@ class U2fBleFrameInitializationFragment : public U2fBleFrameFragment {
 // A continuation fragment of a frame.
 class U2fBleFrameContinuationFragment : public U2fBleFrameFragment {
  public:
-  static bool Parse(const std::vector<uint8_t>& data,
+  static bool Parse(base::span<const uint8_t> data,
                     U2fBleFrameContinuationFragment* fragment);
 
   U2fBleFrameContinuationFragment() = default;
-  U2fBleFrameContinuationFragment(const uint8_t* data,
-                                  size_t size,
+  U2fBleFrameContinuationFragment(base::span<const uint8_t> fragment,
                                   uint8_t sequence)
-      : U2fBleFrameFragment(data, size), sequence_(sequence) {}
+      : U2fBleFrameFragment(fragment), sequence_(sequence) {}
 
   uint8_t sequence() const { return sequence_; }
 
@@ -160,7 +156,8 @@ class U2fBleFrameContinuationFragment : public U2fBleFrameFragment {
 // The helper used to construct a U2fBleFrame from a sequence of its fragments.
 class U2fBleFrameAssembler {
  public:
-  U2fBleFrameAssembler(const U2fBleFrameInitializationFragment& fragment);
+  explicit U2fBleFrameAssembler(
+      const U2fBleFrameInitializationFragment& fragment);
   ~U2fBleFrameAssembler();
 
   bool IsDone() const;
@@ -169,6 +166,7 @@ class U2fBleFrameAssembler {
   U2fBleFrame* GetFrame();
 
  private:
+  uint16_t data_length_ = 0;
   uint8_t sequence_number_ = 0;
   U2fBleFrame frame_;
 
@@ -177,4 +175,4 @@ class U2fBleFrameAssembler {
 
 }  // namespace device
 
-#endif  // DEVICE_U2F_U2F_BLE_FRAMES_
+#endif  // DEVICE_U2F_U2F_BLE_FRAMES_H_

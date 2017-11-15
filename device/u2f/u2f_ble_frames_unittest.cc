@@ -4,10 +4,10 @@
 
 #include "device/u2f/u2f_ble_frames.h"
 
+#include <vector>
+
 #include "device/u2f/u2f_command_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include <vector>
 
 namespace {
 
@@ -23,11 +23,11 @@ std::vector<uint8_t> GetSomeData(size_t size) {
 namespace device {
 
 TEST(U2fBleFramesTest, InitializationFragment) {
-  std::vector<uint8_t> data = GetSomeData(25);
+  const std::vector<uint8_t> data = GetSomeData(25);
   constexpr uint16_t kDataLength = 21123;
 
   U2fBleFrameInitializationFragment fragment(
-      U2fCommandType::CMD_MSG, kDataLength, data.data(), data.size());
+      U2fCommandType::CMD_MSG, kDataLength, base::make_span(data));
 
   std::vector<uint8_t> buffer;
   const size_t binary_size = fragment.Serialize(&buffer);
@@ -40,17 +40,15 @@ TEST(U2fBleFramesTest, InitializationFragment) {
       U2fBleFrameInitializationFragment::Parse(buffer, &parsed_fragment));
 
   EXPECT_EQ(kDataLength, parsed_fragment.data_length());
-  EXPECT_EQ(data, std::vector<uint8_t>(
-                      parsed_fragment.data(),
-                      parsed_fragment.data() + parsed_fragment.size()));
+  EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
   EXPECT_EQ(U2fCommandType::CMD_MSG, parsed_fragment.command());
 }
 
 TEST(U2fBleFramesTest, ContinuationFragment) {
-  auto data = GetSomeData(25);
+  const auto data = GetSomeData(25);
   constexpr uint8_t kSequence = 61;
 
-  U2fBleFrameContinuationFragment fragment(data.data(), data.size(), kSequence);
+  U2fBleFrameContinuationFragment fragment(base::make_span(data), kSequence);
 
   std::vector<uint8_t> buffer;
   const size_t binary_size = fragment.Serialize(&buffer);
@@ -61,9 +59,7 @@ TEST(U2fBleFramesTest, ContinuationFragment) {
   U2fBleFrameContinuationFragment parsed_fragment;
   ASSERT_TRUE(U2fBleFrameContinuationFragment::Parse(buffer, &parsed_fragment));
 
-  EXPECT_EQ(data, std::vector<uint8_t>(
-                      parsed_fragment.data(),
-                      parsed_fragment.data() + parsed_fragment.size()));
+  EXPECT_EQ(base::make_span(data), parsed_fragment.fragment());
   EXPECT_EQ(kSequence, parsed_fragment.sequence());
 }
 
@@ -100,8 +96,8 @@ TEST(U2fBleFramesTest, FrameAssemblerError) {
   auto fragments = frame.ToFragments(20);
   ASSERT_EQ(1u, fragments.second.size());
 
-  fragments.second[0] = U2fBleFrameContinuationFragment(
-      fragments.second[0].data(), fragments.second[0].size(), 51);
+  fragments.second[0] =
+      U2fBleFrameContinuationFragment(fragments.second[0].fragment(), 51);
 
   U2fBleFrameAssembler assembler(fragments.first);
   EXPECT_FALSE(assembler.IsDone());

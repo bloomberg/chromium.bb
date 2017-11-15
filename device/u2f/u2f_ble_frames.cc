@@ -4,10 +4,11 @@
 
 #include "device/u2f/u2f_ble_frames.h"
 
+#include <algorithm>
+#include <limits>
+
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-
-#include <algorithm>
 
 namespace device {
 
@@ -50,29 +51,48 @@ U2fBleFrame::ErrorCode U2fBleFrame::GetErrorCode() const {
 std::pair<U2fBleFrameInitializationFragment,
           std::vector<U2fBleFrameContinuationFragment>>
 U2fBleFrame::ToFragments(size_t max_fragment_size) const {
-  DCHECK_LE(data_.size(), 0xFFFFu);
+  DCHECK_LE(data_.size(), std::numeric_limits<uint16_t>::max());
   DCHECK_GE(max_fragment_size, 3u);
 
-  size_t data_fragment_size = std::min(max_fragment_size - 3, data_.size());
-  U2fBleFrameInitializationFragment initial_fragment(
-      command_, static_cast<uint16_t>(data_.size()), data_.data(),
-      data_fragment_size);
+  // Cast is necessary to ignore too high bits.
+  auto data_view =
+      base::make_span(data_.data(), static_cast<uint16_t>(data_.size()));
 
-  size_t num_continuation_fragments = 0;
+  // Subtract 3 to account for CMD, HLEN and LLEN bytes.
+  const size_t init_fragment_size =
+      std::min(max_fragment_size - 3, data_view.size());
+
+  U2fBleFrameInitializationFragment initial_fragment(
+      command_, data_view.size(), data_view.first(init_fragment_size));
+
   std::vector<U2fBleFrameContinuationFragment> other_fragments;
-  for (size_t pos = data_fragment_size; pos < data_.size();
-       pos += max_fragment_size - 1) {
-    data_fragment_size = std::min(data_.size() - pos, max_fragment_size - 1);
-    other_fragments.push_back(
-        U2fBleFrameContinuationFragment(&data_[pos], data_fragment_size,
-                                        (num_continuation_fragments++) & 0x7F));
+  data_view = data_view.subspan(init_fragment_size);
+
+  while (!data_view.empty()) {
+    // Subtract 1 to account for SEQ byte.
+    const size_t cont_fragment_size =
+        std::min(max_fragment_size - 1, data_view.size());
+    // High bit must stay cleared.
+    other_fragments.emplace_back(data_view.first(cont_fragment_size),
+                                 other_fragments.size() & 0x7F);
+
+    data_view = data_view.subspan(cont_fragment_size);
   }
 
-  return std::make_pair(initial_fragment, std::move(other_fragments));
+  return {initial_fragment, std::move(other_fragments)};
 }
 
+U2fBleFrameFragment::U2fBleFrameFragment() = default;
+
+U2fBleFrameFragment::U2fBleFrameFragment(const U2fBleFrameFragment& frame) =
+    default;
+U2fBleFrameFragment::~U2fBleFrameFragment() = default;
+
+U2fBleFrameFragment::U2fBleFrameFragment(base::span<const uint8_t> fragment)
+    : fragment_(fragment) {}
+
 bool U2fBleFrameInitializationFragment::Parse(
-    const std::vector<uint8_t>& data,
+    base::span<const uint8_t> data,
     U2fBleFrameInitializationFragment* fragment) {
   if (data.size() < 3)
     return false;
@@ -82,8 +102,8 @@ bool U2fBleFrameInitializationFragment::Parse(
   if (static_cast<size_t>(data_length) + 3 < data.size())
     return false;
 
-  *fragment = U2fBleFrameInitializationFragment(
-      command, data_length, data.data() + 3, data.size() - 3);
+  *fragment =
+      U2fBleFrameInitializationFragment(command, data_length, data.subspan(3));
   return true;
 }
 
@@ -92,52 +112,52 @@ size_t U2fBleFrameInitializationFragment::Serialize(
   buffer->push_back(static_cast<uint8_t>(command_));
   buffer->push_back((data_length_ >> 8) & 0xFF);
   buffer->push_back(data_length_ & 0xFF);
-  buffer->insert(buffer->end(), data(), data() + size());
-  return size() + 3;
+  buffer->insert(buffer->end(), fragment().begin(), fragment().end());
+  return fragment().size() + 3;
 }
 
 bool U2fBleFrameContinuationFragment::Parse(
-    const std::vector<uint8_t>& data,
+    base::span<const uint8_t> data,
     U2fBleFrameContinuationFragment* fragment) {
   if (data.empty())
     return false;
   const uint8_t sequence = data[0];
-  *fragment = U2fBleFrameContinuationFragment(data.data() + 1, data.size() - 1,
-                                              sequence);
+  *fragment = U2fBleFrameContinuationFragment(data.subspan(1), sequence);
   return true;
 }
 
 size_t U2fBleFrameContinuationFragment::Serialize(
     std::vector<uint8_t>* buffer) const {
   buffer->push_back(sequence_);
-  buffer->insert(buffer->end(), data(), data() + size());
-  return size() + 1;
+  buffer->insert(buffer->end(), fragment().begin(), fragment().end());
+  return fragment().size() + 1;
 }
 
 U2fBleFrameAssembler::U2fBleFrameAssembler(
     const U2fBleFrameInitializationFragment& fragment)
-    : frame_(fragment.command(), std::vector<uint8_t>()) {
-  std::vector<uint8_t>& data = frame_.data();
-  data.reserve(fragment.data_length());
-  data.assign(fragment.data(), fragment.data() + fragment.size());
-}
+    : data_length_(fragment.data_length()),
+      frame_(fragment.command(),
+             std::vector<uint8_t>(fragment.fragment().begin(),
+                                  fragment.fragment().end())) {}
 
 bool U2fBleFrameAssembler::AddFragment(
     const U2fBleFrameContinuationFragment& fragment) {
   if (fragment.sequence() != sequence_number_)
     return false;
-  if (++sequence_number_ > 0x7F)
-    sequence_number_ = 0;
+  sequence_number_ = (sequence_number_ + 1) & 0x7F;
 
-  std::vector<uint8_t>& data = frame_.data();
-  if (data.size() + fragment.size() > data.capacity())
+  if (static_cast<size_t>(data_length_) <
+      frame_.data().size() + fragment.fragment().size()) {
     return false;
-  data.insert(data.end(), fragment.data(), fragment.data() + fragment.size());
+  }
+
+  frame_.data().insert(frame_.data().end(), fragment.fragment().begin(),
+                       fragment.fragment().end());
   return true;
 }
 
 bool U2fBleFrameAssembler::IsDone() const {
-  return frame_.data().size() == frame_.data().capacity();
+  return frame_.data().size() == data_length_;
 }
 
 U2fBleFrame* U2fBleFrameAssembler::GetFrame() {
