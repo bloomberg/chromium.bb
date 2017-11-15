@@ -1996,8 +1996,6 @@ crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-sta
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]

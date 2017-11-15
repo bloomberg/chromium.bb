@@ -1,55 +1,42 @@
 Tests fetch network filters
 
 filterText: -.css
-isRegex: false
 Found results: 3
 
 filterText: -.png
-isRegex: false
 Found results: 2
 
 filterText: css
-isRegex: false
 Found results: 1
 
 filterText: 
-isRegex: false
 Found results: 4
 
-filterText: .*
-isRegex: true
+filterText: /.*/
 Found results: 4
 
-filterText: .*\..*
-isRegex: true
+filterText: /.*\..*/
 Found results: 4
 
-filterText: .*\.png
-isRegex: true
+filterText: /.*\.png/
 Found results: 2
 
-filterText: NOTHINGTOMATCH
-isRegex: true
+filterText: /NOTHINGTOMATCH/
 Found results: 0
 
-filterText: 
-isRegex: true
-Found results: 4
+filterText: //
+Found results: 0
 
 filterText: png
-isRegex: false
 Found results: 2
 
 filterText: -missing
-isRegex: false
 Found results: 3
 
 filterText: is:from-cache
-isRegex: false
-Found results: 3
+Found results: 1
 
 filterText: -is:from-cache
-isRegex: false
-Found results: 1
+Found results: 3
 
 
