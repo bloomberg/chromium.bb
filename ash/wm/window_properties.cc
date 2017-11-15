@@ -5,6 +5,7 @@
 #include "ash/wm/window_properties.h"
 
 #include "ash/wm/window_state.h"
+#include "ui/gfx/geometry/rect.h"
 
 DECLARE_UI_CLASS_PROPERTY_TYPE(ash::wm::WindowState*);
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
@@ -12,6 +13,8 @@ DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType);
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false);
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsOverrideKey, NULL);
 
@@ -26,6 +29,8 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(WidgetCreationType,
                              kWidgetCreationTypeKey,
                              WidgetCreationType::INTERNAL);
+
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false);
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::wm::WindowState, kWindowStateKey, NULL);
 

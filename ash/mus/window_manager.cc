@@ -21,7 +21,6 @@
 #include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/shell_port_mus.h"
 #include "ash/mus/top_level_window_factory.h"
-#include "ash/mus/window_properties.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_pin_type.h"
