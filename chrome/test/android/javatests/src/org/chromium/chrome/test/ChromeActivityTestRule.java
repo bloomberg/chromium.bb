@@ -386,11 +386,7 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         prepareUrlIntent(intent, url);
 
         startActivityCompletely(intent);
-
-        CriteriaHelper.pollUiThread(() -> ChromeBrowserInitializer.getInstance(
-                getActivity()).hasNativeInitializationCompleted(),
-                "Native initialization never finished", 2 * CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
-                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForActivityNativeInitializationComplete();
 
         CriteriaHelper.pollUiThread(
                 () -> getActivity().getActivityTab() != null, "Tab never selected/initialized.");
@@ -409,6 +405,19 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
         Assert.assertNotNull(tab);
         Assert.assertNotNull(tab.getView());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    /**
+     * Waits for the activity to fully finish it's native initialization.
+     */
+    public void waitForActivityNativeInitializationComplete() {
+        CriteriaHelper.pollUiThread(() -> ChromeBrowserInitializer.getInstance(
+                getActivity()).hasNativeInitializationCompleted(),
+                "Native initialization never finished", 2 * CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        CriteriaHelper.pollUiThread(() -> getActivity().didFinishNativeInitialization(),
+                "Native initialization (of Activity) never finished");
     }
 
     /**
