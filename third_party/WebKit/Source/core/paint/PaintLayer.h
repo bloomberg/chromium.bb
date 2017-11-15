@@ -843,12 +843,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetCompositingReasons(CompositingReasons,
                              CompositingReasons mask = kCompositingReasonAll);
 
-  // Returns true if overlap should be assumed as an optimization due to
-  // inline transforms.
-  bool OverlapSkippedDueToInlineTransform(CompositingReasons reasons) const {
-    return reasons & kCompositingReasonInlineTransform;
-  }
-
   SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
     DCHECK(IsAllowedToQueryCompositingState());
     return rare_data_ ? rare_data_->squashing_disallowed_reasons
