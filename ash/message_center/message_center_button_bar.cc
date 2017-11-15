@@ -44,6 +44,7 @@ constexpr SkColor kButtonSeparatorColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 constexpr int kTextFontSize = 14;
 constexpr int kSeparatorHeight = 24;
 constexpr gfx::Insets kSeparatorPadding(12, 0, 12, 0);
+constexpr gfx::Insets kButtonBarBorder(4, 18, 4, 0);
 
 void SetDefaultButtonStyle(views::Button* button) {
   button->SetFocusForPlatform();
@@ -82,6 +83,10 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   SetPaintToLayer();
   SetBackground(
       views::CreateSolidBackground(message_center_style::kBackgroundColor));
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kHorizontal);
+  SetLayoutManager(layout);
+  SetBorder(views::CreateEmptyBorder(kButtonBarBorder));
 
   notification_label_ = new views::Label(title);
   notification_label_->SetAutoColorReadabilityEnabled(false);
@@ -92,6 +97,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       message_center_style::GetFontListForSizeAndWeight(
           kTextFontSize, gfx::Font::Weight::MEDIUM));
   AddChildView(notification_label_);
+  layout->SetFlexForView(notification_label_, 1);
 
   button_container_ = new views::View;
   button_container_->SetLayoutManager(
@@ -154,40 +160,10 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   SetDefaultButtonStyle(settings_button_);
   button_container_->AddChildView(settings_button_);
 
+  AddChildView(button_container_);
+
   SetCloseAllButtonEnabled(!settings_initially_visible);
   SetBackArrowVisible(settings_initially_visible);
-  ViewVisibilityChanged();
-}
-
-void MessageCenterButtonBar::ViewVisibilityChanged() {
-  // TODO(tetsui): Remove GridLayout and use BoxLayout.
-  // The view will be simple enough for BoxLayout after back arrow removal.
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
-  views::ColumnSet* column = layout->AddColumnSet(0);
-  constexpr int kFooterLeftMargin = 18;
-  column->AddPaddingColumn(0, kFooterLeftMargin);
-
-  // Column for the label "Notifications".
-  column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0f,
-                    views::GridLayout::USE_PREF, 0, 0);
-
-  // Fills in the remaining space between "Notifications" and buttons.
-  column->AddPaddingColumn(1.0f, 0);
-
-  // The button area column.
-  column->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.0f,
-                    views::GridLayout::USE_PREF, 0, 0);
-
-  constexpr int kFooterTopMargin = 4;
-  layout->AddPaddingRow(0, kFooterTopMargin);
-  layout->StartRow(0, 0, message_center_style::kActionIconSize);
-  layout->AddView(notification_label_);
-  if (button_container_->visible())
-    layout->AddView(button_container_);
-  else if (collapse_button_->visible())
-    layout->AddView(collapse_button_);
-  constexpr int kFooterBottomMargin = 4;
-  layout->AddPaddingRow(0, kFooterBottomMargin);
 }
 
 MessageCenterButtonBar::~MessageCenterButtonBar() {}
@@ -218,7 +194,6 @@ views::Button* MessageCenterButtonBar::GetSettingsButtonForTest() const {
 void MessageCenterButtonBar::SetBackArrowVisible(bool visible) {
   collapse_button_->SetVisible(visible);
   button_container_->SetVisible(!visible);
-  ViewVisibilityChanged();
   Layout();
 }
 
@@ -233,7 +208,6 @@ void MessageCenterButtonBar::SetButtonsVisible(bool visible) {
   if (close_all_button_)
     close_all_button_->SetVisible(visible);
 
-  ViewVisibilityChanged();
   Layout();
 }
 

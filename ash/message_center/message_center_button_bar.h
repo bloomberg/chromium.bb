@@ -64,10 +64,6 @@ class MessageCenterButtonBar : public views::View,
   void SetButtonsVisible(bool visible);
 
  private:
-  // Updates the layout manager which can have differing configuration
-  // depending on the visibility of different parts of the button bar.
-  void ViewVisibilityChanged();
-
   MessageCenterView* message_center_view() const {
     return message_center_view_;
   }
