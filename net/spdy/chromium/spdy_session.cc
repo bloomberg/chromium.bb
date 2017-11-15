@@ -866,10 +866,8 @@ void SpdySession::CancelPush(const GURL& url) {
 
   SpdyStreamId stream_id = unclaimed_it->second.stream_id;
 
-  if (active_streams_.find(stream_id) == active_streams_.end()) {
-    ResetStream(stream_id, ERROR_CODE_CANCEL, "Cancelled push stream.");
-  }
-  unclaimed_pushed_streams_.erase(unclaimed_it);
+  DCHECK(active_streams_.find(stream_id) != active_streams_.end());
+  ResetStream(stream_id, ERROR_CODE_CANCEL, "Cancelled push stream.");
 }
 
 void SpdySession::InitializeWithSocket(
