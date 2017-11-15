@@ -3429,13 +3429,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // DCHECK_IS_ON() && defined(SYZYASAN)
 
 #if defined(OS_CHROMEOS)
-    {"enable-external-drive-rename",
-     flag_descriptions::kEnableExternalDriveRename,
-     flag_descriptions::kEnableExternalDriveRenameDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableExternalDriveRename)},
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_CHROMEOS)
     {"sys-internals", flag_descriptions::kSysInternalsName,
      flag_descriptions::kSysInternalsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSysInternals)},

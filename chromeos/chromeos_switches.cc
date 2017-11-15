@@ -528,9 +528,6 @@ const char kEnterpriseDisableLicenseTypeSelection[] =
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
-// Enables a rename action for external drive such as USB and SD.
-const char kEnableExternalDriveRename[] = "enable-external-drive-rename";
-
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
