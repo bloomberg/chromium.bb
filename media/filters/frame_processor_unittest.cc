@@ -1114,6 +1114,68 @@ TEST_P(FrameProcessorTest,
   CheckReadsThenReadStalls(video_.get(), "50 60 40");
 }
 
+TEST_P(FrameProcessorTest, OOOKeyframePts_1) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1010)));
+  // Note that the following does not contain a DTS continuity, but *does*
+  // contain a PTS discontinuity (keyframe at 0.1s after keyframe at 1s).
+  EXPECT_TRUE(ProcessFrames("0K 1000|10K 100|20K", ""));
+
+  // Force sequence mode to place the next frames where segments mode would put
+  // them, to simplify this test case.
+  if (use_sequence_mode_)
+    SetTimestampOffset(Milliseconds(500));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(510)));
+  EXPECT_TRUE(ProcessFrames("500|100K", ""));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) [100,110) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 1000 100");  // Verifies PTS
+    SeekStream(audio_.get(), Milliseconds(100));
+    CheckReadsThenReadStalls(audio_.get(), "500");  // Verifies PTS
+  } else {
+    CheckExpectedRangesByTimestamp(
+        audio_.get(), "{ [0,10) [100,110) [500,510) [1000,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0");
+    SeekStream(audio_.get(), Milliseconds(100));
+    CheckReadsThenReadStalls(audio_.get(), "100");
+    SeekStream(audio_.get(), Milliseconds(500));
+    CheckReadsThenReadStalls(audio_.get(), "500");
+    SeekStream(audio_.get(), Milliseconds(1000));
+    CheckReadsThenReadStalls(audio_.get(), "1000");
+  }
+}
+
+TEST_P(FrameProcessorTest, OOOKeyframePts_2) {
+  InSequence s;
+  AddTestTracks(HAS_AUDIO);
+  frame_processor_->SetSequenceMode(use_sequence_mode_);
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1010)));
+  EXPECT_TRUE(ProcessFrames("0K 1000|10K", ""));
+
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(1010)));
+  EXPECT_TRUE(ProcessFrames("100|20K", ""));
+
+  if (range_api_ == ChunkDemuxerStream::RangeApi::kLegacyByDts) {
+    CheckExpectedRangesByTimestamp(audio_.get(), "{ [0,30) }");
+    CheckReadsThenReadStalls(audio_.get(), "0 1000 100");  // Verifies PTS
+  } else {
+    CheckExpectedRangesByTimestamp(audio_.get(),
+                                   "{ [0,10) [100,110) [1000,1010) }");
+    CheckReadsThenReadStalls(audio_.get(), "0");
+    SeekStream(audio_.get(), Milliseconds(100));
+    CheckReadsThenReadStalls(audio_.get(), "100");
+    SeekStream(audio_.get(), Milliseconds(1000));
+    CheckReadsThenReadStalls(audio_.get(), "1000");
+  }
+}
+
 TEST_P(FrameProcessorTest, AudioNonKeyframeChangedToKeyframe) {
   // Verifies that an audio non-keyframe is changed to a keyframe with a media
   // log warning. An exact overlap append of the preceding keyframe is also done
