@@ -8,36 +8,36 @@
     - When an object has just one retainer it must be expanded automatically until
       there's an object having two or more retainers.
     - Test the expansion of a long retainment chain is limited by a certain level.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([
     function testRetainersView(next) {
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
       function step1() {
-        HeapSnapshotTestRunner.switchToView('Summary', step2);
+        HeapProfilerTestRunner.switchToView('Summary', step2);
       }
 
       function step2() {
-        var row = HeapSnapshotTestRunner.findRow('A');
+        var row = HeapProfilerTestRunner.findRow('A');
         TestRunner.assertEquals(true, !!row, '"A" row');
-        HeapSnapshotTestRunner.expandRow(row, step3);
+        HeapProfilerTestRunner.expandRow(row, step3);
       }
 
       function step3(row) {
         var count = row.data['count'];
         TestRunner.assertEquals(instanceCount.toString(), count);
-        HeapSnapshotTestRunner.clickRowAndGetRetainers(row.children[0], step4);
+        HeapProfilerTestRunner.clickRowAndGetRetainers(row.children[0], step4);
       }
 
       function step4(retainersRoot) {
-        var rowsShown = HeapSnapshotTestRunner.countDataRows(retainersRoot);
+        var rowsShown = HeapProfilerTestRunner.countDataRows(retainersRoot);
         TestRunner.assertEquals(2, rowsShown, 'retaining objects');
         setTimeout(next, 0);
       }
@@ -55,44 +55,44 @@
         // l1 = null;
 
         var sizeOfL3 = 1000000;
-        var builder = new HeapSnapshotTestRunner.HeapSnapshotBuilder();
+        var builder = new HeapProfilerTestRunner.HeapSnapshotBuilder();
         var rootNode = builder.rootNode;
 
-        var gcRootsNode = new HeapSnapshotTestRunner.HeapNode('(GC roots)');
-        rootNode.linkNode(gcRootsNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var gcRootsNode = new HeapProfilerTestRunner.HeapNode('(GC roots)');
+        rootNode.linkNode(gcRootsNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
-        var windowNode = new HeapSnapshotTestRunner.HeapNode('Window', 20);
-        rootNode.linkNode(windowNode, HeapSnapshotTestRunner.HeapEdge.Type.shortcut);
-        gcRootsNode.linkNode(windowNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var windowNode = new HeapProfilerTestRunner.HeapNode('Window', 20);
+        rootNode.linkNode(windowNode, HeapProfilerTestRunner.HeapEdge.Type.shortcut);
+        gcRootsNode.linkNode(windowNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
-        var l3Node = new HeapSnapshotTestRunner.HeapNode('L3', sizeOfL3);
-        var l2Node = new HeapSnapshotTestRunner.HeapNode('L2', 32);
-        var l1Node = new HeapSnapshotTestRunner.HeapNode('L1', 32);
-        var rootNode = new HeapSnapshotTestRunner.HeapNode('Object', 32);
-        windowNode.linkNode(rootNode, HeapSnapshotTestRunner.HeapEdge.Type.property, 'root');
-        rootNode.linkNode(l1Node, HeapSnapshotTestRunner.HeapEdge.Type.property, 'l1a');
-        rootNode.linkNode(l1Node, HeapSnapshotTestRunner.HeapEdge.Type.property, 'l1b');
-        l1Node.linkNode(l2Node, HeapSnapshotTestRunner.HeapEdge.Type.property, 'x');
-        l2Node.linkNode(l3Node, HeapSnapshotTestRunner.HeapEdge.Type.property, 'y');
+        var l3Node = new HeapProfilerTestRunner.HeapNode('L3', sizeOfL3);
+        var l2Node = new HeapProfilerTestRunner.HeapNode('L2', 32);
+        var l1Node = new HeapProfilerTestRunner.HeapNode('L1', 32);
+        var rootNode = new HeapProfilerTestRunner.HeapNode('Object', 32);
+        windowNode.linkNode(rootNode, HeapProfilerTestRunner.HeapEdge.Type.property, 'root');
+        rootNode.linkNode(l1Node, HeapProfilerTestRunner.HeapEdge.Type.property, 'l1a');
+        rootNode.linkNode(l1Node, HeapProfilerTestRunner.HeapEdge.Type.property, 'l1b');
+        l1Node.linkNode(l2Node, HeapProfilerTestRunner.HeapEdge.Type.property, 'x');
+        l2Node.linkNode(l3Node, HeapProfilerTestRunner.HeapEdge.Type.property, 'y');
         return builder.generateSnapshot();
       }
 
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
       function step1() {
-        HeapSnapshotTestRunner.switchToView('Summary', step2);
+        HeapProfilerTestRunner.switchToView('Summary', step2);
       }
 
       function step2() {
-        var row = HeapSnapshotTestRunner.findRow('L3');
+        var row = HeapProfilerTestRunner.findRow('L3');
         TestRunner.assertEquals(true, !!row, '"L3" row');
-        HeapSnapshotTestRunner.expandRow(row, step3);
+        HeapProfilerTestRunner.expandRow(row, step3);
       }
 
       function step3(row) {
         var count = row.data['count'];
         TestRunner.assertEquals('1', count);
-        HeapSnapshotTestRunner.clickRowAndGetRetainers(row.children[0], step4);
+        HeapProfilerTestRunner.clickRowAndGetRetainers(row.children[0], step4);
       }
 
       function step4(retainersRoot) {
@@ -126,44 +126,44 @@
         // for (var i = 0; i < 1000; ++i)
         //   head = { next: head };
 
-        var builder = new HeapSnapshotTestRunner.HeapSnapshotBuilder();
+        var builder = new HeapProfilerTestRunner.HeapSnapshotBuilder();
         var rootNode = builder.rootNode;
 
-        var gcRootsNode = new HeapSnapshotTestRunner.HeapNode('(GC roots)');
-        rootNode.linkNode(gcRootsNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var gcRootsNode = new HeapProfilerTestRunner.HeapNode('(GC roots)');
+        rootNode.linkNode(gcRootsNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
-        var windowNode = new HeapSnapshotTestRunner.HeapNode('Window', 20);
-        rootNode.linkNode(windowNode, HeapSnapshotTestRunner.HeapEdge.Type.shortcut);
-        gcRootsNode.linkNode(windowNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var windowNode = new HeapProfilerTestRunner.HeapNode('Window', 20);
+        rootNode.linkNode(windowNode, HeapProfilerTestRunner.HeapEdge.Type.shortcut);
+        gcRootsNode.linkNode(windowNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
-        var headNode = new HeapSnapshotTestRunner.HeapNode('Object', 32);
-        windowNode.linkNode(headNode, HeapSnapshotTestRunner.HeapEdge.Type.property, 'head');
+        var headNode = new HeapProfilerTestRunner.HeapNode('Object', 32);
+        windowNode.linkNode(headNode, HeapProfilerTestRunner.HeapEdge.Type.property, 'head');
         for (var i = 1; i < 1000; ++i) {
-          var nextNode = new HeapSnapshotTestRunner.HeapNode('Object', 32);
-          headNode.linkNode(nextNode, HeapSnapshotTestRunner.HeapEdge.Type.property, 'next');
+          var nextNode = new HeapProfilerTestRunner.HeapNode('Object', 32);
+          headNode.linkNode(nextNode, HeapProfilerTestRunner.HeapEdge.Type.property, 'next');
           headNode = nextNode;
         }
-        var tailNode = new HeapSnapshotTestRunner.HeapNode('Tail', 32);
-        headNode.linkNode(tailNode, HeapSnapshotTestRunner.HeapEdge.Type.property, 'next');
+        var tailNode = new HeapProfilerTestRunner.HeapNode('Tail', 32);
+        headNode.linkNode(tailNode, HeapProfilerTestRunner.HeapEdge.Type.property, 'next');
         return builder.generateSnapshot();
       }
 
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
       function step1() {
-        HeapSnapshotTestRunner.switchToView('Summary', step2);
+        HeapProfilerTestRunner.switchToView('Summary', step2);
       }
 
       function step2() {
-        var row = HeapSnapshotTestRunner.findRow('Tail');
+        var row = HeapProfilerTestRunner.findRow('Tail');
         TestRunner.assertEquals(true, !!row, '"Tail" row');
-        HeapSnapshotTestRunner.expandRow(row, step3);
+        HeapProfilerTestRunner.expandRow(row, step3);
       }
 
       function step3(row) {
         var count = row.data['count'];
         TestRunner.assertEquals('1', count);
-        HeapSnapshotTestRunner.clickRowAndGetRetainers(row.children[0], step4);
+        HeapProfilerTestRunner.clickRowAndGetRetainers(row.children[0], step4);
       }
 
       function step4(retainersRoot) {
@@ -172,7 +172,7 @@
       }
 
       function step5(retainersRoot) {
-        var rowsShown = HeapSnapshotTestRunner.countDataRows(retainersRoot);
+        var rowsShown = HeapProfilerTestRunner.countDataRows(retainersRoot);
         TestRunner.assertEquals(20, rowsShown, 'retaining objects');
         setTimeout(next, 0);
       }

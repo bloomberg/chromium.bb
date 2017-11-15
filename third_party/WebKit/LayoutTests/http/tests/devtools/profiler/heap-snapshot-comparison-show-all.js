@@ -5,32 +5,32 @@
 (async function() {
   TestRunner.addResult(
       `Tests Comparison view of detailed heap snapshots. The "Show All" button must show all nodes.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   var instanceCount = 24;
   var firstId = 100;
   function createHeapSnapshotA() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount, firstId);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount, firstId);
   }
   function createHeapSnapshotB() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount + 1, firstId + instanceCount * 2);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount + 1, firstId + instanceCount * 2);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Comparison', step2);
+      HeapProfilerTestRunner.switchToView('Comparison', step2);
     }
 
     function step2() {
-      var row = HeapSnapshotTestRunner.findRow('A');
+      var row = HeapProfilerTestRunner.findRow('A');
       TestRunner.assertEquals(true, !!row, '"A" row');
-      HeapSnapshotTestRunner.expandRow(row, step3);
+      HeapProfilerTestRunner.expandRow(row, step3);
     }
 
     var countA;
@@ -41,7 +41,7 @@
       countB = row._removedCount;
       TestRunner.assertEquals(true, countB > 0, 'countB > 0');
 
-      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(true, !!buttonsNode, 'buttons node (added)');
       var words = buttonsNode.showAll.textContent.split(' ');
       for (var i = 0; i < words.length; ++i) {
@@ -50,21 +50,21 @@
           TestRunner.assertEquals(
               countA + countB - row._dataGrid.defaultPopulateCount(), maybeNumber, buttonsNode.showAll.textContent);
       }
-      HeapSnapshotTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
+      HeapProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
     }
 
     function step4(row) {
-      var rowsShown = HeapSnapshotTestRunner.countDataRows(row, function(node) {
+      var rowsShown = HeapProfilerTestRunner.countDataRows(row, function(node) {
         return node.data.addedCount;
       });
       TestRunner.assertEquals(countA, rowsShown, 'after showAll click 1');
 
       countB = row._removedCount;
       TestRunner.assertEquals(true, countB > 0, 'countB > 0');
-      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(false, !!buttonsNode, 'buttons node (deleted)');
 
-      var deletedRowsShown = HeapSnapshotTestRunner.countDataRows(row, function(node) {
+      var deletedRowsShown = HeapProfilerTestRunner.countDataRows(row, function(node) {
         return node.data.removedCount;
       });
       TestRunner.assertEquals(countB, deletedRowsShown, 'deleted rows shown');

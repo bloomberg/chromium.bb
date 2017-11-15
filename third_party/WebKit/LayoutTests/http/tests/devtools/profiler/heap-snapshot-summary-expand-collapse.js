@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(
       `https://crbug.com/738932 Tests the snapshot view is not empty on repeatitive expand-collapse.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
   await TestRunner.loadHTML(`
       <p>
@@ -16,18 +16,18 @@
 
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Summary', step2);
+      HeapProfilerTestRunner.switchToView('Summary', step2);
     }
 
     function step2() {
-      HeapSnapshotTestRunner.findAndExpandRow('A', step3);
+      HeapProfilerTestRunner.findAndExpandRow('A', step3);
     }
 
     function step3(row) {

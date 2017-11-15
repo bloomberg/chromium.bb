@@ -4,15 +4,15 @@
 
 (async function() {
   TestRunner.addResult(`This test checks HeapSnapshots module.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   function createTestEnvironmentInWorker() {
     if (!this.TestRunner)
       TestRunner = {};
 
-    if (!this.HeapSnapshotTestRunner)
-      HeapSnapshotTestRunner = {};
+    if (!this.HeapProfilerTestRunner)
+      HeapProfilerTestRunner = {};
 
     TestRunner.assertEquals = function(expected, found, message) {
       if (expected === found)
@@ -30,12 +30,12 @@
   function runTestSuiteInWorker() {
     var testSuite = [
       function postOrderIndexBug() {
-        var builder = new HeapSnapshotTestRunner.HeapSnapshotBuilder();
-        var node1 = new HeapSnapshotTestRunner.HeapNode('Node1');
-        var node2 = new HeapSnapshotTestRunner.HeapNode('Node2');
-        builder.rootNode.linkNode(node1, HeapSnapshotTestRunner.HeapEdge.Type.internal);
-        builder.rootNode.linkNode(node2, HeapSnapshotTestRunner.HeapEdge.Type.internal);
-        node2.linkNode(node1, HeapSnapshotTestRunner.HeapEdge.Type.internal);
+        var builder = new HeapProfilerTestRunner.HeapSnapshotBuilder();
+        var node1 = new HeapProfilerTestRunner.HeapNode('Node1');
+        var node2 = new HeapProfilerTestRunner.HeapNode('Node2');
+        builder.rootNode.linkNode(node1, HeapProfilerTestRunner.HeapEdge.Type.internal);
+        builder.rootNode.linkNode(node2, HeapProfilerTestRunner.HeapEdge.Type.internal);
+        node2.linkNode(node1, HeapProfilerTestRunner.HeapEdge.Type.internal);
         var snapshot = builder.createJSHeapSnapshot();
         var postOrderIndexes = snapshot._buildPostOrderIndex().nodeOrdinal2PostOrderIndex;
         var nodeOrdinals = snapshot._buildPostOrderIndex().postOrderIndex2NodeOrdinal;
@@ -46,7 +46,7 @@
       },
 
       function heapSnapshotNodeSimpleTest() {
-        var snapshot = HeapSnapshotTestRunner.createJSHeapSnapshotMockObject();
+        var snapshot = HeapProfilerTestRunner.createJSHeapSnapshotMockObject();
         var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
         TestRunner.assertEquals('', nodeRoot.name(), 'root name');
         TestRunner.assertEquals('hidden', nodeRoot.type(), 'root type');
@@ -58,7 +58,7 @@
       },
 
       function heapSnapshotNodeIteratorTest() {
-        var snapshot = HeapSnapshotTestRunner.createJSHeapSnapshotMockObject();
+        var snapshot = HeapProfilerTestRunner.createJSHeapSnapshotMockObject();
         var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
         var iterator = new HeapSnapshotWorker.HeapSnapshotNodeIterator(nodeRoot);
         var names = [];
@@ -68,7 +68,7 @@
       },
 
       function heapSnapshotEdgeSimpleTest() {
-        var snapshot = HeapSnapshotTestRunner.createJSHeapSnapshotMockObject();
+        var snapshot = HeapProfilerTestRunner.createJSHeapSnapshotMockObject();
         var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
         var edgeIterator = new HeapSnapshotWorker.HeapSnapshotEdgeIterator(nodeRoot);
         TestRunner.assertEquals(true, edgeIterator.hasNext(), 'has edges');
@@ -84,7 +84,7 @@
       },
 
       function heapSnapshotEdgeIteratorTest() {
-        var snapshot = HeapSnapshotTestRunner.createJSHeapSnapshotMockObject();
+        var snapshot = HeapProfilerTestRunner.createJSHeapSnapshotMockObject();
         var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
         var names = [];
         for (var iterator = nodeRoot.edges(); iterator.hasNext(); iterator.next())
@@ -95,7 +95,7 @@
       },
 
       function heapSnapshotNodeAndEdgeTest() {
-        var snapshotMock = HeapSnapshotTestRunner.createJSHeapSnapshotMockObject();
+        var snapshotMock = HeapProfilerTestRunner.createJSHeapSnapshotMockObject();
         var nodeRoot = snapshotMock.createNode(snapshotMock._rootNodeIndex);
         var names = [];
 
@@ -114,21 +114,21 @@
         // Now check against a real HeapSnapshot instance.
         names = [];
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         depthFirstTraversal(snapshot.rootNode());
         TestRunner.assertEquals(reference, names.join(','), 'snapshot traversal');
       },
 
       function heapSnapshotSimpleTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         TestRunner.assertEquals(6, snapshot.nodeCount, 'node count');
         TestRunner.assertEquals(20, snapshot.totalSize, 'total size');
       },
 
       function heapSnapshotContainmentEdgeIndexesTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var actual = snapshot._firstEdgeIndexes;
         var expected = [0, 6, 12, 18, 21, 21, 21];
         TestRunner.assertEquals(expected.length, actual.length, 'Edge indexes size');
@@ -138,7 +138,7 @@
 
       function heapSnapshotPostOrderIndexTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var postOrderIndex2NodeOrdinal = snapshot._buildPostOrderIndex().postOrderIndex2NodeOrdinal;
         var expected = [5, 3, 4, 2, 1, 0];
         for (var i = 0; i < expected.length; ++i)
@@ -147,7 +147,7 @@
 
       function heapSnapshotDominatorsTreeTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var result = snapshot._buildPostOrderIndex();
         var dominatorsTree =
             snapshot._buildDominatorTree(result.postOrderIndex2NodeOrdinal, result.nodeOrdinal2PostOrderIndex);
@@ -158,7 +158,7 @@
 
       function heapSnapshotRetainedSizeTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var actualRetainedSizes = new Array(snapshot.nodeCount);
         for (var nodeOrdinal = 0; nodeOrdinal < snapshot.nodeCount; ++nodeOrdinal)
           actualRetainedSizes[nodeOrdinal] = snapshot._retainedSizes[nodeOrdinal];
@@ -168,14 +168,14 @@
       },
 
       function heapSnapshotLargeRetainedSize(next) {
-        var builder = new HeapSnapshotTestRunner.HeapSnapshotBuilder();
+        var builder = new HeapProfilerTestRunner.HeapSnapshotBuilder();
         var node = builder.rootNode;
 
         var iterations = 6;
         var nodeSize = 1000 * 1000 * 1000;
         for (var i = 0; i < 6; i++) {
-          var newNode = new HeapSnapshotTestRunner.HeapNode('Node' + i, nodeSize);
-          node.linkNode(newNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+          var newNode = new HeapProfilerTestRunner.HeapNode('Node' + i, nodeSize);
+          node.linkNode(newNode, HeapProfilerTestRunner.HeapEdge.Type.element);
           node = newNode;
         }
 
@@ -187,7 +187,7 @@
 
       function heapSnapshotDominatedNodesTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
         var expectedDominatedNodes = [21, 14, 7, 28, 35];
         var actualDominatedNodes = snapshot._dominatedNodes;
@@ -204,21 +204,21 @@
       },
 
       function heapSnapshotPageOwnedTest(next) {
-        var builder = new HeapSnapshotTestRunner.HeapSnapshotBuilder();
+        var builder = new HeapProfilerTestRunner.HeapSnapshotBuilder();
         var rootNode = builder.rootNode;
 
-        var debuggerNode = new HeapSnapshotTestRunner.HeapNode('Debugger');
-        rootNode.linkNode(debuggerNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var debuggerNode = new HeapProfilerTestRunner.HeapNode('Debugger');
+        rootNode.linkNode(debuggerNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
-        var windowNode = new HeapSnapshotTestRunner.HeapNode('Window');
-        rootNode.linkNode(windowNode, HeapSnapshotTestRunner.HeapEdge.Type.shortcut);
+        var windowNode = new HeapProfilerTestRunner.HeapNode('Window');
+        rootNode.linkNode(windowNode, HeapProfilerTestRunner.HeapEdge.Type.shortcut);
 
-        var pageOwnedNode = new HeapSnapshotTestRunner.HeapNode('PageOwnedNode');
-        windowNode.linkNode(pageOwnedNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
-        debuggerNode.linkNode(pageOwnedNode, HeapSnapshotTestRunner.HeapEdge.Type.property, 'debugger2pageOwnedNode');
+        var pageOwnedNode = new HeapProfilerTestRunner.HeapNode('PageOwnedNode');
+        windowNode.linkNode(pageOwnedNode, HeapProfilerTestRunner.HeapEdge.Type.element);
+        debuggerNode.linkNode(pageOwnedNode, HeapProfilerTestRunner.HeapEdge.Type.property, 'debugger2pageOwnedNode');
 
-        var debuggerOwnedNode = new HeapSnapshotTestRunner.HeapNode('debuggerOwnedNode');
-        debuggerNode.linkNode(debuggerOwnedNode, HeapSnapshotTestRunner.HeapEdge.Type.element);
+        var debuggerOwnedNode = new HeapProfilerTestRunner.HeapNode('debuggerOwnedNode');
+        debuggerNode.linkNode(debuggerOwnedNode, HeapProfilerTestRunner.HeapEdge.Type.element);
 
         var snapshot = builder.createJSHeapSnapshot();
         snapshot._flags = new Array(snapshot.nodeCount);
@@ -234,7 +234,7 @@
 
       function heapSnapshotRetainersTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var expectedRetainers = {'': [], 'A': [''], 'B': ['', 'A'], 'C': ['A', 'B'], 'D': ['B'], 'E': ['C']};
         for (var nodes = snapshot._allNodes(); nodes.hasNext(); nodes.next()) {
           var names = [];
@@ -249,7 +249,7 @@
 
       function heapSnapshotAggregatesTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var expectedAggregates = {
           'A': {count: 1, self: 2, maxRet: 2, type: 'object', name: 'A'},
           'B': {count: 1, self: 3, maxRet: 8, type: 'object', name: 'B'},
@@ -283,7 +283,7 @@
 
       function heapSnapshotFlagsTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMockWithDOM(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMockWithDOM(), new HeapSnapshotWorker.HeapSnapshotProgress());
         var expectedCanBeQueried = {
           '': false,
           'A': true,
@@ -307,7 +307,7 @@
 
       function heapSnapshotNodesProviderTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
         var allNodeIndexes = [];
         for (var i = 0; i < snapshot.nodes.length; i += snapshot._nodeFieldCount)
@@ -325,7 +325,7 @@
 
       function heapSnapshotEdgesProviderTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
-            HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
         function edgeFilter(edge) {
           return edge.name() === 'b';
@@ -344,7 +344,7 @@
       },
 
       function heapSnapshotLoaderTest() {
-        var source = HeapSnapshotTestRunner.createHeapSnapshotMockRaw();
+        var source = HeapProfilerTestRunner.createHeapSnapshotMockRaw();
         var sourceStringified = JSON.stringify(source);
         var partSize = sourceStringified.length >> 3;
 
@@ -360,7 +360,7 @@
         }
         assertSnapshotEquals(
             new HeapSnapshotWorker.JSHeapSnapshot(
-                HeapSnapshotTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress(), false),
+                HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress(), false),
             result);
       },
     ];
@@ -383,7 +383,7 @@
     TestRunner.addResult('Unexpected event from worker: ' + eventName);
   });
   var source = '(' + createTestEnvironmentInWorker + ')();' +
-      '(' + HeapSnapshotTestRunner.createHeapSnapshotMockFactories + ')();' +
+      '(' + HeapProfilerTestRunner.createHeapSnapshotMockFactories + ')();' +
       '(' + runTestSuiteInWorker + ')();';
   proxy.evaluateForTest(source, function(result) {
     TestRunner.addResult(result);

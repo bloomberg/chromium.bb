@@ -4,19 +4,19 @@
 
 (async function() {
   TestRunner.addResult(`Tests sorting in Containment view of detailed heap snapshots.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Containment', step2);
+      HeapProfilerTestRunner.switchToView('Containment', step2);
     }
 
     var gcRoots;
@@ -25,12 +25,12 @@
     var currentColumnOrder;
 
     function step2() {
-      HeapSnapshotTestRunner.findAndExpandGCRoots(step3);
+      HeapProfilerTestRunner.findAndExpandGCRoots(step3);
     }
 
     function step3(gcRootsRow) {
       gcRoots = gcRootsRow;
-      columns = HeapSnapshotTestRunner.viewColumns();
+      columns = HeapProfilerTestRunner.viewColumns();
       currentColumn = 0;
       currentColumnOrder = false;
       setTimeout(step4, 0);
@@ -42,16 +42,16 @@
         return;
       }
 
-      HeapSnapshotTestRunner.clickColumn(columns[currentColumn], step5);
+      HeapProfilerTestRunner.clickColumn(columns[currentColumn], step5);
     }
 
     function step5(newColumnState) {
       columns[currentColumn] = newColumnState;
-      var contents = HeapSnapshotTestRunner.columnContents(columns[currentColumn], gcRoots);
+      var contents = HeapProfilerTestRunner.columnContents(columns[currentColumn], gcRoots);
       TestRunner.assertEquals(true, !!contents.length, 'column contents');
       var sortTypes = {object: 'name', distance: 'number', shallowSize: 'size', retainedSize: 'size'};
       TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], 'sort by id');
-      HeapSnapshotTestRunner.checkArrayIsSorted(
+      HeapProfilerTestRunner.checkArrayIsSorted(
           contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
 
       if (!currentColumnOrder)

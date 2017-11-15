@@ -4,16 +4,16 @@
 
 (async function() {
   TestRunner.addResult(`Tests showing several node ranges in the Summary view of detailed heap snapshot.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   var instanceCount = 50;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
     var row;
 
     function dumpAndPopulate(step, from, to) {
@@ -26,13 +26,13 @@
     }
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Summary', step2);
+      HeapProfilerTestRunner.switchToView('Summary', step2);
     }
 
     function step2() {
-      row = HeapSnapshotTestRunner.findRow('A');
+      row = HeapProfilerTestRunner.findRow('A');
       TestRunner.addResult('Row found: ' + !!row);
-      HeapSnapshotTestRunner.expandRow(row, step3);
+      HeapProfilerTestRunner.expandRow(row, step3);
     }
 
     async function step3() {

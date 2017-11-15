@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests that search works for large bottom-up view of CPU profile.\n`);
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
 
   var nodesCount = 1000;
   function buildTree(startId, count) {
@@ -61,5 +61,5 @@
     var node = item.profileNode;
     TestRunner.addResult(`${node.callUID}: ${node.functionName} ${node.self} ${node.total}`);
   }
-  ProfilerTestRunner.completeProfilerTest();
+  CPUProfilerTestRunner.completeProfilerTest();
 })();

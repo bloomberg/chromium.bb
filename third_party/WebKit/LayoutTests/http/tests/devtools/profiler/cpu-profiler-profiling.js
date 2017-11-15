@@ -4,13 +4,13 @@
 
 (async function() {
   TestRunner.addResult('Tests that CPU profiling works. https://bugs.webkit.org/show_bug.cgi?id=52634\n');
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
   await TestRunner.showPanel('js_profiler');
 
-  ProfilerTestRunner.runProfilerTestSuite([async function testProfiling(next) {
+  CPUProfilerTestRunner.runProfilerTestSuite([async function testProfiling(next) {
 
-    ProfilerTestRunner.showProfileWhenAdded('profile');
-    ProfilerTestRunner.waitUntilProfileViewIsShown('profile', findPageFunctionInProfileView);
+    CPUProfilerTestRunner.showProfileWhenAdded('profile');
+    CPUProfilerTestRunner.waitUntilProfileViewIsShown('profile', findPageFunctionInProfileView);
 
     await TestRunner.evaluateInPagePromise(`
         function pageFunction() {

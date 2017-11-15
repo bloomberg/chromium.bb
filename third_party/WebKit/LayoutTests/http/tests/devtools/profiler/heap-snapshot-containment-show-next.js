@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(
       `Tests Containment view of detailed heap snapshots. Repeated clicks on "Show Next" button must show all nodes.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
   await TestRunner.loadHTML(`
       <p>
@@ -16,30 +16,30 @@
 
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowNext(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testShowNext(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      HeapSnapshotTestRunner.switchToView('Containment', step2);
+      HeapProfilerTestRunner.switchToView('Containment', step2);
     }
 
     function step2() {
-      HeapSnapshotTestRunner.findAndExpandWindow(step3);
+      HeapProfilerTestRunner.findAndExpandWindow(step3);
     }
 
     function step3(row) {
-      var rowsShown = HeapSnapshotTestRunner.countDataRows(row);
+      var rowsShown = HeapProfilerTestRunner.countDataRows(row);
       TestRunner.assertEquals(
           true, rowsShown <= instanceCount, 'shown more instances than created: ' + rowsShown + ' > ' + instanceCount);
       if (rowsShown < instanceCount) {
-        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(true, !!buttonsNode, 'buttons node');
-        HeapSnapshotTestRunner.clickShowMoreButton('showNext', buttonsNode, step3);
+        HeapProfilerTestRunner.clickShowMoreButton('showNext', buttonsNode, step3);
       } else if (rowsShown === instanceCount) {
-        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapProfilerTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(false, !!buttonsNode, 'buttons node found when all instances are shown!');
         setTimeout(next, 0);
       }

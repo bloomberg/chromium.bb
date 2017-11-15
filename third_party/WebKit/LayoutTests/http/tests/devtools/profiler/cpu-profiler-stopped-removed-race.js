@@ -4,10 +4,10 @@
 
 (async function() {
   TestRunner.addResult(`Tests that profile removal right after stop profiling issued works. Bug 476430.\n`);
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
   await TestRunner.showPanel('js_profiler');
 
-  ProfilerTestRunner.runProfilerTestSuite([function testProfiling(next) {
+  CPUProfilerTestRunner.runProfilerTestSuite([function testProfiling(next) {
     var cpuProfiler = TestRunner.cpuProfilerModel;
     var targetManager = SDK.targetManager;
     targetManager.addEventListener(SDK.TargetManager.Events.SuspendStateChanged, onSuspendStateChanged);
@@ -27,7 +27,7 @@
         return;
       }
       TestRunner.addResult('Resuming targets');
-      ProfilerTestRunner.completeProfilerTest();
+      CPUProfilerTestRunner.completeProfilerTest();
     }
 
     function stopRecording(resultPromise) {

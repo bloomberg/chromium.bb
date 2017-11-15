@@ -4,19 +4,19 @@
 
 (async function() {
   TestRunner.addResult(`Tests search in Summary view of detailed heap snapshots.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
   var instanceCount = 200;
   function createHeapSnapshot() {
-    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount, 100);
+    return HeapProfilerTestRunner.createHeapSnapshot(instanceCount, 100);
   }
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testSearch(next) {
-    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([function testSearch(next) {
+    HeapProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step0() {
-      HeapSnapshotTestRunner.switchToView('Summary', step1);
+      HeapProfilerTestRunner.switchToView('Summary', step1);
     }
 
     var view;
@@ -26,7 +26,7 @@
     }
 
     function step1() {
-      view = HeapSnapshotTestRunner.currentProfileView();
+      view = HeapProfilerTestRunner.currentProfileView();
       TestRunner.addSniffer(view, '_selectRevealedNode', step2);
       view.performSearch({query: '@1', caseSensitive: false});
     }
@@ -37,7 +37,7 @@
         return next();
       }
       TestRunner.addResult('PASS: hidden node @1 was not found.');
-      view = HeapSnapshotTestRunner.currentProfileView();
+      view = HeapProfilerTestRunner.currentProfileView();
       addNodeSelectSniffer('A', '101', step3);
       view.performSearch({query: '@101', caseSensitive: false});
     }

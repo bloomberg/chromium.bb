@@ -4,12 +4,12 @@
 
 (async function() {
   TestRunner.addResult('Tests that sampling heap profiling works.\n');
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
-  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([async function testProfiling(next) {
+  HeapProfilerTestRunner.runHeapSnapshotTestSuite([async function testProfiling(next) {
 
-    HeapSnapshotTestRunner.startSamplingHeapProfiler();
+    HeapProfilerTestRunner.startSamplingHeapProfiler();
     await TestRunner.evaluateInPagePromise(`
         function pageFunction() {
           (function () {
@@ -20,9 +20,9 @@
           })();
         }
         pageFunction();`);
-    HeapSnapshotTestRunner.stopSamplingHeapProfiler();
+    HeapProfilerTestRunner.stopSamplingHeapProfiler();
 
-    const view = await HeapSnapshotTestRunner.showProfileWhenAdded('Profile 1');
+    const view = await HeapProfilerTestRunner.showProfileWhenAdded('Profile 1');
     const tree = view.profileDataGridTree;
     if (!tree)
       TestRunner.addResult('no tree');

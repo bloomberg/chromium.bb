@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests that CPU profiling is able to save/load.\n`);
-  await TestRunner.loadModule('profiler_test_runner');
+  await TestRunner.loadModule('cpu_profiler_test_runner');
   await TestRunner.showPanel('js_profiler');
   await TestRunner.evaluateInPagePromise(`
       function pageFunction() {
@@ -36,7 +36,7 @@
   };
   var file = new MockedFile();
 
-  ProfilerTestRunner.runProfilerTestSuite([
+  CPUProfilerTestRunner.runProfilerTestSuite([
     function testSave(next) {
       function saveProfileToFile(profile) {
         Bindings.FileOutputStream = function() {};
@@ -73,8 +73,8 @@
 
         profile.saveToFile();
       }
-      ProfilerTestRunner.showProfileWhenAdded('manual');
-      ProfilerTestRunner.waitUntilProfileViewIsShown('manual', view => saveProfileToFile(view._profileHeader));
+      CPUProfilerTestRunner.showProfileWhenAdded('manual');
+      CPUProfilerTestRunner.waitUntilProfileViewIsShown('manual', view => saveProfileToFile(view._profileHeader));
       TestRunner.evaluateInPage('pageFunction()', function done() {});
     },
 
@@ -92,7 +92,7 @@
       }
       var profilesPanel = UI.panels.js_profiler;
       var profileName = file.name.substr(0, file.name.length - '.cpuprofile'.length);
-      ProfilerTestRunner.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
+      CPUProfilerTestRunner.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
       profilesPanel._loadFromFile(file);
       TestRunner.addSniffer(Profiler.CPUProfileHeader.prototype, 'updateStatus', function(statusText) {
         if (!statusText.startsWith('Parsing'))

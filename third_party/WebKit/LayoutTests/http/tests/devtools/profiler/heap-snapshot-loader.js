@@ -4,10 +4,10 @@
 
 (async function() {
   TestRunner.addResult(`This test checks HeapSnapshots loader.\n`);
-  await TestRunner.loadModule('heap_snapshot_test_runner');
+  await TestRunner.loadModule('heap_profiler_test_runner');
   await TestRunner.showPanel('heap_profiler');
 
-  var source = HeapSnapshotTestRunner.createHeapSnapshotMockRaw();
+  var source = HeapProfilerTestRunner.createHeapSnapshotMockRaw();
   var sourceStringified = JSON.stringify(source);
   var partSize = sourceStringified.length >> 3;
 
