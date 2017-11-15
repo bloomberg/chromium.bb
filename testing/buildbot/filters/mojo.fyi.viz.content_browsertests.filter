@@ -20,12 +20,6 @@
 -ResourceFetcherTests.*
 -SavableResourcesTest.*
 
-# ReuqestCompositorFrameSink crashes http://crbug.com/784943
--CrossSiteTransferTest/CrossSiteTransferTest.MaliciousPostWithFileData*
--DevToolsProtocolTest.InspectDuringFrameSwap
--OpenedByDOMTest.CrossProcessPopup
--RenderFrameHostManagerTest.*
-
 # OOPIFs aren't supported yet http://crbug.com/778751
 -CrossProcessFrameTreeBrowserTest.*
 -CrossSiteResourceHandlerTest.*
