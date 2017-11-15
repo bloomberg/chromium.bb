@@ -22,8 +22,8 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   }
   // Blink-internal constructor
   static CSSMathInvert* Create(CSSNumericValue* value) {
-    return new CSSMathInvert(value,
-                             CSSNumericValueType::NegateEntries(value->Type()));
+    return new CSSMathInvert(
+        value, CSSNumericValueType::NegateExponents(value->Type()));
   }
 
   String getOperator() const final { return "invert"; }

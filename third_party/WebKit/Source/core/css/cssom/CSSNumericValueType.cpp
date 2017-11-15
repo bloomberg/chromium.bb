@@ -63,12 +63,12 @@ CSSNumericValueType::BaseType UnitTypeToBaseType(
 
 CSSNumericValueType::CSSNumericValueType(CSSPrimitiveValue::UnitType unit) {
   if (unit != CSSPrimitiveValue::UnitType::kNumber)
-    SetEntry(UnitTypeToBaseType(unit), 1);
+    SetExponent(UnitTypeToBaseType(unit), 1);
 }
 
-CSSNumericValueType CSSNumericValueType::NegateEntries(
+CSSNumericValueType CSSNumericValueType::NegateExponents(
     CSSNumericValueType type) {
-  std::for_each(type.entries_.begin(), type.entries_.end(),
+  std::for_each(type.exponents_.begin(), type.exponents_.end(),
                 [](int& v) { v *= -1; });
   return type;
 }
@@ -92,13 +92,13 @@ CSSNumericValueType CSSNumericValueType::Add(CSSNumericValueType type1,
   // differences.
   for (unsigned i = 0; i < kNumBaseTypes; ++i) {
     const BaseType base_type = static_cast<BaseType>(i);
-    if (type1.entries_[i] != type2.entries_[i]) {
+    if (type1.exponents_[i] != type2.exponents_[i]) {
       if (base_type != BaseType::kPercent) {
         type1.ApplyPercentHint(base_type);
         type2.ApplyPercentHint(base_type);
       }
 
-      if (type1.entries_[i] != type2.entries_[i]) {
+      if (type1.exponents_[i] != type2.exponents_[i]) {
         error = true;
         return type1;
       }
@@ -109,10 +109,31 @@ CSSNumericValueType CSSNumericValueType::Add(CSSNumericValueType type1,
   return type1;
 }
 
+CSSNumericValueType CSSNumericValueType::Multiply(CSSNumericValueType type1,
+                                                  CSSNumericValueType type2,
+                                                  bool& error) {
+  if (type1.HasPercentHint() && type2.HasPercentHint() &&
+      type1.PercentHint() != type2.PercentHint()) {
+    error = true;
+    return type1;
+  }
+
+  if (type1.HasPercentHint())
+    type2.ApplyPercentHint(type1.PercentHint());
+  else if (type2.HasPercentHint())
+    type1.ApplyPercentHint(type2.PercentHint());
+
+  for (unsigned i = 0; i < kNumBaseTypes; ++i)
+    type1.exponents_[i] += type2.exponents_[i];
+
+  error = false;
+  return type1;
+}
+
 void CSSNumericValueType::ApplyPercentHint(BaseType hint) {
   DCHECK_NE(hint, BaseType::kPercent);
-  SetEntry(hint, GetEntry(hint) + GetEntry(BaseType::kPercent));
-  SetEntry(BaseType::kPercent, 0);
+  SetExponent(hint, Exponent(hint) + Exponent(BaseType::kPercent));
+  SetExponent(BaseType::kPercent, 0);
   percent_hint_ = hint;
   has_percent_hint_ = true;
 }
