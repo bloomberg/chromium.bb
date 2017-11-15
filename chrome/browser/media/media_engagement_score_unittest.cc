@@ -84,8 +84,8 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
 
     score->IncrementVisits();
     score->IncrementMediaPlaybacks();
-    score->IncrementAudiblePlaybacks();
-    score->IncrementSignificantPlaybacks();
+    score->IncrementAudiblePlaybacks(1);
+    score->IncrementSignificantPlaybacks(1);
     score->IncrementVisitsWithMediaTag();
   }
 

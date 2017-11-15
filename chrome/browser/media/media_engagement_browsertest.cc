@@ -118,12 +118,20 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
     Advance(MediaEngagementBrowserTest::kMaxWaitingTime);
   }
 
-  void ExpectScores(int visits, int media_playbacks) {
-    ExpectScores(http_server_.GetURL("/"), visits, media_playbacks);
+  void ExpectScores(int visits,
+                    int media_playbacks,
+                    int audible_playbacks,
+                    int significant_playbacks) {
+    ExpectScores(http_server_.GetURL("/"), visits, media_playbacks,
+                 audible_playbacks, significant_playbacks);
   }
 
-  void ExpectScoresSecondOrigin(int visits, int media_playbacks) {
-    ExpectScores(http_server_origin2_.GetURL("/"), visits, media_playbacks);
+  void ExpectScoresSecondOrigin(int visits,
+                                int media_playbacks,
+                                int audible_playbacks,
+                                int significant_playbacks) {
+    ExpectScores(http_server_origin2_.GetURL("/"), visits, media_playbacks,
+                 audible_playbacks, significant_playbacks);
   }
 
   content::WebContents* GetWebContents() {
@@ -178,14 +186,20 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
   void CloseBrowser() { CloseAllBrowsers(); }
 
  private:
-  void ExpectScores(GURL url, int visits, int media_playbacks) {
+  void ExpectScores(GURL url,
+                    int visits,
+                    int media_playbacks,
+                    int audible_playbacks,
+                    int significant_playbacks) {
     MediaEngagementScore score = GetService()->CreateEngagementScore(url);
     EXPECT_EQ(visits, score.visits());
     EXPECT_EQ(media_playbacks, score.media_playbacks());
+    EXPECT_EQ(audible_playbacks, score.audible_playbacks());
+    EXPECT_EQ(significant_playbacks, score.significant_playbacks());
   }
 
   void InjectTimerTaskRunner() {
-    contents_observer()->playback_timer_->SetTaskRunner(task_runner_);
+    contents_observer()->SetTaskRunnerForTest(task_runner_);
   }
 
   MediaEngagementService* GetService() {
@@ -213,13 +227,16 @@ class MediaEngagementBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 1);
+  ExpectScores(1, 1, 0, 0);
+  CloseTab();
+  ExpectScores(1, 1, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 1);
+  CloseTab();
+  ExpectScores(1, 1, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -227,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
   Advance(base::TimeDelta::FromSeconds(1));
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -235,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", false);
   Advance(base::TimeDelta::FromSeconds(1));
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -243,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", true);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -251,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html", true);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -259,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlay("engagement_test_muted.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -267,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlay("engagement_test_audio_muted.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -277,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExecuteScript("document.getElementById(\"media\").pause();");
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -287,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExecuteScript("document.getElementById(\"media\").pause();");
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -296,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   OpenTab();
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 1);
+  ExpectScores(1, 1, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -305,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   OpenTab();
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 1);
+  ExpectScores(1, 1, 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -314,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                                        false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -322,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlay("engagement_test_no_audio_track.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -330,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlay("engagement_test_silent_audio_track.html", false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnBrowserClose) {
@@ -339,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnBrowserClose) {
   AdvanceMeaningfulPlaybackTime();
 
   CloseBrowser();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -353,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   AdvanceMeaningfulPlaybackTime();
 
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnNewOrigin) {
@@ -362,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnNewOrigin) {
   AdvanceMeaningfulPlaybackTime();
 
   LoadNewOriginPage();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -371,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                              false);
   AdvanceMeaningfulPlaybackTime();
   CloseTab();
-  ExpectScores(1, 0);
+  ExpectScores(1, 0, 1, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation) {
@@ -382,8 +399,9 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation) {
   WaitForWasRecentlyAudible();
   AdvanceMeaningfulPlaybackTime();
 
-  ExpectScores(1, 1);
-  ExpectScoresSecondOrigin(0, 0);
+  CloseTab();
+  ExpectScores(1, 1, 1, 1);
+  ExpectScoresSecondOrigin(0, 0, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation_AudioOnly) {
@@ -394,8 +412,9 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation_AudioOnly) {
   WaitForWasRecentlyAudible();
   AdvanceMeaningfulPlaybackTime();
 
-  ExpectScores(1, 1);
-  ExpectScoresSecondOrigin(0, 0);
+  CloseTab();
+  ExpectScores(1, 1, 1, 1);
+  ExpectScoresSecondOrigin(0, 0, 0, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
@@ -403,5 +422,13 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html", false);
   EraseHistory();
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 1);
+  CloseTab();
+  ExpectScores(1, 1, 1, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, MultipleElements) {
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_multiple.html", false);
+  AdvanceMeaningfulPlaybackTime();
+  CloseTab();
+  ExpectScores(1, 1, 3, 2);
 }
