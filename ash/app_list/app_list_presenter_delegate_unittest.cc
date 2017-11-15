@@ -134,58 +134,6 @@ TEST_F(AppListPresenterDelegateTest,
   EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
 }
 
-// Tests that clicking outside the app-list bubble closes it.
-TEST_F(AppListPresenterDelegateTest, ClickOutsideBubbleClosesBubble) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
-
-  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
-  aura::Window* app_window = app_list_presenter_impl()->GetWindow();
-  ASSERT_TRUE(app_window);
-  ui::test::EventGenerator& generator = GetEventGenerator();
-
-  // Click on the bubble itself. The bubble should remain visible.
-  generator.MoveMouseToCenterOf(app_window);
-  generator.ClickLeftButton();
-  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
-
-  // Click outside the bubble. This should close it.
-  gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
-  gfx::Point point_outside =
-      gfx::Point(app_window_bounds.right(), app_window_bounds.y()) +
-      gfx::Vector2d(10, 0);
-  generator.MoveMouseToInHost(point_outside);
-  generator.ClickLeftButton();
-  EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
-}
-
-// Tests that tapping outside the app-list bubble closes it.
-TEST_F(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
-
-  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
-  aura::Window* app_window = app_list_presenter_impl()->GetWindow();
-  ASSERT_TRUE(app_window);
-  gfx::Rect app_window_bounds = app_window->GetBoundsInRootWindow();
-  ui::test::EventGenerator& generator = GetEventGenerator();
-
-  // Click on the bubble itself. The bubble should remain visible.
-  generator.GestureTapAt(app_window_bounds.CenterPoint());
-  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
-
-  // Tap outside the bubble. This should close it.
-  gfx::Point point_outside =
-      gfx::Point(app_window_bounds.right(), app_window_bounds.y()) +
-      gfx::Vector2d(10, 0);
-  generator.GestureTapAt(point_outside);
-  EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
-}
-
 // Tests opening the app list on a secondary display, then deleting the display.
 TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   // Set up a screen with two displays (horizontally adjacent).
@@ -203,34 +151,6 @@ TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
 
   // Updating the displays should close the app list.
   EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
-}
-
-// Tests opening the app list on a tiny display that is too small to contain
-// it.
-TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
-
-  // Set up a screen with a tiny display (height smaller than the app list).
-  UpdateDisplay("400x300");
-
-  app_list_presenter_impl()->ShowAndRunLoop(GetPrimaryDisplayId());
-  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
-
-  // The top of the app list should be on-screen (even if the bottom is not).
-  // We need to manually calculate the Y coordinate of the top of the app list
-  // from the anchor (center) and height. There isn't a bounds rect that gives
-  // the actual app list position (the widget bounds include the bubble border
-  // which is much bigger than the actual app list size).
-
-  app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
-  const int app_list_view_top =
-      app_list->anchor_rect().y() - app_list->bounds().height() / 2;
-  const int kMinimalAppListMargin = 10;
-
-  EXPECT_GE(app_list_view_top, kMinimalAppListMargin);
 }
 
 // Tests that the app list is not draggable in side shelf alignment.
@@ -752,7 +672,6 @@ TEST_F(AppListPresenterDelegateTest,
   // should show.
   GetPrimaryShelf()->SetAlignment(ShelfAlignment::SHELF_ALIGNMENT_LEFT);
   app_list_presenter_impl()->ShowAndRunLoop(GetPrimaryDisplayId());
-  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   EXPECT_FALSE(GetPrimaryShelf()->IsHorizontalAlignment());
   EXPECT_EQ(GetPrimaryShelf()->shelf_layout_manager()->GetShelfBackgroundType(),
             SHELF_BACKGROUND_APP_LIST);

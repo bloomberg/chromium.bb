@@ -438,8 +438,7 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
     return;
 
   is_app_list_visible_ = shown;
-  if (app_list::features::IsFullscreenAppListEnabled())
-    MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+  MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
 }
 
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
@@ -475,9 +474,6 @@ void ShelfLayoutManager::OnKeyboardClosed() {
 }
 
 ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
-  const bool is_fullscreen_app_list_enabled =
-      app_list::features::IsFullscreenAppListEnabled();
-
   if (state_.pre_lock_screen_animation_active)
     return SHELF_BACKGROUND_DEFAULT;
 
@@ -486,7 +482,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     return SHELF_BACKGROUND_OVERLAP;
 
   // If the app list is active, hide the shelf background to prevent overlap.
-  if (is_app_list_visible_ && is_fullscreen_app_list_enabled)
+  if (is_app_list_visible_)
     return SHELF_BACKGROUND_APP_LIST;
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
@@ -1100,8 +1096,7 @@ void ShelfLayoutManager::StartGestureDrag(
         shelf_bounds.bottom() - gesture_in_screen.location().y();
   } else {
     // Disable the shelf dragging if the fullscreen app list is opened.
-    if (app_list::features::IsFullscreenAppListEnabled() &&
-        is_app_list_visible_) {
+    if (is_app_list_visible_) {
       return;
     }
     gesture_drag_status_ = GESTURE_DRAG_IN_PROGRESS;
@@ -1248,10 +1243,6 @@ void ShelfLayoutManager::CancelGestureDrag() {
 
 bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
     float scroll_y_hint) const {
-  // Only fullscreen app list can be dragged from the shelf.
-  if (!app_list::features::IsFullscreenAppListEnabled())
-    return false;
-
   // Fullscreen app list can only be dragged from bottom alignment shelf.
   if (!shelf_->IsHorizontalAlignment())
     return false;

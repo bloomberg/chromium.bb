@@ -17,8 +17,7 @@ namespace app_list {
 SuggestionsContainerView::SuggestionsContainerView(
     ContentsView* contents_view,
     PaginationModel* pagination_model)
-    : contents_view_(contents_view),
-      pagination_model_(pagination_model) {
+    : contents_view_(contents_view), pagination_model_(pagination_model) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -133,7 +132,7 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   for (; i < apps_num; ++i) {
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
         this, view_delegate_, pagination_model_, true,
-        true /* is_fullscreen_app_list_enabled */,
+
         is_play_store_app_search_enabled);
     tiles_layout_manager->AddView(tile_item);
     AddChildView(tile_item);

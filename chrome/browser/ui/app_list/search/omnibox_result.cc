@@ -160,8 +160,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
       list_controller_(list_controller),
       autocomplete_controller_(autocomplete_controller),
       is_voice_query_(is_voice_query),
-      match_(match),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      match_(match) {
   if (match_.search_terms_args && autocomplete_controller_) {
     match_.search_terms_args->from_app_list = true;
     autocomplete_controller_->UpdateMatchDestinationURL(
@@ -218,25 +217,16 @@ void OmniboxResult::UpdateIcon() {
   bool is_bookmarked =
       bookmark_model && bookmark_model->IsBookmarked(match_.destination_url);
 
-  if (is_fullscreen_app_list_enabled_) {
-    const gfx::VectorIcon& icon =
-        is_bookmarked ? kIcBookmarkIcon : TypeToVectorIcon(match_.type);
-    SetIcon(
-        gfx::CreateVectorIcon(icon, kListIconSizeFullscreen, kListIconColor));
-  } else {
-    const gfx::VectorIcon& icon =
-        is_bookmarked ? omnibox::kStarIcon
-                      : AutocompleteMatch::TypeToVectorIcon(match_.type);
-    SetIcon(gfx::CreateVectorIcon(icon, 16, kIconColor));
-  }
+  const gfx::VectorIcon& icon =
+      is_bookmarked ? kIcBookmarkIcon : TypeToVectorIcon(match_.type);
+  SetIcon(gfx::CreateVectorIcon(icon, kListIconSize, kListIconColor));
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {
   // For url result with non-empty description, swap title and details. Thus,
   // the url description is presented as title, and url itself is presented as
   // details.
-  const bool use_directly =
-      !is_fullscreen_app_list_enabled_ || !IsUrlResultWithDescription();
+  const bool use_directly = !IsUrlResultWithDescription();
   SearchResult::Tags title_tags;
   if (use_directly) {
     set_title(match_.contents);

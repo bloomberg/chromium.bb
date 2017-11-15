@@ -46,8 +46,6 @@ class OmniboxResult : public SearchResult {
   bool is_voice_query_;
   AutocompleteMatch match_;
 
-  const bool is_fullscreen_app_list_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(OmniboxResult);
 };
 

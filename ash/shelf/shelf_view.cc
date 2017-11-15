@@ -1549,9 +1549,6 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 bool ShelfView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  if (!app_list::features::IsFullscreenAppListEnabled())
-    return false;
-
   shelf_->ProcessMouseWheelEvent(event);
   return true;
 }

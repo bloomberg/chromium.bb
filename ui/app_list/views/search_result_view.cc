@@ -26,20 +26,13 @@ namespace app_list {
 
 namespace {
 
-constexpr int kPreferredWidth = 300;
-constexpr int kPreferredWidthFullscreen = 640;
-constexpr int kPreferredHeight = 56;
-constexpr int kPreferredHeightFullscreen = 48;
-constexpr int kIconLeftPadding = 16;
-constexpr int kIconRightPadding = 24;
+constexpr int kPreferredWidth = 640;
+constexpr int kPreferredHeight = 48;
 constexpr int kIconLeftRightPadding = 19;
 constexpr int kTextTrailPadding = 16;
-constexpr int kSeparatorPadding = 62;
-constexpr int kBorderSize = 1;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
 
-constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0xFF, 0xE1, 0xE1, 0xE1);
 // Matched text color, #000 87%.
 constexpr SkColor kMatchedTextColor =
     SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
@@ -53,34 +46,7 @@ constexpr SkColor kRowSelectedColor =
     SkColorSetARGBMacro(0x14, 0x00, 0x00, 0x00);
 
 int GetIconViewWidth() {
-  if (!features::IsFullscreenAppListEnabled())
-    return kListIconSize + kIconLeftPadding + kIconRightPadding;
-  return kListIconSizeFullscreen + 2 * kIconLeftRightPadding;
-}
-
-// Creates a RenderText of given |text| and |styles|. Caller takes ownership
-// of returned RenderText. Used for bubble launcher.
-gfx::RenderText* CreateRenderText(const base::string16& text,
-                                  const SearchResult::Tags& tags) {
-  gfx::RenderText* render_text = gfx::RenderText::CreateInstance();
-  render_text->SetText(text);
-  render_text->SetColor(kResultDefaultTextColor);
-
-  for (SearchResult::Tags::const_iterator it = tags.begin(); it != tags.end();
-       ++it) {
-    // NONE means default style so do nothing.
-    if (it->styles == SearchResult::Tag::NONE)
-      continue;
-
-    if (it->styles & SearchResult::Tag::MATCH)
-      render_text->ApplyWeight(gfx::Font::Weight::BOLD, it->range);
-    if (it->styles & SearchResult::Tag::DIM)
-      render_text->ApplyColor(kResultDimmedTextColor, it->range);
-    else if (it->styles & SearchResult::Tag::URL)
-      render_text->ApplyColor(kResultURLTextColor, it->range);
-  }
-
-  return render_text;
+  return kListIconSize + 2 * kIconLeftRightPadding;
 }
 
 }  // namespace
@@ -95,7 +61,6 @@ SearchResultView::SearchResultView(SearchResultListView* list_view)
       badge_icon_(new views::ImageView),
       actions_view_(new SearchResultActionsView(this)),
       progress_bar_(new views::ProgressBar),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
   if (is_app_list_focus_enabled_)
     SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -141,31 +106,20 @@ void SearchResultView::ClearSelectedAction() {
 }
 
 void SearchResultView::UpdateTitleText() {
-  if (!result_ || result_->title().empty()) {
+  if (!result_ || result_->title().empty())
     title_text_.reset();
-  } else {
-    if (!is_fullscreen_app_list_enabled_) {
-      title_text_.reset(
-          CreateRenderText(result_->title(), result_->title_tags()));
-    } else {
-      CreateTitleRenderText();
-    }
-  }
+  else
+    CreateTitleRenderText();
 
   UpdateAccessibleName();
 }
 
 void SearchResultView::UpdateDetailsText() {
-  if (!result_ || result_->details().empty()) {
+  if (!result_ || result_->details().empty())
     details_text_.reset();
-  } else {
-    if (!is_fullscreen_app_list_enabled_) {
-      details_text_.reset(
-          CreateRenderText(result_->details(), result_->details_tags()));
-    } else {
-      CreateDetailsRenderText();
-    }
-  }
+  else
+
+    CreateDetailsRenderText();
 
   UpdateAccessibleName();
 }
@@ -199,7 +153,6 @@ void SearchResultView::UpdateAccessibleName() {
 }
 
 void SearchResultView::CreateTitleRenderText() {
-  DCHECK(is_fullscreen_app_list_enabled_);
   std::unique_ptr<gfx::RenderText> render_text(
       gfx::RenderText::CreateInstance());
   render_text->SetText(result_->title());
@@ -225,7 +178,6 @@ void SearchResultView::CreateTitleRenderText() {
 }
 
 void SearchResultView::CreateDetailsRenderText() {
-  DCHECK(is_fullscreen_app_list_enabled_);
   // Ensures single line row for omnibox non-url search result.
   if (result_->is_omnibox_search()) {
     details_text_.reset();
@@ -250,10 +202,7 @@ const char* SearchResultView::GetClassName() const {
 }
 
 gfx::Size SearchResultView::CalculatePreferredSize() const {
-  if (!is_fullscreen_app_list_enabled_)
-    return gfx::Size(kPreferredWidth, kPreferredHeight);
-
-  return gfx::Size(kPreferredWidthFullscreen, kPreferredHeightFullscreen);
+  return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
 
 void SearchResultView::Layout() {
@@ -263,31 +212,18 @@ void SearchResultView::Layout() {
 
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(GetIconViewWidth());
-  if (is_fullscreen_app_list_enabled_) {
-    const int top_bottom_padding =
-        (rect.height() - kListIconSizeFullscreen) / 2;
-    icon_bounds.Inset(kIconLeftRightPadding, top_bottom_padding,
-                      kIconLeftRightPadding, top_bottom_padding);
-  } else {
-    const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
-    icon_bounds.Inset(kIconLeftPadding, top_bottom_padding, kIconRightPadding,
-                      top_bottom_padding);
-  }
+  const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
+  icon_bounds.Inset(kIconLeftRightPadding, top_bottom_padding,
+                    kIconLeftRightPadding, top_bottom_padding);
   icon_bounds.Intersect(rect);
   icon_->SetBoundsRect(icon_bounds);
 
   gfx::Rect badge_icon_bounds;
-  if (is_fullscreen_app_list_enabled_) {
-    badge_icon_bounds =
-        gfx::Rect(icon_bounds.right() - kListBadgeIconSizeFullscreen / 2,
-                  icon_bounds.bottom() - kListBadgeIconSizeFullscreen / 2,
-                  kListBadgeIconSizeFullscreen, kListBadgeIconSizeFullscreen);
-  } else {
-    badge_icon_bounds = gfx::Rect(
-        icon_bounds.right() - kListBadgeIconSize + kListBadgeIconOffsetX,
-        icon_bounds.bottom() - kListBadgeIconSize + kListBadgeIconOffsetY,
-        kListBadgeIconSize, kListBadgeIconSize);
-  }
+
+  badge_icon_bounds = gfx::Rect(icon_bounds.right() - kListBadgeIconSize / 2,
+                                icon_bounds.bottom() - kListBadgeIconSize / 2,
+                                kListBadgeIconSize, kListBadgeIconSize);
+
   badge_icon_bounds.Intersect(rect);
   badge_icon_->SetBoundsRect(badge_icon_bounds);
 
@@ -352,11 +288,6 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect content_rect(rect);
-  const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
-
-  if (!is_fullscreen_app_list_enabled_)
-    canvas->FillRect(content_rect, kCardBackgroundColor);
-
   gfx::Rect text_bounds(rect);
   text_bounds.set_x(GetIconViewWidth());
   if (actions_view_->visible()) {
@@ -372,29 +303,15 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
   text_bounds.set_x(
       GetMirroredXWithWidthInView(text_bounds.x(), text_bounds.width()));
 
-  if (is_fullscreen_app_list_enabled_) {
-    // Set solid color background to avoid broken text. See crbug.com/746563.
-    // This should be drawn before selected color which is semi-transparent.
-    canvas->FillRect(text_bounds, kCardBackgroundColorFullscreen);
-  }
+  // Set solid color background to avoid broken text. See crbug.com/746563.
+  // This should be drawn before selected color which is semi-transparent.
+  canvas->FillRect(text_bounds, kCardBackgroundColor);
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
   if (is_app_list_focus_enabled_ ? selected()
                                  : list_view_->IsResultViewSelected(this)) {
-    canvas->FillRect(content_rect, is_fullscreen_app_list_enabled_
-                                       ? kRowSelectedColor
-                                       : kSelectedColor);
-  } else if (!is_fullscreen_app_list_enabled_ && hover) {
-    canvas->FillRect(content_rect, kHighlightedColor);
-  }
-
-  if (!is_fullscreen_app_list_enabled_ && !is_last_result_) {
-    gfx::Rect line_rect = content_rect;
-    line_rect.set_height(kBorderSize);
-    line_rect.set_y(content_rect.bottom() - kBorderSize);
-    line_rect.set_x(kSeparatorPadding);
-    canvas->FillRect(line_rect, kSeparatorColor);
+    canvas->FillRect(content_rect, kRowSelectedColor);
   }
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);
@@ -453,9 +370,7 @@ void SearchResultView::OnIconChanged() {
   if (image.isNull())
     return;
 
-  SetIconImage(image, icon_,
-               is_fullscreen_app_list_enabled_ ? kListIconSizeFullscreen
-                                               : kListIconSize);
+  SetIconImage(image, icon_, kListIconSize);
 }
 
 void SearchResultView::OnBadgeIconChanged() {
@@ -466,9 +381,7 @@ void SearchResultView::OnBadgeIconChanged() {
     return;
   }
 
-  SetIconImage(image, badge_icon_,
-               is_fullscreen_app_list_enabled_ ? kListBadgeIconSizeFullscreen
-                                               : kListBadgeIconSize);
+  SetIconImage(image, badge_icon_, kListBadgeIconSize);
   badge_icon_->SetVisible(true);
 }
 

@@ -52,13 +52,11 @@ SearchResultTileItemView::SearchResultTileItemView(
     AppListViewDelegate* view_delegate,
     PaginationModel* pagination_model,
     bool is_suggested_app,
-    bool is_fullscreen_app_list_enabled,
     bool is_play_store_search_enabled)
     : is_suggested_app_(is_suggested_app),
       result_container_(result_container),
       view_delegate_(view_delegate),
-      pagination_model_(pagination_model),
-      is_fullscreen_app_list_enabled_(is_fullscreen_app_list_enabled) {
+      pagination_model_(pagination_model) {
   // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
   // non-null item makes the tile visible.
   SetVisible(false);
@@ -120,36 +118,32 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetRating(item_->rating());
   SetPrice(item_->formatted_price());
 
-  if (is_fullscreen_app_list_enabled_) {
-    const gfx::FontList& font = AppListAppTitleFont();
-    if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
-      set_is_recommendation(true);
+  const gfx::FontList& font = AppListAppTitleFont();
+  if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION) {
+    set_is_recommendation(true);
 
-      title()->SetFontList(font);
-      title()->SetLineHeight(font.GetHeight());
-      title()->SetEnabledColor(kGridTitleColor);
-    } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
-      // Set solid color background to avoid broken text. See crbug.com/746563.
-      if (rating_) {
-        rating_->SetBackground(
-            views::CreateSolidBackground(kCardBackgroundColorFullscreen));
-      }
-      if (price_) {
-        price_->SetBackground(
-            views::CreateSolidBackground(kCardBackgroundColorFullscreen));
-      }
-      title()->SetBackground(
-          views::CreateSolidBackground(kCardBackgroundColorFullscreen));
-      title()->SetFontList(font);
-      title()->SetLineHeight(font.GetHeight());
-      title()->SetEnabledColor(kSearchTitleColor);
+    title()->SetFontList(font);
+    title()->SetLineHeight(font.GetHeight());
+    title()->SetEnabledColor(kGridTitleColor);
+  } else if (item_->display_type() == SearchResult::DISPLAY_TILE) {
+    // Set solid color background to avoid broken text. See crbug.com/746563.
+    if (rating_) {
+      rating_->SetBackground(
+          views::CreateSolidBackground(kCardBackgroundColor));
     }
-
-    title()->SetMaxLines(2);
-    title()->SetMultiLine(item_->display_type() == SearchResult::DISPLAY_TILE &&
-                          item_->result_type() ==
-                              SearchResult::RESULT_INSTALLED_APP);
+    if (price_) {
+      price_->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+    }
+    title()->SetBackground(views::CreateSolidBackground(kCardBackgroundColor));
+    title()->SetFontList(font);
+    title()->SetLineHeight(font.GetHeight());
+    title()->SetEnabledColor(kSearchTitleColor);
   }
+
+  title()->SetMaxLines(2);
+  title()->SetMultiLine(item_->display_type() == SearchResult::DISPLAY_TILE &&
+                        item_->result_type() ==
+                            SearchResult::RESULT_INSTALLED_APP);
 
   // Only refresh the icon if it's different from the old one. This prevents
   // flickering.
@@ -209,10 +203,7 @@ void SearchResultTileItemView::LogAppLaunch() const {
   if (!is_suggested_app_)
     return;
 
-  UMA_HISTOGRAM_BOOLEAN(is_fullscreen_app_list_enabled_
-                            ? kAppListAppLaunchedFullscreen
-                            : kAppListAppLaunched,
-                        is_suggested_app_);
+  UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen, is_suggested_app_);
 }
 
 void SearchResultTileItemView::ButtonPressed(views::Button* sender,
@@ -301,7 +292,7 @@ void SearchResultTileItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  if (!is_fullscreen_app_list_enabled_ || !item_) {
+  if (!item_) {
     TileItemView::Layout();
     return;
   }
@@ -364,7 +355,7 @@ void SearchResultTileItemView::Layout() {
 }
 
 gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
-  if (is_fullscreen_app_list_enabled_ && item_) {
+  if (item_) {
     if (item_->display_type() == SearchResult::DISPLAY_RECOMMENDATION)
       return gfx::Size(kGridTileWidth, kGridTileHeight);
     if (item_->display_type() == SearchResult::DISPLAY_TILE)

@@ -46,7 +46,6 @@ class APP_LIST_EXPORT SearchResultPageView
   void OnAnimationUpdated(double progress,
                           AppListModel::State from_state,
                           AppListModel::State to_state) override;
-  int GetSearchBoxZHeight() const override;
   void OnHidden() override;
   gfx::Rect GetSearchBoxBounds() const override;
   views::View* GetSelectedView() const override;
@@ -80,8 +79,6 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // -1 indicates no selection.
   int selected_index_;
-
-  const bool is_fullscreen_app_list_enabled_;
 
   // Whether the app list focus is enabled.
   const bool is_app_list_focus_enabled_;

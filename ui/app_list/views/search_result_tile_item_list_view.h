@@ -60,8 +60,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   const bool is_play_store_app_search_enabled_;
 
-  const bool is_fullscreen_app_list_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(SearchResultTileItemListView);
 };
 

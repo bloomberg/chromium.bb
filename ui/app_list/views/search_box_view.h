@@ -65,9 +65,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
   bool HasSearch() const;
   void ClearSearch();
 
-  // Sets the shadow border of the search box.
-  void SetShadow(const gfx::ShadowValue& shadow);
-
   // Returns the bounds to use for the view (including the shadow) given the
   // desired bounds of the search box contents.
   gfx::Rect GetViewBoundsForSearchBoxContentsBounds(
@@ -244,9 +241,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::WidgetDelegateView,
 
   // Owned by |content_container_|. It is deleted when the view is deleted.
   views::BoxLayout* box_layout_ = nullptr;
-
-  // Whether the fullscreen app list feature is enabled.
-  const bool is_fullscreen_app_list_enabled_;
 
   // Whether the app list focus is enabled.
   const bool is_app_list_focus_enabled_;

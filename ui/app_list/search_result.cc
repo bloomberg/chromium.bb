@@ -92,8 +92,7 @@ int SearchResult::GetPreferredIconDimension() const {
     case DISPLAY_TILE:
       return kTileIconSize;
     case DISPLAY_LIST:
-      return features::IsFullscreenAppListEnabled() ? kListIconSizeFullscreen
-                                                    : kListIconSize;
+      return kListIconSize;
     case DISPLAY_NONE:
     case DISPLAY_CARD:
       return 0;

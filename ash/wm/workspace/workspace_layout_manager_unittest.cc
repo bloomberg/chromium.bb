@@ -1410,36 +1410,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
 }
 
-// The non-fullscreen app list should not affect the backdrop.
-TEST_F(WorkspaceLayoutManagerBackdropTest,
-       BackdropIgnoresNonFullscreenAppListVisibilityNotification) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
-
-  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
-  WorkspaceControllerTestApi test_helper(wc);
-
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
-  EXPECT_FALSE(test_helper.GetBackdropWindow());
-
-  // Turn the top window backdrop on.
-  ShowTopWindowBackdropForContainer(default_container(), true);
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-  EXPECT_FALSE(app_list::features::IsFullscreenAppListEnabled());
-
-  // Showing the non-fullscreen app list should have no effect for the backdrop.
-  TestAppListPresenterImpl app_list_presenter_impl;
-  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-
-  // There should also be no change when the app list is hidden.
-  app_list_presenter_impl.DismissAndRunLoop();
-  EXPECT_TRUE(test_helper.GetBackdropWindow());
-}
-
 // Fullscreen app list changes to visible should hide the backdrop, otherwise,
 // should show the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest,
@@ -1456,7 +1426,6 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   EXPECT_TRUE(test_helper.GetBackdropWindow());
-  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
   // Showing the fullscreen app list should hide the backdrop.
   TestAppListPresenterImpl app_list_presenter_impl;
   app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());

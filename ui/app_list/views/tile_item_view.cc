@@ -61,8 +61,7 @@ TileItemView::TileItemView()
       parent_background_color_(SK_ColorTRANSPARENT),
       icon_(new views::ImageView),
       badge_(nullptr),
-      title_(new views::Label),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
+      title_(new views::Label) {
   if (features::IsAppListFocusEnabled())
     SetFocusBehavior(FocusBehavior::ALWAYS);
   // Prevent the icon view from interfering with our mouse events.
@@ -162,7 +161,7 @@ void TileItemView::StateChanged(ButtonState old_state) {
 }
 
 void TileItemView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (!is_fullscreen_app_list_enabled_ || !selected_)
+  if (!selected_)
     return;
 
   gfx::Rect rect(GetContentsBounds());
@@ -235,28 +234,9 @@ void TileItemView::UpdateBackgroundColor() {
   // rendering. Does not actually set the label's background color.
   title_->SetBackgroundColor(background_color);
 
-  if (is_fullscreen_app_list_enabled_) {
-    SetBackground(nullptr);
-    SchedulePaint();
-    return;
-  }
-
-  std::unique_ptr<views::Background> background;
-  if (selected_) {
-    background_color = kSelectedColor;
-    background = views::CreateSolidBackground(background_color);
-  } else if (image_shadow_animator_) {
-    if (state() == STATE_HOVERED || state() == STATE_PRESSED)
-      image_shadow_animator_->animation()->Show();
-    else
-      image_shadow_animator_->animation()->Hide();
-  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    background_color = kHighlightedColor;
-    background = views::CreateSolidBackground(background_color);
-  }
-
-  SetBackground(std::move(background));
+  SetBackground(nullptr);
   SchedulePaint();
+  return;
 }
 
 }  // namespace app_list

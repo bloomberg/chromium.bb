@@ -300,28 +300,8 @@ void ContentsView::UpdateSearchBox(double progress,
   gfx::Rect search_box_rect =
       gfx::Tween::RectValueBetween(progress, search_box_from, search_box_to);
 
-  int original_z_height = from_page->GetSearchBoxZHeight();
-  int target_z_height = to_page->GetSearchBoxZHeight();
-
-  if (original_z_height != target_z_height) {
-    gfx::ShadowValue original_shadow = GetShadowForZHeight(original_z_height);
-    gfx::ShadowValue target_shadow = GetShadowForZHeight(target_z_height);
-
-    gfx::Vector2d offset(gfx::Tween::LinearIntValueBetween(
-                             progress, original_shadow.x(), target_shadow.x()),
-                         gfx::Tween::LinearIntValueBetween(
-                             progress, original_shadow.y(), target_shadow.y()));
-    search_box->SetShadow(gfx::ShadowValue(
-        offset,
-        gfx::Tween::LinearIntValueBetween(progress, original_shadow.blur(),
-                                          target_shadow.blur()),
-        gfx::Tween::ColorValueBetween(progress, original_shadow.color(),
-                                      target_shadow.color())));
-  }
-  if (is_fullscreen_app_list_enabled_) {
-    search_box->UpdateLayout(progress, current_state, target_state);
-    search_box->UpdateBackground(progress, current_state, target_state);
-  }
+  search_box->UpdateLayout(progress, current_state, target_state);
+  search_box->UpdateBackground(progress, current_state, target_state);
   search_box->GetWidget()->SetBounds(
       search_box->GetViewBoundsForSearchBoxContentsBounds(
           ConvertRectToWidget(search_box_rect)));

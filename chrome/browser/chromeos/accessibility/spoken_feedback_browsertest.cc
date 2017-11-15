@@ -321,10 +321,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateAppLauncher) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
-  if (app_list::features::IsFullscreenAppListEnabled())
-    return;
+  // TODO(newcomer): reimplement this test once the AppListFocus changes are
+  // complete (http://crbug.com/784942).
+  return;
 
   EnableChromeVox();
 

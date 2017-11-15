@@ -1439,7 +1439,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   view_->OnGestureEvent(&update_event);
 
   EXPECT_TRUE(IsStateShown(AppListModel::STATE_APPS));
-  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 AppListModel::STATE_APPS));
 
@@ -1447,7 +1447,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // during drag.
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_SEARCH_RESULTS));
   EXPECT_TRUE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 AppListModel::STATE_SEARCH_RESULTS));
 
@@ -1462,7 +1462,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
   // Search box should keep |kSearchBoxCornerRadiusFullscreen| corner radius
   // if launcher drag finished.
   EXPECT_FALSE(view_->is_in_drag());
-  EXPECT_EQ(kSearchBoxBorderCornerRadiusFullscreen,
+  EXPECT_EQ(kSearchBoxBorderCornerRadius,
             search_box_view()->GetSearchBoxBorderCornerRadiusForState(
                 AppListModel::STATE_APPS));
 }
