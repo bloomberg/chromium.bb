@@ -1,4 +1,4 @@
-Verify that UISourceCodes are removed as main frame gets navigated.
+Verify that debugger live location gets updated.
 
 
 Running: attachFrame
@@ -9,11 +9,7 @@ Running: navigateMainFrame
 [ UPDATE ]  LiveLocation-css: null
 [ UPDATE ]  LiveLocation-css: null
 [ UPDATE ]  LiveLocation-js: http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-script.js:0:0
-[ UPDATE ]  LiveLocation-js: debugger:///VM94 sourcemap-script.js:0:0
-Page reloaded.
+[ UPDATE ]  LiveLocation-js: debugger:///VM[XXX] sourcemap-script.js:0:0
 [  GET   ]  LiveLocation-js: null
 [  GET   ]  LiveLocation-css: null
-
-Running: navigateBack
-Page reloaded.
 

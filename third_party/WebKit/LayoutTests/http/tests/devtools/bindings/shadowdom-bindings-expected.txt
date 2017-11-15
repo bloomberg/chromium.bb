@@ -3,49 +3,37 @@ Verify that UISourceCodes are added and removed as shadow dom styles and scripts
 
 Running: dumpInitialWorkspace
 Removed: 0 uiSourceCodes
-Workspace: 7 uiSourceCodes.
-    debugger:///VM[XXX] bindings-test.js
-    debugger:///VM[XXX] inspector-test.js
-    debugger:///VM[XXX] shadowdom-bindings.html
-    debugger:///VM[XXX] shadowdom-bindings.html
-    http://127.0.0.1:8000/devtools/bindings/shadowdom-bindings.html
-    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/inspector-test.js
+Workspace: 3 uiSourceCodes.
+    debugger:///VM[XXX]
+    debugger:///VM[XXX]
+    http://127.0.0.1:8000/devtools/resources/inspected-page.html
 
 Running: attachShadow1
 Removed: 0 uiSourceCodes
-Workspace: 14 uiSourceCodes.
-    debugger:///VM[XXX] bindings-test.js
-    debugger:///VM[XXX] inspector-test.js
-    debugger:///VM[XXX] shadowdom-bindings.html
-    debugger:///VM[XXX] shadowdom-bindings.html
+Workspace: 10 uiSourceCodes.
+    debugger:///VM[XXX]
+    debugger:///VM[XXX]
 [+] debugger:///VM[XXX] sourcemap-script.js
 [+] debugger:///VM[XXX] _test_attachShadow1.js
 [+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
 [+] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
-    http://127.0.0.1:8000/devtools/bindings/shadowdom-bindings.html
-    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/inspector-test.js
+    http://127.0.0.1:8000/devtools/resources/inspected-page.html
 [+] sourcemap-script.js
 [+] sourcemap-style.css
 [+] _test_attachShadow1.js
 
 Running: attachShadow2
 Removed: 0 uiSourceCodes
-Workspace: 17 uiSourceCodes.
-    debugger:///VM[XXX] bindings-test.js
-    debugger:///VM[XXX] inspector-test.js
-    debugger:///VM[XXX] shadowdom-bindings.html
-    debugger:///VM[XXX] shadowdom-bindings.html
+Workspace: 13 uiSourceCodes.
+    debugger:///VM[XXX]
+    debugger:///VM[XXX]
     debugger:///VM[XXX] sourcemap-script.js
 [+] debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] _test_attachShadow1.js
 [+] debugger:///VM[XXX] _test_attachShadow2.js
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
-    http://127.0.0.1:8000/devtools/bindings/shadowdom-bindings.html
-    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/inspector-test.js
+    http://127.0.0.1:8000/devtools/resources/inspected-page.html
     sourcemap-script.js
     sourcemap-style.css
     _test_attachShadow1.js
@@ -53,11 +41,9 @@ Workspace: 17 uiSourceCodes.
 
 Running: detachShadow1
 Removed: 0 uiSourceCodes
-Workspace: 19 uiSourceCodes.
-    debugger:///VM[XXX] bindings-test.js
-    debugger:///VM[XXX] inspector-test.js
-    debugger:///VM[XXX] shadowdom-bindings.html
-    debugger:///VM[XXX] shadowdom-bindings.html
+Workspace: 15 uiSourceCodes.
+    debugger:///VM[XXX]
+    debugger:///VM[XXX]
     debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] _test_attachShadow1.js
@@ -65,9 +51,7 @@ Workspace: 19 uiSourceCodes.
 [+] debugger:///VM[XXX] _test_detachShadow1.js
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
-    http://127.0.0.1:8000/devtools/bindings/shadowdom-bindings.html
-    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/inspector-test.js
+    http://127.0.0.1:8000/devtools/resources/inspected-page.html
     sourcemap-script.js
     sourcemap-style.css
     _test_attachShadow1.js
@@ -78,11 +62,9 @@ Running: detachShadow2
 Removed: 2 uiSourceCodes
 [-] http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-sass.scss
 [-] sourcemap-style.css
-Workspace: 19 uiSourceCodes.
-    debugger:///VM[XXX] bindings-test.js
-    debugger:///VM[XXX] inspector-test.js
-    debugger:///VM[XXX] shadowdom-bindings.html
-    debugger:///VM[XXX] shadowdom-bindings.html
+Workspace: 15 uiSourceCodes.
+    debugger:///VM[XXX]
+    debugger:///VM[XXX]
     debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] sourcemap-script.js
     debugger:///VM[XXX] _test_attachShadow1.js
@@ -90,9 +72,7 @@ Workspace: 19 uiSourceCodes.
     debugger:///VM[XXX] _test_detachShadow1.js
 [+] debugger:///VM[XXX] _test_detachShadow2.js
     http://127.0.0.1:8000/devtools/bindings/resources/sourcemap-typescript.ts
-    http://127.0.0.1:8000/devtools/bindings/shadowdom-bindings.html
-    http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/inspector-test.js
+    http://127.0.0.1:8000/devtools/resources/inspected-page.html
     sourcemap-script.js
     _test_attachShadow1.js
     _test_attachShadow2.js

@@ -6421,7 +6421,6 @@ crbug.com/591099 http/tests/devtools/appcache/appcache-iframe-manifests.html [ F
 crbug.com/591099 http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.html [ Failure ]
 crbug.com/591099 http/tests/devtools/audits2/audits2-limited-run.js [ Crash ]
 crbug.com/591099 http/tests/devtools/audits2/audits2-successful-run.js [ Crash ]
-crbug.com/591099 http/tests/devtools/bindings/livelocation-main-frame-navigated.html [ Failure ]
 crbug.com/591099 http/tests/devtools/console/command-line-api.js [ Pass Timeout ]
 crbug.com/591099 http/tests/devtools/console/console-format.js [ Failure ]
 crbug.com/591099 http/tests/devtools/console/console-functions.js [ Failure ]
