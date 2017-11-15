@@ -3052,11 +3052,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if options.send_mail:
       refspec_opts.append('ready')
       refspec_opts.append('notify=ALL')
+    elif not self.GetIssue():
+      refspec_opts.append('wip')
     else:
-      if not self.GetIssue():
-        refspec_opts.append('wip')
-      else:
-        refspec_opts.append('notify=NONE')
+      refspec_opts.append('notify=NONE')
 
     # TODO(tandrii): options.message should be posted as a comment
     # if --send-mail is set on non-initial upload as Rietveld used to do it.
@@ -3072,6 +3071,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # Documentation on Gerrit topics is here:
       # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
       refspec_opts.append('topic=%s' % options.topic)
+
+    # Gerrit sorts hashtags, so order is not important.
+    hashtags = {self.SanitizeTag(t) for t in options.hashtags}
+    if not self.GetIssue():
+      hashtags.update(self.GetHashTags(change_desc.description))
+    refspec_opts += ['hashtag=%s' % t for t in sorted(hashtags)]
 
     refspec_suffix = ''
     if refspec_opts:
@@ -3136,6 +3141,40 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           labels={'Code-Review': score})
 
     return 0
+
+  _STRIP_PREFIX_RGX = re.compile(
+      r'^(\s*(revert|reland)( "|:)?\s*)*', re.IGNORECASE)
+  _BRACKET_TAG_RGX = re.compile(r'\s*\[([^\[\]]+)\]')
+  _COLON_SEPARATED_TAG_RGX = re.compile(r'^([a-zA-Z0-9_\- ]+):')
+  _BAD_TAG_CHUNK_RGX = re.compile(r'[^a-zA-Z0-9]+')
+
+  @classmethod
+  def SanitizeTag(cls, tag):
+    """Returns a sanitized Gerrit hash tag. Can be used as parameter value."""
+    return cls._BAD_TAG_CHUNK_RGX.sub('-', tag).strip('-').lower()
+
+  @classmethod
+  def GetHashTags(cls, description):
+    """Extracts ans sanitizes a list of tags from a CL description."""
+
+    subject = description.split('\n', 1)[0]
+    subject = cls._STRIP_PREFIX_RGX.sub('', subject)
+
+    tags = []
+    start = 0
+    while True:
+      m = cls._BRACKET_TAG_RGX.match(subject, start)
+      if not m:
+        break
+      tags.append(cls.SanitizeTag(m.group(1)))
+      start = m.end()
+
+    if not tags:
+      # Try "Tag: " prefix.
+      m = cls._COLON_SEPARATED_TAG_RGX.match(subject)
+      if m:
+        tags.append(cls.SanitizeTag(m.group(1)))
+    return tags
 
   def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,
                      change_desc):
@@ -4871,6 +4910,12 @@ def CMDupload(parser, args):
   If the name of the checked out branch starts with "bug-" or "fix-" followed by
   a bug number, this bug number is automatically populated in the CL
   description.
+
+  If subject contains text in square brackets or has "<text>: " prefix, such
+  text(s) is treated as Gerrit hashtags. For example, CLs with subjects
+    [git-cl] add support for hashtags
+    Foo bar: implement foo
+  will be hashtagged with "git-cl" and "foo-bar" respectively.
   """
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
                     help='bypass upload presubmit hook')
@@ -4897,6 +4942,10 @@ def CMDupload(parser, args):
   parser.add_option('--cc',
                     action='append', default=[],
                     help='cc email addresses')
+  parser.add_option('--hashtag', dest='hashtags',
+                    action='append', default=[],
+                    help=('Gerrit hashtag for new CL; '
+                          'can be applied multiple times'))
   parser.add_option('-s', '--send-mail', action='store_true',
                     help='send email to reviewer(s) and cc(s) immediately')
   parser.add_option('--emulate_svn_auto_props',
@@ -4907,22 +4956,17 @@ def CMDupload(parser, args):
   parser.add_option('-c', '--use-commit-queue', action='store_true',
                     help='tell the commit queue to commit this patchset; '
                           'implies --send-mail')
-  parser.add_option('--private', action='store_true',
-                    help='set the review private (rietveld only)')
   parser.add_option('--target_branch',
                     '--target-branch',
                     metavar='TARGET',
                     help='Apply CL to remote ref TARGET.  ' +
                          'Default: remote branch head, or master')
   parser.add_option('--squash', action='store_true',
-                    help='Squash multiple commits into one (Gerrit only)')
+                    help='Squash multiple commits into one')
   parser.add_option('--no-squash', action='store_true',
-                    help='Don\'t squash multiple commits into one ' +
-                         '(Gerrit only)')
+                    help='Don\'t squash multiple commits into one')
   parser.add_option('--topic', default=None,
-                    help='Topic to specify when uploading (Gerrit only)')
-  parser.add_option('--email', default=None,
-                    help='email address to use to connect to Rietveld')
+                    help='Topic to specify when uploading')
   parser.add_option('--tbr-owners', dest='add_owners_to', action='store_const',
                     const='TBR', help='add a set of OWNERS to TBR')
   parser.add_option('--r-owners', dest='add_owners_to', action='store_const',
@@ -4934,6 +4978,12 @@ def CMDupload(parser, args):
   parser.add_option('--dependencies', action='store_true',
                     help='Uploads CLs of all the local branches that depend on '
                          'the current branch')
+
+  # TODO: remove Rietveld flags
+  parser.add_option('--private', action='store_true',
+                    help='set the review private (rietveld only)')
+  parser.add_option('--email', default=None,
+                    help='email address to use to connect to Rietveld')
 
   orig_args = args
   add_git_similarity(parser)

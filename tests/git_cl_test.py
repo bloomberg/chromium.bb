@@ -618,6 +618,7 @@ class GitCookiesCheckerTest(TestCase):
     self.maxDiff = 10000
     self.assertEqual(by_line(sys.stdout.getvalue().strip()), by_line(expected))
 
+
 class TestGitCl(TestCase):
   def setUp(self):
     super(TestGitCl, self).setUp()
@@ -1915,6 +1916,47 @@ class TestGitCl(TestCase):
     # CMDupload should have been called 5 times because of 5 dependent branches.
     self.assertEquals(5, record_calls.times_called)
     self.assertEquals(0, ret)
+
+  def test_get_hash_tags(self):
+    cases = [
+      ('', []),
+      ('a', []),
+      ('[a]', ['a']),
+      ('[aa]', ['aa']),
+      ('[a ]', ['a']),
+      ('[a- ]', ['a']),
+      ('[a- b]', ['a-b']),
+      ('[a--b]', ['a-b']),
+      ('[a', []),
+      ('[a]x', ['a']),
+      ('[aa]x', ['aa']),
+      ('[a b]', ['a-b']),
+      ('[a  b]', ['a-b']),
+      ('[a__b]', ['a-b']),
+      ('[a] x', ['a']),
+      ('[a][b]', ['a', 'b']),
+      ('[a] [b]', ['a', 'b']),
+      ('[a][b]x', ['a', 'b']),
+      ('[a][b] x', ['a', 'b']),
+      ('[a]\n[b]', ['a']),
+      ('[a\nb]', []),
+      ('[a][', ['a']),
+      ('Revert "[a] feature"', ['a']),
+      ('Reland "[a] feature"', ['a']),
+      ('Revert: [a] feature', ['a']),
+      ('Reland: [a] feature', ['a']),
+      ('Revert "Reland: [a] feature"', ['a']),
+      ('Foo: feature', ['foo']),
+      ('Foo Bar: feature', ['foo-bar']),
+      ('Revert "Foo bar: feature"', ['foo-bar']),
+      ('Reland "Foo bar: feature"', ['foo-bar']),
+    ]
+    for desc, expected in cases:
+      actual = git_cl._GerritChangelistImpl.GetHashTags(desc)
+      self.assertEqual(
+          actual,
+          expected,
+          'GetHashTags(%r) == %r, expected %r' % (desc, actual, expected))
 
   def test_gerrit_change_id(self):
     self.calls = [
