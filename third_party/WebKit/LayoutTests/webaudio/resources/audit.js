@@ -624,7 +624,8 @@ window.Audit = (function() {
         passDetail = '${actual} contains only the constant ${expected}.';
       } else {
         let counter = 0;
-        failDetail = '${actual}: Expected ${expected} for all values but found ' +
+        failDetail =
+            '${actual}: Expected ${expected} for all values but found ' +
             numberOfErrors + ' unexpected values: ';
         failDetail += '\n\tIndex\tActual';
         for (let errorIndex in errors) {
