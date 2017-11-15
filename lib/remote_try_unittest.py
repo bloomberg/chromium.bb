@@ -25,6 +25,7 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
   BRANCH = 'test-branch'
   PATCHES = ('5555', '6666')
   BUILD_CONFIGS = ('amd64-generic-paladin', 'arm-generic-paladin')
+  UNKNOWN_CONFIGS = ('unknown-config')
   BUILD_GROUP = 'display'
   PASS_THROUGH_ARGS = ['funky', 'cold', 'medina']
   TEST_EMAIL = 'explicit_email'
@@ -51,6 +52,12 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
         committer_email=self.TEST_EMAIL,
         swarming=True,
         master_buildbucket_id=self.MASTER_BUILDBUCKET_ID)
+
+  def _CreateJobUnknown(self):
+    return remote_try.RemoteTryJob(
+        self.UNKNOWN_CONFIGS,
+        self.BUILD_GROUP,
+        'description')
 
 
 class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
@@ -145,6 +152,39 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
             'bot': ['amd64-generic-paladin', 'arm-generic-paladin'],
             'email': ['explicit_email'],
             'cbb_config': 'amd64-generic-paladin',
+            'user': mock.ANY,
+        }
+    })
+
+  def testUnknownRequestBody(self):
+    """Verify our request body with max options."""
+    self.maxDiff = None
+    body = self._CreateJobUnknown()._GetRequestBody('unknown-config')
+
+    self.assertEqual(body, {
+        'parameters_json': mock.ANY,
+        'bucket': 'master.chromiumos.tryserver',
+        'tags': [
+            'cbb_display_label:display',
+            'cbb_branch:master',
+            'cbb_config:unknown-config',
+            'cbb_master_build_id:',
+            'cbb_email:default_email',
+        ]
+    })
+
+    parameters_parsed = json.loads(body['parameters_json'])
+
+    self.assertEqual(parameters_parsed, {
+        'builder_name': 'Generic',
+        'properties': {
+            'extra_args': [],
+            'cbb_extra_args': [],
+            'name': 'description',
+            'owners': ['default_email'],
+            'bot': 'unknown-config',
+            'email': ['default_email'],
+            'cbb_config': 'unknown-config',
             'user': mock.ANY,
         }
     })

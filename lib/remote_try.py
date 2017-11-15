@@ -223,7 +223,8 @@ class RemoteTryJob(object):
             'cbb_email:%s' % self.user_email,]
 
     # Add build_type tag for Pre-CQ builds.
-    if site_config[bot]['build_type'] == constants.PRE_CQ_TYPE:
+    if (bot in site_config and
+        site_config[bot]['build_type'] == constants.PRE_CQ_TYPE):
       tags.append('build_type:%s' % constants.PRE_CQ_TYPE)
 
     return {
