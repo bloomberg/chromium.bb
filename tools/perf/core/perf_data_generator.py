@@ -627,6 +627,8 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
 BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'dummy_benchmark.noisy_benchmark_1',
     'dummy_benchmark.stable_benchmark_1',
+    'loading.mobile',
+    'loading.desktop'
 ]
 
 
