@@ -1443,20 +1443,25 @@ bool DrawRecordOp::HasNonAAPaint() const {
   return record->HasNonAAPaint();
 }
 
-AnnotateOp::AnnotateOp() = default;
+AnnotateOp::AnnotateOp() : PaintOp(kType) {}
 
 AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
                        const SkRect& rect,
                        sk_sp<SkData> data)
-    : annotation_type(annotation_type), rect(rect), data(std::move(data)) {}
+    : PaintOp(kType),
+      annotation_type(annotation_type),
+      rect(rect),
+      data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
+
+DrawImageOp::DrawImageOp() : PaintOpWithFlags(kType) {}
 
 DrawImageOp::DrawImageOp(const PaintImage& image,
                          SkScalar left,
                          SkScalar top,
                          const PaintFlags* flags)
-    : PaintOpWithFlags(flags ? *flags : PaintFlags()),
+    : PaintOpWithFlags(kType, flags ? *flags : PaintFlags()),
       image(image),
       left(left),
       top(top) {}
@@ -1469,14 +1474,14 @@ bool DrawImageOp::HasDiscardableImages() const {
 
 DrawImageOp::~DrawImageOp() = default;
 
-DrawImageRectOp::DrawImageRectOp() = default;
+DrawImageRectOp::DrawImageRectOp() : PaintOpWithFlags(kType) {}
 
 DrawImageRectOp::DrawImageRectOp(const PaintImage& image,
                                  const SkRect& src,
                                  const SkRect& dst,
                                  const PaintFlags* flags,
                                  PaintCanvas::SrcRectConstraint constraint)
-    : PaintOpWithFlags(flags ? *flags : PaintFlags()),
+    : PaintOpWithFlags(kType, flags ? *flags : PaintFlags()),
       image(image),
       src(src),
       dst(dst),
@@ -1488,10 +1493,8 @@ bool DrawImageRectOp::HasDiscardableImages() const {
 
 DrawImageRectOp::~DrawImageRectOp() = default;
 
-DrawRecordOp::DrawRecordOp() = default;
-
 DrawRecordOp::DrawRecordOp(sk_sp<const PaintRecord> record)
-    : record(std::move(record)) {}
+    : PaintOp(kType), record(std::move(record)) {}
 
 DrawRecordOp::~DrawRecordOp() = default;
 
@@ -1503,13 +1506,13 @@ bool DrawRecordOp::HasDiscardableImages() const {
   return record->HasDiscardableImages();
 }
 
-DrawTextBlobOp::DrawTextBlobOp() = default;
+DrawTextBlobOp::DrawTextBlobOp() : PaintOpWithFlags(kType) {}
 
 DrawTextBlobOp::DrawTextBlobOp(scoped_refptr<PaintTextBlob> paint_blob,
                                SkScalar x,
                                SkScalar y,
                                const PaintFlags& flags)
-    : PaintOpWithFlags(flags), blob(std::move(paint_blob)), x(x), y(y) {}
+    : PaintOpWithFlags(kType, flags), blob(std::move(paint_blob)), x(x), y(y) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
 
@@ -1605,8 +1608,6 @@ PaintOpBuffer::PlaybackFoldingIterator::PlaybackFoldingIterator(
     const std::vector<size_t>* offsets)
     : iter_(buffer, offsets),
       folded_draw_color_(SK_ColorTRANSPARENT, SkBlendMode::kSrcOver) {
-  // PaintOps don't set their type in their ctor.
-  folded_draw_color_.type = static_cast<uint8_t>(PaintOpType::DrawColor);
   FindNextOp();
 }
 

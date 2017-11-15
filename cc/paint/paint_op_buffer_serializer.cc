@@ -40,7 +40,6 @@ void PaintOpBufferSerializer::SerializePreamble(
   if (!preamble.translation.IsZero()) {
     TranslateOp translate_op(-preamble.translation.x(),
                              -preamble.translation.y());
-    translate_op.type = static_cast<uint8_t>(PaintOpType::Translate);
     SerializeOp(&translate_op, options, params);
   }
 
@@ -48,20 +47,17 @@ void PaintOpBufferSerializer::SerializePreamble(
     ClipRectOp clip_op(
         SkRect::MakeFromIRect(gfx::RectToSkIRect(preamble.playback_rect)),
         SkClipOp::kIntersect, false);
-    clip_op.type = static_cast<uint8_t>(PaintOpType::ClipRect);
     SerializeOp(&clip_op, options, params);
   }
 
   if (!preamble.post_translation.IsZero()) {
     TranslateOp translate_op(preamble.post_translation.x(),
                              preamble.post_translation.y());
-    translate_op.type = static_cast<uint8_t>(PaintOpType::Translate);
     SerializeOp(&translate_op, options, params);
   }
 
   if (preamble.post_scale != 1.f) {
     ScaleOp scale_op(preamble.post_scale, preamble.post_scale);
-    scale_op.type = static_cast<uint8_t>(PaintOpType::Scale);
     SerializeOp(&scale_op, options, params);
   }
 }
@@ -124,7 +120,6 @@ bool PaintOpBufferSerializer::SerializeOp(
 void PaintOpBufferSerializer::Save(const PaintOp::SerializeOptions& options,
                                    const PlaybackParams& params) {
   SaveOp save_op;
-  save_op.type = static_cast<uint8_t>(PaintOpType::Save);
   SerializeOp(&save_op, options, params);
 }
 
@@ -133,7 +128,6 @@ void PaintOpBufferSerializer::RestoreToCount(
     const PaintOp::SerializeOptions& options,
     const PlaybackParams& params) {
   RestoreOp restore_op;
-  restore_op.type = static_cast<uint8_t>(PaintOpType::Restore);
   while (canvas_.getSaveCount() > count) {
     if (!SerializeOp(&restore_op, options, params))
       return;
