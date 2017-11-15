@@ -23,6 +23,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
+#include "net/cert/symantec_certs.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/public/cpp/net_adapters.h"
 
@@ -56,6 +57,7 @@ int BuildLoadFlagsForRequest(const ResourceRequest& request,
 // TODO: this duplicates some of PopulateResourceResponse in
 // content/browser/loader/resource_loader.cc
 void PopulateResourceResponse(net::URLRequest* request,
+                              bool is_load_timing_enabled,
                               ResourceResponse* response) {
   response->head.request_time = request->request_time();
   response->head.response_time = request->response_time();
@@ -74,7 +76,19 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.effective_connection_type =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
-  request->GetLoadTimingInfo(&response->head.load_timing);
+  if (is_load_timing_enabled)
+    request->GetLoadTimingInfo(&response->head.load_timing);
+
+  if (request->ssl_info().cert.get()) {
+    response->head.has_major_certificate_errors =
+        net::IsCertStatusError(request->ssl_info().cert_status) &&
+        !net::IsCertStatusMinorError(request->ssl_info().cert_status);
+    response->head.is_legacy_symantec_cert =
+        !response->head.has_major_certificate_errors &&
+        net::IsLegacySymantecCert(request->ssl_info().public_key_hashes);
+    response->head.cert_validity_start =
+        request->ssl_info().cert->valid_start();
+  }
 
   response->head.request_start = request->creation_time();
   response->head.response_start = base::TimeTicks::Now();
@@ -270,13 +284,13 @@ URLLoader::URLLoader(NetworkContext* context,
                      bool report_raw_headers,
                      mojom::URLLoaderClientPtr url_loader_client,
                      const net::NetworkTrafficAnnotationTag& traffic_annotation,
-                     uint32_t process_id,
-                     uint32_t routing_id)
+                     uint32_t process_id)
     : context_(context),
       options_(options),
       resource_type_(request.resource_type),
+      is_load_timing_enabled_(request.enable_load_timing),
       process_id_(process_id),
-      routing_id_(routing_id),
+      render_frame_id_(request.render_frame_id),
       connected_(true),
       binding_(this, std::move(url_loader_request)),
       url_loader_client_(std::move(url_loader_client)),
@@ -416,7 +430,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   *defer_redirect = true;
 
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
-  PopulateResourceResponse(url_request_.get(), response.get());
+  PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
+                           response.get());
   if (report_raw_headers_) {
     response->head.devtools_info = BuildDevToolsInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());
@@ -442,8 +457,8 @@ void URLLoader::OnSSLCertificateError(net::URLRequest* request,
                                       const net::SSLInfo& ssl_info,
                                       bool fatal) {
   context_->network_service()->client()->OnSSLCertificateError(
-      resource_type_, url_request_->url(), process_id_, routing_id_, ssl_info,
-      fatal,
+      resource_type_, url_request_->url(), process_id_, render_frame_id_,
+      ssl_info, fatal,
       base::Bind(&URLLoader::OnSSLCertificateErrorResponse,
                  weak_ptr_factory_.GetWeakPtr(), ssl_info));
 }
@@ -463,7 +478,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   }
 
   response_ = new ResourceResponse();
-  PopulateResourceResponse(url_request_.get(), response_.get());
+  PopulateResourceResponse(url_request_.get(), is_load_timing_enabled_,
+                           response_.get());
   if (report_raw_headers_) {
     response_->head.devtools_info = BuildDevToolsInfo(
         *url_request_, raw_request_headers_, raw_response_headers_.get());

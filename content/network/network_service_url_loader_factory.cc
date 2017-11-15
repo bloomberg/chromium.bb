@@ -40,7 +40,7 @@ void NetworkServiceURLLoaderFactory::CreateLoaderAndStart(
       context_, std::move(request), options, url_request, report_raw_headers,
       std::move(client),
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
-      process_id_, routing_id);
+      process_id_);
 }
 
 void NetworkServiceURLLoaderFactory::Clone(
