@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -195,8 +196,14 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   EXPECT_TRUE(GenerationPopupShowing());
 }
 
+// Flaky on Linux and Mac. See https://crbug.com/784861.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_AutoSavingGeneratedPassword DISABLED_AutoSavingGeneratedPassword
+#else
+#define MAYBE_AutoSavingGeneratedPassword AutoSavingGeneratedPassword
+#endif
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       AutoSavingGeneratedPassword) {
+                       MAYBE_AutoSavingGeneratedPassword) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
