@@ -870,7 +870,7 @@
                   'google_apis/gcm/',
     },
     'generic_sensor': {
-      'filepath': 'device/generic_sensor/|'\
+      'filepath': 'services/device/generic_sensor/|'\
                   'third_party/WebKit/Source/modules/sensor/',
     },
     'geolocation': {
@@ -1984,7 +1984,8 @@
                        'juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'scheib+watch@chromium.org'],
-    'device_sensors': ['mlamouri+watch-sensors@chromium.org',
+    'device_sensors': ['juncai+watch@chromium.org',
+                       'mlamouri+watch-sensors@chromium.org',
                        'rijubrata.bhaumik@intel.com',
                        'timvolodine@chromium.org'],
     'devtools': ['devtools-reviews@chromium.org',
@@ -2019,6 +2020,7 @@
             'zea+watch@chromium.org'],
     'generic_sensor': ['alexander.shalamov@intel.com',
                        'cco3+watch@chromium.org',
+                       'juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'mikhail.pozdnyakov@intel.com',
                        'timvolodine@chromium.org',
