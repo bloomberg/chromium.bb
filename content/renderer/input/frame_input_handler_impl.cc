@@ -143,6 +143,7 @@ void FrameInputHandlerImpl::SetEditableSelectionOffsets(int32_t start,
   }
   if (!render_frame_)
     return;
+  HandlingState handling_state(render_frame_, UpdateState::kIsSelectingRange);
   render_frame_->GetWebFrame()->SetEditableSelectionOffsets(start, end);
 }
 
