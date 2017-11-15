@@ -55,7 +55,19 @@
   testExtractExtension('http://example.com/foo.ht?ml#hello%20');
   testExtractExtension('/some/folder/folder.js%20/');
 
+  testURLWithoutHash('http://example.com/#hello');
+  testURLWithoutHash('http://example.com/#?hello');
+  testURLWithoutHash('http://example.com/?#hello');
+  testURLWithoutHash('http://example.com/?hello#hello');
+  testURLWithoutHash('http://example.com/hello#?hello#hello');
+
   TestRunner.completeTest();
+
+  function testURLWithoutHash(url) {
+    TestRunner.addResult('URL: ' + url);
+    TestRunner.addResult('Without Hash: ' + Common.ParsedURL.urlWithoutHash(url));
+    TestRunner.addResult('');
+  }
 
   /**
    * @param {string} url

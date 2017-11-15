@@ -253,4 +253,19 @@ Extension: ht
 URL: /some/folder/folder.js%20/
 Extension: 
 
+URL: http://example.com/#hello
+Without Hash: http://example.com/
+
+URL: http://example.com/#?hello
+Without Hash: http://example.com/
+
+URL: http://example.com/?#hello
+Without Hash: http://example.com/?
+
+URL: http://example.com/?hello#hello
+Without Hash: http://example.com/?hello
+
+URL: http://example.com/hello#?hello#hello
+Without Hash: http://example.com/hello
+
 
