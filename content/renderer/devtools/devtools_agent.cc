@@ -156,12 +156,13 @@ void DevToolsAgent::DidExitDebugLoop() {
   paused_ = false;
 }
 
-bool DevToolsAgent::RequestDevToolsForFrame(blink::WebLocalFrame* webFrame) {
+bool DevToolsAgent::RequestDevToolsForFrame(int session_id,
+                                            blink::WebLocalFrame* webFrame) {
   RenderFrameImpl* frame = RenderFrameImpl::FromWebFrame(webFrame);
   if (!frame)
     return false;
-  Send(new DevToolsAgentHostMsg_RequestNewWindow(routing_id(),
-      frame->GetRoutingID()));
+  Send(new DevToolsAgentHostMsg_RequestNewWindow(routing_id(), session_id,
+                                                 frame->GetRoutingID()));
   return true;
 }
 
@@ -269,9 +270,9 @@ void DevToolsAgent::OnInspectElement(int session_id, int x, int y) {
                                   WebPoint(point_rect.x, point_rect.y));
 }
 
-void DevToolsAgent::OnRequestNewWindowACK(bool success) {
+void DevToolsAgent::OnRequestNewWindowACK(int session_id, bool success) {
   if (!success)
-    GetWebAgent()->FailedToRequestDevTools();
+    GetWebAgent()->FailedToRequestDevTools(session_id);
 }
 
 void DevToolsAgent::ContinueProgram() {

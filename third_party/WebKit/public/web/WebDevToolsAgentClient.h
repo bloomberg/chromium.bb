@@ -69,7 +69,9 @@ class WebDevToolsAgentClient {
   virtual void WillEnterDebugLoop() {}
   virtual void DidExitDebugLoop() {}
 
-  virtual bool RequestDevToolsForFrame(WebLocalFrame*) { return false; }
+  virtual bool RequestDevToolsForFrame(int session_id, WebLocalFrame*) {
+    return false;
+  }
 
   virtual void EnableTracing(const WebString& category_filter) {}
   virtual void DisableTracing() {}

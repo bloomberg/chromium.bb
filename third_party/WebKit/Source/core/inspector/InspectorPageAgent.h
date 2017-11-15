@@ -67,7 +67,7 @@ class CORE_EXPORT InspectorPageAgent final
    public:
     virtual ~Client() {}
     virtual void PageLayoutInvalidated(bool resized) {}
-    virtual void WaitForCreateWindow(LocalFrame*) {}
+    virtual void WaitForCreateWindow(InspectorPageAgent*, LocalFrame*) {}
   };
 
   enum ResourceType {
