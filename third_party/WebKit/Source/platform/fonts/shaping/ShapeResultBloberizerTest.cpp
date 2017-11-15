@@ -29,16 +29,14 @@ class TestSimpleFontData : public SimpleFontData {
         false, false,
         force_rotation ? FontOrientation::kVerticalUpright
                        : FontOrientation::kHorizontal);
-    scoped_refptr<OpenTypeVerticalData> vertical_data(
-        force_rotation ? OpenTypeVerticalData::Create(platform_data) : nullptr);
     return base::AdoptRef(
-        new TestSimpleFontData(platform_data, std::move(vertical_data)));
+        new TestSimpleFontData(platform_data, force_rotation));
   }
 
  private:
   TestSimpleFontData(const FontPlatformData& platform_data,
-                     scoped_refptr<OpenTypeVerticalData> vertical_data)
-      : SimpleFontData(platform_data, std::move(vertical_data)) {}
+                     bool used_vertically)
+      : SimpleFontData(platform_data, used_vertically) {}
 };
 
 class ShapeResultBloberizerTest : public ::testing::Test {
@@ -217,12 +215,12 @@ TEST_F(ShapeResultBloberizerTest, MixedBlobRotation) {
   // Normal (horizontal) font.
   scoped_refptr<SimpleFontData> font_normal = TestSimpleFontData::Create();
   ASSERT_FALSE(font_normal->PlatformData().IsVerticalAnyUpright());
-  ASSERT_EQ(font_normal->VerticalData(), nullptr);
+  ASSERT_EQ(font_normal->UsedVertically(), false);
 
   // Rotated (vertical upright) font.
   scoped_refptr<SimpleFontData> font_rotated = TestSimpleFontData::Create(true);
   ASSERT_TRUE(font_rotated->PlatformData().IsVerticalAnyUpright());
-  ASSERT_NE(font_rotated->VerticalData(), nullptr);
+  ASSERT_EQ(font_rotated->UsedVertically(), true);
 
   struct {
     const SimpleFontData* font_data;

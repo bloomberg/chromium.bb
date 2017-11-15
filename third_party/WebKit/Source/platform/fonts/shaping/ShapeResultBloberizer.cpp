@@ -80,7 +80,7 @@ ShapeResultBloberizer::BlobRotation ShapeResultBloberizer::GetBlobRotation(
   // For vertical upright text we need to compensate the inherited 90deg CW
   // rotation (using a 90deg CCW rotation).
   return (font_data->PlatformData().IsVerticalAnyUpright() &&
-          font_data->VerticalData())
+          font_data->UsedVertically())
              ? BlobRotation::kCCWRotation
              : BlobRotation::kNoRotation;
 }
@@ -211,7 +211,7 @@ inline void AddEmphasisMark(ShapeResultBloberizer& bloberizer,
 
   bool is_vertical =
       emphasis_font_data->PlatformData().IsVerticalAnyUpright() &&
-      emphasis_font_data->VerticalData();
+      emphasis_font_data->UsedVertically();
 
   if (!is_vertical) {
     bloberizer.Add(emphasis_data.glyph, emphasis_font_data,

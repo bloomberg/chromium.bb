@@ -333,23 +333,6 @@ bool FontPlatformData::FontContainsCharacter(UChar32 character) {
 
 #endif
 
-scoped_refptr<OpenTypeVerticalData> FontPlatformData::VerticalData() const {
-  return FontCache::GetFontCache()->GetVerticalData(Typeface()->uniqueID(),
-                                                    *this);
-}
-
-Vector<char> FontPlatformData::OpenTypeTable(SkFontTableTag tag) const {
-  Vector<char> table_buffer;
-
-  auto* typeface = paint_typeface_.ToSkTypeface().get();
-  const size_t table_size = typeface->getTableSize(tag);
-  if (table_size) {
-    table_buffer.resize(table_size);
-    typeface->getTableData(tag, 0, table_size, &table_buffer[0]);
-  }
-  return table_buffer;
-}
-
 const PaintTypeface& FontPlatformData::GetPaintTypeface() const {
   return paint_typeface_;
 }

@@ -71,7 +71,6 @@ namespace blink {
 class FontFaceCreationParams;
 class FontGlobalContext;
 class FontDescription;
-class OpenTypeVerticalData;
 class SimpleFontData;
 
 enum class AlternateFontName {
@@ -205,10 +204,6 @@ class PLATFORM_EXPORT FontCache {
   }
 #endif
 
-  typedef uint32_t FontFileKey;
-  scoped_refptr<OpenTypeVerticalData> GetVerticalData(const FontFileKey&,
-                                               const FontPlatformData&);
-
   static void AcceptLanguagesChanged(const String&);
 
 #if defined(OS_ANDROID)
@@ -323,7 +318,6 @@ class PLATFORM_EXPORT FontCache {
   FontDataCache font_data_cache_;
 
   void PurgePlatformFontDataCache();
-  void PurgeFontVerticalDataCache();
   void PurgeFallbackListShaperCache();
 
   friend class SimpleFontData;  // For fontDataFromFontPlatformData

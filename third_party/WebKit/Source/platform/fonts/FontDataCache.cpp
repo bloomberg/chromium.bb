@@ -108,17 +108,6 @@ void FontDataCache::Release(const SimpleFontData* font_data) {
     inactive_font_data_.insert(it->value.first);
 }
 
-void FontDataCache::MarkAllVerticalData() {
-  Cache::iterator end = cache_.end();
-  for (Cache::iterator font_data = cache_.begin(); font_data != end;
-       ++font_data) {
-    OpenTypeVerticalData* vertical_data = const_cast<OpenTypeVerticalData*>(
-        font_data->value.first->VerticalData());
-    if (vertical_data)
-      vertical_data->SetInFontCache(true);
-  }
-}
-
 bool FontDataCache::Purge(PurgeSeverity purge_severity) {
   if (purge_severity == kForcePurge)
     return PurgeLeastRecentlyUsed(INT_MAX);
