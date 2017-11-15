@@ -868,7 +868,7 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="PrivateMemoryFootprint">
     <summary>
-      Measure of total memory consumed by process.
+      Measure of total private memory consumed by process.
     </summary>
   </metric>
   <metric name="ProcessType">
@@ -881,6 +881,11 @@ be describing additional metrics about the same event.
   <metric name="Resident">
     <summary>
       Size of process' working set.
+    </summary>
+  </metric>
+  <metric name="SharedMemoryFootprint">
+    <summary>
+      Measure of total shared memory consumed by process.
     </summary>
   </metric>
   <metric name="TimeSinceLastNavigation">
@@ -897,7 +902,12 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="Total2.PrivateMemoryFootprint">
     <summary>
-      Measure of total memory consumed by all processes.
+      Measure of total private memory consumed by all processes.
+    </summary>
+  </metric>
+  <metric name="Total2.SharedMemoryFootprint">
+    <summary>
+      Measure of total shared memory consumed by all processes.
     </summary>
   </metric>
   <metric name="Uptime">
