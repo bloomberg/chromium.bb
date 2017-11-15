@@ -14,9 +14,9 @@
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "media/base/video_codecs.h"
+#include "media/capabilities/video_decode_stats_db.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "media/mojo/services/video_decode_stats_db.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/geometry/size.h"
 
