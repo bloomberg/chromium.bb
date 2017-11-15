@@ -36,7 +36,7 @@ ukm::SourceId UkmRecorder::GetNewSourceID() {
 std::unique_ptr<UkmEntryBuilder> UkmRecorder::GetEntryBuilder(
     ukm::SourceId source_id,
     const char* event_name) {
-  return base::MakeUnique<UkmEntryBuilder>(
+  return std::make_unique<UkmEntryBuilder>(
       base::Bind(&UkmRecorder::AddEntry, base::Unretained(this)), source_id,
       event_name);
 }

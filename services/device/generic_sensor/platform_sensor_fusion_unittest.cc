@@ -29,7 +29,7 @@ using mojom::SensorType;
 class PlatformSensorFusionTest : public DeviceServiceTestBase {
  public:
   PlatformSensorFusionTest() {
-    provider_ = base::MakeUnique<FakePlatformSensorProvider>();
+    provider_ = std::make_unique<FakePlatformSensorProvider>();
     PlatformSensorProvider::SetProviderForTesting(provider_.get());
   }
 
@@ -69,12 +69,12 @@ class PlatformSensorFusionTest : public DeviceServiceTestBase {
 
   void CreateLinearAccelerationFusionSensor() {
     auto fusion_algorithm =
-        base::MakeUnique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
+        std::make_unique<LinearAccelerationFusionAlgorithmUsingAccelerometer>();
     CreateFusionSensor(std::move(fusion_algorithm));
   }
 
   void CreateAbsoluteOrientationEulerAnglesFusionSensor() {
-    auto fusion_algorithm = base::MakeUnique<
+    auto fusion_algorithm = std::make_unique<
         AbsoluteOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndMagnetometer>();
     CreateFusionSensor(std::move(fusion_algorithm));
   }
@@ -121,7 +121,7 @@ TEST_F(PlatformSensorFusionTest, SourceSensorWorksSeparately) {
   EXPECT_TRUE(accelerometer_);
   EXPECT_FALSE(accelerometer_->IsActiveForTesting());
 
-  auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>();
+  auto client = std::make_unique<testing::NiceMock<MockPlatformSensorClient>>();
   accelerometer_->AddClient(client.get());
   accelerometer_->StartListening(client.get(), PlatformSensorConfiguration(10));
   EXPECT_TRUE(accelerometer_->IsActiveForTesting());
@@ -169,7 +169,7 @@ TEST_F(PlatformSensorFusionTest, SourceSensorDoesNotKeepOutdatedConfigs) {
   EXPECT_TRUE(fusion_sensor_);
   EXPECT_EQ(SensorType::LINEAR_ACCELERATION, fusion_sensor_->GetType());
 
-  auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>(
+  auto client = std::make_unique<testing::NiceMock<MockPlatformSensorClient>>(
       fusion_sensor_);
   fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(10));
   fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(20));
@@ -210,7 +210,7 @@ TEST_F(PlatformSensorFusionTest, AllSourceSensorsStoppedOnSingleSourceFailure) {
   EXPECT_EQ(SensorType::ABSOLUTE_ORIENTATION_EULER_ANGLES,
             fusion_sensor_->GetType());
 
-  auto client = base::MakeUnique<testing::NiceMock<MockPlatformSensorClient>>(
+  auto client = std::make_unique<testing::NiceMock<MockPlatformSensorClient>>(
       fusion_sensor_);
   fusion_sensor_->StartListening(client.get(), PlatformSensorConfiguration(10));
 

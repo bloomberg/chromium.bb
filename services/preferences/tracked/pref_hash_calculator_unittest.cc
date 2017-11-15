@@ -20,7 +20,7 @@ TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
   base::DictionaryValue dictionary_value_1;
   dictionary_value_1.SetInteger("int value", 1);
   dictionary_value_1.Set("nested empty map",
-                         base::MakeUnique<base::DictionaryValue>());
+                         std::make_unique<base::DictionaryValue>());
   base::DictionaryValue dictionary_value_1_equivalent;
   dictionary_value_1_equivalent.SetInteger("int value", 1);
   base::DictionaryValue dictionary_value_2;
@@ -78,35 +78,35 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
   static const char kSeed[] = "0123456789ABCDEF0123456789ABCDEF";
   static const char kDeviceId[] = "test_device_id1";
 
-  auto null_value = base::MakeUnique<base::Value>();
-  auto bool_value = base::MakeUnique<base::Value>(false);
-  auto int_value = base::MakeUnique<base::Value>(1234567890);
-  auto double_value = base::MakeUnique<base::Value>(123.0987654321);
-  auto string_value = base::MakeUnique<base::Value>(
+  auto null_value = std::make_unique<base::Value>();
+  auto bool_value = std::make_unique<base::Value>(false);
+  auto int_value = std::make_unique<base::Value>(1234567890);
+  auto double_value = std::make_unique<base::Value>(123.0987654321);
+  auto string_value = std::make_unique<base::Value>(
       "testing with special chars:\n<>{}:^^@#$\\/");
 
   // For legacy reasons, we have to support pruning of empty lists/dictionaries
   // and nested empty ists/dicts in the hash generation algorithm.
-  auto nested_empty_dict = base::MakeUnique<base::DictionaryValue>();
-  nested_empty_dict->Set("a", base::MakeUnique<base::DictionaryValue>());
-  nested_empty_dict->Set("b", base::MakeUnique<base::ListValue>());
-  auto nested_empty_list = base::MakeUnique<base::ListValue>();
-  nested_empty_list->Append(base::MakeUnique<base::DictionaryValue>());
-  nested_empty_list->Append(base::MakeUnique<base::ListValue>());
+  auto nested_empty_dict = std::make_unique<base::DictionaryValue>();
+  nested_empty_dict->Set("a", std::make_unique<base::DictionaryValue>());
+  nested_empty_dict->Set("b", std::make_unique<base::ListValue>());
+  auto nested_empty_list = std::make_unique<base::ListValue>();
+  nested_empty_list->Append(std::make_unique<base::DictionaryValue>());
+  nested_empty_list->Append(std::make_unique<base::ListValue>());
   nested_empty_list->Append(
-      base::MakeUnique<base::Value>(nested_empty_dict->Clone()));
+      std::make_unique<base::Value>(nested_empty_dict->Clone()));
 
   // A dictionary with an empty dictionary, an empty list, and nested empty
   // dictionaries/lists in it.
-  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString("a", "foo");
-  dict_value->Set("d", base::MakeUnique<base::ListValue>());
-  dict_value->Set("b", base::MakeUnique<base::DictionaryValue>());
+  dict_value->Set("d", std::make_unique<base::ListValue>());
+  dict_value->Set("b", std::make_unique<base::DictionaryValue>());
   dict_value->SetString("c", "baz");
   dict_value->Set("e", std::move(nested_empty_dict));
   dict_value->Set("f", std::move(nested_empty_list));
 
-  auto list_value = base::MakeUnique<base::ListValue>();
+  auto list_value = std::make_unique<base::ListValue>();
   list_value->AppendBoolean(true);
   list_value->AppendInteger(100);
   list_value->AppendDouble(1.0);

@@ -210,10 +210,10 @@ class ConnectTestService : public Service,
                      const std::string& name) override {
     if (name == "connect_test_a") {
       provided_services_.emplace_back(
-          base::MakeUnique<ProvidedService>("A", std::move(request)));
+          std::make_unique<ProvidedService>("A", std::move(request)));
     } else if (name == "connect_test_b") {
       provided_services_.emplace_back(
-          base::MakeUnique<ProvidedService>("B", std::move(request)));
+          std::make_unique<ProvidedService>("B", std::move(request)));
     }
   }
 

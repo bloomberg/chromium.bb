@@ -228,7 +228,7 @@ aura::Window* NewVisibleWindow(
     aura::WindowTreeClient* client,
     aura::WindowMusType type = aura::WindowMusType::LOCAL) {
   std::unique_ptr<aura::WindowPortMus> window_port_mus =
-      base::MakeUnique<aura::WindowPortMus>(client, type);
+      std::make_unique<aura::WindowPortMus>(client, type);
   aura::Window* window = new aura::Window(nullptr, std::move(window_port_mus));
   window->Init(ui::LAYER_NOT_DRAWN);
   window->Show();
@@ -277,7 +277,7 @@ class WindowServerTest : public WindowServerTestBase {
   std::unique_ptr<EmbedResult> Embed(aura::WindowTreeClient* window_tree_client,
                                      aura::Window* window) {
     DCHECK(!embed_details_);
-    embed_details_ = base::MakeUnique<EmbedDetails>();
+    embed_details_ = std::make_unique<EmbedDetails>();
     window_tree_client->Embed(window, ConnectAndGetWindowServerClient(), 0,
                               base::Bind(&WindowServerTest::EmbedCallbackImpl,
                                          base::Unretained(this)));
@@ -286,13 +286,13 @@ class WindowServerTest : public WindowServerTestBase {
       // such as |window| has children.
       EXPECT_FALSE(embed_details_->embed_result);
       embed_details_.reset();
-      return base::MakeUnique<EmbedResult>();
+      return std::make_unique<EmbedResult>();
     }
     // Wait for EmbedCallbackImpl() to be called with the result.
     embed_details_->waiting = true;
     if (!WindowServerTestBase::DoRunLoopWithTimeout()) {
       embed_details_.reset();
-      return base::MakeUnique<EmbedResult>();
+      return std::make_unique<EmbedResult>();
     }
     std::unique_ptr<EmbedResult> result = std::move(embed_details_->result);
     embed_details_.reset();
@@ -308,7 +308,7 @@ class WindowServerTest : public WindowServerTestBase {
   }
 
   std::unique_ptr<ClientAreaChange> WaitForClientAreaToChange() {
-    client_area_change_ = base::MakeUnique<ClientAreaChange>();
+    client_area_change_ = std::make_unique<ClientAreaChange>();
     // The nested run loop is quit in OnWmSetClientArea(). Client area
     // changes don't route through the window, only the WindowManagerDelegate.
     if (!WindowServerTestBase::DoRunLoopWithTimeout()) {
@@ -346,7 +346,7 @@ class WindowServerTest : public WindowServerTestBase {
  private:
   // Used to track the state of a call to window->Embed().
   struct EmbedDetails {
-    EmbedDetails() : result(base::MakeUnique<EmbedResult>()) {}
+    EmbedDetails() : result(std::make_unique<EmbedResult>()) {}
 
     // The callback function supplied to Embed() was called.
     bool callback_run = false;
@@ -711,7 +711,7 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
       return false;
 
     created_window_ = nullptr;
-    run_loop_ = base::MakeUnique<base::RunLoop>();
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
     return created_window_ != nullptr;

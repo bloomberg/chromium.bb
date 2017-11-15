@@ -70,7 +70,7 @@ class BatteryStatusServiceTest : public testing::Test {
 
     // We keep a raw pointer to the FakeBatteryManager, which we expect to
     // remain valid for the lifetime of the BatteryStatusService.
-    auto battery_manager = base::MakeUnique<FakeBatteryManager>(
+    auto battery_manager = std::make_unique<FakeBatteryManager>(
         battery_service_.GetUpdateCallbackForTesting());
     battery_manager_ = battery_manager.get();
 

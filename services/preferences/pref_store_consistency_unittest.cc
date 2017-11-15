@@ -76,7 +76,7 @@ class PrefServiceConnection : public mojom::PrefStoreObserver,
     auto* pref_value_store = new PrefValueStore(
         nullptr, nullptr, nullptr, nullptr, pref_store_client_.get(), nullptr,
         pref_registry->defaults().get(), pref_notifier);
-    pref_service_ = base::MakeUnique<::PrefService>(
+    pref_service_ = std::make_unique<::PrefService>(
         pref_notifier, pref_value_store, pref_store_client_.get(),
         pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
   }
@@ -192,14 +192,14 @@ class PersistentPrefStoreConsistencyTest : public testing::Test {
  public:
   void SetUp() override {
     pref_store_ = base::MakeRefCounted<InMemoryPrefStore>();
-    pref_store_impl_ = base::MakeUnique<PersistentPrefStoreImpl>(
+    pref_store_impl_ = std::make_unique<PersistentPrefStoreImpl>(
         pref_store_, base::BindOnce(&base::DoNothing));
   }
 
   PersistentPrefStore* pref_store() { return pref_store_.get(); }
 
   std::unique_ptr<PrefServiceConnection> CreateConnection() {
-    return base::MakeUnique<PrefServiceConnection>(pref_store_impl_.get());
+    return std::make_unique<PrefServiceConnection>(pref_store_impl_.get());
   }
 
  private:
@@ -209,7 +209,7 @@ class PersistentPrefStoreConsistencyTest : public testing::Test {
 };
 
 TEST_F(PersistentPrefStoreConsistencyTest, TwoPrefs) {
-  pref_store()->SetValue(kKey, base::MakeUnique<base::Value>(kInitialValue), 0);
+  pref_store()->SetValue(kKey, std::make_unique<base::Value>(kInitialValue), 0);
   auto connection = CreateConnection();
   auto connection2 = CreateConnection();
 
@@ -324,9 +324,9 @@ TEST_F(PersistentPrefStoreConsistencyTest, DifferentSubPrefs) {
 }
 
 TEST_F(PersistentPrefStoreConsistencyTest, WriteParentThenChild) {
-  auto initial_value = base::MakeUnique<base::DictionaryValue>();
+  auto initial_value = std::make_unique<base::DictionaryValue>();
   initial_value->SetDictionary(kDictionaryKey,
-                               base::MakeUnique<base::DictionaryValue>());
+                               std::make_unique<base::DictionaryValue>());
   pref_store()->SetValue(kDictionaryKey, std::move(initial_value), 0);
   auto connection = CreateConnection();
   auto connection2 = CreateConnection();
@@ -356,7 +356,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, WriteParentThenChild) {
   base::DictionaryValue three_dict;
   three_dict.SetInteger(kKey, 3);
   three_dict.SetDictionary(kDictionaryKey,
-                           base::MakeUnique<base::DictionaryValue>());
+                           std::make_unique<base::DictionaryValue>());
   base::Value five_dict = three_dict.Clone();
   five_dict.SetKey(kKey, base::Value(5));
   base::DictionaryValue expected_dict;
@@ -447,7 +447,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, WriteChildThenParent) {
 
 TEST_F(PersistentPrefStoreConsistencyTest, WriteChildThenDeleteParent) {
   pref_store()->SetValue(kDictionaryKey,
-                         base::MakeUnique<base::DictionaryValue>(), 0);
+                         std::make_unique<base::DictionaryValue>(), 0);
   auto connection = CreateConnection();
   auto connection2 = CreateConnection();
   auto& pref_service = connection->pref_service();
@@ -483,7 +483,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, WriteChildThenDeleteParent) {
 }
 
 TEST_F(PersistentPrefStoreConsistencyTest, DeleteParentThenWriteChild) {
-  auto initial_value = base::MakeUnique<base::DictionaryValue>();
+  auto initial_value = std::make_unique<base::DictionaryValue>();
   initial_value->SetInteger(kOtherKey, 5);
   pref_store()->SetValue(kDictionaryKey, std::move(initial_value), 0);
   auto connection = CreateConnection();
@@ -619,7 +619,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, DeleteChildThenWriteParent) {
 }
 
 TEST_F(PersistentPrefStoreConsistencyTest, ReplaceParentThenWriteChild) {
-  auto initial_value = base::MakeUnique<base::DictionaryValue>();
+  auto initial_value = std::make_unique<base::DictionaryValue>();
   initial_value->SetPath({kKey, kOtherKey}, base::Value(5));
   pref_store()->SetValue(kDictionaryKey, std::move(initial_value), 0);
   auto connection = CreateConnection();
@@ -703,7 +703,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, WriteChildThenReplaceParent) {
 }
 
 TEST_F(PersistentPrefStoreConsistencyTest, NestedWriteParentThenChild) {
-  pref_store()->SetValue(kKey, base::MakeUnique<base::DictionaryValue>(), 0);
+  pref_store()->SetValue(kKey, std::make_unique<base::DictionaryValue>(), 0);
   auto connection = CreateConnection();
   auto connection2 = CreateConnection();
   auto& pref_service = connection->pref_service();
@@ -711,7 +711,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, NestedWriteParentThenChild) {
   {
     ScopedDictionaryPrefUpdate update(&pref_service, kDictionaryKey);
     auto nested_dict =
-        update->SetDictionary(kKey, base::MakeUnique<base::DictionaryValue>());
+        update->SetDictionary(kKey, std::make_unique<base::DictionaryValue>());
     nested_dict->SetInteger(kChildKey, 2);
     nested_dict->SetInteger(kOtherKey, 4);
   }
@@ -764,7 +764,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, NestedWriteChildThenParent) {
   {
     ScopedDictionaryPrefUpdate update(&pref_service, kDictionaryKey);
     auto nested_dict =
-        update->SetDictionary(kKey, base::MakeUnique<base::DictionaryValue>());
+        update->SetDictionary(kKey, std::make_unique<base::DictionaryValue>());
     nested_dict->SetInteger(kChildKey, 2);
     nested_dict->SetInteger(kOtherKey, 4);
   }
@@ -799,7 +799,7 @@ TEST_F(PersistentPrefStoreConsistencyTest, NestedWriteChildThenParent) {
 
 TEST_F(PersistentPrefStoreConsistencyTest,
        DeleteParentThenWriteChildThenDeleteParent) {
-  auto initial_value = base::MakeUnique<base::DictionaryValue>();
+  auto initial_value = std::make_unique<base::DictionaryValue>();
   initial_value->SetInteger(kOtherKey, 5);
   pref_store()->SetValue(kDictionaryKey, std::move(initial_value), 0);
   auto connection = CreateConnection();
@@ -852,7 +852,7 @@ TEST_F(PersistentPrefStoreConsistencyTest,
 
 TEST_F(PersistentPrefStoreConsistencyTest,
        NestedDeleteParentThenWriteChildThenDeleteChild) {
-  auto initial_value = base::MakeUnique<base::DictionaryValue>();
+  auto initial_value = std::make_unique<base::DictionaryValue>();
   initial_value->SetPath({kKey, kOtherKey}, base::Value(5));
   pref_store()->SetValue(kDictionaryKey, std::move(initial_value), 0);
   auto connection = CreateConnection();

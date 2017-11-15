@@ -43,14 +43,14 @@ class PersistentPrefStoreClientTest : public testing::Test,
             mojom::PersistentPrefStoreConnection::New(
                 mojom::PrefStoreConnection::New(
                     mojom::PrefStoreObserverRequest(),
-                    base::MakeUnique<base::DictionaryValue>(), true),
+                    std::make_unique<base::DictionaryValue>(), true),
                 std::move(store_proxy),
                 ::PersistentPrefStore::PREF_READ_ERROR_NONE, false));
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
     pref_registry->RegisterDictionaryPref(kDictionaryKey);
     pref_registry->RegisterDictionaryPref(kUninitializedDictionaryKey);
     PrefNotifierImpl* pref_notifier = new PrefNotifierImpl;
-    pref_service_ = base::MakeUnique<PrefService>(
+    pref_service_ = std::make_unique<PrefService>(
         pref_notifier,
         new PrefValueStore(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                            nullptr, pref_notifier),
@@ -226,7 +226,7 @@ TEST_F(PersistentPrefStoreClientTest, SubPrefUpdates_NestedUpdateAfterSet) {
 TEST_F(PersistentPrefStoreClientTest, SubPrefUpdates_NestedUpdateBeforeSet) {
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
-    update->Set("path.to", base::MakeUnique<base::DictionaryValue>());
+    update->Set("path.to", std::make_unique<base::DictionaryValue>());
   }
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
@@ -287,7 +287,7 @@ TEST_F(PersistentPrefStoreClientTest,
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
     auto dict = update->SetDictionary(
-        "path.to", base::MakeUnique<base::DictionaryValue>());
+        "path.to", std::make_unique<base::DictionaryValue>());
     dict->SetString("string", "string value");
   }
   auto update = WaitForUpdate();
@@ -305,7 +305,7 @@ TEST_F(PersistentPrefStoreClientTest,
   {
     ScopedDictionaryPrefUpdate update(pref_service(), kDictionaryKey);
     auto dict = update->SetDictionaryWithoutPathExpansion(
-        "a.dictionary", base::MakeUnique<base::DictionaryValue>());
+        "a.dictionary", std::make_unique<base::DictionaryValue>());
     dict->SetKey("a.string", base::Value("string value"));
   }
   auto update = WaitForUpdate();

@@ -79,7 +79,7 @@ class ServiceManagerTestClient : public test::ServiceTestClient,
   const Identity& target_identity() const { return target_identity_; }
 
   void WaitForTargetIdentityCall() {
-    wait_for_target_identity_loop_ = base::MakeUnique<base::RunLoop>();
+    wait_for_target_identity_loop_ = std::make_unique<base::RunLoop>();
     wait_for_target_identity_loop_->Run();
   }
 
@@ -116,7 +116,7 @@ class ServiceManagerTestClient : public test::ServiceTestClient,
 class SimpleService {
  public:
   explicit SimpleService(mojom::ServiceRequest request)
-      : context_(base::MakeUnique<ServiceImpl>(this), std::move(request)) {}
+      : context_(std::make_unique<ServiceImpl>(this), std::move(request)) {}
   ~SimpleService() {}
 
   Connector* connector() { return context_.connector(); }
@@ -180,7 +180,7 @@ class ServiceManagerTest : public test::ServiceTest,
     binding_.Bind(mojo::MakeRequest(&listener));
     service_manager->AddListener(std::move(listener));
 
-    wait_for_instances_loop_ = base::MakeUnique<base::RunLoop>();
+    wait_for_instances_loop_ = std::make_unique<base::RunLoop>();
     wait_for_instances_loop_->Run();
   }
 

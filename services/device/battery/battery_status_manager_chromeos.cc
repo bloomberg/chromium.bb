@@ -151,7 +151,7 @@ class BatteryStatusManagerChromeOS
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return base::MakeUnique<BatteryStatusManagerChromeOS>(callback);
+  return std::make_unique<BatteryStatusManagerChromeOS>(callback);
 }
 
 }  // namespace device

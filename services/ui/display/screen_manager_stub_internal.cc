@@ -43,11 +43,11 @@ Display DefaultDisplay() {
 
 // static
 std::unique_ptr<ScreenManager> ScreenManager::Create() {
-  return base::MakeUnique<ScreenManagerStubInternal>();
+  return std::make_unique<ScreenManagerStubInternal>();
 }
 
 ScreenManagerStubInternal::ScreenManagerStubInternal()
-    : screen_(base::MakeUnique<display::ScreenBase>()),
+    : screen_(std::make_unique<display::ScreenBase>()),
       weak_ptr_factory_(this) {}
 
 ScreenManagerStubInternal::~ScreenManagerStubInternal() {}

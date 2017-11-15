@@ -129,7 +129,7 @@ WindowTree* CreateTreeViaFactory(WindowServer* window_server,
                                  const UserId& user_id,
                                  TestWindowTreeBinding** binding) {
   WindowTree* tree = new WindowTree(window_server, user_id, nullptr,
-                                    base::MakeUnique<DefaultAccessPolicy>());
+                                    std::make_unique<DefaultAccessPolicy>());
   *binding = new TestWindowTreeBinding(tree);
   window_server->AddTree(base::WrapUnique(tree), base::WrapUnique(*binding),
                          nullptr);

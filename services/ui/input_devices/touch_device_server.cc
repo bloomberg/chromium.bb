@@ -15,7 +15,7 @@ namespace ui {
 
 TouchDeviceServer::TouchDeviceServer()
     : touch_transform_setter_(
-          base::MakeUnique<display::DefaultTouchTransformSetter>()) {}
+          std::make_unique<display::DefaultTouchTransformSetter>()) {}
 
 TouchDeviceServer::~TouchDeviceServer() {}
 

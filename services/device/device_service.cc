@@ -47,7 +47,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const WakeLockContextCallback& wake_lock_context_callback,
     const base::android::JavaRef<jobject>& java_nfc_delegate) {
-  return base::MakeUnique<DeviceService>(
+  return std::make_unique<DeviceService>(
       std::move(file_task_runner), std::move(io_task_runner),
       wake_lock_context_callback, java_nfc_delegate);
 }
@@ -55,7 +55,7 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
 std::unique_ptr<service_manager::Service> CreateDeviceService(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  return base::MakeUnique<DeviceService>(std::move(file_task_runner),
+  return std::make_unique<DeviceService>(std::move(file_task_runner),
                                          std::move(io_task_runner));
 }
 #endif
@@ -148,7 +148,7 @@ void DeviceService::BindBatteryMonitorRequest(
 
 void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
   if (!hid_manager_)
-    hid_manager_ = base::MakeUnique<HidManagerImpl>();
+    hid_manager_ = std::make_unique<HidManagerImpl>();
   hid_manager_->AddBinding(std::move(request));
 }
 
@@ -185,7 +185,7 @@ void DeviceService::BindPowerMonitorRequest(
     mojom::PowerMonitorRequest request) {
   if (!power_monitor_message_broadcaster_) {
     power_monitor_message_broadcaster_ =
-        base::MakeUnique<PowerMonitorMessageBroadcaster>();
+        std::make_unique<PowerMonitorMessageBroadcaster>();
   }
   power_monitor_message_broadcaster_->Bind(std::move(request));
 }

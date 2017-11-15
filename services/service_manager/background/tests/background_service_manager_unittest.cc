@@ -51,7 +51,7 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
   BackgroundServiceManager background_service_manager(nullptr, nullptr);
   base::MessageLoop message_loop;
   mojom::ServicePtr service;
-  ServiceContext service_context(base::MakeUnique<ServiceImpl>(),
+  ServiceContext service_context(std::make_unique<ServiceImpl>(),
                                  mojo::MakeRequest(&service));
   background_service_manager.RegisterService(
       Identity(kTestName, mojom::kRootUserID), std::move(service), nullptr);

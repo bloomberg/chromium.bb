@@ -28,7 +28,7 @@ void ServiceImpl::OnStart() {
       video_capture::uma::SERVICE_STARTED);
 
   ref_factory_ =
-      base::MakeUnique<service_manager::ServiceContextRefFactory>(base::Bind(
+      std::make_unique<service_manager::ServiceContextRefFactory>(base::Bind(
           &ServiceImpl::MaybeRequestQuitDelayed, base::Unretained(this)));
   registry_.AddInterface<mojom::DeviceFactoryProvider>(
       // Unretained |this| is safe because |registry_| is owned by |this|.
@@ -74,7 +74,7 @@ void ServiceImpl::OnTestingControlsRequest(
     mojom::TestingControlsRequest request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   mojo::MakeStrongBinding(
-      base::MakeUnique<TestingControlsImpl>(ref_factory_->CreateRef()),
+      std::make_unique<TestingControlsImpl>(ref_factory_->CreateRef()),
       std::move(request));
 }
 

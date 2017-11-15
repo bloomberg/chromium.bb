@@ -69,7 +69,7 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate,
                               std::move(gpu_host_proxy),
                               mojo::ScopedSharedBufferHandle());
   gpu_memory_buffer_manager_ =
-      base::MakeUnique<viz::ServerGpuMemoryBufferManager>(gpu_service_.get(),
+      std::make_unique<viz::ServerGpuMemoryBufferManager>(gpu_service_.get(),
                                                           next_client_id_++);
 }
 
@@ -110,7 +110,7 @@ void DefaultGpuHost::CreateFrameSinkManager(
 }
 
 GpuClient* DefaultGpuHost::AddInternal(mojom::GpuRequest request) {
-  auto client(base::MakeUnique<GpuClient>(
+  auto client(std::make_unique<GpuClient>(
       next_client_id_++, &gpu_info_, &gpu_feature_info_,
       gpu_memory_buffer_manager_.get(), gpu_service_.get()));
   GpuClient* client_ref = client.get();

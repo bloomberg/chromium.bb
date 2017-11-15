@@ -51,7 +51,7 @@ void ServiceContext::SetGlobalBinderForTesting(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   if (!g_overridden_binder_registries.Get()) {
     g_overridden_binder_registries.Get() =
-        base::MakeUnique<ServiceNameToBinderRegistryMap>();
+        std::make_unique<ServiceNameToBinderRegistryMap>();
   }
 
   (*g_overridden_binder_registries.Get())[service_name].AddInterface(

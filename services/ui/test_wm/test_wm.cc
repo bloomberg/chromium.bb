@@ -56,10 +56,10 @@ class TestWM : public service_manager::Service,
   void OnStart() override {
     CHECK(!started_);
     started_ = true;
-    screen_ = base::MakeUnique<display::ScreenBase>();
+    screen_ = std::make_unique<display::ScreenBase>();
     display::Screen::SetScreenInstance(screen_.get());
     aura_env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-    window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
+    window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
         context()->connector(), this, this);
     aura_env_->SetWindowTreeClient(window_tree_client_.get());
     window_tree_client_->ConnectAsWindowManager();
@@ -144,7 +144,7 @@ class TestWM : public service_manager::Service,
     window_tree_host_ = std::move(window_tree_host);
     root_ = window_tree_host_->window();
     default_capture_client_ =
-        base::MakeUnique<aura::client::DefaultCaptureClient>(
+        std::make_unique<aura::client::DefaultCaptureClient>(
             root_->GetRootWindow());
     DCHECK(window_manager_client_);
     window_manager_client_->AddActivationParent(root_);

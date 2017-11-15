@@ -30,7 +30,7 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
   // TODO(fuchsia): Implement this. crbug.com/750934
   NOTIMPLEMENTED();
 
-  return base::MakeUnique<TimeZoneMonitorFuchsia>();
+  return std::make_unique<TimeZoneMonitorFuchsia>();
 }
 
 }  // namespace device

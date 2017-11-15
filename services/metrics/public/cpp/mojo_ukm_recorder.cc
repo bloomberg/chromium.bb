@@ -21,7 +21,7 @@ std::unique_ptr<MojoUkmRecorder> MojoUkmRecorder::Create(
   ukm::mojom::UkmRecorderInterfacePtr interface;
   connector->BindInterface(metrics::mojom::kMetricsServiceName,
                            mojo::MakeRequest(&interface));
-  return base::MakeUnique<MojoUkmRecorder>(std::move(interface));
+  return std::make_unique<MojoUkmRecorder>(std::move(interface));
 }
 
 void MojoUkmRecorder::UpdateSourceURL(SourceId source_id, const GURL& url) {

@@ -9,7 +9,7 @@
 namespace echo {
 
 std::unique_ptr<service_manager::Service> CreateEchoService() {
-  return base::MakeUnique<EchoService>();
+  return std::make_unique<EchoService>();
 }
 
 EchoService::EchoService() {

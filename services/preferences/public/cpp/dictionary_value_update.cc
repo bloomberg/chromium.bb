@@ -65,25 +65,25 @@ void DictionaryValueUpdate::SetPath(
 }
 
 void DictionaryValueUpdate::SetBoolean(base::StringPiece path, bool in_value) {
-  Set(path, base::MakeUnique<base::Value>(in_value));
+  Set(path, std::make_unique<base::Value>(in_value));
 }
 
 void DictionaryValueUpdate::SetInteger(base::StringPiece path, int in_value) {
-  Set(path, base::MakeUnique<base::Value>(in_value));
+  Set(path, std::make_unique<base::Value>(in_value));
 }
 
 void DictionaryValueUpdate::SetDouble(base::StringPiece path, double in_value) {
-  Set(path, base::MakeUnique<base::Value>(in_value));
+  Set(path, std::make_unique<base::Value>(in_value));
 }
 
 void DictionaryValueUpdate::SetString(base::StringPiece path,
                                       base::StringPiece in_value) {
-  Set(path, base::MakeUnique<base::Value>(in_value));
+  Set(path, std::make_unique<base::Value>(in_value));
 }
 
 void DictionaryValueUpdate::SetString(base::StringPiece path,
                                       const base::string16& in_value) {
-  Set(path, base::MakeUnique<base::Value>(in_value));
+  Set(path, std::make_unique<base::Value>(in_value));
 }
 
 std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
@@ -93,7 +93,7 @@ std::unique_ptr<DictionaryValueUpdate> DictionaryValueUpdate::SetDictionary(
   base::DictionaryValue* dictionary_value =
       value_->SetDictionary(path, std::move(in_value));
 
-  return base::MakeUnique<DictionaryValueUpdate>(
+  return std::make_unique<DictionaryValueUpdate>(
       report_update_, dictionary_value, ConcatPath(path_, path));
 }
 
@@ -128,7 +128,7 @@ DictionaryValueUpdate::SetDictionaryWithoutPathExpansion(
 
   std::vector<std::string> full_path = path_;
   full_path.push_back(path.as_string());
-  return base::MakeUnique<DictionaryValueUpdate>(
+  return std::make_unique<DictionaryValueUpdate>(
       report_update_, dictionary_value, std::move(full_path));
 }
 
@@ -170,7 +170,7 @@ bool DictionaryValueUpdate::GetDictionary(
   if (!value_->GetDictionary(path, &dictionary_value))
     return false;
 
-  *out_value = base::MakeUnique<DictionaryValueUpdate>(
+  *out_value = std::make_unique<DictionaryValueUpdate>(
       report_update_, dictionary_value, ConcatPath(path_, path));
   return true;
 }
@@ -231,7 +231,7 @@ bool DictionaryValueUpdate::GetDictionaryWithoutPathExpansion(
 
   std::vector<std::string> full_path = path_;
   full_path.push_back(key.as_string());
-  *out_value = base::MakeUnique<DictionaryValueUpdate>(
+  *out_value = std::make_unique<DictionaryValueUpdate>(
       report_update_, dictionary_value, std::move(full_path));
   return true;
 }

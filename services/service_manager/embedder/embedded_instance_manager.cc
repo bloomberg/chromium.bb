@@ -77,7 +77,7 @@ void EmbeddedInstanceManager::BindServiceRequestOnServiceSequence(
   int instance_id = next_instance_id_++;
 
   std::unique_ptr<service_manager::ServiceContext> context =
-      base::MakeUnique<service_manager::ServiceContext>(factory_callback_.Run(),
+      std::make_unique<service_manager::ServiceContext>(factory_callback_.Run(),
                                                         std::move(request));
 
   service_manager::ServiceContext* raw_context = context.get();

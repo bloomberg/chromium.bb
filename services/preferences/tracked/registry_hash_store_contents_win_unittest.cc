@@ -138,10 +138,10 @@ TEST(RegistryHashStoreContentsWinScopedTest, TestScopedDirsCleared) {
   scoped_refptr<TempScopedDirRegistryCleaner> temp_scoped_dir_cleaner =
       base::MakeRefCounted<TempScopedDirRegistryCleaner>();
   std::unique_ptr<RegistryHashStoreContentsWin> contentsA =
-      base::MakeUnique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
+      std::make_unique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
                                                      temp_scoped_dir_cleaner);
   std::unique_ptr<RegistryHashStoreContentsWin> contentsB =
-      base::MakeUnique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
+      std::make_unique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
                                                      temp_scoped_dir_cleaner);
 
   contentsA->SetMac(kAtomicPrefPath, kTestStringA);
@@ -192,7 +192,7 @@ TEST(RegistryHashStoreContentsWinScopedTest, TestScopedDirsClearedMultiThread) {
   scoped_refptr<TempScopedDirRegistryCleaner> temp_scoped_dir_cleaner =
       base::MakeRefCounted<TempScopedDirRegistryCleaner>();
   std::unique_ptr<RegistryHashStoreContentsWin> contents =
-      base::MakeUnique<RegistryHashStoreContentsWin>(
+      std::make_unique<RegistryHashStoreContentsWin>(
           registry_path, kStoreKey, std::move(temp_scoped_dir_cleaner));
   base::OnceClosure other_thread_closure =
       base::BindOnce(&OffThreadTempScopedDirDestructor, registry_path,

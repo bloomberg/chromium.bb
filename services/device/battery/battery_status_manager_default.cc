@@ -37,7 +37,7 @@ class BatteryStatusManagerDefault : public BatteryStatusManager {
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return base::MakeUnique<BatteryStatusManagerDefault>(callback);
+  return std::make_unique<BatteryStatusManagerDefault>(callback);
 }
 
 }  // namespace device

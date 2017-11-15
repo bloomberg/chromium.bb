@@ -29,7 +29,7 @@ class DictionaryValueUpdate;
 //   if (!update->GetDictionaryWithoutPathExpansion(url.spec(),
 //                                                  &nested_dictionary)) {
 //     nested_dictionary = update->SetDictionaryWithoutPathExpansion(
-//         url.spec(), base::MakeUnique<base::DictionaryValue>());
+//         url.spec(), std::make_unique<base::DictionaryValue>());
 //   }
 //
 //   nested_dictionary->Set("metadata", std::move(metadata));

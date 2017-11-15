@@ -155,11 +155,11 @@ class ScreenManagerOzoneInternalTest : public ui::TaskRunnerTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
         switches::kScreenConfig, "none");
 
-    screen_manager_ = base::MakeUnique<ScreenManagerOzoneInternal>();
+    screen_manager_ = std::make_unique<ScreenManagerOzoneInternal>();
 
     // Create NDD for FakeDisplayController.
     std::unique_ptr<NativeDisplayDelegate> ndd =
-        base::MakeUnique<FakeDisplayDelegate>();
+        std::make_unique<FakeDisplayDelegate>();
     fake_display_controller_ = ndd->GetFakeDisplayController();
 
     // Add NDD to ScreenManager so one isn't loaded from Ozone.

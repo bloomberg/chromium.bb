@@ -45,7 +45,7 @@ void ReceiverMediaToMojoAdapter::OnFrameReadyInBuffer(
     media::mojom::VideoFrameInfoPtr frame_info) {
   receiver_->OnFrameReadyInBuffer(
       buffer_id, frame_feedback_id,
-      base::MakeUnique<ScopedAccessPermissionMojoToMediaAdapter>(
+      std::make_unique<ScopedAccessPermissionMojoToMediaAdapter>(
           std::move(access_permission)),
       std::move(frame_info));
 }

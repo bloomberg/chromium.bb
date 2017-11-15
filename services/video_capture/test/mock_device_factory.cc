@@ -63,7 +63,7 @@ std::unique_ptr<media::VideoCaptureDevice> MockDeviceFactory::CreateDevice(
     const media::VideoCaptureDeviceDescriptor& device_descriptor) {
   if (devices_.find(device_descriptor) == devices_.end())
     return nullptr;
-  return base::MakeUnique<RawPointerVideoCaptureDevice>(
+  return std::make_unique<RawPointerVideoCaptureDevice>(
       devices_[device_descriptor]);
 }
 

@@ -40,7 +40,7 @@ const DisplayMode* GetCorrespondingMode(const DisplaySnapshot& snapshot,
 
 ScreenManagerForwarding::ScreenManagerForwarding(Mode mode)
     : is_in_process_(mode == Mode::IN_WM_PROCESS),
-      screen_(base::MakeUnique<display::ScreenBase>()),
+      screen_(std::make_unique<display::ScreenBase>()),
       binding_(this),
       dev_controller_binding_(this) {
   if (!is_in_process_)

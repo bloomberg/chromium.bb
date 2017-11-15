@@ -103,10 +103,10 @@ class ThreadedImageCursorsFactoryImpl : public ws::ThreadedImageCursorsFactory {
     // point to it.
     if (!resource_runner_) {
       resource_runner_ = base::ThreadTaskRunnerHandle::Get();
-      image_cursors_set_ = base::MakeUnique<ui::ImageCursorsSet>();
+      image_cursors_set_ = std::make_unique<ui::ImageCursorsSet>();
       image_cursors_set_weak_ptr_ = image_cursors_set_->GetWeakPtr();
     }
-    return base::MakeUnique<ws::ThreadedImageCursors>(
+    return std::make_unique<ws::ThreadedImageCursors>(
         resource_runner_, image_cursors_set_weak_ptr_);
   }
 
@@ -142,7 +142,7 @@ Service::InProcessConfig::~InProcessConfig() = default;
 Service::Service(const InProcessConfig* config)
     : is_in_process_(config != nullptr),
       threaded_image_cursors_factory_(
-          base::MakeUnique<ThreadedImageCursorsFactoryImpl>(config)),
+          std::make_unique<ThreadedImageCursorsFactoryImpl>(config)),
       test_config_(false),
       ime_registrar_(&ime_driver_),
       discardable_shared_memory_manager_(config ? config->memory_manager
@@ -260,7 +260,7 @@ void Service::OnStart() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  input_device_controller_ = base::MakeUnique<InputDeviceController>();
+  input_device_controller_ = std::make_unique<InputDeviceController>();
   input_device_controller_->AddInterface(&registry_);
 #endif
 
@@ -276,8 +276,8 @@ void Service::OnStart() {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  window_server_ = base::MakeUnique<ws::WindowServer>(this);
-  std::unique_ptr<ws::GpuHost> gpu_host = base::MakeUnique<ws::DefaultGpuHost>(
+  window_server_ = std::make_unique<ws::WindowServer>(this);
+  std::unique_ptr<ws::GpuHost> gpu_host = std::make_unique<ws::DefaultGpuHost>(
       window_server_.get(), context()->connector());
   window_server_->SetGpuHost(std::move(gpu_host));
 
@@ -285,7 +285,7 @@ void Service::OnStart() {
 
   if (!discardable_shared_memory_manager_) {
     owned_discardable_shared_memory_manager_ =
-        base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
+        std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     discardable_shared_memory_manager_ =
         owned_discardable_shared_memory_manager_.get();
   }
@@ -402,7 +402,7 @@ void Service::OnWillCreateTreeForWindowManager(
     display::ScreenManagerForwarding::Mode mode =
         is_in_process() ? display::ScreenManagerForwarding::Mode::IN_WM_PROCESS
                         : display::ScreenManagerForwarding::Mode::OWN_PROCESS;
-    screen_manager_ = base::MakeUnique<display::ScreenManagerForwarding>(mode);
+    screen_manager_ = std::make_unique<display::ScreenManagerForwarding>(mode);
 #else
     CHECK(false);
 #endif
@@ -505,7 +505,7 @@ void Service::BindWindowTreeFactoryRequest(
   }
   AddUserIfNecessary(source_info.identity);
   mojo::MakeStrongBinding(
-      base::MakeUnique<ws::WindowTreeFactory>(window_server_.get(),
+      std::make_unique<ws::WindowTreeFactory>(window_server_.get(),
                                               source_info.identity.user_id(),
                                               source_info.identity.name()),
       std::move(request));
@@ -533,14 +533,14 @@ void Service::BindWindowServerTestRequest(
   if (!test_config_)
     return;
   mojo::MakeStrongBinding(
-      base::MakeUnique<ws::WindowServerTestImpl>(window_server_.get()),
+      std::make_unique<ws::WindowServerTestImpl>(window_server_.get()),
       std::move(request));
 }
 
 void Service::BindRemoteEventDispatcherRequest(
     mojom::RemoteEventDispatcherRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<ws::RemoteEventDispatcherImpl>(window_server_.get()),
+      std::make_unique<ws::RemoteEventDispatcherImpl>(window_server_.get()),
       std::move(request));
 }
 

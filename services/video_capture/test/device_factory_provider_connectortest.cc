@@ -34,7 +34,7 @@ class DeviceFactoryProviderConnectorTest : public ::testing::Test {
     std::unique_ptr<ServiceImpl> service_impl = std::make_unique<ServiceImpl>();
     service_impl_ = service_impl.get();
     connector_factory_ =
-        base::MakeUnique<service_manager::TestConnectorFactory>(
+        std::make_unique<service_manager::TestConnectorFactory>(
             std::move(service_impl));
     connector_ = connector_factory_->CreateConnector();
     connector_->BindInterface(mojom::kServiceName, &factory_provider_);

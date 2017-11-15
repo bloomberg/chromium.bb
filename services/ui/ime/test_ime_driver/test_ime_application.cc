@@ -21,7 +21,7 @@ TestIMEApplication::~TestIMEApplication() {}
 
 void TestIMEApplication::OnStart() {
   mojom::IMEDriverPtr ime_driver_ptr;
-  mojo::MakeStrongBinding(base::MakeUnique<TestIMEDriver>(),
+  mojo::MakeStrongBinding(std::make_unique<TestIMEDriver>(),
                           MakeRequest(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;

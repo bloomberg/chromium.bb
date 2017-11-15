@@ -120,7 +120,7 @@ void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
     media::mojom::VideoFrameInfoPtr frame_info) {
   mojom::ScopedAccessPermissionPtr access_permission_proxy;
   mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
-      base::MakeUnique<ScopedAccessPermissionMediaToMojoAdapter>(
+      std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
           std::move(access_permission)),
       mojo::MakeRequest(&access_permission_proxy));
   receiver_->OnFrameReadyInBuffer(buffer_id, frame_feedback_id,

@@ -72,7 +72,7 @@ void PlatformSensorProviderWin::CreateSensorInternal(
   switch (type) {
     // Fusion sensor.
     case mojom::SensorType::LINEAR_ACCELERATION: {
-      auto linear_acceleration_fusion_algorithm = base::MakeUnique<
+      auto linear_acceleration_fusion_algorithm = std::make_unique<
           LinearAccelerationFusionAlgorithmUsingAccelerometer>();
       // If this PlatformSensorFusion object is successfully initialized,
       // |callback| will be run with a reference to this object.
@@ -102,7 +102,7 @@ void PlatformSensorProviderWin::FreeResources() {
 
 void PlatformSensorProviderWin::CreateSensorThread() {
   if (!sensor_thread_)
-    sensor_thread_ = base::MakeUnique<SensorThread>();
+    sensor_thread_ = std::make_unique<SensorThread>();
 }
 
 bool PlatformSensorProviderWin::StartSensorThread() {

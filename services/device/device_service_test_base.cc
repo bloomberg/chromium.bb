@@ -89,7 +89,7 @@ DeviceServiceTestBase::~DeviceServiceTestBase() {}
 
 std::unique_ptr<service_manager::Service>
 DeviceServiceTestBase::CreateService() {
-  return base::MakeUnique<ServiceTestClient>(this, file_thread_.task_runner(),
+  return std::make_unique<ServiceTestClient>(this, file_thread_.task_runner(),
                                              io_thread_.task_runner());
 }
 

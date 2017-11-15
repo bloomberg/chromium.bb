@@ -26,10 +26,10 @@ std::unique_ptr<PlatformDisplay> PlatformDisplay::Create(
     return factory_->CreatePlatformDisplay(root, metrics);
 
 #if defined(OS_ANDROID)
-  return base::MakeUnique<PlatformDisplayDefault>(root, metrics,
+  return std::make_unique<PlatformDisplayDefault>(root, metrics,
                                                   nullptr /* image_cursors */);
 #else
-  return base::MakeUnique<PlatformDisplayDefault>(
+  return std::make_unique<PlatformDisplayDefault>(
       root, metrics, threaded_image_cursors_factory->CreateCursors());
 #endif
 }

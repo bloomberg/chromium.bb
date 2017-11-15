@@ -327,7 +327,7 @@ PrefFilter::OnWriteCallbackPair PrefHashFilter::GetOnWriteSynchronousCallbacks(
   }
 
   std::unique_ptr<base::DictionaryValue> changed_paths_macs =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
 
   for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
        it != changed_paths_.end(); ++it) {

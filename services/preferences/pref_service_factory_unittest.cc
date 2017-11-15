@@ -62,8 +62,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
           service_factory_.Run(), std::move(request)));
     } else if (name == "prefs_unittest_helper") {
       test_helper_service_context_ =
-          base::MakeUnique<service_manager::ServiceContext>(
-              base::MakeUnique<service_manager::Service>(), std::move(request));
+          std::make_unique<service_manager::ServiceContext>(
+              std::make_unique<service_manager::Service>(), std::move(request));
       std::move(connector_callback_)
           .Run(test_helper_service_context_->connector());
     }
@@ -101,7 +101,7 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
     below_user_prefs_pref_store_ = new ValueMapPrefStore();
     auto user_prefs = base::MakeRefCounted<InMemoryPrefStore>();
     PrefServiceFactory factory;
-    service_factory_ = base::MakeUnique<InProcessPrefServiceFactory>();
+    service_factory_ = std::make_unique<InProcessPrefServiceFactory>();
     auto delegate = service_factory_->CreateDelegate();
     auto pref_registry = GetInitialPrefRegistry();
     delegate->InitPrefRegistry(pref_registry.get());
@@ -131,7 +131,7 @@ class PrefServiceFactoryTest : public service_manager::test::ServiceTest {
 
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return base::MakeUnique<ServiceTestClient>(
+    return std::make_unique<ServiceTestClient>(
         this, service_factory_->CreatePrefServiceFactory(),
         std::move(connector_callback_));
   }
@@ -330,13 +330,13 @@ TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore) {
   EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
 
   below_user_prefs_pref_store()->SetValue(
-      kKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+      kKey, std::make_unique<base::Value>(kUpdatedValue), 0);
   WaitForPrefChange(pref_service.get(), kKey);
   EXPECT_EQ(kUpdatedValue, pref_service->GetInteger(kKey));
   pref_service->SetInteger(kKey, 3);
   EXPECT_EQ(3, pref_service->GetInteger(kKey));
   above_user_prefs_pref_store()->SetValue(kKey,
-                                          base::MakeUnique<base::Value>(4), 0);
+                                          std::make_unique<base::Value>(4), 0);
   WaitForPrefChange(pref_service.get(), kKey);
   EXPECT_EQ(4, pref_service->GetInteger(kKey));
 }
@@ -346,16 +346,16 @@ TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_Layering) {
   auto pref_service = Create();
 
   above_user_prefs_pref_store()->SetValue(
-      kKey, base::MakeUnique<base::Value>(kInitialValue), 0);
+      kKey, std::make_unique<base::Value>(kInitialValue), 0);
   WaitForPrefChange(pref_service.get(), kKey);
   EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
 
   below_user_prefs_pref_store()->SetValue(
-      kKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+      kKey, std::make_unique<base::Value>(kUpdatedValue), 0);
   // This update is needed to check that the change to kKey has propagated even
   // though we will not observe it change.
   below_user_prefs_pref_store()->SetValue(
-      kOtherKey, base::MakeUnique<base::Value>(kUpdatedValue), 0);
+      kOtherKey, std::make_unique<base::Value>(kUpdatedValue), 0);
   WaitForPrefChange(pref_service.get(), kOtherKey);
   EXPECT_EQ(kInitialValue, pref_service->GetInteger(kKey));
 }
@@ -366,7 +366,7 @@ TEST_F(PrefServiceFactoryTest, ReadOnlyPrefStore_UserPrefStoreLayering) {
   auto pref_service = Create();
 
   above_user_prefs_pref_store()->SetValue(kKey,
-                                          base::MakeUnique<base::Value>(2), 0);
+                                          std::make_unique<base::Value>(2), 0);
   WaitForPrefChange(pref_service.get(), kKey);
   EXPECT_EQ(2, pref_service->GetInteger(kKey));
 

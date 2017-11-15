@@ -72,11 +72,11 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   DCHECK(!bounds.size().IsEmpty());
 
 #if defined(OS_WIN)
-  platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
+  platform_window_ = std::make_unique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11)
-  platform_window_ = base::MakeUnique<ui::X11Window>(this, bounds);
+  platform_window_ = std::make_unique<ui::X11Window>(this, bounds);
 #elif defined(OS_ANDROID)
-  platform_window_ = base::MakeUnique<ui::PlatformWindowAndroid>(this);
+  platform_window_ = std::make_unique<ui::PlatformWindowAndroid>(this);
   platform_window_->SetBounds(bounds);
 #elif defined(USE_OZONE)
   platform_window_ =
@@ -255,9 +255,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
       mojo::MakeRequest(&display_private));
 
   display_private->SetDisplayVisible(true);
-  frame_generator_ = base::MakeUnique<FrameGenerator>();
+  frame_generator_ = std::make_unique<FrameGenerator>();
   auto frame_sink_client_binding =
-      base::MakeUnique<CompositorFrameSinkClientBinding>(
+      std::make_unique<CompositorFrameSinkClientBinding>(
           frame_generator_.get(),
           std::move(compositor_frame_sink_client_request),
           std::move(compositor_frame_sink), std::move(display_private));

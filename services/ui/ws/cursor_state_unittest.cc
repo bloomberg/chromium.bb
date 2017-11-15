@@ -41,7 +41,7 @@ class CursorStateTest : public testing::Test, public CursorStateDelegate {
   void SetUp() override {
     screen_manager_.Init(window_server()->display_manager());
     window_server()->user_id_tracker()->AddUserId(kTestId1);
-    cursor_state_ = base::MakeUnique<CursorState>(display_manager(), this);
+    cursor_state_ = std::make_unique<CursorState>(display_manager(), this);
 
     AddWindowManager(window_server(), kTestId1);
     screen_manager().AddDisplay(MakeDisplay(0, 0, 1024, 768, 1.0f));

@@ -23,7 +23,7 @@ void OnQuit(bool* quit_called) {
 }
 
 std::unique_ptr<Service> CreateTestService() {
-  return base::MakeUnique<Service>();
+  return std::make_unique<Service>();
 }
 
 }  // namespace

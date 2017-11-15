@@ -93,7 +93,7 @@ void SensorProviderImpl::SensorCreated(
 
   auto init_params = mojom::SensorInitParams::New();
 
-  auto sensor_impl = base::MakeUnique<SensorImpl>(sensor);
+  auto sensor_impl = std::make_unique<SensorImpl>(sensor);
   init_params->client_request = sensor_impl->GetClient();
 
   mojom::SensorPtr sensor_ptr;

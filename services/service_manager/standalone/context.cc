@@ -60,8 +60,8 @@ class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
  private:
    std::unique_ptr<ServiceProcessLauncher> Create(
       const base::FilePath& service_path) override {
-    return base::MakeUnique<ServiceProcessLauncher>(
-        launch_process_runner_, delegate_, service_path);
+     return std::make_unique<ServiceProcessLauncher>(launch_process_runner_,
+                                                     delegate_, service_path);
   }
 
   base::TaskRunner* launch_process_runner_;
@@ -94,7 +94,7 @@ Context::Context(
 // not build ServiceProcessLauncher).
 #if !defined(OS_IOS)
   service_process_launcher_factory =
-      base::MakeUnique<ServiceProcessLauncherFactoryImpl>(
+      std::make_unique<ServiceProcessLauncherFactoryImpl>(
           blocking_pool_.get(), service_process_launcher_delegate);
 #endif
   service_manager_.reset(

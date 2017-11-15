@@ -126,7 +126,7 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
     return nullptr;
   const base::DictionaryValue& value = *dictionary_value;
 
-  auto entry = base::MakeUnique<Entry>();
+  auto entry = std::make_unique<Entry>();
 
   // Name.
   std::string name;

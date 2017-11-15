@@ -28,7 +28,7 @@ FileSystem::~FileSystem() {}
 void FileSystem::GetDirectory(filesystem::mojom::DirectoryRequest request,
                               GetDirectoryCallback callback) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<filesystem::DirectoryImpl>(
+      std::make_unique<filesystem::DirectoryImpl>(
           path_, scoped_refptr<filesystem::SharedTempDir>(), lock_table_),
       std::move(request));
   std::move(callback).Run();
@@ -51,7 +51,7 @@ void FileSystem::GetSubDirectory(const std::string& sub_directory_path,
   }
 
   mojo::MakeStrongBinding(
-      base::MakeUnique<filesystem::DirectoryImpl>(
+      std::make_unique<filesystem::DirectoryImpl>(
           subdir, scoped_refptr<filesystem::SharedTempDir>(), lock_table_),
       std::move(request));
   std::move(callback).Run(filesystem::mojom::FileError::OK);

@@ -16,7 +16,7 @@ void FaceDetectionProviderImpl::CreateFaceDetection(
     shape_detection::mojom::FaceDetectionRequest request,
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<FaceDetectionImplMac>(std::move(options)),
+      std::make_unique<FaceDetectionImplMac>(std::move(options)),
       std::move(request));
 }
 

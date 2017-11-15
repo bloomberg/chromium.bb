@@ -23,7 +23,7 @@ class OrientationQuaternionFusionAlgorithmUsingEulerAnglesTest
  public:
   OrientationQuaternionFusionAlgorithmUsingEulerAnglesTest() {
     auto fusion_algorithm =
-        base::MakeUnique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
+        std::make_unique<OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
             true /* absolute */);
     fusion_algorithm_ = fusion_algorithm.get();
     fake_fusion_sensor_ = base::MakeRefCounted<FakePlatformSensorFusion>(

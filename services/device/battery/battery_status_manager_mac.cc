@@ -213,7 +213,7 @@ class BatteryStatusObserver {
 class BatteryStatusManagerMac : public BatteryStatusManager {
  public:
   explicit BatteryStatusManagerMac(const BatteryCallback& callback)
-      : notifier_(base::MakeUnique<BatteryStatusObserver>(callback)) {}
+      : notifier_(std::make_unique<BatteryStatusObserver>(callback)) {}
 
   ~BatteryStatusManagerMac() override { notifier_->Stop(); }
 
@@ -236,7 +236,7 @@ class BatteryStatusManagerMac : public BatteryStatusManager {
 // static
 std::unique_ptr<BatteryStatusManager> BatteryStatusManager::Create(
     const BatteryStatusService::BatteryUpdateCallback& callback) {
-  return base::MakeUnique<BatteryStatusManagerMac>(callback);
+  return std::make_unique<BatteryStatusManagerMac>(callback);
 }
 
 }  // namespace device

@@ -87,7 +87,7 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
     std::unique_ptr<CoordinationUnitClass> new_cu =
-        base::MakeUnique<CoordinationUnitClass>(id, std::move(service_ref));
+        std::make_unique<CoordinationUnitClass>(id, std::move(service_ref));
     return static_cast<CoordinationUnitClass*>(
         CoordinationUnitBase::AddNewCoordinationUnit(std::move(new_cu)));
   }

@@ -64,8 +64,8 @@ CursorState::CursorState(DisplayManager* display_manager,
                          CursorStateDelegate* delegate)
     : display_manager_(display_manager),
       delegate_(delegate),
-      current_state_(base::MakeUnique<StateSnapshot>()),
-      state_on_unlock_(base::MakeUnique<StateSnapshot>()) {}
+      current_state_(std::make_unique<StateSnapshot>()),
+      state_on_unlock_(std::make_unique<StateSnapshot>()) {}
 
 CursorState::~CursorState() {}
 

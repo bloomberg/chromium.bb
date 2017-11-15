@@ -249,15 +249,15 @@ void PlatformSensorProviderLinux::CreateFusionSensor(
   std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm;
   switch (type) {
     case mojom::SensorType::LINEAR_ACCELERATION:
-      fusion_algorithm = base::MakeUnique<
+      fusion_algorithm = std::make_unique<
           LinearAccelerationFusionAlgorithmUsingAccelerometer>();
       break;
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
-      fusion_algorithm = base::MakeUnique<
+      fusion_algorithm = std::make_unique<
           RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
       break;
     case mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION:
-      fusion_algorithm = base::MakeUnique<
+      fusion_algorithm = std::make_unique<
           OrientationQuaternionFusionAlgorithmUsingEulerAngles>(
           false /* absolute */);
       break;

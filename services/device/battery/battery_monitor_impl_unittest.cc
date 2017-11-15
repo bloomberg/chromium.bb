@@ -91,7 +91,7 @@ class BatteryMonitorImplTest : public DeviceServiceTestBase {
     DeviceServiceTestBase::SetUp();
 
     BatteryStatusService* battery_service = BatteryStatusService::GetInstance();
-    auto battery_manager = base::MakeUnique<FakeBatteryManager>(
+    auto battery_manager = std::make_unique<FakeBatteryManager>(
         battery_service->GetUpdateCallbackForTesting());
     battery_manager_ = battery_manager.get();
     battery_service->SetBatteryManagerForTesting(std::move(battery_manager));

@@ -73,7 +73,7 @@ void BackgroundServiceManager::InitializeOnBackgroundThread(
     service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
     std::unique_ptr<base::Value> catalog_contents) {
   context_ =
-      base::MakeUnique<Context>(launcher_delegate, std::move(catalog_contents));
+      std::make_unique<Context>(launcher_delegate, std::move(catalog_contents));
 }
 
 void BackgroundServiceManager::ShutDownOnBackgroundThread(

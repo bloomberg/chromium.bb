@@ -260,7 +260,7 @@ void FingerprintChromeOS::OnGetLabelFromRecordPath(
 
 // static
 void Fingerprint::Create(device::mojom::FingerprintRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<FingerprintChromeOS>(),
+  mojo::MakeStrongBinding(std::make_unique<FingerprintChromeOS>(),
                           std::move(request));
 }
 

@@ -115,14 +115,14 @@ class FrameGeneratorTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    frame_generator_ = base::MakeUnique<FrameGenerator>();
-    begin_frame_source_ = base::MakeUnique<viz::FakeExternalBeginFrameSource>(
+    frame_generator_ = std::make_unique<FrameGenerator>();
+    begin_frame_source_ = std::make_unique<viz::FakeExternalBeginFrameSource>(
         kRefreshRate, kTickAutomatically);
 
     // FrameGenerator requires a valid SurfaceInfo before generating
     // CompositorFrames.
     std::unique_ptr<TestClientBinding> client_binding =
-        base::MakeUnique<TestClientBinding>(frame_generator_.get());
+        std::make_unique<TestClientBinding>(frame_generator_.get());
     binding_ = client_binding.get();
     IssueBeginFrame();
 

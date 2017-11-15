@@ -17,7 +17,7 @@ class FaceDetectionProviderImpl
 
   static void Create(
       shape_detection::mojom::FaceDetectionProviderRequest request) {
-    mojo::MakeStrongBinding(base::MakeUnique<FaceDetectionProviderImpl>(),
+    mojo::MakeStrongBinding(std::make_unique<FaceDetectionProviderImpl>(),
                             std::move(request));
   }
 

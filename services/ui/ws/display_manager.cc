@@ -51,7 +51,7 @@ DisplayManager::DisplayManager(WindowServer* window_server,
   // TODO: http://crbug.com/701468 fix function key preferences and sticky keys.
   ui::EventRewriterChromeOS::Delegate* delegate = nullptr;
   ui::EventRewriter* sticky_keys_controller = nullptr;
-  event_rewriter_ = base::MakeUnique<ui::EventRewriterChromeOS>(
+  event_rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
       delegate, sticky_keys_controller);
 #endif
   user_id_tracker_->AddObserver(this);
@@ -219,7 +219,7 @@ UserDisplayManager* DisplayManager::GetUserDisplayManager(
     const UserId& user_id) {
   if (!user_display_managers_.count(user_id)) {
     user_display_managers_[user_id] =
-        base::MakeUnique<UserDisplayManager>(window_server_, user_id);
+        std::make_unique<UserDisplayManager>(window_server_, user_id);
     if (window_server_->display_creation_config() ==
         DisplayCreationConfig::MANUAL) {
       user_display_managers_[user_id]->DisableAutomaticNotification();
@@ -232,7 +232,7 @@ CursorLocationManager* DisplayManager::GetCursorLocationManager(
     const UserId& user_id) {
   if (!cursor_location_managers_.count(user_id)) {
     cursor_location_managers_[user_id] =
-        base::MakeUnique<CursorLocationManager>();
+        std::make_unique<CursorLocationManager>();
   }
   return cursor_location_managers_[user_id].get();
 }

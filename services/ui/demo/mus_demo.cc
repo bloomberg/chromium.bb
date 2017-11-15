@@ -68,13 +68,13 @@ void MusDemo::RemoveWindowTreeData(aura::WindowTreeHostMus* window_tree_host) {
 }
 
 void MusDemo::OnStart() {
-  screen_ = base::MakeUnique<display::ScreenBase>();
+  screen_ = std::make_unique<display::ScreenBase>();
   display::Screen::SetScreenInstance(screen_.get());
 
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
-  capture_client_ = base::MakeUnique<aura::client::DefaultCaptureClient>();
-  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
-  wm_state_ = base::MakeUnique<::wm::WMState>();
+  capture_client_ = std::make_unique<aura::client::DefaultCaptureClient>();
+  property_converter_ = std::make_unique<aura::PropertyConverter>();
+  wm_state_ = std::make_unique<::wm::WMState>();
 
   window_tree_client_ = CreateWindowTreeClient();
   env_->SetWindowTreeClient(window_tree_client_.get());

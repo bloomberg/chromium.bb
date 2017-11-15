@@ -113,7 +113,7 @@ void OnConnect(
       managed_prefs.get(), supervised_user_prefs.get(), extension_prefs.get(),
       command_line_prefs.get(), persistent_pref_store.get(),
       recommended_prefs.get(), pref_registry->defaults().get(), pref_notifier);
-  auto pref_service = base::MakeUnique<PrefService>(
+  auto pref_service = std::make_unique<PrefService>(
       pref_notifier, pref_value_store, persistent_pref_store.get(),
       pref_registry.get(), base::Bind(&DoNothingHandleReadError), true);
   switch (pref_service->GetAllPrefStoresInitializationStatus()) {

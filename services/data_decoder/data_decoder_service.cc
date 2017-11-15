@@ -22,14 +22,14 @@ void OnImageDecoderRequest(
     service_manager::ServiceContextRefFactory* ref_factory,
     mojom::ImageDecoderRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<ImageDecoderImpl>(ref_factory->CreateRef()),
+      std::make_unique<ImageDecoderImpl>(ref_factory->CreateRef()),
       std::move(request));
 }
 
 void OnJsonParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
                          mojom::JsonParserRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<JsonParserImpl>(ref_factory->CreateRef()),
+      std::make_unique<JsonParserImpl>(ref_factory->CreateRef()),
       std::move(request));
 }
 
@@ -41,7 +41,7 @@ DataDecoderService::~DataDecoderService() = default;
 
 // static
 std::unique_ptr<service_manager::Service> DataDecoderService::Create() {
-  return base::MakeUnique<DataDecoderService>();
+  return std::make_unique<DataDecoderService>();
 }
 
 void DataDecoderService::OnStart() {

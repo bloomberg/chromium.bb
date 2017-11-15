@@ -32,7 +32,7 @@ class FileService::FileSystemObjects
     if (!lock_table_)
       lock_table_ = new filesystem::LockTable;
     mojo::MakeStrongBinding(
-        base::MakeUnique<FileSystem>(user_dir_, lock_table_),
+        std::make_unique<FileSystem>(user_dir_, lock_table_),
         std::move(request));
   }
 
@@ -74,7 +74,7 @@ class FileService::LevelDBServiceObjects
 };
 
 std::unique_ptr<service_manager::Service> CreateFileService() {
-  return base::MakeUnique<FileService>();
+  return std::make_unique<FileService>();
 }
 
 FileService::FileService()
