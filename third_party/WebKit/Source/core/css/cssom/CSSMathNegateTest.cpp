@@ -10,7 +10,7 @@
 
 namespace blink {
 
-TEST(CSSMathNegate, TypeIsNegationOfArgumentType) {
+TEST(CSSMathNegate, TypeIsSameAsArgumentType) {
   CSSUnitValue* value =
       CSSUnitValue::Create(0, CSSPrimitiveValue::UnitType::kPixels);
   const CSSNumericValueType type = CSSMathNegate::Create(value)->Type();
@@ -19,7 +19,7 @@ TEST(CSSMathNegate, TypeIsNegationOfArgumentType) {
     const auto base_type = static_cast<CSSNumericValueType::BaseType>(i);
     EXPECT_FALSE(type.HasPercentHint());
     if (base_type == CSSNumericValueType::BaseType::kLength)
-      EXPECT_EQ(type.Exponent(base_type), -1);
+      EXPECT_EQ(type.Exponent(base_type), 1);
     else
       EXPECT_EQ(type.Exponent(base_type), 0);
   }

@@ -697,6 +697,8 @@ interface CSSNumericValue : CSSStyleValue
     method add
     method constructor
     method div
+    method max
+    method min
     method mul
     method sub
     method to

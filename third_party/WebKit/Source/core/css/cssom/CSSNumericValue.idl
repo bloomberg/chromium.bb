@@ -9,10 +9,12 @@ typedef (double or CSSNumericValue) CSSNumberish;
 [
   Exposed(Window CSSTypedOM, PaintWorklet CSSTypedOM)
 ] interface CSSNumericValue : CSSStyleValue {
-  [RaisesException, NewObject] CSSNumericValue add(CSSNumericValue value);
-  [RaisesException, NewObject] CSSNumericValue sub(CSSNumericValue value);
-  [RaisesException, NewObject] CSSNumericValue mul(double value);
-  [RaisesException, NewObject] CSSNumericValue div(double value);
+  [RaisesException, NewObject] CSSNumericValue add(CSSNumberish... values);
+  [RaisesException, NewObject] CSSNumericValue sub(CSSNumberish... values);
+  [RaisesException, NewObject] CSSNumericValue mul(CSSNumberish... values);
+  [RaisesException, NewObject] CSSNumericValue div(CSSNumberish... values);
+  [RaisesException, NewObject] CSSNumericValue min(CSSNumberish... values);
+  [RaisesException, NewObject] CSSNumericValue max(CSSNumberish... values);
 
   [RaisesException, NewObject] CSSNumericValue to(DOMString unit);
 

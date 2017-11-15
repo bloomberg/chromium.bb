@@ -18,7 +18,9 @@ namespace blink {
 class CSSUnitValue;
 class ExceptionState;
 
+class CSSNumericValue;
 using CSSNumberish = DoubleOrCSSNumericValue;
+using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
 
 class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   WTF_MAKE_NONCOPYABLE(CSSNumericValue);
@@ -32,29 +34,20 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   static CSSNumericValue* FromNumberish(const CSSNumberish& value);
 
   // Methods defined in the IDL.
-  virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
-    // TODO(meade): Implement.
-    return nullptr;
-  }
-  virtual CSSNumericValue* sub(const CSSNumericValue*, ExceptionState&) {
-    // TODO(meade): Implement.
-    return nullptr;
-  }
-  virtual CSSNumericValue* mul(double, ExceptionState&) {
-    // TODO(meade): Implement.
-    return nullptr;
-  }
-  virtual CSSNumericValue* div(double, ExceptionState&) {
-    // TODO(meade): Implement.
-    return nullptr;
-  }
+  CSSNumericValue* add(const HeapVector<CSSNumberish>&, ExceptionState&);
+  CSSNumericValue* sub(const HeapVector<CSSNumberish>&, ExceptionState&);
+  CSSNumericValue* mul(const HeapVector<CSSNumberish>&, ExceptionState&);
+  CSSNumericValue* div(const HeapVector<CSSNumberish>&, ExceptionState&);
+  CSSNumericValue* min(const HeapVector<CSSNumberish>&, ExceptionState&);
+  CSSNumericValue* max(const HeapVector<CSSNumberish>&, ExceptionState&);
+
   // Converts between compatible types, as defined in the IDL.
   CSSNumericValue* to(const String&, ExceptionState&);
 
   // Internal methods.
   // Converts between compatible types.
   virtual CSSUnitValue* to(CSSPrimitiveValue::UnitType) const = 0;
-  virtual bool IsCalculated() const = 0;
+  virtual bool IsUnitValue() const = 0;
 
   const CSSNumericValueType& Type() const { return type_; }
 
@@ -65,10 +58,11 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
   CSSNumericValue(const CSSNumericValueType& type) : type_(type) {}
 
  private:
+  virtual CSSNumericValue* Negate();
+  virtual CSSNumericValue* Invert();
+
   CSSNumericValueType type_;
 };
-
-using CSSNumericValueVector = HeapVector<Member<CSSNumericValue>>;
 
 CSSNumericValueVector CSSNumberishesToNumericValues(
     const HeapVector<CSSNumberish>&);

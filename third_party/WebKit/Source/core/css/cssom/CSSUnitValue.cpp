@@ -6,6 +6,10 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSResolutionUnits.h"
+#include "core/css/cssom/CSSMathMax.h"
+#include "core/css/cssom/CSSMathMin.h"
+#include "core/css/cssom/CSSMathProduct.h"
+#include "core/css/cssom/CSSMathSum.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {

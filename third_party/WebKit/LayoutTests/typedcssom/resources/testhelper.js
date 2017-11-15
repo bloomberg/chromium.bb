@@ -1,14 +1,21 @@
-const style_value_attributes = {
-  'CSSKeywordValue': ['value'],
-  'CSSUnitValue': ['unit', 'value'],
-};
-
 // Compares two CSSStyleValues to check if they're the same type
 // and have the same attributes.
 function assert_style_value_equals(a, b) {
   assert_equals(a.constructor.name, b.constructor.name);
-  for (const attr of style_value_attributes[a.constructor.name]) {
-    assert_equals(a[attr], b[attr], attr);
+  const className = a.constructor.name;
+  switch (className) {
+    case 'CSSKeywordValue':
+      return assert_equals(a.value, b.value);
+    case 'CSSUnitValue':
+      return assert_equals(a.value, b.value) && assert_equals(a.unit, b.unit);
+    case 'CSSMathSum':
+    case 'CSSMathProduct':
+    case 'CSSMathMin':
+    case 'CSSMathMax':
+      return assert_style_value_array_equals(a.values, b.values);
+    case 'CSSMathInvert':
+    case 'CSSMathNegate':
+      return assert_style_value_equals(a.value, b.value);
   }
 }
 
