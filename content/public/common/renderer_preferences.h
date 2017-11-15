@@ -97,6 +97,11 @@ struct CONTENT_EXPORT RendererPreferences {
   // Set to true to indicate that the preference to set DNT to 1 is enabled.
   bool enable_do_not_track;
 
+  // Whether to allow the use of Encrypted Media Extensions (EME), except for
+  // the use of Clear Key key system which is always allowed as required by the
+  // spec.
+  bool enable_encrypted_media;
+
   // This is the IP handling policy override for WebRTC. The value must be one
   // of the strings defined in privacy.json. The allowed values are specified
   // in webrtc_ip_handling_policy.h.

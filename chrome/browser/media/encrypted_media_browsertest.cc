@@ -508,7 +508,7 @@ class EncryptedMediaTest
 
   void DisableEncryptedMedia() {
     PrefService* pref_service = browser()->profile()->GetPrefs();
-    pref_service->SetBoolean(prefs::kWebKitEncryptedMediaEnabled, false);
+    pref_service->SetBoolean(prefs::kEnableEncryptedMedia, false);
   }
 
  protected:

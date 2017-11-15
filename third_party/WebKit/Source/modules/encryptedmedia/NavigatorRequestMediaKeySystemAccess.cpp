@@ -12,7 +12,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
@@ -295,34 +294,6 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   } else {
     Deprecation::CountDeprecationFeaturePolicy(
         *document, FeaturePolicyFeature::kEncryptedMedia);
-  }
-
-  // From https://w3c.github.io/encrypted-media/#common-key-systems
-  // All user agents MUST support the common key systems described in this
-  // section.
-  // 9.1 Clear Key: The "org.w3.clearkey" Key System uses plain-text clear
-  //                (unencrypted) key(s) to decrypt the source.
-  //
-  // Do not check settings for Clear Key.
-  if (key_system != "org.w3.clearkey") {
-    // For other key systems, check settings and report UMA.
-    bool encypted_media_enabled =
-        document->GetSettings() &&
-        document->GetSettings()->GetEncryptedMediaEnabled();
-
-    static bool has_reported_uma = false;
-    if (!has_reported_uma) {
-      has_reported_uma = true;
-      DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
-                          ("Media.EME.EncryptedMediaEnabled"));
-      histogram.Count(encypted_media_enabled);
-    }
-
-    if (!encypted_media_enabled) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kNotSupportedError, "Unsupported keySystem"));
-    }
   }
 
   // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess

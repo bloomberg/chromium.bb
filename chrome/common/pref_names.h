@@ -146,7 +146,6 @@ extern const char kWebKitJavascriptEnabled[];
 extern const char kWebKitWebSecurityEnabled[];
 extern const char kWebKitLoadsImagesAutomatically[];
 extern const char kWebKitPluginsEnabled[];
-extern const char kWebKitEncryptedMediaEnabled[];
 extern const char kWebKitDomPasteEnabled[];
 extern const char kWebKitTextAreasAreResizable[];
 extern const char kWebkitTabsToLinks[];
@@ -362,6 +361,7 @@ extern const char kEnableDeprecatedWebPlatformFeatures[];
 extern const char kEnableHyperlinkAuditing[];
 extern const char kEnableReferrers[];
 extern const char kEnableDoNotTrack[];
+extern const char kEnableEncryptedMedia[];
 
 extern const char kImportAutofillFormData[];
 extern const char kImportBookmarks[];

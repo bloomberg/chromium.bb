@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "media/base/cdm_config.h"
+#include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_permission.h"
 #include "media/base/mime_util.h"
@@ -866,12 +868,34 @@ void KeySystemConfigSelector::SelectConfig(
   //     agent, reject promise with a NotSupportedError. String comparison
   //     is case-sensitive.
   if (!key_system.ContainsOnlyASCII()) {
-    not_supported_cb.Run("Only ASCII keySystems are supported");
+    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
     return;
   }
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
+    not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
+    return;
+  }
+
+  const bool is_encrypted_media_enabled =
+      media_permission_->IsEncryptedMediaEnabled();
+
+  // Only report this UMA at most once per renderer process.
+  static bool has_reported_encrypted_media_enabled_uma = false;
+  if (!has_reported_encrypted_media_enabled_uma) {
+    has_reported_encrypted_media_enabled_uma = true;
+    UMA_HISTOGRAM_BOOLEAN("Media.EME.EncryptedMediaEnabled",
+                          is_encrypted_media_enabled);
+  }
+
+  // According to Section 9 "Common Key Systems": All user agents MUST support
+  // the common key systems described in this section.
+  //   9.1 Clear Key
+  //
+  // Therefore, always support Clear Key key system and only check settings for
+  // other key systems.
+  if (!is_encrypted_media_enabled && !IsClearKey(key_system_ascii)) {
     not_supported_cb.Run(kUnsupportedKeySystemOrConfigMessage);
     return;
   }

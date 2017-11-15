@@ -31,6 +31,7 @@ RendererPreferences::RendererPreferences()
       use_custom_colors(true),
       enable_referrers(true),
       enable_do_not_track(false),
+      enable_encrypted_media(true),
       webrtc_udp_min_port(0),
       webrtc_udp_max_port(0),
       tap_multiple_targets_strategy(TAP_MULTIPLE_TARGETS_STRATEGY_POPUP),

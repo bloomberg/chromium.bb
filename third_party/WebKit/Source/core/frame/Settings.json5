@@ -556,11 +556,6 @@
     },
 
     {
-      name: "encryptedMediaEnabled",
-      initial: true,
-    },
-
-    {
       name: "viewportEnabled",
       initial: false,
       invalidate: "ViewportDescription",
