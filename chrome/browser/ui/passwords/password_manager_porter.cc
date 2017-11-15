@@ -23,10 +23,15 @@
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/strings/string16.h"
+#endif
 
 namespace {
 
@@ -39,10 +44,6 @@ void WriteToFile(const base::FilePath& path, std::string data) {
 // unused.
 #if !defined(OS_ANDROID)
 const base::FilePath::CharType kFileExtension[] = FILE_PATH_LITERAL("csv");
-
-// The default name of the password file when exporting.
-constexpr base::FilePath::CharType kDefaultFileName[] =
-    FILE_PATH_LITERAL("chrome_passwords");
 
 // Returns the file extensions corresponding to supported formats.
 // Inner vector indicates equivalent extensions. For example:
@@ -58,7 +59,14 @@ base::FilePath GetDefaultFilepathForPasswordFile(
     const base::FilePath::StringType& default_extension) {
   base::FilePath default_path;
   PathService::Get(chrome::DIR_USER_DOCUMENTS, &default_path);
-  return default_path.Append(kDefaultFileName).AddExtension(default_extension);
+#if defined(OS_WIN)
+  base::string16 file_name =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_DEFAULT_EXPORT_FILENAME);
+#else
+  std::string file_name =
+      l10n_util::GetStringUTF8(IDS_PASSWORD_MANAGER_DEFAULT_EXPORT_FILENAME);
+#endif
+  return default_path.Append(file_name).AddExtension(default_extension);
 }
 #endif
 
