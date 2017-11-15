@@ -25,28 +25,44 @@ class URLRequestContextGetter;
 namespace update_client {
 
 // Implements a CRX downloader in top of the URLFetcher.
-class UrlFetcherDownloader : public CrxDownloader,
-                             public net::URLFetcherDelegate {
+class UrlFetcherDownloader : public CrxDownloader {
  public:
   UrlFetcherDownloader(std::unique_ptr<CrxDownloader> successor,
                        net::URLRequestContextGetter* context_getter);
   ~UrlFetcherDownloader() override;
 
  private:
+  class URLFetcherDelegate : public net::URLFetcherDelegate {
+   public:
+    explicit URLFetcherDelegate(UrlFetcherDownloader* downloader);
+    ~URLFetcherDelegate() override;
+
+   private:
+    // Overrides for URLFetcherDelegate.
+    void OnURLFetchComplete(const net::URLFetcher* source) override;
+    void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+                                    int64_t current,
+                                    int64_t total,
+                                    int64_t current_network_bytes) override;
+    // Not owned by this class.
+    UrlFetcherDownloader* downloader_ = nullptr;
+    DISALLOW_COPY_AND_ASSIGN(URLFetcherDelegate);
+  };
+
   // Overrides for CrxDownloader.
   void DoStartDownload(const GURL& url) override;
 
-  // Overrides for URLFetcherDelegate.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void CreateDownloadDir();
+  void StartURLFetch(const GURL& url);
+  void OnURLFetchComplete(const net::URLFetcher* source);
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
                                   int64_t total,
-                                  int64_t current_network_bytes) override;
-
-  void CreateDownloadDir();
-  void StartURLFetch(const GURL& url);
+                                  int64_t current_network_bytes);
 
   THREAD_CHECKER(thread_checker_);
+
+  std::unique_ptr<URLFetcherDelegate> delegate_;
 
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_ = nullptr;
