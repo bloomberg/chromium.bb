@@ -18,6 +18,10 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
   CSSNumericArray* values() { return values_.Get(); }
   void setValues(CSSNumericArray* values) { values_ = values; }
 
+  const CSSNumericValueVector& NumericValues() const {
+    return values_->Values();
+  }
+
   void Trace(Visitor* visitor) override {
     visitor->Trace(values_);
     CSSMathValue::Trace(visitor);

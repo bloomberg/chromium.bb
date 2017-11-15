@@ -6,9 +6,51 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSMathInvert.h"
+#include "core/css/cssom/CSSMathMax.h"
+#include "core/css/cssom/CSSMathMin.h"
+#include "core/css/cssom/CSSMathNegate.h"
+#include "core/css/cssom/CSSMathProduct.h"
+#include "core/css/cssom/CSSMathSum.h"
 #include "core/css/cssom/CSSUnitValue.h"
 
 namespace blink {
+
+namespace {
+
+template <CSSStyleValue::StyleValueType type>
+void PrependValueForArithmetic(CSSNumericValueVector& vector,
+                               CSSNumericValue* value) {
+  DCHECK(value);
+  if (value->GetType() == type)
+    vector.PrependVector(static_cast<CSSMathVariadic*>(value)->NumericValues());
+  else
+    vector.push_front(value);
+}
+
+template <class BinaryOperation>
+CSSUnitValue* MaybeSimplifyAsUnitValue(const CSSNumericValueVector& values,
+                                       const BinaryOperation& op) {
+  DCHECK(!values.IsEmpty());
+
+  CSSUnitValue* first_unit_value = ToCSSUnitValueOrNull(values[0]);
+  if (!first_unit_value)
+    return nullptr;
+
+  double final_value = first_unit_value->value();
+  for (size_t i = 1; i < values.size(); i++) {
+    CSSUnitValue* unit_value = ToCSSUnitValueOrNull(values[i]);
+    if (!unit_value ||
+        unit_value->GetInternalUnit() != first_unit_value->GetInternalUnit())
+      return nullptr;
+
+    final_value = op(final_value, unit_value->value());
+  }
+
+  return CSSUnitValue::Create(final_value, first_unit_value->GetInternalUnit());
+}
+
+}  // namespace
 
 bool CSSNumericValue::IsValidUnit(CSSPrimitiveValue::UnitType unit) {
   // UserUnits returns true for CSSPrimitiveValue::IsLength below.
@@ -62,7 +104,7 @@ CSSNumericValue* CSSNumericValue::to(const String& unit_string,
                                       "Invalid unit for conversion");
     return nullptr;
   }
-  if (IsCalculated()) {
+  if (!IsUnitValue()) {
     exception_state.ThrowTypeError(
         "Conversion of CSSCalcValue is not supported yet");
     return nullptr;
@@ -73,6 +115,96 @@ CSSNumericValue* CSSNumericValue::to(const String& unit_string,
     return nullptr;
   }
   return result;
+}
+
+CSSNumericValue* CSSNumericValue::add(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  PrependValueForArithmetic<kSumType>(values, this);
+
+  if (CSSUnitValue* unit_value =
+          MaybeSimplifyAsUnitValue(values, std::plus<double>())) {
+    return unit_value;
+  }
+  return CSSMathSum::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::sub(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  std::transform(values.begin(), values.end(), values.begin(),
+                 [](CSSNumericValue* v) { return v->Negate(); });
+  PrependValueForArithmetic<kSumType>(values, this);
+
+  if (CSSUnitValue* unit_value =
+          MaybeSimplifyAsUnitValue(values, std::plus<double>())) {
+    return unit_value;
+  }
+  return CSSMathSum::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::mul(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  PrependValueForArithmetic<kProductType>(values, this);
+
+  if (CSSUnitValue* unit_value =
+          MaybeSimplifyAsUnitValue(values, std::multiplies<double>())) {
+    return unit_value;
+  }
+  return CSSMathProduct::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::div(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  std::transform(values.begin(), values.end(), values.begin(),
+                 [](CSSNumericValue* v) { return v->Invert(); });
+  PrependValueForArithmetic<kProductType>(values, this);
+
+  if (CSSUnitValue* unit_value =
+          MaybeSimplifyAsUnitValue(values, std::multiplies<double>())) {
+    return unit_value;
+  }
+  return CSSMathProduct::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::min(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  PrependValueForArithmetic<kMinType>(values, this);
+
+  if (CSSUnitValue* unit_value = MaybeSimplifyAsUnitValue(
+          values, [](double a, double b) { return std::min(a, b); })) {
+    return unit_value;
+  }
+  return CSSMathMin::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::max(
+    const HeapVector<CSSNumberish>& numberishes,
+    ExceptionState& exception_state) {
+  auto values = CSSNumberishesToNumericValues(numberishes);
+  PrependValueForArithmetic<kMaxType>(values, this);
+
+  if (CSSUnitValue* unit_value = MaybeSimplifyAsUnitValue(
+          values, [](double a, double b) { return std::max(a, b); })) {
+    return unit_value;
+  }
+  return CSSMathMax::Create(std::move(values));
+}
+
+CSSNumericValue* CSSNumericValue::Negate() {
+  return CSSMathNegate::Create(this);
+}
+
+CSSNumericValue* CSSNumericValue::Invert() {
+  return CSSMathInvert::Create(this);
 }
 
 CSSNumericValueVector CSSNumberishesToNumericValues(

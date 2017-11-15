@@ -119,7 +119,7 @@ void CSSRotation::setAngle(CSSNumericValue* angle,
     exception_state.ThrowTypeError("Must pass an angle to CSSRotation");
     return;
   }
-  if (angle->IsCalculated()) {
+  if (!angle->IsUnitValue()) {
     exception_state.ThrowTypeError("Calculated angles are not supported yet");
     return;
   }

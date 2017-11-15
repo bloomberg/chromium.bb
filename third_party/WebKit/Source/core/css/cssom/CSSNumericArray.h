@@ -36,6 +36,8 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
     return nullptr;
   }
 
+  const CSSNumericValueVector& Values() const { return values_; }
+
  private:
   explicit CSSNumericArray(CSSNumericValueVector values)
       : values_(std::move(values)) {}

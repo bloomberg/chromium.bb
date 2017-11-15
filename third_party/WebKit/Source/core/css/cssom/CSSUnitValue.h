@@ -38,7 +38,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
 
   // From CSSNumericValue.
   CSSUnitValue* to(CSSPrimitiveValue::UnitType) const final;
-  bool IsCalculated() const final { return false; }
+  bool IsUnitValue() const final { return true; }
 
   // From CSSStyleValue.
   StyleValueType GetType() const final;
@@ -56,6 +56,14 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   double ConvertFixedLength(CSSPrimitiveValue::UnitType) const;
   double ConvertAngle(CSSPrimitiveValue::UnitType) const;
 
+  // From CSSNumericValue
+  CSSNumericValue* Negate() final {
+    return CSSUnitValue::Create(-value_, unit_);
+  }
+  CSSNumericValue* Invert() final {
+    return CSSUnitValue::Create(1.0 / value_, unit_);
+  }
+
   double value_;
   CSSPrimitiveValue::UnitType unit_;
 };
@@ -63,8 +71,8 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
 DEFINE_TYPE_CASTS(CSSUnitValue,
                   CSSNumericValue,
                   value,
-                  !value->IsCalculated(),
-                  !value.IsCalculated());
+                  value->IsUnitValue(),
+                  value.IsUnitValue());
 
 }  // namespace blink
 

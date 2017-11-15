@@ -45,6 +45,9 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   CSSMathInvert(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}
 
+  // From CSSNumericValue
+  CSSNumericValue* Invert() final { return value_.Get(); }
+
   Member<CSSNumericValue> value_;
 };
 

@@ -30,7 +30,7 @@ void CSSSkew::setAx(CSSNumericValue* value, ExceptionState& exception_state) {
     exception_state.ThrowTypeError("Must specify an angle unit");
     return;
   }
-  if (value->IsCalculated()) {
+  if (!value->IsUnitValue()) {
     exception_state.ThrowTypeError("Calculated angles are not supported yet");
     return;
   }
@@ -42,7 +42,7 @@ void CSSSkew::setAy(CSSNumericValue* value, ExceptionState& exception_state) {
     exception_state.ThrowTypeError("Must specify an angle unit");
     return;
   }
-  if (value->IsCalculated()) {
+  if (!value->IsUnitValue()) {
     exception_state.ThrowTypeError("Calculated angles are not supported yet");
     return;
   }
