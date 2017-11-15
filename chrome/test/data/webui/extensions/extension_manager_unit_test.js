@@ -17,35 +17,6 @@ cr.define('extension_manager_tests', function() {
     UpdateItemData: 'update item data',
   };
 
-  class TestService extends TestBrowserProxy {
-    constructor() {
-      super([
-        'getExtensionsInfo',
-        'getProfileConfiguration',
-      ]);
-      this.itemStateChangedTarget = new FakeChromeEvent();
-      this.profileStateChangedTarget = new FakeChromeEvent();
-    }
-
-    getProfileConfiguration() {
-      this.methodCalled('getProfileConfiguration');
-      return Promise.resolve({inDeveloperMode: false});
-    }
-
-    getItemStateChangedTarget() {
-      return this.itemStateChangedTarget;
-    }
-
-    getProfileStateChangedTarget() {
-      return this.profileStateChangedTarget;
-    }
-
-    getExtensionsInfo() {
-      this.methodCalled('getExtensionsInfo');
-      return Promise.resolve([]);
-    }
-  }
-
   var suiteName = 'ExtensionManagerUnitTest';
 
   suite(suiteName, function() {
@@ -58,7 +29,7 @@ cr.define('extension_manager_tests', function() {
     setup(function() {
       PolymerTest.clearBody();
 
-      service = new TestService();
+      service = new extensions.TestService();
       extensions.Service.instance_ = service;
 
       manager = document.createElement('extensions-manager');

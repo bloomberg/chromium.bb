@@ -10,23 +10,6 @@ cr.define('extension_load_error_tests', function() {
     CodeSection: 'Code Section',
   };
 
-  /**
-   * @implements {extensions.LoadErrorDelegate}
-   * @extends {extension_test_util.ClickMock}
-   * @constructor
-   */
-  class MockDelegate extends TestBrowserProxy {
-    constructor() {
-      super(['retryLoadUnpacked']);
-    }
-
-    /** @override */
-    retryLoadUnpacked(guid) {
-      this.methodCalled('retryLoadUnpacked', guid);
-      return Promise.resolve();
-    }
-  }
-
   var suiteName = 'ExtensionLoadErrorTests';
 
   suite(suiteName, function() {
@@ -46,7 +29,7 @@ cr.define('extension_load_error_tests', function() {
 
     setup(function() {
       PolymerTest.clearBody();
-      mockDelegate = new MockDelegate();
+      mockDelegate = new extensions.TestService();
       loadError = new extensions.LoadError();
       loadError.delegate = mockDelegate;
       loadError.loadError = stubLoadError;

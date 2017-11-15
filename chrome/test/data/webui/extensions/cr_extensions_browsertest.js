@@ -37,6 +37,9 @@ var CrExtensionsBrowserTest = class extends PolymerTest {
       '../mock_controller.js',
       '../../../../../ui/webui/resources/js/promise_resolver.js',
       '../../../../../ui/webui/resources/js/webui_resource_test.js',
+      '../fake_chrome_event.js',
+      '../test_browser_proxy.js',
+      'test_service.js',
     ]);
   }
 
@@ -105,7 +108,6 @@ var CrExtensionsToolbarTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
       'extension_toolbar_test.js',
     ]);
   }
@@ -268,7 +270,6 @@ var CrExtensionsLoadErrorTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
       'extension_load_error_test.js',
     ]);
   }
@@ -299,8 +300,6 @@ var CrExtensionsManagerUnitTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../fake_chrome_event.js',
-      '../test_browser_proxy.js',
       'extension_manager_unit_test.js',
     ]);
   }
@@ -421,7 +420,6 @@ var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
       'extension_keyboard_shortcuts_test.js',
     ]);
   }
@@ -453,7 +451,6 @@ var CrExtensionsShortcutInputTest = class extends CrExtensionsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../test_browser_proxy.js',
       'extension_shortcut_input_test.js',
     ]);
   }
