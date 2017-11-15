@@ -36,6 +36,26 @@ Observation& Observation::operator=(const Observation& other) = default;
 
 Observation::~Observation() {}
 
+ObservationCategory Observation::GetObservationCategory() const {
+  switch (source_) {
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE:
+      return ObservationCategory::kHttp;
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_TCP:
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC:
+      return ObservationCategory::kTransport;
+    case NETWORK_QUALITY_OBSERVATION_SOURCE_MAX:
+      NOTREACHED();
+      return ObservationCategory::kHttp;
+  }
+  NOTREACHED();
+  return ObservationCategory::kHttp;
+}
+
 }  // namespace internal
 
 }  // namespace nqe

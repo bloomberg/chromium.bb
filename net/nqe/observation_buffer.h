@@ -73,8 +73,6 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       base::TimeTicks begin_timestamp,
       const base::Optional<int32_t>& current_signal_strength,
       int percentile,
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources,
       size_t* observations_count) const;
 
   void SetTickClockForTesting(base::TickClock* tick_clock) {
@@ -90,8 +88,6 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
   void GetPercentileForEachHostWithCounts(
       base::TimeTicks begin_timestamp,
       int percentile,
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources,
       const base::Optional<std::set<IPHash>>& host_filter,
       std::map<IPHash, int32_t>* host_keyed_percentiles,
       std::map<IPHash, size_t>* host_keyed_counts) const;
@@ -115,9 +111,7 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       const base::TimeTicks& begin_timestamp,
       const base::Optional<int32_t>& current_signal_strength,
       std::vector<WeightedObservation>* weighted_observations,
-      double* total_weight,
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources) const;
+      double* total_weight) const;
 
   const NetworkQualityEstimatorParams* params_;
 

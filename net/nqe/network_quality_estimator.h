@@ -302,8 +302,6 @@ class NET_EXPORT NetworkQualityEstimator
       const base::Optional<nqe::internal::IPHash>& host);
 
   // Returns an estimate of network quality at the specified |percentile|.
-  // |disallowed_observation_sources| is the list of observation sources that
-  // should be excluded when computing the percentile.
   // Only the observations later than |start_time| are taken into account.
   // |percentile| must be between 0 and 100 (both inclusive) with higher
   // percentiles indicating less performant networks. For example, if
@@ -312,13 +310,14 @@ class NET_EXPORT NetworkQualityEstimator
   // be slower than the returned estimate with 0.1 probability. |statistic|
   // is the statistic that should be used for computing the estimate. If unset,
   // the default statistic is used. Virtualized for testing.
+  // |observation_category| is the category of observations which should be used
+  // for computing the RTT estimate.
   // If |observations_count| is not null, then it is set to the number of RTT
   // observations that were available when computing the RTT estimate.
   virtual base::TimeDelta GetRTTEstimateInternal(
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources,
       base::TimeTicks start_time,
       const base::Optional<Statistic>& statistic,
+      nqe::internal::ObservationCategory observation_category,
       int percentile,
       size_t* observations_count) const;
   int32_t GetDownlinkThroughputKbpsEstimateInternal(
@@ -574,12 +573,17 @@ class NET_EXPORT NetworkQualityEstimator
   // ID of the current network.
   nqe::internal::NetworkID current_network_id_;
 
-  // Buffer that holds throughput observations (in kilobits per second) sorted
-  // by timestamp.
-  ObservationBuffer downstream_throughput_kbps_observations_;
+  // Buffer that holds throughput observations from the HTTP layer (in kilobits
+  // per second) sorted by timestamp.
+  ObservationBuffer http_downstream_throughput_kbps_observations_;
 
-  // Buffer that holds RTT observations (in milliseconds) sorted by timestamp.
-  ObservationBuffer rtt_ms_observations_;
+  // Buffer that holds RTT observations from the HTTP layer (in milliseconds)
+  // sorted by timestamp.
+  ObservationBuffer http_rtt_ms_observations_;
+
+  // Buffer that holds RTT observations from the transport layer (in
+  // milliseconds) sorted by timestamp.
+  ObservationBuffer transport_rtt_ms_observations_;
 
   // Time when the transaction for the last main frame request was started.
   base::TimeTicks last_main_frame_request_;
@@ -673,16 +677,6 @@ class NET_EXPORT NetworkQualityEstimator
 
   // Manages the writing of events to the net log.
   nqe::internal::EventCreator event_creator_;
-
-  // Vector that contains observation sources that should not be used when
-  // computing the estimate at HTTP layer.
-  const std::vector<NetworkQualityObservationSource>
-      disallowed_observation_sources_for_http_;
-
-  // Vector that contains observation sources that should not be used when
-  // computing the estimate at transport layer.
-  const std::vector<NetworkQualityObservationSource>
-      disallowed_observation_sources_for_transport_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 
