@@ -837,8 +837,6 @@ final class JavaUrlRequest extends UrlRequestBase {
             case COMPLETE:
             case CANCELLED:
                 break;
-            default:
-                break;
         }
     }
 

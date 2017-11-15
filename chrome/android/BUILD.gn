@@ -1188,7 +1188,6 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//components/sync/android:sync_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",

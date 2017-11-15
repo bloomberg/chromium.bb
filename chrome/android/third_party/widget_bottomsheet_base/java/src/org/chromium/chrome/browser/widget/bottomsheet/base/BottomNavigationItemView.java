@@ -37,7 +37,6 @@ import android.widget.TextView;
 /**
  * Forked from android.support.design.internal.BottomNavigationItemView.
  */
-@SuppressWarnings("RestrictTo")
 public class BottomNavigationItemView extends LinearLayout implements MenuView.ItemView {
     public static final int INVALID_ITEM_POSITION = -1;
 
