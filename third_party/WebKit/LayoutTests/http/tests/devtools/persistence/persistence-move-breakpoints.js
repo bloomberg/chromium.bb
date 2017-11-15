@@ -1,13 +1,14 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/isolated-filesystem-test.js"></script>
-<script src="../../inspector/persistence/persistence-test.js"></script>
-<script src="resources/foo.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Verify that breakpoints are moved appropriately\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.addScriptTag('resources/foo.js');
+  await TestRunner.showPanel('sources');
+
   var testMapping = BindingsTestRunner.initializeTestMapping();
   var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
   var fsEntry = BindingsTestRunner.addFooJSFile(fs);
@@ -17,36 +18,36 @@ function test() {
       fs.reportCreated(next);
     },
 
-    function setBreakpointInFileSystemUISourceCode(next) {
-      TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
-          .then(code => SourcesTestRunner.showUISourceCodePromise(code))
-          .then(onSourceFrame);
-
-      function onSourceFrame(sourceFrame) {
-        SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
-        SourcesTestRunner.waitBreakpointSidebarPane().then(SourcesTestRunner.dumpBreakpointSidebarPane).then(next);
-      }
+    async function setBreakpointInFileSystemUISourceCode(next) {
+      var uiSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+      var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
+      SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+      await SourcesTestRunner.waitBreakpointSidebarPane();
+      dumpBreakpointSidebarPane();
+      next();
     },
 
-    function addFileMapping(next) {
+    async function addFileMapping(next) {
       testMapping.addBinding('foo.js');
-      BindingsTestRunner.waitForBinding('foo.js').then(onBindingCreated);
+      await BindingsTestRunner.waitForBinding('foo.js');
 
-      function onBindingCreated(binding) {
-        SourcesTestRunner.waitBreakpointSidebarPane().then(SourcesTestRunner.dumpBreakpointSidebarPane).then(next);
-      }
+      await SourcesTestRunner.waitBreakpointSidebarPane();
+      dumpBreakpointSidebarPane();
+      next();
     },
 
     function removeFileMapping(next) {
       Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
       testMapping.removeBinding('foo.js');
 
-      function onBindingRemoved(event) {
+      async function onBindingRemoved(event) {
         var binding = event.data;
         if (binding.network.name() !== 'foo.js')
           return;
         Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-        SourcesTestRunner.waitBreakpointSidebarPane().then(dumpBreakpointSidebarPane).then(next);
+        await SourcesTestRunner.waitBreakpointSidebarPane();
+        dumpBreakpointSidebarPane();
+        next();
       }
     },
   ]);
@@ -62,10 +63,4 @@ function test() {
       TestRunner.addResult('    ' + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber);
     }
   }
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that breakpoints are moved appropriately</p>
-</body>
-</html>
+})();
