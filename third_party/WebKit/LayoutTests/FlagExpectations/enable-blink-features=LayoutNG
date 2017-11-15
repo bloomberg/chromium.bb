@@ -6473,7 +6473,6 @@ crbug.com/591099 http/tests/devtools/layers/layer-sticky-position-constraint-get
 crbug.com/591099 http/tests/devtools/network/network-columns-visible.js [ Failure ]
 crbug.com/591099 http/tests/devtools/network/network-datareceived.js [ Failure ]
 crbug.com/591099 http/tests/devtools/network/network-disable-cache-preloads.php [ Failure ]
-crbug.com/591099 http/tests/devtools/network/network-filters.html [ Failure Timeout ]
 crbug.com/591099 http/tests/devtools/network/network-initiator.html [ Failure ]
 crbug.com/591099 http/tests/devtools/network/network-memory-cached-resource.html [ Failure ]
 crbug.com/591099 http/tests/devtools/network/network-xhr-same-url-as-main-resource.html [ Failure ]
