@@ -46,7 +46,7 @@ cr.define('cr.ui', function() {
           this.updateVisibility();
         }
       }.bind(this), 0);
-    });
+    }.bind(this));
 
     this.updateVisibility();
   }
