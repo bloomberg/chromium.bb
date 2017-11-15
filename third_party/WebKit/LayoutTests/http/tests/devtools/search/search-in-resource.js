@@ -1,10 +1,15 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/search/search-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests single resource search in inspector page agent.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
+  await TestRunner.addIframe('resources/search.html');
+
   ApplicationTestRunner.runAfterResourcesAreFinished(['search.js'], step2);
   var resource;
 
@@ -34,13 +39,4 @@ function test() {
 
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body>
-<p>Tests single resource search in inspector page agent.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=68998">Bug 68998</a>
-
-<iframe src="resources/search.html" onload="runTest()">
-</body>
-</html>
+})();

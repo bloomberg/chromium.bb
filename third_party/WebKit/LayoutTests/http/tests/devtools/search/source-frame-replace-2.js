@@ -1,12 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/sources-test.js"></script>
-<script src="../../inspector/search/search-test.js"></script>
-<script src="resources/search.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests different types of search-and-replace in SourceFrame\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addScriptTag('resources/search.js');
+
   UI.viewManager.showView('sources');
   SourcesTestRunner.showScriptSource('search.js', didShowScriptSource);
 
@@ -19,10 +20,4 @@ function test() {
 
     TestRunner.completeTest();
   }
-};
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests different types of search-and-replace in SourceFrame</p>
-</body>
-</html>
+})();

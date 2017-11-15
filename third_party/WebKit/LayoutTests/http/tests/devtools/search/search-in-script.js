@@ -1,11 +1,15 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script src="../../inspector/debugger-test.js"></script>
-<script src="../../inspector/search/search-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Tests script search in inspector debugger agent.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
+  await TestRunner.addIframe('resources/search.html');
+
   SourcesTestRunner.startDebuggerTest(step1);
   var script;
 
@@ -47,13 +51,4 @@ function test() {
 
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-</script>
-</head>
-<body>
-<p>Tests script search in inspector debugger agent.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=69015">Bug 69015</a>
-
-<iframe src="resources/search.html" onload="runTest()">
-</body>
-</html>
+})();
