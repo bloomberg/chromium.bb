@@ -926,57 +926,44 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
                                 int order_idx, int *fwd_offset, int *bck_offset,
                                 int is_compound) {
   assert(fwd_offset != NULL && bck_offset != NULL);
-
-  if (is_compound) {
-    int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
-    int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
-    int bck_frame_index = 0, fwd_frame_index = 0;
-    int cur_frame_index = cm->cur_frame->cur_frame_offset;
-
-    if (bck_idx >= 0) {
-      bck_frame_index = cm->buffer_pool->frame_bufs[bck_idx].cur_frame_offset;
-    }
-
-    if (fwd_idx >= 0) {
-      fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
-    }
-
-    *bck_offset = abs(cur_frame_index - bck_frame_index);
-    *fwd_offset = abs(fwd_frame_index - cur_frame_index);
-
-    const double fwd = abs(fwd_frame_index - cur_frame_index);
-    const double bck = abs(cur_frame_index - bck_frame_index);
-    int order;
-    double ratio;
-
-    if (COMPOUND_WEIGHT_MODE == DIST) {
-      if (fwd > bck) {
-        ratio = (bck != 0) ? fwd / bck : 5.0;
-        order = 0;
-      } else {
-        ratio = (fwd != 0) ? bck / fwd : 5.0;
-        order = 1;
-      }
-      int quant_dist_idx;
-      for (quant_dist_idx = 0; quant_dist_idx < 4; ++quant_dist_idx) {
-        if (ratio < quant_dist_category[quant_dist_idx]) break;
-      }
-      *fwd_offset = quant_dist_lookup_table[order_idx][quant_dist_idx][order];
-      *bck_offset =
-          quant_dist_lookup_table[order_idx][quant_dist_idx][1 - order];
-    } else {
-      *fwd_offset = (DIST_PRECISION >> 1);
-      *bck_offset = (DIST_PRECISION >> 1);
-    }
-
-    if (mbmi->compound_idx) {
-      *fwd_offset = -1;
-      *bck_offset = -1;
-    }
-  } else {
-    *bck_offset = -1;
+  if (!is_compound || mbmi->compound_idx) {
     *fwd_offset = -1;
+    *bck_offset = -1;
+    return;
   }
+
+  const int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
+  const int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
+  const int cur_frame_index = cm->cur_frame->cur_frame_offset;
+  int bck_frame_index = 0, fwd_frame_index = 0;
+
+  if (bck_idx >= 0) {
+    bck_frame_index = cm->buffer_pool->frame_bufs[bck_idx].cur_frame_offset;
+  }
+
+  if (fwd_idx >= 0) {
+    fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
+  }
+
+  int d0 = clamp(abs(fwd_frame_index - cur_frame_index), 0, MAX_FRAME_DISTANCE);
+  int d1 = clamp(abs(cur_frame_index - bck_frame_index), 0, MAX_FRAME_DISTANCE);
+
+  const int order = d0 <= d1;
+
+  if (d0 == 0 || d1 == 0) {
+    *fwd_offset = quant_dist_lookup_table[order_idx][3][order];
+    *bck_offset = quant_dist_lookup_table[order_idx][3][1 - order];
+    return;
+  }
+
+  int i;
+  for (i = 0; i < 4; ++i) {
+    int c0 = quant_dist_weight[i][0];
+    int c1 = quant_dist_weight[i][1];
+    if (d0 * c0 < d1 * c1) break;
+  }
+  *fwd_offset = quant_dist_lookup_table[order_idx][i][order];
+  *bck_offset = quant_dist_lookup_table[order_idx][i][1 - order];
 }
 #endif  // CONFIG_JNT_COMP
 

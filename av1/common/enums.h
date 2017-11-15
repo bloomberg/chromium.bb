@@ -108,6 +108,8 @@ extern "C" {
 #define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
 
+#define MAX_FRAME_DISTANCE (INT16_MAX - 1)
+
 #if CONFIG_JNT_COMP
 typedef enum COMPOUND_DIST_WEIGHT_MODE {
   DIST,
