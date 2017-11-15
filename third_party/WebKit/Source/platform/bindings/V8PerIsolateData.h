@@ -66,14 +66,6 @@ class PLATFORM_EXPORT V8PerIsolateData {
     kUseSnapshot,
   };
 
-  class EndOfScopeTask {
-    USING_FAST_MALLOC(EndOfScopeTask);
-
-   public:
-    virtual ~EndOfScopeTask() {}
-    virtual void Run() = 0;
-  };
-
   // Disables the UseCounter.
   // UseCounter depends on the current context, but it's not available during
   // the initialization of v8::Context and the global object.  So we need to
@@ -193,7 +185,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   // to C++ from script, after executing a script task (e.g. callback,
   // event) or microtasks (e.g. promise). This is explicitly needed for
   // Indexed DB transactions per spec, but should in general be avoided.
-  void AddEndOfScopeTask(std::unique_ptr<EndOfScopeTask>);
+  void AddEndOfScopeTask(WTF::Closure);
   void RunEndOfScopeTasks();
   void ClearEndOfScopeTasks();
 
@@ -309,7 +301,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   bool is_handling_recursion_level_error_;
   bool is_reporting_exception_;
 
-  Vector<std::unique_ptr<EndOfScopeTask>> end_of_scope_tasks_;
+  Vector<WTF::Closure> end_of_scope_tasks_;
   std::unique_ptr<Data> thread_debugger_;
 
   Persistent<ActiveScriptWrappableSet> active_script_wrappables_;
