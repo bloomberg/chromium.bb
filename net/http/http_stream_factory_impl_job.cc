@@ -908,7 +908,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       ssl_config = &server_ssl_config_;
     }
     int rv = quic_request_.Request(destination, quic_version_,
-                                   request_info_.privacy_mode,
+                                   request_info_.privacy_mode, priority_,
                                    ssl_config->GetCertVerifyFlags(), url,
                                    net_log_, &net_error_details_, io_callback_);
     if (rv == OK) {

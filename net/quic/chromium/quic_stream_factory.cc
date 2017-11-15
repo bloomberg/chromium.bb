@@ -304,6 +304,7 @@ class QuicStreamFactory::Job {
       HostResolver* host_resolver,
       const QuicSessionKey& key,
       bool was_alternative_service_recently_broken,
+      RequestPriority priority,
       int cert_verify_flags,
       const NetLogWithSource& net_log);
 
@@ -359,6 +360,7 @@ class QuicStreamFactory::Job {
   HostResolver* host_resolver_;
   std::unique_ptr<HostResolver::Request> request_;
   const QuicSessionKey key_;
+  const RequestPriority priority_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
   const NetLogWithSource net_log_;
@@ -379,6 +381,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             HostResolver* host_resolver,
                             const QuicSessionKey& key,
                             bool was_alternative_service_recently_broken,
+                            RequestPriority priority,
                             int cert_verify_flags,
                             const NetLogWithSource& net_log)
     : io_state_(STATE_RESOLVE_HOST),
@@ -386,6 +389,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       quic_version_(quic_version),
       host_resolver_(host_resolver),
       key_(key),
+      priority_(priority),
       cert_verify_flags_(cert_verify_flags),
       was_alternative_service_recently_broken_(
           was_alternative_service_recently_broken),
@@ -475,8 +479,7 @@ int QuicStreamFactory::Job::DoResolveHost() {
 
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return host_resolver_->Resolve(
-      HostResolver::RequestInfo(key_.destination()), DEFAULT_PRIORITY,
-      &address_list_,
+      HostResolver::RequestInfo(key_.destination()), priority_, &address_list_,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()),
       &request_, net_log_);
 }
@@ -581,6 +584,7 @@ QuicStreamRequest::~QuicStreamRequest() {
 int QuicStreamRequest::Request(const HostPortPair& destination,
                                QuicTransportVersion quic_version,
                                PrivacyMode privacy_mode,
+                               RequestPriority priority,
                                int cert_verify_flags,
                                const GURL& url,
                                const NetLogWithSource& net_log,
@@ -594,7 +598,7 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
   net_error_details_ = net_error_details;
   server_id_ = QuicServerId(HostPortPair::FromURL(url), privacy_mode);
 
-  int rv = factory_->Create(server_id_, destination, quic_version,
+  int rv = factory_->Create(server_id_, destination, quic_version, priority,
                             cert_verify_flags, url, net_log, this);
   if (rv == ERR_IO_PENDING) {
     net_log_ = net_log;
@@ -840,6 +844,7 @@ bool QuicStreamFactory::CanUseExistingSession(const QuicServerId& server_id,
 int QuicStreamFactory::Create(const QuicServerId& server_id,
                               const HostPortPair& destination,
                               QuicTransportVersion quic_version,
+                              RequestPriority priority,
                               int cert_verify_flags,
                               const GURL& url,
                               const NetLogWithSource& net_log,
@@ -918,7 +923,7 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   QuicSessionKey key(destination, server_id);
   std::unique_ptr<Job> job = std::make_unique<Job>(
       this, quic_version, host_resolver_, key, WasQuicRecentlyBroken(server_id),
-      cert_verify_flags, net_log);
+      priority, cert_verify_flags, net_log);
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
