@@ -24,6 +24,20 @@ namespace base {
 
 namespace {
 
+// Exit codes with special meanings on Windows.
+const DWORD kNormalTerminationExitCode = 0;
+const DWORD kDebuggerInactiveExitCode = 0xC0000354;
+const DWORD kKeyboardInterruptExitCode = 0xC000013A;
+const DWORD kDebuggerTerminatedExitCode = 0x40010004;
+
+// This exit code is used by the Windows task manager when it kills a
+// process.  It's value is obviously not that unique, and it's
+// surprising to me that the task manager uses this value, but it
+// seems to be common practice on Windows to test for it as an
+// indication that the task manager has killed something if the
+// process goes away.
+const DWORD kProcessKilledExitCode = 1;
+
 bool CheckForProcessExitAndReport(const Process& process) {
   if (WaitForSingleObject(process.Handle(), 0) == WAIT_OBJECT_0) {
     int exit_code;
@@ -55,7 +69,7 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
     // to leave exit_code uninitialized, since that could cause
     // random interpretations of the exit code.  So we assume it
     // terminated "normally" in this case.
-    *exit_code = win::kNormalTerminationExitCode;
+    *exit_code = kNormalTerminationExitCode;
 
     // Assume the child has exited normally if we can't get the exit
     // code.
@@ -83,17 +97,17 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   *exit_code = tmp_exit_code;
 
   switch (tmp_exit_code) {
-    case win::kNormalTerminationExitCode:
+    case kNormalTerminationExitCode:
       return TERMINATION_STATUS_NORMAL_TERMINATION;
-    case win::kDebuggerInactiveExitCode:    // STATUS_DEBUGGER_INACTIVE.
-    case win::kKeyboardInterruptExitCode:   // Control-C/end session.
-    case win::kDebuggerTerminatedExitCode:  // Debugger terminated process.
-    case win::kProcessKilledExitCode:       // Task manager kill.
+    case kDebuggerInactiveExitCode:  // STATUS_DEBUGGER_INACTIVE.
+    case kKeyboardInterruptExitCode:  // Control-C/end session.
+    case kDebuggerTerminatedExitCode:  // Debugger terminated process.
+    case kProcessKilledExitCode:  // Task manager kill.
       return TERMINATION_STATUS_PROCESS_WAS_KILLED;
-    case win::kSandboxFatalMemoryExceeded:  // Terminated process due to
-                                            // exceeding the sandbox job
-                                            // object memory limits.
-    case win::kOomExceptionCode:            // Ran out of memory.
+    case base::win::kSandboxFatalMemoryExceeded:  // Terminated process due to
+                                                  // exceeding the sandbox job
+                                                  // object memory limits.
+    case base::win::kOomExceptionCode:  // Ran out of memory.
       return TERMINATION_STATUS_OOM;
     default:
       // All other exit codes indicate crashes.
@@ -148,7 +162,7 @@ void EnsureProcessTerminated(Process process) {
           [](Process process) {
             if (CheckForProcessExitAndReport(process))
               return;
-            process.Terminate(win::kProcessKilledExitCode, false);
+            process.Terminate(kProcessKilledExitCode, false);
           },
           Passed(&process)),
       TimeDelta::FromSeconds(2));
