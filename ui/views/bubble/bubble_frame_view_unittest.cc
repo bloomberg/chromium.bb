@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/label_button.h"
@@ -806,6 +807,54 @@ TEST_F(BubbleFrameViewTest, LayoutWithIcon) {
   EXPECT_LT(title->height(), icon->height());
   const int title_offset_y = (icon->height() - title->height()) / 2;
   EXPECT_EQ(icon->y() + title_offset_y, title->y());
+}
+
+// Test the size of the bubble allows a |gfx::NO_ELIDE| title to fit, even if
+// there is no content.
+TEST_F(BubbleFrameViewTest, NoElideTitle) {
+  test::TestLayoutProvider provider;
+  TestBubbleDialogDelegateView delegate;
+  TestAnchor anchor(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  delegate.SetAnchorView(anchor.widget().GetContentsView());
+
+  // Make sure the client area size doesn't interfere with the final size.
+  delegate.SetPreferredSize(gfx::Size());
+
+  Widget* bubble = BubbleDialogDelegateView::CreateBubble(&delegate);
+  bubble->Show();
+
+  // Before changing the title, get the base width of the bubble when there's no
+  // title or content in it.
+  const int empty_bubble_width = bubble->GetClientAreaBoundsInScreen().width();
+  base::string16 title = base::ASCIIToUTF16("This is a title string");
+  delegate.ChangeTitle(title);
+  Label* title_label =
+      static_cast<Label*>(delegate.GetBubbleFrameView()->title());
+
+  // Sanity check: Title labels default to multiline and elide tail. Either of
+  // which result in the Layout system making the title and resulting dialog
+  // very narrow.
+  EXPECT_EQ(gfx::ELIDE_TAIL, title_label->elide_behavior());
+  EXPECT_TRUE(title_label->multi_line());
+  EXPECT_GT(empty_bubble_width, title_label->size().width());
+  EXPECT_EQ(empty_bubble_width, bubble->GetClientAreaBoundsInScreen().width());
+
+  // Set the title to a non-eliding label.
+  title_label->SetElideBehavior(gfx::NO_ELIDE);
+  title_label->SetMultiLine(false);
+
+  // Update the bubble size now that some properties of the title have changed.
+  delegate.SizeToContents();
+
+  // The title/bubble should now be bigger than in multiline tail-eliding mode.
+  EXPECT_LT(empty_bubble_width, title_label->size().width());
+  EXPECT_LT(empty_bubble_width, bubble->GetClientAreaBoundsInScreen().width());
+  // Make sure the bubble is wide enough to fit the title's full size.
+  EXPECT_GE(bubble->GetClientAreaBoundsInScreen().width(),
+            title_label->GetPreferredSize().width());
+  // Make sure the title's actual size has enough room for all its text.
+  EXPECT_EQ(gfx::GetStringWidth(title, title_label->font_list()),
+            title_label->size().width());
 }
 
 }  // namespace views
