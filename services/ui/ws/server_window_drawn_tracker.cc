@@ -106,10 +106,17 @@ void ServerWindowDrawnTracker::OnWindowHierarchyChanged(
     ServerWindow* window,
     ServerWindow* new_parent,
     ServerWindow* old_parent) {
+  ServerWindow* old_root = root_;
   RemoveObservers();
   AddObservers();
   const bool is_drawn = window_->IsDrawn();
+  auto ref = weak_factory_.GetWeakPtr();
   SetDrawn(is_drawn ? nullptr : old_parent, is_drawn);
+  // Allow for the |observer_| to delete |this|.
+  if (!ref)
+    return;
+  if (old_root != root_)
+    observer_->OnRootDidChange(old_parent, window);
 }
 
 void ServerWindowDrawnTracker::OnWillChangeWindowVisibility(

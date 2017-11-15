@@ -668,13 +668,18 @@ void WindowServer::FinishOperation() {
 }
 
 void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
-  WindowManagerDisplayRoot* display_root =
-      display_manager_->GetWindowManagerDisplayRoot(window);
-  if (display_root) {
-    EventDispatcher* event_dispatcher =
-        display_root->window_manager_state()->event_dispatcher();
-    event_dispatcher->UpdateCursorProviderByLastKnownLocation();
-  }
+  UpdateNativeCursorFromMouseLocation(
+      display_manager_->GetWindowManagerDisplayRoot(window));
+}
+
+void WindowServer::UpdateNativeCursorFromMouseLocation(
+    WindowManagerDisplayRoot* display_root) {
+  if (!display_root)
+    return;
+
+  EventDispatcher* event_dispatcher =
+      display_root->window_manager_state()->event_dispatcher();
+  event_dispatcher->UpdateCursorProviderByLastKnownLocation();
 }
 
 void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
@@ -801,7 +806,15 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
       pending_system_modal_windows_.Remove(system_modal_window);
   }
 
-  UpdateNativeCursorFromMouseLocation(window);
+  WindowManagerDisplayRoot* old_display_root =
+      old_parent ? display_manager_->GetWindowManagerDisplayRoot(old_parent)
+                 : nullptr;
+  WindowManagerDisplayRoot* new_display_root =
+      new_parent ? display_manager_->GetWindowManagerDisplayRoot(new_parent)
+                 : nullptr;
+  UpdateNativeCursorFromMouseLocation(new_display_root);
+  if (old_display_root != new_display_root)
+    UpdateNativeCursorFromMouseLocation(old_display_root);
 }
 
 void WindowServer::OnWindowBoundsChanged(ServerWindow* window,

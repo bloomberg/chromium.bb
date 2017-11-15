@@ -41,6 +41,7 @@ class GpuHost;
 class ServerWindow;
 class ThreadedImageCursorsFactory;
 class UserActivityMonitor;
+class WindowManagerDisplayRoot;
 class WindowManagerState;
 class WindowServerDelegate;
 class WindowTree;
@@ -300,6 +301,8 @@ class WindowServer : public ServerWindowDelegate,
   // cursor. This is run in response to events that change the bounds or window
   // hierarchy.
   void UpdateNativeCursorFromMouseLocation(ServerWindow* window);
+  void UpdateNativeCursorFromMouseLocation(
+      WindowManagerDisplayRoot* display_root);
 
   // Updates the native cursor if the cursor is currently inside |window|. This
   // is run in response to events that change the mouse cursor properties of

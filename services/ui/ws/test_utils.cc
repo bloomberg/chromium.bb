@@ -195,6 +195,10 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
   return count;
 }
 
+bool EventDispatcherTestApi::IsObservingWindow(ServerWindow* window) {
+  return ed_->observed_windows_.count(window) > 0;
+}
+
 // TestDisplayBinding ---------------------------------------------------------
 
 WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {

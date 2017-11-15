@@ -15,6 +15,7 @@
 #include "services/ui/ws/event_location.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
+#include "services/ui/ws/server_window_drawn_tracker.h"
 #include "services/ui/ws/window_coordinate_conversions.h"
 #include "services/ui/ws/window_finder.h"
 #include "ui/base/cursor/cursor.h"
@@ -51,11 +52,14 @@ bool IsPointerGoingUp(const PointerEvent& event) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+EventDispatcher::ObservedWindow::ObservedWindow() = default;
+EventDispatcher::ObservedWindow::~ObservedWindow() = default;
+
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
     : delegate_(delegate),
       capture_window_(nullptr),
       capture_window_client_id_(kInvalidClientId),
-      event_targeter_(base::MakeUnique<EventTargeter>(this)),
+      event_targeter_(std::make_unique<EventTargeter>(this)),
       mouse_button_down_(false),
       mouse_cursor_source_window_(nullptr),
       mouse_cursor_in_non_client_area_(false) {}
@@ -157,7 +161,7 @@ void EventDispatcher::SetDragDropSourceWindow(
     const std::unordered_map<std::string, std::vector<uint8_t>>& mime_data,
     uint32_t drag_operations) {
   CancelImplicitCaptureExcept(nullptr, kInvalidClientId);
-  drag_controller_ = base::MakeUnique<DragController>(
+  drag_controller_ = std::make_unique<DragController>(
       this, drag_source, window, source_connection, drag_pointer, mime_data,
       drag_operations);
 }
@@ -498,7 +502,7 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
 
   std::unique_ptr<DeepestWindowAndTarget> result;
   if (found_target) {
-    result = base::MakeUnique<DeepestWindowAndTarget>();
+    result = std::make_unique<DeepestWindowAndTarget>();
     result->deepest_window = AdjustTargetForModal(*found_target);
     result->pointer_target.is_mouse_event = is_mouse_event;
     result->pointer_target.window = result->deepest_window.window;
@@ -522,8 +526,6 @@ void EventDispatcher::ProcessPointerEventOnFoundTargetImpl(
 
     PointerTarget& pointer_target = pointer_targets_[pointer_id];
     if (pointer_target.is_pointer_down) {
-      if (is_mouse_event)
-        SetMouseCursorSourceWindow(pointer_target.window);
       if (!any_pointers_down) {
         // Don't attempt to change focus on pointer down. We assume client code
         // will do that.
@@ -762,21 +764,25 @@ void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
 }
 
 void EventDispatcher::ObserveWindow(ServerWindow* window) {
-  auto res = observed_windows_.insert(std::make_pair(window, 0u));
-  res.first->second++;
-  if (res.second)
-    window->AddObserver(this);
+  auto iter = observed_windows_.find(window);
+  if (iter != observed_windows_.end()) {
+    iter->second->num_observers++;
+    return;
+  }
+  std::unique_ptr<ObservedWindow> observed_window =
+      std::make_unique<ObservedWindow>();
+  observed_window->num_observers = 1;
+  observed_window->drawn_tracker =
+      std::make_unique<ServerWindowDrawnTracker>(window, this);
+  observed_windows_[window] = std::move(observed_window);
 }
 
 void EventDispatcher::UnobserveWindow(ServerWindow* window) {
   auto it = observed_windows_.find(window);
   DCHECK(it != observed_windows_.end());
-  DCHECK_LT(0u, it->second);
-  it->second--;
-  if (!it->second) {
-    window->RemoveObserver(this);
+  DCHECK_LT(0u, it->second->num_observers);
+  if (--it->second->num_observers == 0u)
     observed_windows_.erase(it);
-  }
 }
 
 Accelerator* EventDispatcher::FindAccelerator(
@@ -826,29 +832,25 @@ void EventDispatcher::CancelImplicitCaptureExcept(ServerWindow* window,
   pointer_targets_.clear();
 }
 
-void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
-                                                  ServerWindow* new_parent,
-                                                  ServerWindow* old_parent) {
-  // TODO(sky): this isn't quite right, I think the logic should be (assuming
-  // moving in same root and still drawn):
-  // . if there is capture and window is still in the same root, continue
-  //   sending to it.
-  // . if there isn't capture, then reevaluate each of the pointer targets
-  //   sending exit as necessary.
-  // http://crbug.com/613646 .
-  if (!new_parent || !new_parent->IsDrawn())
-    CancelPointerEventsToTarget(window);
-}
-
-void EventDispatcher::OnWindowVisibilityChanged(ServerWindow* window) {
+void EventDispatcher::WindowNoLongerValidTarget(ServerWindow* window) {
   CancelPointerEventsToTarget(window);
-}
-
-void EventDispatcher::OnWindowDestroyed(ServerWindow* window) {
-  CancelPointerEventsToTarget(window);
-
   if (mouse_cursor_source_window_ == window)
     SetMouseCursorSourceWindow(nullptr);
+}
+
+void EventDispatcher::OnDrawnStateChanged(ServerWindow* ancestor,
+                                          ServerWindow* window,
+                                          bool is_drawn) {
+  if (!is_drawn)
+    WindowNoLongerValidTarget(window);
+}
+
+void EventDispatcher::OnRootDidChange(ServerWindow* ancestor,
+                                      ServerWindow* window) {
+  if (delegate_->IsWindowInDisplayRoot(window))
+    return;
+
+  WindowNoLongerValidTarget(window);
 }
 
 void EventDispatcher::OnDragCursorUpdated() {

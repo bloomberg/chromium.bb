@@ -15,12 +15,20 @@ TestServerWindowDelegate::TestServerWindowDelegate(
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
+void TestServerWindowDelegate::AddRootWindow(ServerWindow* window) {
+  roots_.insert(window);
+}
+
 viz::HostFrameSinkManager* TestServerWindowDelegate::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
 }
 
 ServerWindow* TestServerWindowDelegate::GetRootWindowForDrawn(
     const ServerWindow* window) {
+  for (ServerWindow* root : roots_) {
+    if (root->Contains(window))
+      return root;
+  }
   return root_window_;
 }
 

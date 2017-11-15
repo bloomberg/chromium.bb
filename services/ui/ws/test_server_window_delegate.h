@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 #define SERVICES_UI_WS_TEST_SERVER_WINDOW_DELEGATE_H_
 
+#include <set>
+
 #include "base/macros.h"
 #include "services/ui/ws/server_window_delegate.h"
 
@@ -17,7 +19,12 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
       viz::HostFrameSinkManager* host_frame_sink_manager);
   ~TestServerWindowDelegate() override;
 
+  // GetRootWindowForDrawn() returns the first ServerWindow added by way of
+  // AddRootWindow() that contains the supplied window. If none of the
+  // ServerWindows added by way of AddRootWindow() contain the supplied window,
+  // then the value passed to set_root_window() is returned.
   void set_root_window(ServerWindow* window) { root_window_ = window; }
+  void AddRootWindow(ServerWindow* window);
 
  private:
   // ServerWindowDelegate:
@@ -28,6 +35,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
   ServerWindow* root_window_ = nullptr;
   viz::HostFrameSinkManager* host_frame_sink_manager_ = nullptr;
+  std::set<ServerWindow*> roots_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };

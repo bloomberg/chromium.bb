@@ -20,7 +20,7 @@
 #include "services/ui/ws/event_targeter.h"
 #include "services/ui/ws/event_targeter_delegate.h"
 #include "services/ui/ws/modal_window_controller.h"
-#include "services/ui/ws/server_window_observer.h"
+#include "services/ui/ws/server_window_drawn_tracker_observer.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -43,6 +43,7 @@ class DragSource;
 class DragTargetConnection;
 class EventDispatcherDelegate;
 class ServerWindow;
+class ServerWindowDrawnTracker;
 
 struct EventLocation;
 
@@ -51,7 +52,7 @@ class EventDispatcherTestApi;
 }
 
 // Handles dispatching events to the right location as well as updating focus.
-class EventDispatcher : public ServerWindowObserver,
+class EventDispatcher : public ServerWindowDrawnTrackerObserver,
                         public DragCursorUpdater,
                         public EventTargeterDelegate {
  public:
@@ -200,6 +201,16 @@ class EventDispatcher : public ServerWindowObserver,
     DeepestWindow deepest_window;
   };
 
+  struct ObservedWindow {
+    ObservedWindow();
+    ~ObservedWindow();
+
+    // Number of times ObserveWindow() has been called.
+    uint8_t num_observers = 0;
+
+    std::unique_ptr<ServerWindowDrawnTracker> drawn_tracker;
+  };
+
   // EventTargeter returns the deepest window based on hit-test data. If the
   // target is blocked by a modal window this returns a different target,
   // otherwise the supplied target is returned.
@@ -330,12 +341,15 @@ class EventDispatcher : public ServerWindowObserver,
   void CancelImplicitCaptureExcept(ServerWindow* window,
                                    ClientSpecificId client_id);
 
-  // ServerWindowObserver:
-  void OnWillChangeWindowHierarchy(ServerWindow* window,
-                                   ServerWindow* new_parent,
-                                   ServerWindow* old_parent) override;
-  void OnWindowVisibilityChanged(ServerWindow* window) override;
-  void OnWindowDestroyed(ServerWindow* window) override;
+  // Called when |window| is no longer a valid target for events, for example,
+  // the window was removed from the hierarchy.
+  void WindowNoLongerValidTarget(ServerWindow* window);
+
+  // ServerWindowDrawnTrackerObserver:
+  void OnDrawnStateChanged(ServerWindow* ancestor,
+                           ServerWindow* window,
+                           bool is_drawn) override;
+  void OnRootDidChange(ServerWindow* ancestor, ServerWindow* window) override;
 
   // DragCursorUpdater:
   void OnDragCursorUpdated() override;
@@ -378,7 +392,8 @@ class EventDispatcher : public ServerWindowObserver,
   PointerIdToTargetMap pointer_targets_;
 
   // Keeps track of number of observe requests for each observed window.
-  std::map<const ServerWindow*, uint8_t> observed_windows_;
+  std::map<const ServerWindow*, std::unique_ptr<ObservedWindow>>
+      observed_windows_;
 
   // Set to true when querying EventTargeter for the target.
   bool waiting_on_event_targeter_ = false;
