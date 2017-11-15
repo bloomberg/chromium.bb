@@ -8,6 +8,7 @@
       :host {
         cursor: pointer;
         display: block;
+        outline: none;
       }
 
       :host([disabled]) {
@@ -16,7 +17,6 @@
       }
 
       #container {
-        outline: none;
         position: relative;
         width: 34px;
         z-index: 0;
@@ -92,7 +92,7 @@
         color: var(--cr-toggle-checked-ink-color, var(--primary-color));
       }
     </style>
-    <div id="container" tabindex$="[[tabIndex]]">
+    <div id="container">
      <div id="bar"></div>
      <div id="button"></div>
     </div>

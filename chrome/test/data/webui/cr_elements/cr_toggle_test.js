@@ -33,12 +33,14 @@ suite('cr-toggle', function() {
 
   function assertDisabled() {
     assertTrue(toggle.disabled);
+    assertEquals('-1', toggle.getAttribute('tabindex'));
     assertTrue(toggle.hasAttribute('disabled'));
     assertEquals('true', toggle.getAttribute('aria-disabled'));
   }
 
   function assertNotDisabled() {
     assertFalse(toggle.disabled);
+    assertEquals('0', toggle.getAttribute('tabindex'));
     assertFalse(toggle.hasAttribute('disabled'));
     assertEquals('false', toggle.getAttribute('aria-disabled'));
   }
