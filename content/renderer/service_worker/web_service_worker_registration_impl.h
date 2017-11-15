@@ -34,22 +34,23 @@ class WebServiceWorkerImpl;
 class ServiceWorkerProviderContext;
 
 // WebServiceWorkerRegistrationImpl corresponds to one ServiceWorkerRegistration
-// object in JavaScript. It is owned by content::ServiceWorkerRegistrationHandle
-// in the browser process, but also is refcounted by
-// WebServiceWorkerRegistration::Handles in the renderer process. See the
-// detailed lifecycle explanation below.
+// object in JavaScript. It is owned by
+// content::ServiceWorkerRegistrationObjectHost in the browser process, but also
+// is refcounted by WebServiceWorkerRegistration::Handles in the renderer
+// process. See the detailed lifecycle explanation below.
 //
 // A WebServiceWorkerRegistrationImpl is created when the browser process sends
 // the first ServiceWorkerRegistrationObjectInfo to the renderer process that
 // describes the desired JavaScript object. The instance is created and takes
 // ownership of the object info. The object info has a Mojo connection to a
-// ServiceWorkerRegistrationHandle in the browser process
+// ServiceWorkerRegistrationObjectHost in the browser process
 // ((|this->info_.host_ptr_info|) . In addition, The
 // WebServiceWorkerRegistrationImpl itself is connected with the
-// ServiceWorkerRegistrationHandle (|this->binding_|). Creation always happens
-// in order to create a ServiceWorkerRegistration JavaScript object in Blink.
-// The instance is shared with Blink via WebServiceWorkerRegistration::Handle.
-// As long as a handle is alive in Blink, this instance should not die.
+// ServiceWorkerRegistrationObjectHost (|this->binding_|). Creation always
+// happens in order to create a ServiceWorkerRegistration JavaScript object in
+// Blink. The instance is shared with Blink via
+// WebServiceWorkerRegistration::Handle. As long as a handle is alive in Blink,
+// this instance should not die.
 //
 // During the lifetime of WebServiceWorkerRegistrationImpl, multiple
 // WebServiceWorkerRegistration::Handles may be created and held by Blink. If
@@ -60,8 +61,8 @@ class ServiceWorkerProviderContext;
 //
 // If all WebServiceWorkerRegistration::Handles are destroyed, the
 // WebServiceWorkerRegistrationImpl clears |info_|, which informs the
-// ServiceWorkerRegistrationHandle in the browser process that this instance is
-// ready to be destroyed. If there was no ServiceWorkerRegistrationObjectInfo
+// ServiceWorkerRegistrationObjectHost in the browser process that this instance
+// is ready to be destroyed. If there was no ServiceWorkerRegistrationObjectInfo
 // inflight, the browser process destroys the Mojo connection to this instance,
 // which finally destroys it.
 //
@@ -225,17 +226,17 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   // content::ServiceWorkerRegistration in the browser process.
   const int64_t registration_id_;
   // |info_| is initialized by the contructor with |info| passed from the remote
-  // content::ServiceWorkerRegistrationHandle just created in the browser
+  // content::ServiceWorkerRegistrationObjectHost just created in the browser
   // process. It will be reset to nullptr by DetachAndMaybeDestroy() when
   // there is no any blink::WebServiceWorkerRegistration::Handle referencing
   // |this|. After that if another Mojo connection from the same remote
-  // content::ServiceWorkerRegistrationHandle is passed here again (e.g.
+  // content::ServiceWorkerRegistrationObjectHost is passed here again (e.g.
   // WebServiceWorkerProviderImpl::OnDidGetRegistration()), |info_| will be set
   // to the valid value again by Attach().
   // |info_->host_ptr_info| is taken/bound by |host_for_global_scope_| or
   // |host_for_client_| which holds the Mojo connection caller end point
   // retaining an reference to the remote
-  // content::ServiceWorkerRegistrationHandle to control its lifetime.
+  // content::ServiceWorkerRegistrationObjectHost to control its lifetime.
   // |info_->request| is bound on |binding_|.
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;
@@ -259,16 +260,15 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
       host_for_client_;
 
   // |binding_| keeps the Mojo binding to serve its other Mojo endpoint (i.e.
-  // the caller end) held by the content::ServiceWorkerRegistrationHandle in the
-  // browser process, is bound with |info_->request| by BindRequest() function.
-  // This also controls lifetime of |this|, its connection error handler will
-  // delete |this|.
-  // It is bound on the main thread for service worker clients (document, shared
-  // worker).
-  // It is bound on the IO thread for service worker execution contexts,
-  // but always uses PostTask to handle received messages actually on the worker
-  // thread, because it's a channel-associated interface which can be bound
-  // only on the main or IO thread.
+  // the caller end) held by the content::ServiceWorkerRegistrationObjectHost in
+  // the browser process, is bound with |info_->request| by BindRequest()
+  // function. This also controls lifetime of |this|, its connection error
+  // handler will delete |this|. It is bound on the main thread for service
+  // worker clients (document, shared worker). It is bound on the IO thread for
+  // service worker execution contexts, but always uses PostTask to handle
+  // received messages actually on the worker thread, because it's a
+  // channel-associated interface which can be bound only on the main or IO
+  // thread.
   // TODO(leonhsl): Once we can detach this interface out from the legacy IPC
   // channel-associated interfaces world, for service worker execution context
   // we should bind it always on the worker thread on which |this| lives.

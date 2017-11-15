@@ -20,7 +20,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_registration_handle.h"
+#include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/test_browser_context.h"
@@ -262,14 +262,14 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   auto dispatcher_host = base::MakeRefCounted<ServiceWorkerDispatcherHost>(
       helper_->mock_render_process_id(),
       helper_->browser_context()->GetResourceContext());
-  // ServiceWorkerRegistrationHandle ctor will make |handle| be owned by
-  // |dispatcher_host|.
-  auto* handle = new ServiceWorkerRegistrationHandle(
+  // ServiceWorkerRegistrationObjectHost ctor will make
+  // |registration_object_host| be owned by |dispatcher_host|.
+  auto* registration_object_host = new ServiceWorkerRegistrationObjectHost(
       context()->AsWeakPtr(), dispatcher_host.get(),
       base::WeakPtr<ServiceWorkerProviderHost>(), registration.get());
-  ALLOW_UNUSED_LOCAL(handle);
+  ALLOW_UNUSED_LOCAL(registration_object_host);
   registration->NotifyRegistrationFailed();
-  // Don't crash when handle gets destructed.
+  // Don't crash when |registration_object_host| gets destructed.
 }
 
 TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
@@ -610,14 +610,14 @@ TEST_F(ServiceWorkerActivationTest, LameDuckTime_NoControllee) {
   EXPECT_FALSE(IsLameDuckTimerRunning());
 }
 
-// Sets up a registration with a ServiceWorkerRegistrationHandle to hold it.
-class ServiceWorkerRegistrationHandleTest
+// Sets up a registration with a ServiceWorkerRegistrationObjectHost to hold it.
+class ServiceWorkerRegistrationObjectHostTest
     : public ServiceWorkerRegistrationTest {
  protected:
   void SetUp() override {
     ServiceWorkerRegistrationTest::SetUp();
     mojo::edk::SetDefaultProcessErrorCallback(base::AdaptCallbackForRepeating(
-        base::BindOnce(&ServiceWorkerRegistrationHandleTest::OnMojoError,
+        base::BindOnce(&ServiceWorkerRegistrationObjectHostTest::OnMojoError,
                        base::Unretained(this))));
   }
 
@@ -754,7 +754,7 @@ class ServiceWorkerRegistrationHandleTest
   std::vector<std::string> bad_messages_;
 };
 
-TEST_F(ServiceWorkerRegistrationHandleTest, BreakConnection_Destroy) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, BreakConnection_Destroy) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
@@ -773,7 +773,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, BreakConnection_Destroy) {
   EXPECT_EQ(nullptr, context()->GetLiveRegistration(registration_id));
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, Update_Success) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_Success) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   SetUpRegistration(kScope, kScriptUrl);
@@ -795,7 +795,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, Update_Success) {
             CallUpdate(registration_host_ptr.get()));
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, Update_CrossOriginShouldFail) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, Update_CrossOriginShouldFail) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   SetUpRegistration(kScope, kScriptUrl);
@@ -816,7 +816,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, Update_CrossOriginShouldFail) {
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest,
+TEST_F(ServiceWorkerRegistrationObjectHostTest,
        Update_ContentSettingsDisallowsServiceWorker) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -838,7 +838,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest,
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_Success) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
@@ -866,7 +866,8 @@ TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_Success) {
             CallUnregister(registration_host_ptr.get()));
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_CrossOriginShouldFail) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest,
+       Unregister_CrossOriginShouldFail) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   SetUpRegistration(kScope, kScriptUrl);
@@ -887,7 +888,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_CrossOriginShouldFail) {
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest,
+TEST_F(ServiceWorkerRegistrationObjectHostTest,
        Unregister_ContentSettingsDisallowsServiceWorker) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
@@ -909,7 +910,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest,
   SetBrowserClientForTesting(old_browser_client);
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, SetVersionAttributes) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
@@ -1016,7 +1017,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, SetVersionAttributes) {
   }
 }
 
-TEST_F(ServiceWorkerRegistrationHandleTest, UpdateFound) {
+TEST_F(ServiceWorkerRegistrationObjectHostTest, UpdateFound) {
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);

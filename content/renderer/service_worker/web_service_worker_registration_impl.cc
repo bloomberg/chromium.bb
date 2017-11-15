@@ -199,8 +199,8 @@ void WebServiceWorkerRegistrationImpl::DetachAndMaybeDestroy() {
   DCHECK_EQ(LifecycleState::kAttachedAndBound, state_);
   state_ = LifecycleState::kDetached;
   // We will continue in OnConnectionError() triggered by destruction of the
-  // content::ServiceWorkerRegistrationHandle in the browser process, or else in
-  // Attach*() if |this| is reused.
+  // content::ServiceWorkerRegistrationObjectHost in the browser process, or
+  // else in Attach*() if |this| is reused.
 }
 
 void WebServiceWorkerRegistrationImpl::BindRequest(

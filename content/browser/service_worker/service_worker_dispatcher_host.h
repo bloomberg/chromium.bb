@@ -38,7 +38,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerHandle;
 class ServiceWorkerProviderHost;
-class ServiceWorkerRegistrationHandle;
+class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 
 // ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
@@ -91,13 +91,13 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   // Following methods are virtual only for testing.
   virtual void RegisterServiceWorkerHandle(
       std::unique_ptr<ServiceWorkerHandle> handle);
-  virtual void RegisterServiceWorkerRegistrationHandle(
-      ServiceWorkerRegistrationHandle* handle);
-  virtual void UnregisterServiceWorkerRegistrationHandle(int handle_id);
+  virtual void RegisterServiceWorkerRegistrationObjectHost(
+      ServiceWorkerRegistrationObjectHost* host);
+  virtual void UnregisterServiceWorkerRegistrationObjectHost(int handle_id);
 
   ServiceWorkerHandle* FindServiceWorkerHandle(int provider_id,
                                                int64_t version_id);
-  ServiceWorkerRegistrationHandle* FindServiceWorkerRegistrationHandle(
+  ServiceWorkerRegistrationObjectHost* FindServiceWorkerRegistrationObjectHost(
       int provider_id,
       int64_t registration_id);
 
@@ -195,9 +195,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
 
   base::IDMap<std::unique_ptr<ServiceWorkerHandle>> handles_;
 
-  using RegistrationHandleMap =
-      base::IDMap<std::unique_ptr<ServiceWorkerRegistrationHandle>>;
-  RegistrationHandleMap registration_handles_;
+  base::IDMap<std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
+      registration_object_hosts_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.
   std::vector<std::unique_ptr<IPC::Message>> pending_messages_;
