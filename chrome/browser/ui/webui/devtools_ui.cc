@@ -101,8 +101,7 @@ class DevToolsDataSource : public content::URLDataSource,
                                const GotDataCallback& callback);
 
   // Serves remote DevTools frontend from hard-coded App Engine domain.
-  void StartRemoteDataRequest(const std::string& path,
-                              const GotDataCallback& callback);
+  void StartRemoteDataRequest(const GURL& url, const GotDataCallback& callback);
 
   // Serves remote DevTools frontend from any endpoint, passed through
   // command-line flag.
@@ -163,8 +162,16 @@ void DevToolsDataSource::StartDataRequest(
   remote_path_prefix += "/";
   if (base::StartsWith(path, remote_path_prefix,
                        base::CompareCase::INSENSITIVE_ASCII)) {
-    StartRemoteDataRequest(path.substr(remote_path_prefix.length()),
-                           callback);
+    GURL url(kRemoteFrontendBase + path.substr(remote_path_prefix.length()));
+
+    CHECK_EQ(url.host(), kRemoteFrontendDomain);
+    if (url.is_valid() && DevToolsUIBindings::IsValidRemoteFrontendURL(url)) {
+      StartRemoteDataRequest(url, callback);
+    } else {
+      DLOG(ERROR) << "Refusing to load invalid remote front-end URL";
+      callback.Run(new base::RefCountedStaticMemory(kHttpNotFound,
+                                                    strlen(kHttpNotFound)));
+    }
     return;
   }
 
@@ -225,15 +232,9 @@ void DevToolsDataSource::StartBundledDataRequest(
 }
 
 void DevToolsDataSource::StartRemoteDataRequest(
-    const std::string& path,
+    const GURL& url,
     const content::URLDataSource::GotDataCallback& callback) {
-  GURL url = GURL(kRemoteFrontendBase + path);
-  CHECK_EQ(url.host(), kRemoteFrontendDomain);
-  if (!url.is_valid()) {
-    callback.Run(
-        new base::RefCountedStaticMemory(kHttpNotFound, strlen(kHttpNotFound)));
-    return;
-  }
+  CHECK(url.is_valid());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("devtools_hard_coded_data_source", R"(
         semantics {

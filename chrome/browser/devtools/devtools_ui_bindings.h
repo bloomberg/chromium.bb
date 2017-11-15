@@ -45,6 +45,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   static GURL SanitizeFrontendURL(const GURL& url);
   static bool IsValidFrontendURL(const GURL& url);
+  static bool IsValidRemoteFrontendURL(const GURL& url);
 
   class Delegate {
    public:
