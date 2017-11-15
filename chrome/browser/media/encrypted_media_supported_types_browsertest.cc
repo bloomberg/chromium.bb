@@ -40,8 +40,6 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-namespace chrome {
-
 namespace {
 
 const char kClearKey[] = "org.w3.clearkey";
@@ -920,5 +918,3 @@ IN_PROC_BROWSER_TEST_F(
 }
 #endif  // !defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
-
-}  // namespace chrome

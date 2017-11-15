@@ -17,8 +17,6 @@
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-namespace chrome {
-
 MediaBrowserTest::MediaBrowserTest() : ignore_plugin_crash_(false) {}
 
 MediaBrowserTest::~MediaBrowserTest() {}
@@ -77,5 +75,3 @@ void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
 void MediaBrowserTest::IgnorePluginCrash() {
   ignore_plugin_crash_ = true;
 }
-
-}  // namespace chrome
