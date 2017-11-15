@@ -508,22 +508,25 @@ def get_total_disk_space():
     return (total, free)
 
 
-def get_target_revision(solution_name, git_url, revisions):
+def _get_target_branch_and_revision(solution_name, git_url, revisions):
   normalized_name = solution_name.strip('/')
   if normalized_name in revisions:
-    return revisions[normalized_name]
-  if git_url in revisions:
-    return revisions[git_url]
-  return None
+    configured = revisions[normalized_name]
+  elif git_url in revisions:
+    configured = revisions[git_url]
+  else:
+    return 'master', 'HEAD'
 
-
-def force_revision(cwd, revision):
-  split_revision = revision.split(':', 1)
-  branch = 'master'
-  if len(split_revision) == 2:
+  parts = configured.split(':', 1)
+  if len(parts) == 2:
     # Support for "branch:revision" syntax.
-    branch, revision = split_revision
+    return parts
+  return 'master', configured
 
+
+def force_solution_revision(solution_name, git_url, revisions, cwd):
+  branch, revision = _get_target_branch_and_revision(
+      solution_name, git_url, revisions)
   if revision and revision.upper() != 'HEAD':
     git('checkout', '--force', revision, cwd=cwd)
   else:
@@ -644,11 +647,7 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
           except Exception:
             tries -= 1
 
-      # TODO(tandrii): refactor to avoid exposing revision which isn't really
-      # sha1 and not even 'HEAD' but can also be 'branch:HEAD' and even
-      # 'branch:sha1'.
-      revision = get_target_revision(name, url, revisions) or 'HEAD'
-      force_revision(sln_dir, revision)
+      force_solution_revision(name, url, revisions, sln_dir)
       done = True
     except SubprocessFailed as e:
       # Exited abnormally, theres probably something wrong.
