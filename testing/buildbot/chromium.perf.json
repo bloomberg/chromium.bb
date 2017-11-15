@@ -1375,7 +1375,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.mobile",
@@ -6266,7 +6266,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.mobile",
@@ -10457,7 +10457,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13531,7 +13531,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.mobile",
@@ -17722,7 +17722,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -20796,7 +20796,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.mobile",
@@ -25647,7 +25647,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.mobile",
@@ -30574,7 +30574,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -34885,7 +34885,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -39092,7 +39092,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -43299,7 +43299,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -47511,7 +47511,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -51697,7 +51697,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -55904,7 +55904,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -59987,7 +59987,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -64049,7 +64049,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -68153,7 +68153,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -72299,7 +72299,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -76424,7 +76424,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -80576,7 +80576,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -84680,7 +84680,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
@@ -88784,7 +88784,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "loading.desktop",
