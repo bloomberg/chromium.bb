@@ -1927,13 +1927,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   associated_interfaces_.reset(new AssociatedInterfaceRegistryImpl());
   GetContentClient()->browser()->ExposeInterfacesToRenderer(
       registry.get(), associated_interfaces_.get(), this);
-  static_cast<AssociatedInterfaceRegistry*>(associated_interfaces_.get())
-      ->AddInterface(base::Bind(&RenderProcessHostImpl::BindRouteProvider,
-                                base::Unretained(this)));
-
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&RenderProcessHostImpl::CreateRendererHost,
-                                  base::Unretained(this)));
+  AssociatedInterfaceRegistry* associated_registry =
+      associated_interfaces_.get();
+  associated_registry->AddInterface(base::Bind(
+      &RenderProcessHostImpl::BindRouteProvider, base::Unretained(this)));
+  associated_registry->AddInterface(base::Bind(
+      &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
     AddUIThreadInterface(
@@ -2042,7 +2041,7 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
-    mojom::RendererHostRequest request) {
+    mojom::RendererHostAssociatedRequest request) {
   renderer_host_binding_.Bind(std::move(request));
 }
 
@@ -2884,8 +2883,6 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
-      IPC_MESSAGE_HANDLER(RenderProcessHostMsg_SuddenTerminationChanged,
-                          SuddenTerminationChanged)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                           OnUserMetricsRecordAction)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Close_ACK, OnCloseACK)

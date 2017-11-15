@@ -1156,10 +1156,8 @@ mojom::StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
 }
 
 mojom::RendererHost* RenderThreadImpl::GetRendererHost() {
-  if (!renderer_host_) {
-    GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                  mojo::MakeRequest(&renderer_host_));
-  }
+  if (!renderer_host_)
+    GetChannel()->GetRemoteAssociatedInterface(&renderer_host_);
   return renderer_host_.get();
 }
 

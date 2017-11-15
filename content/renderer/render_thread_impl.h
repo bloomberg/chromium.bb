@@ -826,7 +826,7 @@ class CONTENT_EXPORT RenderThreadImpl
   PendingFrameCreateMap pending_frame_creates_;
 
   mojom::StoragePartitionServicePtr storage_partition_service_;
-  mojom::RendererHostPtr renderer_host_;
+  mojom::RendererHostAssociatedPtr renderer_host_;
 
   AssociatedInterfaceRegistryImpl associated_interfaces_;
 
