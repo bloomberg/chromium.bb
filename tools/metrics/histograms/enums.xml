@@ -41003,8 +41003,8 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="12" label="kNoCacheBecauseStreamingSource">
     Blink did not request a code cache because this is a streaming source
   </int>
-  <int value="13" label="kNoCacheBecauseExtension">
-    Blink did not request a code cache because it is compiling an extension
+  <int value="13" label="kNoCacheBecauseV8Extension">
+    Blink did not request a code cache because it is compiling a V8 extension
   </int>
   <int value="14" label="kHitIsolateCacheWhenProduceCodeCache">
     The compilation hit V8's isolate's compilation cache and produced a code
@@ -41013,6 +41013,17 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="15" label="kHitIsolateCacheWhenConsumeCodeCache">
     The compilation hit V8's isolate's compilation cache instead of consuming a
     code cache
+  </int>
+  <int value="16" label="kNoCacheBecauseModuleExtension">
+    Blink did not request a code cache because it is compiling a module for an
+    extension
+  </int>
+  <int value="17" label="kNoCacheBecausePacScript">
+    Blink did not request a code cache because it is compiling a PAC script
+  </int>
+  <int value="18" label="kNoCacheBecauseInDocumentWrite">
+    Blink did not request a code cache because it is compiling a script created
+    by document.write
   </int>
 </enum>
 
