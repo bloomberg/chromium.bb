@@ -279,9 +279,9 @@ message PolicyFetchRequest {
   optional string policy_invalidation_info = 10;
 
   // Whether or not the client only supports the new PolicyData invalidation
-  // keys. If true, only the policy_invalidation_key and
-  // command_invalidation_key fields will be set in the PolicyData response.
-  optional bool new_invalidation_keys_only = 11;
+  // topics. If true, only the policy_invalidation_topic and
+  // command_invalidation_topic fields will be set in the PolicyData response.
+  optional bool invalidation_topics_only = 11;
 }
 
 // This message customizes how the device behaves when it is disabled by its
@@ -459,14 +459,14 @@ message PolicyData {
   // is present only for device policies.
   optional string display_domain = 25;
 
-  // Invalidation key for devices. Clients register for messages using this key
-  // in order to receive notifications for device policy changes.
-  optional string policy_invalidation_key = 26;
+  // Invalidation topic for devices. Clients register for FCM messages using
+  // this topic in order to receive notifications for device policy changes.
+  optional string policy_invalidation_topic = 26;
 
-  // Invalidation key for commands. Clients register for messages using this key
-  // in order to receive notifications that one or more commands are available
-  // for execution.
-  optional string command_invalidation_key = 27;
+  // Invalidation topic for commands. Clients register for FCM messages using
+  // this topic in order to receive notifications that one or more commands are
+  // available for execution.
+  optional string command_invalidation_topic = 27;
 }
 
 message PolicyFetchResponse {
@@ -1188,6 +1188,9 @@ message CertificateBasedDeviceRegistrationData {
   optional DeviceRegisterRequest device_register_request = 3;
 }
 
+// Request to enroll a Chrome browser.
+message BrowserRegisterRequest {}
+
 // Gets an enrollment token to a managed Google Play account for using it with
 // Active Directory. Sent when a new user logs in with Active Directory and
 // opens Play Store for the first time.
@@ -1330,20 +1333,24 @@ message TpmVersionInfo {
 //     * active_directory_play_activity
 //     * check_device_license
 //     * active_directory_user_signin
-//
-//   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
+//     * browser_register
+//   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
+//     browser.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
 //   * For register, ping, check_android_management and
-//     check_device_license requests
+//     check_device_license requests with user authentication
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
+//
+//   * For register for Chrome browsers
+//     Authorization: GoogleEnrollmentToken token=<enrollment token>
 //
 //   * For unregister, policy, status, cert_upload, remote_commands,
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, and active_directory_user_signin requests
-//      Authorization: GoogleDMToken token=<dm token from register>
+//     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check or for
 //     certificate_based_register requests, nor for register requests
@@ -1374,6 +1381,7 @@ message TpmVersionInfo {
 //   active_directory_play_activity: active_directory_play_activity_request
 //   check_device_license: check_device_license_request
 //   active_directory_user_signin: active_directory_user_signin_request
+//   browser_register: browser_register_request
 //
 message DeviceManagementRequest {
   // Register request.
@@ -1445,6 +1453,9 @@ message DeviceManagementRequest {
   // Initiate an Active Directory user signin.
   optional ActiveDirectoryUserSigninRequest
       active_directory_user_signin_request = 22;
+
+  // Request to register a browser independently of its users.
+  optional BrowserRegisterRequest browser_register_request = 23;
 }
 
 // Response from server to device.
