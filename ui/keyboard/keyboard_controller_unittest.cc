@@ -184,7 +184,10 @@ class KeyboardControllerTest : public testing::Test,
   KeyboardControllerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        number_of_calls_(0),
+        visible_bounds_number_of_calls_(0),
+        occluding_bounds_number_of_calls_(0),
+        is_available_number_of_calls_(0),
+        is_available_(false),
         keyboard_closed_(false) {}
   ~KeyboardControllerTest() override {}
 
@@ -238,14 +241,38 @@ class KeyboardControllerTest : public testing::Test,
  protected:
   // KeyboardControllerObserver overrides
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override {
-    notified_bounds_ = new_bounds;
-    number_of_calls_++;
+    // TODO(blakeo): remove this method
+  }
+  void OnKeyboardVisibleBoundsChanging(const gfx::Rect& new_bounds) override {
+    visible_bounds_ = new_bounds;
+    visible_bounds_number_of_calls_++;
+  }
+  void OnKeyboardWorkspaceOccludedBoundsChanging(
+      const gfx::Rect& new_bounds) override {
+    occluding_bounds_ = new_bounds;
+    occluding_bounds_number_of_calls_++;
+  }
+  void OnKeyboardAvailabilityChanging(bool is_available) override {
+    is_available_ = is_available;
+    is_available_number_of_calls_++;
   }
   void OnKeyboardClosed() override { keyboard_closed_ = true; }
 
-  int number_of_calls() const { return number_of_calls_; }
+  // TODO(blakeo): remove this method
+  int bounds_number_of_calls() const { return 0; }
+  int visible_bounds_number_of_calls() const {
+    return visible_bounds_number_of_calls_;
+  }
+  int occluding_bounds_number_of_calls() const {
+    return occluding_bounds_number_of_calls_;
+  }
+  int is_available_number_of_calls() const {
+    return is_available_number_of_calls_;
+  }
 
-  const gfx::Rect& notified_bounds() { return notified_bounds_; }
+  const gfx::Rect& notified_visible_bounds() { return visible_bounds_; }
+  const gfx::Rect& notified_occluding_bounds() { return occluding_bounds_; }
+  bool notified_is_available() { return is_available_; }
 
   bool IsKeyboardClosed() { return keyboard_closed_; }
 
@@ -290,8 +317,13 @@ class KeyboardControllerTest : public testing::Test,
   std::unique_ptr<TestFocusController> focus_controller_;
 
  private:
-  int number_of_calls_;
-  gfx::Rect notified_bounds_;
+  int visible_bounds_number_of_calls_;
+  gfx::Rect visible_bounds_;
+  int occluding_bounds_number_of_calls_;
+  gfx::Rect occluding_bounds_;
+  int is_available_number_of_calls_;
+  bool is_available_;
+
   std::unique_ptr<KeyboardLayoutDelegate> layout_delegate_;
   std::unique_ptr<KeyboardController> controller_;
   std::unique_ptr<ui::TextInputClient> test_text_input_client_;
@@ -576,7 +608,6 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
 TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
   ui::Layer* layer = keyboard_container()->layer();
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
   ShowKeyboard();
 
   // Keyboard container and window should immediately become visible before
@@ -589,7 +620,9 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_EQ(transform, layer->transform());
   // animation occurs in a cloned layer, so the actual final bounds should
   // already be applied to the container.
-  EXPECT_EQ(keyboard_container()->bounds(), notified_bounds());
+  EXPECT_EQ(keyboard_container()->bounds(), notified_visible_bounds());
+  EXPECT_EQ(keyboard_container()->bounds(), notified_occluding_bounds());
+  EXPECT_TRUE(notified_is_available());
 
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_container()->IsVisible());
@@ -599,7 +632,9 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_EQ(gfx::Transform(), layer->transform());
   // KeyboardController should notify the bounds of container window to its
   // observers after show animation finished.
-  EXPECT_EQ(keyboard_container()->bounds(), notified_bounds());
+  EXPECT_EQ(keyboard_container()->bounds(), notified_visible_bounds());
+  EXPECT_EQ(keyboard_container()->bounds(), notified_occluding_bounds());
+  EXPECT_TRUE(notified_is_available());
 
   // Directly hide keyboard without delay.
   float hide_start_opacity = layer->opacity();
@@ -610,7 +645,9 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   layer = keyboard_container()->layer();
   // KeyboardController should notify the bounds of keyboard window to its
   // observers before hide animation starts.
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
+  EXPECT_FALSE(notified_is_available());
 
   RunAnimationForLayer(layer);
   EXPECT_FALSE(keyboard_container()->IsVisible());
@@ -618,7 +655,17 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_FALSE(contents_window()->IsVisible());
   float hide_end_opacity = layer->opacity();
   EXPECT_GT(hide_start_opacity, hide_end_opacity);
-  EXPECT_EQ(gfx::Rect(), notified_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
+  EXPECT_FALSE(notified_is_available());
+
+  controller()->SetContainerType(ContainerType::FLOATING);
+  ShowKeyboard();
+  RunAnimationForLayer(layer);
+  // Visible bounds and occluding bounds are now different.
+  EXPECT_EQ(keyboard_container()->bounds(), notified_visible_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
+  EXPECT_TRUE(notified_is_available());
 }
 
 // Show keyboard during keyboard hide animation should abort the hide animation
@@ -670,12 +717,21 @@ TEST_F(KeyboardControllerTest, DisplayChangeShouldNotifyBoundsChange) {
 
   SetFocus(&input_client);
   gfx::Rect new_bounds(0, 0, 1280, 800);
+  // TODO(blakeo): strictly speaking, the is_available_number_of_calls should
+  // not go up if the availability value is the same each time. This will
+  // eventually need to be fixed, but is currently harmless.
   ASSERT_NE(new_bounds, root_window()->bounds());
-  EXPECT_EQ(1, number_of_calls());
+  EXPECT_EQ(1, visible_bounds_number_of_calls());
+  EXPECT_EQ(1, occluding_bounds_number_of_calls());
+  EXPECT_EQ(1, is_available_number_of_calls());
   root_window()->SetBounds(new_bounds);
-  EXPECT_EQ(2, number_of_calls());
+  EXPECT_EQ(2, visible_bounds_number_of_calls());
+  EXPECT_EQ(2, occluding_bounds_number_of_calls());
+  EXPECT_EQ(2, is_available_number_of_calls());
   MockRotateScreen();
-  EXPECT_EQ(3, number_of_calls());
+  EXPECT_EQ(3, visible_bounds_number_of_calls());
+  EXPECT_EQ(3, occluding_bounds_number_of_calls());
+  EXPECT_EQ(3, is_available_number_of_calls());
 }
 
 }  // namespace keyboard

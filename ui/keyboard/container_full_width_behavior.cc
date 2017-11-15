@@ -116,4 +116,8 @@ bool ContainerFullWidthBehavior::TextBlurHidesKeyboard() const {
   return !controller_->keyboard_locked();
 }
 
+bool ContainerFullWidthBehavior::BoundsAffectWorkspaceLayout() const {
+  return !controller_->keyboard_locked();
+}
+
 }  //  namespace keyboard
