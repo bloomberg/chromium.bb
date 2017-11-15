@@ -183,6 +183,9 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
     sql::Connection* db) {
+  if (!db)
+    return std::make_pair(0, DeletePageResult::STORE_FAILURE);
+
   DeletePageResult result = DeletePageResult::SUCCESS;
   size_t pages_cleared = 0;
 
