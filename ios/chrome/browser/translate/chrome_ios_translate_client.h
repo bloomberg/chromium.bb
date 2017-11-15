@@ -76,6 +76,10 @@ class ChromeIOSTranslateClient
   // web::WebStateObserver implementation.
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // The WebState this instance is observing. Will be null after
+  // WebStateDestroyed has been called.
+  web::WebState* web_state_ = nullptr;
+
   std::unique_ptr<translate::TranslateManager> translate_manager_;
   translate::IOSTranslateDriver translate_driver_;
 
