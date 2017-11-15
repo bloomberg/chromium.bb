@@ -169,7 +169,7 @@ FcHashTableAdd (FcHashTable *table,
 
 	return !ret;
     }
-    for (prev = &table->buckets[hash & FC_HASH_SIZE];
+    for (prev = &table->buckets[hash % FC_HASH_SIZE];
 	 (b = *prev); prev = &(b->next))
     {
 	if (!table->compare_func (bucket->key, key))
