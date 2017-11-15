@@ -19,6 +19,7 @@
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_iterator.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
+#include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -41,6 +42,7 @@ namespace vr {
 class Animation;
 class SkiaSurfaceProvider;
 class UiElementRenderer;
+struct CameraModel;
 
 enum LayoutAlignment {
   NONE = 0,
@@ -121,7 +123,7 @@ class UiElement : public cc::AnimationTarget {
   bool IsHitTestable() const;
 
   virtual void Render(UiElementRenderer* renderer,
-                      const gfx::Transform& model_view_proj_matrix) const;
+                      const CameraModel& model) const;
 
   virtual void Initialize(SkiaSurfaceProvider* provider);
 

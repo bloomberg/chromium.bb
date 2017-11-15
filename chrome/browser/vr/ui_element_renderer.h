@@ -79,15 +79,18 @@ class UiElementRenderer {
       float opacity);
 
   // TODO(crbug/779108) This presumes a Daydream controller.
-  VIRTUAL_FOR_MOCKS void DrawController(ControllerMesh::State state,
-                                        float opacity,
-                                        const gfx::Transform& view_proj_matrix);
+  VIRTUAL_FOR_MOCKS void DrawController(
+      ControllerMesh::State state,
+      float opacity,
+      const gfx::Transform& model_view_proj_matrix);
 
-  VIRTUAL_FOR_MOCKS void DrawLaser(float opacity,
-                                   const gfx::Transform& view_proj_matrix);
+  VIRTUAL_FOR_MOCKS void DrawLaser(
+      float opacity,
+      const gfx::Transform& model_view_proj_matrix);
 
-  VIRTUAL_FOR_MOCKS void DrawReticle(float opacity,
-                                     const gfx::Transform& view_proj_matrix);
+  VIRTUAL_FOR_MOCKS void DrawReticle(
+      float opacity,
+      const gfx::Transform& model_view_proj_matrix);
 
   VIRTUAL_FOR_MOCKS void DrawWebVr(int texture_data_handle);
 

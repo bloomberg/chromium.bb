@@ -182,7 +182,9 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
 
   FakeUiElementRenderer renderer;
   if (element->draw_phase() != kPhaseNone) {
-    element->Render(&renderer, kPixelDaydreamProjMatrix);
+    CameraModel model;
+    model.view_proj_matrix = kPixelDaydreamProjMatrix;
+    element->Render(&renderer, model);
   }
 
   // It is expected that some elements doesn't render anything (such as root

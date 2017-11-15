@@ -85,7 +85,7 @@ Button::Button(base::Callback<void()> click_handler,
 Button::~Button() = default;
 
 void Button::Render(UiElementRenderer* renderer,
-                    const gfx::Transform& view_proj_matrix) const {}
+                    const CameraModel& model) const {}
 
 void Button::SetButtonColors(const ButtonColors& colors) {
   colors_ = colors;

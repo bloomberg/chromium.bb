@@ -17,7 +17,7 @@ class InvisibleHitTarget : public UiElement {
   ~InvisibleHitTarget() override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InvisibleHitTarget);

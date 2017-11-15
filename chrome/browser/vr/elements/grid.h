@@ -18,7 +18,7 @@ class Grid : public Rect {
   ~Grid() override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const override;
+              const CameraModel& model) const override;
 
   SkColor grid_color() const { return grid_color_; }
   void SetGridColor(SkColor grid_color);

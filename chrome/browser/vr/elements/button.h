@@ -35,7 +35,7 @@ class Button : public UiElement {
   ~Button() override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   Rect* background() const { return background_; }
   VectorIcon* foreground() const { return foreground_; }

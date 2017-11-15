@@ -56,6 +56,8 @@ void UiRenderer::DrawSplashScreen(const RenderInfo& render_info) {
   if (elements.empty())
     return;
 
+  LOG(ERROR) << "lolk drawing splash screen";
+
   // WebVR is incompatible with 3D world compositing since the
   // depth buffer was already populated with unknown scaling - the
   // WebVR app has full control over zNear/zFar. Just leave the
@@ -87,32 +89,31 @@ void UiRenderer::DrawUiView(const RenderInfo& render_info,
 
   auto sorted_elements = GetElementsInDrawOrder(elements);
 
-  for (auto& eye_info :
-       {render_info.left_eye_info, render_info.right_eye_info}) {
-    glViewport(eye_info.viewport.x(), eye_info.viewport.y(),
-               eye_info.viewport.width(), eye_info.viewport.height());
+  for (auto& camera_model :
+       {render_info.left_eye_model, render_info.right_eye_model}) {
+    glViewport(camera_model.viewport.x(), camera_model.viewport.y(),
+               camera_model.viewport.width(), camera_model.viewport.height());
 
-    DrawElements(eye_info.view_proj_matrix, sorted_elements, render_info);
+    DrawElements(camera_model, sorted_elements, render_info);
   }
 }
 
-void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
+void UiRenderer::DrawElements(const CameraModel& camera_model,
                               const std::vector<const UiElement*>& elements,
                               const RenderInfo& render_info) {
   if (elements.empty()) {
     return;
   }
   for (const auto* element : elements) {
-    DrawElement(view_proj_matrix, *element);
+    DrawElement(camera_model, *element);
   }
   ui_element_renderer_->Flush();
 }
 
-void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
+void UiRenderer::DrawElement(const CameraModel& camera_model,
                              const UiElement& element) {
   DCHECK_GE(element.draw_phase(), 0);
-  element.Render(ui_element_renderer_,
-                 view_proj_matrix * element.world_space_transform());
+  element.Render(ui_element_renderer_, camera_model);
 }
 
 std::vector<const UiElement*> UiRenderer::GetElementsInDrawOrder(

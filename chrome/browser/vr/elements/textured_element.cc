@@ -65,9 +65,8 @@ void TexturedElement::UpdateElementSize() {
   SetSize(stale_size().width(), height);
 }
 
-void TexturedElement::Render(
-    UiElementRenderer* renderer,
-    const gfx::Transform& model_view_proj_matrix) const {
+void TexturedElement::Render(UiElementRenderer* renderer,
+                             const CameraModel& model) const {
   if (!g_initialized_for_testing_) {
     if (!initialized_)
       return;
@@ -76,10 +75,10 @@ void TexturedElement::Render(
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
-  renderer->DrawTexturedQuad(texture_handle_,
-                             UiElementRenderer::kTextureLocationLocal,
-                             model_view_proj_matrix, copy_rect,
-                             computed_opacity(), size(), corner_radius());
+  renderer->DrawTexturedQuad(
+      texture_handle_, UiElementRenderer::kTextureLocationLocal,
+      model.view_proj_matrix * world_space_transform(), copy_rect,
+      computed_opacity(), size(), corner_radius());
 }
 
 void TexturedElement::OnSetMode() {

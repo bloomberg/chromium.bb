@@ -19,7 +19,7 @@ class FullScreenRect : public Rect {
 
  private:
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
   bool IsWorldPositioned() const final;
 
   DISALLOW_COPY_AND_ASSIGN(FullScreenRect);
