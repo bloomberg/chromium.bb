@@ -229,11 +229,20 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  typedef std::map<int32_t, linked_ptr<VaapiPicture>> Pictures;
-  // All allocated Pictures, regardless of their current state.
-  // Pictures are allocated once and destroyed at the end of decode.
-  // Comes after vaapi_wrapper_ to ensure all pictures are destroyed
-  // before vaapi_wrapper_ is destroyed.
+  // TODO(mcasas): Use a VaapiPicture factory instead, https://crbug.com/784507.
+  base::Callback<linked_ptr<VaapiPicture>(const scoped_refptr<VaapiWrapper>&,
+                                          const MakeGLContextCurrentCallback&,
+                                          const BindGLImageCallback&,
+                                          int32_t,
+                                          const gfx::Size&,
+                                          uint32_t,
+                                          uint32_t)>
+      create_vaapi_picture_callback_;
+  // All allocated Pictures, regardless of their current state. Pictures are
+  // allocated once using | create_vaapi_picture_callback_| and destroyed at the
+  // end of decode. Comes after |vaapi_wrapper_| to ensure all pictures are
+  // destroyed before said |vaapi_wrapper_| is destroyed.
+  using Pictures = std::map<int32_t, linked_ptr<VaapiPicture>>;
   Pictures pictures_;
 
   // Return a VaapiPicture associated with given client-provided id.

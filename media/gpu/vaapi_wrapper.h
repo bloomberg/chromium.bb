@@ -96,13 +96,13 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // again to free the allocated surfaces first, but is not required to do so
   // at destruction time, as this will be done automatically from
   // the destructor.
-  bool CreateSurfaces(unsigned int va_format,
-                      const gfx::Size& size,
-                      size_t num_surfaces,
-                      std::vector<VASurfaceID>* va_surfaces);
+  virtual bool CreateSurfaces(unsigned int va_format,
+                              const gfx::Size& size,
+                              size_t num_surfaces,
+                              std::vector<VASurfaceID>* va_surfaces);
 
   // Free all memory allocated in CreateSurfaces.
-  void DestroySurfaces();
+  virtual void DestroySurfaces();
 
   // Create a VASurface of |va_format|, |size| and using |va_attribs|
   // attributes. The ownership of the surface is transferred to the
@@ -206,11 +206,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Get the created surfaces format.
   unsigned int va_surface_format() const { return va_surface_format_; }
 
+ protected:
+  VaapiWrapper();
+  virtual ~VaapiWrapper();
+
  private:
   friend class base::RefCountedThreadSafe<VaapiWrapper>;
-
-  VaapiWrapper();
-  ~VaapiWrapper();
 
   bool Initialize(CodecMode mode, VAProfile va_profile);
   void Deinitialize();

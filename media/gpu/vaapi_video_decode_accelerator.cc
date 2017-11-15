@@ -325,6 +325,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     : state_(kUninitialized),
       num_stream_bufs_at_decoder_(0),
       input_ready_(&lock_),
+      create_vaapi_picture_callback_(base::Bind(&VaapiPicture::CreatePicture)),
       surfaces_available_(&lock_),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VaapiDecoderThread"),
@@ -805,7 +806,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
                               ? buffers[i].service_texture_ids()[0]
                               : 0;
 
-    linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
+    linked_ptr<VaapiPicture> picture(create_vaapi_picture_callback_.Run(
         vaapi_wrapper_, make_context_current_cb_, bind_image_cb_,
         buffers[i].id(), requested_pic_size_, service_id, client_id));
     RETURN_AND_NOTIFY_ON_FAILURE(
