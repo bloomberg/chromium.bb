@@ -39,8 +39,6 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -225,13 +223,7 @@ public class WindowAndroid {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !Build.VERSION.RELEASE.equals("8.0.0")
                 && activityFromContext(context) != null) {
             Configuration configuration = context.getResources().getConfiguration();
-            boolean isScreenWideColorGamut = false;
-            try {
-                Method method = configuration.getClass().getMethod("isScreenWideColorGamut");
-                isScreenWideColorGamut = (Boolean) method.invoke(configuration);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                Log.e(TAG, "Error invoking isScreenWideColorGamut:", e);
-            }
+            boolean isScreenWideColorGamut = configuration.isScreenWideColorGamut();
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
         }
     }
