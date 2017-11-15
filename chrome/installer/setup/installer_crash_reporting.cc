@@ -22,7 +22,6 @@
 #include "chrome/installer/setup/installer_crash_reporter_client.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/crash/content/app/crash_keys_win.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 
