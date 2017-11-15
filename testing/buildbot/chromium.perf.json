@@ -66783,27 +66783,6 @@
   "Win 7 ATI GPU Perf": {
     "isolated_scripts": [
       {
-        "args": [],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "1002:6613",
-              "id": "build103-m1",
-              "os": "Windows-2008ServerR2-SP1",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 600,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [
           "blink_perf.bindings",
           "-v",
