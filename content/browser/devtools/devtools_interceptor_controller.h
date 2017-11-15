@@ -23,6 +23,8 @@ struct GlobalRequestID;
 
 class DevToolsInterceptorController : public base::SupportsUserData::Data {
  public:
+  using GetResponseBodyForInterceptionCallback =
+      DevToolsURLRequestInterceptor::GetResponseBodyForInterceptionCallback;
   using ContinueInterceptedRequestCallback =
       DevToolsURLRequestInterceptor::ContinueInterceptedRequestCallback;
   using Modifications = DevToolsURLRequestInterceptor::Modifications;
@@ -44,6 +46,10 @@ class DevToolsInterceptorController : public base::SupportsUserData::Data {
   void StopInterceptingRequests(const FrameTreeNode* target_frame);
 
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
+
+  void GetResponseBody(
+      std::string request_id,
+      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
 
   ~DevToolsInterceptorController() override;
 

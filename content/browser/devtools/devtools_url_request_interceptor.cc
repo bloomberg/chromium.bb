@@ -53,8 +53,11 @@ DevToolsURLRequestInterceptor::Pattern::Pattern(const Pattern& other) = default;
 
 DevToolsURLRequestInterceptor::Pattern::Pattern(
     const std::string& url_pattern,
-    base::flat_set<ResourceType> resource_types)
-    : url_pattern(url_pattern), resource_types(std::move(resource_types)) {}
+    base::flat_set<ResourceType> resource_types,
+    InterceptionStage interception_stage)
+    : url_pattern(url_pattern),
+      resource_types(std::move(resource_types)),
+      interception_stage(interception_stage) {}
 
 const DevToolsTargetRegistry::TargetInfo*
 DevToolsURLRequestInterceptor::TargetInfoForRequestInfo(
@@ -106,6 +109,24 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::MaybeInterceptResponse(
   return nullptr;
 }
 
+void DevToolsURLRequestInterceptor::GetResponseBody(
+    std::string interception_id,
+    std::unique_ptr<GetResponseBodyForInterceptionCallback> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DevToolsURLInterceptorRequestJob* job = GetJob(interception_id);
+  if (!job) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            &GetResponseBodyForInterceptionCallback::sendFailure,
+            std::move(callback),
+            protocol::Response::InvalidParams("Invalid InterceptionId.")));
+    return;
+  }
+
+  job->GetResponseBody(std::move(callback));
+}
+
 net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
@@ -135,7 +156,7 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
   if (sub_requests_.find(request) != sub_requests_.end())
     return nullptr;
 
-  bool matchFound = false;
+  InterceptionStage interception_stage = DONT_INTERCEPT;
   const std::string url =
       protocol::NetworkHandler::ClearUrlRef(request->url()).spec();
   for (const Pattern& pattern : intercepted_page.intercepted_patterns) {
@@ -145,11 +166,20 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
       continue;
     }
     if (base::MatchPattern(url, pattern.url_pattern)) {
-      matchFound = true;
-      break;
+      if (pattern.interception_stage == REQUEST &&
+          interception_stage == RESPONSE) {
+        interception_stage = BOTH;
+        break;
+      } else if (pattern.interception_stage == RESPONSE &&
+                 interception_stage == REQUEST) {
+        interception_stage = BOTH;
+        break;
+      }
+      interception_stage = pattern.interception_stage;
     }
   }
-  if (!matchFound)
+
+  if (interception_stage == DONT_INTERCEPT)
     return nullptr;
 
   bool is_redirect;
@@ -167,7 +197,7 @@ net::URLRequestJob* DevToolsURLRequestInterceptor::InnerMaybeInterceptRequest(
       this, interception_id, request, network_delegate,
       target_info->devtools_token, target_info->devtools_target_id,
       intercepted_page.network_handler, is_redirect,
-      resource_request_info->GetResourceType());
+      resource_request_info->GetResourceType(), interception_stage);
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }
