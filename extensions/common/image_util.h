@@ -17,7 +17,8 @@ namespace image_util {
 // Returns true on success.
 bool ParseCssColorString(const std::string& color_string, SkColor* result);
 
-// Parses a string like #FF9982 or #EEE to a color. Returns true for success.
+// Parses a RGB or RGBA string like #FF9982CC, #FF9982, #EEEE, or #EEE to a
+// color. Returns true for success.
 bool ParseHexColorString(const std::string& color_string, SkColor* result);
 
 // Creates a string like #FF9982 from a color.

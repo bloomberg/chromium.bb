@@ -52,12 +52,20 @@ TEST(ImageUtilTest, ChangeBadgeBackgroundShortCSS) {
   RunPassHexTest("#A1E", SkColorSetARGB(0xFF, 0xAA, 0x11, 0xEE));
 }
 
+TEST(ImageUtilTest, ParseHexWithAlphaCSS) {
+  RunPassHexTest("#340061CC", SkColorSetARGB(0xCC, 0x34, 0, 0x61));
+}
+
+TEST(ImageUtilTest, ParseHexWithAlphaShortCSS) {
+  RunPassHexTest("#A1E9", SkColorSetARGB(0x99, 0xAA, 0x11, 0xEE));
+}
+
 TEST(ImageUtilTest, ChangeBadgeBackgroundCSSNoHash) {
   RunFailHexTest("11FF22");
 }
 
 TEST(ImageUtilTest, ChangeBadgeBackgroundCSSTooShort) {
-  RunFailHexTest("#FF22");
+  RunFailHexTest("#FF22C");
 }
 
 TEST(ImageUtilTest, ChangeBadgeBackgroundCSSTooLong) {

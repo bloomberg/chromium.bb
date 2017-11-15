@@ -29,6 +29,14 @@ class TestableAccessibilityFocusRingController
 
   int GetMargin() const override { return margin_; }
 
+  static void GetColorAndOpacityFromColor(SkColor color,
+                                          float default_opacity,
+                                          SkColor* result_color,
+                                          float* result_opacity) {
+    AccessibilityFocusRingController::GetColorAndOpacityFromColor(
+        color, default_opacity, result_color, result_opacity);
+  }
+
  private:
   int margin_;
 };
@@ -162,6 +170,23 @@ TEST_F(AccessibilityFocusRingControllerTest, CursorWorksOnMultipleDisplays) {
             50);
   EXPECT_LT(abs(cursor_layer->layer()->GetTargetBounds().y() - location.y()),
             50);
+}
+
+TEST_F(AccessibilityFocusRingControllerTest, HighlightColorCalculation) {
+  SkColor without_alpha = SkColorSetARGB(0xFF, 0x42, 0x42, 0x42);
+  SkColor with_alpha = SkColorSetARGB(0x3D, 0x14, 0x15, 0x92);
+
+  float default_opacity = 0.3f;
+  SkColor result_color = SK_ColorWHITE;
+  float result_opacity = 0.0f;
+
+  TestableAccessibilityFocusRingController::GetColorAndOpacityFromColor(
+      without_alpha, default_opacity, &result_color, &result_opacity);
+  EXPECT_EQ(default_opacity, result_opacity);
+
+  TestableAccessibilityFocusRingController::GetColorAndOpacityFromColor(
+      with_alpha, default_opacity, &result_color, &result_opacity);
+  EXPECT_NEAR(0.239f, result_opacity, .001);
 }
 
 }  // namespace ash

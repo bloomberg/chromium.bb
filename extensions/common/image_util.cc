@@ -39,20 +39,30 @@ bool ParseCssColorString(const std::string& color_string, SkColor* result) {
 
 bool ParseHexColorString(const std::string& color_string, SkColor* result) {
   std::string formatted_color;
+  // Save a memory allocation -- we never need more than 8 chars.
+  formatted_color.reserve(8);
+
   // Check the string for incorrect formatting.
   if (color_string.empty() || color_string[0] != '#')
     return false;
 
   // Convert the string from #FFF format to #FFFFFF format.
-  if (color_string.length() == 4) {
-    for (size_t i = 1; i < 4; ++i) {
+  if (color_string.length() == 4 || color_string.length() == 5) {
+    for (size_t i = 1; i < color_string.length(); ++i) {
       formatted_color += color_string[i];
       formatted_color += color_string[i];
     }
   } else if (color_string.length() == 7) {
     formatted_color = color_string.substr(1, 6);
+  } else if (color_string.length() == 9) {
+    formatted_color = color_string.substr(1, 8);
   } else {
     return false;
+  }
+
+  // Add an alpha if one was not set.
+  if (formatted_color.length() == 6) {
+    formatted_color += "FF";
   }
 
   // Convert the string to an integer and make sure it is in the correct value
@@ -61,7 +71,8 @@ bool ParseHexColorString(const std::string& color_string, SkColor* result) {
   if (!base::HexStringToBytes(formatted_color, &color_bytes))
     return false;
 
-  *result = SkColorSetARGB(255, color_bytes[0], color_bytes[1], color_bytes[2]);
+  *result = SkColorSetARGB(color_bytes[3], color_bytes[0], color_bytes[1],
+                           color_bytes[2]);
   return true;
 }
 
