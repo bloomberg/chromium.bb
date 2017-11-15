@@ -988,6 +988,9 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   }
 
   MaybeRecordElementsDisplayed();
+
+  if (download_iph_manager_)
+    download_iph_manager_->UpdateInProductHelp();
 }
 
 void MediaControlsImpl::DefaultEventHandler(Event* event) {
@@ -1414,6 +1417,9 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
     overlay_play_button_->SetDoesFit(does_fit);
   }
 
+  if (download_iph_manager_)
+    download_iph_manager_->UpdateInProductHelp();
+
   MaybeRecordElementsDisplayed();
 }
 
@@ -1436,6 +1442,7 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
       current_time_display_.Get(),
       duration_display_.Get(),
       overlay_play_button_.Get(),
+      overlay_cast_button_.Get(),
   };
 
   // Record which controls are used.
@@ -1444,9 +1451,6 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
       element->MaybeRecordDisplayed();
   }
   overflow_menu_->MaybeRecordDisplayed();
-
-  if (download_iph_manager_)
-    download_iph_manager_->UpdateInProductHelp();
 }
 
 void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {

@@ -48,7 +48,7 @@ bool MediaControlToggleClosedCaptionsButtonElement::HasOverflowButton() const {
 const char*
 MediaControlToggleClosedCaptionsButtonElement::GetNameForHistograms() const {
   return IsOverflowElement() ? "ClosedCaptionOverflowButton"
-                             : "ClosedCaptionsButton";
+                             : "ClosedCaptionButton";
 }
 
 void MediaControlToggleClosedCaptionsButtonElement::DefaultEventHandler(
