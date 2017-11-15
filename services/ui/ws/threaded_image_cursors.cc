@@ -8,8 +8,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/ui/common/image_cursors_set.h"
+#include "ui/base/cursor/cursor_data.h"
 #include "ui/base/cursor/image_cursors.h"
 #include "ui/platform_window/platform_window.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 namespace ui {
 namespace ws {
@@ -70,6 +76,35 @@ void SetCursorOnResourceThread(
   }
 }
 
+#if defined(USE_OZONE)
+// Executed on |resource_task_runner_|. Creates a  PlatformCursor using the
+// Ozone |cursor_factory| passed to it, and then schedules a task on
+// |ui_service_task_runner_| to set that cursor on the provided
+// |platform_window|.
+// |platform_window| pointer needs to be valid while
+// |threaded_image_cursors_weak_ptr| is not invalidated.
+void SetCustomCursorOnResourceThread(
+    base::WeakPtr<ui::ImageCursors> image_cursors_weak_ptr,
+    std::unique_ptr<ui::CursorData> cursor_data,
+    ui::CursorFactoryOzone* cursor_factory,
+    ui::PlatformWindow* platform_window,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_service_task_runner_,
+    base::WeakPtr<ThreadedImageCursors> threaded_image_cursors_weak_ptr) {
+  if (image_cursors_weak_ptr) {
+    ui::PlatformCursor platform_cursor = cursor_factory->CreateAnimatedCursor(
+        cursor_data->cursor_frames(), cursor_data->hotspot_in_pixels(),
+        cursor_data->frame_delay().InMilliseconds(),
+        cursor_data->scale_factor());
+    // |platform_window| is owned by the UI Service thread, so setting the
+    // cursor on it also needs to happen on that thread.
+    ui_service_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&ThreadedImageCursors::SetCursorOnPlatformWindow,
+                              threaded_image_cursors_weak_ptr, platform_cursor,
+                              platform_window));
+  }
+}
+#endif  // defined(USE_OZONE)
+
 }  // namespace
 
 ThreadedImageCursors::ThreadedImageCursors(
@@ -115,13 +150,55 @@ void ThreadedImageCursors::SetCursorSize(CursorSize cursor_size) {
                             image_cursors_weak_ptr_, cursor_size));
 }
 
-void ThreadedImageCursors::SetCursor(ui::CursorType cursor_type,
+void ThreadedImageCursors::SetCursor(const ui::CursorData& cursor_data,
                                      ui::PlatformWindow* platform_window) {
-  resource_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SetCursorOnResourceThread, image_cursors_weak_ptr_,
-                 cursor_type, platform_window, ui_service_task_runner_,
-                 weak_ptr_factory_.GetWeakPtr()));
+  ui::CursorType cursor_type = cursor_data.cursor_type();
+
+#if !defined(USE_OZONE)
+  // Outside of ozone builds, there isn't a single interface for creating
+  // PlatformCursors. The closest thing to one is in //content/ instead of
+  // //ui/ which means we can't use it from here. For now, just don't handle
+  // custom image cursors.
+  //
+  // TODO(erg): Once blink speaks directly to mus, make blink perform its own
+  // cursor management on its own mus windows so we can remove Webcursor from
+  // //content/ and do this in way that's safe cross-platform, instead of as an
+  // ozone-specific hack.
+  if (cursor_type == ui::CursorType::kCustom) {
+    NOTIMPLEMENTED() << "No custom cursor support on non-ozone yet.";
+    cursor_type = ui::CursorType::kPointer;
+  }
+#else
+  // In Ozone builds, we have an interface available which turns bitmap data
+  // into platform cursors.
+  if (cursor_type == ui::CursorType::kCustom) {
+    std::unique_ptr<ui::CursorData> cursor_data_copy =
+        std::make_unique<ui::CursorData>(cursor_data);
+    ui::CursorFactoryOzone* cursor_factory =
+        ui::CursorFactoryOzone::GetInstance();
+    // CursorFactoryOzone is a thread-local singleton (crbug.com/741106).
+    // However the instance that belongs to the UI Service thread is used
+    // on the resource thread. (This happens via ImageCursors when we call
+    // SetCursorOnResourceThread.) Since CursorFactoryOzone is not thread-safe,
+    // we should only use it on the UI Service thread, which is why this
+    // PostTask is needed.
+    resource_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SetCustomCursorOnResourceThread, image_cursors_weak_ptr_,
+                   base::Passed(&cursor_data_copy),
+                   base::Unretained(cursor_factory), platform_window,
+                   ui_service_task_runner_, weak_ptr_factory_.GetWeakPtr()));
+  }
+#endif  // !defined(USE_OZONE)
+
+  // Handle the non-custom cursor case for both Ozone and non-Ozone builds.
+  if (cursor_type != ui::CursorType::kCustom) {
+    resource_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&SetCursorOnResourceThread, image_cursors_weak_ptr_,
+                   cursor_type, platform_window, ui_service_task_runner_,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ThreadedImageCursors::SetCursorOnPlatformWindow(
