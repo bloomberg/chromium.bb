@@ -50,25 +50,4 @@ LargeIconImageResult::LargeIconImageResult(
 
 LargeIconImageResult::~LargeIconImageResult() {}
 
-int GetUmaFaviconType(IconType icon_type) {
-  // These values must stay in sync with the FaviconType enum in
-  // histograms/enums.xml.
-  switch (icon_type) {
-    case IconType::kInvalid:
-      break;
-    case IconType::kFavicon:
-      return 1;
-    case IconType::kTouchIcon:
-      return 2;
-    case IconType::kTouchPrecomposedIcon:
-      return 3;
-    case IconType::kWebManifestIcon:
-      return 4;
-  }
-  // Unexpected values including multiple bits (accidentally) being set in the
-  // input contribute to the zero bucket in release mode.
-  NOTREACHED();
-  return 0;
-}
-
 }  // namespace favicon_base

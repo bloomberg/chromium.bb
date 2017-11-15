@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/debug/alias.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -978,12 +979,22 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
 
 // static
 int ThumbnailDatabase::ToPersistedIconType(favicon_base::IconType icon_type) {
-  return static_cast<int>(icon_type);
+  if (icon_type == favicon_base::IconType::kInvalid)
+    return 0;
+
+  return 1 << (static_cast<int>(icon_type) - 1);
 }
 
 // static
 favicon_base::IconType ThumbnailDatabase::FromPersistedIconType(int icon_type) {
-  return static_cast<favicon_base::IconType>(icon_type);
+  if (icon_type == 0)
+    return favicon_base::IconType::kInvalid;
+
+  int val = 1 + base::bits::Log2Floor(icon_type);
+  if (val > static_cast<int>(favicon_base::IconType::kMax))
+    return favicon_base::IconType::kInvalid;
+
+  return static_cast<favicon_base::IconType>(val);
 }
 
 sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,

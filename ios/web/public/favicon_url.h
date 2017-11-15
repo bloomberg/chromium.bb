@@ -18,11 +18,10 @@ struct FaviconURL {
   // favicon_base::IconType.
   enum class IconType {
     kInvalid = 0,
-    kFavicon = 1 << 0,
-    kTouchIcon = 1 << 1,
-    kTouchPrecomposedIcon = 1 << 2,
-    kWebManifestIcon = 1 << 3,
-    kMax = kWebManifestIcon
+    kFavicon,
+    kTouchIcon,
+    kTouchPrecomposedIcon,
+    kWebManifestIcon,
   };
 
   FaviconURL();
