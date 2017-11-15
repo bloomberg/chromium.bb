@@ -27505,6 +27505,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.SpannableStringAppliedCorrectly"
+    enum="Boolean">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Track whether the SpannableString is applied correctly in
+    ClearBrowsingDataCheckbox.java. (crbug.com/783866)
+  </summary>
+</histogram>
+
 <histogram name="History.ClearBrowsingData.TaskQueueAtShutdown">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
