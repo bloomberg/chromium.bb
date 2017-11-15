@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/child/web_scheduler_impl.h"
 #include "platform/scheduler/child/worker_scheduler_impl.h"
@@ -115,7 +116,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
   }));
 
   thread_->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
+      BLINK_FROM_HERE,
+      CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   completion.Wait();
 }
 
@@ -132,7 +134,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
   }));
 
   thread_->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
+      BLINK_FROM_HERE,
+      CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   thread_.reset();
 }
 
@@ -150,7 +153,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   thread_->PostIdleTask(BLINK_FROM_HERE, task.release());
   // We need to post a wake-up task or idle work will never happen.
   thread_->GetWebTaskRunner()->PostDelayedTask(
-      BLINK_FROM_HERE, WTF::Bind([] {}), TimeDelta::FromMilliseconds(50));
+      BLINK_FROM_HERE, CrossThreadBind([] {}), TimeDelta::FromMilliseconds(50));
 
   completion.Wait();
 }
@@ -162,7 +165,8 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestTaskObserver) {
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&AddTaskObserver, thread_.get(), &observer));
   thread_->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&RunTestTask, WTF::Unretained(&calls)));
+      BLINK_FROM_HERE,
+      CrossThreadBind(&RunTestTask, WTF::CrossThreadUnretained(&calls)));
   RunOnWorkerThread(FROM_HERE,
                     base::Bind(&RemoveTaskObserver, thread_.get(), &observer));
 
@@ -184,10 +188,12 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestShutdown) {
 
   RunOnWorkerThread(FROM_HERE, base::Bind(&ShutdownOnThread, thread_.get()));
   thread_->GetWebTaskRunner()->PostTask(
-      BLINK_FROM_HERE, WTF::Bind(&MockTask::Run, WTF::Unretained(&task)));
+      BLINK_FROM_HERE,
+      CrossThreadBind(&MockTask::Run, WTF::CrossThreadUnretained(&task)));
   thread_->GetWebTaskRunner()->PostDelayedTask(
       BLINK_FROM_HERE,
-      WTF::Bind(&MockTask::Run, WTF::Unretained(&delayed_task)),
+      CrossThreadBind(&MockTask::Run,
+                      WTF::CrossThreadUnretained(&delayed_task)),
       TimeDelta::FromMilliseconds(50));
   thread_.reset();
 }
