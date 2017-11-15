@@ -805,7 +805,7 @@ TEST_F(StructTraitsTest, RenderPass) {
       shared_state_2, surface_quad_rect, surface_quad_rect,
       SurfaceId(FrameSinkId(1337, 1234),
                 LocalSurfaceId(1234, base::UnguessableToken::Create())),
-      base::nullopt, SK_ColorYELLOW);
+      base::nullopt, SK_ColorYELLOW, false);
 
   std::unique_ptr<RenderPass> output;
   SerializeAndDeserialize<mojom::RenderPass>(input, &output);
@@ -878,6 +878,8 @@ TEST_F(StructTraitsTest, RenderPass) {
             out_surface_quad->fallback_surface_id);
   EXPECT_EQ(surface_quad->default_background_color,
             out_surface_quad->default_background_color);
+  EXPECT_EQ(surface_quad->stretch_content_to_fill_bounds,
+            out_surface_quad->stretch_content_to_fill_bounds);
 }
 
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
@@ -946,7 +948,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   primary_surface_quad->SetNew(sqs, rect3, rect3, primary_surface_id,
                                base::Optional<SurfaceId>(fallback_surface_id),
-                               SK_ColorBLUE);
+                               SK_ColorBLUE, false);
 
   const gfx::Rect rect4(1234, 5678, 9101112, 13141516);
   const ResourceId resource_id4(1337);

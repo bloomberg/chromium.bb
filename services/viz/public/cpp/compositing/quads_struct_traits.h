@@ -257,6 +257,12 @@ struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
     return quad->default_background_color;
   }
 
+  static bool stretch_content_to_fill_bounds(const viz::DrawQuad& input) {
+    const viz::SurfaceDrawQuad* quad =
+        viz::SurfaceDrawQuad::MaterialCast(&input);
+    return quad->stretch_content_to_fill_bounds;
+  }
+
   static bool Read(viz::mojom::SurfaceQuadStateDataView data,
                    viz::DrawQuad* out);
 };

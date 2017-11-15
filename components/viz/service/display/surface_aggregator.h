@@ -101,6 +101,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                            const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
+                         float parent_device_scale_factor,
                          const gfx::Transform& target_transform,
                          const ClipData& clip_rect,
                          RenderPass* dest_pass,
@@ -109,11 +110,13 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                          bool* damage_rect_in_quad_space_valid);
 
   void EmitSurfaceContent(Surface* surface,
+                          float parent_device_scale_factor,
                           const SharedQuadState* source_sqs,
                           const gfx::Rect& rect,
-                          const gfx::Rect& visible_rect,
+                          const gfx::Rect& source_visible_rect,
                           const gfx::Transform& target_transform,
                           const ClipData& clip_rect,
+                          bool stretch_content_to_fill_bounds,
                           RenderPass* dest_pass,
                           bool ignore_undamaged,
                           gfx::Rect* damage_rect_in_quad_space,
@@ -140,9 +143,20 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                                        const gfx::Transform& target_transform,
                                        const ClipData& clip_rect,
                                        RenderPass* dest_render_pass);
+
+  SharedQuadState* CopyAndScaleSharedQuadState(
+      const SharedQuadState* source_sqs,
+      const gfx::Transform& scaled_quad_to_target_transform,
+      const gfx::Transform& target_transform,
+      const ClipData& clip_rect,
+      RenderPass* dest_render_pass,
+      float x_scale,
+      float y_scale);
+
   void CopyQuadsToPass(
       const QuadList& source_quad_list,
       const SharedQuadStateList& source_shared_quad_state_list,
+      float parent_device_scale_factor,
       const std::unordered_map<ResourceId, ResourceId>& resource_to_child_map,
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,

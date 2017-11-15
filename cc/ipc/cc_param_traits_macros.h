@@ -96,6 +96,7 @@ IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(primary_surface_id)
   IPC_STRUCT_TRAITS_MEMBER(fallback_surface_id)
   IPC_STRUCT_TRAITS_MEMBER(default_background_color)
+  IPC_STRUCT_TRAITS_MEMBER(stretch_content_to_fill_bounds)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(viz::TextureDrawQuad)

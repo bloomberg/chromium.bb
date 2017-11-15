@@ -172,6 +172,8 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->primary_surface_id, b->primary_surface_id);
     EXPECT_EQ(a->fallback_surface_id, b->fallback_surface_id);
     EXPECT_EQ(a->default_background_color, b->default_background_color);
+    EXPECT_EQ(a->stretch_content_to_fill_bounds,
+              b->stretch_content_to_fill_bounds);
   }
 
   void Compare(const TextureDrawQuad* a, const TextureDrawQuad* b) {
@@ -388,7 +390,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       pass_in->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_in->SetAll(shared_state3_in, arbitrary_rect2,
                      arbitrary_rect1_inside_rect2, arbitrary_bool1,
-                     arbitrary_surface_id, base::nullopt, SK_ColorWHITE);
+                     arbitrary_surface_id, base::nullopt, SK_ColorWHITE, true);
   pass_cmp->CopyFromAndAppendDrawQuad(surface_in);
 
   TextureDrawQuad* texture_in =

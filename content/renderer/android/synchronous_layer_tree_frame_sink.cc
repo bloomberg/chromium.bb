@@ -314,7 +314,7 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     surface_quad->SetNew(
         shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
         viz::SurfaceId(kChildFrameSinkId, child_local_surface_id_),
-        base::nullopt, SK_ColorWHITE);
+        base::nullopt, SK_ColorWHITE, false);
 
     bool result = child_support_->SubmitCompositorFrame(child_local_surface_id_,
                                                         std::move(frame));

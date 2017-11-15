@@ -96,7 +96,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         surface_quad->SetNew(
             sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
             SurfaceId(FrameSinkId(1, i), LocalSurfaceId(i, kArbitraryToken)),
-            base::nullopt, SK_ColorWHITE);
+            base::nullopt, SK_ColorWHITE, false);
       }
 
       frame.render_pass_list.push_back(std::move(pass));
@@ -118,7 +118,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
           sqs, gfx::Rect(0, 0, 100, 100), gfx::Rect(0, 0, 100, 100),
           SurfaceId(FrameSinkId(1, num_surfaces),
                     LocalSurfaceId(num_surfaces, kArbitraryToken)),
-          base::nullopt, SK_ColorWHITE);
+          base::nullopt, SK_ColorWHITE, false);
 
       pass->output_rect = gfx::Rect(0, 0, 100, 100);
 

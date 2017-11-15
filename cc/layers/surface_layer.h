@@ -22,6 +22,9 @@ class CC_EXPORT SurfaceLayer : public Layer {
   static scoped_refptr<SurfaceLayer> Create(
       scoped_refptr<viz::SurfaceReferenceFactory> ref_factory);
 
+  // TODO(fsamuel): SurfaceLayer only cares about the surface ID of the
+  // |surface_info|. SetPrimarySurfaceInfo only needs to be a
+  // SetPrimarySurfaceId.
   void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
   void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
 

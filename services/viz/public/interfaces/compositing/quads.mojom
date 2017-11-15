@@ -58,6 +58,7 @@ struct SurfaceQuadState {
   SurfaceId primary_surface_id;
   SurfaceId? fallback_surface_id;
   uint32 default_background_color;
+  bool stretch_content_to_fill_bounds;
 };
 
 struct TextureQuadState {

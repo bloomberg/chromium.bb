@@ -590,6 +590,8 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_->SetFrameSinkId(frame_sink_id_);
   host_->SetViewportSize(size_);
   host_->SetDeviceScaleFactor(1);
+  // TODO(fsamuel): We should listen to display density change events.
+  host_->SetPaintedDeviceScaleFactor(root_window_->GetDipScale());
 
   if (needs_animate_)
     host_->SetNeedsAnimate();
