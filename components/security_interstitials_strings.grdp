@@ -79,19 +79,19 @@
   </message>
   <if expr="not is_android and not is_ios">
     <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the computer's clock is wrong.">
-      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your computer's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
+      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your computer's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
     </message>
   </if>
   <if expr="is_android">
     <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the Android device's clock is wrong.">
-      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect. <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
+      A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.
     </message>
   </if>
   <if expr="is_ios">
     <message name="IDS_CLOCK_ERROR_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: error shown when the browser can't load a page because the device's clock is wrong. This paragraph explains the situation and gives instructions to fix it on iOS.">
       &lt;p&gt;A private connection to <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>paypal.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> can't be established because your device's date and time (<ph name="DATE_AND_TIME">$2<ex>Monday, January 1, 1970 2:44:30 PM</ex></ph>) are incorrect.&lt;/p&gt;
 
-      &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt; <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
+      &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;
     </message>
   </if>
   <if expr="_google_chrome">
