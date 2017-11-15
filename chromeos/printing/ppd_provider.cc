@@ -17,6 +17,8 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
+#include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -31,6 +33,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/printing/ppd_cache.h"
+#include "chromeos/printing/ppd_line_reader.h"
 #include "chromeos/printing/printing_constants.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -43,8 +46,7 @@
 namespace chromeos {
 namespace {
 
-// Extract cupsFilter/cupsFilter2 filter names from the contents
-// of a ppd, pre-split into lines.
+// Extract cupsFilter/cupsFilter2 filter names from a line from a ppd.
 
 // cupsFilter2 lines look like this:
 //
@@ -61,69 +63,61 @@ namespace {
 // |num_value_tokens| is the number of tokens we expect to find in the
 // value string.  The filter is always the last of these.
 //
-// This function looks at each line in ppd_lines for lines of this format, and,
-// for each one found, adds the name of the filter (rastertofoo in the examples
-// above) to the returned set.
+// Return the name of the filter, if one is found.
 //
 // This would be simpler with re2, but re2 is not an allowed dependency in
 // this part of the tree.
-std::set<std::string> ExtractCupsFilters(
-    const std::vector<std::string>& ppd_lines,
-    const std::string& field_name,
-    int num_value_tokens) {
-  std::set<std::string> ret;
+base::Optional<std::string> ExtractCupsFilter(const std::string& line,
+                                              const std::string& field_name,
+                                              int num_value_tokens) {
   std::string delims(" \n\t\r\"");
+  base::StringTokenizer line_tok(line, delims);
 
-  for (const std::string& line : ppd_lines) {
-    base::StringTokenizer line_tok(line, delims);
-
-    if (!line_tok.GetNext()) {
-      continue;
-    }
-    if (line_tok.token_piece() != field_name) {
-      continue;
-    }
-
-    // Skip to the last of the value tokens.
-    for (int i = 0; i < num_value_tokens; ++i) {
-      if (!line_tok.GetNext()) {
-        // Continue the outer loop.
-        goto next_line;
-      }
-    }
-
-    if (line_tok.token_piece() != "") {
-      ret.insert(line_tok.token_piece().as_string());
-    }
-  next_line : {}  // Lint requires {} instead of ; for an empty statement.
+  if (!line_tok.GetNext()) {
+    return {};
   }
-  return ret;
+  if (line_tok.token_piece() != field_name) {
+    return {};
+  }
+
+  // Skip to the last of the value tokens.
+  for (int i = 0; i < num_value_tokens; ++i) {
+    if (!line_tok.GetNext()) {
+      return {};
+    }
+  }
+  if (line_tok.token_piece() != "") {
+    return line_tok.token_piece().as_string();
+  }
+  return {};
 }
 
-// The ppd spec explicitly disallows quotes inside quoted strings, and provides
-// no way for including escaped quotes in a quoted string.  It also requires
-// that the string be a single line, and that everything in these fields be
-// 7-bit ASCII.  The CUPS spec on these particular fields is not particularly
-// rigorous, but specifies no way of including escaped spaces in the tokens
-// themselves, and the cups *code* just parses out these lines with a sscanf
-// call that uses spaces as delimiters.
+// Extract the used cups filters from a ppd.
 //
-// Furthermore, cups (post 1.5) discards all cupsFilter lines if *any*
+// Note that CUPS (post 1.5) discards all cupsFilter lines if *any*
 // cupsFilter2 lines exist.
 //
-// All of this is a long way of saying the regular-expression based parsing
-// done here is, to the best of my knowledge, actually conformant to the specs
-// that exist, and not just a hack.
 std::vector<std::string> ExtractFiltersFromPpd(
     const std::string& ppd_contents) {
-  std::vector<std::string> lines = base::SplitString(
-      ppd_contents, "\n\r", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  std::set<std::string> filters = ExtractCupsFilters(lines, "*cupsFilter2:", 4);
-  if (filters.empty()) {
-    // No cupsFilter2 lines found, fall back to looking for cupsFilter lines.
-    filters = ExtractCupsFilters(lines, "*cupsFilter:", 3);
+  std::string line;
+  base::Optional<std::string> tmp;
+  auto ppd_reader = PpdLineReader::Create(ppd_contents, 255);
+  std::vector<std::string> cups_filters;
+  std::vector<std::string> cups_filter2s;
+  while (ppd_reader->NextLine(&line)) {
+    tmp = ExtractCupsFilter(line, "*cupsFilter:", 3);
+    if (tmp.has_value()) {
+      cups_filters.push_back(tmp.value());
+    }
+    tmp = ExtractCupsFilter(line, "*cupsFilter2:", 4);
+    if (tmp.has_value()) {
+      cups_filter2s.push_back(tmp.value());
+    }
   }
-  return std::vector<std::string>(filters.begin(), filters.end());
+  if (!cups_filter2s.empty()) {
+    return cups_filter2s;
+  }
+  return cups_filters;
 }
 
 // Returns false if there are obvious errors in the reference that will prevent
