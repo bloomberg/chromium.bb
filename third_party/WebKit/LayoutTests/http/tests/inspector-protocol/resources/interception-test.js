@@ -48,7 +48,7 @@
     this._testRunner.completeTest();
   }
 
-  async startInterceptionTest(requestInterceptedDict, numConsoleLogsToWaitFor, interceptionStage = 'Request') {
+  async startInterceptionTest(requestInterceptedDict, numConsoleLogsToWaitFor) {
     if (typeof numConsoleLogsToWaitFor === 'undefined')
       numConsoleLogsToWaitFor = 0;
     var frameStoppedLoading = false;
@@ -80,11 +80,8 @@
         requestInterceptedDict[filename + '+Auth'](event);
         return;
       } else if (event.params.hasOwnProperty('redirectUrl')) {
-        var errorReason = '';
-        if (event.params.responseErrorReason)
-          errorReason = event.params.responseErrorReason + ' ';
         this._log(id, 'Network.requestIntercepted ' + id + ' ' +
-            errorReason + event.params.responseStatusCode + ' redirect ' +
+            event.params.redirectStatusCode + ' redirect ' +
             this._interceptionRequestParams[id].url.split('/').pop() +
             ' -> ' + event.params.redirectUrl.split('/').pop());
         this._interceptionRequestParams[id].url = event.params.redirectUrl;
@@ -136,12 +133,7 @@
     await this._session.protocol.Network.setCacheDisabled({cacheDisabled: true});
     this._session.protocol.Network.enable();
     this._testRunner.log('Network agent enabled');
-    var patterns = [];
-    if (interceptionStage === 'HeadersReceived' || interceptionStage === 'Both')
-      patterns.push({urlPattern: "*", interceptionStage: 'HeadersReceived'});
-    if (interceptionStage === undefined || interceptionStage === 'Request' || interceptionStage === 'Both')
-      patterns.push({urlPattern: "*", interceptionStage: 'Request'});
-    await this._session.protocol.Network.setRequestInterception({patterns: patterns});
+    await this._session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "*"}]});
     this._testRunner.log('Request interception enabled');
     await this._session.protocol.Page.enable();
     this._testRunner.log('Page agent enabled');
