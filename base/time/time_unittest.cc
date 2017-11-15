@@ -112,6 +112,13 @@ class TimeTest : public testing::Test {
 };
 
 // Test conversions to/from time_t and exploding/unexploding.
+#if defined(OS_IOS)
+// TODO(crbug.com/782033): this test seems to be unreliable on the simulator;
+// possibly broken on 10.13?
+#define MAYBE_TimeT DISABLED_TimeT
+#else
+#define MAYBE_TimeT TimeT
+#endif
 TEST_F(TimeTest, TimeT) {
   // C library time and exploded time.
   time_t now_t_1 = time(nullptr);
