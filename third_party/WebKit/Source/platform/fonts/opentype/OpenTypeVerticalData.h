@@ -33,35 +33,37 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
-namespace blink {
+#include <SkPaint.h>
+#include <SkRefCnt.h>
+#include <SkTypeface.h>
 
-class FontPlatformData;
-class SimpleFontData;
+namespace blink {
 
 class PLATFORM_EXPORT OpenTypeVerticalData
     : public RefCounted<OpenTypeVerticalData> {
  public:
-  static scoped_refptr<OpenTypeVerticalData> Create(
-      const FontPlatformData& platform_data) {
-    return base::AdoptRef(new OpenTypeVerticalData(platform_data));
+  static scoped_refptr<OpenTypeVerticalData> CreateUnscaled(
+      sk_sp<SkTypeface> typeface) {
+    return base::AdoptRef(new OpenTypeVerticalData(typeface));
   }
+
+  void SetScaleAndFallbackMetrics(float size_per_unit,
+                                  float ascent,
+                                  int height);
 
   bool IsOpenType() const { return !advance_widths_.IsEmpty(); }
   bool HasVerticalMetrics() const { return !advance_heights_.IsEmpty(); }
-  float AdvanceHeight(const SimpleFontData*, Glyph) const;
+  float AdvanceHeight(Glyph) const;
 
-  bool InFontCache() const { return in_font_cache_; }
-  void SetInFontCache(bool in_font_cache) { in_font_cache_ = in_font_cache; }
-
-  void GetVerticalTranslationsForGlyphs(const SimpleFontData*,
+  void GetVerticalTranslationsForGlyphs(const SkPaint&,
                                         const Glyph*,
                                         size_t,
                                         float* out_xy_array) const;
 
  private:
-  explicit OpenTypeVerticalData(const FontPlatformData&);
+  explicit OpenTypeVerticalData(sk_sp<SkTypeface>);
 
-  void LoadMetrics(const FontPlatformData&);
+  void LoadMetrics(sk_sp<SkTypeface>);
   bool HasVORG() const { return !vert_origin_y_.IsEmpty(); }
 
   HashMap<Glyph, Glyph> vertical_glyph_map_;
@@ -71,8 +73,9 @@ class PLATFORM_EXPORT OpenTypeVerticalData
   int16_t default_vert_origin_y_;
   HashMap<Glyph, int16_t> vert_origin_y_;
 
-  bool
-      in_font_cache_;  // for mark & sweep in FontCache::purgeInactiveFontData()
+  float size_per_unit_;
+  float ascent_fallback_;
+  int height_fallback_;
 };
 
 }  // namespace blink

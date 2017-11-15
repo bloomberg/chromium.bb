@@ -38,7 +38,6 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/SmallCapsIterator.h"
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/graphics/paint/PaintFont.h"
 #include "platform/graphics/paint/PaintTypeface.h"
 #include "platform/wtf/Allocator.h"
@@ -153,9 +152,6 @@ class PLATFORM_EXPORT FontPlatformData {
 
   bool IsHashTableDeletedValue() const { return is_hash_table_deleted_value_; }
   bool FontContainsCharacter(UChar32 character);
-
-  scoped_refptr<OpenTypeVerticalData> VerticalData() const;
-  Vector<char> OpenTypeTable(SkFontTableTag) const;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // The returned styles are all actual styles without

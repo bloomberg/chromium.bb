@@ -80,11 +80,6 @@ class FontDataCache {
   bool Contains(const FontPlatformData*) const;
   void Release(const SimpleFontData*);
 
-  // This is used by FontVerticalDataCache to mark all items with vertical data
-  // that are currently in cache as "in cache", which is later used to sweep the
-  // FontVerticalDataCache.
-  void MarkAllVerticalData();
-
   // Purges items in FontDataCache according to provided severity.
   // Returns true if any removal of cache items actually occurred.
   bool Purge(PurgeSeverity);

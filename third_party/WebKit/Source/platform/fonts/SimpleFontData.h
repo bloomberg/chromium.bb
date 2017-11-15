@@ -36,7 +36,6 @@
 #include "platform/fonts/FontMetrics.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/TypesettingFeatures.h"
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/StringHash.h"
@@ -73,9 +72,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   }
 
   const FontPlatformData& PlatformData() const { return platform_data_; }
-  const OpenTypeVerticalData* VerticalData() const {
-    return vertical_data_.get();
-  }
+  bool UsedVertically() const { return used_vertically_; }
 
   scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
   scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
@@ -156,7 +153,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
                  bool subpixel_ascent_descent = false);
 
   // Only used for testing.
-  SimpleFontData(const FontPlatformData&, scoped_refptr<OpenTypeVerticalData>);
+  SimpleFontData(const FontPlatformData&, bool used_vertically);
 
  private:
   void PlatformInit(bool subpixel_ascent_descent);
@@ -175,7 +172,7 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   FontPlatformData platform_data_;
   SkPaint paint_;
 
-  scoped_refptr<OpenTypeVerticalData> vertical_data_;
+  bool used_vertically_;
 
   Glyph space_glyph_;
   float space_width_;

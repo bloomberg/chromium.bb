@@ -135,15 +135,15 @@ static hb_bool_t HarfBuzzGetGlyphVerticalOrigin(hb_font_t* hb_font,
                                                 void* user_data) {
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
-  const OpenTypeVerticalData* vertical_data =
-      hb_font_data->simple_font_data_->VerticalData();
+  scoped_refptr<OpenTypeVerticalData> vertical_data =
+      hb_font_data->VerticalData();
   if (!vertical_data)
     return false;
 
   float result[] = {0, 0};
   Glyph the_glyph = glyph;
-  vertical_data->GetVerticalTranslationsForGlyphs(
-      hb_font_data->simple_font_data_, &the_glyph, 1, result);
+  vertical_data->GetVerticalTranslationsForGlyphs(hb_font_data->paint_,
+                                                  &the_glyph, 1, result);
   *x = SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(-result[0]);
   *y = SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(-result[1]);
   return true;
@@ -155,15 +155,15 @@ static hb_position_t HarfBuzzGetGlyphVerticalAdvance(hb_font_t* hb_font,
                                                      void* user_data) {
   HarfBuzzFontData* hb_font_data =
       reinterpret_cast<HarfBuzzFontData*>(font_data);
-  const OpenTypeVerticalData* vertical_data =
-      hb_font_data->simple_font_data_->VerticalData();
-  if (!vertical_data)
+  scoped_refptr<OpenTypeVerticalData> vertical_data =
+      hb_font_data->VerticalData();
+  if (!vertical_data) {
     return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
-        hb_font_data->simple_font_data_->GetFontMetrics().Height());
+        hb_font_data->height_fallback_);
+  }
 
   Glyph the_glyph = glyph;
-  float advance_height =
-      -vertical_data->AdvanceHeight(hb_font_data->simple_font_data_, the_glyph);
+  float advance_height = -vertical_data->AdvanceHeight(the_glyph);
   return SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(
       SkFloatToScalar(advance_height));
 }
@@ -337,11 +337,10 @@ hb_font_t* HarfBuzzFace::GetScaledFont(
   PaintFont paint_font;
   platform_data_->SetupPaintFont(&paint_font);
   paint_font.SetTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  harf_buzz_font_data_->paint_ = paint_font.ToSkPaint();
   harf_buzz_font_data_->range_set_ = std::move(range_set);
-  harf_buzz_font_data_->UpdateSimpleFontData(platform_data_);
+  harf_buzz_font_data_->UpdateFallbackMetricsAndScale(*platform_data_,
+                                                      paint_font.ToSkPaint());
 
-  DCHECK(harf_buzz_font_data_->simple_font_data_);
   int scale =
       SkiaTextMetrics::SkiaScalarToHarfBuzzPosition(platform_data_->size());
   hb_font_set_scale(unscaled_font_, scale, scale);

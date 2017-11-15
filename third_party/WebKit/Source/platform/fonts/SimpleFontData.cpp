@@ -61,7 +61,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
     : max_char_width_(-1),
       avg_char_width_(-1),
       platform_data_(platform_data),
-      vertical_data_(nullptr),
+      used_vertically_(false),
       custom_font_data_(std::move(custom_data)),
       is_text_orientation_fallback_(is_text_orientation_fallback),
       visual_overflow_inflation_for_ascent_(0),
@@ -69,14 +69,14 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
   PlatformInit(subpixel_ascent_descent);
   PlatformGlyphInit();
   if (platform_data.IsVerticalAnyUpright() && !is_text_orientation_fallback) {
-    vertical_data_ = platform_data.VerticalData();
+    used_vertically_ = true;
   }
 }
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
-                               scoped_refptr<OpenTypeVerticalData> vertical_data)
+                               bool used_vertically)
     : platform_data_(platform_data),
-      vertical_data_(std::move(vertical_data)),
+      used_vertically_(used_vertically),
       is_text_orientation_fallback_(false),
       visual_overflow_inflation_for_ascent_(0),
       visual_overflow_inflation_for_descent_(0) {}
