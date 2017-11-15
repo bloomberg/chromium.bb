@@ -9,6 +9,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/cert/x509_certificate.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/client_socket_handle.h"
@@ -17,10 +18,12 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "net/ssl/ssl_config.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/test_data_directory.h"
 
 namespace {
+
+const char kCertData[] = {
+#include "net/data/ssl/certificates/spdy_pooling.inc"
+};
 
 class FuzzerDelegate : public net::SpdyStream::Delegate {
  public:
@@ -103,7 +106,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   net::SSLSocketDataProvider ssl_provider(net::ASYNC, net::OK);
   ssl_provider.cert =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+      net::X509Certificate::CreateFromBytes(kCertData, arraysize(kCertData));
+  CHECK(ssl_provider.cert);
   socket_factory.AddSSLSocketDataProvider(&ssl_provider);
 
   net::SpdySessionDependencies deps;
