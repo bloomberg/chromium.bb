@@ -2379,12 +2379,12 @@ void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
 void QuicConnection::SendConnectivityProbingPacket(
     QuicPacketWriter* probing_writer,
     const QuicSocketAddress& peer_address) {
+  DCHECK(peer_address.IsInitialized());
   if (perspective_ == Perspective::IS_SERVER && probing_writer == nullptr) {
     // Server can use default packet writer to write probing packet.
     probing_writer = writer_;
   }
-
-  DCHECK(!probing_writer && peer_address.IsInitialized());
+  DCHECK(probing_writer);
 
   if (probing_writer->IsWriteBlocked()) {
     QUIC_BUG << "Writer blocked when send connectivity probing packet";
