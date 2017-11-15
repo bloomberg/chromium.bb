@@ -306,7 +306,6 @@ EXPERIMENT_LIST="
     segment_globalmv
     frame_superres
     new_multisymbol
-    compound_singleref
     aom_qm
     ext_qm
     ext_comp_refs

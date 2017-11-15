@@ -311,11 +311,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     for (i = 0; i < BLOCK_SIZES_ALL; ++i)
       av1_cost_tokens_from_cdf(x->compound_type_cost[i],
                                fc->compound_type_cdf[i], NULL);
-#if CONFIG_COMPOUND_SINGLEREF
-    for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-      av1_cost_tokens_from_cdf(x->inter_singleref_comp_mode_cost[i],
-                               fc->inter_singleref_comp_mode_cdf[i], NULL);
-#endif  // CONFIG_COMPOUND_SINGLEREF
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
       av1_cost_tokens_from_cdf(x->interintra_cost[i], fc->interintra_cdf[i],
@@ -1140,44 +1135,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_GLOBALA] += 2000;
 
   rd->thresh_mult[THR_PAETH] += 1000;
-
-#if CONFIG_COMPOUND_SINGLEREF
-  rd->thresh_mult[THR_SR_NEAREST_NEARMV] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEARL2] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEARL3] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEARB] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEARA] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEARG] += 1200;
-
-  /*
-  rd->thresh_mult[THR_SR_NEAREST_NEWMV] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEWL2] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEWL3] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEWB] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEWA] += 1200;
-  rd->thresh_mult[THR_SR_NEAREST_NEWG] += 1200;*/
-
-  rd->thresh_mult[THR_SR_NEAR_NEWMV] += 1500;
-  rd->thresh_mult[THR_SR_NEAR_NEWL2] += 1500;
-  rd->thresh_mult[THR_SR_NEAR_NEWL3] += 1500;
-  rd->thresh_mult[THR_SR_NEAR_NEWB] += 1500;
-  rd->thresh_mult[THR_SR_NEAR_NEWA] += 1500;
-  rd->thresh_mult[THR_SR_NEAR_NEWG] += 1500;
-
-  rd->thresh_mult[THR_SR_GLOBAL_NEWMV] += 2000;
-  rd->thresh_mult[THR_SR_GLOBAL_NEWL2] += 2000;
-  rd->thresh_mult[THR_SR_GLOBAL_NEWL3] += 2000;
-  rd->thresh_mult[THR_SR_GLOBAL_NEWB] += 2000;
-  rd->thresh_mult[THR_SR_GLOBAL_NEWA] += 2000;
-  rd->thresh_mult[THR_SR_GLOBAL_NEWG] += 2000;
-
-  rd->thresh_mult[THR_SR_NEW_NEWMV] += 1700;
-  rd->thresh_mult[THR_SR_NEW_NEWL2] += 1700;
-  rd->thresh_mult[THR_SR_NEW_NEWL3] += 1700;
-  rd->thresh_mult[THR_SR_NEW_NEWB] += 1700;
-  rd->thresh_mult[THR_SR_NEW_NEWA] += 1700;
-  rd->thresh_mult[THR_SR_NEW_NEWG] += 1700;
-#endif  // CONFIG_COMPOUND_SINGLEREF
 
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLA] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL2A] += 1000;

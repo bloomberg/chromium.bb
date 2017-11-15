@@ -409,15 +409,6 @@ static INLINE aom_cdf_prob *av1_get_pred_cdf_single_ref_p6(
 }
 #endif  // CONFIG_NEW_MULTISYMBOL
 
-#if CONFIG_COMPOUND_SINGLEREF
-int av1_get_inter_mode_context(const MACROBLOCKD *xd);
-
-static INLINE aom_prob av1_get_inter_mode_prob(const AV1_COMMON *cm,
-                                               const MACROBLOCKD *xd) {
-  return cm->fc->comp_inter_mode_prob[av1_get_inter_mode_context(xd)];
-}
-#endif  // CONFIG_COMPOUND_SINGLEREF
-
 // Returns a context number for the given MB prediction signal
 // The mode info data structure has a one element border above and to the
 // left of the entries corresponding to real blocks.

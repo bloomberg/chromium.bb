@@ -81,14 +81,6 @@ static INLINE int is_inter_singleref_mode(PREDICTION_MODE mode) {
 static INLINE int is_inter_compound_mode(PREDICTION_MODE mode) {
   return mode >= NEAREST_NEARESTMV && mode <= NEW_NEWMV;
 }
-#if CONFIG_COMPOUND_SINGLEREF
-static INLINE int is_inter_singleref_comp_mode(PREDICTION_MODE mode) {
-  return mode >= SR_NEAREST_NEARMV && mode <= SR_NEW_NEWMV;
-}
-static INLINE int is_inter_anyref_comp_mode(PREDICTION_MODE mode) {
-  return is_inter_compound_mode(mode) || is_inter_singleref_comp_mode(mode);
-}
-#endif  // CONFIG_COMPOUND_SINGLEREF
 
 static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
   static PREDICTION_MODE lut[] = {
@@ -109,28 +101,17 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // NEARMV
     MB_MODE_COUNT,  // GLOBALMV
     MB_MODE_COUNT,  // NEWMV
-#if CONFIG_COMPOUND_SINGLEREF
-    NEARESTMV,  // SR_NEAREST_NEARMV
-    // NEARESTMV,  // SR_NEAREST_NEWMV
-    NEARMV,     // SR_NEAR_NEWMV
-    GLOBALMV,   // SR_ZERO_NEWMV
-    NEWMV,      // SR_NEW_NEWMV
-#endif          // CONFIG_COMPOUND_SINGLEREF
-    NEARESTMV,  // NEAREST_NEARESTMV
-    NEARMV,     // NEAR_NEARMV
-    NEARESTMV,  // NEAREST_NEWMV
-    NEWMV,      // NEW_NEARESTMV
-    NEARMV,     // NEAR_NEWMV
-    NEWMV,      // NEW_NEARMV
-    GLOBALMV,   // GLOBAL_GLOBALMV
-    NEWMV,      // NEW_NEWMV
+    NEARESTMV,      // NEAREST_NEARESTMV
+    NEARMV,         // NEAR_NEARMV
+    NEARESTMV,      // NEAREST_NEWMV
+    NEWMV,          // NEW_NEARESTMV
+    NEARMV,         // NEAR_NEWMV
+    NEWMV,          // NEW_NEARMV
+    GLOBALMV,       // GLOBAL_GLOBALMV
+    NEWMV,          // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
-#if CONFIG_COMPOUND_SINGLEREF
-  assert(is_inter_anyref_comp_mode(mode));
-#else   // !CONFIG_COMPOUND_SINGLEREF
   assert(is_inter_compound_mode(mode));
-#endif  // CONFIG_COMPOUND_SINGLEREF
   return lut[mode];
 }
 
@@ -153,45 +134,27 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // NEARMV
     MB_MODE_COUNT,  // GLOBALMV
     MB_MODE_COUNT,  // NEWMV
-#if CONFIG_COMPOUND_SINGLEREF
-    NEARMV,  // SR_NEAREST_NEARMV
-    // NEWMV,      // SR_NEAREST_NEWMV
-    NEWMV,      // SR_NEAR_NEWMV
-    NEWMV,      // SR_ZERO_NEWMV
-    NEWMV,      // SR_NEW_NEWMV
-#endif          // CONFIG_COMPOUND_SINGLEREF
-    NEARESTMV,  // NEAREST_NEARESTMV
-    NEARMV,     // NEAR_NEARMV
-    NEWMV,      // NEAREST_NEWMV
-    NEARESTMV,  // NEW_NEARESTMV
-    NEWMV,      // NEAR_NEWMV
-    NEARMV,     // NEW_NEARMV
-    GLOBALMV,   // GLOBAL_GLOBALMV
-    NEWMV,      // NEW_NEWMV
+    NEARESTMV,      // NEAREST_NEARESTMV
+    NEARMV,         // NEAR_NEARMV
+    NEWMV,          // NEAREST_NEWMV
+    NEARESTMV,      // NEW_NEARESTMV
+    NEWMV,          // NEAR_NEWMV
+    NEARMV,         // NEW_NEARMV
+    GLOBALMV,       // GLOBAL_GLOBALMV
+    NEWMV,          // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
-#if CONFIG_COMPOUND_SINGLEREF
-  assert(is_inter_anyref_comp_mode(mode));
-#else   // !CONFIG_COMPOUND_SINGLEREF
   assert(is_inter_compound_mode(mode));
-#endif  // CONFIG_COMPOUND_SINGLEREF
   return lut[mode];
 }
 
 static INLINE int have_nearmv_in_inter_mode(PREDICTION_MODE mode) {
   return (mode == NEARMV || mode == NEAR_NEARMV || mode == NEAR_NEWMV ||
-#if CONFIG_COMPOUND_SINGLEREF
-          mode == SR_NEAREST_NEARMV || mode == SR_NEAR_NEWMV ||
-#endif  // CONFIG_COMPOUND_SINGLEREF
           mode == NEW_NEARMV);
 }
 
 static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
   return (mode == NEWMV || mode == NEW_NEWMV || mode == NEAREST_NEWMV ||
-#if CONFIG_COMPOUND_SINGLEREF
-          /* mode == SR_NEAREST_NEWMV || */ mode == SR_NEAR_NEWMV ||
-          mode == SR_ZERO_NEWMV || mode == SR_NEW_NEWMV ||
-#endif  // CONFIG_COMPOUND_SINGLEREF
           mode == NEW_NEARESTMV || mode == NEAR_NEWMV || mode == NEW_NEARMV);
 }
 
@@ -1277,11 +1240,7 @@ static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {
 
 static INLINE int is_motion_variation_allowed_compound(
     const MB_MODE_INFO *mbmi) {
-#if CONFIG_COMPOUND_SINGLEREF
-  if (!has_second_ref(mbmi) && !is_inter_singleref_comp_mode(mbmi->mode))
-#else
   if (!has_second_ref(mbmi))
-#endif  // CONFIG_COMPOUND_SINGLEREF
     return 1;
   else
     return 0;

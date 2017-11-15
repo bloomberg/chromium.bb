@@ -61,21 +61,14 @@ static const int mode_2_counter[] = {
   0,  // NEARMV
   3,  // GLOBALMV
   1,  // NEWMV
-#if CONFIG_COMPOUND_SINGLEREF
-  0,    // SR_NEAREST_NEARMV
-        //  1,    // SR_NEAREST_NEWMV
-  1,    // SR_NEAR_NEWMV
-  3,    // SR_ZERO_NEWMV
-  1,    // SR_NEW_NEWMV
-#endif  // CONFIG_COMPOUND_SINGLEREF
-  0,    // NEAREST_NEARESTMV
-  0,    // NEAR_NEARMV
-  1,    // NEAREST_NEWMV
-  1,    // NEW_NEARESTMV
-  1,    // NEAR_NEWMV
-  1,    // NEW_NEARMV
-  3,    // GLOBAL_GLOBALMV
-  1,    // NEW_NEWMV
+  0,  // NEAREST_NEARESTMV
+  0,  // NEAR_NEARMV
+  1,  // NEAREST_NEWMV
+  1,  // NEW_NEARESTMV
+  1,  // NEAR_NEWMV
+  1,  // NEW_NEARMV
+  3,  // GLOBAL_GLOBALMV
+  1,  // NEW_NEWMV
 };
 
 // There are 3^3 different combinations of 3 counts that can be either 0,1 or

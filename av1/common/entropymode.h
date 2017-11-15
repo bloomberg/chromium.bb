@@ -27,9 +27,6 @@ extern "C" {
 #define TX_SIZE_CONTEXTS 2
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
-#if CONFIG_COMPOUND_SINGLEREF
-#define INTER_SINGLEREF_COMP_OFFSET(mode) ((mode)-SR_NEAREST_NEARMV)
-#endif  // CONFIG_COMPOUND_SINGLEREF
 #define INTER_COMPOUND_OFFSET(mode) ((mode)-NEAREST_NEARESTMV)
 
 // Number of possible contexts for a color index.
@@ -200,12 +197,6 @@ typedef struct frame_contexts {
                                     [INTER_COMPOUND_MODES - 1];
   aom_cdf_prob inter_compound_mode_cdf[INTER_MODE_CONTEXTS]
                                       [CDF_SIZE(INTER_COMPOUND_MODES)];
-#if CONFIG_COMPOUND_SINGLEREF
-  aom_prob inter_singleref_comp_mode_probs[INTER_MODE_CONTEXTS]
-                                          [INTER_SINGLEREF_COMP_MODES - 1];
-  aom_cdf_prob inter_singleref_comp_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(
-      INTER_SINGLEREF_COMP_MODES)];
-#endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob compound_type_prob[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
   aom_cdf_prob compound_type_cdf[BLOCK_SIZES_ALL][CDF_SIZE(COMPOUND_TYPES)];
   aom_prob interintra_prob[BLOCK_SIZE_GROUPS];
@@ -263,9 +254,6 @@ typedef struct frame_contexts {
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
 #endif
-#if CONFIG_COMPOUND_SINGLEREF
-  aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
-#endif  // CONFIG_COMPOUND_SINGLEREF
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
@@ -431,10 +419,6 @@ typedef struct FRAME_COUNTS {
   unsigned int drl_mode[DRL_MODE_CONTEXTS][2];
 
   unsigned int inter_compound_mode[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
-#if CONFIG_COMPOUND_SINGLEREF
-  unsigned int inter_singleref_comp_mode[INTER_MODE_CONTEXTS]
-                                        [INTER_SINGLEREF_COMP_MODES];
-#endif  // CONFIG_COMPOUND_SINGLEREF
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
   unsigned int interintra_mode[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];
   unsigned int wedge_interintra[BLOCK_SIZES_ALL][2];
@@ -450,9 +434,6 @@ typedef struct FRAME_COUNTS {
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
-#if CONFIG_COMPOUND_SINGLEREF
-  unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
-#endif  // CONFIG_COMPOUND_SINGLEREF
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
 #if CONFIG_EXT_SKIP
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
@@ -566,10 +547,6 @@ extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];
 extern const aom_tree_index
     av1_inter_compound_mode_tree[TREE_SIZE(INTER_COMPOUND_MODES)];
-#if CONFIG_COMPOUND_SINGLEREF
-extern const aom_tree_index
-    av1_inter_singleref_comp_mode_tree[TREE_SIZE(INTER_SINGLEREF_COMP_MODES)];
-#endif  // CONFIG_COMPOUND_SINGLEREF
 extern const aom_tree_index av1_compound_type_tree[TREE_SIZE(COMPOUND_TYPES)];
 extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
 #if CONFIG_EXT_PARTITION_TYPES

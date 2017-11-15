@@ -541,18 +541,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   } else {
     int ref;
 
-#if CONFIG_COMPOUND_SINGLEREF
-    for (ref = 0; ref < 1 + is_inter_anyref_comp_mode(mbmi->mode); ++ref)
-#else
-    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
-#endif  // CONFIG_COMPOUND_SINGLEREF
-    {
-      const MV_REFERENCE_FRAME frame =
-#if CONFIG_COMPOUND_SINGLEREF
-          has_second_ref(mbmi) ? mbmi->ref_frame[ref] : mbmi->ref_frame[0];
-#else
-          mbmi->ref_frame[ref];
-#endif  // CONFIG_COMPOUND_SINGLEREF
+    for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+      const MV_REFERENCE_FRAME frame = mbmi->ref_frame[ref];
       if (frame < LAST_FRAME) {
 #if CONFIG_INTRABC
         assert(is_intrabc_block(mbmi));
@@ -2572,11 +2562,7 @@ static void read_compound_tools(AV1_COMMON *cm,
   } else {
     cm->allow_interintra_compound = 0;
   }
-#if CONFIG_COMPOUND_SINGLEREF
-  if (!frame_is_intra_only(cm)) {
-#else   // !CONFIG_COMPOUND_SINGLEREF
   if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
-#endif  // CONFIG_COMPOUND_SINGLEREF
     cm->allow_masked_compound = aom_rb_read_bit(rb);
   } else {
     cm->allow_masked_compound = 0;
@@ -3403,11 +3389,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
     read_frame_reference_mode_probs(cm, &r);
 
-#if CONFIG_COMPOUND_SINGLEREF
-    for (int i = 0; i < COMP_INTER_MODE_CONTEXTS; i++)
-      av1_diff_update_prob(&r, &fc->comp_inter_mode_prob[i], ACCT_STR);
-#endif  // CONFIG_COMPOUND_SINGLEREF
-
 #if CONFIG_AMVR
     if (cm->cur_frame_force_integer_mv == 0) {
 #endif
@@ -3450,10 +3431,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.motion_mode)));
   assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
                  sizeof(cm->counts.intra_inter)));
-#if CONFIG_COMPOUND_SINGLEREF
-  assert(!memcmp(cm->counts.comp_inter_mode, zero_counts.comp_inter_mode,
-                 sizeof(cm->counts.comp_inter_mode)));
-#endif  // CONFIG_COMPOUND_SINGLEREF
   assert(!memcmp(cm->counts.comp_inter, zero_counts.comp_inter,
                  sizeof(cm->counts.comp_inter)));
 #if CONFIG_EXT_COMP_REFS

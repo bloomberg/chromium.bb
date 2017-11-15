@@ -457,21 +457,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
       mbmi->pred_mv[1] = this_mv;
       mi_pred_mv[1] = this_mv;
     }
-#if CONFIG_COMPOUND_SINGLEREF
-  } else if (is_inter_singleref_comp_mode(mbmi->mode)) {
-    // Special case: SR_NEAR_NEWMV uses 1 + mbmi->ref_mv_idx
-    // (like NEARMV) instead
-    if (mbmi->mode == SR_NEAR_NEWMV) ref_mv_idx += 1;
-
-    if (compound_ref0_mode(mbmi->mode) == NEWMV ||
-        compound_ref1_mode(mbmi->mode) == NEWMV) {
-      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
-      clamp_mv_ref(&this_mv.as_mv, bw, bh, xd);
-      mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-      mbmi->pred_mv[0] = this_mv;
-      mi_pred_mv[0] = this_mv;
-    }
-#endif  // CONFIG_COMPOUND_SINGLEREF
   } else {
     if (mbmi->mode == NEWMV) {
       int i;
@@ -1207,12 +1192,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
 
-#if CONFIG_COMPOUND_SINGLEREF
-        if (!has_second_ref(mbmi))
-          counts->comp_inter_mode[av1_get_inter_mode_context(xd)]
-                                 [is_inter_singleref_comp_mode(mbmi->mode)]++;
-#endif  // CONFIG_COMPOUND_SINGLEREF
-
         if (cm->reference_mode != COMPOUND_REFERENCE &&
             cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
           const int bsize_group = size_group_lookup[bsize];
@@ -1262,14 +1241,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
 
-        if (
-#if CONFIG_COMPOUND_SINGLEREF
-            is_inter_anyref_comp_mode(mbmi->mode)
-#else   // !CONFIG_COMPOUND_SINGLEREF
-            cm->reference_mode != SINGLE_REFERENCE &&
-            is_inter_compound_mode(mbmi->mode)
-#endif  // CONFIG_COMPOUND_SINGLEREF
-            && mbmi->motion_mode == SIMPLE_TRANSLATION) {
+        if (cm->reference_mode != SINGLE_REFERENCE &&
+            is_inter_compound_mode(mbmi->mode) &&
+            mbmi->motion_mode == SIMPLE_TRANSLATION) {
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
             counts
                 ->compound_interinter[bsize][mbmi->interinter_compound_type]++;
@@ -1291,12 +1265,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         if (allow_update_cdf)
           update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
                      INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
-#if CONFIG_COMPOUND_SINGLEREF
-      } else if (is_inter_singleref_comp_mode(mode)) {
-        mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
-        ++counts->inter_singleref_comp_mode[mode_ctx]
-                                           [INTER_SINGLEREF_COMP_OFFSET(mode)];
-#endif  // CONFIG_COMPOUND_SINGLEREF
       } else {
         mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                              mbmi->ref_frame, bsize, -1);
@@ -1305,9 +1273,6 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
       int mode_allowed = (mbmi->mode == NEWMV);
       mode_allowed |= (mbmi->mode == NEW_NEWMV);
-#if CONFIG_COMPOUND_SINGLEREF
-      mode_allowed |= (mbmi->mode == SR_NEW_NEWMV);
-#endif  // CONFIG_COMPOUND_SINGLEREF
       if (mode_allowed) {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         int idx;
@@ -4294,11 +4259,7 @@ static void make_consistent_compound_tools(AV1_COMMON *cm) {
   (void)cm;
   if (frame_is_intra_only(cm) || cm->reference_mode == COMPOUND_REFERENCE)
     cm->allow_interintra_compound = 0;
-#if CONFIG_COMPOUND_SINGLEREF
-  if (frame_is_intra_only(cm))
-#else   // !CONFIG_COMPOUND_SINGLEREF
   if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
-#endif  // CONFIG_COMPOUND_SINGLEREF
     cm->allow_masked_compound = 0;
 }
 
@@ -4870,19 +4831,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
                            &xd->block_refs[ref]->sf);
     }
-#if CONFIG_COMPOUND_SINGLEREF
-    // Single ref compound mode
-    if (!is_compound && is_inter_singleref_comp_mode(mbmi->mode)) {
-      xd->block_refs[1] = xd->block_refs[0];
-      YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[0]);
-#if CONFIG_INTRABC
-      assert(IMPLIES(!is_intrabc_block(mbmi), cfg));
-#else
-      assert(cfg != NULL);
-#endif  // !CONFIG_INTRABC
-      av1_setup_pre_planes(xd, 1, cfg, mi_row, mi_col, &xd->block_refs[1]->sf);
-    }
-#endif  // CONFIG_COMPOUND_SINGLEREF
 
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, block_size);
 

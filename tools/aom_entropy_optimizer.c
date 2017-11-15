@@ -442,21 +442,6 @@ int main(int argc, const char **argv) {
                      "static const aom_cdf_prob\n"
                      "default_inter_compound_mode_cdf[INTER_MODE_CONTEXTS][CDF_"
                      "SIZE(INTER_COMPOUND_MODES)]");
-#if CONFIG_COMPOUND_SINGLEREF
-  /* Compound singleref mode */
-  cts_each_dim[0] = INTER_MODE_CONTEXTS;
-  cts_each_dim[1] = INTER_SINGLEREF_COMP_MODES;
-  optimize_entropy_table(
-      &fc.inter_singleref_comp_mode[0][0], probsfile, 2, cts_each_dim,
-      av1_inter_singleref_comp_mode_tree, 0,
-      "static const aom_prob default_inter_singleref_comp_mode_probs\n"
-      "[INTER_MODE_CONTEXTS][INTER_SINGLEREF_COMP_MODES - 1]");
-  optimize_cdf_table(&fc.inter_singleref_comp_mode[0][0], probsfile, 2,
-                     cts_each_dim,
-                     "static const aom_cdf_prob\n"
-                     "default_inter_singleref_comp_mode_cdf[INTER_MODE_"
-                     "CONTEXTS][CDF_SIZE(INTER_SINGLEREF_COMP_MODES)]");
-#endif
 
   /* Interintra */
   cts_each_dim[0] = BLOCK_SIZE_GROUPS;
@@ -610,18 +595,6 @@ int main(int argc, const char **argv) {
       "default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)]");
 
 /* Compound single ref inter mode */
-#if CONFIG_COMPOUND_SINGLEREF
-  cts_each_dim[0] = COMP_INTER_MODE_CONTEXTS;
-  cts_each_dim[1] = 2;
-  optimize_entropy_table(&fc.comp_inter_mode[0][0], probsfile, 2, cts_each_dim,
-                         NULL, 1,
-                         "static const aom_prob "
-                         "default_comp_inter_mode_p[COMP_INTER_MODE_CONTEXTS]");
-  optimize_cdf_table(&fc.comp_inter_mode[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_comp_inter_mode_cdf[COMP_INTER_MODE_CONTEXTS]["
-                     "CDF_SIZE(2)]");
-#endif
 
 /* Transform size */
 #if CONFIG_RECT_TX_EXT
