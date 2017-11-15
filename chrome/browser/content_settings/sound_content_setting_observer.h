@@ -18,6 +18,14 @@ class SoundContentSettingObserver
       public content::WebContentsUserData<SoundContentSettingObserver>,
       public content_settings::Observer {
  public:
+  // The reason why the site was muted. This is logged to UKM, so add new values
+  // at the end.
+  enum MuteReason {
+    kSiteException = 0,  // Muted due to an explicit block exception.
+    kMuteByDefault = 1,  // Muted due to the default sound setting being set to
+                         // block.
+  };
+
   ~SoundContentSettingObserver() override;
 
   // content::WebContentsObserver implementation.
@@ -30,12 +38,28 @@ class SoundContentSettingObserver
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
 
+  // This method is called by the WebContentsDelegate to indicate that the audio
+  // state of the WebContents has changed.
+  void OnAudioStateChanged(bool is_audible);
+
  private:
   explicit SoundContentSettingObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SoundContentSettingObserver>;
 
   void MuteOrUnmuteIfNecessary();
   ContentSetting GetCurrentContentSetting();
+
+  // Records SiteMuted UKM event if site is muted and sound is playing.
+  void CheckSoundBlocked(bool is_audible);
+
+  // Record a UKM event that audio was blocked on the page.
+  void RecordSiteMutedUKM();
+
+  // Determine the reason why audio was blocked on the page.
+  MuteReason GetSiteMutedReason();
+
+  // True if we have already logged a SiteMuted UKM event since last navigation.
+  bool logged_site_muted_ukm_;
 
   HostContentSettingsMap* host_content_settings_map_;
 

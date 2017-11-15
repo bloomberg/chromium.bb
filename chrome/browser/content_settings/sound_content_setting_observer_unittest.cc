@@ -9,6 +9,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
@@ -17,8 +19,10 @@
 
 namespace {
 
-constexpr char kURL1[] = "http://google.com";
-constexpr char kURL2[] = "http://youtube.com";
+constexpr char kURL1[] = "http://google.com/";
+constexpr char kURL2[] = "http://youtube.com/";
+constexpr char kSiteMutedEvent[] = "Media.SiteMuted";
+constexpr char kSiteMutedReason[] = "MuteReason";
 #if !defined(OS_ANDROID)
 constexpr char kExtensionId[] = "extensionid";
 #endif
@@ -36,6 +40,7 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
     SoundContentSettingObserver::CreateForWebContents(web_contents());
     host_content_settings_map_ = HostContentSettingsMapFactory::GetForProfile(
         Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
 
     NavigateAndCommit(GURL(kURL1));
   }
@@ -52,6 +57,30 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
         CONTENT_SETTINGS_TYPE_SOUND, setting);
   }
 
+  void SimulateAudioStarting() {
+    SoundContentSettingObserver::FromWebContents(web_contents())
+        ->OnAudioStateChanged(true);
+  }
+
+  void SimulateAudioPlaying() {
+    content::WebContentsTester::For(web_contents())
+        ->SetIsCurrentlyAudible(true);
+  }
+
+  bool RecordedSiteMuted() {
+    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(kURL1);
+    if (!source)
+      return false;
+    return test_ukm_recorder_->HasEntry(*source, kSiteMutedEvent);
+  }
+
+  void ExpectRecordedForReason(SoundContentSettingObserver::MuteReason reason) {
+    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(kURL1);
+    EXPECT_NE(nullptr, source);
+    test_ukm_recorder_->ExpectMetric(*source, kSiteMutedEvent, kSiteMutedReason,
+                                     reason);
+  }
+
 // TabMutedReason does not exist on Android.
 #if !defined(OS_ANDROID)
   void SetMuteStateForReason(bool state, TabMutedReason reason) {
@@ -61,6 +90,7 @@ class SoundContentSettingObserverTest : public ChromeRenderViewHostTestHarness {
 
  private:
   HostContentSettingsMap* host_content_settings_map_;
+  std::unique_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(SoundContentSettingObserverTest);
 };
@@ -156,3 +186,54 @@ TEST_F(SoundContentSettingObserverTest, DontUnmuteWhenMutedForMediaCapture) {
   EXPECT_TRUE(web_contents()->IsAudioMuted());
 }
 #endif  // !defined(OS_ANDROID)
+
+TEST_F(SoundContentSettingObserverTest,
+       UnmutedAudioPlayingDoesNotRecordSiteMuted) {
+  // Play audio while sound content setting is allowed.
+  ChangeSoundContentSettingTo(CONTENT_SETTING_ALLOW);
+  SimulateAudioStarting();
+  EXPECT_FALSE(RecordedSiteMuted());
+}
+
+TEST_F(SoundContentSettingObserverTest, MutedAudioBlockedBySiteException) {
+  // Play audio while sound content setting is blocked.
+  ChangeSoundContentSettingTo(CONTENT_SETTING_BLOCK);
+  SimulateAudioStarting();
+  EXPECT_TRUE(RecordedSiteMuted());
+  ExpectRecordedForReason(
+      SoundContentSettingObserver::MuteReason::kSiteException);
+}
+
+TEST_F(SoundContentSettingObserverTest,
+       MutingAudioWhileSoundIsPlayingBlocksSound) {
+  // Unmuted audio starts playing.
+  SimulateAudioPlaying();
+  // Sound is not blocked.
+  EXPECT_FALSE(RecordedSiteMuted());
+  // User mutes the site.
+  ChangeSoundContentSettingTo(CONTENT_SETTING_BLOCK);
+  // Sound is blocked.
+  EXPECT_TRUE(RecordedSiteMuted());
+  ExpectRecordedForReason(
+      SoundContentSettingObserver::MuteReason::kSiteException);
+}
+
+TEST_F(SoundContentSettingObserverTest, MuteByDefaultRecordsCorrectly) {
+  // Blocking audio via default content setting records properly.
+  ChangeDefaultSoundContentSettingTo(CONTENT_SETTING_BLOCK);
+  SimulateAudioStarting();
+  EXPECT_TRUE(RecordedSiteMuted());
+  ExpectRecordedForReason(
+      SoundContentSettingObserver::MuteReason::kMuteByDefault);
+}
+
+TEST_F(SoundContentSettingObserverTest,
+       MuteByDefaultAndExceptionRecordsException) {
+  // Block audio via default and exception.
+  ChangeSoundContentSettingTo(CONTENT_SETTING_BLOCK);
+  ChangeDefaultSoundContentSettingTo(CONTENT_SETTING_BLOCK);
+  SimulateAudioStarting();
+  EXPECT_TRUE(RecordedSiteMuted());
+  ExpectRecordedForReason(
+      SoundContentSettingObserver::MuteReason::kSiteException);
+}
