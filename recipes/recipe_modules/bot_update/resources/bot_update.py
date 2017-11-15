@@ -508,8 +508,8 @@ def get_total_disk_space():
     return (total, free)
 
 
-def get_target_revision(folder_name, git_url, revisions):
-  normalized_name = folder_name.strip('/')
+def get_target_revision(solution_name, git_url, revisions):
+  normalized_name = solution_name.strip('/')
   if normalized_name in revisions:
     return revisions[normalized_name]
   if git_url in revisions:
@@ -517,7 +517,7 @@ def get_target_revision(folder_name, git_url, revisions):
   return None
 
 
-def force_revision(folder_name, revision):
+def force_revision(cwd, revision):
   split_revision = revision.split(':', 1)
   branch = 'master'
   if len(split_revision) == 2:
@@ -525,7 +525,7 @@ def force_revision(folder_name, revision):
     branch, revision = split_revision
 
   if revision and revision.upper() != 'HEAD':
-    git('checkout', '--force', revision, cwd=folder_name)
+    git('checkout', '--force', revision, cwd=cwd)
   else:
     # TODO(machenbach): This won't work with branch-heads, as Gerrit's
     # destination branch would be e.g. refs/branch-heads/123. But here
@@ -534,7 +534,7 @@ def force_revision(folder_name, revision):
     # refs/heads/master. It needs to translate to refs/remotes/origin/master
     # first. See also https://crbug.com/740456 .
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
-    git('checkout', '--force', ref, cwd=folder_name)
+    git('checkout', '--force', ref, cwd=cwd)
 
 
 def is_broken_repo_dir(repo_dir):
@@ -644,6 +644,9 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
           except Exception:
             tries -= 1
 
+      # TODO(tandrii): refactor to avoid exposing revision which isn't really
+      # sha1 and not even 'HEAD' but can also be 'branch:HEAD' and even
+      # 'branch:sha1'.
       revision = get_target_revision(name, url, revisions) or 'HEAD'
       force_revision(sln_dir, revision)
       done = True
