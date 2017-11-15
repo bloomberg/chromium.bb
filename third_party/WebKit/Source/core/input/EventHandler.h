@@ -26,6 +26,7 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/events/TextEventInputType.h"
@@ -46,7 +47,6 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashTraits.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebMenuSourceType.h"

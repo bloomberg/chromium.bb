@@ -4,6 +4,7 @@
 
 #include "core/dom/StaticRange.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Element.h"
@@ -16,7 +17,6 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -22,12 +22,12 @@
 #ifndef StyleRule_h
 #define StyleRule_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSPropertyValueSet.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaList.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -5,13 +5,13 @@
 #ifndef PaintPropertyTreeBuilder_h
 #define PaintPropertyTreeBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/wtf/Optional.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

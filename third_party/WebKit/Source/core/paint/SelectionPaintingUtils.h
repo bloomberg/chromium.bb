@@ -5,9 +5,9 @@
 #ifndef SelectionPaintingUtils_h
 #define SelectionPaintingUtils_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/paint/PaintPhase.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

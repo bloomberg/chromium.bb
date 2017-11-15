@@ -25,10 +25,10 @@
 #ifndef RegisteredEventListener_h
 #define RegisteredEventListener_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/events/AddEventListenerOptionsResolved.h"
 #include "core/dom/events/EventListener.h"
 #include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

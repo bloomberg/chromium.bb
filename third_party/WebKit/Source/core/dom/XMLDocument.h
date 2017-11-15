@@ -26,8 +26,8 @@
 #ifndef XMLDocument_h
 #define XMLDocument_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/Document.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

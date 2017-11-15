@@ -31,9 +31,9 @@
 #ifndef WebFileChooserCompletionImpl_h
 #define WebFileChooserCompletionImpl_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/html/forms/FileChooser.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebFileChooserCompletion.h"

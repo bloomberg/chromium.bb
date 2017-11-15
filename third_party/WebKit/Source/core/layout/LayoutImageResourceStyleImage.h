@@ -27,9 +27,9 @@
 #ifndef LayoutImageResourceStyleImage_h
 #define LayoutImageResourceStyleImage_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/style/StyleImage.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

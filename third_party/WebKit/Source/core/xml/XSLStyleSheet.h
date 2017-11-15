@@ -25,10 +25,10 @@
 
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
+#include "base/memory/scoped_refptr.h"
 #include "core/css/StyleSheet.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "platform/runtime_enabled_features.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

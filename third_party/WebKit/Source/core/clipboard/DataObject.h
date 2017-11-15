@@ -31,12 +31,12 @@
 #ifndef DataObject_h
 #define DataObject_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "platform/PasteMode.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"

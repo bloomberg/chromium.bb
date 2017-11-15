@@ -28,6 +28,7 @@
 #define MessagePort_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "core/CoreExport.h"
@@ -35,7 +36,6 @@
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/EventTarget.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebVector.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"

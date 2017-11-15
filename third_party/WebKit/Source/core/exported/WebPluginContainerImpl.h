@@ -32,12 +32,12 @@
 #ifndef WebPluginContainerImpl_h
 #define WebPluginContainerImpl_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/plugins/PluginView.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Compiler.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebCoalescedInputEvent.h"
 #include "public/platform/WebTouchEvent.h"

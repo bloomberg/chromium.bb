@@ -27,11 +27,11 @@
 #ifndef CanvasImageSource_h
 #define CanvasImageSource_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

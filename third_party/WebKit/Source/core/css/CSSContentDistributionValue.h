@@ -5,10 +5,10 @@
 #ifndef CSSContentDistributionValue_h
 #define CSSContentDistributionValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValuePair.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

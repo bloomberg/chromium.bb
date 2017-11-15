@@ -25,8 +25,8 @@
 #ifndef LabelsNodeList_h
 #define LabelsNodeList_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/LiveNodeList.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -21,12 +21,12 @@
 #ifndef CSSComputedStyleDeclaration_h
 #define CSSComputedStyleDeclaration_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/properties/CSSProperty.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 #include "platform/wtf/text/WTFString.h"

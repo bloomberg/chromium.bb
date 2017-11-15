@@ -6,10 +6,10 @@
 #define WebAssociatedURLLoaderImpl_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/web/WebAssociatedURLLoader.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
 

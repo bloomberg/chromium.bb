@@ -31,12 +31,12 @@
 #ifndef Timing_h
 #define Timing_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/style/DataEquivalency.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/MathExtras.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

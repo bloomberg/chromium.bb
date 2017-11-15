@@ -32,12 +32,12 @@
 #define ErrorEvent_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/events/Event.h"
 #include "core/events/ErrorEventInit.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

@@ -30,13 +30,13 @@
 #ifndef InspectorLayerTreeAgent_h
 #define InspectorLayerTreeAgent_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/LayerTree.h"
 #include "core/page/PageOverlay.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {

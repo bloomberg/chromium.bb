@@ -5,13 +5,13 @@
 #ifndef NGUnpositionedFloat_h
 #define NGUnpositionedFloat_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/layout/ng/geometry/ng_box_strut.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

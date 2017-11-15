@@ -32,6 +32,7 @@
 #define Animation_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -48,7 +49,6 @@
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/graphics/CompositorElementId.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

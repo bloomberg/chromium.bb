@@ -34,13 +34,13 @@
 #include "public/web/WebSharedWorker.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/exported/WorkerShadowPage.h"
 #include "core/workers/SharedWorkerReportingProxy.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/web/WebDevToolsAgentClient.h"

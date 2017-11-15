@@ -32,12 +32,12 @@
 #ifndef LocalFrameClientImpl_h
 #define LocalFrameClientImpl_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/ScopedVirtualTimePauser.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 
 #include <memory>

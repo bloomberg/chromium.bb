@@ -5,6 +5,7 @@
 #include "core/loader/ThreadableLoader.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -27,7 +28,6 @@
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
 #include "public/platform/WebURLLoadTiming.h"

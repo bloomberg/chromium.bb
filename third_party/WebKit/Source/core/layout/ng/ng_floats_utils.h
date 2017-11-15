@@ -5,9 +5,9 @@
 #ifndef NGFloatsUtils_h
 #define NGFloatsUtils_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

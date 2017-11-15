@@ -31,9 +31,9 @@
 
 #include "public/web/WebElementCollection.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLCollection.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/web/WebElement.h"
 
 namespace blink {

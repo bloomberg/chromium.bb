@@ -26,12 +26,12 @@
 #ifndef XMLHttpRequestUpload_h
 #define XMLHttpRequestUpload_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

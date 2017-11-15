@@ -27,12 +27,12 @@
 #ifndef DOMTimer_h
 #define DOMTimer_h
 
+#include "base/memory/scoped_refptr.h"
 #include "bindings/core/v8/ScheduledAction.h"
 #include "core/CoreExport.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

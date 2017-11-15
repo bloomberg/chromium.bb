@@ -6,9 +6,9 @@
 #define TokenizedChunkQueue_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "platform/wtf/Deque.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "platform/wtf/Vector.h"

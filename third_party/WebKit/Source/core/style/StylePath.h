@@ -6,10 +6,10 @@
 #define StylePath_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/style/BasicShapes.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

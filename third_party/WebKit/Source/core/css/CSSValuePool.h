@@ -26,6 +26,7 @@
 #ifndef CSSValuePool_h
 #define CSSValuePool_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
@@ -39,7 +40,6 @@
 #include "core/css/CSSUnsetValue.h"
 #include "core/css/CSSValueList.h"
 #include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/AtomicStringHash.h"
 
 namespace blink {

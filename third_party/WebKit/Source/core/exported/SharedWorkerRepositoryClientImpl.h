@@ -32,11 +32,11 @@
 #define SharedWorkerRepositoryClientImpl_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

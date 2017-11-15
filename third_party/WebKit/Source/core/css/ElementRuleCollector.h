@@ -23,13 +23,13 @@
 #ifndef ElementRuleCollector_h
 #define ElementRuleCollector_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/MatchResult.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {

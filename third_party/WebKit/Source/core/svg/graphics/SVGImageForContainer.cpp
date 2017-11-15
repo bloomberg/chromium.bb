@@ -19,9 +19,9 @@
 
 #include "core/svg/graphics/SVGImageForContainer.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
 

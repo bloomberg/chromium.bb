@@ -27,9 +27,9 @@
 #ifndef NodeEventContext_h
 #define NodeEventContext_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/dom/events/TreeScopeEventContext.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

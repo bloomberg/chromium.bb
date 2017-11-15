@@ -31,6 +31,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
@@ -46,7 +47,6 @@
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
 #include "platform/loader/fetch/fetch_initiator_type_names.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/Base64.h"
 #include "platform/wtf/text/StringBuilder.h"

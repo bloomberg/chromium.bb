@@ -27,12 +27,12 @@
 #define FontResource_h
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

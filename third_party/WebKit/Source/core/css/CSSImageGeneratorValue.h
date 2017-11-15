@@ -26,13 +26,13 @@
 #ifndef CSSImageGeneratorValue_h
 #define CSSImageGeneratorValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

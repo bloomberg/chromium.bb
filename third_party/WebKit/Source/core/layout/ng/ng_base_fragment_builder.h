@@ -5,12 +5,12 @@
 #ifndef NGBaseFragmentBuilder_h
 #define NGBaseFragmentBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
 #ifndef LayoutTreeBuilder_h
 #define LayoutTreeBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/Document.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

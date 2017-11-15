@@ -30,8 +30,8 @@
 
 #include "public/web/WebDOMEvent.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/events/Event.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -6,8 +6,8 @@
 #define HTMLParserReentryPermit_h
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

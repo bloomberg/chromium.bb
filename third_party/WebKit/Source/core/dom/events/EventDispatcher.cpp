@@ -27,6 +27,7 @@
 
 #include "core/dom/events/EventDispatcher.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
@@ -44,7 +45,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

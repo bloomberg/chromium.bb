@@ -21,12 +21,12 @@
 #ifndef CSSImageValue_h
 #define CSSImageValue_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/weborigin/Referrer.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

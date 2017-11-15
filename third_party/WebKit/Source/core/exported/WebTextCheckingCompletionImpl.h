@@ -31,10 +31,10 @@
 #ifndef WebTextCheckingCompletionImpl_h
 #define WebTextCheckingCompletionImpl_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/web/WebTextCheckingCompletion.h"
 
 namespace blink {

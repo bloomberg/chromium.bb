@@ -31,6 +31,7 @@
 #include "core/animation/CompositorAnimations.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/ElementAnimations.h"
@@ -61,7 +62,6 @@
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/PtrUtil.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -27,12 +27,12 @@
 #ifndef HTMLTreeBuilder_h
 #define HTMLTreeBuilder_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/parser/HTMLConstructionSite.h"
 #include "core/html/parser/HTMLElementStack.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/TextPosition.h"

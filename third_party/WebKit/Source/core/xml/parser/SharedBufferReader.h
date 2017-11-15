@@ -31,10 +31,10 @@
 #ifndef SharedBufferReader_h
 #define SharedBufferReader_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

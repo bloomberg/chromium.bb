@@ -5,13 +5,13 @@
 #ifndef WebViewFrameWidget_h
 #define WebViewFrameWidget_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/frame/WebFrameWidgetBase.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

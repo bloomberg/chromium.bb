@@ -5,8 +5,8 @@
 #ifndef HTMLImageFallbackHelper_h
 #define HTMLImageFallbackHelper_h
 
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

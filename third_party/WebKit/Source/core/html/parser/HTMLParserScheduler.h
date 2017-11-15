@@ -27,10 +27,10 @@
 #define HTMLParserScheduler_h
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

@@ -5,12 +5,12 @@
 #ifndef SuspendableScriptExecutor_h
 #define SuspendableScriptExecutor_h
 
+#include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "v8/include/v8.h"
 

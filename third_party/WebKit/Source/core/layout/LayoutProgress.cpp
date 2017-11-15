@@ -20,10 +20,10 @@
 
 #include "core/layout/LayoutProgress.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "core/html/HTMLProgressElement.h"
 #include "core/layout/LayoutTheme.h"
 #include "platform/wtf/CurrentTime.h"
-#include "platform/wtf/RefPtr.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
