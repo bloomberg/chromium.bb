@@ -13,14 +13,14 @@ using BaseType = CSSNumericValueType::BaseType;
 
 TEST(CSSNumericValueType, ApplyingPercentHintMovesPowerAndSetsPercentHint) {
   CSSNumericValueType type(UnitType::kPixels);
-  type.SetEntry(BaseType::kPercent, 5);
-  EXPECT_EQ(5, type.GetEntry(BaseType::kPercent));
-  EXPECT_EQ(1, type.GetEntry(BaseType::kLength));
+  type.SetExponent(BaseType::kPercent, 5);
+  EXPECT_EQ(5, type.Exponent(BaseType::kPercent));
+  EXPECT_EQ(1, type.Exponent(BaseType::kLength));
   EXPECT_FALSE(type.HasPercentHint());
 
   type.ApplyPercentHint(BaseType::kLength);
-  EXPECT_EQ(0, type.GetEntry(BaseType::kPercent));
-  EXPECT_EQ(6, type.GetEntry(BaseType::kLength));
+  EXPECT_EQ(0, type.Exponent(BaseType::kPercent));
+  EXPECT_EQ(6, type.Exponent(BaseType::kLength));
   ASSERT_TRUE(type.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type.PercentHint());
 }
@@ -49,7 +49,7 @@ TEST(CSSNumericValueType, AddingSameTypeRetainsSamePower) {
   const auto result = CSSNumericValueType::Add(type1, type2, error);
   EXPECT_FALSE(error);
 
-  EXPECT_EQ(1, result.GetEntry(BaseType::kLength));
+  EXPECT_EQ(1, result.Exponent(BaseType::kLength));
   EXPECT_FALSE(result.HasPercentHint());
 }
 
@@ -65,7 +65,7 @@ TEST(CSSNumericValueType, AddingPercentRetainsPowersAndSetsTypeHint) {
   const auto result = CSSNumericValueType::Add(type1, type2, error);
   EXPECT_FALSE(error);
 
-  EXPECT_EQ(1, result.GetEntry(BaseType::kLength));
+  EXPECT_EQ(1, result.Exponent(BaseType::kLength));
   ASSERT_TRUE(result.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, result.PercentHint());
 }
@@ -78,7 +78,7 @@ TEST(CSSNumericValueType,
 
   CSSNumericValueType type2;
   type2.ApplyPercentHint(BaseType::kLength);
-  type2.SetEntry(BaseType::kLength, 1);
+  type2.SetExponent(BaseType::kLength, 1);
   ASSERT_TRUE(type2.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type2.PercentHint());
 
@@ -86,7 +86,7 @@ TEST(CSSNumericValueType,
   const auto result = CSSNumericValueType::Add(type1, type2, error);
   EXPECT_FALSE(error);
 
-  EXPECT_EQ(1, result.GetEntry(BaseType::kLength));
+  EXPECT_EQ(1, result.Exponent(BaseType::kLength));
   ASSERT_TRUE(result.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, result.PercentHint());
 }
@@ -96,13 +96,13 @@ TEST(CSSNumericValueType,
   // { *length: 1 } + { *length: 1 } == { *length: 1 }
   CSSNumericValueType type1;
   type1.ApplyPercentHint(BaseType::kLength);
-  type1.SetEntry(BaseType::kLength, 1);
+  type1.SetExponent(BaseType::kLength, 1);
   ASSERT_TRUE(type1.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type1.PercentHint());
 
   CSSNumericValueType type2;
   type2.ApplyPercentHint(BaseType::kLength);
-  type2.SetEntry(BaseType::kLength, 1);
+  type2.SetExponent(BaseType::kLength, 1);
   ASSERT_TRUE(type2.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type2.PercentHint());
 
@@ -110,7 +110,7 @@ TEST(CSSNumericValueType,
   const auto result = CSSNumericValueType::Add(type1, type2, error);
   EXPECT_FALSE(error);
 
-  EXPECT_EQ(1, result.GetEntry(BaseType::kLength));
+  EXPECT_EQ(1, result.Exponent(BaseType::kLength));
   ASSERT_TRUE(result.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, result.PercentHint());
 }
@@ -120,24 +120,24 @@ TEST(CSSNumericValueType, AdditionRequiringApplyingPercentHint) {
   // }
   CSSNumericValueType type1(UnitType::kPercentage);
   type1.ApplyPercentHint(BaseType::kLength);
-  type1.SetEntry(BaseType::kTime, 2);
-  EXPECT_EQ(1, type1.GetEntry(BaseType::kLength));
-  EXPECT_EQ(2, type1.GetEntry(BaseType::kTime));
+  type1.SetExponent(BaseType::kTime, 2);
+  EXPECT_EQ(1, type1.Exponent(BaseType::kLength));
+  EXPECT_EQ(2, type1.Exponent(BaseType::kTime));
   ASSERT_TRUE(type1.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type1.PercentHint());
 
   CSSNumericValueType type2(UnitType::kPercentage);
-  type2.SetEntry(BaseType::kTime, 2);
-  EXPECT_EQ(2, type2.GetEntry(BaseType::kTime));
-  EXPECT_EQ(1, type2.GetEntry(BaseType::kPercent));
+  type2.SetExponent(BaseType::kTime, 2);
+  EXPECT_EQ(2, type2.Exponent(BaseType::kTime));
+  EXPECT_EQ(1, type2.Exponent(BaseType::kPercent));
   EXPECT_FALSE(type2.HasPercentHint());
 
   bool error = true;
   const auto result = CSSNumericValueType::Add(type1, type2, error);
   EXPECT_FALSE(error);
 
-  EXPECT_EQ(1, result.GetEntry(BaseType::kLength));
-  EXPECT_EQ(2, result.GetEntry(BaseType::kTime));
+  EXPECT_EQ(1, result.Exponent(BaseType::kLength));
+  EXPECT_EQ(2, result.Exponent(BaseType::kTime));
   ASSERT_TRUE(result.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, result.PercentHint());
 }
@@ -146,22 +146,60 @@ TEST(CSSNumericValueType, ImpossibleAdditionWithPercentHints) {
   // { *length: 1, time: 3 } + { time: 2, percent: 2 } == failure
   CSSNumericValueType type1(UnitType::kPercentage);
   type1.ApplyPercentHint(BaseType::kLength);
-  type1.SetEntry(BaseType::kTime, 3);
-  EXPECT_EQ(1, type1.GetEntry(BaseType::kLength));
-  EXPECT_EQ(3, type1.GetEntry(BaseType::kTime));
+  type1.SetExponent(BaseType::kTime, 3);
+  EXPECT_EQ(1, type1.Exponent(BaseType::kLength));
+  EXPECT_EQ(3, type1.Exponent(BaseType::kTime));
   ASSERT_TRUE(type1.HasPercentHint());
   EXPECT_EQ(BaseType::kLength, type1.PercentHint());
 
   CSSNumericValueType type2;
-  type2.SetEntry(BaseType::kPercent, 2);
-  type2.SetEntry(BaseType::kTime, 2);
-  EXPECT_EQ(2, type2.GetEntry(BaseType::kTime));
-  EXPECT_EQ(2, type2.GetEntry(BaseType::kPercent));
+  type2.SetExponent(BaseType::kPercent, 2);
+  type2.SetExponent(BaseType::kTime, 2);
+  EXPECT_EQ(2, type2.Exponent(BaseType::kTime));
+  EXPECT_EQ(2, type2.Exponent(BaseType::kPercent));
   EXPECT_FALSE(type2.HasPercentHint());
 
   bool error = false;
   CSSNumericValueType::Add(type1, type2, error);
   EXPECT_TRUE(error);
+}
+
+TEST(CSSNumericValueType, MultiplyDifferentNonNullTypeHintsIsError) {
+  // { *length: 0 } * { *time: 0 } == failure
+  CSSNumericValueType type1;
+  type1.ApplyPercentHint(BaseType::kTime);
+  EXPECT_EQ(BaseType::kTime, type1.PercentHint());
+
+  CSSNumericValueType type2;
+  type2.ApplyPercentHint(BaseType::kLength);
+  EXPECT_EQ(BaseType::kLength, type2.PercentHint());
+
+  bool error = false;
+  CSSNumericValueType::Multiply(type1, type2, error);
+  EXPECT_TRUE(error);
+}
+
+TEST(CSSNumericValueType, MultiplyAddsPowersAndSetsPercentHint) {
+  // { length: 2, time: 1 } * { length: 3, angle*: 2 } == { length: 5, time: 1,
+  // angle: 2 }
+  CSSNumericValueType type1;
+  type1.SetExponent(BaseType::kLength, 2);
+  type1.SetExponent(BaseType::kTime, 1);
+
+  CSSNumericValueType type2;
+  type2.ApplyPercentHint(BaseType::kAngle);
+  type2.SetExponent(BaseType::kLength, 3);
+  type2.SetExponent(BaseType::kAngle, 2);
+
+  bool error = true;
+  const auto result = CSSNumericValueType::Multiply(type1, type2, error);
+  ASSERT_FALSE(error);
+
+  EXPECT_EQ(5, result.Exponent(BaseType::kLength));
+  EXPECT_EQ(1, result.Exponent(BaseType::kTime));
+  EXPECT_EQ(2, result.Exponent(BaseType::kAngle));
+  ASSERT_TRUE(result.HasPercentHint());
+  EXPECT_EQ(BaseType::kAngle, result.PercentHint());
 }
 
 }  // namespace blink

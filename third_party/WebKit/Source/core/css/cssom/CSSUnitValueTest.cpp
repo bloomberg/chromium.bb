@@ -193,9 +193,9 @@ TEST_P(CSSUnitValueTypeTest, TypeInitializesCorrectly) {
     const auto base_type = static_cast<CSSNumericValueType::BaseType>(i);
     EXPECT_FALSE(type.HasPercentHint());
     if (base_type == GetParam().second)
-      EXPECT_EQ(type.GetEntry(base_type), 1);
+      EXPECT_EQ(type.Exponent(base_type), 1);
     else
-      EXPECT_EQ(type.GetEntry(base_type), 0);
+      EXPECT_EQ(type.Exponent(base_type), 0);
   }
 }
 
