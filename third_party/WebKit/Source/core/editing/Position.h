@@ -195,12 +195,6 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   static PositionTemplate<Strategy> FirstPositionInNode(
       const Node& anchor_node);
   static PositionTemplate<Strategy> LastPositionInNode(const Node& anchor_node);
-  // TODO(editing-dev): Instead of these two deprecated functions please use
-  // const-ref implementation below.
-  static PositionTemplate<Strategy> FirstPositionInOrBeforeNodeDeprecated(
-      Node* anchor_node);
-  static PositionTemplate<Strategy> LastPositionInOrAfterNodeDeprecated(
-      Node* anchor_node);
   static PositionTemplate<Strategy> FirstPositionInOrBeforeNode(
       const Node& anchor_node);
   static PositionTemplate<Strategy> LastPositionInOrAfterNode(

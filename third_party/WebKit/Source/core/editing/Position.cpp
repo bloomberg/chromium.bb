@@ -540,24 +540,6 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::LastPositionInNode(
 // static
 template <typename Strategy>
 PositionTemplate<Strategy>
-PositionTemplate<Strategy>::FirstPositionInOrBeforeNodeDeprecated(Node* node) {
-  if (!node)
-    return PositionTemplate<Strategy>();
-  return FirstPositionInOrBeforeNode(*node);
-}
-
-// static
-template <typename Strategy>
-PositionTemplate<Strategy>
-PositionTemplate<Strategy>::LastPositionInOrAfterNodeDeprecated(Node* node) {
-  if (!node)
-    return PositionTemplate<Strategy>();
-  return LastPositionInOrAfterNode(*node);
-}
-
-// static
-template <typename Strategy>
-PositionTemplate<Strategy>
 PositionTemplate<Strategy>::FirstPositionInOrBeforeNode(const Node& node) {
   return EditingIgnoresContent(node) ? BeforeNode(node)
                                      : FirstPositionInNode(node);
