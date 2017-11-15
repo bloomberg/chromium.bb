@@ -1758,6 +1758,7 @@ enum WebFeature {
   kDocumentPageShowRegistered = 2228,
   kDocumentPageShowFired = 2229,
   kReplaceCharsetInXHR = 2230,
+  kRespondToSameOriginRequestWithCrossOriginResponse = 2231,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

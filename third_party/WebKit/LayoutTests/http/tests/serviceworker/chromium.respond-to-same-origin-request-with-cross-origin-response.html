@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!-- This test requires internals because it tests Chromium's
+  internal UseCounter. See https://crbug.com/784018. -->
+<title>Service Worker: Respond to same-origin request with cross origin response</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/get-host-info.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+
+promise_test((t) => {
+    const url = 'resources/fetch-rewrite-worker.js';
+    const scope = 'resources/blank.html?' +
+                  'respond-to-same-origin-request-with-cross-origin-response';
+    const host_info = get_host_info();
+    const target_url = host_info['HTTPS_REMOTE_ORIGIN'] +
+                       base_path() +
+                       '/resources/fetch-access-control.php?ACAOrigin=*';
+    // from web_feature.mojom
+    const kRespondToSameOriginRequestWithCrossOriginResponse = 2231;
+    let worker;
+    let frame;
+    return service_worker_unregister_and_register(t, url, scope)
+      .then((registration) => {
+          add_completion_callback(() => registration.unregister());
+          worker = registration.installing;
+          return wait_for_state(t, worker, 'activated');
+        })
+      .then(() => with_iframe(scope))
+      .then((f) => {
+          frame = f;
+          assert_false(
+              frame.contentWindow.internals.isUseCounted(
+                  frame.contentDocument,
+                  kRespondToSameOriginRequestWithCrossOriginResponse),
+              'The usecounter must not be counted yet.');
+          add_completion_callback(() => frame.remove());
+          return frame.contentWindow.fetch(
+            './?url=' + encodeURIComponent(target_url) +
+            '&mode=cors', {mode: 'same-origin'});
+        })
+      .then(() => {
+          assert_true(
+              frame.contentWindow.internals.isUseCounted(
+                  frame.contentDocument,
+                  kRespondToSameOriginRequestWithCrossOriginResponse),
+              'The usecounter must be counted.');
+        });
+  }, 'Usecounter for RespondToSameOriginRequestWithCrossOriginResponse');
+
+</script>
+</html>

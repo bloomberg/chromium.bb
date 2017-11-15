@@ -12,6 +12,8 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
+#include "core/frame/WebFeature.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleTypes.h"
 #include "modules/fetch/BodyStreamBuffer.h"
@@ -235,6 +237,18 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
 
   WebServiceWorkerResponse web_response;
   response->PopulateWebServiceWorkerResponse(web_response);
+
+  // UseCounter for cross origin CORS responses to "same-origin" requests.
+  // See https://crbug.com/784018.
+  if (request_mode_ == network::mojom::FetchRequestMode::kSameOrigin &&
+      !web_response.UrlList().empty() &&
+      !SecurityOrigin::AreSameSchemeHostPort(
+          request_url_, *(web_response.UrlList().end() - 1))) {
+    UseCounter::Count(
+        GetExecutionContext(),
+        WebFeature::kRespondToSameOriginRequestWithCrossOriginResponse);
+  }
+
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {
     scoped_refptr<BlobDataHandle> blob_data_handle =
