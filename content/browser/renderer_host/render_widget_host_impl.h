@@ -616,7 +616,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // interface calls processed on the FrameInputHandler to be processed in order
   // with the interface calls processed on the WidgetInputHandler.
   void SetWidgetInputHandler(
-      mojom::WidgetInputHandlerAssociatedPtr widget_input_handler);
+      mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
+      mojom::WidgetInputHandlerHostRequest host_request);
   void SetWidget(mojom::WidgetPtr widget);
 
   // InputRouterImplClient overrides.

@@ -153,7 +153,8 @@ void LegacyIPCFrameInputHandler::MoveCaret(const gfx::Point& point) {
 }
 
 void LegacyIPCFrameInputHandler::GetWidgetInputHandler(
-    mojom::WidgetInputHandlerAssociatedRequest interface_request) {
+    mojom::WidgetInputHandlerAssociatedRequest interface_request,
+    mojom::WidgetInputHandlerHostPtr host) {
   NOTREACHED();
 }
 

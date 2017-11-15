@@ -76,7 +76,8 @@ class CONTENT_EXPORT InputRouterImpl
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
   void SetForceEnableZoom(bool enabled) override;
   cc::TouchAction AllowedTouchAction() override;
-  void BindHost(mojom::WidgetInputHandlerHostRequest request) override;
+  void BindHost(mojom::WidgetInputHandlerHostRequest request,
+                bool frame_handler) override;
 
   // InputHandlerHost impl
   void CancelTouchTimeout() override;
@@ -206,7 +207,13 @@ class CONTENT_EXPORT InputRouterImpl
   // Last touch position relative to screen. Used to compute movementX/Y.
   base::flat_map<int, gfx::Point> global_touch_position_;
 
+  // The host binding associated with the widget input handler from
+  // the widget.
   mojo::Binding<mojom::WidgetInputHandlerHost> host_binding_;
+
+  // The host binding associated with the widget input handler from
+  // the frame.
+  mojo::Binding<mojom::WidgetInputHandlerHost> frame_host_binding_;
 
   base::WeakPtr<InputRouterImpl> weak_this_;
   base::WeakPtrFactory<InputRouterImpl> weak_ptr_factory_;

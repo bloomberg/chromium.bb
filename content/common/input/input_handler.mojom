@@ -332,5 +332,6 @@ interface FrameInputHandler {
   // Return an associated WidgetInputHandler interface so that input
   // messages to the widget associated with this frame can be sent
   // serially.
-  GetWidgetInputHandler(associated WidgetInputHandler& interface_request);
+  GetWidgetInputHandler(associated WidgetInputHandler& interface_request,
+                        WidgetInputHandlerHost host);
 };
