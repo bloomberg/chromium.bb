@@ -29,12 +29,6 @@ Ui::Ui(UiBrowserInterface* browser,
       model_(base::MakeUnique<Model>()),
       content_input_delegate_(
           base::MakeUnique<ContentInputDelegate>(content_input_forwarder)),
-      scene_manager_(
-          base::MakeUnique<UiSceneManager>(browser,
-                                           scene_.get(),
-                                           content_input_delegate_.get(),
-                                           model_.get(),
-                                           ui_initial_state)),
       input_manager_(base::MakeUnique<UiInputManager>(scene_.get())),
       weak_ptr_factory_(this) {
   model_->started_for_autopresentation =
@@ -43,6 +37,10 @@ Ui::Ui(UiBrowserInterface* browser,
       base::FeatureList::IsEnabled(features::kExperimentalVRFeatures);
   model_->speech.has_or_can_request_audio_permission =
       ui_initial_state.has_or_can_request_audio_permission;
+
+  scene_manager_ = base::MakeUnique<UiSceneManager>(
+      browser, scene_.get(), content_input_delegate_.get(), model_.get(),
+      ui_initial_state);
 }
 
 Ui::~Ui() = default;

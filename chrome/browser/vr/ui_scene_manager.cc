@@ -380,6 +380,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
   auto spinner = base::MakeUnique<Spinner>(512);
   spinner->set_name(kWebVrTimeoutSpinner);
   spinner->set_draw_phase(kPhaseOverlayForeground);
+  spinner->SetVisible(false);
   spinner->SetSize(kSpinnerWidth, kSpinnerHeight);
   spinner->SetTranslate(0, kSpinnerVerticalOffset, -kSpinnerDistance);
   spinner->SetColor(color_scheme().spinner_color);
@@ -394,6 +395,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
   auto spinner_bg = base::MakeUnique<FullScreenRect>();
   spinner_bg->set_name(kWebVrTimeoutSpinnerBackground);
   spinner_bg->set_draw_phase(kPhaseOverlayBackground);
+  spinner_bg->SetVisible(false);
   spinner_bg->set_hit_testable(false);
   spinner_bg->SetColor(color_scheme().spinner_background);
   spinner_bg->SetTransitionedProperties({OPACITY});
@@ -406,6 +408,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
   auto timeout_message = base::MakeUnique<Rect>();
   timeout_message->set_name(kWebVrTimeoutMessage);
   timeout_message->set_draw_phase(kPhaseOverlayForeground);
+  timeout_message->SetVisible(false);
   timeout_message->SetSize(kTimeoutMessageBackgroundWidthM,
                            kTimeoutMessageBackgroundHeightM);
   timeout_message->SetTranslate(0, kSpinnerVerticalOffset, -kSpinnerDistance);
@@ -450,6 +453,7 @@ void UiSceneManager::CreateSplashScreen(Model* model) {
       kPhaseOverlayForeground, kTimeoutButtonWidth, kTimeoutButtonHeight,
       vector_icons::kClose16Icon);
   button->set_name(kWebVrTimeoutMessageButton);
+  button->SetVisible(false);
   button->SetTranslate(0, kTimeoutButtonVerticalOffset,
                        -kTimeoutButtonDistance);
   button->SetRotate(1, 0, 0, kTimeoutButtonRotationRad);
