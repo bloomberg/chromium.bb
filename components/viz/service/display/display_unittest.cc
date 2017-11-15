@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/null_task_runner.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/scheduler_test_common.h"
@@ -18,6 +19,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
+#include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/local_surface_id_allocator.h"
@@ -29,10 +31,12 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/test/compositor_frame_helpers.h"
+#include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::AnyNumber;
 
 namespace viz {
@@ -154,6 +158,11 @@ class DisplayTest : public testing::Test {
     pass_list->swap(frame.render_pass_list);
 
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  }
+
+  void RunAllPendingInMessageLoop() {
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
 
   FrameSinkManagerImpl manager_;
@@ -1998,7 +2007,7 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
   TearDownDisplay();
 }
 
-TEST_F(DisplayTest, CompositorFrameWitMultipleDrawQuadInSharedQuadState) {
+TEST_F(DisplayTest, CompositorFrameWithMultipleDrawQuadInSharedQuadState) {
   SetUpDisplay(RendererSettings(), cc::TestWebGraphicsContext3D::Create());
 
   StubDisplayClient client;
@@ -2010,7 +2019,7 @@ TEST_F(DisplayTest, CompositorFrameWitMultipleDrawQuadInSharedQuadState) {
   gfx::Rect rect2(50, 0, 50, 50);
   gfx::Rect rect3(0, 50, 50, 50);
   gfx::Rect rect4(50, 50, 50, 50);
-  gfx::Rect rect5(0, 00, 60, 40);
+  gfx::Rect rect5(0, 0, 60, 40);
 
   bool is_clipped = false;
   bool opaque_content = true;
@@ -2067,6 +2076,106 @@ TEST_F(DisplayTest, CompositorFrameWitMultipleDrawQuadInSharedQuadState) {
                                     ->quad_list.ElementAt(3)
                                     ->rect.ToString());
   }
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
+  RendererSettings settings;
+  const LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
+
+  // Set up first display.
+  SetUpDisplay(settings, nullptr);
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+
+  // Create frame sink for a sub surface.
+  const LocalSurfaceId sub_local_surface_id(6,
+                                            base::UnguessableToken::Create());
+  const SurfaceId sub_surface_id(kAnotherFrameSinkId, sub_local_surface_id);
+
+  MockCompositorFrameSinkClient sub_client;
+
+  auto sub_support = CompositorFrameSinkSupport::Create(
+      &sub_client, &manager_, kAnotherFrameSinkId, false /* is_root */,
+      true /* needs_sync_points */);
+
+  const gfx::Size display_size(100, 100);
+  display_->Resize(display_size);
+  const gfx::Size sub_surface_size(32, 32);
+
+  {
+    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
+    frame.metadata.presentation_token = 1;
+    EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
+    // TODO(penghuang): Verify DidDiscardCompositorFrame() is called when
+    // GLSurface presentation callback is implemented.
+    // https://crbug.com/776877
+    sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
+  }
+
+  {
+    // Submit a frame for display_ with full damage.
+    RenderPassList pass_list;
+    auto pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(display_size);
+    pass->damage_rect = gfx::Rect(display_size);
+    pass->id = 1;
+
+    auto* shared_quad_state1 = pass->CreateAndAppendSharedQuadState();
+    gfx::Rect rect1(display_size);
+    shared_quad_state1->SetAll(
+        gfx::Transform(), rect1 /* quad_layer_rect */,
+        rect1 /* visible_quad_layer_rect */, rect1 /*clip_rect */,
+        false /* is_clipped */, false /* are_contents_opaque */,
+        0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+    auto* quad1 = pass->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+    quad1->SetNew(shared_quad_state1, rect1 /* rect */,
+                  rect1 /* visible_rect */, SK_ColorBLACK,
+                  false /* force_anti_aliasing_off */);
+
+    auto* shared_quad_state2 = pass->CreateAndAppendSharedQuadState();
+    gfx::Rect rect2(gfx::Point(20, 20), sub_surface_size);
+    shared_quad_state2->SetAll(
+        gfx::Transform(), rect2 /* quad_layer_rect */,
+        rect2 /* visible_quad_layer_rect */, rect2 /*clip_rect */,
+        false /* is_clipped */, true /* are_contents_opaque */,
+        1.0f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
+    auto* quad2 = pass->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
+    quad2->SetNew(shared_quad_state2, rect2 /* rect */,
+                  rect2 /* visible_rect */,
+                  sub_surface_id /* primary_surface_id */,
+                  base::Optional<SurfaceId>() /* fallback_surface_id */,
+                  SK_ColorBLACK, false /* stretch_content_to_fill_bounds */);
+
+    pass_list.push_back(std::move(pass));
+    SubmitCompositorFrame(&pass_list, local_surface_id);
+    display_->DrawAndSwap();
+    RunAllPendingInMessageLoop();
+  }
+
+  {
+    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
+    frame.metadata.presentation_token = 2;
+    EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
+    EXPECT_CALL(sub_client, DidDiscardCompositorFrame(2)).Times(1);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
+
+    display_->DrawAndSwap();
+    RunAllPendingInMessageLoop();
+  }
+
+  {
+    CompositorFrame frame = test::MakeCompositorFrame(sub_surface_size);
+    frame.metadata.presentation_token = 3;
+    EXPECT_CALL(sub_client, DidReceiveCompositorFrameAck(_)).Times(1);
+    sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
+
+    display_->DrawAndSwap();
+    RunAllPendingInMessageLoop();
+  }
+
+  sub_support->EvictCurrentSurface();
   TearDownDisplay();
 }
 

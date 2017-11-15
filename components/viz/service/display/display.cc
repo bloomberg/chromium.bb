@@ -273,17 +273,11 @@ bool Display::DrawAndSwap() {
     return false;
   }
 
-  DLOG_IF(WARNING, !presented_callbacks_.empty())
-      << "DidReceiveSwapBuffersAck() is not called for the last SwapBuffers!";
   // Run callbacks early to allow pipelining and collect presented callbacks.
   for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
     Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-    if (surface) {
-      Surface::PresentedCallback callback;
-      if (surface->TakePresentedCallback(&callback))
-        presented_callbacks_.push_back(std::move(callback));
+    if (surface)
       surface->RunDrawCallback();
-    }
   }
 
   frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
@@ -362,6 +356,16 @@ bool Display::DrawAndSwap() {
   bool should_swap = should_draw && size_matches;
   if (should_swap) {
     swapped_since_resize_ = true;
+
+    DLOG_IF(WARNING, !presented_callbacks_.empty())
+        << "DidReceiveSwapBuffersAck() is not called for the last SwapBuffers!";
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      Surface::PresentedCallback callback;
+      if (surface && surface->TakePresentedCallback(&callback))
+        presented_callbacks_.push_back(std::move(callback));
+    }
+
     for (auto& latency : frame.metadata.latency_info) {
       TRACE_EVENT_WITH_FLOW1(
           "input,benchmark", "LatencyInfo.Flow",

@@ -247,8 +247,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
       base::flat_set<SurfaceId>* added_dependencies,
       base::flat_set<SurfaceId>* removed_dependencies);
 
-  void UnrefFrameResourcesAndRunDrawCallback(
-      base::Optional<FrameData> frame_data);
+  void UnrefFrameResourcesAndRunCallbacks(base::Optional<FrameData> frame_data);
   void ClearCopyRequests();
 
   void TakeLatencyInfoFromPendingFrame(
