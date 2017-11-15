@@ -21,9 +21,10 @@ struct vpx_image;
 namespace base {
 class SequencedTaskRunner;
 class TickClock;
-}
+}  // namespace base
 
 namespace media {
+class FrameBufferPool;
 
 // Libvpx video decoder wrapper.
 // Note: VpxVideoDecoder accepts only YV12A VP8 content or VP9 content. This is
@@ -116,8 +117,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   // |memory_pool_| is a single-threaded memory pool used for VP9 decoding
   // with no alpha. |frame_pool_| is used for all other cases.
-  class MemoryPool;
-  scoped_refptr<MemoryPool> memory_pool_;
+  scoped_refptr<FrameBufferPool> memory_pool_;
 
   // High resolution vp9 may block the media thread for too long, in such cases
   // offload the decoding to a task pool.
