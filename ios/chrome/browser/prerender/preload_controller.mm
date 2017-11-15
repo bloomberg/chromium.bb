@@ -246,13 +246,13 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   webState->SetShouldSuppressDialogs(false);
   webState->SetDelegate(nullptr);
 
-  HistoryTabHelper::FromWebState(webState_.get())
+  HistoryTabHelper::FromWebState(webState.get())
       ->SetDelayHistoryServiceNotification(false);
 
   if (AccountConsistencyService* accountConsistencyService =
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
               browserState_)) {
-    accountConsistencyService->RemoveWebStateHandler(webState_.get());
+    accountConsistencyService->RemoveWebStateHandler(webState.get());
   }
 
   if ([tab loadFinished]) {
