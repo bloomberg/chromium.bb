@@ -159,6 +159,27 @@
       <message desc="Label for option to highlight spoken words rather than spoken nodes." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_DESCRIPTION">
         Highlight each word as it is spoken
       </message>
+      <message desc="Label for option to pick word highlight color." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_DESCRIPTION">
+        Color for word highlights:
+      </message>
+      <message desc="Label for a blue highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_BLUE">
+        Blue
+      </message>
+      <message desc="Label for a orange highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_ORANGE">
+        Orange
+      </message>
+      <message desc="Label for a yellow highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_YELLOW">
+        Yellow
+      </message>
+      <message desc="Label for a green highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_GREEN">
+        Green
+      </message>
+      <message desc="Label for a pink highlight color in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_COLOR_PINK">
+        Pink
+      </message>
+      <message desc="Example of a word highlight in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_EXAMPLE">
+        Example highlight
+      </message>
     </messages>
   </release>
 </grit>

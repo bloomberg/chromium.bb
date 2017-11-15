@@ -239,7 +239,7 @@ var SelectToSpeak = function() {
   /** @const {string} */
   this.color_ = '#f73a98';
 
-  /** @const {string} */
+  /** @private {string} */
   this.highlightColor_ = '#5e9bff';
 
   /** @private {?NodeGroupItem} */
@@ -622,24 +622,27 @@ SelectToSpeak.prototype = {
    * change.
    */
   initPreferences_: function() {
-    var updatePrefs = (function() {
-                        chrome.storage.sync.get(
-                            ['voice', 'rate', 'wordHighlight'],
-                            (function(prefs) {
-                              if (prefs['voice']) {
-                                this.voiceNameFromPrefs_ = prefs['voice'];
-                              }
-                              if (prefs['rate']) {
-                                this.speechRate_ = parseFloat(prefs['rate']);
-                              } else {
-                                chrome.storage.sync.set(
-                                    {'rate': this.speechRate_});
-                              }
-                              if (prefs['wordHighlight'] !== undefined) {
-                                this.wordHighlight_ = prefs['wordHighlight'];
-                              }
-                            }).bind(this));
-                      }).bind(this);
+    var updatePrefs =
+        (function() {
+          chrome.storage.sync.get(
+              ['voice', 'rate', 'wordHighlight', 'highlightColor'],
+              (function(prefs) {
+                if (prefs['voice']) {
+                  this.voiceNameFromPrefs_ = prefs['voice'];
+                }
+                if (prefs['rate']) {
+                  this.speechRate_ = parseFloat(prefs['rate']);
+                } else {
+                  chrome.storage.sync.set({'rate': this.speechRate_});
+                }
+                if (prefs['wordHighlight'] !== undefined) {
+                  this.wordHighlight_ = prefs['wordHighlight'];
+                }
+                if (prefs['highlightColor']) {
+                  this.highlightColor_ = prefs['highlightColor'];
+                }
+              }).bind(this));
+        }).bind(this);
 
     updatePrefs();
     chrome.storage.onChanged.addListener(updatePrefs);
