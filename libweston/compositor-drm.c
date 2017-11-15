@@ -4892,13 +4892,31 @@ drm_output_fini_crtc(struct drm_output *output)
 	output->scanout_plane = NULL;
 }
 
+static void
+drm_output_print_modes(struct drm_output *output)
+{
+	struct weston_mode *m;
+	struct drm_mode *dm;
+
+	wl_list_for_each(m, &output->base.mode_list, link) {
+		dm = to_drm_mode(m);
+
+		weston_log_continue(STAMP_SPACE "%dx%d@%.1f%s%s, %.1f MHz\n",
+				    m->width, m->height, m->refresh / 1000.0,
+				    m->flags & WL_OUTPUT_MODE_PREFERRED ?
+				    ", preferred" : "",
+				    m->flags & WL_OUTPUT_MODE_CURRENT ?
+				    ", current" : "",
+				    dm->mode_info.clock / 1000.0);
+	}
+}
+
 static int
 drm_output_enable(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 	struct drm_head *head = to_drm_head(weston_output_get_first_head(base));
-	struct weston_mode *m;
 	drmModeRes *resources;
 	int ret;
 
@@ -4948,17 +4966,9 @@ drm_output_enable(struct weston_output *base)
 				      &output->scanout_plane->base,
 				      &b->compositor->primary_plane);
 
-	weston_log("Output %s, (connector %d, crtc %d)\n",
-		   output->base.name, head->connector_id, output->crtc_id);
-	wl_list_for_each(m, &output->base.mode_list, link)
-		weston_log_continue(STAMP_SPACE "mode %dx%d@%.1f%s%s%s\n",
-				    m->width, m->height, m->refresh / 1000.0,
-				    m->flags & WL_OUTPUT_MODE_PREFERRED ?
-				    ", preferred" : "",
-				    m->flags & WL_OUTPUT_MODE_CURRENT ?
-				    ", current" : "",
-				    head->connector->count_modes == 0 ?
-				    ", built-in" : "");
+	weston_log("Output %s (crtc %d) video modes:\n",
+		   output->base.name, output->crtc_id);
+	drm_output_print_modes(output);
 
 	return 0;
 
