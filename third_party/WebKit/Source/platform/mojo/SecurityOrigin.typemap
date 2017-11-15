@@ -13,4 +13,5 @@ deps = [
   "//mojo/public/cpp/bindings",
   "//url",
 ]
-type_mappings = [ "url.mojom.Origin=scoped_refptr<::blink::SecurityOrigin>" ]
+type_mappings =
+    [ "url.mojom.Origin=scoped_refptr<const ::blink::SecurityOrigin>" ]

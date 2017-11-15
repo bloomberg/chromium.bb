@@ -53,7 +53,7 @@ class MODULES_EXPORT QuotaTracker {
       const String& database_name,
       unsigned long long* database_size,
       unsigned long long* space_available);
-  void UpdateDatabaseSize(SecurityOrigin*,
+  void UpdateDatabaseSize(const SecurityOrigin*,
                           const String& database_name,
                           unsigned long long database_size);
 

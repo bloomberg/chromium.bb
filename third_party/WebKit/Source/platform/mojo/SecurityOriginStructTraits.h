@@ -13,28 +13,30 @@ namespace mojo {
 
 template <>
 struct StructTraits<url::mojom::blink::Origin::DataView,
-                    scoped_refptr<::blink::SecurityOrigin>> {
+                    scoped_refptr<const ::blink::SecurityOrigin>> {
   static WTF::String scheme(
-      const scoped_refptr<::blink::SecurityOrigin>& origin) {
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->Protocol();
   }
   static WTF::String host(
-      const scoped_refptr<::blink::SecurityOrigin>& origin) {
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->Host();
   }
-  static uint16_t port(const scoped_refptr<::blink::SecurityOrigin>& origin) {
+  static uint16_t port(
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->EffectivePort();
   }
   static WTF::String suborigin(
-      const scoped_refptr<::blink::SecurityOrigin>& origin) {
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     WTF::String suborigin = origin->GetSuborigin()->GetName();
     return suborigin.IsNull() ? "" : suborigin;
   }
-  static bool unique(const scoped_refptr<::blink::SecurityOrigin>& origin) {
+  static bool unique(
+      const scoped_refptr<const ::blink::SecurityOrigin>& origin) {
     return origin->IsUnique();
   }
   static bool Read(url::mojom::blink::Origin::DataView data,
-                   scoped_refptr<::blink::SecurityOrigin>* out) {
+                   scoped_refptr<const ::blink::SecurityOrigin>* out) {
     if (data.unique()) {
       *out = ::blink::SecurityOrigin::CreateUnique();
     } else {

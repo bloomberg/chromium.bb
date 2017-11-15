@@ -76,7 +76,7 @@ class MODULES_EXPORT DatabaseTracker {
 
   unsigned long long GetMaxSizeForDatabase(const Database*);
 
-  void CloseDatabasesImmediately(SecurityOrigin*, const String& name);
+  void CloseDatabasesImmediately(const SecurityOrigin*, const String& name);
 
   using DatabaseCallback = WTF::RepeatingFunction<void(Database*)>;
   void ForEachOpenDatabaseInPage(Page*, DatabaseCallback);

@@ -19,15 +19,16 @@ void WebDatabaseImpl::Create(mojom::blink::WebDatabaseRequest request) {
                           std::move(request));
 }
 
-void WebDatabaseImpl::UpdateSize(const scoped_refptr<SecurityOrigin>& origin,
-                                 const String& name,
-                                 int64_t size) {
+void WebDatabaseImpl::UpdateSize(
+    const scoped_refptr<const SecurityOrigin>& origin,
+    const String& name,
+    int64_t size) {
   DCHECK(origin->CanAccessDatabase());
   QuotaTracker::Instance().UpdateDatabaseSize(origin.get(), name, size);
 }
 
 void WebDatabaseImpl::CloseImmediately(
-    const scoped_refptr<SecurityOrigin>& origin,
+    const scoped_refptr<const SecurityOrigin>& origin,
     const String& name) {
   DCHECK(origin->CanAccessDatabase());
   DatabaseTracker::Tracker().CloseDatabasesImmediately(origin.get(), name);
