@@ -2313,6 +2313,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int plane) {
   int i;
   const uint8_t *above_ref = ref - ref_stride;
+  const uint8_t *left_ref = ref - 1;
   DECLARE_ALIGNED(16, uint8_t, left_data[MAX_TX_SIZE * 2 + 32]);
   DECLARE_ALIGNED(16, uint8_t, above_data[MAX_TX_SIZE * 2 + 32]);
   uint8_t *const above_row = above_data + 16;
@@ -2372,7 +2373,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     if (need_left) {
       val = (n_top_px > 0) ? above_ref[0] : 129;
     } else {
-      val = (n_left_px > 0) ? ref[-1] : 127;
+      val = (n_left_px > 0) ? left_ref[0] : 127;
     }
 #else
     const int val = need_left ? 129 : 127;
@@ -2401,11 +2402,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
     i = 0;
     if (n_left_px > 0) {
-      for (; i < n_left_px; i++) left_col[i] = ref[i * ref_stride - 1];
+      for (; i < n_left_px; i++) left_col[i] = left_ref[i * ref_stride];
       if (need_bottom && n_bottomleft_px > 0) {
         assert(i == txhpx);
         for (; i < txhpx + n_bottomleft_px; i++)
-          left_col[i] = ref[i * ref_stride - 1];
+          left_col[i] = left_ref[i * ref_stride];
       }
       if (i < num_left_pixels_needed)
         memset(&left_col[i], left_col[i - 1], num_left_pixels_needed - i);
@@ -2450,7 +2451,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     } else {
 #if CONFIG_INTRA_EDGE
       if (n_left_px > 0) {
-        memset(above_row, ref[-1], num_top_pixels_needed);
+        memset(above_row, left_ref[0], num_top_pixels_needed);
       } else {
 #endif  // CONFIG_INTRA_EDGE
         memset(above_row, 127, num_top_pixels_needed);
@@ -2467,7 +2468,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     } else if (n_top_px > 0) {
       above_row[-1] = above_ref[0];
     } else if (n_left_px > 0) {
-      above_row[-1] = ref[-1];
+      above_row[-1] = left_ref[0];
     } else {
       above_row[-1] = 128;
     }
