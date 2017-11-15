@@ -53,6 +53,8 @@ TEST_F(UiRendererTest, ReticleStacking) {
     }
   }
 
+  EXPECT_TRUE(saw_target);
+
   auto controller_elements = scene_->GetVisibleControllerElements();
   bool saw_reticle = false;
   for (auto* e : controller_elements) {
@@ -61,6 +63,48 @@ TEST_F(UiRendererTest, ReticleStacking) {
     }
   }
   EXPECT_FALSE(saw_reticle);
+}
+
+TEST_F(UiRendererTest, ReticleStackingAtopForeground) {
+  UiElement* element = scene_->GetUiElementByName(kContentQuad);
+  EXPECT_TRUE(element);
+  element->set_draw_phase(kPhaseOverlayForeground);
+  model_->reticle.target_element_id = element->id();
+  auto unsorted = scene_->GetVisible2dBrowsingOverlayElements();
+  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
+  bool saw_target = false;
+  for (auto* e : sorted) {
+    if (e == element) {
+      saw_target = true;
+    } else if (saw_target) {
+      EXPECT_EQ(kReticle, e->name());
+      break;
+    }
+  }
+  EXPECT_TRUE(saw_target);
+
+  auto controller_elements = scene_->GetVisibleControllerElements();
+  bool saw_reticle = false;
+  for (auto* e : controller_elements) {
+    if (e->name() == kReticle) {
+      saw_reticle = true;
+    }
+  }
+  EXPECT_FALSE(saw_reticle);
+}
+
+TEST_F(UiRendererTest, ReticleStackingWithControllerElements) {
+  UiElement* element = scene_->GetUiElementByName(kReticle);
+  EXPECT_TRUE(element);
+  element->set_draw_phase(kPhaseBackground);
+  EXPECT_NE(scene_->GetUiElementByName(kLaser)->draw_phase(),
+            element->draw_phase());
+  model_->reticle.target_element_id = 0;
+  auto unsorted = scene_->GetVisibleControllerElements();
+  auto sorted = UiRenderer::GetElementsInDrawOrder(unsorted);
+  EXPECT_EQ(element->DebugName(), sorted.back()->DebugName());
+  EXPECT_EQ(scene_->GetUiElementByName(kLaser)->draw_phase(),
+            element->draw_phase());
 }
 
 TEST_P(UiRendererTest, UiRendererSortingTest) {

@@ -32,8 +32,10 @@ UiScene::Elements GetVisibleElements(UiElement* root,
   for (auto& element : *root) {
     if (element.IsVisible() && predicate(&element)) {
       elements.push_back(&element);
-      if (target && target->id() == element.id())
+      if (target && target->id() == element.id()) {
         elements.push_back(reticle);
+        reticle->set_draw_phase(element.draw_phase());
+      }
     }
   }
   return elements;
@@ -219,7 +221,15 @@ UiScene::Elements UiScene::GetVisibleControllerElements() const {
           Reticle* reticle = static_cast<Reticle*>(element);
           // If the reticle has a non-null target element,
           // it would have been positioned elsewhere.
-          return !reticle->TargetElement();
+          bool need_to_add_reticle = !reticle->TargetElement();
+          if (need_to_add_reticle) {
+            // We must always update the reticle's draw phase when it is
+            // included in a list of elements we vend. The other controller
+            // elements are drawn in the foreground phase, so we will update the
+            // reticle to match here.
+            reticle->set_draw_phase(kPhaseForeground);
+          }
+          return need_to_add_reticle;
         }
         return element->draw_phase() == kPhaseForeground;
       });
