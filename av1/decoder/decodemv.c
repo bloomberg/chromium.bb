@@ -962,8 +962,8 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
   // DV should not have sub-pel.
   assert((mv->as_mv.col & 7) == 0);
   assert((mv->as_mv.row & 7) == 0);
-  mv->as_mv.col = (mv->as_mv.col >> 3) << 3;
-  mv->as_mv.row = (mv->as_mv.row >> 3) << 3;
+  mv->as_mv.col = (mv->as_mv.col >> 3) * 8;
+  mv->as_mv.row = (mv->as_mv.row >> 3) * 8;
   int valid = is_mv_valid(&mv->as_mv) &&
               av1_is_dv_valid(mv->as_mv, &xd->tile, mi_row, mi_col, bsize,
                               cm->mib_size_log2);
@@ -1025,8 +1025,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     // Ref DV should not have sub-pel.
     assert((dv_ref.as_mv.col & 7) == 0);
     assert((dv_ref.as_mv.row & 7) == 0);
-    dv_ref.as_mv.col = (dv_ref.as_mv.col >> 3) << 3;
-    dv_ref.as_mv.row = (dv_ref.as_mv.row >> 3) << 3;
+    dv_ref.as_mv.col = (dv_ref.as_mv.col >> 3) * 8;
+    dv_ref.as_mv.row = (dv_ref.as_mv.row >> 3) * 8;
     xd->corrupted |=
         !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
 #if !CONFIG_TXK_SEL
