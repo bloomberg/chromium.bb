@@ -49,6 +49,7 @@ static_library("browser") {
     "credentials_filter.h",
     "export/csv_writer.cc",
     "export/csv_writer.h",
+    "export/destination.h",
     "export/password_csv_writer.cc",
     "export/password_csv_writer.h",
     "form_fetcher.h",
