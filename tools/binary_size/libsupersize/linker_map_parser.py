@@ -330,9 +330,9 @@ class MapFileParserLld(object):
           # merged data. Feature request is filed under:
           # https://bugs.llvm.org/show_bug.cgi?id=35248
           if cur_obj == '<internal>':
-            sym_maker.cur_sym.object_path = cur_obj
+            sym_maker.cur_sym.full_name = '** lld merge section'
           else:
-            sym_maker.cur_sym.object_path = '** lld merge section'
+            sym_maker.cur_sym.object_path = cur_obj
 
         elif indent_size == 16:
           # If multiple entries exist, take only the first.
@@ -346,6 +346,14 @@ class MapFileParserLld(object):
     return self._section_sizes, sym_maker.syms
 
 
+def DetectLinkerNameFromMapFileHeader(first_line):
+  if first_line.startswith('Address'):
+    return 'lld'
+  if first_line.startswith('Archive member'):
+    return 'gold'
+  raise Exception('Invalid map file.')
+
+
 class MapFileParser(object):
   """Parses a linker map file, with heuristic linker detection."""
   def Parse(self, lines):
@@ -357,10 +365,10 @@ class MapFileParser(object):
     Returns:
       A tuple of (section_sizes, symbols).
     """
-    first_line = next(lines)
-    if first_line.startswith('Address'):
+    linker_name = DetectLinkerNameFromMapFileHeader(next(lines))
+    if linker_name == 'lld':
       inner_parser = MapFileParserLld()
-    elif first_line.startswith('Archive member'):
+    elif linker_name == 'gold':
       inner_parser = MapFileParserGold()
     else:
       raise Exception('.map file is from a unsupported linker.')

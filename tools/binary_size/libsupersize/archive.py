@@ -788,6 +788,11 @@ def _ParseGnArgs(args_path):
   return ["%s=%s" % x for x in sorted(args.iteritems())]
 
 
+def _DetectLinkerName(map_path):
+  with _OpenMaybeGz(map_path) as map_file:
+    return linker_map_parser.DetectLinkerNameFromMapFileHeader(next(map_file))
+
+
 def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
   """Returns a tuple of (build_id, section_sizes)."""
   with zipfile.ZipFile(apk_path) as apk, \
@@ -838,9 +843,6 @@ def Run(args, parser):
   output_directory_finder = path_util.OutputDirectoryFinder(
       value=args.output_directory,
       any_path_within_output_directory=any_input)
-  tool_prefix_finder = path_util.ToolPrefixFinder(
-      value=args.tool_prefix,
-      output_directory_finder=output_directory_finder)
   if apk_path:
     with zipfile.ZipFile(apk_path) as z:
       lib_infos = [f for f in z.infolist()
@@ -868,6 +870,11 @@ def Run(args, parser):
                    'is_official_build=true, or use --map-file to point me a '
                    'linker map file.')
 
+  linker_name = _DetectLinkerName(map_path)
+  tool_prefix_finder = path_util.ToolPrefixFinder(
+      value=args.tool_prefix,
+      output_directory_finder=output_directory_finder,
+      linker_name=linker_name)
   tool_prefix = tool_prefix_finder.Finalized()
   output_directory = None
   if not args.no_source_paths:

@@ -12,8 +12,9 @@ import os
 _STATUS_DETECTED = 1
 _STATUS_VERIFIED = 2
 
-SRC_ROOT = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+SRC_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
+    os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                 os.pardir, os.pardir, os.pardir)))
 
 _SAMPLE_TOOL_SUFFIX = 'readelf'
 
@@ -77,27 +78,39 @@ class OutputDirectoryFinder(_PathFinder):
 
 
 class ToolPrefixFinder(_PathFinder):
-  def __init__(self, value=None, output_directory_finder=None):
+  def __init__(self, value=None, output_directory_finder=None,
+               linker_name=None):
     super(ToolPrefixFinder, self).__init__(
         name='tool-prefix', value=value)
     self._output_directory_finder = output_directory_finder
+    self._linker_name = linker_name;
 
   def Detect(self):
     output_directory = self._output_directory_finder.Tentative()
     if output_directory:
-      # Auto-detect from build_vars.txt
-      build_vars_path = os.path.join(output_directory, 'build_vars.txt')
-      if os.path.exists(build_vars_path):
-        with open(build_vars_path) as f:
-          build_vars = dict(l.rstrip().split('=', 1) for l in f if '=' in l)
-        tool_prefix = build_vars['android_tool_prefix']
-        ret = os.path.normpath(os.path.join(output_directory, tool_prefix))
-        # Need to maintain a trailing /.
-        if tool_prefix.endswith(os.path.sep):
-          ret += os.path.sep
+      ret = None
+      if self._linker_name == 'lld':
+        ret = os.path.join(SRC_ROOT, 'third_party', 'llvm-build',
+                           'Release+Asserts', 'bin', 'llvm-')
+      else:
+        # Auto-detect from build_vars.txt
+        build_vars_path = os.path.join(output_directory, 'build_vars.txt')
+        if os.path.exists(build_vars_path):
+          with open(build_vars_path) as f:
+            build_vars = dict(l.rstrip().split('=', 1) for l in f if '=' in l)
+          tool_prefix = build_vars['android_tool_prefix']
+          ret = os.path.normpath(os.path.join(output_directory, tool_prefix))
+          # Maintain a trailing '/' if needed.
+          if tool_prefix.endswith(os.path.sep):
+            ret += os.path.sep
+      if ret:
         # Check for output directories that have a stale build_vars.txt.
         if os.path.isfile(ret + _SAMPLE_TOOL_SUFFIX):
           return ret
+        else:
+          logging.warn('Invalid default tool-prefix: %s', ret)
+          # TODO(huangs): For LLD, print more instruction on how to download
+          # or build the required tools.
     from_path = distutils.spawn.find_executable(_SAMPLE_TOOL_SUFFIX)
     if from_path:
       return from_path[:-7]
