@@ -21,6 +21,8 @@ class WaylandKeyboard {
     connection_ = connection;
   }
 
+  int modifiers() { return modifiers_; }
+
  private:
   // wl_keyboard_listener
   static void Keymap(void* data,
@@ -58,7 +60,7 @@ class WaylandKeyboard {
   WaylandConnection* connection_ = nullptr;
   wl::Object<wl_keyboard> obj_;
   EventDispatchCallback callback_;
-  uint8_t modifiers_ = 0;
+  int modifiers_ = 0;
 };
 
 }  // namespace ui

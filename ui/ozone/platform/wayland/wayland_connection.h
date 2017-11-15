@@ -50,6 +50,8 @@ class WaylandConnection : public PlatformEventSource,
   void SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
                        const gfx::Point& location);
 
+  int GetKeyboardModifiers();
+
  private:
   void Flush();
   void DispatchUiEvent(Event* event);

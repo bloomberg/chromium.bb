@@ -22,6 +22,8 @@ class WaylandPointer {
     cursor_->Init(obj_.get(), connection_);
   }
 
+  int GetFlagsWithKeyboardModifiers();
+
   WaylandCursor* cursor() { return cursor_.get(); }
 
  private:
@@ -59,6 +61,10 @@ class WaylandPointer {
   EventDispatchCallback callback_;
   gfx::PointF location_;
   int flags_ = 0;
+
+  // Keeps track of current modifiers. These are needed in order to properly
+  // update |flags_| with newest modifiers.
+  int keyboard_modifiers_ = 0;
 };
 
 }  // namespace ui
