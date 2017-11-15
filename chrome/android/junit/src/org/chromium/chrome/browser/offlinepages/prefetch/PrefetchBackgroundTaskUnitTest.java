@@ -120,6 +120,7 @@ public class PrefetchBackgroundTaskUnitTest {
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 
         doAnswer(new Answer() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 mPrefetchBackgroundTask.setNativeTask(1);
                 return Boolean.TRUE;

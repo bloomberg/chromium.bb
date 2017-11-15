@@ -31,6 +31,7 @@ public class BarcodeDetectionImplTest {
 
         final ArrayBlockingQueue<BarcodeDetectionResult[]> queue = new ArrayBlockingQueue<>(1);
         detector.detect(mojoBitmap, new BarcodeDetection.DetectResponse() {
+            @Override
             public void call(BarcodeDetectionResult[] results) {
                 queue.add(results);
             }

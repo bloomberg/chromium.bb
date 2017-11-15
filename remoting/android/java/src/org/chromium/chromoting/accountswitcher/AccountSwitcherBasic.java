@@ -75,6 +75,7 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
         mAccountName = (TextView) mAccountsUi.findViewById(R.id.account_name);
         Button chooseAccount = (Button) mAccountsUi.findViewById(R.id.choose_account);
         chooseAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
             public void onClick(View v) {
                 onChooseAccount();
             }

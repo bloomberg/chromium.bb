@@ -83,6 +83,7 @@ public class OfflinePageBridgeUnitTest {
         public long lastDeletedOfflineId;
         public ClientId lastDeletedClientId;
 
+        @Override
         public void offlinePageDeleted(DeletedPageInfo deletedPage) {
             lastDeletedOfflineId = deletedPage.getOfflineId();
             lastDeletedClientId = deletedPage.getClientId();

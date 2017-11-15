@@ -56,6 +56,7 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
         mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 
+    @Override
     @After
     public void tearDown() {
         CommandLine.reset();

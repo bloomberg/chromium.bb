@@ -81,6 +81,7 @@ class BackgroundTaskSchedulerUma {
         }
 
         /** Converts cached UMA entry to a string in format: EVENT:VALUE:COUNT. */
+        @Override
         public String toString() {
             return mEvent + SEPARATOR + mValue + SEPARATOR + mCount;
         }

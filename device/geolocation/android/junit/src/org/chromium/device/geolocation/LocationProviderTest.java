@@ -148,6 +148,7 @@ public class LocationProviderTest {
         mGoogleApiClient = Mockito.mock(GoogleApiClient.class);
         mGoogleApiClientIsConnected = false;
         doAnswer(new Answer<Boolean>() {
+            @Override
             public Boolean answer(InvocationOnMock invocation) {
                 return mGoogleApiClientIsConnected;
             }
@@ -156,6 +157,7 @@ public class LocationProviderTest {
                 .isConnected();
 
         doAnswer(new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) {
                 mGoogleApiClientIsConnected = true;
                 return null;
@@ -165,6 +167,7 @@ public class LocationProviderTest {
                 .connect();
 
         doAnswer(new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) {
                 mGoogleApiClientIsConnected = false;
                 return null;

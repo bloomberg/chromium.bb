@@ -24,11 +24,13 @@ public class BaseActivityInstrumentationTestCase<T extends Activity>
         super(activityClass);
     }
 
+    @Override
     @CallSuper
     protected void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     @CallSuper
     protected void tearDown() throws Exception {
         super.tearDown();

@@ -83,6 +83,7 @@ public class InvalidationClientServiceTest extends
         setupService();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         if (InvalidationClientService.getIsClientStartedForTest()) {

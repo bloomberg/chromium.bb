@@ -85,6 +85,7 @@ public class CompositorSurfaceManagerTest {
             private int mFormat = PixelFormat.UNKNOWN;
             private final MyFakeSurface mSurface = new MyFakeSurface();
 
+            @Override
             @Implementation
             public void setFormat(int format) {
                 mFormat = format;
@@ -107,6 +108,7 @@ public class CompositorSurfaceManagerTest {
 
         public MyShadowSurfaceView() {}
 
+        @Override
         @Implementation
         public SurfaceHolder getHolder() {
             return getMyFakeSurfaceHolder();

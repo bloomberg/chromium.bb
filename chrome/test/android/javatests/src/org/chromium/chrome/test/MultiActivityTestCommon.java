@@ -72,6 +72,7 @@ final class MultiActivityTestCommon {
             throws InterruptedException, TimeoutException {
         final CallbackHelper newTabCreatorHelper = new CallbackHelper();
         activity.getTabModelSelector().addObserver(new EmptyTabModelSelectorObserver() {
+            @Override
             public void onNewTabCreated(Tab tab) {
                 newTabCreatorHelper.notifyCalled();
             }

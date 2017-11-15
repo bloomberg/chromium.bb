@@ -144,6 +144,7 @@ public class Event<ParamT> {
             Preconditions.notNull(mEvent);
         }
 
+        @Override
         public final void run(ParamT p) {
             synchronized (mLock) {
                 if (mOwner.contains(mEvent)) {

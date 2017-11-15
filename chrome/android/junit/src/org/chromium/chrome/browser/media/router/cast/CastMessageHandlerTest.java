@@ -88,11 +88,13 @@ public class CastMessageHandlerTest {
         clientIds.add(CLIENT_ID1);
         clientIds.add(CLIENT_ID2);
         doAnswer(new Answer() {
-                public Object answer(InvocationOnMock invocation) {
-                    return clientIds;
-                }
-            })
-                .when(mRouteProvider).getClients();
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                return clientIds;
+            }
+        })
+                .when(mRouteProvider)
+                .getClients();
         doNothing().when(mRouteProvider).onMessage(anyString(), anyString());
         doNothing().when(mRouteProvider).onMessageSentResult(anyBoolean(), anyInt());
     }

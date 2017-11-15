@@ -19,6 +19,7 @@ import java.util.Map;
 public class RobotiumBundleGenerator implements ResultsBundleGenerator {
     private static final String TAG = "RobotiumBundleGenerator";
 
+    @Override
     public List<ResultsBundleGenerator.TestCaseResult> generateIntermediateTestResults(
             Map<String, ResultsBundleGenerator.TestResult> rawResults) {
         if (rawResults.isEmpty()) {
@@ -77,6 +78,7 @@ public class RobotiumBundleGenerator implements ResultsBundleGenerator {
         return testCaseResultList;
     }
 
+    @Override
     public Bundle generate(int testsPassed, int testsFailed, int testsErrored, int totalTests) {
         Bundle resultsBundle = new Bundle();
         StringBuilder resultBuilder = new StringBuilder();

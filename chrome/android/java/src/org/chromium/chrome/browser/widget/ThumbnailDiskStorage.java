@@ -79,6 +79,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     long mSizeBytes;
 
     private class InitTask extends AsyncTask<Void, Void, Void> {
+        @Override
         protected Void doInBackground(Void... params) {
             initDiskCache();
             return null;
@@ -86,6 +87,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     }
 
     private class ClearTask extends AsyncTask<Void, Void, Void> {
+        @Override
         protected Void doInBackground(Void... params) {
             clearDiskCache();
             return null;

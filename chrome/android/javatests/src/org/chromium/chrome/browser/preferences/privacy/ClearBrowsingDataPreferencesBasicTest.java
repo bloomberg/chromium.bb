@@ -71,6 +71,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
             mSyncable = syncable;
         }
 
+        @Override
         public Set<Integer> getActiveDataTypes() {
             if (mSyncable) {
                 return CollectionUtil.newHashSet(ModelType.HISTORY_DELETE_DIRECTIVES);

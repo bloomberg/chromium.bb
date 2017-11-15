@@ -177,6 +177,7 @@ public class MediaNotificationManagerTestBase {
         mService = spy(new MockListenerService());
 
         doAnswer(new Answer() {
+            @Override
             public Object answer(InvocationOnMock invocation) {
                 mService.onDestroy();
                 mService = null;
