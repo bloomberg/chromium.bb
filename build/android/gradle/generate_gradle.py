@@ -42,10 +42,6 @@ _GRADLE_BUILD_FILE = 'build.gradle'
 _MODULE_ALL = '_all'
 
 _DEFAULT_TARGETS = [
-    # TODO(agrieve): .build_config seem not quite right for this target
-    # because it has resources as deps of android_apk() rather than using an
-    #  android_library() intermediate target.
-    # '//android_webview:system_webview_apk',
     '//android_webview/test/embedded_test_server:aw_net_test_support_apk',
     '//android_webview/test:webview_instrumentation_apk',
     '//android_webview/test:webview_instrumentation_test_apk',
@@ -57,6 +53,7 @@ _DEFAULT_TARGETS = [
     '//chrome/android:chrome_sync_shell_test_apk',
     '//content/public/android:content_junit_tests',
     '//content/shell/android:content_shell_apk',
+    '//tools/android/errorprone_plugin:errorprone_plugin_java',
 ]
 
 _EXCLUDED_PREBUILT_JARS = [
@@ -727,7 +724,10 @@ def main():
                       default=os.path.join('$CHROMIUM_OUTPUT_DIR', 'gradle'))
   parser.add_argument('--all',
                       action='store_true',
-                      help='Generate all java targets (slows down IDE)')
+                      help='Include all .java files reachable from any '
+                           'apk/test/binary target. On by default unless '
+                           '--split-projects is used (--split-projects can '
+                           'slow down Studio given too many targets).')
   parser.add_argument('--use-gradle-process-resources',
                       action='store_true',
                       help='Have gradle generate R.java rather than ninja')
@@ -763,16 +763,20 @@ def main():
       args.canary)
   logging.warning('Creating project at: %s', generator.project_dir)
 
+  args.all = args.all or not args.split_projects
+
+  targets_from_args = set(args.targets or _DEFAULT_TARGETS)
+  if args.extra_targets:
+    targets_from_args.update(args.extra_targets)
+
   if args.all:
     # Run GN gen if necessary (faster than running "gn gen" in the no-op case).
     _RunNinja(constants.GetOutDirectory(), ['build.ninja'])
     # Query ninja for all __build_config targets.
     targets = _QueryForAllGnTargets(output_dir)
   else:
-    targets = args.targets or _DEFAULT_TARGETS
-    if args.extra_targets:
-      targets.extend(args.extra_targets)
-    targets = [re.sub(r'_test_apk$', '_test_apk__apk', t) for t in targets]
+    targets = [re.sub(r'_test_apk$', '_test_apk__apk', t)
+               for t in targets_from_args]
     # TODO(wnwen): Utilize Gradle's test constructs for our junit tests?
     targets = [re.sub(r'_junit_tests$', '_junit_tests__java_binary', t)
                for t in targets]
@@ -782,16 +786,19 @@ def main():
   logging.warning('Building .build_config files...')
   _RunNinja(output_dir, [e.NinjaBuildConfigTarget() for e in main_entries])
 
-  if args.split_projects:
+  if args.all:
     # There are many unused libraries, so restrict to those that are actually
-    # used when using --all with individual project entries.
-    if args.all:
-      main_entries = [e for e in main_entries if (
-          e.GetType() == 'android_apk' or
-          e.GnTarget().endswith('_test_apk__apk') or
-          e.GnTarget().endswith('_junit_tests__java_binary'))]
-    main_entries = _FindAllProjectEntries(main_entries)
-    logging.info('Found %d dependent build_config targets.', len(main_entries))
+    # used by apks/binaries/tests or that are explicitly mentioned in --targets.
+    main_entries = [e for e in main_entries if (
+        e.GetType() in ('android_apk', 'java_binary') or
+        e.GnTarget() in targets_from_args or
+        e.GnTarget().endswith('_test_apk__apk') or
+        e.GnTarget().endswith('_junit_tests__java_binary'))]
+
+    if args.split_projects:
+      main_entries = _FindAllProjectEntries(main_entries)
+
+  logging.info('Generating for %d targets.', len(main_entries))
 
   entries = [e for e in _CombineTestEntries(main_entries) if e.IsValid()]
   logging.info('Creating %d projects for targets.', len(entries))
