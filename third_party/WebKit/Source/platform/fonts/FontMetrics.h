@@ -25,9 +25,12 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/MathExtras.h"
 
+#include <SkPaint.h>
+
 namespace blink {
 
 const unsigned kGDefaultUnitsPerEm = 1000;
+class FontPlatformData;
 
 class FontMetrics {
   DISALLOW_NEW();
@@ -154,6 +157,19 @@ class FontMetrics {
   void SetUnderlinePosition(float underline_position) {
     underline_position_ = underline_position;
   }
+
+  // Unfortunately we still need to keep metrics adjustments for certain Mac
+  // fonts, see crbug.com/445830. Also, a potentially better solution for the
+  // subpixel_ascent_descent flag would be to move line layout to LayoutUnit
+  // instead of int boundaries, see crbug.com/707807 and crbug.com/706298.
+  static void AscentDescentWithHacks(
+      float& ascent,
+      float& descent,
+      unsigned& visual_overflow_inflation_for_ascent,
+      unsigned& visual_overflow_inflation_for_descent,
+      const FontPlatformData&,
+      const SkPaint&,
+      bool subpixel_ascent_descent = false);
 
  private:
   friend class SimpleFontData;
