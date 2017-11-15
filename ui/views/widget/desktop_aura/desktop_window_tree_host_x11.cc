@@ -26,6 +26,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/layout.h"
+#include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/base/x/x11_window_event_manager.h"
@@ -55,7 +56,6 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_observer_x11.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_window_move_client.h"
-#include "ui/views/widget/desktop_aura/x11_pointer_grab.h"
 #include "ui/views/widget/desktop_aura/x11_window_event_filter.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
@@ -1267,7 +1267,7 @@ void DesktopWindowTreeHostX11::SetCapture() {
 
   // If the pointer is already in |xwindow_|, we will not get a crossing event
   // with a mode of NotifyGrab, so we must record the grab state manually.
-  has_pointer_grab_ |= !GrabPointer(xwindow_, true, x11::None);
+  has_pointer_grab_ |= !ui::GrabPointer(xwindow_, true, x11::None);
 }
 
 void DesktopWindowTreeHostX11::ReleaseCapture() {
@@ -1276,7 +1276,7 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     // the topmost window underneath the mouse so the capture release being
     // asynchronous is likely inconsequential.
     g_current_capture = NULL;
-    UngrabPointer();
+    ui::UngrabPointer();
     has_pointer_grab_ = false;
 
     OnHostLostWindowCapture();
