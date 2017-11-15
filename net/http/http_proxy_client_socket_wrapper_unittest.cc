@@ -115,6 +115,10 @@ class HttpProxyClientSocketWrapperTest
         store_server_configs_in_properties_,
         /*mark_quic_broken_when_network_blackholes=*/false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
+        /*max_time_before_crypto_handshake_seconds=*/
+        kMaxTimeForCryptoHandshakeSecs,
+        /*max_idle_time_before_crypto_handshake_seconds=*/
+        kInitialIdleTimeoutSecs,
         /*connect_using_default_network=*/true,
         migrate_sessions_on_network_change_, migrate_sessions_early_,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,

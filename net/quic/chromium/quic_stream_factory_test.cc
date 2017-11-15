@@ -198,6 +198,9 @@ class QuicStreamFactoryTestBase {
         store_server_configs_in_properties_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         reduced_ping_timeout_seconds_(kPingTimeoutSecs),
+        max_time_before_crypto_handshake_seconds_(
+            kMaxTimeForCryptoHandshakeSecs),
+        max_idle_time_before_crypto_handshake_seconds_(kInitialIdleTimeoutSecs),
         migrate_sessions_on_network_change_(false),
         migrate_sessions_early_(false),
         allow_server_migration_(false),
@@ -218,6 +221,8 @@ class QuicStreamFactoryTestBase {
         kDefaultMaxPacketSize, string(), store_server_configs_in_properties_,
         /*mark_quic_broken_when_network_blackholes*/ false,
         idle_connection_timeout_seconds_, reduced_ping_timeout_seconds_,
+        max_time_before_crypto_handshake_seconds_,
+        max_idle_time_before_crypto_handshake_seconds_,
         /*connect_using_default_network*/ true,
         migrate_sessions_on_network_change_, migrate_sessions_early_,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
@@ -736,6 +741,8 @@ class QuicStreamFactoryTestBase {
   bool store_server_configs_in_properties_;
   int idle_connection_timeout_seconds_;
   int reduced_ping_timeout_seconds_;
+  int max_time_before_crypto_handshake_seconds_;
+  int max_idle_time_before_crypto_handshake_seconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
   bool allow_server_migration_;
@@ -5363,6 +5370,22 @@ TEST_P(QuicStreamFactoryTest, HostResolverUsesRequestPriority) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+// Passes |max_time_before_crypto_handshake_seconds| and
+// |max_idle_time_before_crypto_handshake_seconds| to QuicStreamFactory, then
+// checks that its internal QuicConfig is correct.
+TEST_P(QuicStreamFactoryTest, ConfigMaxTimeBeforeCryptoHandshake) {
+  max_time_before_crypto_handshake_seconds_ = 11;
+  max_idle_time_before_crypto_handshake_seconds_ = 13;
+
+  Initialize();
+
+  const QuicConfig* config = QuicStreamFactoryPeer::GetConfig(factory_.get());
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(11),
+            config->max_time_before_crypto_handshake());
+  EXPECT_EQ(QuicTime::Delta::FromSeconds(13),
+            config->max_idle_time_before_crypto_handshake());
 }
 
 }  // namespace test

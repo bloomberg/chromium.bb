@@ -160,14 +160,21 @@ void SetInitialRttEstimate(base::TimeDelta estimate,
     config->SetInitialRoundTripTimeUsToSend(estimate.InMicroseconds());
 }
 
-QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
-                                const QuicTagVector& client_connection_options,
-                                int idle_connection_timeout_seconds) {
+QuicConfig InitializeQuicConfig(
+    const QuicTagVector& connection_options,
+    const QuicTagVector& client_connection_options,
+    int idle_connection_timeout_seconds,
+    int max_time_before_crypto_handshake_seconds,
+    int max_idle_time_before_crypto_handshake_seconds) {
   DCHECK_GT(idle_connection_timeout_seconds, 0);
   QuicConfig config;
   config.SetIdleNetworkTimeout(
       QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds),
       QuicTime::Delta::FromSeconds(idle_connection_timeout_seconds));
+  config.set_max_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(max_time_before_crypto_handshake_seconds));
+  config.set_max_idle_time_before_crypto_handshake(QuicTime::Delta::FromSeconds(
+      max_idle_time_before_crypto_handshake_seconds));
   config.SetConnectionOptionsToSend(connection_options);
   config.SetClientConnectionOptions(client_connection_options);
   return config;
@@ -656,6 +663,8 @@ QuicStreamFactory::QuicStreamFactory(
     bool mark_quic_broken_when_network_blackholes,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
+    int max_time_before_crypto_handshake_seconds,
+    int max_idle_time_before_crypto_handshake_seconds,
     bool connect_using_default_network,
     bool migrate_sessions_on_network_change,
     bool migrate_sessions_early,
@@ -679,9 +688,12 @@ QuicStreamFactory::QuicStreamFactory(
       max_packet_length_(max_packet_length),
       clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
-      config_(InitializeQuicConfig(connection_options,
-                                   client_connection_options,
-                                   idle_connection_timeout_seconds)),
+      config_(
+          InitializeQuicConfig(connection_options,
+                               client_connection_options,
+                               idle_connection_timeout_seconds,
+                               max_time_before_crypto_handshake_seconds,
+                               max_idle_time_before_crypto_handshake_seconds)),
       crypto_config_(
           std::make_unique<ProofVerifierChromium>(cert_verifier,
                                                   ct_policy_enforcer,

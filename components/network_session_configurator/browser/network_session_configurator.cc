@@ -196,6 +196,30 @@ int GetQuicReducedPingTimeoutSeconds(
   return 0;
 }
 
+int GetQuicMaxTimeBeforeCryptoHandshakeSeconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(quic_trial_params,
+                            "max_time_before_crypto_handshake_seconds"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
+int GetQuicMaxIdleTimeBeforeCryptoHandshakeSeconds(
+    const VariationParameters& quic_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(quic_trial_params,
+                            "max_idle_time_before_crypto_handshake_seconds"),
+          &value)) {
+    return value;
+  }
+  return 0;
+}
+
 bool ShouldQuicRaceCertVerification(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -294,6 +318,18 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     if (reduced_ping_timeout_seconds > 0 &&
         reduced_ping_timeout_seconds < net::kPingTimeoutSecs) {
       params->quic_reduced_ping_timeout_seconds = reduced_ping_timeout_seconds;
+    }
+    int max_time_before_crypto_handshake_seconds =
+        GetQuicMaxTimeBeforeCryptoHandshakeSeconds(quic_trial_params);
+    if (max_time_before_crypto_handshake_seconds > 0) {
+      params->quic_max_time_before_crypto_handshake_seconds =
+          max_time_before_crypto_handshake_seconds;
+    }
+    int max_idle_time_before_crypto_handshake_seconds =
+        GetQuicMaxIdleTimeBeforeCryptoHandshakeSeconds(quic_trial_params);
+    if (max_idle_time_before_crypto_handshake_seconds > 0) {
+      params->quic_max_idle_time_before_crypto_handshake_seconds =
+          max_idle_time_before_crypto_handshake_seconds;
     }
     params->quic_race_cert_verification =
         ShouldQuicRaceCertVerification(quic_trial_params);
