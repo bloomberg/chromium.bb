@@ -74,12 +74,10 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
 
 std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
     const PendingScript* pending_script) {
-  return GetTraceArgsForScriptElement(
-      pending_script->GetElement(), pending_script->StartingPosition(),
-      (pending_script &&
-       pending_script->GetScriptType() == ScriptType::kClassic)
-          ? pending_script->UrlForClassicScript()
-          : NullURL());
+  DCHECK(pending_script);
+  return GetTraceArgsForScriptElement(pending_script->GetElement(),
+                                      pending_script->StartingPosition(),
+                                      pending_script->UrlForTracing());
 }
 
 void DoExecuteScript(PendingScript* pending_script, const KURL& document_url) {

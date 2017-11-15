@@ -97,9 +97,11 @@ class CORE_EXPORT PendingScript
   virtual bool StartStreamingIfPossible(ScriptStreamer::Type, WTF::Closure) = 0;
   virtual bool IsCurrentlyStreaming() const = 0;
 
-  // The following two methods are used for document.write() intervention and
-  // have effects only for classic scripts.
-  virtual KURL UrlForClassicScript() const = 0;
+  // Used only for tracing, and can return a null URL.
+  // TODO(hiroshige): It's preferable to return the base URL consistently
+  // https://html.spec.whatwg.org/#concept-script-base-url
+  // but it requires further refactoring.
+  virtual KURL UrlForTracing() const = 0;
 
   // Used for DCHECK()s.
   bool IsExternalOrModule() const {

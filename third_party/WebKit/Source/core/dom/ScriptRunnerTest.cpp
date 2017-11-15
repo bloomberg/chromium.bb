@@ -34,7 +34,7 @@ class MockPendingScript : public PendingScript {
   MOCK_CONST_METHOD0(IsExternal, bool());
   MOCK_CONST_METHOD0(ErrorOccurred, bool());
   MOCK_CONST_METHOD0(WasCanceled, bool());
-  MOCK_CONST_METHOD0(UrlForClassicScript, KURL());
+  MOCK_CONST_METHOD0(UrlForTracing, KURL());
   MOCK_METHOD0(RemoveFromMemoryCache, void());
 
   MOCK_CONST_METHOD0(IsCurrentlyStreaming, bool());

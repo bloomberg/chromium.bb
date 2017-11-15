@@ -397,7 +397,7 @@ bool ClassicPendingScript::WasCanceled() const {
   return GetResource()->WasCanceled();
 }
 
-KURL ClassicPendingScript::UrlForClassicScript() const {
+KURL ClassicPendingScript::UrlForTracing() const {
   if (!is_external_ || !GetResource())
     return NullURL();
 
