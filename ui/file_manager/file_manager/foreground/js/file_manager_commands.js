@@ -348,23 +348,10 @@ var CommandHandler = function(fileManager, selectionHandler) {
       this.updateAvailability.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
-      'enable-external-drive-rename', function(enabled) {
-        CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = enabled;
-      }.bind(this));
-
-  chrome.commandLinePrivate.hasSwitch(
       'enable-zip-archiver-packer', function(enabled) {
         CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = enabled;
       }.bind(this));
 };
-
-/**
- * A flag that determines whether external disk rename feature is enabled or
- * not.
- * @type {boolean}
- * @private
- */
-CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = false;
 
 /**
  * A flag that determines whether zip archiver - packer is enabled or no.
@@ -979,26 +966,23 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
-    // TODO(klemenko): Remove flag below when 274041 gets implemented.
-    if (CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_) {
-      // Check if it is removable drive
-      var root = CommandUtil.getCommandEntry(event.target);
-      // |root| is null for unrecognized volumes. Do not enable rename command
-      // for such volumes because they need to be formatted prior to rename.
-      if (root != null) {
-        var location = root && fileManager.volumeManager.getLocationInfo(root);
-        var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
-        var writable = location && !location.isReadOnly;
-        var removable = location &&
-            location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
-        var canExecute = removable && writable && volumeInfo &&
-            CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
-                volumeInfo.diskFileSystemType) > -1;
-        event.canExecute = canExecute;
-        event.command.setHidden(!removable);
-        if (removable)
-          return;
-      }
+    // Check if it is removable drive
+    var root = CommandUtil.getCommandEntry(event.target);
+    // |root| is null for unrecognized volumes. Do not enable rename command
+    // for such volumes because they need to be formatted prior to rename.
+    if (root != null) {
+      var location = root && fileManager.volumeManager.getLocationInfo(root);
+      var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
+      var writable = location && !location.isReadOnly;
+      var removable = location &&
+          location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+      var canExecute = removable && writable && volumeInfo &&
+          CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
+              volumeInfo.diskFileSystemType) > -1;
+      event.canExecute = canExecute;
+      event.command.setHidden(!removable);
+      if (removable)
+        return;
     }
 
     // Check if it is file or folder
