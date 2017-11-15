@@ -2076,6 +2076,18 @@ ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   return root_window->GetHost()->GetInputMethod();
 }
 
+RenderWidgetHostViewBase*
+RenderWidgetHostViewAura::GetFocusedViewForTextSelection() {
+  // We obtain the TextSelection from focused RWH which is obtained from the
+  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
+  // and the focused RWH will be that of the embedder which is incorrect. In
+  // this case we should use TextSelection for |this| since RWHV for guest
+  // forwards text selection information to its platform view.
+  return is_guest_view_hack_
+             ? this
+             : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
+}
+
 void RenderWidgetHostViewAura::Shutdown() {
   if (!in_shutdown_) {
     in_shutdown_ = true;
@@ -2403,6 +2415,28 @@ void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
     RenderWidgetHostViewBase* updated_view) {
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
+
+#if defined(OS_WIN)
+  RenderWidgetHostViewBase* focused_view = GetFocusedViewForTextSelection();
+  if (!focused_view)
+    return;
+
+  // Some assistive software need to track the location of the caret.
+  if (!GetRenderWidgetHost() || !legacy_render_widget_host_HWND_)
+    return;
+
+  // Not using |GetCaretBounds| because it includes the whole of the selection,
+  // not just the focus.
+  const TextInputManager::SelectionRegion* region =
+      GetTextInputManager()->GetSelectionRegion(focused_view);
+  if (!region)
+    return;
+
+  const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
+      region->focus.edge_top_rounded().x(),
+      region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));
+  legacy_render_widget_host_HWND_->MoveCaretTo(caret_rect);
+#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::OnTextSelectionChanged(
@@ -2417,9 +2451,9 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
   // this case we should use TextSelection for |this| since RWHV for guest
   // forwards text selection information to its platform view.
   RenderWidgetHostViewBase* focused_view =
-      is_guest_view_hack_ ? this : GetFocusedWidget()
-                                       ? GetFocusedWidget()->GetView()
-                                       : nullptr;
+      is_guest_view_hack_
+          ? this
+          : GetFocusedWidget() ? GetFocusedWidget()->GetView() : nullptr;
 
   if (!focused_view)
     return;
@@ -2432,23 +2466,7 @@ void RenderWidgetHostViewAura::OnTextSelectionChanged(
     ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
     clipboard_writer.WriteText(selection->selected_text());
   }
-
-#elif defined(OS_WIN)
-  // Some assistive software need to track the location of the caret.
-  if (!GetRenderWidgetHost() || !legacy_render_widget_host_HWND_)
-    return;
-
-  // Not using |GetCaretBounds| because it includes the whole of the selection,
-  // not just the focus.
-  const TextInputManager::SelectionRegion* region =
-      GetTextInputManager()->GetSelectionRegion(focused_view);
-  if (!region)
-    return;
-  const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
-      region->focus.edge_top_rounded().x(),
-      region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));
-  legacy_render_widget_host_HWND_->MoveCaretTo(caret_rect);
-#endif  // defined(OS_WIN)
+#endif  // defined(USE_X11)
 }
 
 void RenderWidgetHostViewAura::SetPopupChild(
