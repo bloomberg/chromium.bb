@@ -208,7 +208,7 @@ FileTasks.create = function(
   });
 
   var defaultTaskPromise = tasksPromise.then(function(tasks) {
-    return FileTasks.getDefaultTask(tasks);
+    return FileTasks.getDefaultTask(tasks, taskHistory);
   });
 
   return Promise.all([tasksPromise, defaultTaskPromise]).then(function(args) {
@@ -487,18 +487,22 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
   if (this.defaultTask_ !== null) {
-    var nonGenericTasks = this.tasks_.filter(t => !t.isGenericFileHandler);
-    if (!this.defaultTask_.isDefault && nonGenericTasks.length >= 2 &&
-        !this.taskHistory_.getLastExecutedTime(this.defaultTask_.taskId)) {
-      this.showTaskPicker(
-          this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
-          '', function(task) {
-            this.execute(task.taskId);
-          }.bind(this), FileTasks.TaskPickerType.OpenWith);
-      return;
-    }
     this.executeInternal_(this.defaultTask_.taskId);
     callback(true, this.entries_);
+    return;
+  }
+
+  var nonGenericTasks = this.tasks_.filter(t => !t.isGenericFileHandler);
+  // If there is only one task that is not a generic file handler, it should be
+  // executed as a default task. If there are multiple tasks that are not
+  // generic file handlers, and none of them are considered as default, we show
+  // a task picker to ask the user to choose one.
+  if (nonGenericTasks.length >= 2) {
+    this.showTaskPicker(
+        this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
+        '', function(task) {
+          this.execute(task.taskId);
+        }.bind(this), FileTasks.TaskPickerType.OpenWith);
     return;
   }
 
@@ -996,28 +1000,29 @@ FileTasks.prototype.showTaskPicker = function(
 
 /**
  * Gets the default task from tasks. In case there is no such task (i.e. all
- * tasks are generic file handlers), then return opt_taskToUseIfNoDefault or
- * null.
+ * tasks are generic file handlers), then return null.
  *
  * @param {!Array<!Object>} tasks The list of tasks from where to choose the
  *     default task.
- * @param {!Object=} opt_taskToUseIfNoDefault The task to return in case there
- *     is no default task available in tasks.
- * @return {Object} opt_taskToUseIfNoDefault or null in case
- *     opt_taskToUseIfNoDefault is undefined.
+ * @param {!TaskHistory} taskHistory
+ * @return {Object} the default task, or null if no default task found.
  */
-FileTasks.getDefaultTask = function(tasks, opt_taskToUseIfNoDefault) {
+FileTasks.getDefaultTask = function(tasks, taskHistory) {
+  // 1. Default app set for MIME or file extension by user, or built-in app.
   for (var i = 0; i < tasks.length; i++) {
     if (tasks[i].isDefault) {
       return tasks[i];
     }
   }
-  // If we haven't picked a default task yet, then just pick the first one
-  // which is not generic file handler.
-  for (var i = 0; i < tasks.length; i++) {
-    if (!tasks[i].isGenericFileHandler) {
-      return tasks[i];
-    }
+  var nonGenericTasks = tasks.filter(t => !t.isGenericFileHandler);
+  // 2. Most recently executed non-generic task.
+  var latest = nonGenericTasks[0];
+  if (latest && taskHistory.getLastExecutedTime(latest.taskId)) {
+    return latest;
   }
-  return opt_taskToUseIfNoDefault || null;
+  // 3. Sole non-generic handler.
+  if (nonGenericTasks.length == 1) {
+    return nonGenericTasks[0];
+  }
+  return null;
 };
