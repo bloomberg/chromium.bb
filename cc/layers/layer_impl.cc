@@ -474,7 +474,7 @@ void LayerImpl::NoteLayerPropertyChangedFromPropertyTrees() {
 
 void LayerImpl::ValidateQuadResourcesInternal(viz::DrawQuad* quad) const {
 #if DCHECK_IS_ON()
-  const ResourceProvider* resource_provider =
+  const LayerTreeResourceProvider* resource_provider =
       layer_tree_impl_->resource_provider();
   for (viz::ResourceId resource_id : quad->resources)
     resource_provider->ValidateResource(resource_id);

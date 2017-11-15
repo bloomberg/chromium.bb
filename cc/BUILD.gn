@@ -632,6 +632,7 @@ cc_test("cc_unittests") {
     "raster/synchronous_task_graph_runner_unittest.cc",
     "raster/task_graph_work_queue_unittest.cc",
     "raster/texture_compressor_etc1_unittest.cc",
+    "resources/layer_tree_resource_provider_unittest.cc",
     "resources/resource_pool_unittest.cc",
     "resources/resource_provider_unittest.cc",
     "resources/resource_util_unittest.cc",

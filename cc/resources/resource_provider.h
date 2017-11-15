@@ -324,8 +324,6 @@ class CC_EXPORT ResourceProvider
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
 
-  void ValidateResource(viz::ResourceId id) const;
-
   GLenum GetImageTextureTarget(gfx::BufferUsage usage,
                                viz::ResourceFormat format) const;
 

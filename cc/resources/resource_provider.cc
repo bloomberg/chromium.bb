@@ -1058,12 +1058,6 @@ GLenum ResourceProvider::GetImageTextureTarget(
   return found->second;
 }
 
-void ResourceProvider::ValidateResource(viz::ResourceId id) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(id);
-  DCHECK(resources_.find(id) != resources_.end());
-}
-
 GLES2Interface* ResourceProvider::ContextGL() const {
   viz::ContextProvider* context_provider = compositor_context_provider_;
   return context_provider ? context_provider->ContextGL() : nullptr;
