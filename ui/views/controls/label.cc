@@ -351,8 +351,17 @@ gfx::Size Label::GetMinimumSize() const {
     size.set_width(gfx::Canvas::GetStringWidth(
         base::string16(gfx::kEllipsisUTF16), font_list()));
   }
-  if (!multi_line())
-    size.SetToMin(GetTextSize());
+
+  if (!multi_line()) {
+    if (elide_behavior_ == gfx::NO_ELIDE) {
+      // If elision is disabled on single-line Labels, use text size as minimum.
+      // This is OK because clients can use |gfx::ElideBehavior::TRUNCATE|
+      // to get a non-eliding Label that should size itself less aggressively.
+      size.SetToMax(GetTextSize());
+    } else {
+      size.SetToMin(GetTextSize());
+    }
+  }
   size.Enlarge(GetInsets().width(), GetInsets().height());
   return size;
 }
