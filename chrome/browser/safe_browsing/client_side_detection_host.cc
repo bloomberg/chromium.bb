@@ -225,10 +225,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       return;
     }
 
-    if (database_manager_->IsMalwareKillSwitchOn()) {
-      malware_reason = NO_CLASSIFY_KILLSWITCH;
-    }
-
     // Query the CSD Whitelist asynchronously. We're already on the IO thread so
     // can call WhitelistCheckerClient directly.
     base::Callback<void(bool)> result_callback =

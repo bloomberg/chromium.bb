@@ -470,20 +470,10 @@ ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
   return ThreatSource::LOCAL_PVER4;
 }
 
-bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return false;
-}
-
 bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
   // TODO(vakh): Investigate the possibility of using a command line switch for
   // this instead.
   return true;
-}
-
-bool V4LocalDatabaseManager::IsMalwareKillSwitchOn() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return false;
 }
 
 bool V4LocalDatabaseManager::IsSupported() const {

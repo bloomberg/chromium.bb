@@ -108,17 +108,7 @@ safe_browsing::ThreatSource TestSafeBrowsingDatabaseManager::GetThreatSource()
   return safe_browsing::ThreatSource::UNKNOWN;
 }
 
-bool TestSafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool TestSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-bool TestSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   NOTIMPLEMENTED();
   return false;
 }

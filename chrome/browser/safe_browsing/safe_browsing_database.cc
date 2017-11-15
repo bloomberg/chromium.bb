@@ -83,17 +83,6 @@ const base::FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
 // the whitelist will be considered a match.
 const size_t kMaxWhitelistSize = 5000;
 
-// If the hash of this exact expression is on a whitelist then all
-// lookups to this whitelist will be considered a match.
-const char kWhitelistKillSwitchUrl[] =
-    "sb-ssl.google.com/safebrowsing/csd/killswitch";  // Don't change this!
-
-// If the hash of this exact expression is on a whitelist then the
-// malware IP blacklisting feature will be disabled in csd.
-// Don't change this!
-const char kMalwareIPKillSwitchUrl[] =
-    "sb-ssl.google.com/safebrowsing/csd/killswitch_malware";
-
 const size_t kMaxIpPrefixSize = 128;
 const size_t kMinIpPrefixSize = 1;
 
@@ -1632,15 +1621,8 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
   }
   std::sort(new_whitelist.begin(), new_whitelist.end(), SBFullHashLess);
 
-  SBFullHash kill_switch = SBFullHashForString(kWhitelistKillSwitchUrl);
-  if (std::binary_search(new_whitelist.begin(), new_whitelist.end(),
-                         kill_switch, SBFullHashLess)) {
-    // The kill switch is whitelisted hence we whitelist all URLs.
-    state_manager_.BeginWriteTransaction()->WhitelistEverything(whitelist_id);
-  } else {
-    state_manager_.BeginWriteTransaction()->SwapSBWhitelist(whitelist_id,
-                                                            &new_whitelist);
-  }
+  state_manager_.BeginWriteTransaction()->SwapSBWhitelist(whitelist_id,
+                                                          &new_whitelist);
 }
 
 void SafeBrowsingDatabaseNew::LoadIpBlacklist(
@@ -1680,19 +1662,6 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
   }
 
   state_manager_.BeginWriteTransaction()->swap_ip_blacklist(&new_blacklist);
-}
-
-bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
-  SBFullHash malware_kill_switch = SBFullHashForString(kMalwareIPKillSwitchUrl);
-  std::vector<SBFullHash> full_hashes;
-  full_hashes.push_back(malware_kill_switch);
-  return ContainsWhitelistedHashes(SBWhitelistId::CSD, full_hashes);
-}
-
-bool SafeBrowsingDatabaseNew::IsCsdWhitelistKillSwitchOn() {
-  return state_manager_.BeginReadTransaction()
-      ->GetSBWhitelist(SBWhitelistId::CSD)
-      ->second;
 }
 
 SafeBrowsingDatabaseNew::PrefixGetHashCache*
