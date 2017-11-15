@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -10,17 +9,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
-#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 
-class DeferredMediaBrowserTest : public InProcessBrowserTest {
- public:
-#if defined(OS_ANDROID)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kIgnoreAutoplayRestrictionsForTests);
-  }
-#endif
-};
+using DeferredMediaBrowserTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(DeferredMediaBrowserTest, BackgroundMediaIsDeferred) {
   // Navigate to a video file, which would autoplay in the foreground, but won't
@@ -58,8 +49,8 @@ IN_PROC_BROWSER_TEST_F(DeferredMediaBrowserTest, BackgroundMediaIsDeferred) {
             browser()->tab_strip_model()->GetActiveWebContents());
 
   // If everything worked, we should see "playing" and not "ended".
-  const base::string16 playing_str = base::UTF8ToUTF16("playing");
-  const base::string16 ended_str = base::UTF8ToUTF16("ended");
+  const base::string16 playing_str = base::ASCIIToUTF16("playing");
+  const base::string16 ended_str = base::ASCIIToUTF16("ended");
   content::TitleWatcher watcher(background_contents, playing_str);
   watcher.AlsoWaitForTitle(ended_str);
   EXPECT_EQ(playing_str, watcher.WaitAndGetTitle());
