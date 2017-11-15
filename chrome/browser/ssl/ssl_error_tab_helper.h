@@ -39,6 +39,9 @@ class SSLErrorTabHelper
       std::unique_ptr<security_interstitials::SecurityInterstitialPage>
           blocking_page);
 
+  security_interstitials::SecurityInterstitialPage*
+  GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+
  private:
   explicit SSLErrorTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<SSLErrorTabHelper>;
