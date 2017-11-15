@@ -209,9 +209,8 @@ function test() {
     })
   ];
 
-  var logView = UI.panels.network._networkLogView;
   for (var request of requests)
-    logView._appendRequest(request);
+    NetworkLog.networkLog._onRequestStarted({data: request});
 
   /**
    * @this {CanvasRenderingContext2D}
