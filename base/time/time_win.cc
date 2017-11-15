@@ -75,15 +75,15 @@ int64_t CurrentWallclockMicroseconds() {
   return FileTimeToMicroseconds(ft);
 }
 
-// Time between resampling the un-granular clock for this API.  60 seconds.
-const int kMaxMillisecondsToAvoidDrift = 60 * Time::kMillisecondsPerSecond;
+// Time between resampling the un-granular clock for this API.
+constexpr TimeDelta kMaxTimeToAvoidDrift = TimeDelta::FromSeconds(60);
 
-int64_t initial_time = 0;
-TimeTicks initial_ticks;
+int64_t g_initial_time = 0;
+TimeTicks g_initial_ticks;
 
 void InitializeClock() {
-  initial_ticks = TimeTicks::Now();
-  initial_time = CurrentWallclockMicroseconds();
+  g_initial_ticks = TimeTicks::Now();
+  g_initial_time = CurrentWallclockMicroseconds();
 }
 
 // The two values that ActivateHighResolutionTimer uses to set the systemwide
@@ -132,14 +132,14 @@ bool SafeConvertToWord(int in, WORD* out) {
 
 // static
 Time Time::Now() {
-  if (initial_time == 0)
+  if (g_initial_time == 0)
     InitializeClock();
 
   // We implement time using the high-resolution timers so that we can get
   // timeouts which are smaller than 10-15ms.  If we just used
   // CurrentWallclockMicroseconds(), we'd have the less-granular timer.
   //
-  // To make this work, we initialize the clock (initial_time) and the
+  // To make this work, we initialize the clock (g_initial_time) and the
   // counter (initial_ctr).  To compute the initial time, we can check
   // the number of ticks that have elapsed, and compute the delta.
   //
@@ -149,15 +149,15 @@ Time Time::Now() {
     TimeTicks ticks = TimeTicks::Now();
 
     // Calculate the time elapsed since we started our timer
-    TimeDelta elapsed = ticks - initial_ticks;
+    TimeDelta elapsed = ticks - g_initial_ticks;
 
     // Check if enough time has elapsed that we need to resync the clock.
-    if (elapsed.InMilliseconds() > kMaxMillisecondsToAvoidDrift) {
+    if (elapsed > kMaxTimeToAvoidDrift) {
       InitializeClock();
       continue;
     }
 
-    return Time(elapsed + Time(initial_time));
+    return Time(elapsed + Time(g_initial_time));
   }
 }
 
@@ -165,7 +165,7 @@ Time Time::Now() {
 Time Time::NowFromSystemTime() {
   // Force resync.
   InitializeClock();
-  return Time(initial_time);
+  return Time(g_initial_time);
 }
 
 // static
@@ -695,7 +695,7 @@ double ThreadTicks::TSCTicksPerSecond() {
   double elapsed_time_seconds =
       perf_counter_ticks / static_cast<double>(perf_counter_frequency.QuadPart);
 
-  const double kMinimumEvaluationPeriodSeconds = 0.05;
+  static constexpr double kMinimumEvaluationPeriodSeconds = 0.05;
   if (elapsed_time_seconds < kMinimumEvaluationPeriodSeconds)
     return 0;
 

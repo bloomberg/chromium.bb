@@ -93,7 +93,7 @@ const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
 // the test launcher to people looking at the output (no output for a long
 // time is mysterious and gives no info about what is happening) 3) help
 // debugging in case the process hangs anyway.
-const int kOutputTimeoutSeconds = 15;
+constexpr TimeDelta kOutputTimeout = TimeDelta::FromSeconds(15);
 
 // Limit of output snippet lines when printing to stdout.
 // Avoids flooding the logs with amount of output that gums up
@@ -516,7 +516,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       force_run_broken_tests_(false),
       run_result_(true),
       watchdog_timer_(FROM_HERE,
-                      TimeDelta::FromSeconds(kOutputTimeoutSeconds),
+                      kOutputTimeout,
                       this,
                       &TestLauncher::OnOutputTimeout),
       parallel_jobs_(parallel_jobs) {}
@@ -1242,9 +1242,7 @@ scoped_refptr<TaskRunner> TestLauncher::GetTaskRunner() {
 }
 
 size_t NumParallelJobs() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  CommandLine::SwitchMap switches = command_line->GetSwitches();
-
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kTestLauncherJobs)) {
     // If the number of test launcher jobs was specified, return that number.
     size_t jobs = 0U;
@@ -1257,7 +1255,8 @@ size_t NumParallelJobs() {
       return 0U;
     }
     return jobs;
-  } else if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
+  }
+  if (command_line->HasSwitch(kGTestFilterFlag) && !BotModeEnabled()) {
     // Do not run jobs in parallel by default if we are running a subset of
     // the tests and if bot mode is off.
     return 1U;
