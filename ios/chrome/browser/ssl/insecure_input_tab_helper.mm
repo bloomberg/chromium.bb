@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
 #import "ios/web/public/navigation_item.h"
@@ -63,10 +64,10 @@ InsecureInputTabHelper* InsecureInputTabHelper::GetOrCreateForWebState(
 }
 
 void InsecureInputTabHelper::DidShowPasswordFieldInInsecureContext() {
-  DCHECK(!web::IsOriginSecure(web_state()->GetLastCommittedURL()));
+  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
 
   security_state::SSLStatusInputEventData* input_events =
-      GetOrCreateSSLStatusInputEventData(web_state());
+      GetOrCreateSSLStatusInputEventData(web_state_);
   if (!input_events)
     return;
 
@@ -74,15 +75,15 @@ void InsecureInputTabHelper::DidShowPasswordFieldInInsecureContext() {
   // shown, update the SSLStatusInputEventData.
   if (!input_events->input_events()->password_field_shown) {
     input_events->input_events()->password_field_shown = true;
-    web_state()->DidChangeVisibleSecurityState();
+    web_state_->DidChangeVisibleSecurityState();
   }
 }
 
 void InsecureInputTabHelper::DidInteractWithNonsecureCreditCardInput() {
-  DCHECK(!web::IsOriginSecure(web_state()->GetLastCommittedURL()));
+  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
 
   security_state::SSLStatusInputEventData* input_events =
-      GetOrCreateSSLStatusInputEventData(web_state());
+      GetOrCreateSSLStatusInputEventData(web_state_);
   if (!input_events)
     return;
 
@@ -90,15 +91,15 @@ void InsecureInputTabHelper::DidInteractWithNonsecureCreditCardInput() {
   // shown, update the SSLStatusInputEventData.
   if (!input_events->input_events()->credit_card_field_edited) {
     input_events->input_events()->credit_card_field_edited = true;
-    web_state()->DidChangeVisibleSecurityState();
+    web_state_->DidChangeVisibleSecurityState();
   }
 }
 
 void InsecureInputTabHelper::DidEditFieldInInsecureContext() {
-  DCHECK(!web::IsOriginSecure(web_state()->GetLastCommittedURL()));
+  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
 
   security_state::SSLStatusInputEventData* input_events =
-      GetOrCreateSSLStatusInputEventData(web_state());
+      GetOrCreateSSLStatusInputEventData(web_state_);
   if (!input_events)
     return;
 
@@ -106,20 +107,27 @@ void InsecureInputTabHelper::DidEditFieldInInsecureContext() {
   // update the SSLStatusInputEventData.
   if (!input_events->input_events()->insecure_field_edited) {
     input_events->input_events()->insecure_field_edited = true;
-    web_state()->DidChangeVisibleSecurityState();
+    web_state_->DidChangeVisibleSecurityState();
   }
 }
 
 InsecureInputTabHelper::InsecureInputTabHelper(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {
-  DCHECK(web_state);
+    : web_state_(web_state) {
+  web_state_->AddObserver(this);
 }
 
 void InsecureInputTabHelper::FormActivityRegistered(
     web::WebState* web_state,
     const web::FormActivityParams& params) {
+  DCHECK_EQ(web_state_, web_state);
   if (params.type == "input" &&
       !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
     DidEditFieldInInsecureContext();
   }
+}
+
+void InsecureInputTabHelper::WebStateDestroyed(web::WebState* web_state) {
+  DCHECK_EQ(web_state_, web_state);
+  web_state_->RemoveObserver(this);
+  web_state_ = nullptr;
 }
