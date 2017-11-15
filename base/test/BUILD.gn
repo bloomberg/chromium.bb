@@ -26,10 +26,8 @@ static_library("test_support") {
   testonly = true
   sources = [
     "../trace_event/trace_config_memory_test_util.h",
-    "android/java_handler_thread_for_testing.cc",
-    "android/java_handler_thread_for_testing.h",
-    "android/test_system_message_handler_link_android.cc",
-    "android/test_system_message_handler_link_android.h",
+    "android/java_handler_thread_helpers.cc",
+    "android/java_handler_thread_helpers.h",
     "copy_only_int.h",
     "fuzzed_data_provider.cc",
     "fuzzed_data_provider.h",
@@ -334,8 +332,7 @@ if (is_android) {
   generate_jni("base_unittests_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/ContentUriTestUtils.java",
-      "android/java/src/org/chromium/base/JavaHandlerThreadTest.java",
-      "android/java/src/org/chromium/base/TestSystemMessageHandler.java",
+      "android/java/src/org/chromium/base/JavaHandlerThreadHelpers.java",
       "android/java/src/org/chromium/base/TestUiThread.java",
     ]
     jni_package = "base"

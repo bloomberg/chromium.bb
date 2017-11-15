@@ -37,20 +37,9 @@
 #include "base/message_loop/message_pump_libevent.h"
 #endif
 
-#if defined(OS_ANDROID)
-namespace base {
-namespace android {
-
-class JavaMessageHandlerFactory;
-
-}  // namespace android
-}  // namespace base
-#endif  // defined(OS_ANDROID)
-
 namespace base {
 
 class ThreadTaskRunnerHandle;
-class WaitableEvent;
 
 // A MessageLoop is used to process events for a particular thread.  There is
 // at most one MessageLoop instance per thread.
@@ -443,7 +432,12 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   static MessageLoopForUI* current() {
     MessageLoop* loop = MessageLoop::current();
     DCHECK(loop);
+#if defined(OS_ANDROID)
+    DCHECK(loop->IsType(MessageLoop::TYPE_UI) ||
+           loop->IsType(MessageLoop::TYPE_JAVA));
+#else
     DCHECK(loop->IsType(MessageLoop::TYPE_UI));
+#endif
     return static_cast<MessageLoopForUI*>(loop);
   }
 
@@ -464,8 +458,7 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   // never be called. Instead use Start(), which will forward all the native UI
   // events to the Java message loop.
   void Start();
-  void StartForTesting(base::android::JavaMessageHandlerFactory* factory,
-                       WaitableEvent* test_done_event);
+
   // In Android there are cases where we want to abort immediately without
   // calling Quit(), in these cases we call Abort().
   void Abort();

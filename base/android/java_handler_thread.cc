@@ -60,7 +60,7 @@ void JavaHandlerThread::InitializeThread(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj,
                                          jlong event) {
   // TYPE_JAVA to get the Android java style message loop.
-  message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_JAVA));
+  message_loop_ = new base::MessageLoop(base::MessageLoop::TYPE_JAVA);
   StartMessageLoop();
   reinterpret_cast<base::WaitableEvent*>(event)->Signal();
 }
@@ -72,12 +72,12 @@ void JavaHandlerThread::StopThread(JNIEnv* env,
 
 void JavaHandlerThread::OnLooperStopped(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj) {
-  message_loop_ = nullptr;
+  delete message_loop_;
   CleanUp();
 }
 
 void JavaHandlerThread::StartMessageLoop() {
-  static_cast<MessageLoopForUI*>(message_loop_.get())->Start();
+  static_cast<MessageLoopForUI*>(message_loop_)->Start();
   Init();
 }
 
@@ -94,6 +94,17 @@ void JavaHandlerThread::StopMessageLoopForTesting() {
 void JavaHandlerThread::JoinForTesting() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JavaHandlerThread_joinThread(env, java_thread_);
+}
+
+void JavaHandlerThread::ListenForUncaughtExceptionsForTesting() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_JavaHandlerThread_listenForUncaughtExceptionsForTesting(env,
+                                                               java_thread_);
+}
+
+ScopedJavaLocalRef<jthrowable> JavaHandlerThread::GetUncaughtExceptionIfAny() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_JavaHandlerThread_getUncaughtExceptionIfAny(env, java_thread_);
 }
 
 } // namespace android

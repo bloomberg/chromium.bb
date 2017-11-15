@@ -34,7 +34,7 @@ class BASE_EXPORT JavaHandlerThread {
       const base::android::ScopedJavaLocalRef<jobject>& obj);
   virtual ~JavaHandlerThread();
 
-  base::MessageLoop* message_loop() const { return message_loop_.get(); }
+  base::MessageLoop* message_loop() const { return message_loop_; }
 
   // Gets the TaskRunner associated with the message loop.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
@@ -58,6 +58,10 @@ class BASE_EXPORT JavaHandlerThread {
   void StopMessageLoopForTesting();
   void JoinForTesting();
 
+  // See comment in JavaHandlerThread.java regarding use of this function.
+  void ListenForUncaughtExceptionsForTesting();
+  ScopedJavaLocalRef<jthrowable> GetUncaughtExceptionIfAny();
+
  protected:
   // Semantically the same as base::Thread#Init(), but unlike base::Thread the
   // Android Looper will already be running. This Init() call will still run
@@ -68,7 +72,7 @@ class BASE_EXPORT JavaHandlerThread {
   // loop ends. The Android Looper will also have been quit by this point.
   virtual void CleanUp() {}
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
+  base::MessageLoop* message_loop_ = nullptr;
 
  private:
   ScopedJavaGlobalRef<jobject> java_thread_;
