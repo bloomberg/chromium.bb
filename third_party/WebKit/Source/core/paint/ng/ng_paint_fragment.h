@@ -54,7 +54,7 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   // TODO(eae): Switch to using NG geometry types.
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
-  bool HasSelfPaintingLayer() const { return false; }
+  bool HasSelfPaintingLayer() const;
   LayoutRect VisualRect() const override { return visual_rect_; }
   LayoutRect VisualOverflowRect() const;
   LayoutRect OverflowClipRect(const LayoutPoint& location,
