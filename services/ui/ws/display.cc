@@ -78,6 +78,25 @@ void Display::Init(const display::ViewportMetrics& metrics,
   UpdateCursorConfig();
 }
 
+void Display::InitWindowManagerDisplayRoots() {
+  if (binding_) {
+    std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
+        new WindowManagerDisplayRoot(this));
+    WindowManagerDisplayRoot* display_root = display_root_ptr.get();
+    // For this case we never create additional displays roots, so any
+    // id works.
+    window_manager_display_root_map_[service_manager::mojom::kRootUserID] =
+        display_root_ptr.get();
+    WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
+    display_root->window_manager_state_ = window_tree->window_manager_state();
+    window_tree->window_manager_state()->AddWindowManagerDisplayRoot(
+        std::move(display_root_ptr));
+  } else {
+    CreateWindowManagerDisplayRootsFromFactories();
+  }
+  display_manager()->OnDisplayUpdated(display_);
+}
+
 int64_t Display::GetId() const {
   // TODO(tonikitoo): Implement a different ID for external window mode.
   return display_.id();
@@ -207,25 +226,6 @@ void Display::SetSize(const gfx::Size& size) {
 
 void Display::SetTitle(const std::string& title) {
   platform_display_->SetTitle(base::UTF8ToUTF16(title));
-}
-
-void Display::InitWindowManagerDisplayRoots() {
-  if (binding_) {
-    std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
-        new WindowManagerDisplayRoot(this));
-    WindowManagerDisplayRoot* display_root = display_root_ptr.get();
-    // For this case we never create additional displays roots, so any
-    // id works.
-    window_manager_display_root_map_[service_manager::mojom::kRootUserID] =
-        display_root_ptr.get();
-    WindowTree* window_tree = binding_->CreateWindowTree(display_root->root());
-    display_root->window_manager_state_ = window_tree->window_manager_state();
-    window_tree->window_manager_state()->AddWindowManagerDisplayRoot(
-        std::move(display_root_ptr));
-  } else {
-    CreateWindowManagerDisplayRootsFromFactories();
-  }
-  display_manager()->OnDisplayUpdated(display_);
 }
 
 void Display::CreateWindowManagerDisplayRootsFromFactories() {

@@ -6,6 +6,7 @@
 
 #include "ash/display/mirror_window_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
@@ -57,6 +58,10 @@ using MirrorWindowControllerTest = AshTestBase;
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
+  // MirrorWindowController is not used in the MUS or MASH configs.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   MirrorWindowTestApi test_api;
   aura::test::TestWindowDelegate test_window_delegate;
   test_window_delegate.set_window_component(HTTOP);
@@ -105,6 +110,10 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorBasic) {
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
+  // MirrorWindowController is not used in the MUS or MASH configs.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   MirrorWindowTestApi test_api;
   aura::test::TestWindowDelegate test_window_delegate;
   test_window_delegate.set_window_component(HTTOP);
@@ -161,6 +170,10 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorRotate) {
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
+  // MirrorWindowController is not used in the MUS or MASH configs.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   MirrorWindowTestApi test_api;
   display_manager()->SetMultiDisplayMode(display::DisplayManager::MIRRORING);
 
@@ -197,6 +210,10 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorLocations) {
 // TODO(weidongg/774795) Remove this test when multi mirroring is enabled by
 // default, because cursor compositing will be enabled for software mirroring.
 TEST_F(MirrorWindowControllerTest, MirrorCursorMoveOnEnter) {
+  // MirrorWindowController is not used in the MUS or MASH configs.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   aura::Env* env = aura::Env::GetInstance();
   Shell* shell = Shell::Get();
   WindowTreeHostManager* window_tree_host_manager =
@@ -292,6 +309,11 @@ TEST_F(MirrorWindowControllerTest, DockMode) {
 
 TEST_F(MirrorOnBootTest, MirrorOnBoot) {
   EXPECT_TRUE(display_manager()->IsInMirrorMode());
+
+  // MirrorWindowController is not used in the MUS or MASH configs.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   RunAllPendingInMessageLoop();
   MirrorWindowTestApi test_api;
   EXPECT_EQ(1U, test_api.GetHosts().size());

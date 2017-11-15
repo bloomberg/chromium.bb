@@ -33,6 +33,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -649,7 +650,9 @@ void WindowTreeHostManager::OnHostResized(aura::WindowTreeHost* host) {
   display::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->UpdateDisplayBounds(display.id(),
                                            host->GetBoundsInPixels())) {
-    mirror_window_controller_->UpdateWindow();
+    // The window server controls mirroring in Mus, not Ash.
+    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+      mirror_window_controller_->UpdateWindow();
     cursor_window_controller_->UpdateContainer();
   }
 }
@@ -658,7 +661,9 @@ void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
     const display::DisplayInfoList& info_list) {
   if (GetDisplayManager()->IsInMirrorMode() ||
       GetDisplayManager()->IsInUnifiedMode()) {
-    mirror_window_controller_->UpdateWindow(info_list);
+    // The window server controls mirroring in Mus, not Ash.
+    if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+      mirror_window_controller_->UpdateWindow(info_list);
     cursor_window_controller_->UpdateContainer();
   } else {
     NOTREACHED();
@@ -666,7 +671,9 @@ void WindowTreeHostManager::CreateOrUpdateMirroringDisplay(
 }
 
 void WindowTreeHostManager::CloseMirroringDisplayIfNotNecessary() {
-  mirror_window_controller_->CloseIfNotNecessary();
+  // The window server controls mirroring in Mus, not Ash.
+  if (aura::Env::GetInstance()->mode() == aura::Env::Mode::LOCAL)
+    mirror_window_controller_->CloseIfNotNecessary();
   // If cursor_compositing is enabled for large cursor, the cursor window is
   // always on the desktop display (the visible cursor on the non-desktop
   // display is drawn through compositor mirroring). Therefore, it's unnecessary

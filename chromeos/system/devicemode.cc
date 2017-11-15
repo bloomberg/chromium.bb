@@ -11,11 +11,10 @@
 namespace chromeos {
 
 bool IsRunningAsSystemCompositor() {
-  static bool is_running_as_system_compositor =
-      base::SysInfo::IsRunningOnChromeOS() ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceSystemCompositorMode);
-  return is_running_as_system_compositor;
+  static bool is_running_on_chrome_os = base::SysInfo::IsRunningOnChromeOS();
+  return is_running_on_chrome_os ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kForceSystemCompositorMode);
 }
 
 }  // namespace chromeos

@@ -28,8 +28,10 @@
 -CursorWindowControllerTest.ShouldEnableCursorCompositing
 -CursorWindowControllerTest.VisibilityTest
 
-# TODO: Display manager. http://crbug.com/695569
+# TODO: wire up mirroring and unified display. http://crbug.com/770243.
+-DisplayManagerTest.SoftwareMirroring
 -DisplayManagerTest.SoftwareMirroringWithCompositingCursor
+-DisplayManagerTest.SingleDisplayToSoftwareMirroring
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -DragWindowResizerTest.CursorDeviceScaleFactor
