@@ -22,10 +22,10 @@ class WebDatabaseImpl : public mojom::blink::WebDatabase {
 
  private:
   // blink::mojom::blink::Database
-  void UpdateSize(const scoped_refptr<SecurityOrigin>&,
+  void UpdateSize(const scoped_refptr<const SecurityOrigin>&,
                   const String& name,
                   int64_t size) override;
-  void CloseImmediately(const scoped_refptr<SecurityOrigin>&,
+  void CloseImmediately(const scoped_refptr<const SecurityOrigin>&,
                         const String& name) override;
 };
 

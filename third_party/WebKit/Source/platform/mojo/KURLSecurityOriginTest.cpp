@@ -22,7 +22,7 @@ class UrlTestImpl : public url::mojom::blink::UrlTest {
     std::move(callback).Run(in);
   }
 
-  void BounceOrigin(const scoped_refptr<SecurityOrigin>& in,
+  void BounceOrigin(const scoped_refptr<const SecurityOrigin>& in,
                     BounceOriginCallback callback) override {
     std::move(callback).Run(in);
   }
@@ -76,7 +76,7 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   // Test basic Origin serialization.
   scoped_refptr<SecurityOrigin> non_unique =
       SecurityOrigin::Create("http", "www.google.com", 80);
-  scoped_refptr<SecurityOrigin> output;
+  scoped_refptr<const SecurityOrigin> output;
   EXPECT_TRUE(proxy->BounceOrigin(non_unique, &output));
   EXPECT_TRUE(non_unique->IsSameSchemeHostPortAndSuborigin(output.get()));
   EXPECT_TRUE(non_unique->IsSameSchemeHostPort(output.get()));

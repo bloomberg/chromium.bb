@@ -180,7 +180,7 @@ unsigned long long DatabaseTracker::GetMaxSizeForDatabase(
   return database_size + space_available;
 }
 
-void DatabaseTracker::CloseDatabasesImmediately(SecurityOrigin* origin,
+void DatabaseTracker::CloseDatabasesImmediately(const SecurityOrigin* origin,
                                                 const String& name) {
   String origin_string = origin->ToRawString();
   MutexLocker open_database_map_lock(open_database_map_guard_);
