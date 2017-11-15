@@ -16,7 +16,6 @@ def _CommonChecks(input_api, output_api):
   results = []
 
   _UpdatePerfData(input_api)
-  _UpdateBenchmarkShardingMap(input_api)
   results.extend(_CheckNoUncommittedFiles(input_api, output_api))
 
   results.extend(_CheckWprShaFiles(input_api, output_api))
@@ -69,14 +68,6 @@ def _CheckExpectations(input_api, output_api):
     results.append(output_api.PresubmitError(
         'Validating story expectation data failed.', long_text=out))
   return results
-
-
-def _UpdateBenchmarkShardingMap(input_api):
-  perf_dir = input_api.PresubmitLocalPath()
-  _RunArgs([
-      input_api.python_executable,
-      input_api.os_path.join(perf_dir, 'generate_perf_sharding')],
-      input_api)
 
 
 def _UpdatePerfData(input_api):
