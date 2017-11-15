@@ -2936,8 +2936,11 @@
     <message name="IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was discarded.">
       Photo was discarded
     </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE" desc="The text on the button to switch the mode of the camera between photo and video.">
-    Switch camera mode
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_CAMERA" desc="The text on the button to switch the mode of the camera to photo.">
+    Switch to camera mode
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_SWITCH_MODE_TO_VIDEO" desc="The text on the button to switch the mode of the camera to video.">
+    Switch to video recorder
     </message>
     <message name="IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce a switch to photo mode for camera.">
       Photo mode entered

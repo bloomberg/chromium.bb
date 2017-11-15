@@ -49,7 +49,10 @@
           image-type="[[getImageType_(selectedItem_)]]"
           discard-image-label="[[i18nDynamic(locale, 'discardPhoto')]]"
           take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]"
-          switch-mode-label="[[i18nDynamic(locale, 'switchMode')]]"
+          switch-mode-to-camera-label="[[i18nDynamic(locale,
+              'switchModeToCamera')]]"
+          switch-mode-to-video-label="[[i18nDynamic(locale,
+              'switchModeToVideo')]]"
           camera-video-mode-enabled="[[cameraVideoModeEnabled]]">
       </cr-picture-pane>
       <cr-picture-list id="pictureList"
@@ -59,8 +62,7 @@
           selected-item="{{selectedItem_}}"
           old-image-label="[[i18nDynamic(locale, 'photoFromCamera')]]"
           profile-image-label="[[i18nDynamic(locale, 'profilePhoto')]]"
-          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]"
-          switch-mode-label="[[i18nDynamic(locale, 'switchMode')]]">
+          take-photo-label="[[i18nDynamic(locale, 'takePhoto')]]">
       </cr-picture-list>
     </div>
   </template>
