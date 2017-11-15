@@ -736,6 +736,10 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "<input id=\"un6'\" type='text' name=\"u6'\">"
      "<input id=\"pw6'\" type='password' name=\"p6'\">"
      "</form>"
+     "<form>"
+     "<input id='un8' type='text'>"
+     "<input id='pw8' type='password'>"
+     "</form>"
      "<iframe name='pf'></iframe>"
      "<script>"
      "  var doc = frames['pf'].document.open();"
@@ -871,7 +875,8 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       NO,
       @""
     },
-    // No match because there are duplicate inputs in the form.
+    // There are inputs with duplicate names in the form, the first of them is
+    // filled.
     {
       base_url,
       base_url,
@@ -879,8 +884,8 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       "test_user",
       "p3",
       "test_password",
-      NO,
-      @""
+      YES,
+      @"un3=test_user;pw3=test_password;"
     },
     // Basic test, but with quotes in the names and IDs.
     {
@@ -892,6 +897,18 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
       "test_password",
       YES,
       @"un6'=test_user;pw6'=test_password;"
+    },
+    // Fields don't have name attributes so id attribute is used for fields
+    // identification.
+    {
+      base_url,
+      base_url,
+      "un8",
+      "test_user",
+      "pw8",
+      "test_password",
+      YES,
+      @"un8=test_user;pw8=test_password;"
     },
   };
   // clang-format on
