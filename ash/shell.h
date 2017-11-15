@@ -111,7 +111,7 @@ class LaserPointerController;
 class LocaleNotificationController;
 class LockStateController;
 class LogoutConfirmationController;
-class LockScreenController;
+class LoginScreenController;
 class MagnificationController;
 class TabletModeController;
 class MediaController;
@@ -359,8 +359,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   LocaleNotificationController* locale_notification_controller() {
     return locale_notification_controller_.get();
   }
-  LockScreenController* lock_screen_controller() {
-    return lock_screen_controller_.get();
+  LoginScreenController* login_screen_controller() {
+    return login_screen_controller_.get();
   }
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
@@ -657,7 +657,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
-  std::unique_ptr<LockScreenController> lock_screen_controller_;
+  std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;

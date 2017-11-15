@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_constants.h"
@@ -340,14 +340,14 @@ void LoginAuthUserView::RequestFocus() {
 
 void LoginAuthUserView::OnAuthSubmit(const base::string16& password) {
   bool authenticated_by_pin = (auth_methods_ & AUTH_PIN) != 0;
-  Shell::Get()->lock_screen_controller()->AuthenticateUser(
+  Shell::Get()->login_screen_controller()->AuthenticateUser(
       current_user()->basic_user_info->account_id, base::UTF16ToUTF8(password),
       authenticated_by_pin, on_auth_);
 }
 
 void LoginAuthUserView::OnUserViewTap() {
   if (HasAuthMethod(AUTH_TAP)) {
-    Shell::Get()->lock_screen_controller()->AttemptUnlock(
+    Shell::Get()->login_screen_controller()->AttemptUnlock(
         current_user()->basic_user_info->account_id);
   } else {
     on_tap_.Run();

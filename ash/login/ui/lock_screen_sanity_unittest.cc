@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "ash/login/lock_screen_controller.h"
-#include "ash/login/mock_lock_screen_client.h"
+#include "ash/login/login_screen_controller.h"
+#include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
@@ -115,7 +115,7 @@ TEST_F(LockScreenSanityTest, PasswordIsInitiallyFocused) {
 }
 
 // Verifies submitting the password invokes mojo lock screen client.
-TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
+TEST_F(LockScreenSanityTest, PasswordSubmitCallsLoginScreenClient) {
   // Build lock screen.
   auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
                                         data_dispatcher());
@@ -126,7 +126,7 @@ TEST_F(LockScreenSanityTest, PasswordSubmitCallsLockScreenClient) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
   // Password submit runs mojo.
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
   EXPECT_CALL(
       *client,
@@ -221,8 +221,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
           ->GetWidget()
           ->GetContentsView();
 
-  LockScreenController* lock_screen_controller =
-      Shell::Get()->lock_screen_controller();
+  LoginScreenController* controller = Shell::Get()->login_screen_controller();
 
   // Initialize lock screen action state.
   data_dispatcher()->SetLockScreenNoteState(mojom::TrayActionState::kActive);
@@ -237,7 +236,7 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   // Lock screen app focus is requested using lock screen mojo client - set up
   // the mock client.
   LockScreenAppFocuser app_widget_focuser(app_widget.get());
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client, FocusLockScreenApps(_))
       .WillRepeatedly(Invoke(&app_widget_focuser,
                              &LockScreenAppFocuser::FocusLockScreenApp));
@@ -245,32 +244,32 @@ TEST_F(LockScreenSanityTest, TabWithLockScreenAppActive) {
   // Initially, focus should be with the lock screen app - when the app loses
   // focus (notified via mojo interface), shelf should get the focus next.
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
-  lock_screen_controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 
   // Reversing focus should bring focus back to the lock screen app.
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
   // Focus is passed to lock screen apps via mojo - flush the request.
-  lock_screen_controller->FlushForTesting();
+  controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
   EXPECT_TRUE(app_widget_focuser.reversed_tab_order());
 
   // Have the app tab out in reverse tab order - in this case, the status area
   // should get the focus.
-  lock_screen_controller->HandleFocusLeavingLockScreenApps(true /*reverse*/);
+  controller->HandleFocusLeavingLockScreenApps(true /*reverse*/);
   EXPECT_TRUE(VerifyFocused(status_area));
 
   // Tabbing out of the status area (in default order) should focus the lock
   // screen app again.
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, 0);
   // Focus is passed to lock screen apps via mojo - flush the request.
-  lock_screen_controller->FlushForTesting();
+  controller->FlushForTesting();
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
   EXPECT_FALSE(app_widget_focuser.reversed_tab_order());
 
   // Tab out of the lock screen app once more - the shelf should get the focus
   // again.
-  lock_screen_controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
+  controller->HandleFocusLeavingLockScreenApps(false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 }
 
@@ -297,7 +296,7 @@ TEST_F(LockScreenSanityTest, FocusLockScreenWhenLockScreenAppExit) {
   EXPECT_TRUE(VerifyFocused(lock_screen_app));
 
   // Tab out of the lock screen app - shelf should get the focus.
-  Shell::Get()->lock_screen_controller()->HandleFocusLeavingLockScreenApps(
+  Shell::Get()->login_screen_controller()->HandleFocusLeavingLockScreenApps(
       false /*reverse*/);
   EXPECT_TRUE(VerifyFocused(shelf));
 

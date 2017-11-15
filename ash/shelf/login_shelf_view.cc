@@ -11,7 +11,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -194,7 +194,7 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
           mojom::CloseLockScreenNoteReason::kUnlockButtonPressed);
       break;
     case kCancel:
-      Shell::Get()->lock_screen_controller()->CancelAddUser();
+      Shell::Get()->login_screen_controller()->CancelAddUser();
       break;
   }
 }

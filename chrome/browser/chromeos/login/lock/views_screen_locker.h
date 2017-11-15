@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/ui/ash/lock_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace chromeos {
@@ -17,11 +17,11 @@ namespace chromeos {
 class UserSelectionScreen;
 class UserSelectionScreenProxy;
 
-// ViewsScreenLocker acts like LockScreenClient::Delegate which handles method
+// ViewsScreenLocker acts like LoginScreenClient::Delegate which handles method
 // calls coming from ash into chrome.
 // It is also a ScreenLocker::Delegate which handles calls from chrome into
 // ash (views-based lockscreen).
-class ViewsScreenLocker : public LockScreenClient::Delegate,
+class ViewsScreenLocker : public LoginScreenClient::Delegate,
                           public ScreenLocker::Delegate,
                           public PowerManagerClient::Observer,
                           public lock_screen_apps::FocusCyclerDelegate {
@@ -46,7 +46,7 @@ class ViewsScreenLocker : public LockScreenClient::Delegate,
                            ScreenLocker::FingerprintState state) override;
   content::WebContents* GetWebContents() override;
 
-  // LockScreenClient::Delegate
+  // LoginScreenClient::Delegate
   void HandleAuthenticateUser(const AccountId& account_id,
                               const std::string& hashed_password,
                               bool authenticated_by_pin,

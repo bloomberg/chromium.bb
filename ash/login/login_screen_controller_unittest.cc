@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 
-#include "ash/login/mock_lock_screen_client.h"
+#include "ash/login/mock_login_screen_client.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -17,11 +17,11 @@ using ::testing::_;
 namespace ash {
 
 namespace {
-using LockScreenControllerTest = AshTestBase;
+using LoginScreenControllerTest = AshTestBase;
 
-TEST_F(LockScreenControllerTest, RequestAuthentication) {
-  LockScreenController* controller = Shell::Get()->lock_screen_controller();
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+TEST_F(LoginScreenControllerTest, RequestAuthentication) {
+  LoginScreenController* controller = Shell::Get()->login_screen_controller();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
 
   AccountId id = AccountId::FromUserEmail("user1@test.com");
 
@@ -69,9 +69,9 @@ TEST_F(LockScreenControllerTest, RequestAuthentication) {
   EXPECT_TRUE(*callback_result);
 }
 
-TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
-  LockScreenController* controller = Shell::Get()->lock_screen_controller();
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+TEST_F(LoginScreenControllerTest, RequestEasyUnlock) {
+  LoginScreenController* controller = Shell::Get()->login_screen_controller();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
 
   AccountId id = AccountId::FromUserEmail("user1@test.com");
 
@@ -91,9 +91,9 @@ TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(LockScreenControllerTest, RequestUserPodFocus) {
-  LockScreenController* controller = Shell::Get()->lock_screen_controller();
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+TEST_F(LoginScreenControllerTest, RequestUserPodFocus) {
+  LoginScreenController* controller = Shell::Get()->login_screen_controller();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
 
   AccountId id = AccountId::FromUserEmail("user1@test.com");
 

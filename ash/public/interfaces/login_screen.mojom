@@ -9,10 +9,11 @@ import "components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/signin/public/interfaces/account_id.mojom";
 import "mojo/common/string16.mojom";
 
-// Allows clients (e.g. Chrome browser) to control the ash lock screen.
-interface LockScreen {
+// Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
+// screens.
+interface LoginScreen {
   // Sets the client interface.
-  SetClient(LockScreenClient client);
+  SetClient(LoginScreenClient client);
 
   // Displays the lock screen. |did_show| is true iff the lock UI was
   // successfully displayed.
@@ -69,7 +70,7 @@ interface LockScreen {
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
 // often involve preferences or talk to cryptohome that is not available to ash.
-interface LockScreenClient {
+interface LoginScreenClient {
   // Request user authentication in chrome.
   // If auth succeeds:
   // chrome will hide the lock screen and clear any displayed error messages.

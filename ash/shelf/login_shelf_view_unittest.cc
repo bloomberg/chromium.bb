@@ -10,7 +10,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
-#include "ash/login/mock_lock_screen_client.h"
+#include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -296,7 +296,7 @@ TEST_F(LoginShelfViewTest, ClickUnlockButton) {
 }
 
 TEST_F(LoginShelfViewTest, ClickCancelButton) {
-  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   EXPECT_CALL(*client, CancelAddUser());
   Click(LoginShelfView::kCancel);
 }

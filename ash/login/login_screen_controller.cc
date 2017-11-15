@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/login/lock_screen_controller.h"
+#include "ash/login/login_screen_controller.h"
 
 #include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/lock_screen.h"
@@ -31,13 +31,13 @@ std::string CalculateHash(const std::string& password,
 
 }  // namespace
 
-LockScreenController::LockScreenController() : binding_(this) {}
+LoginScreenController::LoginScreenController() : binding_(this) {}
 
-LockScreenController::~LockScreenController() = default;
+LoginScreenController::~LoginScreenController() = default;
 
 // static
-void LockScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
-                                                bool for_test) {
+void LoginScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
+                                                 bool for_test) {
   if (for_test) {
     // There is no remote pref service, so pretend that ash owns the pref.
     registry->RegisterStringPref(prefs::kQuickUnlockPinSalt, "");
@@ -48,43 +48,43 @@ void LockScreenController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kQuickUnlockPinSalt);
 }
 
-void LockScreenController::BindRequest(mojom::LockScreenRequest request) {
+void LoginScreenController::BindRequest(mojom::LoginScreenRequest request) {
   binding_.Bind(std::move(request));
 }
 
-void LockScreenController::SetClient(mojom::LockScreenClientPtr client) {
-  lock_screen_client_ = std::move(client);
+void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
+  login_screen_client_ = std::move(client);
 }
 
-void LockScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
+void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
   ash::LockScreen::Show();
   std::move(on_shown).Run(true);
 }
 
-void LockScreenController::ShowErrorMessage(int32_t login_attempts,
-                                            const std::string& error_text,
-                                            const std::string& help_link_text,
-                                            int32_t help_topic_id) {
+void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
+                                             const std::string& error_text,
+                                             const std::string& help_link_text,
+                                             int32_t help_topic_id) {
   NOTIMPLEMENTED();
 }
 
-void LockScreenController::ClearErrors() {
+void LoginScreenController::ClearErrors() {
   NOTIMPLEMENTED();
 }
 
-void LockScreenController::ShowUserPodCustomIcon(
+void LoginScreenController::ShowUserPodCustomIcon(
     const AccountId& account_id,
     mojom::EasyUnlockIconOptionsPtr icon) {
   DataDispatcher()->ShowEasyUnlockIcon(account_id, icon);
 }
 
-void LockScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
+void LoginScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
   auto icon_options = mojom::EasyUnlockIconOptions::New();
   icon_options->icon = mojom::EasyUnlockIconId::NONE;
   DataDispatcher()->ShowEasyUnlockIcon(account_id, icon_options);
 }
 
-void LockScreenController::SetAuthType(
+void LoginScreenController::SetAuthType(
     const AccountId& account_id,
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
@@ -96,27 +96,28 @@ void LockScreenController::SetAuthType(
   }
 }
 
-void LockScreenController::LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,
-                                     bool show_guest) {
+void LoginScreenController::LoadUsers(
+    std::vector<mojom::LoginUserInfoPtr> users,
+    bool show_guest) {
   DCHECK(DataDispatcher());
 
   DataDispatcher()->NotifyUsers(users);
 }
 
-void LockScreenController::SetPinEnabledForUser(const AccountId& account_id,
-                                                bool is_enabled) {
+void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
+                                                 bool is_enabled) {
   // Chrome will update pin pod state every time user tries to authenticate.
   // LockScreen is destroyed in the case of authentication success.
   if (DataDispatcher())
     DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
-void LockScreenController::AuthenticateUser(
+void LoginScreenController::AuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    mojom::LockScreenClient::AuthenticateUserCallback callback) {
-  if (!lock_screen_client_)
+    mojom::LoginScreenClient::AuthenticateUserCallback callback) {
+  if (!login_screen_client_)
     return;
 
   // If auth is disabled by the debug overlay bypass the mojo call entirely, as
@@ -140,100 +141,100 @@ void LockScreenController::AuthenticateUser(
   // have the system salt.
   DCHECK(!pending_user_auth_) << "More than one concurrent auth attempt";
   pending_user_auth_ = base::BindOnce(
-      &LockScreenController::DoAuthenticateUser, base::Unretained(this),
+      &LoginScreenController::DoAuthenticateUser, base::Unretained(this),
       account_id, password, authenticated_by_pin, std::move(callback));
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
-      &LockScreenController::OnGetSystemSalt, base::Unretained(this)));
+      &LoginScreenController::OnGetSystemSalt, base::Unretained(this)));
 }
 
-void LockScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
+void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
   for (auto& observer : lock_screen_apps_focus_observers_)
     observer.OnFocusLeavingLockScreenApps(reverse);
 }
 
-void LockScreenController::AttemptUnlock(const AccountId& account_id) {
-  if (!lock_screen_client_)
+void LoginScreenController::AttemptUnlock(const AccountId& account_id) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->AttemptUnlock(account_id);
+  login_screen_client_->AttemptUnlock(account_id);
 
   Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
       LoginMetricsRecorder::AuthMethod::kSmartlock);
 }
 
-void LockScreenController::HardlockPod(const AccountId& account_id) {
-  if (!lock_screen_client_)
+void LoginScreenController::HardlockPod(const AccountId& account_id) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->HardlockPod(account_id);
+  login_screen_client_->HardlockPod(account_id);
 }
 
-void LockScreenController::RecordClickOnLockIcon(const AccountId& account_id) {
-  if (!lock_screen_client_)
+void LoginScreenController::RecordClickOnLockIcon(const AccountId& account_id) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->RecordClickOnLockIcon(account_id);
+  login_screen_client_->RecordClickOnLockIcon(account_id);
 }
 
-void LockScreenController::OnFocusPod(const AccountId& account_id) {
-  if (!lock_screen_client_)
+void LoginScreenController::OnFocusPod(const AccountId& account_id) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->OnFocusPod(account_id);
+  login_screen_client_->OnFocusPod(account_id);
 }
 
-void LockScreenController::OnNoPodFocused() {
-  if (!lock_screen_client_)
+void LoginScreenController::OnNoPodFocused() {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->OnNoPodFocused();
+  login_screen_client_->OnNoPodFocused();
 }
 
-void LockScreenController::LoadWallpaper(const AccountId& account_id) {
-  if (!lock_screen_client_)
+void LoginScreenController::LoadWallpaper(const AccountId& account_id) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->LoadWallpaper(account_id);
+  login_screen_client_->LoadWallpaper(account_id);
 }
 
-void LockScreenController::SignOutUser() {
-  if (!lock_screen_client_)
+void LoginScreenController::SignOutUser() {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->SignOutUser();
+  login_screen_client_->SignOutUser();
 }
 
-void LockScreenController::CancelAddUser() {
-  if (!lock_screen_client_)
+void LoginScreenController::CancelAddUser() {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->CancelAddUser();
+  login_screen_client_->CancelAddUser();
 }
 
-void LockScreenController::OnMaxIncorrectPasswordAttempted(
+void LoginScreenController::OnMaxIncorrectPasswordAttempted(
     const AccountId& account_id) {
-  if (!lock_screen_client_)
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->OnMaxIncorrectPasswordAttempted(account_id);
+  login_screen_client_->OnMaxIncorrectPasswordAttempted(account_id);
 }
 
-void LockScreenController::FocusLockScreenApps(bool reverse) {
-  if (!lock_screen_client_)
+void LoginScreenController::FocusLockScreenApps(bool reverse) {
+  if (!login_screen_client_)
     return;
-  lock_screen_client_->FocusLockScreenApps(reverse);
+  login_screen_client_->FocusLockScreenApps(reverse);
 }
 
-void LockScreenController::AddLockScreenAppsFocusObserver(
+void LoginScreenController::AddLockScreenAppsFocusObserver(
     LockScreenAppsFocusObserver* observer) {
   lock_screen_apps_focus_observers_.AddObserver(observer);
 }
 
-void LockScreenController::RemoveLockScreenAppsFocusObserver(
+void LoginScreenController::RemoveLockScreenAppsFocusObserver(
     LockScreenAppsFocusObserver* observer) {
   lock_screen_apps_focus_observers_.RemoveObserver(observer);
 }
 
-void LockScreenController::FlushForTesting() {
-  lock_screen_client_.FlushForTesting();
+void LoginScreenController::FlushForTesting() {
+  login_screen_client_.FlushForTesting();
 }
 
-void LockScreenController::DoAuthenticateUser(
+void LoginScreenController::DoAuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
     bool authenticated_by_pin,
-    mojom::LockScreenClient::AuthenticateUserCallback callback,
+    mojom::LoginScreenClient::AuthenticateUserCallback callback,
     const std::string& system_salt) {
   int dummy_value;
   bool is_pin =
@@ -262,15 +263,15 @@ void LockScreenController::DoAuthenticateUser(
   Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
       is_pin ? LoginMetricsRecorder::AuthMethod::kPin
              : LoginMetricsRecorder::AuthMethod::kPassword);
-  lock_screen_client_->AuthenticateUser(account_id, hashed_password, is_pin,
-                                        std::move(callback));
+  login_screen_client_->AuthenticateUser(account_id, hashed_password, is_pin,
+                                         std::move(callback));
 }
 
-void LockScreenController::OnGetSystemSalt(const std::string& system_salt) {
+void LoginScreenController::OnGetSystemSalt(const std::string& system_salt) {
   std::move(pending_user_auth_).Run(system_salt);
 }
 
-LoginDataDispatcher* LockScreenController::DataDispatcher() const {
+LoginDataDispatcher* LoginScreenController::DataDispatcher() const {
   if (!ash::LockScreen::IsShown())
     return nullptr;
   return ash::LockScreen::Get()->data_dispatcher();

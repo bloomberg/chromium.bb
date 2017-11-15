@@ -39,7 +39,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/lock_screen_client.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/screenlock_icon_source.h"
@@ -218,7 +218,7 @@ void ScreenLocker::Init() {
     delegate_ = views_screen_locker_.get();
 
     // Create and display lock screen.
-    LockScreenClient::Get()->ShowLockScreen(base::BindOnce(
+    LoginScreenClient::Get()->ShowLockScreen(base::BindOnce(
         [](ViewsScreenLocker* screen_locker, bool did_show) {
           CHECK(did_show);
           screen_locker->OnLockScreenReady();

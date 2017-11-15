@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_
-#define ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_
+#ifndef ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
+#define ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/interfaces/lock_screen.mojom.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -18,25 +18,25 @@ namespace ash {
 class LockScreenAppsFocusObserver;
 class LoginDataDispatcher;
 
-// LockScreenController implements mojom::LockScreen and wraps the
-// mojom::LockScreenClient interface. This lets a consumer of ash provide a
-// LockScreenClient, which we will dispatch to if one has been provided to us.
-// This could send requests to LockScreenClient and also handle requests from
-// LockScreenClient through mojo.
-class ASH_EXPORT LockScreenController : public mojom::LockScreen {
+// LoginScreenController implements mojom::LoginScreen and wraps the
+// mojom::LoginScreenClient interface. This lets a consumer of ash provide a
+// LoginScreenClient, which we will dispatch to if one has been provided to us.
+// This could send requests to LoginScreenClient and also handle requests from
+// LoginScreenClient through mojo.
+class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
  public:
   using OnShownCallback = base::OnceCallback<void(bool did_show)>;
 
-  LockScreenController();
-  ~LockScreenController() override;
+  LoginScreenController();
+  ~LoginScreenController() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
-  // Binds the mojom::LockScreen interface to this object.
-  void BindRequest(mojom::LockScreenRequest request);
+  // Binds the mojom::LoginScreen interface to this object.
+  void BindRequest(mojom::LoginScreenRequest request);
 
-  // mojom::LockScreen:
-  void SetClient(mojom::LockScreenClientPtr client) override;
+  // mojom::LoginScreen:
+  void SetClient(mojom::LoginScreenClientPtr client) override;
   void ShowLockScreen(ShowLockScreenCallback callback) override;
   void ShowErrorMessage(int32_t login_attempts,
                         const std::string& error_text,
@@ -55,16 +55,16 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
                             bool is_enabled) override;
   void HandleFocusLeavingLockScreenApps(bool reverse) override;
 
-  // Wrappers around the mojom::LockScreenClient interface.
-  // Hash the password and send AuthenticateUser request to LockScreenClient.
-  // LockScreenClient(chrome) will do the authentication and request to show
-  // error messages in the lock screen if auth fails, or request to clear
-  // errors if auth succeeds.
+  // Wrappers around the mojom::LoginScreenClient interface. Hash the password
+  // and send AuthenticateUser request to LoginScreenClient.
+  // LoginScreenClient(chrome) will do the authentication and request to show
+  // error messages in the screen if auth fails, or request to clear errors if
+  // auth succeeds.
   void AuthenticateUser(
       const AccountId& account_id,
       const std::string& password,
       bool authenticated_by_pin,
-      mojom::LockScreenClient::AuthenticateUserCallback callback);
+      mojom::LoginScreenClient::AuthenticateUserCallback callback);
   void AttemptUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
@@ -99,19 +99,19 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
       const AccountId& account_id,
       const std::string& password,
       bool authenticated_by_pin,
-      mojom::LockScreenClient::AuthenticateUserCallback callback,
+      mojom::LoginScreenClient::AuthenticateUserCallback callback,
       const std::string& system_salt);
 
   void OnGetSystemSalt(const std::string& system_salt);
 
-  // Returns the active data dispatcher or nullptr if there is no lock screen.
+  // Returns the active data dispatcher or nullptr if there is no screen.
   LoginDataDispatcher* DataDispatcher() const;
 
   // Client interface in chrome browser. May be null in tests.
-  mojom::LockScreenClientPtr lock_screen_client_;
+  mojom::LoginScreenClientPtr login_screen_client_;
 
-  // Binding for the LockScreen interface.
-  mojo::Binding<mojom::LockScreen> binding_;
+  // Binding for the LoginScreen interface.
+  mojo::Binding<mojom::LoginScreen> binding_;
 
   // User authentication call that will run when we have system salt.
   PendingAuthenticateUserCall pending_user_auth_;
@@ -122,9 +122,9 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
   // If set to false, all auth requests will forcibly fail.
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
 
-  DISALLOW_COPY_AND_ASSIGN(LockScreenController);
+  DISALLOW_COPY_AND_ASSIGN(LoginScreenController);
 };
 
 }  // namespace ash
 
-#endif  // ASH_LOGIN_LOCK_SCREEN_CONTROLLER_H_
+#endif  // ASH_LOGIN_LOGIN_SCREEN_CONTROLLER_H_

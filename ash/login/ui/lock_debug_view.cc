@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
@@ -322,25 +323,25 @@ void LockDebugView::ButtonPressed(views::Button* sender,
   // Linux Desktop builds, where the cryptohome dbus stub accepts all passwords
   // as valid.
   if (sender == toggle_auth_) {
-    auto get_next_auth_state = [](LockScreenController::ForceFailAuth auth) {
+    auto get_next_auth_state = [](LoginScreenController::ForceFailAuth auth) {
       switch (auth) {
-        case LockScreenController::ForceFailAuth::kOff:
-          return LockScreenController::ForceFailAuth::kImmediate;
-        case LockScreenController::ForceFailAuth::kImmediate:
-          return LockScreenController::ForceFailAuth::kDelayed;
-        case LockScreenController::ForceFailAuth::kDelayed:
-          return LockScreenController::ForceFailAuth::kOff;
+        case LoginScreenController::ForceFailAuth::kOff:
+          return LoginScreenController::ForceFailAuth::kImmediate;
+        case LoginScreenController::ForceFailAuth::kImmediate:
+          return LoginScreenController::ForceFailAuth::kDelayed;
+        case LoginScreenController::ForceFailAuth::kDelayed:
+          return LoginScreenController::ForceFailAuth::kOff;
       }
       NOTREACHED();
-      return LockScreenController::ForceFailAuth::kOff;
+      return LoginScreenController::ForceFailAuth::kOff;
     };
-    auto get_auth_label = [](LockScreenController::ForceFailAuth auth) {
+    auto get_auth_label = [](LoginScreenController::ForceFailAuth auth) {
       switch (auth) {
-        case LockScreenController::ForceFailAuth::kOff:
+        case LoginScreenController::ForceFailAuth::kOff:
           return "Auth (allowed)";
-        case LockScreenController::ForceFailAuth::kImmediate:
+        case LoginScreenController::ForceFailAuth::kImmediate:
           return "Auth (immediate fail)";
-        case LockScreenController::ForceFailAuth::kDelayed:
+        case LoginScreenController::ForceFailAuth::kDelayed:
           return "Auth (delayed fail)";
       }
       NOTREACHED();
@@ -349,7 +350,7 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     force_fail_auth_ = get_next_auth_state(force_fail_auth_);
     toggle_auth_->SetText(base::ASCIIToUTF16(get_auth_label(force_fail_auth_)));
     Shell::Get()
-        ->lock_screen_controller()
+        ->login_screen_controller()
         ->set_force_fail_auth_for_debug_overlay(force_fail_auth_);
     return;
   }
