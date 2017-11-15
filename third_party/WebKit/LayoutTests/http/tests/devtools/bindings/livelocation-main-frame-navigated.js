@@ -1,11 +1,11 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(`Verify that debugger live location gets updated.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
 
-async function test() {
   TestRunner.markStep('attachFrame');
   await Promise.all([
     BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
@@ -17,24 +17,10 @@ async function test() {
   var cssLiveLocation = BindingsTestRunner.createCSSLiveLocation('css', 'sourcemap-style.css');
 
   TestRunner.markStep('navigateMainFrame');
-  var url = 'http://127.0.0.1:8000/devtools/bindings/resources/empty-page.html';
+  var url = TestRunner.url('resources/empty-page.html');
   await TestRunner.navigatePromise(url);
   BindingsTestRunner.dumpLocation(jsLiveLocation);
   BindingsTestRunner.dumpLocation(cssLiveLocation);
 
-  TestRunner.markStep('navigateBack');
-  var originalUrl = 'http://127.0.0.1:8000/devtools/bindings/livelocation-main-frame-navigated.html';
-  await TestRunner.navigatePromise(originalUrl);
-
   TestRunner.completeTest();
-}
-
-</script>
-
-</head>
-<body onload="runTest()">
-<p>
-Verify that debugger live location gets updated.
-</p>
-</body>
-</html>
+})();

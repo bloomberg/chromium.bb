@@ -1,11 +1,27 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
+(async function() {
+  TestRunner.addResult(
+      `Verify that UISourceCodes are added and removed as shadow dom styles and scripts are added and removed.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+  await TestRunner.loadHTML(`
+    <template id='template'>
+    <style>div {
+        color: blue;
+    }
+    /*# sourceURL=sourcemap-style.css */
+    /*# sourceMappingURL=${TestRunner.url('resources/sourcemap-style.css.map')} */
+    </style>
+    <script>window.foo = console.log.bind(console, 'foo');
+    //# sourceURL=sourcemap-script.js
+    //# sourceMappingURL=${TestRunner.url('resources/sourcemap-script.js.map')}
+    </script>
+    <p>Hi! I'm ShadowDOM v1!</p>
+    </template>
+  `);
 
-async function test() {
   TestRunner.markStep('dumpInitialWorkspace');
   var snapshot = BindingsTestRunner.dumpWorkspace();
 
@@ -40,29 +56,4 @@ async function test() {
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.completeTest();
-}
-
-</script>
-
-</head>
-<body onload="runTest()">
-<p>
-Verify that UISourceCodes are added and removed as shadow dom styles and scripts are added and removed.
-</p>
-
-<template id='template'>
-<style>div {
-    color: blue;
-}
-/*# sourceURL=sourcemap-style.css */
-/*# sourceMappingURL=resources/sourcemap-style.css.map */
-</style>
-<script>window.foo = console.log.bind(console, 'foo');
-//# sourceURL=sourcemap-script.js
-//# sourceMappingURL=resources/sourcemap-script.js.map
-</script>
-<p>Hi! I'm ShadowDOM v1!</p>
-</template>
-
-</body>
-</html>
+})();

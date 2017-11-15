@@ -4,27 +4,18 @@ Verify that navigator shows proper UISourceCodes as shadow dom styles and script
 Running: dumpInitialNavigator
 top
   127.0.0.1:8000
-    devtools/bindings
-      shadowdom-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachShadow1
 top
   127.0.0.1:8000
-    devtools/bindings
+    devtools
       resources
+        inspected-page.html
+      bindings/resources
         sourcemap-typescript.ts
         sourcemap-sass.scss
-      shadowdom-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
   (no domain)
     sourcemap-script.js
     sourcemap-style.css
@@ -32,16 +23,12 @@ top
 Running: attachShadow2
 top
   127.0.0.1:8000
-    devtools/bindings
+    devtools
       resources
+        inspected-page.html
+      bindings/resources
         sourcemap-typescript.ts
         sourcemap-sass.scss
-      shadowdom-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
   (no domain)
     sourcemap-script.js
     sourcemap-style.css
@@ -49,16 +36,12 @@ top
 Running: detachShadow1
 top
   127.0.0.1:8000
-    devtools/bindings
+    devtools
       resources
+        inspected-page.html
+      bindings/resources
         sourcemap-typescript.ts
         sourcemap-sass.scss
-      shadowdom-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
   (no domain)
     sourcemap-script.js
     sourcemap-style.css
@@ -66,15 +49,11 @@ top
 Running: detachShadow2
 top
   127.0.0.1:8000
-    devtools/bindings
+    devtools
       resources
+        inspected-page.html
+      bindings/resources
         sourcemap-typescript.ts
-      shadowdom-navigator.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
   (no domain)
     sourcemap-script.js
 

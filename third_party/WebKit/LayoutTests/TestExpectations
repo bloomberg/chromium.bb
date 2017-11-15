@@ -1992,11 +1992,6 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
-# These tests have machine-dependent names in the output (e.g. ... debugger:///VM37 ...)
-# # which makes them have different results on different machines.
-crbug.com/763718 http/tests/devtools/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
-crbug.com/763718 virtual/mojo-loading/http/tests/devtools/bindings/livelocation-main-frame-navigated.html [ Pass Failure ]
-
 # Untriaged failures after https://crrev.com/c/543695/.
 # These need to be updated but appear not to be related to that change.
 crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass Failure ]
