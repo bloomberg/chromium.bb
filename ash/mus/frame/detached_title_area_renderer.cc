@@ -20,10 +20,9 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::DetachedTitleAreaRendererForClient*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::DetachedTitleAreaRendererForClient*);
 
 namespace ash {
-namespace mus {
 namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(DetachedTitleAreaRendererForClient*,
@@ -144,5 +143,4 @@ void DetachedTitleAreaRendererForClient::DeleteDelegate() {
 
 DetachedTitleAreaRendererForClient::~DetachedTitleAreaRendererForClient() {}
 
-}  // namespace mus
 }  // namespace ash

@@ -7,18 +7,17 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::WorkspaceEventHandlerMus*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::WorkspaceEventHandlerMus*);
 
 namespace {
 
-DEFINE_UI_CLASS_PROPERTY_KEY(ash::mus::WorkspaceEventHandlerMus*,
+DEFINE_UI_CLASS_PROPERTY_KEY(ash::WorkspaceEventHandlerMus*,
                              kWorkspaceEventHandlerProperty,
                              nullptr);
 
 }  // namespace
 
 namespace ash {
-namespace mus {
 
 WorkspaceEventHandlerMus::WorkspaceEventHandlerMus(
     aura::Window* workspace_window)
@@ -35,5 +34,4 @@ WorkspaceEventHandlerMus* WorkspaceEventHandlerMus::Get(aura::Window* window) {
   return window->GetProperty(kWorkspaceEventHandlerProperty);
 }
 
-}  // namespace mus
 }  // namespace ash

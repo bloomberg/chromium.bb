@@ -13,7 +13,6 @@
 #include "ui/views/layout/layout_provider.h"
 
 namespace ash {
-namespace mus {
 
 void RunCallback(bool* success, const base::Closure& callback, bool result) {
   *success = result;
@@ -52,5 +51,4 @@ TEST_F(AppLaunchTest, TestQuickLaunch) {
   EXPECT_TRUE(success);
 }
 
-}  // namespace mus
 }  // namespace ash

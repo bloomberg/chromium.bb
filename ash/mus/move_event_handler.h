@@ -23,8 +23,6 @@ class CancelModeEvent;
 
 namespace ash {
 
-namespace mus {
-
 class WorkspaceEventHandlerMus;
 
 // EventHandler attached to windows that may be dragged and/or resized. This
@@ -80,7 +78,6 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(MoveEventHandler);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_MOVE_EVENT_HANDLER_H_

@@ -270,9 +270,9 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
 
   const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
-  mus::WindowManager* window_manager =
+  WindowManager* window_manager =
       ash_test_helper_->window_manager_service()->window_manager();
-  aura::Window* window = mus::CreateAndParentTopLevelWindow(
+  aura::Window* window = CreateAndParentTopLevelWindow(
       window_manager, mus_window_type, &properties);
   window->set_id(shell_window_id);
   window->Show();

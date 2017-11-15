@@ -7,11 +7,9 @@
 #include "ui/base/class_property.h"
 
 namespace ash {
-namespace mus {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false);
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false);
 
-}  // namespace mus
 }  // namespace ash

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 
 namespace ash {
-namespace mus {
 
 ImmersiveHandlerFactoryMus::ImmersiveHandlerFactoryMus() {}
 
@@ -40,5 +39,4 @@ ImmersiveHandlerFactoryMus::CreateGestureHandler(
   return nullptr;
 }
 
-}  // namespace mus
 }  // namespace ash

@@ -29,7 +29,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace mus {
 namespace {
 
 // Returns true if a fullscreen window was requested.
@@ -240,5 +239,4 @@ aura::Window* CreateAndParentTopLevelWindow(
   return window;
 }
 
-}  // namespace mus
 }  // namespace ash

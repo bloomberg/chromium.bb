@@ -8,10 +8,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::DisconnectedAppHandler*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::DisconnectedAppHandler*);
 
 namespace ash {
-namespace mus {
 namespace {
 
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(DisconnectedAppHandler,
@@ -39,5 +38,4 @@ void DisconnectedAppHandler::OnEmbeddedAppDisconnected(aura::Window* window) {
   delete window_;
 }
 
-}  // namespace mus
 }  // namespace ash

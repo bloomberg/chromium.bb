@@ -45,7 +45,6 @@
 #include "ui/display/types/native_display_delegate.h"
 
 namespace ash {
-namespace mus {
 
 ShellPortMus::ShellPortMus(WindowManager* window_manager)
     : window_manager_(window_manager) {
@@ -275,5 +274,4 @@ void ShellPortMus::AddVideoDetectorObserver(
   video_detector->AddObserver(std::move(observer));
 }
 
-}  // namespace mus
 }  // namespace ash

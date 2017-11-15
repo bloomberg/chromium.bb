@@ -32,8 +32,6 @@ namespace mojom {
 enum class WindowStyle;
 }
 
-namespace mus {
-
 // Functions for extracting properties that are used at a Window creation time.
 // When an aura::Window is created at the request of a client an initial set of
 // properties is supplied to allow the WindowManager (ash) to configure the
@@ -71,7 +69,6 @@ void ApplyProperties(
     aura::PropertyConverter* property_converter,
     const std::map<std::string, std::vector<uint8_t>>& properties);
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_PROPERTY_UTIL_H_

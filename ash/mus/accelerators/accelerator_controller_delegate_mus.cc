@@ -11,7 +11,6 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace ash {
-namespace mus {
 
 AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus(
     WindowManager* window_manager)
@@ -79,5 +78,4 @@ void AcceleratorControllerDelegateMus::PerformAction(
   }
 }
 
-}  // namespace mus
 }  // namespace ash

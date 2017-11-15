@@ -15,19 +15,18 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
-DECLARE_UI_CLASS_PROPERTY_TYPE(ash::mus::MoveEventHandler*);
+DECLARE_UI_CLASS_PROPERTY_TYPE(ash::MoveEventHandler*);
 
 namespace {
 
 // Key used for storing identifier sent to clients for windows.
-DEFINE_UI_CLASS_PROPERTY_KEY(ash::mus::MoveEventHandler*,
+DEFINE_UI_CLASS_PROPERTY_KEY(ash::MoveEventHandler*,
                              kWmMoveEventHandler,
                              nullptr);
 
 }  // namespace
 
 namespace ash {
-namespace mus {
 namespace {
 
 ui::CursorType CursorForWindowComponent(int window_component) {
@@ -150,5 +149,4 @@ void MoveEventHandler::OnWindowDestroying(aura::Window* window) {
   Detach();
 }
 
-}  // namespace mus
 }  // namespace ash

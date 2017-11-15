@@ -6,7 +6,6 @@
 #define ASH_MUS_ACCELERATORS_ACCELERATOR_IDS_H_
 
 namespace ash {
-namespace mus {
 
 // Accelerator ids consist of two parts:
 // . Upper 16 bits identifies source (namespace part).
@@ -26,7 +25,6 @@ inline uint16_t GetAcceleratorNamespaceId(uint32_t accelerator_id) {
   return static_cast<uint16_t>((accelerator_id >> 16) & kLocalIdMask);
 }
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_IDS_H_

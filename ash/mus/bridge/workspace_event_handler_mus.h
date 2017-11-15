@@ -13,7 +13,6 @@ class Window;
 }
 
 namespace ash {
-namespace mus {
 
 // TODO(sky): investigate if can use aura version.
 class WorkspaceEventHandlerMus : public WorkspaceEventHandler {
@@ -34,7 +33,6 @@ class WorkspaceEventHandlerMus : public WorkspaceEventHandler {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerMus);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_BRIDGE_WORKSPACE_EVENT_HANDLER_MUS_H_

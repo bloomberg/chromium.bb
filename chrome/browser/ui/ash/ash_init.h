@@ -10,9 +10,7 @@
 #include "base/macros.h"
 
 namespace ash {
-namespace mus {
 class WindowManager;
-}
 }  // namespace ash
 
 // Creates and owns ash.
@@ -24,7 +22,7 @@ class AshInit {
 
  private:
   // Only created when running in ash::Config::MUS.
-  std::unique_ptr<ash::mus::WindowManager> window_manager_;
+  std::unique_ptr<ash::WindowManager> window_manager_;
 
   // NOTE: Please add new code to ChromeBrowserMainExtraPartsAsh.
 

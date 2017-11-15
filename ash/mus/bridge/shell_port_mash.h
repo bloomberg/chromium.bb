@@ -18,7 +18,6 @@ class PointerWatcherEventRouter;
 }
 
 namespace ash {
-namespace mus {
 
 class AcceleratorControllerDelegateMus;
 class AcceleratorControllerRegistrar;
@@ -80,7 +79,6 @@ class ShellPortMash : public ShellPortMus {
   DISALLOW_COPY_AND_ASSIGN(ShellPortMash);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_BRIDGE_SHELL_PORT_MASH_H_

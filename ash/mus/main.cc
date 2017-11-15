@@ -8,8 +8,8 @@
 
 MojoResult ServiceMain(MojoHandle service_request_handle) {
   const bool show_primary_host_on_connect = true;
-  ash::mus::WindowManagerService* service =
-      new ash::mus::WindowManagerService(show_primary_host_on_connect);
+  ash::WindowManagerService* service =
+      new ash::WindowManagerService(show_primary_host_on_connect);
   service->set_running_standalone(true);
   service_manager::ServiceRunner runner(service);
   return runner.Run(service_request_handle);

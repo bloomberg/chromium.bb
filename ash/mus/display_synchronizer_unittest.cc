@@ -12,7 +12,6 @@
 #include "ui/gfx/geometry/insets.h"
 
 namespace ash {
-namespace mus {
 
 using DisplaySynchronizerTest = AshTestBase;
 
@@ -82,5 +81,4 @@ TEST_F(DisplaySynchronizerTest,
   EXPECT_LT(frame_decoration_change_index, display_config_change_index);
 }
 
-}  // namespace mus
 }  // namespace ash

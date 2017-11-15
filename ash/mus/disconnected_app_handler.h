@@ -9,7 +9,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace ash {
-namespace mus {
 
 // DisconnectedAppHandler is associated with a single aura Window and deletes
 // the window when the embedded app is disconnected. This is intended to be used
@@ -34,7 +33,6 @@ class DisconnectedAppHandler : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(DisconnectedAppHandler);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_DISCONNECTED_APP_HANDLER_H_

@@ -45,7 +45,7 @@ std::unique_ptr<service_manager::Service> CreateUiService() {
 #if defined(OS_CHROMEOS)
 std::unique_ptr<service_manager::Service> CreateAshService() {
   const bool show_primary_host_on_connect = true;
-  return std::make_unique<ash::mus::WindowManagerService>(
+  return std::make_unique<ash::WindowManagerService>(
       show_primary_host_on_connect);
 }
 

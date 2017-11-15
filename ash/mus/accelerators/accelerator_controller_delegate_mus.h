@@ -9,7 +9,6 @@
 #include "base/macros.h"
 
 namespace ash {
-namespace mus {
 
 class WindowManager;
 
@@ -33,7 +32,6 @@ class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerDelegateMus);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_CONTROLLER_DELEGATE_MUS_H_

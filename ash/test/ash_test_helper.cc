@@ -257,10 +257,10 @@ void AshTestHelper::CreateMashWindowManager() {
   CHECK(config_ != Config::CLASSIC);
   const bool show_primary_root_on_connect = false;
   window_manager_service_ =
-      std::make_unique<mus::WindowManagerService>(show_primary_root_on_connect);
+      std::make_unique<WindowManagerService>(show_primary_root_on_connect);
 
   window_manager_service_->window_manager_.reset(
-      new mus::WindowManager(nullptr, config_, show_primary_root_on_connect));
+      new WindowManager(nullptr, config_, show_primary_root_on_connect));
   window_manager_service_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
 

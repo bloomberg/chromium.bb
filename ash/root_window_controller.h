@@ -63,11 +63,8 @@ class SystemWallpaperController;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
-class WorkspaceController;
-
-namespace mus {
 class WindowManager;
-}
+class WorkspaceController;
 
 namespace wm {
 class RootWindowLayoutManager;
@@ -258,7 +255,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
  private:
   // TODO(sky): remove this. Temporary during ash-mus unification.
   // http://crbug.com/671246.
-  friend class mus::WindowManager;
+  friend class WindowManager;
 
   // Creates a new RootWindowController with the specified host. Only one of
   // |ash_host| or |window_tree_host| should be specified. This takes ownership

@@ -15,7 +15,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace ash {
-namespace mus {
 
 int64_t GetInitialDisplayId(const InitProperties& properties) {
   auto iter =
@@ -86,5 +85,4 @@ void ApplyProperties(
   }
 }
 
-}  // namespace mus
 }  // namespace ash

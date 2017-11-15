@@ -8,7 +8,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace mus {
 
 // Maps to ui::mojom::WindowManager::kRenderParentTitleArea_Property.
 extern const aura::WindowProperty<bool>* const kRenderTitleAreaProperty;
@@ -17,7 +16,6 @@ extern const aura::WindowProperty<bool>* const kRenderTitleAreaProperty;
 // WindowManagerDelegate::OnWmClientJankinessChanged()).
 extern const aura::WindowProperty<bool>* const kWindowIsJanky;
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_WINDOW_PROPERTIES_H_

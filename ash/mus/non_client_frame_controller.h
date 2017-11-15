@@ -35,7 +35,6 @@ enum class WindowType;
 }
 
 namespace ash {
-namespace mus {
 
 class WindowManager;
 
@@ -117,7 +116,6 @@ class NonClientFrameController
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_NON_CLIENT_FRAME_CONTROLLER_H_

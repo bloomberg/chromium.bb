@@ -14,7 +14,6 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 
 namespace ash {
-namespace mus {
 
 // Used by WindowManager for handling accelerators.
 class AcceleratorHandler {
@@ -29,7 +28,6 @@ class AcceleratorHandler {
   virtual ~AcceleratorHandler() {}
 };
 
-}  // namespace mus
 }  // namespace ash
 
 #endif  // ASH_MUS_ACCELERATORS_ACCELERATOR_HANDLER_H_
