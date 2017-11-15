@@ -13,6 +13,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
@@ -58,7 +59,9 @@ WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   DCHECK(info->request.is_pending());
-  auto* impl = new WebServiceWorkerRegistrationImpl(std::move(info));
+  scoped_refptr<WebServiceWorkerRegistrationImpl> impl =
+      new WebServiceWorkerRegistrationImpl(std::move(info),
+                                           nullptr /* provider_context */);
   impl->host_for_global_scope_ =
       blink::mojom::ThreadSafeServiceWorkerRegistrationObjectHostAssociatedPtr::
           Create(std::move(impl->info_->host_ptr_info), io_task_runner);
@@ -67,9 +70,9 @@ WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
   // OnConnectionError() cannot happen before BindRequest(), therefore using
   // base::Unretained() here is safe.
   io_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebServiceWorkerRegistrationImpl::BindRequest,
-                     base::Unretained(impl), std::move(impl->info_->request)));
+      FROM_HERE, base::BindOnce(&WebServiceWorkerRegistrationImpl::BindRequest,
+                                base::Unretained(impl.get()),
+                                std::move(impl->info_->request)));
   impl->state_ = LifecycleState::kAttachedAndBound;
   return impl;
 }
@@ -77,30 +80,16 @@ WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
 // static
 scoped_refptr<WebServiceWorkerRegistrationImpl>
 WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
+    base::WeakPtr<ServiceWorkerProviderContext> provider_context) {
   DCHECK(info->request.is_pending());
-  auto* impl = new WebServiceWorkerRegistrationImpl(std::move(info));
+  scoped_refptr<WebServiceWorkerRegistrationImpl> impl =
+      new WebServiceWorkerRegistrationImpl(std::move(info),
+                                           std::move(provider_context));
   impl->host_for_client_.Bind(std::move(impl->info_->host_ptr_info));
   impl->BindRequest(std::move(impl->info_->request));
   impl->state_ = LifecycleState::kAttachedAndBound;
   return impl;
-}
-
-void WebServiceWorkerRegistrationImpl::AttachForServiceWorkerGlobalScope(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  if (state_ == LifecycleState::kAttachedAndBound)
-    return;
-  DCHECK_EQ(LifecycleState::kDetached, state_);
-  DCHECK(!info->request.is_pending());
-  Attach(std::move(info));
-
-  DCHECK(!host_for_global_scope_);
-  DCHECK(!host_for_client_);
-  host_for_global_scope_ =
-      blink::mojom::ThreadSafeServiceWorkerRegistrationObjectHostAssociatedPtr::
-          Create(std::move(info_->host_ptr_info), io_task_runner);
-  state_ = LifecycleState::kAttachedAndBound;
 }
 
 void WebServiceWorkerRegistrationImpl::AttachForServiceWorkerClient(
@@ -188,9 +177,9 @@ void WebServiceWorkerRegistrationImpl::Attach(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
   DCHECK(!info_);
   DCHECK(info);
-  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
-            info->handle_id);
-  DCHECK_EQ(handle_id_, info->handle_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationId,
+            info->registration_id);
+  DCHECK_EQ(registration_id_, info->registration_id);
   DCHECK(info->host_ptr_info.is_valid());
   info_ = std::move(info);
 }
@@ -401,26 +390,26 @@ void WebServiceWorkerRegistrationImpl::Destruct(
 }
 
 WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info)
-    : handle_id_(info->handle_id),
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
+    base::WeakPtr<ServiceWorkerProviderContext> provider_context)
+    : registration_id_(info->registration_id),
       proxy_(nullptr),
       binding_(this),
       creation_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      state_(LifecycleState::kInitial) {
+      state_(LifecycleState::kInitial),
+      provider_context_for_client_(std::move(provider_context)) {
   Attach(std::move(info));
 
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->AddServiceWorkerRegistration(handle_id_, this);
+  if (provider_context_for_client_)
+    provider_context_for_client_->AddServiceWorkerRegistration(registration_id_,
+                                                               this);
 }
 
 WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
   DCHECK_EQ(LifecycleState::kDead, state_);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  if (dispatcher)
-    dispatcher->RemoveServiceWorkerRegistration(handle_id_);
+  if (provider_context_for_client_)
+    provider_context_for_client_->RemoveServiceWorkerRegistration(
+        registration_id_);
 }
 
 void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
@@ -450,17 +439,20 @@ void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
   if (mask.installing_changed()) {
     DCHECK(installing);
     SetInstalling(dispatcher->GetOrCreateServiceWorker(
-        dispatcher->Adopt(std::move(installing))));
+        ServiceWorkerHandleReference::Adopt(std::move(installing),
+                                            dispatcher->thread_safe_sender())));
   }
   if (mask.waiting_changed()) {
     DCHECK(waiting);
     SetWaiting(dispatcher->GetOrCreateServiceWorker(
-        dispatcher->Adopt(std::move(waiting))));
+        ServiceWorkerHandleReference::Adopt(std::move(waiting),
+                                            dispatcher->thread_safe_sender())));
   }
   if (mask.active_changed()) {
     DCHECK(active);
     SetActive(dispatcher->GetOrCreateServiceWorker(
-        dispatcher->Adopt(std::move(active))));
+        ServiceWorkerHandleReference::Adopt(std::move(active),
+                                            dispatcher->thread_safe_sender())));
   }
 }
 

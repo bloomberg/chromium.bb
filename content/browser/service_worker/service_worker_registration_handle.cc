@@ -56,7 +56,6 @@ blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerRegistrationHandle::CreateObjectInfo() {
   DCHECK(provider_host_);
   auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
-  info->handle_id = handle_id_;
   info->options = blink::mojom::ServiceWorkerRegistrationOptions::New(
       registration_->pattern());
   info->registration_id = registration_->id();

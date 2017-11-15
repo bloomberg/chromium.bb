@@ -32,13 +32,24 @@ namespace {
 class MockServiceWorkerRegistrationObjectHost
     : public blink::mojom::ServiceWorkerRegistrationObjectHost {
  public:
-  MockServiceWorkerRegistrationObjectHost() = default;
+  MockServiceWorkerRegistrationObjectHost() {
+    bindings_.set_connection_error_handler(
+        base::Bind(&MockServiceWorkerRegistrationObjectHost::OnConnectionError,
+                   base::Unretained(this)));
+  }
   ~MockServiceWorkerRegistrationObjectHost() override = default;
 
   void AddBinding(
       blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedRequest
           request) {
     bindings_.AddBinding(this, std::move(request));
+  }
+
+  blink::mojom::ServiceWorkerRegistrationObjectAssociatedRequest
+  CreateRegistrationObjectRequest() {
+    if (!remote_registration_)
+      return mojo::MakeRequest(&remote_registration_);
+    return nullptr;
   }
 
   int GetBindingCount() const { return bindings_.size(); }
@@ -71,8 +82,19 @@ class MockServiceWorkerRegistrationObjectHost
                             base::nullopt);
   }
 
+  void OnConnectionError() {
+    // If there are still bindings, |this| is still being used.
+    if (!bindings_.empty())
+      return;
+    // Will destroy corresponding remote WebServiceWorkerRegistrationImpl
+    // instance.
+    remote_registration_.reset();
+  }
+
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;
+  blink::mojom::ServiceWorkerRegistrationObjectAssociatedPtr
+      remote_registration_;
 };
 
 class MockWebServiceWorkerProviderClientImpl
@@ -139,10 +161,11 @@ class ServiceWorkerProviderContextTest : public testing::Test {
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
   CreateServiceWorkerRegistrationObjectInfo() {
     auto info = blink::mojom::ServiceWorkerRegistrationObjectInfo::New();
-    info->handle_id = 10;
     info->registration_id = 20;
     remote_registration_object_host_.AddBinding(
         mojo::MakeRequest(&info->host_ptr_info));
+    info->request =
+        remote_registration_object_host_.CreateRegistrationObjectRequest();
 
     info->active = blink::mojom::ServiceWorkerObjectInfo::New();
     info->active->handle_id = 100;
@@ -154,6 +177,12 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     info->installing->handle_id = 102;
     info->installing->version_id = 202;
     return info;
+  }
+
+  bool ContainsRegistration(ServiceWorkerProviderContext* provider_context,
+                            int64_t registration_id) {
+    return provider_context->ContainsServiceWorkerRegistrationForTesting(
+        registration_id);
   }
 
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
@@ -352,6 +381,130 @@ TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
             ipc_sink()->GetMessageAt(0)->type());
   EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
             ipc_sink()->GetMessageAt(1)->type());
+}
+
+TEST_F(ServiceWorkerProviderContextTest,
+       SetAndTakeRegistrationForServiceWorkerGlobalScope) {
+  // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
+  const int kProviderId = 10;
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, nullptr, nullptr,
+      dispatcher(), nullptr /* loader_factory_getter */);
+
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
+      CreateServiceWorkerRegistrationObjectInfo();
+  int64_t registration_id = info->registration_id;
+  ASSERT_EQ(1, remote_registration_object_host().GetBindingCount());
+
+  provider_context->SetRegistrationForServiceWorkerGlobalScope(
+      std::move(info), thread_safe_sender());
+  EXPECT_EQ(0UL, ipc_sink()->message_count());
+
+  // Should return a registration object newly created with incrementing
+  // the refcounts.
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
+      provider_context->TakeRegistrationForServiceWorkerGlobalScope(
+          base::ThreadTaskRunnerHandle::Get());
+  EXPECT_TRUE(registration);
+  EXPECT_EQ(registration_id, registration->RegistrationId());
+  EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
+  ASSERT_EQ(3UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(1)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_IncrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(2)->type());
+
+  ipc_sink()->ClearMessages();
+
+  // The registration dtor decrements the refcounts.
+  registration = nullptr;
+  ASSERT_EQ(3UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(1)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(2)->type());
+  // The Mojo connection has been dropped.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, remote_registration_object_host().GetBindingCount());
+}
+
+TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration1;
+  scoped_refptr<WebServiceWorkerRegistrationImpl> registration2;
+  int64_t registration_id = blink::mojom::kInvalidServiceWorkerRegistrationId;
+  // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
+  const int kProviderId = 10;
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, SERVICE_WORKER_PROVIDER_FOR_WINDOW, nullptr, nullptr,
+      dispatcher(), nullptr /* loader_factory_getter */);
+
+  {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
+        CreateServiceWorkerRegistrationObjectInfo();
+    registration_id = info->registration_id;
+    // The 1st ServiceWorkerRegistrationObjectHost Mojo connection has been
+    // added.
+    ASSERT_EQ(1, remote_registration_object_host().GetBindingCount());
+
+    ASSERT_FALSE(ContainsRegistration(provider_context.get(), registration_id));
+    // Should return a registration object newly created with adopting the
+    // refcounts.
+    registration1 =
+        provider_context->GetOrCreateRegistrationForServiceWorkerClient(
+            std::move(info));
+    EXPECT_TRUE(registration1);
+    EXPECT_TRUE(ContainsRegistration(provider_context.get(), registration_id));
+    EXPECT_EQ(registration_id, registration1->RegistrationId());
+    EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
+    EXPECT_EQ(0UL, ipc_sink()->message_count());
+  }
+
+  ipc_sink()->ClearMessages();
+
+  {
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info =
+        CreateServiceWorkerRegistrationObjectInfo();
+    // The 2nd Mojo connection has been added.
+    ASSERT_EQ(2, remote_registration_object_host().GetBindingCount());
+    // Should return the same registration object without incrementing the
+    // refcounts.
+    registration2 =
+        provider_context->GetOrCreateRegistrationForServiceWorkerClient(
+            std::move(info));
+    EXPECT_TRUE(registration2);
+    EXPECT_EQ(registration1, registration2);
+    // The 2nd Mojo connection has been dropped.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(1, remote_registration_object_host().GetBindingCount());
+    ASSERT_EQ(3UL, ipc_sink()->message_count());
+    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+              ipc_sink()->GetMessageAt(0)->type());
+    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+              ipc_sink()->GetMessageAt(1)->type());
+    EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+              ipc_sink()->GetMessageAt(2)->type());
+  }
+
+  ipc_sink()->ClearMessages();
+
+  // The registration dtor decrements the refcounts.
+  registration1 = nullptr;
+  registration2 = nullptr;
+  ASSERT_EQ(3UL, ipc_sink()->message_count());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(0)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(1)->type());
+  EXPECT_EQ(ServiceWorkerHostMsg_DecrementServiceWorkerRefCount::ID,
+            ipc_sink()->GetMessageAt(2)->type());
+  // The 1st Mojo connection has been dropped.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(ContainsRegistration(provider_context.get(), registration_id));
+  EXPECT_EQ(0, remote_registration_object_host().GetBindingCount());
 }
 
 }  // namespace content
