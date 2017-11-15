@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
@@ -173,8 +174,18 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
       ui::VKEY_S, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
       kAccelNameBootstrappingSlave;
 
-  for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
-    AddAccelerator(i->first);
+  for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i) {
+    if (!ash_util::IsRunningInMash()) {
+      // To make reset accelerator work while system tray is open, register it
+      // at accelerator controller.
+      ash::Shell::Get()->accelerator_controller()->Register({i->first}, this);
+    } else {
+      // TODO(crbug.com/782072): In mash, accelerators are not available if
+      // system tray is open.
+      NOTIMPLEMENTED();
+      AddAccelerator(i->first);
+    }
+  }
 
   if (!ash_util::IsRunningInMash())
     ash::Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
@@ -194,6 +205,9 @@ WebUILoginView::~WebUILoginView() {
     ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
         this);
   }
+
+  if (!ash_util::IsRunningInMash())
+    ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
 
   // Clear any delegates we have set on the WebView.
   WebContents* web_contents = web_view()->GetWebContents();
