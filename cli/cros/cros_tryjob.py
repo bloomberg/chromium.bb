@@ -430,7 +430,8 @@ List Examples:
         msg = ('These configs are not tryjob safe:\n'
                '  %s\n'
                'Consider these configs instead:\n'
-               '  %s\n' %
+               '  %s\n'
+               'See go/cros-explicit-tryjob-build-configs-psa.' %
                (', '.join(prod_configs), ', '.join(alternative_configs)))
 
         if self.options.branch == 'master':

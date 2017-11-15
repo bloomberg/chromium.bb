@@ -715,7 +715,8 @@ def _PostParseCheck(parser, options, site_config):
           options.debug):
     cros_build_lib.Die(
         'Refusing to run non-tryjob config as a tryjob.\n'
-        'Please see "repo sync && cros tryjob --list %s" for alternatives.',
+        'Please see "repo sync && cros tryjob --list %s" for alternatives.\n'
+        'See go/cros-explicit-tryjob-build-configs-psa.',
         build_config.name)
 
   # The --version option is not compatible with an external target unless the
