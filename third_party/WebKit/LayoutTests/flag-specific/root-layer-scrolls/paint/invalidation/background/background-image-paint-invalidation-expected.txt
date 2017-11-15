@@ -24,6 +24,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 808, 2016],
+          "reason": "background on scrolling contents layer"
+        },
+        {
           "object": "LayoutBlockFlow BODY",
           "rect": [8, 8, 800, 2000],
           "reason": "style change"
@@ -32,6 +37,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
     {
       "object": "LayoutView #document",
       "reason": "style change"

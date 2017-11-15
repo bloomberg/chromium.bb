@@ -1852,9 +1852,6 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
   if (affects_parent_block_)
     HandleDynamicFloatPositionChange(this);
 
-  if (!parent_)
-    return;
-
   if (diff.NeedsFullLayout()) {
     // If the in-flow state of an element is changed, disable scroll
     // anchoring on the containing scroller.

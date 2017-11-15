@@ -24,6 +24,11 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "background on scrolling contents layer"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [6, 4, 788, 592],
           "reason": "style change"
@@ -37,6 +42,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Scrolling Contents Layer",
+      "reason": "background on scrolling contents layer"
+    },
     {
       "object": "LayoutView #document",
       "reason": "style change"
