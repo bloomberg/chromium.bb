@@ -179,8 +179,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const blink::WebRect& viewportIntersection) override;
   void VisibilityChanged(bool visible) override;
   void SetIsInert(bool) override;
-  void UpdateRenderThrottlingStatus(bool is_throttled,
-                                    bool subtree_throttled) override;
   void DidChangeOpener(blink::WebFrame* opener) override;
   void AdvanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;

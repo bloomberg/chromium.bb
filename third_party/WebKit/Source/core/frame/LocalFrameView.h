@@ -902,17 +902,6 @@ class CORE_EXPORT LocalFrameView final
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
-  enum ForceThrottlingInvalidationBehavior {
-    kDontForceThrottlingInvalidation,
-    kForceThrottlingInvalidation
-  };
-  enum NotifyChildrenBehavior { kDontNotifyChildren, kNotifyChildren };
-  void UpdateRenderThrottlingStatus(
-      bool hidden,
-      bool subtree_throttled,
-      ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
-      NotifyChildrenBehavior = kNotifyChildren);
-
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);
@@ -1105,6 +1094,16 @@ class CORE_EXPORT LocalFrameView final
   void UpdateViewportIntersectionsForSubtree(
       DocumentLifecycle::LifecycleState) override;
 
+  enum ForceThrottlingInvalidationBehavior {
+    kDontForceThrottlingInvalidation,
+    kForceThrottlingInvalidation
+  };
+  enum NotifyChildrenBehavior { kDontNotifyChildren, kNotifyChildren };
+  void UpdateRenderThrottlingStatus(
+      bool hidden,
+      bool subtree_throttled,
+      ForceThrottlingInvalidationBehavior = kDontForceThrottlingInvalidation,
+      NotifyChildrenBehavior = kNotifyChildren);
   void NotifyResizeObservers();
 
   // PaintInvalidationCapableScrollableArea

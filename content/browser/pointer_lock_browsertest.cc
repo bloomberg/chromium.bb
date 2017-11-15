@@ -323,8 +323,6 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   RenderWidgetHostViewBase* child_view = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetView());
 
-  WaitForChildFrameSurfaceReady(child->current_frame_host());
-
   // Request a pointer lock on the root frame's body.
   EXPECT_TRUE(ExecuteScript(root, "document.body.requestPointerLock()"));
 

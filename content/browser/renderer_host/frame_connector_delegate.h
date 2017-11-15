@@ -155,11 +155,6 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // RenderWidgetHostView::Hide() is called on the current view.
   virtual bool IsHidden() const;
 
-  // Determines whether the child frame should be render throttled, which
-  // happens when the entire rect is offscreen.
-  virtual bool IsThrottled() const;
-  virtual bool IsSubtreeThrottled() const;
-
   // Called by RenderWidgetHostViewChildFrame to update the visibility of any
   // nested child RWHVCFs inside it.
   virtual void SetVisibilityForChildViews(bool visible) const {}

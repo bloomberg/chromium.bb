@@ -557,11 +557,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetViewportIntersection,
 // Sets the inert bit on an out-of-process iframe.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetIsInert, bool /* inert */)
 
-// Toggles render throttling for an out-of-process iframe.
-IPC_MESSAGE_ROUTED2(ViewMsg_UpdateRenderThrottlingStatus,
-                    bool /* is_throttled */,
-                    bool /* subtree_throttled */)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
