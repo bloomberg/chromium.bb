@@ -4,37 +4,6 @@
 
 /** @fileoverview Suite of tests for extension-toolbar. */
 cr.define('extension_toolbar_tests', function() {
-  /**
-   * A mock delegate for the toolbar.
-   * @constructor
-   * @implements {extensions.ToolbarDelegate}
-   * @extends TestBrowserProxy
-   */
-  class MockDelegate extends TestBrowserProxy {
-    constructor() {
-      super([
-        'loadUnpacked',
-        'setProfileInDevMode',
-        'updateAllExtensions',
-      ]);
-    }
-
-    /** @override */
-    loadUnpacked() {
-      this.methodCalled('loadUnpacked');
-      return Promise.resolve();
-    }
-
-    /** @override */
-    setProfileInDevMode(inDevMode) {
-      this.methodCalled('setProfileInDevMode', inDevMode);
-    }
-
-    updateAllExtensions() {
-      this.methodCalled('updateAllExtensions');
-    }
-  }
-
   /** @enum {string} */
   var TestNames = {
     Layout: 'layout',
@@ -52,7 +21,7 @@ cr.define('extension_toolbar_tests', function() {
     setup(function() {
       toolbar = document.querySelector('extensions-manager').$$(
           'extensions-toolbar');
-      mockDelegate = new MockDelegate();
+      mockDelegate = new extensions.TestService();
       toolbar.set('delegate', mockDelegate);
     });
 

@@ -4,27 +4,6 @@
 
 /** @fileoverview Suite of tests for extension-keyboard-shortcuts. */
 cr.define('extension_shortcut_input_tests', function() {
-  class DelegateMock extends TestBrowserProxy {
-    constructor() {
-      super(['setShortcutHandlingSuspended', 'updateExtensionCommand']);
-    }
-
-    /** @param {boolean} enable */
-    setShortcutHandlingSuspended(enable) {
-      this.methodCalled('setShortcutHandlingSuspended', enable);
-    }
-
-    /**
-     * @param {string} item
-     * @param {string} commandName
-     * @param {string} keybinding
-     */
-    updateExtensionCommand(item, commandName, keybinding) {
-      this.methodCalled(
-          'updateExtensionCommand', [item, commandName, keybinding]);
-    }
-  }
-
   /** @enum {string} */
   const TestNames = {
     Basic: 'basic',
@@ -38,7 +17,7 @@ cr.define('extension_shortcut_input_tests', function() {
     setup(function() {
       PolymerTest.clearBody();
       input = new extensions.ShortcutInput();
-      input.delegate = new DelegateMock();
+      input.delegate = new extensions.TestService();
       input.commandName = 'Command';
       input.item = 'itemid';
       document.body.appendChild(input);
