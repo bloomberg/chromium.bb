@@ -107,6 +107,11 @@ class NetworkHandler : public DevToolsDomainHandler,
       Maybe<protocol::Network::AuthChallengeResponse> auth_challenge_response,
       std::unique_ptr<ContinueInterceptedRequestCallback> callback) override;
 
+  void GetResponseBodyForInterception(
+      const String& interception_id,
+      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback)
+      override;
+
   void NavigationPreloadRequestSent(int worker_version_id,
                                     const std::string& request_id,
                                     const ResourceRequest& request);
