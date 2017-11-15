@@ -589,6 +589,19 @@ def git_checkouts(solutions, revisions, shallow, refs, git_cache_dir,
 
 def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
                   cleanup_dir):
+  name = sln['name']
+  url = sln['url']
+  if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
+    # Experiments show there's little to be gained from
+    # a shallow clone of src.
+    shallow = False
+  sln_dir = path.join(build_dir, name)
+  s = ['--shallow'] if shallow else []
+  populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
+                   '--cache-dir', git_cache_dir] + s + [url])
+  for ref in refs:
+    populate_cmd.extend(['--ref', ref])
+
   # Just in case we're hitting a different git server than the one from
   # which the target revision was polled, we retry some.
   done = False
@@ -599,18 +612,6 @@ def _git_checkout(sln, build_dir, revisions, shallow, refs, git_cache_dir,
   deadline = time.time() + 60
   tries = 0
   while not done:
-    name = sln['name']
-    url = sln['url']
-    if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-      # Experiments show there's little to be gained from
-      # a shallow clone of src.
-      shallow = False
-    sln_dir = path.join(build_dir, name)
-    s = ['--shallow'] if shallow else []
-    populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                     '--cache-dir', git_cache_dir] + s + [url])
-    for ref in refs:
-      populate_cmd.extend(['--ref', ref])
     git(*populate_cmd)
     mirror_dir = git(
         'cache', 'exists', '--quiet',
