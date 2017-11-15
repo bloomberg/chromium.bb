@@ -1479,9 +1479,12 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
       spdy_util_.ConstructSpdyPriority(4, 2, IDLE, true));
   SpdySerializedFrame rst_a(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
+  SpdySerializedFrame rst_b(
+      spdy_util_.ConstructSpdyRstStream(4, ERROR_CODE_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(req, 0), CreateMockWrite(priority_a, 2),
+      CreateMockWrite(req, 0),        CreateMockWrite(priority_a, 2),
       CreateMockWrite(priority_b, 6), CreateMockWrite(rst_a, 7),
+      CreateMockWrite(rst_b, 9),
   };
 
   SpdySerializedFrame push_a(spdy_util_.ConstructSpdyPush(
@@ -1494,7 +1497,7 @@ TEST_F(SpdySessionTest, CancelPushBeforeClaimed) {
   MockRead reads[] = {
       CreateMockRead(push_a, 1),          CreateMockRead(push_a_body, 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4), CreateMockRead(push_b, 5),
-      MockRead(ASYNC, ERR_IO_PENDING, 8), MockRead(ASYNC, 0, 9)  // EOF
+      MockRead(ASYNC, ERR_IO_PENDING, 8), MockRead(ASYNC, 0, 10)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
