@@ -61,14 +61,16 @@ public class PasswordEntryEditor extends Fragment {
     // Constants used to log UMA enum histogram, must stay in sync with
     // PasswordManagerAndroidWebsiteActions. Further actions can only be appended, existing
     // entries must not be overwritten.
+    // NOTE: BOUNDARY must be at least 2, even if only COPIED currently exists (crbug.com/781959).
     private static final int WEBSITE_ACTION_COPIED = 0;
-    private static final int WEBSITE_ACTION_BOUNDARY = 1;
+    private static final int WEBSITE_ACTION_BOUNDARY = 2;
 
     // Constants used to log UMA enum histogram, must stay in sync with
     // PasswordManagerAndroidUsernameActions. Further actions can only be appended, existing
     // entries must not be overwritten.
+    // NOTE: BOUNDARY must be at least 2, even if only COPIED currently exists (crbug.com/781959).
     private static final int USERNAME_ACTION_COPIED = 0;
-    private static final int USERNAME_ACTION_BOUNDARY = 1;
+    private static final int USERNAME_ACTION_BOUNDARY = 2;
 
     // Constants used to log UMA enum histogram, must stay in sync with
     // PasswordManagerAndroidPasswordActions. Further actions can only be appended, existing
