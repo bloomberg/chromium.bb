@@ -28,17 +28,13 @@ Polymer({
       reflectToAttribute: true,
       observer: 'disabledChanged_',
     },
-
-    tabIndex: {
-      type: Number,
-      value: 0,
-    },
   },
 
   hostAttributes: {
     'aria-disabled': 'false',
     'aria-pressed': 'false',
     role: 'button',
+    tabindex: 0,
   },
 
   listeners: {
@@ -99,7 +95,7 @@ Polymer({
 
   /** @private */
   disabledChanged_: function() {
-    this.tabIndex = this.disabled ? -1 : 0;
+    this.setAttribute('tabindex', this.disabled ? -1 : 0);
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
   },
 
