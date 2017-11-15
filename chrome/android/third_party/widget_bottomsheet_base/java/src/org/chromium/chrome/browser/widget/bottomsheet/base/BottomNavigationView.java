@@ -81,6 +81,7 @@ import android.widget.FrameLayout;
  * &lt;/menu&gt;
  * </pre>
  */
+@SuppressWarnings("RestrictTo")
 public class BottomNavigationView extends FrameLayout {
     private static final int[] CHECKED_STATE_SET = {android.R.attr.state_checked};
     private static final int[] DISABLED_STATE_SET = {-android.R.attr.state_enabled};

@@ -625,8 +625,7 @@ public class DownloadNotificationService extends Service {
      *                               here if there is a notification that should be assumed gone.
      *                               Or pass -1 if no notification fits that criteria.
      */
-    @SuppressWarnings("NewApi")
-    @SuppressLint("NewApi")
+    @SuppressLint("NewApi") // useForegroundService guards StatusBarNotification.getNotification
     boolean hideSummaryNotificationIfNecessary(int notificationIdToIgnore) {
         if (mDownloadsInProgress.size() > 0) return false;
 
