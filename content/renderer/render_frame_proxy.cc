@@ -622,6 +622,7 @@ void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
 
 void RenderFrameProxy::FrameRectsChanged(const blink::WebRect& frame_rect) {
   pending_resize_params_.frame_rect = gfx::Rect(frame_rect);
+  pending_resize_params_.screen_info = render_widget_->screen_info();
   WasResized();
 }
 
