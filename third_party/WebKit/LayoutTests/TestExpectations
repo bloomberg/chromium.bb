@@ -4040,3 +4040,4 @@ crbug.com/785179 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector-protoc
 crbug.com/785179 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector-protocol/network/request-interception-on-both-redirect-rewrite.js [ Skip ]
 crbug.com/785179 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector-protocol/network/request-interception-on-response-redirect.js [ Skip ]
 crbug.com/785187 [ Mac ] virtual/mojo-loading/http/tests/devtools/elements/elements-panel-rewrite-href.js [ Skip ]
+crbug.com/785187 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
