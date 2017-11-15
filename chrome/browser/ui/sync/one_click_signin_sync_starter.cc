@@ -70,22 +70,6 @@ void SetUserChoiceHistogram(SigninChoice choice) {
                             SIGNIN_CHOICE_SIZE);
 }
 
-// Lock the profile in memory when |enable| is false. Or unlock the profile
-// if |enable| is true. This is used by force-sign-in policy only.
-void EnableProfileForForceSigninInMemory(Profile* profile, bool enable) {
-  ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile->GetPath(), &entry);
-  DCHECK(has_entry);
-  if (enable) {
-    entry->SetIsSigninRequired(false);
-  } else {
-    entry->LockForceSigninProfile(true);
-  }
-}
-
 }  // namespace
 
 OneClickSigninSyncStarter::OneClickSigninSyncStarter(
@@ -279,6 +263,11 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
   dm_token_ = dm_token;
   client_id_ = client_id;
 
+  if (signin_util::IsForceSigninEnabled()) {
+    LoadPolicyWithCachedCredentials();
+    return;
+  }
+
   // Allow user to create a new profile before continuing with sign-in.
   browser_ = EnsureBrowser(browser_, profile_);
   content::WebContents* web_contents =
@@ -295,10 +284,6 @@ void OneClickSigninSyncStarter::OnRegisteredForPolicy(
                                       signin->GetUsernameForAuthInProgress(),
                                       std::make_unique<SigninDialogDelegate>(
                                           weak_pointer_factory_.GetWeakPtr()));
-  // If force signin enabled, lock the profile when dialog is being displayed to
-  // avoid new browser window opened.
-  if (signin_util::IsForceSigninEnabled())
-    EnableProfileForForceSigninInMemory(profile_, false);
 }
 
 void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
@@ -314,9 +299,6 @@ void OneClickSigninSyncStarter::LoadPolicyWithCachedCredentials() {
       profile_->GetRequestContext(),
       base::Bind(&OneClickSigninSyncStarter::OnPolicyFetchComplete,
                  weak_pointer_factory_.GetWeakPtr()));
-
-  // Unlock the profile after loading policies.
-  EnableProfileForForceSigninInMemory(profile_, true);
 }
 
 void OneClickSigninSyncStarter::OnPolicyFetchComplete(bool success) {
@@ -391,11 +373,18 @@ void OneClickSigninSyncStarter::CompleteInitForNewProfile(
         DCHECK(!client_id_.empty());
         LoadPolicyWithCachedCredentials();
       } else {
-        // No policy to load - simply complete the signin process and unlock the
-        // profile.
+        // No policy to load - simply complete the signin process.
         SigninManagerFactory::GetForProfile(profile_)->CompletePendingSignin();
-        EnableProfileForForceSigninInMemory(profile_, true);
       }
+
+      // Unlock the new profile.
+      ProfileAttributesEntry* entry;
+      bool has_entry =
+          g_browser_process->profile_manager()
+              ->GetProfileAttributesStorage()
+              .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+      DCHECK(has_entry);
+      entry->SetIsSigninRequired(false);
 
       // Open the profile's first window, after all initialization.
       profiles::FindOrCreateNewWindowForProfile(
