@@ -1282,6 +1282,8 @@ TEST(ThumbnailDatabaseIconTypeTest, ShouldBeBackwardCompatible) {
             ThumbnailDatabase::FromPersistedIconType(4));
   EXPECT_EQ(favicon_base::IconType::kWebManifestIcon,
             ThumbnailDatabase::FromPersistedIconType(8));
+  EXPECT_EQ(favicon_base::IconType::kInvalid,
+            ThumbnailDatabase::FromPersistedIconType(16));
 }
 
 }  // namespace history
