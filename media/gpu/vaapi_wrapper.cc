@@ -303,13 +303,13 @@ static std::vector<VAConfigAttrib> GetRequiredAttribs(
 
 // This class encapsulates reading and giving access to the list of supported
 // ProfileInfo entries, in a singleton way.
-class LazyProfileInfos {
+class VASupportedProfiles {
  public:
   struct ProfileInfo {
     VAProfile va_profile;
     gfx::Size max_resolution;
   };
-  static LazyProfileInfos* Get();
+  static VASupportedProfiles* Get();
 
   std::vector<ProfileInfo> GetSupportedProfileInfosForCodecMode(
       VaapiWrapper::CodecMode mode);
@@ -317,8 +317,8 @@ class LazyProfileInfos {
   bool IsProfileSupported(VaapiWrapper::CodecMode mode, VAProfile va_profile);
 
  private:
-  LazyProfileInfos();
-  ~LazyProfileInfos();
+  VASupportedProfiles();
+  ~VASupportedProfiles();
 
   bool GetSupportedVAProfiles(std::vector<VAProfile>* profiles);
 
@@ -355,19 +355,19 @@ class LazyProfileInfos {
 };
 
 // static
-LazyProfileInfos* LazyProfileInfos::Get() {
-  static LazyProfileInfos* profile_infos = new LazyProfileInfos();
+VASupportedProfiles* VASupportedProfiles::Get() {
+  static VASupportedProfiles* profile_infos = new VASupportedProfiles();
   return profile_infos;
 }
 
-std::vector<LazyProfileInfos::ProfileInfo>
-LazyProfileInfos::GetSupportedProfileInfosForCodecMode(
+std::vector<VASupportedProfiles::ProfileInfo>
+VASupportedProfiles::GetSupportedProfileInfosForCodecMode(
     VaapiWrapper::CodecMode mode) {
   return supported_profiles_[mode];
 }
 
-bool LazyProfileInfos::IsProfileSupported(VaapiWrapper::CodecMode mode,
-                                          VAProfile va_profile) {
+bool VASupportedProfiles::IsProfileSupported(VaapiWrapper::CodecMode mode,
+                                             VAProfile va_profile) {
   for (const auto& profile : supported_profiles_[mode]) {
     if (profile.va_profile == va_profile)
       return true;
@@ -375,7 +375,7 @@ bool LazyProfileInfos::IsProfileSupported(VaapiWrapper::CodecMode mode,
   return false;
 }
 
-LazyProfileInfos::LazyProfileInfos()
+VASupportedProfiles::VASupportedProfiles()
     : va_lock_(VADisplayState::Get()->va_lock()),
       va_display_(nullptr),
       report_error_to_uma_cb_(base::Bind(&base::DoNothing)) {
@@ -400,15 +400,15 @@ LazyProfileInfos::LazyProfileInfos()
   }
 }
 
-LazyProfileInfos::~LazyProfileInfos() {
+VASupportedProfiles::~VASupportedProfiles() {
   VAStatus va_res = VA_STATUS_SUCCESS;
   VADisplayState::Get()->Deinitialize(&va_res);
   VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
   va_display_ = nullptr;
 }
 
-std::vector<LazyProfileInfos::ProfileInfo>
-LazyProfileInfos::GetSupportedProfileInfosForCodecModeInternal(
+std::vector<VASupportedProfiles::ProfileInfo>
+VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) {
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
@@ -438,7 +438,7 @@ LazyProfileInfos::GetSupportedProfileInfosForCodecModeInternal(
   return supported_profile_infos;
 }
 
-bool LazyProfileInfos::GetSupportedVAProfiles(
+bool VASupportedProfiles::GetSupportedVAProfiles(
     std::vector<VAProfile>* profiles) {
   base::AutoLock auto_lock(*va_lock_);
   // Query the driver for supported profiles.
@@ -460,8 +460,9 @@ bool LazyProfileInfos::GetSupportedVAProfiles(
   return true;
 }
 
-bool LazyProfileInfos::IsEntrypointSupported_Locked(VAProfile va_profile,
-                                                    VAEntrypoint entrypoint) {
+bool VASupportedProfiles::IsEntrypointSupported_Locked(
+    VAProfile va_profile,
+    VAEntrypoint entrypoint) {
   va_lock_->AssertAcquired();
   // Query the driver for supported entrypoints.
   int max_entrypoints = vaMaxNumEntrypoints(va_display_);
@@ -483,7 +484,7 @@ bool LazyProfileInfos::IsEntrypointSupported_Locked(VAProfile va_profile,
   return base::ContainsValue(supported_entrypoints, entrypoint);
 }
 
-bool LazyProfileInfos::AreAttribsSupported_Locked(
+bool VASupportedProfiles::AreAttribsSupported_Locked(
     VAProfile va_profile,
     VAEntrypoint entrypoint,
     const std::vector<VAConfigAttrib>& required_attribs) {
@@ -509,7 +510,7 @@ bool LazyProfileInfos::AreAttribsSupported_Locked(
   return true;
 }
 
-bool LazyProfileInfos::GetMaxResolution_Locked(
+bool VASupportedProfiles::GetMaxResolution_Locked(
     VAProfile va_profile,
     VAEntrypoint entrypoint,
     std::vector<VAConfigAttrib>& required_attribs,
@@ -564,14 +565,14 @@ VAProfile ProfileToVAProfile(VideoCodecProfile profile,
       break;
     }
   }
-  if (!LazyProfileInfos::Get()->IsProfileSupported(mode, va_profile) &&
+  if (!VASupportedProfiles::Get()->IsProfileSupported(mode, va_profile) &&
       va_profile == VAProfileH264Baseline) {
     // https://crbug.com/345569: ProfileIDToVideoCodecProfile() currently strips
     // the information whether the profile is constrained or not, so we have no
     // way to know here. Try for baseline first, but if it is not supported,
     // try constrained baseline and hope this is what it actually is
     // (which in practice is true for a great majority of cases).
-    if (LazyProfileInfos::Get()->IsProfileSupported(
+    if (VASupportedProfiles::Get()->IsProfileSupported(
             mode, VAProfileH264ConstrainedBaseline)) {
       va_profile = VAProfileH264ConstrainedBaseline;
       DVLOG(1) << "Fall back to constrained baseline profile.";
@@ -611,7 +612,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     VAProfile va_profile,
     const base::Closure& report_error_to_uma_cb) {
-  if (!LazyProfileInfos::Get()->IsProfileSupported(mode, va_profile)) {
+  if (!VASupportedProfiles::Get()->IsProfileSupported(mode, va_profile)) {
     DVLOG(1) << "Unsupported va_profile: " << va_profile;
     return nullptr;
   }
@@ -638,8 +639,8 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
 VideoEncodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedEncodeProfiles() {
   VideoEncodeAccelerator::SupportedProfiles profiles;
-  std::vector<LazyProfileInfos::ProfileInfo> encode_profile_infos =
-      LazyProfileInfos::Get()->GetSupportedProfileInfosForCodecMode(kEncode);
+  std::vector<VASupportedProfiles::ProfileInfo> encode_profile_infos =
+      VASupportedProfiles::Get()->GetSupportedProfileInfosForCodecMode(kEncode);
 
   for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
     VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kEncode);
@@ -664,8 +665,8 @@ VaapiWrapper::GetSupportedEncodeProfiles() {
 VideoDecodeAccelerator::SupportedProfiles
 VaapiWrapper::GetSupportedDecodeProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles;
-  std::vector<LazyProfileInfos::ProfileInfo> decode_profile_infos =
-      LazyProfileInfos::Get()->GetSupportedProfileInfosForCodecMode(kDecode);
+  std::vector<VASupportedProfiles::ProfileInfo> decode_profile_infos =
+      VASupportedProfiles::Get()->GetSupportedProfileInfosForCodecMode(kDecode);
 
   for (size_t i = 0; i < arraysize(kProfileMap); ++i) {
     VAProfile va_profile = ProfileToVAProfile(kProfileMap[i].profile, kDecode);
@@ -687,8 +688,8 @@ VaapiWrapper::GetSupportedDecodeProfiles() {
 
 // static
 bool VaapiWrapper::IsJpegDecodeSupported() {
-  return LazyProfileInfos::Get()->IsProfileSupported(kDecode,
-                                                     VAProfileJPEGBaseline);
+  return VASupportedProfiles::Get()->IsProfileSupported(kDecode,
+                                                        VAProfileJPEGBaseline);
 }
 
 void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
