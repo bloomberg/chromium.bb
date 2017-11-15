@@ -55,9 +55,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                   Maybe<int> max_resource_size) override;
   Response Disable() override;
 
-  void ClearBrowserCache(
-      std::unique_ptr<ClearBrowserCacheCallback> callback) override;
-
+  Response ClearBrowserCache() override;
   void ClearBrowserCookies(
       std::unique_ptr<ClearBrowserCookiesCallback> callback) override;
 

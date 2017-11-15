@@ -738,42 +738,16 @@ Response NetworkHandler::Disable() {
   return Response::FallThrough();
 }
 
-class DevtoolsClearCacheObserver
-    : public content::BrowsingDataRemover::Observer {
- public:
-  explicit DevtoolsClearCacheObserver(
-      content::BrowsingDataRemover* remover,
-      std::unique_ptr<NetworkHandler::ClearBrowserCacheCallback> callback)
-      : remover_(remover), callback_(std::move(callback)) {
-    remover_->AddObserver(this);
-  }
-
-  ~DevtoolsClearCacheObserver() override { remover_->RemoveObserver(this); }
-  void OnBrowsingDataRemoverDone() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback_->sendSuccess();
-    delete this;
-  }
-
- private:
-  content::BrowsingDataRemover* remover_;
-  std::unique_ptr<NetworkHandler::ClearBrowserCacheCallback> callback_;
-};
-
-void NetworkHandler::ClearBrowserCache(
-    std::unique_ptr<ClearBrowserCacheCallback> callback) {
-  if (!process_) {
-    callback->sendFailure(Response::InternalError());
-    return;
-  }
+Response NetworkHandler::ClearBrowserCache() {
+  if (!process_)
+    return Response::InternalError();
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(
           process_->GetBrowserContext());
-  remover->RemoveAndReply(
-      base::Time(), base::Time::Max(),
-      content::BrowsingDataRemover::DATA_TYPE_CACHE,
-      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
-      new DevtoolsClearCacheObserver(remover, std::move(callback)));
+  remover->Remove(base::Time(), base::Time::Max(),
+                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
+                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
+  return Response::OK();
 }
 
 void NetworkHandler::ClearBrowserCookies(
