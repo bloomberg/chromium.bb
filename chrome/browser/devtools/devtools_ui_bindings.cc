@@ -484,6 +484,7 @@ GURL DevToolsUIBindings::SanitizeFrontendURL(const GURL& url) {
       chrome::kChromeUIDevToolsHost, SanitizeFrontendPath(url.path()), true);
 }
 
+// static
 bool DevToolsUIBindings::IsValidFrontendURL(const GURL& url) {
   if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host() == content::kChromeUITracingHost &&
@@ -492,6 +493,12 @@ bool DevToolsUIBindings::IsValidFrontendURL(const GURL& url) {
   }
 
   return SanitizeFrontendURL(url).spec() == url.spec();
+}
+
+bool DevToolsUIBindings::IsValidRemoteFrontendURL(const GURL& url) {
+  return ::SanitizeFrontendURL(url, url::kHttpsScheme, kRemoteFrontendDomain,
+                               url.path(), true)
+             .spec() == url.spec();
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
@@ -1369,6 +1376,14 @@ void DevToolsUIBindings::ReadyToCommitNavigation(
             web_contents_->GetMainFrame() &&
         frontend_host_) {
       return;
+    }
+    if (content::RenderFrameHost* opener = web_contents_->GetOpener()) {
+      content::WebContents* opener_wc =
+          content::WebContents::FromRenderFrameHost(opener);
+      DevToolsUIBindings* opener_bindings =
+          opener_wc ? DevToolsUIBindings::ForWebContents(opener_wc) : nullptr;
+      if (!opener_bindings || !opener_bindings->frontend_host_)
+        return;
     }
     frontend_host_.reset(content::DevToolsFrontendHost::Create(
         navigation_handle->GetRenderFrameHost(),
