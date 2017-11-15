@@ -87,6 +87,7 @@ public class ChildProcessConnectionTest {
 
     private final ChildProcessConnection.ChildServiceConnectionFactory mServiceConnectionFactory =
             new ChildProcessConnection.ChildServiceConnectionFactory() {
+                @Override
                 public ChildProcessConnection.ChildServiceConnection createConnection(
                         Intent bindIntent, int bindFlags,
                         ChildProcessConnection.ChildServiceConnectionDelegate delegate) {

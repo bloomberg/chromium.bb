@@ -47,6 +47,7 @@ public class TestStatusListener implements TestListener {
         @param test The test in which the failure occurred.
         @param t The exception that was raised.
      */
+    @Override
     public void addFailure(Test test, AssertionFailedError e) {
         Log.e(TAG, "Failure while running " + test.toString(), e);
         mFailed = true;

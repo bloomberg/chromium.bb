@@ -345,6 +345,7 @@ public class MinidumpUploaderImplTest {
             mSucceed = succeed;
         }
 
+        @Override
         public HttpURLConnection createHttpURLConnection(String url) {
             try {
                 return new MinidumpUploadCallableTest.TestHttpURLConnection(new URL(url)) {
@@ -360,6 +361,7 @@ public class MinidumpUploaderImplTest {
     }
 
     private static class FailingHttpUrlConnectionFactory implements HttpURLConnectionFactory {
+        @Override
         public HttpURLConnection createHttpURLConnection(String url) {
             return null;
         }

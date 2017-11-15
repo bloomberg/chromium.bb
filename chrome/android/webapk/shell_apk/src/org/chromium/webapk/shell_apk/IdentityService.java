@@ -14,6 +14,7 @@ import org.chromium.webapk.lib.common.identity_service.IIdentityService;
 /** IdentityService allows browsers to query information about the WebAPK. */
 public class IdentityService extends Service {
     private final IIdentityService.Stub mBinder = new IIdentityService.Stub() {
+        @Override
         public String getRuntimeHostBrowserPackageName() {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
             try {

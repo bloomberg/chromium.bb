@@ -75,6 +75,7 @@ public class ChromotingDownloadManager {
 
         if (mUnfinishedDownloadIds.isEmpty()) {
             mActivity.runOnUiThread(new Runnable() {
+                @Override
                 public void run() {
                     mCallback.onBatchDownloadComplete();
                 }

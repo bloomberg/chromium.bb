@@ -31,6 +31,7 @@ public class BackgroundShadowAsyncTask<Params, Progress, Result> extends
 
     private static final ExecutorService sExecutorService = Executors.newSingleThreadExecutor();
 
+    @Override
     @Implementation
     @SafeVarargs
     public final AsyncTask<Params, Progress, Result> execute(final Params... params) {
@@ -47,6 +48,7 @@ public class BackgroundShadowAsyncTask<Params, Progress, Result> extends
         }
     }
 
+    @Override
     @Implementation
     public final Result get() {
         try {

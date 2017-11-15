@@ -114,20 +114,24 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             mCallback = callback;
         }
 
+        @Override
         public Uri getOrigin() {
             return Uri.parse(mOrigin);
         }
 
+        @Override
         public String[] getResources() {
             return new String[] { WebViewBrowserActivity.RESOURCE_GEO };
         }
 
+        @Override
         public void grant(String[] resources) {
             assert resources.length == 1;
             assert WebViewBrowserActivity.RESOURCE_GEO.equals(resources[0]);
             mCallback.invoke(mOrigin, true, false);
         }
 
+        @Override
         public void deny() {
             mCallback.invoke(mOrigin, false, false);
         }
@@ -143,14 +147,17 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             mOrigin = origin;
         }
 
+        @Override
         public Uri getOrigin() {
             return Uri.parse(mOrigin);
         }
 
+        @Override
         public String[] getResources() {
             return new String[] { WebViewBrowserActivity.RESOURCE_FILE_URL };
         }
 
+        @Override
         public void grant(String[] resources) {
             assert resources.length == 1;
             assert WebViewBrowserActivity.RESOURCE_FILE_URL.equals(resources[0]);
@@ -158,6 +165,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             WebViewBrowserActivity.this.mWebView.loadUrl(mOrigin);
         }
 
+        @Override
         public void deny() {
             // womp womp
         }
@@ -172,6 +180,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         setContentView(R.layout.activity_webview_browser);
         mUrlBar = (EditText) findViewById(R.id.url_field);
         mUrlBar.setOnKeyListener(new OnKeyListener() {
+            @Override
             public boolean onKey(View view, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
                     loadUrlFromUrlBar(view);

@@ -128,10 +128,13 @@ public class WebShareTest {
         // Set up ShareHelper to ignore the intent (without showing a picker). This simulates the
         // user canceling the dialog.
         ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
+            @Override
             public void setIntentToSendBack(Intent intent) {}
 
+            @Override
             public void onCustomChooserShown(AlertDialog dialog) {}
 
+            @Override
             public void fireIntent(Context context, Intent intent) {
                 // Click again to start another share. This is necessary to work around
                 // https://crbug.com/636274 (callback is not canceled until next share is
@@ -161,12 +164,15 @@ public class WebShareTest {
         ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
             private Intent mIntentToSendBack;
 
+            @Override
             public void setIntentToSendBack(Intent intent) {
                 mIntentToSendBack = intent;
             }
 
+            @Override
             public void onCustomChooserShown(AlertDialog dialog) {}
 
+            @Override
             public void fireIntent(Context context, Intent intent) {
                 mReceivedIntent = intent;
 
@@ -210,13 +216,16 @@ public class WebShareTest {
     @Feature({"WebShare"})
     public void testWebShareCancelPreLMR1() throws Exception {
         ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
+            @Override
             public void setIntentToSendBack(Intent intent) {}
 
+            @Override
             public void onCustomChooserShown(AlertDialog dialog) {
                 // Cancel the chooser dialog.
                 dialog.dismiss();
             }
 
+            @Override
             public void fireIntent(Context context, Intent intent) {}
         });
 
@@ -240,8 +249,10 @@ public class WebShareTest {
     @Feature({"WebShare"})
     public void testWebShareSuccessPreLMR1() throws Exception {
         ShareHelper.setFakeIntentReceiverForTesting(new ShareHelper.FakeIntentReceiver() {
+            @Override
             public void setIntentToSendBack(Intent intent) {}
 
+            @Override
             public void onCustomChooserShown(AlertDialog dialog) {
                 // Click on an app (it doesn't matter which, because we will hook the intent).
                 assert dialog.getListView().getCount() > 0;
@@ -250,6 +261,7 @@ public class WebShareTest {
                     .performItemClick(null, 0, dialog.getListView().getItemIdAtPosition(0));
             }
 
+            @Override
             public void fireIntent(Context context, Intent intent) {
                 mReceivedIntent = intent;
             }

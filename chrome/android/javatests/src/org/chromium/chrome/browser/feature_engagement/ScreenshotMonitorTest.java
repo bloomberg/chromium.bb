@@ -61,6 +61,7 @@ public class ScreenshotMonitorTest {
         // This is modified on the UI thread and accessed on the test thread.
         public final AtomicInteger screenshotShowUiCount = new AtomicInteger();
 
+        @Override
         public void onScreenshotTaken() {
             Assert.assertTrue(ThreadUtils.runningOnUiThread());
             screenshotShowUiCount.getAndIncrement();

@@ -122,6 +122,7 @@ public class NFCTest {
         public TestNfcDelegate(Activity activity) {
             mActivity = activity;
         }
+        @Override
         public void trackActivityForHost(int hostId, Callback<Activity> callback) {
             mCallback = callback;
         }
@@ -130,6 +131,7 @@ public class NFCTest {
             mCallback.onResult(mActivity);
         }
 
+        @Override
         public void stopTrackingActivityForHost(int hostId) {}
     }
 

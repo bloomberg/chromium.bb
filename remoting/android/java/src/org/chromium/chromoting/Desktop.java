@@ -147,6 +147,7 @@ public class Desktop
 
             // Suspend the ActionBar timer when the user interacts with the options menu.
             getSupportActionBar().addOnMenuVisibilityListener(new OnMenuVisibilityListener() {
+                @Override
                 public void onMenuVisibilityChanged(boolean isVisible) {
                     if (isVisible) {
                         stopActionBarAutoHideTimer();
@@ -383,6 +384,7 @@ public class Desktop
         }
 
         mActionBarAutoHideTask = new Runnable() {
+            @Override
             public void run() {
                 if (!mToolbar.isOverflowMenuShowing()) {
                     hideSystemUi();

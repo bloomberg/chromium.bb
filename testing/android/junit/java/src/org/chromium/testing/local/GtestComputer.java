@@ -35,10 +35,12 @@ public class GtestComputer extends Computer {
             mRunner = contained;
         }
 
+        @Override
         public Description getDescription() {
             return mRunner.getDescription();
         }
 
+        @Override
         public void run(RunNotifier notifier) {
             long startTimeMillis = System.currentTimeMillis();
             mLogger.testCaseStarted(mRunner.getDescription(),
@@ -49,6 +51,7 @@ public class GtestComputer extends Computer {
                     System.currentTimeMillis() - startTimeMillis);
         }
 
+        @Override
         public void filter(Filter filter) throws NoTestsRemainException {
             if (mRunner instanceof Filterable) {
                 ((Filterable) mRunner).filter(filter);

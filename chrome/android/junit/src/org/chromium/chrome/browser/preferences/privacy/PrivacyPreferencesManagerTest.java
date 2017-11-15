@@ -106,6 +106,7 @@ public class PrivacyPreferencesManagerTest {
         }
 
         // Stub out this call, as it could otherwise call into native code.
+        @Override
         public void syncUsageAndCrashReportingPrefs() {}
     }
 }

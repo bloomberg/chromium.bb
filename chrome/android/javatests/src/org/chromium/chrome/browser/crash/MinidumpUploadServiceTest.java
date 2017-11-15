@@ -72,6 +72,7 @@ public class MinidumpUploadServiceTest {
 
         private static class NetworkChangingPermissionManager
                 extends MockCrashReportingPermissionManager {
+            @Override
             public boolean isNetworkAvailableForCrashUploads() {
                 return mIsNetworkAvailable;
             }
@@ -81,6 +82,7 @@ public class MinidumpUploadServiceTest {
             }
         }
 
+        @Override
         CrashReportingPermissionManager getCrashReportingPermissionManager() {
             return mPermissionManager;
         }

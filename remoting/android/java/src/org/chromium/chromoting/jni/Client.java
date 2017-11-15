@@ -174,6 +174,7 @@ public class Client implements InputStub {
     /**
      * Moves the mouse cursor, possibly while clicking the specified (nonnegative) button.
      */
+    @Override
     public void sendMouseEvent(int x, int y, int whichButton, boolean buttonDown) {
         if (!mConnected) {
             return;
@@ -183,6 +184,7 @@ public class Client implements InputStub {
     }
 
     /** Injects a mouse-wheel event with delta values. */
+    @Override
     public void sendMouseWheelEvent(int deltaX, int deltaY) {
         if (!mConnected) {
             return;
@@ -195,6 +197,7 @@ public class Client implements InputStub {
      * Presses or releases the specified key. If scanCode is not zero then
      * keyCode is ignored.
      */
+    @Override
     public boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown) {
         if (!mConnected) {
             return false;
@@ -204,6 +207,7 @@ public class Client implements InputStub {
     }
 
     /** Sends TextEvent to the host. */
+    @Override
     public void sendTextEvent(String text) {
         if (!mConnected) {
             return;
@@ -213,6 +217,7 @@ public class Client implements InputStub {
     }
 
     /** Sends an array of TouchEvents to the host. */
+    @Override
     public void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
         if (!mConnected) {
             return;

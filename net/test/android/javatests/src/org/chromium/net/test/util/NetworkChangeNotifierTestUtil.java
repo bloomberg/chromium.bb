@@ -17,6 +17,7 @@ public class NetworkChangeNotifierTestUtil {
      */
     public static void flushUiThreadTaskQueue() throws Exception {
         FutureTask<Void> task = new FutureTask<Void>(new Runnable() {
+            @Override
             public void run() {}
         }, null);
         ThreadUtils.postOnUiThread(task);

@@ -17,7 +17,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -61,6 +60,7 @@ public class AppIndexingUtilTest {
         doReturn("My neat website").when(mTab).getTitle();
         doReturn(0L).when(mUtil).getElapsedTime();
         doAnswer(new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) {
                 CopylessPaste.GetEntitiesResponse callback =
                         (CopylessPaste.GetEntitiesResponse) invocation.getArguments()[0];
@@ -108,6 +108,7 @@ public class AppIndexingUtilTest {
     @Test
     public void testCacheHit_noEntity() {
         doAnswer(new Answer<Void>() {
+            @Override
             public Void answer(InvocationOnMock invocation) {
                 CopylessPaste.GetEntitiesResponse callback =
                         (CopylessPaste.GetEntitiesResponse) invocation.getArguments()[0];
