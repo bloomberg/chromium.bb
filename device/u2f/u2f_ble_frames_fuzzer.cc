@@ -4,17 +4,19 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <vector>
 
-#include "u2f_ble_frames.h"
-#include "u2f_command_type.h"
+#include "device/u2f/u2f_ble_frames.h"
+#include "device/u2f/u2f_command_type.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
-  std::vector<uint8_t> data(raw_data, raw_data + size);
+  auto data_span = base::make_span(raw_data, size);
+  std::vector<uint8_t> data(data_span.begin(), data_span.end());
 
   {
     device::U2fBleFrameInitializationFragment fragment(
-        device::U2fCommandType::CMD_MSG, 21123, raw_data, size);
+        device::U2fCommandType::CMD_MSG, 21123, data_span);
     std::vector<uint8_t> buffer;
     fragment.Serialize(&buffer);
 
@@ -27,7 +29,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* raw_data, size_t size) {
   }
 
   {
-    device::U2fBleFrameContinuationFragment fragment(raw_data, size, 61);
+    device::U2fBleFrameContinuationFragment fragment(data_span, 61);
     std::vector<uint8_t> buffer;
     fragment.Serialize(&buffer);
 
