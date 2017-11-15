@@ -2756,6 +2756,73 @@ TEST(HttpCache, SimpleGET_ParallelWritingCacheWriteFailed) {
                                     kSimpleGET_Transaction);
 }
 
+// Tests that POST requests do not join existing transactions for parallel
+// writing to the cache. Note that two POSTs only map to the same entry if their
+// upload data identifier is same and that should happen for back-forward case
+// (LOAD_ONLY_FROM_CACHE). But this test tests without LOAD_ONLY_FROM_CACHE
+// because read-only transactions anyways do not join parallel writing.
+// TODO(shivanisha) Testing this because it is allowed by the code but looks
+// like the code should disallow two POSTs without LOAD_ONLY_FROM_CACHE with the
+// same upload data identifier to map to the same entry.
+TEST(HttpCache, SimplePOST_ParallelWritingDisallowed) {
+  MockHttpCache cache;
+
+  MockTransaction transaction(kSimplePOST_Transaction);
+
+  const int64_t kUploadId = 1;  // Just a dummy value.
+
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      std::make_unique<UploadBytesElementReader>("hello", 5));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers),
+                                              kUploadId);
+
+  // Note that both transactions should have the same upload_data_stream
+  // identifier to map to the same entry.
+  transaction.load_flags = LOAD_SKIP_CACHE_VALIDATION;
+  MockHttpRequest request(transaction);
+  request.upload_data_stream = &upload_data_stream;
+
+  const int kNumTransactions = 2;
+  std::vector<std::unique_ptr<Context>> context_list;
+
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(std::make_unique<Context>());
+    auto& c = context_list[i];
+
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+
+    c->result =
+        c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+
+    // Complete the headers phase request.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  std::string cache_key =
+      base::StringPrintf("1/%s", kSimplePOST_Transaction.url);
+
+  // Only the 1st transaction gets added to writers.
+  EXPECT_EQ(1, cache.GetCountDoneHeadersQueue(cache_key));
+  EXPECT_EQ(1, cache.GetCountWriterTransactions(cache_key));
+
+  // Read the 1st transaction.
+  ReadAndVerifyTransaction(context_list[0]->trans.get(),
+                           kSimplePOST_Transaction);
+
+  // 2nd transaction should now become a reader.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, cache.GetCountReaders(cache_key));
+  EXPECT_EQ(0, cache.GetCountDoneHeadersQueue(cache_key));
+  ReadAndVerifyTransaction(context_list[1]->trans.get(),
+                           kSimplePOST_Transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
 // Tests the case when parallel writing succeeds. Tests both idle and waiting
 // transactions.
 TEST(HttpCache, SimpleGET_ParallelWritingSuccess) {

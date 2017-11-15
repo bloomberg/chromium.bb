@@ -475,6 +475,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // already.
   void ProcessAddToEntryQueue(ActiveEntry* entry);
 
+  // Returns true if the transaction can join other transactions for writing to
+  // the cache simultaneously. It is only supported for GET requests and
+  // non-range requests.
+  bool CanTransactionJoinExistingWriters(Transaction* transaction);
+
   // Invoked when a transaction that has already completed the response headers
   // phase can resume reading/writing the response body. It will invoke the IO
   // callback of the transaction. This is a helper function for
