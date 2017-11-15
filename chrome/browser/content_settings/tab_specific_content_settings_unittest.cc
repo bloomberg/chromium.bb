@@ -7,13 +7,9 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/web_contents_tester.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/parsed_cookie.h"
@@ -40,8 +36,6 @@ class MockSiteDataObserver
   DISALLOW_COPY_AND_ASSIGN(MockSiteDataObserver);
 };
 
-constexpr char kURL[] = "http://google.com";
-
 }  // namespace
 
 class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
@@ -49,26 +43,6 @@ class TabSpecificContentSettingsTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     TabSpecificContentSettings::CreateForWebContents(web_contents());
-  }
-
- protected:
-  void SetSoundContentSetting(ContentSetting setting) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile);
-    const GURL url = web_contents()->GetLastCommittedURL();
-    map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_SOUND,
-                                       std::string(), setting);
-  }
-
-  void SimulateAudioStarting(TabSpecificContentSettings* content_settings) {
-    content_settings->OnAudioStateChanged(true);
-  }
-
-  void SimulateAudioPlaying() {
-    content::WebContentsTester::For(web_contents())
-        ->SetIsCurrentlyAudible(true);
   }
 };
 
@@ -303,42 +277,4 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
                                           base::UTF8ToUTF16("name"),
                                           base::UTF8ToUTF16("display_name"),
                                           blocked_by_policy);
-}
-
-TEST_F(TabSpecificContentSettingsTest, UnmutedAudioPlayingDoesNotBlockSound) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  NavigateAndCommit(GURL(kURL));
-
-  // Play audio while sound content setting is allowed.
-  SetSoundContentSetting(CONTENT_SETTING_ALLOW);
-  SimulateAudioStarting(content_settings);
-  EXPECT_FALSE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_SOUND));
-}
-
-TEST_F(TabSpecificContentSettingsTest, MutedAudioPlayingBlocksSound) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  NavigateAndCommit(GURL(kURL));
-
-  // Play audio while sound content setting is blocked.
-  SetSoundContentSetting(CONTENT_SETTING_BLOCK);
-  SimulateAudioStarting(content_settings);
-  EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_SOUND));
-}
-
-TEST_F(TabSpecificContentSettingsTest,
-       MutingAudioWhileSoundIsPlayingBlocksSound) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  NavigateAndCommit(GURL(kURL));
-
-  // Unmuted audio starts playing.
-  SimulateAudioPlaying();
-  // Sound is not blocked.
-  EXPECT_FALSE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_SOUND));
-  // User mutes the site.
-  SetSoundContentSetting(CONTENT_SETTING_BLOCK);
-  // Sound is blocked.
-  EXPECT_TRUE(content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_SOUND));
 }

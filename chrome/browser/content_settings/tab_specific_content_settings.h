@@ -188,6 +188,9 @@ class TabSpecificContentSettings
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
+  // Called when audio has been blocked on the page.
+  void OnAudioBlocked();
+
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
@@ -361,9 +364,6 @@ class TabSpecificContentSettings
   // Block all content. Used for testing content setting bubbles.
   void BlockAllContentForTesting();
 
-  // This method is called to update the sound status.
-  void OnAudioStateChanged(bool is_audible);
-
  private:
   friend class content::WebContentsUserData<TabSpecificContentSettings>;
 
@@ -401,15 +401,6 @@ class TabSpecificContentSettings
 
   // Updates MIDI settings on navigation.
   void MidiDidNavigate(content::NavigationHandle* navigation_handle);
-
-  // Checks whether sound has been blocked when the sound setting is updated.
-  void OnSoundContentSettingUpdated();
-
-  // Sets sound as blocked if site is muted and sound is playing.
-  void CheckSoundBlocked(bool is_audible);
-
-  // Gets the current sound setting state.
-  ContentSetting GetSoundContentSetting() const;
 
   // All currently registered |SiteDataObserver|s.
   base::ObserverList<SiteDataObserver> observer_list_;

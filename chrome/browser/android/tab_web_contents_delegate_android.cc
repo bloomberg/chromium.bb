@@ -16,6 +16,7 @@
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
@@ -419,6 +420,15 @@ void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
       banners::AppBannerManagerAndroid::FromWebContents(web_contents);
   DCHECK(manager);
   manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
+}
+
+void TabWebContentsDelegateAndroid::OnAudioStateChanged(
+    WebContents* web_contents,
+    bool audible) {
+  SoundContentSettingObserver* sound_content_setting_observer =
+      SoundContentSettingObserver::FromWebContents(web_contents);
+  if (sound_content_setting_observer)
+    sound_content_setting_observer->OnAudioStateChanged(audible);
 }
 
 void TabWebContentsDelegateAndroid::OnDidBlockFramebust(

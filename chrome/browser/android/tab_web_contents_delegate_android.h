@@ -81,6 +81,8 @@ class TabWebContentsDelegateAndroid
                       bool* was_blocked) override;
   void RequestAppBannerFromDevTools(
       content::WebContents* web_contents) override;
+  void OnAudioStateChanged(content::WebContents* web_contents,
+                           bool audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
 
