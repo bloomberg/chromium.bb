@@ -93,7 +93,6 @@ crbug.com/417782 paint/invalidation/window-resize/window-resize-viewport-percent
 crbug.com/417782 paint/overflow/fixed-background-scroll-window.html [ Failure ]
 crbug.com/417782 plugins/webview-plugin-nested-iframe-scroll.html [ Failure ]
 crbug.com/417782 plugins/webview-plugin-scroll.html [ Failure ]
-crbug.com/417782 printing/fixed-positioned-scrolled.html [ Failure ]
 crbug.com/417782 printing/quirks-percentage-height-body.html [ Failure ]
 crbug.com/417782 printing/quirks-percentage-height.html [ Failure ]
 crbug.com/417782 printing/standards-percentage-heights.html [ Failure ]
