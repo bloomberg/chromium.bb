@@ -17,6 +17,7 @@ class Display;
 }
 
 namespace ui {
+class CursorData;
 class ImageCursors;
 class ImageCursorsSet;
 class PlatformWindow;
@@ -27,6 +28,9 @@ namespace ws {
 // via the provided task runner. This is needed because ui::ImageCursors needs
 // to load resources when executing some of its methods, which cannot happen on
 // the UI Service's thread when it runs inside the Window Manager process.
+//
+// Unlike ImageCursors, this class can also handle CursorType::kCustom cursors,
+// which is also done asynchronously.
 //
 // Note: We could execute the methods synchronously when UI Service runs in its
 // own process (and thus the provided task runner matches the task runner of the
@@ -53,10 +57,10 @@ class ThreadedImageCursors {
   // Asynchronously sets the size of the mouse cursor icon.
   void SetCursorSize(CursorSize cursor_size);
 
-  // Asynchronously sets the cursor type and then sets the corresponding
+  // Asynchronously loads the cursor and then sets the corresponding
   // PlatformCursor on the provided |platform_window|.
   // |platform_window| pointer needs to be valid while this object is alive.
-  void SetCursor(ui::CursorType cursor_type,
+  void SetCursor(const ui::CursorData& cursor_data,
                  ui::PlatformWindow* platform_window);
 
   // Helper method. Sets |platform_cursor| on the |platform_window|.
@@ -78,7 +82,7 @@ class ThreadedImageCursors {
   // destroyed).
   scoped_refptr<base::SingleThreadTaskRunner> ui_service_task_runner_;
 
-  // Lives on |resource_runner_|'s thread, used to own the object behid
+  // Lives on |resource_runner_|'s thread, used to own the object behind
   // |image_cursors_weak_ptr_|.
   base::WeakPtr<ui::ImageCursorsSet> image_cursors_set_weak_ptr_;
 
