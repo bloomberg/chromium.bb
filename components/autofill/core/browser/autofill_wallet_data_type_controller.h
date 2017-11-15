@@ -42,6 +42,9 @@ class AutofillWalletDataTypeController
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();
 
+  // Report an error (which will stop the datatype asynchronously).
+  void DisableForPolicy();
+
   // Whether the database loaded callback has been registered.
   bool callback_registered_;
 

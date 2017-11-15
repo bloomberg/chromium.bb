@@ -52,12 +52,7 @@ bool AutofillWalletDataTypeController::StartModels() {
   DCHECK_EQ(state(), MODEL_STARTING);
 
   if (!IsEnabled()) {
-    // Report the error (which will stop the datatype asynchronously).
-    if (state() != NOT_RUNNING && state() != STOPPING) {
-      CreateErrorHandler()->OnUnrecoverableError(
-          syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-                            "Wallet syncing is disabled by policy.", type()));
-    }
+    DisableForPolicy();
     return false;
   }
 
@@ -119,12 +114,7 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
     syncer::SyncService* sync_service = sync_client_->GetSyncService();
     sync_service->ReenableDatatype(type());
   } else {
-    // Report the error (which will stop the datatype asynchronously).
-    if (state() != NOT_RUNNING && state() != STOPPING) {
-      CreateErrorHandler()->OnUnrecoverableError(
-          syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
-                            "Wallet syncing is disabled by policy.", type()));
-    }
+    DisableForPolicy();
   }
 }
 
@@ -136,6 +126,13 @@ bool AutofillWalletDataTypeController::IsEnabled() {
   PrefService* ps = sync_client_->GetPrefService();
   return ps->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled) &&
          ps->GetBoolean(autofill::prefs::kAutofillCreditCardEnabled);
+}
+void AutofillWalletDataTypeController::DisableForPolicy() {
+  if (state() != NOT_RUNNING && state() != STOPPING) {
+    CreateErrorHandler()->OnUnrecoverableError(
+        syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_POLICY_ERROR,
+                          "Wallet syncing is disabled by policy.", type()));
+  }
 }
 
 }  // namespace browser_sync
