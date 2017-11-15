@@ -682,8 +682,13 @@ static const TX_SIZE max_txsize_rect_intra_lookup[BLOCK_SIZES_ALL] = {
   // 32x8    16x64,    64x16
   TX_16X8,   TX_16X32, TX_32X16,
 #if CONFIG_EXT_PARTITION
+#if CONFIG_TX64X64
+  // 32x128  128x32
+  TX_32X64,  TX_64X32
+#else
   // 32x128  128x32
   TX_32X32,  TX_32X32
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION
 };
 
@@ -731,8 +736,13 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   // 16x64,  64x16
   TX_16X32,  TX_32X16,
 #if CONFIG_EXT_PARTITION
+#if CONFIG_TX64X64
+  // 32x128  128x32
+  TX_32X64,  TX_64X32
+#else
   // 32x128  128x32
   TX_32X32,  TX_32X32
+#endif  // CONFIG_TX64X64
 #endif  // CONFIG_EXT_PARTITION
 };
 
