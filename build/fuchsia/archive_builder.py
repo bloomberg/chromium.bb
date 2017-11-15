@@ -12,25 +12,13 @@ import argparse
 import os
 import sys
 
-from runner_common import BuildArchive, ReadRuntimeDeps, ImageCreationData
+from runner_common import AddCommonCommandLineArguments, BuildArchive, \
+    ReadRuntimeDeps, ImageCreationData
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--output-directory',
-                      type=os.path.realpath,
-                      help=('Path to the directory in which build files are'
-                            ' located (must include build type).'))
-  parser.add_argument('--runtime-deps-path',
-                      type=os.path.realpath,
-                      help='Runtime data dependency file from GN.')
-  parser.add_argument('--target-cpu',
-                      help='GN target_cpu setting for the build.')
-  parser.add_argument('--exe-name',
-                      type=os.path.realpath,
-                      help='Name of the the binary executable.')
-  parser.add_argument('--no-autorun', action='store_true',
-                      help='Disable generating an autorun file')
+  AddCommonCommandLineArguments(parser)
   args, child_args = parser.parse_known_args()
 
   data = ImageCreationData(output_directory=args.output_directory,

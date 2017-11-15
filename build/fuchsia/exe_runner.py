@@ -12,39 +12,18 @@ import argparse
 import os
 import sys
 
-from runner_common import BuildBootfs, ImageCreationData, ReadRuntimeDeps, \
-    RunFuchsia
+from runner_common import AddRunnerCommandLineArguments, BuildBootfs, \
+    ImageCreationData, ReadRuntimeDeps, RunFuchsia
 
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--dry-run', '-n', action='store_true', default=False,
-                      help='Just print commands, don\'t execute them.')
-  parser.add_argument('--output-directory',
-                      type=os.path.realpath,
-                      help=('Path to the directory in which build files are'
-                            ' located (must include build type).'))
-  parser.add_argument('--runtime-deps-path',
-                      type=os.path.realpath,
-                      help='Runtime data dependency file from GN.')
-  parser.add_argument('--target-cpu',
-                      help='GN target_cpu setting for the build.')
-  parser.add_argument('--exe-name',
-                      type=os.path.realpath,
-                      help='Name of the the binary executable.')
-  parser.add_argument('-d', '--device', action='store_true', default=False,
-                      help='Run on hardware device instead of QEMU.')
-  parser.add_argument('--bootdata', type=os.path.realpath,
-                      help='Path to a bootdata to use instead of the default '
-                           'one from the SDK')
-  parser.add_argument('--kernel', type=os.path.realpath,
-                      help='Path to a kernel to use instead of the default '
-                           'one from the SDK')
-  parser.add_argument('--no-autorun', action='store_true',
-                      help='Disable generating an autorun file')
+  AddRunnerCommandLineArguments(parser)
   parser.add_argument('--extra-file', action='append', default=[],
                       help='Extra file to add to bootfs, '
                            '<bootfs_path>=<local_path>')
+  parser.add_argument('--no-autorun', action='store_true',
+                      help='Disable generating an autorun file')
   args, child_args = parser.parse_known_args()
 
   runtime_deps = ReadRuntimeDeps(args.runtime_deps_path, args.output_directory)

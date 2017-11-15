@@ -192,6 +192,43 @@ def _TargetCpuToSdkBinPath(target_cpu):
   return os.path.join(SDK_ROOT, 'target', _TargetCpuToArch(target_cpu))
 
 
+def AddCommonCommandLineArguments(parser):
+  """Adds command line arguments used by all the helper scripts to an
+  argparse.ArgumentParser object."""
+  parser.add_argument('--exe-name',
+                      type=os.path.realpath,
+                      help='Name of the the binary executable.')
+  parser.add_argument('--output-directory',
+                      type=os.path.realpath,
+                      help=('Path to the directory in which build files are'
+                            ' located (must include build type).'))
+  parser.add_argument('--runtime-deps-path',
+                      type=os.path.realpath,
+                      help='Runtime data dependency file from GN.')
+  parser.add_argument('--target-cpu',
+                      help='GN target_cpu setting for the build.')
+
+
+def AddRunnerCommandLineArguments(parser):
+  """Adds command line arguments used by the runner scripts to an
+  argparse.ArgumentParser object. Includes all the arguments added by
+  AddCommonCommandLineArguments()."""
+  AddCommonCommandLineArguments(parser)
+  parser.add_argument('--bootdata', type=os.path.realpath,
+                      help='Path to a bootdata to use instead of the default '
+                           'one from the SDK')
+  parser.add_argument('--device', '-d', action='store_true', default=False,
+                      help='Run on hardware device instead of QEMU.')
+  parser.add_argument('--dry-run', '-n', action='store_true', default=False,
+                      help='Just print commands, don\'t execute them.')
+  parser.add_argument('--kernel', type=os.path.realpath,
+                      help='Path to a kernel to use instead of the default '
+                           'one from the SDK')
+  parser.add_argument('--wait-for-network', action='store_true', default=False,
+                      help='Wait for network connectivity before executing '
+                           'the test binary.')
+
+
 class ImageCreationData(object):
   """Grabbag of data needed to build bootfs or archive of binary's dependencies.
 

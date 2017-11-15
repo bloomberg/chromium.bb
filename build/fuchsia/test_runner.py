@@ -16,8 +16,8 @@ import sys
 import tempfile
 import time
 
-from runner_common import BuildBootfs, ImageCreationData, ReadRuntimeDeps, \
-    RunFuchsia, HOST_IP_ADDRESS
+from runner_common import AddRunnerCommandLineArguments, BuildBootfs, \
+    ImageCreationData, ReadRuntimeDeps, RunFuchsia, HOST_IP_ADDRESS
 
 DIR_SOURCE_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
@@ -86,18 +86,7 @@ class PortForwarderNoop(chrome_test_server_spawner.PortForwarder):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--dry-run', '-n', action='store_true', default=False,
-                      help='Just print commands, don\'t execute them.')
-  parser.add_argument('--output-directory',
-                      type=os.path.realpath,
-                      help=('Path to the directory in which build files are'
-                            ' located (must include build type).'))
-  parser.add_argument('--runtime-deps-path',
-                      type=os.path.realpath,
-                      help='Runtime data dependency file from GN.')
-  parser.add_argument('--exe-name',
-                      type=os.path.realpath,
-                      help='Name of the the test')
+  AddRunnerCommandLineArguments(parser)
   parser.add_argument('--enable-test-server', action='store_true',
                       default=False,
                       help='Enable testserver spawner.')
@@ -114,8 +103,6 @@ def main():
                       default=False,
                       help='Runs the tests and the launcher in the same '
                       'process. Useful for debugging.')
-  parser.add_argument('--target-cpu',
-                      help='GN target_cpu setting for the build.')
   parser.add_argument('--test-launcher-batch-limit',
                       type=int,
                       help='Sets the limit of test batch to run in a single '
@@ -134,17 +121,6 @@ def main():
                       help='Where the test launcher will output its json.')
   parser.add_argument('child_args', nargs='*',
                       help='Arguments for the test process.')
-  parser.add_argument('-d', '--device', action='store_true', default=False,
-                      help='Run on hardware device instead of QEMU.')
-  parser.add_argument('--bootdata', type=os.path.realpath,
-                      help='Path to a bootdata to use instead of the default '
-                           'one from the SDK')
-  parser.add_argument('--kernel', type=os.path.realpath,
-                      help='Path to a kernel to use instead of the default '
-                           'one from the SDK')
-  parser.add_argument('--wait-for-network', action='store_true', default=False,
-                      help='Wait for network connectivity before executing '
-                           'the test binary.')
   args = parser.parse_args()
 
   child_args = ['--test-launcher-retry-limit=0']
