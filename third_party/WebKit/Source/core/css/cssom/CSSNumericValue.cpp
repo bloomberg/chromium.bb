@@ -75,4 +75,13 @@ CSSNumericValue* CSSNumericValue::to(const String& unit_string,
   return result;
 }
 
+CSSNumericValueVector CSSNumberishesToNumericValues(
+    const HeapVector<CSSNumberish>& values) {
+  CSSNumericValueVector result;
+  for (const CSSNumberish& value : values) {
+    result.push_back(CSSNumericValue::FromNumberish(value));
+  }
+  return result;
+}
+
 }  // namespace blink

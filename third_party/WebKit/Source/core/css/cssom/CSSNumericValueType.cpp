@@ -66,12 +66,55 @@ CSSNumericValueType::CSSNumericValueType(CSSPrimitiveValue::UnitType unit) {
     SetEntry(UnitTypeToBaseType(unit), 1);
 }
 
-/* static */
 CSSNumericValueType CSSNumericValueType::NegateEntries(
     CSSNumericValueType type) {
   std::for_each(type.entries_.begin(), type.entries_.end(),
                 [](int& v) { v *= -1; });
   return type;
+}
+
+CSSNumericValueType CSSNumericValueType::Add(CSSNumericValueType type1,
+                                             CSSNumericValueType type2,
+                                             bool& error) {
+  if (type1.HasPercentHint() && type2.HasPercentHint() &&
+      type1.PercentHint() != type2.PercentHint()) {
+    error = true;
+    return type1;
+  }
+
+  if (type1.HasPercentHint())
+    type2.ApplyPercentHint(type1.PercentHint());
+  else if (type2.HasPercentHint())
+    type1.ApplyPercentHint(type2.PercentHint());
+
+  DCHECK_EQ(type1.PercentHint(), type2.PercentHint());
+  // Match up base types. Try to use the percent hint to match up any
+  // differences.
+  for (unsigned i = 0; i < kNumBaseTypes; ++i) {
+    const BaseType base_type = static_cast<BaseType>(i);
+    if (type1.entries_[i] != type2.entries_[i]) {
+      if (base_type != BaseType::kPercent) {
+        type1.ApplyPercentHint(base_type);
+        type2.ApplyPercentHint(base_type);
+      }
+
+      if (type1.entries_[i] != type2.entries_[i]) {
+        error = true;
+        return type1;
+      }
+    }
+  }
+
+  error = false;
+  return type1;
+}
+
+void CSSNumericValueType::ApplyPercentHint(BaseType hint) {
+  DCHECK_NE(hint, BaseType::kPercent);
+  SetEntry(hint, GetEntry(hint) + GetEntry(BaseType::kPercent));
+  SetEntry(BaseType::kPercent, 0);
+  percent_hint_ = hint;
+  has_percent_hint_ = true;
 }
 
 }  // namespace blink

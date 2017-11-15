@@ -18,17 +18,9 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
  public:
   // The constructor defined in the IDL.
   static CSSMathSum* Create(const HeapVector<CSSNumberish>& args,
-                            ExceptionState& exception_state) {
-    if (args.IsEmpty()) {
-      exception_state.ThrowDOMException(kSyntaxError,
-                                        "Arguments can't be empty");
-      return nullptr;
-    }
-
-    // TODO(crbug.com/776173): Implement add typing.
-    CSSNumericValueType type(CSSPrimitiveValue::UnitType::kNumber);
-    return new CSSMathSum(CSSNumericArray::FromNumberishes(args), type);
-  }
+                            ExceptionState&);
+  // Blink-internal constructor.
+  static CSSMathSum* Create(CSSNumericValueVector);
 
   String getOperator() const final { return "sum"; }
 
