@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
 
   // |text| IDL attribute implementations.
   String text() const;
-  void setText(const String&, ExceptionState&);
+  void setText(const String&);
 
   int index() const;
 
