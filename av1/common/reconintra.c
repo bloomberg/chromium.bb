@@ -2079,6 +2079,7 @@ static void build_intra_predictors_high(
   int need_above = extend_modes[mode] & NEED_ABOVE;
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
   const uint16_t *above_ref = ref - ref_stride;
+  const uint16_t *left_ref = ref - 1;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
   const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
@@ -2127,7 +2128,7 @@ static void build_intra_predictors_high(
     if (need_left) {
       val = (n_top_px > 0) ? above_ref[0] : base + 1;
     } else {
-      val = (n_left_px > 0) ? ref[-1] : base - 1;
+      val = (n_left_px > 0) ? left_ref[0] : base - 1;
     }
 #else
     const int val = need_left ? base + 1 : base - 1;
@@ -2156,11 +2157,11 @@ static void build_intra_predictors_high(
     const int num_left_pixels_needed = txhpx + (need_bottom ? txwpx : 0);
     i = 0;
     if (n_left_px > 0) {
-      for (; i < n_left_px; i++) left_col[i] = ref[i * ref_stride - 1];
+      for (; i < n_left_px; i++) left_col[i] = left_ref[i * ref_stride];
       if (need_bottom && n_bottomleft_px > 0) {
         assert(i == txhpx);
         for (; i < txhpx + n_bottomleft_px; i++)
-          left_col[i] = ref[i * ref_stride - 1];
+          left_col[i] = left_ref[i * ref_stride];
       }
       if (i < num_left_pixels_needed)
         aom_memset16(&left_col[i], left_col[i - 1], num_left_pixels_needed - i);
@@ -2207,7 +2208,7 @@ static void build_intra_predictors_high(
     } else {
 #if CONFIG_INTRA_EDGE
       if (n_left_px > 0) {
-        aom_memset16(above_row, ref[-1], num_top_pixels_needed);
+        aom_memset16(above_row, left_ref[0], num_top_pixels_needed);
       } else {
 #endif  // CONFIG_INTRA_EDGE
         aom_memset16(above_row, base - 1, num_top_pixels_needed);
@@ -2224,7 +2225,7 @@ static void build_intra_predictors_high(
     } else if (n_top_px > 0) {
       above_row[-1] = above_ref[0];
     } else if (n_left_px > 0) {
-      above_row[-1] = ref[-1];
+      above_row[-1] = left_ref[0];
     } else {
       above_row[-1] = base;
     }
