@@ -15,6 +15,7 @@
 
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
+#include "gpu/config/gpu_test_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/extension_set.h"
@@ -171,6 +172,10 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
 
 TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
   if (!IsApplicable()) {
+    return;
+  }
+  // TODO(kainino): https://crbug.com/782317
+  if (GPUTestBotConfig::CurrentConfigMatches("Intel")) {
     return;
   }
 
