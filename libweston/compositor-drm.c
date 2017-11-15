@@ -3826,6 +3826,35 @@ drm_set_backlight(struct weston_output *output_base, uint32_t value)
 	}
 }
 
+static void
+drm_output_init_backlight(struct drm_output *output)
+{
+	struct weston_head *base;
+	struct drm_head *head;
+
+	output->base.set_backlight = NULL;
+
+	wl_list_for_each(base, &output->base.head_list, output_link) {
+		head = to_drm_head(base);
+
+		if (head->backlight) {
+			weston_log("Initialized backlight for head '%s', device %s\n",
+				   head->base.name, head->backlight->path);
+
+			if (!output->base.set_backlight) {
+				output->base.set_backlight = drm_set_backlight;
+				output->base.backlight_current =
+							drm_get_backlight(head);
+			}
+		}
+	}
+
+	if (!output->base.set_backlight) {
+		weston_log("No backlight control for output '%s'\n",
+			   output->base.name);
+	}
+}
+
 /**
  * Power output on or off
  *
@@ -4899,14 +4928,7 @@ drm_output_enable(struct weston_output *base)
 		goto err;
 	}
 
-	if (head->backlight) {
-		weston_log("Initialized backlight, device %s\n",
-			   head->backlight->path);
-		output->base.set_backlight = drm_set_backlight;
-		output->base.backlight_current = drm_get_backlight(head);
-	} else {
-		weston_log("Failed to initialize backlight\n");
-	}
+	drm_output_init_backlight(output);
 
 	output->base.start_repaint_loop = drm_output_start_repaint_loop;
 	output->base.repaint = drm_output_repaint;
