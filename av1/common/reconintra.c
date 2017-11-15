@@ -2552,7 +2552,8 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
                                        const uint8_t *ref, int ref_stride,
                                        uint8_t *dst, int dst_stride,
                                        int col_off, int row_off, int plane) {
-  BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  BLOCK_SIZE bsize = mbmi->sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
   const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
@@ -2583,7 +2584,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const int bottom_available = (yd > 0);
 
 #if CONFIG_EXT_PARTITION_TYPES
-  const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
+  const PARTITION_TYPE partition = mbmi->partition;
 #else
   const PARTITION_TYPE partition = PARTITION_NONE;
 #endif
@@ -2597,12 +2598,12 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const int have_bottom_left =
       has_bottom_left(cm, bsize, mi_row, mi_col, bottom_available, have_left,
                       partition, tx_size, row_off, col_off, pd->subsampling_y);
-  if (xd->mi[0]->mbmi.palette_mode_info.palette_size[plane != 0] > 0) {
+  if (mbmi->palette_mode_info.palette_size[plane != 0] > 0) {
     const int stride = wpx;
     int r, c;
     const uint8_t *const map = xd->plane[plane != 0].color_index_map;
-    uint16_t *palette = xd->mi[0]->mbmi.palette_mode_info.palette_colors +
-                        plane * PALETTE_MAX_SIZE;
+    const uint16_t *const palette =
+        mbmi->palette_mode_info.palette_colors + plane * PALETTE_MAX_SIZE;
 
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
