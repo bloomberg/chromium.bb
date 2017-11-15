@@ -26,7 +26,6 @@
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_delegate.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_highlighter_view.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
-#include "ios/chrome/browser/ui/contextual_search/contextual_search_web_state_observer.h"
 #import "ios/chrome/browser/ui/contextual_search/js_contextual_search_manager.h"
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 #import "ios/chrome/browser/ui/contextual_search/window_gesture_observer.h"
@@ -44,6 +43,7 @@
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -130,9 +130,9 @@ NSArray* StringValueToRectArray(const std::string& list) {
 
 @interface ContextualSearchController ()<DOMAltering,
                                          CRWWebViewScrollViewProxyObserver,
+                                         CRWWebStateObserver,
                                          UIGestureRecognizerDelegate,
                                          ContextualSearchHighlighterDelegate,
-                                         ContextualSearchWebStateDelegate,
                                          TouchToSearchPermissionsChangeAudience>
 
 // Permissions interface for this feature. Property is readwrite for testing.
@@ -230,10 +230,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   id<CRWWebViewProxy> _webViewProxy;
 
   // Observer for |_webState|.
-  std::unique_ptr<ContextualSearchWebStateObserver> _webStateObserver;
-
-  // Observer for search tab's web state.
-  std::unique_ptr<ContextualSearchWebStateObserver> _searchTabWebStateObserver;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   // Object that manages find_in_page.js injection into the web view.
   __weak JsContextualSearchManager* _contextualSearchJsManager;
@@ -356,7 +353,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
     // Set up the web state observer. This lasts as long as this object does,
     // but it will observe and un-observe the web tabs as it changes over time.
-    _webStateObserver.reset(new ContextualSearchWebStateObserver(self));
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
 
     _copyGestureRecognizer = [[UILongPressGestureRecognizer alloc]
         initWithTarget:self
@@ -425,7 +422,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
         [webState->GetJSInjectionReceiver()
             instanceOfClass:[JsContextualSearchManager class]]);
     _webState = webState;
-    _webStateObserver->ObserveWebState(webState);
+    _webState->AddObserver(_webStateObserver.get());
     [self updateWebViewProxy:webState->GetWebViewProxy()];
     [self enableCurrentWebState];
   } else {
@@ -505,7 +502,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 - (void)disconnectWebState {
   if (_webState) {
     _contextualSearchJsManager = nil;
-    _webStateObserver->ObserveWebState(nullptr);
+    _webState->RemoveObserver(_webStateObserver.get());
     [self updateWebViewProxy:nil];
     [self disableCurrentWebState];
   }
@@ -1200,11 +1197,11 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   [self dismissPane:ContextualSearch::RESET];
 }
 
-#pragma mark - ContextualSearchWebStateObserver methods
+#pragma mark - CRWWebStateObserver methods
 
-- (void)webState:(web::WebState*)webState
-    pageLoadedWithStatus:(web::PageLoadCompletionStatus)loadStatus {
-  if (loadStatus != web::PageLoadCompletionStatus::SUCCESS)
+- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+  DCHECK_EQ(self.webState, webState);
+  if (!success)
     return;
 
   [self movePanelOffscreen];
@@ -1213,7 +1210,9 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 }
 
 - (void)webStateDestroyed:(web::WebState*)webState {
+  DCHECK_EQ(self.webState, webState);
   [self updateWebViewProxy:nil];
+  [self close];
 }
 
 #pragma mark - UIGestureRecognizerDelegate Methods

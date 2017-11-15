@@ -34,8 +34,6 @@ source_set("contextual_search") {
     "contextual_search_metrics.h",
     "contextual_search_metrics.mm",
     "contextual_search_panel_state.h",
-    "contextual_search_web_state_observer.h",
-    "contextual_search_web_state_observer.mm",
     "js_contextual_search_manager.h",
     "js_contextual_search_manager.mm",
     "touch_to_search_permissions_mediator.h",
