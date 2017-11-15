@@ -41,6 +41,7 @@ void VideoFrameResourceProvider::Initialize(
   CHECK(media_context_provider);
   context_provider_ = media_context_provider;
 
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   // TODO(lethalantidote): Get real value for delegated_sync_points_required.
   // TODO(lethalantidote): Get real resource_settings.
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
@@ -79,6 +80,7 @@ void VideoFrameResourceProvider::AppendQuads(viz::RenderPass* render_pass) {
 void VideoFrameResourceProvider::PrepareSendToParent(
     const cc::LayerTreeResourceProvider::ResourceIdArray& resource_ids,
     std::vector<viz::TransferableResource>* transferable_resources) {
+  viz::ContextProvider::ScopedContextLock lock(context_provider_);
   resource_provider_->PrepareSendToParent(resource_ids, transferable_resources);
 }
 
