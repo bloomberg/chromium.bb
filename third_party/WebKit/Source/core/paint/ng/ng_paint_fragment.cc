@@ -22,6 +22,11 @@ NGPaintFragment::NGPaintFragment(
   PopulateDescendants(stop_at_block_layout_root);
 }
 
+bool NGPaintFragment::HasSelfPaintingLayer() const {
+  return physical_fragment_->IsBox() &&
+         ToNGPhysicalBoxFragment(*physical_fragment_).HasSelfPaintingLayer();
+}
+
 bool NGPaintFragment::HasOverflowClip() const {
   return physical_fragment_->IsBox() &&
          ToNGPhysicalBoxFragment(*physical_fragment_).HasOverflowClip();

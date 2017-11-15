@@ -41,6 +41,14 @@ const NGBaseline* NGPhysicalBoxFragment::Baseline(
   return nullptr;
 }
 
+bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object);
+  DCHECK(layout_object->IsBoxModelObject());
+  return ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer() &&
+         BoxType() != kAnonymousBox;
+}
+
 bool NGPhysicalBoxFragment::HasOverflowClip() const {
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
