@@ -1550,7 +1550,7 @@ blink::WebRTCErrorType RTCPeerConnectionHandler::SetConfiguration(
 
 bool RTCPeerConnectionHandler::AddICECandidate(
     const blink::WebRTCVoidRequest& request,
-    const blink::WebRTCICECandidate& candidate) {
+    scoped_refptr<blink::WebRTCICECandidate> candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   // Libjingle currently does not accept callbacks for addICECandidate.
@@ -1558,7 +1558,7 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 
   // TODO(tommi): Instead of calling addICECandidate here, we can do a
   // PostTaskAndReply kind of a thing.
-  bool result = AddICECandidate(candidate);
+  bool result = AddICECandidate(std::move(candidate));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&RTCPeerConnectionHandler::OnaddICECandidateResult,
@@ -1568,13 +1568,13 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 }
 
 bool RTCPeerConnectionHandler::AddICECandidate(
-    const blink::WebRTCICECandidate& candidate) {
+    scoped_refptr<blink::WebRTCICECandidate> candidate) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
-      dependency_factory_->CreateIceCandidate(candidate.SdpMid().Utf8(),
-                                              candidate.SdpMLineIndex(),
-                                              candidate.Candidate().Utf8()));
+      dependency_factory_->CreateIceCandidate(candidate->SdpMid().Utf8(),
+                                              candidate->SdpMLineIndex(),
+                                              candidate->Candidate().Utf8()));
   bool return_value = false;
 
   if (native_candidate) {
@@ -1587,7 +1587,8 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
-        this, candidate, PeerConnectionTracker::SOURCE_REMOTE, return_value);
+        this, std::move(candidate), PeerConnectionTracker::SOURCE_REMOTE,
+        return_value);
   }
   return return_value;
 }
@@ -2124,10 +2125,10 @@ void RTCPeerConnectionHandler::OnIceCandidate(
     int component, int address_family) {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
-  blink::WebRTCICECandidate web_candidate;
-  web_candidate.Initialize(blink::WebString::FromUTF8(sdp),
-                           blink::WebString::FromUTF8(sdp_mid),
-                           sdp_mline_index);
+  scoped_refptr<blink::WebRTCICECandidate> web_candidate =
+      blink::WebRTCICECandidate::Create(blink::WebString::FromUTF8(sdp),
+                                        blink::WebString::FromUTF8(sdp_mid),
+                                        sdp_mline_index);
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
         this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);
@@ -2145,7 +2146,7 @@ void RTCPeerConnectionHandler::OnIceCandidate(
     }
   }
   if (!is_closed_)
-    client_->DidGenerateICECandidate(web_candidate);
+    client_->DidGenerateICECandidate(std::move(web_candidate));
 }
 
 webrtc::SessionDescriptionInterface*

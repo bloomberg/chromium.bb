@@ -182,7 +182,7 @@ WebRTCAnswerOptions ConvertToWebRTCAnswerOptions(
                                           : true));
 }
 
-WebRTCICECandidate ConvertToWebRTCIceCandidate(
+scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
     ExecutionContext* context,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
   DCHECK(!candidate.IsNull());
@@ -197,8 +197,9 @@ WebRTCICECandidate ConvertToWebRTCIceCandidate(
       UseCounter::Count(context,
                         WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
     }
-    return WebRTCICECandidate(ice_candidate_init.candidate(),
-                              ice_candidate_init.sdpMid(), sdp_m_line_index);
+    return WebRTCICECandidate::Create(ice_candidate_init.candidate(),
+                                      ice_candidate_init.sdpMid(),
+                                      sdp_m_line_index);
   }
 
   DCHECK(candidate.IsRTCIceCandidate());
@@ -978,9 +979,10 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
-  WebRTCICECandidate web_candidate = ConvertToWebRTCIceCandidate(
+  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
-  bool implemented = peer_handler_->AddICECandidate(request, web_candidate);
+  bool implemented =
+      peer_handler_->AddICECandidate(request, std::move(web_candidate));
   if (!implemented)
     resolver->Reject(DOMException::Create(
         kOperationError, "This operation could not be completed."));
@@ -1008,9 +1010,10 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
 
   RTCVoidRequest* request = RTCVoidRequestImpl::Create(
       GetExecutionContext(), this, success_callback, error_callback);
-  WebRTCICECandidate web_candidate = ConvertToWebRTCIceCandidate(
+  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
-  bool implemented = peer_handler_->AddICECandidate(request, web_candidate);
+  bool implemented =
+      peer_handler_->AddICECandidate(request, std::move(web_candidate));
   if (!implemented)
     AsyncCallErrorCallback(
         error_callback,
@@ -1426,11 +1429,12 @@ void RTCPeerConnection::NegotiationNeeded() {
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
-    const WebRTCICECandidate& web_candidate) {
+    scoped_refptr<WebRTCICECandidate> web_candidate) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  DCHECK(!web_candidate.IsNull());
-  RTCIceCandidate* ice_candidate = RTCIceCandidate::Create(web_candidate);
+  DCHECK(web_candidate);
+  RTCIceCandidate* ice_candidate =
+      RTCIceCandidate::Create(std::move(web_candidate));
   ScheduleDispatchEvent(
       RTCPeerConnectionIceEvent::Create(false, false, ice_candidate));
 }

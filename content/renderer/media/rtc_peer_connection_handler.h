@@ -135,9 +135,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   blink::WebRTCErrorType SetConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
-  bool AddICECandidate(const blink::WebRTCICECandidate& candidate) override;
-  bool AddICECandidate(const blink::WebRTCVoidRequest& request,
-                       const blink::WebRTCICECandidate& candidate) override;
+  bool AddICECandidate(
+      scoped_refptr<blink::WebRTCICECandidate> candidate) override;
+  bool AddICECandidate(
+      const blink::WebRTCVoidRequest& request,
+      scoped_refptr<blink::WebRTCICECandidate> candidate) override;
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
 

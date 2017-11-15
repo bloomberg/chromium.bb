@@ -26,7 +26,7 @@ class MockWebRTCPeerConnectionHandlerClient
   // WebRTCPeerConnectionHandlerClient implementation.
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
-               void(const blink::WebRTCICECandidate& candidate));
+               void(scoped_refptr<blink::WebRTCICECandidate> candidate));
   MOCK_METHOD1(DidChangeSignalingState, void(SignalingState state));
   MOCK_METHOD1(DidChangeICEGatheringState, void(ICEGatheringState state));
   MOCK_METHOD1(DidChangeICEConnectionState, void(ICEConnectionState state));
@@ -49,7 +49,7 @@ class MockWebRTCPeerConnectionHandlerClient
                void(std::unique_ptr<blink::WebRTCRtpReceiver>*));
 
   void didGenerateICECandidateWorker(
-      const blink::WebRTCICECandidate& candidate);
+      scoped_refptr<blink::WebRTCICECandidate> candidate);
   void didAddRemoteTrackWorker(
       std::unique_ptr<blink::WebRTCRtpReceiver>* stream_web_rtp_receivers);
   void didRemoveRemoteTrackWorker(

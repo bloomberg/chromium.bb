@@ -65,50 +65,52 @@ RTCIceCandidate* RTCIceCandidate::Create(
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
-  return new RTCIceCandidate(WebRTCICECandidate(candidate_init.candidate(),
-                                                sdp_mid, sdp_m_line_index));
+  return new RTCIceCandidate(WebRTCICECandidate::Create(
+      candidate_init.candidate(), sdp_mid, sdp_m_line_index));
 }
 
-RTCIceCandidate* RTCIceCandidate::Create(WebRTCICECandidate web_candidate) {
-  return new RTCIceCandidate(web_candidate);
+RTCIceCandidate* RTCIceCandidate::Create(
+    scoped_refptr<WebRTCICECandidate> web_candidate) {
+  return new RTCIceCandidate(std::move(web_candidate));
 }
 
-RTCIceCandidate::RTCIceCandidate(WebRTCICECandidate web_candidate)
-    : web_candidate_(web_candidate) {}
+RTCIceCandidate::RTCIceCandidate(
+    scoped_refptr<WebRTCICECandidate> web_candidate)
+    : web_candidate_(std::move(web_candidate)) {}
 
 String RTCIceCandidate::candidate() const {
-  return web_candidate_.Candidate();
+  return web_candidate_->Candidate();
 }
 
 String RTCIceCandidate::sdpMid() const {
-  return web_candidate_.SdpMid();
+  return web_candidate_->SdpMid();
 }
 
 unsigned short RTCIceCandidate::sdpMLineIndex() const {
-  return web_candidate_.SdpMLineIndex();
+  return web_candidate_->SdpMLineIndex();
 }
 
-WebRTCICECandidate RTCIceCandidate::WebCandidate() const {
+scoped_refptr<WebRTCICECandidate> RTCIceCandidate::WebCandidate() const {
   return web_candidate_;
 }
 
 void RTCIceCandidate::setCandidate(String candidate) {
-  web_candidate_.SetCandidate(candidate);
+  web_candidate_->SetCandidate(candidate);
 }
 
 void RTCIceCandidate::setSdpMid(String sdp_mid) {
-  web_candidate_.SetSdpMid(sdp_mid);
+  web_candidate_->SetSdpMid(sdp_mid);
 }
 
 void RTCIceCandidate::setSdpMLineIndex(unsigned short sdp_m_line_index) {
-  web_candidate_.SetSdpMLineIndex(sdp_m_line_index);
+  web_candidate_->SetSdpMLineIndex(sdp_m_line_index);
 }
 
 ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* script_state) {
   V8ObjectBuilder result(script_state);
-  result.AddString("candidate", web_candidate_.Candidate());
-  result.AddString("sdpMid", web_candidate_.SdpMid());
-  result.AddNumber("sdpMLineIndex", web_candidate_.SdpMLineIndex());
+  result.AddString("candidate", web_candidate_->Candidate());
+  result.AddString("sdpMid", web_candidate_->SdpMid());
+  result.AddNumber("sdpMLineIndex", web_candidate_->SdpMLineIndex());
   return result.GetScriptValue();
 }
 
