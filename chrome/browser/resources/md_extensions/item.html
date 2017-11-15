@@ -181,7 +181,8 @@
         <template is="dom-if"
             if="[[computeSourceIndicatorIcon_(data.*)]]">
           <div id="source-indicator">
-            <div class="source-icon-wrapper">
+            <div class="source-icon-wrapper" role="img"
+                aria-labelledby="source-indicator-text">
               <iron-icon icon="[[computeSourceIndicatorIcon_(data.*)]]">
               </iron-icon>
             </div>
