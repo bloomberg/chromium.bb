@@ -1132,9 +1132,8 @@ void RenderWidget::ClearEditCommands() {
 
 void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
   if (widget_input_handler_manager_) {
-    WidgetInputHandlerManager::WidgetInputHandlerHost host =
-        widget_input_handler_manager_->GetWidgetInputHandlerHost();
-    (*host)->DidOverscroll(params);
+    widget_input_handler_manager_->GetWidgetInputHandlerHost()->DidOverscroll(
+        params);
   } else {
     Send(new InputHostMsg_DidOverscroll(routing_id_, params));
   }
@@ -1737,9 +1736,8 @@ void RenderWidget::OnImeSetComposition(
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
     if (widget_input_handler_manager_) {
-      WidgetInputHandlerManager::WidgetInputHandlerHost host =
-          widget_input_handler_manager_->GetWidgetInputHandlerHost();
-      (*host)->ImeCancelComposition();
+      widget_input_handler_manager_->GetWidgetInputHandlerHost()
+          ->ImeCancelComposition();
     } else {
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
     }
@@ -1992,10 +1990,9 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
   if (widget_input_handler_manager_) {
-    WidgetInputHandlerManager::WidgetInputHandlerHost host =
-        widget_input_handler_manager_->GetWidgetInputHandlerHost();
-    (*host)->ImeCompositionRangeChanged(composition_range_,
-                                        composition_character_bounds_);
+    widget_input_handler_manager_->GetWidgetInputHandlerHost()
+        ->ImeCompositionRangeChanged(composition_range_,
+                                     composition_character_bounds_);
   } else {
     Send(new InputHostMsg_ImeCompositionRangeChanged(
         routing_id(), composition_range_, composition_character_bounds_));
@@ -2517,8 +2514,8 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
 void RenderWidget::SetupWidgetInputHandler(
     mojom::WidgetInputHandlerRequest request,
     mojom::WidgetInputHandlerHostPtr host) {
-  widget_input_handler_manager_->AddInterface(std::move(request));
-  widget_input_handler_manager_->SetWidgetInputHandlerHost(std::move(host));
+  widget_input_handler_manager_->AddInterface(std::move(request),
+                                              std::move(host));
 }
 
 void RenderWidget::SetWidgetBinding(mojom::WidgetRequest request) {

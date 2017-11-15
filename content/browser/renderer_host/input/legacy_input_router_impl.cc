@@ -203,7 +203,8 @@ void LegacyInputRouterImpl::SetDeviceScaleFactor(float device_scale_factor) {
 }
 
 void LegacyInputRouterImpl::BindHost(
-    mojom::WidgetInputHandlerHostRequest request) {
+    mojom::WidgetInputHandlerHostRequest request,
+    bool frame_handler) {
   NOTREACHED();
 }
 

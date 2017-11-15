@@ -85,6 +85,7 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f),
       host_binding_(this),
+      frame_host_binding_(this),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
@@ -191,9 +192,15 @@ cc::TouchAction InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
-void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request) {
-  host_binding_.Close();
-  host_binding_.Bind(std::move(request));
+void InputRouterImpl::BindHost(mojom::WidgetInputHandlerHostRequest request,
+                               bool frame_handler) {
+  if (frame_handler) {
+    frame_host_binding_.Close();
+    frame_host_binding_.Bind(std::move(request));
+  } else {
+    host_binding_.Close();
+    host_binding_.Bind(std::move(request));
+  }
 }
 
 void InputRouterImpl::CancelTouchTimeout() {

@@ -53,7 +53,8 @@ class CONTENT_EXPORT LegacyIPCFrameInputHandler
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
   void MoveCaret(const gfx::Point& point) override;
   void GetWidgetInputHandler(
-      mojom::WidgetInputHandlerAssociatedRequest interface_request) override;
+      mojom::WidgetInputHandlerAssociatedRequest interface_request,
+      mojom::WidgetInputHandlerHostPtr host) override;
 
  private:
   void SendInput(std::unique_ptr<IPC::Message> message);

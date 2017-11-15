@@ -2848,8 +2848,12 @@ void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
 }
 
 void RenderWidgetHostImpl::SetWidgetInputHandler(
-    mojom::WidgetInputHandlerAssociatedPtr widget_input_handler) {
-  associated_widget_input_handler_ = std::move(widget_input_handler);
+    mojom::WidgetInputHandlerAssociatedPtr widget_input_handler,
+    mojom::WidgetInputHandlerHostRequest host_request) {
+  if (base::FeatureList::IsEnabled(features::kMojoInputMessages)) {
+    associated_widget_input_handler_ = std::move(widget_input_handler);
+    input_router_->BindHost(std::move(host_request), true);
+  }
 }
 
 void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
@@ -2861,7 +2865,7 @@ void RenderWidgetHostImpl::SetWidget(mojom::WidgetPtr widget) {
         mojo::MakeRequest(&host);
     widget->SetupWidgetInputHandler(mojo::MakeRequest(&widget_input_handler_),
                                     std::move(host));
-    input_router_->BindHost(std::move(host_request));
+    input_router_->BindHost(std::move(host_request), false);
   }
 }
 
