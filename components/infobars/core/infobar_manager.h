@@ -47,13 +47,15 @@ class InfoBarManager {
 
   // Adds the specified |infobar|, which already owns a delegate.
   //
-  // If infobars are disabled for this tab or the tab already has an infobar
-  // whose delegate returns true for
-  // InfoBarDelegate::EqualsDelegate(infobar->delegate()), |infobar| is deleted
-  // immediately without being added.
+  // If infobars are disabled for this tab, |infobar| is deleted immediately.
+  // If the tab already has an infobar whose delegate returns true for
+  // InfoBarDelegate::EqualsDelegate(infobar->delegate()), depending on the
+  // value of |replace_existing|, |infobar| is either deleted immediately
+  // without being added, or is added as replacement for the matching infobar.
   //
   // Returns the infobar if it was successfully added.
-  InfoBar* AddInfoBar(std::unique_ptr<InfoBar> infobar);
+  InfoBar* AddInfoBar(std::unique_ptr<InfoBar> infobar,
+                      bool replace_existing = false);
 
   // Removes the specified |infobar|.  This in turn may close immediately or
   // animate closed; at the end the infobar will delete itself.

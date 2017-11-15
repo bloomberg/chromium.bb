@@ -18,36 +18,23 @@
 #include "jni/FramebustBlockInfoBar_jni.h"
 
 namespace {
-
 class FramebustBlockInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
-  FramebustBlockInfoBarDelegate(const GURL& blocked_url)
-      : infobars::InfoBarDelegate(), blocked_url_(blocked_url) {}
-
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override {
     return infobars::InfoBarDelegate::InfoBarIdentifier::
         FRAMEBUST_BLOCK_INFOBAR_ANDROID;
   }
 
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override {
-    if (delegate->GetIdentifier() != GetIdentifier())
-      return false;
-
-    auto* framebust_delegate =
-        static_cast<FramebustBlockInfoBarDelegate*>(delegate);
-    return blocked_url_ == framebust_delegate->blocked_url_;
+    return delegate->GetIdentifier() == GetIdentifier();
   }
-
- private:
-  const GURL& blocked_url_;
 };
 
 }  // namespace
 
 FramebustBlockInfoBar::FramebustBlockInfoBar(
     std::unique_ptr<FramebustBlockMessageDelegate> delegate)
-    : InfoBarAndroid(base::MakeUnique<FramebustBlockInfoBarDelegate>(
-          delegate->GetBlockedUrl())),
+    : InfoBarAndroid(base::MakeUnique<FramebustBlockInfoBarDelegate>()),
       delegate_bridge_(base::MakeUnique<FramebustBlockMessageDelegateBridge>(
           std::move(delegate))) {}
 
@@ -70,5 +57,6 @@ void FramebustBlockInfoBar::Show(
     std::unique_ptr<FramebustBlockMessageDelegate> message_delegate) {
   InfoBarService* service = InfoBarService::FromWebContents(web_contents);
   service->AddInfoBar(
-      base::WrapUnique(new FramebustBlockInfoBar(std::move(message_delegate))));
+      base::WrapUnique(new FramebustBlockInfoBar(std::move(message_delegate))),
+      /*replace_existing=*/true);
 }
