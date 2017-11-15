@@ -24,8 +24,6 @@
 #include "extensions/common/constants.h"
 #endif  // (ENABLE_EXTENSIONS)
 
-namespace chrome {
-
 ////////////////////////////////////////////////////////////////////////////////
 // UnloadController, public:
 
@@ -399,5 +397,3 @@ void UnloadController::ClearUnloadState(content::WebContents* web_contents,
     }
   }
 }
-
-}  // namespace chrome
