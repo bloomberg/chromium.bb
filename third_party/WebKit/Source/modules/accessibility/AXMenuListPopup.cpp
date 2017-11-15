@@ -140,6 +140,7 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
     AXObject* child = children_[option_index].Get();
+    cache.PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
     cache.PostNotification(this, AXObjectCacheImpl::kAXActiveDescendantChanged);
     cache.PostNotification(child, AXObjectCacheImpl::kAXMenuListItemSelected);
   }
@@ -149,6 +150,7 @@ void AXMenuListPopup::DidHide() {
   AXObjectCacheImpl& cache = AXObjectCache();
   cache.PostNotification(this, AXObjectCacheImpl::kAXHide);
   if (ActiveDescendant())
+    cache.PostNotification(this, AXObjectCacheImpl::kAXChildrenChanged);
     cache.PostNotification(ActiveDescendant(),
                            AXObjectCacheImpl::kAXMenuListItemUnselected);
 }

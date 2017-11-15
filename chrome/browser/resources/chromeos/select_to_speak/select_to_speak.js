@@ -497,7 +497,8 @@ SelectToSpeak.prototype = {
     if (found)
       return true;
 
-    if (!node.name || !node.location || node.state.offscreen)
+    if (!node.name || !node.location || node.state.offscreen ||
+        node.state.invisible)
       return false;
 
     if (overlaps(node.location, rect)) {
