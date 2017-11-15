@@ -54,6 +54,20 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setNavigatorOverrides(const String& platform) override;
   protocol::Response setDefaultBackgroundColorOverride(
       protocol::Maybe<protocol::DOM::RGBA>) override;
+  protocol::Response setDeviceMetricsOverride(
+      int width,
+      int height,
+      double device_scale_factor,
+      bool mobile,
+      protocol::Maybe<double> scale,
+      protocol::Maybe<int> screen_width,
+      protocol::Maybe<int> screen_height,
+      protocol::Maybe<int> position_x,
+      protocol::Maybe<int> position_y,
+      protocol::Maybe<bool> dont_set_visible_size,
+      protocol::Maybe<protocol::Emulation::ScreenOrientation>,
+      protocol::Maybe<protocol::Page::Viewport>) override;
+  protocol::Response clearDeviceMetricsOverride() override;
 
   // InspectorBaseAgent overrides.
   protocol::Response disable() override;

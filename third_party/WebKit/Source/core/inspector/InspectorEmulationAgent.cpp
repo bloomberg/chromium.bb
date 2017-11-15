@@ -215,6 +215,32 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   return Response::OK();
 }
 
+Response InspectorEmulationAgent::setDeviceMetricsOverride(
+    int width,
+    int height,
+    double device_scale_factor,
+    bool mobile,
+    Maybe<double> scale,
+    Maybe<int> screen_width,
+    Maybe<int> screen_height,
+    Maybe<int> position_x,
+    Maybe<int> position_y,
+    Maybe<bool> dont_set_visible_size,
+    Maybe<protocol::Emulation::ScreenOrientation>,
+    Maybe<protocol::Page::Viewport>) {
+  // We don't have to do anything other than reply to the client, as the
+  // emulation parameters should have already been updated by the handling of
+  // ViewMsg_EnableDeviceEmulation.
+  return Response::OK();
+}
+
+Response InspectorEmulationAgent::clearDeviceMetricsOverride() {
+  // We don't have to do anything other than reply to the client, as the
+  // emulation parameters should have already been cleared by the handling of
+  // ViewMsg_DisableDeviceEmulation.
+  return Response::OK();
+}
+
 void InspectorEmulationAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_local_frame_);
   InspectorBaseAgent::Trace(visitor);
