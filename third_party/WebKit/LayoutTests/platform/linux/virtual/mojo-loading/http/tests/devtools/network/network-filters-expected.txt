@@ -46,10 +46,10 @@ Found results: 3
 
 filterText: is:from-cache
 isRegex: false
-Found results: 3
+Found results: 1
 
 filterText: -is:from-cache
 isRegex: false
-Found results: 1
+Found results: 3
 
 
