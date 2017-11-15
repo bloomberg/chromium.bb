@@ -4,12 +4,12 @@
 
 #include "chrome/browser/engagement/important_sites_usage_counter.h"
 
-#include <memory>
-
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -26,12 +26,9 @@ using storage::QuotaManager;
 
 class ImportantSitesUsageCounterTest : public testing::Test {
  public:
-  ImportantSitesUsageCounterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
-
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_.reset(new base::RunLoop());
   }
 
   void TearDown() override { content::RunAllTasksUntilIdle(); }
@@ -51,19 +48,7 @@ class ImportantSitesUsageCounterTest : public testing::Test {
         quota_manager_->proxy(), data.data(), storage::QuotaClient::kFileSystem,
         data.size());
     quota_manager_->proxy()->RegisterClient(client);
-
-    // TouchAllOriginsAndNotify calls quota_manager_->proxy()->quota_manager().
-    // which must be accessed on the IO thread. Call the method and wait for it
-    // using a RunLoop.
-    base::RunLoop run_loop;
-    BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)
-        ->PostTaskAndReply(
-            FROM_HERE,
-            base::Bind(
-                &ImportantSitesUsageCounterTest::TouchAllOriginsAndNotify,
-                base::Unretained(this), client),
-            run_loop.QuitClosure());
-    run_loop.Run();
+    client->TouchAllOriginsAndNotify();
   }
 
   void CreateLocalStorage(
@@ -91,17 +76,12 @@ class ImportantSitesUsageCounterTest : public testing::Test {
 
   void WaitForResult() {
     run_loop_->Run();
-    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_.reset(new base::RunLoop());
   }
 
   const std::vector<ImportantDomainInfo>& domain_info() { return domain_info_; }
 
  private:
-  void TouchAllOriginsAndNotify(content::MockStorageClient* client) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    client->TouchAllOriginsAndNotify();
-  }
-
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   base::ScopedTempDir temp_dir_;
