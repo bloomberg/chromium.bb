@@ -70,6 +70,10 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
 
   void EnableFallbackToRoot() { fallback_to_root_ = true; }
 
+  void set_is_window_in_display_root(bool value) {
+    is_window_in_display_root_ = value;
+  }
+
   ui::Event* last_event_target_not_found() {
     return last_event_target_not_found_.get();
   }
@@ -204,6 +208,9 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) override {
     return window->GetRootForDrawn();
   }
+  bool IsWindowInDisplayRoot(const ServerWindow* window) override {
+    return is_window_in_display_root_;
+  }
 
   Delegate* delegate_;
   ServerWindow* focused_window_;
@@ -220,6 +227,8 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
 
   // If true events blocked by a modal window are sent to |root_|.
   bool fallback_to_root_ = false;
+
+  bool is_window_in_display_root_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
@@ -291,6 +300,7 @@ class EventDispatcherTest : public testing::TestWithParam<bool>,
   viz::HostFrameSinkManager* host_frame_sink_manager() {
     return ws_test_helper_.window_server()->GetHostFrameSinkManager();
   }
+  TestServerWindowDelegate* window_delegate() { return window_delegate_.get(); }
 
   void DispatchEvent(EventDispatcher* dispatcher,
                      const ui::Event& event,
@@ -1457,8 +1467,8 @@ TEST_P(EventDispatcherTest, UpdatingCaptureStopsObservingPreviousCapture) {
   EXPECT_EQ(child1.get(),
             test_event_dispatcher_delegate()->lost_capture_window());
 
-  // If observing does not stop during the capture update this crashes.
-  child1->AddObserver(dispatcher);
+  EXPECT_FALSE(
+      EventDispatcherTestApi(dispatcher).IsObservingWindow(child1.get()));
 }
 
 // Tests that destroying a window with explicit capture clears the capture
@@ -2320,6 +2330,7 @@ TEST_P(EventDispatcherTest, DontCancelWhenMovedToSeparateDisplay) {
   event_dispatcher()->SetCaptureWindow(w1.get(), kClientAreaId);
   ASSERT_EQ(w1.get(), event_dispatcher()->capture_window());
   test_event_dispatcher_delegate()->set_root(&root2);
+  window_delegate()->AddRootWindow(&root2);
   root2.Add(w1.get());
   EXPECT_EQ(w1.get(), event_dispatcher()->capture_window());
 }

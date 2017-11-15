@@ -196,6 +196,7 @@ class EventDispatcherTestApi {
   }
   ServerWindow* capture_window() { return ed_->capture_window_; }
   EventTargeter* event_targeter() { return ed_->event_targeter_.get(); }
+  bool IsObservingWindow(ServerWindow* window);
 
  private:
   EventDispatcher* ed_;
