@@ -17,14 +17,15 @@ import android.view.ViewTreeObserver;
 public class ImpressionTracker
         implements ViewTreeObserver.OnPreDrawListener, View.OnAttachStateChangeListener {
     /**
-     * The Listener will be called back on an impression, which is defined as at least 2/3 of the
-     * view's height being visible.
+     * The Listener will be called back on an impression, which is defined as a given part of the
+     * view's height being visible (defaults to 2/3 of the view's height, can be configured by
+     * {@code setImpressionThreshold()}).
      *
      * @see #setListener
      */
     public interface Listener {
         /**
-         * The tracked view is being shown (at least 2/3 of its height are visible).
+         * The tracked view is being shown (a given part of its height is visible).
          */
         void onImpression();
     }
@@ -32,6 +33,7 @@ public class ImpressionTracker
     /** The currently tracked View. */
     private final View mView;
     private @Nullable Listener mListener;
+    private int mImpressionThresholdPx;
 
     /**
      * Creates a new instance tracking the given {@code view} as soon as and while a listener is
@@ -54,6 +56,15 @@ public class ImpressionTracker
         if (mListener != null) detach();
         mListener = listener;
         if (mListener != null) attach();
+    }
+
+    /**
+     * Sets a custom threshold that defines "impression".
+     * @param impressionThresholdPx Number of pixels of height of the view that need to be visible.
+     */
+    public void setImpressionThreshold(int impressionThresholdPx) {
+        assert impressionThresholdPx > 0;
+        mImpressionThresholdPx = impressionThresholdPx;
     }
 
     /**
@@ -93,11 +104,15 @@ public class ImpressionTracker
         if (parent != null) {
             Rect rect = new Rect(0, 0, mView.getWidth(), mView.getHeight());
 
-            // Track impression if at least 2/3 of the view is visible.
+            int impressionThresholdPx = mImpressionThresholdPx;
+            // If no threshold is specified, track impression if at least 2/3 of the view is
+            // visible.
+            if (impressionThresholdPx == 0) impressionThresholdPx = 2 * mView.getHeight() / 3;
+
             // |getChildVisibleRect| returns false when the view is empty, which may happen when
             // dismissing or reassigning a View. In this case |rect| appears to be invalid.
             if (parent.getChildVisibleRect(mView, rect, null)
-                    && rect.height() >= 2 * mView.getHeight() / 3) {
+                    && rect.height() >= impressionThresholdPx) {
                 mListener.onImpression();
             }
         }

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.support.annotation.LayoutRes;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -36,6 +37,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private SnippetArticle mArticle;
 
     private final DisplayStyleObserverAdapter mDisplayStyleObserver;
+    private final ImpressionTracker mExposureTracker;
     /**
      * Constructs a {@link SnippetArticleViewHolder} item used to display snippets.
      * @param parent The SuggestionsRecyclerView that is going to contain the newly created view.
@@ -55,6 +57,9 @@ public class SnippetArticleViewHolder extends CardViewHolder {
                 itemView, uiConfig, newDisplayStyle -> updateLayout());
 
         mOfflinePageBridge = offlinePageBridge;
+
+        mExposureTracker = new ImpressionTracker(itemView);
+        mExposureTracker.setImpressionThreshold(/* impressionThresholdPx */ 1);
     }
 
     @Override
@@ -108,6 +113,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         mDisplayStyleObserver.attach();
         mSuggestionsBinder.updateViewInformation(mArticle);
         setImpressionListener(this::onImpression);
+        mExposureTracker.setListener(this::onExposure);
 
         refreshOfflineBadgeVisibility();
     }
@@ -116,6 +122,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     public void recycle() {
         mDisplayStyleObserver.detach();
         mSuggestionsBinder.recycle();
+        mExposureTracker.setListener(null);
         super.recycle();
     }
 
@@ -176,8 +183,14 @@ public class SnippetArticleViewHolder extends CardViewHolder {
         return R.layout.new_tab_page_snippets_card_large_thumbnail;
     }
 
+    private void onExposure() {
+        if (mArticle == null || mArticle.mExposed) return;
+        mArticle.mExposed = true;
+    }
+
     private void onImpression() {
-        if (mArticle == null || !mArticle.trackImpression()) return;
+        if (mArticle == null || mArticle.mSeen) return;
+        mArticle.mSeen = true;
 
         if (SectionList.shouldReportPrefetchedSuggestionsMetrics(mArticle.mCategory)
                 && mOfflinePageBridge.isOfflinePageModelLoaded()) {

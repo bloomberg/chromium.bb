@@ -370,15 +370,18 @@ public class SectionListTest {
         final int initialSectionSize = 2;
         final int updatedSectionSize = 5;
         registerCategory(mSuggestionSource, CATEGORY1, 1);
-        registerCategory(mSuggestionSource, CATEGORY2, initialSectionSize);
+        List<SnippetArticle> suggestions =
+                registerCategory(mSuggestionSource, CATEGORY2, initialSectionSize);
         when(mUiDelegate.isVisible()).thenReturn(true); // Prevent updates on new suggestions.
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
 
         assertThat(sectionList.getSection(CATEGORY2).getSuggestionsCount(), is(initialSectionSize));
 
+        // Mark all suggestions as seen so that they cannot get replaced.
+        for (SnippetArticle suggestion : suggestions) suggestion.mExposed = true;
+
         // New suggestions are added, which will make CATEGORY2 stale.
-        bindViewHolders(sectionList);
         mSuggestionSource.setSuggestionsForCategory(
                 CATEGORY2, createDummySuggestions(updatedSectionSize, CATEGORY2));
         assertTrue(sectionList.getSection(CATEGORY2).isDataStale());
