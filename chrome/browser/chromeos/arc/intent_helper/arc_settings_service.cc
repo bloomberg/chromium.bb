@@ -32,6 +32,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/font_size_util.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -691,9 +692,11 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
   bool write_success = base::JSONWriter::Write(extras, &extras_json);
   DCHECK(write_success);
 
-  instance->SendBroadcast(action, "org.chromium.arc.intent_helper",
-                          "org.chromium.arc.intent_helper.SettingsReceiver",
-                          extras_json);
+  instance->SendBroadcast(
+      action, ArcIntentHelperBridge::kArcIntentHelperPackageName,
+      ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
+          "SettingsReceiver"),
+      extras_json);
 }
 
 // InstanceHolder<mojom::AppInstance>::Observer:
