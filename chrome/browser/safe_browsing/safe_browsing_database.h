@@ -214,14 +214,6 @@ class SafeBrowsingDatabase {
       const std::vector<SBFullHashResult>& full_hits,
       const base::TimeDelta& cache_lifetime) = 0;
 
-  // Returns true if the malware IP blacklisting killswitch URL is present
-  // in the csd whitelist. This function is safe to call from any thread.
-  virtual bool IsMalwareIPMatchKillSwitchOn() = 0;
-
-  // Returns true if the whitelist killswitch URL is present in the csd
-  // whitelist. This function is safe to call from any thread.
-  virtual bool IsCsdWhitelistKillSwitchOn() = 0;
-
   // The name of the bloom-filter file for the given database file.
   // NOTE(shess): OBSOLETE.  Present for deleting stale files.
   static base::FilePath BloomFilterForFilename(
@@ -379,12 +371,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void CacheHashResults(const std::vector<SBPrefix>& prefixes,
                         const std::vector<SBFullHashResult>& full_hits,
                         const base::TimeDelta& cache_lifetime) override;
-
-  // Returns the value of malware_kill_switch_;
-  bool IsMalwareIPMatchKillSwitchOn() override;
-
-  // Returns true if the CSD whitelist has everything whitelisted.
-  bool IsCsdWhitelistKillSwitchOn() override;
 
  private:
   friend class SafeBrowsingDatabaseTest;

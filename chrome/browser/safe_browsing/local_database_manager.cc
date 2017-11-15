@@ -465,22 +465,6 @@ bool LocalSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
   return database_->ContainsDownloadWhitelistedString(str);
 }
 
-bool LocalSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!enabled_ || !MakeDatabaseAvailable()) {
-    return true;
-  }
-  return database_->IsMalwareIPMatchKillSwitchOn();
-}
-
-bool LocalSafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!enabled_ || !MakeDatabaseAvailable()) {
-    return true;
-  }
-  return database_->IsCsdWhitelistKillSwitchOn();
-}
-
 bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(
     const GURL& url,
     const SBThreatTypeSet& expected_threats,

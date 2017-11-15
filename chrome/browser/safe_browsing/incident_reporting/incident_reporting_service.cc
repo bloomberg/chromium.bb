@@ -37,7 +37,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -176,7 +175,7 @@ class IncidentReportingService::UploadContext {
   // The report being uploaded.
   std::unique_ptr<ClientIncidentReport> report;
 
-  // The uploader in use. This is NULL until the CSD killswitch is checked.
+  // The uploader in use.
   std::unique_ptr<IncidentReportUploader> uploader;
 
   // A mapping of profile contexts to the data to be persisted upon successful
@@ -319,10 +318,7 @@ bool IncidentReportingService::IsEnabledForProfile(Profile* profile) {
 
 IncidentReportingService::IncidentReportingService(
     SafeBrowsingService* safe_browsing_service)
-    : database_manager_(safe_browsing_service
-                            ? safe_browsing_service->database_manager()
-                            : nullptr),
-      url_request_context_getter_(
+    : url_request_context_getter_(
           safe_browsing_service ? safe_browsing_service->url_request_context()
                                 : nullptr),
       collect_environment_data_fn_(&CollectEnvironmentData),
@@ -410,10 +406,7 @@ IncidentReportingService::IncidentReportingService(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
     base::TimeDelta delayed_task_interval,
     const scoped_refptr<base::TaskRunner>& delayed_task_runner)
-    : database_manager_(safe_browsing_service
-                            ? safe_browsing_service->database_manager()
-                            : nullptr),
-      url_request_context_getter_(request_context_getter),
+    : url_request_context_getter_(request_context_getter),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(GetBackgroundTaskRunner()),
       environment_collection_pending_(),
@@ -943,24 +936,9 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
 
   std::unique_ptr<UploadContext> context(new UploadContext(std::move(report)));
   context->profiles_to_state.swap(profiles_to_state);
-  if (!database_manager_.get()) {
-    // No database manager during testing. Take ownership of the context and
-    // continue processing.
-    UploadContext* temp_context = context.get();
-    uploads_.push_back(std::move(context));
-    IncidentReportingService::OnKillSwitchResult(temp_context, false);
-  } else {
-    if (content::BrowserThread::PostTaskAndReplyWithResult(
-            content::BrowserThread::IO,
-            FROM_HERE,
-            base::Bind(&SafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn,
-                       database_manager_),
-            base::Bind(&IncidentReportingService::OnKillSwitchResult,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       context.get()))) {
-      uploads_.push_back(std::move(context));
-    }  // else should not happen. Let the context be deleted automatically.
-  }
+  UploadContext* temp_context = context.get();
+  uploads_.push_back(std::move(context));
+  IncidentReportingService::UploadReportIfUploadingEnabled(temp_context);
 }
 
 void IncidentReportingService::CancelAllReportUploads() {
@@ -972,12 +950,11 @@ void IncidentReportingService::CancelAllReportUploads() {
   uploads_.clear();
 }
 
-void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
-                                                  bool is_killswitch_on) {
+void IncidentReportingService::UploadReportIfUploadingEnabled(
+    UploadContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (is_killswitch_on ||
-      !base::FeatureList::IsEnabled(kIncidentReportingEnableUpload)) {
+  if (!base::FeatureList::IsEnabled(kIncidentReportingEnableUpload)) {
     OnReportUploadResult(context, IncidentReportUploader::UPLOAD_SUPPRESSED,
                          std::unique_ptr<ClientIncidentResponse>());
     return;

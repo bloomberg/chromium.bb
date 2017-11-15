@@ -303,18 +303,8 @@ safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
   return safe_browsing::ThreatSource::REMOTE;
 }
 
-bool RemoteSafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  NOTREACHED();
-  return true;
-}
-
 bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
   return false;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
-  NOTREACHED();
-  return true;
 }
 
 bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {

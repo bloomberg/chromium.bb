@@ -134,8 +134,6 @@ class LocalSafeBrowsingDatabaseManager
   bool MatchMalwareIP(const std::string& ip_address) override;
   bool MatchDownloadWhitelistUrl(const GURL& url) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
-  bool IsMalwareKillSwitchOn() override;
-  bool IsCsdWhitelistKillSwitchOn() override;
   void CancelCheck(Client* client) override;
   void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
                        const V4ProtocolConfig& config) override;

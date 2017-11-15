@@ -208,14 +208,8 @@ class SafeBrowsingDatabaseManager
   // Returns the ThreatSource for this implementation.
   virtual ThreatSource GetThreatSource() const = 0;
 
-  // Check if the CSD whitelist kill switch is turned on.
-  virtual bool IsCsdWhitelistKillSwitchOn() = 0;
-
   // Returns whether download protection is enabled.
   virtual bool IsDownloadProtectionEnabled() const = 0;
-
-  // Check if the CSD malware IP matching kill switch is turned on.
-  virtual bool IsMalwareKillSwitchOn() = 0;
 
   // Returns true if URL-checking is supported on this build+device.
   // If false, calls to CheckBrowseUrl may dcheck-fail.

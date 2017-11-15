@@ -356,8 +356,6 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
                         const base::TimeDelta& cache_lifetime) override {
     // Do nothing for the cache.
   }
-  bool IsMalwareIPMatchKillSwitchOn() override { return false; }
-  bool IsCsdWhitelistKillSwitchOn() override { return false; }
 
   // Fill up the database with test URL.
   void AddUrl(const GURL& url,
