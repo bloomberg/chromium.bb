@@ -39,6 +39,8 @@ namespace blink {
 
 class Event;
 
+// TODO(nhiroki): Rename this to V8WorkerOrWorkletGlobalScopeEventListener.
+// (https://crbug.com/782696)
 class V8WorkerGlobalScopeEventListener final : public V8EventListener {
  public:
   static V8WorkerGlobalScopeEventListener* Create(
