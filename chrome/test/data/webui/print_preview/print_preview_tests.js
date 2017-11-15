@@ -378,7 +378,9 @@ cr.define('print_preview_test', function() {
             loadTimeData.getBoolean('printPdfAsImageEnabled'));
   }
 
-  suite('PrintPreview', function() {
+  const suiteName = 'PrintPreview';
+
+  suite(suiteName, function() {
     suiteSetup(function() {
       function CloudPrintInterfaceStub() {
         cr.EventTarget.call(this);
@@ -1725,4 +1727,8 @@ cr.define('print_preview_test', function() {
       });
     }  // cr.isWindows
   });
+
+  return {
+    suiteName: suiteName,
+  };
 });

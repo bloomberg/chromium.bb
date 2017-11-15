@@ -103,7 +103,7 @@ PrintPreviewUIBrowserTest.prototype = {
   'DISABLED_GenerateDraft',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
-    mocha.grep(new RegExp(testName + '\\b')).run();
+    runMochaTest(print_preview_test.suiteName, testName);
   });
 });
 
@@ -115,14 +115,14 @@ PrintPreviewUIBrowserTest.prototype = {
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
     this.accessibilityIssuesAreErrors = false;
-    mocha.grep(new RegExp(testName + '\\b')).run();
+    runMochaTest(print_preview_test.suiteName, testName);
   });
 });
 
 GEN('#if !defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewUIBrowserTest', 'SystemDefaultPrinterPolicy', function() {
   loadTimeData.overrideValues({useSystemDefaultPrinter: true});
-  mocha.grep(new RegExp('SystemDefaultPrinterPolicy' + '\\b')).run();
+  runMochaTest(print_preview_test.suiteName, 'SystemDefaultPrinterPolicy');
 });
 GEN('#endif');
 
@@ -132,7 +132,7 @@ GEN('#if defined(OS_MACOSX)');
   'MacOpenPDFInPreviewBadPrintTicket',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
-    mocha.grep(new RegExp(testName + '\\b')).run();
+    runMochaTest(print_preview_test.suiteName, testName);
   });
 });
 GEN('#endif');
@@ -143,7 +143,7 @@ GEN('#if defined(OS_WIN)');
   'WinSystemDialogLinkBadPrintTicket',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
-    mocha.grep(new RegExp(testName + '\\b')).run();
+    runMochaTest(print_preview_test.suiteName, testName);
   });
 });
 GEN('#endif');
