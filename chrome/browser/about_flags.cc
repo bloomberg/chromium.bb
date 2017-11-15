@@ -86,7 +86,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
-#include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_ranker_impl.h"
 #include "components/version_info/version_info.h"
@@ -1815,9 +1814,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(translate::kTranslateUI2016Q2)},
 #endif  // OS_LINUX || OS_WIN
-    {"translate-lang-by-ulp", flag_descriptions::kTranslateLanguageByUlpName,
-     flag_descriptions::kTranslateLanguageByUlpDescription, kOsAll,
-     FEATURE_VALUE_TYPE(translate::kTranslateLanguageByULP)},
     {"translate-ranker-enforcement",
      flag_descriptions::kTranslateRankerEnforcementName,
      flag_descriptions::kTranslateRankerEnforcementDescription, kOsAll,

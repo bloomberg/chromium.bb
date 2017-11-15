@@ -43,8 +43,6 @@
 
 namespace translate {
 
-const base::Feature kTranslateLanguageByULP{"TranslateLanguageByULP",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
 namespace {
 
 // Callbacks for translate errors.
@@ -59,60 +57,6 @@ const char kSourceLanguageQueryName[] = "sl";
 
 // Used in kReportLanguageDetectionErrorURL to specify the page URL.
 const char kUrlQueryName[] = "u";
-
-// Name for params in config for considering ULP in GetTargetLanguage().
-const char kTargetLanguageULPConfidenceThresholdName[] =
-    "target_language_ulp_confidence_threshold";
-const char kTargetLanguageULPProbabilityThresholdName[] =
-    "target_language_ulp_probability_threshold";
-
-// Name for params in config for considering ULP in InitiateTranslation().
-const char kInitiateTranslationULPConfidenceThresholdName[] =
-    "initiate_translation_ulp_confidence_threshold";
-const char kInitiateTranslationULPProbabilityThresholdName[] =
-    "initiate_translation_ulp_probability_threshold";
-
-// Constants for considering ULP. These built-in constatants of default will be
-// override by the value in config params if present.
-//   Default constants for the GetTargetLanguage() function:
-//     The confidence threshold that we will consider to use the ULP
-//     "reading list".
-const double kDefaultTargetLanguageULPConfidenceThreshold = 0.7;
-//     The probability threshold that we will consider to use a language on
-//     ULP "reading list".
-const double kDefaultTargetLanguageULPProbabilityThreshold = 0.55;
-
-//   Default constants for the InitiateTranslation() function:
-//     The confidence threshold that we will consider to use the ULP
-//     "reading list".
-const double kDefaultInitiateTranslationULPConfidenceThreshold = 0.75;
-//     The probability threshold that we will consider to use a language on
-//     ULP "reading list".
-const double kDefaultInitiateTranslationULPProbabilityThreshold = 0.5;
-
-// Return the probability of the |language| in the |list|, or 0.0 if it is not
-// in
-// the |list|.
-double GetLanguageProbability(
-    const TranslatePrefs::LanguageAndProbabilityList& list,
-    const std::string language) {
-  for (const auto& it : list) {
-    if (language == it.first) {
-      return it.second;
-    }
-  }
-  return 0.0;
-}
-
-// Get a value from the |map| by |key| and return the converted double, if
-// failed
-// return the |default_value| instead.
-double GetDoubleFromMap(std::map<std::string, std::string>& map,
-                        const std::string& key,
-                        double default_value) {
-  double value = default_value;
-  return base::StringToDouble(map[key], &value) ? value : default_value;
-}
 
 }  // namespace
 
@@ -284,13 +228,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  if (LanguageInULP(language_code)) {
-    TranslateBrowserMetrics::ReportInitiationStatus(
-        TranslateBrowserMetrics::INITIATION_STATUS_LANGUAGE_IN_ULP);
-    RecordTranslateEvent(metrics::TranslateEventProto::LANGUAGE_IN_ULP);
-    return;
-  }
-
   if (!should_offer_translation) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
@@ -305,27 +242,6 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
                                      language_code, target_lang,
                                      TranslateErrors::NONE, false);
-}
-
-bool TranslateManager::LanguageInULP(const std::string& language) const {
-  if (!base::FeatureList::IsEnabled(kTranslateLanguageByULP))
-    return false;
-  std::map<std::string, std::string> params;
-  variations::GetVariationParamsByFeature(translate::kTranslateLanguageByULP,
-                                          &params);
-  // Check the language & probability on the reading list.
-  TranslatePrefs::LanguageAndProbabilityList reading;
-  if (translate_client_->GetTranslatePrefs()->GetReadingFromUserLanguageProfile(
-          &reading) >
-          GetDoubleFromMap(params,
-                           kInitiateTranslationULPConfidenceThresholdName,
-                           kDefaultInitiateTranslationULPConfidenceThreshold) &&
-      GetLanguageProbability(reading, language) >
-          GetDoubleFromMap(params,
-                           kInitiateTranslationULPProbabilityThresholdName,
-                           kDefaultInitiateTranslationULPProbabilityThreshold))
-    return true;
-  return false;
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
@@ -490,13 +406,8 @@ std::string TranslateManager::GetTargetLanguage(
         return lang_code;
     }
   } else {
-    // Get target language from ULP if the ULP experiment is enabled.
-    std::string language = TranslateManager::GetTargetLanguageFromULP(prefs);
-    if (!language.empty())
-      return language;
-
     // Get the browser's user interface language.
-    language = TranslateDownloadManager::GetLanguageCode(
+    std::string language = TranslateDownloadManager::GetLanguageCode(
         TranslateDownloadManager::GetInstance()->application_locale());
     // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
     translate::ToTranslateLanguageSynonym(&language);
@@ -514,29 +425,6 @@ std::string TranslateManager::GetTargetLanguage(
     }
   }
 
-  return std::string();
-}
-
-// static
-std::string TranslateManager::GetTargetLanguageFromULP(
-    const TranslatePrefs* prefs) {
-  if (!base::FeatureList::IsEnabled(kTranslateLanguageByULP))
-    return std::string();
-  std::map<std::string, std::string> params;
-  variations::GetVariationParamsByFeature(translate::kTranslateLanguageByULP,
-                                          &params);
-  TranslatePrefs::LanguageAndProbabilityList reading;
-  // We only consider ULP if the confidence is greater than the threshold.
-  if (prefs->GetReadingFromUserLanguageProfile(&reading) <=
-      GetDoubleFromMap(params, kTargetLanguageULPConfidenceThresholdName,
-                       kDefaultTargetLanguageULPConfidenceThreshold))
-    return std::string();
-
-  if (reading.size() > 0 &&
-      reading[0].second >
-          GetDoubleFromMap(params, kTargetLanguageULPProbabilityThresholdName,
-                           kDefaultTargetLanguageULPProbabilityThreshold))
-    return reading[0].first;
   return std::string();
 }
 

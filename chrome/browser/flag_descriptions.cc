@@ -1449,11 +1449,6 @@ const char kTranslate2016q2UiName[] = "Translate 2016Q2 UI";
 const char kTranslate2016q2UiDescription[] =
     "Improved triggering logic and look for Translate Bubble UI";
 
-const char kTranslateLanguageByUlpName[] = "Translate Language by ULP";
-const char kTranslateLanguageByUlpDescription[] =
-    "Improved translate target language and triggering logic by considering "
-    "information from User Language Profile (ULP).";
-
 const char kTranslateRankerEnforcementName[] =
     "Enforce TranslateRanker decisions";
 const char kTranslateRankerEnforcementDescription[] =
