@@ -82,6 +82,14 @@ class ASH_EXPORT AccessibilityFocusRingController
 
   virtual int GetMargin() const;
 
+  // Breaks an SkColor into its opacity and color. If the opacity is
+  // not set (or is 0xFF), uses the |default_opacity| instead.
+  // Visible for testing.
+  static void GetColorAndOpacityFromColor(SkColor color,
+                                          float default_opacity,
+                                          SkColor* result_color,
+                                          float* result_opacity);
+
  private:
   // AccessibilityLayerDelegate overrides.
   void OnDeviceScaleFactorChanged() override;
@@ -133,6 +141,7 @@ class ASH_EXPORT AccessibilityFocusRingController
   std::vector<gfx::Rect> highlight_rects_;
   std::unique_ptr<AccessibilityHighlightLayer> highlight_layer_;
   SkColor highlight_color_;
+  float highlight_opacity_;
 
   friend struct base::DefaultSingletonTraits<AccessibilityFocusRingController>;
 

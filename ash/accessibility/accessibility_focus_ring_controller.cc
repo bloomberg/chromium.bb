@@ -144,7 +144,7 @@ void AccessibilityFocusRingController::UpdateHighlightFromHighlightRects() {
   if (!highlight_layer_)
     highlight_layer_ = std::make_unique<AccessibilityHighlightLayer>(this);
   highlight_layer_->Set(highlight_rects_, highlight_color_);
-  highlight_layer_->SetOpacity(kHighlightOpacity);
+  highlight_layer_->SetOpacity(highlight_opacity_);
 }
 
 void AccessibilityFocusRingController::OnLayerChange(
@@ -191,7 +191,8 @@ void AccessibilityFocusRingController::SetHighlights(
     const std::vector<gfx::Rect>& rects,
     SkColor color) {
   highlight_rects_ = rects;
-  highlight_color_ = color;
+  GetColorAndOpacityFromColor(color, kHighlightOpacity, &highlight_color_,
+                              &highlight_opacity_);
   UpdateHighlightFromHighlightRects();
 }
 
@@ -268,6 +269,20 @@ void AccessibilityFocusRingController::RectsToRings(
 
 int AccessibilityFocusRingController::GetMargin() const {
   return kAccessibilityFocusRingMargin;
+}
+
+void AccessibilityFocusRingController::GetColorAndOpacityFromColor(
+    SkColor color,
+    float default_opacity,
+    SkColor* result_color,
+    float* result_opacity) {
+  int alpha = SkColorGetA(color);
+  if (alpha == 0xFF) {
+    *result_opacity = default_opacity;
+  } else {
+    *result_opacity = SkColor4f::FromColor(color).fA;
+  }
+  *result_color = SkColorSetA(color, 0xFF);
 }
 
 // Given a vector of rects that all overlap, already sorted from top to bottom
