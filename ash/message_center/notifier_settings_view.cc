@@ -99,7 +99,7 @@ std::unique_ptr<views::Painter> CreateFocusPainter() {
 }
 
 // TODO(tetsui): Give more general names and remove kEntryHeight, etc.
-constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 0);
+constexpr gfx::Insets kTopLabelPadding(16, 18, 15, 18);
 const int kQuietModeViewSpacing = 18;
 
 constexpr gfx::Insets kHeaderViewPadding(4, 0, 4, 0);
@@ -108,6 +108,7 @@ constexpr gfx::Insets kQuietModeLabelPadding(16, 0, 15, 0);
 constexpr gfx::Insets kQuietModeTogglePadding(0, 14, 0, 14);
 constexpr SkColor kTopLabelColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 constexpr SkColor kLabelColor = SkColorSetARGB(0xDE, 0x0, 0x0, 0x0);
+constexpr SkColor kTopBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 const int kLabelFontSize = 13;
 
 // EntryView ------------------------------------------------------------------
@@ -428,6 +429,8 @@ NotifierSettingsView::NotifierSettingsView()
   header_view_ = new views::View;
   header_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, kHeaderViewPadding, 0));
+  header_view_->SetBorder(
+      views::CreateSolidSidedBorder(1, 0, 0, 0, kTopBorderColor));
 
   views::View* quiet_mode_view = new views::View;
 
