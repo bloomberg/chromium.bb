@@ -1623,13 +1623,36 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnFetchRequestEmptyBeforeInit) {
       /*use_mock_prefetched_pages_tracker=*/false,
       /*use_fake_breaking_news_listener=*/false,
       /*use_mock_remote_suggestions_status_service=*/false);
-  RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
   EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _)).Times(0);
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR),
                            IsEmpty()));
   provider->Fetch(articles_category(), std::set<std::string>(),
                   base::Bind(&SuggestionsLoaded, &loaded));
+  RunUntilIdle();
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, ReturnRefetchRequestEmptyBeforeInit) {
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _)).Times(0);
+  MockFunction<void(Status)> loaded;
+  EXPECT_CALL(loaded, Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR)));
+  provider->RefetchInTheBackground(
+      base::Bind(&MockFunction<void(Status)>::Call, base::Unretained(&loaded)));
+  RunUntilIdle();
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, IgnoreRefetchRequestEmptyBeforeInit) {
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _)).Times(0);
+  provider->RefetchInTheBackground(
+      RemoteSuggestionsProvider::FetchStatusCallback());
   RunUntilIdle();
 }
 
