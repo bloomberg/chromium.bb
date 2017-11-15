@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -236,7 +235,7 @@ void SimpleWebViewDialog::Init() {
   location_bar_->Init();
   UpdateReload(web_view_->web_contents()->IsLoading(), true);
 
-  gfx::Rect bounds(CalculateScreenBounds(gfx::Size()));
+  gfx::Rect bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   bounds.Inset(kExternalMargin, kExternalMargin);
   layout->set_minimum_size(bounds.size());
 
