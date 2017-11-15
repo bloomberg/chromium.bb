@@ -60,8 +60,6 @@ source_set("lib") {
     "window_manager.h",
     "window_manager_service.cc",
     "window_manager_service.h",
-    "window_properties.cc",
-    "window_properties.h",
   ]
 
   deps = [
