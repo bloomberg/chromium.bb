@@ -35,12 +35,9 @@ class CORE_EXPORT PointerEventFactory {
                        const Vector<WebMouseEvent>&,
                        LocalDOMWindow*);
 
-  PointerEvent* Create(const WebTouchPoint&,
-                       const Vector<std::pair<WebTouchPoint, TimeTicks>>&,
-                       WebInputEvent::Modifiers,
-                       TimeTicks event_platform_time_stamp,
-                       LocalFrame*,
-                       DOMWindow*);
+  PointerEvent* Create(const WebPointerEvent&,
+                       const Vector<WebPointerEvent>&,
+                       LocalDOMWindow*);
 
   PointerEvent* CreatePointerCancelEvent(
       const int pointer_id,

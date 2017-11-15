@@ -54,6 +54,10 @@ class WebPointerEvent : public WebInputEvent, public WebPointerProperties {
   // scroll.
   bool touch_start_or_first_touch_move;
 
+  // A unique identifier for the touch event. Valid ids start at one and
+  // increase monotonically. Zero means an unknown id.
+  uint32_t unique_touch_event_id;
+
 #if INSIDE_BLINK
   bool IsCancelable() const { return dispatch_type == kBlocking; }
 
