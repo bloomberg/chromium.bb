@@ -72,7 +72,8 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
   void WillEnterDebugLoop() override;
   void DidExitDebugLoop() override;
 
-  bool RequestDevToolsForFrame(blink::WebLocalFrame* frame) override;
+  bool RequestDevToolsForFrame(int session_id,
+                               blink::WebLocalFrame* frame) override;
 
   void EnableTracing(const blink::WebString& category_filter) override;
   void DisableTracing() override;
@@ -87,7 +88,7 @@ class CONTENT_EXPORT DevToolsAgent : public RenderFrameObserver,
                                     const std::string& method,
                                     const std::string& message);
   void OnInspectElement(int session_id, int x, int y);
-  void OnRequestNewWindowACK(bool success);
+  void OnRequestNewWindowACK(int session_id, bool success);
   void ContinueProgram();
 
   void GotManifest(int session_id,

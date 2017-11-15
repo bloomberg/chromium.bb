@@ -139,7 +139,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnDispatchOnInspectorFrontend(
       RenderFrameHost* sender,
       const DevToolsMessageChunk& message);
-  void OnRequestNewWindow(RenderFrameHost* sender, int new_routing_id);
+  void OnRequestNewWindow(RenderFrameHost* sender,
+                          int session_id,
+                          int new_routing_id);
   void DestroyOnRenderFrameGone();
 
   bool CheckConsistency();

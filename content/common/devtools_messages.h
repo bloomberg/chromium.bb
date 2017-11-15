@@ -105,7 +105,8 @@ IPC_MESSAGE_ROUTED3(DevToolsAgentMsg_InspectElement,
                     int /* y */)
 
 // ACK for DevToolsAgentHostMsg_RequestNewWindow message.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_RequestNewWindow_ACK,
+IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_RequestNewWindow_ACK,
+                    int /* session_id */,
                     bool /* success */)
 
 //-----------------------------------------------------------------------------
@@ -113,7 +114,8 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_RequestNewWindow_ACK,
 
 // Requests new DevTools window being opened for frame in the same process
 // with given routing id.
-IPC_MESSAGE_ROUTED1(DevToolsAgentHostMsg_RequestNewWindow,
+IPC_MESSAGE_ROUTED2(DevToolsAgentHostMsg_RequestNewWindow,
+                    int /* session_id */,
                     int /* frame_route_id */)
 
 #endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_

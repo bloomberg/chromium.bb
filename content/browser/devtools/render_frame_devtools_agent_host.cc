@@ -1339,22 +1339,23 @@ void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
   }
 }
 
-void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
-    RenderFrameHost* sender,
-    int new_routing_id) {
+void RenderFrameDevToolsAgentHost::OnRequestNewWindow(RenderFrameHost* sender,
+                                                      int session_id,
+                                                      int new_routing_id) {
   RenderFrameHostImpl* frame_host = RenderFrameHostImpl::FromID(
       sender->GetProcess()->GetID(), new_routing_id);
 
   bool success = false;
-  if (IsAttached() && sender->GetRoutingID() != new_routing_id && frame_host) {
+  if (SessionById(session_id) && sender->GetRoutingID() != new_routing_id &&
+      frame_host) {
     scoped_refptr<DevToolsAgentHost> agent =
         RenderFrameDevToolsAgentHost::GetOrCreateFor(
             frame_host->frame_tree_node());
     success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
   }
 
-  sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(
-      sender->GetRoutingID(), success));
+  sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(sender->GetRoutingID(),
+                                                         session_id, success));
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
