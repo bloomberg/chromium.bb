@@ -325,13 +325,15 @@ void TestSuite::SuppressErrorDialogs() {
   UINT existing_flags = SetErrorMode(new_flags);
   SetErrorMode(existing_flags | new_flags);
 
-#if defined(_DEBUG) && defined(_HAS_EXCEPTIONS) && (_HAS_EXCEPTIONS == 1)
+#if defined(_DEBUG)
   // Suppress the "Debug Assertion Failed" dialog.
   // TODO(hbono): remove this code when gtest has it.
   // http://groups.google.com/d/topic/googletestframework/OjuwNlXy5ac/discussion
-  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
   _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-#endif  // defined(_DEBUG) && defined(_HAS_EXCEPTIONS) && (_HAS_EXCEPTIONS == 1)
+  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+  _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+#endif  // defined(_DEBUG)
 #endif  // defined(OS_WIN)
 }
 
