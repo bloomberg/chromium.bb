@@ -39,6 +39,7 @@
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
+#include "platform/wtf/text/ParsingUtilities.h"
 #include "platform/wtf/text/StringHash.h"
 #include "public/platform/WebReferrerPolicy.h"
 
@@ -322,6 +323,15 @@ bool SecurityPolicy::ReferrerPolicyFromString(
   return false;
 }
 
+namespace {
+
+template <typename CharType>
+inline bool IsASCIIAlphaOrHyphen(CharType c) {
+  return IsASCIIAlpha(c) || c == '-';
+}
+
+}  // namespace
+
 bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
     const String& header_value,
     ReferrerPolicyLegacyKeywordsSupport legacy_keywords_support,
@@ -332,10 +342,19 @@ bool SecurityPolicy::ReferrerPolicyFromHeaderValue(
   header_value.Split(',', true, tokens);
   for (const auto& token : tokens) {
     ReferrerPolicy current_result;
+    auto stripped_token = token.StripWhiteSpace();
     if (SecurityPolicy::ReferrerPolicyFromString(token.StripWhiteSpace(),
                                                  legacy_keywords_support,
                                                  &current_result)) {
       referrer_policy = current_result;
+    } else {
+      Vector<UChar> characters;
+      stripped_token.AppendTo(characters);
+      const UChar* position = characters.data();
+      UChar* end = characters.data() + characters.size();
+      SkipWhile<UChar, IsASCIIAlphaOrHyphen>(position, end);
+      if (position != end)
+        return false;
     }
   }
 
