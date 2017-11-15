@@ -54,14 +54,15 @@ public class SmartSelectionClient implements SelectionClient {
      */
     public static SmartSelectionClient create(ResultCallback callback, WebContents webContents) {
         WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || windowAndroid == null) return null;
+        // TODO(donnd): update to "SDK_INT < Build.VERSION_CODES.O_MR1" once MR1 is supported.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O || windowAndroid == null) return null;
 
         return new SmartSelectionClient(callback, webContents, windowAndroid);
     }
 
     private SmartSelectionClient(
             ResultCallback callback, WebContents webContents, WindowAndroid windowAndroid) {
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+        assert Build.VERSION.SDK_INT > Build.VERSION_CODES.O;
         mProvider = new SmartSelectionProvider(callback, windowAndroid);
         mCallback = callback;
         mSmartSelectionMetricLogger =
