@@ -205,11 +205,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kConfigured] = printers;
     RebuildConfiguredPrintersIndex();
-    UpdateConfiguredPrinterURIs();
-    for (auto& observer : observer_list_) {
-      observer.OnPrintersChanged(kConfigured, printers_[kConfigured]);
-    }
     RebuildDetectedLists();
+    UpdateConfiguredPrinterURIs();
+    NotifyObservers({kConfigured});
   }
 
   // SyncedPrintersManager::Observer implementation
@@ -217,9 +215,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       const std::vector<Printer>& printers) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kEnterprise] = printers;
-    for (auto& observer : observer_list_) {
-      observer.OnPrintersChanged(kEnterprise, printers_[kEnterprise]);
-    }
+    NotifyObservers({kEnterprise});
   }
 
   // Callback entry point for PrinterDetectorObserverProxys owned by this
@@ -237,9 +233,26 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         break;
     }
     RebuildDetectedLists();
+
+    // We may have new URI information for a configured printer in the changed
+    // detected list.  If we do, pass the updated information along to
+    // observers.
+    if (UpdateConfiguredPrinterURIs()) {
+      NotifyObservers({kConfigured});
+    }
   }
 
  private:
+  // Notify observers on the given classes the the relevant lists have changed.
+  void NotifyObservers(
+      const std::vector<CupsPrintersManager::PrinterClass>& printer_classes) {
+    for (auto& observer : observer_list_) {
+      for (auto printer_class : printer_classes) {
+        observer.OnPrintersChanged(printer_class, printers_[printer_class]);
+      }
+    }
+  }
+
   // Rebuild the index from printer id to index for configured printers.
   void RebuildConfiguredPrintersIndex() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
@@ -250,8 +263,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   // Cross reference the Configured printers with the raw detected printer
-  // lists.
-  void UpdateConfiguredPrinterURIs() {
+  // lists.  Returns true if any entries in the configured printers list
+  // changed as a result of this cross referencing, false otherwise.
+  bool UpdateConfiguredPrinterURIs() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     bool updated = false;
     for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
@@ -270,11 +284,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         }
       }
     }
-    if (updated) {
-      for (auto& observer : observer_list_) {
-        observer.OnPrintersChanged(kConfigured, printers_[kConfigured]);
-      }
-    }
+    return updated;
   }
 
   // Look through all sources for the detected printer with the given id.
@@ -394,6 +404,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
   }
 
+  // Record in UMA the appropriate event with a setup attempt for a printer is
+  // abandoned.
   void RecordSetupAbandoned(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (IsUsbPrinter(printer)) {
@@ -409,18 +421,17 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     }
   }
 
-  // Rebuild the Automatic and Discovered printers lists.
+  // Rebuild the Automatic and Discovered printers lists from the (cached) raw
+  // detections.  This will also generate OnPrintersChanged events for any
+  // observers observering either of the detected lists (kAutomatic and
+  // kDiscovered).
   void RebuildDetectedLists() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kAutomatic].clear();
     printers_[kDiscovered].clear();
     AddDetectedList(usb_detections_);
     AddDetectedList(zeroconf_detections_);
-
-    for (auto& observer : observer_list_) {
-      observer.OnPrintersChanged(kAutomatic, printers_[kAutomatic]);
-      observer.OnPrintersChanged(kDiscovered, printers_[kDiscovered]);
-    }
+    NotifyObservers({kAutomatic, kDiscovered});
   }
 
   // Callback invoked on completion of PpdProvider::ResolvePpdReference.
@@ -438,7 +449,6 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       value.reset(new Printer::PpdReference(ref));
     }
     RebuildDetectedLists();
-    UpdateConfiguredPrinterURIs();
   }
 
   SEQUENCE_CHECKER(sequence_);
