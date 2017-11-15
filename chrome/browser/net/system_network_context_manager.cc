@@ -75,7 +75,8 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
     return io_thread_network_context_.get();
   }
 
-  if (!network_service_network_context_) {
+  if (!network_service_network_context_ ||
+      network_service_network_context_.encountered_error()) {
     content::mojom::NetworkService* network_service =
         content::GetNetworkService();
     if (!is_quic_allowed_)
@@ -139,4 +140,8 @@ void SystemNetworkContextManager::DisableQuic() {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&DisableQuicOnIOThread, io_thread,
                      base::Unretained(safe_browsing_service)));
+}
+
+void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
+  network_service_network_context_.FlushForTesting();
 }
