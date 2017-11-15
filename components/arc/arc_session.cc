@@ -232,6 +232,10 @@ class ArcSessionImpl : public ArcSession,
   explicit ArcSessionImpl(std::unique_ptr<Delegate> delegate);
   ~ArcSessionImpl() override;
 
+  // Returns default delegate implementation used for the production.
+  static std::unique_ptr<Delegate> CreateDelegate(
+      ArcBridgeService* arc_bridge_service);
+
   // ArcSession overrides:
   void Start(ArcInstanceMode request_mode) override;
   void Stop() override;
@@ -247,9 +251,10 @@ class ArcSessionImpl : public ArcSession,
   // In case of success, |container_instance_id| must not be empty, and
   // |socket_fd| is /dev/null.
   // TODO(hidehiko): Remove |socket_fd| from this callback.
-  void OnMiniInstanceStarted(StartArcInstanceResult result,
-                             const std::string& container_instance_id,
-                             base::ScopedFD socket_fd);
+  void OnMiniInstanceStarted(
+      chromeos::SessionManagerClient::StartArcInstanceResult result,
+      const std::string& container_instance_id,
+      base::ScopedFD socket_fd);
 
   // Sends a D-Bus message to start or to upgrade to a full instance.
   void StartFullInstance();
@@ -260,9 +265,10 @@ class ArcSessionImpl : public ArcSession,
   // instance to a full instance.
   // In either start or upgrade case, |socket_fd| should be a socket which
   // shold be accept(2)ed to connect ArcBridgeService Mojo channel.
-  void OnFullInstanceStarted(StartArcInstanceResult result,
-                             const std::string& container_instance_id,
-                             base::ScopedFD socket_fd);
+  void OnFullInstanceStarted(
+      chromeos::SessionManagerClient::StartArcInstanceResult result,
+      const std::string& container_instance_id,
+      base::ScopedFD socket_fd);
 
   // Called when Mojo connection is established (or canceled during the
   // connect.)
@@ -350,6 +356,12 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionDelegateImpl);
 };
+
+// static
+std::unique_ptr<ArcSessionImpl::Delegate> ArcSessionImpl::CreateDelegate(
+    ArcBridgeService* arc_bridge_service) {
+  return std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service);
+}
 
 ArcSessionDelegateImpl::ArcSessionDelegateImpl(
     ArcBridgeService* arc_bridge_service)
@@ -494,7 +506,7 @@ void ArcSessionImpl::StartMiniInstance() {
 }
 
 void ArcSessionImpl::OnMiniInstanceStarted(
-    StartArcInstanceResult result,
+    chromeos::SessionManagerClient::StartArcInstanceResult result,
     const std::string& container_instance_id,
     base::ScopedFD socket_fd) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -564,7 +576,7 @@ void ArcSessionImpl::StartFullInstance() {
 }
 
 void ArcSessionImpl::OnFullInstanceStarted(
-    StartArcInstanceResult result,
+    chromeos::SessionManagerClient::StartArcInstanceResult result,
     const std::string& container_instance_id,
     base::ScopedFD socket_fd) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -833,7 +845,7 @@ void ArcSession::RemoveObserver(Observer* observer) {
 std::unique_ptr<ArcSession> ArcSession::Create(
     ArcBridgeService* arc_bridge_service) {
   return std::make_unique<ArcSessionImpl>(
-      std::make_unique<ArcSessionDelegateImpl>(arc_bridge_service));
+      ArcSessionImpl::CreateDelegate(arc_bridge_service));
 }
 
 }  // namespace arc
