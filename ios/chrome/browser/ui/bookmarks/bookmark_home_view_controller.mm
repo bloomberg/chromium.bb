@@ -170,9 +170,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
-    if (self.isReconstructingFromCache) {
-      [self setupUIStackCacheIfApplicable];
-    }
     // Set the delegate here to make sure it is working when navigating in the
     // ViewController hierarchy (as each view controller is setting itself as
     // delegate).
@@ -902,6 +899,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (![self isViewLoaded])
     return;
 
+  // Bookmark Model is loaded after presenting Bookmarks,  we need to check
+  // again here if restoring of cache position is needed.  It is to prevent
+  // crbug.com/765503.
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration) &&
+      bookmark_utils_ios::GetBookmarkUIPositionCache(_bookmarks)) {
+    self.isReconstructingFromCache = YES;
+  }
+
   DCHECK(self.waitForModelView);
   __weak BookmarkHomeViewController* weakSelf = self;
   [self.waitForModelView stopWaitingWithCompletion:^{
@@ -1012,6 +1017,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   if (_rootNode != self.bookmarks->root_node()) {
     [self setupContextBar];
+  }
+  if (self.isReconstructingFromCache) {
+    [self setupUIStackCacheIfApplicable];
   }
 }
 

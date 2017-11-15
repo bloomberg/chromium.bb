@@ -182,7 +182,9 @@ using bookmarks::BookmarkNode;
   if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
     [self.bookmarkBrowser setRootNode:self.bookmarkModel->root_node()];
     // If cache is present then reconstruct the last visited bookmark from
-    // cache.
+    // cache.  If bookmarkModel is not loaded yet, the following checking will
+    // be done again at bookmarkModelLoaded in BookmarkHomeViewController to
+    // prevent crbug.com/765503.
     if (bookmark_utils_ios::GetBookmarkUIPositionCache(self.bookmarkModel)) {
       self.bookmarkBrowser.isReconstructingFromCache = YES;
     }
