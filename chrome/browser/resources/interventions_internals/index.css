@@ -91,6 +91,10 @@ table {
   width: 100%;
 }
 
+.nqe-value-column {
+  text-align: center;
+}
+
 td {
   border: 1px solid white;
   padding: 10px;
@@ -168,6 +172,14 @@ td.log-url .url-tooltip::after {
     font-size: 85%;
   }
 
+  #nqe-logs-table {
+    width: 60%;
+  }
+
+  #blacklisted-hosts-table {
+    width: 60%;
+  }
+
   .log-time {
     width: 15%;
   }
@@ -193,6 +205,14 @@ td.log-url .url-tooltip::after {
   .log-time {
     font-size: 100%;
     width: 8%;
+  }
+
+  #nqe-logs-table {
+    width: 30%;
+  }
+
+  #blacklisted-hosts-table {
+    width: 30%;
   }
 
   td.log-description {
