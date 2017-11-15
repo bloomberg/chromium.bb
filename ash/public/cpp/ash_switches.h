@@ -55,7 +55,7 @@ ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kForceClamshellPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
-ASH_PUBLIC_EXPORT extern const char kShowMdLogin[];
+ASH_PUBLIC_EXPORT extern const char kShowViewsLogin[];
 ASH_PUBLIC_EXPORT extern const char kShowWebUiLock[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonWindow[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonAccelCount[];
@@ -66,7 +66,7 @@ ASH_PUBLIC_EXPORT extern const char kTouchscreenUsableWhileScreenOff[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
-
+ASH_PUBLIC_EXPORT bool IsUsingViewsLogin();
 ASH_PUBLIC_EXPORT bool IsUsingWebUiLock();
 
 }  // namespace switches
