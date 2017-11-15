@@ -169,12 +169,16 @@ struct CommonMailboxObjects {
     mailbox3_ = viz::TextureMailbox(shared_bitmap_.get(), size);
   }
 
+  using RepeatingReleaseCallback =
+      base::RepeatingCallback<void(const gpu::SyncToken& sync_token,
+                                   bool is_lost)>;
+
   gpu::Mailbox mailbox_name1_;
   gpu::Mailbox mailbox_name2_;
   MockMailboxCallback mock_callback_;
-  viz::ReleaseCallback release_mailbox1_;
-  viz::ReleaseCallback release_mailbox2_;
-  viz::ReleaseCallback release_mailbox3_;
+  RepeatingReleaseCallback release_mailbox1_;
+  RepeatingReleaseCallback release_mailbox2_;
+  RepeatingReleaseCallback release_mailbox3_;
   viz::TextureMailbox mailbox1_;
   viz::TextureMailbox mailbox2_;
   viz::TextureMailbox mailbox3_;

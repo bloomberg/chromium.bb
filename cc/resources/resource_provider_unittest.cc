@@ -2026,7 +2026,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   viz::ResourceId resource =
       child_resource_provider_->CreateResourceFromTextureMailbox(
           viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
-          viz::SingleReleaseCallback::Create(callback));
+          viz::SingleReleaseCallback::Create(std::move(callback)));
   EXPECT_EQ(1u, context()->NumTextures());
   EXPECT_FALSE(release_sync_token.HasData());
   {
@@ -2078,9 +2078,10 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   sync_token = release_sync_token;
   EXPECT_LT(0u, sync_token.release_count());
   release_sync_token.Clear();
+  callback = base::Bind(ReleaseCallback, &release_sync_token, &lost_resource);
   resource = child_resource_provider_->CreateResourceFromTextureMailbox(
       viz::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D),
-      viz::SingleReleaseCallback::Create(callback));
+      viz::SingleReleaseCallback::Create(std::move(callback)));
   EXPECT_EQ(1u, context()->NumTextures());
   EXPECT_FALSE(release_sync_token.HasData());
   {

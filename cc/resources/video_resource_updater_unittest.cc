@@ -397,7 +397,7 @@ TEST_F(VideoResourceUpdaterTest, ReuseResource) {
   // Simulate the ResourceProvider releasing the resources back to the video
   // updater.
   for (auto& release_callback : resources.release_callbacks)
-    release_callback.Run(gpu::SyncToken(), false);
+    std::move(release_callback).Run(gpu::SyncToken(), false);
 
   // Allocate resources for the same frame.
   context3d_->ResetUploadCount();
@@ -619,7 +619,7 @@ TEST_F(VideoResourceUpdaterTest, PassReleaseSyncToken) {
         updater.CreateExternalResourcesFromVideoFrame(video_frame);
 
     ASSERT_EQ(resources.release_callbacks.size(), 1u);
-    resources.release_callbacks[0].Run(sync_token, false);
+    std::move(resources.release_callbacks[0]).Run(sync_token, false);
   }
 
   EXPECT_EQ(release_sync_token_, sync_token);

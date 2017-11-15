@@ -256,24 +256,24 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   ResourceId resource_y =
       child_resource_provider->CreateResourceFromTextureMailbox(
           resources.mailboxes[media::VideoFrame::kYPlane],
-          SingleReleaseCallback::Create(
-              resources.release_callbacks[media::VideoFrame::kYPlane]));
+          SingleReleaseCallback::Create(std::move(
+              resources.release_callbacks[media::VideoFrame::kYPlane])));
   ResourceId resource_u =
       child_resource_provider->CreateResourceFromTextureMailbox(
           resources.mailboxes[media::VideoFrame::kUPlane],
-          SingleReleaseCallback::Create(
-              resources.release_callbacks[media::VideoFrame::kUPlane]));
+          SingleReleaseCallback::Create(std::move(
+              resources.release_callbacks[media::VideoFrame::kUPlane])));
   ResourceId resource_v =
       child_resource_provider->CreateResourceFromTextureMailbox(
           resources.mailboxes[media::VideoFrame::kVPlane],
-          SingleReleaseCallback::Create(
-              resources.release_callbacks[media::VideoFrame::kVPlane]));
+          SingleReleaseCallback::Create(std::move(
+              resources.release_callbacks[media::VideoFrame::kVPlane])));
   ResourceId resource_a = 0;
   if (with_alpha) {
     resource_a = child_resource_provider->CreateResourceFromTextureMailbox(
         resources.mailboxes[media::VideoFrame::kAPlane],
-        SingleReleaseCallback::Create(
-            resources.release_callbacks[media::VideoFrame::kAPlane]));
+        SingleReleaseCallback::Create(std::move(
+            resources.release_callbacks[media::VideoFrame::kAPlane])));
   }
 
   // Transfer resources to the parent.
@@ -368,8 +368,8 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
 
   ResourceId resource_y =
       child_resource_provider->CreateResourceFromTextureMailbox(
-          resources.mailboxes[0],
-          SingleReleaseCallback::Create(resources.release_callbacks[0]));
+          resources.mailboxes[0], SingleReleaseCallback::Create(std::move(
+                                      resources.release_callbacks[0])));
 
   // Transfer resource to the parent.
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;

@@ -29,7 +29,7 @@ LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
     frame_sink_->DetachFromClient();
 
   for (auto& callback : release_callbacks_)
-    callback.second.Run(gpu::SyncToken(), true /* lost */);
+    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
 
   if (shell_)
     shell_->RemoveShellObserver(this);
@@ -91,9 +91,9 @@ bool LayerTreeFrameSinkHolder::HasReleaseCallbackForResource(
 
 void LayerTreeFrameSinkHolder::SetResourceReleaseCallback(
     viz::ResourceId id,
-    const viz::ReleaseCallback& callback) {
+    viz::ReleaseCallback callback) {
   DCHECK(!callback.is_null());
-  release_callbacks_[id] = callback;
+  release_callbacks_[id] = std::move(callback);
 }
 
 int LayerTreeFrameSinkHolder::AllocateResourceId() {
@@ -125,7 +125,7 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
     auto it = release_callbacks_.find(resource.id);
     DCHECK(it != release_callbacks_.end());
     if (it != release_callbacks_.end()) {
-      it->second.Run(resource.sync_token, resource.lost);
+      std::move(it->second).Run(resource.sync_token, resource.lost);
       release_callbacks_.erase(it);
     }
   }
@@ -158,7 +158,7 @@ void LayerTreeFrameSinkHolder::DidDiscardCompositorFrame(
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   last_frame_resources_.clear();
   for (auto& callback : release_callbacks_)
-    callback.second.Run(gpu::SyncToken(), true /* lost */);
+    std::move(callback.second).Run(gpu::SyncToken(), true /* lost */);
   release_callbacks_.clear();
 
   if (shell_)

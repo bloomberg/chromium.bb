@@ -15,9 +15,8 @@ namespace viz {
 
 class VIZ_COMMON_EXPORT SingleReleaseCallback {
  public:
-  static std::unique_ptr<SingleReleaseCallback> Create(
-      const ReleaseCallback& cb) {
-    return base::WrapUnique(new SingleReleaseCallback(cb));
+  static std::unique_ptr<SingleReleaseCallback> Create(ReleaseCallback cb) {
+    return base::WrapUnique(new SingleReleaseCallback(std::move(cb)));
   }
 
   ~SingleReleaseCallback();
@@ -25,7 +24,7 @@ class VIZ_COMMON_EXPORT SingleReleaseCallback {
   void Run(const gpu::SyncToken& sync_token, bool is_lost);
 
  private:
-  explicit SingleReleaseCallback(const ReleaseCallback& callback);
+  explicit SingleReleaseCallback(ReleaseCallback callback);
 
   ReleaseCallback callback_;
 };

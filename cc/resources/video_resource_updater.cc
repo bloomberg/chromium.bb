@@ -186,7 +186,9 @@ VideoFrameExternalResources::VideoFrameExternalResources()
       bits_per_channel(8) {}
 
 VideoFrameExternalResources::VideoFrameExternalResources(
-    const VideoFrameExternalResources& other) = default;
+    VideoFrameExternalResources&& other) = default;
+VideoFrameExternalResources& VideoFrameExternalResources::operator=(
+    VideoFrameExternalResources&& other) = default;
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
