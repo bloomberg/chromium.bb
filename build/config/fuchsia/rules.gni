@@ -10,7 +10,7 @@ template("generate_runner_script") {
   _target_dir_name = get_label_info(invoker.exe_target, "dir")
   _target_shortname = get_label_info(invoker.exe_target, "name")
   _runtime_deps_file = "$root_out_dir/gen.runtime/$_target_dir_name/$_target_shortname.runtime_deps"
-  _runtime_deps_target = "${_target_shortname}__write_deps"
+  _runtime_deps_target = "${target_name}__write_deps"
   group(_runtime_deps_target) {
     forward_variables_from(invoker,
                            [
@@ -45,12 +45,11 @@ template("generate_runner_script") {
     data = []
     runner_args = []
 
-    generated_script = "$root_build_dir/bin/run_${_target_shortname}"
     outputs = [
-      generated_script,
+      invoker.generated_script,
     ]
     data += [
-      generated_script,
+      invoker.generated_script,
       "//build/fuchsia/exe_runner.py",
       "//build/fuchsia/test_runner.py",
       "//build/fuchsia/runner_common.py",
@@ -84,7 +83,7 @@ template("generate_runner_script") {
       "--depfile",
       rebase_path(depfile, root_build_dir),
       "--script-output-path",
-      rebase_path(generated_script, root_build_dir),
+      rebase_path(invoker.generated_script, root_build_dir),
       "--exe-name",
       _target_shortname,
     ]
@@ -104,6 +103,8 @@ template("test_runner_script") {
     testonly = true
     runner_script = "test_runner.py"
     exe_target = invoker.test_name
+    generated_script =
+        "$root_build_dir/bin/run_" + get_label_info(exe_target, "name")
     forward_variables_from(invoker, "*")
   }
 }
@@ -129,6 +130,24 @@ template("fuchsia_executable_runner") {
                              "data_deps",
                            ])
     runner_script = "exe_runner.py"
+    generated_script =
+        "$root_build_dir/bin/run_" + get_label_info(exe_target, "name")
+    if (!defined(data_deps)) {
+      data_deps = []
+    }
+    data_deps += [ exe_target ]
+  }
+
+  generate_runner_script(target_name + "_archive") {
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "exe_target",
+                             "data_deps",
+                           ])
+    runner_script = "archive_builder.py"
+    generated_script =
+        "$root_build_dir/bin/archive_" + get_label_info(exe_target, "name")
     if (!defined(data_deps)) {
       data_deps = []
     }
