@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PopupOpenerTabHelper);
 
@@ -68,6 +69,17 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(
       tick_clock_(std::move(tick_clock)) {
   visibility_tracker_ = base::MakeUnique<ScopedVisibilityTracker>(
       tick_clock_.get(), web_contents->IsVisible());
+}
+
+void PopupOpenerTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted() ||
+      !navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+  last_committed_source_id_ = ukm::ConvertToSourceId(
+      navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
 }
 
 void PopupOpenerTabHelper::WasShown() {
