@@ -7,6 +7,7 @@ import json
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
+from webkitpy.w3c.gerrit import GerritError
 from webkitpy.w3c.gerrit_mock import MockGerritAPI, MockGerritCL
 from webkitpy.w3c.test_exporter import TestExporter
 from webkitpy.w3c.wpt_github import PullRequest
@@ -346,6 +347,21 @@ class TestExporterTest(LoggingTestCase):
         self.assertEqual(test_exporter.wpt_github.calls, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created, [])
         self.assertEqual(test_exporter.wpt_github.pull_requests_merged, [])
+
+    def test_run_returns_false_on_gerrit_search_error(self):
+        def raise_gerrit_error():
+            raise GerritError('Gerrit API fails.')
+
+        test_exporter = TestExporter(self.host)
+        test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
+        test_exporter.get_exportable_commits = lambda: ([], [])
+        test_exporter.gerrit = MockGerritAPI()
+        test_exporter.gerrit.query_exportable_open_cls = raise_gerrit_error
+        success = test_exporter.main(['--credentials-json', '/tmp/credentials.json'])
+
+        self.assertFalse(success)
+        self.assertLog(['INFO: Cloning GitHub w3c/web-platform-tests into /tmp/wpt\n',
+                        'ERROR: Gerrit API fails.\n'])
 
     def test_run_returns_false_on_patch_failure(self):
         test_exporter = TestExporter(self.host)

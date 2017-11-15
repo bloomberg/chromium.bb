@@ -17,7 +17,7 @@ from webkitpy.w3c.common import (
     PROVISIONAL_PR_LABEL,
     read_credentials
 )
-from webkitpy.w3c.gerrit import GerritAPI, GerritCL
+from webkitpy.w3c.gerrit import GerritAPI, GerritCL, GerritError
 from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
 
 _log = logging.getLogger(__name__)
@@ -53,15 +53,23 @@ class TestExporter(object):
         self.local_wpt = self.local_wpt or LocalWPT(self.host, credentials['GH_TOKEN'])
         self.local_wpt.fetch()
 
-        open_gerrit_cls = self.gerrit.query_exportable_open_cls()
-        self.process_gerrit_cls(open_gerrit_cls)
+        # The Gerrit search API is slow and easy to fail, so we wrap it in a try
+        # statement to continue exporting landed commits when it fails.
+        try:
+            open_gerrit_cls = self.gerrit.query_exportable_open_cls()
+        except GerritError as e:
+            _log.error(str(e))
+            gerrit_error = True
+        else:
+            self.process_gerrit_cls(open_gerrit_cls)
+            gerrit_error = False
 
-        exportable_commits, errors = self.get_exportable_commits()
-        for error in errors:
+        exportable_commits, git_errors = self.get_exportable_commits()
+        for error in git_errors:
             _log.error(error)
         self.process_chromium_commits(exportable_commits)
 
-        return not bool(errors)
+        return not (gerrit_error or git_errors)
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser(description=__doc__)

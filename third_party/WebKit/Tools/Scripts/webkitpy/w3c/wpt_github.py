@@ -379,7 +379,7 @@ class JSONResponse(object):
 
 
 class GitHubError(Exception):
-    """Raised when an GitHub returns a non-OK response status for a request."""
+    """Raised when GitHub returns a non-OK response status for a request."""
 
     def __init__(self, expected, received, action, extra_data=None):
         message = 'Expected {}, but received {} from GitHub when attempting to {}'.format(
