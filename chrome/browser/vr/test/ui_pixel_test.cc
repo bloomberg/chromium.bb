@@ -79,14 +79,14 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
   controller_model.home_button_state = UiInputManager::ButtonState::UP;
   RenderInfo render_info;
   render_info.head_pose = view_matrix;
-  render_info.left_eye_info.view_matrix = view_matrix;
-  render_info.left_eye_info.proj_matrix = proj_matrix;
-  render_info.left_eye_info.view_proj_matrix = proj_matrix * view_matrix;
-  render_info.right_eye_info = render_info.left_eye_info;
+  render_info.left_eye_model.view_matrix = view_matrix;
+  render_info.left_eye_model.proj_matrix = proj_matrix;
+  render_info.left_eye_model.view_proj_matrix = proj_matrix * view_matrix;
+  render_info.right_eye_model = render_info.left_eye_model;
   render_info.surface_texture_size = frame_buffer_size_;
-  render_info.left_eye_info.viewport = {0, 0, frame_buffer_size_.width(),
-                                        frame_buffer_size_.height()};
-  render_info.right_eye_info.viewport = {0, 0, 0, 0};
+  render_info.left_eye_model.viewport = {0, 0, frame_buffer_size_.width(),
+                                         frame_buffer_size_.height()};
+  render_info.right_eye_model.viewport = {0, 0, 0, 0};
 
   GestureList gesture_list;
   ReticleModel reticle_model;

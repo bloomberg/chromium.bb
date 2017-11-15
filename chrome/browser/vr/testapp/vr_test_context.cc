@@ -89,16 +89,16 @@ void VrTestContext::DrawFrame() {
   RenderInfo render_info;
   render_info.head_pose = head_pose_;
   render_info.surface_texture_size = window_size_;
-  render_info.left_eye_info.viewport = gfx::Rect(window_size_);
-  render_info.left_eye_info.view_matrix = head_pose_;
-  render_info.left_eye_info.proj_matrix = ProjectionMatrix();
-  render_info.left_eye_info.view_proj_matrix = ViewProjectionMatrix();
+  render_info.left_eye_model.viewport = gfx::Rect(window_size_);
+  render_info.left_eye_model.view_matrix = head_pose_;
+  render_info.left_eye_model.proj_matrix = ProjectionMatrix();
+  render_info.left_eye_model.view_proj_matrix = ViewProjectionMatrix();
 
   UpdateController();
 
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, kForwardVector);
-  ui_->OnProjMatrixChanged(render_info.left_eye_info.proj_matrix);
+  ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
   ui_->ui_renderer()->Draw(render_info);
 
   // TODO(cjgrant): Render viewport-aware elements.

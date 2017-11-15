@@ -34,7 +34,7 @@ class ContentElement : public UiElement {
                    const gfx::PointF& position) override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   void SetTexture(unsigned int texture_id,
                   UiElementRenderer::TextureLocation location);

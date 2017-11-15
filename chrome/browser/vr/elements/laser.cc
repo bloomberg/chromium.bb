@@ -72,7 +72,7 @@ Laser::Laser(Model* model) : model_(model) {
 Laser::~Laser() = default;
 
 void Laser::Render(UiElementRenderer* renderer,
-                   const gfx::Transform& model_view_proj_matrix) const {
+                   const CameraModel& model) const {
   // Find the length of the beam (from hand to target).
   const float laser_length =
       std::sqrt(model_->controller.laser_origin.SquaredDistanceTo(
@@ -111,7 +111,8 @@ void Laser::Render(UiElementRenderer* renderer,
     face_transform.matrix().postTranslate(model_->controller.laser_origin.x(),
                                           model_->controller.laser_origin.y(),
                                           model_->controller.laser_origin.z());
-    transform = model_view_proj_matrix * face_transform;
+    transform =
+        model.view_proj_matrix * world_space_transform() * face_transform;
     renderer->DrawLaser(computed_opacity(), transform);
   }
 }

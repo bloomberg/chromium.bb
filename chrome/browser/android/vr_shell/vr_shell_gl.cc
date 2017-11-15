@@ -25,6 +25,7 @@
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/fps_meter.h"
+#include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/model.h"
 #include "chrome/browser/vr/pose_util.h"
 #include "chrome/browser/vr/ui.h"
@@ -641,6 +642,7 @@ void VrShellGl::HandleControllerAppButtonActivity(
           gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
     controller_start_direction_ = controller_direction;
   }
+
   if (controller_->ButtonUpHappened(
           gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
     // A gesture is a movement of the controller while holding the App button.
@@ -742,9 +744,11 @@ void VrShellGl::UpdateEyeInfos(const gfx::Transform& head_pose,
                                const gfx::Size& render_size,
                                vr::RenderInfo* out_render_info) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
-    vr::RenderInfo::EyeInfo& eye_info = (eye == GVR_LEFT_EYE)
-                                            ? out_render_info->left_eye_info
-                                            : out_render_info->right_eye_info;
+    vr::CameraModel& eye_info = (eye == GVR_LEFT_EYE)
+                                    ? out_render_info->left_eye_model
+                                    : out_render_info->right_eye_model;
+    eye_info.eye_type =
+        GVR_LEFT_EYE ? vr::EyeType::kLeftEye : vr::EyeType::kRightEye;
 
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
                                              buffer_viewport_.get());
@@ -881,7 +885,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                  &render_info_primary_);
 
   // Measure projected content size and bubble up if delta exceeds threshold.
-  ui_->OnProjMatrixChanged(render_info_primary_.left_eye_info.proj_matrix);
+  ui_->OnProjMatrixChanged(render_info_primary_.left_eye_model.proj_matrix);
 
   // At this point, we draw non-WebVR content that could, potentially, fill the
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash
@@ -925,11 +929,11 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                    kViewportListWebVrBrowserUiOffset, render_size_webvr_ui_,
                    &render_info_webvr_browser_ui);
     gvr::Rectf minimal_fov;
-    GetMinimalFov(render_info_webvr_browser_ui.left_eye_info.view_matrix,
+    GetMinimalFov(render_info_webvr_browser_ui.left_eye_model.view_matrix,
                   overlay_elements, fov_recommended_left, kZNear, &minimal_fov);
     webvr_browser_ui_left_viewport_->SetSourceFov(minimal_fov);
 
-    GetMinimalFov(render_info_webvr_browser_ui.right_eye_info.view_matrix,
+    GetMinimalFov(render_info_webvr_browser_ui.right_eye_model.view_matrix,
                   overlay_elements, fov_recommended_right, kZNear,
                   &minimal_fov);
     webvr_browser_ui_right_viewport_->SetSourceFov(minimal_fov);

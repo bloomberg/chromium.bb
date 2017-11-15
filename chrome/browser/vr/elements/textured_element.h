@@ -28,7 +28,7 @@ class TexturedElement : public UiElement {
   void Initialize(SkiaSurfaceProvider* provider) final;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   static void SetInitializedForTesting();
   static void SetRerenderIfNotDirtyForTesting();

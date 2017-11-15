@@ -39,7 +39,7 @@ class Laser : public UiElement {
 
  private:
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   // Since the laser needs to render in response to model changes that occur
   // after the scene update (i.e., after input), we cannot rely on the usual

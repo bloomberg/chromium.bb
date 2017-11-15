@@ -46,7 +46,7 @@ class Reticle : public UiElement {
 
  private:
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   gfx::Point3F origin_;
   gfx::Point3F target_;

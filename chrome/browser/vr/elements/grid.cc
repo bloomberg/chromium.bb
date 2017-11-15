@@ -86,11 +86,10 @@ void Grid::NotifyClientColorAnimated(SkColor color,
   }
 }
 
-void Grid::Render(UiElementRenderer* renderer,
-                  const gfx::Transform& model_view_proj_matrix) const {
-  renderer->DrawGradientGridQuad(model_view_proj_matrix, edge_color(),
-                                 center_color(), grid_color_, gridline_count_,
-                                 computed_opacity());
+void Grid::Render(UiElementRenderer* renderer, const CameraModel& model) const {
+  renderer->DrawGradientGridQuad(
+      model.view_proj_matrix * world_space_transform(), edge_color(),
+      center_color(), grid_color_, gridline_count_, computed_opacity());
 }
 
 Grid::Renderer::~Renderer() = default;

@@ -51,7 +51,7 @@ Controller::Controller() {
 Controller::~Controller() = default;
 
 void Controller::Render(UiElementRenderer* renderer,
-                        const gfx::Transform& model_view_proj_matrix) const {
+                        const CameraModel& model) const {
   ControllerMesh::State state;
   if (touchpad_button_pressed_) {
     state = ControllerMesh::TOUCHPAD;
@@ -63,7 +63,8 @@ void Controller::Render(UiElementRenderer* renderer,
     state = ControllerMesh::IDLE;
   }
 
-  renderer->DrawController(state, computed_opacity(), model_view_proj_matrix);
+  renderer->DrawController(state, computed_opacity(),
+                           model.view_proj_matrix * world_space_transform());
 }
 
 gfx::Transform Controller::LocalTransform() const {
@@ -130,13 +131,13 @@ void Controller::Renderer::SetUp(std::unique_ptr<ControllerMesh> model) {
 
 void Controller::Renderer::Draw(ControllerMesh::State state,
                                 float opacity,
-                                const gfx::Transform& view_proj_matrix) {
+                                const gfx::Transform& model_view_proj_matrix) {
   glUseProgram(program_handle_);
 
   glUniform1f(opacity_handle_, opacity);
 
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
-                     MatrixToGLArray(view_proj_matrix).data());
+                     MatrixToGLArray(model_view_proj_matrix).data());
 
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 

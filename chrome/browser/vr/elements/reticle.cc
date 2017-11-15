@@ -87,7 +87,7 @@ UiElement* Reticle::TargetElement() const {
 }
 
 void Reticle::Render(UiElementRenderer* renderer,
-                     const gfx::Transform& model_view_proj_matrix) const {
+                     const CameraModel& model) const {
   // Scale the reticle to have a fixed FOV size at any distance.
   const float eye_to_target =
       std::sqrt(model_->reticle.target_point.SquaredDistanceTo(kOrigin));
@@ -116,7 +116,8 @@ void Reticle::Render(UiElementRenderer* renderer,
   mat.matrix().postTranslate(target_point.x(), target_point.y(),
                              target_point.z());
 
-  gfx::Transform transform = model_view_proj_matrix * mat;
+  gfx::Transform transform =
+      model.view_proj_matrix * world_space_transform() * mat;
   renderer->DrawReticle(computed_opacity(), transform);
 }
 

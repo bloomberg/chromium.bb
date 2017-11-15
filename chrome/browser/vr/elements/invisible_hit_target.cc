@@ -12,7 +12,7 @@ InvisibleHitTarget::InvisibleHitTarget() {
 InvisibleHitTarget::~InvisibleHitTarget() = default;
 
 void InvisibleHitTarget::Render(UiElementRenderer* renderer,
-                                const gfx::Transform& view_proj_matrix) const {
+                                const CameraModel& model) const {
   DCHECK(hit_testable());
 }
 

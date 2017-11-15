@@ -70,7 +70,7 @@ class Controller : public UiElement {
 
  private:
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const final;
+              const CameraModel& model) const final;
 
   gfx::Transform LocalTransform() const override;
 

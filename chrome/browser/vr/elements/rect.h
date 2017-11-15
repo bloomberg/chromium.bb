@@ -35,7 +35,7 @@ class Rect : public UiElement {
                                  cc::Animation* animation) override;
 
   void Render(UiElementRenderer* renderer,
-              const gfx::Transform& model_view_proj_matrix) const override;
+              const CameraModel& model) const override;
 
  private:
   SkColor center_color_ = SK_ColorWHITE;
