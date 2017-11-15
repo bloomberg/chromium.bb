@@ -120,8 +120,8 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   bool HandleDragStatusUpdate(blink::WebDragStatus drag_status,
                               const blink::WebDragData& drag_data,
                               blink::WebDragOperationsMask mask,
-                              const blink::WebPoint& position,
-                              const blink::WebPoint& screen) override;
+                              const blink::WebFloatPoint& position,
+                              const blink::WebFloatPoint& screen) override;
   void DidReceiveResponse(const blink::WebURLResponse& response) override;
   void DidReceiveData(const char* data, int data_length) override;
   void DidFinishLoading() override;

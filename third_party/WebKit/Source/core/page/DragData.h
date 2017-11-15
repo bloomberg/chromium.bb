@@ -28,7 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/page/DragActions.h"
-#include "platform/geometry/IntPoint.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
@@ -57,12 +57,12 @@ class CORE_EXPORT DragData {
   // clientPosition is taken to be the position of the drag event within the
   // target window, with (0,0) at the top left.
   DragData(DataObject*,
-           const IntPoint& client_position,
-           const IntPoint& global_position,
+           const FloatPoint& client_position,
+           const FloatPoint& global_position,
            DragOperation,
            DragApplicationFlags = kDragApplicationNone);
-  const IntPoint& ClientPosition() const { return client_position_; }
-  const IntPoint& GlobalPosition() const { return global_position_; }
+  const FloatPoint& ClientPosition() const { return client_position_; }
+  const FloatPoint& GlobalPosition() const { return global_position_; }
   DragApplicationFlags Flags() const { return application_flags_; }
   DataObject* PlatformData() const { return platform_drag_data_; }
   DragOperation DraggingSourceOperationMask() const {
@@ -85,8 +85,8 @@ class CORE_EXPORT DragData {
   String DroppedFileSystemId() const;
 
  private:
-  const IntPoint client_position_;
-  const IntPoint global_position_;
+  const FloatPoint client_position_;
+  const FloatPoint global_position_;
   const Member<DataObject> platform_drag_data_;
   const DragOperation dragging_source_operation_mask_;
   const DragApplicationFlags application_flags_;

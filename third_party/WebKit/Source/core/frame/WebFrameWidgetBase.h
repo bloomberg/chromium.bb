@@ -28,7 +28,7 @@ class WebLayer;
 class WebLayerTreeView;
 class WebViewImpl;
 class HitTestResult;
-struct WebPoint;
+struct WebFloatPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
     : public GarbageCollectedFinalized<WebFrameWidgetBase>,
@@ -68,22 +68,22 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // WebFrameWidget implementation.
   WebDragOperation DragTargetDragEnter(const WebDragData&,
-                                       const WebPoint& point_in_viewport,
-                                       const WebPoint& screen_point,
+                                       const WebFloatPoint& point_in_viewport,
+                                       const WebFloatPoint& screen_point,
                                        WebDragOperationsMask operations_allowed,
                                        int modifiers) override;
-  WebDragOperation DragTargetDragOver(const WebPoint& point_in_viewport,
-                                      const WebPoint& screen_point,
+  WebDragOperation DragTargetDragOver(const WebFloatPoint& point_in_viewport,
+                                      const WebFloatPoint& screen_point,
                                       WebDragOperationsMask operations_allowed,
                                       int modifiers) override;
-  void DragTargetDragLeave(const WebPoint& point_in_viewport,
-                           const WebPoint& screen_point) override;
+  void DragTargetDragLeave(const WebFloatPoint& point_in_viewport,
+                           const WebFloatPoint& screen_point) override;
   void DragTargetDrop(const WebDragData&,
-                      const WebPoint& point_in_viewport,
-                      const WebPoint& screen_point,
+                      const WebFloatPoint& point_in_viewport,
+                      const WebFloatPoint& screen_point,
                       int modifiers) override;
-  void DragSourceEndedAt(const WebPoint& point_in_viewport,
-                         const WebPoint& screen_point,
+  void DragSourceEndedAt(const WebFloatPoint& point_in_viewport,
+                         const WebFloatPoint& screen_point,
                          WebDragOperation) override;
   void DragSourceSystemDragEnded() override;
 
@@ -119,13 +119,15 @@ class CORE_EXPORT WebFrameWidgetBase
   // Consolidate some common code between starting a drag over a target and
   // updating a drag over a target. If we're starting a drag, |isEntering|
   // should be true.
-  WebDragOperation DragTargetDragEnterOrOver(const WebPoint& point_in_viewport,
-                                             const WebPoint& screen_point,
-                                             DragAction,
-                                             int modifiers);
+  WebDragOperation DragTargetDragEnterOrOver(
+      const WebFloatPoint& point_in_viewport,
+      const WebFloatPoint& screen_point,
+      DragAction,
+      int modifiers);
 
   // Helper function to call VisualViewport::viewportToRootFrame().
-  WebPoint ViewportToRootFrame(const WebPoint& point_in_viewport) const;
+  WebFloatPoint ViewportToRootFrame(
+      const WebFloatPoint& point_in_viewport) const;
 
   WebViewImpl* View() const;
 

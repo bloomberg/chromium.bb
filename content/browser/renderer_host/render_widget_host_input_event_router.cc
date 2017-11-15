@@ -882,8 +882,8 @@ void RenderWidgetHostInputEventRouter::OnHittestData(
 RenderWidgetHostImpl*
 RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
     RenderWidgetHostViewBase* root_view,
-    const gfx::Point& point,
-    gfx::Point* transformed_point) {
+    const gfx::PointF& point,
+    gfx::PointF* transformed_point) {
   if (!root_view)
     return nullptr;
   return RenderWidgetHostImpl::From(

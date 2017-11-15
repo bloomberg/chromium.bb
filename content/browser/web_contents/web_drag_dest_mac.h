@@ -13,7 +13,7 @@
 #include "content/browser/loader/global_routing_id.h"
 #include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace content {
 class RenderViewHost;
@@ -90,7 +90,7 @@ CONTENT_EXPORT
 // Helper to call WebWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint().
 - (content::RenderWidgetHostImpl*)
 GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
-             transformedPt:(gfx::Point*)transformedPt;
+             transformedPt:(gfx::PointF*)transformedPt;
 
 // Sets |dragStartProcessID_| and |dragStartViewID_|.
 - (void)setDragStartTrackersForProcess:(int)processID;

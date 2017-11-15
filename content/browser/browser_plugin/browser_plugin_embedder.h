@@ -42,8 +42,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
                          RenderFrameHost* render_frame_host) override;
 
   // Sends a 'dragend' message to the guest that started the drag.
-  void DragSourceEndedAt(int client_x, int client_y, int screen_x,
-      int screen_y, blink::WebDragOperation operation);
+  void DragSourceEndedAt(float client_x,
+                         float client_y,
+                         float screen_x,
+                         float screen_y,
+                         blink::WebDragOperation operation);
 
   // Indicates that a drag operation has entered into the bounds of a given
   // |guest|. Returns whether the |guest| also started the operation.

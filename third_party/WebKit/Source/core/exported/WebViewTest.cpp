@@ -2441,8 +2441,8 @@ static void DragAndDropURL(WebViewImpl* web_view, const std::string& url) {
   item.string_data = WebString::FromUTF8(url);
   drag_data.AddItem(item);
 
-  const WebPoint client_point(0, 0);
-  const WebPoint screen_point(0, 0);
+  const WebFloatPoint client_point(0, 0);
+  const WebFloatPoint screen_point(0, 0);
   WebFrameWidgetBase* widget = web_view->MainFrameImpl()->FrameWidget();
   widget->DragTargetDragEnter(drag_data, client_point, screen_point,
                               kWebDragOperationCopy, 0);

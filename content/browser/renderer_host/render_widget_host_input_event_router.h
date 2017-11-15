@@ -94,8 +94,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // will return nullptr and will not modify |transformed_point|.
   RenderWidgetHostImpl* GetRenderWidgetHostAtPoint(
       RenderWidgetHostViewBase* root_view,
-      const gfx::Point& point,
-      gfx::Point* transformed_point);
+      const gfx::PointF& point,
+      gfx::PointF* transformed_point);
 
   std::vector<RenderWidgetHostView*> GetRenderWidgetHostViewsForTests() const;
 

@@ -1694,12 +1694,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     const gfx::Rect root_bounds = rwhv_root->GetViewBounds();
     const gfx::Rect child_bounds = rwhv_child->GetViewBounds();
     const float page_scale_factor = GetPageScaleFactor(shell());
-    const gfx::Point point_in_child(
-        gfx::ToCeiledInt((child_bounds.x() - root_bounds.x() + 10) *
-                         page_scale_factor),
-        gfx::ToCeiledInt((child_bounds.y() - root_bounds.y() + 10) *
-                         page_scale_factor));
-    gfx::Point dont_care;
+    const gfx::PointF point_in_child(
+        (child_bounds.x() - root_bounds.x() + 10) * page_scale_factor,
+        (child_bounds.y() - root_bounds.y() + 10) * page_scale_factor);
+    gfx::PointF dont_care;
     ASSERT_EQ(rwhv_child->GetRenderWidgetHost(),
               router->GetRenderWidgetHostAtPoint(rwhv_root, point_in_child,
                                                  &dont_care));

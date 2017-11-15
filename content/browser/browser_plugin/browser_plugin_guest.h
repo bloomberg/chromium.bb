@@ -243,8 +243,11 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   // |message|.
   static bool ShouldForwardToBrowserPluginGuest(const IPC::Message& message);
 
-  void DragSourceEndedAt(int client_x, int client_y, int screen_x,
-      int screen_y, blink::WebDragOperation operation);
+  void DragSourceEndedAt(float client_x,
+                         float client_y,
+                         float screen_x,
+                         float screen_y,
+                         blink::WebDragOperation operation);
 
   // Called when the drag started by this guest ends at an OS-level.
   void EmbedderSystemDragEnded();
@@ -312,7 +315,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
                           blink::WebDragStatus drag_status,
                           const DropData& drop_data,
                           blink::WebDragOperationsMask drag_mask,
-                          const gfx::Point& location);
+                          const gfx::PointF& location);
   // Instructs the guest to execute an edit command decoded in the embedder.
   void OnExecuteEditCommand(int instance_id,
                             const std::string& command);
