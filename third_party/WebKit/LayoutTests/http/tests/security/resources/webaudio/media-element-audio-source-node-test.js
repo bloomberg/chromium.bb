@@ -31,7 +31,9 @@ function runTest (url, oncomplete, tester)
     source.connect(context.destination);
 
     audio.addEventListener("playing", function(e) {
-            context.startRendering();
+            // If we receive multiple playing events, we still can't invoke
+            // startRendering multiple times.
+            context.startRendering().catch(() => {});
         });
 
     context.oncomplete = function(e) {
