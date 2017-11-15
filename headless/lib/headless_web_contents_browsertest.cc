@@ -1334,19 +1334,14 @@ class HeadlessWebContentsBeginFrameControlViewportTest
                                  .SetHeight(100)
                                  .SetScale(2)
                                  .Build())
-                .Build());
-    // Round-trip through main thread to ensure that viewport update has reached
-    // it.
-    // TODO(eseckler): Add an acknowledgment to SetDeviceMetricsOverride that is
-    // sent after renderer applied new emulation params.
-    devtools_client_->GetRuntime()->Evaluate(
-        "", base::Bind(&HeadlessWebContentsBeginFrameControlViewportTest::
-                           MainThreadRoundTripComplete,
+                .Build(),
+            base::Bind(&HeadlessWebContentsBeginFrameControlViewportTest::
+                           SetDeviceMetricsOverrideDone,
                        base::Unretained(this)));
   }
 
-  void MainThreadRoundTripComplete(
-      std::unique_ptr<runtime::EvaluateResult> result) {
+  void SetDeviceMetricsOverrideDone(
+      std::unique_ptr<emulation::SetDeviceMetricsOverrideResult> result) {
     EXPECT_TRUE(result);
     // Take a screenshot.
     sent_screenshot_request_ = true;
