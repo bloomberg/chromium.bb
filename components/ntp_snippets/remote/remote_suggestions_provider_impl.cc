@@ -565,8 +565,11 @@ void RemoteSuggestionsProviderImpl::FetchSuggestions(
     FetchStatusCallback callback) {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   if (!ready()) {
-    std::move(callback).Run(Status(StatusCode::TEMPORARY_ERROR,
-                                   "RemoteSuggestionsProvider is not ready!"));
+    if (callback) {
+      std::move(callback).Run(
+          Status(StatusCode::TEMPORARY_ERROR,
+                 "RemoteSuggestionsProvider is not ready!"));
+    }
     return;
   }
 
