@@ -151,7 +151,7 @@ public class WebVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags.Add("enable-features=WebVrAutopresentFromIntent")
+    @CommandLineFlags.Add("enable-features=WebVrAutopresent")
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testTrustedIntentAllowsAutoPresent() throws InterruptedException {
         VrIntentUtils.setHandlerInstanceForTesting(new MockVrIntentHandler(
