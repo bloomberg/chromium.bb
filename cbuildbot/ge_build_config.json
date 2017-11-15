@@ -1696,12 +1696,6 @@
         },
         {
           "board_name": "coral",
-          "name": "coral",
-          "cq_test_enabled": false,
-          "release_builder_test_pool": "bvt"
-        },
-        {
-          "board_name": "coral",
           "name": "lava",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
