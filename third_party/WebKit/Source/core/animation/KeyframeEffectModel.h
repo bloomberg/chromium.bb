@@ -123,9 +123,9 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
                                       const ComputedStyle& base_style,
                                       const ComputedStyle* parent_style) const;
 
-  static KeyframeVector NormalizedKeyframesForInspector(
+  static Vector<double> GetComputedOffsetsForInspector(
       const KeyframeVector& keyframes) {
-    return NormalizedKeyframes(keyframes);
+    return GetComputedOffsets(keyframes);
   }
 
   bool Affects(const PropertyHandle& property) const override {
@@ -144,7 +144,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
         has_synthetic_keyframes_(false),
         needs_compositor_keyframes_snapshot_(true) {}
 
-  static KeyframeVector NormalizedKeyframes(const KeyframeVector& keyframes);
+  static Vector<double> GetComputedOffsets(const KeyframeVector& keyframes);
 
   // Lazily computes the groups of property-specific keyframes.
   void EnsureKeyframeGroups() const;

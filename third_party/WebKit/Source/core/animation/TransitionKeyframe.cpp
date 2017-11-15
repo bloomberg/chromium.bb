@@ -27,8 +27,10 @@ PropertyHandleSet TransitionKeyframe::Properties() const {
 
 scoped_refptr<Keyframe::PropertySpecificKeyframe>
 TransitionKeyframe::CreatePropertySpecificKeyframe(
-    const PropertyHandle& property) const {
+    const PropertyHandle& property,
+    double offset) const {
   DCHECK(property == property_);
+  DCHECK(offset == offset_);
   return PropertySpecificKeyframe::Create(Offset(), &Easing(), Composite(),
                                           value_->Clone(), compositor_value_);
 }

@@ -27,8 +27,8 @@ class ComputedStyle;
 // Generically a keyframe is a set of (property, value) pairs. In the
 // web-animations spec keyframes have a few additional properties:
 //
-//   * A possibly-null offset, which represents the keyframe's position relative
-//     to other keyframes in the same effect.
+//   * A possibly-null keyframe offset, which represents the keyframe's position
+//     relative to other keyframes in the same effect.
 //   * A possibly-null composite operation, which specifies the operation used
 //     to combine values in this keyframe with an underlying value.
 //   * A non-null timing function, which applies to the period of time between
@@ -38,13 +38,11 @@ class ComputedStyle;
 // For spec details, refer to: http://w3c.github.io/web-animations/#keyframe
 //
 // Implementation-wise the base Keyframe class captures the offset, composite
-// operation, and timing functions. It is left to subclasses to define and store
+// operation, and timing function. It is left to subclasses to define and store
 // the set of (property, value) pairs.
 //
 // TODO(smcgruer): Our implementation does not allow for a null composite
 // operation; by the spec we should allow this and use the effect operation.
-// TODO(smcgruer): Our implementation confuses offset and computed offset; the
-// former is user-specified whilst the latter is a computed value.
 //
 // === PropertySpecificKeyframes ===
 //
@@ -67,8 +65,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
  public:
   virtual ~Keyframe() {}
 
-  // TODO(smcgruer): Once we properly distinguish between offset and computed
-  // offset, the keyframe offset should be immutable.
+  // TODO(smcgruer): The keyframe offset should be immutable.
   void SetOffset(double offset) { offset_ = offset; }
   double Offset() const { return offset_; }
 
@@ -160,10 +157,15 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     EffectModel::CompositeOperation composite_;
   };
 
-  // Construct and return a property-specific keyframe for this keyframe, for
-  // the given property.
+  // Construct and return a property-specific keyframe for this keyframe.
+  //
+  // The 'offset' parameter is the offset to use in the resultant
+  // PropertySpecificKeyframe. For CSS Transitions and CSS Animations, this is
+  // the normal offset from the keyframe itself. However in web-animations this
+  // will be a computed offset value which may differ from the keyframe offset.
   virtual scoped_refptr<PropertySpecificKeyframe>
-  CreatePropertySpecificKeyframe(const PropertyHandle&) const = 0;
+  CreatePropertySpecificKeyframe(const PropertyHandle&,
+                                 double offset) const = 0;
 
   // Comparator function for sorting Keyframes based on their offsets.
   static bool CompareOffsets(const scoped_refptr<Keyframe>&,

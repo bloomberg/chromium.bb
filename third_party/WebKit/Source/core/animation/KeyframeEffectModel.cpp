@@ -132,10 +132,10 @@ bool KeyframeEffectModelBase::SnapshotAllCompositorKeyframes(
   return updated;
 }
 
-KeyframeEffectModelBase::KeyframeVector
-KeyframeEffectModelBase::NormalizedKeyframes(const KeyframeVector& keyframes) {
+Vector<double> KeyframeEffectModelBase::GetComputedOffsets(
+    const KeyframeVector& keyframes) {
   double last_offset = 0;
-  KeyframeVector result;
+  Vector<double> result;
   result.ReserveCapacity(keyframes.size());
 
   for (const auto& keyframe : keyframes) {
@@ -146,26 +146,27 @@ KeyframeEffectModelBase::NormalizedKeyframes(const KeyframeVector& keyframes) {
       DCHECK_GE(offset, last_offset);
       last_offset = offset;
     }
-    result.push_back(keyframe->Clone());
+    result.push_back(offset);
   }
 
   if (result.IsEmpty())
     return result;
 
-  if (IsNull(result.back()->Offset()))
-    result.back()->SetOffset(1);
+  if (IsNull(result.back()))
+    result.back() = 1;
 
-  if (result.size() > 1 && IsNull(result[0]->Offset()))
-    result.front()->SetOffset(0);
+  if (result.size() > 1 && IsNull(result[0]))
+    result.front() = 0;
 
   size_t last_index = 0;
-  last_offset = result.front()->Offset();
+  last_offset = result.front();
   for (size_t i = 1; i < result.size(); ++i) {
-    double offset = result[i]->Offset();
+    double offset = result[i];
     if (!IsNull(offset)) {
-      for (size_t j = 1; j < i - last_index; ++j)
-        result[last_index + j]->SetOffset(
-            last_offset + (offset - last_offset) * j / (i - last_index));
+      for (size_t j = 1; j < i - last_index; ++j) {
+        result[last_index + j] =
+            last_offset + (offset - last_offset) * j / (i - last_index);
+      }
       last_index = i;
       last_offset = offset;
     }
@@ -187,8 +188,13 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
 
   keyframe_groups_ = WTF::WrapUnique(new KeyframeGroupMap);
   scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
-  for (const auto& keyframe : NormalizedKeyframes(GetFrames())) {
-    if (keyframe->Offset() == 0)
+  Vector<double> computed_offsets = GetComputedOffsets(keyframes_);
+  DCHECK_EQ(computed_offsets.size(), keyframes_.size());
+  for (size_t i = 0; i < keyframes_.size(); i++) {
+    double computed_offset = computed_offsets[i];
+    const auto& keyframe = keyframes_[i];
+
+    if (computed_offset == 0)
       zero_offset_easing = &keyframe->Easing();
 
     for (const PropertyHandle& property : keyframe->Properties()) {
@@ -203,7 +209,8 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
         group = group_iter->value.get();
       }
 
-      group->AppendKeyframe(keyframe->CreatePropertySpecificKeyframe(property));
+      group->AppendKeyframe(
+          keyframe->CreatePropertySpecificKeyframe(property, computed_offset));
     }
   }
 
