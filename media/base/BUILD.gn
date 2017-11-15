@@ -285,6 +285,7 @@ source_set("base") {
     "//gpu/command_buffer/common",
     "//ppapi/features",
     "//skia",
+    "//third_party/libaom:av1_features",
     "//third_party/libyuv",
     "//third_party/widevine/cdm:headers",
     "//ui/display:display",

@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/media_log.h"
 #include "media/filters/gpu_video_decoder.h"
@@ -17,6 +18,7 @@
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/libaom/av1_features.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
 #include "media/filters/ffmpeg_audio_decoder.h"
@@ -27,6 +29,10 @@
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
 #include "media/filters/vpx_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+#include "media/filters/aom_video_decoder.h"
 #endif
 
 namespace media {
@@ -90,6 +96,10 @@ DefaultRendererFactory::CreateVideoDecoders(
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(base::MakeUnique<VpxVideoDecoder>());
+#endif
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+  video_decoders.push_back(base::MakeUnique<AomVideoDecoder>(media_log_));
 #endif
 
 #if !defined(MEDIA_DISABLE_FFMPEG) && !defined(DISABLE_FFMPEG_VIDEO_DECODERS)

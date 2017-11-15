@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//media/media_options.gni")
+import("//third_party/libaom/options.gni")
 
 source_set("filters") {
   # Do not expand the visibility here without double-checking with OWNERS, this
@@ -150,6 +151,14 @@ source_set("filters") {
       "vpx_video_decoder.h",
     ]
     deps += [ "//third_party/libvpx" ]
+  }
+
+  if (enable_av1_decoder) {
+    sources += [
+      "aom_video_decoder.cc",
+      "aom_video_decoder.h",
+    ]
+    deps += [ "//third_party/libaom" ]
   }
 
   if (proprietary_codecs && media_use_ffmpeg) {
@@ -329,6 +338,10 @@ source_set("unit_tests") {
 
   if (media_use_libvpx) {
     sources += [ "vpx_video_decoder_unittest.cc" ]
+  }
+
+  if (enable_av1_decoder) {
+    sources += [ "aom_video_decoder_unittest.cc" ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {

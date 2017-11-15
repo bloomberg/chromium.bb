@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
+#include "third_party/libaom/av1_features.h"
 #include "ui/display/display_switches.h"
 
 #if !defined(MEDIA_DISABLE_LIBVPX)
@@ -163,6 +164,13 @@ bool IsSupportedAudioConfig(const AudioConfig& config) {
 // specific logic for Android (move from MimeUtilIntenral).
 bool IsSupportedVideoConfig(const VideoConfig& config) {
   switch (config.codec) {
+    case media::kCodecAV1:
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+      return IsColorSpaceSupported(config.color_space);
+#else
+      return false;
+#endif
+
     case media::kCodecVP9:
       // Color management required for HDR to not look terrible.
       return IsColorSpaceSupported(config.color_space) &&

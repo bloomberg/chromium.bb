@@ -264,7 +264,32 @@ TEST_F(FFmpegCommonTest, VerifyUmaCodecHashes) {
   // should only be used to *ADD* values to histograms file.  Never delete any
   // values; diff should verify.
 #if 0
-  printf("<enum name=\"FFmpegCodecHashes\" type=\"int\">\n");
+  static const std::vector<std::pair<std::string, int32_t>> kDeprecatedHashes =
+      {
+          {"brender_pix_deprecated", -1866047250},
+          {"adpcm_vima_deprecated", -1782518388},
+          {"pcm_s32le_planar_deprecated", -1328796639},
+          {"webp_deprecated", -993429906},
+          {"paf_video_deprecated", -881893142},
+          {"vima_deprecated", -816209197},
+          {"iff_byterun1", -777478450},
+          {"paf_audio_deprecated", -630356729},
+
+          {"exr_deprecated", -418117523},
+          {"hevc_deprecated", -414733739},
+          {"vp7_deprecated", -197551526},
+          {"escape130_deprecated", 73149662},
+          {"tak_deprecated", 1041617024},
+          {"opus_deprecated", 1165132763},
+          {"g2m_deprecated", 1194572884},
+
+          {"pcm_s24le_planar_deprecated", 1535518292},
+          {"sanm_deprecated", 2047102762},
+      };
+
+  for (auto& kv : kDeprecatedHashes)
+    sorted_hashes[kv.second] = kv.first.c_str();
+  printf("<enum name=\"FFmpegCodecHashes\">\n");
   for (const auto& kv : sorted_hashes)
     printf("  <int value=\"%d\" label=\"%s\"/>\n", kv.first, kv.second);
   printf("</enum>\n");

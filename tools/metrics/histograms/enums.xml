@@ -17017,6 +17017,8 @@ Called by update_net_error_codes.py.-->
   <int value="-1920272933" label="mlp"/>
   <int value="-1913457333" label="smackvideo"/>
   <int value="-1910182388" label="dds"/>
+  <int value="-1909815814" label="xma2"/>
+  <int value="-1900731082" label="scte_35"/>
   <int value="-1877492821" label="ws_vqa"/>
   <int value="-1868061100" label="avrp"/>
   <int value="-1866047250" label="brender_pix_deprecated"/>
@@ -17036,6 +17038,7 @@ Called by update_net_error_codes.py.-->
   <int value="-1746190470" label="adpcm_ima_amv"/>
   <int value="-1742178896" label="cinepak"/>
   <int value="-1722959117" label="cook"/>
+  <int value="-1704969006" label="pcm_f24le"/>
   <int value="-1694324852" label="adpcm_ima_rad"/>
   <int value="-1653946850" label="mp3on4"/>
   <int value="-1638592334" label="msmpeg4v3"/>
@@ -17057,18 +17060,23 @@ Called by update_net_error_codes.py.-->
   <int value="-1493473944" label="mp1"/>
   <int value="-1488471023" label="aac_latm"/>
   <int value="-1471896197" label="adpcm_4xm"/>
+  <int value="-1471717594" label="atrac3al"/>
   <int value="-1458812472" label="vble"/>
   <int value="-1452408746" label="bin_data"/>
   <int value="-1437754593" label="tqi"/>
+  <int value="-1400052876" label="fits"/>
   <int value="-1398094744" label="brender_pix"/>
   <int value="-1396201900" label="lagarith"/>
   <int value="-1394735166" label="s302m"/>
+  <int value="-1382236305" label="truemotion2rt"/>
   <int value="-1366158780" label="mvc2"/>
+  <int value="-1351352498" label="srgc"/>
   <int value="-1346295474" label="dfa"/>
   <int value="-1335819014" label="adpcm_ea_r3"/>
   <int value="-1333697928" label="rv10"/>
   <int value="-1328796639" label="pcm_s32le_planar_deprecated"/>
   <int value="-1326344691" label="wmalossless"/>
+  <int value="-1308771510" label="atrac3pal"/>
   <int value="-1276285619" label="subviewer1"/>
   <int value="-1267322736" label="evrc"/>
   <int value="-1253653962" label="cljr"/>
@@ -17089,15 +17097,18 @@ Called by update_net_error_codes.py.-->
   <int value="-1146321910" label="adpcm_sbpro_4"/>
   <int value="-1124358604" label="qdraw"/>
   <int value="-1094512964" label="hevc"/>
+  <int value="-1088817241" label="dst"/>
   <int value="-1082894560" label="y41p"/>
   <int value="-1069291012" label="roq"/>
   <int value="-1055791926" label="wmv2"/>
+  <int value="-1055192910" label="adpcm_ima_dat4"/>
   <int value="-1052495685" label="adpcm_ea_xas"/>
   <int value="-1050536726" label="fic"/>
   <int value="-1050267191" label="theora"/>
   <int value="-1047975380" label="aura"/>
   <int value="-1038298513" label="iac"/>
   <int value="-1033247386" label="pcm_u24be"/>
+  <int value="-1030939519" label="bitpacked"/>
   <int value="-1030131048" label="ra_288"/>
   <int value="-1011667768" label="sgirle"/>
   <int value="-1010059925" label="cdgraphics"/>
@@ -17111,6 +17122,7 @@ Called by update_net_error_codes.py.-->
   <int value="-961342190" label="truespeech"/>
   <int value="-955936385" label="qdm2"/>
   <int value="-937993216" label="cyuv"/>
+  <int value="-919523138" label="dolby_e"/>
   <int value="-908137771" label="mss2"/>
   <int value="-898663359" label="paf_video"/>
   <int value="-891450332" label="qcelp"/>
@@ -17122,7 +17134,7 @@ Called by update_net_error_codes.py.-->
   <int value="-853586131" label="eac3"/>
   <int value="-839127813" label="adpcm_adx"/>
   <int value="-820705472" label="timed_id3"/>
-  <int value="-816209197" label="vima"/>
+  <int value="-816209197" label="vima_deprecated"/>
   <int value="-815578090" label="ssa"/>
   <int value="-804708185" label="vb"/>
   <int value="-799004205" label="thp"/>
@@ -17131,6 +17143,7 @@ Called by update_net_error_codes.py.-->
   <int value="-780629337" label="adpcm_ima_oki"/>
   <int value="-777478450" label="iff_byterun1"/>
   <int value="-776406198" label="hdmv_pgs_subtitle"/>
+  <int value="-775674438" label="cfhd"/>
   <int value="-773314651" label="adpcm_thp_le"/>
   <int value="-755809410" label="xface"/>
   <int value="-750906124" label="sonic"/>
@@ -17138,6 +17151,8 @@ Called by update_net_error_codes.py.-->
   <int value="-728484627" label="vp6f"/>
   <int value="-711076000" label="ilbc"/>
   <int value="-693682032" label="png"/>
+  <int value="-686461436" label="m101"/>
+  <int value="-680421267" label="xpm"/>
   <int value="-665301881" label="kgv1"/>
   <int value="-651841063" label="musepack7"/>
   <int value="-644671397" label="pcm_s16le"/>
@@ -17160,8 +17175,10 @@ Called by update_net_error_codes.py.-->
   <int value="-478544739" label="mxpeg"/>
   <int value="-469833042" label="sgi"/>
   <int value="-462654404" label="pbm"/>
+  <int value="-458233175" label="rscc"/>
   <int value="-450113811" label="vp8"/>
   <int value="-449164482" label="smv"/>
+  <int value="-443982307" label="pcm_s64be"/>
   <int value="-434097103" label="8svx_fib"/>
   <int value="-431043877" label="rv30"/>
   <int value="-418117523" label="exr_deprecated"/>
@@ -17169,6 +17186,7 @@ Called by update_net_error_codes.py.-->
   <int value="-411871512" label="4xm"/>
   <int value="-351638235" label="mace6"/>
   <int value="-335532805" label="v308"/>
+  <int value="-331242415" label="interplayacm"/>
   <int value="-321063470" label="cavs"/>
   <int value="-312812574" label="dsicinaudio"/>
   <int value="-305868762" label="ptx"/>
@@ -17177,15 +17195,18 @@ Called by update_net_error_codes.py.-->
   <int value="-268375107" label="indeo2"/>
   <int value="-262604522" label="qpeg"/>
   <int value="-259187129" label="interplay_dpcm"/>
+  <int value="-235507784" label="mscc"/>
   <int value="-235472313" label="pjs"/>
   <int value="-197551526" label="vp7_deprecated"/>
   <int value="-195649673" label="mmvideo"/>
   <int value="-194494447" label="sanm"/>
   <int value="-179123055" label="hnm4video"/>
+  <int value="-178584929" label="adpcm_aica"/>
   <int value="-166593824" label="bintext"/>
   <int value="-153142813" label="adpcm_ima_qt"/>
   <int value="-135875472" label="pcm_s24le_planar"/>
   <int value="-108909529" label="adpcm_ea"/>
+  <int value="-97649057" label="scpr"/>
   <int value="-96441857" label="escape124"/>
   <int value="-92926716" label="indeo3"/>
   <int value="-92742166" label="adpcm_swf"/>
@@ -17204,6 +17225,7 @@ Called by update_net_error_codes.py.-->
   <int value="123753" label="bethsoftvid"/>
   <int value="5678717" label="adpcm_vima"/>
   <int value="6153938" label="ffv1"/>
+  <int value="20173491" label="gdv"/>
   <int value="60024993" label="sol_dpcm"/>
   <int value="73149662" label="escape130_deprecated"/>
   <int value="76029796" label="mss1"/>
@@ -17231,6 +17253,7 @@ Called by update_net_error_codes.py.-->
   <int value="284053917" label="sp5x"/>
   <int value="287849834" label="msvideo1"/>
   <int value="294769071" label="pcm_s16be_planar"/>
+  <int value="296667069" label="pcm_s64le"/>
   <int value="309105352" label="bmp"/>
   <int value="309392554" label="dsd_msbf"/>
   <int value="311400023" label="zlib"/>
@@ -17238,6 +17261,7 @@ Called by update_net_error_codes.py.-->
   <int value="342736256" label="avrn"/>
   <int value="343186566" label="rpza"/>
   <int value="347789448" label="vplayer"/>
+  <int value="373372875" label="pcm_f16le"/>
   <int value="396111544" label="otf"/>
   <int value="412600562" label="pcm_u16be"/>
   <int value="429618670" label="jv"/>
@@ -17253,7 +17277,11 @@ Called by update_net_error_codes.py.-->
   <int value="500576677" label="hap"/>
   <int value="503945275" label="motionpixels"/>
   <int value="525499602" label="vmnc"/>
+  <int value="536845270" label="av1"/>
+  <int value="539341854" label="magicyuv"/>
+  <int value="548057626" label="sdx2_dpcm"/>
   <int value="552661632" label="adpcm_xa"/>
+  <int value="553940120" label="adpcm_psx"/>
   <int value="558339021" label="jpeg2000"/>
   <int value="563328753" label="4gv"/>
   <int value="565711017" label="pcm_s24le"/>
@@ -17262,6 +17290,7 @@ Called by update_net_error_codes.py.-->
   <int value="579930439" label="cmv"/>
   <int value="580364763" label="txd"/>
   <int value="588676310" label="pcm_s8_planar"/>
+  <int value="602113129" label="xma1"/>
   <int value="603287142" label="mpl2"/>
   <int value="610300309" label="v210x"/>
   <int value="634747673" label="avs"/>
@@ -17274,6 +17303,7 @@ Called by update_net_error_codes.py.-->
   <int value="746742638" label="truehd"/>
   <int value="747771882" label="dts"/>
   <int value="753949422" label="indeo5"/>
+  <int value="776942197" label="ylc"/>
   <int value="781916095" label="ayuv"/>
   <int value="789960893" label="bmv_audio"/>
   <int value="802192292" label="adpcm_ima_dk4"/>
@@ -17285,6 +17315,7 @@ Called by update_net_error_codes.py.-->
   <int value="865955000" label="smc"/>
   <int value="903853106" label="012v"/>
   <int value="913577987" label="wmav2"/>
+  <int value="930537867" label="clearvideo"/>
   <int value="944040689" label="ppm"/>
   <int value="944980366" label="idcin"/>
   <int value="946455966" label="aasc"/>
@@ -17314,6 +17345,7 @@ Called by update_net_error_codes.py.-->
   <int value="1139877352" label="dnxhd"/>
   <int value="1158772651" label="anm"/>
   <int value="1165132763" label="opus_deprecated"/>
+  <int value="1185344399" label="svg"/>
   <int value="1194572884" label="g2m_deprecated"/>
   <int value="1210249397" label="avc"/>
   <int value="1213003867" label="hdmv_text_subtitle"/>
@@ -17323,6 +17355,7 @@ Called by update_net_error_codes.py.-->
   <int value="1251286213" label="dxv"/>
   <int value="1258259575" label="pcm_lxf"/>
   <int value="1271374381" label="wmav1"/>
+  <int value="1278764780" label="gremlin_dpcm"/>
   <int value="1294385179" label="mp3"/>
   <int value="1299068647" label="truemotion1"/>
   <int value="1310993795" label="zerocodec"/>
@@ -17337,6 +17370,7 @@ Called by update_net_error_codes.py.-->
   <int value="1397947482" label="dsd_lsbf"/>
   <int value="1411832541" label="pcm_f32be"/>
   <int value="1413182900" label="dvd_nav_packet"/>
+  <int value="1456197148" label="fmvc"/>
   <int value="1462568683" label="srt"/>
   <int value="1467359000" label="msa1"/>
   <int value="1468951708" label="comfortnoise"/>
@@ -17366,7 +17400,9 @@ Called by update_net_error_codes.py.-->
   <int value="1724507916" label="ra_144"/>
   <int value="1729587546" label="pgmyuv"/>
   <int value="1730373804" label="pcm_alaw"/>
+  <int value="1739261970" label="pixlet"/>
   <int value="1741236466" label="subrip"/>
+  <int value="1768130043" label="wrapped_avframe"/>
   <int value="1771307928" label="flashsv2"/>
   <int value="1789213623" label="wavpack"/>
   <int value="1804125128" label="pcm_s24be"/>
@@ -17384,7 +17420,9 @@ Called by update_net_error_codes.py.-->
   <int value="1951984033" label="v210"/>
   <int value="1961440145" label="vp6a"/>
   <int value="1965599083" label="sami"/>
+  <int value="1980641302" label="daala"/>
   <int value="1981484138" label="pcm_u32le"/>
+  <int value="1991949075" label="sheervideo"/>
   <int value="1997862473" label="interplayvideo"/>
   <int value="2002251246" label="tscc2"/>
   <int value="2005720882" label="atrac3"/>
@@ -17392,8 +17430,10 @@ Called by update_net_error_codes.py.-->
   <int value="2032395845" label="pcm_u16le"/>
   <int value="2041774878" label="huffyuv"/>
   <int value="2047102762" label="sanm_deprecated"/>
+  <int value="2049828371" label="screenpresso"/>
   <int value="2053719989" label="r210"/>
   <int value="2071582326" label="xbin"/>
+  <int value="2080470405" label="speedhq"/>
   <int value="2080704511" label="pcm_s16be"/>
   <int value="2084073402" label="ljpeg"/>
   <int value="2086226415" label="pcm_s32le"/>
@@ -17401,6 +17441,8 @@ Called by update_net_error_codes.py.-->
   <int value="2100540076" label="amr_wb"/>
   <int value="2118960502" label="mimic"/>
   <int value="2128505640" label="wnv1"/>
+  <int value="2134847163" label="adpcm_mtaf"/>
+  <int value="2142093799" label="psd"/>
   <int value="2146164868" label="v410"/>
 </enum>
 
@@ -41312,6 +41354,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="7" label="kCodecVP9"/>
   <int value="8" label="kCodecHEVC"/>
   <int value="9" label="kCodecDolbyVision"/>
+  <int value="10" label="kCodecAV1"/>
 </enum>
 
 <enum name="VideoCodecProfile">
@@ -41339,6 +41382,7 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="21" label="DolbyVision profile5"/>
   <int value="22" label="DolbyVision profile7"/>
   <int value="23" label="Theora"/>
+  <int value="24" label="AV1 Profile0"/>
 </enum>
 
 <enum name="VideoDecodeAcceleratorError">
