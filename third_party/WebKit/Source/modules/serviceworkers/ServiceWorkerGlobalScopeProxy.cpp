@@ -418,6 +418,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchInstallEvent(int event_id) {
       WorkerGlobalScope(), WaitUntilObserver::kInstall, event_id);
   Event* event = InstallEvent::Create(
       EventTypeNames::install, ExtendableEventInit(), event_id, observer);
+  WorkerGlobalScope()->SetIsInstalling(true);
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 

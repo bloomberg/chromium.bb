@@ -76118,6 +76118,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.CacheStorageInstalledScript.Count" units="count">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The counts of scripts which are stored to the CacheStorage by the installing
+    service worker.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.CacheStorageInstalledScript.ScriptSize"
+    units="bytes">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The length of scripts which are stored to the CacheStorage by the installing
+    service worker.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.CacheStorageInstalledScript.ScriptTotalSize"
+    units="bytes">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    The total length of scripts which are stored to the CacheStorage by the
+    installing service worker.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.CanMakePaymentEvent.Time" units="ms">
   <owner>jinho.bang@samsung.com</owner>
   <summary>

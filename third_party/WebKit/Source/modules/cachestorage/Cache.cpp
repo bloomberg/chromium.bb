@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/modules/v8/V8Response.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/cachestorage/CacheStorageError.h"
 #include "modules/fetch/BodyStreamBuffer.h"
@@ -21,10 +22,12 @@
 #include "modules/fetch/GlobalFetch.h"
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
 #include "platform/network/http_names.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "services/network/public/interfaces/fetch_api.mojom-blink.h"
@@ -275,6 +278,7 @@ class Cache::BarrierCallbackForPut final
     batch_operations_[index] = batch_operation;
     if (--number_of_remaining_operations_ != 0)
       return;
+    MaybeReportInstalledScripts();
     cache_->WebCache()->DispatchBatch(
         std::make_unique<CallbackPromiseAdapter<void, CacheStorageError>>(
             resolver_),
@@ -300,6 +304,30 @@ class Cache::BarrierCallbackForPut final
   }
 
  private:
+  // Report the script stats if this cache storage is for service worker
+  // execution context and it's in installation phase.
+  void MaybeReportInstalledScripts() {
+    ExecutionContext* context = resolver_->GetExecutionContext();
+    if (!context || !context->IsServiceWorkerGlobalScope())
+      return;
+    ServiceWorkerGlobalScope* global_scope =
+        ToServiceWorkerGlobalScope(context);
+    if (!global_scope->IsInstalling())
+      return;
+
+    for (const auto& operation : batch_operations_) {
+      scoped_refptr<BlobDataHandle> blob_data_handle =
+          operation.response.GetBlobDataHandle();
+      if (!blob_data_handle)
+        continue;
+      if (!MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
+              blob_data_handle->GetType())) {
+        continue;
+      }
+      global_scope->CountCacheStorageInstalledScript(blob_data_handle->size());
+    }
+  }
+
   bool completed_ = false;
   int number_of_remaining_operations_;
   Member<Cache> cache_;
