@@ -101,15 +101,6 @@ static void browser_accessibility_atk_hyperlink_class_init(
 // AtkAction interface.
 //
 
-static BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
-    AtkAction* atk_action) {
-  if (!IS_BROWSER_ACCESSIBILITY_ATK_HYPERLINK(atk_action))
-    return nullptr;
-
-  return ToBrowserAccessibilityAuraLinux(
-      BROWSER_ACCESSIBILITY_ATK_HYPERLINK(atk_action));
-}
-
 static gboolean browser_accessibility_atk_hyperlink_do_action(AtkAction* action,
                                                               gint index) {
   g_return_val_if_fail(ATK_IS_ACTION(action), FALSE);

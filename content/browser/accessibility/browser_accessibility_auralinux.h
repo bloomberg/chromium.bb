@@ -96,6 +96,9 @@ ToBrowserAccessibilityAuraLinux(const BrowserAccessibility* obj);
 CONTENT_EXPORT BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
     BrowserAccessibility* obj);
 
+BrowserAccessibilityAuraLinux* ToBrowserAccessibilityAuraLinux(
+    AtkAction* atk_action);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_AURALINUX_H_
