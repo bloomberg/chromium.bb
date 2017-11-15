@@ -104,10 +104,17 @@ def main():
         extra_flags = rest_args[1:]
 
       # These flags are to make sure that test output perf metrics in the log.
-      if not '--verbose' in extra_flags:
-        extra_flags.append('--verbose')
-      if not '--test-launcher-print-test-stdio=always' in extra_flags:
-        extra_flags.append('--test-launcher-print-test-stdio=always')
+      verbose_flag = '--verbose'
+      if not verbose_flag in extra_flags:
+        extra_flags.append(verbose_flag)
+      test_stdio_flag = '--test-launcher-print-test-stdio=always'
+      if not test_stdio_flag in extra_flags:
+        extra_flags.append(test_stdio_flag)
+      # This flag makes sure that performance tests are deteriministic and
+      # isolated so that adding or removing a test doesn't affect results.
+      single_process_flag = '--single-process-tests'
+      if not single_process_flag in extra_flags:
+        extra_flags.append(single_process_flag)
       if args.isolated_script_test_filter_file:
         extra_flags.append('--test-launcher-filter-file=' +
                            args.isolated_script_test_filter_file)
